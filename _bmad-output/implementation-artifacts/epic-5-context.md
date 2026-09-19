@@ -40,6 +40,31 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - **The canvas is the site.** At rest it is a pixel-faithful render with zero chrome, and nothing on it substitutes a design or decides the page at render — page-dependent choices are build-time facts, and the editor advises (AD-37).
 - **Never lose content.** Switching design carries a control both designs declare, parks one only the old design has (restored exactly on return) and defaults one only the new design has; props and list items a design does not show are kept invisibly, and Shuffle and Remix obey the same rule.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
+  - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
+    written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`
+    were waiting for — so the rail's absence rule and R-37's refusal both already exist. What does NOT exist is the
+    `bindingContext` half: it has **no runtime reader anywhere** and **no template → resource table**, so
+    `compileTarget.includes(file)` is the whole filter today and gives the same answer on every design in the repo.
+    The table comes from `appendix-b1-template-contexts.md` §3 and §5, and is paired with a VALIDATOR rule — a design
+    whose contexts fit none of its own targets is refused at assembly — because a wrong table would otherwise hide a
+    design **silently**, which is this surface's worst failure. Also settled: the category display name has no home in
+    code, so it joins `CategoryContent` (`content.json`, per category, already read by `assembleEntry`) rather than a
+    second list that can drift; `doc-edit.ts` has no insert and gains one shaped exactly like `duplicateSection`;
+    category order must be NUMERIC (`a17` sorts before `a4` as a string); and `read.ts` already ships every placeable
+    design for this story (DW-200, which this story adds nothing to). **DW-190 closes here** — the picker is the
+    refusal surface a section with no root had nowhere to show on. No migration and **no Schema phase**.
+  - **The `⌘K` collision, found by reading (Story 5.10's Create):** `⌘K` is ALREADY the **link** mark inside an
+    editing session (`lib/inline.ts:230`, `KEYS = { b, i, u, k: 'a' }`), and `shortcutFor` lets a `⌘`-modified gesture
+    through with the caret in a field — only `undo` and `redo` are held back. Worse, a field that does not permit
+    links returns *without* `preventDefault` ON PURPOSE so the key reaches the browser, so the picker would have
+    swallowed it. `'add'` joins that one exclusion list in the SHARED function; it does not become a `SINGLE_KEY`, so
+    it carries no WCAG 2.1.4 focus condition and still fires with a popover open.
+  - **The preview is the canvas's own render, in its own frame (Story 5.10's Create):** a design's stylesheet carries
+    media queries that key on the VIEWPORT, so a shadow root sized to a card would apply desktop rules at card width
+    and draw a broken miniature — R-137 settled the identical point for the canvas. Each card therefore gets an
+    `inert` `/canvas` iframe at Desktop width, fitted by transform, created only on intersection (NFR-1's "Section
+    Picker preview lazy rendering"). **`inert` is what keeps R-149 at one rule on one element**: it was unavailable to
+    the canvas, which must stay pointer-editable, and is available here because the card takes the press.
 - **Text is text plus marks, never HTML.** A string plus ordered ranges over exactly bold, italic, underline and link (the link record carries `newTab`/`rel`), edited through raw `contenteditable` with no editor-library DOM in the iframe; paste strips to the four, and the sidebar edits the same value.
   - **Story 5.3 built it value-first (2026-09-18):** typing is read from the element as WORDS (`readText`), the one edit between the words before and after, anchored at the caret (`diffText`), is applied to the STORED value (`replaceRange`), and the element is rewritten from the serializer when their nodes differ (compared after `normalize()`, U+00A0 equal to a space). The page cannot hold a whole link record — `linkAttributes` writes a Portal link as `href="#" data-portal` and never writes `ref` — so reading markup back after a keystroke would drop every Portal link and every `ref`. Only a paste is read for marks (`readMarks`, over an inert `DOMParser` document, narrowed to the field's own allow-list). One controller runs the canvas element and the panel's rich Text Area (`apps/web/lib/inline.ts`); the marks functions sit beside the serializer in `packages/section-runtime/src/marks.ts`. A `\n` is `<br>` on both emitters, a link with no destination writes no anchor (DW-120), and `PropDef.maxChars` stops typing and paste with "{Label} holds {n} characters.".
 - **Untouched is a real state.** An untouched synthesizable template shows its Synthesis Defaults under a worded marker and only an edit materializes it — never viewing, a preview subject or a member-state check; removing every section returns it to untouched, hiding does not, and other canvases open empty and emit nothing (AD-22).
@@ -286,6 +311,17 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     for a layout that cannot hold the word — D6a's project-level row, which has the width, still prints them.
     A control row's words are its name and title: read them with `getAttribute`/`aria-label`, never `textContent`,
     which includes an inline SVG's `<title>` (`run-verify-editor.cjs` step 48).
+  - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
+    **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
+    every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's
+    drawn sun/moon **segmented** becomes **R-132's one button that swaps its glyph**, at the segmented's position,
+    flipping the SAME `mode` the canvas holds — so the picker and the page behind it can never disagree. **R-152:**
+    site-wide designs ARE offered on every canvas and land in the Site-wide group rather than at the invoked position
+    (the stack order is derived, `editor.test.ts:103`); **a second one in the same category REPLACES the first**, one
+    edit, `⌘Z`-able; and in the owner's own words there is **no text message** — a site-wide design carries the Kit's
+    **`Globe`** on its picker card with a hover `title` and the same words as its accessible name, so the mark arrives
+    BEFORE the press. **Layers gains no glyph: R-126 stands.** The polite `#editor-said` announcement stays, being a
+    screen reader's only access to a glyph and a hover, and not a visible message.
   - **R-126 (owner, 2026-09-18, on the deployed Story 5.4):** the Layers panel is drawn for its NAMES — the two groups
     the same shape with a hairline between (no card, no glyph, no footed note), `Site-wide` and its derived template
     count on one line, the name at `text-helper-caption`, and the `⋯` as the row's only control with Hide/Show leading

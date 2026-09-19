@@ -3085,6 +3085,65 @@ deliberate exception for the canvas frame only."*
   Accepted: the alternative is dozens of Tab presses through the site's own links on every pass.
 - Targets: ✅ this entry · ✅ Story 5.9's spec (Question 5) · ✅ `run-verify-editor.cjs` step 8 · ✅ `prd.md` NFR-5.
 
+**R-150 — the Section Picker shows the whole library, Pro tagged; the rail has no "Free only" switch.**
+Story 5.10's Q1, ruled option 1 (owner, 2026-09-19): *"No switch — the picker always shows everything, Pro tagged."*
+
+- **Why it was a question.** `S5 Section Picker.dc.html:73-76` draws a **`Free only`** toggle in the rail's footer.
+  **R-77** struck the identical affordance from B8's Site Remix for the identical reason — the canvas is open and
+  FR-L3's exit sheet catches Pro at deploy — but R-77 was ruled about *Remix*, and carrying a ruling from one surface
+  to another is exactly what standing rule 6 refuses to guess.
+- **What it binds.** R-77's reasoning is now the rule for **browsing the library**, not just for re-rolling it. Every
+  design offered on this canvas is shown; the ✦ Pro tag is the only Pro signal and is never pressable (UX-DR19, B10).
+  **S5a and S5c are superseded on the rail footer alone** — every other pixel of both frames stands.
+- **What it also avoids:** a small fraction of the library is `[Free]` (derived, `tools/inventory-gen.py`), so the
+  toggle would have emptied most categories on press — a Free user would never meet the designs that sell the upgrade.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (Question 1, its Boundaries and its tasks) ·
+  ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · ✅ `epics.md` (Story 5.10's AC) ·
+  ⬜ `S5` loses the row whenever a library pass next touches the frames (as R-77's own B8 row still awaits).
+
+**R-151 — the picker's dark preview is R-132's ONE button, not S5's segmented pair.** Story 5.10's Q2, ruled option 1
+(owner, 2026-09-19): *"One button in the picker's header, exactly like the editor's (sun in light, moon in dark),
+flipping the same setting the canvas uses."*
+
+- **Why it was a question.** S5a`:82-85` and S5c`:236-239` draw a **two-cell sun/moon segmented** in the picker's
+  header. **R-132** had already settled the same control everywhere else as *one button that swaps its glyph*, with
+  `aria-pressed` and an accessible name naming the destination. Two approved things disagreed about one control's
+  shape. There was also a mechanical half: `onShortcut` yields every single-key binding to `dialog[open]`, so with the
+  picker open `.` and the top bar's own button are both out of reach.
+- **What it binds.** One control, `components/editor/mode-toggle.tsx` reused verbatim, in the picker's header at the
+  segmented's drawn position, flipping **the same `mode`** the canvas holds — so the picker and the page behind it can
+  never disagree about which mode is being looked at, and a mode chosen in the picker survives closing it. S5's
+  segmented is superseded; its **position** is kept. The previews alone invert: *"app chrome stays light"* (S5c's own
+  caption) is untouched.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (Question 2, its tasks) · ✅ `EXPERIENCE.md` § *Drawn, but on the
+  wrong mechanism* · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`'s header, on the next library pass.
+
+**R-152 — site-wide designs ARE in the picker; a second replaces the first; and a globe marks them instead of a
+sentence.** Story 5.10's Q3, ruled option 1 (owner, 2026-09-19) with an amendment in his own words: *"Offer them, and
+say plainly where they went — and picking a second one replaces the first. Do not add a text message that this is
+shown on all templates. Instead for such Global sections — use a Globe icon with proper title/label visible on hover."*
+
+- **Why it was a question.** Headers, announcement bars and footers are **shared**, and the editor's stack order is
+  *derived*, not stored (`apps/web/editor.test.ts:103` — site-wide non-`a3`, then the canvas, then `a3` footers). So a
+  header cannot land in the gap a user pressed "+" in, however it was invoked; honouring the invoked position would
+  mean reopening Story 5.4's stack rule. And nothing in the code refuses a *second* header: `placementRefusal` knows
+  only `a25`, and `canDuplicate` (`editor.tsx:1725`) governs duplication, not placement.
+- **What it binds.** (1) A design whose `compileTarget` is `default.hbs` is **offered** on every canvas, and lands in
+  the Site-wide group rather than at the invoked position. (2) **Picking a second one in the same category replaces
+  the first** — header replaces header, footer replaces footer — as one edit, so `⌘Z` puts the old one back.
+  (3) **No sentence, no toast, no banner.** A site-wide design carries the Kit's existing **`Globe`**
+  (`components/kit/icons.tsx:412`, already the product's glyph for Sites and for an external link) on its **picker
+  card**, with a hover `title` and the same string as its accessible name. The mark arrives *before* the press, which
+  is where the surprise was.
+- **What it does NOT touch, deliberately.** **Layers keeps no glyph** — R-126 removed the globe badge from B7's
+  Site-wide group on the owner's own test and is not reversed here; the group's *name* is still what identifies it.
+  The canvas name tag is Story 5.2's chrome and is `pointer-events: none`, so a hover `title` could not fire there
+  anyway. **And the polite `#editor-said` announcement stays**: it is a screen reader's only access to a glyph and a
+  hover, every other placement already announces (UX-DR12), and it is not a visible message — which is what the
+  amendment struck.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (Question 3, its I/O matrix, its tasks and the owner's test) ·
+  ✅ `EXPERIENCE.md` (the Site-wide singleton row) · ✅ `epics.md` (Story 5.10's AC).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

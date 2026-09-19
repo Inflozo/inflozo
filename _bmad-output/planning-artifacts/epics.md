@@ -1861,9 +1861,18 @@ match the template being edited, so a design binding a resource the template lac
 **And** previews are lazily rendered with skeletons, holding NFR-1
 **And** **`⌘K` is bound HERE** — FR-D11's key lands with the action it drives and joins Story 5.9's one table and
 its `?` card, and the keyboard journey grows a stop for it (**R-145**)
+**And** the rail carries **no "Free only" switch** — **R-150** (owner, 2026-09-19): R-77's reasoning generalised
+from Site Remix to browsing the library, so every offered design is shown and the ✦ Pro tag is the only Pro signal
+**And** the header's dark control is **R-132's one button that swaps its glyph**, not S5's segmented pair — **R-151**
+(owner, 2026-09-19) — flipping the same `mode` the canvas holds, in the segmented's drawn position
+**And** **site-wide designs are offered here too** and land in the Site-wide group rather than at the invoked
+position, because the stack order is derived; **a second one in the same category replaces the first**, as one edit;
+and a site-wide design is marked on its picker card by the Kit's **`Globe`** with a hover title and the same words as
+its accessible name — **never a sentence, a toast or a banner** (**R-152**, owner, 2026-09-19). Layers still carries
+no glyph (R-126 stands)
 **And** the overlay matches S5a and S5c dark.
 
-**FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Owner test:** yes.
+**FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Rulings:** R-150, R-151, R-152. · **Owner test:** yes.
 
 ### Story 5.11: The design ring — navigation, shuffle, and carry / park / default
 

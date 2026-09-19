@@ -71,6 +71,9 @@ the token set the picker follows with no change at all.
   `data-inflozo-*` attribute (`pilots.test.ts:40` enforces the key); the **"+ Add section" pill is
   pressed**, so it follows `SectionPill`'s pattern in the editor's own body and pays that component's
   two documented costs (hidden from the first canvas `scroll`, replaced 150 ms after the last).
+- **A site-wide section is marked, never explained** (R-152). The Kit's `Globe` on the picker card, a hover
+  `title`, the same words as its accessible name — and **no sentence, toast or banner anywhere**. Layers gains no
+  glyph: R-126 removed B7's on the owner's own test and stands.
 - **Motion degrades.** The hairline and pill share S4b's `addline` breath — an **opacity** pulse,
   never a scale — and the overlay rises on `--duration-overlay` (200 ms, scale 0.98 → 1); both go
   through `globals.css`'s existing `prefers-reduced-motion` block, never around it.
@@ -90,6 +93,8 @@ the token set the picker follows with no change at all.
 - **No second implementation of anything.** The grid's arrow keys are `icon-picker.tsx`'s `gridKeys`;
   the rail is `radioKeys`/`tabStop`; the search field is the Kit's `SearchInput`; the refusal is
   `placementRefusal`; the render is `renderSection`. Nothing here re-authors an existing part.
+- **No "Free only" switch in the rail** (R-150) and **no sun/moon segmented in the header** (R-151) — the first is
+  not built at all, the second is R-132's one button. Neither is greyed; both are absent (UX-DR3).
 - **No design ring, no ◀ ▶, no thumbnail strip, no Shuffle** — all Story 5.11's (R-118). This story
   places a section; it never changes one.
 - **No new payload route and no per-design fetch.** `read.ts` already ships every placeable design to
@@ -105,8 +110,8 @@ the token set the picker follows with no change at all.
 | Open on an empty canvas | the canvas has no sections | the canvas's one affordance is "+ Add section"; pressing it opens the picker at the end | N/A |
 | Place | Add pressed, or `Enter` on a focused card | one instance at the invoked position, one journal entry, one undo step; picker closes; focus returns to the invoking control; the placement announced politely | `placementRefusal` → the sentence in the picker, nothing written |
 | Second Post Content | an `a25` design, the layout already has one | the card is drawn; Add **refuses** with *"this layout already prints the article"* in the picker's own refusal line (**DW-190**) | the doc is untouched |
-| Site-wide design | a design compiling to `default.hbs` (a header, a footer) | lands in the **Site-wide group**, not at the invoked position, and the announcement says so — the stack order is derived, not stored (`editor.test.ts:103`) | N/A |
-| A second header | the site doc already holds one, and another is picked | **Question 3** — no rule exists today: `placementRefusal` knows only `a25`, and `canDuplicate` (`editor.tsx:1725`) governs duplication, not placement | settled with Q3, not guessed |
+| Site-wide design | a design compiling to `default.hbs` (a header, a footer) | its card carries the `Globe`; it lands in the **Site-wide group**, not at the invoked position — the stack order is derived, not stored (`editor.test.ts:103`) — and the placement is announced politely, with **no visible sentence** (R-152) | N/A |
+| A second header | the site doc already holds one, and another header is picked | **it replaces the first**, in one transaction, so `⌘Z` restores the old one (R-152). Category for category: a header replaces a header, never a footer | N/A |
 | Wrong template | a design whose `compileTarget` excludes this canvas's file | never drawn, never counted in the rail | N/A |
 | Wrong resource | a design whose `bindingContext` does not intersect this template's | never drawn, never counted | assembly refuses a design whose contexts fit none of its own targets |
 | Non-placeable | an `a32` / `a33` / `a34` design | its category is **absent from the rail entirely** | N/A |
@@ -132,11 +137,11 @@ the token set the picker follows with no change at all.
     `--radius-sm`, hover `rgba(28,27,26,.04)`, **active `--color-coral-tint` on `--color-coral-text` at 600**,
     count on the right in mono 11px inheriting the row's colour. *The drawn names and counts are stress-fill
     fiction* — 34 invented categories against a real roster — so the rail is built from the catalogue.
-  - Rail footer `:73-76` — the **`Free only`** label and the Kit's toggle, off. **Question 1.**
+  - Rail footer `:73-76` — the **`Free only`** label and the Kit's toggle, off. **Not built (R-150).**
   - Header `:79-86` — the category title in Bricolage 20px/700 (`:80`); the meta line in mono 12px
     (`:81` **`18 designs · shown in your pack: Paper`**, and S5c `:235` **`18 designs · pack: Paper · dark mode`**
     — the two frames disagree, reconciled in the Design Notes); the sun/moon **segmented** `:82-85`
-    (**Question 2**); the close **×** `:86`, 32px, with **no `aria-label` drawn** — it gets one (A7 item 9).
+    (**superseded by R-132's one button, R-151 — the position is kept**); the close **×** `:86`, 32px, with **no `aria-label` drawn** — it gets one (A7 item 9).
   - Grid `:88` — `<div tabindex="0" role="group" aria-label="Designs">`, **CSS multi-column** with
     `column-gap:16px`, cards `break-inside:avoid; margin-bottom:16px`.
   - Card `:101` — `--color-surface`, 1px `--color-line`, `--radius` 12px, `--shadow-sm`; hover
@@ -256,8 +261,10 @@ the token set the picker follows with no change at all.
 
 ## Tasks & Acceptance
 
-**Execution.** No migration and no schema change, so **no Schema phase** (R-99). Three questions are open;
-the tasks they govern are marked **[Q1]**, **[Q2]**, **[Q3]** and are not started until each is ruled.
+**Execution.** No migration and no schema change, so **no Schema phase** (R-99). **All three questions are ruled —
+R-150, R-151 and R-152, option 1 each (owner, 2026-09-19), R-152 with an amendment in his own words** — so the list
+below is the whole of it: no Free-only switch, R-132's one button in the header, and site-wide designs offered with a
+globe on the card instead of a sentence.
 
 - [ ] `packages/library/designs/*/content.json` -- add `title` per category, from the export's roster
       (`a1` Headers · `a4` Heroes · `a17` Post Grids · `a22` Newsletter · `a24` Post Headers) -- the rail
@@ -288,8 +295,10 @@ the tasks they govern are marked **[Q1]**, **[Q2]**, **[Q3]** and are not starte
 - [ ] `apps/web/components/editor/section-picker.tsx` -- new: S5a's overlay as a native modal `<dialog>`
       (`Esc`, the focus trap and focus return are the platform's), the 240px rail as a radio group over
       `radioKeys`/`tabStop`, the Kit's `SearchInput`, the multi-column grid over `icon-picker.tsx`'s
-      `gridKeys`, and the card with its hover wash, `Add` button and tier badge. **[Q1]** the `Free only`
-      row · **[Q2]** the header's mode control.
+      `gridKeys`, and the card with its hover wash, `Add` button and tier badge. **The rail footer's `Free only`
+      row is NOT built** (R-150), the header's dark control is `mode-toggle.tsx` reused verbatim at the segmented's
+      drawn position (R-151), and a site-wide design's card carries the Kit's `Globe` (`kit/icons.tsx:412`) beside
+      its name with a hover `title` and the same words as its accessible name (R-152).
 - [ ] `apps/web/components/editor/section-preview.tsx` -- new: one card's live preview. An
       `IntersectionObserver` creates an `inert` `/canvas` iframe only when the card nears the viewport
       (NFR-1), `renderSection` paints it, and it is sized to R-137's Desktop width and fitted to the card so
@@ -302,8 +311,10 @@ the tasks they govern are marked **[Q1]**, **[Q2]**, **[Q3]** and are not starte
       invoked position; the insert through `commit` so it is one edit and one undo step; the pressed
       **"+ Add section"** pill on the hovered gap, placed like `SectionPill` and added as one row to the
       chrome table; the Layers footer's `AddButton`; the empty canvas's one affordance; and the polite
-      announcement through `#editor-said`, **naming the Site-wide group when that is where a section went**.
-      **[Q3]** whether site-wide designs are offered here at all.
+      announcement through `#editor-said`, **naming the Site-wide group when that is where a section went** — the
+      announcement only, **never a visible sentence, toast or banner** (R-152). Site-wide designs are offered on
+      every canvas; **a second one in the same category replaces the first**, in the same transaction, so `⌘Z`
+      restores the old one.
 - [ ] `apps/web/app/…/(editor)/read.ts` -- read `projects.style_pack` and hand the editor the preset's name
       for the meta line -- the only new field `EditorData` gains.
 - [ ] `apps/web/picker.test.ts` · `packages/library/src/placement.test.ts` · `apps/web/keymap.test.ts` --
@@ -324,7 +335,12 @@ the tasks they govern are marked **[Q1]**, **[Q2]**, **[Q3]** and are not starte
   its `⌘K` chip, the category title and meta line, and the card grid with its hover wash and coral `Add` — and
   with the dark preview on it **matches S5c**, whose only changes are the preview interiors: the app chrome stays light.
 - Given a Free plan, when a Pro design is shown, then it carries `✦ Pro`, it can be added, and **nothing asks
-  for money** (UX-DR19).
+  for money** (UX-DR19); **and the rail carries no Free-only switch** (R-150).
+- Given a site-wide design, when its card is drawn, then it carries the `Globe` with a hover title and the same
+  accessible name, **and no sentence, toast or banner appears anywhere when it is placed** (R-152); and picking a
+  second one in that category replaces the first in one `⌘Z`-able edit.
+- Given the picker open, when I press the header's dark control, then it is **one button that swaps its glyph**
+  (R-132, R-151), the previews invert and the app chrome stays light, and the canvas behind agrees on the mode.
 - Given any canvas, when the picker opens, then every design drawn can actually be placed there, every category
   in the rail has at least one, and no non-placeable treatment's category appears at all.
 - Given a placement, when it lands, then it is **one** edit, one journal entry and one `⌘Z` away from gone.
@@ -382,9 +398,12 @@ the product beats a per-surface size, and `kit/badge.tsx` is already what B10 an
 `duplicateSection`'s own precedent — and with nothing selected, at the end of this canvas's stack; the "+"
 inserts at its gap. A **site-wide** design is the exception: the stack order is *derived*
 (`editor.test.ts:103` — site-wide non-`a3`, then the canvas, then `a3` footers), so a header cannot land
-between two canvas sections however it was invoked. It goes to the Site-wide group and the announcement says
-so. Changing that would mean changing Story 5.4's stack rule, which is out of this story's scope — hence
-Question 3, which asks the smaller question instead.
+between two canvas sections however it was invoked. Changing that would mean changing Story 5.4's stack rule,
+which is out of this story's scope, so **R-152 moves the information earlier instead of explaining it later**: the
+card carries the `Globe` before you press, rather than a sentence after. A second site-wide design in the same
+category **replaces** the first — the behaviour a single shared header implies — in the same transaction, so `⌘Z`
+puts the old one back. The only thing said aloud is the polite `#editor-said` announcement every placement already
+makes, which is a screen reader's sole access to a glyph and a hover.
 
 ## Verification
 
@@ -435,13 +454,19 @@ to your account at Story 5.1.
    important step on this list.
 9. **Same screen.** Open the picker again and find a card tagged **✦ Pro**. Click it. **Expect:** it is added
    like any other, and **nothing asks you to upgrade**. That question is only asked the day you ship.
-10. **Same screen.** Open the picker and add a **Header** (under Headers). **Expect:** it appears at the very
-    top of the page rather than where you were, replacing the header that was there, and the editor says so —
-    a header is shared by every template. *This whole step is Question 3 below; if it reads wrong, say so.*
-11. **URL:** the same editor, then switch the template to **Post** using the switcher in the top bar. Press
+10. **Same screen.** Open the picker and find the **Headers** category. **Expect:** each card there shows a small
+    **globe** beside its name; rest the pointer on the globe and a label appears saying it is site-wide and shows on
+    every template. **There is no sentence, banner or pop-up about this anywhere.**
+11. **Same screen.** Add that header. **Expect:** it appears at the very **top** of the page rather than in the gap
+    you were in, and it **replaces** the header that was already there — your site has one header. Press `⌘Z` once:
+    the old header is back.
+12. **Same screen.** Open the picker and look at its top-right. **Expect:** a single **sun** button. Press it —
+    it becomes a **moon**, and every card's picture turns dark while the picker itself stays light. Press it again
+    to come back. Close the picker: the page behind you is in the mode you just chose.
+13. **URL:** the same editor, then switch the template to **Post** using the switcher in the top bar. Press
     `⌘K`. **Expect:** a **different** list of categories — the ones that work on an article. The home-page-only
     ones are simply not there, with no greyed-out rows and no explanations.
-12. **Same screen.** Use only the keyboard: `⌘K` to open, arrow keys to move between cards, `Enter` to place
+14. **Same screen.** Use only the keyboard: `⌘K` to open, arrow keys to move between cards, `Enter` to place
     one. **Expect:** it works, and when the picker closes the outline is back on the button you started from.
 
 ## Questions for the owner
@@ -466,7 +491,8 @@ disappear and Heroes might show one or two cards.
    that most categories look nearly empty when it is on, and a Free user who flips it may never discover the
    designs that would make them upgrade.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** No switch — the picker always shows everything, Pro tagged. Recorded as
+**R-150**; S5a and S5c are superseded on the rail footer alone.
 
 ### Question 2 — how do you switch the picker's previews to dark?
 
@@ -489,7 +515,9 @@ dark without losing your place in the picker.
 3. **No control in the picker at all** — the previews simply show whichever mode the canvas is already in. The
    least to build, but to compare a design in dark you must close the picker, press `.`, and open it again.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** One button in the picker's header, exactly like the editor's, flipping the
+same setting the canvas uses. Recorded as **R-151**; `mode-toggle.tsx` is reused verbatim at the segmented's drawn
+position.
 
 ### Question 3 — should headers and footers be in this picker?
 
@@ -515,4 +543,11 @@ template.
 3. **Leave them out of this story entirely.** Least to build, but then there is no way to add or replace a
    header until a later story, and a project that loses its header cannot get one back.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1, amended (owner, 2026-09-19).** Offer them; a second one in the same category replaces the first.
+**And in his own words:** *"Do not add a text message that this is shown on all templates. Instead for such Global
+sections — use a Globe icon with proper title/label visible on hover."* Recorded as **R-152**. So there is **no
+sentence, no toast and no banner**: a site-wide design carries the Kit's `Globe` on its **picker card**, with a hover
+`title` and the same words as its accessible name, and the mark therefore arrives *before* the press rather than
+after it. **Layers gains no glyph** — R-126 removed B7's on his own test and is not reversed. **The polite
+`#editor-said` announcement stays**, because a glyph and a hover are invisible to a screen reader, every other
+placement already announces (UX-DR12), and it is not a visible message — which is what the amendment struck.
