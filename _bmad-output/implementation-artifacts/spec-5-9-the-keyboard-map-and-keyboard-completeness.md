@@ -474,12 +474,20 @@ stayed on Syncing and `projects.revision` did not move, which is the stalled `/s
 The second, straight after: **0 FAIL**, every check passing, accounts deleted. Step 66 is therefore intermittent on
 the real stack and not this diff's; it is added to DW-204's evidence rather than left here.
 
+**Deploy (2026-09-19).** No migration in this story (R-99 has nothing to check). HEAD (`61fffa5f`) is already the tip
+of `main`, pushed at Review; confirmed rather than re-pushed. CI run [35456935324](https://github.com/Inflozo/inflozo/actions/runs/35456935324)
+on `61fffa5f` (`GITHUB_TOKEN`, read-only): `check`, `rls` and `deploy` all completed **success**. `Deployment:
+dpl_9a2ehTJmnRuikFN15wByvoDSjNhk` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) — `readyState: READY`, aliased to `app.inflozo.com`
+and `inflozo.com`. Spot-checked unauthenticated on the live domain: `/app/harness/editor` → 308, `/` → 307 — both
+redirect to sign-in, consistent with the Review walk's authenticated 404 on both harness routes; no harness code path
+is reachable without `INFLOZO_HARNESS=1`, which production does not set.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy fills the URL in. Use the **Pilot sections** project — the one
 seeded to your account at Story 5.1 — and a keyboard only where a step says so.
 
-1. **URL:** `https://app.inflozo.com/projects/<PILOT-PROJECT-ID>` · **Screen:** the editor.
+1. **URL:** `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · **Screen:** the editor.
    Press `Tab` once, without touching the mouse first. **Expect:** a small white pill reading
    **"Skip the canvas"** appears over the top-left of the bar, with a coral ring around it. Press
    `Tab` again — it disappears.
