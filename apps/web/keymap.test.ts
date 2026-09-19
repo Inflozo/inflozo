@@ -4,7 +4,7 @@ import { DEVICES } from './lib/device.ts'
 import { holdsCaret, KEYMAP, SINGLE_KEY, sheetRows, shortcutFor } from './lib/keymap.ts'
 
 /* STORY 5.9 — FR-D11's map, asserted where `node --test` can reach it. The I/O matrix's KEY rows are here; the
-   gestures themselves are the keyboard journey's (`tools/keyboard/journey.spec.mjs`, inside `pnpm check`) and the
+   gestures themselves are the keyboard journey's (`tools/keyboard/journey.spec.mjs`, `pnpm keyboard` — its own step in CI's `check` job) and the
    deployed walk's (`tools/probe/run-verify-editor.cjs` from step 71).
 
    R-141's three tests came from `journal.test.ts` with this story, assertion for assertion — the two functions moved
@@ -56,6 +56,14 @@ test('every live single key reaches its gesture with no modifier at all', () => 
   assert.equal(shortcutFor(bare('l'), false), 'layers')
   assert.equal(shortcutFor(bare('L', { shiftKey: true }), false), null, '⇧L is not L — ⇧R is Site Remix (5.12)')
   assert.equal(shortcutFor(bare('.'), false), 'dark')
+  // review, 2026-09-19: an AZERTY board types a digit and `.` WITH Shift, and the character is already in `key`
+  assert.equal(shortcutFor(bare('1', { shiftKey: true }), false), DEVICES[0].name)
+  assert.equal(shortcutFor(bare('.', { shiftKey: true }), false), 'dark')
+  assert.equal(shortcutFor(bare('!', { shiftKey: true }), false), null, 'and ⇧1 on a QWERTY board is `!`, which is no key of ours')
+  // Chrome's autofill fires a keydown with no `key`
+  assert.equal(shortcutFor({ metaKey: false, ctrlKey: false, shiftKey: false } as never, false), null)
+  // a date field's segments take digits and Backspace
+  assert.equal(holdsCaret({ tagName: 'INPUT', type: 'date' }), true)
   assert.equal(shortcutFor(bare('?', { shiftKey: true }), false), 'shortcuts', 'R-147: the layout\'s shift makes the character')
   assert.equal(shortcutFor(bare('Escape'), false), null, 'Esc is a ladder with a handler of its own, never a gesture here')
   // the three devices, walked off S4a's own track rather than written down
@@ -105,7 +113,7 @@ test('R-145: every deferred row names its story, binds nothing and is not on the
     assert.ok(!listed.has(b), `${b.action}: the card must not advertise a key that does nothing`)
     assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
   }
-  // and the five keys the owner was asked about are all still owed, by their chips
+  // and the keys the owner was asked about are all still owed, by their chips
   for (const chip of ['⌘K', '[', ']', 'P', '⇧R', '⌘⏎']) {
     assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
     assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)

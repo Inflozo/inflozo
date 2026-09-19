@@ -939,6 +939,11 @@ export function Editor({
     // open POPOVER too — a Layers `⋯` menu, a picker — because the menu owns the key while it is up.
     const owner = SINGLE_KEY.has(gesture) ? ':popover-open, dialog[open]' : 'dialog[open]'
     if (gesture !== 'save' && target?.ownerDocument?.querySelector(owner)) return
+    // a `<select>` has no caret but it does have type-ahead: `l` there is a letter of an option's name (review)
+    if (SINGLE_KEY.has(gesture) && (target?.tagName === 'SELECT' || active?.tagName === 'SELECT')) return
+    // A HELD KEY IS ONE PRESS: auto-repeat would stack a duplicate per tick and strobe the panel. ⌘Z and ⇧⌘Z repeat
+    // on purpose, as they do everywhere.
+    if (e.repeat && gesture !== 'undo' && gesture !== 'redo') return void e.preventDefault()
     e.preventDefault()
     run(gesture)
   }

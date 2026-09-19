@@ -2,9 +2,9 @@
 title: 'Story 5.9 — The keyboard map, and keyboard completeness'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '467aec611605b59371a7fff23471561a2d8f0d8e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -303,13 +303,35 @@ the journey in `pnpm check` over a harness mount as well as on the deployed edit
 - [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close DW-167 with its resolution;
       raise the keyboard-focus half of DW-188 if the journey finds it -- the ledger is the record.
 
+### Review Findings
+
+Review of 2026-09-19 — five layers over `467aec61..a9aa4b21`. Every patch below is applied and ticked.
+
+- [ ] [Review][Decision] **`Backspace` deletes the selected section, and nobody was asked.** FR-D11 names `Del`; the map also binds `Backspace`, because a Mac keyboard's "delete" key reports `Backspace`. This spec's own Ask First lists "any new global binding beyond FR-D11's map" — `?` was asked for that reason and this was not. Question 4 below.
+- [x] [Review][Patch] **MEDIUM — the deployed walk could never pass as written.** Steps 74 and 78 asserted the polite region `=== ''`, and the editor never empties it, so both failed on every run that reached them (the Real-infra verifier's fourth run: 2 FAIL, 367 PASS; the product facts inside both held). They compare before and after, as the harness journey's own stop already did [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] **MEDIUM — the journey's "no pointer" control did not read the helpers it said it read**: `lastIndexOf` found the needle on the control's own line, so `open`, `caretIntoCanvas`, `openEveryGroup`, `openGroup` and `select` were never scanned. `indexOf`; the control still passes with the helpers in [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] **MEDIUM — a letter typed at a focused `<select>` folded Layers or flipped the canvas** instead of jumping to the option, and `1` `2` `3` or Backspace in a date field changed the device or deleted the section. A `<select>` keeps its single keys; the date and time kinds count as holding a caret [editor.tsx `onShortcut` · lib/keymap.ts `TEXTUAL`]
+- [x] [Review][Patch] A HELD key repeated: ⌘D stacked a copy per tick, `L` and `.` strobed. A held key is one press; ⌘Z and ⇧⌘Z still repeat [editor.tsx `onShortcut`]
+- [x] [Review][Patch] `1` `2` `3` and `.` required Shift to be UP, so they were dead on an AZERTY board, where a digit is typed with Shift. Unconstrained, as `?` already was; ⇧1 on QWERTY is `!` and matches nothing [lib/keymap.ts · keymap.test.ts]
+- [x] [Review][Patch] Chrome's autofill fires a `keydown` with no `key`, and `shortcutFor` threw on it [lib/keymap.ts · keymap.test.ts]
+- [x] [Review][Patch] `.` on a Light-only project was held by a source regex alone — the harness fixture is dark-enabled and no deployed step pressed the key. Step 53 presses it on the real Light-only project [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] The harness canvas ROUTE's production guard had no check at all (`HARNESS_ONLY` walks pages) [apps/web/app-routes.test.ts]
+- [x] [Review][Patch] AC3 says `⇧⌘Z` is "found already passing" and no stop pressed it. The Del stop now redoes and undoes again [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] "Every drag surface" was one: no section in the harness fixture draws an item list (executed — every row selected, every group opened, no handle). The stop is named for what it walks, says where the item list IS walked (`run-verify-controls.cjs`, Story 4.5), and the catalogue and the gate's header no longer say "both" [journey.spec.mjs · tools/doc-audit.py · run-keyboard-gate.sh]
+- [x] [Review][Patch] The false premise "the journey runs inside `pnpm check`" was corrected in AC7 and the Design Note and survived in seven other places — propagate, never localise. Question 2's ruled text is a record and is left alone [keymap.test.ts · harness/editor/page.tsx · run-verify-editor.cjs · this spec · deferred-work.md DW-167]
+- [x] [Review][Patch] The deployed steps called themselves "the same journey" and omit five of its stops; the comment now names which earlier steps cover three of them and which two are the harness's alone [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] The gate leaked its log on an interrupt and its readiness fetch had no timeout; "the five keys" listed six [run-keyboard-gate.sh · keymap.test.ts]
+- [x] [Review][Patch] Every navigation in the deployed walk gets ONE retry, after the single-use magic link: the verifier's four runs all died on a 30s `page.goto` while curl had the URL in 0.25s (DW-204, which this story owned and did not touch) [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Defer] The same announcement twice in a row is silent to a screen reader — a second ⌘D on a same-named section, a second rung 2 — because React skips an identical state [editor.tsx `setSaid`] — deferred, pre-existing → DW-205
+- [x] [Review][Defer] DW-204 stays open: the retry is a way round it, not its cause — see the ledger.
+
 **Acceptance Criteria:**
 - Given the deployed editor, when the skip link takes focus, then it **matches `D8c`** — the pill at
   its drawn place, size, radius, ink and 2px `#C2381F` ring — and is not rendered at rest.
 - Given the account menu, when it opens, then the **Keyboard shortcuts** row **matches `S3
   Dashboard.dc.html:362`** and the sheet's rows **match `Editor Sidebar Kit.dc.html:274-280`**.
 - Given a keyboard-only session with no pointer events, when the journey runs, then every stop passes
-  in `pnpm check` and again on the deployed site, and `⌘Z`, `⇧⌘Z` and `⌘S` are found already passing.
+  in `pnpm keyboard` and again on the deployed site, and `⌘Z`, `⇧⌘Z` and `⌘S` are found already passing.
 - Given any text field or `contenteditable` in either document, when a single-character shortcut is
   typed into it, then the character is entered and no editor action fires (WCAG 2.1.4).
 - Given the shell, when Tab is pressed from the top, then the first stop is the skip link and the
@@ -361,7 +383,7 @@ to run anyway.
 and the first page answered in half a second. A production build inside `pnpm check` would cost
 minutes and prove nothing more about key handling. **One side effect, found by running it:** `next
 dev` rewrites the tracked `apps/web/next-env.d.ts` to point at `.next/dev/types/…` and `next build`
-points it back, so the gate must restore the file before it exits or every `pnpm check` leaves a
+points it back, so the gate must restore the file before it exits or every run of it leaves a
 dirty tree and the next commit carries it.
 
 **`pnpm check` is NOT the only place `pnpm check` runs — executed, and it cost a red deploy.** This
@@ -395,7 +417,7 @@ story.
 ## Verification
 
 **Commands:**
-- `pnpm check` -- expected: green, with the keyboard gate's stops listed and its own count printed
+- `pnpm check` -- expected: green; and `pnpm keyboard` -- expected: green, with the journey's stops listed and its own count printed
   (never written down). This is the run that must stay green: it is the `check` job `deploy` needs.
 - `bash tools/keyboard/run-keyboard-gate.sh` -- expected: exit 0; with no browser installed, a
   refusal naming `pnpm exec playwright install chromium` rather than a failure.
@@ -422,7 +444,7 @@ story.
 
 **Real services (R-82): none were hit at Dev, and that is the story's shape rather than an omission.**
 The harness mounts the real `Editor` with fixture props and runs with **no Supabase environment at
-all** — that is precisely what lets NFR-6(d)'s journey run inside `pnpm check`. `SUPABASE_URL`,
+all** — that is precisely what lets NFR-6(d)'s journey run in CI's `check` job. `SUPABASE_URL`,
 `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `RESEND_API_KEY`, `DODO_API_KEY`,
 `GHOST6_*` and `GHOST5_*` were neither read nor set by anything above; no key was printed. The
 real-stack proof is the **Review** phase's, which R-82 requires and which this story has already
@@ -568,3 +590,22 @@ everywhere else. Recorded as **R-147** in `reconcile-designs-decisions.md` §A10
 the record of why the PRD's "complete set" is now thirteen actions plus the key that lists them. It carries the
 identical single-key focus condition (UX-DR11, WCAG 2.1.4): while any text holds the caret it does nothing.
 S3's row is built as drawn, and the card lists exactly the keys that work (R-145).
+
+### Question 4 — should the Backspace key delete the selected section too?
+
+The plan says `Del` deletes the selected section. On a Mac laptop there is no separate `Del` key: the
+key labelled "delete" is what every other keyboard calls Backspace. So the story made **both** keys
+delete the section — and the rules for this story say any key beyond the plan's list is yours to
+approve, which is why `?` was Question 3. This one was missed.
+
+**Example.** You select the "Latest Post" section and press Backspace. Today it is removed, and "Latest
+Post removed" is announced; `⌘Z` brings it back. While you are typing in any field, Backspace only
+deletes a character, exactly like every other single key. The shortcuts card shows `Del` only.
+
+1. **Keep both — `Del` and Backspace delete the selected section.** (RECOMMENDED) — it is what Figma,
+   Webflow and every design tool do, and without it a Mac laptop has no delete key at all. `⌘Z` undoes
+   a slip, and a site-wide section still asks first.
+2. **`Del` only, as the plan wrote it.** A Mac laptop user then deletes a section with `fn`+delete, or
+   from the `⋯` menu.
+
+**Ruled:** _(awaiting the owner)_

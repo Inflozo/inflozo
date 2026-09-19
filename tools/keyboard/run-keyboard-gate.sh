@@ -2,7 +2,7 @@
 # THE KEYBOARD GATE (Story 5.9, NFR-6(d), R-146). Exit 0 means the editor answered every stop of the spec's I/O
 # matrix from the keyboard alone: D8c's skip link first, the canvas one tab stop with the embedded document out of
 # the order, the eight live keys, WCAG 2.1.4's focus condition, the three-rung `Esc` ladder, R-147's card listing
-# exactly the keys that work, every deferred key inert, both `⌥`-arrow reorders, `⌥F10` into the mark toolbar, and
+# exactly the keys that work, every deferred key inert, the Layers row's `⌥`-arrow reorder, `⌥F10` into the mark toolbar, and
 # the settings panel's reset wiring (DW-167). Any non-zero exit is a failure and CI's `check` job keys on it.
 #
 # IT IS ITS OWN STEP IN THAT JOB AND NOT A LINE INSIDE `pnpm check`, and the reason is executed rather than
@@ -46,7 +46,9 @@ KEEP="$(mktemp)"
 cp "$NEXT_ENV" "$KEEP"
 
 dev=""
+LOG=""
 cleanup() {
+  [ -n "$LOG" ] && rm -f "$LOG"
   [ -n "$dev" ] && kill "$dev" 2>/dev/null || true
   [ -n "$dev" ] && wait "$dev" 2>/dev/null || true
   cmp -s "$KEEP" "$NEXT_ENV" || cp "$KEEP" "$NEXT_ENV"
@@ -66,7 +68,7 @@ dev=$!
 ready=0
 for _ in $(seq 1 120); do
   if ! kill -0 "$dev" 2>/dev/null; then break; fi
-  if [ "$(node -e "fetch('${BASE}/app/harness/editor').then(r=>process.stdout.write(String(r.status)),()=>process.stdout.write('0'))")" = "200" ]; then ready=1; break; fi
+  if [ "$(node -e "fetch('${BASE}/app/harness/editor',{signal:AbortSignal.timeout(5000)}).then(r=>process.stdout.write(String(r.status)),()=>process.stdout.write('0'))")" = "200" ]; then ready=1; break; fi
   sleep 0.5
 done
 if [ "$ready" -ne 1 ]; then

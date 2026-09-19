@@ -82,7 +82,7 @@
 // this story owns — no cap, and no main-thread task over 5s on a 40-section planted doc (NFR-1's fps gate is Story
 // 5.23's, manual-only). STEP 2 CHANGED WITH R-137: the page card is no longer flush with the bottom at a top-only
 // radius, it is Desktop's 1440 x 900 fitted, centred, rounded all round — the one change the owner is asked to expect.
-// Story 5.9 adds steps 71-80, inside step 5's CSP session, and they are the same journey `pnpm check` runs over a
+// Story 5.9 adds steps 71-80, inside step 5's CSP session, and they are the journey `pnpm keyboard` runs over a
 // harness mount (`tools/keyboard/journey.spec.mjs`, R-146) — here with a real session, a real read, the real canvas
 // route and the real policy, because a harness proves the wiring and never the stack (R-82, NFR-6(d)): D8c's skip
 // link measured at its drawn place, size, radius and corrected 2px ring and gone again when it loses focus; the
@@ -226,6 +226,11 @@ async function main() {
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
+    // ONE RETRY ON A NAVIGATION (Story 5.9's review): four runs in a row died on a 30s `page.goto` timeout, each at
+    // a different line, while curl had the same URL in a quarter of a second. After the magic link, which is
+    // single-use and must never be asked for twice.
+    const steady = (p) => { const go = p.goto.bind(p); p.goto = (url, o) => go(url, o).catch(() => go(url, o)); return p }
+    steady(page)
     check('step 1 — A signs in', !page.url().includes('/sign-in'), page.url())
 
     const openCard = async () => {
@@ -2268,6 +2273,14 @@ async function main() {
     const litMode = await canvasMode()
     const keptStored = await storedOverrides()
     check('step 53 — FR-D7 on a Light-only project: the sun is ABSENT from the bar rather than disabled, and the canvas is light', noSun === false && litMode === 'light', `control ${noSun ? 'present' : 'absent'} · mode ${litMode}`)
+    // Story 5.9's review: and `.` does NOTHING here — the one arm of the key the harness fixture cannot reach, because
+    // it is dark-enabled. Executed rather than matched in the source: the canvas stays light and nothing is announced.
+    await page.locator('section[aria-label="Canvas"]').focus()
+    const saidLit = await page.evaluate(() => document.getElementById('editor-said')?.textContent ?? '')
+    await page.keyboard.press('.')
+    await page.waitForTimeout(400)
+    const afterDot = { mode: await canvasMode(), said: await page.evaluate(() => document.getElementById('editor-said')?.textContent ?? '') }
+    check('step 53 — R-135: `.` on a Light-only project changes nothing and announces nothing', afterDot.mode === 'light' && afterDot.said === saidLit, JSON.stringify(afterDot))
     // Story 5.7: and the DEVICE TRACK is untouched by any of it — R-135 scopes dark and nothing else, so the track is
     // beside the sun rather than part of it, and a Light-only project previews on a phone exactly as every other does
     const litDevice = await page.evaluate(() => {
@@ -2921,7 +2934,9 @@ async function main() {
 
     // ── Story 5.9's steps — FR-D11's MAP ON THE DEPLOYED EDITOR, inside step 5's CSP session ─────────────────────
     //
-    // THE SAME JOURNEY `pnpm check` RUNS, on the real stack (R-82, NFR-6(d)). `tools/keyboard/journey.spec.mjs` drives
+    // THE JOURNEY `pnpm keyboard` RUNS, on the real stack (R-82, NFR-6(d)) — its map, ladder and card; the panel-field
+    // 2.1.4 row, the ⌥-arrows, ⌥F10 and the reset wiring are steps 31, 17 and 12-13's above and are not walked twice; the
+    // panel-field 2.1.4 row and the menu-owns-the-key row are the harness journey's alone. `tools/keyboard/journey.spec.mjs` drives
     // a harness mount with fixture props and proves the WIRING; these steps prove it with a real session, a real read,
     // the real canvas route and the real policy. Neither replaces the other — R-146 says so in as many words.
     //
@@ -3011,11 +3026,15 @@ async function main() {
     const beforeKeys59 = await pageNames()
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    // BEFORE AND AFTER, never `=== ''`: the polite region is never emptied, so it still holds step 73's device — the
+    // review's first complete run failed here on every press for that reason and no other
+    const quiet59 = await saidNow59()
     await page.keyboard.press(`${CMD58}+d`)
     await page.keyboard.press('Delete')
     await page.waitForTimeout(400)
     check('step 74 — with NOTHING selected both keys do nothing and announce nothing',
-      JSON.stringify(await pageNames()) === JSON.stringify(beforeKeys59) && (await saidNow59()) === '', JSON.stringify(await pageNames()))
+      JSON.stringify(await pageNames()) === JSON.stringify(beforeKeys59) && (await saidNow59()) === quiet59, JSON.stringify({ names: await pageNames(), said: await saidNow59(), quiet59 }))
     await page.locator(`#editor-layers [data-layer-row]`).nth(beforeKeys59.length > 1 ? 1 : 0).focus()
     await page.keyboard.press('Enter')
     await page.waitForTimeout(250)
@@ -3124,13 +3143,13 @@ async function main() {
     check('step 77 — Esc closes the card and the platform returns focus to where it was', await page.evaluate(() => document.querySelector('dialog[open][data-shortcuts-sheet]') === null && document.activeElement === document.querySelector('section[aria-label="Canvas"]')))
 
     // ── step 78 — R-145: a key whose action has not been built does nothing at all ──
-    const beforeDead59 = { names: await pageNames(), mode: await modeNow59(), device: await deviceNow59() }
+    const beforeDead59 = { names: await pageNames(), mode: await modeNow59(), device: await deviceNow59(), said: await saidNow59() }
     await page.locator('section[aria-label="Canvas"]').focus()
     for (const key of ['[', ']', 'p', `${CMD58}+k`, `${CMD58}+Enter`, 'Shift+R']) await page.keyboard.press(key)
     await page.waitForTimeout(500)
     check('step 78 — R-145: ⌘K, `[`, `]`, P, ⇧R and ⌘⏎ change nothing, announce nothing and open nothing — absent, never greyed',
       JSON.stringify(await pageNames()) === JSON.stringify(beforeDead59.names) && (await modeNow59()) === beforeDead59.mode &&
-      (await deviceNow59()) === beforeDead59.device && (await saidNow59()) === '' &&
+      (await deviceNow59()) === beforeDead59.device && (await saidNow59()) === beforeDead59.said &&
       (await page.evaluate(() => document.querySelectorAll('dialog[open], :popover-open').length)) === 0,
       JSON.stringify(beforeDead59))
 
@@ -3141,7 +3160,7 @@ async function main() {
     }
 
     // ── step 80 — S3's account-menu row, on the dashboard, opening the same card ──
-    const menuPage59 = await context.newPage()
+    const menuPage59 = steady(await context.newPage())
     await menuPage59.goto(at('/'), { waitUntil: 'load' })
     await menuPage59.locator('[popovertarget="account-menu"]').click()
     await menuPage59.waitForTimeout(400)

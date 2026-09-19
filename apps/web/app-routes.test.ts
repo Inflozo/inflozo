@@ -105,6 +105,9 @@ test('every harness page does not exist unless the gate switched it on', () => {
       `${page} sits outside (authed) and does not refuse without INFLOZO_HARNESS=1 — it would ship a test mount to production.`,
     )
   }
+  // the canvas ROUTE beside it is no page, so the walk above never meets it (review, 2026-09-19)
+  const route = readFileSync(join(APP, 'harness', 'canvas', 'route.ts'), 'utf8').replace(/\/\/[^\n]*|\/\*[^]*?\*\//g, ' ')
+  assert.match(route, /if \(!HARNESS\) return new NextResponse\('not found', \{ status: 404 \}\)/)
   // and the switch itself is read in ONE place, so the page and the canvas route cannot disagree
   assert.match(readFileSync('lib/harness.ts', 'utf8'), /process\.env\.INFLOZO_HARNESS === '1'/)
 })

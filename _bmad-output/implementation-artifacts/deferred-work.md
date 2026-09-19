@@ -4026,7 +4026,7 @@ resolution: THE "Ask First" LAPSED AND THEN THE OWNER RULED. Story 4.11 made `@p
   so the DOM this entry was waiting on had already arrived; **R-146** (owner, 2026-09-19, Story 5.9's Q2) then chose to
   spend it. `tools/keyboard/run-keyboard-gate.sh` boots `next dev` with `INFLOZO_HARNESS=1` and drives
   `/app/harness/editor` — the REAL `Editor` with the pilot fixture, typed against `EditorData` so drift is a compile
-  error — from the keyboard alone, inside `pnpm test` and therefore inside CI's `check` job, the only place a gate can
+  error — from the keyboard alone, as `pnpm keyboard`, its own step inside CI's `check` job, the only place a gate can
   block a deploy (R-116). Its last test is this entry's own subject, the panel's reset wiring. What a harness cannot
   prove is still the deployed walk's (R-82): `run-verify-editor.cjs` runs the same journey on the deployed editor with
   a real session from step 71. `/pilots`' render inputs stay where Story 5.1 left them — `apps/web/lib/canvas.ts`,
@@ -4829,4 +4829,20 @@ location: `tools/probe/run-verify-editor.cjs` (`freshLoad`, every `page.goto(edi
   server reads (`(editor)/read.ts`)
 reason: telling the two causes apart needs Vercel's logs and a second vantage point, neither of which a review of
   5.8 owns; the harness already refuses to call a died run a result.
+  **Story 5.9's Review (2026-09-19):** Dev did not touch it, and the Real-infra verifier's four walks of `a9aa4b21`
+  all died the same way (lines 1661, 1325, 655 and 3145) while curl had the site in 0.25s. Every navigation after the
+  magic link now gets one retry (`steady`), which is a way round it and not its cause — the diagnosis above is still owed.
 
+### DW-205: the same announcement twice in a row is silent to a screen reader
+
+plain: The editor speaks to screen-reader users through one hidden line of text. If the same sentence is written
+  twice running — duplicate a section, then duplicate its same-named copy — the second one changes nothing on the
+  page, so nothing is spoken, and the person cannot tell the second key worked.
+status: open
+severity: low
+origin: Story 5.9's Review (2026-09-19), Edge Case Hunter. `setSaid` is a plain `useState`; React skips an identical
+  value. The pattern is every story's since 5.2 — the keyboard map only makes a repeat likelier.
+owner: Story 5.23's play-loop gate, where the editor is walked with a screen reader.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`setSaid`, every caller)
+reason: the fix is one helper every announcement routes through, and whether a repeat should be re-spoken at all is
+  best judged with a screen reader running, not from the code.

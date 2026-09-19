@@ -905,7 +905,7 @@ DOCS = [
   "Story 5.9: D8c's skip link first and drawn only while focused, the canvas as ONE tab stop with the embedded document "
   'out of sequential order, the eight live keys plus R-147\'s `?`, WCAG 2.1.4\'s focus condition typed into both a canvas '
   'contenteditable and a panel field, a menu owning the key while it is up, the three-rung Esc ladder, the card listing '
-  'exactly the keys that work and no deferred one (R-145), both ⌥-arrow reorders, ⌥F10 into the mark toolbar, and the '
+  'exactly the keys that work and no deferred one (R-145), the ⌥-arrow reorder of a Layers row, ⌥F10 into the mark toolbar, and the '
   'settings panel\'s reset wiring, its confirm and its Esc (DW-167). Its first test reads its own source and fails if a '
   'pointer API appears below the sentinel, which is how "no pointer events" is checked rather than remembered. Stores no '
   'count: every subject is read off the page.'),

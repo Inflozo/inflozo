@@ -129,7 +129,8 @@ test('the journey uses no pointer at all', () => {
   const source = readFileSync(fileURLToPath(import.meta.url), 'utf8')
   // EVERYTHING BELOW THE SENTINEL, HELPERS INCLUDED — a pointer hidden in a helper would be a pointer all the same.
   // The names below carry no leading dot, so the list this test reads is never what it finds.
-  const body = source.slice(source.lastIndexOf('KEYBOARD ONLY BELOW'))
+  // `indexOf`, never `lastIndexOf`: the needle is on this line too, and the last one starts the scan BELOW the helpers
+  const body = source.slice(source.indexOf('KEYBOARD ONLY BELOW'))
   for (const name of ['click(', 'dblclick(', 'tap(', 'hover(', 'mouse.', 'dragTo(']) {
     expect(body, `NFR-6(d): the keyboard journey must use no pointer — found .${name}`).not.toContain(`.${name}`)
   }
@@ -266,6 +267,11 @@ test('Del removes the selection, and a site-wide one asks first with focus on Ca
   expect((await rows(page)).all).toHaveLength(before - 1)
   expect(await said(page)).toMatch(/removed/)
   // ⌘Z puts it back exactly, which is Story 5.8's promise and this key's control
+  await page.keyboard.press('ControlOrMeta+z')
+  expect((await rows(page)).all).toHaveLength(before)
+  // AC3: ⇧⌘Z is found passing on the same walk — it takes the section away again, and ⌘Z brings it back
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  expect((await rows(page)).all).toHaveLength(before - 1)
   await page.keyboard.press('ControlOrMeta+z')
   expect((await rows(page)).all).toHaveLength(before)
 
@@ -409,7 +415,7 @@ test('R-145: a deferred key does nothing and announces nothing', async ({ page }
 
 // ── keyboard completeness: every drag has a keyboard path, and the toolbar is reachable ─────────────────────────
 
-test('every drag surface answers ⌥↑ / ⌥↓, and the move is announced in its own words', async ({ page }) => {
+test('the Layers row answers ⌥↑ / ⌥↓, and the move is announced in its own words', async ({ page }) => {
   await open(page)
   const { page: own } = await rows(page)
   expect(own.length, 'the fixture must hold two page sections to move one past the other').toBeGreaterThan(1)
@@ -420,6 +426,11 @@ test('every drag surface answers ⌥↑ / ⌥↓, and the move is announced in i
   expect(await said(page)).toMatch(/\S/)
   await page.keyboard.press('Alt+ArrowUp')
   expect((await rows(page)).page[0]).toBe(own[0])
+
+  // THE OTHER DRAG SURFACE, the item list's handle, is NOT walked here and cannot be: no section in the harness
+  // fixture draws an item list (executed at review, 2026-09-19 — every row selected, every group opened, no
+  // `[data-handle]`). Its ⌥↑ / ⌥↓ is Story 4.5's and is walked on the deployed /pilots page by
+  // `tools/probe/run-verify-controls.cjs`.
 })
 
 test('§7.3(3): ⌥F10 reaches the mark toolbar, ← → move between marks, Esc restores the selection', async ({ page }) => {

@@ -79,12 +79,13 @@ export const KEYMAP: readonly Binding[] = [
     action: device.label,
     chips: [String(n + 1)],
     keys: [String(n + 1)],
-    shift: false,
+    // Shift is unconstrained, as on `?`: an AZERTY layout types a digit WITH Shift, and `key` already carries the
+    // character — ⇧1 on a QWERTY board arrives as `!` and matches nothing (review, 2026-09-19)
   })),
   { gesture: 'layers', action: 'Show or hide Layers', chips: ['L'], keys: ['l'], shift: false },
   // R-135: on a Light-only project there is no sun to press, and the press does nothing and announces nothing. That
   // is the editor's condition, not the map's — the card lists the key because the key exists.
-  { gesture: 'dark', action: 'Light and dark', chips: ['.'], keys: ['.'], shift: false },
+  { gesture: 'dark', action: 'Light and dark', chips: ['.'], keys: ['.'] },
   // NO `keys`: `Esc` is a LADDER, not a gesture — three rungs, each announcing where it landed (EXPERIENCE § the
   // focus model (1)), and it must also reach a field, a picker and a dialog that `shortcutFor`'s guard refuses. Its
   // handler is `editor.tsx`'s `onEscape`, over `escDeselects`; the row is here so the card lists it.
@@ -114,7 +115,8 @@ export const SINGLE_KEY: ReadonlySet<Gesture> = new Set(
 /*  ONLY A FIELD WITH TEXT IN IT (Story 5.8's review): a checkbox, a range, a colour well or a `<select>` has no caret
  *  and no undo of its own, and focus RESTS on one after every panel control is used — so counting them made ⌘Z dead
  *  exactly when it is most wanted, straight after changing a control. */
-const TEXTUAL = ['', 'text', 'search', 'url', 'email', 'number', 'password', 'tel']
+// the date and time kinds too: their segments take digits and Backspace, so `1` must not change the device there
+const TEXTUAL = ['', 'text', 'search', 'url', 'email', 'number', 'password', 'tel', 'date', 'time', 'datetime-local', 'month', 'week']
 export const holdsCaret = (el: { tagName?: string; type?: string; isContentEditable?: boolean } | null | undefined): boolean =>
   !!el &&
   (el.isContentEditable === true ||
@@ -135,7 +137,8 @@ export function shortcutFor(
   e: { key: string; metaKey: boolean; ctrlKey: boolean; shiftKey: boolean; altKey?: boolean },
   inField: boolean,
 ): Gesture | null {
-  if (e.altKey === true) return null
+  // Chrome's autofill fires a keydown with no `key` at all
+  if (e.altKey === true || typeof e.key !== 'string') return null
   // exactly one of the two, so ⌃⌘Z and a stray AltGr combination are not this gesture
   const cmd = e.metaKey !== e.ctrlKey
   const key = e.key.toLowerCase()

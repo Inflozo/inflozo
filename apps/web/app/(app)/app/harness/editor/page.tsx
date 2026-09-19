@@ -13,7 +13,7 @@ import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilot
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
  *
  * THE REAL `Editor`, MOUNTED WITH FIXTURE PROPS, so a browser can open the editor with NO DATABASE — which is what
- * lets NFR-6(d)'s keyboard journey run inside `pnpm check`, and therefore inside the `check` job `deploy` needs
+ * lets NFR-6(d)'s keyboard journey run as `pnpm keyboard`, its own step inside the `check` job `deploy` needs
  * (R-116). It is the trade `/pilots` has made since Story 4.5, and it is typed against `EditorData`: a prop the
  * editor gains and this page does not is a COMPILE ERROR rather than silent drift.
  *
