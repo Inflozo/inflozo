@@ -2,8 +2,8 @@
 title: 'Story 5.9 — The keyboard map, and keyboard completeness'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '467aec611605b59371a7fff23471561a2d8f0d8e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
