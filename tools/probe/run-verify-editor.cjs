@@ -1872,10 +1872,14 @@ async function main() {
       const span = [...a.querySelectorAll('span[id$="-label"]')].find((s) => s.textContent === label)
       const head = span?.parentElement
       if (head === undefined || head === null) return null
+      // VISIBLE words only: `textContent` includes the badge's SVG <title>, which is its accessible NAME and is not
+      // printed anywhere — reading it as print made a correct row fail (Review, 2026-09-19)
+      const shown = head.cloneNode(true)
+      shown.querySelectorAll('.rounded-full').forEach((el) => el.remove())
       const chip = head.querySelector('.rounded-full')
       // the name is the SVG <title> the Kit writes, and the hover title is on the chip itself — both must be the words
       const named = chip?.querySelector('title')?.textContent ?? null
-      return { words: head.textContent, name: named, hover: chip?.getAttribute('title') ?? null, moon: named === 'Dark override' && chip?.querySelector('svg') !== undefined && chip?.querySelector('svg') !== null }
+      return { words: shown.textContent, name: named, hover: chip?.getAttribute('title') ?? null, moon: named === 'Dark override' && chip?.querySelector('svg') !== undefined && chip?.querySelector('svg') !== null }
     }, label)
 
     // ── step 46 — S4a's sun, at its drawn place and size, and nothing else right of centre ──
