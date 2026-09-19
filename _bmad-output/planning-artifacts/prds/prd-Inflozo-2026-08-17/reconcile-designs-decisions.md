@@ -2925,6 +2925,57 @@ option 1 (owner, 2026-09-19): *"Give the bottom the same 32 px as the top. I do 
     Review (2026-09-19).
 - **Deliberately not touched:** the export (R-74); the 28px sides, which stay S4a's.
 
+**R-140 — B6's "Download a copy" is not built, because nothing in Inflozo can read such a file back in.**
+Story 5.8's Q1, ruled option 1 (owner, 2026-09-19): *"Leave the button out for now."*
+
+- **Why it was a question.** `B Missing Surfaces.dc.html:1384` draws a second control in the Retrying panel, beside
+  "Retry now": **"Download a copy"**. It would write the project document to the customer's disk — and **no surface,
+  in any story of any epic, reads such a file back**. Under R-118 that is an absent control; under R-74 it is a drawn
+  one, and R-118's own list has never before held an item with no owning story at all, so the two rules did not settle
+  it between them (standing rule 6). **It was raised as an open item on 2026-09-04 and never answered:**
+  `reconcile-designs.md:4614` — *"FR-D10 — the 'Download a copy' affordance in Retrying (B6): adopt or strike"* — and
+  `:4453` records the same thing as "an affordance no FR names". That file is `record` and is not edited (standing
+  rule 5); this entry is its answer, which is **strike**.
+- **What it binds.** The Retrying panel carries **"Retry now" and nothing else**. It is ABSENT, never greyed and never
+  captioned (UX-DR3) — R-118 applied a sixth time, and the first time to a control with **no** future story named. The
+  panel's reassurance sentence is untouched and is what it was drawn for: *"Your work is safe on this device. Nothing
+  is lost if you close the tab — we will send it when the connection returns."* Should a "restore from a file" story
+  ever be written, the button lands with it and works on the day it ships.
+- **What it costs:** in the one state where cloud sync is failing, the customer's only escape is to leave the tab open
+  until the connection returns. Accepted knowingly: the local journal already survives a reload and a closed tab
+  (FR-D9), so the exposure is browser eviction alone, which FR-D9 already states as a limitation rather than a
+  requirement.
+- Targets:
+  - ✅ this entry · ✅ Story 5.8's spec (its Question 1, its Code Map and its Boundaries) ·
+    ✅ `epics.md` (Story 5.8's AC) · ✅ `EXPERIENCE.md` (B6's divergence row) — Story 5.8's Create run (2026-09-19).
+- **Deliberately not touched:** the export (R-74) — B6 is not edited and stands as drawn, this entry being the record
+  of which of its two controls is built and why; the panel's fill, ink, radius, type and its two sentences, which are
+  B6's verbatim.
+
+**R-141 — ⌘Z and ⇧⌘Z land with the undo arrows, not with the keyboard map.** Story 5.8's Q2, ruled option 1 (owner,
+2026-09-19): *"Build ⌘Z and ⇧⌘Z here too, with the arrows."*
+
+- **Why it was a question.** Story 5.9 owns FR-D11's map ENTIRE and tests it as one journey, and the precedent had run
+  twice in a row: Story 5.6 built S4a's sun and not `.`, Story 5.7 built the device track and not `1` `2` `3`. Applying
+  it a third time would have shipped an editor whose headline feature — undo — no keyboard could reach by the gesture
+  every person alive reaches for, through the owner's own manual test of that very story.
+- **What it binds.** **A ⌘-MODIFIED SHORTCUT MAY LAND WITH THE CONTROL IT DRIVES; A SINGLE-KEY ONE MAY NOT.** The two
+  are different rules, and UX-DR11 is the reason: a single-key binding is live only while the shell holds focus and
+  never while a text field or a `contenteditable` has it (WCAG 2.1.4), which is exactly the condition Story 5.9's
+  keyboard journey exists to verify and which cannot be verified one key at a time. A ⌘-modified binding carries no
+  such condition and cannot collide with typing on the canvas. So Story 5.8 builds **⌘Z, ⇧⌘Z and ⌘S**; `1` `2` `3`,
+  `L`, `.`, `[` `]` and every other single-key binding stay Story 5.9's, and R-118's rule is untouched for them.
+- **Story 5.9 is narrowed, not relieved.** It still builds and tests the COMPLETE map as one journey (FR-D11,
+  UX-DR11, UX-DR21, NFR-6(d)) — it will simply find these three already working, as it would have found ⌘S. Its
+  acceptance is unchanged: the complete set works, verified with no pointer events.
+- Targets:
+  - ✅ this entry · ✅ Story 5.8's spec (its Question 2, its Boundaries, its tasks, its matrix and the owner's test) ·
+    ✅ `epics.md` (Stories 5.8 and 5.9's ACs) · ✅ `EXPERIENCE.md` (the shortcut table's note) —
+    Story 5.8's Create run (2026-09-19).
+- **Deliberately not touched:** R-118, which governs a CONTROL with no story to make it work and is not what this
+  ruling is about; the map itself, which is unchanged in content and in ownership; the single-key focus rule, which is
+  the whole reason the two halves are separated here.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

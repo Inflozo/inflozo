@@ -16,7 +16,8 @@ to the server a few minutes later, when you close the tab, or the moment you pre
 come back tomorrow, and your page is exactly where you left it.
 
 It also gives you a **way back**. Two small arrows appear at the right of the top bar: the left one undoes
-your last change, the right one puts it back. It remembers your last hundred changes, and it remembers
+your last change, the right one puts it back — and **⌘Z and ⇧⌘Z do the same** (your ruling R-141). It
+remembers your last hundred changes, and it remembers
 them **through a reload** — so if you delete the wrong section, go and make tea, come back and reload the
 page, the arrow still brings it back with everything you had typed into it.
 
@@ -68,6 +69,9 @@ differs → the cloud replaces the doc and the journal is cleared.
 - **The indicator's labels are B6's five, exactly** (`prd.md:1335`, `EXPERIENCE.md:314`) — one dot, one
   label, **never a spinner**. The Kit component already exists and its five-member union is the compile
   error that enforces it (`components/kit/persistence-indicator.tsx`).
+- **⌘Z, ⇧⌘Z and ⌘S are bound on the editor shell and are inert while a field or a `contenteditable` holds
+  the caret** — the browser's own undo owns the text being typed, and taking it would break inline editing
+  (Story 5.3). Outside a field they are `preventDefault`ed, so the browser's page-level undo never competes.
 - **`navigator.storage.persist()` is requested once per project mount**, and its answer is never shown:
   loss to eviction is a stated limitation, not a requirement (FR-D9).
 - **The fallback is honest.** If IndexedDB is unavailable or a write fails, the editor switches to immediate
@@ -89,10 +93,15 @@ differs → the cloud replaces the doc and the journal is cleared.
   the §AD4 defaults they are.
 
 **Never:**
-- **No ⌘Z / ⇧⌘Z here** unless Question 2 rules otherwise. The global keyboard map is Story 5.9's, entire —
-  the same reason 5.6 built the sun and not `.`, and 5.7 the device track and not `1` `2` `3`. **⌘S is the
-  exception and it is built here**, because it is not a map entry but a clause of AD-15's flush contract,
-  and 5.8's own acceptance criteria name it.
+- **No single-key shortcut here** — `[` `]`, `1` `2` `3`, `L`, `.`, `P`, `⇧R`, `Esc`. They carry UX-DR11's
+  focus condition (live only while the shell holds focus, never inside a text field or a `contenteditable`),
+  which is verified as one keyboard journey and not one key at a time, so they stay Story 5.9's entire —
+  as `.` stayed at 5.6 and `1` `2` `3` at 5.7. **R-141 (owner, 2026-09-19) draws the line at the modifier:
+  ⌘Z, ⇧⌘Z and ⌘S ARE built here**, beside the arrows they drive, because a ⌘-modified binding cannot
+  collide with typing on the canvas and carries no focus condition to verify.
+- **No "Download a copy".** B6 draws it beside Retry now; **R-140 (owner, 2026-09-19)** leaves it out —
+  nothing in Inflozo reads such a file back in. Absent, never greyed and never captioned (UX-DR3), and the
+  panel's reassurance sentence stays exactly as drawn.
 - **No edit lock, no heartbeat, no takeover, no `edit_locks` write.** All of it is Story 5.17's. The
   takeover half of AD-15's journal-clearing rule (`lock_generation` advancing) therefore has nothing to read
   and is not built; the revision half is, and is reachable today.
@@ -125,6 +134,9 @@ differs → the cloud replaces the doc and the journal is cleared.
 | A local write fails mid-session | quota exceeded | the same fallback, from that moment; the indicator changes in the same task, never a stale "Saved on this device" | N/A |
 | Undo | ≥ 1 entry, pointer not at the head | the touched doc is restored to the entry's `before`; the canvas repaints; politely announced | N/A |
 | Redo | ≥ 1 undone entry | the entry's `after` is restored | N/A |
+| ⌘Z / ⇧⌘Z | the shell holds focus (R-141) | undo / redo, identical to the arrows — one handler, not two | N/A |
+| ⌘Z with the caret in a text prop | inline editing under way | **the editor does nothing**; the browser's own undo owns the words being typed (Story 5.3) | N/A |
+| ⌘Z with nothing to undo | an empty journal | nothing happens and nothing is announced; the arrow is already `aria-disabled` | N/A |
 | An edit while undone > 0 | the user undoes twice then types | the undone tail is **discarded** and the new transaction appended — the ordinary editor rule | N/A |
 | 101st edit | the journal holds 100 | the oldest entry is dropped; undo reaches back exactly 100 edits | N/A |
 | Undo past a vanished design | a restored doc names a `designId` the library no longer holds | **nothing is applied**; a notice names the design; the pointer does not move | never half-applied |
@@ -146,7 +158,8 @@ differs → the cloud replaces the doc and the journal is cleared.
   (`#C4383C`, ink, 500) · *"Syncing every change to the cloud"* (`#C9C2B8`, soft ink). Then the panel
   (`:1379-1386`): `#FDECEC`, 10px radius, 11/12 padding — *"Retrying, third attempt"* at 12px/600 `#8E2C30`,
   the reassurance at 11.5px, and two controls, **"Retry now"** (28px, white, `#F0CFD0` border) and
-  **"Download a copy"** (Question 1). Its note: *"One indicator, five labels, one dot that changes colour —
+  **"Download a copy"** — which **R-140 (owner, 2026-09-19) leaves unbuilt**, so the panel carries Retry now
+  alone. Its note: *"One indicator, five labels, one dot that changes colour —
   never a spinner… The expanded panel appears only on Retrying, and its first sentence is the reassurance
   rather than the error."*
 - `S4 Editor.dc.html:32` — **where the indicator sits**: in the 48px bar, third item, directly after the
@@ -154,6 +167,7 @@ differs → the cloud replaces the doc and the journal is cleared.
 - `S4 Editor.dc.html:41-43` — **the undo/redo pair**: two 28 × 28 buttons, `border-radius:8px`, `gap:2px`,
   hover `rgba(28,27,26,.05)`, 14px 1.5-weight strokes (`M9 14L4 9l5-5` + `M4 9h11a5 5 0 0 1 0 10h-3`,
   mirrored for redo), the unavailable one at `opacity:.35`. They sit between the device track and Ship it.
+  **R-141 gives them ⌘Z and ⇧⌘Z**; the frame draws no shortcut hint and none is added.
 - `S12 Billing.dc.html` S12a's right column — the Account card the autosave toggle joins, extrapolated from
   the Email and Sessions cards beside it exactly as Sessions was (R-74).
 
@@ -266,8 +280,10 @@ differs → the cloud replaces the doc and the journal is cleared.
       as 5.6 made `dark_enabled` server truth.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hook `commit()` to open a
       transaction and append; gate the first paint on the local read; add the hydrate comparison, the flush
-      timer, `visibilitychange`, ⌘S, the undo/redo pair in the bar and the indicator beside the project name
-      -- `commit()` is already the one door, so the journal hooks one function.
+      timer, `visibilitychange`, the undo/redo pair in the bar and the indicator beside the project name; bind
+      **⌘Z, ⇧⌘Z and ⌘S** on the shell, inert while a field or a `contenteditable` holds the caret (R-141)
+      -- `commit()` is already the one door, so the journal hooks one function, and the shortcuts call the
+      same two handlers the arrows do rather than a second implementation.
 - [ ] `apps/web/components/editor/save-state.tsx` -- new: the Kit indicator wired to the state machine, and
       B6's Retrying panel anchored beneath it with its reassurance sentence and Retry now (R-98's busy
       label) -- the panel opens on Retrying and on nothing else.
@@ -281,11 +297,14 @@ differs → the cloud replaces the doc and the journal is cleared.
       and one definition of what a guarded doc write is.
 - [ ] `apps/web/journal.test.ts` -- new: the matrix's journal, indicator and backoff rows as unit tests,
       including the 100-edit trim, the undone-tail discard, the vanished-design refusal and `unsyncedEdits`.
+      The shortcut's own rule is pure too -- which key, in which focus state, means what -- so it is tested
+      here and not only in the browser.
 - [ ] `apps/web/editor.test.ts` -- `sync` resolves as no canvas and collides with no canvas path -- the same
       three assertions `settings` carries.
 - [ ] `tools/probe/run-verify-editor.cjs` -- steps 61+ inside step 5's CSP session: an edit survives a
-      reload, undo reaches through it, the journal clears when account B writes and the revision moves, the
-      indicator's four reachable labels, and the fallback with IndexedDB refused.
+      reload, undo reaches through it **by ⌘Z as well as by the arrow**, ⌘Z is inert with the caret in a text
+      prop, the journal clears when account B writes and the revision moves, the indicator's four reachable
+      labels, the Retrying panel carrying **one** control, and the fallback with IndexedDB refused.
 
 **Acceptance Criteria:**
 - Given any edit in the editor, when it lands, then the interaction returns before the local write settles
@@ -295,6 +314,10 @@ differs → the cloud replaces the doc and the journal is cleared.
 - Given a Variant Shuffle or a Style Pack change when those stories land, when it is undone, then **one**
   press undoes it however many operations it cost — because both go through `commit()` (AD-16).
 - Given 100 edits, when the 101st lands, then undo still reaches back exactly 100 and no further.
+- Given the editor shell has focus, when ⌘Z or ⇧⌘Z is pressed, then it does exactly what the arrow does —
+  and given the caret is inside a text prop, then the editor does nothing and the browser's own undo keeps
+  the words (R-141, and Story 5.3's inline editing is untouched).
+- Given a failing flush, when B6's panel opens, then it carries **"Retry now" and no second control** (R-140).
 - Given a reload whose cloud revision equals the local `base_revision`, when the editor hydrates, then the
   local doc and the journal both survive; given a differing revision, then the cloud doc replaces the local
   one and the journal is cleared (AD-15, `addendum.md` §AD1.1).
@@ -346,6 +369,14 @@ B6's *"Fades to the resting label after a few seconds"* is the fourth transition
 *"Saved on this device"* — which stays true after a sync, because the local store is always written. It is
 the weaker of the two truths, deliberately: the indicator's resting claim is the one that is always
 verifiable on this device.
+
+**⌘Z is one handler, not a second implementation.** R-141 is a sequencing ruling, not a behavioural one: the
+key calls the same `undo()` the arrow's `onClick` calls, so the two can never drift. Its only rule of its own
+is the guard — while `editing.current` is set or the active element is a field, the handler returns without
+`preventDefault`, so the browser's native undo owns the words being typed and Story 5.3's inline editing is
+untouched. Everywhere else it `preventDefault`s, so the browser's page-level undo never competes for the
+gesture. `⌘S` is guarded the same way in reverse: it always `preventDefault`s, because the browser's Save
+Page As is never what the press meant.
 
 **Turning autosave off asks first.** It is the one toggle that removes a protection, and the warning has to
 be read *before* the protection goes — so it uses the app's one dialog (`kit/dialog.ts`, 460px, focus on
@@ -399,12 +430,14 @@ sitting. Step 6 asks you to close the tab on purpose.
 | 2 | same | Top bar, right | Look between the three device buttons and the right-hand end. | — | Two small **arrows**, one curving left and one curving right. Both are faded — there is nothing to undo yet. |
 | 3 | same | Canvas, Home | Click a headline and type something into it. | type `Tuesday letters` over the headline | The left arrow **wakes up** the moment you stop typing. The words beside your project name still read "Saved on this device". |
 | 4 | same | Top bar | Press the **left arrow** once. Then press the **right arrow** once. | — | Your headline goes back to what it was, then returns to `Tuesday letters`. One press each way — not one press per letter. |
+| 4b | same | Editor | Now do the same with the keyboard: **⌘Z**, then **⇧⌘Z** (Ctrl+Z and Ctrl+Shift+Z on Windows). | — | Exactly what the arrows did. **This is your ruling R-141** — it is why undo works the way your hands expect. |
+| 4c | same | Canvas, Home | Click **into** a headline so the cursor is blinking in it, type a few letters, and press **⌘Z**. | type `abc` | Only your **letters** come back out, one step at a time — the editor keeps its hands off while you are typing, which is the browser's own undo doing its ordinary job. Click away from the headline first, and ⌘Z goes back to undoing whole changes again. |
 | 5 | same | Canvas, Home | Click a whole section to select it, and delete it with the bin in the little pill. Then press the **left arrow**. | — | The section disappears, then comes **straight back** — in the same place, with everything you had typed into it. |
 | 6 | same | Editor | Press **⌘S** (Ctrl+S on Windows). Watch the words beside your project name. | — | They change to **"Syncing"** with an orange dot, then **"Synced"** with a green one, then settle back to "Saved on this device" after a few seconds. |
 | 7 | — | — | **Close the tab completely.** Make a cup of tea. Then open the URL in step 1 again. | — | Your `Tuesday letters` headline is **still there**. This is the whole story. |
 | 8 | same | Top bar | Press the **left arrow** a few times. | — | It still undoes the changes you made **before** you closed the tab — the history survived too. |
 | 9 | same | Canvas, Home | Make one small change. Now **switch your wifi off**, wait about three minutes, and watch the words beside your project name. | change any headline | They go to **"Retrying · 12s"** in red, counting down. A small pink panel opens underneath: *"Retrying, third attempt"* and *"Your work is safe on this device. Nothing is lost if you close the tab — we will send it when the connection returns."* |
-| 10 | same | The pink panel | Switch your wifi back on and press **"Retry now"**. | — | The button says it is retrying, then the panel closes and the words go **"Syncing" → "Synced"**. Nothing you typed was lost. |
+| 10 | same | The pink panel | Read the panel, then switch your wifi back on and press **"Retry now"**. | — | There is **one** button in it, "Retry now" — the drawing had a second, "Download a copy", and your ruling R-140 left it out. The button says it is retrying, then the panel closes and the words go **"Syncing" → "Synced"**. Nothing you typed was lost. |
 | 11 | `https://app.inflozo.com/account` | Account | Scroll to the new **Saving** card and read it. | — | A row saying your work is sent to the cloud every few minutes, with the switch **on**. |
 | 12 | same | Account | Turn the switch **off**. | — | A box asks first and tells you plainly what it costs — your work would then only be sent when you close the tab or press ⌘S, and a browser that clears its storage could lose it. The **Cancel** button is the one already selected. |
 | 13 | same | Account | Press Cancel. Then turn it off again and confirm this time. Then turn it back on. | — | Turning it off needs the confirm each time; turning it back **on** asks nothing. |
@@ -441,7 +474,10 @@ panel was drawn for, and it stays either way.
    promise the rest of the product deliberately avoids making. If you pick this, I will also record the
    missing "read it back in" half as deferred work so it is not forgotten.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** Leave the button out for now. Recorded as **R-140** in
+`prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` §A10 — R-118 applied a sixth time, and the first time to
+a control with no future story named at all. The Retrying panel carries **"Retry now" and nothing else**; its
+reassurance sentence is untouched.
 
 ### Question 2 — should ⌘Z undo, or does that wait for the keyboard story?
 
@@ -470,4 +506,9 @@ button anywhere in the drawings, so without it there would be no manual save at 
    test, and no chance of two stories disagreeing about a shortcut. The cost is that between now and 5.9 the
    editor has undo that only a mouse can reach, and your test of this story will feel wrong.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** Build ⌘Z and ⇧⌘Z here too, with the arrows. Recorded as **R-141** in
+`prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` §A10, which draws the line the two previous stories did
+not need: **a ⌘-modified binding may land with the control it drives; a single-key one may not**, because only the
+single-key ones carry UX-DR11's focus condition and that condition is verified as one journey, not one key at a time.
+So this story builds **⌘Z, ⇧⌘Z and ⌘S**; `[` `]`, `1` `2` `3`, `L`, `.`, `P`, `⇧R` and `Esc` stay Story 5.9's, which
+still builds and tests the complete map.

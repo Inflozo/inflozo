@@ -1783,9 +1783,14 @@ reference a superseded document; an ordinary reload against a matching revision 
 **And** the testable claim is scoped to match: **the journal is present and replayable after a reload within the
 same session**
 **And** **no operation count is ever surfaced anywhere in the product** (AD-16)
+**And** **⌘Z, ⇧⌘Z and ⌘S are built here, beside S4a's undo arrows** — **R-141** (owner, 2026-09-19): a ⌘-modified
+binding may land with the control it drives, because it cannot collide with typing on the canvas, while every
+single-key binding stays Story 5.9's, whose keyboard journey is what verifies the focus condition they carry
+**And** B6's second panel control, **"Download a copy", is NOT built** — **R-140** (owner, 2026-09-19): nothing in
+Inflozo reads such a file back in, so it is absent rather than greyed (UX-DR3) and the panel carries "Retry now" alone
 **And** the indicator matches B6 as extended.
 
-**FRs:** FR-D9, FR-D10. · **Frame:** `B Missing Surfaces.dc.html` B6. · **Owner test:** yes.
+**FRs:** FR-D9, FR-D10. · **Frame:** `B Missing Surfaces.dc.html` B6. · **Rulings:** R-140, R-141. · **Owner test:** yes.
 
 ### Story 5.9: The keyboard map, and keyboard completeness
 
@@ -1804,6 +1809,9 @@ dark toggle · **Esc** deselect · **P** Preview Mode · **⇧R** Site Remix · 
 text field or a `contenteditable` has it** — WCAG 2.1.4, which axe-core does not detect, so it is verified by the
 E2E keyboard journey (UX-DR11, UX-DR21)
 **And** ⌘-modified shortcuts are unaffected by that rule
+**And** **⌘Z, ⇧⌘Z and ⌘S already work when this story starts** — Story 5.8 built them with the undo arrows
+(**R-141**). This story is narrowed, not relieved: it still builds and tests the **complete** map as one journey,
+and finds those three already passing
 **And** **the states added after the map carry no shortcut, deliberately** — the paginated preview, the preview
 subject, the auto-generated marker and the member-state toggle are set-and-forget context, not per-edit actions
 **And** **standard within-component keyboard behaviour is not a shortcut and is required**: Section Picker arrows

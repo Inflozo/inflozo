@@ -44,6 +44,22 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **Story 5.3 built it value-first (2026-09-18):** typing is read from the element as WORDS (`readText`), the one edit between the words before and after, anchored at the caret (`diffText`), is applied to the STORED value (`replaceRange`), and the element is rewritten from the serializer when their nodes differ (compared after `normalize()`, U+00A0 equal to a space). The page cannot hold a whole link record — `linkAttributes` writes a Portal link as `href="#" data-portal` and never writes `ref` — so reading markup back after a keystroke would drop every Portal link and every `ref`. Only a paste is read for marks (`readMarks`, over an inert `DOMParser` document, narrowed to the field's own allow-list). One controller runs the canvas element and the panel's rich Text Area (`apps/web/lib/inline.ts`); the marks functions sit beside the serializer in `packages/section-runtime/src/marks.ts`. A `\n` is `<br>` on both emitters, a link with no destination writes no anchor (DW-120), and `PropDef.maxChars` stops typing and paste with "{Label} holds {n} characters.".
 - **Untouched is a real state.** An untouched synthesizable template shows its Synthesis Defaults under a worded marker and only an edit materializes it — never viewing, a preview subject or a member-state check; removing every section returns it to untouched, hiding does not, and other canvases open empty and emit nothing (AD-22).
 - **Saving never costs speed.** Changes write locally without blocking; cloud sync runs on a timer (3 min, a per-user toggle with a data-loss warning), at tab close, on lock release, on ⌘S and before deploy or export, and says so when it falls back to per-change sync.
+  - **Story 5.8's planning (2026-09-19, read in the schema and the grants):** `authenticated` has NO UPDATE grant on
+    `projects.revision` (`schema:1209-1212`, AD-31), so the sync can only be a `security definer` RPC — one plpgsql
+    body is one transaction, which is also what DW-197 found missing from the project-level Clear, so that action
+    adopts it. One route handler wraps the RPC because `fetch(..., { keepalive: true })` at tab close cannot call a
+    Server Action; the timer, ⌘S and tab close are then one path. `SYNC`/`syncPath` join `SETTINGS` in `lib/editor.ts`
+    as a second STATIC sibling of `[template]` (R-131's precedent). The journal record is `{ seq, txn, docKey, before,
+    after }` rather than an inverse-op log — `addendum.md` §AD4 hands the record shape to the Architect and keeps only
+    the transaction id load-bearing, and a whole-doc restore is what makes FR-D9's "never half-applying" one check
+    before one assignment and its "parked value restored alongside the design" free, in a story where
+    `parkedControls` does not exist. **The story HAS a Schema phase** (R-99): DW-193's `template_key_shape` fix on
+    both tables, plus the RPC. The indicator itself is NOT built — Story 1.3 built it from B6
+    (`components/kit/persistence-indicator.tsx`), and its five-label union is the compile error that keeps a sixth out.
+  - **R-140 (owner, 2026-09-19, Story 5.8's Q1):** B6's second panel control, **"Download a copy"**, is NOT built —
+    nothing in Inflozo reads such a file back in. Absent, never greyed (UX-DR3); R-118 applied a sixth time, and the
+    first time to a control with no future story named at all. The Retrying panel carries "Retry now" alone and its
+    reassurance sentence is untouched.
 - **Undo counts edits.** One gesture is one transaction, one undo step and one edit (a Shuffle is one); 100 edits, replayable after a reload in the session, cleared only by a hydrate that supersedes the local doc, and no operation count is ever surfaced (AD-15, AD-16).
 - **One editing context per project.** A second opener reads along and may request editing; the holder flushes then releases, an unanswered request may take over from the last synced snapshot, the displaced session is told its `unsynced_edits`, and deploy and export require the lock.
 - **The canvas is a viewport.** The iframe is viewport-sized and scrolls internally, device preview resizes both axes (834; 390 × 844), the only scale is the automatic fit shown in a chip, and there is no zoom control, per-breakpoint editing or section cap.
@@ -85,6 +101,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
+  - **R-141 (owner, 2026-09-19, Story 5.8's Q2) — WHEN a binding is built splits on the modifier, and the reason is
+    UX-DR11.** A **⌘-modified** binding may land with the control it drives: Story 5.8 builds `⌘Z`, `⇧⌘Z` and `⌘S`
+    beside S4a's undo arrows, calling the same handlers rather than a second implementation, inert while a field or a
+    `contenteditable` holds the caret so Story 5.3's inline editing keeps the browser's own undo. A **single-key**
+    binding may not, because only it carries the focus condition (live only while the shell holds focus, WCAG 2.1.4)
+    and that condition is verified as ONE keyboard journey, not one key at a time — so `[` `]`, `1` `2` `3`, `L`, `.`,
+    `P`, `⇧R` and `Esc` all stay Story 5.9's. It narrows 5.9, never relieves it: 5.9 still builds and tests the
+    COMPLETE map and finds three of them already passing. R-118 is untouched — it governs a control with no story to
+    make it work, which is a different question.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions

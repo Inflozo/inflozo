@@ -391,6 +391,14 @@ the three. The shortcuts are FR-D11's, and they are the complete set:
 **States added after the shortcut map carry no shortcut, deliberately** (FR-D11): the paginated
 preview, the preview subject, and the member-state nudge are all reached by clicking.
 
+**When each binding is BUILT is not this table's question, and the two halves answer differently —
+R-141 (owner, 2026-09-19, Story 5.8's Q2).** A **⌘-modified** binding may land with the control it
+drives: Story 5.8 builds `⌘Z`, `⇧⌘Z` and `⌘S` beside S4a's undo arrows, because neither can collide
+with typing on the canvas. A **single-key** binding may not, because it is live only while the shell
+holds focus and never inside a text field or a `contenteditable` (UX-DR11, WCAG 2.1.4) — a condition
+the keyboard journey verifies as one walk and cannot verify one key at a time. So `[` `]`, `1` `2` `3`,
+`L`, `.`, `P`, `⇧R` and `Esc` all stay Story 5.9's, which still builds and tests the complete set.
+
 **That rule governs new *global* bindings, and nothing else.** Standard within-component keyboard
 behaviour — arrows through a list, `Enter` to select, `⌥`-arrow to move a row, `⌥F10` into a
 toolbar — is not a shortcut in FR-D11's sense and is **required** by NFR-5's keyboard-completeness
@@ -699,7 +707,7 @@ Each of these keeps its frame's components, layout, colour and density. Only wha
 | **B23a** Starter Chooser *(corrected 2026-09-04, A7 item 19)* | now Appendix E's ten with their packs and "All Free" on Quiet and Ledger only; until 2026-09-04 ten starters, seven names invented, seven marked "All Free" | Appendix E is normative and names all ten with their pack and composition: **Aurora · Gazette · Signal · Foundry · Quiet · Pulse · Bloom · Chapter · Ledger · Studio**. FR-O4: **only Quiet and Ledger** are Free end-to-end. The frame's grid, category filter, free filter, "swap or upgrade" marks and "Start empty" escape are all kept; the roster and the Free marks are replaced. Also: no starter ships a membership template (FR-O1), so "Cohort — tiers and member pages" goes with the name |
 | **B20 / S11d** Manage Keys *(corrected 2026-09-04, A9 item 17)* | now three credentials, each present or absent with one line on what it enables, the Staff Access Token "Not added · Add token", and the site URL as read-only text ("Fixed for this connection"); until the A9 export Admin + Content keys only, B20's grantable scopes, S11d's editable API URL | FR-C8: **three** credentials, each shown **present or absent with what it enables**, the Staff Access Token addable and removable at any time. Custom Integration scopes are fixed by Ghost and cannot be granted — the missing capability is the token, not a permission. **The site URL is immutable**; a domain move is disconnect + reconnect, and the affordance does not exist rather than being guarded |
 | **B7** Layers *(corrected 2026-09-04, A9 item 13)* | now "on all 9 templates" and "Editing a site-wide section changes it on all 9 templates."; until the A9 export "on 26 pages" | The unit is **templates**, and a project has roughly seven to ten of them, not 26 (FR-D6) |
-| **B6** Persistence Indicator *(corrected 2026-09-04, A9 item 18)* | now five states, the fifth "Syncing every change to the cloud"; until the A9 export four | Correct, and add FR-D10's **no-local-storage fallback** state — "syncing every change to the cloud" — because a false "Saved on this device" is the one thing this indicator must never say. The periodic-autosave toggle and its data-loss warning live in Account settings. **Copy only (F-080):** the drawn label **"Saved on this device"** is the string and Appendix H now carries it; FR-D10's "Saved locally" is the state name and is never printed |
+| **B6** Persistence Indicator *(corrected 2026-09-04, A9 item 18)* | now five states, the fifth "Syncing every change to the cloud"; until the A9 export four | Correct, and add FR-D10's **no-local-storage fallback** state — "syncing every change to the cloud" — because a false "Saved on this device" is the one thing this indicator must never say. The periodic-autosave toggle and its data-loss warning live in Account settings. **The panel's second control, "Download a copy" (`:1384`), is NOT built — R-140 (owner, 2026-09-19, Story 5.8's Q1): nothing in Inflozo reads such a file back in, so it is absent rather than greyed (UX-DR3, R-118 a sixth time) and the panel carries "Retry now" alone.** **Copy only (F-080):** the drawn label **"Saved on this device"** is the string and Appendix H now carries it; FR-D10's "Saved locally" is the state name and is never printed |
 
 ### Plan limits — Appendix F.1 is the sole definition, and several frames disagree with it
 
