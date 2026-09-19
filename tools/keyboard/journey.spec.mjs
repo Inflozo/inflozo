@@ -1,7 +1,9 @@
 // Story 5.9 — THE KEYBOARD JOURNEY (NFR-6(d), R-146), over the harness mount of the real editor.
 //
-//   bash tools/keyboard/run-keyboard-gate.sh          — and it also runs inside `pnpm check`, which is CI's `check`
-//                                                        job, which is the only place a gate can block a deploy (R-116)
+//   bash tools/keyboard/run-keyboard-gate.sh          — or `pnpm keyboard`, and CI runs the same script as its own
+//                                                        step in the `check` job, which `deploy` needs (R-116), so a
+//                                                        red journey publishes nothing. Never inside `pnpm check`
+//                                                        itself: `vercel build` runs that a second time, browserless.
 //
 // IT DRIVES WITH THE KEYBOARD AND NOTHING ELSE. NFR-6(d) says "run with no pointer events": the context has no touch
 // (`playwright.config.mjs`) and the first test below reads THIS FILE and fails if a mouse or tap API appears in it, so

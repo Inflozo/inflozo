@@ -3,7 +3,14 @@
 # matrix from the keyboard alone: D8c's skip link first, the canvas one tab stop with the embedded document out of
 # the order, the eight live keys, WCAG 2.1.4's focus condition, the three-rung `Esc` ladder, R-147's card listing
 # exactly the keys that work, every deferred key inert, both `⌥`-arrow reorders, `⌥F10` into the mark toolbar, and
-# the settings panel's reset wiring (DW-167). Any non-zero exit is a failure and `pnpm check` keys on it.
+# the settings panel's reset wiring (DW-167). Any non-zero exit is a failure and CI's `check` job keys on it.
+#
+# IT IS ITS OWN STEP IN THAT JOB AND NOT A LINE INSIDE `pnpm check`, and the reason is executed rather than
+# reasoned: `apps/web/vercel.json`'s buildCommand runs `pnpm -w check` a SECOND time inside `vercel build`, in
+# Vercel's own build image — which has no browser, and is not a Debian for `playwright install --with-deps` to
+# serve. A gate inside that command turns every deploy red with `check` green (CI run 35452356017, 2026-09-19).
+# Nothing is lost: `deploy` needs `check`, so a red gate here still publishes nothing, which is all R-146 asks.
+# Run it by hand, or before a push, with `pnpm keyboard`.
 #
 #   bash tools/keyboard/run-keyboard-gate.sh                 the gate
 #   bash tools/keyboard/run-keyboard-gate.sh --headed        watch it drive
@@ -24,7 +31,7 @@ installed="node_modules/@playwright/test/package.json"
 [ -f "$installed" ] || { echo "MISSING: node_modules/@playwright/test — run pnpm install first." >&2; exit 1; }
 
 # A BROWSER IS A REFUSAL, NOT A FAILURE: a machine that has never downloaded one must be told the command rather
-# than shown a stack. CI installs it in the `check` job before `pnpm check` (.github/workflows/ci.yml).
+# than shown a stack. CI installs it in the `check` job before `pnpm keyboard` (.github/workflows/ci.yml).
 browser="$(node -e "process.stdout.write(require('@playwright/test').chromium.executablePath())" 2>/dev/null || true)"
 if [ -z "$browser" ] || [ ! -e "$browser" ]; then
   echo "REFUSED: the keyboard journey needs Chromium and this machine has none." >&2
@@ -33,7 +40,7 @@ if [ -z "$browser" ] || [ ! -e "$browser" ]; then
 fi
 
 # `next dev` REWRITES THE TRACKED apps/web/next-env.d.ts to point at .next/dev/types (and `next build` points it
-# back) — executed. Without this every `pnpm check` would leave a dirty tree and the next commit would carry it.
+# back) — executed. Without this every run would leave a dirty tree and the next commit would carry it.
 NEXT_ENV="apps/web/next-env.d.ts"
 KEEP="$(mktemp)"
 cp "$NEXT_ENV" "$KEEP"

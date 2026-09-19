@@ -168,7 +168,11 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `⌥F10`, the mark toolbar) through the panel's rich Text Area, which runs the same `lib/inline.ts` controller, and
     the canvas's own caret is walked on the deployed editor. **`next dev` needed its own `distDir`** (`next.config.ts`,
     keyed on `INFLOZO_HARNESS`): Next 16 allows one dev server per build directory, so without it `pnpm check` would
-    fail for anyone with the app running.
+    fail for anyone with the app running. **AND THE GATE MAY NOT LIVE INSIDE `pnpm check`**: `apps/web/vercel.json`'s
+    buildCommand runs `pnpm -w check` a SECOND time inside `vercel build`, in a browserless image that is not a
+    Debian, so the first push had `check` green and `deploy` red and nothing published (CI run 35452356017). It is
+    `pnpm keyboard`, run as its own step in the `check` job `deploy` needs — anything a future story adds to
+    `pnpm test` runs on Vercel too.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions

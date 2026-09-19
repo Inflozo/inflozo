@@ -896,9 +896,11 @@ DOCS = [
    'matrix from the keyboard alone.',
    'No container, unlike the render matrix: nothing is photographed, so the browser the repository installs is the one '
    'it drives. With no Chromium it REFUSES, naming `pnpm exec playwright install chromium`, rather than failing green; '
-   'CI installs it in the check job before pnpm check. It restores apps/web/next-env.d.ts on the way out, because '
-   '`next dev` rewrites that tracked file. Run by `pnpm test`, so it runs wherever `pnpm check` runs — which is the '
-   'check job deploy needs (R-116).')),
+   'CI installs it in the check job before it. It restores apps/web/next-env.d.ts on the way out, because '
+   '`next dev` rewrites that tracked file. `pnpm keyboard` runs it, and CI runs it as its OWN STEP in the check job '
+   'deploy needs (R-116) — deliberately NOT inside pnpm test, because vercel.json\'s buildCommand runs pnpm -w check a '
+   'second time inside vercel build, in a browserless image that is not a Debian, and a gate there turns every deploy '
+   'red with check green (executed: CI run 35452356017, 2026-09-19).')),
  ('tools/keyboard/journey.spec.mjs', 'tool', 'The keyboard-only journey',
   "Story 5.9: D8c's skip link first and drawn only while focused, the canvas as ONE tab stop with the embedded document "
   'out of sequential order, the eight live keys plus R-147\'s `?`, WCAG 2.1.4\'s focus condition typed into both a canvas '

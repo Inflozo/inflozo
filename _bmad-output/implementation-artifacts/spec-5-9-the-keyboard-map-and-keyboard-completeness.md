@@ -284,10 +284,12 @@ the journey in `pnpm check` over a harness mount as well as on the deployed edit
       `next dev` on a free port with `INFLOZO_HARNESS=1`, refusing with the install command when no
       browser is present, and restoring `apps/web/next-env.d.ts` on the way out (`next dev` rewrites
       it — executed) -- the gate, shaped like `run-matrix-gate.sh` and `run-rls-gate.sh`.
-- [x] `package.json` -- `test` gains the gate -- so it runs wherever `pnpm check` runs, which is the
-      only place that gates `deploy` (R-116).
-- [x] `.github/workflows/ci.yml` -- install Chromium for the `check` job before `pnpm check` -- the
-      one step that makes the gate real in CI; nothing else about the job changes.
+- [x] `package.json` -- a `keyboard` script beside `matrix`, and the gate is CI's own step in the
+      `check` job rather than a line inside `pnpm check` -- `deploy` needs `check`, which is all R-116
+      asks; see the Design Note below for why it may NOT live inside `pnpm check`.
+- [x] `.github/workflows/ci.yml` -- install Chromium for the `check` job, then run `pnpm keyboard`
+      before `pnpm check` -- the two steps that make the gate real in CI; nothing else about the job
+      changes.
 - [x] `tools/doc-audit.py` -- catalogue rows for the three new `tools/keyboard/` files, then
       `--generate` -- a new file under `tools/` without a row blocks the commit.
 - [x] `tools/probe/run-verify-editor.cjs` -- steps 71 onward inside step 5's CSP session: the same
@@ -315,7 +317,9 @@ the journey in `pnpm check` over a harness mount as well as on the deployed edit
 - Given a key whose action is not built, when it is pressed, then nothing happens, nothing is
   announced, and the sheet does not list it.
 - Given `pnpm check`, `pnpm build`, the RLS gate and the documentation gate, when each runs, then all
-  are green — and the keyboard gate is inside `pnpm check`, in the `check` job `deploy` needs.
+  are green — and the keyboard gate runs in the `check` job `deploy` needs, so a red journey publishes
+  nothing. (Written at Create as "inside `pnpm check`"; that premise was false and the Design Note
+  below records what was executed.)
 
 ## Design Notes
 
@@ -360,6 +364,24 @@ dev` rewrites the tracked `apps/web/next-env.d.ts` to point at `.next/dev/types/
 points it back, so the gate must restore the file before it exits or every `pnpm check` leaves a
 dirty tree and the next commit carries it.
 
+**`pnpm check` is NOT the only place `pnpm check` runs — executed, and it cost a red deploy.** This
+spec said the gate should live inside `pnpm check` "which is the only place that gates `deploy`".
+`apps/web/vercel.json`'s buildCommand is `node --version && pnpm --version && pnpm -w check && next
+build`, so **`vercel build` runs the whole of `pnpm check` a second time**, inside Vercel's own build
+image — which has no Chromium, and is not a Debian for `playwright install --with-deps` to serve.
+Pushed that way, CI run **35452356017** (2026-09-19) had `check` **green** — Chromium installed, the
+journey passed — and `deploy` **red** on the gate's own refusal, so **nothing published**. The
+repository already knew this and the spec did not read it: `tools/doc-audit.py`'s row for
+`tools/check-catalog.mjs` says in so many words "run by pnpm test and therefore by CI **and the Vercel
+build**". Standing rule 1, on a platform claim, for the price of one deploy.
+
+The fix keeps R-146 whole and adds no switch that can rot: the gate is **its own step in CI's `check`
+job**, after the Chromium install and before `pnpm check`. `deploy` needs `check`, so a red journey
+still publishes nothing — which is the entirety of what the owner ruled. `pnpm keyboard` runs it by
+hand. The alternative considered and rejected was an environment variable in `vercel.json` switching
+the gate off for that one re-run: it would have kept the letter of the criterion, but a gate with an
+off-switch in the tree is a gate that is one careless copy away from off everywhere.
+
 **One task line was written wrong and the ruling it cites is what was built.** The task for
 `kit/icons.tsx` says the keyboard glyph is "emitted from `packages/library/icons/tabler.json`,
 R-130's rule". That is the rule for a glyph **the export does not draw** — R-92 (owner, 2026-09-05)
@@ -392,7 +414,7 @@ story.
 | Command | Result |
 |---|---|
 | `bash tools/keyboard/run-keyboard-gate.sh` | **exit 0** — every test of `journey.spec.mjs` passed in one worker with no retries, the count printed by the run itself. `apps/web/next-env.d.ts` was clean afterwards (`git status --porcelain` empty), so the restore on the way out works. |
-| `pnpm check` | **exit 0** — lint, typecheck and every package test, with the keyboard gate inside it and green there too. This is the run CI's `check` job makes, and the one `deploy` needs (R-116). |
+| `pnpm check` | **exit 0** — lint, typecheck and every package test. It is browser-free by design (see the Design Note): the journey is `pnpm keyboard`, its own step in the same `check` job. |
 | `pnpm build` | **exit 0** — both harness routes compile as dynamic (`ƒ`), so neither is prerendered into the production output. |
 | `node --test --experimental-strip-types keymap.test.ts dark-mode.test.ts app-routes.test.ts journal.test.ts` | **0 fail** — R-141's three moved proofs, this story's map, guard and card tests, the `HARNESS_ONLY` refusal, and `.` carrying the same Light-only condition its button carries (R-135). |
 | `python3 tools/doc-audit.py --check`, twice | **PASS (0 warnings)** both times — the three `tools/keyboard/` files have catalogue rows. |

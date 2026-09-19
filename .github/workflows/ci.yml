@@ -47,12 +47,16 @@ jobs:
       # and the hook retries once and stages them, and in CI there is nothing to stage.
       - run: python3 tools/story-board.py
       - run: python3 tools/doc-audit.py --check
-      # THE ONE STEP THAT MAKES STORY 5.9'S KEYBOARD GATE REAL HERE (NFR-6(d), R-146). `pnpm check` runs
-      # tools/keyboard/run-keyboard-gate.sh, which drives the editor with the keyboard alone over a harness
-      # mount; with no browser on the runner it REFUSES rather than failing, which would be a green gate that
-      # proved nothing. Chromium only — the journey photographs nothing, so the render matrix's pinned image
-      # and its fonts are not this job's business (that is matrix.yml's, R-116).
+      # STORY 5.9'S KEYBOARD GATE (NFR-6(d), R-146), and it is ITS OWN STEP IN THIS JOB rather than a line
+      # inside `pnpm check`. `deploy` needs `check`, so a red gate here still publishes nothing — which is the
+      # whole of what R-146 asks. IT MAY NOT LIVE INSIDE `pnpm check`: `apps/web/vercel.json`'s buildCommand
+      # runs `pnpm -w check` a SECOND time inside `vercel build`, in Vercel's own build image, which has no
+      # browser and is not a Debian for `--with-deps` to serve — so a gate inside that command turns every
+      # deploy red (executed: CI run 35452356017, 2026-09-19, `check` green and `deploy` red on the refusal).
+      # Chromium only — the journey photographs nothing, so the render matrix's pinned image and its fonts are
+      # not this job's business (that is matrix.yml's, R-116).
       - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm keyboard
       - run: pnpm check
       - run: pnpm build
 
