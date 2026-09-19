@@ -47,6 +47,18 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - **Undo counts edits.** One gesture is one transaction, one undo step and one edit (a Shuffle is one); 100 edits, replayable after a reload in the session, cleared only by a hydrate that supersedes the local doc, and no operation count is ever surfaced (AD-15, AD-16).
 - **One editing context per project.** A second opener reads along and may request editing; the holder flushes then releases, an unanswered request may take over from the last synced snapshot, the displaced session is told its `unsynced_edits`, and deploy and export require the lock.
 - **The canvas is a viewport.** The iframe is viewport-sized and scrolls internally, device preview resizes both axes (834; 390 × 844), the only scale is the automatic fit shown in a chip, and there is no zoom control, per-breakpoint editing or section cap.
+  - **R-137 (owner, 2026-09-19, Story 5.7's Q1) — Desktop is a viewport too, and there is ONE rule for three
+    devices:** **1440 × 900** · **834 × 1112** (`D8a`, `EXPERIENCE.md:62`) · **390 × 844** (UX-DR17), fitted by
+    `min(1, stageW/deviceW, stageH/deviceH)` and never magnified. It settles a contradiction between two approved
+    frames — S4a`:63` draws the resting card filling the height, B11a`:740` draws it as a fixed 1440 × 900 with its
+    chip, and that chip was deliberately kept through the A7 correction pass. **B11a governs the card's GEOMETRY**
+    (device-sized, centred in the ground, a radius on all four corners, the skeleton following it) **and S4a governs
+    everything else about it** (the ground, the ink, the shadow, the 6px radius). The iframe's CSS pixel size IS the
+    device's, so media queries fire and `vh` resolves; the fit is a `transform` over it and never touches the CSS
+    viewport (`prd.md:569`). A device change is a STYLE change, never a repaint — the selection, the stamps, the
+    inline caret and the scroll survive it, and every section root is the same node. The device is session state like
+    the mode: no column, no migration, **no Schema phase**. `1` `2` `3` stay Story 5.9's and the `⋯` collapse at 834
+    stays Story 5.22's; FR-D14's fps gate stays Story 5.23's, while its **no-cap** and **5 s lockup bound** are 5.7's.
 - **Live content is read in the browser and degrades honestly.** Reads are cached 60 s, batched and de-duplicated across canvas, picker and link search under a per-session ceiling, and fall back to Orbit Weekly naming the cause on 429 (that Ghost rate-limits Content API keys is the PRD's statement, not a measurement); body HTML is never read — `{{content}}` is the style-guide fixture.
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.

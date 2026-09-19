@@ -21,6 +21,11 @@ monitor — "viewport 390 × 844 · shown at 55%". There is deliberately no zoom
 out for you and only reported, because a second knob that changes apparent size invites people to mistake
 it for the first.
 
+**Desktop changes too, and you will see it the moment you open the editor** (your ruling R-137): the page
+now sits in the middle of the grey as a real 1440 × 900 screen with a rounded bottom edge, instead of
+filling the window down to the bottom. You see about a third less of your page at once — and in exchange
+the fold on desktop is where a visitor's fold will actually be.
+
 ## Intent
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
@@ -53,16 +58,19 @@ so it cannot change which breakpoint applies (`prd.md:569`).
   each with an accessible name and a hover `title` (R-136's carve-out — a 48 px bar cannot hold three words).
 - The chip carries **words, not only a percentage** (UX-DR8), and it re-reads whenever the stage changes —
   a fold, a window resize, a device change.
+- **R-137: Desktop is a viewport too — 1440 × 900.** The page card takes the active device's size rather
+  than the room available, is centred in the ground, and carries its 6 px radius on **all four** corners
+  instead of standing on the bottom of the window. One rule for three devices; no state where the card
+  fills the height.
 - R-123 survives: the ground around the page card still deselects on a primary press. The centring must not
   introduce a third element between the `<section aria-label="Canvas">` and the card, or `e.target ===
   e.currentTarget` stops being true and a press on the ground stops working.
 
 **Ask First:**
-- **Question 1 below is open and this story cannot be finished without it** — the export draws Desktop two
-  different ways (S4a fills the height; B11a is a fixed 1440 × 900) and the choice changes what the editor
-  looks like at rest. Standing rule 6: flag, do not guess.
 - Any second scale, zoom, or "Fit / %" control — B11 draws one and UX-DR17 removed it. If the fit is ever
   genuinely unusable, that is a question, not a control.
+- Anything that would change the resting canvas beyond what **R-137** settles. The card's geometry is
+  B11a's; its ground, ink, shadow and 6 px radius are S4a's and are not in play.
 
 **Never:**
 - **No zoom control.** B11's drawn "Fit / 55%" picker is not built (UX-DR17, UX-DR20).
@@ -111,7 +119,9 @@ wide**, and 900 − 48 (top bar) − 24/48 (`pt-6`/`py-6`) ≈ **828 tall**.
   undo/redo (5.8) and Ship it (Epic 7).
 - `S4 Editor.dc.html:62-63` — the canvas stage and the page card **as built today**: ground `#EDEAE6`,
   `padding:24px 28px 0`; card `max-width:864px; margin:0 auto; border-radius:6px 6px 0 0; height:100%`.
-  **This is the frame Question 1 puts against B11a.**
+  **R-137 keeps the ground, the ink, the shadow and the 6 px radius from here and takes the card's geometry
+  from B11a** — so `height:100%`, the top-only radius and the 864 ceiling are the three things that go, and
+  nothing else on this line does.
 - `B Missing Surfaces.dc.html:720-827` — **B11**. B11a's chip `VIEWPORT 1440 × 900 · SHOWN AT 46%` and
   B11b's `VIEWPORT 390 × 844 · SHOWN AT 55%`, each a mono pill at `top:9px; left:12px` of the stage:
   `9.5px`, ink `#6B6459`, `background:#F4F1EC`, `border:1px solid #D8D2C7`, `border-radius:24px`,
@@ -198,10 +208,13 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
       `mode`; move the `ResizeObserver` from the card to the stage `<section>`; replace `scale` with
       `fitFor`; size the card and the iframe from the device and the fit; put `DeviceSwitch` beside
       `ModeToggle` and `ViewportChip` over the ground; set `data-width` to the active device's width;
-      announce the new device through `setSaid` -- one component owns the geometry, as it owns the mode.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx` -- match the card's
-      resting shape to whatever Question 1 settles -- a skeleton that draws a different shape from the screen
-      it stands in for is the flicker R-98 exists to remove.
+      announce the new device through `setSaid`. **R-137:** the card loses `flex-1`, `max-w-[1440px]` and
+      `rounded-t-[6px]` for the device's size, `rounded-[6px]` and centring **on the `<section>` itself** --
+      one component owns the geometry, as it owns the mode, and no wrapper is added that R-123's ground test
+      would not cover.
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx` -- draw the resting card
+      at Desktop's 16:10 proportion, centred, fully rounded (R-137) -- a skeleton that draws a different shape
+      from the screen it stands in for is the flicker R-98 exists to remove.
 - [ ] `apps/web/editor.test.ts` -- unit-test `fitFor` over the matrix's rows: both axes, the cap at 1, a
       zero-sized stage before the first measurement -- the fit is the only arithmetic in the story.
 - [ ] `tools/probe/run-verify-editor.cjs` -- steps **54+**, inside step 5's session: the switch measured at
@@ -215,6 +228,9 @@ browser test in `pnpm check`, Story 5.9's), DW-169 (one token set until Epic 6).
       from a frame -- standing rule 3: a finding is not closed until it reaches an owning document.
 
 **Acceptance Criteria:**
+- Given the editor at rest on Desktop, when I look at the canvas, then the page card is **1440 × 900 fitted**
+  — centred in the ground, rounded on all four corners, with ground below it — and its ground, ink, shadow and
+  6 px radius are still `S4 Editor.dc.html:62-63`'s (R-137).
 - Given the editor at rest, when I look at the top bar, then the device track sits immediately right of the
   sun and **matches `S4 Editor.dc.html:36-40`** — the pill, the three 28 × 26 buttons, the white active
   segment and its shadow, the 14 px glyphs and their two inks.
@@ -258,6 +274,16 @@ The observer moves to the stage `<section>`, whose content box is the room. Keep
 `<section>` (`items-center justify-center`) rather than wrapping the card: a wrapper becomes a fourth
 ground that R-123's `e.target === e.currentTarget` does not cover, and a press beside the card would
 silently stop deselecting.
+
+### What R-137 settled, and what it did not
+
+The export drew the desktop canvas twice and differently: S4a`:63` filling the height, B11a`:740` a fixed
+1440 × 900 with its chip — a chip deliberately kept through the A7 correction pass. The owner ruled for
+B11a (2026-09-19), so there is **one rule for three devices** and no state in which the card fills the room
+available. What did not change: the ground, the ink, the shadow and the 6 px radius are S4a's still. What
+this buys is the story's own thesis applied to desktop as well — B11b's note, *"a 390-wide column with no
+height cannot tell you where the fold is"*, is just as true of a 1380-tall desktop canvas. What it costs is
+about a third less page in view while editing at 1440, and the owner took that knowingly.
 
 ### Why the fit is capped at 1
 
@@ -312,7 +338,8 @@ saved yet — saving arrives with Story 5.8 — so do this in one sitting.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the right-hand end of the top bar, just past the sun. | — | Three small joined buttons — a **screen**, a **tablet** and a **phone** — with the screen one white and raised, the other two plain. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the page in the middle before you touch anything. | — | **This is your ruling R-137, and it is the one change you should expect to notice.** The page no longer runs down to the bottom of the window: it sits centred in the grey as a screen-shaped card with a **rounded bottom edge** and a band of grey below it. It is a third shorter than you are used to. Everything on it — the ground, the shadow, the corners — is the colour and weight it always was. |
+| 1b | same | Editor, Home | Look at the right-hand end of the top bar, just past the sun. | — | Three small joined buttons — a **screen**, a **tablet** and a **phone** — with the screen one white and raised, the other two plain. |
 | 2 | same | Top bar | Hover each of the three in turn. | — | Each one tells you what it is — "Desktop", "Tablet", "Mobile" — and nothing else in the bar has moved. |
 | 3 | same | Canvas, Home | Press the **phone**. | — | The page in the middle becomes **phone-shaped** — narrow *and* short, with a proper bottom edge — with grey either side of it. The menu has collapsed to a hamburger and the hero has stacked. |
 | 4 | same | Canvas, Home | Read the small grey chip at the top-left of the grey area. | — | **"viewport 390 × 844 · shown at 98%"** (the percentage depends on your monitor). It tells you the real size first and the shrinking second. |
@@ -362,4 +389,8 @@ Tablet and Mobile are fixed sizes either way. This question is only about **Desk
    changes when you fold a panel. Nothing about the editor you have already walked changes, and checking a
    full-height hero means pressing the tablet or the phone.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-19).** Desktop becomes a real 1440 × 900 screen, like the other two.
+Recorded as **R-137** in `reconcile-designs-decisions.md` §A10, and propagated at this Create run to
+`epics.md`'s Story 5.7 AC and to `EXPERIENCE.md`'s device-preview paragraph and B11 divergence row. **B11a
+governs the card's geometry — device-sized, centred in the ground, a radius on all four corners — and S4a
+governs everything else about it**: the ground, the ink, the shadow and the 6 px radius.

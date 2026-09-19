@@ -2842,6 +2842,36 @@ moon icon and drop 'Dark override' text along with it. Add title on the icon so 
   12px filled-chip geometry, which is the Kit's and not D6a's bare crescent (the two differ, and the Kit's is the one
   built).
 
+**R-137 — Desktop is a real 1440 × 900 viewport, like the other two.** Story 5.7's Q1, ruled option 1 (owner,
+2026-09-19): *"Desktop becomes a real 1440 × 900 screen, like the other two."*
+
+- **Why it was a question.** Two approved frames draw the same canvas differently, and standing rule 6 refuses a guess
+  between them. `S4 Editor.dc.html:63` — the editor at rest, and what Stories 5.1–5.6 built — gives the page card
+  `height:100%` and a top-only radius, standing on the bottom of the stage: on a 1440 laptop roughly 1380 of the page's
+  own pixels, a height no visitor will ever have. `B Missing Surfaces.dc.html:740` draws the same canvas under device
+  preview as a fixed **1440 × 900** with ground below it and the chip `VIEWPORT 1440 × 900 · SHOWN AT 46%` — and that
+  chip was read and deliberately **kept** through the A7 correction pass (§A7 item 6, 2026-09-04), which is what made
+  it a contradiction rather than an artist's licence.
+- **What it binds.** ONE RULE FOR ALL THREE DEVICES: the canvas iframe is always a named device's viewport in both
+  axes — Desktop **1440 × 900**, Tablet **834 × 1112** (`D8 Editor Below 1440.dc.html:39`, `EXPERIENCE.md:62`), Mobile
+  **390 × 844** (UX-DR17) — fitted by `min(1, stageW/deviceW, stageH/deviceH)` and never magnified. The page card
+  therefore takes the device's size rather than the room available, is **centred in the ground with a radius on all
+  four corners**, and no longer stands on the bottom of the window; the editor's skeleton follows the card, and the
+  chip states a size that does not change when a panel folds. **B11a supersedes S4a`:62-63` on the card's GEOMETRY and
+  on nothing else** — the ground, the ink, the shadow and the 6px radius stay S4a's.
+- **What it costs, and the owner took it knowingly:** about a third less page in view while editing at 1440, and a band
+  of ground below the card. What it buys is FR-D14's whole point — `100vh`, `position: sticky`, `position: fixed` and
+  the fold are honest on desktop as well as on a phone — and it narrows `prd.md:66`'s carve-out to what it should
+  always have been: 900 is a NOMINAL desktop viewport, never this visitor's window.
+- Targets:
+  - ✅ this entry · ✅ Story 5.7's spec (its Question 1, its I/O matrix and its tasks) ·
+    ✅ `epics.md` (Story 5.7's AC) · ✅ `EXPERIENCE.md` (the device-preview paragraph and B11's divergence row) —
+    Story 5.7's Create run (2026-09-19).
+- **Deliberately not touched:** the export (R-74) — neither frame is edited and both stand as drawn, this entry being
+  the record of which governs which property; **browser zoom**, which is the reader's own accessibility setting, is
+  never the canvas scale and may not be defeated (FR-D14, WCAG 1.4.4, `EXPERIENCE.md:613-618`); S4a's stage padding,
+  ground, shadow and 864 arithmetic, which the card keeps as its width ceiling at rest.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

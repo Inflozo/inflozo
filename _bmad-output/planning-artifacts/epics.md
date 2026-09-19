@@ -1734,8 +1734,10 @@ So that a sticky header sticks and a full-screen hero fills.
 
 **Given** the device toggles
 **When** I pick Desktop, Tablet (834) or Mobile (390)
-**Then** the canvas resizes in **both axes to a real device size** — 390 × 844 for mobile, **not a 390-wide
-column of infinite height**
+**Then** the canvas resizes in **both axes to a real device size** — **1440 × 900**, **834 × 1112** and
+**390 × 844** — **not a 390-wide column of infinite height**, and **not a desktop canvas that fills whatever
+height the window has left**: Desktop is a real viewport too, which is **R-137** (owner, 2026-09-19) ruling
+between B11a's fixed 1440 × 900 and S4a's resting card filling the height
 **And** the size and the automatic scale are reported in a mono chip — "viewport 390 × 844 · shown at 55%"
 **And** **there is no user zoom control**: the only scale is fit-to-screen. **B11's drawn "Fit / 55%" picker is
 re-specified — keep the chip, remove the control** (UX-DR17, UX-DR20)
