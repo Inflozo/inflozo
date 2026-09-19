@@ -308,6 +308,7 @@ the journey in `pnpm check` over a harness mount as well as on the deployed edit
 Review of 2026-09-19 — five layers over `467aec61..a9aa4b21`. Every patch below is applied and ticked.
 
 - [ ] [Review][Decision] **`Backspace` deletes the selected section, and nobody was asked.** FR-D11 names `Del`; the map also binds `Backspace`, because a Mac keyboard's "delete" key reports `Backspace`. This spec's own Ask First lists "any new global binding beyond FR-D11's map" — `?` was asked for that reason and this was not. Question 4 below.
+- [ ] [Review][Decision] **HIGH — the accessibility scan is red on the live editor, and this story made it so.** The first complete deployed walk (on `27a638fa`) has axe-core failing all of step 8 with `frame-focusable-content`: the canvas iframe carries `tabIndex={-1}` — which is how this story makes the canvas ONE tab stop (UX-DR9) — and axe refuses any frame with that attribute whose document holds a focusable element, whatever that element's own tabindex. UX-DR9 as built and NFR-5's zero cannot both stand. Dev recorded that axe run as "not yet executed". Question 5 below.
 - [x] [Review][Patch] **MEDIUM — the deployed walk could never pass as written.** Steps 74 and 78 asserted the polite region `=== ''`, and the editor never empties it, so both failed on every run that reached them (the Real-infra verifier's fourth run: 2 FAIL, 367 PASS; the product facts inside both held). They compare before and after, as the harness journey's own stop already did [tools/probe/run-verify-editor.cjs]
 - [x] [Review][Patch] **MEDIUM — the journey's "no pointer" control did not read the helpers it said it read**: `lastIndexOf` found the needle on the control's own line, so `open`, `caretIntoCanvas`, `openEveryGroup`, `openGroup` and `select` were never scanned. `indexOf`; the control still passes with the helpers in [tools/keyboard/journey.spec.mjs]
 - [x] [Review][Patch] **MEDIUM — a letter typed at a focused `<select>` folded Layers or flipped the canvas** instead of jumping to the option, and `1` `2` `3` or Backspace in a date field changed the device or deleted the section. A `<select>` keeps its single keys; the date and time kinds count as holding a caret [editor.tsx `onShortcut` · lib/keymap.ts `TEXTUAL`]
@@ -322,6 +323,7 @@ Review of 2026-09-19 — five layers over `467aec61..a9aa4b21`. Every patch belo
 - [x] [Review][Patch] The deployed steps called themselves "the same journey" and omit five of its stops; the comment now names which earlier steps cover three of them and which two are the harness's alone [tools/probe/run-verify-editor.cjs]
 - [x] [Review][Patch] The gate leaked its log on an interrupt and its readiness fetch had no timeout; "the five keys" listed six [run-keyboard-gate.sh · keymap.test.ts]
 - [x] [Review][Patch] Every navigation in the deployed walk gets ONE retry, after the single-use magic link: the verifier's four runs all died on a 30s `page.goto` while curl had the URL in 0.25s (DW-204, which this story owned and did not touch) [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] Step 5's CSP zero counted the Projects page's own recorded violation (DW-201) once step 80 opened that page inside its session; scoped to the editor and the canvas, as steps 14 and 70 are [tools/probe/run-verify-editor.cjs]
 - [x] [Review][Defer] The same announcement twice in a row is silent to a screen reader — a second ⌘D on a same-named section, a second rung 2 — because React skips an identical state [editor.tsx `setSaid`] — deferred, pre-existing → DW-205
 - [x] [Review][Defer] DW-204 stays open: the retry is a way round it, not its cause — see the ledger.
 
@@ -453,6 +455,17 @@ written: `tools/probe/run-verify-editor.cjs` steps 71 onward drive the same jour
 `/app/harness/editor` and `/app/harness/canvas` answer **404** in production, and run step 8's axe
 pass again with R-147's card open. Those steps are written but **not yet executed** — the code they
 walk is not deployed until the Deploy phase of this story.
+
+**The Review's deployed walk (2026-09-19, `27a638fa`, production, real Supabase sessions; `SUPABASE_URL`,
+`SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` by name).** CI on that commit: `check` (with `pnpm keyboard`),
+`rls` and `deploy` green. The Real-infra verifier's four walks of `a9aa4b21` all died on `page.goto` timeouts
+(DW-204); with one retry per navigation the first walk of `27a638fa` ran to the end: **every one of Story 5.9's
+steps 71–80 passed**, step 53's new `.` press on the Light-only project included, `/harness/editor` and
+`/harness/canvas` both 404 with `/login` 307 as the control, accounts deleted, users 13 → 13. It also printed
+failures, and none is hidden here: **step 8's axe is red on `frame-focusable-content` (Question 5)**; step 5's CSP
+count caught the Projects page's DW-201 event through step 80 (the harness's scoping, patched); and step 36's pill
+placement during a scroll failed in this walk and passed in the verifier's fourth — intermittent, Story 5.4's, not
+this diff's. No migration in the diff, so R-99 had nothing to check.
 
 ## Owner's manual test
 
@@ -607,5 +620,32 @@ deletes a character, exactly like every other single key. The shortcuts card sho
    a slip, and a site-wide section still asks first.
 2. **`Del` only, as the plan wrote it.** A Mac laptop user then deletes a section with `fn`+delete, or
    from the `⋯` menu.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 5 — the accessibility scanner objects to how the canvas skips the Tab key
+
+This story made the page preview **one single Tab stop**: Tab goes Layers → the page area → Controls,
+and never wanders through every link inside your site's preview. That is what the plan asked for
+(UX-DR9) and it works. But the automated accessibility scanner we run on the live editor (axe-core,
+which must report zero problems — NFR-5) now reports one: its rule says a preview frame that is
+skipped by Tab must not contain anything a keyboard could land on. It cannot know that everything in
+the preview is reachable another way — every section from the Layers list, every text and link from
+the Controls panel.
+
+**Example.** A keyboard user wants to change the hero's headline. Today: Tab to Layers, Enter on
+"Hero", Tab to Controls, type in the Headline field. They never need to Tab *into* the preview. The
+scanner flags the preview anyway.
+
+1. **Keep the one Tab stop, and record this one scanner rule as a deliberate exception for the canvas
+   frame only.** (RECOMMENDED) — the exception is written down with its reason, the scanner still
+   checks everything else in the editor and everything inside the preview, and the keyboard test this
+   story added keeps proving that every action has a keyboard route.
+2. **Satisfy the scanner: let Tab walk into the preview.** Every link and button of your site becomes
+   a Tab stop between Layers and Controls — dozens of presses on a long page — which is what UX-DR9
+   and the skip link were written to prevent.
+3. **Keep the one Tab stop and find a different technique that the scanner accepts.** Unknown cost: I
+   have not found one — the scanner objects to the attribute itself — so this is a research task with
+   no promised result, and the story waits on it.
 
 **Ruled:** _(awaiting the owner)_
