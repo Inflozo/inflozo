@@ -165,6 +165,45 @@
   animation: health-pulse 1200ms var(--ease-out) infinite;
 }
 
+/* STORY 5.10 — THE SECTION PICKER'S TWO MOTIONS, both degrading through the reduced-motion block above and
+   neither going around it.
+
+   `picker-rise`: S5a's overlay comes up on `--duration-overlay` (200ms), scale 0.98 → 1. A scale, not a slide, so
+   nothing travels across the editor it is covering.
+
+   `addline`: S4b's insertion breath (`S4 Editor.dc.html:19`), an OPACITY pulse .55 → 1 → .55 and never a scale,
+   which would move the page under the pointer. It is shared by the pressed "+ Add section" pill in THIS document
+   and the hairline inside the canvas — the canvas document carries its own copy in `lib/canvas-chrome.css`,
+   because globals.css cannot reach across the frame. */
+@keyframes picker-rise {
+  from {
+    opacity: 0;
+    scale: 0.98;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@utility animate-picker-rise {
+  animation: picker-rise var(--duration-overlay) var(--ease-out);
+}
+
+@keyframes addline {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@utility animate-addline {
+  animation: addline 1600ms ease-in-out infinite;
+}
+
 /* THE CANVAS OUTLINES (Story 5.2, R-120): the line on the box drawn over a hovered or selected section, in the chrome
    layer inside the canvas document (lib/canvas-layer.ts, whose shadow roots adopt this stylesheet). An inset box-shadow spread and not a border or an outline, because Chromium floors those two to
    whole CSS pixels (a 1.5px border paints 1px, measured 2026-09-17) and the spread paints its exact width at 1× and 2×.

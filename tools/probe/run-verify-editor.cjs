@@ -95,6 +95,17 @@
 // R-147's card measured against `Editor Sidebar Kit.dc.html:274-280` and listing exactly the keys that work (R-145);
 // every deferred key inert; `/harness/editor` and `/harness/canvas` 404 in production; and S3d's account-menu row
 // opening the SAME card, row for row. Step 8's axe runs once more with the card open.
+// Story 5.10 adds steps 81-85, inside the same session: S5a's picker measured where it is drawn (the 22px inset, the
+// 240px rail on 16/12 with its right rule, `ALL CATEGORIES` carrying NO number, `Find a section…` and its ⌘K chip, the
+// meta line's one template, the 16px column gap) with R-150's `Free only` switch absent and R-151's ONE dark button;
+// FR-D12's filter proved by opening the SAME picker on Home and on Post and reading two different rails, each count
+// derived over its own canvas and nothing greyed; every card's preview a LIVE render in an `inert`, uniquely titled
+// frame at Desktop width (R-137, NFR-1) — which is what keeps R-149 at one rule on one element; R-152's globe with its
+// hover title and the same words in the card's accessible name, a second site-wide design REPLACING the first in one
+// ⌘Z-able transaction, announced politely and with no sentence, toast or banner anywhere; and S4b's hairline and
+// pressed "+ Add section" pill measured on a hovered gap, placing one section there and ⌘K refusing to open with a
+// REAL caret in a canvas text prop, which is the story's most important line (`lib/inline.ts:230`). Step 8's axe runs
+// once more with the picker open, asserting NO SECOND NODE EXCEPTION is needed.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -3134,9 +3145,10 @@ async function main() {
       card59 !== null && card59.onCancel && card59.actionFont.size === '12.5px' && card59.actionFont.weight === '500' &&
       card59.chipFont.size === '11px' && card59.chipFont.radius === '5px' && card59.chipFont.padding === '1px 6px' && card59.chipFont.mono &&
       card59.lastHairline === '0px', JSON.stringify(card59 && { ...card59, words: undefined }))
-    check('step 77 — R-145: the card lists exactly the keys that WORK — no ⌘K, no `[` `]`, no P, no ⇧R, no ⌘⏎ — and never greys or captions one',
-      card59 !== null && ['⌘K', '[', ']', 'P', '⇧R', '⌘⏎'].every((k) => !card59.chips.includes(k)) &&
-      ['L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
+    // Story 5.10: ⌘K MOVED FROM THE FIRST LIST TO THE SECOND, because this story built the picker it presses (R-145)
+    check('step 77 — R-145: the card lists exactly the keys that WORK — no `[` `]`, no P, no ⇧R, no ⌘⏎ — and never greys or captions one',
+      card59 !== null && ['[', ']', 'P', '⇧R', '⌘⏎'].every((k) => !card59.chips.includes(k)) &&
+      ['⌘K', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
       !/not yet|coming soon|unavailable/i.test(card59.words), JSON.stringify(card59 && card59.chips))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
@@ -3145,13 +3157,234 @@ async function main() {
     // ── step 78 — R-145: a key whose action has not been built does nothing at all ──
     const beforeDead59 = { names: await pageNames(), mode: await modeNow59(), device: await deviceNow59(), said: await saidNow59() }
     await page.locator('section[aria-label="Canvas"]').focus()
-    for (const key of ['[', ']', 'p', `${CMD58}+k`, `${CMD58}+Enter`, 'Shift+R']) await page.keyboard.press(key)
+    // ⌘K left this loop at Story 5.10 and has steps 81-85 of its own; four keys are still owed
+    for (const key of ['[', ']', 'p', `${CMD58}+Enter`, 'Shift+R']) await page.keyboard.press(key)
     await page.waitForTimeout(500)
-    check('step 78 — R-145: ⌘K, `[`, `]`, P, ⇧R and ⌘⏎ change nothing, announce nothing and open nothing — absent, never greyed',
+    check('step 78 — R-145: `[`, `]`, P, ⇧R and ⌘⏎ change nothing, announce nothing and open nothing — absent, never greyed',
       JSON.stringify(await pageNames()) === JSON.stringify(beforeDead59.names) && (await modeNow59()) === beforeDead59.mode &&
       (await deviceNow59()) === beforeDead59.device && (await saidNow59()) === beforeDead59.said &&
       (await page.evaluate(() => document.querySelectorAll('dialog[open], :popover-open').length)) === 0,
       JSON.stringify(beforeDead59))
+
+    /* ── Story 5.10 — THE SECTION PICKER, steps 81-85, inside step 5's one CSP session ────────────────────────────
+       S5a measured where it is drawn, the filter proved by opening the SAME picker on two canvases, R-152's globe and
+       its replacement, and the placement as ONE undo step. Every edit below is undone before the walk moves on, and
+       `freshLoad()` after step 80 is the belt to that brace. */
+    const pickerOpen59 = () => page.evaluate(() => document.querySelector('dialog[open][aria-label="Add a section"]') !== null)
+    const railNow59 = () => page.evaluate(() => [...document.querySelectorAll('dialog[open][aria-label="Add a section"] [role="radio"]')].map((r) => r.textContent.replace(/\s+/g, ' ').trim()))
+    const cardsNow59 = () => page.evaluate(() => [...document.querySelectorAll('dialog[open][aria-label="Add a section"] [data-cell]')].map((c) => c.dataset.design))
+
+    // ── step 81 — ⌘K opens it, and S5a's panel is measured where it is drawn ──
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+k`)
+    await page.waitForTimeout(1200)
+    const panel510 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][aria-label="Add a section"]')
+      if (!d) return null
+      const b = d.getBoundingClientRect()
+      const c = getComputedStyle(d)
+      const rail = d.querySelector('[id="picker-categories"]')?.parentElement
+      const r = rail && getComputedStyle(rail)
+      const heading = [...d.querySelectorAll('p')].find((p) => p.textContent.trim() === 'ALL CATEGORIES')
+      const search = d.querySelector('#picker-search')
+      const grid = d.querySelector('[data-picker-grid]')
+      const g = grid && getComputedStyle(grid)
+      return {
+        inset: [Math.round(b.left), Math.round(b.top), Math.round(innerWidth - b.right), Math.round(innerHeight - b.bottom)],
+        radius: c.borderTopLeftRadius, shadow: c.boxShadow, display: c.display, overflow: c.overflow,
+        railWidth: r && r.width, railPad: r && `${r.paddingTop} ${r.paddingLeft}`, railRule: r && r.borderRightWidth,
+        heading: heading ? heading.textContent.trim() : null,
+        headingHasNumber: heading ? /\d/.test(heading.textContent) : null,
+        placeholder: search && search.placeholder,
+        chip: d.querySelector('kbd') && d.querySelector('kbd').textContent.trim(),
+        meta: [...d.querySelectorAll('p')].map((p) => p.textContent.trim()).find((t) => /designs? ·/.test(t)) ?? null,
+        columnGap: g && g.columnGap,
+        // R-150: the rail footer's Free only toggle is NOT built — absent, never greyed
+        freeOnly: /free only/i.test(d.textContent),
+        // R-151: R-132's ONE button, at the segmented's drawn position, and no two-button pair
+        modeButtons: d.querySelectorAll('#picker-mode').length,
+        close: d.querySelector('button[aria-label="Close the section picker"]') !== null,
+      }
+    })
+    // `S5 Section Picker.dc.html:29-37, :88` — inset 22 on every side, --radius-lg, --shadow-modal, a 240px rail on
+    // 16px/12px with a right rule, `ALL CATEGORIES` carrying NO NUMBER (A7 item 1), and a 16px column gap
+    check('step 81 — ⌘K opens S5a: the 22px-inset panel, the 240px rail, `ALL CATEGORIES` with no number, `Find a section…` and its ⌘K chip',
+      panel510 !== null && panel510.inset.every((n) => Math.abs(n - 22) <= 1) && panel510.radius === '16px' &&
+      panel510.display === 'flex' && panel510.overflow === 'hidden' && panel510.railWidth === '240px' &&
+      panel510.railPad === '16px 12px' && panel510.railRule === '1px' && panel510.heading === 'ALL CATEGORIES' &&
+      panel510.headingHasNumber === false && panel510.placeholder === 'Find a section…' && panel510.chip === '⌘K' &&
+      panel510.columnGap === '16px' && panel510.close, JSON.stringify(panel510))
+    check('step 81 — R-150 and R-151: no `Free only` switch anywhere in the rail, and the dark control is ONE button',
+      panel510 !== null && panel510.freeOnly === false && panel510.modeButtons === 1, JSON.stringify(panel510 && { freeOnly: panel510.freeOnly, modeButtons: panel510.modeButtons }))
+    check('step 81 — the meta line is S5a\'s one template, naming the project\'s own pack',
+      panel510 !== null && /^\d+ designs? · shown in your pack: \S+$/.test(panel510.meta ?? ''), JSON.stringify(panel510 && panel510.meta))
+
+    // ── step 82 — FR-D12: only what can work is offered, and the rail is DERIVED per canvas ──
+    const homeRail510 = await railNow59()
+    const homeCards510 = await cardsNow59()
+    check('step 82 — every category in the rail carries a count, and every card drawn is a design the library really holds',
+      homeRail510.length > 0 && homeRail510.every((r) => /\d+$/.test(r)) && homeCards510.length > 0 && homeCards510.every((id) => /^a\d+\/\d+$/.test(id)),
+      JSON.stringify({ homeRail510, homeCards510 }))
+    check('step 82 — the count beside each category is the number of its cards, derived over THIS canvas (standing rule 4)',
+      homeRail510.every((row) => {
+        const n = Number(/(\d+)$/.exec(row)[1])
+        return n > 0 && n <= homeCards510.length
+      }) && homeRail510.reduce((t, row) => t + Number(/(\d+)$/.exec(row)[1]), 0) === homeCards510.length,
+      JSON.stringify({ homeRail510, cards: homeCards510.length }))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    check('step 82 — Esc closes it and the platform returns focus to the invoking position',
+      !(await pickerOpen59()) && (await page.evaluate(() => document.activeElement === document.querySelector('section[aria-label="Canvas"]'))))
+
+    // the SAME picker on the Post canvas: a different list, nothing greyed and no explanation (UX-DR3, R-33)
+    await freshLoad('post')
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+k`)
+    await page.waitForTimeout(1200)
+    const postRail510 = await railNow59()
+    const postCards510 = await cardsNow59()
+    const greyed510 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][aria-label="Add a section"]')
+      return d ? d.querySelectorAll('[aria-disabled="true"], [disabled]').length : -1
+    })
+    check('step 82 — FR-D12: the Post canvas offers a DIFFERENT list, and the home-only categories are simply not there',
+      postRail510.length > 0 && JSON.stringify(postRail510) !== JSON.stringify(homeRail510) &&
+      postCards510.some((id) => !homeCards510.includes(id)) && homeCards510.some((id) => !postCards510.includes(id)),
+      JSON.stringify({ homeRail510, postRail510 }))
+    check('step 82 — and nothing in it is greyed or captioned: what cannot work is ABSENT (UX-DR3)', greyed510 === 0, `${greyed510} greyed nodes`)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    await freshLoad()
+
+    // ── step 83 — the preview is the canvas's own render, in an `inert` frame at Desktop width (NFR-1, R-137, R-149) ──
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+k`)
+    await page.waitForTimeout(2500)
+    const previews510 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][aria-label="Add a section"]')
+      const frames = [...d.querySelectorAll('iframe')]
+      return {
+        frames: frames.length,
+        cards: d.querySelectorAll('[data-cell]').length,
+        allInert: frames.every((f) => f.inert === true),
+        allTitled: frames.every((f) => (f.title ?? '').trim() !== ''),
+        uniqueTitles: new Set(frames.map((f) => f.title)).size === frames.length,
+        atDesktop: frames.every((f) => f.getBoundingClientRect().width > 0 && Number(getComputedStyle(f).width.replace('px', '')) === 1440),
+        painted: frames.filter((f) => (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0).length,
+        focusable: frames.filter((f) => (f.contentDocument?.querySelectorAll('a[href], button, input, [tabindex]').length ?? 0) > 0).length,
+      }
+    })
+    // R-137: the frame's CSS pixel size IS the device's, so the design's own media queries fire and the miniature is
+    // the canvas's render fitted by a transform — never a shadow root at card width
+    check('step 83 — every preview is a LIVE render in an `inert`, titled frame at Desktop width, and every card has one',
+      previews510.frames === previews510.cards && previews510.frames > 0 && previews510.allInert && previews510.allTitled &&
+      previews510.uniqueTitles && previews510.atDesktop && previews510.painted === previews510.frames, JSON.stringify(previews510))
+    // R-149 stays ONE rule on ONE element: `inert` takes the preview frames out of the accessibility tree entirely
+    check('step 83 — `inert` is what keeps R-149 at one exception: nothing inside a preview frame is focusable to axe',
+      previews510.allInert, JSON.stringify(previews510))
+
+    // ── step 84 — R-152: the globe before the press, the replacement, and ONE undo step (AD-15, AD-16) ──
+    const siteCard510 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][aria-label="Add a section"]')
+      const cell = [...d.querySelectorAll('[data-cell]')].find((c) => (c.getAttribute('aria-label') ?? '').includes('Site-wide'))
+      if (!cell) return null
+      const card = cell.closest('div')
+      const globe = card.querySelector('[title*="every template"]')
+      return {
+        design: cell.dataset.design,
+        label: cell.getAttribute('aria-label'),
+        globeTitle: globe ? globe.getAttribute('title') : null,
+        globeGlyph: !!(globe && globe.querySelector('svg')),
+        // R-152 in the owner's own words: no sentence, no toast, no banner ANYWHERE in the picker
+        sentence: /shows on every template\./.test(d.textContent) || /added to every template/i.test(d.textContent),
+      }
+    })
+    check('step 84 — R-152: a site-wide card carries the Kit\'s globe with a hover title and the SAME words in its accessible name — and no sentence anywhere',
+      siteCard510 !== null && siteCard510.globeGlyph && siteCard510.globeTitle === 'Site-wide — shows on every template' &&
+      siteCard510.label.includes(siteCard510.globeTitle) && siteCard510.sentence === false, JSON.stringify(siteCard510))
+    const beforeSite510 = await page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row^="site:"]')].map((r) => r.dataset.layerRow))
+    await page.locator(`dialog[open] [data-cell][data-design="${siteCard510.design}"]`).click()
+    await page.waitForTimeout(800)
+    const afterSite510 = await page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row^="site:"]')].map((r) => r.dataset.layerRow))
+    const said510 = await saidNow59()
+    check('step 84 — a second site-wide design in the same category REPLACES the first, in one transaction',
+      afterSite510.length === beforeSite510.length && JSON.stringify(afterSite510) !== JSON.stringify(beforeSite510), JSON.stringify({ beforeSite510, afterSite510 }))
+    check('step 84 — the placement is announced politely, naming the Site-wide group, and the picker has closed behind it',
+      /Site-wide group/.test(said510) && !(await pickerOpen59()), JSON.stringify({ said510 }))
+    check('step 84 — and the only thing said aloud is that announcement: no toast, no banner, no visible sentence (R-152)',
+      (await page.evaluate(() => !/shows on every template|added to every template/i.test(document.body.innerText))))
+    await page.keyboard.press(`${CMD58}+z`)
+    await page.waitForTimeout(600)
+    check('step 84 — one ⌘Z puts the old site-wide section back — one gesture, one edit, one undo step (AD-15, AD-16)',
+      JSON.stringify(await page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row^="site:"]')].map((r) => r.dataset.layerRow))) === JSON.stringify(beforeSite510))
+
+    // ── step 85 — the "+" on the hovered gap places at THAT gap, and ⌘K with a caret does not open at all ──
+    const beforePage510 = await pageNames()
+    const gapAt510 = await page.evaluate((n) => {
+      const f = document.querySelector('section[aria-label="Canvas"] iframe')
+      const fr = f.getBoundingClientRect()
+      const s = fr.width / f.offsetWidth
+      const b = f.contentDocument.querySelectorAll('#canvas > *')[n].getBoundingClientRect()
+      return { x: Math.round(fr.left + (b.left + b.width / 2) * s), y: Math.round(fr.top + (b.top + b.height / 2) * s) }
+    }, 0)
+    await page.mouse.move(gapAt510.x, gapAt510.y)
+    await page.waitForTimeout(400)
+    const hairline510 = await canvasFrame().evaluate(() => {
+      const el = document.querySelector('[data-inflozo-insert]')
+      if (!el) return null
+      const a = getComputedStyle(el, '::after')
+      return { bg: a.backgroundColor, height: a.height, bottom: a.bottom, animation: a.animationName, position: a.position }
+    })
+    // S4b`:181`: 2px of `--color-coral` on the section's own bottom edge, breathing through the `addline` OPACITY pulse
+    check('step 85 — the hovered gap paints S4b\'s 2px coral hairline inside the canvas, breathing in opacity',
+      hairline510 !== null && hairline510.height === '2px' && hairline510.bg === 'rgb(255, 89, 65)' &&
+      hairline510.bottom === '-1px' && hairline510.animation === 'addline' && hairline510.position === 'absolute', JSON.stringify(hairline510))
+    const pill510 = await page.evaluate(() => {
+      const b = document.querySelector('[data-add-section]')
+      if (!b) return null
+      const c = getComputedStyle(b)
+      return { words: b.textContent.trim(), radius: c.borderTopLeftRadius, border: `${c.borderTopWidth} ${c.borderTopColor}`, padding: `${c.paddingTop} ${c.paddingLeft}`, size: c.fontSize, weight: c.fontWeight, animation: c.animationName }
+    })
+    check('step 85 — and S4b\'s pressed "+ Add section" pill sits on it, drawn as the frame draws it',
+      pill510 !== null && pill510.words === '+ Add section' && pill510.radius === '24px' && pill510.border === '1px rgb(255, 89, 65)' &&
+      pill510.padding === '4px 11px' && pill510.size === '11px' && pill510.weight === '600' && pill510.animation === 'addline', JSON.stringify(pill510))
+    await page.locator('[data-add-section]').click()
+    await page.waitForTimeout(2000)
+    const firstCard510 = (await cardsNow59()).find((id) => id !== siteCard510.design)
+    await page.locator(`dialog[open] [data-cell][data-design="${firstCard510}"]`).click()
+    await page.waitForTimeout(800)
+    const placed510 = await pageNames()
+    check('step 85 — Add places ONE section at the invoked gap, the picker closes and the placement is announced',
+      placed510.length === beforePage510.length + 1 && /added/.test(await saidNow59()) && !(await pickerOpen59()),
+      JSON.stringify({ beforePage510, placed510 }))
+    await page.keyboard.press(`${CMD58}+z`)
+    await page.waitForTimeout(600)
+    check('step 85 — control: one ⌘Z takes it away again, so the insert really went through the one `commit`',
+      JSON.stringify(await pageNames()) === JSON.stringify(beforePage510))
+    // THE NARROWING, WITH A REAL CARET IN THE CANVAS — the one thing only the deployed walk can reach (`inline.ts:230`)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    const caretIn510 = await canvasFrame().evaluate(() => {
+      const el = [...document.querySelectorAll('#canvas [data-inflozo-selected] *, #canvas *')].find((e) => e.children.length === 0 && (e.textContent ?? '').trim())
+      if (!el) return false
+      const r = el.getBoundingClientRect()
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
+    })
+    if (caretIn510) {
+      const f510 = await page.locator('section[aria-label="Canvas"] iframe').boundingBox()
+      const k510 = await page.evaluate(() => { const f = document.querySelector('section[aria-label="Canvas"] iframe'); return f.getBoundingClientRect().width / f.offsetWidth })
+      await page.mouse.click(f510.x + caretIn510.x * k510, f510.y + caretIn510.y * k510)
+      await page.waitForTimeout(200)
+      await page.mouse.click(f510.x + caretIn510.x * k510, f510.y + caretIn510.y * k510)
+      await page.waitForTimeout(400)
+    }
+    const editing510 = await canvasFrame().evaluate(() => document.activeElement?.isContentEditable === true)
+    await page.keyboard.press(`${CMD58}+k`)
+    await page.waitForTimeout(500)
+    check('step 85 — ⌘K with a real caret in a canvas text prop does NOT open the picker: it is the LINK mark there (inline.ts:230)',
+      editing510 && !(await pickerOpen59()), JSON.stringify({ editing510, open: await pickerOpen59() }))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    await freshLoad()
 
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     for (const path of ['/harness/editor', '/harness/canvas']) {
@@ -3458,6 +3691,23 @@ async function main() {
     await axePage.waitForTimeout(400)
     const cardAxe = await axeRun()
     check('step 8 — axe: zero violations with R-147\'s shortcuts card open', cardAxe.length === 0 && (await axePage.locator('dialog[open][data-shortcuts-sheet]').count()) === 1, cardAxe.join('; '))
+    await axePage.keyboard.press('Escape')
+    await axePage.waitForTimeout(300)
+
+    /* STORY 5.10 — THE PICKER OPEN, AND NO SECOND NODE EXCEPTION (R-149). This is the story's own exit criterion: its
+       preview frames are `inert`, so `frame-focusable-content` has nothing to report on them and the filter above —
+       one rule, one element, the canvas iframe — is the only exception on the page. The frames are given time to
+       paint first, because an empty frame would prove nothing about the render inside it, and axe is injected into
+       each one so the previews are scanned rather than skipped. */
+    await axePage.locator('section[aria-label="Canvas"]').focus()
+    await axePage.keyboard.press(`${CMD58}+k`)
+    await axePage.waitForTimeout(3000)
+    for (const f of axePage.frames()) await f.addScriptTag({ path: AXE }).catch(() => {})
+    const pickerShown = await axePage.locator('dialog[open][aria-label="Add a section"]').count()
+    const pickerAxe = await axeRun()
+    check('step 8 — axe: zero violations with the Section Picker open, WITH NO EXCEPTION BEYOND R-149\'s ONE (the `inert` preview frames are what buy it)',
+      pickerAxe.length === 0 && pickerShown === 1, `${pickerShown} picker · ${pickerAxe.join('; ')}`)
+    await axePage.keyboard.press('Escape')
     await axeContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──

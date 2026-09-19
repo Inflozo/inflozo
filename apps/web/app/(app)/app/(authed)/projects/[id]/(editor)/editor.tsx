@@ -4,16 +4,18 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
-import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
-  clearDarkOverrides, darkOverridesInForce, duplicateSection, getPath, isDesigned, moveSection, removeSection,
-  renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor,
+  clearDarkOverrides, darkOverridesInForce, defaultContent, duplicateSection, getPath, insertSection, isDesigned,
+  moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
+  stampControls, storedFor,
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
+import { SectionPicker, type Placement } from '@/components/editor/section-picker'
 import { SaveState } from '@/components/editor/save-state'
 import { openShortcuts, ShortcutsSheet } from '@/components/editor/shortcuts-sheet'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
@@ -21,7 +23,7 @@ import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection }
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { ProBadge } from '@/components/kit/badge'
-import { Button, IconButton } from '@/components/kit/button'
+import { AddButton, Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
@@ -37,6 +39,7 @@ import {
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { holdsCaret, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
@@ -232,6 +235,7 @@ export function Editor({
   memberVisibility,
   timezone,
   plan,
+  stylePack,
   canvases,
   synthesized,
   defaults: stacks,
@@ -296,6 +300,15 @@ export function Editor({
   const conflict = useRef<HTMLDialogElement>(null)
   /** R-147's card, opened by `?` here and by the account menu's row everywhere else — one component, one door */
   const shortcuts = useRef<HTMLDialogElement>(null)
+  /* ─── Story 5.10 — the Section Picker (FR-D12, S5a) ───────────────────────────────────────────────────────────
+   * A native modal `<dialog>`, so `Esc`, the focus trap and the return of focus to the invoking control are the
+   * platform's (`EXPERIENCE.md:502`). `invoked` is the STACK INDEX the "+" was pressed under, or null for `⌘K`
+   * with nothing selected; `lib/picker.ts`'s `invokedAt` turns it into one position in the canvas's own doc. */
+  const picker = useRef<HTMLDialogElement>(null)
+  const [picking, setPicking] = useState(false)
+  const [invoked, setInvoked] = useState<number | null>(null)
+  /** DW-190's home: R-37's refusal, shown in the picker where the press was */
+  const [pickerRefusal, setPickerRefusal] = useState<string | null>(null)
   /** null means FALLBACK MODE: IndexedDB refused, or a write failed, and every change goes straight to the cloud */
   const local = useRef<LocalStore | null>(null)
   /** AD-15's `base_revision`: the `projects.revision` this session's document descends from */
@@ -359,9 +372,13 @@ export function Editor({
    *  already takes the fit as a derived quantity — `place()` is handed it, `onScreen` and `fitOf` recompute it from the
    *  DOM — so this line is the whole of the change. */
   const scale = fitFor(size, device)
+  /** STORY 5.10 — can anything be placed on THIS canvas at all? One query (`offeredOn`), and the hairline, the
+   *  "+ Add section" pill and the Layers footer's button are all readers of it: where nothing can be placed there
+   *  is no affordance, rather than an affordance that opens an empty picker (UX-DR3). */
+  const canAdd = offeredHere(entries, canvas.file, SITE.file).length > 0
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd }
 
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
@@ -608,6 +625,10 @@ export function Editor({
       if (!root || !placed) return
       root.toggleAttribute('data-inflozo-selected', same(placed, now.selected))
       root.toggleAttribute('data-inflozo-hover', same(placed, now.hovered))
+      // Story 5.10 — S4b's insertion hairline, painted inside the frame from `lib/canvas-chrome.css`. A SECOND mark
+      // and not `data-inflozo-hover`, because the two genuinely differ: a canvas nothing can be placed on is hovered
+      // exactly as any other and offers no gap to press.
+      root.toggleAttribute('data-inflozo-insert', now.canAdd && same(placed, now.hovered))
     })
   }
   /** The stored slice each root's attributes come from, in the mode being shown — `stampControls`' single door,
@@ -780,15 +801,22 @@ export function Editor({
   /** The fit, as the frame draws it: one canvas pixel is `k` screen pixels. */
   const fitOf = (f: HTMLIFrameElement, fr: DOMRect) => (f.offsetWidth > 0 ? fr.width / f.offsetWidth : 1)
 
-  /** Is a point in the CANVAS document's coordinates inside S4b's pill, which lives outside the frame? */
+  /** Is a point in the CANVAS document's coordinates inside one of S4b's pressed children, which live outside the
+   *  frame? BOTH of them since Story 5.10 — the quick actions and the "+ Add section" — because crossing onto either
+   *  arrives here as a `pointerout` with a null `relatedTarget` and would otherwise clear the very hover the pill is
+   *  anchored to. Tested by GEOMETRY, because two documents' pointer events have no guaranteed order. */
   const overPill = (cx: number, cy: number) => {
-    const [f, el] = [frame.current, pill.current]
-    if (!f || !el || el.style.visibility === 'hidden') return false
+    const f = frame.current
+    if (!f) return false
     const fr = f.getBoundingClientRect()
     const k = fitOf(f, fr)
-    const p = el.getBoundingClientRect()
     const [x, y] = [fr.left + cx * k, fr.top + cy * k]
-    return x >= p.left && x <= p.right && y >= p.top && y <= p.bottom
+    const els = [pill.current, document.querySelector<HTMLElement>('[data-add-section]')]
+    return els.some((el) => {
+      if (!el || el.style.visibility === 'hidden') return false
+      const p = el.getBoundingClientRect()
+      return x >= p.left && x <= p.right && y >= p.top && y <= p.bottom
+    })
   }
 
   /** One doc's own sections as they sit ON SCREEN, in `captureLayout`'s two offsets — what the pill's grip drags
@@ -907,6 +935,10 @@ export function Editor({
   const run = (gesture: Gesture) => {
     const pick = latest.current.selected
     switch (gesture) {
+      // STORY 5.10 — `⌘K`. With a section selected the picker opens at the gap AFTER it (`duplicateSection`'s own
+      // precedent); with nothing selected, at the end of this canvas's own stack. Where nothing can be placed there
+      // is nothing to open (UX-DR3), exactly as the sun does nothing on a Light-only project.
+      case 'add': return openPicker(pick ? latest.current.stack.findIndex((i) => same(i, pick)) : null)
       case 'save': return void flush('manual')
       case 'undo': return onUndo()
       case 'redo': return onRedo()
@@ -1333,8 +1365,10 @@ export function Editor({
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null. */
   const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string): string | null => {
     const now = latest.current
-    const doc = now.docs[pick.doc]
-    if (!doc) return `there is no ${pick.doc} template to edit`
+    // Story 5.10: a canvas with NO ROW YET is a canvas you can add the first section to — R-129's three membership
+    // templates and Private are never synthesized, so `docs` holds nothing for them until something is placed. Every
+    // other caller addresses a doc it drew a row from, so the fallback only ever answers the picker.
+    const doc = now.docs[pick.doc] ?? EMPTY_DOC
     const next = op(doc)
     if (typeof next === 'string') return next
     const back = commit({ ...now.docs, [pick.doc]: next }, pick.doc)
@@ -1409,6 +1443,68 @@ export function Editor({
   }
   const onToggleHidden = (row: LayerRow) =>
     row.doc === SITE.key && !row.hidden ? askFirst('hide', row) : edit(row, (doc) => setHidden(doc, row.instanceId, !row.hidden))
+
+  /* ─── Story 5.10 — opening the picker, and the one placement it makes (FR-D12, AD-15, AD-16, R-152) ──────────── */
+
+  /** `from` is the STACK INDEX the gesture was made at, or null for the end of this canvas's own stack. */
+  const openPicker = (from: number | null) => {
+    if (!latest.current.canAdd || picker.current?.open) return
+    setInvoked(from)
+    setPickerRefusal(null)
+    setPicking(true)
+    // opened on the frame after the one that mounted it, exactly as the site-wide confirm is
+    requestAnimationFrame(() => picker.current?.showModal())
+  }
+
+  /**
+   * ONE GESTURE, ONE EDIT, ONE TRANSACTION, ONE UNDO STEP (AD-15, AD-16). The insert goes through `apply` →
+   * `commit`, the editor's single doc-write door, so `⌘Z` puts it back with no extra code and AD-22's round trip
+   * (an edit materialises an untouched template) is free.
+   *
+   * A SITE-WIDE DESIGN IS THE ONE EXCEPTION TO "where it was invoked" (R-152): the stack order is DERIVED
+   * (`canvasStack`, `editor.test.ts:103`), so a header cannot land between two canvas sections however it was
+   * invoked. It goes into the SITE doc, and A SECOND ONE IN THE SAME CATEGORY REPLACES THE FIRST — in the same
+   * transaction, so one `⌘Z` puts the old one back. The card said so before the press, with the Kit's globe; nothing
+   * is explained afterwards, and the only thing said aloud is the polite announcement every placement already makes.
+   */
+  const onPlace = ({ entry: design, siteWide }: Placement) => {
+    const now = latest.current
+    const docKey = siteWide ? SITE.key : templateKeyOf(now.key)
+    const layerName = `${design.categoryTitle} — ${design.name}`
+    const instance = {
+      instanceId: crypto.randomUUID(),
+      layerName,
+      designId: design.id,
+      content: defaultContent(design.contentSchema),
+      controls: {},
+      data: {},
+      darkOverrides: {},
+      hidden: false,
+      memberVisibility: 'everyone' as const,
+      isMainFeed: false,
+    }
+    let replaced: string | null = null
+    const refused = apply({ doc: docKey, instanceId: instance.instanceId }, (doc) => {
+      if (!siteWide) return insertSection(doc, invokedAt(now.stack, docKey, invoked), instance)
+      // category for category: a header replaces a header, never a footer
+      const at = doc.instances.findIndex((i) => categoryOf(i.designId) === design.category)
+      if (at === -1) return insertSection(doc, doc.instances.length, instance)
+      replaced = doc.instances[at]?.layerName ?? null
+      const cleared = removeSection(doc, doc.instances[at]!.instanceId)
+      return typeof cleared === 'string' ? cleared : insertSection(cleared, at, instance)
+    })
+    if (refused !== null) {
+      // DW-190: the refusal has a home now — the picker itself, which is where the press was. Nothing is written.
+      setPickerRefusal(refused)
+      return
+    }
+    picker.current?.close()
+    setSaid(
+      siteWide
+        ? `${layerName} added to the Site-wide group${replaced === null ? '' : `, replacing ${replaced as string}`}`
+        : `${layerName} added`,
+    )
+  }
 
   /** The drop, and `⌥↑`/`⌥↓`: one `moveSection`, announced politely in its own words (UX-DR12). */
   const moveTo = (pick: Pick, to: number): string | null => {
@@ -1614,6 +1710,18 @@ export function Editor({
             onClearDark={askClearDark}
             onMove={moveTo}
           />
+          {/* S4 Editor.dc.html:172 — the Layers footer's full-width dashed button, redrawn identically at 834 and 720
+              (`D8 Editor Below 1440.dc.html:72`, `:202`). It is the Kit's `AddButton`, which `/kit` already draws with
+              these very words. OUTSIDE the scrolling list, as the frame draws it, so it is always in reach — which is
+              also the empty canvas's one affordance: there is no gap to hover when there is no section.
+              ABSENT where nothing can be placed on this canvas (UX-DR3), never a button that opens an empty picker. */}
+          {canAdd ? (
+            <div className="border-t border-line p-[10px]">
+              <AddButton id="editor-add-section" onClick={() => openPicker(null)}>
+                + Add section
+              </AddButton>
+            </div>
+          ) : null}
         </aside>
         {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" /> : null}
 
@@ -1719,6 +1827,7 @@ export function Editor({
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling} resources={links} handle={tools} />
           <SectionPill
             shown={!!pointed}
+            canAdd={canAdd}
             hidden={scrolling}
             boxOf={pillBox}
             // FR-D5: a site-wide section is one shared instance, so its Duplicate is absent here as it is in Layers
@@ -1727,6 +1836,8 @@ export function Editor({
             pillRef={pill}
             onDuplicate={() => pointed && onDuplicate(pointed)}
             onDelete={() => pointed && onRemove(pointed)}
+            // S4b's "+ Add section", on the gap under the hovered section: the picker opens at THAT gap
+            onAdd={() => openPicker(hovered ? stack.findIndex((i) => same(i, hovered)) : null)}
             gripProps={pillGrip}
             onPointerLeave={(e) => {
               // leaving the pill for the canvas is the canvas document's own `pointerover`; leaving it for a panel or
@@ -1877,6 +1988,35 @@ export function Editor({
       {/* R-147's card, opened by `?` — the editor draws no account menu (`shell.tsx:295-297`), so this is its only
           door from in here. Its rows are the map's own (R-145): exactly the keys that work. */}
       <ShortcutsSheet dialog={shortcuts} />
+
+      {/* STORY 5.10 — S5a's Section Picker. MOUNTED ONLY WHILE IT IS OPEN, so every preview iframe goes with it and
+          the resting editor carries none of them. `onClose` is the platform's — `Esc`, the ×, a press on the scrim —
+          and the platform also returns focus to whatever opened it; the one thing it cannot do is put focus back on a
+          control that has since gone (the hover pill the placement itself cleared), so the canvas catches it. */}
+      {picking ? (
+        <SectionPicker
+          dialog={picker}
+          open={picking}
+          entries={entries}
+          file={canvas.file}
+          siteFile={SITE.file}
+          rows={rows}
+          pool={pool}
+          icons={icons.current}
+          mode={mode}
+          onMode={flip}
+          darkEnabled={darkEnabled}
+          pack={stylePack}
+          src={src}
+          refusal={pickerRefusal}
+          onAdd={onPlace}
+          onClose={() => {
+            setPicking(false)
+            setPickerRefusal(null)
+            if (document.activeElement === document.body || document.activeElement === null) stage.current?.focus()
+          }}
+        />
+      ) : null}
 
       {/* R-133's ONE confirm, opened by the Controls panel's row AND the Layers `⋯` — R-115's shape, on Cancel */}
       <dialog

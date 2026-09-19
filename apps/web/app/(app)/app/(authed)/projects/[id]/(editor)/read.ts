@@ -7,6 +7,7 @@ import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-revi
 import { CANVASES, canvasesOf, isUuid, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
+import { placeholderFor } from '@/lib/style-pack'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 
@@ -53,12 +54,12 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  *  (`20260904120000_complete_schema.sql:224`), so this story has no Schema phase (R-99). */
 export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, style_pack').eq('id', id).maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
 
-export type Project = { id: string; name: string; dark_enabled: boolean; revision: number }
+export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; style_pack: unknown }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -95,6 +96,10 @@ export type EditorData = {
   /** the site's time zone name, printed under a date control */
   timezone: string
   plan: PlanId
+  /** Story 5.10 — the project's Style Pack, by NAME, for the Section Picker's meta line ("shown in your pack:
+   *  Paper", S5a`:81`). `projects.style_pack` is the stored value and `PRESETS` the one place a pack's own name
+   *  lives; a pack this build does not know falls back to Paper exactly as the dashboard card does. */
+  stylePack: string
   /** Story 5.5 — the canvases this project offers, in D5b's row order; a conditional canvas is absent, not greyed */
   canvases: CanvasKey[]
   /** Story 5.5 — the canvas keys whose doc came from `synthesize`: D5a's marker, as server truth (AD-22) */
@@ -224,6 +229,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // the dataset's own zone, as `/controls` and `/pilots` read it, until 5.18 reads the connected site's
     timezone: orbitWeekly.site().timezone,
     plan,
+    stylePack: placeholderFor(project?.style_pack).name,
     canvases,
     synthesized,
     defaults,

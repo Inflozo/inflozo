@@ -103,6 +103,22 @@ function LazyGroup({
   )
 }
 
+/** P0-2: THE ARROW GRID — a roving move over `[data-cell]` in the pressed container, by DOM order.
+ *
+ *  ONE IMPLEMENTATION, TWO GRIDS (Story 5.10). The icon picker lays its cells out in ROWS of eight, so "down" is
+ *  eight cells on; the Section Picker's grid is CSS multi-column, so its cells run DOWN each column and "down" is
+ *  one cell on while "right" is a whole column. The caller says which, because only the caller knows its layout —
+ *  the walk itself is the same and is never written twice. */
+export function gridKeys(event: KeyboardEvent<HTMLElement>, steps: { right: number; down: number }) {
+  const step = ({ ArrowRight: steps.right, ArrowLeft: -steps.right, ArrowDown: steps.down, ArrowUp: -steps.down } as Record<string, number>)[event.key]
+  if (step === undefined) return
+  const cells = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-cell]')]
+  const at = cells.indexOf(document.activeElement as HTMLElement)
+  if (at < 0) return
+  event.preventDefault()
+  cells[Math.max(0, Math.min(cells.length - 1, at + step))]?.focus()
+}
+
 export function IconPicker({
   id,
   label,
@@ -176,17 +192,6 @@ export function IconPicker({
         <Drawing name={key} mod={mod} />
       </button>
     )
-
-  /** P0-2: the grid moves with the arrow keys — a row is eight cells. */
-  const gridKeys = (event: KeyboardEvent<HTMLDivElement>) => {
-    const step = ({ ArrowRight: 1, ArrowLeft: -1, ArrowDown: COLUMNS, ArrowUp: -COLUMNS } as Record<string, number>)[event.key]
-    if (step === undefined) return
-    const cells = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-cell]')]
-    const at = cells.indexOf(document.activeElement as HTMLElement)
-    if (at < 0) return
-    event.preventDefault()
-    cells[Math.max(0, Math.min(cells.length - 1, at + step))]?.focus()
-  }
 
   const categoryOptions = [{ value: '', label: 'All categories' }, ...(mod?.ICON_CATEGORIES ?? []).map((c) => ({ value: c, label: c }))]
 
@@ -272,7 +277,7 @@ export function IconPicker({
         </div>
         <div aria-hidden className="h-px bg-line" />
 
-        <div ref={scroller} onKeyDown={gridKeys} className={`flex max-h-[300px] flex-col gap-3 overflow-y-auto pr-1 ${slimScrollbar}`}>
+        <div ref={scroller} onKeyDown={(event) => gridKeys(event, { right: 1, down: COLUMNS })} className={`flex max-h-[300px] flex-col gap-3 overflow-y-auto pr-1 ${slimScrollbar}`}>
           {mod === null ? (
             <span className="text-[11.5px] text-ink-soft">Loading the icons…</span>
           ) : groups.length === 0 && query.trim() === '' ? (

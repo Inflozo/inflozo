@@ -113,11 +113,34 @@ test('R-145: every deferred row names its story, binds nothing and is not on the
     assert.ok(!listed.has(b), `${b.action}: the card must not advertise a key that does nothing`)
     assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
   }
-  // and the keys the owner was asked about are all still owed, by their chips
-  for (const chip of ['⌘K', '[', ']', 'P', '⇧R', '⌘⏎']) {
+  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10, which built the picker it
+  // presses (R-145: a shortcut arrives with the action it drives), and each of the four below leaves it the same way
+  for (const chip of ['[', ']', 'P', '⇧R', '⌘⏎']) {
     assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
     assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)
   }
+})
+
+/* STORY 5.10 — ⌘K IS LANDED, AND NARROWED IN THE SHARED FUNCTION. It is the first of R-145's five owed keys to
+   arrive with its action, and the narrowing is the whole of the risk: `⌘K` is ALREADY the link mark inside a text
+   field (`lib/inline.ts:230`), and a field that does not permit a link returns there WITHOUT `preventDefault` on
+   purpose — so without this the picker would have swallowed the key on its way to the browser. */
+test('⌘K is bound, listed, and yields to a caret in a field — the link mark keeps it there', () => {
+  const add = KEYMAP.find((b) => b.gesture === 'add')
+  assert.ok(add && add.story === undefined && add.keys?.includes('k') && add.meta === true, 'the row is live and ⌘-modified')
+  assert.deepEqual(add?.chips, ['⌘K'])
+  assert.ok(sheetRows().some((b) => b.gesture === 'add'), 'the card lists it, because it works')
+  // both sides of the caret
+  assert.equal(shortcutFor({ key: 'k', metaKey: true, ctrlKey: false, shiftKey: false }, false), 'add')
+  assert.equal(shortcutFor({ key: 'k', metaKey: false, ctrlKey: true, shiftKey: false }, false), 'add', 'Ctrl elsewhere')
+  assert.equal(shortcutFor({ key: 'k', metaKey: true, ctrlKey: false, shiftKey: false }, true), null, 'in a field ⌘K is the link mark')
+  // ⇧⌘K is not it, and a bare k is not it — it carries no single-key focus condition either way
+  assert.equal(shortcutFor({ key: 'k', metaKey: true, ctrlKey: false, shiftKey: true }, false), null)
+  assert.equal(shortcutFor({ key: 'k', metaKey: false, ctrlKey: false, shiftKey: false }, false), null)
+  assert.ok(!SINGLE_KEY.has('add'), 'it stays ⌘-modified, so WCAG 2.1.4 has no condition to impose')
+  // and the three keys that do NOT give way to a caret still do not (the guard narrowed, never widened)
+  assert.equal(shortcutFor({ key: 's', metaKey: true, ctrlKey: false, shiftKey: false }, true), 'save')
+  assert.equal(shortcutFor({ key: 'd', metaKey: true, ctrlKey: false, shiftKey: false }, true), 'duplicate')
 })
 
 test('the card is derived from the map, and the map is the only binder', () => {

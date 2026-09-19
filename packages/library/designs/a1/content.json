@@ -1,5 +1,6 @@
 {
   "category": "a1",
+  "title": "Headers",
   "props": {
     "signInUrl": { "label": "Sign in link", "type": "url", "default": { "portal": "signin" } },
     "accountUrl": { "label": "Account link", "type": "url", "default": { "portal": "account" } },

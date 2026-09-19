@@ -102,6 +102,7 @@ export {
   clearDarkOverrides,
   darkOverrideCount,
   duplicateSection,
+  insertSection,
   isDesigned,
   moveSection,
   removeSection,

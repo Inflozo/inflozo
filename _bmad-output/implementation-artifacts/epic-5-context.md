@@ -53,7 +53,27 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     category order must be NUMERIC (`a17` sorts before `a4` as a string); and `read.ts` already ships every placeable
     design for this story (DW-200, which this story adds nothing to). **DW-190 closes here** — the picker is the
     refusal surface a section with no root had nowhere to show on. No migration and **no Schema phase**.
-  - **The `⌘K` collision, found by reading (Story 5.10's Create):** `⌘K` is ALREADY the **link** mark inside an
+    - **Story 5.10 built it (2026-09-20):** the filter is ONE pure query — `offeredOn(entry, file)` in
+    `packages/library/src/placement.ts` (`isPlaceable` ∧ `compileTarget` ∧ a non-empty `bindingContext` intersection
+    with `CONTEXTS_BY_TARGET`, the appendix-B1 §3/§5 table) — and the rail, the grid, the counts and all three empty
+    states are readers of `apps/web/lib/picker.ts` over it, so nothing that cannot work is ever drawn. **A SITE-WIDE
+    DESIGN IS ASKED ABOUT TWO FILES, NOT ONE** (found by executing): a header compiles to `default.hbs` alone, so a
+    picker asking only about `home.hbs` offered no Headers category at all, which R-152 requires — `offeredHere`
+    therefore takes the canvas's file AND the site's, and `isSiteWide` decides where a placement lands. The
+    `bindingContext` table is paired with the validator rule `context-unreachable`, so a wrong table breaks a build
+    instead of shrinking a rail. The category's DISPLAY NAME joined `CategoryContent` (`content.json`, validated
+    non-empty and never the bare id) and rides the entry as `categoryTitle`. `insertSection` joined `doc-edit.ts`
+    beside `duplicateSection`, and the placement goes through `apply` → `commit`, so it is one edit, one journal
+    entry and one `⌘Z` — a site-wide REPLACEMENT is a remove and an insert inside that one transaction. The overlay
+    is a native modal `<dialog>`, which gives `Esc`, the focus trap and the return of focus for nothing and makes
+    every single-key binding go quiet while it is open with no new guard. Each card's preview is `renderSection`
+    into an **`inert`** `/canvas` iframe at Desktop width, created on intersection — `inert` is what keeps R-149 at
+    one rule on one element. **`ModeToggle` gained an `id` parameter**, because R-151's second one duplicated
+    `editor-mode`, which the deployed walk reads by id. `pilots.test.ts`'s chrome-selector reader learned at-rules
+    (a `@keyframes` block carries no selector; a `@media` wrapper's inner rules are still held to the key), because
+    the hairline needs both and `globals.css` cannot reach the canvas document. **DW-190 is CLOSED**: the picker's
+    own refusal line is the home a refusal with no section to sit on was waiting for.
+- **The `⌘K` collision, found by reading (Story 5.10's Create):** `⌘K` is ALREADY the **link** mark inside an
     editing session (`lib/inline.ts:230`, `KEYS = { b, i, u, k: 'a' }`), and `shortcutFor` lets a `⌘`-modified gesture
     through with the caret in a field — only `undo` and `redo` are held back. Worse, a field that does not permit
     links returns *without* `preventDefault` ON PURPOSE so the key reaches the browser, so the picker would have

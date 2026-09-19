@@ -4506,17 +4506,20 @@ reason: unreachable while the seeded site doc holds one instance; the fix is to 
 
 ### DW-190: a refusal shown "where the action was pressed" has nowhere to go when the section has no root
 
-plain: When Inflozo refuses to copy a section (today only "this layout already prints the article"), it says so in a
-  small note on that section on the page. A hidden section, or one shown only to paying members, is not on the page,
-  so the note has nowhere to appear and the refusal is silent.
-status: open
+plain: FIXED 2026-09-20 (Story 5.10) — the Section Picker is the refusal's home. A refused placement now says so in
+  the picker's own line, above the cards, where the press was; nothing is written and the picker stays open. The
+  older case the entry was opened for — a refused COPY of a hidden or member-gated section, which has no root to
+  put a note on — is unchanged and still unreachable, because the library holds no A25 design to refuse.
+status: closed
 severity: low
 origin: Story 5.4's Review (2026-09-18, Blind Hunter) — `editor.tsx`'s `refuse()` skips `showNote` when `rootOf(pick)`
   is null; only R-37's Post Content refusal can reach it and `packages/library/designs/` holds no A25 design yet
 owner: Story 5.10 (the Section Picker, which draws the refusal surface for placement)
-location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`refuse`)
-reason: unreachable on the deployed editor until an A25 design exists; the picker's refusal surface is the natural
-  place for a refusal that has no section to sit on
+location: `apps/web/components/editor/section-picker.tsx` (the `refusal` line) and
+  `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`onPlace`, which routes the sentence there
+  rather than through `refuse`)
+reason: unreachable on the deployed editor until an A25 design exists, so it is proved by
+  `packages/section-runtime/src/doc-edit.test.ts` (`insertSection` answering R-37's sentence) rather than by a walk
 
 ## Deferred from: the planning of spec-5-5-the-template-switcher-and-the-synthesised-templates (2026-09-18)
 

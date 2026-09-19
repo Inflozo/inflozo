@@ -39,10 +39,21 @@ test('the pilots canvas document carries no script, every pilot stylesheet and t
 // rather than a reader that found nothing.
 test('every editor chrome selector is keyed on a data-inflozo-* attribute, and the document carries it', () => {
   const css = readFileSync(join('lib', 'canvas-chrome.css'), 'utf8')
-  const selectors = (sheet: string) => sheet.replace(/\/\*[^]*?\*\//g, '').split('}').map((rule) => rule.split('{')[0]?.trim() ?? '').filter(Boolean).flatMap((s) => s.split(','))
+  /* Story 5.10 — THE READER UNDERSTANDS AT-RULES, because the hairline needs two. A `@keyframes` block holds no
+     selector at all (its `0%` and `50%` stops would read as unkeyed ones), so it is dropped whole; every other
+     at-rule — `@media (prefers-reduced-motion: reduce)` — is a WRAPPER, so only its opener goes and the rules inside
+     it are read and held to the key exactly as a top-level rule is. */
+  const selectors = (sheet: string) =>
+    sheet
+      .replace(/\/\*[^]*?\*\//g, '')
+      .replace(/@(?:-\w+-)?keyframes[^{]*\{(?:[^{}]|\{[^{}]*\})*\}/g, '')
+      .replace(/@[\w-]+[^{}]*\{/g, '')
+      .split('}').map((rule) => rule.split('{')[0]?.trim() ?? '').filter(Boolean).flatMap((s) => s.split(','))
   const unkeyed = (sheet: string) => selectors(sheet).filter((s) => !/\[data-inflozo-/.test(s))
   assert.deepEqual(unkeyed(`${css}\n[data-inflozo-hover] .x{outline:0}\ndiv,[data-inflozo-selected]{outline:0}`).map((s) => s.trim()), ['div'], 'control: the reader sees a planted unkeyed selector, and only it')
   assert.ok(selectors(`${css}\n[data-inflozo-hover]{outline:0}`).length > selectors(css).length, 'control: the reader sees a planted keyed rule')
+  assert.deepEqual(unkeyed(`${css}\n@keyframes planted{0%,100%{opacity:.5}50%{opacity:1}}`).map((s) => s.trim()), [], 'control: a @keyframes block carries no selector for the key to hold')
+  assert.deepEqual(unkeyed(`${css}\n@media (prefers-reduced-motion: reduce){p{animation:none}}`).map((s) => s.trim()), ['p'], 'control: a rule INSIDE an at-rule is still read, and still held to the key')
   for (const s of unkeyed(css)) assert.fail(`"${s.trim()}" is not keyed on a data-inflozo-* attribute`)
   const doc = pilotsCanvasDocument()
   assert.ok(doc.includes(`<style data-order="4-editor">${css}</style>`), 'the canvas document does not carry the chrome stylesheet')

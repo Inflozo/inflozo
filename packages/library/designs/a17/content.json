@@ -1,5 +1,6 @@
 {
   "category": "a17",
+  "title": "Post Grids",
   "props": {
     "eyebrow": { "label": "Eyebrow", "type": "text", "default": "The archive" },
     "title": { "label": "Title", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "Everything Orbit Weekly published this spring" },

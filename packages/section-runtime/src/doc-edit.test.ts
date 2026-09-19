@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { UNIVERSALS } from '@inflozo/library'
 import type { ControlEntry } from './controls.ts'
 import {
-  clearDarkOverrides, darkOverrideCount, duplicateSection, isDesigned, moveSection, removeSection, renameSection,
-  setHidden, setMemberVisibility,
+  clearDarkOverrides, darkOverrideCount, duplicateSection, insertSection, isDesigned, moveSection, removeSection,
+  renameSection, setHidden, setMemberVisibility,
 } from './doc-edit.ts'
 import { parseDoc, type DocInstance, type ProjectDoc } from './doc-schema.ts'
 
@@ -175,4 +175,44 @@ test('darkOverrideCount: one per SECTION carrying a usable override, across ever
   let cleared = home
   for (const id of ['hero', 'news']) cleared = ok(clearDarkOverrides(cleared, id))
   assert.equal(darkOverrideCount([cleared], design), 0)
+})
+
+/* ─── Story 5.10 — `insertSection`, the Section Picker's one placement ──────────────────────────────────────────
+   Shaped exactly as `duplicateSection` is (pure, caller-supplied id, the same `placementRefusal`), so the matrix's
+   Place, Second Post Content and empty-canvas rows are asserted here rather than in a browser. */
+
+const fresh = (id: string, designId = 'a4/1'): DocInstance => parseDoc({ schemaVersion: 1, instances: [instance(id, designId)] }, 'home').instances[0] as DocInstance
+
+test('insertSection: the section lands at the position it was invoked at, and nothing else moves', () => {
+  assert.equal(names(ok(insertSection(home(), 0, fresh('new')))), 'new hero grid news')
+  assert.equal(names(ok(insertSection(home(), 1, fresh('new')))), 'hero new grid news')
+  assert.equal(names(ok(insertSection(home(), 3, fresh('new')))), 'hero grid news new')
+  // an empty canvas has one position, and it is 0 — the first section of a template with no row yet
+  assert.equal(names(ok(insertSection(doc(), 0, fresh('new')))), 'new')
+  // and every other byte of the instance is the caller's, untouched
+  const placed = ok(insertSection(home(), 1, fresh('new'))).instances[1] as DocInstance
+  assert.equal(placed.designId, 'a4/1')
+  assert.equal(placed.hidden, false)
+  assert.equal(placed.memberVisibility, 'everyone')
+})
+
+test('insertSection: a position off either end is CLAMPED, never refused — a gap is a place on screen', () => {
+  assert.equal(names(ok(insertSection(home(), -4, fresh('new')))), 'new hero grid news')
+  assert.equal(names(ok(insertSection(home(), 99, fresh('new')))), 'hero grid news new')
+  assert.equal(names(ok(insertSection(home(), Number.NaN, fresh('new')))), 'hero grid news new')
+})
+
+test('insertSection: an id that is blank or already on the template is refused, and nothing is written', () => {
+  const was = home()
+  assert.match(insertSection(was, 0, fresh(' ')) as string, /needs an id of its own/)
+  assert.match(insertSection(was, 0, fresh('grid')) as string, /already holds a section grid/)
+  assert.equal(names(was), 'hero grid news', 'the doc handed in is never mutated')
+})
+
+test('insertSection: R-37\'s second Post Content is refused with the sentence the picker shows (DW-190)', () => {
+  const article = doc(instance('body', 'a25/1'))
+  assert.equal(insertSection(article, 1, fresh('second', 'a25/7')), 'this layout already prints the article')
+  // the FIRST one is allowed, and an ordinary design beside it is unaffected
+  assert.equal(names(ok(insertSection(doc(instance('head', 'a24/1')), 1, fresh('body', 'a25/1')))), 'head body')
+  assert.equal(names(ok(insertSection(article, 1, fresh('news', 'a22/1')))), 'body news')
 })

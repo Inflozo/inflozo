@@ -63,6 +63,23 @@ export function duplicateSection(doc: ProjectDoc, instanceId: string, newInstanc
   return withInstances(doc, [...doc.instances.slice(0, n + 1), copy, ...doc.instances.slice(n + 1)])
 }
 
+/** STORY 5.10 — the Section Picker's placement, shaped exactly as `duplicateSection` is: pure, caller-supplied id,
+ *  the same `placementRefusal` over the designs the template already holds, and the next doc or a sentence.
+ *
+ *  `at` is the position in THIS doc's own instances — 0 puts it first, `instances.length` last — which is what makes
+ *  "the section lands where it was invoked" one number rather than a rule. A site-wide design is placed into the
+ *  SITE doc, whose order the canvas stack derives (`canvasStack`), so where it lands on screen is not this
+ *  function's business. Out of range is clamped rather than refused: a gap is a position on screen, and the doc it
+ *  addresses can have grown since the pointer was there. */
+export function insertSection(doc: ProjectDoc, position: number, instance: DocInstance): ProjectDoc | string {
+  if (instance.instanceId.trim() === '') return 'a new section needs an id of its own'
+  if (at(doc, instance.instanceId) !== -1) return `this template already holds a section ${instance.instanceId}`
+  const refusal = placementRefusal(instance.designId, doc.instances.map((i) => i.designId))
+  if (refusal !== null) return refusal
+  const n = Math.max(0, Math.min(Number.isInteger(position) ? position : doc.instances.length, doc.instances.length))
+  return withInstances(doc, [...doc.instances.slice(0, n), instance, ...doc.instances.slice(n)])
+}
+
 /** Removes a section for good. Removing every one of them returns the template to untouched (AD-22, `isDesigned`),
  *  which is what HIDING deliberately does not do. */
 export function removeSection(doc: ProjectDoc, instanceId: string): ProjectDoc | string {

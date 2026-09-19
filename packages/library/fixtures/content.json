@@ -1,5 +1,6 @@
 {
   "category": "reference",
+  "title": "Reference",
   "props": {
     "eyebrow": { "label": "Eyebrow", "type": "text", "default": "Issue 42" },
     "title": { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "default": "Latest posts" },

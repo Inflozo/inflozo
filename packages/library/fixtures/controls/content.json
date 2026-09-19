@@ -1,5 +1,6 @@
 {
   "category": "controls",
+  "title": "Controls sample",
   "props": {
     "eyebrow": { "label": "Eyebrow", "type": "text", "maxChars": 30, "default": "This week at Orbit Weekly" },
     "heading": { "label": "Heading", "type": "richtext", "marks": ["strong", "em"], "maxChars": 40, "default": "Seven links, checked by hand" },

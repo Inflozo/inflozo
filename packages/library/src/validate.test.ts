@@ -167,7 +167,7 @@ test("V1's lexical half — chrome-literal: a data-text template keeps its token
 })
 
 test('S6 — catalog-prop: a text prop names a live prop-marked key and carries no default', () => {
-  const content = (prop: object): CategoryContent => ({ category: 'reference', props: { submitLabel: { label: 'Button text', ...prop } as never } })
+  const content = (prop: object): CategoryContent => ({ category: 'reference', title: 'Reference', props: { submitLabel: { label: 'Button text', ...prop } as never } })
   assert.deepEqual(codes(validateCategoryContent(content({ type: 'text', catalog: 'member.signup_cta' }))), [])
   assert.deepEqual(codes(validateCategoryContent(content({ type: 'richtext', catalog: 'member.signup_cta' }))), ['catalog-prop'])
   assert.deepEqual(codes(validateCategoryContent(content({ type: 'text', catalog: 'nav.menu' }))), ['catalog-prop'])
@@ -312,9 +312,9 @@ test('the leak assertion is one regex, and it sees a valueless directive mid-tag
 })
 
 test('an inline token a prop does not declare cannot be declared at all outside the closed set', () => {
-  const bad: CategoryContent = { category: 'a22', props: { h: { type: 'text', label: 'Heading', tokens: ['unknownToken'] } } }
+  const bad: CategoryContent = { category: 'a22', title: 'A22 designs', props: { h: { type: 'text', label: 'Heading', tokens: ['unknownToken'] } } }
   assert.deepEqual(codes(validateCategoryContent(bad)), ['bad-inline-token'])
-  const good: CategoryContent = { category: 'a22', props: { h: { type: 'text', label: 'Heading', tokens: ['members'] } } }
+  const good: CategoryContent = { category: 'a22', title: 'A22 designs', props: { h: { type: 'text', label: 'Heading', tokens: ['members'] } } }
   clean(validateCategoryContent(good), 'a prop declaring {members}')
 })
 
@@ -324,7 +324,7 @@ test('an un-allow-listed token inside a prop VALUE stays literal text — it is 
   // it and never an error either: it stays the characters that were typed. Provable here as
   // non-refusal, because this story ships no renderer — 4.2's emitters execute the substitution.
   const withStray: CategoryContent = {
-    category: 'a22',
+    category: 'a22', title: 'A22 designs',
     props: { h: { type: 'text', label: 'Heading', tokens: ['members'], default: 'Hi {members}, see {unknownToken}' } },
   }
   clean(validateCategoryContent(withStray), "a prop value carrying {unknownToken}")
@@ -344,7 +344,7 @@ test('the three universal controls sit on every section root', () => {
 
 test('a content prop the category does not declare is refused (R-102), in every directive that names one', () => {
   const content: CategoryContent = {
-    category: 'a4',
+    category: 'a4', title: 'A4 designs',
     props: { title: { type: 'text', label: 'L' }, 'cta.url': { type: 'url', label: 'L' }, logos: { type: 'array', label: 'L' }, 'logos[].alt': { type: 'text', label: 'L' } },
   }
   const o = { controls: [], content }
@@ -355,7 +355,7 @@ test('a content prop the category does not declare is refused (R-102), in every 
 })
 
 test('a directive and its prop must agree in kind', () => {
-  const content: CategoryContent = { category: 'a4', props: { title: { type: 'text', label: 'L' }, logos: { type: 'array', label: 'L' } } }
+  const content: CategoryContent = { category: 'a4', title: 'A4 designs', props: { title: { type: 'text', label: 'L' }, logos: { type: 'array', label: 'L' } } }
   const o = { controls: [], content }
   assert.deepEqual(codes(validateMarkup(root('<li data-items="title">x</li>'), o)), ['prop-type-mismatch'])
   assert.deepEqual(codes(validateMarkup(root('<p data-prop="logos">x</p>'), o)), ['prop-type-mismatch'])
@@ -386,7 +386,7 @@ test('a guard sits on the URL entry when there is one, so a template entry befor
 
 test('data-initials takes a declared TEXT prop — a Ghost field name the category never declared is refused (R-2)', () => {
   const content: CategoryContent = {
-    category: 'a21',
+    category: 'a21', title: 'A21 designs',
     props: { people: { type: 'array', label: 'L' }, 'people[].name': { type: 'text', label: 'L' }, 'people[].bio': { type: 'richtext', label: 'L' } },
   }
   const o = { controls: [], content }
@@ -439,7 +439,27 @@ test('bindingContext: page is refused and the ten legal values are named (FR-G3)
   assert.deepEqual(codes(f), ['bad-binding-context'])
   assert.match(f[0]!.message, /none · post · posts · tag · tags · author · authors · tiers · error · private/)
   assert.match(f[0]!.message, /a page and a post are the SAME resource/)
-  clean(validateDesignJson(design({ bindingContext: ['post'] })), 'bindingContext: post')
+  // with `post.hbs` beside it: since Story 5.10 a design that binds `post` and compiles only to `index.hbs` is
+  // refused by `context-unreachable`, and rightly — the resource is not there (appendix B1 §3)
+  clean(validateDesignJson(design({ bindingContext: ['post'], compileTarget: ['post.hbs'] })), 'bindingContext: post')
+})
+
+/* STORY 5.10 — the `bindingContext` half of FR-D12's filter, refused at assembly so it can never hide a design
+   silently from the Section Picker's rail. The table is `placement.ts`'s `CONTEXTS_BY_TARGET`, cited to
+   `appendix-b1-template-contexts.md` §3 (the master matrix), §3a (the wrapper rule) and §5 (the `{{#get}}` column),
+   with R-7 keeping §5 off the two templates that must not query the database. */
+test('a design whose contexts fit NONE of its own targets is refused; one target that works is enough', () => {
+  const f = validateDesignJson(design({ bindingContext: ['post'], compileTarget: ['index.hbs', 'tag.hbs'] }))
+  assert.deepEqual(codes(f), ['context-unreachable'])
+  assert.match(f[0]!.message, /vanish from the Section Picker silently/)
+  // R-7: §5's resources are withheld from error.hbs and private.hbs, so a posts feed there is unreachable
+  assert.deepEqual(codes(validateDesignJson(design({ bindingContext: ['posts'], compileTarget: ['error.hbs'] }))), ['context-unreachable'])
+  clean(validateDesignJson(design({ bindingContext: ['error'], compileTarget: ['error.hbs'] })), 'the error page binds its own context')
+  // §5 puts `tags` on every template that may run a get, including default.hbs, which carries nothing natively
+  clean(validateDesignJson(design({ bindingContext: ['tags'], compileTarget: ['default.hbs'] })), 'a {{#get}} resource on the wrapper')
+  clean(validateDesignJson(design({ bindingContext: ['none'], compileTarget: ['default.hbs', 'private.hbs'] })), 'a design that binds nothing fits anywhere')
+  // one target that works is enough — the story's own framing of the rule
+  clean(validateDesignJson(design({ bindingContext: ['post'], compileTarget: ['post.hbs', 'index.hbs'] })), 'one reachable target')
 })
 
 test('a design declaring pagination cannot list a non-paginated target (R-7)', () => {
@@ -525,7 +545,7 @@ test('JSON null anywhere in design.json or content.json is refused by its path, 
     assert.deepEqual(codes(validateDesignJson(design(over as Partial<DesignJson>))), ['json-null'], `${at}, design.json on its own`)
     assert.match(f[0]!.message, new RegExp(`design\\.json carries null at ${at.replace(/[[\].]/g, '\\$&')}\\.`))
   }
-  const content = { category: 'a17', props: { title: no } } as unknown as CategoryContent
+  const content = { category: 'a17', title: 'A17 designs', props: { title: no } } as unknown as CategoryContent
   assert.deepEqual(codes(validateDesign({ html: EVERY_DIRECTIVE, design: design(), content })), ['json-null'])
   assert.deepEqual(codes(validateCategoryContent(content)), ['json-null'])
 })
@@ -577,9 +597,19 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
   clean(validateDesignJson(design()), 'the reference design.json')
 })
 
+/* STORY 5.10 — the category's DISPLAY NAME lives beside its props, because the Section Picker's rail needs one and
+   the category directory is the only place it can live without a second list that can drift from it. */
+test('content.json: a category needs a title, and the bare id is not one', () => {
+  const props = { h: { type: 'text', label: 'L' } } as CategoryContent['props']
+  for (const title of [undefined, '', '   ', 'a17', 42]) {
+    assert.deepEqual(codes(validateCategoryContent({ category: 'a17', title, props } as unknown as CategoryContent)), ['category-title'], JSON.stringify(title))
+  }
+  clean(validateCategoryContent({ category: 'a17', title: 'Post Grids', props }), 'a real display name')
+})
+
 test('content.json refusals: marks, tokens, orphan items, unsafe defaults, the category id', () => {
   const only = (props: CategoryContent['props'], code: string, category = 'a22') =>
-    assert.ok(codes(validateCategoryContent({ category, props })).includes(code), `${code} should fire`)
+    assert.ok(codes(validateCategoryContent({ category, title: 'Reference', props })).includes(code), `${code} should fire`)
   only({ h: { type: 'richtext', label: 'L', marks: ['script'] } }, 'bad-mark')
   only({ h: { type: 'text', label: 'L', marks: ['strong'] } }, 'marks-on-plain-prop')
   only({ u: { type: 'url', label: 'L', tokens: ['members'] } }, 'tokens-on-non-text')
@@ -591,7 +621,7 @@ test('content.json refusals: marks, tokens, orphan items, unsafe defaults, the c
   only({ u: { type: 'url', label: 'L', default: { search: 'yes' } } }, 'unset-default-link')
   only({ u: { type: 'url', label: 'L', default: { href: '' } } }, 'unset-default-link')
   only({}, 'bad-category', 'A-22')
-  clean(validateCategoryContent({ category: 'a22', props: {
+  clean(validateCategoryContent({ category: 'a22', title: 'A22 designs', props: {
     h: { type: 'richtext', label: 'Heading', marks: ['strong', 'em', 'u', 'a'], tokens: ['members'] },
     u: { type: 'url', label: 'Link', default: 'https://example.com/' },
     logos: { type: 'array', label: 'Logos' }, 'logos[].alt': { type: 'text', label: 'Description' },
@@ -717,7 +747,7 @@ test('a root value outside its offered set, and a no-value-locked universal on t
 
 test('content.json: a prop needs a label and a known type; an array its bounds and sentences; an icon and a date their shapes', () => {
   const only = (props: CategoryContent['props'], code: string, icons?: (n: string) => readonly [] | undefined) =>
-    assert.deepEqual(codes(validateCategoryContent({ category: 'a5', props }, icons)), [code], `only ${code} should fire`)
+    assert.deepEqual(codes(validateCategoryContent({ category: 'a5', title: 'A5 designs', props }, icons)), [code], `only ${code} should fire`)
   const set = (n: string) => (n === 'star' || n === 'heart-filled' ? [] as const : undefined)
   only({ h: { type: 'text', label: '' } }, 'prop-label')
   only({ h: { type: 'color' as 'text', label: 'Colour' } }, 'prop-type')
@@ -733,12 +763,12 @@ test('content.json: a prop needs a label and a known type; an array its bounds a
   only({ n: { type: 'richtext', label: 'Heading', maxChars: 4, default: { text: 'Five!' } } }, 'max-chars-default')
   // review (2026-09-18): a catalog-linked field starts from the catalog's words — "Subscribe" is nine — so a shorter limit would refuse every keystroke
   only({ n: { type: 'text', label: 'Button', catalog: 'member.signup_cta', maxChars: 4 } }, 'max-chars-catalog')
-  clean(validateCategoryContent({ category: 'a5', props: { n: { type: 'text', label: 'Button', catalog: 'member.signup_cta', maxChars: 9 } }}), 'a catalog string that fits its limit')
+  clean(validateCategoryContent({ category: 'a5', title: 'A5 designs', props: { n: { type: 'text', label: 'Button', catalog: 'member.signup_cta', maxChars: 9 } }}), 'a catalog string that fits its limit')
   only({ i: { type: 'icon', label: 'Icon', default: 'rocketship' } }, 'icon-default', set)
   only({ i: { type: 'icon', label: 'Icon', default: '"><script>' } }, 'icon-default')
   only({ d: { type: 'date', label: 'Next issue', default: '1 October 2026' } }, 'date-default')
   only({ d: { type: 'date', label: 'Next issue', default: '2026-02-30' } }, 'date-default')
-  clean(validateCategoryContent({ category: 'a5', props: {
+  clean(validateCategoryContent({ category: 'a5', title: 'A5 designs', props: {
     f: { type: 'array', label: 'Features', min: 2, max: 6, atMin: 'a', atMax: 'b', item: 'feature', default: [{}, {}] },
     'f[].icon': { type: 'icon', label: 'Icon', default: 'star' },
     g: { type: 'icon', label: 'Badge', default: 'heart-filled' },
@@ -749,7 +779,7 @@ test('content.json: a prop needs a label and a known type; an array its bounds a
 })
 
 test('data-prop takes an icon and a date prop as well as text', () => {
-  const content: CategoryContent = { category: 'a5', props: { i: { type: 'icon', label: 'Icon' }, d: { type: 'date', label: 'Day' }, u: { type: 'url', label: 'Link' } } }
+  const content: CategoryContent = { category: 'a5', title: 'A5 designs', props: { i: { type: 'icon', label: 'Icon' }, d: { type: 'date', label: 'Day' }, u: { type: 'url', label: 'Link' } } }
   clean(validateMarkup(root('<span data-prop="i"></span><time data-prop="d">x</time>'), { controls: [], content }), 'icon and date via data-prop')
   assert.deepEqual(codes(validateMarkup(root('<span data-prop="u">x</span>'), { controls: [], content })), ['prop-type-mismatch'])
 })
@@ -778,7 +808,7 @@ test("a category's control union is generated from its designs, and one name wit
 // ─── assembly ────────────────────────────────────────────────────────────────
 
 test('an entry is assembled from the path, the design, the category content and the files', () => {
-  const content: CategoryContent = { category: 'a17', props: { title: { type: 'text', label: 'L' } } }
+  const content: CategoryContent = { category: 'a17', title: 'A17 designs', props: { title: { type: 'text', label: 'L' } } }
   const e = assembleEntry({
     dir: 'packages/library/designs/a17/1', design: design(), content,
     html: EVERY_DIRECTIVE, css: '.x{}',
@@ -796,7 +826,7 @@ test('an entry is assembled from the path, the design, the category content and 
 })
 
 test("Story 4.7 — js is the markup's declared modules in registry order, omitted when none, and a bad one refuses assembly", () => {
-  const content: CategoryContent = { category: 'a17', props: {} }
+  const content: CategoryContent = { category: 'a17', title: 'A17 designs', props: {} }
   const at = (html: string) => assembleEntry({ dir: 'designs/a17/2', design: design(), content, html, css: '' })
   const two = at('<section data-module="lightbox"><div data-module="carousel:768"></div><p data-module="lightbox"></p></section>')
   assert.ok(typeof two !== 'string', String(two))
@@ -809,7 +839,7 @@ test("Story 4.7 — js is the markup's declared modules in registry order, omitt
 test('a content.json from another category is refused (R-102)', () => {
   const e = assembleEntry({
     dir: 'designs/a3/4', design: design(),
-    content: { category: 'a22', props: {} }, html: '<section></section>', css: '',
+    content: { category: 'a22', title: 'A22 designs', props: {} }, html: '<section></section>', css: '',
   })
   assert.equal(typeof e, 'string')
   assert.match(String(e), /never crosses a category boundary/)
@@ -817,7 +847,7 @@ test('a content.json from another category is refused (R-102)', () => {
 
 test('validateDesign runs design.json, content.json and markup as one', () => {
   const content: CategoryContent = {
-    category: 'a17',
+    category: 'a17', title: 'A17 designs',
     props: {
       title: { type: 'text', label: 'Title' }, 'cta.url': { type: 'url', label: 'Link' }, 'cta.title': { type: 'text', label: 'Link title' },
       logos: { type: 'array', label: 'Logos' }, 'logos[].name': { type: 'text', label: 'Name' },

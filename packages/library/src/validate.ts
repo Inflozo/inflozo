@@ -21,6 +21,7 @@ import {
   PILL_CHARS, pillRefusal, safeUrl, splitFirst, tCallRefusals, valueWords,
 } from './vocabulary.ts'
 import { CATALOG, catalogPropRefusal } from './catalog.ts'
+import { CONTEXTS_BY_TARGET } from './placement.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
 export type Failure = { code: string; message: string }
@@ -449,6 +450,21 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
     }
   }
 
+  /* STORY 5.10 — THE `bindingContext` HALF OF FR-D12'S FILTER, MADE LOUD RATHER THAN SILENT.
+     The Section Picker offers a design only where its contexts really exist (`offeredOn`), and until this story
+     nothing read `bindingContext` at run time at all. A design that fits none of its own targets would therefore
+     vanish from every rail with no error anywhere — the worst failure that surface has. So it is refused HERE, at
+     assembly, where the author reads it. The test is "none of its own targets", as the story frames it: a design
+     that works on at least one template it declares is the author's own call. */
+  /*  Only over the LEGAL values of each set: a `bindingContext` or a `compileTarget` this vocabulary does not know
+      already has its own, louder failure above, and a second sentence about it would send the author the wrong way. */
+  const legalContexts = (contexts as readonly string[]).filter((c) => (BINDING_CONTEXTS as readonly string[]).includes(c))
+  const legalTargets = targets.filter(isCompileTarget)
+  if (legalContexts.length > 0 && legalTargets.length > 0
+    && !legalTargets.some((t) => legalContexts.some((c) => (CONTEXTS_BY_TARGET(t) as readonly string[]).includes(c)))) {
+    push(out, 'context-unreachable', `this design binds ${legalContexts.join(' · ')} and compiles to ${legalTargets.join(', ')}, where none of those resources exists (appendix-b1-template-contexts.md §3, §5 and R-7). It would be offered on no canvas at all and vanish from the Section Picker silently (FR-D12).`)
+  }
+
   // R-7 — compileTarget is a REFUSAL, not a hint. Both halves are decided at compile, never at run.
   if (markup !== undefined && /\bdata-pagination\b/.test(markup)) {
     const illegal = targets.filter((t) => !PAGINATED_TARGETS.has(t))
@@ -638,6 +654,12 @@ export function validateCategoryContent(content: CategoryContent, icons?: IconLo
   const out: Failure[] = []
   if (!/^[a-z][a-z0-9]*$/.test(content.category ?? '')) {
     push(out, 'bad-category', `"${content.category}" is not a category id.`)
+  }
+  /* Story 5.10 — the category's DISPLAY NAME, which the Section Picker's rail is built from. Required, and never the
+     bare id: a rail row reading "a17" is the drift a second list would have caused, arriving by another door. */
+  const title = content.title
+  if (typeof title !== 'string' || title.trim() === '' || title.trim() === content.category) {
+    push(out, 'category-title', `content.json for ${content.category} needs a title — the category's display name as the export's roster prints it ("Post Grids" for a17). The Section Picker's rail is built from it (FR-D12), and the id is not a name.`)
   }
   const props = content.props ?? {}
   for (const [path, prop] of Object.entries(props)) {

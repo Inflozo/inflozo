@@ -2,8 +2,9 @@
 title: 'Story 5.10 — The Section Picker'
 type: 'feature'
 created: '2026-09-19'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
+baseline_commit: '5ab1ddd7f53d42a7e2931c318da1fa0da38ef3ad'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -266,48 +267,48 @@ R-150, R-151 and R-152, option 1 each (owner, 2026-09-19), R-152 with an amendme
 below is the whole of it: no Free-only switch, R-132's one button in the header, and site-wide designs offered with a
 globe on the card instead of a sentence.
 
-- [ ] `packages/library/designs/*/content.json` -- add `title` per category, from the export's roster
+- [x] `packages/library/designs/*/content.json` -- add `title` per category, from the export's roster
       (`a1` Headers · `a4` Heroes · `a17` Post Grids · `a22` Newsletter · `a24` Post Headers) -- the rail
       needs a display name and the category directory is the only place one can live without a second
       list that can drift from it.
-- [ ] `packages/library/src/registry.ts` -- `CategoryContent` gains `title: string`; `SectionRegistryEntry`
+- [x] `packages/library/src/registry.ts` -- `CategoryContent` gains `title: string`; `SectionRegistryEntry`
       gains `categoryTitle`; `assembleEntry` carries it -- one field, one source, and every future category
       story authors its own with its designs.
-- [ ] `packages/library/src/validate.ts` -- `validateCategoryContent` requires a non-empty `title` that is
+- [x] `packages/library/src/validate.ts` -- `validateCategoryContent` requires a non-empty `title` that is
       not the bare id; **and refuse at assembly a design whose `bindingContext` intersects the contexts of
       none of its own `compileTarget`s** -- an authoring error must be loud, never a design silently missing
       from the picker (standing rule 3).
-- [ ] `packages/library/src/placement.ts` -- add `CONTEXTS_BY_TARGET`, the template → resource table cited
+- [x] `packages/library/src/placement.ts` -- add `CONTEXTS_BY_TARGET`, the template → resource table cited
       to `appendix-b1-template-contexts.md` §3 and §5, and `offeredOn(entry, file)` = `isPlaceable` ∧
       `compileTarget.includes(file)` ∧ a non-empty `bindingContext` intersection; plus `byCategory`, numeric
       (`a17` sorts after `a4`, which a string sort gets wrong) -- one pure query the rail, the grid, the
       counts and every empty state read.
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- `insertSection(doc, at, instance)` beside
+- [x] `packages/section-runtime/src/doc-edit.ts` -- `insertSection(doc, at, instance)` beside
       `duplicateSection`, same shape, same `placementRefusal` call, caller-supplied id -- the whole
       data-layer change.
-- [ ] `apps/web/lib/picker.ts` -- new and pure: the rail model (offered categories in numeric order with
+- [x] `apps/web/lib/picker.ts` -- new and pure: the rail model (offered categories in numeric order with
       their runtime counts), the search filter over design and category names, the invoked position, and the
       three empty-state sentences -- `node --test` reaches a `lib/*.ts` and cannot reach a `.tsx`.
-- [ ] `apps/web/lib/keymap.ts` -- land `⌘K` (`gesture: 'add'`, `keys: ['k']`, `meta: true`, the `story` key
+- [x] `apps/web/lib/keymap.ts` -- land `⌘K` (`gesture: 'add'`, `keys: ['k']`, `meta: true`, the `story` key
       gone) and **add `'add'` to `shortcutFor`'s in-field exclusion beside `undo` and `redo`** -- `⌘K` is
       already the link mark in a text field (`inline.ts:230`) and must yield to a caret; the fix belongs in
       the shared function, not in the caller.
-- [ ] `apps/web/components/editor/section-picker.tsx` -- new: S5a's overlay as a native modal `<dialog>`
+- [x] `apps/web/components/editor/section-picker.tsx` -- new: S5a's overlay as a native modal `<dialog>`
       (`Esc`, the focus trap and focus return are the platform's), the 240px rail as a radio group over
       `radioKeys`/`tabStop`, the Kit's `SearchInput`, the multi-column grid over `icon-picker.tsx`'s
       `gridKeys`, and the card with its hover wash, `Add` button and tier badge. **The rail footer's `Free only`
       row is NOT built** (R-150), the header's dark control is `mode-toggle.tsx` reused verbatim at the segmented's
       drawn position (R-151), and a site-wide design's card carries the Kit's `Globe` (`kit/icons.tsx:412`) beside
       its name with a hover `title` and the same words as its accessible name (R-152).
-- [ ] `apps/web/components/editor/section-preview.tsx` -- new: one card's live preview. An
+- [x] `apps/web/components/editor/section-preview.tsx` -- new: one card's live preview. An
       `IntersectionObserver` creates an `inert` `/canvas` iframe only when the card nears the viewport
       (NFR-1), `renderSection` paints it, and it is sized to R-137's Desktop width and fitted to the card so
       the design's own media queries fire as they will on the site. The Kit's `Skeleton` holds the space
       until then, and a render that throws keeps the skeleton and leaves the card addable.
-- [ ] `apps/web/lib/canvas-chrome.css` -- the insertion hairline as one rule keyed on `[data-inflozo-insert]`,
+- [x] `apps/web/lib/canvas-chrome.css` -- the insertion hairline as one rule keyed on `[data-inflozo-insert]`,
       with S4b's `addline` opacity breath, degrading through `globals.css`'s reduced-motion block -- painted
       chrome belongs inside the frame and takes no press.
-- [ ] `apps/web/app/…/(editor)/editor.tsx` -- the `add` arm in `run()`; the picker's open state and its
+- [x] `apps/web/app/…/(editor)/editor.tsx` -- the `add` arm in `run()`; the picker's open state and its
       invoked position; the insert through `commit` so it is one edit and one undo step; the pressed
       **"+ Add section"** pill on the hovered gap, placed like `SectionPill` and added as one row to the
       chrome table; the Layers footer's `AddButton`; the empty canvas's one affordance; and the polite
@@ -315,15 +316,15 @@ globe on the card instead of a sentence.
       announcement only, **never a visible sentence, toast or banner** (R-152). Site-wide designs are offered on
       every canvas; **a second one in the same category replaces the first**, in the same transaction, so `⌘Z`
       restores the old one.
-- [ ] `apps/web/app/…/(editor)/read.ts` -- read `projects.style_pack` and hand the editor the preset's name
+- [x] `apps/web/app/…/(editor)/read.ts` -- read `projects.style_pack` and hand the editor the preset's name
       for the meta line -- the only new field `EditorData` gains.
-- [ ] `apps/web/picker.test.ts` · `packages/library/src/placement.test.ts` · `apps/web/keymap.test.ts` --
+- [x] `apps/web/picker.test.ts` · `packages/library/src/placement.test.ts` · `apps/web/keymap.test.ts` --
       the I/O matrix's rows as unit tests: every filter arm, the numeric order, the three empty states, the
       refusal, the insert positions, and `⌘K` both ways across the caret.
-- [ ] `tools/keyboard/journey.spec.mjs` -- `'ControlOrMeta+k'` leaves the deferred loop at `:401` and gets
+- [x] `tools/keyboard/journey.spec.mjs` -- `'ControlOrMeta+k'` leaves the deferred loop at `:401` and gets
       its own stop: open, arrow across the grid, `Enter` places, focus returns to the invoking control,
       `Esc` closes; plus one asserting `⌘K` with the caret in a field does **not** open it.
-- [ ] `tools/probe/run-verify-editor.cjs` -- this story's steps after the last on file, inside step 5's one
+- [x] `tools/probe/run-verify-editor.cjs` -- this story's steps after the last on file, inside step 5's one
       CSP session, and one more `axeRun()` with the picker open -- **asserting no second node exception is
       needed** (R-149), which is what the `inert` preview frames buy.
 
@@ -404,6 +405,37 @@ card carries the `Globe` before you press, rather than a sentence after. A secon
 category **replaces** the first — the behaviour a single shared header implies — in the same transaction, so `⌘Z`
 puts the old one back. The only thing said aloud is the polite `#editor-said` announcement every placement already
 makes, which is a screen reader's sole access to a glyph and a hover.
+
+## Dev notes (2026-09-20)
+
+**Two things the spec did not foresee, both found by executing rather than reading.**
+
+1. **`offeredOn(entry, file)` alone hides every site-wide design from every canvas.** A header compiles to
+   `default.hbs` and nothing else, so a picker opened on Home and asked only about `home.hbs` offered no Headers
+   category at all — and R-152 and the owner's manual test step 10 both require one. `lib/picker.ts`'s `offeredHere`
+   therefore asks about **two** files, the canvas's and the site's, and `isSiteWide` decides where each one lands.
+   The library's `offeredOn` is unchanged and still answers one file at a time.
+2. **`ModeToggle` hard-coded `id="editor-mode"`.** R-151 puts a second one in the picker's header, which made the id
+   duplicate — and the deployed walk finds the top bar's sun by exactly that id (steps 46-53). The id is a parameter
+   now, defaulted, and the picker's is `picker-mode`.
+
+**Three smaller decisions, each made rather than asked (routine judgement calls).**
+
+- **`pilots.test.ts`'s chrome-selector reader learned at-rules.** The hairline needs a `@keyframes` and a
+  `prefers-reduced-motion` block, and the reader split on `}` and read `@media (…)` as an unkeyed selector. It now
+  drops a `@keyframes` block whole (it carries no selector) and strips a wrapping at-rule's opener, so the rules
+  **inside** one are still read and still held to the `data-inflozo-` key. Both cases carry a control assertion.
+- **`globals.css` cannot reach the canvas document**, so the hairline's reduced-motion degrade is written in
+  `canvas-chrome.css` beside it, for the same preference the browser reports in both. The pressed pill and the
+  overlay go through `globals.css`'s existing block, as the spec says.
+- **The card's press target is S5a's wash itself** (`top:0 … bottom:41px`), with `Add` centred in it. One
+  interactive element per card, the whole picture as a target, the name and badge legible below it — and no
+  interactive content nested over an `inert` frame, which is what would have cost a second axe finding.
+
+**Not executed here, and owed to Review (R-82):** the deployed walk. `tools/probe/run-verify-editor.cjs` gains steps
+81-85 and one more `axeRun()` with the picker open; none of it has run against production, because the code is not
+published yet. Everything else in § Verification below is green on this machine.
+
 
 ## Verification
 

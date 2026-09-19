@@ -1,5 +1,6 @@
 {
   "category": "a4",
+  "title": "Heroes",
   "props": {
     "eyebrow": { "label": "Eyebrow", "type": "text", "default": "Issue 48" },
     "headline": { "label": "Headline", "type": "text", "default": "The personal page never disappeared. It went quiet." },

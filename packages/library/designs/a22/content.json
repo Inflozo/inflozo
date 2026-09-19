@@ -1,5 +1,6 @@
 {
   "category": "a22",
+  "title": "Newsletter",
   "props": {
     "eyebrow": { "label": "Eyebrow", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "The Friday edition" },
     "heading": { "label": "Heading", "type": "richtext", "marks": ["strong", "em", "u", "a"], "default": "One letter a week, on Friday morning" },

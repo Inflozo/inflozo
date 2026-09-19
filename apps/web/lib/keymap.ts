@@ -30,7 +30,7 @@ import { DEVICES } from './device.ts'
 /** What a matched press asks the editor to do. */
 export type Gesture =
   | 'undo' | 'redo' | 'save'
-  | 'duplicate' | 'remove'
+  | 'add' | 'duplicate' | 'remove'
   | 'layers' | 'dark' | 'shortcuts' | 'deselect'
   | 'desktop' | 'tablet' | 'mobile'
 
@@ -61,7 +61,10 @@ export type Binding = {
  * track's are one list and `1` `2` `3` can never fall out of step with the order on screen (standing rule 4).
  */
 export const KEYMAP: readonly Binding[] = [
-  { action: 'Add section', chips: ['⌘K'], story: '5.10' },
+  // Story 5.10 — R-145's first key to arrive with its action. It stays ⌘-MODIFIED and is deliberately not a
+  // `SINGLE_KEY`: it carries no WCAG 2.1.4 focus condition and still fires while a popover is open. The narrowing
+  // that matters is in `shortcutFor` below — ⌘K is already the LINK mark inside a field (`lib/inline.ts:230`).
+  { gesture: 'add', action: 'Add section', chips: ['⌘K'], keys: ['k'], meta: true, shift: false },
   { action: 'Previous design', chips: ['['], story: '5.11' },
   { action: 'Next design', chips: [']'], story: '5.11' },
   // ⌘D obeys the rules its button obeys: a site-wide section is one shared instance and has no Duplicate at all
@@ -147,8 +150,11 @@ export function shortcutFor(
     if ((b.meta === true) !== cmd) continue
     if (b.shift !== undefined && b.shift !== e.shiftKey) continue
     if (!inField) return b.gesture
-    // In a field: every single-character binding is inert (2.1.4), and of the ⌘ ones only undo and redo give way.
-    return b.meta === true && b.gesture !== 'undo' && b.gesture !== 'redo' ? b.gesture : null
+    // In a field: every single-character binding is inert (2.1.4), and of the ⌘ ones only these three give way.
+    // `add` is Story 5.10's: ⌘K is ALREADY the link mark with a caret in a field (`lib/inline.ts:230`), and a field
+    // that does not permit a link returns there WITHOUT `preventDefault` on purpose, so the key would otherwise fall
+    // through to the picker instead of to the browser. The fix belongs in this shared function, never in a caller.
+    return b.meta === true && b.gesture !== 'undo' && b.gesture !== 'redo' && b.gesture !== 'add' ? b.gesture : null
   }
   return null
 }

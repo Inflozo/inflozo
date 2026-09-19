@@ -23,13 +23,16 @@ import { Moon, Sun } from '@/components/kit/icons'
 /** What the live region says once the flip has landed — the mode NOW SHOWING, never the press. */
 export const modeShown = (mode: Mode) => (mode === 'dark' ? 'Dark mode' : 'Light mode')
 
-export function ModeToggle({ mode, onMode }: { mode: Mode; onMode: (next: Mode) => void }) {
+/* Story 5.10 — `id` is a parameter because R-151 puts a SECOND one of these in the Section Picker's header, and two
+   elements carrying `editor-mode` would be one duplicated id: the deployed walk finds the top bar's sun by that id
+   (`run-verify-editor.cjs` steps 46-53), and it must keep finding exactly one. */
+export function ModeToggle({ mode, onMode, id = 'editor-mode' }: { mode: Mode; onMode: (next: Mode) => void; id?: string }) {
   const dark = mode === 'dark'
   // the DESTINATION, not the state: "Preview dark mode" is what pressing it does (R-132)
   const label = dark ? 'Back to light mode' : 'Preview dark mode'
   return (
     <button
-      id="editor-mode"
+      id={id}
       type="button"
       aria-label={label}
       title={label}

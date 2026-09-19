@@ -98,6 +98,11 @@ export type PropDef = {
  *  `items[].label` — so a prop inside a repeat resolves with no tree walk. */
 export type CategoryContent = {
   category: string
+  /** Story 5.10 — the category's DISPLAY NAME, as the export's roster prints it ("Post Grids" for `a17`). The
+   *  Section Picker's rail is built from it. It lives HERE, beside the props, because the category directory is the
+   *  only place one name can live without a second list that can drift from it: every future category story authors
+   *  its own title in the same file as its designs. */
+  title: string
   props: Record<string, PropDef>
 }
 
@@ -155,6 +160,9 @@ export type SectionRegistryEntry = {
   /** `{categoryId}/{n}`, stable forever (AD-2) */
   id: string
   category: string
+  /** Story 5.10 — the category's display name, from its `content.json`. Carried on the entry so the picker's rail
+   *  needs nothing but the entries it was already handed. */
+  categoryTitle: string
   name: string
   tier: 'free' | 'pro'
   bindingContext: BindingContext[]
@@ -215,6 +223,7 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
   const entry: SectionRegistryEntry = {
     id: `${ident.category}/${ident.n}`,
     category: ident.category,
+    categoryTitle: input.content.title,
     name: d.name,
     tier: d.tier,
     bindingContext: d.bindingContext,

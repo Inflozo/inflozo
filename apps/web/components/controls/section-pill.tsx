@@ -11,8 +11,13 @@ import { Copy, Grip, Trash } from '@/components/kit/icons'
    that take the coral tint on hover, the two icons at 13px and the grip at 10×13.
 
    THREE CONTROLS AND NO MORE (R-118, absent not greyed): Duplicate, Delete and the drag grip. S4b also draws `◀ ▶`
-   and the divider between them — those arrive with Story 5.11's design ring — and the hairline "+" is 5.10's. A
-   site-wide section's Duplicate is absent here too, exactly as it is in its Layers menu (FR-D5).
+   and the divider between them — those arrive with Story 5.11's design ring. A site-wide section's Duplicate is
+   absent here too, exactly as it is in its Layers menu (FR-D5).
+
+   STORY 5.10 ADDS S4b'S SECOND PRESSED CHILD, on the same hover and the same frame loop: the "+ Add section" pill,
+   centred on the hovered section's BOTTOM boundary (`bottom:-13px;left:50%`) over the coral hairline the canvas
+   document paints there (`lib/canvas-chrome.css`). It is pressed, so it is out here with the quick actions and for
+   the same two reasons, and it pays the same two costs. One `boxOf()` per frame places both.
 
    OUTSIDE THE FRAME, because it is PRESSED (AD-21, as amended through 5.1–5.3), and for a second, mechanical reason:
    a React portal into the canvas document receives no React events at all — React's delegation is attached in the
@@ -42,6 +47,10 @@ const target = `inline-flex size-[26px] items-center justify-center rounded-full
 export type PillBox = { rect: Box; bounds: Box; badgeLeft: number | null }
 
 export function SectionPill({
+  /** Story 5.10 — S4b's "+ Add section": the picker, at the gap under the hovered section */
+  onAdd,
+  /** Story 5.10 — false where NOTHING can be placed on this canvas: the pill is absent, never a dead press (UX-DR3) */
+  canAdd,
   /** something is hovered: the pill is mounted and placed */
   shown,
   /** the canvas is scrolling: the pill hides, laid out, and is placed again when the scroll settles */
@@ -67,8 +76,11 @@ export function SectionPill({
   onDelete: () => void
   gripProps: HTMLAttributes<HTMLSpanElement>
   onPointerLeave: (event: { clientX: number; clientY: number }) => void
+  onAdd: () => void
+  canAdd: boolean
 }) {
   const pill = useRef<HTMLDivElement | null>(null)
+  const add = useRef<HTMLButtonElement | null>(null)
 
   /* Placed on its own frame loop, as the in-canvas chrome is (`lib/canvas-layer.ts`): position follows LAYOUT, not
      just render — a fold re-fits the canvas, a section grows as its words are typed. The loop runs after every
@@ -91,6 +103,16 @@ export function SectionPill({
         top: `${Math.min(Math.max(rect.top + INSET, bounds.top + 4), bounds.bottom - h - 4)}px`,
       }
       for (const [key, value] of Object.entries(style)) if (el.style.getPropertyValue(key) !== value) el.style.setProperty(key, value)
+      // S4b's "+ Add section": centred on the section's BOTTOM boundary, half its own height below it, and kept
+      // inside the canvas card exactly as the quick actions are
+      const plus = add.current
+      if (!plus) return
+      const [pw, ph] = [plus.offsetWidth, plus.offsetHeight]
+      const at = {
+        left: `${Math.min(Math.max(rect.left + (rect.right - rect.left) / 2 - pw / 2, bounds.left + 4), bounds.right - pw - 4)}px`,
+        top: `${Math.min(Math.max(rect.bottom - ph / 2, bounds.top + 4), bounds.bottom - ph - 4)}px`,
+      }
+      for (const [key, value] of Object.entries(at)) if (plus.style.getPropertyValue(key) !== value) plus.style.setProperty(key, value)
     }
     tick()
     let id = requestAnimationFrame(function loop() {
@@ -102,6 +124,7 @@ export function SectionPill({
 
   if (!shown) return null
   return createPortal(
+    <>
     <div
       ref={(el) => {
         pill.current = el
@@ -127,7 +150,25 @@ export function SectionPill({
       <span aria-hidden title="Drag to reorder" {...gripProps} className={`${target} cursor-grab touch-none text-ink-soft`}>
         <Grip />
       </span>
-    </div>,
+    </div>
+    {/* S4b`:181`: white on a 1px coral border, `--color-coral-text` at 11/600, `4px 11px`, `--radius-pill`, the sm
+        shadow, breathing in OPACITY with the hairline under it. The words are the frame's, exactly. */}
+    {canAdd ? (
+    <button
+      ref={add}
+      type="button"
+      data-add-section=""
+      aria-label={`Add a section after ${name}`}
+      title="Add a section"
+      onPointerLeave={onPointerLeave}
+      onClick={onAdd}
+      style={{ visibility: hidden ? 'hidden' : 'visible' }}
+      className={`fixed z-40 whitespace-nowrap rounded-pill border border-coral bg-surface p-[4px_11px] text-helper-caption font-semibold text-coral-text shadow-sm motion-safe:animate-addline ${ring}`}
+    >
+      + Add section
+    </button>
+    ) : null}
+    </>,
     document.body,
   )
 }

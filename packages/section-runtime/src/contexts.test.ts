@@ -172,7 +172,7 @@ test('initials, typed: first and last word, identical on both emitters, through 
 })
 
 test('initials from Ghost are refused: an undeclared prop on the validator, and inside a Ghost repeat on the runtime, whatever the target', () => {
-  const content: CategoryContent = { category: 'a21', props: { title: { type: 'text', label: 'T' } } }
+  const content: CategoryContent = { category: 'a21', title: 'Reference', props: { title: { type: 'text', label: 'T' } } }
   const f = validateMarkup('<section data-bg="base" data-spacing="compact" data-divider="none"><span data-initials="name">JD</span></section>', { controls: [], content })
   assert.deepEqual(f.map((x) => x.code), ['unknown-prop'])
   const inRepeat = '<ul><li data-repeat="authors"><span data-initials="people[].name">JD</span></li></ul>'

@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { categoryOf, isPlaceable, NON_PLACEABLE, placementRefusal, POST_CONTENT } from './placement.ts'
+import { byCategory, categoryOf, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT } from './placement.ts'
+import type { BindingContext } from './vocabulary.ts'
 
 // Story 5.4 — the matrix's placement rows. Neither rule can be exercised on the deployed editor, because
 // `packages/library/designs/` holds no A25, A32, A33 or A34 design: this is their whole proof.
@@ -36,4 +37,49 @@ test('an ordinary design is unaffected, however many are already there', () => {
 
 test('a non-placeable treatment answers no sentence: it is absent, not refused (UX-DR3)', () => {
   for (const category of NON_PLACEABLE) assert.equal(placementRefusal(`${category}/1`, ['a25/1']), null, category)
+})
+
+// ─── Story 5.10 — the bindingContext half, the numeric order, and the one query the Section Picker reads ──────────
+
+const entry = (id: string, bindingContext: BindingContext[], compileTarget: string[]) => ({ id, bindingContext, compileTarget })
+
+test('CONTEXTS_BY_TARGET is appendix B1 §3 plus §5, and R-7 holds §5 off the two templates that must not query', () => {
+  // §3's master matrix, row by row — the native half
+  assert.deepEqual([...CONTEXTS_BY_TARGET('default.hbs')].sort(), ['authors', 'none', 'posts', 'tags', 'tiers'])
+  assert.ok(CONTEXTS_BY_TARGET('home.hbs').includes('posts') && CONTEXTS_BY_TARGET('index.hbs').includes('posts'))
+  // §3a's wrapper rule: the resource is `post` on BOTH, and what differs is the product, which compileTarget says
+  assert.deepEqual([...CONTEXTS_BY_TARGET('post.hbs')].sort(), [...CONTEXTS_BY_TARGET('page.hbs')].sort())
+  assert.ok(CONTEXTS_BY_TARGET('post.hbs').includes('post') && !CONTEXTS_BY_TARGET('home.hbs').includes('post'))
+  assert.ok(CONTEXTS_BY_TARGET('tag.hbs').includes('tag') && CONTEXTS_BY_TARGET('author.hbs').includes('author'))
+  // R-7: no §5 resource on either, and each keeps its own
+  for (const file of ['error.hbs', 'private.hbs']) {
+    for (const c of ['posts', 'tags', 'authors', 'tiers']) assert.ok(!CONTEXTS_BY_TARGET(file).includes(c as BindingContext), `${c} on ${file}`)
+  }
+  assert.deepEqual([...CONTEXTS_BY_TARGET('error.hbs')].sort(), ['error', 'none'])
+  assert.deepEqual([...CONTEXTS_BY_TARGET('private.hbs')].sort(), ['none', 'private'])
+  // a Routes-Manager template carries nothing natively and reaches §5 through a get (§3, the custom-route row)
+  assert.deepEqual([...CONTEXTS_BY_TARGET('custom-signup.hbs')].sort(), ['authors', 'none', 'posts', 'tags', 'tiers'])
+  // `none` is on every row: a design that binds no resource fits anywhere
+  for (const file of ['default.hbs', 'home.hbs', 'post.hbs', 'error.hbs', 'private.hbs', 'custom-x.hbs']) {
+    assert.ok(CONTEXTS_BY_TARGET(file).includes('none'), file)
+  }
+})
+
+test('offeredOn is the three conditions together, and each of them alone is enough to withhold a design', () => {
+  assert.equal(offeredOn(entry('a17/1', ['posts'], ['home.hbs']), 'home.hbs'), true)
+  // wrong template
+  assert.equal(offeredOn(entry('a17/1', ['posts'], ['home.hbs']), 'post.hbs'), false)
+  // wrong resource: the target is listed, and the context is not there
+  assert.equal(offeredOn(entry('a17/1', ['posts'], ['home.hbs', 'error.hbs']), 'error.hbs'), false)
+  // non-placeable: a treatment is never offered, however well it fits
+  assert.equal(offeredOn(entry('a33/1', ['none'], ['post.hbs']), 'post.hbs'), false)
+  // a design that binds nothing is offered wherever it compiles
+  assert.equal(offeredOn(entry('a1/1', ['none'], ['default.hbs']), 'default.hbs'), true)
+})
+
+test('byCategory is NUMERIC — a17 after a4, which a string sort gets wrong', () => {
+  assert.deepEqual(['a17', 'a4', 'a1', 'a22', 'a24'].sort(byCategory), ['a1', 'a4', 'a17', 'a22', 'a24'])
+  assert.deepEqual(['a3', 'a30', 'a2'].sort(byCategory), ['a2', 'a3', 'a30'])
+  // anything that is not `a{n}` sorts after everything that is, by its own name
+  assert.deepEqual(['zz', 'a9', 'aa'].sort(byCategory), ['a9', 'aa', 'zz'])
 })
