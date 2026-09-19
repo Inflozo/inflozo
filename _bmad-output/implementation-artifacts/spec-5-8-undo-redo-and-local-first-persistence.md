@@ -2,8 +2,8 @@
 title: 'Story 5.8 — Undo, redo, and local-first persistence'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '6c73e5d9f573c8e2ab98b44dde9dc0dad669157e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
