@@ -173,6 +173,13 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     Debian, so the first push had `check` green and `deploy` red and nothing published (CI run 35452356017). It is
     `pnpm keyboard`, run as its own step in the `check` job `deploy` needs — anything a future story adds to
     `pnpm test` runs on Vercel too.
+  - **R-148 · R-149 (owner, 2026-09-19, Story 5.9's Review).** `Backspace` deletes the selected section exactly as
+    `Del` does — one action, two hardware keys, one chip on the card, because a Mac laptop's "delete" key reports
+    `Backspace`; both carry the single-key condition, so inside any text field `Backspace` deletes a character and
+    nothing else. And **the canvas stays ONE tab stop**: axe-core refuses `tabindex="-1"` on a frame whose document
+    holds a focusable element (`frame-focusable-content`, red on every scan at `27a638fa`), so NFR-5's zero holds for
+    every rule on every element EXCEPT that rule on that element — a NODE FILTER in `run-verify-editor.cjs` step 8,
+    never a disabled rule, with the keyboard journey (R-146) carrying the weight the scanner no longer does.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions
