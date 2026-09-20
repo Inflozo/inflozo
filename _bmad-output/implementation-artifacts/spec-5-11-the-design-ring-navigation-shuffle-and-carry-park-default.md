@@ -3,7 +3,7 @@ title: 'Story 5.11 — The design ring: navigation, shuffle, and carry / park / 
 type: 'feature'
 created: '2026-09-20'
 status: 'in-review'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 1
 baseline_commit: 'e74f84cc690eafbc994a8aeecc8b85e2ecea4122'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -627,6 +627,17 @@ from it), on production:**
 - Confirm on the deployed editor that a section whose category holds one design draws **no** arrows and no
   Shuffle anywhere — the pill, the panel and the strip agree, and nothing is greyed (UX-DR3).
 
+**Deploy (2026-09-20).** CI on `95b3f568` went red — `pnpm keyboard`, one test: the R-145 settle check asserted the
+`data-inflozo-swapped` attribute with a 5s poll, but the attribute lives 180ms, so on a loaded runner it had come and
+gone before the first poll (the same test passed at 1.5s locally, 29 of 29; `deploy` was skipped, so production stayed
+at `0a956e74`). A test race, not a product fault — fixed in `30583fd6` by watching the frame with a MutationObserver
+from before the key, and re-run: `pnpm check` exit 0, `pnpm keyboard` 29 passed. CI on `30583fd6` (`check`, `rls`,
+the render matrix) completed successfully and `deploy` promoted
+**Deployment: `dpl_GZo8GBdZCbJp67jMMy5r6ajY2rdn`** (`inflozo-6fgj1awg6-umangkagathara.vercel.app`), production,
+`readyState: READY`, built from `30583fd6` — the app on `https://app.inflozo.com` (`VERCEL_TOKEN` / `VERCEL_TEAM_ID` /
+`VERCEL_PROJECT` by name; `GITHUB_TOKEN` for the CI run). No migration in this story's diff (`supabase/migrations/`
+unchanged since baseline), so no database step here (R-99).
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the URLs. Use the **Pilot sections** project — the one seeded
@@ -637,37 +648,37 @@ to your account at Story 5.1.
    settings groups, a new **Design** block: the word **Design** on the left, a counter reading **"1 of 1"**
    on the right, and the design's name underneath. Nothing else — no key chips along the bottom and no
    Shuffle card (your findings 3 and 4).
-2. **Same screen.** Look for arrows beside that counter. **Expect:** there are **none**, and one plain
+2. **URL:** `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · **Screen:** the same one. Look for arrows beside that counter. **Expect:** there are **none**, and one plain
    sentence says this category has one design so far. This is the rule you set at R-118 — a control that
    could do nothing is not there at all, rather than there and dead.
-3. **Same screen.** Hover any section on the canvas and look at the small white pill in its top-right
+3. **URL:** `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · **Screen:** the same one. Hover any section on the canvas and look at the small white pill in its top-right
    corner. **Expect:** the same answer — Duplicate, Delete and the drag handle, and **no** ◀ ▶, no counter
    and **no Shuffle**, because there is nowhere to go. (When Epic 9 fills a category, all four appear here on
    their own.)
-4. **Same screen.** With a section selected, press `]`, then `[`. **Expect:** nothing happens and nothing is
+4. **URL:** `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · **Screen:** the same one. With a section selected, press `]`, then `[`. **Expect:** nothing happens and nothing is
    announced — no flicker, no error.
-5. **Same screen.** Press `?` to open the keyboard card. **Expect:** it now lists **Previous design `[`** and
+5. **URL:** `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · **Screen:** the same one. Press `?` to open the keyboard card. **Expect:** it now lists **Previous design `[`** and
    **Next design `]`** among the shortcuts. They were deliberately missing until today.
 6. **URL:** `https://app.inflozo.com/controls` · **Screen:** the **Controls review** page — an internal
    page we use to check the panel, not a customer screen. **Expect:** a sample section on the left and its
    panel on the right, and the panel now has the same **Design** block at the top — this time reading
    **"1 of 3"**, with three thumbnails and working ◀ ▶ arrows (your ruling R-158: three samples, so
    the arrows really differ and the counter really counts).
-7. **Same screen.** In the panel, change a couple of settings — **Dummy data:** set **Alignment** to
+7. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. In the panel, change a couple of settings — **Dummy data:** set **Alignment** to
    *Centre* and **Card tint** to *Strong* — and type something into the heading so you can recognise it.
-8. **Same screen.** Press **▶**. **Expect:** the sample section **changes shape in place**, your heading text
+8. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. Press **▶**. **Expect:** the sample section **changes shape in place**, your heading text
    is still there word for word, **Alignment is still Centre** (both designs have it), and **Card tint has
    disappeared from the panel** — the new design does not have that setting.
-9. **Same screen.** Press **▶** once more so you are on the third design, then press **▶** again.
+9. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. Press **▶** once more so you are on the third design, then press **▶** again.
    **Expect:** it wraps round to the first — **and Card tint is set to Strong again**, exactly as you left it,
    even though you went the long way round. This is the whole promise of the story: browsing costs you nothing.
-10. **Same screen.** Look at the **Features** list in the panel while the second design is showing.
+10. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. Look at the **Features** list in the panel while the second design is showing.
     **Expect:** it reads **"3 items · 2 shown in this design"**, and the section on the left draws two — the
     third is not gone, it is waiting.
-11. **Same screen.** Look at the foot of the Design block. **Expect:** **nothing** there — no *Try a design*
+11. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. Look at the foot of the Design block. **Expect:** **nothing** there — no *Try a design*
     card and no *Cycle designs* line with `[` `]` chips. Both were built and both are now gone, on your findings
     3 and 4. Shuffle has one home, and you press it in the next step.
-12. **Same screen.** Rest the pointer on the sample section itself and look at the small white pill in its
+12. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. Rest the pointer on the sample section itself and look at the small white pill in its
     top-right corner. **Expect:** ◀, the counter, ▶, then a **circular-arrow Shuffle button** — Shuffle's one
     home now. Press it: it jumps you to another design in the ring, carrying your words the same way. Rest on it
     and a label says what it is — in that pill everything is a picture, so the words are in the label rather
@@ -675,7 +686,7 @@ to your account at Story 5.1.
     **And expect nothing else in that pill here.** This internal page holds one sample and no page to put it on,
     so Duplicate, Delete and the drag handle have nothing to act on and are **not drawn** — the same rule you
     set at R-118. You saw all three in their real place at step 3.
-13. **Same screen.** Use the keyboard only: click anywhere on the page that is not a text field, then press
+13. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same one. Use the keyboard only: click anywhere on the page that is not a text field, then press
     `]` and `[`. **Expect:** the same changes as the arrows — this is your finding 1, and it did not work
     before. Now click into the heading field in the panel and type `[`. **Expect:** the character `[` appears
     in your text and **the design does not change** — this is the most important step on this list.
