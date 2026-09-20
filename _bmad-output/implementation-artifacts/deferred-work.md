@@ -4895,3 +4895,18 @@ location: `apps/web/app/(app)/app/(authed)/canvas/route.ts`, `apps/web/app/(app)
 reason: the fix is one pure function in `lib/canvas.ts` both routes call, with a unit test — small, but a
   refactor of two shipped routes, and step 83 guards it meanwhile.
 
+### DW-209: the live-site walk's sticky-header scroll check (step 15) fails most runs — the canvas does not scroll
+
+plain: One automated check selects the sticky header, scrolls the page with a simulated mouse wheel and films it.
+  On 2026-09-20 the page did not scroll at all in four runs out of five, so the check failed before it could look
+  at anything. We do not yet know why.
+status: open
+severity: medium
+origin: Story 5.10's Review (2026-09-20), Real-infra verifier, at `41fd5d18` and again at `67dae0a1`.
+owner: Story 5.11's Dev, before its own deployed walk.
+location: `tools/probe/run-verify-editor.cjs` (step 15 b); possibly `apps/web/components/controls/section-pill.tsx`
+reason: A HYPOTHESIS, NOT A FINDING: the wheel is sent at x=700, the middle of the card, which is where this
+  story's "+ Add section" pill sits — and a wheel over a pill in the parent page does not scroll the canvas inside
+  the frame. If that is it, a customer scrolling with the pointer on the pill would feel the same stall, and the
+  fix is the pill passing its wheel to the canvas. It was not executed, so it is not asserted.
+

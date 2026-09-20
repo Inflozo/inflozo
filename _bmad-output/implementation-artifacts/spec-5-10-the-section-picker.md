@@ -2,7 +2,7 @@
 title: 'Story 5.10 — The Section Picker'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-progress'
+status: 'in-review'
 owner_test: issues
 baseline_commit: '5ab1ddd7f53d42a7e2931c318da1fa0da38ef3ad'
 review_loop_iteration: 0
@@ -713,6 +713,28 @@ the two noted:
 | Search, no matches · nothing offered here | `picker.test.ts` the search across the rail, and the three empty states |
 | `⌘K` with a caret | `keymap.test.ts` · `journey.spec.mjs:499`, both a panel field and a canvas `contenteditable` |
 | A preview that throws | **read, not executed** — `section-preview.tsx:113`'s `catch` keeps the `Skeleton`, leaves the card addable and `console.warn`s; it is a `.tsx`, which `node --test` cannot load, and no harness forces a `renderSection` throw. The smallest honest statement is that this row is covered by inspection alone. |
+
+### The Review's walk of the live site (2026-09-20, R-82)
+
+Production at `67dae0a1` — Vercel `dpl_8UGa2pFBtpV9YP8P5veJpC9Me7oJ` READY, CI and the render matrix green for it.
+`env $(grep -E '^(SUPABASE_(URL|SECRET_KEY)|VERCEL_(TOKEN|TEAM_ID))=' tools/probe/.env | xargs) node tools/probe/run-verify-editor.cjs`,
+two attempts, identical: **440 PASS, 7 FAIL — none of the seven is a picker step.**
+
+| What | Before the Review (`41fd5d18`) | After (`67dae0a1`) |
+|---|---|---|
+| step 83 — a preview is KEPT (R-157) | **FAIL on production**: `src …/canvas?v=&design=a1%2F1`, `cache-control: no-store` — the build id was empty | PASS: `…/canvas?v=67dae0a1bfc4&design=a1%2F1` → `private, max-age=31536000, immutable`; control: the bare address → `no-store` |
+| step 27 onward | the walk died here (the Layers footer was read as the list) — steps 28-85 never ran from the committed file | PASS, and the walk reaches its end |
+| step 82 — counts | FAIL (summed `All sections` in) | PASS: `All sections 4 · Headers 1 · Heroes 1 · Post Grids 1 · Newsletter 1`, 4 cards |
+| step 85 — ⌘K with a caret | not a result: its control `editing510` was `false` | PASS with the control true: `{"editing510":true,"open":false}` |
+
+Supabase: `projects.style_pack` read over REST with `SUPABASE_SECRET_KEY` → 200, `{"preset":"paper"}` on the Pilot
+project; control `select=style_pack_nope` → 400 `42703`. No migration in the diff, so no Schema phase (R-99).
+`pnpm check` exit 0; `pnpm keyboard` 23 passed, the new "lands directly after it" journey among them.
+
+**The seven FAILs left, stated and not explained away:** step 15 (the sticky-header film: the synthesized wheel
+scrolled the canvas 0px — DW-209) and steps 66, 66b, 69b (Story 5.8's save landing on `Retrying` from this machine —
+the run also ended on `read ETIMEDOUT`; DW-204's family). Neither touches a file this story's diff changed the
+behaviour of, and neither was re-run in isolation, so neither is claimed as a flake.
 
 ## Owner's manual test
 
