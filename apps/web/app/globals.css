@@ -258,6 +258,13 @@
   /* the hairline as an INSET SHADOW, for R-120's reason: a border is floored to whole CSS pixels */
   box-shadow: inset 0 0 0 1px var(--color-line);
   background-repeat: no-repeat;
+  /* EVERY PIP IS ITS OWN 5px LAYER, AND WITHOUT THIS LINE THE FACES ARE ALL THE SAME FACE. A gradient layer
+     defaults to `background-size: auto`, which fills the whole 18px box — and a percentage `background-position`
+     resolves to `(container - layer) x pct`, so with the two the same size EVERY pip lands at 0,0 and all six
+     faces drew ONE centred dot. Executed in Chromium and seen: the owner reported it as "the dice shows the same
+     dots on each face" (2026-09-20, R-164). Sizing the layer smaller than the face is what makes the positions
+     below mean anything. `remix-dice.test.ts` measures the drawn pips rather than reading this rule back. */
+  background-size: 5px 5px;
   backface-visibility: hidden;
   /* one pip, named once and repeated per face below — copies of a gradient, never six elements each */
   --pip: radial-gradient(circle at center, var(--color-coral) 1.3px, transparent 1.45px);

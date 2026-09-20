@@ -280,7 +280,7 @@ export function Review({
       if (gesture !== 'prev' && gesture !== 'next' && gesture !== 'remix') return
       if (singleKeyOwned(e, [target, active], [document, doc])) return
       e.preventDefault()
-      if (gesture === 'remix') return void remixDice.current?.roll()
+      if (gesture === 'remix') return void remixDice.current?.press()
       ringStep.current(gesture === 'prev' ? -1 : 1)
     }
     document.addEventListener('keydown', onKey)

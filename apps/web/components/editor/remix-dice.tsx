@@ -19,7 +19,13 @@ import { NOTHING_TO_REMIX, REMIX_WORDS, UNDO_NOTE, remixAsk } from '@/lib/remix'
  * carve-out — the one R-132, R-136 and R-159 already use — and it carries the key, so a screen reader hears the
  * shortcut it could have pressed instead.
  *
- * THE DIALOG OPENS ON THE ROLL'S OWN `transitionend`, NEVER ON A TIMER. `globals.css`'s reduced-motion block
+ * THE QUESTION COMES FIRST AND THE ROLL IS THE ANSWER (R-164, owner, 2026-09-20). A press opens the confirm AT
+ * ONCE — nothing has been decided yet, so there is nothing to animate — and the cube tumbles only once **Remix**
+ * is pressed, with the canvas re-rolling as it settles. That is the slot machine the FR asks for: you pull the
+ * handle, the die runs, and the result is there when it stops. It also means the roll can never delay the
+ * question, which is what the first build did.
+ *
+ * THE RE-ROLL LANDS ON THE ROLL'S OWN `transitionend`, NEVER ON A TIMER. `globals.css`'s reduced-motion block
  * forces every transition to 0.01ms, so the event fires at once there and after the roll otherwise: one code
  * path, nothing to keep in step with the CSS, and no `setTimeout` a reader who asked for no motion would still
  * wait out. The guard is `propertyName === 'transform'`, because a transition list fires once per property.
@@ -44,8 +50,10 @@ const FACES: readonly (readonly [number, number])[] = [
  *  read as a cube rather than a square with dots: two faces stay in view at rest. */
 const TILT = { x: -18, y: 24 }
 
-/** `run(gesture)` reaches the dice's own roll through this, so `⇧R` and the button are one handler (R-141). */
-export type RemixHandle = { roll: () => void }
+/** `run(gesture)` reaches the dice's own press through this, so `⇧R` and the button are one handler (R-141).
+ *  It is `press`, not `roll`: since R-164 the press opens the question and the roll is what CONFIRMING it looks
+ *  like, so a key that rolled would skip the confirm entirely. */
+export type RemixHandle = { press: () => void }
 
 export function RemixDice({
   canvas,
@@ -74,15 +82,24 @@ export function RemixDice({
   const rolling = useRef(false)
   const [turn, setTurn] = useState({ ...TILT, rolls: 0 })
 
-  const roll = () => {
+  /** THE DICE'S ONE DOOR, and both the button and `⇧R` come through it: the confirm opens at once (R-164). A
+   *  press while the cube is still in the air is ignored — one roll, one re-roll. */
+  const press = () => {
     if (rolling.current) return
+    openOnCancel(dialog.current)
+  }
+  if (handle) handle.current = { press }
+
+  /** CONFIRMED: the cube runs, and `onRemix` fires as it settles, so the dice is rolling for exactly as long as
+   *  the re-roll takes to arrive. */
+  const go = () => {
+    dialog.current?.close()
     rolling.current = true
     const face = FACES[Math.floor(Math.random() * FACES.length)] ?? FACES[0]!
     // TWO WHOLE TURNS ON TOP OF THE FACE, so the value always changes however the draw falls — a transform that
-    // did not change would fire no `transitionend`, and the dialog would never open
+    // did not change would fire no `transitionend`, and the re-roll would never land
     setTurn((was) => ({ x: TILT.x + face[0] - 360 * (was.rolls + 1), y: TILT.y + face[1] + 720 * (was.rolls + 1), rolls: was.rolls + 1 }))
   }
-  if (handle) handle.current = { roll }
 
   return (
     <>
@@ -95,7 +112,7 @@ export function RemixDice({
         // ModeToggle's rule, for ModeToggle's reason: the press never takes focus out of the canvas, so a caret in
         // a text prop survives it
         onMouseDown={(event) => event.preventDefault()}
-        onClick={roll}
+        onClick={press}
         className={`remix-dice inline-flex size-7 items-center justify-center rounded-sm transition-colors hover:bg-paper-sunk ${ring}`}
       >
         <span
@@ -105,7 +122,7 @@ export function RemixDice({
           onTransitionEnd={(event) => {
             if (event.propertyName !== 'transform' || !rolling.current) return
             rolling.current = false
-            openOnCancel(dialog.current)
+            onRemix()
           }}
         >
           {FACES.map((_, n) => (
@@ -145,10 +162,7 @@ export function RemixDice({
               variant="coral"
               size={36}
               data-remix-go
-              onClick={() => {
-                dialog.current?.close()
-                onRemix()
-              }}
+              onClick={go}
             >
               Remix
             </Button>

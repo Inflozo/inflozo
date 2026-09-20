@@ -12,11 +12,11 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 ## In plain English
 
 A small **dice** now sits in the editor's top bar, next to the light/dark button — just the dice, no
-words. Press it (or press `⇧R`) and it tumbles for about a second and lands on a face, and a popup asks
-whether you are sure: it says exactly what will happen — every section on this page gets a different
-design from its own category, your words, pictures and settings all stay — and offers **Cancel** or
-**Remix**. Cancel changes nothing; Remix re-rolls the page in one go, and one press of `⌘Z` (or the Undo
-arrow you already have) puts it all back exactly as it was.
+words. Press it (or press `⇧R`) and a popup asks straight away whether you are sure: it says exactly what
+will happen — every section on this page gets a different design from its own category, your words,
+pictures and settings all stay — and offers **Cancel** or **Remix**. Cancel changes nothing. Press
+**Remix** and the dice tumbles in 3D for about a second, and the page lands on its new designs as the
+dice stops. One press of `⌘Z` (or the Undo arrow you already have) puts it all back exactly as it was.
 
 **One thing to know before you test it.** The library still holds one design per category, so in your own
 editor there is nothing for the dice to roll to yet — the popup will say so honestly rather than pretend.
@@ -39,8 +39,9 @@ would move* — for each placed section, `shuffleTo` over that section's own rin
 5.11) — and `editor.tsx` folds every pick into the canvas's doc through repeated `switchDesign` and
 **one** `commit`, so a whole-page re-roll is one journal entry and one `⌘Z` (AD-15, AD-16, FR-D17's
 single-step undo) with no new machinery. The door is the owner's dice: an icon-only control in the top
-bar's right-hand cluster beside R-132's mode button, a CSS 3D cube that rolls on press and opens the app's
-one confirm dialog when it settles. `⇧R` calls the same handler.
+bar's right-hand cluster beside R-132's mode button, a CSS 3D cube. **The press opens the app's one confirm
+dialog AT ONCE, and the cube rolls only on the confirmed Remix, with the canvas landing as it settles**
+(R-164, owner, 2026-09-20 — this block amended on his instruction). `⇧R` calls the same handler.
 
 ## Boundaries & Constraints
 
@@ -62,8 +63,11 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
 - **Icon-only is paid for.** The dice carries its words as an accessible name and hover title through
   `DESIGN.md:534-536`'s carve-out, the one R-132, R-136 and R-159 already use.
 - **Motion degrades.** `globals.css:255`'s reduced-motion block already flattens every transition in the
-  app document; the dialog therefore opens on the cube's `transitionend`, never on a timer, so a reader
-  who asks for no motion gets the popup at once.
+  app document; the re-roll therefore lands on the cube's `transitionend`, never on a timer, so a reader
+  who asks for no motion waits for nothing. The confirm itself never waits on motion at all (R-164).
+- **Every face is a different face** (R-164). Each pip is a gradient layer, and a layer sized to the whole
+  face makes every percentage position resolve to the same point — so the size is set and the check
+  **measures where the pips land**, never reads the rule back.
 - **`⇧R` is a single-key binding** (R-145, WCAG 2.1.4): live only while the shell holds focus, inert with
   a caret in a field, and quiet while a dialog or popover is open — all three inherited from
   `shortcutFor` / `singleKeyOwned`, with no new guard.
@@ -91,15 +95,17 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Happy path | Home holds 6 sections, each with a ring of 3+ | Confirm names 6; **Remix** swaps all 6 to a *different* design each, one `commit`, one `⌘Z` restores every one | N/A |
-| Cancel | Dialog open | Doc byte-identical, journal unchanged, Undo arrow unchanged, focus returns to the dice | N/A |
+| Happy path | Home holds 6 sections, each with a ring of 3+ | The press opens the confirm at once naming 6; **Remix** starts the roll and swaps all 6 to a *different* design each as it settles, one `commit`, one `⌘Z` restores every one | N/A |
+| Cancel | Dialog open | Doc byte-identical, journal unchanged, Undo arrow unchanged, nothing rolled, focus returns to the dice | N/A |
+| The question is never delayed | Dice pressed, or `⇧R` | The confirm is up inside 250ms — far less than the cube's own ~900ms — and the cube has **not** moved (R-164) | N/A |
+| Six faces, six faces | The cube at rest | Face *n* draws *n* pips in *n* different places, measured where they land rather than read off the rule (R-164) | N/A |
 | Mixed rings | 4 sections, 2 with a ring of 1 | Confirm names **2**; only those two move, the other two are untouched | N/A |
 | Nothing to roll | Every ring length 1 (today's library) | Dialog says so in one sentence and carries **Close** alone; no doc write, no announcement | N/A |
 | Empty canvas | Untouched / synthesized canvas, no stored instances | Same "nothing to remix" answer; AD-22's untouched state is never materialised by a Remix | N/A |
 | `⇧R` in a field | Caret in a panel field or a `contenteditable` | The character `R` is typed; no roll, no dialog | `shortcutFor` returns null |
 | `⇧R` with the dialog open | Dialog open | Nothing; the dialog owns the key | `singleKeyOwned` sees `dialog[open]` |
-| Reduced motion | `prefers-reduced-motion: reduce` | Cube does not tumble, dialog opens immediately, everything else identical | N/A |
-| Re-press mid-roll | Dice pressed again while rolling | One roll, one dialog — the second press is ignored until it settles | guard on the rolling flag |
+| Reduced motion | `prefers-reduced-motion: reduce` | Cube does not tumble and the confirmed re-roll lands at once, everything else identical | N/A |
+| Re-press mid-roll | Dice or `⇧R` pressed while the confirmed roll is running | Nothing opens and nothing re-rolls twice — one roll, one re-roll, one `⌘Z` | guard on the rolling flag |
 | Read-only session | 5.17's reader (not yet built) | Out of scope — the dice follows whatever gate 5.17 puts on every editing control | N/A |
 
 </frozen-after-approval>
@@ -191,17 +197,21 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
       there (the page stores nothing) is out of scope — the ring's own arrows are the way back.
 
 **Acceptance Criteria:**
-- Given the editor on a canvas whose sections have rings, when I press the dice or `⇧R`, then the cube
-  rolls once and the confirm opens on Cancel naming the exact number of sections that would change.
+- Given the editor on a canvas whose sections have rings, when I press the dice or `⇧R`, then the confirm
+  opens **at once** on Cancel naming the exact number of sections that would change, and the cube has not
+  moved (R-164).
 - Given that dialog, when I press **Cancel**, `Esc` or the backdrop, then the doc, the journal and the
-  Undo arrow are unchanged.
-- Given that dialog, when I press **Remix**, then every countable section changes to a different design of
-  its own ring, every content prop and control value survives (carry / park / default), `#editor-said`
-  announces the count, and **one** `⌘Z` restores the canvas exactly.
+  Undo arrow are unchanged, nothing has rolled, and focus returns to the dice.
+- Given that dialog, when I press **Remix**, then the cube rolls and, as it settles, every countable
+  section changes to a different design of its own ring, every content prop and control value survives
+  (carry / park / default), `#editor-said` announces the count, and **one** `⌘Z` restores the canvas
+  exactly. A press landing while the cube is still in the air opens nothing and re-rolls nothing.
 - Given a canvas where no ring is longer than one, when I open the dialog, then it says so in one sentence
   and offers **Close** alone — nothing is greyed and nothing is written.
-- Given `prefers-reduced-motion: reduce`, when I press the dice, then the cube does not tumble and the
-  dialog opens immediately.
+- Given the cube at rest, when its faces are measured, then face *n* draws *n* pips in *n* different
+  places — the check computes where each pip lands rather than reading back the rule that placed it (R-164).
+- Given `prefers-reduced-motion: reduce`, when I press the dice, then the confirm opens as it always does,
+  the cube does not tumble, and a confirmed Remix lands immediately.
 - Given the `?` shortcuts card, when I open it, then **Site Remix `⇧R`** is listed — it was deliberately
   missing until today (R-145).
 - **Matches the frame:** the confirm is `B Missing Surfaces.dc.html` **B8 as re-specified** — its heading
@@ -227,10 +237,24 @@ for (const p of picks) {
 commit({ ...docs, [canvasKey]: next }, canvasKey) // ONE entry, ONE ⌘Z
 ```
 
-**Why the dialog opens on `transitionend`.** `globals.css:255` forces every transition to `0.01ms` under
+**Why the question comes first and the roll second (R-164).** The first build rolled on the press and opened
+the confirm when the die settled, which put ~900ms between the press and the question — and animated a
+decision that had not been taken yet. The owner turned it round on 2026-09-20: the press asks, and the roll
+is what *confirming* looks like. It is also the better metaphor, which is what FR-D17 asked for — you pull
+the handle, the die runs, and the result is there when it stops.
+
+**Why the re-roll lands on `transitionend`.** `globals.css:255` forces every transition to `0.01ms` under
 reduced motion, so `transitionend` fires at once there and after the roll otherwise — one code path, no
 timer to keep in step with the CSS, and no `setTimeout` that a reduced-motion reader would still wait out.
 Guard on `propertyName === 'transform'`, because a transition list fires once per property.
+
+**Why the pips need `background-size`, and why the check measures rather than reads.** Each pip is a
+gradient LAYER positioned in percentages, and a layer defaults to `background-size: auto` — the whole 18px
+face. A percentage `background-position` resolves to `(container − layer) × pct`, so at that size every pip
+resolved to `0` and **all six faces drew one centred dot**. It shipped, the deployed probe passed it, and
+the owner caught it by looking: the probe asserted the computed `background-image` string — the very rule it
+had been handed — and never where the pips landed. Sizing the layer to 5px is the fix; computing each
+layer's centre from the box and the layer is the check that cannot pass on a collapsed face again.
 
 **Why the dice leads the cluster rather than following the sun.** `ModeToggle` is not rendered at all on a
 Light-only project (R-135), so a dice placed after it would move on some projects and not others. First in
@@ -338,8 +362,8 @@ seeded to your account at Story 5.1.
    editor, on Home. Look at the top right of the bar, just left of the sun. **Expect:** a small **dice** —
    the dice alone, no words and no box around it. Rest the pointer on it: a label reads **"Site Remix —
    ⇧R"**.
-2. **URL:** the same · **Screen:** the same. **Press the dice.** **Expect:** it tumbles in 3D for about a
-   second, slowing as it lands on a face, and then a popup appears. Nothing on the page has changed yet.
+2. **URL:** the same · **Screen:** the same. **Press the dice.** **Expect:** a popup appears **straight
+   away** — no waiting and nothing spinning first. The dice only rolls once you say Remix.
 3. **URL:** the same · **Screen:** the popup. Read it. **Expect:** it tells you plainly what Remix would
    do and — because every category in the library still holds one design — it says there is nothing to
    remix yet, and the only button is **Close**. This is the honest answer, not a bug: there is nowhere for
@@ -356,9 +380,13 @@ seeded to your account at Story 5.1.
    the page, beside the **Controls review** heading (R-162).
 8. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same. Type something you will recognise
    into the sample section's heading, and set **Card tint** to *Strong* in the panel. Then **press the
-   dice** and, this time, press **Remix** in the popup. **Expect:** the sample section **changes shape**,
-   your heading text is still there word for word, and the settings the new design also has kept their
-   values.
+   dice** and, this time, press **Remix** in the popup. **Expect:** the popup closes, **the dice tumbles
+   in 3D for about a second**, and the sample section **changes shape as the dice stops**. Your heading
+   text is still there word for word, and the settings the new design also has kept their values.
+8a. **URL:** the same · **Screen:** the same. Look closely at the dice as it turns, or press it and look
+   at it sitting still. **Expect:** the faces carry **different numbers of dots** — one, two, three and so
+   on, in a real dice pattern. Until today every face drew a single dot in the middle; you spotted it, and
+   this step is here so it cannot come back (R-164).
 9. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same. Press the dice again and this time
    press **Cancel**. **Expect:** nothing at all changes — the sample is exactly as you left it.
 10. **URL:** the same · **Screen:** the same. To get back to where you started, use the **◀ ▶** arrows on

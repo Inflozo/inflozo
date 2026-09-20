@@ -3618,6 +3618,23 @@ async function main() {
         faces: b.querySelectorAll('.remix-dice__face').length,
         preserved: getComputedStyle(b.querySelector('.remix-dice__cube')).transformStyle,
         pip: getComputedStyle(b.querySelector('.remix-dice__face--1')).backgroundImage,
+        // R-164: WHERE THE PIPS LAND, not the rule that placed them. Each pip is a gradient layer, and a layer at
+        // `background-size: auto` fills the whole face — at which size a percentage position resolves to
+        // `(box - layer) x pct` = 0 and all six faces draw ONE centred dot. That shipped, and the owner saw it.
+        pips: [...b.querySelectorAll('.remix-dice__face')].map((f) => {
+          const cs = getComputedStyle(f)
+          const sizes = cs.backgroundSize.split(',').map((v) => v.trim())
+          const at = (v, span, layer) =>
+            v.endsWith('%') ? ((span - layer) * parseFloat(v)) / 100 + layer / 2 : parseFloat(v) + layer / 2
+          const centres = cs.backgroundPosition.split(',').map((pair, n) => {
+            const [x, y] = pair.trim().split(/\s+/)
+            const [sw, sh] = (sizes[n] ?? sizes[0]).split(/\s+/)
+            const lw = sw === 'auto' ? f.offsetWidth : parseFloat(sw)
+            const lh = (sh ?? sw) === 'auto' ? f.offsetHeight : parseFloat(sh ?? sw)
+            return `${at(x, f.offsetWidth, lw).toFixed(2)},${at(y, f.offsetHeight, lh).toFixed(2)}`
+          })
+          return new Set(centres).size
+        }),
       }
     })
     check('step 88 — R-163: the dice is in the top bar, LEADS the right-hand cluster ahead of the sun, and is icon-only with its words as its accessible name and its hover title',
@@ -3626,11 +3643,16 @@ async function main() {
     check('step 88 — and it is a real cube: six faces in 3D, its pips drawn in the coral the token layer names',
       dice512 !== null && dice512.faces === 6 && dice512.preserved === 'preserve-3d' &&
       /rgb\(255, 89, 65\)/.test(dice512.pip ?? ''), JSON.stringify(dice512 && { faces: dice512.faces, preserved: dice512.preserved, pip: dice512.pip }))
+    check('step 88 — R-164: each face draws its OWN number of pips, in its own places — measured where they land, not read off the rule',
+      JSON.stringify(dice512 && dice512.pips) === JSON.stringify([1, 2, 3, 4, 5, 6]), JSON.stringify(dice512 && dice512.pips))
 
-    // the press: it rolls, and the confirm opens on Cancel when it settles — never on a timer
+    // R-164: THE QUESTION COMES FIRST — the press opens the confirm at once, and the cube rolls only on a
+    // confirmed Remix. A quarter of a second is far less than the die's own ~900ms, so a build that still rolled
+    // before asking would fail here rather than be waited out.
     const beforeDice512 = { names: await pageNames(), said: await saidNow59() }
     await page.locator('#editor-remix').click()
-    await page.waitForTimeout(1600)
+    check('step 88 — R-164: the press opens the confirm AT ONCE, before anything rolls',
+      await page.waitForSelector('dialog[data-remix-confirm][open]', { timeout: 250 }).then(() => true).catch(() => false))
     const ask512 = await page.evaluate(() => {
       const d = document.querySelector('dialog[data-remix-confirm][open]')
       return d === null ? null : {
@@ -3643,7 +3665,7 @@ async function main() {
         greyed: d.querySelectorAll('[aria-disabled="true"], :disabled').length,
       }
     })
-    check('step 88 — pressing the dice rolls it and opens the ONE confirm with focus on Cancel (R-115, UX-DR14)',
+    check('step 88 — pressing the dice opens the ONE confirm with focus on Cancel (R-115, UX-DR14)',
       ask512 !== null && ask512.onCancel && /^Remix Home\?$/.test(ask512.title.trim()), JSON.stringify(ask512))
     check('step 88 — R-158 / R-12: on this project every category holds one design, so the dialog says there is nothing to remix and carries CLOSE ALONE — never a greyed Remix',
       ask512 !== null && /nothing to remix yet/.test(ask512.body) && ask512.buttons.length === 1 && ask512.buttons[0] === 'Close' &&
@@ -3657,12 +3679,11 @@ async function main() {
       (await page.evaluate(() => document.querySelectorAll('dialog[open]').length)) === 0,
       JSON.stringify({ said: await saidNow59(), was: beforeDice512.said }))
 
-    // `⇧R` IS THE SAME CONTROL (R-141): the key presses the dice, so the roll and the dialog are one handler
+    // `⇧R` IS THE SAME CONTROL (R-141): the key presses the dice, so the confirm and the roll are one handler
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press('Shift+R')
-    await page.waitForTimeout(1600)
-    check('step 88 — R-145: `⇧R` opens the very same confirm — the key and the dice are one control',
-      (await page.evaluate(() => document.querySelector('dialog[data-remix-confirm][open]') !== null)))
+    check('step 88 — R-145: `⇧R` opens the very same confirm, at once — the key and the dice are one control',
+      await page.waitForSelector('dialog[data-remix-confirm][open]', { timeout: 250 }).then(() => true).catch(() => false))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
 

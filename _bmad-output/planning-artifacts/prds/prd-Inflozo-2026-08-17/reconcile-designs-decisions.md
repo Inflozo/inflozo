@@ -3413,6 +3413,37 @@ face."*
 - Targets: ✅ this entry · ✅ Story 5.12's spec (Question 3, its tasks and its Design Notes) ·
   ✅ `epic-5-context.md` · ⬜ `B8`, on the next library pass (the control it never drew).
 
+**R-164 — the question comes first, the roll is the answer, and every face of the die is a different face.**
+Three instructions from the owner on 2026-09-20, after seeing Story 5.12's dice on the deployed app. They are
+one re-shaping of the same control, so they are one ruling.
+
+- **(1) The confirm opens on the press, at once.** The first build rolled the cube on the press and opened the
+  dialog on its `transitionend`, putting ~900ms between the press and the question — and animating a decision
+  nobody had taken yet. His words: *"The popup should appear before the dice rolls."*
+- **(2) The cube rolls on the CONFIRMED Remix, and the canvas lands as it settles.** *"Once user confirms for
+  remix, the dice should continue rolling till the remix is done for all section."* The re-roll is one
+  synchronous `commit`, so what the roll measures is the arrival, not the work: `onRemix` fires on the same
+  `transitionend` the dialog used to. **Which end of the roll the canvas lands on was a routine call and was
+  made, not asked** — it lands as the die STOPS, because that is the slot machine FR-D17 names
+  (`B Missing Surfaces.dc.html:1622`) and the alternative shows the result while the die is still deciding.
+- **(3) Each face draws its own number of pips.** *"The dice should show different number dots on each face."*
+  **This was a defect, not a preference.** Every pip is a gradient LAYER positioned in percentages, and a layer
+  defaults to `background-size: auto` — the whole 18px face. A percentage `background-position` resolves to
+  `(container − layer) × pct`, so at that size every pip resolved to `0` and **all six faces drew one centred
+  dot**. Executed and seen in Chromium before the fix and after it.
+- **WHY IT SHIPPED GREEN, AND THE RULE THAT COMES OUT OF IT.** Both deployed walks asserted the face's computed
+  `background-image` — the very rule they had been handed — and neither asked where the pips landed. That is a
+  check reading back its own input, and standing rule 2's shape: **a geometric claim is proved by measuring the
+  geometry.** Both probes and `pnpm keyboard` now compute each layer's centre from the box and the layer size
+  and count the distinct ones; with the fix removed, face 2 collapses to one place and the check fails (control
+  run, 2026-09-20).
+- **What it does NOT change.** R-161 (the canvas you are on, one `commit`, one `⌘Z`), R-162 (the dice in the
+  editor and on `/controls`) and R-163 (a real cube in token colours, icon-only, ~900ms with a settling curve)
+  all stand. No hex enters a `.tsx`. The confirm is still B8 as re-specified, opening on Cancel.
+- Targets: ✅ this entry · ✅ Story 5.12's spec (its frozen matrix and Intent, amended on his instruction, its
+  acceptance criteria, its Design Notes and its owner test) · ✅ `remix-dice.tsx` · ✅ `globals.css` ·
+  ✅ `tools/keyboard/journey.spec.mjs` · ✅ both deployed probes · ⬜ `epic-5-context.md`, at the epic's close.
+
 
 ## B · Approved decisions superseded by this session
 

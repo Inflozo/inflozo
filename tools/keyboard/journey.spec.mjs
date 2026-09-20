@@ -934,20 +934,30 @@ test('FR-D5 does not reach the ring: a site-wide section has the same Design blo
    important step of his own test.
 
    The whole re-roll is ONE transaction, which is FR-D17's hard requirement and the reason R-161 scoped the dice
-   to the canvas you are on: one press, one `⌘Z`, asserted here rather than reasoned about. */
+   to the canvas you are on: one press, one `⌘Z`, asserted here rather than reasoned about.
+
+   SINCE R-164 THE ORDER IS QUESTION FIRST, ROLL SECOND: a press opens the confirm AT ONCE, and the cube tumbles
+   only on the confirmed Remix, with the canvas landing as it settles. Every stop below asserts that order, because
+   the first build had it the other way round and the owner asked for this one. */
 
 const remixDialog = (page) => page.locator('dialog[data-remix-confirm][open]')
 const designName = (page) => page.locator('#editor-design-name')
 
-test('R-145: ⇧R rolls the dice and opens the confirm on Cancel, and Esc leaves the canvas untouched', async ({ page }) => {
+test('R-164: ⇧R opens the confirm AT ONCE on Cancel, and Esc leaves the canvas untouched', async ({ page }) => {
   await open(page)
   await selectRinged(page)
   const before = { design: await designName(page).innerText(), counter: await counter(page).innerText(), said: await said(page) }
+  const resting = await page.locator('.remix-dice__cube').evaluate((el) => getComputedStyle(el).transform)
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('Shift+R')
 
-  // the dialog opens on the cube's own `transitionend` — never a timer — so this wait IS the roll
-  await expect(remixDialog(page)).toBeVisible()
+  // R-164: THE QUESTION COMES FIRST. Nothing has been decided, so nothing animates — the confirm is up inside a
+  // frame rather than after the cube's ~900ms, which is the whole of what the owner asked to be turned round.
+  await expect(remixDialog(page)).toBeVisible({ timeout: 250 })
+  expect(
+    await page.locator('.remix-dice__cube').evaluate((el) => getComputedStyle(el).transform),
+    'and the cube has not moved: the roll belongs to the confirmed Remix',
+  ).toBe(resting)
   await expect(page.locator('dialog[open] [data-cancel]'), 'an irreversible confirm opens on cancel (R-115)').toBeFocused()
   // the count is DERIVED and named in the sentence (standing rule 4); a zero here would make the stop vacuous
   const sentence = await page.locator('#editor-remix-body').innerText()
@@ -973,25 +983,36 @@ test('R-145: ⇧R rolls the dice and opens the confirm on Cancel, and Esc leaves
   expect(await said(page), 'and announces nothing').toBe(before.said)
 })
 
-/* THE MATRIX'S "RE-PRESS MID-ROLL": one roll, one dialog. The second press lands while the cube is still in the
-   air, so `dialog[open]` is NOT yet there to refuse it and the guard that holds is the dice's own rolling flag —
-   without it the second `transitionend` would call `showModal()` on an already-open dialog, which throws. */
-test('a second press while the cube is in the air is ignored — one roll, one dialog', async ({ page }) => {
+/* THE MATRIX'S "RE-PRESS MID-ROLL", as R-164 leaves it: the cube is in the air only AFTER a confirmed Remix, and
+   a press landing there must not re-open the question over a re-roll already on its way. The guard is the dice's
+   own rolling flag; without it the second `transitionend` would fire `onRemix` twice and cost two `⌘Z` presses. */
+test('a press while the cube is in the air is ignored — one roll, one re-roll', async ({ page }) => {
   await open(page)
   await selectRinged(page)
+  const was = await designName(page).innerText()
   await page.locator('section[aria-label="Canvas"]').focus()
-  await page.keyboard.press('Shift+R')
-  // the control: the roll really is still running, so this stop is not passing on a dialog that already opened
-  await expect(remixDialog(page), 'the confirm waits for the cube to settle').toHaveCount(0)
   await page.keyboard.press('Shift+R')
   await expect(remixDialog(page)).toBeVisible()
-  await expect(remixDialog(page), 'two presses, one dialog').toHaveCount(1)
-  // and the page is still usable afterwards: the second press left no rolling flag stuck on
-  await page.keyboard.press('Escape')
-  await expect(remixDialog(page)).toHaveCount(0)
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  // the control: the cube really is still running, so this stop is not passing on a roll that already landed
+  await expect(remixDialog(page), 'the confirm is gone and the die is running').toHaveCount(0)
+  expect(await designName(page).innerText(), 'and the canvas has not changed yet — the roll IS the wait').toBe(was)
+
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('Shift+R')
-  await expect(remixDialog(page), 'and the dice still rolls after it').toBeVisible()
+  await expect(remixDialog(page), 'a press mid-roll opens nothing').toHaveCount(0)
+
+  // it lands once, and one ⌘Z is still the whole of it
+  await expect(designName(page)).not.toHaveText(was)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(designName(page), 'one press, one undo — the ignored press wrote nothing').toHaveText(was)
+
+  // and nothing is stuck: the dice still answers afterwards
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page), 'the rolling flag came off when the cube settled').toBeVisible()
 })
 
 test('FR-D17: Remix re-rolls the canvas in ONE transaction — one press, one ⌘Z, and the count announced', async ({ page }) => {
@@ -1007,6 +1028,10 @@ test('FR-D17: Remix re-rolls the canvas in ONE transaction — one press, one �
   await page.keyboard.press('Enter')
   await expect(remixDialog(page)).toHaveCount(0)
 
+  // R-164: THE CUBE RUNS WHILE THE RE-ROLL ARRIVES, and the canvas lands as it settles — so the die is turning
+  // for exactly as long as the remix takes, which is what the owner asked for
+  const spun = await page.locator('.remix-dice__cube').evaluate((el) => getComputedStyle(el).transitionDuration)
+  expect(parseFloat(spun), 'the roll is the ~900ms one, not the app\'s usual 160').toBeGreaterThan(0.5)
   await expect(designName(page), 'every section with somewhere to go is drawn as a different design').not.toHaveText(was)
   // UX-DR12 / EXPERIENCE.md:541 — a polite canvas-status announcement, never a toast
   expect(await said(page)).toMatch(/^Remixed [1-9]\d* sections? on Home\.$/)
@@ -1019,6 +1044,43 @@ test('FR-D17: Remix re-rolls the canvas in ONE transaction — one press, one �
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('ControlOrMeta+z')
   await expect(designName(page), 'one ⌘Z puts the whole canvas back exactly').toHaveText(was)
+})
+
+/* THE SIX FACES MUST BE SIX DIFFERENT FACES, and this stop exists because they were not (R-164, the owner's
+   own report: "the dice should show different number dots on each face"). Every pip is a gradient LAYER, and a
+   layer defaults to `background-size: auto` — the full 18px box — at which size a percentage `background-position`
+   resolves to `(box - layer) x pct` = 0 and all six faces drew ONE centred dot.
+
+   IT MEASURES THE RESOLVED GEOMETRY, NEVER THE RULE. Reading `background-size` back would assert the CSS it was
+   handed; this computes where each pip actually lands from the box and the layer, so removing the size line puts
+   every centre on top of every other and the counts collapse to 1. */
+test('R-164: each of the cube\'s six faces draws its own number of pips, in its own places', async ({ page }) => {
+  await open(page)
+  const faces = await page.locator('.remix-dice__face').evaluateAll((els) =>
+    els.map((el) => {
+      const cs = getComputedStyle(el)
+      const box = { w: el.offsetWidth, h: el.offsetHeight }
+      const sizes = cs.backgroundSize.split(',').map((v) => v.trim())
+      const at = (v, span, layer) =>
+        v.endsWith('%') ? ((span - layer) * parseFloat(v)) / 100 + layer / 2 : parseFloat(v) + layer / 2
+      const centres = cs.backgroundPosition.split(',').map((pair, n) => {
+        const [x, y] = pair.trim().split(/\s+/)
+        const [sw, sh] = (sizes[n] ?? sizes[0]).split(/\s+/)
+        const lw = sw === 'auto' ? box.w : parseFloat(sw)
+        const lh = (sh ?? sw) === 'auto' ? box.h : parseFloat(sh ?? sw)
+        return `${at(x, box.w, lw).toFixed(2)},${at(y, box.h, lh).toFixed(2)}`
+      })
+      return { layers: centres.length, distinct: new Set(centres).size, box }
+    }),
+  )
+  expect(faces.length, 'six faces, and the roll draws every one of them').toBe(6)
+  for (const [n, face] of faces.entries()) {
+    expect(face.layers, `face ${n + 1} draws ${n + 1} pips`).toBe(n + 1)
+    // the regression in one line: with the layer the size of the face, every centre is the same centre
+    expect(face.distinct, `face ${n + 1}'s pips must land in ${n + 1} different places`).toBe(n + 1)
+  }
+  // and the pips stay inside the die
+  for (const face of faces) expect(face.box.w).toBe(18)
 })
 
 test('WCAG 2.1.4: with the caret in a field ⇧R types a capital R and nothing rolls', async ({ page }) => {
@@ -1045,8 +1107,9 @@ test('WCAG 2.1.4: with the caret in a field ⇧R types a capital R and nothing r
    `emulateMedia` rather than `test.use({ reducedMotion })`: the option is a CONTEXT one and this journey's context
    is the gate's, so it was silently ignored — `matchMedia(...).matches` read false and the cube still transitioned
    for 900ms (executed 2026-09-20, which is the only reason this comment exists rather than a green vacuous test). */
-test('prefers-reduced-motion: the cube does not tumble, and the confirm still opens', async ({ page }) => {
+test('prefers-reduced-motion: the cube does not tumble, and the re-roll lands at once', async ({ page }) => {
   await open(page)
+  await selectRinged(page)
   await page.emulateMedia({ reducedMotion: 'reduce' })
   const motion = await page.locator('.remix-dice__cube').evaluate((el) => ({
     asked: matchMedia('(prefers-reduced-motion: reduce)').matches,
@@ -1054,7 +1117,15 @@ test('prefers-reduced-motion: the cube does not tumble, and the confirm still op
   }))
   expect(motion.asked, 'the control: the emulation really reached the page').toBe(true)
   expect(parseFloat(motion.duration), "the roll is flattened by the app's one reduced-motion rule").toBeLessThan(0.05)
+
+  const was = await designName(page).innerText()
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('Shift+R')
-  await expect(remixDialog(page), 'and the dialog opens on that same flattened transition, not on a timer').toBeVisible()
+  await expect(remixDialog(page), 'the confirm opens at once here as it does everywhere (R-164)').toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  // the re-roll rides the SAME flattened transition, so a reader who asked for no motion waits for nothing —
+  // there is no timer anywhere to wait out, which is the whole reason it is an event and not a `setTimeout`
+  await expect(designName(page), 'and the canvas lands immediately').not.toHaveText(was)
 })

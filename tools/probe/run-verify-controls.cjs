@@ -16,7 +16,8 @@
 // default, the wrap and FR-D13's item cap are proved HERE on production rather than asserted in a unit test.
 // Story 5.12 adds the REMIX WALK after it (R-162): the dice, its confirm and `⇧R` are mounted here as well as in
 // the editor, so this is where a re-roll is proved to really change a section's design on production — in the
-// owner's own editor every ring is length 1 and the confirm says so instead.
+// owner's own editor every ring is length 1 and the confirm says so instead. R-164 turned the order round: the
+// confirm opens AT ONCE and the cube rolls only on the confirmed Remix, with the sample landing as it settles.
 // Story 4.10's Fix (2026-09-15) re-shaped the panel it walks: R-113 put every control in the accordion its role
 // names with nothing pinned above them, and R-115 made "Reset this design" ask first — so a step whose control now
 // sits in a closed accordion opens it, and step 16 answers the confirm.
@@ -670,16 +671,38 @@ async function main() {
         words: (b.textContent ?? '').trim(),
         faces: b.querySelectorAll('.remix-dice__face').length,
         pip: getComputedStyle(b.querySelector('.remix-dice__face--1')).backgroundImage,
+        // R-164: WHERE THE PIPS ACTUALLY LAND, never the rule that placed them. Each pip is a gradient layer, and
+        // a layer at `background-size: auto` fills the whole face — at which size a percentage position resolves
+        // to `(box - layer) x pct` = 0 and all six faces draw ONE centred dot, which is what the owner saw.
+        pips: [...b.querySelectorAll('.remix-dice__face')].map((f) => {
+          const cs = getComputedStyle(f)
+          const sizes = cs.backgroundSize.split(',').map((v) => v.trim())
+          const at = (v, span, layer) =>
+            v.endsWith('%') ? ((span - layer) * parseFloat(v)) / 100 + layer / 2 : parseFloat(v) + layer / 2
+          const centres = cs.backgroundPosition.split(',').map((pair, n) => {
+            const [x, y] = pair.trim().split(/\s+/)
+            const [sw, sh] = (sizes[n] ?? sizes[0]).split(/\s+/)
+            const lw = sw === 'auto' ? f.offsetWidth : parseFloat(sw)
+            const lh = (sh ?? sw) === 'auto' ? f.offsetHeight : parseFloat(sh ?? sw)
+            return `${at(x, f.offsetWidth, lw).toFixed(2)},${at(y, f.offsetHeight, lh).toFixed(2)}`
+          })
+          return new Set(centres).size
+        }),
       }
     })
     check('remix — R-162 / R-163: the dice is beside this page\'s heading, icon-only with its words as its accessible name and its hover title, and it is a real six-faced cube with coral pips',
       dice512 !== null && dice512.label === 'Site Remix — ⇧R' && dice512.title === dice512.label && dice512.words === '' &&
       dice512.faces === 6 && /rgb\(255, 89, 65\)/.test(dice512.pip ?? ''), JSON.stringify(dice512 && { ...dice512, pip: undefined }))
+    check('remix — R-164: each face draws its OWN number of pips, in its own places — measured where they land, not read off the rule',
+      JSON.stringify(dice512 && dice512.pips) === JSON.stringify([1, 2, 3, 4, 5, 6]), JSON.stringify(dice512 && dice512.pips))
 
     const wasRemix512 = (await counter511.innerText()).trim()
     const wordsRemix512 = await drawnHeading()
     await page.locator('#editor-remix').click()
-    await page.waitForTimeout(1600)
+    // R-164: THE QUESTION COMES FIRST. A quarter of a second is far less than the cube's own ~900ms, so a build
+    // that still rolled before asking would fail here rather than be waited out.
+    const prompt512 = await page.waitForSelector('dialog[data-remix-confirm][open]', { timeout: 250 }).then(() => true).catch(() => false)
+    check('remix — R-164: the press opens the confirm AT ONCE, before anything rolls', prompt512)
     const ask512 = await page.evaluate(() => {
       const d = document.querySelector('dialog[data-remix-confirm][open]')
       return d === null ? null : {
@@ -690,7 +713,7 @@ async function main() {
         choices: d.querySelectorAll('input, [role="radio"], [role="checkbox"]').length,
       }
     })
-    check('remix — the dice rolls and the confirm opens on Cancel, naming the count it would move and offering Cancel and a coral Remix (R-115, UX-DR14)',
+    check('remix — the confirm opens on Cancel, naming the count it would move and offering Cancel and a coral Remix (R-115, UX-DR14)',
       ask512 !== null && ask512.onCancel && ask512.title === 'Remix the sample?' &&
       /^Re-rolls 1 section on the sample to a different design in its own category\./.test(ask512.body) &&
       JSON.stringify(ask512.buttons) === JSON.stringify(['Cancel', 'Remix']) && ask512.choices === 0, JSON.stringify(ask512))
@@ -706,9 +729,14 @@ async function main() {
 
     // the owner's step 8 — Remix really re-rolls the sample through its ring, and the typed words carry
     await page.locator('#editor-remix').click()
-    await page.waitForTimeout(1600)
+    await page.waitForSelector('dialog[data-remix-confirm][open]', { timeout: 250 })
     await page.locator('dialog[data-remix-confirm][open] [data-remix-go]').click()
-    await page.waitForTimeout(600)
+    // R-164: THE CUBE RUNS WHILE THE RE-ROLL ARRIVES. Straight after the confirm the sample is still the one it
+    // was — the roll IS the wait — and it lands as the die settles.
+    check('remix — R-164: the confirm closes and the die runs, with the sample unchanged until it settles',
+      (await page.evaluate(() => document.querySelectorAll('dialog[data-remix-confirm][open]').length)) === 0 &&
+      (await counter511.innerText()).trim() === wasRemix512)
+    await page.waitForTimeout(1600)
     check('remix — R-162: the dice really re-rolls the sample through its ring — a DIFFERENT design draws it and the words carry word for word (FR-D19, FR-G3)',
       (await counter511.innerText()).trim() !== wasRemix512 && (await drawnHeading()) === wordsRemix512 &&
       /^Design \d+ of 3 — .+/.test((await page.locator('#controls-said').innerText()).trim()),
@@ -717,9 +745,8 @@ async function main() {
     // R-141: `⇧R` is the same control, through the page's own `shortcutFor` and never a second key table. Focus
     // is where the platform put it when the confirm closed — on the dice itself — so nothing needs pressing first.
     await page.keyboard.press('Shift+R')
-    await page.waitForTimeout(1600)
-    check('remix — R-145 / R-141: `⇧R` opens the very same confirm on this page — the key and the dice are one control',
-      await page.evaluate(() => document.querySelector('dialog[data-remix-confirm][open]') !== null))
+    check('remix — R-145 / R-141: `⇧R` opens the very same confirm on this page, at once — the key and the dice are one control',
+      await page.waitForSelector('dialog[data-remix-confirm][open]', { timeout: 250 }).then(() => true).catch(() => false))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
     // WCAG 2.1.4, the half only a real field can prove: a capital R typed into the Heading is a character

@@ -989,9 +989,9 @@ export function Editor({
       // R-135: on a Light-only project there is no sun to press, so nothing happens and nothing is announced
       case 'dark': return void (darkEnabled && flip(latest.current.mode === 'dark' ? 'light' : 'dark'))
       case 'shortcuts': return openShortcuts(shortcuts)
-      // STORY 5.12 — the key presses the DICE, not the fold: it rolls, and the confirm opens when it settles, so
-      // `⇧R` and the button are one control down to the animation (R-141)
-      case 'remix': return remixDice.current?.roll()
+      // STORY 5.12 — the key presses the DICE, not the fold: the confirm opens at once and the cube rolls only on
+      // the confirmed Remix (R-164), so `⇧R` and the button are one control down to the animation (R-141)
+      case 'remix': return remixDice.current?.press()
       // the ladder below owns it; `shortcutFor` never returns it, and this arm is here so the union stays exhaustive
       case 'deselect': return
       default: {
