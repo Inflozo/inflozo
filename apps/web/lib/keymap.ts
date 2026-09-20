@@ -7,9 +7,10 @@
  * A BINDING WHOSE ACTION HAS NOT BEEN BUILT IS ABSENT (R-145 — R-118 applied to a key for the first time): not
  * bound, not listed, never greyed and never captioned (UX-DR3). Such a row carries `story` and no `keys`, which is
  * the whole of the difference — nothing matches it and `sheetRows()` leaves it out. The row still exists, because
- * the alternative is losing the fact that the key is OWED: `⌘K` lands with 5.10, `[` `]` with 5.11, `⇧R` with 5.12,
- * `P` with 5.15 and `⌘⏎` with 7.18, each a criterion of that story, and the map is complete when 7.18 ships. It is
- * the shape `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses: the scheme itself refuses what is not offered.
+ * the alternative is losing the fact that the key is OWED: `⌘K` landed with 5.10, `[` `]` with 5.11, and `⇧R`
+ * lands with 5.12, `P` with 5.15 and `⌘⏎` with 7.18, each a criterion of that story, and the map is complete when
+ * 7.18 ships. It is the shape `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses: the scheme itself
+ * refuses what is not offered.
  *
  * EVERY SINGLE-CHARACTER SHORTCUT IS LIVE ONLY WHILE THE SHELL HOLDS FOCUS, and never while a text field or a
  * `contenteditable` has it (UX-DR11, WCAG 2.1.4 — a Level A rule inside the AA threshold). `holdsCaret` is that
@@ -31,6 +32,7 @@ import { DEVICES } from './device.ts'
 export type Gesture =
   | 'undo' | 'redo' | 'save'
   | 'add' | 'duplicate' | 'remove'
+  | 'prev' | 'next'
   | 'layers' | 'dark' | 'shortcuts' | 'deselect'
   | 'desktop' | 'tablet' | 'mobile'
 
@@ -65,8 +67,12 @@ export const KEYMAP: readonly Binding[] = [
   // `SINGLE_KEY`: it carries no WCAG 2.1.4 focus condition and still fires while a popover is open. The narrowing
   // that matters is in `shortcutFor` below — ⌘K is already the LINK mark inside a field (`lib/inline.ts:230`).
   { gesture: 'add', action: 'Add section', chips: ['⌘K'], keys: ['k'], meta: true, shift: false },
-  { action: 'Previous design', chips: ['['], story: '5.11' },
-  { action: 'Next design', chips: [']'], story: '5.11' },
+  // Story 5.11 — R-145's second and third keys to arrive with their action: the design ring. SINGLE-KEY, so both
+  // carry WCAG 2.1.4's condition by construction (`SINGLE_KEY` is derived below) — inert while a field or a
+  // `contenteditable` holds the caret, which is what lets `[` still type a bracket into a headline. `shift: false`
+  // for the same reason `L` needs it: `{` and `}` are the shifted characters and are nobody's binding.
+  { gesture: 'prev', action: 'Previous design', chips: ['['], keys: ['['], shift: false },
+  { gesture: 'next', action: 'Next design', chips: [']'], keys: [']'], shift: false },
   // ⌘D obeys the rules its button obeys: a site-wide section is one shared instance and has no Duplicate at all
   // (FR-D5), which is the caller's rule and not the map's.
   { gesture: 'duplicate', action: 'Duplicate section', chips: ['⌘D'], keys: ['d'], meta: true, shift: false },

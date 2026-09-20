@@ -21,25 +21,40 @@ import type { Mode } from '@inflozo/section-runtime'
 const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
 export const CONTROLS_DIR = () => join(PACKAGES(), 'library', 'fixtures', 'controls')
 const SAMPLE = () => join(CONTROLS_DIR(), '1')
+/** Story 5.11 (R-158) — THE ONLY RING IN THE REPOSITORY. `packages/library/designs/` holds exactly one design per
+ *  category, so every assertion about what happens BETWEEN two designs would be vacuous; these three fixture
+ *  designs share one `bindingContext`, one `compileTarget` and one category, so `samePartition` puts them in one
+ *  ring, and they are not the shipped library, so AD-35 is untouched. Read off the directory, never listed. */
+const SAMPLE_DIRS = () =>
+  readdirSync(CONTROLS_DIR())
+    .filter((n) => /^\d+$/.test(n) && statSync(join(CONTROLS_DIR(), n)).isDirectory())
+    .sort((a, b) => Number(a) - Number(b))
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')
 
-/** The sample, assembled through the real `assembleEntry` and validated with the icon set — LOUDLY: a
+/** One sample, assembled through the real `assembleEntry` and validated with the icon set — LOUDLY: a
  *  sample that does not validate is a broken story, not a page to render around. */
-export function sample(): SectionRegistryEntry {
-  const read = (file: string) => readFileSync(join(SAMPLE(), file), 'utf8')
+function assemble(dir: string): SectionRegistryEntry {
+  const read = (file: string) => readFileSync(join(dir, file), 'utf8')
   const design = JSON.parse(read('design.json')) as DesignJson
   const content = JSON.parse(readFileSync(join(CONTROLS_DIR(), 'content.json'), 'utf8')) as CategoryContent
   const html = read('index.html')
   const css = read('style.css')
   const failures = validateDesign({ html, design, content, icons: iconDrawing, css })
   if (failures.length > 0) {
-    throw new Error(`the controls sample does not validate — ${failures.map((f) => `${f.code}: ${f.message}`).join(' · ')}`)
+    throw new Error(`the controls sample ${dir} does not validate — ${failures.map((f) => `${f.code}: ${f.message}`).join(' · ')}`)
   }
-  const entry = assembleEntry({ dir: SAMPLE(), design, content, html, css })
+  const entry = assembleEntry({ dir, design, content, html, css })
   if (typeof entry === 'string') throw new Error(`the controls sample does not assemble — ${entry}`)
   return entry
 }
+
+/** The first sample — the section the review page opens on, and the one every earlier story's test names. */
+export const sample = (): SectionRegistryEntry => assemble(SAMPLE())
+
+/** Story 5.11 (R-158) — all three, in `{n}` order: the ring the deployed review page and the keyboard harness
+ *  exercise carry / park / default over, before Epic 9 fills a real category. */
+export const samples = (): SectionRegistryEntry[] => SAMPLE_DIRS().map((n) => assemble(join(CONTROLS_DIR(), n)))
 
 /** The picture pool: Orbit Weekly's feature images, named by asset id — read off the directory, never listed. */
 export function imagePool(): { id: string; bytes: number }[] {
@@ -122,7 +137,9 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  */
 export function canvasDocument(): string {
   const tokens = readFileSync(TOKENS(), 'utf8')
-  const css = readFileSync(join(SAMPLE(), 'style.css'), 'utf8')
+  // Story 5.11: ALL THREE samples' stylesheets, because the ring draws any of them into this one document. Each
+  // has its own class prefix, so they sit beside one another without meeting.
+  const css = SAMPLE_DIRS().map((n) => `/* controls/${n} */\n${readFileSync(join(CONTROLS_DIR(), n, 'style.css'), 'utf8')}`).join('\n')
   return `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">` +
     `<title>${esc('Controls sample')}</title>` +

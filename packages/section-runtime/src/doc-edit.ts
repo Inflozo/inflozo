@@ -12,7 +12,7 @@
 // EVERY OPERATION ANSWERS THE NEXT DOC OR A SENTENCE, the same shape `controls.ts`'s edits use — so a refusal is one
 // wording, shown where the action was pressed, and never a silent no-op.
 
-import { darkOverridesInForce, movedTo } from './controls.ts'
+import { darkOverridesInForce, movedTo, switchControls } from './controls.ts'
 import type { ControlEntry } from './controls.ts'
 import type { DocInstance, ProjectDoc } from './doc-schema.ts'
 import { placementRefusal } from '@inflozo/library'
@@ -78,6 +78,37 @@ export function insertSection(doc: ProjectDoc, position: number, instance: DocIn
   if (refusal !== null) return refusal
   const n = Math.max(0, Math.min(Number.isInteger(position) ? position : doc.instances.length, doc.instances.length))
   return withInstances(doc, [...doc.instances.slice(0, n), instance, ...doc.instances.slice(n)])
+}
+
+/** STORY 5.11 — THE ONE PLACE A DESIGN CHANGES (FR-D19). The panel's arrows and thumbnails, the section's own
+ *  arrows, `[` / `]` and Shuffle are four doors; this is the operation behind all four, so 5.12's Site Remix and
+ *  Epic 8's "swap to a Free design" call it rather than reimplementing carry / park / default.
+ *
+ *  `ring` is the instance's OWN ring — `ringFor(entries, current)` — carrying each member's declaration, so this
+ *  function needs no library and no lookup: the outgoing design is the ring member the instance already names.
+ *  A design outside it writes NOTHING and answers a sentence; a ring that does not hold the instance's own design
+ *  is the same refusal, because there is then no declaration to decide what carries.
+ *
+ *  Shaped exactly as `insertSection` is: pure, the next doc or a sentence, and one instance changed. Content,
+ *  items and `data` are untouched by construction — the ring never leaves the category and `contentSchema` is the
+ *  category's union (FR-G3), so the swap writes only `designId` and the three control maps. */
+export function switchDesign(
+  doc: ProjectDoc,
+  instanceId: string,
+  to: string,
+  ring: readonly ({ id: string } & Pick<ControlEntry, 'controlSchema' | 'universals'>)[],
+): ProjectDoc | string {
+  const n = at(doc, instanceId)
+  if (n === -1) return missing(instanceId)
+  const instance = doc.instances[n]!
+  if (to === instance.designId) return 'this section already uses that design'
+  const arriving = ring.find((e) => e.id === to)
+  const leaving = ring.find((e) => e.id === instance.designId)
+  if (arriving === undefined || leaving === undefined) {
+    return `${to} is not one of the designs this section can be shown as`
+  }
+  return withInstances(doc, doc.instances.map((i, x) =>
+    (x === n ? { ...i, designId: to, ...switchControls(leaving, arriving, i) } : i)))
 }
 
 /** Removes a section for good. Removing every one of them returns the template to untouched (AD-22, `isDesigned`),

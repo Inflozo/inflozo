@@ -4,7 +4,8 @@
 // duplicated (this story) and offered (Story 5.10's Section Picker, which calls the same two functions).
 //
 // Story 5.10 appends the `bindingContext` half below; `GET_FORBIDDEN_TARGETS` is R-7's own set, read from the
-// vocabulary rather than repeated, so the two can never disagree.
+// vocabulary rather than repeated, so the two can never disagree. Story 5.11 appends the RING (`ringFor`,
+// `samePartition`) at the foot, because "what may be placed here" and "what this section may become" are one rule.
 //
 // A CATEGORY, NOT A DESIGN, decides both: every design of A33 is a Koenig card treatment and every design of A25 is a
 // Post Content layout, so the test is on the `{category}/{n}` id's first half.
@@ -109,4 +110,54 @@ export const offeredOn = (
 export const byCategory = (a: string, b: string): number => {
   const n = (c: string) => (/^a\d+$/.test(c) ? Number(c.slice(1)) : Number.POSITIVE_INFINITY)
   return n(a) - n(b) || (a < b ? -1 : a > b ? 1 : 0)
+}
+
+// ─── Story 5.11 — THE RING: what this instance may BECOME (FR-D19, FR-D13) ───────────────────────────────────────
+//
+// The ring and the Picker answer the same question from two directions — what may be placed HERE, and what this
+// section may become — and both are `bindingContext` ∧ `compileTarget` ∧ (A30's) `surface`. Two implementations of
+// that rule is precisely the drift standing rule 3 forbids, so `ringFor` sits beside `offeredOn` and 5.12's Remix
+// and Epic 8's "swap to a Free design" call it rather than writing it again.
+//
+// EQUAL SETS, NOT AN INTERSECTION, and that is the difference from `offeredOn`. The Picker asks whether a design
+// fits ONE file; the ring asks whether two designs fit the SAME PLACES — A29's tag design and its author design
+// are one category and two rings, and so are A31's error, private and custom-page designs. A swap that narrowed the
+// set would silently take a section off a template it is already on.
+
+/** What the ring reads of a design. A `SectionRegistryEntry` satisfies it; so does anything that carries the four. */
+export type RingEntry = {
+  id: string
+  bindingContext: readonly BindingContext[]
+  compileTarget: readonly string[]
+  /** A30's declared surface — signup · signin · member home. Undefined on every design that is not one of A30's. */
+  surface?: string
+}
+
+const sameSet = (a: readonly string[], b: readonly string[]): boolean => {
+  const x = new Set(a)
+  const y = new Set(b)
+  return x.size === y.size && [...x].every((v) => y.has(v))
+}
+
+/** Could a section drawn as `a` be drawn as `b` and still work everywhere it already is? Same category, the same
+ *  binding contexts, the same compile targets and the same declared surface. ONE comparison, so the ring, Shuffle
+ *  and Remix cannot disagree about what a partition is. */
+export const samePartition = (a: RingEntry, b: RingEntry): boolean =>
+  categoryOf(a.id) !== '' &&
+  categoryOf(a.id) === categoryOf(b.id) &&
+  sameSet(a.bindingContext, b.bindingContext) &&
+  sameSet(a.compileTarget, b.compileTarget) &&
+  a.surface === b.surface
+
+/** Every design this instance may become, INCLUDING the one it is, in `{n}` order — the strip's order, the
+ *  counter's order and the order `[` and `]` step through. A non-placeable treatment is never in a ring, for the
+ *  same reason it is never in the Picker: it is chosen somewhere else entirely (FR-D13, FR-D17).
+ *
+ *  A design outside the partition is not refused, it is ABSENT (UX-DR3) — there is nothing to press and nothing to
+ *  explain. `switchDesign` is the one place a refusal is worded, and only a caller that reached past the ring can
+ *  get one. */
+export function ringFor<T extends RingEntry>(entries: Iterable<T>, entry: RingEntry): T[] {
+  if (!isPlaceable(entry.id)) return []
+  const n = (id: string) => Number(id.split('/')[1] ?? 0)
+  return [...entries].filter((e) => isPlaceable(e.id) && samePartition(entry, e)).sort((a, b) => n(a.id) - n(b.id))
 }

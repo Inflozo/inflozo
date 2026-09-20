@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { byCategory, categoryOf, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT } from './placement.ts'
+import { byCategory, categoryOf, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, ringFor, samePartition } from './placement.ts'
 import type { BindingContext } from './vocabulary.ts'
 
 // Story 5.4 — the matrix's placement rows. Neither rule can be exercised on the deployed editor, because
@@ -82,4 +82,60 @@ test('byCategory is NUMERIC — a17 after a4, which a string sort gets wrong', (
   assert.deepEqual(['a3', 'a30', 'a2'].sort(byCategory), ['a2', 'a3', 'a30'])
   // anything that is not `a{n}` sorts after everything that is, by its own name
   assert.deepEqual(['zz', 'a9', 'aa'].sort(byCategory), ['a9', 'aa', 'zz'])
+})
+
+// ─── Story 5.11 — the RING (FR-D19, FR-D13). Neither arm can be exercised on the deployed editor either:
+//     `packages/library/designs/` holds one design per category, so every ring in the shipped library has
+//     length 1 and the partition rule would be asserted vacuously. This, and the three-design fixture the
+//     app's own tests use, are its whole proof.
+
+const ringDesign = (id: string, over: Partial<{ bindingContext: BindingContext[]; compileTarget: string[]; surface: string }> = {}) => ({
+  id,
+  bindingContext: ['none'] as BindingContext[],
+  compileTarget: ['home.hbs'],
+  ...over,
+})
+
+test('a ring is its category, every design of it, in {n} order — and it holds the design it started from', () => {
+  const all = [ringDesign('a17/10'), ringDesign('a17/2'), ringDesign('a4/1'), ringDesign('a17/1')]
+  assert.deepEqual(ringFor(all, all[1]!).map((e) => e.id), ['a17/1', 'a17/2', 'a17/10'], 'a string sort would put 10 before 2')
+  assert.deepEqual(ringFor(all, all[2]!).map((e) => e.id), ['a4/1'], 'a category of one is a ring of one, never empty')
+})
+
+test('the partition is bindingContext AND compileTarget AND surface, as SETS and not as an intersection', () => {
+  const base = ringDesign('a29/1', { bindingContext: ['tag'], compileTarget: ['tag.hbs'] })
+  const same = ringDesign('a29/2', { bindingContext: ['tag'], compileTarget: ['tag.hbs'] })
+  // A29's tag design and its author design are ONE category and TWO rings
+  const author = ringDesign('a29/3', { bindingContext: ['author'], compileTarget: ['author.hbs'] })
+  // A31's error page against its private page: the same binding set, a different file
+  const narrower = ringDesign('a29/4', { bindingContext: ['tag'], compileTarget: ['tag.hbs', 'author.hbs'] })
+  assert.equal(samePartition(base, same), true)
+  assert.equal(samePartition(base, author), false)
+  assert.equal(samePartition(base, narrower), false, 'a wider target set is a different ring: a swap must not take a section off a template it is already on')
+  // order does not matter — they are sets
+  assert.equal(samePartition(narrower, ringDesign('a29/5', { bindingContext: ['tag'], compileTarget: ['author.hbs', 'tag.hbs'] })), true)
+  assert.deepEqual(ringFor([base, same, author, narrower], base).map((e) => e.id), ['a29/1', 'a29/2'])
+})
+
+test("A30's surface partitions a ring, and nothing declares one today", () => {
+  const signup = ringDesign('a30/1', { surface: 'signup' })
+  const signin = ringDesign('a30/2', { surface: 'signin' })
+  const second = ringDesign('a30/3', { surface: 'signup' })
+  const undeclared = ringDesign('a30/4')
+  assert.deepEqual(ringFor([signup, signin, second, undeclared], signup).map((e) => e.id), ['a30/1', 'a30/3'])
+  assert.equal(samePartition(signup, undeclared), false, 'a declared surface and none are two rings')
+  assert.deepEqual(ringFor([signup, signin, second, undeclared], undeclared).map((e) => e.id), ['a30/4'])
+})
+
+test('a non-placeable treatment is never in a ring, and has none of its own (UX-DR3)', () => {
+  const treatments = NON_PLACEABLE.map((c) => ringDesign(`${c}/1`))
+  const ordinary = ringDesign('a17/1')
+  assert.deepEqual(ringFor([...treatments, ordinary], ordinary).map((e) => e.id), ['a17/1'])
+  for (const t of treatments) assert.deepEqual(ringFor([...treatments, ordinary], t), [], t.id)
+})
+
+test('a malformed id has no ring, and cannot drag one in with it', () => {
+  const junk = ringDesign('../a17/1')
+  assert.deepEqual(ringFor([junk, ringDesign('a17/1')], junk), [])
+  assert.equal(samePartition(junk, junk), false)
 })

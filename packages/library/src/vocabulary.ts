@@ -610,6 +610,16 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
       ? ok
       : fail(`"${v}" is not an array prop path — name the array itself ("items") and write its per-item props in full ("items[].label")`)),
   },
+  'data-items-limit': {
+    // Story 5.11 — FR-D13's per-design cap ("8 items shuffled into a 3-card layout shows 3"), and it must be
+    // DECLARED because nothing can derive it: how many items a design's structure fits is decided by its own CSS
+    // (`grid-template-columns`), which no parser reads back, and `PropDef.max` is the CATEGORY union's ceiling and
+    // cannot narrow per design. Exactly `data-repeat-limit`'s grammar and exactly its shape — a modifier on the
+    // element that carries the list — so an author who knows one knows the other. The items past it are NOT
+    // removed: they stay in the instance and return with a design that fits them (FR-D19).
+    summary: "how many of an AUTHORED list's items this design draws — 1 to 100; the rest stay in the doc (FR-D13)",
+    parse: (v) => (/^([1-9][0-9]?|100)$/.test(v) ? ok : fail(`"${v}" is not a limit between 1 and 100`)),
+  },
   'data-if': {
     // row 3 — rendered since Story 4.10
     summary: 'row 3 · the first arm of a conditional, shown when the Ghost path holds something ({{#if}}); a data-else on its NEXT element sibling is the other arm',

@@ -316,6 +316,9 @@ export const RENDERED_DIRECTIVES: readonly string[] = [
   'data-pagination',
   // Story 4.5 — an AUTHORED array, baked as N copies on both emitters (§7.3 gap row 1)
   'data-items',
+  // Story 5.11 — FR-D13's per-design cap on that array, applied inside `expandItems` so both emitters bake the
+  // same number of copies by construction. The items past it are not removed; they are simply not drawn.
+  'data-items-limit',
   // Story 4.6 — R-2's typed avatar initials, through the user-text path
   'data-initials',
   // Story 4.9 — a chrome string by catalog key: `{{t}}` on the theme, the handed string on the canvas
@@ -514,6 +517,10 @@ function refuseUnrendered(root: RuntimeElement): void {
     if (all(root, `[${d}]:not([data-repeat])`).length > 0) {
       throw new Error(`"${d}" modifies a data-repeat and this element has none — it would ship verbatim`)
     }
+  }
+  // Story 5.11 — the same rule for the AUTHORED list's cap (`validate.ts`'s `orphan-items-limit` is its twin)
+  if (all(root, '[data-items-limit]:not([data-items])').length > 0) {
+    throw new Error('"data-items-limit" modifies a data-items and this element has none — it would ship verbatim')
   }
 }
 
@@ -1246,6 +1253,11 @@ export function initials(name: string): string {
  *  and per-item user text is parked like any other, its mark allow-list looked up by the `[]` path.
  *  Zero items renders nothing. A list inside another list, or inside a Ghost repeat, refuses by name:
  *  a per-item path is written in full and resolves against exactly one enclosing array. */
+/** A `data-items-limit` as a number of copies — `undefined` for an absent or ungrammatical one, which `slice`
+ *  reads as "all of them". The grammar itself is the vocabulary's (`DIRECTIVES`), enforced at validation. */
+const itemsCap = (raw: string | null): number | undefined =>
+  raw !== null && /^([1-9][0-9]?|100)$/.test(raw) ? Number(raw) : undefined
+
 function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderInput, tokens: Tokens, users: UserText | null): void {
   const lists = all(root, '[data-items]')
   for (const el of lists) {
@@ -1267,8 +1279,13 @@ function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
   }
   for (const el of lists) {
     const path = consume(el, 'data-items') ?? ''
+    // STORY 5.11 — FR-D13's per-design cap, applied HERE and nowhere else: this is the one function both emitters
+    // share, so the canvas and the shipped theme bake the same number of copies by construction and
+    // `agreement.test.ts` needs no case of its own to stay honest. The items past the cap are NOT removed — they
+    // stay in the instance and return the moment the section is drawn as a design that fits them (FR-D19).
+    const cap = itemsCap(consume(el, 'data-items-limit'))
     const raw = get(input.content ?? {}, path)
-    for (const [index, item] of (Array.isArray(raw) ? raw : []).entries()) {
+    for (const [index, item] of (Array.isArray(raw) ? raw : []).slice(0, cap).entries()) {
       const clone = el.cloneNode(true)
       el.before(clone)
       // bindings first, as every other walk does: `data-empty` is shared and applyProps sweeps it

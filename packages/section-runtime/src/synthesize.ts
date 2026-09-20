@@ -120,6 +120,7 @@ export function synthesize(file: string, library: SynthesisLibrary): Synthesis {
       controls: { ...row.controls },
       data: {},
       darkOverrides: {},
+      parkedControls: {},
       hidden: false,
       memberVisibility: 'everyone',
       isMainFeed: row.isMainFeed === true,

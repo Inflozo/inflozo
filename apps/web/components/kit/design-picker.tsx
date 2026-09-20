@@ -1,6 +1,12 @@
 import { greyedProps, labelTone, marked, reason, ring, type Greyed } from './greyed'
 
-/* Editor Sidebar Kit.dc.html:71 — design picker. 64×44 wireframe mini-diagrams, ink lines
+/* THE KIT'S DRAWING, AND NOT THE EDITOR'S CONTROL. `/kit` draws this; the real Design block is
+   `components/editor/design-picker.tsx` (Story 5.11, B1a), whose tiles are live `SectionPreview`
+   renders rather than the wireframes below — the export's mini-diagrams were stress-fill fiction for
+   eighteen designs nobody had authored, and a 64×44 render of the design itself is what the frame's
+   own note asks for.
+
+   Editor Sidebar Kit.dc.html:71 — design picker. 64×44 wireframe mini-diagrams, ink lines
    with a coral highlight on surface, active takes a coral ring. Above it the counter —
    "7 of 18", mono, under a label reading Design, NEVER "Layout". The Kit draws six tiles;
    the full picker's +N tile (B1a) is the Design accordion's and is not drawn here. */

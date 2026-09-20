@@ -56,6 +56,14 @@ export type Link = {
   rel?: readonly string[]
 }
 
+/** A30's three membership surfaces, by the canvas each is (R-129: `custom-signup.hbs` · `custom-signin.hbs` ·
+ *  `custom-member-home.hbs`). Story 5.11 — FR-D13's partition rule names a surface and the library had no field to
+ *  partition on: `bindingContext` and `compileTarget` cannot tell a signup page from a member home, because both
+ *  compile to a custom route and bind nothing. So a design that is built for ONE of them says so, and the ring,
+ *  Shuffle and Remix never cross between two (`samePartition`). NOTHING DECLARES IT TODAY — A30's designs are
+ *  Epic 10's — so the field is inert until they land, which is exactly what makes it safe to add here now. */
+export type Surface = 'signup' | 'signin' | 'member-home'
+
 /** One path node of a vendored icon drawing — Tabler's own `[tag, attributes]` shape. */
 export type IconNode = readonly [string, Readonly<Record<string, string>>]
 
@@ -132,6 +140,9 @@ export type DesignJson = {
    *  and FR-D12/D13 filter by intersection, which a set answers and a scalar cannot */
   bindingContext: BindingContext[]
   compileTarget: string[]
+  /** A30 (Story 5.11): the membership surface this design is built for, when it is built for one. Omitted on every
+   *  design that is not one of A30's — which is every design in the library today. */
+  surface?: Surface
   controlSchema: ControlDef[]
   /** R-23: the universal controls this design narrows, by name. Omitted, a universal offers every value. */
   universals?: Record<string, UniversalNarrowing>
@@ -167,6 +178,9 @@ export type SectionRegistryEntry = {
   tier: 'free' | 'pro'
   bindingContext: BindingContext[]
   compileTarget: string[]
+  /** A30's declared surface, carried from `design.json` (Story 5.11). FR-D13 partitions the ring on it beside
+   *  `bindingContext` and `compileTarget`, so a signup design and a signin design of one category are two rings. */
+  surface?: Surface
   /** the CATEGORY's union (FR-G3) */
   contentSchema: Record<string, PropDef>
   /** per design (FR-F7) */
@@ -249,6 +263,7 @@ export function assembleEntry(input: AssembleInput): SectionRegistryEntry | stri
     }
   }
   if (declared.size > 0) entry.js = MODULES.filter((m) => declared.has(m.name)).map((m) => m.name)
+  if (d.surface !== undefined) entry.surface = d.surface
   if (d.dataBindings !== undefined) entry.dataBindings = d.dataBindings
   if (d.provisional !== undefined) entry.provisional = d.provisional
   return entry

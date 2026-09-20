@@ -11,6 +11,9 @@
 // Story 4.5's Review (2026-09-13); until then the checks lived in a scratch harness nobody could re-run.
 // Story 5.3 adds step 19: the sample's Eyebrow (30) and Heading (40) refuse what is typed or pasted past their limits,
 // each saying so under the field — and the Heading is now the rich Text Area the canvas shares.
+// Story 5.11 adds the RING WALK at the foot: this page carries the three fixture designs of
+// `packages/library/fixtures/controls/` (R-158), which is the only ring in the repository, so carry / park /
+// default, the wrap and FR-D13's item cap are proved HERE on production rather than asserted in a unit test.
 // Story 4.10's Fix (2026-09-15) re-shaped the panel it walks: R-113 put every control in the accordion its role
 // names with nothing pinned above them, and R-115 made "Reset this design" ask first — so a step whose control now
 // sits in a closed accordion opens it, and step 16 answers the confirm.
@@ -481,6 +484,95 @@ async function main() {
     })
     check('throttle 4x (b) — a content re-render finishes inside 100 ms (renderCanvas, data-render-ms)', b.every((r) => r.painted && r.renderMs < 100 && r.handlerMs < 100), JSON.stringify(b))
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: 1 })
+
+    /* ── STORY 5.11 — THE DESIGN RING, ON THE DEPLOYED PAGE (FR-D19, FR-D13, R-158, R-82) ───────────────────────
+       `packages/library/designs/` holds ONE design per category, so the editor's own ring has nowhere to go and
+       every assertion about what happens BETWEEN two designs would be vacuous there. This page carries the three
+       fixture designs of `packages/library/fixtures/controls/`, which is the only ring in the repository — so
+       this is where carry / park / default is proved on production, and the owner's own steps 6–12 are these. */
+    await page.reload({ waitUntil: 'networkidle' })
+    await page.waitForFunction(() => !!document.querySelector('iframe[title="The controls sample section"]')?.contentDocument?.querySelector('.cx__feature .cx__icon svg'), null, { timeout: 30000 })
+    const rootClass = () => page.evaluate(() => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelector('#canvas > section')?.className ?? null)
+    const drawn = (sel) => page.evaluate((s) => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelectorAll(s).length, sel)
+    const block511 = page.locator('#editor-design')
+    const counter511 = page.locator('#editor-design-count')
+    const tint511 = page.locator('#section-controls [id$="-control-tint"]')
+    const tintValue511 = async () => ((await tint511.count()) === 0 ? null : (await tint511.locator('[role="radio"][aria-checked="true"]').innerText()).trim())
+
+    check('ring — B1a: the Design block is at the head of the panel and the counter counts the real ring (R-158)',
+      (await block511.count()) === 1 && (await counter511.innerText()).trim() === 'Design 1 of 3' && (await block511.locator('[data-design-tile]').count()) === 3,
+      `${(await counter511.innerText()).trim()} · ${await block511.locator('[data-design-tile]').count()} tiles`)
+
+    // the owner's step 7 — change two settings and type something recognisable
+    await openGroup('Layout')
+    await page.getByRole('radio', { name: 'Centre', exact: true }).first().click()
+    await openGroup('Style')
+    await page.getByRole('radio', { name: 'Strong', exact: true }).first().click()
+    await openGroup('Content')
+    const heading511 = page.getByLabel('Heading', { exact: true })
+    await heading511.click()
+    await page.keyboard.press('ControlOrMeta+a')
+    await page.keyboard.type('Ring words')
+    await page.waitForTimeout(300)
+    check('ring — the control: Alignment is Centre, Card tint is Strong and the heading is the typed words',
+      (await canvas()).attrs['data-align'] === 'center' && (await canvas()).attrs['data-tint'] === 'strong' && (await canvas()).title === 'Ring words',
+      JSON.stringify({ align: (await canvas()).attrs['data-align'], tint: (await canvas()).attrs['data-tint'], title: (await canvas()).title }))
+    const tintWas511 = await tintValue511()
+
+    // the owner's step 8 — ▶ swaps the design in place
+    await page.locator('[data-design-step="1"]').click()
+    await page.waitForTimeout(500)
+    check('ring — ▶ changes the section IN PLACE: a different design renders, the counter counts on, and the position is announced politely (UX-DR12)',
+      (await rootClass()) === 'cy' && (await counter511.innerText()).trim() === 'Design 2 of 3' && /^Design 2 of 3 — .+/.test((await page.locator('#controls-said').innerText()).trim()),
+      `${await rootClass()} · ${(await counter511.innerText()).trim()} · ${(await page.locator('#controls-said').innerText()).trim()}`)
+    check('ring — FR-D19: a setting BOTH designs declare carries, the typed words carry, and the setting only the OLD design had is gone from the panel',
+      (await canvas()).attrs['data-align'] === 'center' && (await canvas()).title === 'Ring words' && (await tint511.count()) === 0,
+      JSON.stringify({ align: (await canvas()).attrs['data-align'], title: (await canvas()).title, tintRows: await tint511.count() }))
+    // the owner's step 10 — FR-D13's cap, and the items past it still there
+    check('ring — FR-D13: the panel reads "3 items · 2 shown in this design" and the section draws two of the three',
+      (await page.locator('#section-controls span', { hasText: /^3 items · 2 shown in this design$/ }).count()) === 1 && (await drawn('.cy__feature')) === 2,
+      `${await drawn('.cy__feature')} drawn · ${await page.locator('#section-controls span', { hasText: /shown in this design/ }).count()} sentence(s)`)
+
+    // the owner's step 9 — the long way round, and the parked value comes back exactly
+    await page.locator('[data-design-step="1"]').click()
+    await page.waitForTimeout(500)
+    check('ring — ▶ again reaches the third design, which declares neither of the two the first one parked',
+      (await rootClass()) === 'cz' && (await counter511.innerText()).trim() === 'Design 3 of 3' && (await tint511.count()) === 0, `${await rootClass()} · ${(await counter511.innerText()).trim()}`)
+    await page.locator('[data-design-step="1"]').click()
+    await page.waitForTimeout(500)
+    check('ring — UX-DR5: ▶ at the end WRAPS to the first, and the parked setting comes back EXACTLY as it was left, even the long way round',
+      (await rootClass()) === 'cx' && (await counter511.innerText()).trim() === 'Design 1 of 3' && (await tintValue511()) === tintWas511 && (await canvas()).attrs['data-tint'] === 'strong' && (await canvas()).title === 'Ring words',
+      JSON.stringify({ root: await rootClass(), tint: await tintValue511(), was: tintWas511, attr: (await canvas()).attrs['data-tint'] }))
+    // and ◀ is the same ring backwards
+    await page.locator('[data-design-step="-1"]').click()
+    await page.waitForTimeout(500)
+    check('ring — ◀ wraps the other way, so neither arrow is ever a dead key', (await counter511.innerText()).trim() === 'Design 3 of 3', (await counter511.innerText()).trim())
+    await page.locator('[data-design-step="1"]').click()
+    await page.waitForTimeout(500)
+
+    // the owner's steps 11 and 12 — R-159's two seats
+    const try511 = page.locator('[data-try-design]')
+    check('ring — R-159: the panel carries S6\'s `Try a design` card, naming and picturing where a shuffle would take you BEFORE the press',
+      (await try511.count()) === 1 && /Same words, new look/.test(await block511.innerText()) && (await block511.locator('iframe').count()) >= 3,
+      `${await try511.count()} card · ${await block511.locator('iframe').count()} previews`)
+    const was511 = (await counter511.innerText()).trim()
+    await try511.click()
+    await page.waitForTimeout(500)
+    check('ring — the card shuffles: a DIFFERENT design of the same ring, carrying the words the same way',
+      (await counter511.innerText()).trim() !== was511 && (await canvas()).title === 'Ring words', `${was511} → ${(await counter511.innerText()).trim()}`)
+    const pill511 = await page.evaluate(() => {
+      const pill = document.querySelector('[data-section-pill]')
+      return pill === null ? null : {
+        count: pill.querySelector('[data-pill-count]')?.textContent ?? null,
+        shuffle: pill.querySelector('[data-pill-shuffle]')?.getAttribute('aria-label') ?? null,
+        titled: pill.querySelector('[data-pill-shuffle]')?.getAttribute('title') ?? null,
+        words: (pill.querySelector('[data-pill-shuffle]')?.textContent ?? '').trim(),
+      }
+    })
+    check('ring — R-159\'s second seat: the section\'s own pill carries the counter, the arrows and an ICON-ONLY Shuffle whose words are its name and its hover title',
+      pill511 !== null && /^\d+ \/ 3$/.test(pill511.count ?? '') && /^Shuffle/.test(pill511.shuffle ?? '') && pill511.shuffle === pill511.titled && pill511.words === '',
+      JSON.stringify(pill511))
+    await page.screenshot({ path: `${OUT}/controls-ring-1440.png` })
     await page.screenshot({ path: `${OUT}/controls-review-1440.png` })
     await context.close()
   } finally {

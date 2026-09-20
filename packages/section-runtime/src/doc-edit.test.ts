@@ -4,7 +4,7 @@ import { UNIVERSALS } from '@inflozo/library'
 import type { ControlEntry } from './controls.ts'
 import {
   clearDarkOverrides, darkOverrideCount, duplicateSection, insertSection, isDesigned, moveSection, removeSection,
-  renameSection, setHidden, setMemberVisibility,
+  renameSection, setHidden, setMemberVisibility, switchDesign,
 } from './doc-edit.ts'
 import { parseDoc, type DocInstance, type ProjectDoc } from './doc-schema.ts'
 
@@ -215,4 +215,88 @@ test('insertSection: R-37\'s second Post Content is refused with the sentence th
   // the FIRST one is allowed, and an ordinary design beside it is unaffected
   assert.equal(names(ok(insertSection(doc(instance('head', 'a24/1')), 1, fresh('body', 'a25/1')))), 'head body')
   assert.equal(names(ok(insertSection(article, 1, fresh('news', 'a22/1')))), 'body news')
+})
+
+// ─── Story 5.11 — `switchDesign`, the ONE doc operation a design change goes through (FR-D19) ────────────────
+
+/** Two designs of one ring, declared just far enough apart to show all three arms: `both` carries, `only1`
+ *  parks against design 1, `only2` starts at its own default. */
+const RING_1: { id: string } & ControlEntry = {
+  id: 'a17/1',
+  controlSchema: [
+    { name: 'both', type: 'segmented', label: 'Both', group: 'layout', values: ['a', 'b'], default: 'a' },
+    { name: 'only1', type: 'segmented', label: 'Only 1', group: 'style', values: ['x', 'y'], default: 'x', darkOverride: true },
+  ],
+  contentSchema: {},
+  html: '',
+}
+const RING_2: { id: string } & ControlEntry = {
+  id: 'a17/2',
+  controlSchema: [
+    { name: 'both', type: 'segmented', label: 'Both', group: 'layout', values: ['a', 'b'], default: 'a' },
+    { name: 'only2', type: 'segmented', label: 'Only 2', group: 'style', values: ['p', 'q'], default: 'p' },
+  ],
+  contentSchema: {},
+  html: '',
+}
+const RING = [RING_1, RING_2]
+
+const ringDoc = () => doc({
+  instanceId: 'grid',
+  layerName: 'Post Grid',
+  designId: 'a17/1',
+  content: { title: 'Seven links' },
+  controls: { both: 'b', only1: 'y' },
+  data: { latest: { count: 4 } },
+  darkOverrides: { only1: 'x' },
+})
+
+test('switchDesign: the one instance takes the new design, and carry / park / default is switchControls\' answer', () => {
+  const next = ok(switchDesign(ringDoc(), 'grid', 'a17/2', RING))
+  const [i] = next.instances as [DocInstance]
+  assert.equal(i.designId, 'a17/2')
+  assert.equal(i.controls['both'], 'b', 'carried')
+  assert.equal(i.controls['only1'], undefined, 'parked')
+  assert.deepEqual(i.parkedControls, { 'a17/1': { controls: { only1: 'y' }, darkOverrides: { only1: 'x' } } })
+  assert.equal(i.controls['only2'], undefined, 'defaulted, which means nothing is stored for it')
+})
+
+test('switchDesign: CONTENT, ITEMS AND DATA ARE UNTOUCHED — a ring never leaves its category (FR-G3)', () => {
+  const before = ringDoc().instances[0]!
+  const after = ok(switchDesign(ringDoc(), 'grid', 'a17/2', RING)).instances[0]!
+  assert.deepEqual(after.content, before.content)
+  assert.deepEqual(after.data, before.data)
+  assert.equal(after.layerName, before.layerName, 'the name the customer sees is the customer\'s, not the design\'s')
+  assert.equal(after.instanceId, before.instanceId)
+  assert.equal(after.hidden, before.hidden)
+  assert.equal(after.memberVisibility, before.memberVisibility)
+})
+
+test('switchDesign: the round trip restores exactly, and clears the record', () => {
+  const away = ok(switchDesign(ringDoc(), 'grid', 'a17/2', RING))
+  const home_ = ok(switchDesign(away, 'grid', 'a17/1', RING))
+  const [i] = home_.instances as [DocInstance]
+  assert.equal(i.controls['only1'], 'y')
+  assert.equal(i.darkOverrides['only1'], 'x')
+  assert.deepEqual(i.parkedControls, {})
+})
+
+test('switchDesign: a design OUTSIDE the ring writes nothing and answers a sentence', () => {
+  for (const to of ['a4/13', 'a17/9', '', 'nonsense']) {
+    assert.equal(switchDesign(ringDoc(), 'grid', to, RING), `${to} is not one of the designs this section can be shown as`, to)
+  }
+  // and a ring that does not hold the instance's OWN design is the same refusal: nothing declares what carries
+  assert.match(String(switchDesign(ringDoc(), 'grid', 'a17/2', [RING_2])), /is not one of the designs/)
+})
+
+test('switchDesign: the design already in force, and an instance that is not here, each refuse', () => {
+  assert.equal(switchDesign(ringDoc(), 'grid', 'a17/1', RING), 'this section already uses that design')
+  assert.equal(switchDesign(ringDoc(), 'nope', 'a17/2', RING), 'there is no section nope on this template')
+})
+
+test('switchDesign: every OTHER instance is byte-identical, as every operation in this module is', () => {
+  const two = doc(instance('one', 'a17/1'), instance('two', 'a17/1'))
+  const next = ok(switchDesign(two, 'one', 'a17/2', RING))
+  assert.equal(next.instances[1], two.instances[1], 'the untouched instance is the same object')
+  assert.notEqual(next, two)
 })

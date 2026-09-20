@@ -733,7 +733,7 @@ test('a directive this story does not emit is refused by name on both emitters, 
 //    `RENDERED_DIRECTIVES` so a directive added to the set later is covered by construction. ──
 const everyDirectiveSrc = `<section class="all" data-module="lightbox">
      <h1 class="h" data-prop="title" data-empty="hide">t</h1>
-     <ul class="l"><li class="i" data-items="logos"><span data-prop="logos[].name">n</span><b data-initials="logos[].name">AP</b></li></ul>
+     <ul class="l"><li class="i" data-items="logos" data-items-limit="1"><span data-prop="logos[].name">n</span><b data-initials="logos[].name">AP</b></li></ul>
      <a class="a" data-prop-attr="href:link" data-t="card.read_more">Read more</a>
      <span class="m" data-helper="total_members">1,000</span>
      <article class="c" data-repeat="posts" data-repeat-limit="2" data-partial="card">
@@ -780,9 +780,18 @@ test('no rendered directive survives — every member of RENDERED_DIRECTIVES is 
   for (const html of [canvas, theme.template]) assert.ok(html.startsWith('<section class="all" data-module="lightbox">'), html)
   // the limit is honoured on the canvas: three rows, limit 2, two articles
   assert.equal((canvas.match(/<article/g) ?? []).length, 2, `the canvas ignored data-repeat-limit: ${canvas}`)
+  // STORY 5.11 — and the AUTHORED list's cap is honoured on BOTH, by the one function they share: two logos,
+  // `data-items-limit="1"`, one `<li>` in each tree. The second logo is untouched in the input (FR-D19).
+  for (const [name, html] of [['canvas', canvas], ['theme', theme.template]] as const) {
+    assert.equal((html.match(/<li class="i"/g) ?? []).length, 1, `${name} ignored data-items-limit: ${html}`)
+    assert.ok(html.includes('One') && !html.includes('Two'), `${name} drew an item past the cap: ${html}`)
+  }
   // a repeat modifier with no repeat to modify is refused, never left in
   assert.throws(() => renderCanvas(doc(), '<div data-partial="x">y</div>', {}), /modifies a data-repeat/)
   assert.throws(() => renderTheme(doc(), '<div data-repeat-limit="3">y</div>', {}), /modifies a data-repeat/)
+  // and so is the AUTHORED list's, on both (`validate.ts`'s `orphan-items-limit` is its twin at assembly)
+  assert.throws(() => renderCanvas(doc(), '<div data-items-limit="2">y</div>', {}), /modifies a data-items/)
+  assert.throws(() => renderTheme(doc(), '<div data-items-limit="2">y</div>', {}), /modifies a data-items/)
 })
 
 // ── Story 4.7 — `data-module` is core's mount point on the live page, so both emitters KEEP it on the element

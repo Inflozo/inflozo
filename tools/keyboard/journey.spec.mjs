@@ -384,11 +384,12 @@ test('R-147: ? opens the card, it lists exactly the keys that work, and Esc retu
   expect(listed.length).toBeGreaterThan(0)
   const chips = await page.locator('[data-shortcut-row] span span').allInnerTexts()
   // R-145: a key whose action is not built is ABSENT — not greyed, not captioned, not listed
-  for (const dead of ['[', ']', 'P', '⇧R', '⌘⏎']) {
+  for (const dead of ['P', '⇧R', '⌘⏎']) {
     expect(chips, `${dead} has nothing to press yet and must not be advertised`).not.toContain(dead)
   }
-  // ⌘K joined this list at Story 5.10, which built the Section Picker it presses (R-145)
-  for (const live of ['⌘K', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
+  // ⌘K joined this list at Story 5.10, which built the Section Picker it presses, and `[` `]` at Story 5.11,
+  // which built the design ring they cycle (R-145: a shortcut arrives with the action it drives)
+  for (const live of ['⌘K', '[', ']', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
     expect(chips, `${live} works and must be listed`).toContain(live)
   }
   await expect(sheet).not.toContainText(/not yet|coming|soon|unavailable/i)
@@ -404,9 +405,10 @@ test('R-145: a deferred key does nothing and announces nothing', async ({ page }
   await select(page, own[0])
   const before = { rows: (await rows(page)).all.length, mode: await modeOf(page), device: await deviceOf(page) }
   await page.locator('section[aria-label="Canvas"]').focus()
-  // ⌘K LEFT THIS LIST AT STORY 5.10, which built the picker it presses — R-145's rule is that a shortcut arrives
-  // with its action, so the key leaves here and gets a stop of its own below. Four are still owed.
-  for (const key of ['[', ']', 'p', 'P', 'ControlOrMeta+Enter', 'Shift+R']) {
+  // ⌘K LEFT THIS LIST AT STORY 5.10 and `[` `]` AT STORY 5.11, each with the action it presses — R-145's rule is
+  // that a shortcut arrives with its action, so a key leaves here and gets a stop of its own below. Three are
+  // still owed.
+  for (const key of ['p', 'P', 'ControlOrMeta+Enter', 'Shift+R']) {
     await page.keyboard.press(key)
   }
   expect((await rows(page)).all).toHaveLength(before.rows)
@@ -735,4 +737,133 @@ test('DW-167: the panel\'s reset asks first, opens on Cancel, and Esc leaves the
   await expect(page.locator('dialog[open]')).toBeVisible()
   await page.keyboard.press('Escape')
   await expect(page.locator('dialog[open]')).toHaveCount(0)
+})
+
+/* ── Story 5.11 — THE DESIGN RING (FR-D19, FR-D13, R-145, R-158) ───────────────────────────────────────────────
+   `[` and `]` are the third and fourth of R-145's owed keys to arrive with their action, and the FIRST that are
+   single-key: the whole of WCAG 2.1.4's condition rides on them, which is why the last expectation below — `[`
+   typing a bracket into a panel field and changing nothing — is the most important one on this page.
+
+   IT WALKS A REAL RING. The shipped library holds one design per category, so the harness carries the three
+   fixture designs of `packages/library/fixtures/controls/` (R-158) and one section of that category: design 1
+   declares `tint` and design 2 does not, so parking and restoring are a real declaration rather than a mock. */
+
+/** The one section here whose category holds more than one design — the LAST of the page's own rows, because the
+ *  harness appends the fixture ring after the pilots. Asserted rather than assumed: a reordering that broke it
+ *  would otherwise make every expectation below vacuous. */
+async function selectRinged(page) {
+  const own = (await rows(page)).page
+  const key = own[own.length - 1]
+  await select(page, key)
+  await expect(
+    page.locator('#editor-design-count'),
+    'the harness must carry a section whose category holds a ring, or this stop proves nothing',
+  ).not.toHaveText('Design 1 of 1')
+  return key
+}
+
+const counter = (page) => page.locator('#editor-design-count')
+const tintRow = (page) => page.locator('#editor-controls [id$="-control-tint"]')
+const tintValue = (page) => tintRow(page).locator('[role="radio"][aria-checked="true"]').innerText()
+
+test('R-145: `]` moves to the next design and announces its position, `[` comes back', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  await expect(counter(page)).toHaveText(/^Design 1 of \d+$/)
+  const first = await page.locator('#editor-design-name').innerText()
+
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press(']')
+  await expect(counter(page)).toHaveText(/^Design 2 of \d+$/)
+  await expect(page.locator('#editor-design-name')).not.toHaveText(first)
+  // UX-DR12: the position AND the design, politely
+  expect(await said(page)).toMatch(/^Design 2 of \d+ — .+/)
+
+  await page.keyboard.press('[')
+  await expect(counter(page)).toHaveText(/^Design 1 of \d+$/)
+  await expect(page.locator('#editor-design-name')).toHaveText(first)
+
+  // UX-DR5: past the last wraps rather than dying — `[` from the first is the same rule backwards
+  await page.keyboard.press('[')
+  await expect(counter(page)).toHaveText(/^Design \d+ of \d+$/)
+  const [at, of_] = (await counter(page).innerText()).match(/(\d+) of (\d+)/).slice(1)
+  expect(at, 'a dead key at the end of a list reads as broken (UX-DR5)').toBe(of_)
+})
+
+test('FR-D19: a setting only the design you LEAVE has is parked, and comes back exactly', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  // `tint` is design 1's alone in the fixture ring, and it is the library's only dark-override control
+  await expect(tintRow(page), 'the first design declares Card tint').toHaveCount(1)
+  const style = page.locator('#editor-controls button[id$="-group-style"]')
+  await style.focus()
+  await page.keyboard.press('Enter')
+  const was = await tintValue(page)
+  await tintRow(page).locator('[role="radio"][tabindex="0"]').focus()
+  await page.keyboard.press('ArrowRight')
+  const chosen_ = await tintValue(page)
+  expect(chosen_, 'the control really changed, or nothing below is parked').not.toBe(was)
+
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press(']')
+  await expect(tintRow(page), 'the design you moved to does not declare it, so the row is gone').toHaveCount(0)
+
+  // THE LONG WAY ROUND: a parked value must survive an INTERMEDIATE design, which is why the ring holds three
+  const length = Number((await counter(page).innerText()).match(/of (\d+)/)[1])
+  for (let n = 1; n < length; n++) await page.keyboard.press(']')
+  await expect(counter(page)).toHaveText(`Design 1 of ${length}`)
+  await expect(tintRow(page)).toHaveCount(1)
+  expect(await tintValue(page), 'the parked value must come back exactly as it was left').toBe(chosen_)
+})
+
+test("EXPERIENCE.md:503 — `← →` cross the thumbnail strip, mirroring `[` and `]`", async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const strip = page.locator('[data-design-strip]')
+  await expect(strip).toHaveCount(1)
+  const marked = strip.locator('[role="radio"][tabindex="0"]')
+  await marked.focus()
+  const from = await page.evaluate(() => document.activeElement?.dataset.designTile)
+  await page.keyboard.press('ArrowRight')
+  const to = await page.evaluate(() => document.activeElement?.dataset.designTile)
+  expect(to, 'the arrow must move focus across the strip').not.toBe(from)
+  // and pressing the focused tile is the swap
+  await page.keyboard.press('Enter')
+  await expect(counter(page)).toHaveText(/^Design 2 of \d+$/)
+})
+
+test('WCAG 2.1.4: with the caret in a field `[` types a bracket and the design does not change', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const before = await counter(page).innerText()
+  await openGroup(page)
+  const field = page.locator('#editor-controls input[type="text"]:visible').first()
+  await field.focus()
+  await expect(field, 'a field nothing focused would prove nothing').toBeFocused()
+  const was = await field.inputValue()
+  await page.keyboard.type('[]')
+  await expect(field).toHaveValue(`${was}[]`)
+  await expect(counter(page), 'the most important row of this story\'s matrix').toHaveText(before)
+
+  // and in a canvas contenteditable, which is where the caret usually is
+  await caretIntoCanvas(page)
+  await page.keyboard.type('[]')
+  await expect(counter(page)).toHaveText(before)
+})
+
+test('R-159: Shuffle is in BOTH seats, and each lands on a different design in one edit', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const start = await counter(page).innerText()
+  // the panel's `Try a design` card — the one place that names the destination BEFORE the press
+  const card = page.locator('[data-try-design]')
+  await expect(card).toHaveCount(1)
+  await card.focus()
+  await page.keyboard.press('Enter')
+  await expect(counter(page)).not.toHaveText(start)
+  expect(await said(page)).toMatch(/^Design \d+ of \d+ — .+/)
+  // ONE EDIT: a shuffle is one gesture, so one ⌘Z puts it back (AD-15, AD-16)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(counter(page)).toHaveText(start)
 })

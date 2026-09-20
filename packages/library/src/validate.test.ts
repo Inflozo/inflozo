@@ -39,7 +39,7 @@ const EVERY_DIRECTIVE = `
   <h3 data-bind="title">Post</h3>
   <img data-bind-attr="src:feature_image|img_url:m" data-bind-srcset="feature_image|img_url"
        data-empty="hide" alt="">
-  <ul><li data-items="logos"><span data-prop="logos[].name">A partner</span><span data-initials="logos[].name">AP</span></li></ul>
+  <ul><li data-items="logos" data-items-limit="3"><span data-prop="logos[].name">A partner</span><span data-initials="logos[].name">AP</span></li></ul>
   <div data-repeat="latest" data-partial="ref-card">
     <span data-index="number">1</span>
     <span data-when="first">First</span>
@@ -277,6 +277,13 @@ test('the lexical shape checks: duplicates, orphan modifiers, both arms on one e
   refuses('orphan-repeat-modifier',
     '<li data-partial="card">x</li>',
     '<li data-repeat="posts" data-partial="card">x</li>')
+  // Story 5.11 — the AUTHORED list's cap is a modifier too: with nothing to modify it would ship verbatim
+  refuses('orphan-items-limit',
+    '<li data-items-limit="2">x</li>',
+    '<li data-items="logos" data-items-limit="2">x</li>')
+  refuses('orphan-items-limit',
+    '<li data-repeat="tags" data-items-limit="2">x</li>',
+    '<li data-items="logos" data-items-limit="2">x</li>')
   refuses('if-and-else',
     '<p data-if="a" data-else data-bind="a">x</p>',
     '<p data-if="a" data-bind="a">x</p>')

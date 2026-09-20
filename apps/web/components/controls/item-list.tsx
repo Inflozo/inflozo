@@ -11,6 +11,7 @@ import { Segmented } from '@/components/kit/segmented'
 import { Menu } from '@/components/kit/select'
 import { Stepper } from '@/components/kit/stepper'
 import { arrowKeys, openMenu } from '@/lib/menu'
+import { shownInThisDesign } from '@/lib/ring'
 import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
 
 /* The two list grammars of `P0-3 Item List Controls.dc.html`, which must never blur.
@@ -94,7 +95,14 @@ export function ItemList({
     commit(moved.state)
   }
 
-  const range = list.min !== undefined && list.max !== undefined ? `${list.min}–${list.max} · ${list.count} used` : `${list.count} used`
+  /* STORY 5.11 — FR-D13's sentence, IN PLACE OF P0-3's range line and only where the two numbers differ: a design
+     renders only as many items as its structure fits (`data-items-limit`), and "8 items shuffled into a 3-card
+     layout shows 3 … the sidebar shows the count". The items past the cap are not gone — they are waiting for a
+     design that fits them — so this says what is drawn, never what is stored. `shown` is the ENGINE's own number
+     (`PropRow.list`), so the panel and both emitters cannot disagree about it. */
+  const range = list.shown < list.count
+    ? shownInThisDesign(list.count, list.shown)
+    : list.min !== undefined && list.max !== undefined ? `${list.min}–${list.max} · ${list.count} used` : `${list.count} used`
 
   return (
     <div className="flex flex-col gap-1">

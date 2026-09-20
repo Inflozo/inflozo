@@ -113,9 +113,9 @@ test('R-145: every deferred row names its story, binds nothing and is not on the
     assert.ok(!listed.has(b), `${b.action}: the card must not advertise a key that does nothing`)
     assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
   }
-  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10, which built the picker it
-  // presses (R-145: a shortcut arrives with the action it drives), and each of the four below leaves it the same way
-  for (const chip of ['[', ']', 'P', '⇧R', '⌘⏎']) {
+  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10 and `[` `]` at Story 5.11,
+  // each with the action it drives (R-145), and each of the three below leaves it the same way
+  for (const chip of ['P', '⇧R', '⌘⏎']) {
     assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
     assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)
   }
@@ -158,4 +158,29 @@ test('the card is derived from the map, and the map is the only binder', () => {
   // `deselect` is the one live row with no keys here, and the comment beside it says why (the Esc ladder)
   const unbound = rows.filter((b) => b.keys === undefined)
   assert.deepEqual(unbound.map((b) => b.gesture), ['deselect'])
+})
+
+/* STORY 5.11 — `[` AND `]` ARE LANDED, and unlike ⌘K they are SINGLE-KEY: the whole of WCAG 2.1.4's condition
+   rides on them, which is why the matrix's row "the caret in a canvas text prop or a panel field → `[` types `[`"
+   is asserted here as well as walked in the keyboard journey. */
+test('R-145: `[` and `]` are bound, listed, and INERT with the caret in a field (the matrix\'s most important row)', () => {
+  const prev = KEYMAP.find((b) => b.gesture === 'prev')
+  const next = KEYMAP.find((b) => b.gesture === 'next')
+  for (const [b, key] of [[prev, '['], [next, ']']] as const) {
+    assert.ok(b, `${key} has no row`)
+    assert.equal(b.story, undefined, `${key}: the row is live now`)
+    assert.ok(b.keys?.includes(key), `${key}: the row binds its own character`)
+    assert.notEqual(b.meta, true, `${key}: it carries no modifier`)
+    assert.ok(sheetRows().includes(b), `${key}: the card lists it, because it works`)
+    // both sides of the caret — and OUT of a field is where it does something
+    assert.equal(shortcutFor(bare(key), false), b.gesture)
+    assert.equal(shortcutFor(bare(key), true), null, `${key}: in a field it types its character and changes nothing`)
+    // a modifier is not it: ⌘[ is the browser's Back
+    assert.equal(shortcutFor(press(key), false), null, `${key}: ⌘ is not this binding`)
+    assert.ok(SINGLE_KEY.has(b.gesture!), `${key}: a single-key binding carries the focus condition`)
+  }
+  // `{` and `}` are the SHIFTED characters and are nobody's binding, which is what `shift: false` says
+  assert.equal(shortcutFor(bare('{', { shiftKey: true }), false), null)
+  assert.equal(shortcutFor(bare('}', { shiftKey: true }), false), null)
+  assert.equal(shortcutFor(bare('[', { shiftKey: true }), false), null)
 })

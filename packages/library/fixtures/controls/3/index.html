@@ -1,0 +1,24 @@
+<!-- Story 5.11's ring fixture, design 3 of 3 (R-158). THE INTERMEDIATE DESIGN THE ROUND TRIP HAS TO SURVIVE:
+     `tint` is declared by design 1 alone, so a value parked against design 1 on the way to design 2 is still
+     parked while the customer is here, and comes back exactly on the way home (1 → 2 → 3 → 1). It carries
+     `columns`, `card` and `align`; it declares `rule`, which design 2 does not, so a restore lands on top of a
+     default; and it adds `stack`. It draws no picture and no icon, so the category's `picture`, `pictureAlt` and
+     `features[].icon` are all kept in the instance and simply not named here (FR-G3, FR-D19).
+     It is the ring's PRO sample, so the strip's ✦ tile and the Try-a-design card's tier badge have something to
+     draw. -->
+<section class="cz" data-bg="base" data-spacing="comfortable" data-divider="none"
+         data-columns="2" data-card="flat" data-align="center" data-rule="line" data-stack="rows">
+  <header class="cz__head">
+    <p class="cz__eyebrow" data-prop="eyebrow">This week at Orbit Weekly</p>
+    <h2 class="cz__title" data-prop="heading">Seven links, checked by hand</h2>
+    <p class="cz__next"><span class="cz__next-label" data-prop="nextIssueLabel">Next issue</span> <time class="cz__date" data-prop="nextIssue" data-prop-attr="datetime:nextIssue">2026-10-01</time></p>
+  </header>
+  <ul class="cz__features">
+    <li class="cz__feature" data-items="features">
+      <span class="cz__feature-title" data-prop="features[].title">A feature</span>
+    </li>
+  </ul>
+  <p class="cz__links">
+    <a class="cz__link" data-prop="archive.label" data-prop-attr="href:archive.link" data-empty="hide">Browse the archive</a>
+  </p>
+</section>

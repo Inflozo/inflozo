@@ -64,6 +64,10 @@ export {
   duplicateItem,
   getPath,
   GROUP_LABELS,
+  // Story 5.11 — FR-D19's carry / park / default over one instance's slice, and FR-D13's per-design item cap as
+  // the panel reads it
+  itemsShown,
+  switchControls,
   moveItem,
   movedTo,
   removeItem,
@@ -87,6 +91,7 @@ export type {
   ControlRow,
   ControlState,
   Mode,
+  ParkedControls,
   DataRow,
   PropRow,
   SidebarGroupModel,
@@ -109,6 +114,8 @@ export {
   renameSection,
   setHidden,
   setMemberVisibility,
+  // Story 5.11 — the ONE doc operation a design change goes through, which 5.12's Remix and Epic 8's swap reuse
+  switchDesign,
 } from './doc-edit.ts'
 // Story 5.5 — FR-D6's synthesis: ONE core function over the normative Synthesis Defaults, called by the editor now
 // and by Story 7.3's compiler and Story 5.16's page-2 preview later (AD-27(d)).

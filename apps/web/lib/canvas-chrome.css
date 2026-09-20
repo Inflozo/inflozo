@@ -70,3 +70,31 @@
     animation: none;
   }
 }
+
+/* THE SWAP'S SETTLE (Story 5.11, `EXPERIENCE.md:878` — "a 180ms slide-fade"). A design change replaces the section's
+   whole subtree, so the honest smallest reading is a fade on the INCOMING root: a true crossfade would need both
+   trees mounted in the canvas document at once, which is a second paint path for a visual flourish.
+
+   `editor.tsx` puts the attribute on the swapped root after the paint and takes it off when the animation's own
+   180ms is up — never on the next frame, which would CANCEL the animation rather than end it — and `mark()`
+   re-applies it after every stamp in that window, because `stampControls` strips every root `data-*` it does not
+   own. A section that is not mid-swap carries nothing, so the canvas at rest is still the site.
+
+   An ANIMATION and not a transition, because the element is new: there is no previous value to transition from. */
+[data-inflozo-swapped] {
+  animation: swapin 180ms ease-out;
+}
+@keyframes swapin {
+  from {
+    opacity: 0.35;
+  }
+  to {
+    opacity: 1;
+  }
+}
+/* `globals.css`'s reduced-motion block cannot reach this document, so the same degrade is written here. */
+@media (prefers-reduced-motion: reduce) {
+  [data-inflozo-swapped] {
+    animation: none;
+  }
+}

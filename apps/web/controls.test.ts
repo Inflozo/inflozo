@@ -2,10 +2,10 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { validateDesign } from '@inflozo/library'
+import { ringFor, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
-import { CONTROLS_DIR, canvasDocument, imagePool, linkResources, poolImage, queryRows, referenceSwatches, sample } from './lib/controls-review.ts'
+import { CONTROLS_DIR, canvasDocument, imagePool, linkResources, poolImage, queryRows, referenceSwatches, sample, samples } from './lib/controls-review.ts'
 
 // Story 4.5's review surface, held by the files it reads — the fences `style-guide.test.ts` put around
 // Story 4.4's page, for the controls review. A core package cannot open a file, so the half of the
@@ -28,6 +28,8 @@ test('the frame route guards itself with currentUser before it builds any body',
 test('the canvas document carries no script, so it needs no nonce', () => {
   const doc = canvasDocument()
   assert.doesNotMatch(doc, /<script\b/i)
+  // Story 5.11: EVERY sample's stylesheet, because the ring draws any of the three into this one document
+  for (const e of samples()) assert.ok(doc.includes(`/* ${e.id} */`) && doc.includes(e.css), `${e.id}'s stylesheet is not in the canvas document`)
   assert.match(doc, /<div id="canvas"><\/div>/, 'the mount point the review writes the section into')
   assert.match(doc, /<meta name="robots" content="noindex,nofollow">/)
   assert.match(doc, /data-mode="light"/)
@@ -97,4 +99,51 @@ test("every link resource carries a URL the picker can read a path from, and a s
     }
   }
   for (const p of all.posts) assert.match(p.meta, /^\d{4}-\d{2}-\d{2}$/, 'a date is shown as its stored day (DW-106)')
+})
+
+/* STORY 5.11 (R-158) — THE ONLY RING IN THE REPOSITORY. `packages/library/designs/` holds one design per
+   category, so without these three the whole carry / park / default claim would be asserted vacuously. */
+
+test('the samples are ONE ring — one category, one partition — and each validates and assembles', () => {
+  const all = samples()
+  assert.ok(all.length >= 3, 'three, not two: with two, ◀ and ▶ are indistinguishable and no value can be shown surviving an INTERMEDIATE design')
+  assert.equal(all[0]?.id, sample().id, 'the page opens on the first, which is every earlier story\'s sample')
+  // derived from the directory, in {n} order
+  assert.deepEqual(all.map((e) => e.id), all.map((_, n) => `controls/${n + 1}`))
+  // the partition rule itself: every one of them is in every other one's ring
+  for (const e of all) assert.deepEqual(ringFor(all, e).map((x) => x.id), all.map((x) => x.id), `${e.id}`)
+})
+
+test('the ring proves every arm of carry / park / default, and FR-D13\'s cap, by DECLARATION', () => {
+  const [one, two, three] = samples()
+  const names = (e: typeof one) => new Set(e!.controlSchema.map((c) => c.name))
+  const [a, b, c] = [names(one), names(two), names(three)]
+  // CARRY: a control every design declares
+  for (const shared of ['columns', 'align', 'card']) {
+    assert.ok(a.has(shared) && b.has(shared), `${shared} must be declared by designs 1 and 2 to prove a carry`)
+  }
+  // PARK: `tint` is the library's only `darkOverride: true` control and ONLY design 1 declares it, so a value
+  // parked against design 1 must survive design 3 to be restored — the one path worth proving
+  assert.ok(a.has('tint') && !b.has('tint') && !c.has('tint'), 'tint must be design 1\'s alone')
+  assert.equal(one!.controlSchema.find((x) => x.name === 'tint')?.darkOverride, true)
+  // DEFAULT: a control only the incoming design declares
+  assert.ok(b.has('frame') && !a.has('frame'), 'design 2 must add one of its own')
+  assert.ok(c.has('stack') && !a.has('stack') && !b.has('stack'), 'design 3 must add a different one')
+  // and the per-design item cap, against the category's three authored features
+  const authored = (JSON.parse(readFileSync(join(CONTROLS_DIR(), 'content.json'), 'utf8')) as CategoryContent).props['features']?.default
+  assert.equal(Array.isArray(authored) && authored.length, 3, 'the category authors three features, so a cap of 2 really caps')
+  assert.match(two!.html, /data-items="features" data-items-limit="2"/)
+  assert.doesNotMatch(one!.html, /data-items-limit/)
+})
+
+test('the ring carries a Pro design, so the strip\'s ✦ and the Try card\'s badge have something to draw', () => {
+  const tiers = new Set(samples().map((e) => e.tier))
+  assert.ok(tiers.has('pro') && tiers.has('free'), 'both tiers, or half the panel is untested')
+})
+
+test('no shipped design is authored here: `packages/library/designs/` is untouched (AD-35, R-158)', () => {
+  for (const e of samples()) {
+    assert.equal(e.category, 'controls', `${e.id} is outside the fixture category`)
+    assert.equal(e.provisional, true, `${e.id} must say it is provisional, as every fixture and pilot does`)
+  }
 })

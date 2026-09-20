@@ -4900,13 +4900,21 @@ reason: the fix is one pure function in `lib/canvas.ts` both routes call, with a
 plain: One automated check selects the sticky header, scrolls the page with a simulated mouse wheel and films it.
   On 2026-09-20 the page did not scroll at all in four runs out of five, so the check failed before it could look
   at anything. We do not yet know why.
-status: open
+status: done 2026-09-20 (Story 5.11, Dev) — executed, and fixed where it pointed
 severity: medium
 origin: Story 5.10's Review (2026-09-20), Real-infra verifier, at `41fd5d18` and again at `67dae0a1`.
 owner: Story 5.11's Dev, before its own deployed walk.
-location: `tools/probe/run-verify-editor.cjs` (step 15 b); possibly `apps/web/components/controls/section-pill.tsx`
+location: `tools/probe/run-verify-editor.cjs` (step 15 b); `apps/web/components/controls/section-pill.tsx`
 reason: A HYPOTHESIS, NOT A FINDING: the wheel is sent at x=700, the middle of the card, which is where this
   story's "+ Add section" pill sits — and a wheel over a pill in the parent page does not scroll the canvas inside
   the frame. If that is it, a customer scrolling with the pointer on the pill would feel the same stall, and the
   fix is the pill passing its wheel to the canvas. It was not executed, so it is not asserted.
+fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium through this repository's own
+  Playwright over the keyboard harness. A wheel synthesised over `[data-add-section]` scrolled the canvas document
+  **0px** and the identical wheel over the iframe **500px**, so the MECHANISM holds — though at the harness's own
+  geometry `(700, 600)` fell on the iframe rather than on the pill, which is why the deployed check fails *most*
+  runs and not all. The fix is the ledger's own: both pills forward their wheel to the canvas
+  (`section-pill.tsx`'s `onWheel` → `editor.tsx`'s `wheelToCanvas`, and the same on `/controls`), and the control
+  re-run after it reads 500px on both. It is a CUSTOMER fix, not a test repair: a pointer resting on a pill stalled
+  the page. Step 15 b's own pass is Story 5.11's Review to record.
 

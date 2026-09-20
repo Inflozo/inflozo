@@ -106,6 +106,13 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * iframe, for AD-21's reason: the section inherits nothing of the app, and the iframe's width IS the viewport the
  * design's media queries read.
  *
+ * `extra` WIDENS IT, and exactly one caller passes any: the keyboard harness's canvas route (Story 5.11, R-158).
+ * The shipped library holds one design per category, so `pnpm keyboard` would walk a `[` and a `]` with nowhere to
+ * go; the harness therefore puts the three fixture designs of `packages/library/fixtures/controls/` on its own
+ * canvas, and their stylesheets have to be in the document they are drawn into. They go BEFORE the chrome sheet,
+ * which must stay last (`canvas-chrome.css` loads after every design's at equal specificity, by design). The app's
+ * own `/canvas` passes none, so what a customer is served is untouched.
+ *
  * `only` NARROWS IT TO ONE DESIGN, which is the Section Picker's whole payload problem (the owner's ruling of
  * 2026-09-20, option 3 of Question 4). A canvas that holds a document needs every stylesheet, because it may draw
  * any section; a PREVIEW draws exactly one, and carrying the rest is waste that grows with the square of the
@@ -113,9 +120,10 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * is 50,577 bytes of which 42,511 are design stylesheets, so one design's is ~16 KB against 50 KB, and at forty
  * designs it is ~16 KB against ~347 KB. An unknown id throws through `pilot()`, which is the route's 404.
  */
-export function pilotsCanvasDocument(only?: string): string {
+export function pilotsCanvasDocument(only?: string, extra: readonly { id: string; css: string }[] = []): string {
   const tokens = readFileSync(TOKENS(), 'utf8')
-  const carried = only === undefined ? pilots() : [pilot(only)]
+  // a narrowed document still reads ONE design, never the library (the preview's whole payload argument)
+  const carried = only === undefined ? [...pilots(), ...extra] : [extra.find((e) => e.id === only) ?? pilot(only)]
   const css = carried.map((e) => `/* ${e.id} */\n${e.css}`).join('\n')
   return `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">` +

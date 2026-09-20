@@ -1,0 +1,34 @@
+{
+  "name": "Controls sample — a centred notice",
+  "tier": "pro",
+  "bindingContext": ["none"],
+  "compileTarget": ["home.hbs", "index.hbs", "page.hbs"],
+  "controlSchema": [
+    { "name": "columns", "type": "stepper", "label": "Columns", "group": "layout", "values": ["2", "3", "4"], "default": "2" },
+    { "name": "card", "type": "named-select", "label": "Card style", "group": "style", "values": ["flat", "outlined", "raised"], "default": "flat" },
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "layout", "values": ["start", "center"], "default": "center",
+      "valueLabels": { "start": "Left", "center": "Centre" } },
+    { "name": "rule", "type": "segmented", "label": "Rule under heading", "group": "style", "values": ["none", "line"], "default": "line",
+      "disabledBy": { "control": "align", "whenValue": "center", "inForce": "none", "reason": "Not available while the heading is centred." } },
+    { "name": "stack", "type": "segmented", "label": "Stacking", "group": "layout", "values": ["rows", "columns"], "default": "rows",
+      "valueLabels": { "rows": "Rows", "columns": "Columns" } }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"], "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "absent": [
+    { "group": "content", "note": "There are no icons here. This design prints its features as words alone, so there is nothing for an icon to sit beside." }
+  ],
+  "ghostCompat": { "minVersion": "5.0.0", "helpers": [] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "notice",
+    "containment": "plain",
+    "ground": "surface",
+    "itemCount": "few",
+    "mediaPlacement": "none",
+    "emphasis": "the ring's third sample: it keeps Rule under heading, drops Show icons and Image position, adds Stacking, and carries no picture at all"
+  }
+}

@@ -3,8 +3,8 @@
 // First written by Story 5.1, whose editor is the first reader. STRICT AT BOTH LEVELS: a field this schema does not
 // name fails loudly rather than being dropped, so a writer that got ahead of its readers is a thrown error, never a
 // value lost on the next save. The stories that write a new field add it HERE, in the same change as the writer, and
-// ALWAYS with a `.default(…)` — Story 5.4 added `hidden` and `memberVisibility` that way; `parkedControls` (5.11) and
-// `isMainFeed` (5.19) are still to come.
+// ALWAYS with a `.default(…)` — Story 5.4 added `hidden` and `memberVisibility` that way, Story 5.5 `isMainFeed` and
+// Story 5.11 `parkedControls`. `isMainFeed`'s LIFECYCLE is still 5.19's.
 //
 // JITLESS, AND THE HARNESS IS WHY. The spec guessed zod's JIT probe (`allowsEval`, `new Function("")`) ran on a
 // schema's first parse, so a server-side parse would keep it out of the browser. Executed on a production build
@@ -13,7 +13,7 @@
 // runtime's index — so the canvas page reported a `script-src` eval violation on every load. `jitless` skips the probe
 // (`util.js:146-148`); it is global to zod, so it is set here before the first schema this module builds.
 
-import { MEMBER_STATES } from '@inflozo/library'
+import { categoryOf, MEMBER_STATES } from '@inflozo/library'
 import { z } from 'zod'
 
 z.config({ jitless: true })
@@ -24,7 +24,12 @@ const values = z.record(z.string(), z.unknown())
 export const instanceSchema = z.strictObject({
   instanceId: z.string().min(1),
   layerName: z.string(),
-  designId: z.string().regex(/^a\d+\/\d+$/, 'a design id is "{category}/{n}", e.g. "a1/1"'),
+  /** `{category}/{n}`, and the CATEGORY half is `categoryOf`'s own rule rather than a second copy of it (standing
+   *  rule 3). It was `a\d+` until Story 5.11, which put the ring's only fixture category — `controls/1..3`,
+   *  `packages/library/fixtures/controls/` — on the keyboard harness's canvas: a shape check whose grammar
+   *  disagreed with the library's would have refused a doc the library assembles happily. Everything the old
+   *  pattern refused it still refuses (`doc-schema.test.ts`). */
+  designId: z.string().refine((v) => categoryOf(v) !== '', 'a design id is "{category}/{n}", e.g. "a1/1"'),
   content: values,
   controls: values,
   data: values,
@@ -48,6 +53,15 @@ export const instanceSchema = z.strictObject({
    *  is why the field and its writer land in one change (the header rule above). Defaulted for the same reason as
    *  `hidden`: every stored doc predates it. */
   isMainFeed: z.boolean().default(false),
+  /** Story 5.11 — FR-D19's PARKED VALUES, keyed by the design they came from: a control only the design being left
+   *  declares is put aside against that design id and comes back exactly as it was on return. BOTH MAPS PARK
+   *  TOGETHER, because a dark override is a second value of the SAME control (AD-30, `storedFor`) and "restored
+   *  exactly" means both — parking `tint` while leaving `darkOverrides.tint` behind would restore the light value
+   *  and lose the dark one. A restore CLEARS the record, so a doc cannot accumulate a stale second copy of a value
+   *  the customer has since changed. It lives inside `project_templates.doc`, which is `jsonb` and carries no DDL
+   *  for its shape, so this field is the whole of the storage change (R-99: no migration, no Schema phase).
+   *  Defaulted for the same reason as `hidden`: every stored doc predates it. */
+  parkedControls: z.record(z.string(), z.strictObject({ controls: values, darkOverrides: values })).default({}),
 })
 
 export const docSchema = z

@@ -42,8 +42,8 @@ import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_W
  *   - the header's sun/moon SEGMENTED (S5a`:82-85`) — R-151 replaces it with R-132's one button that swaps its
  *     glyph, at the segmented's drawn position, flipping the SAME mode the canvas holds. So the picker and the page
  *     behind it can never disagree.
- *   - the design ring, `◀ ▶`, a thumbnail strip and Shuffle — all Story 5.11's (R-118). This places a section; it
- *     never changes one.
+ *   - the design ring, `◀ ▶`, a thumbnail strip and Shuffle — all Story 5.11's, which built them in the PANEL
+ *     (B1a's Design block) and on the section's own pill. This places a section; it never changes one.
  *
  * R-152, IN ONE GLYPH AND NO SENTENCE. A site-wide design carries the Kit's `Globe` beside its name, with a hover
  * `title` and THE SAME WORDS in the card's accessible name, so the mark arrives BEFORE the press rather than as an

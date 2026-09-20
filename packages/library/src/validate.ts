@@ -113,6 +113,10 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
     if ((names.includes('data-repeat-limit') || names.includes('data-partial')) && !names.includes('data-repeat')) {
       push(out, 'orphan-repeat-modifier', `<${tag.name}> carries data-repeat-limit or data-partial with no data-repeat on the same element — both modify a repeat and would be silently ignored.`)
     }
+    // Story 5.11 — the same rule for the AUTHORED list's cap: a modifier with nothing to modify ships verbatim.
+    if (names.includes('data-items-limit') && !names.includes('data-items')) {
+      push(out, 'orphan-items-limit', `<${tag.name}> carries data-items-limit with no data-items on the same element — it modifies an authored list and would be silently ignored.`)
+    }
     if (names.includes('data-if') && names.includes('data-else')) {
       push(out, 'if-and-else', `<${tag.name}> carries both data-if and data-else — the two arms are two SIBLING elements.`)
     }

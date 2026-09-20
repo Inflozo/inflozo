@@ -59,6 +59,25 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     top-LEFT with the counter, Shuffle and a `⋯`, while S4b and `S6:67` both draw the counter and arrows in the
     white quick-action pill at `top:10px;right:10px` that Story 5.4 already built and R-125 already placed — so
     S4b + S6 govern the pill and B1b governs the affordance.
+  - **Story 5.11 built it (2026-09-20):** ONE pure function decides what carries, parks and defaults —
+    `switchControls(from, to, state)` in `controls.ts` — and ONE doc operation calls it, `switchDesign` in
+    `doc-edit.ts`, so the panel's thumbnails and ◀ ▶, the section pill's ◀ ▶, `[` / `]` and both Shuffle seats are
+    four doors onto one rule and every swap is one `apply` → `commit`, one journal entry and one `⌘Z`. A RESTORED
+    VALUE WINS OVER A CARRIED ONE in the single case where both exist (a shared control changed on an intermediate
+    design) and the record is CLEARED in the same breath, because "exactly as you left it" is the promise the ring
+    is sold on. Membership is the library's: `ringFor`/`samePartition` beside `offeredOn`, comparing
+    `bindingContext` and `compileTarget` as EQUAL SETS rather than an intersection — a narrower set is a different
+    ring, or a swap would take a section off a template it is already on — plus A30's new optional `surface`, which
+    nothing declares. `data-items-limit` joined `DIRECTIVES` with `data-repeat-limit`'s grammar and its orphan
+    guard, applied inside `expandItems`; `itemsShown` had to live in `controls.ts` and NOT `core.ts`, because core
+    imports controls. **`instanceSchema.designId` widened from `a\d+` to `categoryOf`'s own rule**, so the harness
+    can store a `controls/n` section. The panel block is a SIBLING of `Sidebar` and not a row in it (FR-F3), and
+    each strip tile is a positioned box with a TRANSPARENT BUTTON OVER IT: a preview is an `<iframe>`, and
+    interactive content inside a `<button>` is axe's `nested-interactive`. **DW-209 was EXECUTED and fixed** — a
+    wheel over a pill scrolled the canvas 0px against the iframe's 500px, so both pills now forward their wheel; a
+    customer felt the same stall. Every ring in the shipped library is length 1, so in the editor itself every one
+    of these controls is ABSENT (UX-DR3) and the block reads "Design 1 of 1"; the rule is walked on the deployed
+    `/controls` and, on every commit, by `pnpm keyboard` over the three fixture designs.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`

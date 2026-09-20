@@ -6,7 +6,7 @@ import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runt
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { harnessCanvasSrc } from '@/lib/canvas'
-import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
+import { imagePool, linkResources, queryRows, referenceSwatches, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
@@ -29,6 +29,14 @@ import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilot
  * default content — the same shape `seed-editor-project.mjs` writes for the real "Pilot sections" project. So the
  * journey meets both kinds of singleton (FR-D5's shared header and an ordinary page section) the day the library
  * holds them, and gains whatever Epics 9 and 10 add without this file being edited (standing rule 4).
+ *
+ * WITH ONE ADDITION, AND IT IS STORY 5.11'S (R-158): THE LIBRARY HOLDS NO RING. Every category in
+ * `packages/library/designs/` holds exactly one design, so `[` and `]` on a pilot can only ever give the same
+ * design back and the journey would prove the keys are bound and nothing else. The three fixture designs of
+ * `packages/library/fixtures/controls/` are one real ring — one category, one `bindingContext`, one
+ * `compileTarget` — so they join the entries here and one section of that category joins the Home doc, and
+ * `pnpm keyboard` walks a real swap on every commit. They are NOT the shipped library, so AD-35 is untouched;
+ * the day Epic 9 fills a category the pilots carry their own rings and these two lines can go.
  *
  * It sits OUTSIDE `(authed)`, which is the whole reason it renders with no Supabase environment at all: `proxy.ts`
  * returns early when `SUPABASE_URL` is unset and `lib/supabase/server.ts` throws only when a client is really built,
@@ -59,19 +67,25 @@ const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc =>
 export default function EditorHarness() {
   if (!HARNESS) notFound()
 
-  const entries = Object.fromEntries(pilotIds().filter(isPlaceable).map((id) => [id, pilot(id)] as const))
+  const ring = samples()
+  const entries = Object.fromEntries([
+    ...pilotIds().filter(isPlaceable).map((id) => [id, pilot(id)] as const),
+    ...ring.map((e) => [e.id, e] as const),
+  ])
   const placed = Object.values(entries)
   const compiling = (file: string) => placed.filter((e) => e.compileTarget.includes(file))
 
   const docs: Record<string, ProjectDoc> = {
     [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
-    [templateKeyOf('home')]: docOf(templateKeyOf('home'), compiling(CANVASES.home.file)),
+    // the fixture ring rides with them: its designs compile to `home.hbs`, so `compiling` picks up the first of
+    // the three and the journey has a section whose `[` and `]` really move
+    [templateKeyOf('home')]: docOf(templateKeyOf('home'), compiling(CANVASES.home.file).filter((e) => e.id !== ring[1]?.id && e.id !== ring[2]?.id)),
   }
 
   const data: EditorData = {
     docs,
     entries,
-    rows: Object.fromEntries(placed.map((e) => [e.id, pilotRows(e)])),
+    rows: Object.fromEntries(placed.map((e) => [e.id, e.id.startsWith('controls/') ? queryRows(e) : pilotRows(e)])),
     memberVisibility: Object.fromEntries(placed.map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },

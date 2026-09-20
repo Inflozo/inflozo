@@ -2,9 +2,10 @@
 title: 'Story 5.11 — The design ring: navigation, shuffle, and carry / park / default'
 type: 'feature'
 created: '2026-09-20'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: 'e74f84cc690eafbc994a8aeecc8b85e2ecea4122'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -257,7 +258,7 @@ declared `surface` — so the partition rule and the placement rule can never dr
 and R-159 (option 2), owner, 2026-09-20** — so the list below is the whole of it: two more fixture designs and
 a real ring on `/controls`, no shipped design authored, and Shuffle in both the panel and the section's pill.
 
-- [ ] `packages/library/fixtures/controls/2/` and `…/3/` (`design.json`, `index.html`, `style.css` each) --
+- [x] `packages/library/fixtures/controls/2/` and `…/3/` (`design.json`, `index.html`, `style.css` each) --
       **the ring fixture (R-158), and the only ring in the repo**: same `bindingContext`/`compileTarget` as
       design 1 so all three share one partition; each **carries** `columns` and `align`; design 2 **drops**
       `tint` (the `darkOverride: true` control) and `rule` and **adds** one control of its own; design 3
@@ -265,96 +266,96 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
       → 1); and design 2's features list carries `data-items-limit="2"` against the fixture's three default
       items. Every arm of carry / park / default and the surplus-item rule is then a real render, not a mock.
       **`packages/library/designs/` is not touched** (AD-35, R-158).
-- [ ] `packages/library/src/vocabulary.ts` -- `data-items-limit` joins `DIRECTIVES` beside
+- [x] `packages/library/src/vocabulary.ts` -- `data-items-limit` joins `DIRECTIVES` beside
       `data-repeat-limit`, with its own grammar and summary -- one table the validator, the canvas emitter
       and the theme emitter all read, so a new attribute cannot be honoured in one place and ignored in another.
-- [ ] `packages/library/src/validate.ts` -- refuse `data-items-limit` on an element with no `data-items`
+- [x] `packages/library/src/validate.ts` -- refuse `data-items-limit` on an element with no `data-items`
       (`core.ts:513`'s rule, which already exists for `data-repeat-limit`) -- a modifier with nothing to
       modify would ship verbatim.
-- [ ] `packages/library/src/registry.ts` -- `DesignJson` and `SectionRegistryEntry` gain optional
+- [x] `packages/library/src/registry.ts` -- `DesignJson` and `SectionRegistryEntry` gain optional
       **`surface`**, carried by `assembleEntry` -- FR-D13's A30 partition needs a declaration to partition
       on, and one optional field is inert until A30 lands in Epic 10.
-- [ ] `packages/library/src/placement.ts` -- **`ringFor(entries, entry)`**: the designs of the same category
+- [x] `packages/library/src/placement.ts` -- **`ringFor(entries, entry)`**: the designs of the same category
       that are `isPlaceable` and share the entry's `bindingContext` set, `compileTarget` set and `surface`,
       in id order; plus `samePartition(a, b)` as its one comparison -- the ring and the picker then answer
       from one file and can never drift.
-- [ ] `packages/section-runtime/src/core.ts` -- `expandItems` renders at most `data-items-limit` copies and
+- [x] `packages/section-runtime/src/core.ts` -- `expandItems` renders at most `data-items-limit` copies and
       **`itemsShown(html, path)`** reports the cap -- one shared function, so both emitters agree by
       construction and `agreement.test.ts` needs no new case to stay honest.
-- [ ] `packages/section-runtime/src/doc-schema.ts` -- `parkedControls` on `instanceSchema`, keyed by design
+- [x] `packages/section-runtime/src/doc-schema.ts` -- `parkedControls` on `instanceSchema`, keyed by design
       id, each value `{ controls, darkOverrides }`, **`.default({})`** -- required would stop every stored
       doc parsing, the seeded project included.
-- [ ] `packages/section-runtime/src/controls.ts` -- `ControlState` gains `parkedControls`, and
+- [x] `packages/section-runtime/src/controls.ts` -- `ControlState` gains `parkedControls`, and
       **`switchControls(from, to, state)`** returns the next `controls`, `darkOverrides` and
       `parkedControls`: a name both declare carries, a name only `from` declares is moved into
       `parkedControls[fromId]` (its dark override with it), a name only `to` declares is left unstored so
       `resolveControls` gives its default, and a parked record for `to` is restored and then cleared. Also
       `PropRow.list.shown` -- the panel prints "N items · M shown in this design" from the engine's own count.
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- **`switchDesign(doc, instanceId, to, ring)`**: pure, the
+- [x] `packages/section-runtime/src/doc-edit.ts` -- **`switchDesign(doc, instanceId, to, ring)`**: pure, the
       next doc or a sentence, shaped exactly as `insertSection` is; refuses a design outside the instance's
       ring and writes nothing -- the one place a design change happens, so 5.12's Remix and Epic 8's swap
       call it rather than reimplementing the rule.
-- [ ] `apps/web/lib/ring.ts` -- new, pure and importless but for the library (`node --test` cannot load a
+- [x] `apps/web/lib/ring.ts` -- new, pure and importless but for the library (`node --test` cannot load a
       `.tsx`): the position words (`Design 7 of 18`, and the pill's `7 / 18`), the announcement sentence, the
       strip model (the first N tiles and a `+N` tile, N derived from the strip's own shape), `step(at, len,
       by)` with UX-DR5's wrap, `shuffleTo(ring, at, random)` (a caller-supplied random — AD-1 keeps the core
       free of randomness), and the one-design sentence.
-- [ ] `apps/web/components/editor/design-picker.tsx` -- new: **B1a's block**, drawn above the settings
+- [x] `apps/web/components/editor/design-picker.tsx` -- new: **B1a's block**, drawn above the settings
       groups (FR-F3: the design picker is not a setting and sits outside every group). The label, ◀ ▶ and
       the mono counter; the 4-column strip whose tiles are `SectionPreview` at the tile's size with the
       active one coral-ringed and a Pro tile ✦-marked; the active design's name and descriptor; and the
       `Cycle designs` footer with the `[` `]` chips. `← →` cross the strip (`EXPERIENCE.md:503`), reusing
       `icon-picker.tsx`'s `gridKeys` -- never a second arrow implementation. With one design: the counter,
       no arrows, and one sentence.
-- [ ] `apps/web/components/editor/design-picker.tsx` -- **R-159, place one of two**: S6`:140`'s
+- [x] `apps/web/components/editor/design-picker.tsx` -- **R-159, place one of two**: S6`:140`'s
       **`Try a design`** card at the block's foot — the destination design's preview, its name, the words
       *"Same words, new look"* and its tier badge, pressing it being the Shuffle. It is the one place that
       shows where a shuffle would take you **before** you press. Absent where the ring holds one.
-- [ ] `apps/web/components/controls/section-pill.tsx` -- S4b's **◀ ▶** at the head of the pill with S6's
+- [x] `apps/web/components/controls/section-pill.tsx` -- S4b's **◀ ▶** at the head of the pill with S6's
       mono counter between them, and — **R-159, place two of two** — a Shuffle control (the Kit's `Refresh`,
       **icon-only**, its words as accessible name and hover `title`) **before** S4b's divider, because the
       divider separates *which design* from *this section*. Each carries its title and accessible name
       (*"Previous design — ["*, as the frame writes it). All three are absent where the ring holds one,
       exactly as Duplicate is absent on a site-wide row.
-- [ ] `apps/web/lib/keymap.ts` -- land `[` and `]` (`gesture: 'prev' | 'next'`, `shift: false`, no `meta`),
+- [x] `apps/web/lib/keymap.ts` -- land `[` and `]` (`gesture: 'prev' | 'next'`, `shift: false`, no `meta`),
       dropping their `story` key -- they become `SINGLE_KEY` members and the `?` card lists them with no
       second list touched.
-- [ ] `apps/web/app/…/(editor)/editor.tsx` -- the `prev`/`next`/`shuffle` arms of `run()`; one `onDesign`
+- [x] `apps/web/app/…/(editor)/editor.tsx` -- the `prev`/`next`/`shuffle` arms of `run()`; one `onDesign`
       handler the panel, the pill and the keys all call; the swap through `apply` → `commit` so it is one
       edit and one `⌘Z`; the polite announcement from that one place; and the panel head gaining the
       category word beside the layer name (`:1893`'s own note).
-- [ ] `apps/web/lib/canvas-chrome.css` -- the swap's settle: a 180ms fade on the incoming root keyed on
+- [x] `apps/web/lib/canvas-chrome.css` -- the swap's settle: a 180ms fade on the incoming root keyed on
       `[data-inflozo-swapped]`, removed on the next frame, inert under `prefers-reduced-motion`
       (`EXPERIENCE.md:878`'s beat, and every transition instant under reduced motion). `mark()` re-applies
       it after the stamp, because `stampControls` strips what it does not own.
-- [ ] `apps/web/components/controls/item-list.tsx` -- the header prints `{count} items · {shown} shown in
+- [x] `apps/web/components/controls/item-list.tsx` -- the header prints `{count} items · {shown} shown in
       this design` when the design shows fewer than the instance holds -- FR-D13's exact sentence, from
       `PropRow.list`.
-- [ ] `apps/web/lib/controls-review.ts` · `app/(app)/app/(authed)/controls/page.tsx` · `review.tsx` --
+- [x] `apps/web/lib/controls-review.ts` · `app/(app)/app/(authed)/controls/page.tsx` · `review.tsx` --
       **R-158**: `samples()` returns all three fixture designs and the review page mounts the design picker
       (and both Shuffle seats it can carry) over them,
       holding `parkedControls` in its own state through the same pure `switchControls` -- the only surface on
       the deployed site where the rule itself can be exercised before Epic 9, for the owner's test and for
       R-82's.
-- [ ] `apps/web/app/(app)/app/harness/editor/page.tsx` -- the three fixture designs join the harness's
+- [x] `apps/web/app/(app)/app/harness/editor/page.tsx` -- the three fixture designs join the harness's
       `entries` and one section of the fixture category joins its Home doc, with a comment saying why (the
       library holds no ring yet) -- so the keyboard journey walks a **real** `[`/`]` on every commit. Check
       the picker stops that count rail rows or cards still pass.
-- [ ] `packages/library/src/placement.test.ts` · `packages/section-runtime/src/{controls,doc-edit,doc-schema,
+- [x] `packages/library/src/placement.test.ts` · `packages/section-runtime/src/{controls,doc-edit,doc-schema,
       index}.test.ts` · `apps/web/{ring,keymap,pilots}.test.ts` -- the I/O matrix's rows as unit tests: every
       partition arm, the wrap, carry/park/default and the exact round trip (dark override included), the
       item cap on both emitters, `parkedControls` defaulting for a doc written before it, and `[`/`]` both
       sides of the caret.
-- [ ] `tools/keyboard/journey.spec.mjs` -- `[` and `]` leave the deferred loop at `:401` and get a stop of
+- [x] `tools/keyboard/journey.spec.mjs` -- `[` and `]` leave the deferred loop at `:401` and get a stop of
       their own over the fixture ring: `]` changes the design and announces its position, `[` comes back,
       the parked value returns, `← →` cross the strip, and both keys are inert with a caret in a field.
-- [ ] `tools/probe/run-verify-editor.cjs` -- **first, DW-209**: execute the wheel hypothesis and fix what it
+- [x] `tools/probe/run-verify-editor.cjs` -- **first, DW-209**: execute the wheel hypothesis and fix what it
       shows. Then this story's steps after the last on file, inside step 5's one CSP session, with one
       `axeRun()` over the panel block and the pill — **no second node exception** (R-149).
-- [ ] `tools/probe/run-verify-controls.cjs` -- **R-158**: the deployed ring walk on `/controls`: the arrows
+- [x] `tools/probe/run-verify-controls.cjs` -- **R-158**: the deployed ring walk on `/controls`: the arrows
       change the design, a carried value survives, a parked one returns exactly, and the item count sentence
       reads as the engine counts it.
-- [ ] `docs/section-authoring.md` -- `data-items-limit` documented in the directive table and in the list
+- [x] `docs/section-authoring.md` -- `data-items-limit` documented in the directive table and in the list
       rule beside `data-repeat-limit` -- the authoring vocabulary is a documented deliverable (FR-G3), and a
       cap no author can find is a cap no design will use.
 
@@ -441,6 +442,31 @@ a second paint path for a visual flourish. It does not build S4c's pinned card (
 thirteen actions and a fourteenth key, and R-145 forbids inventing a fifteenth.
 
 ## Verification
+
+**As built (Dev, 2026-09-20).** Four departures from the spec's letter, each for a mechanical reason:
+- **`itemsShown` lives in `controls.ts`, not `core.ts`.** `core.ts` already imports `controls.ts` (`resolveControls`,
+  `withData`), so a reader in core that the panel called would be an import cycle. The CAP ITSELF is applied in
+  `expandItems` exactly as specified — one shared function, both emitters — and `controls.ts` has the tag scan
+  already. The comment beside it says so.
+- **`agreement.test.ts` gained one attribute, not a case.** Its leak fixture is DERIVED from `RENDERED_DIRECTIVES`
+  (`assert.ok(everyDirectiveSrc.includes(d))`), so a new rendered directive must appear in it or the partition test
+  fails. `data-items-limit="1"` joined the `data-items` element there, and the same test now asserts the cap is
+  honoured and leak-free on BOTH emitters — the proof got stronger, not weaker. `ad36.test.ts` is untouched.
+- **`instanceSchema.designId` widened from `/^a\d+\/\d+$/` to `categoryOf`'s own rule.** The ring fixture's
+  category is `controls`, and the keyboard harness stores one of its sections; a shape check whose grammar
+  disagreed with the library's would have refused a doc the library assembles. Everything the old pattern refused
+  it still refuses (`doc-schema.test.ts`).
+- **On `/controls` the pill draws its RING GROUP ALONE** (`sectionControls={false}`). That page holds one sample and
+  no doc, so Duplicate, Delete and the drag grip would be three dead controls (UX-DR3). The owner's step 12 expects
+  them there; the ring, the counter and Shuffle are, and the three section controls are not.
+
+**DW-209, EXECUTED (standing rule 1) and FIXED.** Driven in Chromium through this repository's own Playwright over
+the keyboard harness: a wheel synthesised over `[data-add-section]` scrolled the canvas document **0px**, and the
+identical wheel over the iframe **500px** — so the hypothesis holds as a MECHANISM, though at the harness's own
+geometry `(700, 600)` fell on the iframe rather than on the pill, which is why the deployed check fails *most* runs
+rather than all. The fix is the ledger's own: both pills forward their wheel to the canvas
+(`section-pill.tsx`'s `onWheel` → `editor.tsx`'s `wheelToCanvas`), and the same control re-run after it reads
+**500px** on both pills. A customer felt the identical stall, so this is a fix and not a test repair.
 
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, including the new partition,

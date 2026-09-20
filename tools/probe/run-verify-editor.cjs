@@ -3484,6 +3484,66 @@ async function main() {
     await page.waitForTimeout(300)
     await freshLoad()
 
+    /* ── step 86 — STORY 5.11, THE DESIGN RING, AND WHAT IT LOOKS LIKE WHERE THERE IS NOWHERE TO GO ──────────
+       The shipped library holds ONE design per category, so every ring on this project has length 1 and this
+       step is a test of ABSENCE (UX-DR3, R-118, and R-158 in the owner's own words): the counter says where it
+       is, one sentence says why there is nothing to press, and not one of the four doors is drawn. The RULE
+       itself — carry / park / default over a real ring — is `run-verify-controls.cjs`'s, on `/controls`. */
+    await clickOn(GRID)
+    await page.waitForTimeout(300)
+    const ring511 = await page.evaluate(() => {
+      const block = document.getElementById('editor-design')
+      if (!block) return null
+      return {
+        counter: document.getElementById('editor-design-count')?.textContent ?? null,
+        name: document.getElementById('editor-design-name')?.textContent ?? null,
+        note: document.getElementById('editor-design-note')?.textContent ?? null,
+        arrows: block.querySelectorAll('[data-design-step]').length,
+        strip: block.querySelectorAll('[data-design-strip]').length,
+        tryCard: block.querySelectorAll('[data-try-design]').length,
+        chips: [...block.querySelectorAll('kbd')].map((k) => k.textContent),
+        // B1a: the block sits ABOVE the settings groups and inside none of them (FR-F3)
+        aboveGroups: !block.closest('[role="region"]') && block.compareDocumentPosition(document.querySelector('#editor-controls [aria-expanded]')) === Node.DOCUMENT_POSITION_FOLLOWING,
+      }
+    })
+    check('step 86 — B1a: the Design block is at the head of the panel, above every settings group and inside none (FR-F3)',
+      ring511 !== null && ring511.aboveGroups, JSON.stringify(ring511))
+    check('step 86 — with one design in the ring the counter still says where it is, and one plain sentence says why there is nothing to press (R-12, R-158)',
+      ring511 !== null && ring511.counter === 'Design 1 of 1' && /one design/.test(ring511.note ?? '') && (ring511.name ?? '') !== '', JSON.stringify(ring511))
+    check('step 86 — ABSENT, NEVER GREYED (UX-DR3): no arrows, no thumbnail strip, no Try-a-design card and no key chips where the ring holds one',
+      ring511 !== null && ring511.arrows === 0 && ring511.strip === 0 && ring511.tryCard === 0 && ring511.chips.length === 0, JSON.stringify(ring511))
+    // S4b + S6's pill gives the same answer: the counter, the arrows and Shuffle arrive with the ring, not before
+    await page.mouse.move(120, 400)
+    await clickOn(GRID)
+    const pill511 = await page.evaluate(() => {
+      const pill = document.querySelector('[data-section-pill]')
+      return pill === null ? null : {
+        count: pill.querySelectorAll('[data-pill-count]').length,
+        shuffle: pill.querySelectorAll('[data-pill-shuffle]').length,
+        labels: [...pill.querySelectorAll('button')].map((b) => b.getAttribute('aria-label')),
+      }
+    })
+    check('step 86 — and the section\'s own pill agrees: no counter, no ◀ ▶ and no Shuffle, and the three controls Story 5.4 built are untouched',
+      pill511 !== null && pill511.count === 0 && pill511.shuffle === 0 && pill511.labels.every((l) => !/design|Shuffle/i.test(l ?? '')), JSON.stringify(pill511))
+    // the keys: bound, listed, and doing nothing where there is nothing to do (⌘D's own rule)
+    const before511 = await saidNow59()
+    const design511 = await page.evaluate(() => document.getElementById('editor-design-name')?.textContent ?? null)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('[')
+    await page.keyboard.press(']')
+    await page.waitForTimeout(400)
+    check('step 86 — `[` and `]` with one design in the ring do nothing and announce nothing — no flicker, no error (the matrix\'s "ring of one")',
+      (await page.evaluate(() => document.getElementById('editor-design-name')?.textContent ?? null)) === design511 && (await saidNow59()) === before511,
+      JSON.stringify({ design511, said: await saidNow59() }))
+    await page.keyboard.press('?')
+    await page.waitForTimeout(400)
+    const chips511 = await page.evaluate(() => [...document.querySelectorAll('dialog[open][data-shortcuts-sheet] [data-shortcut-row] span span')].map((s) => s.textContent))
+    check('step 86 — R-145: the `?` card now lists **Previous design `[`** and **Next design `]`**, which were deliberately missing until this story',
+      chips511.includes('[') && chips511.includes(']'), JSON.stringify(chips511))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    await freshLoad()
+
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     for (const path of ['/harness/editor', '/harness/canvas']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
@@ -3758,7 +3818,10 @@ async function main() {
     await axePage.mouse.move(120, 400)
     await axePage.waitForTimeout(300)
     const selectedAxe = await axeRun()
-    check('step 8 — axe: zero violations with Three Up selected (its panel mounted)', selectedAxe.length === 0 && (await axePage.locator('aside[aria-label="Section settings"]').count()) === 1, selectedAxe.join('; '))
+    // STORY 5.11: the panel that is mounted here carries B1a's Design block, so this run IS the block's axe run —
+    // stated rather than assumed, because a block that failed to draw would otherwise leave the zero meaningless
+    check('step 8 — axe: zero violations with Three Up selected (its panel mounted, B1a\'s Design block with it)',
+      selectedAxe.length === 0 && (await axePage.locator('aside[aria-label="Section settings"]').count()) === 1 && (await axePage.locator('#editor-design').count()) === 1, selectedAxe.join('; '))
     // twice more (Story 5.3): with the mark toolbar showing over a word, and with its link panel open
     const springAxe = await textIn(axePage, stackOf('home').findIndex(([d]) => d === 'a17/1'), '.a17-1__title', 'spring')
     await axePage.mouse.dblclick(springAxe.x, springAxe.y)
@@ -3781,7 +3844,7 @@ async function main() {
     await axePage.keyboard.press('Enter')
     await axePage.waitForTimeout(400)
     const layersAxe = await axeRun()
-    check('step 8 — axe: zero violations with S4b\'s pill showing and a Layers row\'s ⋯ menu open', layersAxe.length === 0 && (await axePage.locator('[data-section-pill]').count()) === 1 && (await axePage.locator('[popover]:popover-open').count()) === 1, layersAxe.join('; '))
+    check('step 8 — axe: zero violations with S4b\'s pill showing (Story 5.11\'s ring group included) and a Layers row\'s ⋯ menu open', layersAxe.length === 0 && (await axePage.locator('[data-section-pill]').count()) === 1 && (await axePage.locator('[popover]:popover-open').count()) === 1, layersAxe.join('; '))
     // Story 5.9's own state: R-147's shortcuts card open over the editor
     await axePage.keyboard.press('Escape')
     await axePage.locator('section[aria-label="Canvas"]').focus()

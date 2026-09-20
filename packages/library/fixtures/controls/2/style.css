@@ -1,0 +1,37 @@
+/* Story 5.11's ring fixture, design 2. Flat, `var(--…)` over the reference tokens only, every control selecting
+   on its `data-` attribute on the section root (AD-3), and its own `cy` prefix so the three samples' stylesheets
+   can sit in one canvas document without meeting. */
+
+.cy { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.cy[data-bg="surface"] { background: var(--bg-surface); }
+.cy[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.cy[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.cy[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
+.cy[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
+.cy[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
+.cy[data-frame="box"] { border: 1px solid var(--border-hairline); border-radius: var(--radius-card); }
+
+.cy__band { display: grid; gap: var(--space-gap); align-items: center; margin-block-end: var(--space-gap); }
+.cy[data-image="side"] .cy__band { grid-template-columns: minmax(0, 2fr) minmax(0, 3fr); }
+.cy[data-align="center"] .cy__words { text-align: center; }
+.cy__picture { display: block; width: 100%; height: auto; border-radius: var(--radius-card); }
+.cy__words { display: flex; flex-direction: column; gap: 0.5rem; }
+.cy__eyebrow { margin: 0; font-size: 0.8125rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.cy[data-bg="contrast"] .cy__eyebrow { color: var(--text-on-contrast); }
+.cy__title { margin: 0; font-family: var(--font-heading); font-size: 2.25rem; line-height: 1.1; }
+.cy__link { color: var(--link-color); text-decoration: var(--link-decoration); }
+.cy[data-bg="contrast"] .cy__link { color: var(--accent-on-contrast); }
+
+.cy__features { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--space-gap); grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cy[data-columns="2"] .cy__features { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cy[data-columns="4"] .cy__features { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cy__feature { display: flex; align-items: center; gap: 0.5rem; padding: 1rem; border-radius: var(--radius-card); }
+.cy[data-card="outlined"] .cy__feature { border: 1px solid var(--border-hairline); }
+.cy[data-card="raised"] .cy__feature { background: var(--bg-elevated); box-shadow: var(--shadow-card); color: var(--text-body); }
+.cy__icon { display: inline-flex; color: var(--accent); }
+.cy__icon svg { width: 1.25rem; height: 1.25rem; }
+.cy[data-icons="off"] .cy__icon { display: none; }
+.cy__feature-title { font-weight: 600; }
+
+@media (max-width: 834px) { .cy[data-columns="4"] .cy__features { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 390px) { .cy__features, .cy[data-image="side"] .cy__band { grid-template-columns: minmax(0, 1fr); } }

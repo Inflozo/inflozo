@@ -1,0 +1,31 @@
+{
+  "name": "Controls sample — a banded pair",
+  "tier": "free",
+  "bindingContext": ["none"],
+  "compileTarget": ["home.hbs", "index.hbs", "page.hbs"],
+  "controlSchema": [
+    { "name": "columns", "type": "stepper", "label": "Columns", "group": "layout", "values": ["2", "3", "4"], "default": "3" },
+    { "name": "card", "type": "named-select", "label": "Card style", "group": "style", "values": ["flat", "outlined", "raised"], "default": "outlined" },
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "layout", "values": ["start", "center"], "default": "start",
+      "valueLabels": { "start": "Left", "center": "Centre" } },
+    { "name": "icons", "type": "toggle", "label": "Show icons", "group": "content", "values": ["on", "off"], "default": "on" },
+    { "name": "image", "type": "segmented", "label": "Image position", "group": "layout", "values": ["top", "side"], "default": "side" },
+    { "name": "frame", "type": "segmented", "label": "Outer frame", "group": "style", "values": ["none", "box"], "default": "none",
+      "valueLabels": { "none": "None", "box": "Box" } }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"], "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "ghostCompat": { "minVersion": "5.0.0", "helpers": [] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "banner-pair",
+    "containment": "band",
+    "ground": "base",
+    "itemCount": "pair",
+    "mediaPlacement": "side",
+    "emphasis": "the ring's second sample: it drops Card tint and Rule under heading, adds Outer frame, and shows two features however many are authored"
+  }
+}

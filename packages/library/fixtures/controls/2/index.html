@@ -1,0 +1,29 @@
+<!-- Story 5.11's ring fixture, design 2 of 3 (R-158). A FIXTURE, not a library design — it lives outside
+     `designs/`, and its category id `controls` names no category, so `packages/library/designs/` is untouched
+     (AD-35). It shares design 1's category union (`../content.json`), its bindingContext and its compileTarget,
+     so `samePartition` puts the three in ONE ring.
+
+     WHAT IT PROVES. It CARRIES `columns`, `card`, `align`, `icons` and `image`; it DROPS `rule` and `tint` (the
+     library's `darkOverride: true` control), which park against design 1 on the way out and come back exactly on
+     the way in; and it ADDS `frame`, which starts at its own default. It also declares
+     `data-items-limit="2"` against the category's three authored features, so FR-D13's "3 items · 2 shown in this
+     design" is a real render on both emitters rather than a claim. It draws no picture prop into a `data-repeat`
+     and declares no `{{#get}}`, so a Ghost query coming and going across a swap is proved too. -->
+<section class="cy" data-bg="surface" data-spacing="comfortable" data-divider="line"
+         data-columns="3" data-card="outlined" data-align="start" data-icons="on"
+         data-image="side" data-frame="none">
+  <div class="cy__band">
+    <img class="cy__picture" data-prop-attr="src:picture;alt:pictureAlt" data-empty="hide" alt="">
+    <div class="cy__words">
+      <p class="cy__eyebrow" data-prop="eyebrow">This week at Orbit Weekly</p>
+      <h2 class="cy__title" data-prop="heading">Seven links, checked by hand</h2>
+      <a class="cy__link" data-prop="issue.label" data-prop-attr="href:issue.link">Read the latest issue</a>
+    </div>
+  </div>
+  <ul class="cy__features">
+    <li class="cy__feature" data-items="features" data-items-limit="2">
+      <span class="cy__icon" data-prop="features[].icon"></span>
+      <span class="cy__feature-title" data-prop="features[].title">A feature</span>
+    </li>
+  </ul>
+</section>

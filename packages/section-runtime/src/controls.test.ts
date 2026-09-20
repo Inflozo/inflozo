@@ -16,10 +16,14 @@ import { CONTROL_CAP, UNIVERSALS, assembleEntry, categoryControlUnion, orbitWeek
 import type { CategoryContent, DesignJson, IconLookup } from '@inflozo/library'
 import { ICONS, filledKey, iconDrawing } from '@inflozo/library/icons'
 import design from '../../library/fixtures/controls/1/design.json' with { type: 'json' }
+// Story 5.11's ring fixture — the other two designs of the same category (R-158)
+import design2 from '../../library/fixtures/controls/2/design.json' with { type: 'json' }
+import design3 from '../../library/fixtures/controls/3/design.json' with { type: 'json' }
 import content from '../../library/fixtures/controls/content.json' with { type: 'json' }
 import {
-  addItem, darkOverridesInForce, defaultContent, duplicateItem, moveItem, removeItem, resetChanges, resetControl,
-  resetSection, resolveControls, setContent, setControl, setData, sidebar, storedFor, withData,
+  addItem, darkOverridesInForce, defaultContent, duplicateItem, itemsShown, moveItem, removeItem, resetChanges,
+  resetControl, resetSection, resolveControls, setContent, setControl, setData, sidebar, storedFor, switchControls,
+  withData,
 } from './controls.ts'
 import type { ControlRow, ControlState, DataRow, Mode, PropRow } from './controls.ts'
 import { editText, iconSvg, renderCanvas, renderTheme } from './index.ts'
@@ -37,6 +41,26 @@ const HTML = `<section class="cx" data-bg="base" data-spacing="comfortable" data
   <a class="cx__link" data-prop="archive.label" data-prop-attr="href:archive.link" data-empty="hide">a</a>
   <h3 data-prop="archiveHeading">f</h3>
   <ol class="cx__posts"><li class="cx__post" data-repeat="latest"><a data-bind-attr="href:url" data-bind="title">p</a></li></ol>
+</section>`
+
+/* Story 5.11's ring fixture, held in memory for the same reason `HTML` is: a core package's test cannot open a
+   file (AD-1). The on-disk copies are validated end to end by `tools/stress/test-vocabulary.mjs` and
+   `apps/web/controls.test.ts`, and the shapes below carry exactly what these tests read — the roots' declared
+   controls, the features list and, on design 2, FR-D13's cap. */
+const HTML2 = `<section class="cy" data-bg="surface" data-spacing="comfortable" data-divider="line" data-columns="3" data-card="outlined" data-align="start" data-icons="on" data-image="side" data-frame="none">
+  <p class="cy__eyebrow" data-prop="eyebrow">e</p>
+  <h2 class="cy__title" data-prop="heading">h</h2>
+  <img class="cy__picture" data-prop-attr="src:picture;alt:pictureAlt" data-empty="hide" alt="">
+  <ul class="cy__features"><li class="cy__feature" data-items="features" data-items-limit="2"><span class="cy__icon" data-prop="features[].icon"></span><span class="cy__t" data-prop="features[].title">t</span></li></ul>
+  <a class="cy__link" data-prop="issue.label" data-prop-attr="href:issue.link">l</a>
+</section>`
+
+const HTML3 = `<section class="cz" data-bg="base" data-spacing="comfortable" data-divider="none" data-columns="2" data-card="flat" data-align="center" data-rule="line" data-stack="rows">
+  <p class="cz__eyebrow" data-prop="eyebrow">e</p>
+  <h2 class="cz__title" data-prop="heading">h</h2>
+  <time class="cz__date" data-prop="nextIssue" data-prop-attr="datetime:nextIssue">d</time>
+  <ul class="cz__features"><li class="cz__feature" data-items="features"><span class="cz__t" data-prop="features[].title">t</span></li></ul>
+  <a class="cz__link" data-prop="archive.label" data-prop-attr="href:archive.link" data-empty="hide">a</a>
 </section>`
 
 const assembled = assembleEntry({
@@ -603,4 +627,129 @@ test('FR-D7 — `darkOverridesInForce` is the panel\'s moon, exactly, for both k
   const moons = sidebar(entry, state).groups.flatMap((g) => g.rows.flatMap((r) => (r.kind === 'control' && r.moon ? [r.name] : [])))
   assert.deepEqual([...moons].sort(), [...darkOverridesInForce(entry, state)].sort())
   assert.deepEqual(darkOverridesInForce(entry, start()), [])
+})
+
+// ─── Story 5.11 — carry / park / default, and FR-D13's per-design item cap ──────────────────────────────────
+//
+// THE THREE FIXTURE DESIGNS ARE THE ONLY RING IN THE REPOSITORY (R-158): design 1 declares `tint` and `rule`,
+// design 2 declares neither and adds `frame`, design 3 declares `rule` and adds `stack` — so every arm of the
+// rule, and a parked value surviving an INTERMEDIATE design, is a real declaration rather than a mock.
+
+const ringEntry = (n: '1' | '2' | '3') => {
+  const built = assembleEntry({
+    dir: `packages/library/fixtures/controls/${n}`,
+    design: (n === '1' ? design : n === '2' ? design2 : design3) as unknown as DesignJson,
+    content: content as unknown as CategoryContent,
+    html: n === '1' ? HTML : n === '2' ? HTML2 : HTML3,
+    css: '',
+  })
+  if (typeof built === 'string') throw new Error(built)
+  return built
+}
+const d1 = ringEntry('1')
+const d2 = ringEntry('2')
+const d3 = ringEntry('3')
+const withId = (e: typeof d1) => ({ id: e.id, controlSchema: e.controlSchema, universals: e.universals })
+
+test('a control BOTH designs declare carries its value, in light and in dark', () => {
+  const state: ControlState = { controls: { align: 'center', columns: '4' }, darkOverrides: { bg: 'contrast' } }
+  const next = switchControls(withId(d1), withId(d2), state)
+  assert.equal(next.controls['align'], 'center')
+  assert.equal(next.controls['columns'], '4')
+  // a universal is declared by every design, so it can never park
+  assert.equal(next.darkOverrides['bg'], 'contrast')
+  assert.deepEqual(next.parkedControls, {})
+})
+
+test('a control only the OUTGOING design declares parks against ITS design id, its dark override with it', () => {
+  const state: ControlState = { controls: { tint: 'strong', align: 'center' }, darkOverrides: { tint: 'soft', bg: 'contrast' } }
+  const next = switchControls(withId(d1), withId(d2), state)
+  assert.equal(next.controls['tint'], undefined, 'the outgoing design\'s own control is not left on the instance')
+  assert.equal(next.darkOverrides['tint'], undefined, 'and neither is its dark override (AD-30)')
+  assert.deepEqual(next.parkedControls, { 'controls/1': { controls: { tint: 'strong' }, darkOverrides: { tint: 'soft' } } })
+  // nothing else moved
+  assert.equal(next.controls['align'], 'center')
+  assert.equal(next.darkOverrides['bg'], 'contrast')
+})
+
+test('a control only the INCOMING design declares is left unstored, so it resolves to its own default', () => {
+  const next = switchControls(withId(d1), withId(d2), { controls: { align: 'center' } })
+  assert.equal(next.controls['frame'], undefined, 'nothing is written for a control the customer has not touched')
+  assert.equal(resolveControls(d2, next.controls)['frame'], 'none', "and it resolves to the incoming design's declared default")
+})
+
+test('THE ROUND TRIP: 1 → 2 → 3 → 1 restores every parked value exactly, dark override included, and clears the record', () => {
+  const start_: ControlState = { controls: { tint: 'strong', rule: 'none', align: 'center' }, darkOverrides: { tint: 'soft' } }
+  const one = switchControls(withId(d1), withId(d2), start_)
+  // ON THE WAY OUT: parked against design 1, and nothing of it is readable on design 2
+  assert.equal(resolveControls(d2, one.controls)['tint'], undefined)
+  // THE INTERMEDIATE DESIGN: design 3 declares neither, so the record is still design 1's and untouched
+  const two = switchControls(withId(d2), withId(d3), { ...one })
+  assert.deepEqual(two.parkedControls['controls/1'], { controls: { tint: 'strong', rule: 'none' }, darkOverrides: { tint: 'soft' } })
+  // AND HOME
+  const back = switchControls(withId(d3), withId(d1), { ...two })
+  assert.equal(back.controls['tint'], 'strong')
+  assert.equal(back.controls['rule'], 'none')
+  assert.equal(back.darkOverrides['tint'], 'soft')
+  assert.deepEqual(back.parkedControls, {}, 'a restore clears the record, so a doc cannot keep a stale second copy')
+  assert.equal(back.controls['align'], 'center', 'and the carried control never left')
+})
+
+test('a name NEITHER design declares is left exactly where it is — it is a third design\'s to mean', () => {
+  const next = switchControls(withId(d2), withId(d3), { controls: { unknownName: 'x' }, darkOverrides: { alsoUnknown: 'y' } })
+  assert.equal(next.controls['unknownName'], 'x')
+  assert.equal(next.darkOverrides['alsoUnknown'], 'y')
+  assert.deepEqual(next.parkedControls, {})
+})
+
+test('switching to the design already in force changes nothing at all', () => {
+  const state: ControlState = { controls: { tint: 'strong' }, parkedControls: { 'controls/2': { controls: { frame: 'box' }, darkOverrides: {} } } }
+  const next = switchControls(withId(d1), withId(d1), state)
+  assert.deepEqual(next.controls, { tint: 'strong' })
+  assert.deepEqual(next.parkedControls, { 'controls/2': { controls: { frame: 'box' }, darkOverrides: {} } })
+})
+
+test('a restored value wins over a carried one, and it happens once', () => {
+  // `rule` is declared by designs 1 and 3 and not by 2: parked leaving 1, defaulted on 3, and changed there
+  const out = switchControls(withId(d1), withId(d2), { controls: { rule: 'none' } })
+  const on3 = switchControls(withId(d2), withId(d3), { ...out, controls: { ...out.controls } })
+  const changed: ControlState = { ...on3, controls: { ...on3.controls, rule: 'line' } }
+  const home_ = switchControls(withId(d3), withId(d1), changed)
+  assert.equal(home_.controls['rule'], 'none', 'the value design 1 was left with is what design 1 gets back')
+  assert.deepEqual(home_.parkedControls, {})
+})
+
+test('junk in the stored maps is ignored rather than thrown, as every other read of a stored record is', () => {
+  const next = switchControls(withId(d1), withId(d2), { controls: 'nonsense' as unknown as Record<string, unknown>, parkedControls: { 'controls/1': null as unknown as { controls: Record<string, unknown>; darkOverrides: Record<string, unknown> } } })
+  assert.deepEqual(next.controls, {})
+  assert.deepEqual(next.parkedControls, {})
+})
+
+test('FR-D13: the panel reports what THIS design draws, and the items past it are untouched', () => {
+  // the category authors three features; design 2 declares `data-items-limit="2"` and the others declare none
+  const listOf = (e: typeof d1) => {
+    const row = sidebar(e, start()).groups.flatMap((g) => g.rows).find((r): r is PropRow => r.kind === 'prop' && r.path === 'features')
+    assert.ok(row?.list, 'the features list is drawn')
+    return row.list
+  }
+  assert.equal(listOf(d1).count, 3)
+  assert.equal(listOf(d1).shown, 3, 'a design with no cap shows everything')
+  assert.equal(listOf(d2).count, 3, 'the instance still holds three: a cap is a render rule, never a storage one')
+  assert.equal(listOf(d2).shown, 2)
+  assert.equal(itemsShown(d2.html, 'features'), 2)
+  assert.equal(itemsShown(d1.html, 'features'), undefined)
+  assert.equal(itemsShown(d2.html, 'notAList'), undefined)
+})
+
+test('the item cap renders on BOTH emitters, and the same number of copies', () => {
+  const state = start()
+  const canvasHtml = renderCanvas(doc(), d2.html, { content: state.content, schema: d2.contentSchema, controlSchema: d2.controlSchema, universals: d2.universals, icons: iconDrawing, target: 'home.hbs' })
+  const themeHtml = renderTheme(doc(), d2.html, { content: state.content, schema: d2.contentSchema, controlSchema: d2.controlSchema, universals: d2.universals, icons: iconDrawing, target: 'home.hbs' }).template
+  for (const [name, html] of [['canvas', canvasHtml], ['theme', themeHtml]] as const) {
+    assert.equal((html.match(/class="cy__feature"/g) ?? []).length, 2, `${name}: ${html}`)
+    assert.ok(html.includes('Every Thursday') === false, `${name} drew the third item`)
+  }
+  // and the uncapped design draws all three, so the cap is the difference and not the markup
+  const all = renderCanvas(doc(), d1.html, { content: state.content, schema: d1.contentSchema, controlSchema: d1.controlSchema, universals: d1.universals, icons: iconDrawing, target: 'home.hbs', dataBindings: d1.dataBindings, getRows: { latest: [] } })
+  assert.equal((all.match(/class="cx__feature"/g) ?? []).length, 3)
 })

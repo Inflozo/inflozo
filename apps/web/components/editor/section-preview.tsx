@@ -46,6 +46,7 @@ export function SectionPreview({
   icons,
   mode,
   src,
+  assets,
   onAspect,
 }: {
   entry: SectionRegistryEntry
@@ -57,6 +58,10 @@ export function SectionPreview({
   mode: Mode
   /** the canvas document's own address, as the editor resolves it — never a second literal */
   src: string
+  /** Story 5.11 — the asset map, where it is not the editor's own. `/controls` serves its pictures from its own
+   *  frame route, so the design ring mounted there hands its map in rather than resolving `canvas?image=` against
+   *  a path that route does not answer. Omitted everywhere else, which is the editor and the Section Picker. */
+  assets?: Readonly<Record<string, string>>
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
@@ -119,7 +124,7 @@ export function SectionPreview({
         feed: 'first',
         member: 'anonymous',
         visibility: 'everyone',
-        assets: canvasAssets(pool),
+        assets: assets ?? canvasAssets(pool),
         icons,
       }))
       // A CLOSED PICKER MEASURES 0 (it is kept mounted, `display:none`): a mode flip from the top bar repaints here
@@ -138,7 +143,7 @@ export function SectionPreview({
   }
   // the icons arrive asynchronously and the mode flips under a live picker: both repaint what is already there
   // — and so does a canvas change: the card is keyed by design and kept, so its target and rows can change under it
-  useEffect(paint, [near, mode, icons, target, rows])
+  useEffect(paint, [near, mode, icons, target, rows, entry])
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0

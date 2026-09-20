@@ -4,15 +4,16 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, duplicateSection, getPath, insertSection, isDesigned,
   moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
-  stampControls, storedFor,
+  stampControls, storedFor, switchDesign,
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
+import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
@@ -39,6 +40,7 @@ import {
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { holdsCaret, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
@@ -132,6 +134,19 @@ import type { EditorData } from './read'
    one place: the first edit to a canvas makes it the user's, and taking its last section off gives it back to the
    default stack, marker and all — while merely HIDING them all does not (FR-D5).
 
+   THE DESIGN RING (Story 5.11 — B1a, S4b + S6, FR-D19, R-158, R-159). A placed section is no longer stuck with the
+   look it arrived in: `]` and `[`, the ◀ ▶ on the section's own quick-action pill, a thumbnail in the panel's
+   Design block and Shuffle in either of R-159's two seats all reach ONE handler here, which calls ONE doc
+   operation (`switchDesign`) through `apply` → `commit` — so a swap is one edit, one journal entry and one `⌘Z`
+   (AD-15, AD-16) and the position is announced politely from the one place all four doors pass. WHICH designs are
+   reachable is the library's `ringFor`, beside `offeredOn`, so the partition rule and the placement rule cannot
+   drift; WHAT a swap does to the stored values is the runtime's `switchControls` (carry / park / default), and
+   content, items and `data` are untouched by construction because a ring never leaves its category. THE LIBRARY
+   HOLDS ONE DESIGN PER CATEGORY TODAY, so every ring here has length 1 and every one of those controls is ABSENT
+   (UX-DR3) with the block reading "Design 1 of 1" and one sentence saying why — the day Epic 9 fills a category
+   they appear on their own, because every count is derived (R-158; the rule itself is exercised on the deployed
+   `/controls` review page and on the keyboard harness, both over the three-design fixture ring).
+
    LIGHT AND DARK (Story 5.6 — S4a's sun, R-132, R-133, D6a). THE PREVIEW IS ONE ATTRIBUTE AND A RE-STAMP, NEVER A
    REPAINT: the canvas document's `<html>` carries `data-mode`, which `tokens.ts` reserved for exactly this
    (`:165-172` — no fourth mode signal exists), the token block does the colouring, and a flip re-stamps each root
@@ -157,7 +172,7 @@ import type { EditorData } from './read'
    the session and a reload starts from the stored docs), View as (5.14),
    Ship it (7.18), the name's rename underline (no story yet),
    "+ Add section" and the hairline "+" between sections (5.10),
-   the design arrows and S4c's "4 / 18" chip (5.11) and the Style Pack card (6.3)
+   and the Style Pack card (6.3)
    (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the VISITOR's `mode-toggle` and a
    different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's docked bar at 390
    (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
@@ -278,6 +293,15 @@ export function Editor({
    *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
    *  card fills the room available. */
   const [device, setDevice] = useState<Device>(DESKTOP)
+  /* STORY 5.11 — WHICH design a Shuffle would land on, held so the `Try a design` card can NAME IT BEFORE THE
+     PRESS (R-159's whole reason for the panel seat). One number, re-drawn after each shuffle; the destination is
+     `shuffleTo(len, at, () => seed)`, so it also follows the arrows without a second piece of state.
+     IT STARTS AT 0 AND IS RANDOMISED ON MOUNT, never in the initializer: this component is prerendered, and a
+     `Math.random()` read during render would name a different design on the server than in the browser. */
+  const [shuffleSeed, setShuffleSeed] = useState(0)
+  useEffect(() => setShuffleSeed(Math.random()), [])
+  /** the section a swap has just landed on, for `canvas-chrome.css`'s 180ms settle — cleared when it is over */
+  const swapped = useRef<Pick | null>(null)
 
   /* ─── Story 5.8 — the journal, the indicator and the flush ───────────────────────────────────────────────────────
    *
@@ -378,6 +402,13 @@ export function Editor({
    *  "+ Add section" pill and the Layers footer's button are all readers of it: where nothing can be placed there
    *  is no affordance, rather than an affordance that opens an empty picker (UX-DR3). */
   const canAdd = offeredHere(entries, canvas.file, SITE.file).length > 0
+  /** What this section may become, from the library and nowhere else (`ringFor` sits beside `offeredOn`). The
+   *  design it IS is always in it; a design the library no longer holds gives an empty ring, which reads as one
+   *  design with nowhere to go — the same answer every category gives today. */
+  const ringOf = (designId: string): SectionRegistryEntry[] => {
+    const entry_ = entries[designId]
+    return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
+  }
   // the canvas document's handlers and paint read the latest values through here
   const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd })
   latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd }
@@ -631,6 +662,9 @@ export function Editor({
       // and not `data-inflozo-hover`, because the two genuinely differ: a canvas nothing can be placed on is hovered
       // exactly as any other and offers no gap to press.
       root.toggleAttribute('data-inflozo-insert', now.canAdd && same(placed, now.hovered))
+      // Story 5.11 — the swap's 180ms settle. Re-applied here after every stamp for the same reason the two
+      // above are: `stampControls` strips every root `data-*` it does not own.
+      root.toggleAttribute('data-inflozo-swapped', same(placed, swapped.current))
     })
   }
   /** The stored slice each root's attributes come from, in the mode being shown — `stampControls`' single door,
@@ -941,6 +975,10 @@ export function Editor({
       // precedent); with nothing selected, at the end of this canvas's own stack. Where nothing can be placed there
       // is nothing to open (UX-DR3), exactly as the sun does nothing on a Light-only project.
       case 'add': return openPicker(pick ? latest.current.stack.findIndex((i) => same(i, pick)) : null)
+      // STORY 5.11 — the ring, ON THE SELECTION and never the hover, exactly as ⌘D and Del are. With nothing
+      // selected, or where the category holds one design, nothing happens and nothing is announced (⌘D's rule).
+      case 'prev': return stepDesign(pick, -1)
+      case 'next': return stepDesign(pick, 1)
       case 'save': return void flush('manual')
       case 'undo': return onUndo()
       case 'redo': return onRedo()
@@ -1205,9 +1243,10 @@ export function Editor({
       const how = landed ? ({ kind: 'local' } as const) : hydrationFor(held, revision)
       if (how.kind === 'local' && held) {
         // A LOCAL DOC MAY NAME A DESIGN THE SERVER'S DOCS DO NOT, and `entries` was built from the server's — so the
-        // library is asked before the local document is trusted. Nothing today can reach this (no surface adds or
-        // swaps a design until 5.10 and 5.11), and the alternative to asking is a canvas that throws for the whole
-        // editor on the next load.
+        // library is asked before the local document is trusted. Since 5.10 and 5.11 two surfaces can put one there
+        // (a placement and a design swap), and the alternative to asking is a canvas that throws for the whole
+        // editor on the next load. `read.ts` hands over every PLACEABLE design, which is exactly what a ring is
+        // drawn from, so a swap made in this browser survives the reload.
         const unknown = Object.values(held.docs).some((doc) => vanishedDesign(doc, (id) => entries[id] !== undefined))
         if (!unknown) {
           const back = autoFrom(held.auto, canvases) as CanvasKey[]
@@ -1325,6 +1364,12 @@ export function Editor({
   const pointed = hovered ? stack.find((i) => same(i, hovered)) : undefined
   const entry = chosen ? entries[chosen.designId] : undefined
   const pro = plan === 'free' && entry?.tier === 'pro'
+  /* Story 5.11 — the SELECTED section's ring feeds the panel block, the HOVERED one's feeds the pill: the pill is
+     drawn for what the pointer is over, which is not always what is chosen. Both are derived, so a category that
+     holds one design draws no arrow anywhere without a second rule saying so (UX-DR3). */
+  const chosenRing = chosen ? ringOf(chosen.designId) : []
+  const chosenAt = chosen ? chosenRing.findIndex((e) => e.id === chosen.designId) : -1
+  const pointedRing = pointed ? ringOf(pointed.designId) : []
   // on a hovered selection the selected box's 1.5px is the only outline (S4c)
   const hoverOutline = pointed && !same(hovered, selected)
   const hoveredRoot = pointed ? rootOf(hovered) : null
@@ -1436,6 +1481,66 @@ export function Editor({
   }
   const onRename = (pick: Pick, name: string) => apply(pick, (doc) => renameSection(doc, pick.instanceId, name))
 
+  /* ─── Story 5.11 — THE DESIGN RING: four doors, one handler, one edit (FR-D19, AD-15, AD-16) ─────────────────
+   *
+   * `onDesign` is the whole of it. The panel's thumbnails call it with a design id; its arrows, the section pill's
+   * arrows and `[` / `]` call `stepDesign`, which is `step()` over the same ring; both Shuffle seats call
+   * `onShuffle`. Every one of them ends in ONE `switchDesign` through `apply` → `commit`, so a swap is one
+   * transaction and one `⌘Z` — a Shuffle is not several edits — and the polite announcement is made HERE, where
+   * the key and every button reach it (`onDuplicate`'s own rule, UX-DR12).
+   */
+
+  /** `canvas-chrome.css`'s settle: the attribute goes on after the paint and comes off when the animation's own
+   *  180ms is up. Never on the next frame — that would cancel the animation rather than end it. */
+  const SWAP_MS = 180
+  const markSwapped = (pick: Pick) => {
+    swapped.current = pick
+    mark()
+    setTimeout(() => {
+      if (!same(swapped.current, pick)) return
+      swapped.current = null
+      mark()
+    }, SWAP_MS)
+  }
+
+  const onDesign = (pick: Pick, to: string) => {
+    const placed = latest.current.stack.find((i) => same(i, pick))
+    if (!placed || to === placed.designId) return
+    const ring = ringOf(placed.designId)
+    if (!edit(pick, (doc) => switchDesign(doc, pick.instanceId, to, ring))) return
+    setSaid(announce(ring.findIndex((e) => e.id === to), ring.length, entries[to]?.name ?? to))
+    markSwapped(pick)
+  }
+
+  /** `[` `]`, the panel's ◀ ▶ and the pill's: one step around the ring, wrapping (UX-DR5 — a dead key at the end
+   *  of a list reads as broken). Nothing selected, or a ring of one, does nothing and says nothing. */
+  const stepDesign = (pick: Pick | null, by: number) => {
+    const placed = pick ? latest.current.stack.find((i) => same(i, pick)) : undefined
+    if (!pick || !placed) return
+    const ring = ringOf(placed.designId)
+    if (ring.length < 2) return
+    const at = ring.findIndex((e) => e.id === placed.designId)
+    onDesign(pick, ring[step(at, ring.length, by)]!.id)
+  }
+
+  /** Where a Shuffle would land, for the `Try a design` card to NAME BEFORE THE PRESS (R-159) — and the same
+   *  index the press then uses, so the card is never a promise the button breaks. */
+  const shuffleTarget = (designId: string): SectionRegistryEntry | null => {
+    const ring = ringOf(designId)
+    const to = shuffleTo(ring.length, ring.findIndex((e) => e.id === designId), () => shuffleSeed)
+    return to === null ? null : (ring[to] ?? null)
+  }
+
+  /** FR-D13's Shuffle, from either of R-159's two seats. The randomness lives HERE and never in the core (AD-1);
+   *  a new seed after the press is what moves the card on to the next destination. */
+  const onShuffle = (pick: Pick | null) => {
+    const placed = pick ? latest.current.stack.find((i) => same(i, pick)) : undefined
+    if (!pick || !placed) return
+    const to = shuffleTarget(placed.designId)
+    setShuffleSeed(Math.random())
+    if (to) onDesign(pick, to.id)
+  }
+
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
    *  one dialog vocabulary asks first, opening on Cancel (EXPERIENCE § destructive confirms). SHOWING one again asks
    *  nothing: it is the restoring half. The dialog lives here and not in Layers, because the canvas pill's Delete
@@ -1508,6 +1613,7 @@ export function Editor({
       controls: {},
       data: {},
       darkOverrides: {},
+      parkedControls: {},
       hidden: false,
       memberVisibility: 'everyone' as const,
       isMainFeed: false,
@@ -1560,6 +1666,20 @@ export function Editor({
       bounds: { left: fr.left, top: fr.top, right: fr.right, bottom: fr.bottom },
       badgeLeft: b && b.width > 0 ? fr.left + b.left * k : null,
     }
+  }
+
+  /** DW-209, EXECUTED (2026-09-20, Chromium through this repository's own Playwright, standing rule 1): a wheel
+   *  dispatched over `[data-add-section]` scrolled the canvas document 0px and the identical wheel over the iframe
+   *  500px. The editor's own page does not scroll (`h-dvh overflow-hidden`), so the canvas simply STALLS while the
+   *  pointer rests on a pill — which a customer feels, and which is also why the deployed walk's sticky-scroll
+   *  check failed most runs: it wheels at x=700, the "+ Add section" pill's own place on a 1440 editor. The pills
+   *  forward their wheel here, to the document the pointer looks like it is over. */
+  const wheelToCanvas = (deltaX: number, deltaY: number, deltaMode: number) => {
+    const win = frame.current?.contentWindow
+    if (!win) return
+    // a wheel may report LINES or PAGES rather than pixels; the line step is the browser's own rough 16px
+    const k = deltaMode === 1 ? 16 : deltaMode === 2 ? win.innerHeight : 1
+    win.scrollBy(deltaX * k, deltaY * k)
   }
 
   /** The pill's grip: the SAME reorder as a Layers row's, read against the sections as they sit on the canvas,
@@ -1862,6 +1982,12 @@ export function Editor({
             boxOf={pillBox}
             // FR-D5: a site-wide section is one shared instance, so its Duplicate is absent here as it is in Layers
             canDuplicate={pointed?.doc !== SITE.key}
+            // S4b + S6's ring, on the section itself (B1b's claim). Null — so the arrows, the counter and
+            // Shuffle are all absent — wherever the hovered section's category holds one design.
+            ringCount={pointedRing.length > 1 ? pillPosition(pointedRing.findIndex((e) => e.id === pointed?.designId), pointedRing.length) : null}
+            onPrevDesign={() => stepDesign(hovered, -1)}
+            onNextDesign={() => stepDesign(hovered, 1)}
+            onShuffle={() => onShuffle(hovered)}
             name={pointed?.layerName ?? ''}
             pillRef={pill}
             onDuplicate={() => pointed && onDuplicate(pointed)}
@@ -1869,6 +1995,7 @@ export function Editor({
             // S4b's "+ Add section", on the gap under the hovered section: the picker opens at THAT gap
             onAdd={() => openPicker(hovered ? stack.findIndex((i) => same(i, hovered)) : null)}
             gripProps={pillGrip}
+            onWheel={wheelToCanvas}
             onPointerLeave={(e) => {
               // leaving the pill for the canvas is the canvas document's own `pointerover`; leaving it for a panel or
               // the bar reaches neither document, so the hover is let go here. Never mid-drag, which holds the pointer.
@@ -1888,14 +2015,38 @@ export function Editor({
         >
           {/* -6px each way: the 28px toggle leaves the label where S4a draws it, 16px from the top */}
           <div className="-my-[6px] flex items-center justify-between gap-2">
-            {/* the instance's layer name, as Layers prints it: S4c's category word and "4 / 18" are the design picker's (5.11) */}
-            <PanelLabel>{chosen ? chosen.layerName : 'Page'}</PanelLabel>
+            {/* the instance's layer name, as Layers prints it, with S4c's CATEGORY WORD beneath it (Story 5.11):
+                the name is the customer's and the category is the library's, and the panel says both. S4c's
+                "4 / 18" is not here — it is the Design block's counter, three lines below. */}
+            <span className="flex min-w-0 flex-col">
+              <PanelLabel>{chosen ? chosen.layerName : 'Page'}</PanelLabel>
+              {chosen && entry ? <span className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
+            </span>
             <IconButton ref={controls.hide} label="Collapse controls" title="Collapse controls" aria-expanded aria-controls="editor-controls" onClick={() => controls.toggle(true)}>
               <Panel size={15} className="-scale-x-100" />
             </IconButton>
           </div>
           {chosen && entry ? (
-            // R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it
+            <>
+            {/* B1a — the Design block, ABOVE the settings groups and inside none of them (FR-F3: the design
+                picker is not a setting). With one design in the ring it is the counter, the name and one
+                sentence; with more it grows its arrows, its strip, its key chips and R-159's Try-a-design card
+                on its own, because every count in it is derived (R-158). */}
+            <DesignPicker
+              ring={chosenRing}
+              at={chosenAt}
+              next={shuffleTarget(chosen.designId)}
+              target={chosen.target}
+              rows={rows}
+              pool={pool}
+              icons={icons.current}
+              mode={mode}
+              src={src}
+              onDesign={(to) => onDesign(chosen, to)}
+              onStep={(by) => stepDesign(chosen, by)}
+              onShuffle={() => onShuffle(chosen)}
+            />
+            {/* R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it */}
             <Sidebar
               key={`${chosen.doc}:${chosen.instanceId}`}
               entry={entry}
@@ -1924,6 +2075,7 @@ export function Editor({
                   : undefined
               }
             />
+            </>
           ) : (
             <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
           )}

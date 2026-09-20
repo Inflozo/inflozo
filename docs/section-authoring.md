@@ -809,7 +809,8 @@ runtime emits the proven eight plus `data-bind-style` and `data-module`; **Story
 **Story 4.5 added `data-items`**, the authored list (row 1 below); **Story 4.6 added
 `data-initials`**, the typed avatar (see *The avatar's two forms*); **Story 4.9 added `data-t` and
 `data-t-attr`**, the catalog's strings (exit 3); **Story 4.10 added `data-if` / `data-else` and
-`data-members`**, rows 3 and 4 (exit 2). Everything else in the set throws
+`data-members`**, rows 3 and 4 (exit 2); and **Story 5.11 added `data-items-limit`**, the per-design cap on an
+authored list (FR-D13). Everything else in the set throws
 with a sentence naming the directive, until the story that owns it lands. The partition is derived from this vocabulary and asserted by a test, so a directive added
 here cannot be silently forgotten by the runtime.
 
@@ -825,6 +826,7 @@ These were executed in the stress harness and keep their names and grammar uncha
 | `data-empty` | `hide` · `fallback` — `fallback` on a text binding only | `hide` removes the element; `fallback` keeps the authored text or attribute | `hide` wraps the element in `{{#if field}}`; `fallback` emits `{{#if field}}…{{else}}<authored>{{/if}}`; a `number` field adds `includeZero=true` |
 | `data-repeat` | a Ghost context path, or a `dataBindings` key | expands against real rows | `{{#foreach …}}` / `{{#get …}}` |
 | `data-repeat-limit` | 1–100 | slices the rows | `limit="n"` on the block |
+| `data-items-limit` *(5.11)* | 1–100 | draws at most that many of the authored list's items | the same number of static blocks — one shared function, so the two cannot disagree |
 | `data-partial` | a partial name | ignored | extracts the body to a parameterless partial |
 | `data-bind-style` | `--custom-property:spec` | the value through `safeCssColor` — hex, `rgb()`/`hsl()` or the pack's accent token; a **named** colour is not parsed and falls back too | `style="{{#if field}}--prop: {{path}}{{/if}}"` — the value is Ghost's at render |
 | `data-module` *(4.7)* | a registry module name, optionally `:N` — the width in CSS pixels below which it runs | **kept** on the element, parsed; a bad value refuses | **kept** on the same element — `core` mounts on it on the live page |
@@ -1070,6 +1072,26 @@ Item List (§2).
     <img class="logos__img" data-prop-attr="src:logos[].src;alt:logos[].alt" src="/logo.svg" alt="">
     <span class="logos__name" data-prop="logos[].name">A partner</span>
   </li>
+</ul>
+```
+
+**`data-items-limit` caps what THIS design draws** *(Story 5.11, FR-D13)*. "A design renders only as
+many list items as its structure fits — eight items shuffled into a three-card layout shows three."
+Nothing can derive that number: how many a design fits is decided by its own CSS
+(`grid-template-columns`), which no parser reads back, and `PropDef.max` is the **category union's**
+ceiling and cannot narrow per design. So the design declares it where it declares everything else
+about its list — on the `data-items` element, with `data-repeat-limit`'s own 1–100 grammar and its
+own guard: a `data-items-limit` with no `data-items` on the same element is refused (`orphan-items-limit`
+at assembly, and by name at render), because a modifier with nothing to modify would ship verbatim.
+
+**The items past the cap are not gone.** They stay in the instance and are drawn again by any design
+whose cap fits them (FR-D19); the settings panel says which is which — *"3 items · 2 shown in this
+design"*. The cap is applied inside the one function both emitters share, so the canvas and the
+shipped theme bake the same number of blocks by construction.
+
+```html
+<ul class="logos">
+  <li class="logos__item" data-items="logos" data-items-limit="3">…</li>
 </ul>
 ```
 
@@ -1399,7 +1421,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | an inline `style` beyond one custom property, or one whose value is not a pack token | AD-3's carve-out is exactly one declaration wide, and the boundary is machine-checkable. A static value is `var(--…)`: §7.3 allows no hex outside the Style Pack, and the bound form is `data-bind-style`. |
 | a `data-repeat-limit` on a declared query, a query nothing references, a key that is a source name | one number in one place; a dead query is a misspelt repeat; `posts` as a key is ambiguous with the context path. |
 | a `data-empty` on a token-template binding | the guard is the URL entry's field, or the first entry's when none binds a URL, and a template has none. |
-| a directive twice on one element · `data-repeat-limit` / `data-partial` with no `data-repeat` · `data-if` with `data-else` on one element · empty markup | a browser keeps the first duplicate silently; an orphan modifier is silently ignored; the two arms are siblings; a source with no root is nothing. |
+| a directive twice on one element · `data-repeat-limit` / `data-partial` with no `data-repeat` · `data-items-limit` with no `data-items` *(5.11)* · `data-if` with `data-else` on one element · empty markup | a browser keeps the first duplicate silently; an orphan modifier is silently ignored; the two arms are siblings; a source with no root is nothing. |
 | a `data-items` on a non-array prop, a `data-prop` on an array, `url` or `image` prop | the compiler would bake an array as text or repeat over a string. `data-prop` takes `text`, `richtext`, `icon` and `date` *(Story 4.5)*. |
 | a control disabled by itself, or by a value the other control does not have | the greyed-with-reason state could never fire (R-33). |
 | a mark outside `strong · em · u · a`, tokens on a `url`/`image` prop, an `x[].y` with no `x` array, a `url` default that fails the scheme rule | AD-4's four marks; only text is substituted into; an item needs its array; an author's default is not user input. |

@@ -1,18 +1,28 @@
 'use client'
 
-import { useLayoutEffect, useRef, type HTMLAttributes, type Ref } from 'react'
+import { useLayoutEffect, useRef, type HTMLAttributes, type Ref, type WheelEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { ring } from '@/components/kit/greyed'
-import { Copy, Grip, Trash } from '@/components/kit/icons'
+import { ChevronLeft, ChevronRight, Copy, Grip, Refresh, Trash } from '@/components/kit/icons'
+import { NEXT_WORDS, PREVIOUS_WORDS, SHUFFLE_WORDS } from '@/lib/ring'
 
 /* S4b's QUICK-ACTION PILL (`S4 Editor.dc.html`:181, the `top:10px;right:10px` group) — Story 5.4.
 
    DRAWN AS S4b DRAWS IT: white on the editor's hairline, radius 24, the `md` shadow, 3px padding, 26px round targets
    that take the coral tint on hover, the two icons at 13px and the grip at 10×13.
 
-   THREE CONTROLS AND NO MORE (R-118, absent not greyed): Duplicate, Delete and the drag grip. S4b also draws `◀ ▶`
-   and the divider between them — those arrive with Story 5.11's design ring. A site-wide section's Duplicate is
-   absent here too, exactly as it is in its Layers menu (FR-D5).
+   STORY 5.11 ADDS THE RING, AND R-159 SETTLES WHERE (`S4 Editor.dc.html:181` + `S6 Variant Shuffle.dc.html:67`
+   govern this pill; `B Missing Surfaces.dc.html` B1b governs the AFFORDANCE — the counter and arrows riding on the
+   section — and its ink pill, its top-left position and its `⋯` are not built, R-126 standing). The head of the
+   pill is now **◀ · the mono `4 / 18` counter · ▶ · Shuffle**, then S4b's 1px DIVIDER, then the three controls
+   Story 5.4 built: the divider separates *which design* from *this section*, which is why Shuffle sits before it.
+   Shuffle is ICON-ONLY (the Kit's `Refresh`), its words carried as the accessible name and the hover title through
+   `DESIGN.md:534-536`'s carve-out — the one R-132's mode button and R-136's moon badge already use, and the reason
+   is the same: every other control in this pill is a 26px round icon target and a word would be the only text in it.
+
+   ALL FOUR ARE ABSENT WHERE THE RING HOLDS ONE DESIGN (UX-DR3, R-118), exactly as Duplicate is absent on a
+   site-wide row — there is nowhere to go, so there is nothing to press rather than something dead to press. A
+   site-wide section's Duplicate is absent here too, exactly as it is in its Layers menu (FR-D5).
 
    STORY 5.10 ADDS S4b'S SECOND PRESSED CHILD, on the same hover and the same frame loop: the "+ Add section" pill,
    centred on the hovered section's BOTTOM boundary (`bottom:-13px;left:50%`) over the coral hairline the canvas
@@ -27,7 +37,13 @@ import { Copy, Grip, Trash } from '@/components/kit/icons'
      - it TRAILS THE COMPOSITOR during a scroll (Story 5.2's finding), so it hides from the first canvas `scroll` and
        is placed again 150 ms after the last — never a frame in which it sits away from its section;
      - the pointer crossing from the iframe onto it reaches the canvas document as a `pointerout` with a null
-       `relatedTarget`, which would clear the hover it is anchored to. `editor.tsx` guards that by geometry.
+       `relatedTarget`, which would clear the hover it is anchored to. `editor.tsx` guards that by geometry;
+     - AND A WHEEL OVER IT DOES NOT REACH THE CANVAS (DW-209, EXECUTED 2026-09-20 in Chromium through this
+       repository's own Playwright): a wheel dispatched over `[data-add-section]` scrolled the canvas document
+       0px, and the identical wheel over the iframe 500px. The page itself does not scroll (`h-dvh
+       overflow-hidden`), so the customer's page simply STALLS while the pointer rests on a pill — and the
+       deployed walk's own sticky-scroll check wheels at x=700, which is where the "+ Add section" pill sits on a
+       1440 editor. So both pills FORWARD their wheel to the canvas, which is the one place it was meant for.
 
    R-125 (owner, 2026-09-18): R-119's Pro tag KEEPS the section's top-right corner and the pill sits directly to its
    LEFT — its right edge a gap short of the badge's left while the badge shows, and S4b's own 10px inset from the
@@ -47,6 +63,12 @@ const target = `inline-flex size-[26px] items-center justify-center rounded-full
 export type PillBox = { rect: Box; bounds: Box; badgeLeft: number | null }
 
 export function SectionPill({
+  /** Story 5.11 — S6's mono `{n} / {m}` for the HOVERED section, or null where its ring holds one design: the
+   *  arrows, the counter and Shuffle are then all absent (UX-DR3) */
+  ringCount,
+  onPrevDesign,
+  onNextDesign,
+  onShuffle,
   /** Story 5.10 — S4b's "+ Add section": the picker, at the gap under the hovered section */
   onAdd,
   /** Story 5.10 — false where NOTHING can be placed on this canvas: the pill is absent, never a dead press (UX-DR3) */
@@ -59,12 +81,18 @@ export function SectionPill({
   boxOf,
   /** a site-wide section is one shared instance: its Duplicate is absent (FR-D5) */
   canDuplicate,
+  /** Story 5.11 — the three controls that act on THIS SECTION, and the divider that separates them from the ring.
+   *  False on the `/controls` review, which holds ONE sample and no doc: there is nothing to duplicate it into,
+   *  nothing to delete it from and no order to drag it in, so they are ABSENT there rather than dead (UX-DR3).
+   *  True everywhere the editor draws the pill. */
+  sectionControls = true,
   name,
   pillRef,
   onDuplicate,
   onDelete,
   gripProps,
   onPointerLeave,
+  onWheel,
 }: {
   shown: boolean
   hidden: boolean
@@ -78,9 +106,18 @@ export function SectionPill({
   onPointerLeave: (event: { clientX: number; clientY: number }) => void
   onAdd: () => void
   canAdd: boolean
+  ringCount: string | null
+  onPrevDesign: () => void
+  onNextDesign: () => void
+  onShuffle: () => void
+  sectionControls?: boolean
+  /** DW-209 — send this wheel to the canvas document, which is where the pointer looks like it is. `deltaMode` is
+   *  carried because a wheel may report lines or pages rather than pixels. */
+  onWheel?: (deltaX: number, deltaY: number, deltaMode: number) => void
 }) {
   const pill = useRef<HTMLDivElement | null>(null)
   const add = useRef<HTMLButtonElement | null>(null)
+  const forward = onWheel === undefined ? undefined : (e: WheelEvent<HTMLElement>) => onWheel(e.deltaX, e.deltaY, e.deltaMode)
 
   /* Placed on its own frame loop, as the in-canvas chrome is (`lib/canvas-layer.ts`): position follows LAYOUT, not
      just render — a fold re-fits the canvas, a section grows as its words are typed. The loop runs after every
@@ -135,21 +172,46 @@ export function SectionPill({
       aria-label={`Quick actions for ${name}`}
       data-section-pill=""
       onPointerLeave={onPointerLeave}
+      onWheel={forward}
       style={{ visibility: hidden ? 'hidden' : 'visible' }}
       className="fixed z-40 flex items-center gap-px rounded-[24px] border border-line bg-surface p-[3px] shadow-md"
     >
-      {canDuplicate ? (
+      {/* STORY 5.11 — B1b's claim, in S4b's pill: the counter and the arrows ride on the section, so a design is
+          changed without ever looking right. S6`:67` draws the counter in mono at 10px in `--color-ink-soft` with
+          `padding:0 4px`, between the two arrows. */}
+      {ringCount === null ? null : (
+        <>
+          <button type="button" aria-label={PREVIOUS_WORDS} title={PREVIOUS_WORDS} onClick={onPrevDesign} className={target}>
+            <ChevronLeft size={13} />
+          </button>
+          <span data-pill-count className="px-1 font-mono text-[10px] text-ink-soft">{ringCount}</span>
+          <button type="button" aria-label={NEXT_WORDS} title={NEXT_WORDS} onClick={onNextDesign} className={target}>
+            <ChevronRight size={13} />
+          </button>
+          {/* R-159's SECOND seat, icon-only, before the divider */}
+          <button type="button" data-pill-shuffle aria-label={SHUFFLE_WORDS} title={SHUFFLE_WORDS} onClick={onShuffle} className={target}>
+            <Refresh size={13} />
+          </button>
+          {/* S4b's 1px divider — which design, then this section. Nothing to separate from, no divider. */}
+          {sectionControls ? <span aria-hidden className="mx-[3px] h-4 w-px bg-line" /> : null}
+        </>
+      )}
+      {sectionControls && canDuplicate ? (
         <button type="button" aria-label={`Duplicate ${name}`} title="Duplicate section" onClick={onDuplicate} className={target}>
           <Copy size={13} />
         </button>
       ) : null}
+      {sectionControls ? (
       <button type="button" aria-label={`Delete ${name}`} title="Delete section" onClick={onDelete} className={target}>
         <Trash size={13} />
       </button>
+      ) : null}
       {/* aria-hidden and pointer-only, as the Layers grip is: the keyboard move is the Layers row's ⌥-arrows (UX-DR10) */}
+      {sectionControls ? (
       <span aria-hidden title="Drag to reorder" {...gripProps} className={`${target} cursor-grab touch-none text-ink-soft`}>
         <Grip />
       </span>
+      ) : null}
     </div>
     {/* S4b`:181`: white on a 1px coral border, `--color-coral-text` at 11/600, `4px 11px`, `--radius-pill`, the sm
         shadow, breathing in OPACITY with the hairline under it. The words are the frame's, exactly. */}
@@ -161,6 +223,7 @@ export function SectionPill({
       aria-label={`Add section after ${name}`}
       title="Add a section"
       onPointerLeave={onPointerLeave}
+      onWheel={forward}
       onClick={onAdd}
       style={{ visibility: hidden ? 'hidden' : 'visible' }}
       className={`fixed z-40 whitespace-nowrap rounded-pill border border-coral bg-surface p-[4px_11px] text-helper-caption font-semibold text-coral-text shadow-sm motion-safe:animate-addline ${ring}`}

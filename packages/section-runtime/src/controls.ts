@@ -34,7 +34,17 @@ export type ControlState = {
   controls?: Readonly<Record<string, unknown>>
   darkOverrides?: Readonly<Record<string, unknown>>
   data?: Readonly<Record<string, unknown>>
+  /** Story 5.11 — FR-D19's parked values, by the design they came from. Written only by `switchControls`, read
+   *  only by it, and beyond every reset's reach (`resetSection`'s own comment says so). */
+  parkedControls?: ParkedControls
 }
+
+/** One design's put-aside values: its `controls` and its `darkOverrides` together, because a dark override is a
+ *  second value of the SAME control (AD-30) and "restored exactly" means both. */
+export type ParkedControls = Readonly<Record<string, {
+  controls: Readonly<Record<string, unknown>>
+  darkOverrides: Readonly<Record<string, unknown>>
+}>>
 
 const own = (o: unknown, k: string): boolean =>
   typeof o === 'object' && o !== null && Object.prototype.hasOwnProperty.call(o, k)
@@ -189,8 +199,10 @@ export type PropRow = {
   def: PropDef
   /** the stored value, or the authored default */
   value: unknown
-  /** an authored array: its bounds, its item noun and the props one item carries, in markup order */
-  list?: { item: string; min?: number; max?: number; count: number; atMax?: string; props: PropRow[] }
+  /** an authored array: its bounds, its item noun and the props one item carries, in markup order. `shown` is
+   *  FR-D13's per-design cap applied to `count` — how many of the stored items THIS design draws — so the panel
+   *  prints "3 items · 2 shown in this design" from the engine's own number rather than a second count. */
+  list?: { item: string; min?: number; max?: number; count: number; shown: number; atMax?: string; props: PropRow[] }
 }
 
 export type DataRow = {
@@ -285,6 +297,23 @@ function markupProps(html: string): string[] {
   return paths
 }
 
+/** FR-D13's PER-DESIGN CAP, as the panel reads it: how many of `path`'s items this design's markup draws, or
+ *  `undefined` where it draws them all. The number is the design's own `data-items-limit` on the `data-items`
+ *  element, applied at render inside `expandItems` — one declaration, two readers, and the list's own items are
+ *  never touched: an item past the cap is waiting, not gone (FR-D19).
+ *
+ *  It lives HERE rather than in `core.ts` for one mechanical reason: `core.ts` imports this module, so a reader in
+ *  core that this module called would be an import cycle. This side has the tag scan already. */
+export function itemsShown(html: string, path: string): number | undefined {
+  for (const tag of scanTags(html)) {
+    const attr = (n: string) => tag.attrs.find(([k]) => k.toLowerCase() === n)?.[1]
+    if (attr('data-items') !== path) continue
+    const raw = attr('data-items-limit')
+    return raw !== undefined && /^([1-9][0-9]?|100)$/.test(raw) ? Number(raw) : undefined
+  }
+  return undefined
+}
+
 /** The value an unset prop starts at: the stored value, else the authored default. */
 const propValue = (entry: ControlEntry, content: unknown, path: string): unknown => {
   const stored = getPath(content, path)
@@ -363,9 +392,13 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}, mode: Mod
     const row: PropRow = { kind: 'prop', path, label: def.label, type: def.type, def, value: propValue(entry, state.content, path) }
     if (def.type === 'array') {
       const count = itemsOf(entry, state, path).length
+      const cap = itemsShown(entry.html, path)
       row.list = {
         item: def.item ?? 'item',
         count,
+        // FR-D13: what this design DRAWS. Equal to `count` wherever the design declares no cap, so the panel's
+        // "N shown in this design" sentence is exactly the case where the two differ.
+        shown: cap === undefined ? count : Math.min(count, cap),
         props: paths.filter((p) => p.startsWith(`${path}[].`)).flatMap((p) => {
           const d = entry.contentSchema[p]
           return d === undefined ? [] : [{ kind: 'prop' as const, path: p, label: d.label, type: d.type, def: d, value: d.default }]
@@ -390,6 +423,65 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}, mode: Mod
     absent: absent(id),
   })).filter((g) => g.rows.length > 0 || g.absent.length > 0)
   return { groups }
+}
+
+// ─── Story 5.11 — the design ring's one rule: carry / park / default (FR-D19) ─
+
+/** WHAT MOVING FROM ONE DESIGN TO ANOTHER MEANS, over one instance's stored slice — decided here and nowhere else,
+ *  so the panel's arrows, the section's arrows, `[` / `]` and Shuffle are four doors onto one rule.
+ *
+ *  THREE ARMS, AND THE THREE WORDS ARE EXACT (FR-D19, FR-D13):
+ *    - a control BOTH designs declare CARRIES its value, in light and in dark — nothing is written and nothing moves;
+ *    - a control only the OUTGOING design declares is PARKED against that design's id, its dark override with it;
+ *    - a control only the INCOMING design declares is left unstored, so `resolveControls` gives it ITS OWN DEFAULT.
+ *  And the fourth thing, which is the promise the whole story exists for: a parked record for the design being
+ *  ARRIVED AT is restored exactly and then CLEARED, so a round trip costs nothing and cannot accumulate a stale copy.
+ *
+ *  CONTENT IS NOT HERE, AND THAT IS WHAT KEEPS THIS SMALL. `contentSchema` is the CATEGORY's union (FR-G3) and a
+ *  ring never leaves its category, so every prop, every list item and every `data` value stays in the instance byte
+ *  for byte — invisible only where the incoming markup does not name it.
+ *
+ *  A NAME NEITHER DESIGN DECLARES IS LEFT ALONE, exactly as `resetSection` leaves it: it is a third design's to
+ *  mean, and it returns with the design that uses it.
+ *
+ *  A RESTORED VALUE WINS OVER A CARRIED ONE, in the one case where both exist (a shared control the customer changed
+ *  on an intermediate design). "Restored exactly as it was" is the promise the ring is sold on, and the record goes
+ *  in the same breath, so it happens once and never again. */
+export function switchControls(
+  from: { id: string } & Pick<ControlEntry, 'controlSchema' | 'universals'>,
+  to: { id: string } & Pick<ControlEntry, 'controlSchema' | 'universals'>,
+  state: ControlState,
+): { controls: Record<string, unknown>; darkOverrides: Record<string, unknown>; parkedControls: Record<string, { controls: Record<string, unknown>; darkOverrides: Record<string, unknown> }> } {
+  const map = (o: unknown): Record<string, unknown> =>
+    typeof o === 'object' && o !== null && !Array.isArray(o) ? { ...(o as Record<string, unknown>) } : {}
+  const controls = map(state.controls)
+  const darkOverrides = map(state.darkOverrides)
+  const parkedControls: Record<string, { controls: Record<string, unknown>; darkOverrides: Record<string, unknown> }> = {}
+  for (const [id, record] of Object.entries(state.parkedControls ?? {})) {
+    parkedControls[id] = { controls: map(record?.controls), darkOverrides: map(record?.darkOverrides) }
+  }
+  if (from.id === to.id) return { controls, darkOverrides, parkedControls }
+
+  const leaving = new Set(declared(from).map((d) => d.name))
+  const arriving = new Set(declared(to).map((d) => d.name))
+  const park = { controls: {} as Record<string, unknown>, darkOverrides: {} as Record<string, unknown> }
+  for (const [live, aside] of [[controls, park.controls], [darkOverrides, park.darkOverrides]] as const) {
+    for (const name of Object.keys(live)) {
+      if (!leaving.has(name) || arriving.has(name)) continue
+      aside[name] = live[name]
+      delete live[name]
+    }
+  }
+  if (Object.keys(park.controls).length > 0 || Object.keys(park.darkOverrides).length > 0) parkedControls[from.id] = park
+  else delete parkedControls[from.id]
+
+  const back = parkedControls[to.id]
+  if (back !== undefined) {
+    Object.assign(controls, back.controls)
+    Object.assign(darkOverrides, back.darkOverrides)
+    delete parkedControls[to.id]
+  }
+  return { controls, darkOverrides, parkedControls }
 }
 
 // ─── the edits ───────────────────────────────────────────────────────────────
