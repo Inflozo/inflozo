@@ -2,9 +2,9 @@
 title: 'Story 5.12 — Site Remix'
 type: 'feature'
 created: '2026-09-20'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '0e5fe2e30ea545a092c98f20ba796d785408f0a0'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -161,9 +161,10 @@ dialog AT ONCE, and the cube rolls only on the confirmed Remix, with the canvas 
 - [x] `apps/web/components/editor/remix-dice.tsx` -- NEW. The icon-only button (ModeToggle's geometry,
       `REMIX_WORDS` as name and title), an 18px CSS 3D cube inside it, and the confirm `<dialog>` through
       `kit/dialog.ts` — title, `remixAsk`'s sentence, **Cancel** (`data-cancel`, focus opens here) and
-      **Remix** in coral. Rolling is one state change: a new `transform` (a random face plus two whole
-      turns) with the transition on it; the dialog opens in `onTransitionEnd` guarded to
-      `propertyName === 'transform'`. Nothing to remix → `NOTHING_TO_REMIX` and **Close** alone.
+      **Remix** in coral. **The press opens the dialog at once (R-164)**; rolling is one state change made
+      by the confirmed **Remix** — a new `transform` (a random face plus two whole turns) with the
+      transition on it — and `onRemix` fires in `onTransitionEnd` guarded to `propertyName === 'transform'`.
+      Nothing to remix → `NOTHING_TO_REMIX` and **Close** alone.
 - [x] `apps/web/app/globals.css` -- the cube's faces: `transform-style: preserve-3d`, six absolutely
       placed faces on `--color-surface` with a `--color-line` hairline, pips in `var(--color-coral)`, one
       `transition: transform 900ms` with a settling ease. Named rules beside `canvas-outline-*`, so no
@@ -219,6 +220,36 @@ dialog AT ONCE, and the cube rolls only on the confirmed Remix, with the canvas 
   "Re-roll what" group (one Style Pack exists, R-118), without "Every page" (FR-D17 re-rolls the canvas)
   and without the toast (EXPERIENCE.md:541 makes the count a polite announcement). The dice itself has no
   frame: it is extrapolated from the control it sits beside, `mode-toggle.tsx` (R-74, R-163).
+
+### Review Findings
+
+Review of 2026-09-20 (`review_loop_iteration` 1), five layers over the diff since `0e5fe2e3`, each rated after
+reading the code at its location. No finding needed the owner. Every patch below is applied; the two deferred
+items are DW-215 and DW-216.
+
+- [x] [Review][Patch] A cancelled roll left the dice dead for the session — `rolling` was cleared only on
+      `transitionend`, and a transition cancelled mid-turn fires none; `onTransitionCancel` now settles it the
+      same way [apps/web/components/editor/remix-dice.tsx]
+- [x] [Review][Patch] The re-roll could land on a canvas the confirm never named — the editor is live for the
+      ~900ms roll, and `onRemix` reads the canvas at settle; the dice now remembers the canvas it asked about
+      and settles quietly if it changed ("the dice never lies") [apps/web/components/editor/remix-dice.tsx]
+- [x] [Review][Patch] A `switchDesign` refusal was silent after the cube had rolled — the sentence now goes to
+      `#editor-said` [editor.tsx `onRemix`]
+- [x] [Review][Patch] FR-D17's "N picks, one entry" and FR-D9's "never half-applying" were only ever exercised
+      at N = 1 (the harness holds one ringed section) — the fold is now `remixFold` in `lib/remix.ts`, pure, and
+      `remix.test.ts` proves two picks land in one returned doc and a refusal on the second writes none
+      [apps/web/lib/remix.ts, apps/web/remix.test.ts]
+- [x] [Review][Patch] R-164 had not reached every sentence that described the old order (standing rule 7):
+      `globals.css` (two sentences, and a citation of a `remix-dice.test.ts` that never existed),
+      `remix-dice.tsx` (`roll()`), `editor.tsx`, `journey.spec.mjs`'s reduced-motion comment,
+      `epic-5-context.md` (twice), R-163's own entry and R-164's ledger in `reconcile-designs-decisions.md`
+- [x] [Review][Patch] This spec's own prose: the `remix-dice.tsx` task, the Verification sentences written
+      before R-164, the `NOTHING_TO_REMIX` quote missing its last sentence, and owner-test step 4, which
+      promised a roll on `⇧R` and would have had the owner report a false bug
+- [x] [Review][Defer] One `⌘Z` restoring SEVERAL remixed sections is proved on the pure fold, not in a browser —
+      the harness holds one ringed section [tools/keyboard/journey.spec.mjs] — deferred, DW-215
+- [x] [Review][Defer] The pip-centre measurement is written three times (the journey and both probes)
+      [tools/probe/run-verify-controls.cjs] — deferred, DW-216
 
 ## Design Notes
 
@@ -289,9 +320,30 @@ uses a coral primary".
 *"`⇧R` with the dialog open"* (the dialog owns the key — `remix` is a `SINGLE_KEY`, so `onShortcut`'s owner
 selector is `:popover-open, dialog[open]`) and *"re-press mid-roll"* (the second press lands while the cube is
 still in the air, so `dialog[open]` is not yet there to refuse it and the guard that holds is the dice's own
-rolling flag — without it the second `transitionend` calls `showModal()` on an open dialog, which throws).
+rolling flag — without it the second confirm would start a second roll, a second `onRemix` and a second `⌘Z`).
 
-**Run at Dev (2026-09-20), locally and against the deployed build `a440621f` — every gate green:**
+**Run at Review (2026-09-20), against production at `564da6b6` — the build that carries R-164:**
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): production
+  `dpl_2mmnRNQdkNfyXiSooREQZ6AxGf6z`, `READY`, `githubCommitSha` `564da6b6`. **GitHub** (`GITHUB_TOKEN`): `CI`
+  and `Render matrix` both `success` for that commit.
+- **Deployed `/controls`** — `node tools/probe/run-verify-controls.cjs` (**Supabase**): **0 FAIL, 112 PASS**.
+  R-164's rows on production: the six faces measured as `[1,2,3,4,5,6]` distinct pip places; the press opens
+  the confirm **at once, before anything rolls**; the confirm closes, the die runs and the sample is unchanged
+  until it settles; Remix re-rolls `2 of 3 → 3 of 3` with the typed words carried; `⇧R` with a caret in Heading
+  types `R` and rolls nothing.
+- **Deployed editor** — `node tools/probe/run-verify-editor.cjs` (**Supabase** + **Vercel**): **0 FAIL, 466
+  PASS** on the second run (the first died on a Playwright timeout with 0 FAIL — not a result, re-run). The
+  confirm reads *"Every section here is the only design its category has so far, so there is nothing to remix
+  yet. More are coming."* with **Close** alone.
+- **Negative controls:** `https://app.inflozo.com/harness/editor` → **404**; and the pip check is a real
+  discriminator — on a collapsed face every layer's centre is the same point, so it reads `[1,1,1,1,1,1]` and fails.
+- **No migration in the diff** (`git diff --stat 0e5fe2e3 HEAD -- supabase/` is empty), so R-99 has nothing to compare.
+- After the review's patches: `pnpm check` exit 0 and `pnpm keyboard` green locally; the patched build is
+  verified on production at Deploy.
+
+**Run at Dev (2026-09-20), locally and against the deployed build `a440621f` — every gate green. This block
+is the record of the FIRST build, which rolled on the press and opened the confirm as the die settled; R-164
+turned that round, so read "rolls and opens" below as that build's order, not today's:**
 - `pnpm check` — **exit 0**. Lint, typecheck and every package test, `apps/web`'s **436 tests, 0 fail** among
   them, with `remix.test.ts`'s rows and `keymap.test.ts`'s `⇧R` row in that run. The run prints its own count.
 - `pnpm keyboard` — **34 stops, 0 fail**, six of them this story's: `⇧R` rolling the dice and opening the
@@ -369,7 +421,7 @@ seeded to your account at Story 5.1.
    remix yet, and the only button is **Close**. This is the honest answer, not a bug: there is nowhere for
    your sections to roll to until Epic 9 fills a category.
 4. **URL:** the same · **Screen:** the editor. Press **`⇧R`** on the keyboard (Shift and R together).
-   **Expect:** exactly the same dice roll and the same popup — the key and the dice are one control.
+   **Expect:** exactly the same popup, straight away, and nothing rolling — the key and the dice are one control.
 5. **URL:** the same · **Screen:** the editor. Click into any text field in the right-hand panel and type
    `R` with Shift held. **Expect:** a capital **R** appears in your text and **no dice rolls**. This is the
    most important step on this list.

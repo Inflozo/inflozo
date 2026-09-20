@@ -54,6 +54,26 @@ export function remixPicks(
   return picks
 }
 
+/**
+ * THE FOLD: every pick through ONE switch into ONE next doc, or the first refusal and nothing at all (FR-D9's
+ * "never half-applying"). It lives here, pure, so both halves of FR-D17's promise are testable off the editor:
+ * the caller commits what this returns ONCE, so N picks are one journal entry, and a refusal on the last pick
+ * leaves the doc it was handed untouched. `switchOne` is `switchDesign`, handed in (standing rule 3).
+ */
+export function remixFold<D>(
+  doc: D,
+  picks: readonly RemixPick[],
+  switchOne: (doc: D, pick: RemixPick) => D | string,
+): D | string {
+  let next = doc
+  for (const pick of picks) {
+    const written = switchOne(next, pick)
+    if (typeof written === 'string') return written
+    next = written
+  }
+  return next
+}
+
 /** How many sections COULD move — the number the confirm names. It is the picks themselves, counted, so the
  *  sentence and the act can never disagree; the draw is irrelevant to the count, which is why it is handed a
  *  constant rather than a source of entropy. */

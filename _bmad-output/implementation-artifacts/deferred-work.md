@@ -5018,3 +5018,30 @@ reason: MEASURED, AND THE BOX IS NOT VISIBLE. At step 2 the window's scroll rang
   but it IS the exact complaint the page was re-laid-out for (the owner's findings 5 and 6, 2026-09-13: two
   scrollbars side by side "looks really bad"), so it is not dismissed either.
   **RESOLVED BY THE PANEL GETTING SHORTER (2026-09-20).** See the `status` line at the head of this entry.
+
+## Deferred from: code review of spec-5-12-site-remix.md (2026-09-20)
+
+### DW-215: one `⌘Z` restoring SEVERAL remixed sections is proved on the pure fold, never in a browser
+
+status: open
+severity: low
+origin: Story 5.12's Review (2026-09-20), Verification Gap reviewer and Blind Hunter.
+owner: the first Epic 9 story that gives a shipped category a second design, or Story 5.23.
+location: `tools/keyboard/journey.spec.mjs` (the FR-D17 stop); `apps/web/app/(app)/app/harness/editor/page.tsx`
+plain: Remix promises that one Undo puts a whole page back. The automated walk only ever remixes a page with one
+  changeable section, so "one Undo for many" is proved by a unit test of the logic, not by pressing keys in a browser.
+reason: The review made the fold pure (`remixFold`) and tests it with two picks and with a refusal, and the editor
+  commits its result once, so the claim is structurally held. An end-to-end stop needs a second ringed section on
+  the harness Home doc, which shifts the fixtures every other stop counts on; left for the story that has a real ring.
+
+### DW-216: the die's pip-centre measurement is written three times
+
+status: open
+severity: low
+origin: Story 5.12's Review (2026-09-20), Blind Hunter.
+owner: whoever next changes how the die's faces are drawn.
+location: `tools/keyboard/journey.spec.mjs`; `tools/probe/run-verify-controls.cjs`; `tools/probe/run-verify-editor.cjs`
+plain: The check that every dice face really shows a different number of dots exists in three copies. A fix to one
+  could miss the others.
+reason: The three are an ESM Playwright spec and two standalone CommonJS probes with no shared module between them
+  today; one shared file is the fix, and it is not worth a new module for fifteen lines until the drawing changes.

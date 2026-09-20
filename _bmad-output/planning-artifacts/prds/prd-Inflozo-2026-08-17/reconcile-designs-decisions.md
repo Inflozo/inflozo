@@ -3403,8 +3403,9 @@ face."*
   `--color-coral`, ~900 ms with a settling curve, inside a button with `mode-toggle.tsx`'s own geometry and its
   words carried as an accessible name and hover title (`DESIGN.md:534-536`'s carve-out — R-132, R-136, R-159).
   It is **icon-only with no label and no key chip**, in the owner's words *"just dice and no additional button or
-  text"*. `globals.css`'s reduced-motion block flattens the roll, and the confirm opens on the roll's own
-  `transitionend`, so a reader who asks for no motion gets the popup at once.
+  text"*. `globals.css`'s reduced-motion block flattens the roll. **Amended by R-164 the same day:** the confirm
+  opens on the press, and it is the confirmed re-roll that lands on the roll's own `transitionend`, so a reader
+  who asks for no motion gets the re-roll at once.
 - **How it differs from R-130 and R-142.** Those two admitted a **Tabler path** the owner named. This one admits a
   **drawing of our own**, in token colours, because no icon set has a tumbling die — so R-92's scope now reads:
   the export governs every glyph it draws, and what it does not draw enters only where the owner names it, whether
@@ -3442,7 +3443,7 @@ one re-shaping of the same control, so they are one ruling.
   all stand. No hex enters a `.tsx`. The confirm is still B8 as re-specified, opening on Cancel.
 - Targets: ✅ this entry · ✅ Story 5.12's spec (its frozen matrix and Intent, amended on his instruction, its
   acceptance criteria, its Design Notes and its owner test) · ✅ `remix-dice.tsx` · ✅ `globals.css` ·
-  ✅ `tools/keyboard/journey.spec.mjs` · ✅ both deployed probes · ⬜ `epic-5-context.md`, at the epic's close.
+  ✅ `tools/keyboard/journey.spec.mjs` · ✅ both deployed probes · ✅ `epic-5-context.md` (Story 5.12's review, 2026-09-20 — it still said the confirm opened on the event).
 
 
 ## B · Approved decisions superseded by this session

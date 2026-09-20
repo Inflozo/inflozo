@@ -104,9 +104,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     ModeToggle's geometry, icon-only with `REMIX_WORDS` as name and title, an 18px CSS 3D cube whose faces, hairline
     and pips are `globals.css`'s `.remix-dice__*` rules in `--color-surface` / `--color-line` / `--color-coral`
     (`tokens.test.ts:125` forbids a hex in a `.tsx`), rolling on ONE inline `transform` — a random face plus two
-    whole turns, so the value always changes and `transitionend` is guaranteed. **THE CONFIRM OPENS ON THAT EVENT
-    AND ON NOTHING ELSE**, which is what makes the reduced-motion degrade free: `globals.css` flattens the roll and
-    the popup arrives at once, with no timer to keep in step (`emulateMedia` proves it in the journey — `test.use({
+    whole turns, so the value always changes and `transitionend` is guaranteed. **THE RE-ROLL LANDS ON THAT EVENT
+    AND ON NOTHING ELSE — and since R-164 the confirm opens on the PRESS, before anything rolls**, which is what
+    makes the reduced-motion degrade free: `globals.css` flattens the roll and the re-roll arrives at once, with no timer to keep in step (`emulateMedia` proves it in the journey — `test.use({
     reducedMotion })` is a CONTEXT option and was silently ignored by this gate's own context). It leads the
     right-hand cluster rather than following the sun, because R-135 does not render `ModeToggle` at all on a
     Light-only project and a dice after it would move. `⇧R` is `keymap.ts`'s first SHIFTED single key (`shift: true`,
@@ -439,8 +439,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     (`DESIGN.md:534-536`'s carve-out) — and it is **R-92's THIRD stated exception**: R-130 and R-142 admitted a
     Tabler path the owner named, this admits a drawing of our own in token colours, because the export draws no
     Site Remix control at all (`EXPERIENCE.md:154` gives `⇧R` as the surface's only door) and no icon set has a
-    tumbling die. The confirm opens on the roll's own `transitionend`, so `globals.css`'s reduced-motion block
-    both flattens the roll and opens the popup at once, with no timer to keep in step with the CSS.
+    tumbling die. **Amended by R-164:** the confirm opens on the press; it is the confirmed RE-ROLL that lands on the
+    roll's own `transitionend` (or `transitioncancel`), so `globals.css`'s reduced-motion block both flattens the
+    roll and lands the re-roll at once, with no timer to keep in step with the CSS.
   - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
     **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
     every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's

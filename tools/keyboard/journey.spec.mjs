@@ -1079,7 +1079,7 @@ test('R-164: each of the cube\'s six faces draws its own number of pips, in its 
     // the regression in one line: with the layer the size of the face, every centre is the same centre
     expect(face.distinct, `face ${n + 1}'s pips must land in ${n + 1} different places`).toBe(n + 1)
   }
-  // and the pips stay inside the die
+  // and the die is still the 18px the pip positions were drawn for
   for (const face of faces) expect(face.box.w).toBe(18)
 })
 
@@ -1100,8 +1100,9 @@ test('WCAG 2.1.4: with the caret in a field ⇧R types a capital R and nothing r
 
 
 /* MOTION DEGRADES, AND IT COSTS NOTHING TO PROVE. `globals.css`'s reduced-motion block flattens every transition
-   in the app document to 0.01ms — the cube's included — and the confirm opens on that transition's own
-   `transitionend` and on nothing else. So a reader who asks for no motion gets the popup AT ONCE by construction:
+   in the app document to 0.01ms — the cube's included — and the confirmed re-roll lands on that transition's own
+   `transitionend` and on nothing else (R-164: the confirm itself waits on no motion). So a reader who asks for no
+   motion gets the re-roll AT ONCE by construction:
    there is no timer anywhere to keep in step with the CSS and none to wait out. Both halves are asserted here.
 
    `emulateMedia` rather than `test.use({ reducedMotion })`: the option is a CONTEXT one and this journey's context

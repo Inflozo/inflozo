@@ -229,10 +229,10 @@
    THE ROLL IS ONE TRANSFORM, and `remix-dice.tsx` sets it inline: a random face plus two whole turns, so the
    value ALWAYS changes and `transitionend` is guaranteed to fire. The resting tilt is part of that same inline
    value rather than a second transform here, so the two cannot fight; nothing but the cube transitions, so the
-   `transitionend` the dialog opens on can only be this one.
+   `transitionend` the re-roll lands on can only be this one (R-164: the confirm waits on no motion at all).
 
    IT DEGRADES THROUGH THE REDUCED-MOTION BLOCK BELOW and nothing here opts out: `transition-duration: 0.01ms
-   !important` flattens the roll AND fires `transitionend` at once, which is why the confirm opens on the event
+   !important` flattens the roll AND fires `transitionend` at once, which is why the re-roll lands on the event
    rather than on a timer — one code path, and no `setTimeout` a reader who asked for no motion would still wait
    out. `!important` in `@layer base` beats this unlayered rule, which is the whole reason it can. */
 .remix-dice {
@@ -263,7 +263,8 @@
      resolves to `(container - layer) x pct`, so with the two the same size EVERY pip lands at 0,0 and all six
      faces drew ONE centred dot. Executed in Chromium and seen: the owner reported it as "the dice shows the same
      dots on each face" (2026-09-20, R-164). Sizing the layer smaller than the face is what makes the positions
-     below mean anything. `remix-dice.test.ts` measures the drawn pips rather than reading this rule back. */
+     below mean anything. `tools/keyboard/journey.spec.mjs`'s R-164 stop and both deployed walks measure the drawn pips rather than reading
+     this rule back. */
   background-size: 5px 5px;
   backface-visibility: hidden;
   /* one pip, named once and repeated per face below — copies of a gradient, never six elements each */

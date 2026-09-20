@@ -41,7 +41,7 @@ import {
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { holdsCaret, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
-import { remixPicks, remixSaid, remixable } from '@/lib/remix'
+import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
@@ -1538,7 +1538,7 @@ export function Editor({
     if (to !== null && ring[to]) onDesign(pick, ring[to]!.id)
   }
 
-  /** Story 5.12 — `⇧R` and the dice are ONE handler (R-141): the key asks the button to roll, so the cube, the
+  /** Story 5.12 — `⇧R` and the dice are ONE handler (R-141): the key presses the button (R-164: the press asks, the roll answers), so the cube, the
    *  confirm and the fold below can never have a second implementation between them. */
   const remixDice = useRef<RemixHandle | null>(null)
 
@@ -1565,17 +1565,12 @@ export function Editor({
     const docKey = templateKeyOf(now.key)
     const picks = remixPicks(now.docs[docKey]?.instances ?? [], ringOf, Math.random)
     if (picks.length === 0) return
-    const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, (doc) => {
-      let next = doc
-      for (const p of picks) {
-        const written = switchDesign(next, p.instanceId, p.to, ringOf(p.from))
-        if (typeof written === 'string') return written
-        next = written
-      }
-      return next
-    })
-    // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541)
-    if (refused === null) setSaid(remixSaid(picks.length, canvas.label))
+    const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, (doc) =>
+      remixFold(doc, picks, (next, p) => switchDesign(next, p.instanceId, p.to, ringOf(p.from))),
+    )
+    // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541). A refusal
+    // is SAID too (review, 2026-09-20): the cube has already rolled, and a roll that lands on silence reads as broken
+    setSaid(refused ?? remixSaid(picks.length, canvas.label))
   }
 
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's

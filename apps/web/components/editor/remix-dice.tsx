@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState, type RefObject } from 'react'
+import { useRef, useState, type RefObject, type TransitionEvent } from 'react'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
@@ -75,11 +75,15 @@ export function RemixDice({
   /** CANCEL PUTS FOCUS BACK ON THE DICE, and it has to be said rather than left to the user agent. A modal
    *  `<dialog>` restores focus to whatever held it when `showModal()` ran — and `onMouseDown` is prevented
    *  below (ModeToggle's rule), so a press of the BUTTON never focuses it and the restore lands on the canvas,
-   *  or on `<body>` where nothing had focus yet. `⇧R` routes through this same `roll()`, so the dice is the
+   *  or on `<body>` where nothing had focus yet. `⇧R` routes through this same `press()`, so the dice is the
    *  invoking control on both doors and is where Cancel, `Esc` and the backdrop all return to. */
   const die = useRef<HTMLButtonElement>(null)
   /** a second press while the cube is in the air is ignored: one roll, one dialog */
   const rolling = useRef(false)
+  /** THE CANVAS THE CONFIRM NAMED (review, 2026-09-20). The dialog is closed while the cube turns, so the editor
+   *  is live for ~900ms and the canvas can be switched under the roll; a re-roll that landed on a canvas the
+   *  question never named would make the dice a liar. The roll settles quietly there instead. */
+  const confirmed = useRef(canvas)
   const [turn, setTurn] = useState({ ...TILT, rolls: 0 })
 
   /** THE DICE'S ONE DOOR, and both the button and `⇧R` come through it: the confirm opens at once (R-164). A
@@ -95,10 +99,17 @@ export function RemixDice({
   const go = () => {
     dialog.current?.close()
     rolling.current = true
+    confirmed.current = canvas
     const face = FACES[Math.floor(Math.random() * FACES.length)] ?? FACES[0]!
     // TWO WHOLE TURNS ON TOP OF THE FACE, so the value always changes however the draw falls — a transform that
     // did not change would fire no `transitionend`, and the re-roll would never land
     setTurn((was) => ({ x: TILT.x + face[0] - 360 * (was.rolls + 1), y: TILT.y + face[1] + 720 * (was.rolls + 1), rolls: was.rolls + 1 }))
+  }
+
+  const settle = (event: TransitionEvent<HTMLSpanElement>) => {
+    if (event.propertyName !== 'transform' || !rolling.current) return
+    rolling.current = false
+    if (confirmed.current === canvas) onRemix()
   }
 
   return (
@@ -119,11 +130,10 @@ export function RemixDice({
           aria-hidden
           className="remix-dice__cube"
           style={{ transform: `rotateX(${turn.x}deg) rotateY(${turn.y}deg)` }}
-          onTransitionEnd={(event) => {
-            if (event.propertyName !== 'transform' || !rolling.current) return
-            rolling.current = false
-            onRemix()
-          }}
+          onTransitionEnd={settle}
+          // a CANCELLED roll (an ancestor going `display: none` mid-turn) fires no `transitionend` at all, and the
+          // flag would then refuse every press for the rest of the session — the confirmed Remix still lands
+          onTransitionCancel={settle}
         >
           {FACES.map((_, n) => (
             <span key={n} className={`remix-dice__face remix-dice__face--${n + 1}`} />

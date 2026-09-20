@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { NOTHING_TO_REMIX, REMIX_WORDS, UNDO_NOTE, remixAsk, remixPicks, remixSaid, remixable } from './lib/remix.ts'
+import { NOTHING_TO_REMIX, REMIX_WORDS, UNDO_NOTE, remixAsk, remixFold, remixPicks, remixSaid, remixable } from './lib/remix.ts'
 
 /* STORY 5.12 — Site Remix's picks and its words, asserted where `node --test` reaches them (the module is pure
    and its one import is `lib/ring.ts`, for exactly that reason). Every row of the spec's I/O matrix that is a
@@ -105,4 +105,21 @@ test('the sentences carry singular and plural, name the canvas, and the count is
   // the icon-only control carries its key in its words (R-163, `DESIGN.md:534-536`'s carve-out)
   assert.equal(REMIX_WORDS, 'Site Remix — ⇧R')
   assert.equal(UNDO_NOTE, 'One undo, always available')
+})
+
+test('the fold is all or nothing: every pick lands in ONE next doc, and a refusal on the last writes none (FR-D17, FR-D9)', () => {
+  // the editor commits what the fold returns ONCE, so N picks in one returned doc IS one journal entry and one ⌘Z —
+  // the keyboard journey can only prove that at N = 1, because its harness holds one ringed section (review, 2026-09-20)
+  const doc = Object.freeze({ a: 'a1/1', b: 'a4/1' }) as Readonly<Record<string, string>>
+  const picks = [
+    { instanceId: 'a', from: 'a1/1', to: 'a1/2' },
+    { instanceId: 'b', from: 'a4/1', to: 'a4/3' },
+  ]
+  const switchOne = (d: Readonly<Record<string, string>>, p: { instanceId: string; to: string }) => ({ ...d, [p.instanceId]: p.to })
+  assert.deepEqual(remixFold(doc, picks, switchOne), { a: 'a1/2', b: 'a4/3' })
+  // CONTROL: the second pick refuses — the sentence comes back, not a half-applied doc, and the input is untouched
+  const refused = remixFold(doc, picks, (d, p) => (p.instanceId === 'b' ? 'No.' : switchOne(d, p)))
+  assert.equal(refused, 'No.')
+  assert.deepEqual(doc, { a: 'a1/1', b: 'a4/1' })
+  assert.equal(remixFold(doc, [], switchOne), doc, 'no picks, the same doc')
 })
