@@ -2,8 +2,8 @@
 title: 'Story 5.11 — The design ring: navigation, shuffle, and carry / park / default'
 type: 'feature'
 created: '2026-09-20'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: 'e74f84cc690eafbc994a8aeecc8b85e2ecea4122'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -723,6 +723,10 @@ story (R-80), and one of them amends a ruling he made at Create.**
 as well as `/controls`. `/controls` exists to review that panel, so a block that differed between the two
 would make his test of it prove nothing — and the editor would otherwise have kept "Design · Design 1 of 1"
 for him to find at Epic 9.
+
+**The owner's re-test (2026-09-20).** Tested on `app.inflozo.com` on the deployment confirmed at the Deploy phase
+(`30583fd6`, `dpl_GZo8GBdZCbJp67jMMy5r6ajY2rdn`), both parts of the manual test — the editor and the Controls review
+page. **Passed.** No new findings. The story moves to Done.
 
 ## Questions for the owner
 
