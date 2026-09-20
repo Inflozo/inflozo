@@ -3342,6 +3342,18 @@ reconciled.** Story 5.11's Question 2, ruled **option 2** (owner, 2026-09-20): *
   · ✅ `EXPERIENCE.md` (the **B1** row) · ✅ `epics.md` (Story 5.11's AC) · ✅ `epic-5-context.md` · ⬜ `B1`, on the
   next library pass.
 
+**R-160 — Where a parked value and a carried value disagree, the parked one wins.** Story 5.11's Question 3, ruled
+**option 1** (owner, 2026-09-20): *"Show None — what you left that design with. Going back to a design always looks
+exactly the way you left it, which is the promise the whole story is sold on."*
+
+- **Why it was a question.** Two of FR-D19's promises pull apart in one narrow case: a control designs 1 and 3 share and
+  design 2 lacks is PARKED against 1 on the way to 2, then CARRIED from 3 on the way back to 1 with whatever was set on 3.
+  Both rules are kept; they disagree about which value design 1 then shows.
+- **What it binds.** The parked record is restored over the carried value and cleared in the same breath (`switchControls`,
+  `packages/section-runtime/src/controls.ts`), so returning to a design always shows it as it was left — which is what the
+  owner's own test of the page checks (step 9). The other reading is one line and is not built.
+- Targets: ✅ this entry · ✅ Story 5.11's spec (Question 3) · ✅ `epic-5-context.md` · ✅ the comment beside `switchControls`.
+
 
 ## B · Approved decisions superseded by this session
 

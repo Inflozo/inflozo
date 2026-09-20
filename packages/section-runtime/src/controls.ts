@@ -475,6 +475,9 @@ export function switchControls(
   if (Object.keys(park.controls).length > 0 || Object.keys(park.darkOverrides).length > 0) parkedControls[from.id] = park
   else delete parkedControls[from.id]
 
+  // R-160 (owner, 2026-09-20, Story 5.11's Q3): where a parked record and a carried value both exist for one control
+  // — a shared control changed on an intermediate design — the PARKED one wins: going back to a design always looks
+  // exactly the way you left it. `Object.assign` after the carry is that rule.
   const back = parkedControls[to.id]
   if (back !== undefined) {
     Object.assign(controls, back.controls)

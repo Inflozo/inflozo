@@ -63,7 +63,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `switchControls(from, to, state)` in `controls.ts` — and ONE doc operation calls it, `switchDesign` in
     `doc-edit.ts`, so the panel's thumbnails and ◀ ▶, the section pill's ◀ ▶, `[` / `]` and the pill's Shuffle (its
     ONE seat since the owner's test amended R-159, below) are four doors onto one rule and every swap is one `apply` → `commit`, one journal entry and one `⌘Z`. A RESTORED
-    VALUE WINS OVER A CARRIED ONE in the single case where both exist (a shared control changed on an intermediate
+    VALUE WINS OVER A CARRIED ONE (**R-160**, owner, 2026-09-20, Story 5.11's Q3) in the single case where both exist (a shared control changed on an intermediate
     design) and the record is CLEARED in the same breath, because "exactly as you left it" is the promise the ring
     is sold on. Membership is the library's: `ringFor`/`samePartition` beside `offeredOn`, comparing
     `bindingContext` and `compileTarget` as EQUAL SETS rather than an intersection — a narrower set is a different

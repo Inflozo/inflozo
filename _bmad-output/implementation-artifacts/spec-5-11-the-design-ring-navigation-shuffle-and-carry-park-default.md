@@ -808,8 +808,7 @@ being kept; they simply disagree here.
    design does *not* always look the way you left it, and the thing that changed it is a design you have
    since left.
 
-**Ruled:** _(awaiting the owner)_
-
-Nothing waits on this. The built behaviour is option 1, it is documented beside the code and covered by a
-test, and switching to option 2 later is one line. It is here because it is a choice you would want to make
-rather than inherit.
+**Ruled: option 1 (owner, 2026-09-20).** *"Show None — what you left that design with. Going back to a design
+always looks exactly the way you left it, which is the promise the whole story is sold on."* Recorded as **R-160**:
+where a parked record and a carried value both exist for one control, the parked record wins and is cleared in the
+same breath — what is built, documented beside `switchControls` and covered by `controls.test.ts`.
