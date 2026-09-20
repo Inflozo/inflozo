@@ -23,16 +23,20 @@ export const STRIP_COLUMNS = 4
 export const STRIP_ROWS = 3
 export const STRIP_TILES = STRIP_COLUMNS * STRIP_ROWS
 
-/** B1a's counter, and the words the block prints above the strip: `Design 7 of 18`. `at` is a zero-based index. */
-export const position = (at: number, length: number): string => `Design ${at + 1} of ${length}`
+/** B1a`:365`'s counter, exactly as the frame prints it: `7 of 18`. The word **Design** is the LABEL beside it and
+ *  is drawn once (the owner's test of the deployed page, 2026-09-20: the block read "Design · Design 1 of 3", which
+ *  is the frame's label and this counter both saying it). `at` is a zero-based index. */
+export const position = (at: number, length: number): string => `${at + 1} of ${length}`
 
 /** S6`:67`'s pill counter — the same number in the section's own quick actions, in the mono `4 / 18` the frame
  *  draws there. Two shapes, ONE arithmetic, so the panel and the pill can never disagree about where you are. */
 export const pillPosition = (at: number, length: number): string => `${at + 1} / ${length}`
 
 /** UX-DR12's polite sentence, spoken through `#editor-said` from the one place the key and every button reach:
- *  *"Design 8 of 18 — Image Backdrop"*. */
-export const announce = (at: number, length: number, name: string): string => `${position(at, length)} — ${name}`
+ *  *"Design 8 of 18 — Image Backdrop"*. It KEEPS the word, because a sentence read aloud on its own has no label
+ *  beside it to supply one — which is the difference between it and the counter above. */
+export const announce = (at: number, length: number, name: string): string =>
+  `Design ${position(at, length)} — ${name}`
 
 /** UX-DR5 and B1's note: the ring WRAPS. A dead key at the end of a list reads as broken, and the counter is the
  *  thing that says where you are — so `]` on the last design lands on the first and says so. */
@@ -62,18 +66,18 @@ export function strip<T>(ring: readonly T[], at: number): { tiles: readonly T[];
 }
 
 /** R-12's shape for a control at its floor: where the ring holds one design the arrows and Shuffle are ABSENT
- *  (UX-DR3, R-118) and this one sentence says why, so the counter reading "Design 1 of 1" is not a puzzle. */
+ *  (UX-DR3, R-118) and this one sentence says why, so a counter reading "1 of 1" is not a puzzle. */
 export const ONE_DESIGN = 'This category has one design so far. More are coming.'
 
-/** B1a`:395`'s footer words, beside the `[` and `]` key chips. */
-export const CYCLE_WORDS = 'Cycle designs'
-
-/** S6`:140`'s card: the design a Shuffle would take you to, named before the press. */
-export const TRY_WORDS = 'Same words, new look'
-export const TRY_TITLE = 'Try a design'
+/* B1a`:395`'s `Cycle designs` FOOTER and S6`:140`'s `Try a design` CARD were built and then REMOVED at the owner's
+ * test of the deployed page (2026-09-20, findings 3 and 4), which amends R-159: Shuffle keeps ONE seat, the section
+ * pill's, and the block is the label, the counter, the strip and the design's name. The keys are still advertised —
+ * in the `?` card, which is R-147's one place for them — and `[` / `]` now work on `/controls` too (finding 1).
+ */
 
 /** The accessible name and hover title of each ring control. The chip the frame draws is part of the words, so a
- *  screen reader hears the key it could have pressed instead (B1a`:395` prints the same two chips). */
+ *  screen reader hears the key it could have pressed instead — which since the footer went is the only place in
+ *  the block that names them at all. */
 export const PREVIOUS_WORDS = 'Previous design — ['
 export const NEXT_WORDS = 'Next design — ]'
 /** R-159: in the section's pill this control is ICON-ONLY, so its words live here as the name and the title

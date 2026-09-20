@@ -293,13 +293,6 @@ export function Editor({
    *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
    *  card fills the room available. */
   const [device, setDevice] = useState<Device>(DESKTOP)
-  /* STORY 5.11 — WHICH design a Shuffle would land on, held so the `Try a design` card can NAME IT BEFORE THE
-     PRESS (R-159's whole reason for the panel seat). One number, re-drawn after each shuffle; the destination is
-     `shuffleTo(len, at, () => seed)`, so it also follows the arrows without a second piece of state.
-     IT STARTS AT 0 AND IS RANDOMISED ON MOUNT, never in the initializer: this component is prerendered, and a
-     `Math.random()` read during render would name a different design on the server than in the browser. */
-  const [shuffleSeed, setShuffleSeed] = useState(0)
-  useEffect(() => setShuffleSeed(Math.random()), [])
   /** the section a swap has just landed on, for `canvas-chrome.css`'s 180ms settle — cleared when it is over */
   const swapped = useRef<Pick | null>(null)
 
@@ -1523,22 +1516,16 @@ export function Editor({
     onDesign(pick, ring[step(at, ring.length, by)]!.id)
   }
 
-  /** Where a Shuffle would land, for the `Try a design` card to NAME BEFORE THE PRESS (R-159) — and the same
-   *  index the press then uses, so the card is never a promise the button breaks. */
-  const shuffleTarget = (designId: string): SectionRegistryEntry | null => {
-    const ring = ringOf(designId)
-    const to = shuffleTo(ring.length, ring.findIndex((e) => e.id === designId), () => shuffleSeed)
-    return to === null ? null : (ring[to] ?? null)
-  }
-
-  /** FR-D13's Shuffle, from either of R-159's two seats. The randomness lives HERE and never in the core (AD-1);
-   *  a new seed after the press is what moves the card on to the next destination. */
+  /** FR-D13's Shuffle, from its ONE seat — the section's pill (the owner's test of the deployed page, 2026-09-20,
+   *  amending R-159: the panel's `Try a design` card was built and removed). The randomness lives HERE and never in
+   *  the core (AD-1), and since nothing names the destination before the press it is drawn AT the press rather than
+   *  held in state. */
   const onShuffle = (pick: Pick | null) => {
     const placed = pick ? latest.current.stack.find((i) => same(i, pick)) : undefined
     if (!pick || !placed) return
-    const to = shuffleTarget(placed.designId)
-    setShuffleSeed(Math.random())
-    if (to) onDesign(pick, to.id)
+    const ring = ringOf(placed.designId)
+    const to = shuffleTo(ring.length, ring.findIndex((e) => e.id === placed.designId), Math.random)
+    if (to !== null && ring[to]) onDesign(pick, ring[to]!.id)
   }
 
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
@@ -2035,7 +2022,6 @@ export function Editor({
             <DesignPicker
               ring={chosenRing}
               at={chosenAt}
-              next={shuffleTarget(chosen.designId)}
               target={chosen.target}
               rows={rows}
               pool={pool}
@@ -2044,7 +2030,6 @@ export function Editor({
               src={src}
               onDesign={(to) => onDesign(chosen, to)}
               onStep={(by) => stepDesign(chosen, by)}
-              onShuffle={() => onShuffle(chosen)}
             />
             {/* R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it */}
             <Sidebar

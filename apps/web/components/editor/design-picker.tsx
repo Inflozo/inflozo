@@ -5,13 +5,10 @@ import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import type { Mode } from '@inflozo/section-runtime'
 import { SectionPreview } from '@/components/editor/section-preview'
 import { gridKeys } from '@/components/controls/icon-picker'
-import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight } from '@/components/kit/icons'
 import type { DesignRows } from '@/lib/canvas'
-import {
-  CYCLE_WORDS, NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, TRY_TITLE, TRY_WORDS, position, strip,
-} from '@/lib/ring'
+import { NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, position, strip } from '@/lib/ring'
 
 /* ────────────────────────────── Story 5.11 — B1a, THE DESIGN BLOCK AT THE HEAD OF THE PANEL (FR-D19, R-74).
  *
@@ -19,8 +16,13 @@ import {
  * the label **Design** (12/500, ink-soft) with **◀ `7 of 18` ▶** to its right at 26px targets on surface, the
  * counter MONO with a fixed `min-width` so the number does not shift the arrows as it counts; a 4-column strip of
  * 44px tiles, the active one coral-ringed, a Pro tile marked with a ✦, and a `+N` tile where the ring is longer
- * than the strip; the active design's name and its descriptor beneath; and a footer rule carrying `Cycle designs`
- * and the two ink key chips `[` and `]`.
+ * than the strip; and the active design's name with its descriptor beneath.
+ *
+ * TWO OF B1a'S PARTS WERE BUILT AND THEN REMOVED, at the owner's test of the deployed page (2026-09-20): the
+ * `Cycle designs` footer with its `[` `]` chips (finding 4) and S6`:140`'s `Try a design` card (finding 3, which
+ * amends R-159 — Shuffle keeps ONE seat, the section pill's). The keys are still advertised, in the `?` card,
+ * which is R-147's one place for them. And the counter prints `7 of 18` and not `Design 7 of 18` (finding 2): the
+ * word is the LABEL to its left, and the block was saying it twice.
  *
  * ABOVE EVERY GROUP AND INSIDE NONE (FR-F3): the design picker is not a setting, so it is a SIBLING of `Sidebar`
  * rather than a row in it — which is also why `Sidebar` is untouched by this story.
@@ -37,17 +39,16 @@ import {
  * is not this). So each tile is a positioned box holding the preview, with a transparent button over it carrying
  * the accessible name.
  *
- * ABSENT, NEVER GREYED (UX-DR3, R-118). Where the ring holds one design there is nowhere to go, so the arrows,
- * the strip and the Try-a-design card are simply NOT DRAWN and one plain sentence says why (R-12's shape): the
- * counter still reads "Design 1 of 1", because that is true and is the thing that changes the day Epic 9 fills
- * the category — every count here is derived, so nothing needs editing then.
+ * ABSENT, NEVER GREYED (UX-DR3, R-118). Where the ring holds one design there is nowhere to go, so the arrows and
+ * the strip are simply NOT DRAWN and one plain sentence says why (R-12's shape): the counter still reads "1 of 1",
+ * because that is true and is the thing that changes the day Epic 9 fills the category — every count here is
+ * derived, so nothing needs editing then.
  *
  * `← →` CROSS THE STRIP (`EXPERIENCE.md:503`), mirroring `[` and `]`, through the Kit's own `gridKeys` — never a
  * second arrow implementation.
  *
- * R-159's FIRST SEAT FOR SHUFFLE: S6`:140`'s **Try a design** card at the block's foot, showing the design a
- * shuffle would take you to BEFORE you press it — its picture, its name, "Same words, new look" and its tier
- * badge. Its pair is the section pill's icon-only control (`controls/section-pill.tsx`).
+ * SHUFFLE IS NOT HERE. Its one seat is the section pill's icon-only control (`controls/section-pill.tsx`), by the
+ * owner's finding 3 above.
  */
 
 /** B1a`:377` — 64 × 44, the tile the strip is a grid of. */
@@ -89,7 +90,6 @@ function Tile({
 export function DesignPicker({
   ring: designs,
   at,
-  next,
   target,
   rows,
   pool,
@@ -99,14 +99,11 @@ export function DesignPicker({
   assets,
   onDesign,
   onStep,
-  onShuffle,
 }: {
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
   /** where in the ring this section is */
   at: number
-  /** the design a Shuffle would land on, or null where there is nowhere to go */
-  next: SectionRegistryEntry | null
   target: string
   rows: Readonly<Record<string, DesignRows | undefined>>
   pool: readonly { id: string }[]
@@ -117,7 +114,6 @@ export function DesignPicker({
   assets?: Readonly<Record<string, string>>
   onDesign: (designId: string) => void
   onStep: (by: number) => void
-  onShuffle: () => void
 }) {
   const active = designs[at]
   const many = designs.length > 1
@@ -222,44 +218,6 @@ export function DesignPicker({
         </span>
       </div>
 
-      {/* R-159's panel seat — S6`:140`'s card, which is the one place that shows where a shuffle would take you
-          BEFORE the press. Absent where the ring holds one design, exactly as the arrows are. */}
-      {next ? (
-        <span className="relative flex items-center gap-[10px] rounded-[8px] border border-line bg-surface p-[7px] transition-colors focus-within:border-coral hover:border-coral">
-          <Tile
-            entry={next}
-            rows={rows[next.id]}
-            className="shrink-0 rounded-[4px] border border-line"
-            style={{ width: TILE_WIDTH, height: TILE_HEIGHT }}
-            {...preview}
-          />
-          <span className="flex min-w-0 flex-col gap-[3px]">
-            <span className="truncate text-[12px] font-semibold">{TRY_TITLE}</span>
-            <span className="truncate text-[11.5px] text-ink-soft">{next.name} · {TRY_WORDS}</span>
-            <span className="flex">{next.tier === 'pro' ? <ProBadge small /> : <FreeBadge />}</span>
-          </span>
-          <button
-            type="button"
-            data-try-design
-            aria-label={`${TRY_TITLE} — ${next.name}. ${TRY_WORDS}`}
-            title={TRY_TITLE}
-            onClick={onShuffle}
-            className={`absolute inset-0 block rounded-[8px] ${ring}`}
-          />
-        </span>
-      ) : null}
-
-      {/* B1a`:393` — the footer rule, the words and the two ink key chips. They are drawn only where the keys do
-          something: R-145's rule, applied to the place that advertises them. */}
-      {many ? (
-        <div className="flex items-center gap-[6px] border-t border-line pt-[10px] text-[11.5px] text-ink-soft">
-          {CYCLE_WORDS}
-          <span aria-hidden className="ml-auto flex items-center gap-[4px]">
-            <kbd className="inline-flex min-w-[18px] items-center justify-center rounded-[4px] border border-line bg-surface px-[5px] py-px font-mono text-[10.5px] text-ink">[</kbd>
-            <kbd className="inline-flex min-w-[18px] items-center justify-center rounded-[4px] border border-line bg-surface px-[5px] py-px font-mono text-[10.5px] text-ink">]</kbd>
-          </span>
-        </div>
-      ) : null}
     </section>
   )
 }

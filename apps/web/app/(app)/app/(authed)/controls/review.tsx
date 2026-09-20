@@ -12,6 +12,7 @@ import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Panel } from '@/components/kit/icons'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
+import { holdsCaret, shortcutFor } from '@/lib/keymap'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 
 /* THE INSTANCE, THE CANVAS AND THE PANEL — Story 4.5's review, the way Epic 5's editor will wire them.
@@ -37,7 +38,9 @@ import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 
    STORY 5.11 — THE ONLY RING IN THE REPOSITORY RIDES HERE (R-158). `packages/library/designs/` holds one design
    per category, so the editor's own arrows have nowhere to go; this page is handed all three fixture designs and
-   mounts B1a's Design block over them, plus S4b + S6's quick-action pill for the ring's second seat. A swap is the
+   mounts B1a's Design block over them, plus S4b + S6's quick-action pill, which since the owner's test of
+   2026-09-20 carries Shuffle's one seat. `[` and `]` are bound here too (his finding 1), through the editor's own
+   `shortcutFor` and its WCAG 2.1.4 guard rather than a second key table. A swap is the
    pure `switchControls` — the very function `switchDesign` calls in the editor — over this page's own
    `ControlState`, `parkedControls` included, so the carry / park / default rule the owner tests here is the rule
    the product runs. Nothing is saved, as nothing on this page ever was.
@@ -86,10 +89,6 @@ export function Review({
   const [said, setSaid] = useState('')
   /** the sample has been drawn at least once, so the pill has a rect to anchor to and the strip has its icons */
   const [painted, setPainted] = useState(false)
-  /** which design a Shuffle would land on — held so the `Try a design` card names it BEFORE the press (R-159).
-   *  Randomised on mount, never in the initializer: this component is prerendered. */
-  const [shuffleSeed, setShuffleSeed] = useState(0)
-  useEffect(() => setShuffleSeed(Math.random()), [])
   const current = useRef(state)
   const design = useRef(entry)
   design.current = entry
@@ -173,11 +172,6 @@ export function Review({
 
   const designRing = ringFor(designs, entry)
   const at = designRing.findIndex((e) => e.id === entry.id)
-  const shuffleNext = (() => {
-    const to = shuffleTo(designRing.length, at, () => shuffleSeed)
-    return to === null ? null : (designRing[to] ?? null)
-  })()
-
   /** ONE PURE FUNCTION decides what carries, what parks and what defaults — the same `switchControls` the
    *  editor's `switchDesign` calls, so what the owner tests here is what the product does. Content, items and
    *  `data` are untouched: they stay in `state` byte for byte across the swap (FR-G3, FR-D19). */
@@ -196,9 +190,11 @@ export function Review({
     if (designRing.length < 2) return
     onDesign(designRing[step(at, designRing.length, by)]!.id)
   }
+  /** The pill's one Shuffle seat (the owner's test of the deployed page, 2026-09-20: the panel's card is gone).
+   *  The random is drawn AT the press, because nothing names the destination before it any more. */
   const onShuffle = () => {
-    setShuffleSeed(Math.random())
-    if (shuffleNext) onDesign(shuffleNext.id)
+    const to = shuffleTo(designRing.length, at, Math.random)
+    if (to !== null && designRing[to]) onDesign(designRing[to]!.id)
   }
 
   /** S4b's pill, placed from the section's rect through the frame's rect. Nothing is scaled on this page, so
@@ -241,6 +237,33 @@ export function Review({
     // mount only: the handlers read the latest state through `current`
   }, [])
 
+  /* `[` AND `]` WORK HERE TOO (the owner's test of the deployed page, 2026-09-20, finding 1). This page is where
+     the only ring in the repository can be cycled, so the keys the panel and the `?` card advertise have to reach
+     it — the editor's own binding is `editor.tsx`'s and does not exist on this route.
+
+     THROUGH `shortcutFor` AND `holdsCaret`, never a second key table (R-145, standing rule 3): the same match and
+     the same WCAG 2.1.4 guard the editor uses, so `[` typed into a panel field is a bracket here exactly as it is
+     there. Bound on BOTH documents, because a press with the pointer in the sample is delivered to the frame's. */
+  const ringStep = useRef(onStep)
+  ringStep.current = onStep
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const doc = (e.target as Node | null)?.ownerDocument ?? document
+      const gesture = shortcutFor(e, holdsCaret(doc.activeElement as HTMLElement | null))
+      if (gesture !== 'prev' && gesture !== 'next') return
+      e.preventDefault()
+      ringStep.current(gesture === 'prev' ? -1 : 1)
+    }
+    document.addEventListener('keydown', onKey)
+    const inner = frame.current?.contentDocument
+    inner?.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      inner?.removeEventListener('keydown', onKey)
+    }
+    // re-bound when the frame's document changes; `ringStep` keeps the handler on the latest ring
+  }, [painted])
+
   return (
     <div className="flex flex-1 flex-col tablet:h-dvh tablet:flex-none tablet:flex-row tablet:overflow-hidden">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 px-4 py-6 tablet:px-8">
@@ -251,9 +274,10 @@ export function Review({
           title="The controls sample section"
           className="block h-[70dvh] w-full rounded border border-line bg-surface tablet:h-auto tablet:min-h-0 tablet:flex-1"
         />
-        {/* S4b + S6's quick-action pill, carrying R-159's SECOND Shuffle seat and the ring's counter. It is drawn
-            whenever the sample is drawn rather than on hover: there is one section on this page and reviewing it
-            is the page's whole job, so there is no second section for a hover to choose between. */}
+        {/* S4b + S6's quick-action pill, carrying the ring's counter and — since the owner's test of 2026-09-20
+            removed the panel's card — Shuffle's ONE seat. It is drawn whenever the sample is drawn rather than on
+            hover: there is one section on this page and reviewing it is the page's whole job, so there is no
+            second section for a hover to choose between. */}
         <SectionPill
           shown={designRing.length > 1 && painted}
           hidden={false}
@@ -305,7 +329,6 @@ export function Review({
         <DesignPicker
           ring={designRing}
           at={at}
-          next={shuffleNext}
           target={entry.compileTarget[0] ?? 'home.hbs'}
           rows={rows}
           pool={pool}
@@ -315,7 +338,6 @@ export function Review({
           assets={canvasAssets}
           onDesign={onDesign}
           onStep={onStep}
-          onShuffle={onShuffle}
         />
         <Sidebar
           entry={entry}

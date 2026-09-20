@@ -3520,9 +3520,13 @@ async function main() {
     })
     check('step 86 — B1a: the Design block is at the head of the panel, above every settings group and inside none (FR-F3)',
       ring511 !== null && ring511.aboveGroups, JSON.stringify(ring511))
-    check('step 86 — with one design in the ring the counter still says where it is, and one plain sentence says why there is nothing to press (R-12, R-158)',
-      ring511 !== null && ring511.counter === 'Design 1 of 1' && /one design/.test(ring511.note ?? '') && (ring511.name ?? '') !== '', JSON.stringify(ring511))
-    check('step 86 — ABSENT, NEVER GREYED (UX-DR3): no arrows, no thumbnail strip, no Try-a-design card and no key chips where the ring holds one',
+    // the owner's test of the deployed page (2026-09-20, finding 2): the counter prints the NUMBER and the label
+    // beside it prints the word — the block was saying "Design" twice
+    check('step 86 — with one design in the ring the counter still says where it is, without repeating its own label, and one plain sentence says why there is nothing to press (R-12, R-158)',
+      ring511 !== null && ring511.counter === '1 of 1' && /one design/.test(ring511.note ?? '') && (ring511.name ?? '') !== '', JSON.stringify(ring511))
+    // findings 3 and 4 took the Try-a-design card and the `Cycle designs` footer out EVERYWHERE, so the last two
+    // clauses now guard against their return rather than against a ring of one
+    check('step 86 — ABSENT, NEVER GREYED (UX-DR3): no arrows and no thumbnail strip where the ring holds one — and no Try-a-design card and no key chips at all',
       ring511 !== null && ring511.arrows === 0 && ring511.strip === 0 && ring511.tryCard === 0 && ring511.chips.length === 0, JSON.stringify(ring511))
     // S4b + S6's pill gives the same answer: the counter, the arrows and Shuffle arrive with the ring, not before
     await page.mouse.move(120, 400)

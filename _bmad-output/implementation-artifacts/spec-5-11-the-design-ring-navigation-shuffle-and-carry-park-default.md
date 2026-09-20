@@ -3,7 +3,7 @@ title: 'Story 5.11 — The design ring: navigation, shuffle, and carry / park / 
 type: 'feature'
 created: '2026-09-20'
 status: 'in-progress'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 baseline_commit: 'e74f84cc690eafbc994a8aeecc8b85e2ecea4122'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -14,9 +14,9 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 After this story a placed section is no longer stuck with the look it arrived in: with it selected you
 press `]` for the next design, `[` for the previous one, click the ◀ ▶ arrows that now appear on the
 section itself, or pick a thumbnail from the new **Design** block at the top of the right-hand panel —
-and the section changes in place, keeping every word you typed. A **Shuffle** button does the same thing
-but chooses for you, and the panel always says where you are — *"Design 7 of 18"* — so browsing feels
-like a ring rather than a corridor with no end.
+and the section changes in place, keeping every word you typed. A **Shuffle** button on the section itself does the
+same thing but chooses for you, and the panel always says where you are — **Design** · *"7 of 18"* — so
+browsing feels like a ring rather than a corridor with no end.
 
 The promise underneath it is that browsing is **safe**: a setting both designs have keeps your value, a
 setting only the design you are leaving has is **put aside against that design** and comes back exactly
@@ -25,8 +25,9 @@ press of `⌘Z` undoes any of it.
 
 **One thing to know before you test it:** the library holds exactly one design per category today (the
 five pilots), so in your own editor the ring has nowhere to go yet — the arrows are simply not there, and
-the counter says "Design 1 of 1". You try the real thing on the internal **Controls review** page, which
-gets three sample designs and working arrows (your ruling R-158, 2026-09-20).
+the counter says "1 of 1". You try the real thing on the internal **Controls review** page, which
+gets three sample designs and working arrows (your ruling R-158, 2026-09-20) — and where `[` and `]` work too,
+after your test of it.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -105,7 +106,7 @@ declared `surface` — so the partition rule and the placement rule can never dr
 |---|---|---|---|
 | Next design | a section selected, ring of 3, at 2 | design 3 renders in place; **one** edit, one `⌘Z`; *"Design 3 of 3 — {name}"* announced | N/A |
 | Past the last | at 3 of 3, `]` | wraps to 1 — a dead key at the end of a list reads as broken (UX-DR5, B1's note) | N/A |
-| Ring of one | every category today | `[`/`]` do nothing and announce nothing; the arrows and Shuffle are **absent**; the block reads **"Design 1 of 1"** with one sentence saying more are coming | N/A |
+| Ring of one | every category today | `[`/`]` do nothing and announce nothing; the arrows and Shuffle are **absent**; the block reads **"1 of 1"** beside its `Design` label (amended by the owner's test, 2026-09-20, finding 2 — it read "Design 1 of 1") with one sentence saying more are coming | N/A |
 | Key with a caret | the caret in a canvas text prop or a panel field | `[` types `[`; no swap (WCAG 2.1.4, `shortcutFor`'s single-key arm) | N/A |
 | Carried control | `align` declared by both | keeps its value, in light **and** in dark | N/A |
 | Parked control | `tint` (a `darkOverride` control) declared only by the outgoing design | removed from `controls`/`darkOverrides`, written to `parkedControls[outgoingId]`; the root loses the attribute (`stampControls`) | N/A |
@@ -296,7 +297,9 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
       ring and writes nothing -- the one place a design change happens, so 5.12's Remix and Epic 8's swap
       call it rather than reimplementing the rule.
 - [x] `apps/web/lib/ring.ts` -- new, pure and importless but for the library (`node --test` cannot load a
-      `.tsx`): the position words (`Design 7 of 18`, and the pill's `7 / 18`), the announcement sentence, the
+      `.tsx`): the position words (`7 of 18` beside the block's own `Design` label — amended at the owner's
+      finding 2, having read `Design 7 of 18` — and the pill's `7 / 18`), the announcement sentence, which
+      KEEPS the word because a sentence read aloud has no label beside it, the
       strip model (the first N tiles and a `+N` tile, N derived from the strip's own shape), `step(at, len,
       by)` with UX-DR5's wrap, `shuffleTo(ring, at, random)` (a caller-supplied random — AD-1 keeps the core
       free of randomness), and the one-design sentence.
@@ -307,10 +310,17 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
       `Cycle designs` footer with the `[` `]` chips. `← →` cross the strip (`EXPERIENCE.md:503`), reusing
       `icon-picker.tsx`'s `gridKeys` -- never a second arrow implementation. With one design: the counter,
       no arrows, and one sentence.
+      **BUILT, THEN AMENDED BY THE OWNER'S TEST (2026-09-20):** the footer and its chips are REMOVED (finding 4)
+      and the counter prints `1 of 3`, not `Design 1 of 3`, because the label beside it already says the word
+      (finding 2). The label, the arrows, the counter, the strip, the name and the sentence stand.
 - [x] `apps/web/components/editor/design-picker.tsx` -- **R-159, place one of two**: S6`:140`'s
       **`Try a design`** card at the block's foot — the destination design's preview, its name, the words
       *"Same words, new look"* and its tier badge, pressing it being the Shuffle. It is the one place that
       shows where a shuffle would take you **before** you press. Absent where the ring holds one.
+      **BUILT, THEN REMOVED AT THE OWNER'S TEST (2026-09-20, finding 3), AMENDING R-159:** Shuffle keeps one
+      seat, the section pill's. The held `shuffleSeed` went with the card in both surfaces and the random is
+      drawn at the press; Shuffle is therefore pointer-only, and `[` / `]` are the keyboard's way to every
+      design it could have reached.
 - [x] `apps/web/components/controls/section-pill.tsx` -- S4b's **◀ ▶** at the head of the pill with S6's
       mono counter between them, and — **R-159, place two of two** — a Shuffle control (the Kit's `Refresh`,
       **icon-only**, its words as accessible name and hover `title`) **before** S4b's divider, because the
@@ -355,6 +365,10 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
 - [x] `tools/probe/run-verify-controls.cjs` -- **R-158**: the deployed ring walk on `/controls`: the arrows
       change the design, a carried value survives, a parked one returns exactly, and the item count sentence
       reads as the engine counts it.
+- [x] `apps/web/app/(app)/app/(authed)/controls/review.tsx` -- **the owner's finding 1 (2026-09-20)**: `[` and
+      `]` bound on this route too, through the editor's own `shortcutFor` + `holdsCaret` rather than a second key
+      table (R-145, standing rule 3), on the page's document and the frame's -- the page advertised the keys and
+      they reached nothing, because the editor's binding is `editor.tsx`'s and this route does not mount it.
 - [x] `docs/section-authoring.md` -- `data-items-limit` documented in the directive table and in the list
       rule beside `data-repeat-limit` -- the authoring vocabulary is a documented deliverable (FR-G3), and a
       cap no author can find is a cap no design will use.
@@ -363,28 +377,30 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
 - Given a selected section whose ring holds more than one design, when I press `]`, use the on-section ▶ or
   click a thumbnail, then the section renders as that design in place, keeping every word, picture, item and
   shared setting; **one** journal entry is written and one `⌘Z` restores exactly what was there.
-- Given the panel, when a section is selected, then its Design block **matches `B Missing Surfaces.dc.html`
-  B1a** — the `Design` label, ◀ ▶ around a mono counter reading *"{n} of {m}"*, the 4-column strip of 44px
-  tiles with the active one coral-ringed and a Pro tile ✦-marked, the active design's name and descriptor
-  beneath, and the `Cycle designs` footer carrying the `[` and `]` chips.
+- Given the panel, when a section is selected, then its Design block is **`B Missing Surfaces.dc.html` B1a as
+  the owner's test of 2026-09-20 left it** — the `Design` label, ◀ ▶ around a mono counter reading *"{n} of
+  {m}"* and **not** repeating the label's word (finding 2), the 4-column strip of 44px tiles with the active
+  one coral-ringed and a Pro tile ✦-marked, and the active design's name and descriptor beneath. B1a's
+  `Cycle designs` footer is **not** drawn (finding 4), and neither is S6's `Try a design` card (finding 3).
 - Given a hovered or selected section, when its quick-action pill is drawn, then it **matches
   `S6 Variant Shuffle.dc.html`'s pill** — ◀ ▶ then the mono `{n} / {m}` counter then S4b's divider and the
   three controls already built — and B1b's claim holds: the counter and arrows ride on the section itself.
-- Given Shuffle, when I use it from **either** seat — the panel's `Try a design` card or the section pill's
-  icon (R-159) — then the section lands on a **different** design of the same ring under the identical carry
-  / park / default rule, in one edit; the card **matches `S6 Variant Shuffle.dc.html:140`** (the destination's
-  picture, its name, *"Same words, new look"*, its tier badge), and the pill's control is icon-only with its
-  words as accessible name and hover title.
+- Given Shuffle, when I press it in its **one** seat — the section pill's icon (R-159 as amended by the owner's
+  finding 3) — then the section lands on a **different** design of the same ring under the identical carry /
+  park / default rule, in one edit; the control is icon-only with its words as accessible name and hover title;
+  and the panel carries no Shuffle card, which the keyboard journey and the deployed `/controls` walk each
+  assert **absent** rather than assume.
 - Given a control only the outgoing design declares, when I move away and back, then its value — and its
   dark override — are restored exactly, and at no point is it written to the section root.
 - Given a category whose designs differ on `bindingContext`, `compileTarget` or `surface`, when I cycle or
   shuffle, then only designs in the instance's own partition are ever reachable, by any of the four doors.
 - Given a ring of one design, when a section is selected, then the arrows and Shuffle are **absent** — not
-  greyed, not captioned as errors — the counter reads *"Design 1 of 1"*, and one plain sentence says the
-  category has one design so far.
-- Given the keyboard alone, when I press `[` and `]` with the shell focused, then the design changes and the
-  position is announced; with the caret in any field the same keys type their characters and change nothing;
-  and `pnpm keyboard` proves both on every commit.
+  greyed, not captioned as errors — the counter reads *"1 of 1"* beside its `Design` label, and one plain
+  sentence says the category has one design so far.
+- Given the keyboard alone, when I press `[` and `]` with the shell focused — **in the editor and on
+  `/controls`** (the owner's finding 1) — then the design changes and the position is announced; with the caret
+  in any field the same keys type their characters and change nothing; and `pnpm keyboard` proves both on every
+  commit, the deployed `/controls` walk proving the same two on production.
 - Given the deployed editor, when the walk runs, then step 5's CSP count is still zero and step 8's axe is
   zero over the new block and pill, with no exception beyond R-149's one.
 
@@ -517,9 +533,9 @@ to your account at Story 5.1.
 
 1. **URL:** `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` · **Screen:** the editor,
    on Home. Click any section on the canvas. **Expect:** at the top of the right-hand panel, above the
-   settings groups, a new **Design** block: a counter reading **"Design 1 of 1"**, one small picture of the
-   section beneath it, its name, and a line along the bottom reading **Cycle designs** with two key chips
-   `[` and `]`.
+   settings groups, a new **Design** block: the word **Design** on the left, a counter reading **"1 of 1"**
+   on the right, and the design's name underneath. Nothing else — no key chips along the bottom and no
+   Shuffle card (your findings 3 and 4).
 2. **Same screen.** Look for arrows beside that counter. **Expect:** there are **none**, and one plain
    sentence says this category has one design so far. This is the rule you set at R-118 — a control that
    could do nothing is not there at all, rather than there and dead.
@@ -534,7 +550,7 @@ to your account at Story 5.1.
 6. **URL:** `https://app.inflozo.com/controls` · **Screen:** the **Controls review** page — an internal
    page we use to check the panel, not a customer screen. **Expect:** a sample section on the left and its
    panel on the right, and the panel now has the same **Design** block at the top — this time reading
-   **"Design 1 of 3"**, with three thumbnails and working ◀ ▶ arrows (your ruling R-158: three samples, so
+   **"1 of 3"**, with three thumbnails and working ◀ ▶ arrows (your ruling R-158: three samples, so
    the arrows really differ and the counter really counts).
 7. **Same screen.** In the panel, change a couple of settings — **Dummy data:** set **Alignment** to
    *Centre* and **Card tint** to *Strong* — and type something into the heading so you can recognise it.
@@ -547,21 +563,51 @@ to your account at Story 5.1.
 10. **Same screen.** Look at the **Features** list in the panel while the second design is showing.
     **Expect:** it reads **"3 items · 2 shown in this design"**, and the section on the left draws two — the
     third is not gone, it is waiting.
-11. **Same screen.** Press the **Try a design** card at the foot of the Design block (Shuffle). **Expect:**
-    it moves you to another design in one go, carrying your words the same way, and the card names and pictures
-    the design it would take you to next — so you always see where you are going before you press.
+11. **Same screen.** Look at the foot of the Design block. **Expect:** **nothing** there — no *Try a design*
+    card and no *Cycle designs* line with `[` `]` chips. Both were built and both are now gone, on your findings
+    3 and 4. Shuffle has one home, and you press it in the next step.
 12. **Same screen.** Rest the pointer on the sample section itself and look at the small white pill in its
-    top-right corner. **Expect:** ◀, the counter, ▶, then a **circular-arrow Shuffle button** (your ruling
-    R-159 — Shuffle in both places). Press the Shuffle button: it does exactly what the card does. Rest on it
+    top-right corner. **Expect:** ◀, the counter, ▶, then a **circular-arrow Shuffle button** — Shuffle's one
+    home now. Press it: it jumps you to another design in the ring, carrying your words the same way. Rest on it
     and a label says what it is — in that pill everything is a picture, so the words are in the label rather
     than printed.
     **And expect nothing else in that pill here.** This internal page holds one sample and no page to put it on,
     so Duplicate, Delete and the drag handle have nothing to act on and are **not drawn** — the same rule you
     set at R-118. You saw all three in their real place at step 3.
-13. **Same screen.** Use the keyboard only: click the section once, then press `]` and `[`. **Expect:** the
-    same changes as the arrows. Now click into the heading field in the panel and type `[`. **Expect:** the
-    character `[` appears in your text and **the design does not change** — this is the most important step
-    on this list.
+13. **Same screen.** Use the keyboard only: click anywhere on the page that is not a text field, then press
+    `]` and `[`. **Expect:** the same changes as the arrows — this is your finding 1, and it did not work
+    before. Now click into the heading field in the panel and type `[`. **Expect:** the character `[` appears
+    in your text and **the design does not change** — this is the most important step on this list.
+
+## Owner's test findings
+
+**Tested on the deployed `/controls` on 2026-09-20, at `905efa4e`. Four findings, all four fixed inside this
+story (R-80), and one of them amends a ruling he made at Create.**
+
+1. **`[` and `]` did not cycle the design on `/controls`.** True, and the block was advertising them. The
+   editor's key binding is `editor.tsx`'s and this route does not mount the editor, so the keys reached
+   nothing here. `review.tsx` now binds them through the editor's own `shortcutFor` + `holdsCaret` — the same
+   match and the same WCAG 2.1.4 guard, never a second key table (R-145, standing rule 3) — on the page's
+   document **and** the frame's, because a press with the pointer over the sample is delivered to the frame.
+2. **"Design 1 of 3" says the word twice.** B1a draws the label **Design** on the left and the counter
+   **`7 of 18`** on the right; the counter was printing the label's word as well. `position()` now returns
+   `1 of 3`. The **announcement keeps it** — *"Design 2 of 3 — …"* — because a sentence read aloud has no
+   label beside it to supply the word (UX-DR12).
+3. **Remove `Try a design` from the panel.** Done, and **this amends R-159**: Shuffle had two seats and now
+   has one, the section pill's icon-only control — which is Question 2's option 3. What is lost is the one
+   thing the card did that the button cannot: name and picture the destination *before* the press. What that
+   simplifies is real — the held `shuffleSeed` state went with it in both surfaces, and the random is now drawn
+   at the press. **A consequence worth stating: Shuffle is now pointer-only.** FR-D11's map is full and R-145
+   forbids a fifteenth key, so there is no keyboard path to *Shuffle* — but there is one to every design it
+   could reach, because `[` and `]` reach all of them. `journey.spec.mjs` proves exactly that on every commit.
+4. **Remove the `Cycle designs` / `[` `]` footer.** Done. The keys are still advertised in the `?` card, which
+   is R-147's one place for them, and both removals are asserted **absent** by the keyboard journey and by the
+   deployed `/controls` walk — a removal nobody checks comes back.
+
+**Where 2, 3 and 4 landed.** All three are the shared `DesignPicker`, so they apply to the editor's own panel
+as well as `/controls`. `/controls` exists to review that panel, so a block that differed between the two
+would make his test of it prove nothing — and the editor would otherwise have kept "Design · Design 1 of 1"
+for him to find at Epic 9.
 
 ## Questions for the owner
 
@@ -620,7 +666,11 @@ press it.
 3. **On the section only**, in the pill beside the arrows. Fewest places to look, but you cannot see what
    you are shuffling into until it has happened.
 
-**Ruled: option 2 (owner, 2026-09-20).** *"In both places."* Recorded as **R-159**. The panel keeps S6's
+**Ruled: option 2 (owner, 2026-09-20).** *"In both places."* Recorded as **R-159**.
+**AMENDED by his test of the deployed page the same day** — *"Remove 'Try a Design' in controls panel"* — which
+takes the panel seat away again and leaves option 3's answer: **the section pill only**. What the amendment costs
+is named under `## Owner's test findings` above, including that Shuffle is now pointer-only. The rest of R-159
+stands: **S4b + S6 govern the pill, B1b governs the affordance**, and in the pill the control is icon-only. The panel keeps S6's
 **`Try a design`** card, and the section's pill gains a Shuffle control **with the ring, before the divider**
 — the divider in the built pill separates *which design* from *this section*. In the pill it is **icon-only**
 (the Kit's `Refresh`, its words carried as accessible name and hover title) through `DESIGN.md:534-536`'s

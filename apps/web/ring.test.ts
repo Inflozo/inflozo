@@ -1,8 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CYCLE_WORDS, NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, SHUFFLE_WORDS, STRIP_COLUMNS, STRIP_ROWS, STRIP_TILES,
-  TRY_TITLE, TRY_WORDS, announce, pillPosition, position, shownInThisDesign, shuffleTo, step, strip,
+  NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, SHUFFLE_WORDS, STRIP_COLUMNS, STRIP_ROWS, STRIP_TILES,
+  announce, pillPosition, position, shownInThisDesign, shuffleTo, step, strip,
 } from './lib/ring.ts'
 
 /* STORY 5.11 — the design ring's own arithmetic and words, asserted where `node --test` reaches them (the module
@@ -10,18 +10,23 @@ import {
    the keyboard journey's and the deployed walk's; what is here is every row of the I/O matrix that is a number or
    a sentence. Nothing counts anything it could derive. */
 
-test('the counter is 1-based in both shapes, and the panel and the pill agree', () => {
-  assert.equal(position(0, 18), 'Design 1 of 18')
-  assert.equal(position(6, 18), 'Design 7 of 18')
-  assert.equal(position(0, 1), 'Design 1 of 1', 'the one-design case still says where it is')
+test('the counter is 1-based in both shapes, says "Design" in NEITHER, and the panel and the pill agree', () => {
+  // the owner's test of the deployed page (2026-09-20, finding 2): the word is the LABEL beside the counter, and
+  // the block was printing it twice — "Design · Design 1 of 3"
+  assert.equal(position(0, 18), '1 of 18')
+  assert.equal(position(6, 18), '7 of 18')
+  assert.equal(position(0, 1), '1 of 1', 'the one-design case still says where it is')
+  assert.doesNotMatch(position(6, 18), /Design/)
   assert.equal(pillPosition(6, 18), '7 / 18')
   assert.equal(pillPosition(0, 1), '1 / 1')
   // the same index and the same length can never read as two different places
-  for (const at of [0, 3, 17]) assert.equal(position(at, 18).replace('Design ', '').replace(' of ', ' / '), pillPosition(at, 18))
+  for (const at of [0, 3, 17]) assert.equal(position(at, 18).replace(' of ', ' / '), pillPosition(at, 18))
 })
 
-test('UX-DR12: the polite sentence names the position AND the design', () => {
+test('UX-DR12: the polite sentence names the position AND the design — and it KEEPS the word the counter dropped', () => {
   assert.equal(announce(7, 18, 'Image Backdrop'), 'Design 8 of 18 — Image Backdrop')
+  // a sentence read aloud has no label beside it to supply the word, which is the whole of the difference
+  assert.match(announce(0, 3, 'Anything'), /^Design 1 of 3 — /)
 })
 
 test('UX-DR5: the ring WRAPS in both directions, and a ring of one has nowhere to go', () => {
@@ -104,13 +109,10 @@ test("FR-D13's sentence names both numbers, and reads for one item too", () => {
 test('every word a control carries is plain English, and each names its key where it has one', () => {
   assert.match(PREVIOUS_WORDS, /^Previous design — \[$/)
   assert.match(NEXT_WORDS, /^Next design — \]$/)
-  assert.ok(SHUFFLE_WORDS.startsWith('Shuffle'), 'the pill\'s icon-only control carries its words as its name (R-159)')
-  assert.equal(CYCLE_WORDS, 'Cycle designs')
-  assert.equal(TRY_TITLE, 'Try a design')
-  assert.equal(TRY_WORDS, 'Same words, new look')
+  assert.ok(SHUFFLE_WORDS.startsWith('Shuffle'), 'the pill\'s icon-only control carries its words as its name')
   // R-12: with one design the block still says something true rather than going quiet
   assert.match(ONE_DESIGN, /one design/)
-  for (const words of [PREVIOUS_WORDS, NEXT_WORDS, SHUFFLE_WORDS, CYCLE_WORDS, TRY_TITLE, TRY_WORDS, ONE_DESIGN]) {
+  for (const words of [PREVIOUS_WORDS, NEXT_WORDS, SHUFFLE_WORDS, ONE_DESIGN]) {
     assert.doesNotMatch(words, /layout|variant|variation/i, 'Appendix H: "Design" is the only word')
   }
 })

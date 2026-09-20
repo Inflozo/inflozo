@@ -510,8 +510,8 @@ async function main() {
     const tint511 = page.locator('#section-controls [id$="-control-tint"]')
     const tintValue511 = async () => ((await tint511.count()) === 0 ? null : (await tint511.locator('[role="radio"][aria-checked="true"]').innerText()).trim())
 
-    check('ring — B1a: the Design block is at the head of the panel and the counter counts the real ring (R-158)',
-      (await block511.count()) === 1 && (await counter511.innerText()).trim() === 'Design 1 of 3' && (await block511.locator('[data-design-tile]').count()) === 3,
+    check('ring — B1a: the Design block is at the head of the panel, the counter counts the real ring and does NOT repeat its own label (R-158, the owner\'s finding 2)',
+      (await block511.count()) === 1 && (await counter511.innerText()).trim() === '1 of 3' && (await block511.locator('[data-design-tile]').count()) === 3,
       `${(await counter511.innerText()).trim()} · ${await block511.locator('[data-design-tile]').count()} tiles`)
 
     // the owner's step 7 — change two settings and type something recognisable
@@ -534,11 +534,14 @@ async function main() {
     await page.locator('[data-design-step="1"]').click()
     await page.waitForTimeout(500)
     check('ring — ▶ changes the section IN PLACE: a different design renders, the counter counts on, and the position is announced politely (UX-DR12)',
-      (await rootClass()) === 'cy' && (await counter511.innerText()).trim() === 'Design 2 of 3' && /^Design 2 of 3 — .+/.test((await page.locator('#controls-said').innerText()).trim()),
+      (await rootClass()) === 'cy' && (await counter511.innerText()).trim() === '2 of 3' && /^Design 2 of 3 — .+/.test((await page.locator('#controls-said').innerText()).trim()),
       `${await rootClass()} · ${(await counter511.innerText()).trim()} · ${(await page.locator('#controls-said').innerText()).trim()}`)
-    check('ring — FR-D19: a setting BOTH designs declare carries, the typed words carry, and the setting only the OLD design had is gone from the panel',
-      (await canvas()).attrs['data-align'] === 'center' && (await drawnHeading()) === 'Ring words' && (await tint511.count()) === 0,
-      JSON.stringify({ align: (await canvas()).attrs['data-align'], title: await drawnHeading(), tintRows: await tint511.count() }))
+    check('ring — FR-D19: a setting BOTH designs declare carries, the typed words carry, and the setting only the OLD design had is gone from the panel AND off the section root',
+      (await canvas()).attrs['data-align'] === 'center' && (await drawnHeading()) === 'Ring words' && (await tint511.count()) === 0
+      // "parked, and at no point written to the section root": `stampControls` writes `resolveControls`' values,
+      // and a control THIS design does not declare never resolves — so the attribute is gone, not merely stale
+      && (await canvas()).attrs['data-tint'] === undefined,
+      JSON.stringify({ align: (await canvas()).attrs['data-align'], title: await drawnHeading(), tintRows: await tint511.count(), tintAttr: (await canvas()).attrs['data-tint'] ?? null }))
     // the owner's step 10 — FR-D13's cap, and the items past it still there
     check('ring — FR-D13: the panel reads "3 items · 2 shown in this design" and the section draws two of the three',
       (await page.locator('#section-controls span', { hasText: /^3 items · 2 shown in this design$/ }).count()) === 1 && (await drawn('.cy__feature')) === 2,
@@ -548,29 +551,48 @@ async function main() {
     await page.locator('[data-design-step="1"]').click()
     await page.waitForTimeout(500)
     check('ring — ▶ again reaches the third design, which declares neither of the two the first one parked',
-      (await rootClass()) === 'cz' && (await counter511.innerText()).trim() === 'Design 3 of 3' && (await tint511.count()) === 0, `${await rootClass()} · ${(await counter511.innerText()).trim()}`)
+      (await rootClass()) === 'cz' && (await counter511.innerText()).trim() === '3 of 3' && (await tint511.count()) === 0, `${await rootClass()} · ${(await counter511.innerText()).trim()}`)
     await page.locator('[data-design-step="1"]').click()
     await page.waitForTimeout(500)
     check('ring — UX-DR5: ▶ at the end WRAPS to the first, and the parked setting comes back EXACTLY as it was left, even the long way round',
-      (await rootClass()) === 'cx' && (await counter511.innerText()).trim() === 'Design 1 of 3' && (await tintValue511()) === tintWas511 && (await canvas()).attrs['data-tint'] === 'strong' && (await drawnHeading()) === 'Ring words',
+      (await rootClass()) === 'cx' && (await counter511.innerText()).trim() === '1 of 3' && (await tintValue511()) === tintWas511 && (await canvas()).attrs['data-tint'] === 'strong' && (await drawnHeading()) === 'Ring words',
       JSON.stringify({ root: await rootClass(), tint: await tintValue511(), was: tintWas511, attr: (await canvas()).attrs['data-tint'] }))
     // and ◀ is the same ring backwards
     await page.locator('[data-design-step="-1"]').click()
     await page.waitForTimeout(500)
-    check('ring — ◀ wraps the other way, so neither arrow is ever a dead key', (await counter511.innerText()).trim() === 'Design 3 of 3', (await counter511.innerText()).trim())
+    check('ring — ◀ wraps the other way, so neither arrow is ever a dead key', (await counter511.innerText()).trim() === '3 of 3', (await counter511.innerText()).trim())
     await page.locator('[data-design-step="1"]').click()
     await page.waitForTimeout(500)
 
-    // the owner's steps 11 and 12 — R-159's two seats
-    const try511 = page.locator('[data-try-design]')
-    check('ring — R-159: the panel carries S6\'s `Try a design` card, naming and picturing where a shuffle would take you BEFORE the press',
-      (await try511.count()) === 1 && /Same words, new look/.test(await block511.innerText()) && (await block511.locator('iframe').count()) >= 3,
-      `${await try511.count()} card · ${await block511.locator('iframe').count()} previews`)
-    const was511 = (await counter511.innerText()).trim()
-    await try511.click()
+    // THE OWNER'S TEST OF THIS PAGE (2026-09-20) took two of B1a's parts out. Both are asserted ABSENT here,
+    // because a removal nobody checks comes back: the `Try a design` card (finding 3, amending R-159 — Shuffle
+    // keeps one seat, the pill's) and the `Cycle designs` footer with its key chips (finding 4).
+    check('ring — the block is the label, the counter, the strip and the name: no Try-a-design card and no key chips (the owner\'s findings 3 and 4)',
+      (await page.locator('[data-try-design]').count()) === 0 && (await block511.locator('kbd').count()) === 0
+      && !/Same words, new look|Cycle designs/.test(await block511.innerText()) && (await block511.locator('iframe').count()) === 3,
+      `${await page.locator('[data-try-design]').count()} card · ${await block511.locator('kbd').count()} chips · ${await block511.locator('iframe').count()} previews`)
+
+    // HIS FINDING 1 — `[` and `]` were advertised on this page and did nothing. They are bound here now, through
+    // the editor's own `shortcutFor`, so this is the deployed proof of the key and of WCAG 2.1.4's guard on it.
+    const keyFrom511 = (await counter511.innerText()).trim()
+    await page.locator('#editor-design').click()
+    await page.keyboard.press(']')
     await page.waitForTimeout(500)
-    check('ring — the card shuffles: a DIFFERENT design of the same ring, carrying the words the same way',
-      (await counter511.innerText()).trim() !== was511 && (await drawnHeading()) === 'Ring words', `${was511} → ${(await counter511.innerText()).trim()} · ${await drawnHeading()}`)
+    const keyNext511 = (await counter511.innerText()).trim()
+    await page.keyboard.press('[')
+    await page.waitForTimeout(500)
+    check('ring — the owner\'s finding 1: `]` and `[` cycle the design on this page, and `[` comes back to where it started',
+      keyNext511 !== keyFrom511 && (await counter511.innerText()).trim() === keyFrom511 && (await drawnHeading()) === 'Ring words',
+      `${keyFrom511} → ${keyNext511} → ${(await counter511.innerText()).trim()}`)
+    await openGroup('Content')
+    await heading511.click()
+    await page.keyboard.type('[]')
+    await page.waitForTimeout(400)
+    check('ring — WCAG 2.1.4: with the caret in the Heading field the same two keys type their characters and the design does not change',
+      (await counter511.innerText()).trim() === keyFrom511 && /\[\]$/.test(await heading511.inputValue().catch(() => heading511.innerText())),
+      `${(await counter511.innerText()).trim()} · ${await heading511.inputValue().catch(() => heading511.innerText())}`)
+
+    // the owner's step 12 — Shuffle's ONE seat
     const pill511 = await page.evaluate(() => {
       const pill = document.querySelector('[data-section-pill]')
       return pill === null ? null : {
@@ -580,9 +602,15 @@ async function main() {
         words: (pill.querySelector('[data-pill-shuffle]')?.textContent ?? '').trim(),
       }
     })
-    check('ring — R-159\'s second seat: the section\'s own pill carries the counter, the arrows and an ICON-ONLY Shuffle whose words are its name and its hover title',
+    check('ring — Shuffle\'s ONE seat: the section\'s own pill carries the counter, the arrows and an ICON-ONLY Shuffle whose words are its name and its hover title',
       pill511 !== null && /^\d+ \/ 3$/.test(pill511.count ?? '') && /^Shuffle/.test(pill511.shuffle ?? '') && pill511.shuffle === pill511.titled && pill511.words === '',
       JSON.stringify(pill511))
+    const wasShuffle511 = (await counter511.innerText()).trim()
+    await page.locator('[data-pill-shuffle]').click()
+    await page.waitForTimeout(500)
+    check('ring — and it SHUFFLES: a different design of the same ring, carrying the words the same way (FR-D13)',
+      (await counter511.innerText()).trim() !== wasShuffle511 && (await drawnHeading()) === 'Ring words',
+      `${wasShuffle511} → ${(await counter511.innerText()).trim()} · ${await drawnHeading()}`)
     await page.screenshot({ path: `${OUT}/controls-ring-1440.png` })
     await page.screenshot({ path: `${OUT}/controls-review-1440.png` })
     await context.close()

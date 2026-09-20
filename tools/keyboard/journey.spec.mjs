@@ -758,7 +758,7 @@ async function selectRinged(page) {
   await expect(
     page.locator('#editor-design-count'),
     'the harness must carry a section whose category holds a ring, or this stop proves nothing',
-  ).not.toHaveText('Design 1 of 1')
+  ).not.toHaveText('1 of 1')
   return key
 }
 
@@ -769,23 +769,23 @@ const tintValue = (page) => tintRow(page).locator('[role="radio"][aria-checked="
 test('R-145: `]` moves to the next design and announces its position, `[` comes back', async ({ page }) => {
   await open(page)
   await selectRinged(page)
-  await expect(counter(page)).toHaveText(/^Design 1 of \d+$/)
+  await expect(counter(page)).toHaveText(/^1 of \d+$/)
   const first = await page.locator('#editor-design-name').innerText()
 
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press(']')
-  await expect(counter(page)).toHaveText(/^Design 2 of \d+$/)
+  await expect(counter(page)).toHaveText(/^2 of \d+$/)
   await expect(page.locator('#editor-design-name')).not.toHaveText(first)
   // UX-DR12: the position AND the design, politely
   expect(await said(page)).toMatch(/^Design 2 of \d+ — .+/)
 
   await page.keyboard.press('[')
-  await expect(counter(page)).toHaveText(/^Design 1 of \d+$/)
+  await expect(counter(page)).toHaveText(/^1 of \d+$/)
   await expect(page.locator('#editor-design-name')).toHaveText(first)
 
   // UX-DR5: past the last wraps rather than dying — `[` from the first is the same rule backwards
   await page.keyboard.press('[')
-  await expect(counter(page)).toHaveText(/^Design \d+ of \d+$/)
+  await expect(counter(page)).toHaveText(/^\d+ of \d+$/)
   const [at, of_] = (await counter(page).innerText()).match(/(\d+) of (\d+)/).slice(1)
   expect(at, 'a dead key at the end of a list reads as broken (UX-DR5)').toBe(of_)
 })
@@ -811,7 +811,7 @@ test('FR-D19: a setting only the design you LEAVE has is parked, and comes back 
   // THE LONG WAY ROUND: a parked value must survive an INTERMEDIATE design, which is why the ring holds three
   const length = Number((await counter(page).innerText()).match(/of (\d+)/)[1])
   for (let n = 1; n < length; n++) await page.keyboard.press(']')
-  await expect(counter(page)).toHaveText(`Design 1 of ${length}`)
+  await expect(counter(page)).toHaveText(`1 of ${length}`)
   await expect(tintRow(page)).toHaveCount(1)
   expect(await tintValue(page), 'the parked value must come back exactly as it was left').toBe(chosen_)
 })
@@ -829,7 +829,7 @@ test("EXPERIENCE.md:503 — `← →` cross the thumbnail strip, mirroring `[` a
   expect(to, 'the arrow must move focus across the strip').not.toBe(from)
   // and pressing the focused tile is the swap
   await page.keyboard.press('Enter')
-  await expect(counter(page)).toHaveText(/^Design 2 of \d+$/)
+  await expect(counter(page)).toHaveText(/^2 of \d+$/)
 })
 
 test('WCAG 2.1.4: with the caret in a field `[` types a bracket and the design does not change', async ({ page }) => {
@@ -851,21 +851,34 @@ test('WCAG 2.1.4: with the caret in a field `[` types a bracket and the design d
   await expect(counter(page)).toHaveText(before)
 })
 
-test('R-159: Shuffle is in BOTH seats, and each lands on a different design in one edit', async ({ page }) => {
+/* THE PANEL BLOCK IS THE LABEL, THE COUNTER, THE STRIP AND THE NAME — and nothing else (the owner's test of the
+   deployed page, 2026-09-20, findings 2, 3 and 4). The `Try a design` card and the `Cycle designs` footer were
+   both built and both removed; Shuffle's one seat is the section's pill, which is pointer-only and therefore
+   `run-verify-controls.cjs`'s to press, not this file's (`:128` refuses a mouse API anywhere in it).
+
+   So what this stop guards is that removing them cost the KEYBOARD nothing: every design in the ring is still
+   reachable by `]` alone, and one `⌘Z` still undoes one step. */
+test('the block carries no Shuffle card and no key chips, and `]` alone still reaches every design in one-edit steps', async ({ page }) => {
   await open(page)
   await selectRinged(page)
+  await expect(page.locator('[data-try-design]'), 'the panel\'s Shuffle card is gone (finding 3)').toHaveCount(0)
+  await expect(page.locator('#editor-design kbd'), 'the `Cycle designs` footer is gone (finding 4)').toHaveCount(0)
+  await expect(counter(page), 'the counter no longer says the word its label says (finding 2)').not.toHaveText(/Design/)
+
   const start = await counter(page).innerText()
-  // the panel's `Try a design` card — the one place that names the destination BEFORE the press
-  const card = page.locator('[data-try-design]')
-  await expect(card).toHaveCount(1)
-  await card.focus()
-  await page.keyboard.press('Enter')
-  await expect(counter(page)).not.toHaveText(start)
-  expect(await said(page)).toMatch(/^Design \d+ of \d+ — .+/)
-  // ONE EDIT: a shuffle is one gesture, so one ⌘Z puts it back (AD-15, AD-16)
+  const length = Number(start.match(/of (\d+)/)[1])
+  expect(length, 'a ring of one would make every expectation below vacuous').toBeGreaterThan(1)
   await page.locator('section[aria-label="Canvas"]').focus()
+  const seen = new Set([start])
+  for (let n = 1; n < length; n++) {
+    await page.keyboard.press(']')
+    seen.add(await counter(page).innerText())
+  }
+  expect(seen.size, 'every design in the ring is reachable by the key alone').toBe(length)
+  // ONE EDIT PER STEP: a press is one gesture, so one ⌘Z puts one back (AD-15, AD-16)
   await page.keyboard.press('ControlOrMeta+z')
-  await expect(counter(page)).toHaveText(start)
+  await expect(counter(page)).toHaveText(`${length - 1} of ${length}`)
+  expect(await said(page)).toMatch(/^Design \d+ of \d+ — .+/)
 })
 
 /* The matrix's "site-wide section" row. A site-wide section is ONE shared instance, which is why FR-D5 takes its
@@ -882,7 +895,7 @@ test('FR-D5 does not reach the ring: a site-wide section has the same Design blo
   expect(site.length, 'the harness must carry a site-wide section, or this stop proves nothing').toBeGreaterThan(0)
   await select(page, site[0])
   await expect(page.locator('#editor-design'), 'the block is drawn for a site-wide section too').toHaveCount(1)
-  await expect(counter(page)).toHaveText(/^Design \d+ of \d+$/)
+  await expect(counter(page)).toHaveText(/^\d+ of \d+$/)
   await expect(page.locator('#editor-design-name')).not.toBeEmpty()
 
   // and it reads the RING: this one holds a single design, so the block says so in the same words a page section
@@ -890,7 +903,6 @@ test('FR-D5 does not reach the ring: a site-wide section has the same Design blo
   const [at, of_] = (await counter(page).innerText()).match(/(\d+) of (\d+)/).slice(1)
   if (of_ === '1') {
     await expect(page.locator('#editor-design [data-design-step]')).toHaveCount(0)
-    await expect(page.locator('[data-try-design]')).toHaveCount(0)
     await expect(page.locator('#editor-design-note')).toHaveText(/one design/)
   } else {
     expect(Number(at)).toBeLessThanOrEqual(Number(of_))
