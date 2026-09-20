@@ -3248,6 +3248,38 @@ shows the name."*
 - Targets: ✅ this entry · ✅ Story 5.10's spec (its findings, tasks and owner test) · ✅ `EXPERIENCE.md` (the Layers
   surface row) · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`, on the next library pass.
 
+**R-157 — the canvas document may be KEPT by the browser, and the Section Picker is kept in the window once
+opened.** Story 5.10's Question 5, ruled **option 1** (owner, 2026-09-20): *"Yes — let the browser keep the pages,
+and keep the picker in the window once opened."* The pair to R-155: that one made a first open lighter, this one
+makes every open after it free, which is what the owner's original complaint was — *"each time he will have to
+wait… he needs to add many sections as he builds"*.
+
+- **What it binds, half one — the address carries the build.** `next.config.ts` inlines `INFLOZO_CANVAS_V` from
+  `VERCEL_GIT_COMMIT_SHA` or the runner's `GITHUB_SHA` (`vercel build` runs inside CI's deploy job, so the runner's
+  environment is its environment), and every canvas address carries it — the editor's, the pilots review's and the
+  keyboard harness's. The route then serves `private, max-age=31536000, immutable` **only when a version is
+  present**, and `no-store` otherwise, so a request without one can never be answered from a stale copy. Nothing is
+  cached outside production: an edited stylesheet must never be held while it is being edited. The pictures cannot
+  carry the build — a relative `canvas?image=x` drops the document's query when it resolves — so they take
+  `private, max-age=600`, which is all a session needs.
+- **What it binds, half two — the picker is mounted on the first open and kept.** A closed `<dialog>` is
+  `display:none`, which keeps every preview's browsing context alive while drawing nothing. An editor that has
+  never opened the picker still carries no frames at all. One consequence had to be handled: a hidden element
+  measures 0, and a zero would drop the fit to 0 and put the skeleton back over a drawn preview, so
+  `section-preview.tsx` ignores a zero-width measurement and the last real size stands.
+- **Measured on a production build of the harness (2026-09-20), which is the only place either half is live —
+  `next dev` caches nothing by design.** A second visit in a new tab fetched **0 bytes** for every preview against
+  16,551 / 16,430 / 19,687 / 14,675 on the first. And the second `⌘K` of a session completed in **25 ms** against
+  **295 ms** for the first, creating no frame and fetching nothing.
+- **One thing the first measurement got wrong, and it is the reason `pilots.test.ts` now asserts the address.** The
+  keyboard harness had its own canvas path written as a literal, with no version — so the guard correctly refused
+  to let anything be kept and the numbers came out flat. An address that quietly loses its `v=` does not go stale,
+  it goes **slow, silently**; the harness path is built by `lib/canvas.ts` now and the test fails if any of the
+  three drops it.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (Question 5, its tasks and verification) · ✅ `epics.md` (Story
+  5.10's AC) · ✅ `apps/web/pilots.test.ts` (the address) · ✅ `run-verify-editor.cjs` step 83 (the header and the
+  kept picker, on the deployed site).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

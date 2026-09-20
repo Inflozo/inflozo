@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
 import { carriesMemberVisibility, DESIGNS_DIR, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
@@ -103,6 +104,21 @@ test('the canvas document NARROWS to one design when asked, and to the library w
   }
   // an id that is not in the library throws rather than quietly serving everything — the route turns that into a 404
   assert.throws(() => pilotsCanvasDocument('a1/9999'))
+})
+
+test("every canvas address carries the build, and a preview keeps it (the owner's ruling of 2026-09-20)", () => {
+  // THE VERSION IS WHAT MAKES THE DOCUMENT CACHEABLE AT ALL: the route serves `immutable` only when the address
+  // carries one, so an address that quietly lost its `v=` would not go stale — it would go SLOW, silently, which is
+  // the failure this test exists to make loud. (It is how the first measurement of this ruling came out flat: the
+  // harness's own path had no version, so the guard correctly refused to let anything be kept.)
+  for (const src of [canvasSrc(true), canvasSrc(false), harnessCanvasSrc()]) assert.match(src, /[?&]v=[^&]+/, src)
+  const preview = previewSrc(canvasSrc(true), 'a4/13')
+  assert.match(preview, /[?&]v=[^&]+/, 'a preview address dropped the build')
+  assert.match(preview, /[?&]design=a4%2F13/, 'a preview address must still name its design')
+  // and the route's own guard: no version, no caching, and nothing cached outside production
+  const route = readFileSync(ROUTE, 'utf8')
+  assert.match(route, /versioned \? keep\('private, max-age=\d+, immutable'\) : 'no-store'/)
+  assert.match(route, /const live = process\.env\.NODE_ENV === 'production'/)
 })
 
 test('every file the canvas document and the pilots review read is traced for every route that reads them', () => {

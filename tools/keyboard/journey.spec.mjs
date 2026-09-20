@@ -525,6 +525,42 @@ test('⌘K with the caret in a field does NOT open the picker — it is the link
 
 // ── keyboard completeness: every drag has a keyboard path, and the toolbar is reachable ─────────────────────────
 
+test("the picker is KEPT once opened, so a second ⌘K shows the pictures already drawn (the owner's ruling of 2026-09-20)", async ({ page }) => {
+  await open(page)
+  // nothing is carried by an editor that has never opened it
+  expect(await page.locator('dialog[aria-label="Add a section"]').count(), 'a resting editor holds no picker at all').toBe(0)
+
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(picker(page)).toBeVisible()
+  await expect.poll(() => page.locator('dialog[aria-label="Add a section"] iframe').count()).toBeGreaterThan(0)
+  // mark the frames that exist now; if the picker is thrown away the marks go with them
+  const drawn = await page.evaluate(() => {
+    const frames = [...document.querySelectorAll('dialog[aria-label="Add a section"] iframe')]
+    frames.forEach((f, n) => { f.dataset.keptMark = String(n) })
+    return frames.length
+  })
+
+  await page.keyboard.press('Escape')
+  await expect(picker(page)).toHaveCount(0)
+  // closed, but KEPT: the dialog is still in the tree, hidden, with its frames alive
+  expect(await page.locator('dialog[aria-label="Add a section"]').count(), 'the picker is kept after it closes').toBe(1)
+
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(picker(page)).toBeVisible()
+  const kept = await page.evaluate(() => {
+    const frames = [...document.querySelectorAll('dialog[aria-label="Add a section"] iframe')]
+    return {
+      marked: frames.filter((f) => f.dataset.keptMark !== undefined).length,
+      // and they are still PAINTED — the second open draws nothing again
+      painted: frames.filter((f) => (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0).length,
+    }
+  })
+  expect(kept.marked, 'every preview frame survived the close — none was re-created').toBe(drawn)
+  expect(kept.painted, 'and every one is still drawn, so the second open waits for nothing').toBe(drawn)
+})
+
 test("choosing a Layers row scrolls the canvas to that section, with air above it (the owner's ruling of 2026-09-20)", async ({ page }) => {
   await open(page)
   const all = (await rows(page)).all

@@ -381,6 +381,29 @@ globe on the card instead of a sentence.
 - [x] `tools/keyboard/journey.spec.mjs` -- a stop that derives both ends of its walk, asserts the section settles
       **exactly `REVEAL_GAP`** below the top edge in both directions, and asserts a sticky section moves nothing.
 
+**The Fix phase, fifth pass (R-157 — Question 5, option 1: the pages may be kept, and so is the picker).**
+
+- [x] `apps/web/next.config.ts` -- `INFLOZO_CANVAS_V`, inlined from `VERCEL_GIT_COMMIT_SHA` or the runner's
+      `GITHUB_SHA` (`vercel build` runs inside CI's deploy job), `dev` elsewhere.
+- [x] `apps/web/lib/canvas.ts` -- every canvas address carries it: `canvasSrc`, the new `harnessCanvasSrc`, and
+      `previewSrc`, which now appends with `&` when the address already has a query.
+- [x] `apps/web/app/…/(authed)/canvas/route.ts` · `harness/canvas/route.ts` -- `private, max-age=31536000,
+      immutable` **only when the address carries a version**, `no-store` otherwise and `no-store` everywhere outside
+      production; the pictures take `private, max-age=600`, because a relative `canvas?image=x` drops the query.
+- [x] `apps/web/app/…/harness/editor/page.tsx` -- its canvas path is built rather than written, so it cannot lose
+      the version again.
+- [x] `apps/web/app/…/(editor)/editor.tsx` -- the picker is mounted on the **first** open and kept (`opened`); a
+      resting editor that has never opened it still carries no frames.
+- [x] `apps/web/components/editor/section-preview.tsx` -- a **zero-width** measurement is ignored: a closed dialog
+      is `display:none` and measures 0, which would otherwise put the skeleton back over a drawn preview.
+- [x] `apps/web/pilots.test.ts` -- every canvas address carries a version, a preview keeps it, and the route's guard
+      is what the source says. **This is the test the first measurement needed**: the harness path had no version,
+      so nothing could be kept and the numbers came out flat.
+- [x] `tools/keyboard/journey.spec.mjs` -- a stop proving the picker is kept: a resting editor holds none, the
+      frames survive `Esc`, and the second `⌘K` finds every one of them still drawn.
+- [x] `tools/probe/run-verify-editor.cjs` -- step 83 asserts, on the **deployed** site, that a preview page carries
+      the build and may be kept while a page without one never is, and that a second `⌘K` finds the picker kept.
+
 **Acceptance Criteria:**
 - Given a canvas with sections, when I hover the gap between two of them, then a 2px coral hairline and the
   **"+ Add section"** pill appear on that boundary and breathe in opacity; **and both match `S4 Editor.dc.html:181`**.
@@ -632,6 +655,18 @@ resolve). The byte split that makes this worth doing at five designs: of the who
 among them · `pnpm build` **exit 0** · the gate green twice. Photographed: each card's footer now reads
 `{name} … + … {Category} {tier}` — `Headers Free`, `Heroes ✦ Pro`, `Post Grids Free`, `Newsletter Free`.
 
+**The Fix phase, fifth pass (R-157), measured on a PRODUCTION BUILD of the harness** — the only place either half is
+live, because `next dev` caches nothing by design (`INFLOZO_HARNESS=1 GITHUB_SHA=… next build && next start`):
+
+| | first | again |
+|---|---|---|
+| a new tab, same browser | 16,551 · 16,430 · 19,687 · 14,675 bytes | **0 · 0 · 0 · 0** |
+| a second `⌘K` in one session | **295 ms** | **25 ms**, creating no frame and fetching nothing |
+
+Headers read off that server: `?v=…` → `private, max-age=31536000, immutable`; a bare `/canvas` → `no-store`.
+`pnpm check` **exit 0** · `pnpm keyboard` **22 passed**, the kept-picker stop among them · `pnpm build` **exit 0** ·
+`node --test apps/web/pilots.test.ts` **10 pass · 0 fail** · the gate green twice.
+
 **Owed to Review, and not run here (R-82).** The deployed walk. `tools/probe/run-verify-editor.cjs` gains
 **steps 81-85** inside step 5's one CSP session — the picker's shape against S5a and S5c, the rail, the search,
 R-152's globe and its accessible name, the hairline and the pressed pill measured on a hovered gap, the placement
@@ -735,6 +770,9 @@ to your account at Story 5.1.
 24. **Same screen.** Nothing to do for this one, but worth knowing: each picture now loads only its own section's
     styling instead of the whole library's. It should feel quicker, and it will feel much quicker as the library
     grows.
+25. **Same screen.** Press `⌘K`, wait for the pictures, press `Esc`, then press `⌘K` again. **Expect:** the second
+    time the pictures are **already there** — no blank grey boxes, no wait at all. Do it a third time: the same.
+    This is the one you asked for: you press `⌘K` once per section you add, and only the first one costs anything.
 
 ## Questions for the owner
 
@@ -813,7 +851,8 @@ each of those is a trip to the server. With this it is zero of both.
 3. **No — leave it as it is.** Option 3's lighter pages are enough.
    - **Cost:** every `⌘K` fetches everything again, and you press `⌘K` once per section you add.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-20).** *"Yes — let the browser keep the pages, and keep the picker in the window
+once opened."* Recorded as **R-157**, built in this story beside R-155.
 
 ### Question 1 — should the picker have a "Free only" switch?
 

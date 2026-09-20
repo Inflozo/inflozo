@@ -5,6 +5,7 @@ import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/li
 import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
+import { harnessCanvasSrc } from '@/lib/canvas'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
@@ -90,6 +91,8 @@ export default function EditorHarness() {
     dropped: {},
   }
 
-  // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it bypassed
-  return <Editor project={HARNESS_PROJECT} canvasSrc="/app/harness/canvas" {...data} />
+  // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
+  // bypassed. It carries the build the same way the app's does (the owner's ruling of 2026-09-20) so the two differ
+  // in the guard alone — `lib/canvas.ts` owns the token, and the route decides what may be kept.
+  return <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} {...data} />
 }

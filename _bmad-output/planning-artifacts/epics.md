@@ -1885,6 +1885,10 @@ Question 4 option 3); the editor's own canvas still carries them all, because it
 **And** choosing a **Layers** row scrolls the canvas smoothly to that section, resting it a little below the top edge
 rather than against it — a sticky section exempted, because it is in view wherever the page is — and a picker card
 names its **category** in mono before the tier pill (**R-156**, owner, 2026-09-20)
+**And** the canvas document carries the **published build** in its address and is served `immutable` only when it does,
+so the browser may keep it; and the picker is **mounted on the first open and kept**, so a second `⌘K` draws nothing
+again (**R-157**, owner, 2026-09-20, Question 5 option 1) — measured on a production build: a second visit fetches 0
+bytes, and a second open costs 25 ms against 295
 **And** the overlay matches S5a and S5c dark.
 
 **FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Rulings:** R-150, R-151, R-152. · **Owner test:** yes.

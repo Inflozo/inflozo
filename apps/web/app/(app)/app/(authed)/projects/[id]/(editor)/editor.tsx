@@ -306,6 +306,9 @@ export function Editor({
   const picker = useRef<HTMLDialogElement>(null)
   const [picking, setPicking] = useState(false)
   const [invoked, setInvoked] = useState<number | null>(null)
+  /** has the picker been opened in this session? Once it has, it stays mounted (R-155's pair, the owner's ruling of
+   *  2026-09-20): `picking` still says whether it is SHOWN, and a closed dialog draws nothing. */
+  const [opened, setOpened] = useState(false)
   /** DW-190's home: R-37's refusal, shown in the picker where the press was */
   const [pickerRefusal, setPickerRefusal] = useState<string | null>(null)
   /** null means FALLBACK MODE: IndexedDB refused, or a write failed, and every change goes straight to the cloud */
@@ -1473,8 +1476,11 @@ export function Editor({
     if (!latest.current.canAdd || picker.current?.open) return
     setInvoked(from)
     setPickerRefusal(null)
+    setOpened(true)
     setPicking(true)
-    // opened on the frame after the one that mounted it, exactly as the site-wide confirm is
+    // opened on the frame after the one that mounted it, exactly as the site-wide confirm is. On every open AFTER
+    // the first the dialog is already in the tree and this is simply the next frame (the owner's ruling of
+    // 2026-09-20): nothing is re-created, and the previews are the ones already drawn.
     requestAnimationFrame(() => picker.current?.showModal())
   }
 
@@ -2012,11 +2018,14 @@ export function Editor({
           door from in here. Its rows are the map's own (R-145): exactly the keys that work. */}
       <ShortcutsSheet dialog={shortcuts} />
 
-      {/* STORY 5.10 — S5a's Section Picker. MOUNTED ONLY WHILE IT IS OPEN, so every preview iframe goes with it and
-          the resting editor carries none of them. `onClose` is the platform's — `Esc`, the ×, a press on the scrim —
-          and the platform also returns focus to whatever opened it; the one thing it cannot do is put focus back on a
-          control that has since gone (the hover pill the placement itself cleared), so the canvas catches it. */}
-      {picking ? (
+      {/* STORY 5.10 — S5a's Section Picker. MOUNTED ON THE FIRST OPEN AND KEPT (the owner's ruling of 2026-09-20,
+          Question 5): a closed `<dialog>` is `display:none`, which keeps every preview's browsing context alive
+          without drawing anything, so the second and every later `⌘K` is instant — and a customer presses `⌘K` once
+          per section they add, which is what he asked about. A RESTING editor that has never opened it still carries
+          no frames at all. `onClose` is the platform's — `Esc`, the ×, a press on the scrim — and the platform also
+          returns focus to whatever opened it; the one thing it cannot do is put focus back on a control that has
+          since gone (the hover pill the placement itself cleared), so the canvas catches it. */}
+      {opened ? (
         <SectionPicker
           dialog={picker}
           open={picking}

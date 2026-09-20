@@ -91,7 +91,10 @@ export function SectionPreview({
     const el = box.current
     if (!el) return
     const watch = new ResizeObserver(([row]) => {
-      if (!row) return
+      // A CLOSED PICKER IS `display:none` AND MEASURES 0 (the owner's ruling of 2026-09-20 keeps it mounted), and a
+      // zero here would drop `fit` to 0 and put the skeleton back over a preview that is already drawn — so the
+      // last real size stands until there is another one. Nothing is ever laid out at 0 on purpose.
+      if (!row || row.contentRect.width === 0) return
       setWide(row.contentRect.width)
       setHigh(row.contentRect.height)
     })

@@ -3301,6 +3301,19 @@ async function main() {
       previews510.narrowed.length > 0 && previews510.narrowed.every((n) => n.asked !== null && n.sheets === 1),
       JSON.stringify(previews510.narrowed))
 
+    // AND THE BROWSER MAY KEEP THEM (the owner's ruling of 2026-09-20, Question 5): the address carries the build,
+    // so the document is `immutable` — a second ⌘K costs nothing — while a bare `/canvas`, which carries no build,
+    // is never cached and so can never be served stale. Read from the deployed origin, not from a header we wrote.
+    const keeping510 = await page.evaluate(async () => {
+      const f = document.querySelector('dialog[open][aria-label="Add a section"] iframe')
+      const one = await fetch(f.src, { credentials: 'same-origin' })
+      const bare = await fetch(new URL(f.src.split('?')[0], location.href).href, { credentials: 'same-origin' })
+      return { versioned: one.headers.get('cache-control'), bare: bare.headers.get('cache-control'), src: f.src }
+    })
+    check('step 83 — a preview page carries the build in its address and may be KEPT; a page without one never is',
+      /immutable/.test(keeping510.versioned ?? '') && /private/.test(keeping510.versioned ?? '') &&
+      /no-store/.test(keeping510.bare ?? '') && /[?&]v=/.test(keeping510.src), JSON.stringify(keeping510))
+
     // R-149 stays ONE rule on ONE element: `inert` takes the preview frames out of the accessibility tree entirely
     check('step 83 — `inert` is what keeps R-149 at one exception: nothing inside a preview frame is focusable to axe',
       previews510.allInert, JSON.stringify(previews510))
@@ -3350,6 +3363,32 @@ async function main() {
     check('step 83 — the `Add` is an ICON in the footer strip, centred on the card and whole — never cropped by a short preview',
       grid510.strips.length > 0 && grid510.strips.every((s) => s.centred && s.inStrip && s.glyph && s.words === '' && s.whole),
       JSON.stringify(grid510.strips))
+
+    // THE PICKER IS KEPT ONCE OPENED (the same ruling's other half): closing it leaves the dialog in the tree,
+    // hidden, with every preview alive — so a second ⌘K, which is what a customer does once per section they add,
+    // draws nothing again.
+    await page.evaluate(() => {
+      const frames = [...document.querySelectorAll('dialog[aria-label="Add a section"] iframe')]
+      frames.forEach((f, n) => { f.dataset.keptMark = String(n) })
+      return frames.length
+    })
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    const restingPicker510 = await page.evaluate(() => document.querySelectorAll('dialog[aria-label="Add a section"]').length)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+k`)
+    await page.waitForTimeout(500)
+    const kept510 = await page.evaluate(() => {
+      const frames = [...document.querySelectorAll('dialog[open][aria-label="Add a section"] iframe')]
+      return {
+        frames: frames.length,
+        marked: frames.filter((f) => f.dataset.keptMark !== undefined).length,
+        painted: frames.filter((f) => (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0).length,
+      }
+    })
+    check('step 83 — the picker is KEPT once opened: a second ⌘K finds every preview still there and still drawn',
+      restingPicker510 === 1 && kept510.frames > 0 && kept510.marked === kept510.frames && kept510.painted === kept510.frames,
+      JSON.stringify({ restingPicker510, ...kept510 }))
 
     // ── step 84 — R-152: the globe before the press, the replacement, and ONE undo step (AD-15, AD-16) ──
     const siteCard510 = await page.evaluate(() => {

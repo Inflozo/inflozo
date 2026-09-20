@@ -12,14 +12,24 @@ import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/sectio
 /** One design's declared queries, each in both orders at the Count's ceiling (`pilotRows()`). */
 export type DesignRows = Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>
 
+/** The build this page was published from, in the canvas document's address (the owner's ruling of 2026-09-20,
+ *  Question 5). It is what lets the document be cached `immutable`: a publish changes the address, so a new
+ *  stylesheet is picked up at once and a stale one can never be served. `next.config.ts` inlines it. */
+const V = process.env.INFLOZO_CANVAS_V ?? 'dev'
+
 /** The canvas document's own address, beside the page: `/canvas` on the app host, `/app/canvas` on localhost. */
-export const canvasSrc = (appPrefixed: boolean) => `${appPrefixed ? '/app' : ''}/canvas`
+export const canvasSrc = (appPrefixed: boolean) => `${appPrefixed ? '/app' : ''}/canvas?v=${V}`
+
+/** The keyboard harness's own copy of it (R-146), which differs from the app's in its guard and nothing else. */
+export const harnessCanvasSrc = () => `/app/harness/canvas?v=${V}`
 
 /** THE SAME DOCUMENT, NARROWED TO ONE DESIGN — a Section Picker preview's address (the owner's ruling of
  *  2026-09-20). A preview draws exactly one section, so it carries exactly one stylesheet; the editor's canvas,
  *  which may draw any of them, keeps `canvasSrc`. A picture inside it still resolves against the document's own
  *  address, and relative resolution drops a query, so `canvas?image=x` lands on the unnarrowed route as before. */
-export const previewSrc = (src: string, designId: string) => `${src}?design=${encodeURIComponent(designId)}`
+export const previewSrc = (src: string, designId: string) =>
+  `${src}${src.includes('?') ? '&' : '?'}design=${encodeURIComponent(designId)}`
+
 
 /** Orbit Weekly's pictures, pointed at the canvas route — relative, so the canvas document resolves it against its
  *  own address. The one place the reserved origin is mapped for a canvas. */

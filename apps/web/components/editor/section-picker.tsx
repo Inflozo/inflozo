@@ -92,7 +92,9 @@ export function SectionPicker({
   onClose,
 }: {
   dialog: React.RefObject<HTMLDialogElement | null>
-  /** mounted only while it is open, so every preview frame goes when it closes */
+  /** whether it is SHOWN. Since the owner's ruling of 2026-09-20 the component stays mounted after the first open —
+   *  a closed `<dialog>` is `display:none`, which keeps every preview alive without drawing anything — so this is
+   *  what the reset below keys on, not the component's lifetime. */
   open: boolean
   entries: Readonly<Record<string, SectionRegistryEntry>>
   /** the template file this canvas compiles into — the whole of what the filter is asked about */
