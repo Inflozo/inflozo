@@ -2,8 +2,8 @@
 title: 'Story 5.12 — Site Remix'
 type: 'feature'
 created: '2026-09-20'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '0e5fe2e30ea545a092c98f20ba796d785408f0a0'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -459,6 +459,12 @@ seeded to your account at Story 5.1.
     so it has no history to step back through. The *"one press of `⌘Z` puts it all back"* promise is
     checked automatically on every commit, and you will see it with your own hands in the editor the day a
     category has more than one design.
+
+## Owner's test findings
+
+**The owner's test (2026-09-20).** Tested on `app.inflozo.com` on the deployment confirmed at the Deploy phase
+(`269292e7`, `dpl_rTfzAsmHgQEv7u6UEpJ2sNGwfkYe`), both parts of the manual test — the editor and the Controls review
+page. His word: *"passed"*. No findings. The story moves to Done.
 
 ## Questions for the owner
 
