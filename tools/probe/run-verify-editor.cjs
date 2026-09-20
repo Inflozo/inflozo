@@ -2049,11 +2049,13 @@ async function main() {
         width: Math.round(r.width), height: Math.round(r.height), glyph: svg ? Math.round(svg.getBoundingClientRect().width) : 0,
         rays: el.querySelectorAll('circle').length, radius: getComputedStyle(el).borderTopLeftRadius,
         rightOfCentre: r.left > bar.left + bar.width / 2,
-        // first of the right-hand cluster: nothing pressable sits to its right but the way into Theme settings
-        after: [...el.parentElement.children].map((c) => c.id),
+        // the cluster's order, ids only: since Story 5.12 the DICE leads it (R-135's own reason — the sun is not
+        // rendered at all on a Light-only project, so a dice after it would move), the sun comes next, and nothing
+        // pressable sits to its right but the device track and the way into Theme settings
+        after: [...el.parentElement.children].map((c) => c.id).filter(Boolean),
       }
     })
-    check('step 46 — R-132: S4a\'s mode control is ONE 28×28 button with the export\'s 15px sun, right of centre, first of the right-hand cluster', sun !== null && sun.tag === 'BUTTON' && sun.width === 28 && sun.height === 28 && sun.glyph === 15 && sun.rays === 1 && sun.radius === '8px' && sun.rightOfCentre && sun.after[0] === 'editor-mode', JSON.stringify(sun))
+    check('step 46 — R-132: S4a\'s mode control is ONE 28×28 button with the export\'s 15px sun, right of centre, directly after Story 5.12\'s dice at the head of the right-hand cluster', sun !== null && sun.tag === 'BUTTON' && sun.width === 28 && sun.height === 28 && sun.glyph === 15 && sun.rays === 1 && sun.radius === '8px' && sun.rightOfCentre && sun.after.slice(0, 2).join(' ') === 'editor-remix editor-mode', JSON.stringify(sun))
     check('step 46 — R-132: an accessible name naming the DESTINATION, and NO `aria-pressed` beside a name that already changes (Review)', sun?.pressed == null && sun?.name === 'Preview dark mode', `${sun?.pressed} · ${JSON.stringify(sun?.name)}`)
     check('step 46 — the canvas opens in light, from the one mode signal `tokens.ts` reserves for it (AD-30)', (await canvasMode()) === 'light', String(await canvasMode()))
 
@@ -2308,10 +2310,13 @@ async function main() {
       return {
         radios: [...track.querySelectorAll('[role="radio"]')].map((b) => b.getAttribute('aria-label')),
         checked: track.querySelector('[aria-checked="true"]')?.getAttribute('aria-label') ?? null,
-        first: cluster?.firstElementChild === track,
+        // STORY 5.12: the seat the absent sun leaves is taken by the DICE, not by the track — which is the whole
+        // reason the dice leads the cluster (R-135): a control placed after the sun moves on a Light-only project,
+        // and this is the assertion that proves the dice does not
+        order: [...(cluster?.children ?? [])].map((c) => c.id).filter(Boolean),
       }
     })
-    check('step 53 — on a Light-only project the DEVICE TRACK is unaffected: all three devices, Desktop in force, and it now LEADS the right-hand cluster the absent sun has left', litDevice !== null && litDevice.radios.join(' | ') === LABELS.join(' | ') && litDevice.checked === DEVICE.DESKTOP.label && litDevice.first === true, JSON.stringify(litDevice))
+    check('step 53 — on a Light-only project the DEVICE TRACK is unaffected: all three devices, Desktop in force, and the dice still LEADS the cluster with the track directly after it — the dice\'s seat does not move when the sun goes (R-135, Story 5.12)', litDevice !== null && litDevice.radios.join(' | ') === LABELS.join(' | ') && litDevice.checked === DEVICE.DESKTOP.label && litDevice.order.slice(0, 2).join(' ') === 'editor-remix editor-device', JSON.stringify(litDevice))
     // R-135 (owner, 2026-09-19): and the editor says nothing else about dark either — both clears are ABSENT, so it
     // cannot delete what Theme settings has just greyed with the reason that it is kept
     await clickOn(HERO)
