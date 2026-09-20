@@ -1874,6 +1874,11 @@ no glyph (R-126 stands)
 spans two columns, a feed two rows — and the **`Add` is an icon in the card's footer strip**, centred between the name
 and the tier badge (**R-153**, the owner's test of the deployed story, 2026-09-20): S5a's multi-column drew a header as
 a sliver and its hover wash cropped the `Add` pill on any short section
+**And** a design's span is **measured, never authored**, so every future category inherits the standard with nothing
+to remember (R-153's standing half, his item 5)
+**And** the rail leads with an **`All sections`** row carrying its own derived count, the heading beneath it reads
+**`CATEGORIES`**, the meta line is the **count alone** and names no pack, and a hovered card takes a **1px coral
+border and nothing else** — no wash, no shadow, no lift (**R-154**, owner, 2026-09-20)
 **And** the overlay matches S5a and S5c dark.
 
 **FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Rulings:** R-150, R-151, R-152. · **Owner test:** yes.

@@ -3160,7 +3160,10 @@ columns, so they are clearly visible. 4. For Longer sections we can span them tw
 - **What it binds.** (1) The grid is **four columns** of a fixed row unit, packed `dense`. (2) A card's **span is
   measured from the design's own drawn aspect** — its height at Desktop width, which the preview already knows:
   a **band** spans two columns, a **feed** spans two rows, everything between is one tile (`apps/web/lib/picker.ts`'s
-  `spanFor`, the only place the two thresholds live). (3) The `Add` is an **icon, not a word**, in the card's
+  `spanFor`, the only place the two thresholds live) — **and that is the standard every future design inherits
+  automatically**, which is his item 5 of the same day: a design's shape is *measured*, never authored, so a
+  category added in Epic 9 or 10 is drawn wide, tall or ordinary with no entry in any list and nothing to remember.
+  (3) The `Add` is an **icon, not a word**, in the card's
   **footer strip**, centred on the card between the name and the tier badge, revealed on hover and on focus — and
   always present where there is no pointer to hover with. S5a's wash stays as the hover treatment, decoration only.
 - **What it does NOT touch.** Everything else in S5a and S5c stands: the 22px-inset panel, the 240px rail and its
@@ -3169,6 +3172,31 @@ columns, so they are clearly visible. 4. For Longer sections we can span them tw
   shape and the `Add`'s seat alone.**
 - Targets: ✅ this entry · ✅ Story 5.10's spec (its findings, its tasks, its owner test) · ✅ `EXPERIENCE.md`
   § *Drawn, but on the wrong mechanism* · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`'s grid, on the next library pass.
+
+**R-154 — the picker's rail leads with `All sections`, its heading is `CATEGORIES`, the meta line is the count
+alone, and a hovered card takes a BORDER and nothing else.** The owner's second pass over the deployed Story 5.10
+(owner, 2026-09-20), items 2, 3, 4 and 6 of six: *"Add 'All sections' link with count in the sidebar of section
+picker at top. Remove 'shown in your pack: Paper' from top of section picker. Rename 'ALL CATEGORIES' to just
+'CATEGORIES' in section picker sidebar. On hover, do not add any shadow/overlay on the section. Instead just add a
+small border around it. And do not lift up on hover."*
+
+- **Why each.** (1) S5a`:37` heads the rail `ALL CATEGORIES` but gives no way *back* to everything once a category
+  is chosen — the only exit was pressing the chosen row again, which nothing tells you. A first row that says
+  `All sections` and carries the same derived count as every other row is the exit, and it makes the heading beneath
+  it redundant as *"all"* — hence `CATEGORIES`. (2) S5a`:81`'s `· shown in your pack: {pack}` states the surface's
+  own premise: **every** preview is in the project's pack, by construction, so the line never varied and never told
+  him anything. (3) S5a`:89-100`'s hover — a `rgba(28,27,26,.25)` wash over the preview, a 2px lift and a swapped
+  shadow — **hides the miniature**, which is the one thing the card exists to show, and moves the card under the
+  pointer. A 1px `--color-coral` border marks the card without covering it or moving it.
+- **What it binds.** The rail's first row is `All sections`, a radio like any other carrying the empty value, with
+  the count of everything offered on this canvas; the heading under it reads `CATEGORIES`; the header's meta line is
+  `{n} designs` plus S5c's ` · dark mode`, and **names no pack**; and a hovered or focus-within card changes its
+  **border colour only** — no wash, no shadow change, no transform. The header title follows the chosen rail row, so
+  with nothing chosen it reads `All sections` too (decided rather than asked: two names for one state is a bug).
+- **What it takes with it.** `EditorData.stylePack` and the `projects.style_pack` read added for that line are
+  **deleted** — nothing else read them, and dead plumbing outlives the reason it was laid.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (its findings, tasks and owner test) · ✅ `EXPERIENCE.md`
+  § *Drawn, but on the wrong mechanism* · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`, on the next library pass.
 
 ## B · Approved decisions superseded by this session
 

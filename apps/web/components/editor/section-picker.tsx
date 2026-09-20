@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import type { Mode } from '@inflozo/section-runtime'
 import { gridKeys } from '@/components/controls/icon-picker'
@@ -21,10 +21,14 @@ import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_W
  * S5a, READ OFF THE FRAME. A `--color-scrim` over the editor and a panel at `inset:22px` — NOT a centred box — on
  * `--color-paper`, `--radius-lg`, `--shadow-modal`, `display:flex; overflow:hidden`. A 240px rail with a right rule
  * and 16px/12px padding, holding the Kit's search field (placeholder `Find a section…`, its `⌘K` chip) over the
- * `ALL CATEGORIES` heading and the category rows; a header with the category title in Bricolage 20/700, the meta
- * line in mono 12, the dark control and the close ×; and a grid of cards, each a live miniature with a hover wash,
- * a coral `Add` and its tier badge. The grid's own shape is the OWNER'S TEST of 2026-09-20 rather than S5a's — see
- * `COLUMNS` below, and `Card`, which is where the `Add` now lives.
+ * `All sections` row, the `CATEGORIES` heading and the category rows; a header with the category title in
+ * Bricolage 20/700, the meta line in mono 12, the dark control and the close ×; and a grid of cards, each a live
+ * miniature with its `Add` and its tier badge.
+ *
+ * FOUR THINGS HERE ARE THE OWNER'S TEST OF 2026-09-20 AND NOT S5a (R-153, and the four he asked for after it): the
+ * grid's shape (`COLUMNS` below), the `Add`'s seat (`Card`), the rail's first row and its renamed heading, and the
+ * hover, which is a BORDER — no wash, no shadow, no lift. S5a`:81`'s `· shown in your pack: Paper` is gone with
+ * them. Everything else in S5a and S5c stands.
  *
  * A NATIVE MODAL `<dialog>`, WHICH IS THREE OF `EXPERIENCE.md:502`'S FOUR REQUIREMENTS FOR NOTHING: `Esc`, the focus
  * trap and the return of focus to the invoking control are all the platform's. It settles a subtlety too —
@@ -82,7 +86,6 @@ export function SectionPicker({
   mode,
   onMode,
   darkEnabled,
-  pack,
   src,
   refusal,
   onAdd,
@@ -101,7 +104,6 @@ export function SectionPicker({
   mode: Mode
   onMode: (next: Mode) => void
   darkEnabled: boolean
-  pack: string
   src: string
   /** the sentence the last Add answered with, shown in the picker's own refusal line (DW-190) */
   refusal: string | null
@@ -128,9 +130,15 @@ export function SectionPicker({
   }, [query, category])
 
   const searching = query.trim() !== ''
-  const title = searching ? 'All categories' : (rows_.find((r) => r.category === category)?.title ?? 'All categories')
+  // the header says what the CHOSEN rail row says — and with nothing chosen that row is now "All sections", so the
+  // two can never read differently (routine, decided rather than asked)
+  const title = searching ? 'All sections' : (rows_.find((r) => r.category === category)?.title ?? 'All sections')
   const empty = emptyState(offered.length, shown.length, query)
-  const choices = rows_.map((r) => ({ value: r.category, label: r.title }))
+  /* THE RAIL'S OWN ROWS, with "All sections" FIRST (the owner's test of 2026-09-20). It is a radio like any other
+     and carries the empty value, so `radioKeys` and `tabStop` walk it beside the categories and nothing here learns
+     a second way to say "no category". Its count is every design offered ON THIS CANVAS — derived, like the rest. */
+  const railRows = [{ category: '', title: 'All sections', count: offered.length }, ...rows_]
+  const choices = railRows.map((r) => ({ value: r.category, label: r.title }))
 
   return (
     <dialog
@@ -154,38 +162,42 @@ export function SectionPicker({
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
-        {/* S5a`:37`: mono 10.5, and NO NUMBER BESIDE IT — A7 item 1 took the library total out of S5a and S5c on
-            purpose (standing rule 4: a total whose source lives elsewhere goes stale) */}
         <div id="picker-categories" className="flex min-h-0 flex-1 flex-col gap-px overflow-y-auto pr-[6px]">
-          <p className="shrink-0 px-[10px] pb-[7px] font-mono text-[10.5px] tracking-[0.02em] text-ink-soft-aa">ALL CATEGORIES</p>
-          {/* the Kit's radio group, never a second arrow implementation: one Tab stop, the arrows move the choice */}
+          {/* the Kit's radio group, never a second arrow implementation: one Tab stop, the arrows move the choice.
+              "All sections" is its first row and the heading sits UNDER it — S5a`:37`'s heading, renamed
+              `CATEGORIES` because the row above it is now the one that says "all" (the owner's test of 2026-09-20). */}
           <div
             role="radiogroup"
             aria-label="Categories"
-            onKeyDown={(event) => radioKeys(event, choices, (value) => setCategory(value))}
+            onKeyDown={(event) => radioKeys(event, choices, (value) => setCategory(value || null))}
             className="flex flex-col gap-px"
           >
-            {rows_.map((row, n) => {
-              const on = row.category === category
+            {railRows.map((row, n) => {
+              const on = row.category === (category ?? '')
               return (
-                <button
-                  key={row.category}
-                  type="button"
-                  role="radio"
-                  aria-checked={on}
-                  tabIndex={n === tabStop(choices, category) ? 0 : -1}
-                  onClick={() => setCategory(on ? null : row.category)}
-                  /* S5a`:38-71`: 7px/10px, `--radius-sm`, hover at ink 4%, and the chosen row at
-                     `--color-coral-tint` on `--color-coral-text` at 600 — the Layers row's own treatment
-                     (`Editor Sidebar Kit.dc.html:220-223`), which is why the rail needs no new token */
-                  className={`flex shrink-0 items-center justify-between rounded-sm p-[7px_10px] text-left text-ui-dense ${ring} ${
-                    on ? 'bg-coral-tint font-semibold text-coral-text' : 'font-medium text-ink-soft hover:bg-ink/[0.04]'
-                  }`}
-                >
-                  {row.title}
-                  {/* DERIVED, over what is offered ON THIS CANVAS — never a library total */}
-                  <span className="font-mono text-[11px]">{row.count}</span>
-                </button>
+                <Fragment key={row.category || 'all'}>
+                  {/* S5a`:37`: mono 10.5, over the categories themselves */}
+                  {n === 1 ? (
+                    <p className="shrink-0 px-[10px] pb-[7px] pt-[10px] font-mono text-[10.5px] tracking-[0.02em] text-ink-soft-aa">CATEGORIES</p>
+                  ) : null}
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    tabIndex={n === tabStop(choices, category ?? '') ? 0 : -1}
+                    onClick={() => setCategory(row.category || null)}
+                    /* S5a`:38-71`: 7px/10px, `--radius-sm`, hover at ink 4%, and the chosen row at
+                       `--color-coral-tint` on `--color-coral-text` at 600 — the Layers row's own treatment
+                       (`Editor Sidebar Kit.dc.html:220-223`), which is why the rail needs no new token */
+                    className={`flex shrink-0 items-center justify-between rounded-sm p-[7px_10px] text-left text-ui-dense ${ring} ${
+                      on ? 'bg-coral-tint font-semibold text-coral-text' : 'font-medium text-ink-soft hover:bg-ink/[0.04]'
+                    }`}
+                  >
+                    {row.title}
+                    {/* DERIVED, over what is offered ON THIS CANVAS — never a library total */}
+                    <span className="font-mono text-[11px]">{row.count}</span>
+                  </button>
+                </Fragment>
               )
             })}
           </div>
@@ -196,7 +208,7 @@ export function SectionPicker({
         {/* S5a`:79-86`: the header */}
         <div className="flex items-center gap-3 border-b border-line p-[16px_24px]">
           <h2 className="font-display text-[20px] font-bold tracking-[-0.01em] text-ink">{title}</h2>
-          <p className="font-mono text-[12px] text-ink-soft">{metaLine(shown.length, pack, mode === 'dark')}</p>
+          <p className="font-mono text-[12px] text-ink-soft">{metaLine(shown.length, mode === 'dark')}</p>
           {/* R-151: R-132's ONE BUTTON at the segmented's drawn position, flipping the same mode the canvas holds —
               absent, never greyed, on a Light-only project, exactly as it is in the top bar (R-135) */}
           <div className="ml-auto flex items-center gap-2">
@@ -299,7 +311,10 @@ function Card({
 
   return (
     <div
-      className={`group relative flex h-full flex-col overflow-hidden rounded-[12px] border border-line bg-surface shadow-sm transition-[box-shadow,transform] hover:-translate-y-[2px] hover:shadow-canvas-page focus-within:-translate-y-[2px] focus-within:shadow-canvas-page ${
+      /* THE HOVER IS A BORDER AND NOTHING ELSE (the owner's test of 2026-09-20). S5a`:89-100` washes the preview,
+         lifts the card 2px and swaps its shadow; he asked for none of the three — a wash over a miniature hides the
+         very thing the miniature is for, and a card that moves under the pointer is a card you chase. */
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[12px] border border-line bg-surface shadow-sm transition-colors hover:border-coral focus-within:border-coral ${
         span === 'wide' ? 'col-span-2' : span === 'tall' ? 'row-span-2' : ''
       }`}
     >
@@ -312,11 +327,6 @@ function Card({
         mode={mode}
         src={src}
         onAspect={(aspect) => setSpan(spanFor(aspect))}
-      />
-      {/* S5a`:89-98`'s wash, now decoration only: it dims the picture under the pointer and takes no press */}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 bottom-[41px] bg-ink/25 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
       />
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three
           tracks, the middle one auto, so the button is centred on the CARD however long the name is. */}

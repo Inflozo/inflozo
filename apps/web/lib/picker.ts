@@ -58,11 +58,12 @@ export const matches = (entry: SectionRegistryEntry, query: string): boolean => 
 export const cards = (offered: readonly SectionRegistryEntry[], category: string | null, query: string): SectionRegistryEntry[] =>
   offered.filter((e) => (query.trim() === '' ? category === null || e.category === category : matches(e, query)))
 
-/** S5a's header, one template with S5c's one addition: `{n} designs · shown in your pack: {pack}`, plus
- *  ` · dark mode` when the dark preview is on. S5c shortens the rest of the line; that is drawing drift and not a
- *  second string (the spec's Design Notes). The count is the cards drawn, derived here and nowhere written. */
-export const metaLine = (count: number, pack: string, dark: boolean): string =>
-  `${count} ${count === 1 ? 'design' : 'designs'} · shown in your pack: ${pack}${dark ? ' · dark mode' : ''}`
+/** S5a's header line, as the owner's test of 2026-09-20 cut it: the COUNT, and S5c's ` · dark mode` when the dark
+ *  preview is on. S5a`:81` also printed `· shown in your pack: {pack}` and he removed it — every preview is in his
+ *  own pack by construction, so the line was stating the surface's premise rather than telling him anything. The
+ *  count is the cards drawn, derived here and nowhere written. */
+export const metaLine = (count: number, dark: boolean): string =>
+  `${count} ${count === 1 ? 'design' : 'designs'}${dark ? ' · dark mode' : ''}`
 
 /** THE THREE EMPTY STATES, none of which the export draws (R-74, extrapolated from S5a and S5c; the rule, not the
  *  sentence, is `EXPERIENCE.md:346`). Each says what is true and what to do — never an apology, never a blank. */

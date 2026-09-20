@@ -433,7 +433,13 @@ test('⌘K opens the Section Picker, the arrows cross the grid, Enter places and
   // the rail lists only categories this canvas can take, each with its own count, and ALL CATEGORIES carries none
   const rail = picker(page).locator('[role="radiogroup"] [role="radio"]')
   expect(await rail.count(), 'the picker must offer at least one category on Home').toBeGreaterThan(0)
-  await expect(picker(page)).toContainText('ALL CATEGORIES')
+  // the owner's test of 2026-09-20: the rail's first row is "All sections" with its own derived count, and the
+  // heading under it is `CATEGORIES` — S5a's `ALL CATEGORIES` is that row's job now
+  await expect(picker(page)).toContainText('CATEGORIES')
+  await expect(picker(page)).not.toContainText('ALL CATEGORIES')
+  await expect(picker(page).locator('[role="radio"]').first()).toContainText('All sections')
+  // and the pack left the meta line with it
+  await expect(picker(page)).not.toContainText(/shown in your pack/i)
   // R-150: the rail footer's Free only switch is NOT built — absent, never greyed
   await expect(picker(page)).not.toContainText(/free only/i)
 

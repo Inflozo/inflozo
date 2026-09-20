@@ -345,6 +345,18 @@ globe on the card instead of a sentence.
       deployed site: four columns, a band two wide and a feed two tall, and the `Add` an icon in the footer strip,
       centred on the card and whole.
 
+**The Fix phase, second pass (R-154 — his items 2, 3, 4 and 6; item 5 needed nothing, and item 1 is Question 4).**
+
+- [x] `apps/web/components/editor/section-picker.tsx` -- the rail's first row is `All sections` with its derived
+      count, inside the same radio group and carrying the empty value; the heading beneath it is `CATEGORIES`; the
+      header title follows the chosen row; and a hovered or focused card changes its **border colour only** -- the
+      wash, the shadow swap and the 2px lift are gone.
+- [x] `apps/web/lib/picker.ts` -- `metaLine` drops the pack and becomes `(count, dark)`.
+- [x] `apps/web/app/…/(editor)/read.ts` · `editor.tsx` · `harness/editor/page.tsx` -- `EditorData.stylePack` and the
+      `projects.style_pack` read are **deleted**: that line was their only reader.
+- [x] `apps/web/picker.test.ts` · `tools/keyboard/journey.spec.mjs` · `tools/probe/run-verify-editor.cjs` -- the
+      meta line without a pack, `CATEGORIES` rather than `ALL CATEGORIES`, and `All sections` first in the rail.
+
 **Acceptance Criteria:**
 - Given a canvas with sections, when I hover the gap between two of them, then a 2px coral hairline and the
   **"+ Add section"** pill appear on that boundary and breathe in opacity; **and both match `S4 Editor.dc.html:181`**.
@@ -488,6 +500,40 @@ height, and the miniature is this surface's whole point.
 now the grid's, not the content's, so a **taller** section is cropped at the bottom and a **shorter** one is **centred**
 in its tile rather than hung from the top. Without that a band still sat against the rule with all its air beneath it.
 
+### Second pass, same day — six more (R-154, and one question left open)
+
+> *"1. The performance also needs much improvement. It takes a lot of time to load the sections… The sections should
+> be available for him to see and add as soon as he opens the section picker. This should not affect the other
+> performance areas of the builder tool. — What are the options. 2. Add 'All sections' link with count in the sidebar
+> of section picker at top. 3. Remove 'shown in your pack: Paper' from top of section picker. 4. Rename 'ALL
+> CATEGORIES' to just 'CATEGORIES' in section picker sidebar. 5. The new layout looks good. We need to ensure that all
+> future sections follows these standards depending on their size (wide/tall/normal). 6. On hover, do not add any
+> shadow/overlay on the section. Instead just add a small border around it. And do not lift up on hover."*
+
+**2, 3, 4 and 6 are built — recorded as R-154.** The rail's first row is `All sections` with its own derived count
+(and the header title follows it, so the two can never read differently); the heading beneath is `CATEGORIES`; the
+meta line is the count alone, and `EditorData.stylePack` with the `projects.style_pack` read went with it because
+nothing else read them; a hovered or focused card changes its **border colour only**.
+
+**5 needs nothing built, and that is the point.** A card's span is **measured** from the design's own drawn height
+(`spanFor`), never authored — so every category Epic 9 and Epic 10 add is drawn wide, tall or ordinary by the same
+rule, with no list to maintain and nothing for a future story to remember. The two thresholds live in exactly one
+place. R-153's register entry now says so in its binding, which is where a future story will read it.
+
+**1 is Question 4 below, and it is open.** What was measured first, on the harness at 1600×1000 (Chromium):
+
+| | previews land at | each frame's own document |
+|---|---|---|
+| **as shipped** (`cache-control: no-store`) | 136 · 189 · 253 · **278 ms**, one after another | **50,877 bytes transferred, per frame** |
+| the same run with the document **cacheable** | **all four at 162 ms** (a second open: 116 ms) | **0 bytes** — served from the browser's memory |
+
+So the dominant cost is that `/canvas` — a document with **no script, no nonce and no user content**, identical for
+every user until the next deploy — is served `no-store`, and every preview frame re-downloads it. On production each
+of those is a round trip to a serverless function. Two further facts the numbers do not show: the picker is
+**unmounted on close** (`editor.tsx`: `{picking ? <SectionPicker/> : null}`), so every open pays the whole cost again;
+and `pilotsCanvasDocument()` puts **every** design's stylesheet in **every** frame, so the parse cost grows with the
+square of the library. The options are Question 4's.
+
 ## Verification
 
 **Run on 2026-09-20 at `e794046b`, on this machine unless a line says otherwise. Every one green.**
@@ -516,13 +562,16 @@ are not read by this story.
 stamp went from 2026-09-19 to 2026-09-20 between the pre-commit hook and CI. The regenerated boards ride on this
 phase's second commit and CI is green from there.
 
-**The Fix phase, re-run 2026-09-20 after R-153.** `pnpm check` **exit 0** · `pnpm keyboard` **20 passed** (the
+**The Fix phase, re-run 2026-09-20 after R-153 and again after R-154.** `pnpm check` **exit 0** · `pnpm keyboard` **20 passed** (the
 picker's arrow walk rewritten for a real grid: `→` the next card, `←` back, `↓` a whole row) ·
 `node --test --experimental-strip-types apps/web/picker.test.ts` **12 pass · 0 fail**, `spanFor`'s two new tests
 among them · `python3 tools/doc-audit.py --check` green twice · `pnpm build` **exit 0**. And the grid was
 **photographed** on the harness editor at 1600 and 1280 (`tools/keyboard`'s own dev server, Chromium): four tracks
 at both widths, `a1/1` two columns wide, `a17/1` two rows tall, `a4/13` and `a22/1` one tile each, and the hovered
-card's `+` centred in its footer strip between the name and the badge.
+card's `+` centred in its footer strip between the name and the badge. **After R-154, re-run and re-photographed:**
+`pnpm check` **exit 0**, `pnpm keyboard` **20 passed**, and the rail photographed with `All sections 4` selected over
+`CATEGORIES`, the meta line reading `4 designs`, and a hovered card carrying a coral border with its picture
+undimmed and unmoved.
 
 **Owed to Review, and not run here (R-82).** The deployed walk. `tools/probe/run-verify-editor.cjs` gains
 **steps 81-85** inside step 5's one CSP session — the picker's shape against S5a and S5c, the rail, the search,
@@ -603,7 +652,61 @@ to your account at Story 5.1.
     no word beside it, and it is **never cut off**, on any card, however short the picture above it is. Click it:
     the section is added exactly as before.
 
+**Added after your second pass of 2026-09-20 (R-154).**
+
+18. **Same screen.** Look at the top of the left-hand list. **Expect:** a first row reading **All sections** with a
+    number beside it, highlighted when no category is chosen; under it the heading **CATEGORIES**, then the categories.
+    Click **Headers**, then click **All sections**: you are back to everything.
+19. **Same screen.** Look beside the title at the top. **Expect:** it reads just **"4 designs"** — the words *shown in
+    your pack: Paper* are gone.
+20. **Same screen.** Hover a card. **Expect:** a **thin coral outline** appears around it and **nothing else** — the
+    picture is not dimmed or covered, and the card does **not** move up.
+
 ## Questions for the owner
+
+### Question 4 — how should the picker's previews load faster?
+
+Each card's picture is drawn by opening a small hidden copy of the same shared page, one per card, and drawing the
+section into it. That shared page is sent with a *"never keep a copy of this"* instruction, so **every card downloads
+it again** — 50 KB each, every time — and the whole picker is thrown away when you close it, so **every open starts
+from nothing**. Those two things are most of the wait you felt.
+
+**Example.** You open the picker on a page with twelve sections available. Today the browser fetches the same 50 KB
+page twelve times before the first picture appears, then does it all again the next time you press `⌘K`. With the
+first option below it fetches it **once**, and the second time you press `⌘K` the pictures are **already there**.
+
+**Measured on my machine, four sections:** as it ships, the four pictures appear one after another over **278 ms**
+and each frame downloads 50 KB. With the shared page allowed to be kept, all four appear **together at 162 ms** and
+the downloads are **zero bytes**. On the real site each of those downloads is a trip to the server, so the saving
+there is larger than these numbers, and it grows with every section we add to the library.
+
+You may pick more than one.
+
+1. **Let the browser keep the shared page, and keep the picker alive once you have opened it.** (RECOMMENDED) Two
+   small changes. The shared page is the same for everybody and only changes when we publish, so it is safe to keep —
+   we stamp the version into its address, which means a new publish is picked up instantly and never serves you a
+   stale one. And the picker stays in memory after your first open, so every later open is immediate.
+   - **Cost:** the first open of a session still takes a moment — one download, then the drawing. Holding the picker
+     in memory uses a little more of it while the editor is open.
+   - **Risk to the rest of the builder: none.** It makes the main canvas faster too, for the same reason.
+2. **Also draw the pictures quietly in the background, a second after the editor opens**, so even the first press of
+   `⌘K` is instant.
+   - **Cost:** the builder does work you may never ask for, and on a slow machine that competes with the canvas you
+     are actually editing — which is the one thing you said must not get worse. I would hold this until you have
+     lived with option 1 and can say whether the first open still bothers you.
+3. **Give each picture only its own section's styling.** Today every picture carries the styling for *every* section
+   in the library, so with forty sections each of the forty pictures loads forty sections' worth.
+   - **Cost:** more to build, and **no visible difference today** with four sections. This is the one that matters
+     when the library is large, so its natural home is the epic that fills the library, not this story.
+4. **Show a photograph instead, and swap the live version in behind it.** We photograph each design once when we
+   publish; the picker shows the photograph instantly.
+   - **Cost:** the photograph is not in *your* colours or *your* words until it swaps — and "a live miniature already
+     wearing your own brand" is the promise this screen was built on. It also adds a publishing step and image files
+     to ship.
+
+**My recommendation: option 1 now, option 3 when the library grows, and 2 and 4 not at all unless 1 disappoints.**
+
+**Ruled:** _(awaiting the owner)_
 
 ### Question 1 — should the picker have a "Free only" switch?
 

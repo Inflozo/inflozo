@@ -111,10 +111,12 @@ test('the three empty states, none of which the export draws (R-74)', () => {
 })
 
 test('the meta line is ONE template — S5a\'s words, with S5c\'s one addition', () => {
-  assert.equal(metaLine(18, 'Paper', false), '18 designs · shown in your pack: Paper')
-  assert.equal(metaLine(18, 'Paper', true), '18 designs · shown in your pack: Paper · dark mode')
-  assert.equal(metaLine(1, 'Paper', false), '1 design · shown in your pack: Paper')
-  assert.equal(metaLine(0, 'Paper', false), '0 designs · shown in your pack: Paper')
+  assert.equal(metaLine(18, false), '18 designs')
+  assert.equal(metaLine(18, true), '18 designs · dark mode')
+  assert.equal(metaLine(1, false), '1 design')
+  assert.equal(metaLine(0, false), '0 designs')
+  // the pack left the line with the owner's test of 2026-09-20 — it is never named here again
+  assert.ok(!metaLine(18, true).includes('pack'))
 })
 
 test('R-152: a site-wide design is the one that compiles into the site file, and its words are one string', () => {

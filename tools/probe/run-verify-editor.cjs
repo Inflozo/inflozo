@@ -3185,7 +3185,8 @@ async function main() {
       const c = getComputedStyle(d)
       const rail = d.querySelector('[id="picker-categories"]')?.parentElement
       const r = rail && getComputedStyle(rail)
-      const heading = [...d.querySelectorAll('p')].find((p) => p.textContent.trim() === 'ALL CATEGORIES')
+      const heading = [...d.querySelectorAll('p')].find((p) => p.textContent.trim() === 'CATEGORIES')
+      const allRow = d.querySelector('[role="radio"]')
       const search = d.querySelector('#picker-search')
       const grid = d.querySelector('[data-picker-grid]')
       const g = grid && getComputedStyle(grid)
@@ -3197,7 +3198,9 @@ async function main() {
         headingHasNumber: heading ? /\d/.test(heading.textContent) : null,
         placeholder: search && search.placeholder,
         chip: d.querySelector('kbd') && d.querySelector('kbd').textContent.trim(),
-        meta: [...d.querySelectorAll('p')].map((p) => p.textContent.trim()).find((t) => /designs? ·/.test(t)) ?? null,
+        // the owner's test of 2026-09-20: "All sections" is the rail's first row, with its own DERIVED count
+        allRow: allRow && { words: allRow.textContent.trim(), first: allRow === d.querySelectorAll('[role="radio"]')[0] },
+        meta: [...d.querySelectorAll('p')].map((p) => p.textContent.trim()).find((t) => /^\d+ designs?\b/.test(t)) ?? null,
         columnGap: g && g.columnGap,
         // R-150: the rail footer's Free only toggle is NOT built — absent, never greyed
         freeOnly: /free only/i.test(d.textContent),
@@ -3207,17 +3210,23 @@ async function main() {
       }
     })
     // `S5 Section Picker.dc.html:29-37, :88` — inset 22 on every side, --radius-lg, --shadow-modal, a 240px rail on
-    // 16px/12px with a right rule, `ALL CATEGORIES` carrying NO NUMBER (A7 item 1), and a 16px column gap
-    check('step 81 — ⌘K opens S5a: the 22px-inset panel, the 240px rail, `ALL CATEGORIES` with no number, `Find a section…` and its ⌘K chip',
+    // 16px/12px with a right rule, and a 16px gap. The heading is `CATEGORIES` and still carries no number of its
+    // own, because the row ABOVE it is the one that counts (the owner's test of 2026-09-20)
+    check('step 81 — ⌘K opens S5a: the 22px-inset panel, the 240px rail, `CATEGORIES` with no number, `Find a section…` and its ⌘K chip',
       panel510 !== null && panel510.inset.every((n) => Math.abs(n - 22) <= 1) && panel510.radius === '16px' &&
       panel510.display === 'flex' && panel510.overflow === 'hidden' && panel510.railWidth === '240px' &&
-      panel510.railPad === '16px 12px' && panel510.railRule === '1px' && panel510.heading === 'ALL CATEGORIES' &&
+      panel510.railPad === '16px 12px' && panel510.railRule === '1px' && panel510.heading === 'CATEGORIES' &&
       panel510.headingHasNumber === false && panel510.placeholder === 'Find a section…' && panel510.chip === '⌘K' &&
       panel510.columnGap === '16px' && panel510.close, JSON.stringify(panel510))
+    check('step 81 — the rail\'s FIRST row is `All sections` with its own derived count (the owner\'s test of 2026-09-20)',
+      panel510 !== null && panel510.allRow !== null && panel510.allRow.first === true &&
+      /^All sections\s*\d+$/.test(panel510.allRow.words), JSON.stringify(panel510 && panel510.allRow))
     check('step 81 — R-150 and R-151: no `Free only` switch anywhere in the rail, and the dark control is ONE button',
       panel510 !== null && panel510.freeOnly === false && panel510.modeButtons === 1, JSON.stringify(panel510 && { freeOnly: panel510.freeOnly, modeButtons: panel510.modeButtons }))
-    check('step 81 — the meta line is S5a\'s one template, naming the project\'s own pack',
-      panel510 !== null && /^\d+ designs? · shown in your pack: \S+$/.test(panel510.meta ?? ''), JSON.stringify(panel510 && panel510.meta))
+    // and the pack left the line on the same test: every preview is in his own pack by construction
+    check('step 81 — the meta line is the COUNT alone, and never names a pack again',
+      panel510 !== null && /^\d+ designs?( · dark mode)?$/.test(panel510.meta ?? '') && !/pack/i.test(panel510.meta ?? ''),
+      JSON.stringify(panel510 && panel510.meta))
 
     // ── step 82 — FR-D12: only what can work is offered, and the rail is DERIVED per canvas ──
     const homeRail510 = await railNow59()

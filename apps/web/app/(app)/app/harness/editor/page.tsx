@@ -8,7 +8,6 @@ import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
-import { defaultStylePack, placeholderFor } from '@/lib/style-pack'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
@@ -85,8 +84,6 @@ export default function EditorHarness() {
     links: linkResources(),
     timezone: orbitWeekly.site().timezone,
     plan: 'free',
-    // Story 5.10 — the picker's meta line names the pack; a blank project's is Paper (`lib/style-pack.ts`)
-    stylePack: placeholderFor(defaultStylePack()).name,
     canvases: canvasesOf(),
     synthesized: [],
     defaults: {},

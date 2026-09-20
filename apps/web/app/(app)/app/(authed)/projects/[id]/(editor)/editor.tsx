@@ -235,7 +235,6 @@ export function Editor({
   memberVisibility,
   timezone,
   plan,
-  stylePack,
   canvases,
   synthesized,
   defaults: stacks,
@@ -2006,7 +2005,6 @@ export function Editor({
           mode={mode}
           onMode={flip}
           darkEnabled={darkEnabled}
-          pack={stylePack}
           src={src}
           refusal={pickerRefusal}
           onAdd={onPlace}
