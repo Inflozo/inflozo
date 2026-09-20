@@ -3445,6 +3445,58 @@ one re-shaping of the same control, so they are one ruling.
   acceptance criteria, its Design Notes and its owner test) · ✅ `remix-dice.tsx` · ✅ `globals.css` ·
   ✅ `tools/keyboard/journey.spec.mjs` · ✅ both deployed probes · ✅ `epic-5-context.md` (Story 5.12's review, 2026-09-20 — it still said the confirm opened on the event).
 
+**R-165 — the preview-subject picker is built now, over the bundled publication, and Story 5.18 changes only
+where its rows come from.** Story 5.13's Question 1, ruled **option 1** (owner, 2026-09-20): *"Build the list
+now, over the sample publication."*
+
+- **Why it was a question.** FR-D22 and Story 5.13's own acceptance criteria both say the user may override the
+  subject *"once a site is connected"* — which is Story 5.18, five stories later — while `D5 Canvas Markers and
+  Template Switcher.dc.html` D5e draws the picker in full. Read as a gate, the story would ship a pill that names
+  the subject and nothing pressable; read as a description of where the rows come from, the picker can be real
+  today, because the bundled publication already carries the rows D5e draws — a feed of dozens of posts, about
+  three quarters of them with a feature image and the rest without.
+- **What it binds.** D5e is built in full: the SUBJECT group, its search field, the style-guide entry first with
+  its caption, then the feed's own posts with their dates and the **"has image"** marker *in words*, and D5e's
+  helper line verbatim. The choice is per canvas and persists in `project_template_prefs.preview_subject` — the
+  column the schema has carried since the complete-schema migration with **no reader anywhere** until this story.
+  Story 5.18 swaps the source behind the same surface and rebuilds nothing.
+- **Why it matters that it is pressable.** FR-D22's central claim is that a subject **with** a feature image and
+  one **without** produce structurally different markup under FR-H8's media guards. `packages/library/designs/a24/1`
+  binds `src:feature_image` with a `srcset`, so the guard removes the whole element — which the owner can now see
+  by hand (R-80) instead of taking on trust. It is R-158's shape one story on: prove the rule on bundled data
+  rather than assert it vacuously and wait.
+- **What it does NOT do.** B9's **connected** state and its SOURCE group stay **ABSENT, not greyed** (UX-DR3,
+  R-118 again): until Story 5.18 every canvas in the product renders the bundled publication, so the pill reads
+  *"Previewing with: Sample content"* on every project — **including one whose `projects.linked_site_id` is set by
+  Story 3.4's "Use your brand"**, because the pill describes the canvas and never the paperwork. No design is
+  authored and no Ghost server is touched.
+- Targets: ✅ this entry · ✅ Story 5.13's spec (Question 1, its Boundaries, its tasks and its owner test) ·
+  ✅ `epic-5-context.md` · ⬜ `epics.md` (Story 5.13's AC, at this story's Done) · ⬜ `prd.md` FR-D22's
+  *"once a site is connected"*, at this story's Done.
+
+**R-166 — the content-source pill is built smaller than it is drawn, so the page card never moves.** Story
+5.13's Question 2, ruled **option 1** (owner, 2026-09-20): *"Make the pill a little smaller, and leave your page
+exactly as it is."*
+
+- **Why it was a question.** `EXPERIENCE.md:159` puts the pill at the **canvas foot**, and the ground there is
+  **32px** — `py-8`, which the owner himself set at **R-139** after finding a height-bound card standing on the
+  window's edge. B9 draws the pill at about **27px** (`padding:5px 12px` over 12.5px type) and D5e states its
+  target as **30px**; at `ViewportChip`'s own 4px inset that leaves between one pixel of clearance and two
+  pixels of overlap against the card's bottom edge at Tablet, Mobile and a short-window Desktop. That is exactly
+  the failure **R-138** was measured and ruled on, with no margin left.
+- **What it binds.** The pill is built at **24px**. `py-8` does not move and no page card loses a pixel at any
+  device. 24px is above WCAG 2.5.8's target floor, and it is the same trade `ViewportChip` already makes in the
+  opposite corner: a thing that lives in that ground is sized for the ground, not for a frame's detail card.
+- **What it does NOT change.** B9 governs the pill in every other respect — the dashed border and grey dot for
+  sample content, the solid hairline and mint dot Story 5.18 will reach, the words, the radius and the type — and
+  D5e governs the menu. R-138's and R-139's insets and padding stand exactly as delivered. The export is
+  untouched (R-74); this entry is the record of the one difference, as R-138's own delivery already is.
+- **How it is proved.** By measuring the geometry, never by reading back the rule (R-164): the deployed walk
+  compares the pill's box to the page card's box at all three devices, and a pill that grew back past the ground
+  fails it.
+- Targets: ✅ this entry · ✅ Story 5.13's spec (Question 2, its Boundaries, its Design Notes, its tasks and its
+  acceptance criteria) · ✅ `epic-5-context.md` · ⬜ `B9`, on the next library pass.
+
 
 ## B · Approved decisions superseded by this session
 

@@ -73,8 +73,13 @@ the choice persists in the column that has been waiting for it. No migration, so
   image; it never changes the article.
 - **A subject that is gone falls back and says so** (FR-D22) — it never empties the canvas, and the
   stored value is kept rather than deleted, so a resource that returns brings the choice back.
-- **The pill never overlaps the page card, on any device.** R-138 and R-139 are the owner's own rulings
-  about exactly this ground, made after he measured a chip sitting on a height-bound card.
+- **The pill never overlaps the page card, on any device, and the card never moves to make room**
+  (**R-166**). It is built at **24px** inside R-139's existing 32px ground; `py-8` is untouched. R-138 and
+  R-139 are the owner's own rulings about exactly this ground, made after he measured a chip sitting on a
+  height-bound card.
+- **The subject list is built now, over the bundled publication** (**R-165**). FR-D22's *"once a site is
+  connected"* names where the rows come from, not whether the surface exists; Story 5.18 changes the source
+  and rebuilds nothing.
 - **The default is the fixture by construction.** The new argument is optional; `/pilots`,
   `tools/check-snapshots.mjs` and `tools/matrix/` pass nothing and render byte-identically. That
   equality is the control for the whole story.
@@ -190,7 +195,8 @@ the choice persists in the column that has been waiting for it. No migration, so
       `hasSubject` true for exactly the canvases the `NATIVE` table gives a singular resource — asserted
       over `CANVASES` rather than against a written list.
 - [ ] `apps/web/components/editor/source-pill.tsx` — NEW. **B9's pill** (`B Missing Surfaces.dc.html:1391-1420`)
-      at the canvas foot, in the stage's own ground, clearing the page card on every device; **D5e's menu**
+      at the canvas foot, in the stage's own ground, **at 24px (R-166)** so it clears the page card on every
+      device without `py-8` moving; **D5e's menu**
       (`D5 …:189-263`) as a `popover="auto"` placed by `openMenu` with `side: 'up'`: the SUBJECT heading,
       the search field, the style-guide row with its caption and check, then the rows with title, date and
       the **"has image"** chip whose *words* carry the meaning and whose glyph is decoration beside them
@@ -229,7 +235,8 @@ the choice persists in the column that has been waiting for it. No migration, so
   the canvas is never empty.
 - **Given** Home or any canvas with no singular resource **Then** the pill states the source and offers
   nothing to open.
-- **Given** any device **Then** the pill does not overlap the page card (R-138, R-139).
+- **Given** any device **Then** the pill does not overlap the page card and the card is the same size it is
+  today — `py-8` unchanged (R-138, R-139, **R-166**).
 - **Given** `pnpm check` **Then** `tools/check-snapshots.mjs` is unchanged and green — the fixture default
   is byte-identical to today.
 
@@ -264,8 +271,11 @@ column (R-99).
 bottom (R-139) — and `ViewportChip` tucks into the top at 4px. B9's pill measures **about 27px** at its
 drawn `padding:5px 12px` over 12.5px type, and D5e states its target as **30px**; at the chip's own 4px
 inset that leaves between one pixel and minus two against the card's bottom edge on a height-bound device
-(Tablet, Mobile, a short-window Desktop). Either way it is R-138's measured failure with no margin left,
-and the first thing the deployed walk must measure, which is **Question 2**.
+(Tablet, Mobile, a short-window Desktop). Either way it is R-138's measured failure with no margin left.
+**R-166 (owner, 2026-09-20) settles it in favour of the page:** the pill is built at **24px**, `py-8` does
+not move, and no card loses a pixel at any size. It stays a real target — 24px is WCAG 2.5.8's floor — and
+it is the same trade `ViewportChip` already makes in the opposite corner. It remains the first thing the
+deployed walk measures, because a rule about geometry is proved by measuring the geometry (R-164).
 
 **What arrives with Story 5.18 and is absent until then.** B9's connected state, the SOURCE group, and a
 subject list drawn from the user's own posts. R-118's rule again, unchanged: absent, never greyed, and no
@@ -346,7 +356,13 @@ design ring on sample designs rather than assert it and wait.
    your real posts in the list. The Tag and Author canvases keep showing every post on the site in the
    meantime, which is wrong on its own terms and is not what the delay is for.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-20).** *"Build the list now, over the sample publication."* Recorded as
+**R-165**. D5e's picker is built in full over the bundled publication — the style-guide entry first, then the
+feed's own posts with their dates and the **"has image"** words — and the per-canvas choice persists in
+`project_template_prefs.preview_subject`. FR-D22's *"once a site is connected"* is read as naming where the
+rows come from, not as a gate on the surface: Story 5.18 swaps the source and rebuilds nothing. Steps 4 to 10
+of the owner's test are therefore live rather than conditional, and the media-guard claim is checked by hand
+rather than asserted.
 
 ### Question 2 — the pill sits under your page. There is not quite enough room. What should give?
 
@@ -373,4 +389,10 @@ of your design. That is exactly the thing you asked us to fix twice before.
 4. **Put the pill in the top bar** instead, beside the template name. No crowding at all, and it stops
    being attached to the page it describes, which is why both drawings put it at the bottom.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-20).** *"Make the pill a little smaller, and leave your page exactly as it
+is."* Recorded as **R-166**. The pill is built at **24px** rather than B9's drawn 27–30px, so it clears the
+page card inside R-139's existing 32px ground on every device; `py-8` does not move and no card loses a pixel
+at any size. 24px is also above WCAG 2.5.8's target floor, and it is the same move `ViewportChip` already
+makes in the opposite corner — a thing that lives in that ground is sized for the ground, not for a frame's
+detail card. B9 governs the pill in every other respect: the dashed border, the grey dot, the words, the
+radius and the type. `reconcile-designs-decisions.md` is the record of the one difference (R-74).

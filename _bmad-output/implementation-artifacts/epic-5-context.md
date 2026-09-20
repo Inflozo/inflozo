@@ -214,6 +214,26 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     letterbox beside a phone-shaped card. The chip renders AFTER the card so the card stays the ground's
     `firstElementChild`, which is how the harness and step 27's gutter find it.
 - **Live content is read in the browser and degrades honestly.** Reads are cached 60 s, batched and de-duplicated across canvas, picker and link search under a per-session ceiling, and fall back to Orbit Weekly naming the cause on 429 (that Ghost rate-limits Content API keys is the PRD's statement, not a measurement); body HTML is never read — `{{content}}` is the style-guide fixture.
+  - **Story 5.13's planning (2026-09-20, read in the schema, the runtime and the frames):** the pill and the
+    subject need NO new mechanism and NO migration — `project_template_prefs.preview_subject` (`{kind, id, slug}`)
+    has been in the complete-schema migration since day one with **no reader anywhere in `apps/web`**, its grants
+    and both policies are in place, and DW-193 fixed its `template_key_shape` on this table too at 5.8. The seam is
+    ONE OPTIONAL ARGUMENT on the one function that already decides what a template hands a section —
+    `templateContext(target, feed, subject?)` — threaded through `renderSection`, the single door the editor,
+    `section-preview.tsx` and `/pilots` all paint through; passing nothing keeps today's render, which is why
+    `tools/check-snapshots.mjs` (NFR-6(c1)) and the render matrix are untouched **and is the story's control**.
+    A separate pure `resolveSubject(file, stored)` answers *which subject, and did the stored one survive*, because
+    `templateContext` returns a render context and has no way to report a fallback. **AND THE ARCHIVES WERE WRONG
+    BEFORE ANYONE CHOSE ANYTHING** (executed): `templateContext` gives `tag.hbs` and `author.hbs` the WHOLE bundled
+    feed, the same rows `home.hbs` gets, so a Tag canvas renders a feed Ghost would never serve — `a17/1`, the only
+    design compiling there, renders it faithfully so nothing looks broken. `appendix-b1-template-contexts.md` §3 is
+    decisive: a list template is flat at the root with the taxonomy object alongside, and its `posts` are that
+    taxonomy's. Which canvases have a subject is DERIVED from `placement.ts`'s `NATIVE` table (a file whose native
+    set holds a singular resource), never a list of four; `NATIVE` is module-private and `CONTEXTS_BY_TARGET` folds
+    `GETTABLE` into it, so the story exports ONE query, `nativeResourceOf(file)`, over the same table. The fixture
+    subjects for the archives cannot be hidden rows the way `subjects.post` and `subjects.page` are — an archive's
+    posts come from the feed — so they join `dataset.subjects` as SLUGS of rows that already exist. No shortcut
+    (FR-D11 names the preview subject *"set-and-forget context"*), no journal entry, **no Schema phase**.
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
@@ -442,6 +462,30 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     tumbling die. **Amended by R-164:** the confirm opens on the press; it is the confirmed RE-ROLL that lands on the
     roll's own `transitionend` (or `transitioncancel`), so `globals.css`'s reduced-motion block both flattens the
     roll and lands the re-roll at once, with no timer to keep in step with the CSS.
+  - **R-165 · R-166 (owner, 2026-09-20, Story 5.13's Q1 and Q2, option 1 each).** **R-165:** the
+    preview-subject picker is built **now**, over the bundled publication — FR-D22's *"once a site is connected"*
+    names where the rows come from, not whether the surface exists, so D5e is drawn in full (the SUBJECT group,
+    its search, the style-guide entry first, the feed's posts with dates and the **"has image"** marker in WORDS)
+    and Story 5.18 swaps the source behind it and rebuilds nothing. It is R-158's shape one story on: the claim
+    that a subject with a feature image and one without are structurally different pages is proved by hand on
+    bundled data (`a24/1` binds `src:feature_image` with a `srcset`, so FR-H8's guard removes the whole element)
+    rather than asserted vacuously. B9's **connected** state and its SOURCE group stay ABSENT, not greyed (UX-DR3,
+    R-118 again) — until 5.18 every canvas renders the bundled publication, so the pill reads *"Sample content"*
+    on every project **including one whose `linked_site_id` Story 3.4 already set**, because the pill describes
+    the canvas and never the paperwork. **R-166:** the pill is built at **24px** rather than B9's drawn 27–30px,
+    because `EXPERIENCE.md:159` puts it at the canvas foot where the ground is R-139's 32px, and at
+    `ViewportChip`'s 4px inset a drawn pill lands between one pixel clear and two pixels over the card's bottom
+    edge at Tablet, Mobile and a short-window Desktop — R-138's measured failure with no margin. `py-8` does not
+    move and **no page card loses a pixel**; 24px is above WCAG 2.5.8's floor and is the same trade `ViewportChip`
+    already makes in the opposite corner. B9 governs the pill in every other respect and D5e governs the menu; the
+    export is untouched (R-74) and `reconcile-designs-decisions.md` is the record.
+  - **B9 governs the pill and D5e governs only the menu, and no question was owed (Story 5.13's Create).** The two
+    frames disagree — B9 draws a light border-style pill at a 24px radius, D5e a 30px item inside an ink
+    `#1C1B1A` bar at 10px/4px. `epics.md`'s own AC rules it (*"the pill matches B9 and the picker matches D5e"*),
+    and B9's Notes agree from the other side: of the four surfaces in that row *"two are ink pills that float over
+    the canvas … the other two are status … the source pill is a border style"*. D5e inherited the ink treatment
+    from the D5 prompt's blanket *"THE PILL SPEC IS SHARED AND ALREADY SET"* line, which generalised a rule B9 had
+    scoped to the other two.
   - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
     **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
     every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's
@@ -499,6 +543,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - **5.8 underpins the loop:** its one-transaction-per-gesture journal makes a shuffle one edit (5.11, 5.12), gives 5.17 `unsynced_edits` and the superseding hydrate, and gives 5.23 a doc to assert over.
   - **Story 5.5's review (2026-09-18, executed on production):** 5.8 is the first writer of `project_templates`, and the stored `template_key_shape` refuses every `custom:` key (two backslashes in the pattern) — so 5.8 **has a Schema phase** that fixes the constraint before its code ships (DW-193, R-99).
 - **Earlier stories lean on later ones:** link search (5.3) and picker previews (5.10) share 5.18's fetch layer, 5.13's subject picker and 5.16's page 2 need 5.19, 5.14 needs 5.21's strip, 5.4's Post Content refusal lives in 5.10's picker, and 5.9's map spans the epic.
+  - **5.13's half is settled and is no longer a lean (R-165, owner, 2026-09-20):** the subject picker is built at
+    5.13 over the bundled publication, whose rows are pure and already in the repo, and Story 5.18 changes only
+    where those rows come from. 5.16's page 2 still needs 5.19.
 - **Across epics:** Epic 3's daily settings snapshot feeds the shims and members checks; Epic 6 replaces the token set; Epic 7 compiles the doc, gates deploy and export on the lock and flush, and repeats the warnings pre-deploy; A34's (5.19) and A32's (5.20) designs arrive in Epic 10.
 - **Undeclared forward dependencies:** the library holds only the provisional pilots, so 5.11, 5.12 and 5.23's round trip have no second design to move to, and the repo's only 40-section fixture is `tools/stress`'s compile-sizing archetypes; the Synthesis Defaults and Post Content (5.4, 5.5) name designs Epics 9–10 author; pack re-roll and undo (5.12, 5.8) have one token set until Epic 6.
   - **Story 5.1, Question 1 ruled option 1 (owner, 2026-09-17)** — nothing places a section before 5.10, so the owner's tests of 5.2–5.9 run on "Pilot sections": the pilots across `site`, `home` and `post`, added once to his own account by 5.1's Deploy through `tools/probe/seed-editor-project.mjs`. Reuse it; never seed a second.
