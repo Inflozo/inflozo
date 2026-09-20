@@ -772,6 +772,16 @@ test('R-145: `]` moves to the next design and announces its position, `[` comes 
   await expect(counter(page)).toHaveText(/^1 of \d+$/)
   const first = await page.locator('#editor-design-name').innerText()
 
+  // The settle lives 180ms, and on a loaded runner the awaits below outlast it — CI's red on 95b3f568 was exactly
+  // that (the attribute came and went before the first poll). So watch from BEFORE the key: the frame records that
+  // it saw the attribute, and the assertion reads the record rather than racing the fade.
+  await canvas.locator('body').evaluate((b) => {
+    const d = b.ownerDocument
+    d.defaultView.__swapSeen = 0
+    new MutationObserver(() => {
+      if (d.querySelector('[data-inflozo-swapped]')) d.defaultView.__swapSeen++
+    }).observe(d, { attributes: true, childList: true, subtree: true })
+  })
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press(']')
   await expect(counter(page)).toHaveText(/^2 of \d+$/)
@@ -779,7 +789,9 @@ test('R-145: `]` moves to the next design and announces its position, `[` comes 
   // EXPERIENCE.md:878's settle: the swapped root carries `data-inflozo-swapped` for the fade's own 180ms and then
   // loses it — at rest the canvas is still the site (review, 2026-09-20: nothing had asserted either half)
   const swapped = canvas.locator('[data-inflozo-swapped]')
-  await expect(swapped, 'the incoming root carries the settle').toHaveCount(1)
+  await expect
+    .poll(() => canvas.locator('body').evaluate((b) => b.ownerDocument.defaultView.__swapSeen), 'the incoming root carries the settle')
+    .toBeGreaterThan(0)
   await expect(swapped, 'and loses it when the fade is over').toHaveCount(0, { timeout: 2000 })
   // UX-DR12: the position AND the design, politely
   expect(await said(page)).toMatch(/^Design 2 of \d+ — .+/)
