@@ -4821,6 +4821,12 @@ reason: the lock is the designed answer to two writers and building a second one
 
 ### DW-204: the deployed editor page sometimes takes more than 30 seconds to finish loading for the test harness
 
+seen again: Story 5.11's Review (2026-09-20, build `56d801c7`) — five attempts of the walk: one complete (455 PASS,
+  its only FAIL a user-count control disturbed by a second recorder running beside it), two dead at `page.reload` and
+  `page.goBack` before any patch, and two dead at the SAME place after — step 53's soft navigation Back to the editor,
+  `painted('home')`, 492 PASS and 0 FAIL each time. Same shape (a navigation that never settles), a new step to add
+  to the list of where it lands; the step's own code was not touched by that story.
+
 plain: Our automated walk of the live site opens the editor dozens of times. On 2026-09-19 roughly one opening in
   twenty never finished loading within 30 seconds, which stops the walk. Ordinary pages on the same site answer in a
   third of a second, and the same walk on a local copy never stalls. We do not yet know whether the slow part is this

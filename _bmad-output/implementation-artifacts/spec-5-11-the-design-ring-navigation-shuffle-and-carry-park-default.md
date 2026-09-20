@@ -593,7 +593,20 @@ refused before any browser step. Then the patches: `pnpm check` **exit 0** and `
 the new cases in them, and `run-verify-controls.cjs` re-run against the STILL-UNPATCHED production as the control for
 its new overlay-guard step: **1 FAIL / 101 PASS**, the one FAIL being exactly that step (`2 of 3 · popover open: 0` —
 `]` swapped the design under the open picker and closed it), and its new DW-209 step PASSING (`top: 70, range: 70`).
-The runs against the patched production are recorded below, after the Review push deployed.
+**After the Review push (`56d801c7`; CI `check`, `rls`, `deploy` and the render matrix all green; Vercel READY built
+from it), on production:**
+- `node tools/probe/run-verify-controls.cjs` (`SUPABASE_URL` + `SUPABASE_SECRET_KEY`) — **0 FAIL / 102 PASS**. The new
+  overlay-guard step now PASSES (`1 of 3 · popover open: 1` — `]` under the open picker changed nothing and left it up),
+  the new DW-209 step reads `top: 300, range: 665`, and the account count is `13 → 13`. (A first run beside the editor
+  walk died at a `page.reload` timeout with 0 FAIL, and its count control read `13 → 15` because the other recorder's
+  accounts were alive — the two walks are run one after the other from now on.)
+- `node tools/probe/run-verify-editor.cjs` (the four variables) — **one complete run: 455 PASS**, step 87's two new
+  checks green (**300px** of canvas scroll with the pointer on the quick-action pill and **300px** on the "+ Add
+  section" pill), step 5's CSP count zero, step 8's axe zero, step 15 passing, step 86 unchanged; its one FAIL was the
+  final user-count control (`14 → 13`), broken by the controls walk running beside it and not by the site. Two solo
+  re-runs to clear that control both died at step 53's soft navigation with **0 FAIL and 492 PASS** each — DW-204's
+  shape, recorded there; a HARNESS ERROR with no FAIL is not a result, so the count control stands unproved on this
+  build and everything else stands proved.
 
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, including the partition, carry / park /
