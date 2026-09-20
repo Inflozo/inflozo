@@ -78,13 +78,18 @@ declared `surface` — so the partition rule and the placement rule can never dr
   is the affordance on the section, `S4 Editor.dc.html` **S4b** and `S6 Variant Shuffle.dc.html:67` are the
   pill it is drawn in, and S6 is the shuffle surface and the mid-swap moment. **R-159 settles the one place
   they disagree**: S4b + S6 govern the pill, B1b governs the affordance, and Shuffle is built in both the
-  panel and the pill.
+  panel and the pill. — **AMENDED by the owner's test of the deployed page, 2026-09-20 (finding 3):** Shuffle
+  is built in the **pill only**; S6`:140`'s `Try a design` card and B1a`:395`'s `Cycle designs` footer are not
+  drawn at all (finding 4), and the counter prints `7 of 18` rather than `Design 7 of 18` (finding 2), because
+  the label beside it already says the word. The rest of this bullet stands.
 - **Announced politely** (UX-DR12): *"Design 8 of 18 — Image Backdrop"* through `#editor-said`, from the
   one place both the key and the button reach (the rule `onDuplicate` already follows).
 
 **Ask First:**
 - **Both questions are ruled** — **R-158** (option 1) and **R-159** (option 2), owner, 2026-09-20. Nothing
-  below waits on him.
+  below waits on him. — **AMENDED:** his test of the deployed page amended R-159 the same day (finding 3), and
+  a **Question 3** is now open — which value wins where carry and restore disagree. Nothing waits on that one
+  either: what is built is documented and tested, and the other reading is one line.
 - Authoring **any design under `packages/library/designs/`** is Epic 9's and Epic 10's work (AD-35, R-158 in
   his own words) — HALT rather than adding one, however convenient a second pilot would be.
 - A **third** place for Shuffle, or a key for it: FR-D11's map is thirteen actions and a fourteenth key, and
@@ -113,7 +118,7 @@ declared `surface` — so the partition rule and the placement rule can never dr
 | Defaulted control | a control only the incoming design declares | takes its declared default; nothing is stored for it | N/A |
 | The round trip | shuffle away, shuffle back | every parked value restored **exactly**, dark override included, and the parked record for that design cleared | N/A |
 | Surplus items | 3 authored items, the incoming design fits 2 | 2 render on **both** emitters; item 3 is untouched in the doc; the panel reads **"3 items · 2 shown in this design"** | N/A |
-| Shuffle | ring ≥ 2, from the panel card **or** the pill (R-159) | lands on a **different** design of the same ring, carrying under the same rule, one edit, announced | ring of 1 → both controls are absent |
+| Shuffle | ring ≥ 2, from the **section pill** — its one seat since the owner's finding 3, 2026-09-20; it read "from the panel card **or** the pill (R-159)" | lands on a **different** design of the same ring, carrying under the same rule, one edit, announced | ring of 1 → the control is absent |
 | Outside the partition | a design of the same category with different `bindingContext`/`compileTarget`/`surface` | never in the strip, never reached by a key or a Shuffle | `switchDesign` answers a sentence and writes nothing |
 | Site-wide section | the header selected | the same ring rules; the swap writes the **site** doc, and the section stays in the Site-wide group | N/A |
 | Nothing selected | `[` or `]` with no selection | nothing happens, nothing announced — `⌘D`'s own rule | N/A |
@@ -459,7 +464,8 @@ thirteen actions and a fourteenth key, and R-145 forbids inventing a fifteenth.
 
 ## Verification
 
-**As built (Dev, 2026-09-20).** Four departures from the spec's letter, each for a mechanical reason:
+**As built.** Six departures from the spec's letter, each for a mechanical reason — the first four from Dev, the
+last two from the Dev verification itself:
 - **`itemsShown` lives in `controls.ts`, not `core.ts`.** `core.ts` already imports `controls.ts` (`resolveControls`,
   `withData`), so a reader in core that the panel called would be an import cycle. The CAP ITSELF is applied in
   `expandItems` exactly as specified — one shared function, both emitters — and `controls.ts` has the tag scan
@@ -471,10 +477,19 @@ thirteen actions and a fourteenth key, and R-145 forbids inventing a fifteenth.
 - **`instanceSchema.designId` widened from `/^a\d+\/\d+$/` to `categoryOf`'s own rule.** The ring fixture's
   category is `controls`, and the keyboard harness stores one of its sections; a shape check whose grammar
   disagreed with the library's would have refused a doc the library assembles. Everything the old pattern refused
-  it still refuses (`doc-schema.test.ts`).
+  it still refuses (`doc-schema.test.ts`), path traversal and casing included.
 - **On `/controls` the pill draws its RING GROUP ALONE** (`sectionControls={false}`). That page holds one sample and
-  no doc, so Duplicate, Delete and the drag grip would be three dead controls (UX-DR3). The owner's step 12 expects
-  them there; the ring, the counter and Shuffle are, and the three section controls are not.
+  no doc, so Duplicate, Delete and the drag grip would be three dead controls (UX-DR3). The owner's manual test
+  step 12 was corrected to say so rather than the pill being made to draw them.
+- **`LIMIT_RE` is exported from the vocabulary and read in three places.** The 1–100 grammar had been written out
+  in `vocabulary.ts`, `core.ts` and `controls.ts` — three copies of one rule is the drift standing rule 3 forbids,
+  and the whole reason `data-items-limit` joined `DIRECTIVES` was that one table decides it. `data-repeat-limit`
+  reads the same constant.
+- **`PanelLabel` takes an optional `id`, and the editor's panel head names both its parts.** Story 5.11 put S4c's
+  category word under the layer name inside a wrapper, so "the first `<span>` in the Controls panel" — which five
+  checks of the deployed walk used to read the heading — became the wrapper, whose `textContent` runs the two
+  together ("Header — RailHeaders") and whose computed type is not the label's. `#editor-panel-name` and
+  `#editor-panel-category` are read by name now, and the walk asserts the category word as well.
 
 **DW-209, EXECUTED (standing rule 1) and FIXED.** Driven in Chromium through this repository's own Playwright over
 the keyboard harness: a wheel synthesised over `[data-add-section]` scrolled the canvas document **0px**, and the
@@ -484,45 +499,68 @@ rather than all. The fix is the ledger's own: both pills forward their wheel to 
 (`section-pill.tsx`'s `onWheel` → `editor.tsx`'s `wheelToCanvas`), and the same control re-run after it reads
 **500px** on both pills. A customer felt the identical stall, so this is a fix and not a test repair.
 
-**Run at Dev (2026-09-20), all against the deployed build `1b5e4805`:**
-- `pnpm check` · `pnpm keyboard` (28 stops, five of them this story's) · `python3 tools/doc-audit.py --check` ·
-  `bash supabase/tests/run-rls-gate.sh` — all green. CI's `check`, `rls` and `deploy` jobs green on both pushes.
-- `node tools/probe/run-verify-controls.cjs` on **production** (R-82) — **97 PASS, 1 FAIL**. Every ring assertion
-  passed: the Design block counts a real ring of three, ▶ changes the section in place and announces its position,
-  a carried setting and the typed words survive, a setting only the outgoing design has disappears from the panel,
-  the item cap reads *"3 items · 2 shown in this design"* and draws two of three, ▶ at the end wraps and the
-  **parked value comes back exactly — the long way round, through an intermediate design** — ◀ wraps the other
-  way, `Try a design` names its destination before the press and shuffles, and the pill carries the counter, the
-  arrows and an icon-only Shuffle whose words are its name and its title. The one FAIL is **DW-210**, a ~35px
-  window scroll on that page after the panel is folded and unfolded; it is measured, filed, and not this story's
-  (the page range is still 0 with the Design block drawn, and the block scrolls inside the panel).
-  Two FAILs in that run were repaired rather than recorded: step 2's panel head (the head keeps the DESIGN's name
-  on `/controls`, which has no layer name) and step 5's R-136 moon reader, which still read the badge's SVG
-  `<title>` as printed words — the mistake R-136's own note names and `run-verify-editor.cjs`'s `moonOn` already
-  avoids. Two more were bugs in this story's own new checks (they read `.cx__title`, design 1's class, on a design
-  drawing `.cy__title`) and are fixed.
-- `node tools/probe/run-verify-editor.cjs` — **NOT RUN at Dev**; step 86 is written and is Review's to run.
+**THE OWNER'S FOUR FINDINGS, FIXED AND PROVED ON PRODUCTION.** He tested the deployed `/controls` at `905efa4e`;
+all four are fixed inside this story (R-80) and each is now a check of the deployed walk, because a removal nobody
+checks comes back. What he found, and what the live page answers, is in `## Owner's test findings` above; the
+run's own lines are below.
+
+**DW-210 no longer reproduces.** Step 17's window scroll range on `/controls` reads **0** at `730e713a`, after his
+findings 3 and 4 took the card and the footer out of the panel; it measured 24, 30 and 35px at `6a09cecc` and
+`1b5e4805`. The shorter panel is the LIKELY cause and not a proved one — no control isolated it — and the ledger
+entry says exactly that rather than claiming a fix.
+
+**Run at Fix (2026-09-20), against the deployed build `6b0a2da4` — every gate, and both deployed walks clean:**
+- `pnpm check` — **exit 0**, lint, typecheck and every package test green, `agreement.test.ts` and `ad36.test.ts`
+  among them (the control: no mode and no ring reaches the theme emitter). Its own run prints the count.
+- `pnpm keyboard` — **29 stops, 0 fail**, six of them this story's: `]` and `[` over the fixture ring with the
+  position announced, a parked value surviving an intermediate design and coming back exactly, `← →` across the
+  strip, both keys inert with the caret in a field and in a canvas `contenteditable`, the block carrying no
+  Shuffle card and no key chips with `]` alone still reaching every design in one-edit steps, and a site-wide
+  section drawing the same block counted by its ring and not its doc.
+- `python3 tools/doc-audit.py --check` — **PASS, 0 warnings** (run twice; the sub-tools regenerate on the first).
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**. No migration is in this story; this is the control that
+  none crept in.
+- `node tools/probe/run-verify-controls.cjs` on **production** (R-82, `SUPABASE_URL` + `SUPABASE_SECRET_KEY`) —
+  **0 FAIL, 100 PASS**. The ring walk in full: the Design block counts a real ring of three and does **not**
+  repeat its own label (`1 of 3`); ▶ changes the section in place and announces *"Design 2 of 3 — Controls
+  sample — a banded pair"*; a carried setting and the typed words survive; the parked control leaves the panel
+  **and the section root** (`tintAttr: null`); the cap reads *"3 items · 2 shown in this design"* and draws two
+  of three; ▶ at the end wraps and the parked value comes back exactly **the long way round, through an
+  intermediate design** (`Strong` → `Strong`); ◀ wraps the other way; the block carries `0 card · 0 chips ·
+  3 previews`; **`]` and `[` cycle the design on this page** (`1 of 3 → 2 of 3 → 1 of 3`) and type their
+  characters with the caret in the Heading field, changing nothing; and the pill's icon-only Shuffle reads its
+  words as its name and its title and **lands on a different design carrying the words**. Step 17's window
+  scroll range is **0** (DW-210).
+- `node tools/probe/run-verify-editor.cjs` on **production** (R-82, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`,
+  `VERCEL_TOKEN`, `VERCEL_TEAM_ID`) — **0 FAIL, 454 PASS, clean on the first attempt** (no DW-204 death).
+  Step 86, this story's: the Design block is at the head of the panel, above every settings group and inside
+  none (`aboveGroups: true`); with one design the counter reads **`1 of 1`**, the sentence says why, and the
+  arrows, the strip, the card and the chips are all **absent**; the section's own pill agrees, carrying only
+  Story 5.4's Duplicate and Delete; `[` and `]` do nothing and announce nothing; and the `?` card lists
+  **`[`** and **`]`**. Step 5's scripted session records **zero** `securitypolicyviolation` events in either
+  document. Step 8's axe is **zero** at every state, B1a's Design block and S4b's ring group included, with no
+  exception beyond R-149's one. Step 15's sticky-scroll check **passes** — DW-209 executed and fixed, not retried.
+- CI at each push: `check`, `rls` and `deploy` green; Vercel READY on `app.inflozo.com`.
+
+**Not hit by this story, and not claimed:** Resend, Dodo and the Ghost test servers T1/T3. Nothing here sends
+mail, takes a payment or reads a Ghost — the ring is the editor's own doc and the library's own entries.
 
 **Commands:**
-- `pnpm check` -- expected: lint, typecheck and every package test green, including the new partition,
-  carry / park / default, round-trip, item-cap and `parkedControls`-default cases, with `agreement.test.ts`
-  and `ad36.test.ts` **untouched and green** (the control: no mode and no ring reaches the theme emitter).
-- `pnpm keyboard` -- expected: the journey's new stop passes — `]` changes the design over the fixture ring
-  and announces its position, `[` restores it with its parked value, `← →` cross the strip, both keys are
-  inert with a caret — and the deferred-key stop now carries four owed keys, not six.
-- `python3 tools/doc-audit.py --check` -- expected: exit 0 (run twice; the sub-tools regenerate on the first
-  failure).
-- `bash supabase/tests/run-rls-gate.sh` -- expected: the gate passes. No migration is in this story; this is
-  the control that none crept in.
-- `node tools/probe/run-verify-editor.cjs` (real production, R-82) -- expected: every step passes on
-  `app.inflozo.com`, step 5's CSP violation count is zero, step 8's axe is zero with R-149's single node
-  exception, **and step 15's sticky scroll check passes** (DW-209 executed and fixed, not merely retried).
-- `node tools/probe/run-verify-controls.cjs` (real production, R-82) -- expected: the deployed ring walk
-  passes — the arrows change the design, a carried value survives, a parked one returns exactly.
+- `pnpm check` -- expected: lint, typecheck and every package test green, including the partition, carry / park /
+  default, round-trip, item-cap and `parkedControls`-default cases, with `agreement.test.ts` and `ad36.test.ts`
+  green (the control: no mode and no ring reaches the theme emitter).
+- `pnpm keyboard` -- expected: 0 fail, and the deferred-key stop carries four owed keys, not six.
+- `python3 tools/doc-audit.py --check` -- expected: exit 0 (run twice).
+- `bash supabase/tests/run-rls-gate.sh` -- expected: the gate passes; the control that no migration crept in.
+- `node tools/probe/run-verify-editor.cjs` (real production, R-82) -- expected: 0 FAIL, step 5's CSP count zero,
+  step 8's axe zero with R-149's single exception, step 15's sticky scroll passing, and step 86's absence case.
+- `node tools/probe/run-verify-controls.cjs` (real production, R-82) -- expected: 0 FAIL, the whole ring walk
+  including the owner's four findings.
 
 **Manual checks:**
 - Open `/projects/<id>` on production beside `B Missing Surfaces.dc.html` B1a and `S6 Variant Shuffle.dc.html`
-  and compare the panel block and the pill part for part (R-74).
+  and compare the panel block and the pill part for part (R-74) — remembering that B1a's `Cycle designs` footer
+  and S6`:140`'s `Try a design` card are deliberately **not** drawn, on the owner's findings 4 and 3.
 - Confirm on the deployed editor that a section whose category holds one design draws **no** arrows and no
   Shuffle anywhere — the pill, the panel and the strip agree, and nothing is greyed (UX-DR3).
 
@@ -597,9 +635,12 @@ story (R-80), and one of them amends a ruling he made at Create.**
    has one, the section pill's icon-only control — which is Question 2's option 3. What is lost is the one
    thing the card did that the button cannot: name and picture the destination *before* the press. What that
    simplifies is real — the held `shuffleSeed` state went with it in both surfaces, and the random is now drawn
-   at the press. **A consequence worth stating: Shuffle is now pointer-only.** FR-D11's map is full and R-145
-   forbids a fifteenth key, so there is no keyboard path to *Shuffle* — but there is one to every design it
-   could reach, because `[` and `]` reach all of them. `journey.spec.mjs` proves exactly that on every commit.
+   at the press. **A consequence worth stating: in the EDITOR, Shuffle is now pointer-only.** Its one seat is
+   the quick-action pill, which is drawn on hover, so without a pointer it is not in the tab order at all; and
+   FR-D11's map is full, so R-145 forbids giving it a key. What that costs is nothing in reach — `[` and `]`
+   get to every design a Shuffle could have landed on — and `journey.spec.mjs` proves exactly that on every
+   commit. (On `/controls` the pill is drawn whenever the sample is, so there it *is* tabbable; that page is an
+   internal review surface and not the customer's.)
 4. **Remove the `Cycle designs` / `[` `]` footer.** Done. The keys are still advertised in the `?` card, which
    is R-147's one place for them, and both removals are asserted **absent** by the keyboard journey and by the
    deployed `/controls` walk — a removal nobody checks comes back.
