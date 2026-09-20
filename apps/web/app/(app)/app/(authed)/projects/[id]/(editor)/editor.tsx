@@ -2019,8 +2019,8 @@ export function Editor({
                 the name is the customer's and the category is the library's, and the panel says both. S4c's
                 "4 / 18" is not here — it is the Design block's counter, three lines below. */}
             <span className="flex min-w-0 flex-col">
-              <PanelLabel>{chosen ? chosen.layerName : 'Page'}</PanelLabel>
-              {chosen && entry ? <span className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
+              <PanelLabel id="editor-panel-name">{chosen ? chosen.layerName : 'Page'}</PanelLabel>
+              {chosen && entry ? <span id="editor-panel-category" className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
             </span>
             <IconButton ref={controls.hide} label="Collapse controls" title="Collapse controls" aria-expanded aria-controls="editor-controls" onClick={() => controls.toggle(true)}>
               <Panel size={15} className="-scale-x-100" />

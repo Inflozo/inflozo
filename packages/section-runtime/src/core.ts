@@ -26,6 +26,7 @@ import {
   GET_FORBIDDEN_TARGETS,
   HELPERS,
   IMAGE_SIZES,
+  LIMIT_RE,
   MEMBER_STATES,
   PAGINATED_TARGETS,
   MEDIA_FALLBACK_REFUSAL,
@@ -1256,7 +1257,7 @@ export function initials(name: string): string {
 /** A `data-items-limit` as a number of copies — `undefined` for an absent or ungrammatical one, which `slice`
  *  reads as "all of them". The grammar itself is the vocabulary's (`DIRECTIVES`), enforced at validation. */
 const itemsCap = (raw: string | null): number | undefined =>
-  raw !== null && /^([1-9][0-9]?|100)$/.test(raw) ? Number(raw) : undefined
+  raw !== null && LIMIT_RE.test(raw) ? Number(raw) : undefined
 
 function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderInput, tokens: Tokens, users: UserText | null): void {
   const lists = all(root, '[data-items]')

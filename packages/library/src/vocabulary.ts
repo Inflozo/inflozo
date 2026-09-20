@@ -223,6 +223,13 @@ export const CONTROL_WORD_RE = CONTROL_NAME_RE // one grammar, one regex: a valu
  *  met the validator still cannot put a brace or a quote into either emitter (AD-36). */
 export const CONTROL_VALUE_RE = /^(?:[a-z][a-z0-9]*(-[a-z0-9]+)*|[0-9]+)$/
 
+/** ONE GRAMMAR FOR BOTH CAPS, 1 to 100 — `data-repeat-limit`'s rows and `data-items-limit`'s authored items. It is
+ *  exported because the number is read in three places and a second copy of the range is exactly the drift standing
+ *  rule 3 forbids: the validator parses it here, `core.ts` turns it into a `slice` on both emitters, and
+ *  `controls.ts` reads it back for the panel's "N shown in this design". (FR-H2 caps `limit="all"` at 100, and
+ *  `all` trips gscan on 6.x.) */
+export const LIMIT_RE = /^([1-9][0-9]?|100)$/
+
 /** FR-F2 / R-23: no `Inherit`, and no other CSS-wide word, anywhere in a control declaration. */
 export const CSS_WIDE_KEYWORDS = ['inherit', 'initial', 'unset', 'revert'] as const
 
@@ -595,7 +602,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
   },
   'data-repeat-limit': {
     summary: 'how many rows — 1 to 100 (FR-H2 caps `limit="all"` at 100, and `all` trips gscan on 6.x)',
-    parse: (v) => (/^([1-9][0-9]?|100)$/.test(v) ? ok : fail(`"${v}" is not a limit between 1 and 100`)),
+    parse: (v) => (LIMIT_RE.test(v) ? ok : fail(`"${v}" is not a limit between 1 and 100`)),
   },
   'data-partial': {
     summary: 'extract the repeated body into a parameterless partial of this name',
@@ -618,7 +625,7 @@ export const DIRECTIVES: Readonly<Record<string, Directive>> = {
     // element that carries the list — so an author who knows one knows the other. The items past it are NOT
     // removed: they stay in the instance and return with a design that fits them (FR-D19).
     summary: "how many of an AUTHORED list's items this design draws — 1 to 100; the rest stay in the doc (FR-D13)",
-    parse: (v) => (/^([1-9][0-9]?|100)$/.test(v) ? ok : fail(`"${v}" is not a limit between 1 and 100`)),
+    parse: (v) => (LIMIT_RE.test(v) ? ok : fail(`"${v}" is not a limit between 1 and 100`)),
   },
   'data-if': {
     // row 3 — rendered since Story 4.10

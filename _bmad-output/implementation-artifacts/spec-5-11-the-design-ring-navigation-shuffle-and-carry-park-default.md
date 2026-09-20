@@ -551,10 +551,13 @@ to your account at Story 5.1.
     it moves you to another design in one go, carrying your words the same way, and the card names and pictures
     the design it would take you to next — so you always see where you are going before you press.
 12. **Same screen.** Rest the pointer on the sample section itself and look at the small white pill in its
-    top-right corner. **Expect:** ◀, the counter, ▶, then a **circular-arrow Shuffle button**, then the
-    divider and the Duplicate / Delete / drag controls you already know (your ruling R-159 — Shuffle in both
-    places). Press the Shuffle button: it does exactly what the card does. Rest on it and a label says what
-    it is — in that pill everything is a picture, so the words are in the label rather than printed.
+    top-right corner. **Expect:** ◀, the counter, ▶, then a **circular-arrow Shuffle button** (your ruling
+    R-159 — Shuffle in both places). Press the Shuffle button: it does exactly what the card does. Rest on it
+    and a label says what it is — in that pill everything is a picture, so the words are in the label rather
+    than printed.
+    **And expect nothing else in that pill here.** This internal page holds one sample and no page to put it on,
+    so Duplicate, Delete and the drag handle have nothing to act on and are **not drawn** — the same rule you
+    set at R-118. You saw all three in their real place at step 3.
 13. **Same screen.** Use the keyboard only: click the section once, then press `]` and `[`. **Expect:** the
     same changes as the arrows. Now click into the heading field in the panel and type `[`. **Expect:** the
     character `[` appears in your text and **the design does not change** — this is the most important step

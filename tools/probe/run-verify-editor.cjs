@@ -330,7 +330,7 @@ async function main() {
       const card = canvas?.firstElementChild
       const controls = document.querySelector('aside[aria-label="Page settings"]')
       const name = header?.querySelector('span')
-      const pageLabel = controls?.querySelector('span')
+      const pageLabel = controls?.querySelector('#editor-panel-name')
       return {
         mains: document.querySelectorAll('main').length,
         shellNav: document.querySelectorAll('nav[aria-label="Sections"]').length,
@@ -491,6 +491,9 @@ async function main() {
       const entry = pilot(id)
       return sidebar(entry, { content: defaultContent(entry.contentSchema), controls: {}, data: {}, darkOverrides: {} }).groups.map((g) => g.label)
     }
+    /** S4c's category word under the panel's heading (Story 5.11), from the LIBRARY's own entry rather than a
+     *  word written down here — the category a design belongs to is `assembleEntry`'s to say. */
+    const categoryOfNth = (n) => pilot(homeStack[n][0]).categoryTitle
     // one root's rect on screen, the frame's scale, and its chrome as the canvas document computes it
     const onScreen = (n) => page.evaluate((n) => {
       const f = document.querySelector('section[aria-label="Canvas"] iframe')
@@ -634,8 +637,12 @@ async function main() {
     await page.waitForTimeout(200)
     const panelOf = () => controlsAside().evaluate((a) => ({
       label: a.getAttribute('aria-label'),
-      head: a.querySelector('span')?.textContent,
-      headCase: a.querySelector('span') && getComputedStyle(a.querySelector('span')).textTransform,
+      // STORY 5.11: the head is TWO elements — the instance's layer name, and S4c's CATEGORY WORD beneath it — so
+      // each is read by its own name. `a.querySelector('span')` used to be the label and is now the wrapper round
+      // both, which is an unstyled node whose textContent runs the two together ("Header - RailHeaders").
+      head: a.querySelector('#editor-panel-name')?.textContent,
+      category: a.querySelector('#editor-panel-category')?.textContent ?? null,
+      headCase: a.querySelector('#editor-panel-name') && getComputedStyle(a.querySelector('#editor-panel-name')).textTransform,
       groups: [...a.querySelectorAll('button[aria-expanded][aria-controls$="-body"]')].map((b) => b.textContent.trim()),
       // the panel's foot is TWO controls since R-133 (Story 5.6): "Reset this design", then "Clear dark overrides"
       // directly under it, in the same shape — so the last two are read in order rather than only the last
@@ -644,10 +651,10 @@ async function main() {
       empty: a.textContent.includes('Nothing selected'),
     }))
     const railPanel = await panelOf()
-    check('step 11 — "Section settings", headed HEADER — RAIL, R-113\'s groups for the design in order, Reset this design and R-133\'s Clear dark overrides at the foot in that order, no "4 / 18"', railPanel.label === 'Section settings' && railPanel.head === layerOf(HEADER) && railPanel.headCase === 'uppercase' && railPanel.groups.join(' · ') === groupsOf(homeStack[HEADER][0]).join(' · ') && railPanel.foot === 'Reset this design · Clear dark overrides' && !railPanel.chip && !railPanel.empty && (await page.getByText('4 / 18').count()) === 0, JSON.stringify(railPanel))
+    check('step 11 — "Section settings", headed HEADER — RAIL with S4c\'s category word beneath it (Story 5.11), R-113\'s groups for the design in order, Reset this design and R-133\'s Clear dark overrides at the foot in that order, no "4 / 18"', railPanel.label === 'Section settings' && railPanel.head === layerOf(HEADER) && railPanel.category === categoryOfNth(HEADER) && railPanel.headCase === 'uppercase' && railPanel.groups.join(' · ') === groupsOf(homeStack[HEADER][0]).join(' · ') && railPanel.foot === 'Reset this design · Clear dark overrides' && !railPanel.chip && !railPanel.empty && (await page.getByText('4 / 18').count()) === 0, JSON.stringify(railPanel))
     await clickOn(GRID)
     const moved = [await onScreen(HEADER), await onScreen(GRID), await panelOf()]
-    check('step 11 — clicking Three Up moves the selection and the panel', !moved[0].selected && moved[1].selected && moved[2].head === layerOf(GRID) && moved[2].groups.join(' · ') === groupsOf(homeStack[GRID][0]).join(' · '), JSON.stringify(moved[2]))
+    check('step 11 — clicking Three Up moves the selection and the panel, category word and all', !moved[0].selected && moved[1].selected && moved[2].head === layerOf(GRID) && moved[2].category === categoryOfNth(GRID) && moved[2].groups.join(' · ') === groupsOf(homeStack[GRID][0]).join(' · '), JSON.stringify(moved[2]))
     const entitlement = await call('/rest/v1', `/entitlements?user_id=eq.${ids[0]}&select=state`)
     const plan = entitlement.body?.[0]?.state ?? 'free'
     check('step 11 — control: account A reads as Free before the Pro badge is looked for', plan === 'free', JSON.stringify(entitlement.body))
@@ -3146,9 +3153,10 @@ async function main() {
       card59.chipFont.size === '11px' && card59.chipFont.radius === '5px' && card59.chipFont.padding === '1px 6px' && card59.chipFont.mono &&
       card59.lastHairline === '0px', JSON.stringify(card59 && { ...card59, words: undefined }))
     // Story 5.10: ⌘K MOVED FROM THE FIRST LIST TO THE SECOND, because this story built the picker it presses (R-145)
-    check('step 77 — R-145: the card lists exactly the keys that WORK — no `[` `]`, no P, no ⇧R, no ⌘⏎ — and never greys or captions one',
-      card59 !== null && ['[', ']', 'P', '⇧R', '⌘⏎'].every((k) => !card59.chips.includes(k)) &&
-      ['⌘K', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
+    // Story 5.11: `[` AND `]` MOVED FROM THE FIRST LIST TO THE SECOND, because this story bound them (R-145)
+    check('step 77 — R-145: the card lists exactly the keys that WORK — no P, no ⇧R, no ⌘⏎ — and never greys or captions one',
+      card59 !== null && ['P', '⇧R', '⌘⏎'].every((k) => !card59.chips.includes(k)) &&
+      ['⌘K', '[', ']', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
       !/not yet|coming soon|unavailable/i.test(card59.words), JSON.stringify(card59 && card59.chips))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
@@ -3503,7 +3511,11 @@ async function main() {
         tryCard: block.querySelectorAll('[data-try-design]').length,
         chips: [...block.querySelectorAll('kbd')].map((k) => k.textContent),
         // B1a: the block sits ABOVE the settings groups and inside none of them (FR-F3)
-        aboveGroups: !block.closest('[role="region"]') && block.compareDocumentPosition(document.querySelector('#editor-controls [aria-expanded]')) === Node.DOCUMENT_POSITION_FOLLOWING,
+        // the GROUPS, by the selector `panelOf` uses — not `[aria-expanded]`, whose first match in this panel is the
+        // head's own Collapse button and therefore PRECEDES the block, which is how this read first answered false
+        aboveGroups: !block.closest('[role="region"]')
+          && !!document.querySelector('#editor-controls button[aria-expanded][aria-controls$="-body"]')
+          && (block.compareDocumentPosition(document.querySelector('#editor-controls button[aria-expanded][aria-controls$="-body"]')) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
       }
     })
     check('step 86 — B1a: the Design block is at the head of the panel, above every settings group and inside none (FR-F3)',

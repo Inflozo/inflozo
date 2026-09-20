@@ -11,7 +11,7 @@
 // type, so junk in it is ignored rather than thrown. No clock, no `Intl`, no locale method — the
 // sentences a panel prints at a floor or a ceiling come from `content.json`, never from this file.
 
-import { CONTROL_VALUE_RE, SIDEBAR_GROUPS, UNIVERSALS, orbitWeekly, scanTags, valueWords } from '@inflozo/library'
+import { CONTROL_VALUE_RE, LIMIT_RE, SIDEBAR_GROUPS, UNIVERSALS, orbitWeekly, scanTags, valueWords } from '@inflozo/library'
 import type {
   AbsentNote, ControlDef, ControlGroup, ControlType, DataBinding, PropDef, PropType, SidebarGroup,
   UniversalNarrowing,
@@ -309,7 +309,7 @@ export function itemsShown(html: string, path: string): number | undefined {
     const attr = (n: string) => tag.attrs.find(([k]) => k.toLowerCase() === n)?.[1]
     if (attr('data-items') !== path) continue
     const raw = attr('data-items-limit')
-    return raw !== undefined && /^([1-9][0-9]?|100)$/.test(raw) ? Number(raw) : undefined
+    return raw !== undefined && LIMIT_RE.test(raw) ? Number(raw) : undefined
   }
   return undefined
 }

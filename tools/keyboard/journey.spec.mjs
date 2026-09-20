@@ -867,3 +867,33 @@ test('R-159: Shuffle is in BOTH seats, and each lands on a different design in o
   await page.keyboard.press('ControlOrMeta+z')
   await expect(counter(page)).toHaveText(start)
 })
+
+/* The matrix's "site-wide section" row. A site-wide section is ONE shared instance, which is why FR-D5 takes its
+   Duplicate away — and the ring is the case where that reasoning does NOT apply: which design an instance is drawn
+   as is the same question wherever it compiles, so the Design block is drawn for it exactly as it is for a page
+   section, counting by its RING and never by its doc. `apply` then writes whichever doc the selection names, which
+   is the one line every operation in this editor shares.
+
+   `a1/1` is a ring of one today, so this stop cannot swap it; what it CAN prove is the thing a carve-out copied
+   from `duplicate`'s arm would break — that the block is there at all, and answers by the ring. */
+test('FR-D5 does not reach the ring: a site-wide section has the same Design block, counting by its ring and not its doc', async ({ page }) => {
+  await open(page)
+  const { site } = await rows(page)
+  expect(site.length, 'the harness must carry a site-wide section, or this stop proves nothing').toBeGreaterThan(0)
+  await select(page, site[0])
+  await expect(page.locator('#editor-design'), 'the block is drawn for a site-wide section too').toHaveCount(1)
+  await expect(counter(page)).toHaveText(/^Design \d+ of \d+$/)
+  await expect(page.locator('#editor-design-name')).not.toBeEmpty()
+
+  // and it reads the RING: this one holds a single design, so the block says so in the same words a page section
+  // with one design uses — absent arrows, never greyed ones (UX-DR3, R-118)
+  const [at, of_] = (await counter(page).innerText()).match(/(\d+) of (\d+)/).slice(1)
+  if (of_ === '1') {
+    await expect(page.locator('#editor-design [data-design-step]')).toHaveCount(0)
+    await expect(page.locator('[data-try-design]')).toHaveCount(0)
+    await expect(page.locator('#editor-design-note')).toHaveText(/one design/)
+  } else {
+    expect(Number(at)).toBeLessThanOrEqual(Number(of_))
+    await expect(page.locator('#editor-design [data-design-step]')).toHaveCount(2)
+  }
+})
