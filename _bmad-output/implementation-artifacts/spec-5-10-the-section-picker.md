@@ -2,8 +2,8 @@
 title: 'Story 5.10 — The Section Picker'
 type: 'feature'
 created: '2026-09-19'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 baseline_commit: '5ab1ddd7f53d42a7e2931c318da1fa0da38ef3ad'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -624,6 +624,11 @@ alone, which is also correct on its own terms: they are in view wherever the pag
 document's end **cannot** be brought to the top, because the browser runs out of scroll and clamps, so the journey's
 stop derives both ends of its walk rather than taking the last row (it settled 298px down, not 24, which is what
 found this).
+
+### Fifth pass — the owner's re-test
+
+Tested on `app.inflozo.com` on **2026-09-20**, on the deployment confirmed at the Deploy phase (`635bf157`,
+`dpl_7jgHB31LipDRneyACPvcxfsH3sTM`). **Passed.** No findings. The story moves to Done.
 
 ## Verification
 
