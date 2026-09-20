@@ -181,7 +181,15 @@ async function main() {
     check('step 5 — five swatches, Accent and Image grey', sw.length === 5 && sw.map((s) => s.n).join(',') === 'Base,Surface,Accent,Contrast,Image' && sw[2].grey === 'true' && sw[4].grey === 'true' && sw[0].grey === null, JSON.stringify(sw))
     check('step 5 — the plain-grounds sentence under them', (await styleRegion.locator('p', { hasText: 'This design is drawn for plain grounds, so accent and image are not offered.' }).count()) === 1)
     // R-136: the badge's words are its accessible name and its hover title, never printed in the row
-    const moons = await styleRegion.evaluate((r) => { const rows = [...r.querySelectorAll('[id$="-label"]')]; return rows.map((l) => ({ label: l.textContent.trim(), moon: l.parentElement.querySelector('.rounded-full[title="Dark override"]') !== null, printed: l.parentElement.textContent.includes('Dark override') })) })
+    // VISIBLE words only: `textContent` includes the badge's SVG <title>, which is its accessible NAME and is
+    // printed nowhere — reading it as print made a correct row fail. `run-verify-editor.cjs`'s `moonOn` already
+    // reads it this way (Story 5.6's Review, R-136); this reader was left behind and is brought into line here.
+    const moons = await styleRegion.evaluate((r) => [...r.querySelectorAll('[id$="-label"]')].map((l) => {
+      const head = l.parentElement
+      const shown = head.cloneNode(true)
+      shown.querySelectorAll('.rounded-full').forEach((el) => el.remove())
+      return { label: l.textContent.trim(), moon: head.querySelector('.rounded-full[title="Dark override"]') !== null, printed: shown.textContent.includes('Dark override') }
+    }))
     check('step 5 — R-136: the moon named "Dark override" beside Background role and none on Card tint, with the words NOT printed in either row', moons.some((m) => m.label === 'Background role' && m.moon && !m.printed) && moons.some((m) => m.label === 'Card tint' && !m.moon), JSON.stringify(moons))
     await bg.getByRole('radio', { name: 'Contrast' }).click()
     c = await canvas()
@@ -386,7 +394,7 @@ async function main() {
     check('step 17 — focus moves to Show controls', g17.focus === 'Show controls', String(g17.focus))
     await page.keyboard.press('Enter')
     const g17b = await page.evaluate(() => ({ asideVisible: !!document.querySelector('aside#section-controls')?.offsetParent, focus: document.activeElement?.getAttribute('aria-label'), pageRange: document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight, w: document.querySelector('iframe[title="The controls sample section"]').getBoundingClientRect().width }))
-    check('step 17 — the strip\'s button brings the panel back as it was, focus on Collapse', g17b.asideVisible && g17b.focus === 'Collapse controls' && g17b.pageRange === 0 && g17b.w === wBefore, JSON.stringify(g17b))
+    check('step 17 — the strip\'s button brings the panel back as it was, focus on Collapse', g17b.asideVisible && g17b.focus === 'Collapse controls' && g17b.pageRange === 0 && g17b.w === wBefore, `${JSON.stringify(g17b)} · wBefore ${wBefore} · at step 2 the page range was ${geo.pageRange}`)
 
     // ── step 19 (Story 5.3) — a prop's character limit stops typing and a paste, and the field says which
     // The limits are the sample's own (`packages/library/fixtures/controls/content.json`), read here rather than
@@ -493,6 +501,9 @@ async function main() {
     await page.reload({ waitUntil: 'networkidle' })
     await page.waitForFunction(() => !!document.querySelector('iframe[title="The controls sample section"]')?.contentDocument?.querySelector('.cx__feature .cx__icon svg'), null, { timeout: 30000 })
     const rootClass = () => page.evaluate(() => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelector('#canvas > section')?.className ?? null)
+    /** The heading, WHICHEVER design is drawing it: `canvas()` reads `.cx__title`, which is design 1's own class,
+     *  and the whole point of the walk below is that the words survive a design that names them differently. */
+    const drawnHeading = () => page.evaluate(() => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelector('[class$="__title"]')?.textContent ?? null)
     const drawn = (sel) => page.evaluate((s) => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelectorAll(s).length, sel)
     const block511 = page.locator('#editor-design')
     const counter511 = page.locator('#editor-design-count')
@@ -526,8 +537,8 @@ async function main() {
       (await rootClass()) === 'cy' && (await counter511.innerText()).trim() === 'Design 2 of 3' && /^Design 2 of 3 — .+/.test((await page.locator('#controls-said').innerText()).trim()),
       `${await rootClass()} · ${(await counter511.innerText()).trim()} · ${(await page.locator('#controls-said').innerText()).trim()}`)
     check('ring — FR-D19: a setting BOTH designs declare carries, the typed words carry, and the setting only the OLD design had is gone from the panel',
-      (await canvas()).attrs['data-align'] === 'center' && (await canvas()).title === 'Ring words' && (await tint511.count()) === 0,
-      JSON.stringify({ align: (await canvas()).attrs['data-align'], title: (await canvas()).title, tintRows: await tint511.count() }))
+      (await canvas()).attrs['data-align'] === 'center' && (await drawnHeading()) === 'Ring words' && (await tint511.count()) === 0,
+      JSON.stringify({ align: (await canvas()).attrs['data-align'], title: await drawnHeading(), tintRows: await tint511.count() }))
     // the owner's step 10 — FR-D13's cap, and the items past it still there
     check('ring — FR-D13: the panel reads "3 items · 2 shown in this design" and the section draws two of the three',
       (await page.locator('#section-controls span', { hasText: /^3 items · 2 shown in this design$/ }).count()) === 1 && (await drawn('.cy__feature')) === 2,
@@ -541,7 +552,7 @@ async function main() {
     await page.locator('[data-design-step="1"]').click()
     await page.waitForTimeout(500)
     check('ring — UX-DR5: ▶ at the end WRAPS to the first, and the parked setting comes back EXACTLY as it was left, even the long way round',
-      (await rootClass()) === 'cx' && (await counter511.innerText()).trim() === 'Design 1 of 3' && (await tintValue511()) === tintWas511 && (await canvas()).attrs['data-tint'] === 'strong' && (await canvas()).title === 'Ring words',
+      (await rootClass()) === 'cx' && (await counter511.innerText()).trim() === 'Design 1 of 3' && (await tintValue511()) === tintWas511 && (await canvas()).attrs['data-tint'] === 'strong' && (await drawnHeading()) === 'Ring words',
       JSON.stringify({ root: await rootClass(), tint: await tintValue511(), was: tintWas511, attr: (await canvas()).attrs['data-tint'] }))
     // and ◀ is the same ring backwards
     await page.locator('[data-design-step="-1"]').click()
@@ -559,7 +570,7 @@ async function main() {
     await try511.click()
     await page.waitForTimeout(500)
     check('ring — the card shuffles: a DIFFERENT design of the same ring, carrying the words the same way',
-      (await counter511.innerText()).trim() !== was511 && (await canvas()).title === 'Ring words', `${was511} → ${(await counter511.innerText()).trim()}`)
+      (await counter511.innerText()).trim() !== was511 && (await drawnHeading()) === 'Ring words', `${was511} → ${(await counter511.innerText()).trim()} · ${await drawnHeading()}`)
     const pill511 = await page.evaluate(() => {
       const pill = document.querySelector('[data-section-pill]')
       return pill === null ? null : {

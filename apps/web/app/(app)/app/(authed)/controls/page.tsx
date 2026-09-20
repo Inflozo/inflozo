@@ -45,8 +45,8 @@ export default function ControlsReview() {
       <header className="flex max-w-[820px] flex-col gap-[6px]">
         <h1 className="font-display text-[30px] font-extrabold tracking-[-0.02em] text-ink">Controls review</h1>
         <p className="font-mono text-control-label text-ink-soft">
-          the panel Epic 5 mounts, beside the section it edits, and Story 5.11&apos;s design ring over the only
-          ring in the repository · nothing here is saved — a reload brings back the sample
+          the panel Epic 5 mounts, beside the section it edits, and Story 5.11&apos;s design ring over it ·
+          nothing here is saved — a reload brings back the sample
         </p>
       </header>
     </Review>

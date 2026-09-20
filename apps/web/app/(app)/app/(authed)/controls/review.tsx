@@ -285,7 +285,9 @@ export function Review({
         className={`flex flex-col gap-3 border-t border-line bg-paper p-4 ${slimScrollbar} tablet:h-full tablet:w-[280px] tablet:shrink-0 tablet:overflow-y-auto tablet:border-l tablet:border-t-0 ${collapsed ? 'tablet:hidden' : ''}`}
       >
         <div className="flex items-center justify-between gap-2">
-          <span className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">{entry.categoryTitle}</span>
+          {/* the ACTIVE design's name, which now changes with the ring — this page has no layer name for the
+              editor's own head to print, so the design is what names the panel here */}
+          <span className="text-[13px] font-semibold uppercase tracking-[0.04em] text-ink-soft">{entry.name}</span>
           <button
             ref={hide}
             type="button"
