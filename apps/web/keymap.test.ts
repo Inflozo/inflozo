@@ -114,7 +114,7 @@ test('R-145: every deferred row names its story, binds nothing and is not on the
     assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
   }
   // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10 and `[` `]` at Story 5.11,
-  // each with the action it drives (R-145), and each of the three below leaves it the same way
+  // each with the action it drives (R-145), and each row below leaves it the same way
   for (const chip of ['P', '⇧R', '⌘⏎']) {
     assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
     assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)

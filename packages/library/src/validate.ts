@@ -22,6 +22,7 @@ import {
 } from './vocabulary.ts'
 import { CATALOG, catalogPropRefusal } from './catalog.ts'
 import { CONTEXTS_BY_TARGET } from './placement.ts'
+import { SURFACES } from './registry.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
 export type Failure = { code: string; message: string }
@@ -423,6 +424,10 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   }
   if (d.tier !== 'free' && d.tier !== 'pro') {
     push(out, 'bad-tier', `tier must be "free" or "pro" — got ${JSON.stringify(d.tier)}`)
+  }
+  // Story 5.11's review (2026-09-20): a misspelt surface would assemble clean and make its own one-design ring, silently
+  if (d.surface !== undefined && !(SURFACES as readonly unknown[]).includes(d.surface)) {
+    push(out, 'bad-surface', `surface, when declared, must be one of ${SURFACES.join(' · ')} (A30's three membership canvases) — got ${JSON.stringify(d.surface)}`)
   }
 
   const contexts = Array.isArray(d.bindingContext) ? d.bindingContext : []

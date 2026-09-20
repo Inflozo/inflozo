@@ -592,6 +592,43 @@ async function main() {
       (await counter511.innerText()).trim() === keyFrom511 && /\[\]$/.test(await heading511.inputValue().catch(() => heading511.innerText())),
       `${(await counter511.innerText()).trim()} · ${await heading511.inputValue().catch(() => heading511.innerText())}`)
 
+    // THE REVIEW OF 2026-09-20: an open picker OWNS `]`. The page had the caret half of WCAG 2.1.4's condition and
+    // not the overlay half, so `]` swapped the design under an open picker — it goes through the editor's own
+    // `singleKeyOwned` now, and this is the deployed proof. Focus rests on a picker BUTTON, not its search field, so
+    // it is the overlay guard being exercised and not the caret one.
+    await featuresList.locator('li[data-row]').nth(0).locator('button[aria-expanded="false"]').click().catch(() => {})
+    await iconTrigger.click()
+    const guardDialog511 = page.locator('[popover]:popover-open[role=dialog]')
+    await guardDialog511.locator('section[aria-label]').first().waitFor({ timeout: 30000 })
+    await guardDialog511.getByRole('radiogroup', { name: 'Style' }).getByRole('radio', { name: 'Filled' }).click()
+    await page.keyboard.press(']')
+    await page.waitForTimeout(400)
+    check('ring — with a picker open `]` is the picker\'s: the design does not change and the picker stays up (the editor\'s overlay guard, shared through `singleKeyOwned`)',
+      (await counter511.innerText()).trim() === keyFrom511 && (await guardDialog511.count()) === 1,
+      `${(await counter511.innerText()).trim()} · popover open: ${await guardDialog511.count()}`)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+
+    // DW-209 ON THIS PAGE, proved rather than remembered: a wheel with the pointer RESTING ON THE PILL scrolls the
+    // sample inside its frame. The window is made short first so the frame has a range to scroll at all — the
+    // control is that range, read and asserted non-zero before the scroll is.
+    await page.setViewportSize({ width: 1440, height: 480 })
+    await page.waitForTimeout(500)
+    const frameScroll511 = () => page.evaluate(() => { const s = document.querySelector('iframe[title="The controls sample section"]').contentDocument.scrollingElement; return { top: s.scrollTop, range: s.scrollHeight - s.clientHeight } })
+    await page.evaluate(() => document.querySelector('iframe[title="The controls sample section"]').contentDocument.scrollingElement.scrollTo(0, 0))
+    const pillBox511 = await page.locator('[data-section-pill]').boundingBox()
+    if (pillBox511) {
+      await page.mouse.move(pillBox511.x + pillBox511.width / 2, pillBox511.y + pillBox511.height / 2, { steps: 3 })
+      await page.waitForTimeout(150)
+      await page.mouse.wheel(0, 300)
+      await page.waitForTimeout(400)
+    }
+    const wheeled511 = await frameScroll511()
+    check('ring — DW-209: a wheel with the pointer on the section\'s pill scrolls the sample inside its frame — the pill forwards it (control: the frame had a range to scroll)',
+      pillBox511 !== null && wheeled511.range > 0 && wheeled511.top > 0, JSON.stringify({ pill: pillBox511 !== null, ...wheeled511 }))
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.waitForTimeout(400)
+
     // the owner's step 12 — Shuffle's ONE seat
     const pill511 = await page.evaluate(() => {
       const pill = document.querySelector('[data-section-pill]')
@@ -615,6 +652,9 @@ async function main() {
       (await counter511.innerText()).trim() !== wasShuffle511 && (await drawnHeading()) === wordsShuffle511 && /^Ring words/.test(wordsShuffle511 ?? ''),
       `${wasShuffle511} → ${(await counter511.innerText()).trim()} · ${JSON.stringify(wordsShuffle511)} → ${JSON.stringify(await drawnHeading())}`)
     await page.screenshot({ path: `${OUT}/controls-ring-1440.png` })
+    // the review screenshot is the page as it opens — on the FIRST design, not wherever the Shuffle above landed
+    await page.locator('[data-design-tile]').first().click()
+    await page.waitForTimeout(500)
     await page.screenshot({ path: `${OUT}/controls-review-1440.png` })
     await context.close()
   } finally {

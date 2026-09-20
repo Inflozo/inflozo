@@ -16,7 +16,7 @@
 //     node test-vocabulary.mjs
 
 import { createRequire } from 'node:module'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -97,15 +97,23 @@ check('the on-disk reference fixture validates clean, end to end', () => {
 // package serves the licence from the JSON because it cannot read a .txt, so the two must not drift.
 const { iconDrawing, TABLER_LICENSE } = await import(join(REPO, 'packages/library/src/icons.ts'))
 
-check('the on-disk controls sample validates clean, icon defaults included', () => {
-  const dir = join(REPO, 'packages/library/fixtures/controls')
-  const f = validateDesign({
-    html: readFileSync(join(dir, '1/index.html'), 'utf8'),
-    design: JSON.parse(readFileSync(join(dir, '1/design.json'), 'utf8')),
-    content: JSON.parse(readFileSync(join(dir, 'content.json'), 'utf8')),
-    icons: iconDrawing,
-  })
-  if (f.length) throw new Error(say(f))
+// Story 5.11 (R-158): the fixture is a RING of designs, every numbered directory — derived, never a literal `1/`
+const CONTROLS_DIR = join(REPO, 'packages/library/fixtures/controls')
+const controlsDesigns = () => readdirSync(CONTROLS_DIR).filter((n) => /^\d+$/.test(n)).sort((a, b) => Number(a) - Number(b))
+
+check('every on-disk controls sample validates clean, icon defaults included', () => {
+  const dir = CONTROLS_DIR
+  const designs = controlsDesigns()
+  if (designs.length < 2) throw new Error('the controls fixture is a ring (R-158) — fewer than two designs on disk')
+  for (const n of designs) {
+    const f = validateDesign({
+      html: readFileSync(join(dir, `${n}/index.html`), 'utf8'),
+      design: JSON.parse(readFileSync(join(dir, `${n}/design.json`), 'utf8')),
+      content: JSON.parse(readFileSync(join(dir, 'content.json'), 'utf8')),
+      icons: iconDrawing,
+    })
+    if (f.length) throw new Error(`controls/${n}: ${say(f)}`)
+  }
 })
 
 check("Tabler's licence ships verbatim beside the set, and the set carries the same text", () => {
@@ -139,16 +147,18 @@ check('no archetype prints a chrome literal (V1\'s tree half) and no fixture car
   if (checkChromeLiterals(jsdoc(), '<nav aria-label="Main"><a href="#">Older</a></nav>').length !== 2) throw new Error('the chrome-literal check is vacuous')
 })
 
-check('the controls sample renders with a named target and raises no chrome literal', () => {
-  const dir = join(REPO, 'packages/library/fixtures/controls')
-  const design = JSON.parse(readFileSync(join(dir, '1/design.json'), 'utf8'))
+check('every controls sample renders with a named target and raises no chrome literal', () => {
+  const dir = CONTROLS_DIR
   const content = JSON.parse(readFileSync(join(dir, 'content.json'), 'utf8'))
-  const html = readFileSync(join(dir, '1/index.html'), 'utf8')
   const defaults = Object.fromEntries(Object.entries(content.props).filter(([k, p]) => !k.includes('[]') && p.default !== undefined).map(([k, p]) => [k, p.default]))
-  for (const target of design.compileTarget) {
-    renderTheme(jsdoc(), html, { target, schema: content.props, content: defaults, controlSchema: design.controlSchema, universals: design.universals, dataBindings: design.dataBindings, icons: iconDrawing })
+  for (const n of controlsDesigns()) {
+    const design = JSON.parse(readFileSync(join(dir, `${n}/design.json`), 'utf8'))
+    const html = readFileSync(join(dir, `${n}/index.html`), 'utf8')
+    for (const target of design.compileTarget) {
+      renderTheme(jsdoc(), html, { target, schema: content.props, content: defaults, controlSchema: design.controlSchema, universals: design.universals, dataBindings: design.dataBindings, icons: iconDrawing })
+    }
+    if (checkChromeLiterals(jsdoc(), html).length) throw new Error(`controls/${n}: ${checkChromeLiterals(jsdoc(), html).join(' · ')}`)
   }
-  if (checkChromeLiterals(jsdoc(), html).length) throw new Error(checkChromeLiterals(jsdoc(), html).join(' · '))
 })
 
 check('no archetype still carries the retired data-prop-attr2', () => {

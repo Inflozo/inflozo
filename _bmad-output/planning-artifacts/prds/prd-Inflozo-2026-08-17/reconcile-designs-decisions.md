@@ -3327,6 +3327,20 @@ reconciled.** Story 5.11's Question 2, ruled **option 2** (owner, 2026-09-20): *
 - Targets: ✅ this entry · ✅ Story 5.11's spec (Question 2, its tasks and its owner test) · ✅ `EXPERIENCE.md`
   § *Drawn, but on the wrong mechanism* (the new **B1** row) · ✅ `epics.md` (Story 5.11's AC) ·
   ✅ `epic-5-context.md` · ⬜ `B1`, on the next library pass.
+- **AMENDED by the owner's test of the deployed page, the same day (2026-09-20, Story 5.11's finding 3: *"Remove
+  'Try a Design' in controls panel"*).** Shuffle keeps **ONE seat, the section pill's** — option 3's answer. S6`:140`'s
+  `Try a design` card is **not drawn**, and with it went the one thing the card did that the button cannot: name and
+  picture the destination before the press. In the editor Shuffle is therefore **pointer-only** (the pill is drawn on
+  hover, and FR-D11's map is full so R-145 forbids it a key); what that costs in reach is nothing, because `[` and `]`
+  get to every design a Shuffle could land on, and `journey.spec.mjs` proves so on every commit. His findings 2 and 4
+  of the same test amended the block beside it: the counter prints **`7 of 18`** (the label to its left already says
+  *Design*) and B1a`:395`'s **`Cycle designs` footer with its `[` `]` chips is not drawn** either — the `?` card is
+  R-147's one place for them. **Everything else in R-159 stands**: S4b + S6 govern the pill, B1b governs the
+  affordance, and in the pill the control is icon-only. Recorded at Story 5.11's Review, 2026-09-20 (the amendment
+  had reached the spec and the code and not this entry — standing rule: propagate, never localise).
+- Amendment targets: ✅ this entry · ✅ Story 5.11's spec (its Always bullet, tasks, AC and `## Owner's test findings`)
+  · ✅ `EXPERIENCE.md` (the **B1** row) · ✅ `epics.md` (Story 5.11's AC) · ✅ `epic-5-context.md` · ⬜ `B1`, on the
+  next library pass.
 
 
 ## B · Approved decisions superseded by this session

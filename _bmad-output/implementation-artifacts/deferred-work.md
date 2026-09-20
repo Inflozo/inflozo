@@ -4916,12 +4916,76 @@ fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium thr
   runs and not all. The fix is the ledger's own: both pills forward their wheel to the canvas
   (`section-pill.tsx`'s `onWheel` → `editor.tsx`'s `wheelToCanvas`, and the same on `/controls`), and the control
   re-run after it reads 500px on both. It is a CUSTOMER fix, not a test repair: a pointer resting on a pill stalled
-  the page. Step 15 b's own pass is Story 5.11's Review to record.
+  the page. **Step 15 b PASSED on production at `2ee6f4a8`** (Story 5.11's Fix run, 0 FAIL / 454 PASS, and again at
+  its Review, 2026-09-20), and since the Review the pointer is put ON each pill by its box and the canvas scroll read
+  before and after — `run-verify-editor.cjs` step 87 and a `ring — DW-209` step of `run-verify-controls.cjs` — so the
+  forwarding is asserted rather than remembered (nothing wheeled over a pill before; step 15 wheels at x=700).
 
+
+## Deferred from: code review of spec-5-11 (2026-09-20)
+
+### DW-211: the editor's own pill ◀ ▶ and Shuffle are wired but never pressed by any gate
+
+status: open
+severity: medium
+origin: Story 5.11's Review (2026-09-20), Verification Gap reviewer.
+owner: Story 5.23 (the play-loop gate), or the first Epic 9 story that gives a shipped category a second design.
+location: `editor.tsx` (`stepDesign(hovered, ±1)`, `onShuffle(hovered)` wired at the `<SectionPill>` mount); `tools/keyboard/journey.spec.mjs`
+plain: The little arrows and the Shuffle button on a section's own pill, in the real editor, are connected to the
+  right code — but no automated check ever presses them there. The keyboard journey may not use a mouse, the deployed
+  editor walk has no ring to press them on, and the `/controls` page presses its OWN copy of the wiring. Swapping the
+  two arrows by mistake would go unnoticed until the owner tried them.
+reason: `journey.spec.mjs:134` refuses every pointer API, `run-verify-editor.cjs` step 86 asserts the ring group ABSENT
+  on production (every shipped ring is length 1), and `review.tsx`'s `onStep`/`onShuffle` are a separate
+  implementation over the page's own state. The fix is a small Playwright spec beside the journey that IS allowed the
+  mouse, hovering the harness's ringed section and pressing `[aria-label^="Next design"]` and `[data-pill-shuffle]`,
+  asserting `#editor-design-count`, `#editor-said` and one `⌘Z`; `playwright.config.mjs`'s `testMatch` grows one name.
+  Not built at the Review because it is a new gate file with its own no-touch rule to settle, not a patch.
+
+### DW-212: a capped list's panel row loses its min–max range
+
+status: open
+severity: low
+origin: Story 5.11's Review (2026-09-20), Blind Hunter.
+owner: Story 5.23, or the first Epic 9 story that ships a `data-items-limit`.
+location: `apps/web/components/controls/item-list.tsx` (the `range` line)
+plain: When a design shows fewer items than the section holds, the list's header says "3 items · 2 shown in this
+  design" (the sentence the PRD asks for) INSTEAD of "2–6 · 3 used". The add and remove buttons still stop at 2 and
+  6, but the numbers are no longer printed while that design is showing.
+reason: FR-D13 gives the exact sentence and the owner's test (step 10) accepted it; the deployed walk asserts it
+  verbatim. Printing both ("3 items · 2 shown in this design · 2–6") is one line, but it changes a sentence the owner
+  has just approved, so it is his to want first.
+
+### DW-213: `itemsShown` reads the first `data-items` element bound to a path, so two lists on one path with two caps report the first
+
+status: open
+severity: low
+origin: Story 5.11's Review (2026-09-20), Edge Case Hunter.
+owner: Epic 9's authoring pass, if any design ever binds one array on two elements.
+location: `packages/section-runtime/src/controls.ts` (`itemsShown`); `packages/library/src/validate.ts`
+plain: A design could, in theory, draw the same list twice with two different "show at most N" caps. The panel would
+  report the first one's number. No design does this and the shipped library has no cap at all yet.
+reason: The honest fix is a validator rule — one `data-items-limit` per path, refused at assembly — rather than a
+  `Math.max` in the reader, because two caps on one list is an authoring mistake and not a rendering case. Deferred
+  because no fixture or design declares two, so the rule would have no positive case to prove it on today.
+
+### DW-214: the swap's 180ms settle is drawn in the editor, where no ring exists yet, and not on `/controls`, where one does
+
+status: open
+severity: low
+origin: Story 5.11's Review (2026-09-20), Blind Hunter and Verification Gap reviewer.
+owner: Story 5.23, or the first Epic 9 story that gives a shipped category a second design.
+location: `apps/web/lib/canvas-chrome.css` (`[data-inflozo-swapped]`); `editor.tsx` `markSwapped`; `review.tsx` `paint`
+plain: When a section changes design in the editor it fades in over 180ms. The only page where a design can change
+  today is the internal Controls review page, and that page does not draw the fade — so nobody has seen it. The
+  keyboard journey now proves the attribute goes on and comes off in the editor's harness; the look of it is unproved.
+reason: `/controls` paints through `renderCanvas` with no `mark()` and its frame document does not carry
+  `canvas-chrome.css`, so adding the attribute there alone would draw nothing. Left until a real ring exists in the
+  editor, where the owner will see it in its own place rather than on an internal page.
 
 ### DW-210: the `/controls` review's window scrolls ~35px once its panel has been folded and unfolded
 
-status: does not reproduce since 2026-09-20 at `730e713a` — step 17 reads a window scroll range of **0** after
+status: closed 2026-09-20 — does not reproduce since `730e713a`: step 17 reads a window scroll range of **0** after
   the same fold-and-unfold that measured 24, 30 and 35px at `6a09cecc` and `1b5e4805`. The owner's own test of the
   page removed the `Try a design` card and the `Cycle designs` footer from the panel between those two readings,
   which is the shorter panel the measurements pointed at; that is the LIKELY cause and not a proved one, because

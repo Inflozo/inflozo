@@ -1927,10 +1927,12 @@ table and its `?` card, carrying the single-key focus condition, and the keyboar
 design per category, so no design is authored here (`packages/library/designs/` untouched, AD-35) and the samples are
 **two more fixture designs** in `packages/library/fixtures/controls/`, giving a ring of three that the deployed
 **Controls review** page, the keyboard harness and the unit tests all drive; in the editor itself the block reads
-**"Design 1 of 1"** with the arrows and Shuffle **absent** (UX-DR3) until Epic 9 fills a category
+**"1 of 1"** beside its `Design` label, with the arrows and Shuffle **absent** (UX-DR3) until Epic 9 fills a category
 **And** **Shuffle is built in BOTH places** — **R-159** (owner, 2026-09-20): S6`:140`'s **`Try a design`** card at the
 foot of the panel's Design block, and a Shuffle control in the section's pill **with the ring, before the divider**,
-icon-only there through `DESIGN.md:534-536`'s carve-out; both absent where the ring holds one
+icon-only there through `DESIGN.md:534-536`'s carve-out; both absent where the ring holds one — **AMENDED by his test
+of the deployed page the same day (findings 2–4): Shuffle has ONE seat, the pill's; the `Try a design` card and the
+`Cycle designs` footer are not drawn; the counter prints `1 of 3`, not `Design 1 of 3`**
 **And** the picker matches B1a and shuffle matches `S6 Variant Shuffle.dc.html` — while the **on-section nav matches
 S4b and S6`:67`, not B1b's ink pill** (R-159's second half): two frames agree, R-118 already put `◀ ▶` in S4b's pill
 and R-125 placed it, so **S4b + S6 govern the pill and B1b governs the affordance** (the counter and arrows riding on

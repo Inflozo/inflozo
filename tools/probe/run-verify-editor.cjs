@@ -3558,6 +3558,32 @@ async function main() {
       chips511.includes('[') && chips511.includes(']'), JSON.stringify(chips511))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(200)
+
+    // ── step 87 — DW-209, PROVED RATHER THAN REMEMBERED: a wheel with the pointer RESTING ON A PILL scrolls the canvas ──
+    // Both pills forward their wheel (`section-pill.tsx` → `wheelToFrame`). Step 15's own pass wheels at x=700 and may
+    // or may not land on a pill, which is exactly why DW-209 failed "most runs" — so this puts the pointer ON each pill
+    // by its box and reads the canvas document's scrollTop before and after (the review of 2026-09-20: nothing did).
+    await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
+    await hoverOn(GRID)
+    const canvasTop511 = () => canvasFrame().evaluate(() => document.scrollingElement.scrollTop)
+    const wheelOver511 = async (selector) => {
+      const box = await page.locator(selector).boundingBox()
+      if (!box) return null
+      const before = await canvasTop511()
+      await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 3 })
+      await page.waitForTimeout(150)
+      await page.mouse.wheel(0, 300)
+      await page.waitForTimeout(400)
+      return (await canvasTop511()) - before
+    }
+    const overPill511 = await wheelOver511('[data-section-pill]')
+    check('step 87 — DW-209: a wheel with the pointer on the section\'s quick-action pill scrolls the canvas — the pill forwards it',
+      overPill511 !== null && overPill511 > 0, overPill511 === null ? 'no pill under the pointer' : `${overPill511}px`)
+    await hoverOn(GRID)
+    const overAdd511 = await wheelOver511('[data-add-section]')
+    check('step 87 — and the same with the pointer on the "+ Add section" pill, the one the hypothesis named',
+      overAdd511 !== null && overAdd511 > 0, overAdd511 === null ? 'no add pill under the pointer' : `${overAdd511}px`)
+    await page.mouse.move(120, 400)
     await freshLoad()
 
     // ── step 79 — the harness does NOT exist in production (R-146) ──

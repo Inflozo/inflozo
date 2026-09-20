@@ -39,6 +39,16 @@ export const withImages = (html: string) =>
 /** An asset id resolves only through this map (AD-27(b)), relative to the canvas document. */
 export const canvasAssets = (pool: readonly { id: string }[]) => Object.fromEntries(pool.map((a) => [a.id, `canvas?image=${a.id}`]))
 
+/** DW-209 (Story 5.11): a wheel that lands on a pill drawn OVER the canvas is forwarded to the canvas document, the
+ *  one the pointer looks like it is over — the editor's page does not scroll, so the canvas simply stalled while the
+ *  pointer rested on a pill. A wheel may report LINES or PAGES rather than pixels; the line step is the browser's own
+ *  rough 16px. ONE implementation for the editor and `/controls` (review, 2026-09-20: it had been written twice). */
+export function wheelToFrame(win: Window | null | undefined, deltaX: number, deltaY: number, deltaMode: number) {
+  if (!win) return
+  const k = deltaMode === 1 ? 16 : deltaMode === 2 ? win.innerHeight : 1
+  win.scrollBy(deltaX * k, deltaY * k)
+}
+
 /** Each query's rows as the canvas shows them: the stored Order picks the list, the fixed or stored limit slices it,
  *  and a query with neither shows Ghost's default. */
 export const shownRows = (entry: SectionRegistryEntry, state: ControlState, rows: DesignRows | undefined) =>

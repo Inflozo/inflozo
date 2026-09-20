@@ -79,13 +79,13 @@ export default function EditorHarness() {
     [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
     // the fixture ring rides with them: its designs compile to `home.hbs`, so `compiling` picks up the first of
     // the three and the journey has a section whose `[` and `]` really move
-    [templateKeyOf('home')]: docOf(templateKeyOf('home'), compiling(CANVASES.home.file).filter((e) => e.id !== ring[1]?.id && e.id !== ring[2]?.id)),
+    [templateKeyOf('home')]: docOf(templateKeyOf('home'), compiling(CANVASES.home.file).filter((e) => !ring.slice(1).some((r) => r.id === e.id))),
   }
 
   const data: EditorData = {
     docs,
     entries,
-    rows: Object.fromEntries(placed.map((e) => [e.id, e.id.startsWith('controls/') ? queryRows(e) : pilotRows(e)])),
+    rows: Object.fromEntries(placed.map((e) => [e.id, ring.some((r) => r.id === e.id) ? queryRows(e) : pilotRows(e)])),
     memberVisibility: Object.fromEntries(placed.map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },

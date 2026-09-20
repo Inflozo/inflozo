@@ -120,7 +120,7 @@ test('the ring proves every arm of carry / park / default, and FR-D13\'s cap, by
   const [a, b, c] = [names(one), names(two), names(three)]
   // CARRY: a control every design declares
   for (const shared of ['columns', 'align', 'card']) {
-    assert.ok(a.has(shared) && b.has(shared), `${shared} must be declared by designs 1 and 2 to prove a carry`)
+    assert.ok(a.has(shared) && b.has(shared) && c.has(shared), `${shared} must be declared by every design to prove a carry`)
   }
   // PARK: `tint` is the library's only `darkOverride: true` control and ONLY design 1 declares it, so a value
   // parked against design 1 must survive design 3 to be restored — the one path worth proving

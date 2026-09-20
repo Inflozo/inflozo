@@ -132,6 +132,22 @@ export const holdsCaret = (el: { tagName?: string; type?: string; isContentEdita
     el.tagName === 'TEXTAREA' ||
     (el.tagName === 'INPUT' && TEXTUAL.includes((el.type ?? '').toLowerCase())))
 
+/** The OTHER half of a single-key press's condition, beside `holdsCaret`: a press something else already owns.
+ *  An open dialog or popover owns the key (a Layers `⋯` menu, a picker — the menu owns `]` while it is up), a
+ *  `<select>` has type-ahead, a press already handled says so, and a held key is one press, not one per repeat tick.
+ *  `editor.tsx`'s `onShortcut` is this rule with ⌘Z's and ⌘S's exceptions beside it; `/controls` binds `[` `]`
+ *  through it too (review of Story 5.11, 2026-09-20: that page had the caret half and not this one, so `]` swapped
+ *  the design under an open picker). `docs` are every document the overlay could be in — the page's and the frame's. */
+export const singleKeyOwned = (
+  e: { defaultPrevented: boolean; repeat: boolean },
+  focused: readonly ({ tagName?: string } | null | undefined)[],
+  docs: readonly ({ querySelector: (s: string) => unknown } | null | undefined)[],
+): boolean =>
+  e.defaultPrevented ||
+  e.repeat ||
+  focused.some((el) => el?.tagName === 'SELECT') ||
+  docs.some((d) => !!d?.querySelector(':popover-open, dialog[open]'))
+
 /**
  * The gesture a key press is, or null for every other press. `inField` is `holdsCaret` over whatever holds the caret
  * — in the editor document OR in the canvas document, which is why the caller resolves it and this does not.

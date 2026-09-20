@@ -48,7 +48,8 @@ export const step = (at: number, length: number, by: number): number =>
  *  from the ring MINUS the one you are on, so "different" is a property of the arithmetic rather than a retry loop
  *  that could spin. */
 export function shuffleTo(length: number, at: number, random: () => number): number | null {
-  if (length < 2) return null
+  // `at` outside the ring (a design not found in it) would skew the draw — index 0 never drawn — so it is nowhere to go
+  if (length < 2 || at < 0 || at >= length) return null
   const n = Math.min(length - 2, Math.max(0, Math.floor(random() * (length - 1))))
   return n >= at ? n + 1 : n
 }

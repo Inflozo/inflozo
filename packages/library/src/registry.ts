@@ -63,6 +63,9 @@ export type Link = {
  *  Shuffle and Remix never cross between two (`samePartition`). NOTHING DECLARES IT TODAY — A30's designs are
  *  Epic 10's — so the field is inert until they land, which is exactly what makes it safe to add here now. */
 export type Surface = 'signup' | 'signin' | 'member-home'
+/** The same three as data, for the validator's `bad-surface` rule — derived from nowhere else, so the type and the
+ *  check cannot drift. */
+export const SURFACES: readonly Surface[] = ['signup', 'signin', 'member-home']
 
 /** One path node of a vendored icon drawing — Tabler's own `[tag, attributes]` shape. */
 export type IconNode = readonly [string, Readonly<Record<string, string>>]

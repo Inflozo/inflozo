@@ -46,6 +46,8 @@ test('UX-DR5: the ring WRAPS in both directions, and a ring of one has nowhere t
 test('Shuffle lands on a DIFFERENT design, wherever the random falls, and never with one design', () => {
   assert.equal(shuffleTo(1, 0, () => 0.5), null, 'a ring of one has no Shuffle at all (UX-DR3)')
   assert.equal(shuffleTo(0, 0, () => 0.5), null)
+  assert.equal(shuffleTo(3, -1, () => 0.5), null, 'a design not found in its ring has nowhere to shuffle to (review, 2026-09-20)')
+  assert.equal(shuffleTo(3, 3, () => 0.5), null)
   for (const length of [2, 3, 8, 18]) {
     for (let at = 0; at < length; at++) {
       const seen = new Set<number>()

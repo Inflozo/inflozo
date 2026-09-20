@@ -767,7 +767,7 @@ const tintRow = (page) => page.locator('#editor-controls [id$="-control-tint"]')
 const tintValue = (page) => tintRow(page).locator('[role="radio"][aria-checked="true"]').innerText()
 
 test('R-145: `]` moves to the next design and announces its position, `[` comes back', async ({ page }) => {
-  await open(page)
+  const canvas = await open(page)
   await selectRinged(page)
   await expect(counter(page)).toHaveText(/^1 of \d+$/)
   const first = await page.locator('#editor-design-name').innerText()
@@ -776,6 +776,11 @@ test('R-145: `]` moves to the next design and announces its position, `[` comes 
   await page.keyboard.press(']')
   await expect(counter(page)).toHaveText(/^2 of \d+$/)
   await expect(page.locator('#editor-design-name')).not.toHaveText(first)
+  // EXPERIENCE.md:878's settle: the swapped root carries `data-inflozo-swapped` for the fade's own 180ms and then
+  // loses it — at rest the canvas is still the site (review, 2026-09-20: nothing had asserted either half)
+  const swapped = canvas.locator('[data-inflozo-swapped]')
+  await expect(swapped, 'the incoming root carries the settle').toHaveCount(1)
+  await expect(swapped, 'and loses it when the fade is over').toHaveCount(0, { timeout: 2000 })
   // UX-DR12: the position AND the design, politely
   expect(await said(page)).toMatch(/^Design 2 of \d+ — .+/)
 
@@ -821,7 +826,7 @@ test("EXPERIENCE.md:503 — `← →` cross the thumbnail strip, mirroring `[` a
   await selectRinged(page)
   const strip = page.locator('[data-design-strip]')
   await expect(strip).toHaveCount(1)
-  const marked = strip.locator('[role="radio"][tabindex="0"]')
+  const marked = strip.locator('[role="option"][tabindex="0"]')
   await marked.focus()
   const from = await page.evaluate(() => document.activeElement?.dataset.designTile)
   await page.keyboard.press('ArrowRight')

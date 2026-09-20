@@ -12,7 +12,8 @@ import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Panel } from '@/components/kit/icons'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
-import { holdsCaret, shortcutFor } from '@/lib/keymap'
+import { wheelToFrame } from '@/lib/canvas'
+import { holdsCaret, shortcutFor, singleKeyOwned } from '@/lib/keymap'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 
 /* THE INSTANCE, THE CANVAS AND THE PANEL — Story 4.5's review, the way Epic 5's editor will wire them.
@@ -241,16 +242,22 @@ export function Review({
      the only ring in the repository can be cycled, so the keys the panel and the `?` card advertise have to reach
      it — the editor's own binding is `editor.tsx`'s and does not exist on this route.
 
-     THROUGH `shortcutFor` AND `holdsCaret`, never a second key table (R-145, standing rule 3): the same match and
-     the same WCAG 2.1.4 guard the editor uses, so `[` typed into a panel field is a bracket here exactly as it is
-     there. Bound on BOTH documents, because a press with the pointer in the sample is delivered to the frame's. */
+     THROUGH `shortcutFor`, `holdsCaret` AND `singleKeyOwned`, never a second key table (R-145, standing rule 3):
+     the same match and the same WCAG 2.1.4 guard the editor uses, so `[` typed into a panel field is a bracket here
+     exactly as it is there, and `]` under an open picker or a held key is the picker's or one press (the review of
+     2026-09-20 found the caret half here and not the overlay half). Bound on BOTH documents, because a press with
+     the pointer in the sample is delivered to the frame's — and the overlay is looked for in both, because the
+     picker is the page's while the press may be the frame's. */
   const ringStep = useRef(onStep)
   ringStep.current = onStep
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      const doc = (e.target as Node | null)?.ownerDocument ?? document
-      const gesture = shortcutFor(e, holdsCaret(doc.activeElement as HTMLElement | null))
+      const target = e.target as HTMLElement | null
+      const doc = target?.ownerDocument ?? document
+      const active = doc.activeElement as HTMLElement | null
+      const gesture = shortcutFor(e, holdsCaret(target) || holdsCaret(active))
       if (gesture !== 'prev' && gesture !== 'next') return
+      if (singleKeyOwned(e, [target, active], [document, doc])) return
       e.preventDefault()
       ringStep.current(gesture === 'prev' ? -1 : 1)
     }
@@ -297,10 +304,7 @@ export function Review({
           gripProps={{}}
           onPointerLeave={() => {}}
           // DW-209: a wheel over the pill would otherwise stall the sample, exactly as it did on the editor
-          onWheel={(dx, dy, mode) => {
-            const win = frame.current?.contentWindow
-            if (win) win.scrollBy(dx * (mode === 1 ? 16 : mode === 2 ? win.innerHeight : 1), dy * (mode === 1 ? 16 : mode === 2 ? win.innerHeight : 1))
-          }}
+          onWheel={(dx, dy, mode) => wheelToFrame(frame.current?.contentWindow, dx, dy, mode)}
         />
       </div>
       <aside

@@ -2,6 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { byCategory, categoryOf, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, ringFor, samePartition } from './placement.ts'
 import type { BindingContext } from './vocabulary.ts'
+import type { Surface } from './registry.ts'
 
 // Story 5.4 — the matrix's placement rows. Neither rule can be exercised on the deployed editor, because
 // `packages/library/designs/` holds no A25, A32, A33 or A34 design: this is their whole proof.
@@ -89,7 +90,7 @@ test('byCategory is NUMERIC — a17 after a4, which a string sort gets wrong', (
 //     length 1 and the partition rule would be asserted vacuously. This, and the three-design fixture the
 //     app's own tests use, are its whole proof.
 
-const ringDesign = (id: string, over: Partial<{ bindingContext: BindingContext[]; compileTarget: string[]; surface: string }> = {}) => ({
+const ringDesign = (id: string, over: Partial<{ bindingContext: BindingContext[]; compileTarget: string[]; surface: Surface }> = {}) => ({
   id,
   bindingContext: ['none'] as BindingContext[],
   compileTarget: ['home.hbs'],

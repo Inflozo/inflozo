@@ -2,9 +2,9 @@
 title: 'Story 5.11 — The design ring: navigation, shuffle, and carry / park / default'
 type: 'feature'
 created: '2026-09-20'
-status: 'in-progress'
+status: 'in-review'
 owner_test: issues
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 'e74f84cc690eafbc994a8aeecc8b85e2ecea4122'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -262,7 +262,8 @@ declared `surface` — so the partition rule and the placement rule can never dr
 
 **Execution.** No migration, no DDL, **no Schema phase** (R-99). **Both questions are ruled — R-158 (option 1)
 and R-159 (option 2), owner, 2026-09-20** — so the list below is the whole of it: two more fixture designs and
-a real ring on `/controls`, no shipped design authored, and Shuffle in both the panel and the section's pill.
+a real ring on `/controls`, no shipped design authored, and Shuffle in both the panel and the section's pill — **the last
+of which his test of the deployed page amended the same day: Shuffle's one seat is the pill's** (findings 2–4 below).
 
 - [x] `packages/library/fixtures/controls/2/` and `…/3/` (`design.json`, `index.html`, `style.css` each) --
       **the ring fixture (R-158), and the only ring in the repo**: same `bindingContext`/`compileTarget` as
@@ -357,7 +358,8 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
       library holds no ring yet) -- so the keyboard journey walks a **real** `[`/`]` on every commit. Check
       the picker stops that count rail rows or cards still pass.
 - [x] `packages/library/src/placement.test.ts` · `packages/section-runtime/src/{controls,doc-edit,doc-schema,
-      index}.test.ts` · `apps/web/{ring,keymap,pilots}.test.ts` -- the I/O matrix's rows as unit tests: every
+      index}.test.ts` · `apps/web/{ring,keymap}.test.ts` (`pilots.test.ts` was named here and not touched at Dev — its
+      selector-key check covered the new chrome rule by derivation; the Review gave it the `extra` case) -- the I/O matrix's rows as unit tests: every
       partition arm, the wrap, carry/park/default and the exact round trip (dark override included), the
       item cap on both emitters, `parkedControls` defaulting for a doc written before it, and `[`/`]` both
       sides of the caret.
@@ -377,6 +379,34 @@ a real ring on `/controls`, no shipped design authored, and Shuffle in both the 
 - [x] `docs/section-authoring.md` -- `data-items-limit` documented in the directive table and in the list
       rule beside `data-repeat-limit` -- the authoring vocabulary is a documented deliverable (FR-G3), and a
       cap no author can find is a cap no design will use.
+
+### Review Findings
+
+Review of 2026-09-20 (`review_loop_iteration` 1), five layers over the diff since `e74f84cc`, each rated after reading
+the code at its location. Every patch below is applied; the four deferred items are DW-211 to DW-214.
+
+- [x] [Review][Patch] `/controls`'s `[` `]` had the caret half of WCAG 2.1.4's condition and not the overlay half: `]` swapped the design under an open picker, a `<select>` or a held key (three layers) [`apps/web/app/(app)/app/(authed)/controls/review.tsx` `onKey`] — `singleKeyOwned` in `lib/keymap.ts`, shared; proved by a new step of the deployed walk, which **FAILED on the unpatched production first** (`2 of 3 · popover open: 0`)
+- [x] [Review][Patch] the R-159 amendment reached the spec and the code and not the ruling's own document, `epics.md`, `EXPERIENCE.md`'s B1 row or `epic-5-context.md`, all of which still said "both places" and "Design 1 of 1" [`reconcile-designs-decisions.md` R-159] — an amendment paragraph and its targets, dated
+- [x] [Review][Patch] four comments described the removed surfaces as present [`editor.tsx:139,146,1480,2020` · `section-pill.tsx:191` · `fixtures/controls/3/index.html:7`]
+- [x] [Review][Patch] DW-210's `status:` word was one the story board cannot read ("does not reproduce") [`deferred-work.md`] — `closed`
+- [x] [Review][Patch] DW-209 was `done` with step 15's pass "to record" — the shape `story-board.py` names as the standing-rule-2 failure [`deferred-work.md`] — the pass recorded, and the forwarding now asserted with the pointer ON each pill (`run-verify-editor.cjs` step 87, `run-verify-controls.cjs` `ring — DW-209`) rather than remembered from one Dev-time execution
+- [x] [Review][Patch] `wheelToCanvas` was written twice [`editor.tsx` · `review.tsx`] — `wheelToFrame` in `lib/canvas.ts`, one implementation
+- [x] [Review][Patch] `markSwapped`'s timer was never cleared, so a swap 180ms before leaving marked a torn-down canvas [`editor.tsx`] — a ref, cleared in the unmount cleanup
+- [x] [Review][Patch] `shuffleTo` with `at` outside the ring skewed the draw (index 0 never drawn) [`apps/web/lib/ring.ts`] — null, with the case in `ring.test.ts`
+- [x] [Review][Patch] `surface` was typed and never validated: `"surface": "signupp"` assembled clean and made its own one-design ring; `RingEntry.surface` was `string` [`packages/library/src/validate.ts` · `placement.ts`] — `bad-surface` against the exported `SURFACES`, and the type
+- [x] [Review][Patch] the harness wrote the ring's membership down (`ring[1]`, `ring[2]`, `startsWith('controls/')`) [`apps/web/app/(app)/app/harness/editor/page.tsx`] — derived from `ring`
+- [x] [Review][Patch] the strip was a `radiogroup` whose arrows move focus without selecting — a radio's arrow selects; a listbox's need not [`apps/web/components/editor/design-picker.tsx`] — `listbox` / `option` / `aria-selected`, the semantics of what it does
+- [x] [Review][Patch] `tools/stress/test-vocabulary.mjs` validated `controls/1` alone while a comment beside the ring said every fixture design passed through it [`tools/stress/test-vocabulary.mjs`] — every numbered directory, derived
+- [x] [Review][Patch] `pilotsCanvasDocument`'s new `extra` parameter was asserted nowhere — reverting it left `pnpm keyboard` green over an unstyled ring [`apps/web/pilots.test.ts`] — two assertions
+- [x] [Review][Patch] `data-inflozo-swapped` was asserted nowhere — never setting it, or never clearing it, failed nothing [`tools/keyboard/journey.spec.mjs`] — on after `]`, off within the fade
+- [x] [Review][Patch] the carry assertion asked two designs, not every one [`apps/web/controls.test.ts`]; two literal counts in new prose [`vocabulary.ts` · `keymap.test.ts`]; the review screenshot captured a shuffled state [`run-verify-controls.cjs`]
+- [x] [Review][Patch] three departures from the spec's letter were built and not listed: the settle is removed on a 180ms timeout, not "the next frame"; `strip()` slides rather than showing the first N; the item-list task's `pilots.test.ts` — listed under `## Verification` now
+- [x] [Review][Defer] the editor's own pill ◀ ▶ and Shuffle are wired but never pressed by any gate [`editor.tsx`] — deferred, DW-211 (a mouse-allowed spec beside the journey; a new gate file, not a patch)
+- [x] [Review][Defer] a capped list's row loses its min–max range [`item-list.tsx`] — deferred, DW-212 (the sentence is the one the owner just approved)
+- [x] [Review][Defer] `itemsShown` reads the first `data-items` bound to a path [`controls.ts`] — deferred, DW-213 (a validator rule with no positive case today)
+- [x] [Review][Defer] the 180ms settle is drawn where no ring exists and not on `/controls` [`canvas-chrome.css`] — deferred, DW-214
+
+Dismissed as noise: a `parkedControls` key refinement (this code is the record's only writer, and refusing a key would make a stored doc unparsable rather than safer); a pre-existing `parkedControls[from.id]` being overwritten (unreachable — a restore clears the record for the design you are on); keying `/controls`'s `Sidebar` by design (the editor keeps the panel mounted across a swap on purpose, so the open groups survive browsing, and `/controls` matches it); a double scroll below the tablet breakpoint on `/controls` (an internal page at a width it is not reviewed at); the journey's FR-D5 stop having a dead arm on production-shaped data; and the walk's `inputValue().catch(...)` on a rich field.
 
 **Acceptance Criteria:**
 - Given a selected section whose ring holds more than one design, when I press `]`, use the on-section ▶ or
@@ -464,8 +494,8 @@ thirteen actions and a fourteenth key, and R-145 forbids inventing a fifteenth.
 
 ## Verification
 
-**As built.** Six departures from the spec's letter, each for a mechanical reason — the first four from Dev, the
-last two from the Dev verification itself:
+**As built.** The departures from the spec's letter, each for a mechanical reason — the first four from Dev, two
+from the Dev verification itself, and three listed at the Review:
 - **`itemsShown` lives in `controls.ts`, not `core.ts`.** `core.ts` already imports `controls.ts` (`resolveControls`,
   `withData`), so a reader in core that the panel called would be an import cycle. The CAP ITSELF is applied in
   `expandItems` exactly as specified — one shared function, both emitters — and `controls.ts` has the tag scan
@@ -485,6 +515,14 @@ last two from the Dev verification itself:
   in `vocabulary.ts`, `core.ts` and `controls.ts` — three copies of one rule is the drift standing rule 3 forbids,
   and the whole reason `data-items-limit` joined `DIRECTIVES` was that one table decides it. `data-repeat-limit`
   reads the same constant.
+- **The settle comes off on a 180ms timeout, not "the next frame"** (the task's words). Removing the attribute on the
+  next frame would cancel the animation rather than end it; `markSwapped` waits the fade's own length. Listed at the Review.
+- **`strip()` slides; it does not show "the first N".** B1a draws the first twelve of eighteen with a `+6`, which is right
+  until the customer cycles past the twelfth — the window slides just far enough to keep the active tile on screen, and
+  the `+N` still says how many are not shown. Unreachable today (no ring is longer than the strip). Listed at the Review.
+- **The strip is a `listbox`, not a `radiogroup`** (the Review, 2026-09-20). `← →` move FOCUS across the tiles and Enter
+  or a press is the swap; a radio's arrow selects on its own, and here an arrow that swapped would write one edit per
+  press. `option` / `aria-selected` say what the strip does.
 - **`PanelLabel` takes an optional `id`, and the editor's panel head names both its parts.** Story 5.11 put S4c's
   category word under the layer name inside a wrapper, so "the first `<span>` in the Controls panel" — which five
   checks of the deployed walk used to read the heading — became the wrapper, whose `textContent` runs the two
@@ -544,6 +582,18 @@ entry says exactly that rather than claiming a fix.
 
 **Not hit by this story, and not claimed:** Resend, Dodo and the Ghost test servers T1/T3. Nothing here sends
 mail, takes a payment or reads a Ghost — the ring is the editor's own doc and the library's own entries.
+
+**THE REVIEW (2026-09-20, R-82).** The Real-infra verifier re-ran every claim above against production at `2ee6f4a8`
+before a patch was applied and every one held with the same tallies: the deployed build was HEAD (Vercel API,
+`VERCEL_TOKEN` + `VERCEL_TEAM_ID`, `githubCommitSha` = `git rev-parse HEAD`, READY); `run-verify-controls.cjs` **0 FAIL /
+100 PASS**; `run-verify-editor.cjs` **0 FAIL / 454 PASS** on its third attempt (two DW-204 deaths first, each with 0 FAIL
+and a clean account cleanup); `pnpm check` exit 0; `pnpm keyboard` 29 passed; no file under `supabase/migrations/` in the
+diff (R-99's control); and the negative control — the controls walk with `SUPABASE_URL` pointed at a wrong host —
+refused before any browser step. Then the patches: `pnpm check` **exit 0** and `pnpm keyboard` **29 passed** again with
+the new cases in them, and `run-verify-controls.cjs` re-run against the STILL-UNPATCHED production as the control for
+its new overlay-guard step: **1 FAIL / 101 PASS**, the one FAIL being exactly that step (`2 of 3 · popover open: 0` —
+`]` swapped the design under the open picker and closed it), and its new DW-209 step PASSING (`top: 70, range: 70`).
+The runs against the patched production are recorded below, after the Review push deployed.
 
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, including the partition, carry / park /
@@ -711,9 +761,9 @@ press it.
 **AMENDED by his test of the deployed page the same day** — *"Remove 'Try a Design' in controls panel"* — which
 takes the panel seat away again and leaves option 3's answer: **the section pill only**. What the amendment costs
 is named under `## Owner's test findings` above, including that Shuffle is now pointer-only. The rest of R-159
-stands: **S4b + S6 govern the pill, B1b governs the affordance**, and in the pill the control is icon-only. The panel keeps S6's
-**`Try a design`** card, and the section's pill gains a Shuffle control **with the ring, before the divider**
-— the divider in the built pill separates *which design* from *this section*. In the pill it is **icon-only**
+stands: **S4b + S6 govern the pill, B1b governs the affordance**, and in the pill the control is icon-only. *(As ruled,
+before the amendment:)* the panel keeps S6's **`Try a design`** card, and the section's pill gains a Shuffle control **with
+the ring, before the divider** — the divider in the built pill separates *which design* from *this section*. In the pill it is **icon-only**
 (the Kit's `Refresh`, its words carried as accessible name and hover title) through `DESIGN.md:534-536`'s
 carve-out, the one R-132's mode button and R-136's moon badge already use: every other control in that pill
 is a 26px round icon target and a word would be the only text in it. Both are absent where the ring holds

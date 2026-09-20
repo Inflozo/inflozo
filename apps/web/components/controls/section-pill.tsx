@@ -188,7 +188,7 @@ export function SectionPill({
           <button type="button" aria-label={NEXT_WORDS} title={NEXT_WORDS} onClick={onNextDesign} className={target}>
             <ChevronRight size={13} />
           </button>
-          {/* R-159's SECOND seat, icon-only, before the divider */}
+          {/* Shuffle's ONE seat (R-159 as the owner's test of 2026-09-20 amended it), icon-only, before the divider */}
           <button type="button" data-pill-shuffle aria-label={SHUFFLE_WORDS} title={SHUFFLE_WORDS} onClick={onShuffle} className={target}>
             <Refresh size={13} />
           </button>

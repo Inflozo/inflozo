@@ -4,6 +4,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
 import { carriesMemberVisibility, DESIGNS_DIR, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
+import { samples } from './lib/controls-review.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
 // for the pilots review. Rendering needs a DOM, which apps/web does not carry; `tools/check-snapshots.mjs` renders
@@ -104,6 +105,16 @@ test('the canvas document NARROWS to one design when asked, and to the library w
   }
   // an id that is not in the library throws rather than quietly serving everything — the route turns that into a 404
   assert.throws(() => pilotsCanvasDocument('a1/9999'))
+
+  // Story 5.11: the harness hands the fixture ring in as `extra` — the whole document carries every one of its
+  // stylesheets (the chrome sheet still last), and a narrowed document serves one of them alone (review, 2026-09-20)
+  const extra = samples()
+  assert.ok(extra.length > 1)
+  const withRing = pilotsCanvasDocument(undefined, extra)
+  for (const e of extra) assert.ok(withRing.includes(`/* ${e.id} */`), `${e.id}'s stylesheet is missing from the harness document`)
+  assert.ok(withRing.lastIndexOf('data-inflozo-') > withRing.lastIndexOf(`/* ${extra[extra.length - 1]!.id} */`), 'the chrome sheet is still last')
+  const one = pilotsCanvasDocument(extra[1]!.id, extra)
+  assert.ok(one.includes(`/* ${extra[1]!.id} */`) && !one.includes(`/* ${extra[0]!.id} */`) && !one.includes(`/* ${ids[0]} */`), 'a narrowed fixture document carries that design alone')
 })
 
 test("every canvas address carries the build, and a preview keeps it (the owner's ruling of 2026-09-20)", () => {

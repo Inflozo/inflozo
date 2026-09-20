@@ -224,7 +224,7 @@ export const CONTROL_WORD_RE = CONTROL_NAME_RE // one grammar, one regex: a valu
 export const CONTROL_VALUE_RE = /^(?:[a-z][a-z0-9]*(-[a-z0-9]+)*|[0-9]+)$/
 
 /** ONE GRAMMAR FOR BOTH CAPS, 1 to 100 — `data-repeat-limit`'s rows and `data-items-limit`'s authored items. It is
- *  exported because the number is read in three places and a second copy of the range is exactly the drift standing
+ *  exported because the number is read everywhere the cap is honoured and a second copy of the range is exactly the drift standing
  *  rule 3 forbids: the validator parses it here, `core.ts` turns it into a `slice` on both emitters, and
  *  `controls.ts` reads it back for the panel's "N shown in this design". (FR-H2 caps `limit="all"` at 100, and
  *  `all` trips gscan on 6.x.) */

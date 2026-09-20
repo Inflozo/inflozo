@@ -30,7 +30,7 @@ import { EmptyPanel } from '@/components/kit/empty-panel'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronLeft, Panel, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
-import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
+import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows, wheelToFrame } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
@@ -136,14 +136,14 @@ import type { EditorData } from './read'
 
    THE DESIGN RING (Story 5.11 — B1a, S4b + S6, FR-D19, R-158, R-159). A placed section is no longer stuck with the
    look it arrived in: `]` and `[`, the ◀ ▶ on the section's own quick-action pill, a thumbnail in the panel's
-   Design block and Shuffle in either of R-159's two seats all reach ONE handler here, which calls ONE doc
+   Design block and the pill's Shuffle — its ONE seat since the owner's test of 2026-09-20 amended R-159 — all reach ONE handler here, which calls ONE doc
    operation (`switchDesign`) through `apply` → `commit` — so a swap is one edit, one journal entry and one `⌘Z`
    (AD-15, AD-16) and the position is announced politely from the one place all four doors pass. WHICH designs are
    reachable is the library's `ringFor`, beside `offeredOn`, so the partition rule and the placement rule cannot
    drift; WHAT a swap does to the stored values is the runtime's `switchControls` (carry / park / default), and
    content, items and `data` are untouched by construction because a ring never leaves its category. THE LIBRARY
    HOLDS ONE DESIGN PER CATEGORY TODAY, so every ring here has length 1 and every one of those controls is ABSENT
-   (UX-DR3) with the block reading "Design 1 of 1" and one sentence saying why — the day Epic 9 fills a category
+   (UX-DR3) with the block reading "1 of 1" beside its `Design` label and one sentence saying why — the day Epic 9 fills a category
    they appear on their own, because every count is derived (R-158; the rule itself is exercised on the deployed
    `/controls` review page and on the keyboard harness, both over the three-design fixture ring).
 
@@ -295,6 +295,9 @@ export function Editor({
   const [device, setDevice] = useState<Device>(DESKTOP)
   /** the section a swap has just landed on, for `canvas-chrome.css`'s 180ms settle — cleared when it is over */
   const swapped = useRef<Pick | null>(null)
+  /** `markSwapped`'s one pending timer, cleared on unmount so a swap 180ms before leaving never marks a torn-down
+   *  canvas (review, 2026-09-20) */
+  const settle = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   /* ─── Story 5.8 — the journal, the indicator and the flush ───────────────────────────────────────────────────────
    *
@@ -1192,6 +1195,7 @@ export function Editor({
     window.addEventListener('mouseup', release)
     return () => {
       alive = false
+      clearTimeout(settle.current)
       el?.removeEventListener('load', ready)
       window.removeEventListener('keydown', onEscape)
       window.removeEventListener('keydown', onShortcut)
@@ -1477,8 +1481,8 @@ export function Editor({
   /* ─── Story 5.11 — THE DESIGN RING: four doors, one handler, one edit (FR-D19, AD-15, AD-16) ─────────────────
    *
    * `onDesign` is the whole of it. The panel's thumbnails call it with a design id; its arrows, the section pill's
-   * arrows and `[` / `]` call `stepDesign`, which is `step()` over the same ring; both Shuffle seats call
-   * `onShuffle`. Every one of them ends in ONE `switchDesign` through `apply` → `commit`, so a swap is one
+   * arrows and `[` / `]` call `stepDesign`, which is `step()` over the same ring; the pill's Shuffle — its one seat
+   * since the owner's test of 2026-09-20 — calls `onShuffle`. Every one of them ends in ONE `switchDesign` through `apply` → `commit`, so a swap is one
    * transaction and one `⌘Z` — a Shuffle is not several edits — and the polite announcement is made HERE, where
    * the key and every button reach it (`onDuplicate`'s own rule, UX-DR12).
    */
@@ -1489,7 +1493,8 @@ export function Editor({
   const markSwapped = (pick: Pick) => {
     swapped.current = pick
     mark()
-    setTimeout(() => {
+    clearTimeout(settle.current)
+    settle.current = setTimeout(() => {
       if (!same(swapped.current, pick)) return
       swapped.current = null
       mark()
@@ -1661,13 +1666,8 @@ export function Editor({
    *  pointer rests on a pill — which a customer feels, and which is also why the deployed walk's sticky-scroll
    *  check failed most runs: it wheels at x=700, the "+ Add section" pill's own place on a 1440 editor. The pills
    *  forward their wheel here, to the document the pointer looks like it is over. */
-  const wheelToCanvas = (deltaX: number, deltaY: number, deltaMode: number) => {
-    const win = frame.current?.contentWindow
-    if (!win) return
-    // a wheel may report LINES or PAGES rather than pixels; the line step is the browser's own rough 16px
-    const k = deltaMode === 1 ? 16 : deltaMode === 2 ? win.innerHeight : 1
-    win.scrollBy(deltaX * k, deltaY * k)
-  }
+  const wheelToCanvas = (deltaX: number, deltaY: number, deltaMode: number) =>
+    wheelToFrame(frame.current?.contentWindow, deltaX, deltaY, deltaMode)
 
   /** The pill's grip: the SAME reorder as a Layers row's, read against the sections as they sit on the canvas,
    *  because that is where the pointer is. Layers draws the dashed slot either way. */
@@ -2017,7 +2017,8 @@ export function Editor({
             <>
             {/* B1a — the Design block, ABOVE the settings groups and inside none of them (FR-F3: the design
                 picker is not a setting). With one design in the ring it is the counter, the name and one
-                sentence; with more it grows its arrows, its strip, its key chips and R-159's Try-a-design card
+                sentence; with more it grows its arrows and its strip (the key chips and the Try-a-design card were built and
+                removed at the owner's test of 2026-09-20, findings 3 and 4)
                 on its own, because every count in it is derived (R-158). */}
             <DesignPicker
               ring={chosenRing}

@@ -566,6 +566,8 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
     assert.ok(codes(validateDesignJson({ ...DESIGN, ...over } as DesignJson)).includes(code), `${code} should fire`)
   only({ id: 'a17/1' }, 'id-authored')
   only({ tier: 'gold' }, 'bad-tier')
+  only({ surface: 'signupp' }, 'bad-surface')
+  only({ surface: 1 }, 'bad-surface')
   only({ bindingContext: [] }, 'binding-context-missing')
   only({ bindingContext: ['posts', 'posts'] }, 'duplicate-context')
   only({ compileTarget: [] }, 'compile-target-missing')

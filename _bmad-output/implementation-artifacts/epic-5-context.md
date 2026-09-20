@@ -61,8 +61,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     S4b + S6 govern the pill and B1b governs the affordance.
   - **Story 5.11 built it (2026-09-20):** ONE pure function decides what carries, parks and defaults —
     `switchControls(from, to, state)` in `controls.ts` — and ONE doc operation calls it, `switchDesign` in
-    `doc-edit.ts`, so the panel's thumbnails and ◀ ▶, the section pill's ◀ ▶, `[` / `]` and both Shuffle seats are
-    four doors onto one rule and every swap is one `apply` → `commit`, one journal entry and one `⌘Z`. A RESTORED
+    `doc-edit.ts`, so the panel's thumbnails and ◀ ▶, the section pill's ◀ ▶, `[` / `]` and the pill's Shuffle (its
+    ONE seat since the owner's test amended R-159, below) are four doors onto one rule and every swap is one `apply` → `commit`, one journal entry and one `⌘Z`. A RESTORED
     VALUE WINS OVER A CARRIED ONE in the single case where both exist (a shared control changed on an intermediate
     design) and the record is CLEARED in the same breath, because "exactly as you left it" is the promise the ring
     is sold on. Membership is the library's: `ringFor`/`samePartition` beside `offeredOn`, comparing
@@ -76,7 +76,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     interactive content inside a `<button>` is axe's `nested-interactive`. **DW-209 was EXECUTED and fixed** — a
     wheel over a pill scrolled the canvas 0px against the iframe's 500px, so both pills now forward their wheel; a
     customer felt the same stall. Every ring in the shipped library is length 1, so in the editor itself every one
-    of these controls is ABSENT (UX-DR3) and the block reads "Design 1 of 1"; the rule is walked on the deployed
+    of these controls is ABSENT (UX-DR3) and the block reads "1 of 1" beside its `Design` label; the rule is walked on the deployed
     `/controls` and, on every commit, by `pnpm keyboard` over the three fixture designs.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
@@ -379,7 +379,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     surviving while the customer is on design 3). The deployed **`/controls`** review page mounts the picker
     over them, so the owner and `run-verify-controls.cjs` exercise the rule on production (R-82); the
     keyboard harness takes the same ring, so `pnpm keyboard` walks it on every commit (R-146). The editor
-    itself reads **"Design 1 of 1"** with the arrows and Shuffle **absent** (UX-DR3) and gains them the day
+    itself reads **"1 of 1"** beside its `Design` label, with the arrows and Shuffle **absent** (UX-DR3), and gains them the day
     Epic 9 fills a category, because every count is derived. **R-159:** Shuffle is built in **BOTH** places —
     S6`:140`'s **`Try a design`** card at the foot of the panel's Design block (the one place that shows
     where a shuffle would take you BEFORE the press) and a control in the section's pill **with the ring,

@@ -18,6 +18,7 @@
 
 import { GET_FORBIDDEN_TARGETS } from './vocabulary.ts'
 import type { BindingContext } from './vocabulary.ts'
+import type { Surface } from './registry.ts'
 
 /** The non-placeable treatments (`sections-inventory.md` § Placeable vs non-placeable): A32 Paywall / Content CTA,
  *  chosen in the Paywall Template editor; A33 Koenig Card Treatments, chosen by the card design module; A34 Pagination
@@ -130,7 +131,7 @@ export type RingEntry = {
   bindingContext: readonly BindingContext[]
   compileTarget: readonly string[]
   /** A30's declared surface — signup · signin · member home. Undefined on every design that is not one of A30's. */
-  surface?: string
+  surface?: Surface
 }
 
 const sameSet = (a: readonly string[], b: readonly string[]): boolean => {

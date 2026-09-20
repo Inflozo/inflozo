@@ -156,7 +156,10 @@ export function DesignPicker({
 
       {many ? (
         <div
-          role="radiogroup"
+          /* a LISTBOX, not a radio group: `← →` move FOCUS across the tiles and Enter or a press is the swap, which is
+             a listbox's contract (WAI-ARIA APG: selection need not follow focus) and not a radio group's, where an
+             arrow itself selects — and here an arrow that swapped would write one edit per press (review, 2026-09-20) */
+          role="listbox"
           aria-label="Designs in this category"
           data-design-strip
           onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => gridKeys(event, { right: 1, down: STRIP_COLUMNS })}
@@ -174,14 +177,14 @@ export function DesignPicker({
                 <Tile entry={entry} rows={rows[entry.id]} className="h-full w-full" {...preview} />
                 <button
                   type="button"
-                  role="radio"
+                  role="option"
                   data-cell
                   data-design-tile={entry.id}
-                  aria-checked={on}
+                  aria-selected={on}
                   /* the tier is in the WORDS, so the ✦ never carries the only signal (UX-DR2) */
                   aria-label={`${entry.name}${entry.tier === 'pro' ? ' — Pro' : ''}`}
                   title={entry.name}
-                  /* a radio group is ONE tab stop: the marked tile takes it and `← →` move between them */
+                  /* the strip is ONE tab stop: the selected tile takes it and `← →` move between them */
                   tabIndex={on ? 0 : -1}
                   onClick={() => onDesign(entry.id)}
                   className={`absolute inset-0 block rounded-[6px] ${ring}`}
