@@ -113,9 +113,9 @@ test('R-145: every deferred row names its story, binds nothing and is not on the
     assert.ok(!listed.has(b), `${b.action}: the card must not advertise a key that does nothing`)
     assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
   }
-  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10 and `[` `]` at Story 5.11,
-  // each with the action it drives (R-145), and each row below leaves it the same way
-  for (const chip of ['P', '⇧R', '⌘⏎']) {
+  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10, `[` `]` at Story 5.11 and
+  // ⇧R at Story 5.12, each with the action it drives (R-145), and each row below leaves it the same way
+  for (const chip of ['P', '⌘⏎']) {
     assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
     assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)
   }
@@ -183,4 +183,25 @@ test('R-145: `[` and `]` are bound, listed, and INERT with the caret in a field 
   assert.equal(shortcutFor(bare('{', { shiftKey: true }), false), null)
   assert.equal(shortcutFor(bare('}', { shiftKey: true }), false), null)
   assert.equal(shortcutFor(bare('[', { shiftKey: true }), false), null)
+})
+
+/* STORY 5.12 — `⇧R` IS LANDED, and it is the first SHIFTED single key in the map. Two rows of the matrix ride on
+   the `shift: true` beside it: a bare `r` must stay a letter, and `⇧R` with a caret in a field must still type a
+   capital R (the owner's own "most important step"). */
+test('R-145: `⇧R` is Site Remix, a bare `r` is a letter, and in a field it types its character', () => {
+  const remix = KEYMAP.find((b) => b.gesture === 'remix')
+  assert.ok(remix, '⇧R has no row')
+  assert.equal(remix.story, undefined, 'the row is live now')
+  assert.deepEqual(remix.chips, ['⇧R'])
+  assert.ok(remix.keys?.includes('r'))
+  assert.equal(remix.shift, true, 'a bare `r` would otherwise be the binding too')
+  assert.notEqual(remix.meta, true, 'it carries no modifier but Shift')
+  assert.ok(sheetRows().includes(remix), 'the card lists it, because it works — it was deliberately missing until today')
+  // Shift makes the key uppercase, and `shortcutFor` lowercases before it matches
+  assert.equal(shortcutFor(bare('R', { shiftKey: true }), false), 'remix')
+  assert.equal(shortcutFor(bare('r'), false), null, 'a bare `r` is nobody\'s binding')
+  assert.equal(shortcutFor(bare('R', { shiftKey: true }), true), null, 'in a field it types a capital R and rolls nothing')
+  // ⌘⇧R is the browser's hard reload, and it is not this
+  assert.equal(shortcutFor(press('r', { shiftKey: true }), false), null)
+  assert.ok(SINGLE_KEY.has('remix'), 'a single-key binding carries WCAG 2.1.4\'s focus condition')
 })

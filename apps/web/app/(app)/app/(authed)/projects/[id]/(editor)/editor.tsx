@@ -16,6 +16,7 @@ import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/l
 import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
+import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
 import { SaveState } from '@/components/editor/save-state'
 import { openShortcuts, ShortcutsSheet } from '@/components/editor/shortcuts-sheet'
@@ -40,6 +41,7 @@ import {
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import { holdsCaret, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
@@ -987,6 +989,9 @@ export function Editor({
       // R-135: on a Light-only project there is no sun to press, so nothing happens and nothing is announced
       case 'dark': return void (darkEnabled && flip(latest.current.mode === 'dark' ? 'light' : 'dark'))
       case 'shortcuts': return openShortcuts(shortcuts)
+      // STORY 5.12 — the key presses the DICE, not the fold: it rolls, and the confirm opens when it settles, so
+      // `⇧R` and the button are one control down to the animation (R-141)
+      case 'remix': return remixDice.current?.roll()
       // the ladder below owns it; `shortcutFor` never returns it, and this arm is here so the union stays exhaustive
       case 'deselect': return
       default: {
@@ -1533,6 +1538,46 @@ export function Editor({
     if (to !== null && ring[to]) onDesign(pick, ring[to]!.id)
   }
 
+  /** Story 5.12 — `⇧R` and the dice are ONE handler (R-141): the key asks the button to roll, so the cube, the
+   *  confirm and the fold below can never have a second implementation between them. */
+  const remixDice = useRef<RemixHandle | null>(null)
+
+  /* ─── Story 5.12 — SITE REMIX: one pure picker, one existing operation, ONE transaction (FR-D17) ────────────
+   *
+   * THE WHOLE RE-ROLL IS ONE `commit`, and that is the only real decision in this story. `commit(written,
+   * touched)` journals `{ docKey, before, after }` for ONE doc, so committing per section would write N journal
+   * entries and cost N `⌘Z` presses — FR-D17's single-step undo would be false. Folding every pick into one next
+   * doc and committing once makes it one entry, one `⌘Z` and one lit Undo arrow, and FR-D9's "never
+   * half-applying" is then one check before one assignment: a refusal from `switchDesign` aborts the fold and
+   * writes nothing at all.
+   *
+   * R-161 (owner, 2026-09-20): THE CANVAS'S OWN DOC ALONE. `stack` holds the site-wide header and footer too,
+   * and including them means a second doc and therefore a second `⌘Z`; the tick-box and the `txn`-grouped undo
+   * land with the first story that has a site-wide ring to prove them on.
+   *
+   * It goes through `apply` for everything after the fold — the commit, the round trip, the selection and the
+   * repaint — which is the one place in this editor that gets all four right. The `instanceId` it is handed is
+   * only there because `apply` addresses a doc through a `Pick`; nothing is removed here, so its selection
+   * bookkeeping has nothing to do.
+   */
+  const onRemix = () => {
+    const now = latest.current
+    const docKey = templateKeyOf(now.key)
+    const picks = remixPicks(now.docs[docKey]?.instances ?? [], ringOf, Math.random)
+    if (picks.length === 0) return
+    const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, (doc) => {
+      let next = doc
+      for (const p of picks) {
+        const written = switchDesign(next, p.instanceId, p.to, ringOf(p.from))
+        if (typeof written === 'string') return written
+        next = written
+      }
+      return next
+    })
+    // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541)
+    if (refused === null) setSaid(remixSaid(picks.length, canvas.label))
+  }
+
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
    *  one dialog vocabulary asks first, opening on Cancel (EXPERIENCE § destructive confirms). SHOWING one again asks
    *  nothing: it is the restoring half. The dialog lives here and not in Layers, because the canvas pill's Delete
@@ -1801,6 +1846,20 @@ export function Editor({
             many words): there is no toggle rather than a theme that declares less. The device track is NOT scoped by
             dark — R-135 scopes the mode and nothing else — so it is drawn on every project. */}
         <div className="ml-auto flex items-center gap-[10px]">
+          {/* STORY 5.12 — the dice LEADS the cluster rather than following the sun, and the reason is R-135:
+              `ModeToggle` is not rendered at all on a Light-only project, so a dice placed after it would move on
+              some projects and not others. First, its seat is the same everywhere — and it is still "next to the
+              dark mode button" wherever that button exists.
+              THE COUNT IS THIS CANVAS'S OWN DOC (R-161): `stack` carries the site-wide header and footer too, and
+              Remix leaves them alone. Derived from the rings, never written down (standing rule 4) — in the shipped
+              library every ring is length 1, so it is 0 and the confirm says so honestly. */}
+          <RemixDice
+            canvas={canvas.label}
+            count={remixable(docs[templateKeyOf(key)]?.instances ?? [], ringOf)}
+            undoable
+            onRemix={onRemix}
+            handle={remixDice}
+          />
           {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
           <DeviceSwitch device={device} onDevice={pickDevice} />
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,

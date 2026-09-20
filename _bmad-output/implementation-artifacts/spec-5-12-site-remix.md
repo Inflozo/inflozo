@@ -2,7 +2,7 @@
 title: 'Story 5.12 — Site Remix'
 type: 'feature'
 created: '2026-09-20'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '0e5fe2e30ea545a092c98f20ba796d785408f0a0'
@@ -143,50 +143,50 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/remix.ts` -- NEW, pure and importless (`ring.ts`'s precedent). `remixPicks(placed,
+- [x] `apps/web/lib/remix.ts` -- NEW, pure and importless (`ring.ts`'s precedent). `remixPicks(placed,
       ringAt, random)` → the `{ instanceId, from, to }` list, one `shuffleTo` per section, skipping every
       ring shorter than two (`from` rides along so the caller needs no second lookup); `remixable(placed, ringAt)` → how many *could* move; `REMIX_WORDS`
       (`'Site Remix — ⇧R'`), `remixAsk(n, canvas)` (what will happen, count derived), `NOTHING_TO_REMIX`
       (R-12's sentence) and `remixSaid(n, canvas)` (UX-DR12's polite line). No randomness of its own —
       `random` is handed in (AD-1), exactly as `shuffleTo` takes it.
-- [ ] `apps/web/remix.test.ts` -- NEW. The I/O matrix's rows over the pure module: every pick differs from
+- [x] `apps/web/remix.test.ts` -- NEW. The I/O matrix's rows over the pure module: every pick differs from
       the design it replaces, a ring of one is skipped, the count matches the picks, a seeded `random`
       is deterministic, and the sentences carry singular/plural.
-- [ ] `apps/web/components/editor/remix-dice.tsx` -- NEW. The icon-only button (ModeToggle's geometry,
+- [x] `apps/web/components/editor/remix-dice.tsx` -- NEW. The icon-only button (ModeToggle's geometry,
       `REMIX_WORDS` as name and title), an 18px CSS 3D cube inside it, and the confirm `<dialog>` through
       `kit/dialog.ts` — title, `remixAsk`'s sentence, **Cancel** (`data-cancel`, focus opens here) and
       **Remix** in coral. Rolling is one state change: a new `transform` (a random face plus two whole
       turns) with the transition on it; the dialog opens in `onTransitionEnd` guarded to
       `propertyName === 'transform'`. Nothing to remix → `NOTHING_TO_REMIX` and **Close** alone.
-- [ ] `apps/web/app/globals.css` -- the cube's faces: `transform-style: preserve-3d`, six absolutely
+- [x] `apps/web/app/globals.css` -- the cube's faces: `transform-style: preserve-3d`, six absolutely
       placed faces on `--color-surface` with a `--color-line` hairline, pips in `var(--color-coral)`, one
       `transition: transform 900ms` with a settling ease. Named rules beside `canvas-outline-*`, so no
       colour literal enters a `.tsx`.
-- [ ] `apps/web/lib/keymap.ts` -- `Gesture` gains `'remix'`; the `Site Remix` row gains
+- [x] `apps/web/lib/keymap.ts` -- `Gesture` gains `'remix'`; the `Site Remix` row gains
       `gesture: 'remix', keys: ['r'], shift: true` and **loses `story`**, so the `?` card lists it from the
       same table (R-145). Nothing else moves.
-- [ ] `apps/web/keymap.test.ts` -- `⇧R` resolves to `remix`, a bare `r` does not, `⇧R` with a caret in a
+- [x] `apps/web/keymap.test.ts` -- `⇧R` resolves to `remix`, a bare `r` does not, `⇧R` with a caret in a
       field resolves to null, and the `?` card's rows now include it.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- `onRemix()`: `remixPicks` over
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- `onRemix()`: `remixPicks` over
       the current canvas's placed sections, folded with `switchDesign` into ONE next doc and ONE `commit`,
       then `setSaid(remixSaid(...))`; a refusal sentence from `switchDesign` aborts the whole fold and
       writes nothing (FR-D9's "never half-applying"). Mount `<RemixDice>` as the **first** item of the
       right-hand cluster, left of `ModeToggle`, so its seat does not move on a Light-only project. Add
       `case 'remix'` to `run(gesture)` reaching the dice's own roll through a ref handle — the shape
       `confirm` and `layers.hide` already use — so the key and the button are one handler (R-141).
-- [ ] `tools/keyboard/journey.spec.mjs` -- the `⇧R` stop (R-146): press it on the harness canvas, the
+- [x] `tools/keyboard/journey.spec.mjs` -- the `⇧R` stop (R-146): press it on the harness canvas, the
       dialog opens with focus on Cancel, `Esc` leaves the doc untouched; press it again, confirm, and the
       ringed section's design changes with `#editor-said` naming the count; one `⌘Z` restores it. And with
       the caret in a panel field, `⇧R` types `R` and opens nothing.
-- [ ] `tools/probe/run-verify-editor.cjs` -- the deployed walk (R-82): the dice is in the top bar with its
+- [x] `tools/probe/run-verify-editor.cjs` -- the deployed walk (R-82): the dice is in the top bar with its
       accessible name, the CSP session records no new violation, pressing it opens the dialog on Cancel,
       and on the real project the dialog carries `NOTHING_TO_REMIX` and no Remix button. `/harness/editor`
       still 404s in production.
-- [ ] `apps/web/app/(app)/app/(authed)/controls/review.tsx` -- **R-162:** mount the
+- [x] `apps/web/app/(app)/app/(authed)/controls/review.tsx` -- **R-162:** mount the
       same `<RemixDice>` beside the page's heading over the page's own `ControlState`, and widen its
       existing key effect (`:251-272`, which already routes `[` and `]` through `shortcutFor`) to accept
       `remix` — never a second key table (standing rule 3).
-- [ ] `tools/probe/run-verify-controls.cjs` -- **R-162:** the dice on the deployed
+- [x] `tools/probe/run-verify-controls.cjs` -- **R-162:** the dice on the deployed
       Controls review page really re-rolls the sample section through its ring, and `⌘Z`'s equivalent
       there (the page stores nothing) is out of scope — the ring's own arrows are the way back.
 

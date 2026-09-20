@@ -94,6 +94,25 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     No toast: EXPERIENCE.md:541 makes the section count a POLITE canvas-status announcement and `#editor-said`
     is the one live region, while R-143 already gave undo its single seat. `parkedControls` and the doc schema
     are untouched, so there is **no Schema phase**.
+  - **Story 5.12 built it (2026-09-20):** Remix added NO mechanism — `apps/web/lib/remix.ts` is one pure picker
+    (`remixPicks` = one `shuffleTo` over each section's own `ringFor`) and `editor.tsx`'s `onRemix` folds every pick
+    through `switchDesign` into ONE next doc and ONE `apply` → `commit`, so the whole re-roll is one journal entry,
+    one `⌘Z` and one lit Undo arrow, and FR-D9's "never half-applying" is one check before one assignment.
+    **THE COUNT IS THE PICKS** — `remixable` IS `remixPicks` counted, so the confirm can never say six and move five
+    (standing rule 4). R-161 is one line in the handler: the picks are taken from `docs[templateKeyOf(key)]` alone,
+    so the site doc is never touched and `journal.ts` is unchanged. The door is `components/editor/remix-dice.tsx`:
+    ModeToggle's geometry, icon-only with `REMIX_WORDS` as name and title, an 18px CSS 3D cube whose faces, hairline
+    and pips are `globals.css`'s `.remix-dice__*` rules in `--color-surface` / `--color-line` / `--color-coral`
+    (`tokens.test.ts:125` forbids a hex in a `.tsx`), rolling on ONE inline `transform` — a random face plus two
+    whole turns, so the value always changes and `transitionend` is guaranteed. **THE CONFIRM OPENS ON THAT EVENT
+    AND ON NOTHING ELSE**, which is what makes the reduced-motion degrade free: `globals.css` flattens the roll and
+    the popup arrives at once, with no timer to keep in step (`emulateMedia` proves it in the journey — `test.use({
+    reducedMotion })` is a CONTEXT option and was silently ignored by this gate's own context). It leads the
+    right-hand cluster rather than following the sun, because R-135 does not render `ModeToggle` at all on a
+    Light-only project and a dice after it would move. `⇧R` is `keymap.ts`'s first SHIFTED single key (`shift: true`,
+    or a bare `r` would bind too) and reaches the same handle `run(gesture)` uses, so the key and the button are one
+    control down to the animation. R-162: the same component is mounted on `/controls` over that page's own
+    `ControlState`, and its existing key effect widened to accept `remix` rather than growing a second key table.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`

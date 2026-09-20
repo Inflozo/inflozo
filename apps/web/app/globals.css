@@ -216,6 +216,89 @@
   box-shadow: inset 0 0 0 1.5px var(--color-coral);
 }
 
+/* STORY 5.12 — SITE REMIX'S DICE (R-163, the owner's Question 3). The export draws NO control for Site Remix at
+   all — `EXPERIENCE.md:154` gives `⇧R` as the surface's only door — and no icon set has a tumbling die, so this is
+   R-92's third stated exception: a drawing of our own, in token colours. His words were "a real little cube. Six
+   faces in 3D, coral pips on the app's paper white with our hairline edge, tumbling for about a second and
+   settling on a face."
+
+   IT IS HERE AND NOT IN A `.tsx` BECAUSE OF THE COLOURS (`tokens.test.ts:125`: no colour literal in any `.ts` or
+   `.tsx` under `apps/web`). The faces are `--color-surface`, the edge `--color-line` and the pips `--color-coral`,
+   which is also B8's own "the only surface in Part B that uses a coral primary".
+
+   THE ROLL IS ONE TRANSFORM, and `remix-dice.tsx` sets it inline: a random face plus two whole turns, so the
+   value ALWAYS changes and `transitionend` is guaranteed to fire. The resting tilt is part of that same inline
+   value rather than a second transform here, so the two cannot fight; nothing but the cube transitions, so the
+   `transitionend` the dialog opens on can only be this one.
+
+   IT DEGRADES THROUGH THE REDUCED-MOTION BLOCK BELOW and nothing here opts out: `transition-duration: 0.01ms
+   !important` flattens the roll AND fires `transitionend` at once, which is why the confirm opens on the event
+   rather than on a timer — one code path, and no `setTimeout` a reader who asked for no motion would still wait
+   out. `!important` in `@layer base` beats this unlayered rule, which is the whole reason it can. */
+.remix-dice {
+  /* shallow, so 18px of cube still reads as a solid object rather than a flat square */
+  perspective: 70px;
+}
+
+.remix-dice__cube {
+  position: relative;
+  display: block;
+  width: 18px;
+  height: 18px;
+  transform-style: preserve-3d;
+  /* ~900ms and a settling curve, not the app's usual 160ms: it is the one control meant to feel like a throw */
+  transition: transform 900ms cubic-bezier(0.18, 0.89, 0.24, 1.02);
+}
+
+.remix-dice__face {
+  position: absolute;
+  inset: 0;
+  border-radius: 3px;
+  background-color: var(--color-surface);
+  /* the hairline as an INSET SHADOW, for R-120's reason: a border is floored to whole CSS pixels */
+  box-shadow: inset 0 0 0 1px var(--color-line);
+  background-repeat: no-repeat;
+  backface-visibility: hidden;
+  /* one pip, named once and repeated per face below — copies of a gradient, never six elements each */
+  --pip: radial-gradient(circle at center, var(--color-coral) 1.3px, transparent 1.45px);
+}
+
+.remix-dice__face--1 {
+  transform: translateZ(9px);
+  background-image: var(--pip);
+  background-position: 50% 50%;
+}
+
+.remix-dice__face--2 {
+  transform: rotateY(180deg) translateZ(9px);
+  background-image: var(--pip), var(--pip);
+  background-position: 28% 28%, 72% 72%;
+}
+
+.remix-dice__face--3 {
+  transform: rotateY(90deg) translateZ(9px);
+  background-image: var(--pip), var(--pip), var(--pip);
+  background-position: 26% 26%, 50% 50%, 74% 74%;
+}
+
+.remix-dice__face--4 {
+  transform: rotateY(-90deg) translateZ(9px);
+  background-image: var(--pip), var(--pip), var(--pip), var(--pip);
+  background-position: 28% 28%, 72% 28%, 28% 72%, 72% 72%;
+}
+
+.remix-dice__face--5 {
+  transform: rotateX(90deg) translateZ(9px);
+  background-image: var(--pip), var(--pip), var(--pip), var(--pip), var(--pip);
+  background-position: 28% 28%, 72% 28%, 50% 50%, 28% 72%, 72% 72%;
+}
+
+.remix-dice__face--6 {
+  transform: rotateX(-90deg) translateZ(9px);
+  background-image: var(--pip), var(--pip), var(--pip), var(--pip), var(--pip), var(--pip);
+  background-position: 28% 24%, 28% 50%, 28% 76%, 72% 24%, 72% 50%, 72% 76%;
+}
+
 /* `app-floor`'s condition is a COARSE POINTER, never a bare width (R-76, R-87): a desktop
    at 200% zoom is 720px wide and stays in the editor. Nothing here collapses anything —
    the editor's own ladder is D8 and Story 5.22. */

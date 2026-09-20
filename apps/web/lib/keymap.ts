@@ -34,6 +34,7 @@ export type Gesture =
   | 'add' | 'duplicate' | 'remove'
   | 'prev' | 'next'
   | 'layers' | 'dark' | 'shortcuts' | 'deselect'
+  | 'remix'
   | 'desktop' | 'tablet' | 'mobile'
 
 export type Binding = {
@@ -100,7 +101,10 @@ export const KEYMAP: readonly Binding[] = [
   // handler is `editor.tsx`'s `onEscape`, over `escDeselects`; the row is here so the card lists it.
   { gesture: 'deselect', action: 'Deselect', chips: ['Esc'] },
   { action: 'Preview Mode', chips: ['P'], story: '5.15' },
-  { action: 'Site Remix', chips: ['⇧R'], story: '5.12' },
+  // Story 5.12 — R-145's fourth key to arrive with its action, and the only one that is SHIFTED: `shift: true`, so
+  // a bare `r` is a letter and nobody's binding. Single-key, so WCAG 2.1.4's focus condition rides on it by
+  // construction (`SINGLE_KEY` is derived below) — which is what lets a capital R still be typed into a headline.
+  { gesture: 'remix', action: 'Site Remix', chips: ['⇧R'], keys: ['r'], shift: true },
   { action: 'Ship it', chips: ['⌘⏎'], story: '7.18' },
   // R-147 (owner, 2026-09-19): FR-D11's fourteenth key, and the one key that teaches all the others. `S3
   // Dashboard.dc.html:362` draws it on the account menu's row, and the editor draws no account menu

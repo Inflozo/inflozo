@@ -384,12 +384,13 @@ test('R-147: ? opens the card, it lists exactly the keys that work, and Esc retu
   expect(listed.length).toBeGreaterThan(0)
   const chips = await page.locator('[data-shortcut-row] span span').allInnerTexts()
   // R-145: a key whose action is not built is ABSENT — not greyed, not captioned, not listed
-  for (const dead of ['P', '⇧R', '⌘⏎']) {
+  for (const dead of ['P', '⌘⏎']) {
     expect(chips, `${dead} has nothing to press yet and must not be advertised`).not.toContain(dead)
   }
-  // ⌘K joined this list at Story 5.10, which built the Section Picker it presses, and `[` `]` at Story 5.11,
-  // which built the design ring they cycle (R-145: a shortcut arrives with the action it drives)
-  for (const live of ['⌘K', '[', ']', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
+  // ⌘K joined this list at Story 5.10, which built the Section Picker it presses, `[` `]` at Story 5.11, which
+  // built the design ring they cycle, and ⇧R at Story 5.12, which built Site Remix (R-145: a shortcut arrives
+  // with the action it drives)
+  for (const live of ['⌘K', '[', ']', '⇧R', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
     expect(chips, `${live} works and must be listed`).toContain(live)
   }
   await expect(sheet).not.toContainText(/not yet|coming|soon|unavailable/i)
@@ -405,10 +406,10 @@ test('R-145: a deferred key does nothing and announces nothing', async ({ page }
   await select(page, own[0])
   const before = { rows: (await rows(page)).all.length, mode: await modeOf(page), device: await deviceOf(page) }
   await page.locator('section[aria-label="Canvas"]').focus()
-  // ⌘K LEFT THIS LIST AT STORY 5.10 and `[` `]` AT STORY 5.11, each with the action it presses — R-145's rule is
-  // that a shortcut arrives with its action, so a key leaves here and gets a stop of its own below. Three are
-  // still owed.
-  for (const key of ['p', 'P', 'ControlOrMeta+Enter', 'Shift+R']) {
+  // ⌘K LEFT THIS LIST AT STORY 5.10, `[` `]` AT STORY 5.11 and ⇧R AT STORY 5.12, each with the action it
+  // presses — R-145's rule is that a shortcut arrives with its action, so a key leaves here and gets a stop of
+  // its own below. Two are still owed.
+  for (const key of ['p', 'P', 'ControlOrMeta+Enter']) {
     await page.keyboard.press(key)
   }
   expect((await rows(page)).all).toHaveLength(before.rows)
@@ -925,4 +926,105 @@ test('FR-D5 does not reach the ring: a site-wide section has the same Design blo
     expect(Number(at)).toBeLessThanOrEqual(Number(of_))
     await expect(page.locator('#editor-design [data-design-step]')).toHaveCount(2)
   }
+})
+
+/* ── Story 5.12 — SITE REMIX (FR-D17, R-145, R-161, R-163) ──────────────────────────────────────────────────
+   `⇧R` is R-145's fourth owed key to arrive with its action, and the first SHIFTED single key — so the last
+   stop below, a capital R typed into a panel field while nothing rolls, is the one the owner called the most
+   important step of his own test.
+
+   The whole re-roll is ONE transaction, which is FR-D17's hard requirement and the reason R-161 scoped the dice
+   to the canvas you are on: one press, one `⌘Z`, asserted here rather than reasoned about. */
+
+const remixDialog = (page) => page.locator('dialog[data-remix-confirm][open]')
+const designName = (page) => page.locator('#editor-design-name')
+
+test('R-145: ⇧R rolls the dice and opens the confirm on Cancel, and Esc leaves the canvas untouched', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const before = { design: await designName(page).innerText(), counter: await counter(page).innerText(), said: await said(page) }
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+
+  // the dialog opens on the cube's own `transitionend` — never a timer — so this wait IS the roll
+  await expect(remixDialog(page)).toBeVisible()
+  await expect(page.locator('dialog[open] [data-cancel]'), 'an irreversible confirm opens on cancel (R-115)').toBeFocused()
+  // the count is DERIVED and named in the sentence (standing rule 4); a zero here would make the stop vacuous
+  const sentence = await page.locator('#editor-remix-body').innerText()
+  expect(sentence).toMatch(/^Re-rolls [1-9]\d* sections? on Home to a different design in its own category\./)
+  await expect(page.locator('[data-remix-go]'), 'there is something to remix, so the coral button is there').toHaveCount(1)
+  // R-161: no tick-box and no scope group — ABSENT, never greyed (UX-DR3, R-118)
+  await expect(remixDialog(page).locator('input, [role="radio"], [role="checkbox"]')).toHaveCount(0)
+  await expect(remixDialog(page)).not.toContainText(/Every page|header and footer|Style Pack/i)
+
+  await page.keyboard.press('Escape')
+  await expect(remixDialog(page)).toHaveCount(0)
+  expect(await designName(page).innerText(), 'Cancel changes nothing').toBe(before.design)
+  expect(await counter(page).innerText()).toBe(before.counter)
+  expect(await said(page), 'and announces nothing').toBe(before.said)
+})
+
+test('FR-D17: Remix re-rolls the canvas in ONE transaction — one press, one ⌘Z, and the count announced', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const was = await designName(page).innerText()
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  // from Cancel, the next stop is the coral primary — the dialog is two buttons and a line of words
+  await page.keyboard.press('Tab')
+  await expect(page.locator('[data-remix-go]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(remixDialog(page)).toHaveCount(0)
+
+  await expect(designName(page), 'every section with somewhere to go is drawn as a different design').not.toHaveText(was)
+  // UX-DR12 / EXPERIENCE.md:541 — a polite canvas-status announcement, never a toast
+  expect(await said(page)).toMatch(/^Remixed [1-9]\d* sections? on Home\.$/)
+  // NO TOAST (B8 drew one): the count is spoken through the editor's one POLITE region and is never drawn, so
+  // the sentence exists nowhere a reader can see it
+  await expect(page.locator('#editor-said')).toHaveClass(/sr-only/)
+  await expect(page.locator('#editor-said')).toHaveAttribute('aria-live', 'polite')
+
+  // ONE press, ONE undo (AD-15, AD-16): the whole re-roll is one journal entry
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(designName(page), 'one ⌘Z puts the whole canvas back exactly').toHaveText(was)
+})
+
+test('WCAG 2.1.4: with the caret in a field ⇧R types a capital R and nothing rolls', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  const before = await counter(page).innerText()
+  await openGroup(page)
+  const field = page.locator('#editor-controls input[type="text"]:visible').first()
+  await field.focus()
+  await expect(field, 'a field nothing focused would prove nothing').toBeFocused()
+  const value = await field.inputValue()
+  await page.keyboard.press('Shift+R')
+  await expect(field, "the owner's own most important step").toHaveValue(`${value}R`)
+  await expect(remixDialog(page)).toHaveCount(0)
+  await expect(counter(page)).toHaveText(before)
+})
+
+
+/* MOTION DEGRADES, AND IT COSTS NOTHING TO PROVE. `globals.css`'s reduced-motion block flattens every transition
+   in the app document to 0.01ms — the cube's included — and the confirm opens on that transition's own
+   `transitionend` and on nothing else. So a reader who asks for no motion gets the popup AT ONCE by construction:
+   there is no timer anywhere to keep in step with the CSS and none to wait out. Both halves are asserted here.
+
+   `emulateMedia` rather than `test.use({ reducedMotion })`: the option is a CONTEXT one and this journey's context
+   is the gate's, so it was silently ignored — `matchMedia(...).matches` read false and the cube still transitioned
+   for 900ms (executed 2026-09-20, which is the only reason this comment exists rather than a green vacuous test). */
+test('prefers-reduced-motion: the cube does not tumble, and the confirm still opens', async ({ page }) => {
+  await open(page)
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  const motion = await page.locator('.remix-dice__cube').evaluate((el) => ({
+    asked: matchMedia('(prefers-reduced-motion: reduce)').matches,
+    duration: getComputedStyle(el).transitionDuration,
+  }))
+  expect(motion.asked, 'the control: the emulation really reached the page').toBe(true)
+  expect(parseFloat(motion.duration), "the roll is flattened by the app's one reduced-motion rule").toBeLessThan(0.05)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page), 'and the dialog opens on that same flattened transition, not on a timer').toBeVisible()
 })

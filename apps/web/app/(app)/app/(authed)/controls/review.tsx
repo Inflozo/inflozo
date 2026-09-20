@@ -8,12 +8,14 @@ import type { ControlState, RuntimeDocument, RuntimeElement } from '@inflozo/sec
 import { loadIcons } from '@/components/controls/icon-picker'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { DesignPicker } from '@/components/editor/design-picker'
+import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Panel } from '@/components/kit/icons'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { wheelToFrame } from '@/lib/canvas'
 import { holdsCaret, shortcutFor, singleKeyOwned } from '@/lib/keymap'
+import { remixPicks, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 
 /* THE INSTANCE, THE CANVAS AND THE PANEL — Story 4.5's review, the way Epic 5's editor will wire them.
@@ -198,6 +200,23 @@ export function Review({
     if (to !== null && designRing[to]) onDesign(designRing[to]!.id)
   }
 
+  /* ─── Story 5.12 — SITE REMIX'S DICE, HERE TOO (R-162, the owner's Question 2) ──────────────────────────────
+     The shipped library holds one design per category, so in his own editor the dice has nothing to roll to and
+     the confirm says so honestly. This page carries the only ring in the repository, so this is where he watches
+     a section really change design — and where `run-verify-controls.cjs` proves the re-roll on production (R-82).
+
+     IT IS THE EDITOR'S OWN PICKER, not a second one: `remixPicks` over this page's one sample, landing through
+     the same `onDesign` the arrows and Shuffle use. There is ONE section here, so Remix and Shuffle do the same
+     thing — which is the honest answer rather than a second mechanism. Nothing is saved on this page, so there is
+     no undo to promise (`undoable` is left off): the ring's own arrows are the way back. */
+  const remixDice = useRef<RemixHandle | null>(null)
+  const remixPlaced = [{ instanceId: 'controls-sample', designId: entry.id }]
+  const remixRing = () => designRing
+  const onRemix = () => {
+    const pick = remixPicks(remixPlaced, remixRing, Math.random)[0]
+    if (pick) onDesign(pick.to)
+  }
+
   /** S4b's pill, placed from the section's rect through the frame's rect. Nothing is scaled on this page, so
    *  there is no fit to divide by — the editor's own `pillBox` is the same arithmetic with one. */
   const pillBox = (): PillBox | null => {
@@ -256,9 +275,12 @@ export function Review({
       const doc = target?.ownerDocument ?? document
       const active = doc.activeElement as HTMLElement | null
       const gesture = shortcutFor(e, holdsCaret(target) || holdsCaret(active))
-      if (gesture !== 'prev' && gesture !== 'next') return
+      // Story 5.12 — `⇧R` joins the same effect, never a second key table (standing rule 3): the same match, the
+      // same caret guard and the same overlay guard the ring's two keys already go through
+      if (gesture !== 'prev' && gesture !== 'next' && gesture !== 'remix') return
       if (singleKeyOwned(e, [target, active], [document, doc])) return
       e.preventDefault()
+      if (gesture === 'remix') return void remixDice.current?.roll()
       ringStep.current(gesture === 'prev' ? -1 : 1)
     }
     document.addEventListener('keydown', onKey)
@@ -274,7 +296,16 @@ export function Review({
   return (
     <div className="flex flex-1 flex-col tablet:h-dvh tablet:flex-none tablet:flex-row tablet:overflow-hidden">
       <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 px-4 py-6 tablet:px-8">
-        {children}
+        {/* R-162: the dice sits beside this page's heading, where the editor's sits beside the sun */}
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">{children}</div>
+          <RemixDice
+            canvas="the sample"
+            count={remixable(remixPlaced, remixRing)}
+            onRemix={onRemix}
+            handle={remixDice}
+          />
+        </div>
         <iframe
           ref={frame}
           src="controls/frame"

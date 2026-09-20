@@ -14,6 +14,9 @@
 // Story 5.11 adds the RING WALK at the foot: this page carries the three fixture designs of
 // `packages/library/fixtures/controls/` (R-158), which is the only ring in the repository, so carry / park /
 // default, the wrap and FR-D13's item cap are proved HERE on production rather than asserted in a unit test.
+// Story 5.12 adds the REMIX WALK after it (R-162): the dice, its confirm and `⇧R` are mounted here as well as in
+// the editor, so this is where a re-roll is proved to really change a section's design on production — in the
+// owner's own editor every ring is length 1 and the confirm says so instead.
 // Story 4.10's Fix (2026-09-15) re-shaped the panel it walks: R-113 put every control in the accordion its role
 // names with nothing pinned above them, and R-115 made "Reset this design" ask first — so a step whose control now
 // sits in a closed accordion opens it, and step 16 answers the confirm.
@@ -652,6 +655,83 @@ async function main() {
       (await counter511.innerText()).trim() !== wasShuffle511 && (await drawnHeading()) === wordsShuffle511 && /^Ring words/.test(wordsShuffle511 ?? ''),
       `${wasShuffle511} → ${(await counter511.innerText()).trim()} · ${JSON.stringify(wordsShuffle511)} → ${JSON.stringify(await drawnHeading())}`)
     await page.screenshot({ path: `${OUT}/controls-ring-1440.png` })
+
+    /* ── STORY 5.12 — SITE REMIX'S DICE, ON THE DEPLOYED PAGE (FR-D17, R-162, R-163, R-82) ──────────────────────
+       R-162 (owner, 2026-09-20): the dice is built in BOTH places, and this is the one where the owner — and this
+       harness — can watch a section really change design, because `packages/library/designs/` holds one design per
+       category and his own editor's confirm therefore says so honestly. His steps 7–9 are these.
+       NO UNDO IS PROMISED HERE: the page stores nothing, so B8's "one undo, always available" line is absent
+       rather than printed as a lie — the ring's own arrows are the way back. */
+    const dice512 = await page.evaluate(() => {
+      const b = document.getElementById('editor-remix')
+      return b === null ? null : {
+        label: b.getAttribute('aria-label'),
+        title: b.getAttribute('title'),
+        words: (b.textContent ?? '').trim(),
+        faces: b.querySelectorAll('.remix-dice__face').length,
+        pip: getComputedStyle(b.querySelector('.remix-dice__face--1')).backgroundImage,
+      }
+    })
+    check('remix — R-162 / R-163: the dice is beside this page\'s heading, icon-only with its words as its accessible name and its hover title, and it is a real six-faced cube with coral pips',
+      dice512 !== null && dice512.label === 'Site Remix — ⇧R' && dice512.title === dice512.label && dice512.words === '' &&
+      dice512.faces === 6 && /rgb\(255, 89, 65\)/.test(dice512.pip ?? ''), JSON.stringify(dice512 && { ...dice512, pip: undefined }))
+
+    const wasRemix512 = (await counter511.innerText()).trim()
+    const wordsRemix512 = await drawnHeading()
+    await page.locator('#editor-remix').click()
+    await page.waitForTimeout(1600)
+    const ask512 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[data-remix-confirm][open]')
+      return d === null ? null : {
+        onCancel: document.activeElement === d.querySelector('[data-cancel]'),
+        title: (d.querySelector('#editor-remix-title')?.textContent ?? '').trim(),
+        body: d.querySelector('#editor-remix-body')?.textContent ?? '',
+        buttons: [...d.querySelectorAll('button')].map((b) => b.textContent.trim()),
+        choices: d.querySelectorAll('input, [role="radio"], [role="checkbox"]').length,
+      }
+    })
+    check('remix — the dice rolls and the confirm opens on Cancel, naming the count it would move and offering Cancel and a coral Remix (R-115, UX-DR14)',
+      ask512 !== null && ask512.onCancel && ask512.title === 'Remix the sample?' &&
+      /^Re-rolls 1 section on the sample to a different design in its own category\./.test(ask512.body) &&
+      JSON.stringify(ask512.buttons) === JSON.stringify(['Cancel', 'Remix']) && ask512.choices === 0, JSON.stringify(ask512))
+    check('remix — and it promises no undo on a page that saves nothing: B8\'s line is ABSENT here, not printed as a lie',
+      ask512 !== null && !/One undo/i.test(ask512.body) &&
+      (await page.evaluate(() => !/One undo/i.test(document.querySelector('dialog[data-remix-confirm][open]')?.textContent ?? ''))))
+    // the owner's step 9 — Cancel changes nothing at all
+    await page.locator('dialog[data-remix-confirm][open] [data-cancel]').click()
+    await page.waitForTimeout(400)
+    check('remix — Cancel leaves the sample exactly as it was: same design, same words',
+      (await counter511.innerText()).trim() === wasRemix512 && (await drawnHeading()) === wordsRemix512,
+      `${wasRemix512} → ${(await counter511.innerText()).trim()}`)
+
+    // the owner's step 8 — Remix really re-rolls the sample through its ring, and the typed words carry
+    await page.locator('#editor-remix').click()
+    await page.waitForTimeout(1600)
+    await page.locator('dialog[data-remix-confirm][open] [data-remix-go]').click()
+    await page.waitForTimeout(600)
+    check('remix — R-162: the dice really re-rolls the sample through its ring — a DIFFERENT design draws it and the words carry word for word (FR-D19, FR-G3)',
+      (await counter511.innerText()).trim() !== wasRemix512 && (await drawnHeading()) === wordsRemix512 &&
+      /^Design \d+ of 3 — .+/.test((await page.locator('#controls-said').innerText()).trim()),
+      `${wasRemix512} → ${(await counter511.innerText()).trim()} · ${JSON.stringify(await drawnHeading())}`)
+
+    // R-141: `⇧R` is the same control, through the page's own `shortcutFor` and never a second key table. Focus
+    // is where the platform put it when the confirm closed — on the dice itself — so nothing needs pressing first.
+    await page.keyboard.press('Shift+R')
+    await page.waitForTimeout(1600)
+    check('remix — R-145 / R-141: `⇧R` opens the very same confirm on this page — the key and the dice are one control',
+      await page.evaluate(() => document.querySelector('dialog[data-remix-confirm][open]') !== null))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    // WCAG 2.1.4, the half only a real field can prove: a capital R typed into the Heading is a character
+    await openGroup('Content')
+    await heading511.click()
+    const wasField512 = await heading511.inputValue().catch(() => heading511.innerText())
+    await page.keyboard.press('Shift+R')
+    await page.waitForTimeout(400)
+    const nowField512 = await heading511.inputValue().catch(() => heading511.innerText())
+    check('remix — WCAG 2.1.4: with the caret in the Heading field ⇧R types a capital R and rolls nothing',
+      nowField512 === `${wasField512}R` && (await page.evaluate(() => document.querySelectorAll('dialog[open]').length)) === 0,
+      `${JSON.stringify(wasField512)} → ${JSON.stringify(nowField512)}`)
     // the review screenshot is the page as it opens — on the FIRST design, not wherever the Shuffle above landed
     await page.locator('[data-design-tile]').first().click()
     await page.waitForTimeout(500)
