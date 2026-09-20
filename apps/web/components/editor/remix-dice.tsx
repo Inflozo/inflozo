@@ -64,6 +64,12 @@ export function RemixDice({
   handle?: RefObject<RemixHandle | null>
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
+  /** CANCEL PUTS FOCUS BACK ON THE DICE, and it has to be said rather than left to the user agent. A modal
+   *  `<dialog>` restores focus to whatever held it when `showModal()` ran — and `onMouseDown` is prevented
+   *  below (ModeToggle's rule), so a press of the BUTTON never focuses it and the restore lands on the canvas,
+   *  or on `<body>` where nothing had focus yet. `⇧R` routes through this same `roll()`, so the dice is the
+   *  invoking control on both doors and is where Cancel, `Esc` and the backdrop all return to. */
+  const die = useRef<HTMLButtonElement>(null)
   /** a second press while the cube is in the air is ignored: one roll, one dialog */
   const rolling = useRef(false)
   const [turn, setTurn] = useState({ ...TILT, rolls: 0 })
@@ -81,6 +87,7 @@ export function RemixDice({
   return (
     <>
       <button
+        ref={die}
         type="button"
         id="editor-remix"
         aria-label={REMIX_WORDS}
@@ -111,6 +118,7 @@ export function RemixDice({
         ref={dialog}
         data-remix-confirm
         onClick={closeOnBackdrop}
+        onClose={() => die.current?.focus()}
         aria-labelledby="editor-remix-title"
         aria-describedby="editor-remix-body"
         className={`${sheet} gap-[18px]`}

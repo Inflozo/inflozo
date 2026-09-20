@@ -957,11 +957,41 @@ test('R-145: ⇧R rolls the dice and opens the confirm on Cancel, and Esc leaves
   await expect(remixDialog(page).locator('input, [role="radio"], [role="checkbox"]')).toHaveCount(0)
   await expect(remixDialog(page)).not.toContainText(/Every page|header and footer|Style Pack/i)
 
+  // THE DIALOG OWNS THE KEY while it is up (the matrix's own row): `remix` is a SINGLE_KEY, so `onShortcut`'s
+  // owner selector is `:popover-open, dialog[open]` and a second ⇧R is refused before it reaches the dice
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page), 'one dialog, and the press did not stack a second roll behind it').toHaveCount(1)
+  await expect(page.locator('dialog[open] [data-cancel]'), 'and it did not move focus either').toBeFocused()
+
   await page.keyboard.press('Escape')
   await expect(remixDialog(page)).toHaveCount(0)
+  // FOCUS COMES BACK TO THE DICE, and it is said rather than left to the user agent: `onMouseDown` is prevented on
+  // the button, so a mouse-opened confirm would otherwise restore focus to whatever held it — `<body>` at worst
+  await expect(page.locator('#editor-remix'), 'Cancel returns focus to the control that opened it').toBeFocused()
   expect(await designName(page).innerText(), 'Cancel changes nothing').toBe(before.design)
   expect(await counter(page).innerText()).toBe(before.counter)
   expect(await said(page), 'and announces nothing').toBe(before.said)
+})
+
+/* THE MATRIX'S "RE-PRESS MID-ROLL": one roll, one dialog. The second press lands while the cube is still in the
+   air, so `dialog[open]` is NOT yet there to refuse it and the guard that holds is the dice's own rolling flag —
+   without it the second `transitionend` would call `showModal()` on an already-open dialog, which throws. */
+test('a second press while the cube is in the air is ignored — one roll, one dialog', async ({ page }) => {
+  await open(page)
+  await selectRinged(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  // the control: the roll really is still running, so this stop is not passing on a dialog that already opened
+  await expect(remixDialog(page), 'the confirm waits for the cube to settle').toHaveCount(0)
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page)).toBeVisible()
+  await expect(remixDialog(page), 'two presses, one dialog').toHaveCount(1)
+  // and the page is still usable afterwards: the second press left no rolling flag stuck on
+  await page.keyboard.press('Escape')
+  await expect(remixDialog(page)).toHaveCount(0)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Shift+R')
+  await expect(remixDialog(page), 'and the dice still rolls after it').toBeVisible()
 })
 
 test('FR-D17: Remix re-rolls the canvas in ONE transaction — one press, one ⌘Z, and the count announced', async ({ page }) => {

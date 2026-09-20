@@ -245,6 +245,74 @@ uses a coral primary".
 
 ## Verification
 
+**As built.** Three departures from the spec's letter, each for a mechanical reason:
+- **`remixable` IS `remixPicks`, counted** — handed a constant `random` rather than a source of entropy. The
+  spec asked for "how many *could* move" as its own function; two functions counting the same thing is how a
+  dialog comes to say six and move five (standing rule 4). The draw cannot change the count, because
+  `shuffleTo` answers null on exactly the rings `remixPicks` skips.
+- **A section whose ring does not hold its own design is skipped too.** `ringFor` answers `[]` for a
+  non-placeable treatment, which the spec names — but it also answers a ring WITHOUT the instance's design when
+  the library no longer holds it, and `shuffleTo` is handed `at = -1` there. Both are one condition, not two.
+- **The confirm returns focus to the dice, and it is SAID rather than left to the user agent** (found at this
+  run's matrix audit, and fixed). A modal `<dialog>` restores focus to whatever held it when `showModal()` ran,
+  and `onMouseDown` is prevented on the dice (ModeToggle's rule, so the press never steals the canvas's caret) —
+  so a MOUSE-opened confirm never focused the button, and Cancel restored focus to the canvas, or to `<body>`
+  where nothing had focus yet. The matrix's Cancel row says "focus returns to the dice"; `onClose` now does it.
+  **Proved by control:** with the one line removed, `pnpm keyboard`'s stop 30 fails on that assertion alone
+  (`expect(#editor-remix).toBeFocused()`), and passes with it.
+
+**Two matrix rows had no behavioural stop until this run**, and both now have one in `tools/keyboard/journey.spec.mjs`:
+*"`⇧R` with the dialog open"* (the dialog owns the key — `remix` is a `SINGLE_KEY`, so `onShortcut`'s owner
+selector is `:popover-open, dialog[open]`) and *"re-press mid-roll"* (the second press lands while the cube is
+still in the air, so `dialog[open]` is not yet there to refuse it and the guard that holds is the dice's own
+rolling flag — without it the second `transitionend` calls `showModal()` on an open dialog, which throws).
+
+**Run at Dev (2026-09-20), locally and against the deployed build `a440621f` — every gate green:**
+- `pnpm check` — **exit 0**. Lint, typecheck and every package test, `apps/web`'s **436 tests, 0 fail** among
+  them, with `remix.test.ts`'s rows and `keymap.test.ts`'s `⇧R` row in that run. The run prints its own count.
+- `pnpm keyboard` — **34 stops, 0 fail**, six of them this story's: `⇧R` rolling the dice and opening the
+  confirm on Cancel with the count derived and no tick-box anywhere in it; a second `⇧R` with the dialog up
+  changing nothing; Esc returning focus to the dice and leaving the doc, the counter and `#editor-said`
+  exactly as they were; a re-press mid-roll giving one roll and one dialog; Remix re-rolling the canvas with
+  the count announced politely and **one** `⌘Z` restoring it; a capital R typed into a panel field rolling
+  nothing; and reduced motion flattening the roll with the confirm still opening on the transition.
+- `node --test apps/web/remix.test.ts apps/web/keymap.test.ts` — **19 tests, 0 fail**.
+- `python3 tools/doc-audit.py --check` — **exit 0** (run twice; the sub-tools regenerate on the first).
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name) — production
+  `dpl_AJPwq9ZxiQv6PtsMYGXgsczBTmqc`, `readyState: READY`, `githubCommitSha` `a440621f`, serving
+  `app.inflozo.com`. CI green on both pushes.
+- **Deployed `/controls`** — `node tools/probe/run-verify-controls.cjs` (**Supabase**, `SUPABASE_URL` +
+  `SUPABASE_SECRET_KEY`): **0 FAIL, 109 PASS**, accounts `13 → 13`. Seven of them this story's, over R-158's
+  three-design ring — the only ring in the repository, which is why R-162 put the dice here: the dice is beside
+  the heading, icon-only, its words its accessible name AND its hover title, and it is a real six-faced cube;
+  the roll opens the confirm on Cancel naming *"Re-rolls 1 section on the sample …"* with a coral Remix beside
+  it and **no choices at all** in the sheet; B8's "one undo, always available" line is **absent** here rather
+  than printed as a lie, because this page saves nothing; Cancel leaves the sample at `2 of 3`; **Remix really
+  re-rolls it** — `2 of 3 → 1 of 3`, a different design drawing it with the typed words carrying word for word
+  (FR-D19, FR-G3); `⇧R` opens the very same confirm; and with the caret in the Heading field `⇧R` types a
+  capital R and rolls nothing. axe-core WCAG 2.1 AA is **zero** at 1440 and 390 with the dice mounted.
+- **Deployed editor** — `node tools/probe/run-verify-editor.cjs` (**Supabase** + **Vercel**, the four variables
+  by name): **0 FAIL, 464 PASS**. Step 88 is this story's eight: the dice is in the top bar and **leads** the
+  right-hand cluster ahead of the sun, icon-only with `Site Remix — ⇧R` as its name and its title; it is a real
+  cube — six faces, `preserve-3d`, pips drawn in `rgb(255, 89, 65)`, the coral the token layer names; pressing
+  it rolls it and opens the one confirm on Cancel; on the owner's own project the dialog reads
+  *"Every section here is the only design its category has so far, so there is nothing to remix yet."* and
+  carries **Close alone** with **nothing greyed** (R-12, R-158); no "Re-roll what" group, no "Every page" and no
+  header-and-footer tick-box (R-161); Close leaves the doc, the journal and the announcement untouched; `⇧R`
+  opens the very same confirm; and **with a real caret in a headline on the canvas `⇧R` types a capital R and
+  rolls nothing** — the owner's own most important step. Steps 46 and 53 now read the dice as the cluster's
+  head on a dark-enabled AND a Light-only project (R-135's reason for putting it first); step 72's Tab walk
+  carries `BUTTON#editor-remix[Site Remix — ⇧R]` in its one canvas stop. Step 5's scripted session records
+  **zero** `securitypolicyviolation` events in either document with the roll and the confirm in it, and step
+  8's axe is **zero** at every state.
+  *(One earlier attempt died at step 53's soft navigation with **0 FAIL and 492 PASS** — DW-204's exact shape,
+  the same step and the same count Story 5.11 recorded twice. A HARNESS ERROR with no FAIL is not a result
+  (standing rule 2), so it was re-run rather than debugged, and the run above is the one that completed.)*
+
+**Not hit by this story, and not claimed:** Resend, Dodo and the Ghost test servers T1/T3. Nothing here sends
+mail, takes a payment or reads a Ghost — Remix swaps which design renders inside the editor's own doc. No file
+under `supabase/migrations/` is in this story's diff, so there is no Schema phase (R-99).
+
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, `remix.test.ts` and
   `keymap.test.ts` included, and `pnpm keyboard`'s journey green with its new `⇧R` stop.
