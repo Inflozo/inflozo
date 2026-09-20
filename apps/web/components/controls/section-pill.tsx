@@ -158,7 +158,7 @@ export function SectionPill({
       ref={add}
       type="button"
       data-add-section=""
-      aria-label={`Add a section after ${name}`}
+      aria-label={`Add section after ${name}`}
       title="Add a section"
       onPointerLeave={onPointerLeave}
       onClick={onAdd}

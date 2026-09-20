@@ -4855,3 +4855,43 @@ owner: Story 5.23's play-loop gate, where the editor is walked with a screen rea
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`setSaid`, every caller)
 reason: the fix is one helper every announcement routes through, and whether a repeat should be re-spoken at all is
   best judged with a screen reader running, not from the code.
+
+### DW-206: the Section Picker is four columns at every width, so its cards are tiny on a narrow editor
+
+plain: The picker always draws four cards across. On a wide screen that is right (your ruling R-153). On the two
+  narrower editor layouts the same four columns leave each card about a thumb wide, too small to read.
+status: open
+severity: low
+origin: Story 5.10's Review (2026-09-20), Blind Hunter.
+owner: the story that builds the editor's below-1440 layouts (`D8 Editor Below 1440.dc.html`).
+location: `apps/web/components/editor/section-picker.tsx` (`COLUMNS`)
+reason: R-153 ruled four columns on the width he tested; the narrow picker has no frame yet, and drawing one is
+  that story's work (R-74), not a guess made in a review.
+
+### DW-207: three small leftovers in the Section Picker
+
+plain: (1) If a section is refused, the sentence saying so stays on screen after you change category or search.
+  (2) While you search, the title says "All sections" but the category you had chosen still looks chosen.
+  (3) The search box shows a ⌘K hint, but pressing ⌘K while typing in it does nothing in the picker.
+status: open
+severity: low
+origin: Story 5.10's Review (2026-09-20), Acceptance Auditor and Blind Hunter.
+owner: Story 5.23's play-loop gate.
+location: `apps/web/components/editor/section-picker.tsx`
+reason: each is cosmetic and none blocks a placement; the refusal itself is reachable by one design only (R-37).
+
+### DW-208: the canvas document's cache rule lives in two files and is tested by reading one of them as text
+
+plain: The rule that decides whether a browser may keep the preview page is written twice — once for the real
+  editor, once for the test harness — and the only automated test reads the first file's words instead of asking
+  the page. The deployed walk's step 83 is the one check that really asks.
+status: open
+severity: low
+origin: Story 5.10's Review (2026-09-20), Verification Gap and Blind Hunter. The production defect this review
+  fixed (an empty build id) was caught by step 83 and by nothing in `pnpm check`.
+owner: the next story that touches `/canvas`.
+location: `apps/web/app/(app)/app/(authed)/canvas/route.ts`, `apps/web/app/(app)/app/harness/canvas/route.ts`,
+  `apps/web/pilots.test.ts`
+reason: the fix is one pure function in `lib/canvas.ts` both routes call, with a unit test — small, but a
+  refactor of two shipped routes, and step 83 guards it meanwhile.
+

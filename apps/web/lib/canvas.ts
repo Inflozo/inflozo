@@ -15,7 +15,7 @@ export type DesignRows = Readonly<Record<string, { newest: readonly unknown[]; o
 /** The build this page was published from, in the canvas document's address (the owner's ruling of 2026-09-20,
  *  Question 5). It is what lets the document be cached `immutable`: a publish changes the address, so a new
  *  stylesheet is picked up at once and a stale one can never be served. `next.config.ts` inlines it. */
-const V = process.env.INFLOZO_CANVAS_V ?? 'dev'
+const V = process.env.INFLOZO_CANVAS_V || 'dev'
 
 /** The canvas document's own address, beside the page: `/canvas` on the app host, `/app/canvas` on localhost. */
 export const canvasSrc = (appPrefixed: boolean) => `${appPrefixed ? '/app' : ''}/canvas?v=${V}`

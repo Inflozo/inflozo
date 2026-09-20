@@ -426,6 +426,28 @@ globe on the card instead of a sentence.
 - Given the deployed editor, when the walk runs, then step 5's CSP count is still zero and step 8's axe is zero
   with the picker open, **with no exception beyond R-149's one**.
 
+### Review Findings
+
+Review of 2026-09-20 — the five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier) over the diff since `5ab1ddd7`. No decision is the owner's; every patch below is applied.
+
+- [x] [Review][Patch] **PRODUCTION DEFECT — the build id in the preview address is EMPTY on the live site, so nothing is kept** (R-157 not in force: deployed step 83 read `src …/canvas?v=&design=a1%2F1`, `cache-control: no-store`). `??` kept an empty `VERCEL_GIT_COMMIT_SHA`; now `||`, and the routes keep a page only for a real build — never an empty `v` or the local `dev` [apps/web/next.config.ts:52, apps/web/lib/canvas.ts:18, both `canvas/route.ts`]
+- [x] [Review][Patch] The deployed walk could not pass step 27: it read the Layers list as the aside's LAST child, which this story's "+ Add section" footer now is. The list carries `data-layers-list` and the walk reads that [tools/probe/run-verify-editor.cjs:1362, :1423, :1518 · apps/web/components/controls/layers.tsx]
+- [x] [Review][Patch] Deployed step 82 summed the rail's counts INCLUDING R-154's `All sections` row, so it could never equal the card count [tools/probe/run-verify-editor.cjs:3241]
+- [x] [Review][Patch] Deployed step 85's caret check never had a caret — its own control (`editing510`) was false, so it proved nothing (standing rule: a result whose control did not pass is not a result). It takes the caret the way steps 16-22 do [tools/probe/run-verify-editor.cjs step 85]
+- [x] [Review][Patch] Deployed step 83 accepted any `v=`, an empty one included — it now requires a commit id [tools/probe/run-verify-editor.cjs step 83]
+- [x] [Review][Patch] A dark/light flip from the top bar WHILE THE PICKER IS CLOSED re-measured every kept preview at 0, read it as the ceiling, and reopened every card as a cropped two-row tile [apps/web/components/editor/section-preview.tsx `paint`]
+- [x] [Review][Patch] A kept preview did not repaint when the canvas changed under it (`target`, `rows` missing from the effect) [apps/web/components/editor/section-preview.tsx]
+- [x] [Review][Patch] `↓`/`↑` walked a fixed four cells on, but the grid is packed dense with two-column and two-row cards (R-153), so the key could land on an unrelated card. They now go to the nearest card below/above [apps/web/components/controls/icon-picker.tsx `gridKeys`, section-picker.tsx]
+- [x] [Review][Patch] Two presses before the first frame called `showModal` twice [editor.tsx `openPicker`]
+- [x] [Review][Patch] The refusal line was a live region inserted already filled, which screen readers often skip; the region now stays in the tree [section-picker.tsx]
+- [x] [Review][Patch] The "+ Add section" pill's accessible name did not contain its visible words (WCAG 2.5.3) [section-pill.tsx:161]
+- [x] [Review][Patch] Nothing proved WHERE a placement lands — every check compared lengths, so an insert that always appended passed. New keyboard journey: ⌘K from the first section lands second [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] Comments and the Owner's manual test still described what R-153/R-154 removed (`ALL CATEGORIES` with no number, the hover wash, the Add over the picture, the multi-column grid) [picker.ts, section-picker.tsx, section-preview.tsx, icon-picker.tsx, this spec's test steps 3 and 5, the walk's header]
+- [x] [Review][Defer] The picker is four columns at every width; at the editor's 834 and 720 widths a tile is about 100px [section-picker.tsx] — deferred, DW-206
+- [x] [Review][Defer] Small picker leftovers: the refusal line outlives a category change, the header reads `All sections` while a category stays checked during a search, and `⌘K` inside the picker's own search field falls to the browser [section-picker.tsx] — deferred, DW-207
+- [x] [Review][Defer] The cache rule is pasted in two route files and asserted by reading one file's text; no test calls `GET` [both `canvas/route.ts`, pilots.test.ts] — deferred, DW-208
+
 ## Design Notes
 
 **The filter is one query, and the `bindingContext` half is made loud rather than silent.** Today
@@ -704,13 +726,15 @@ to your account at Story 5.1.
    down the left, a search box above them, and cards on the right. **Each card shows a small live picture of
    the real section**, in your own colours, with your own words in it — not a stock image.
 3. **Same screen.** Look at the left list. **Expect:** only categories that can go on a home page — today
-   **Heroes**, **Post Grids** and **Newsletter**. Each has a number beside it. The heading above them reads
-   **ALL CATEGORIES** with no number of its own.
+   **Headers**, **Heroes**, **Post Grids** and **Newsletter**. Each has a number beside it. Above them sits an
+   **All sections** row with the number of everything offered here, over a small **CATEGORIES** heading (your
+   ruling R-154 — this step used to say `ALL CATEGORIES` with no number).
 4. **Same screen.** Type `hero` into the search box. **Dummy data:** the word `hero`. **Expect:** the cards
    narrow to matching ones. Now type `zzzz`. **Expect:** the category list on the left **stays exactly where
    it is**, and the card area says it found nothing for "zzzz" — never a blank white space.
-5. **Same screen.** Clear the search, hover any card. **Expect:** the card lifts slightly and a coral **Add**
-   button appears over the picture — with the section's name and its Free or ✦ Pro tag still readable below it.
+5. **Same screen.** Clear the search, hover any card. **Expect:** the card takes a **border and nothing
+   else** — no lift, no wash over the picture — and its **Add** is the small icon in the strip under the picture,
+   between the section's name and its Free or ✦ Pro tag (your rulings R-153 and R-154).
 6. **Same screen.** Click **Add** on any card. **Expect:** the picker closes and that section is now on the
    page, **in the gap you started from**. Press `⌘Z` once. **Expect:** it is gone again, in one press.
 7. **Same screen.** Press `⌘K`. **Expect:** the same picker opens. Press `Esc`. **Expect:** it closes and the

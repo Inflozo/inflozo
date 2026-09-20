@@ -1481,7 +1481,8 @@ export function Editor({
     // opened on the frame after the one that mounted it, exactly as the site-wide confirm is. On every open AFTER
     // the first the dialog is already in the tree and this is simply the next frame (the owner's ruling of
     // 2026-09-20): nothing is re-created, and the previews are the ones already drawn.
-    requestAnimationFrame(() => picker.current?.showModal())
+    // `open` is asked again INSIDE the frame: two presses before it runs would otherwise call `showModal` twice
+    requestAnimationFrame(() => { if (!picker.current?.open) picker.current?.showModal() })
   }
 
   /**

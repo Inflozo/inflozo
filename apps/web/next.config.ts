@@ -47,9 +47,11 @@ const config: NextConfig = {
      picked up at once instead of after a timeout. `vercel build` runs inside the GitHub Action (`ci.yml`'s deploy
      job), so the runner's `GITHUB_SHA` is in its environment; `VERCEL_GIT_COMMIT_SHA` is read first for a build
      started from Vercel's own git integration. Neither is set locally, and `dev` is correct there: the routes serve
-     `no-store` outside production, so an edited stylesheet is never held. */
+     `no-store` outside production, so an edited stylesheet is never held. `||`, NOT `??` (review, 2026-09-20): the
+     CLI-built deployment carries `VERCEL_GIT_COMMIT_SHA` as an EMPTY string, which `??` kept — production served
+     `?v=` and therefore `no-store` on every preview (deployed walk, step 83). */
   env: {
-    INFLOZO_CANVAS_V: (process.env.VERCEL_GIT_COMMIT_SHA ?? process.env.GITHUB_SHA ?? 'dev').slice(0, 12),
+    INFLOZO_CANVAS_V: (process.env.VERCEL_GIT_COMMIT_SHA || process.env.GITHUB_SHA || 'dev').slice(0, 12),
   },
   // AD-1: the core packages ship as TypeScript source and are compiled by the app. `@inflozo/library`
   // joined with Story 4.4, the first page to import one — which is what made this list do anything (DW-2).

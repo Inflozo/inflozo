@@ -10,8 +10,8 @@
  * lives here and `picker.test.ts` asserts the I/O matrix's rows over it.
  *
  * COUNTS ARE DERIVED, NEVER WRITTEN DOWN (standing rule). A category's count is a runtime figure over what is
- * offered ON THIS CANVAS, and `ALL CATEGORIES` carries no number at all — A7 item 1 deleted it from S5a and S5c on
- * purpose, because a library total is never printed.
+ * offered ON THIS CANVAS, and so is the `All sections` row's (R-154): what is offered HERE, counted at runtime —
+ * never the library's total, which A7 item 1 deleted from S5a and S5c on purpose.
  */
 
 import { byCategory, offeredOn, type SectionRegistryEntry } from '@inflozo/library'
@@ -69,7 +69,7 @@ export const metaLine = (count: number, dark: boolean): string =>
  *  sentence, is `EXPERIENCE.md:346`). Each says what is true and what to do — never an apology, never a blank. */
 export function emptyState(offeredCount: number, cardCount: number, query: string): { title: string; instruction: string } | null {
   if (cardCount > 0) return null
-  // NOTHING CAN BE PLACED HERE AT ALL — today only the 404 canvas, whose one binding no design declares
+  // NOTHING CAN BE PLACED HERE AT ALL — a canvas whose bindings no design declares
   if (offeredCount === 0) {
     return {
       title: 'No sections fit this template yet',

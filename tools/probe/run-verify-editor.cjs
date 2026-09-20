@@ -96,7 +96,7 @@
 // every deferred key inert; `/harness/editor` and `/harness/canvas` 404 in production; and S3d's account-menu row
 // opening the SAME card, row for row. Step 8's axe runs once more with the card open.
 // Story 5.10 adds steps 81-85, inside the same session: S5a's picker measured where it is drawn (the 22px inset, the
-// 240px rail on 16/12 with its right rule, `ALL CATEGORIES` carrying NO number, `Find a section…` and its ⌘K chip, the
+// 240px rail on 16/12 with its right rule, R-154's `All sections` row over `CATEGORIES`, each count derived, `Find a section…` and its ⌘K chip, the
 // meta line's one template, the 16px column gap) with R-150's `Free only` switch absent and R-151's ONE dark button;
 // FR-D12's filter proved by opening the SAME picker on Home and on Post and reading two different rails, each count
 // derived over its own canvas and nothing greyed; every card's preview a LIVE render in an `inert`, uniquely titled
@@ -1359,7 +1359,7 @@ async function main() {
     const layersGround = await page.evaluate(() => {
       // Story 5.4 re-anchored this: the list's last ELEMENT CHILD is no longer a row, so the ground is read from
       // the last ROW, exactly as `controls/layers.tsx` reads it
-      const list = document.getElementById('editor-layers').lastElementChild
+      const list = document.querySelector('#editor-layers [data-layers-list]')
       const r = list.getBoundingClientRect()
       const rows = [...list.querySelectorAll('[data-layer-row]')]
       const last = rows[rows.length - 1].getBoundingClientRect()
@@ -1420,7 +1420,7 @@ async function main() {
     // ── step 28 — B7 as R-126 amends it: two groups of one shape, a hairline between, both counts derived ──
     const layersShape = () => page.evaluate(() => {
       const aside = document.getElementById('editor-layers')
-      const list = aside.lastElementChild
+      const list = aside.querySelector('[data-layers-list]')
       const rows = [...list.querySelectorAll('[data-layer-row]')]
       const css = (el) => el && getComputedStyle(el)
       const headings = [...list.querySelectorAll('span')].map((x) => x.textContent.trim())
@@ -1515,7 +1515,7 @@ async function main() {
     check('step 30 — `Space` on a focused row still hides it (UX-DR10): R-126 took the eye off the row, and a KEY costs no width', (await rootCount()) === before30 - 1 && spaced30.words === 'rgb(110, 106, 100)', JSON.stringify({ roots: await rootCount(), before: before30, row: spaced30 }))
     await page.keyboard.press(' ')
     await page.waitForTimeout(400)
-    check('step 30 — `Space` again brings it back, and the key never scrolled the panel', (await rootCount()) === before30 && (await page.evaluate(() => document.getElementById('editor-layers').lastElementChild.scrollTop)) === 0)
+    check('step 30 — `Space` again brings it back, and the key never scrolled the panel', (await rootCount()) === before30 && (await page.evaluate(() => document.querySelector('#editor-layers [data-layers-list]').scrollTop)) === 0)
 
     // ── step 31 — ⌥↓ moves the section, focus follows, and the move is announced politely ──
     const pageNames = () => page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => r.querySelector('button').textContent))
@@ -3238,7 +3238,7 @@ async function main() {
       homeRail510.every((row) => {
         const n = Number(/(\d+)$/.exec(row)[1])
         return n > 0 && n <= homeCards510.length
-      }) && homeRail510.reduce((t, row) => t + Number(/(\d+)$/.exec(row)[1]), 0) === homeCards510.length,
+      }) && homeRail510.filter((row) => !/^All sections/.test(row)).reduce((t, row) => t + Number(/(\d+)$/.exec(row)[1]), 0) === homeCards510.length,
       JSON.stringify({ homeRail510, cards: homeCards510.length }))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
@@ -3312,7 +3312,9 @@ async function main() {
     })
     check('step 83 — a preview page carries the build in its address and may be KEPT; a page without one never is',
       /immutable/.test(keeping510.versioned ?? '') && /private/.test(keeping510.versioned ?? '') &&
-      /no-store/.test(keeping510.bare ?? '') && /[?&]v=/.test(keeping510.src), JSON.stringify(keeping510))
+      /no-store/.test(keeping510.bare ?? '') &&
+      // A BUILD, not merely a `v`: production once served `?v=` (empty) and nothing was kept (review, 2026-09-20)
+      /[?&]v=[0-9a-f]{7,}(&|$)/.test(keeping510.src), JSON.stringify(keeping510))
 
     // R-149 stays ONE rule on ONE element: `inert` takes the preview frames out of the accessibility tree entirely
     check('step 83 — `inert` is what keeps R-149 at one exception: nothing inside a preview frame is focusable to axe',
@@ -3469,21 +3471,10 @@ async function main() {
     check('step 85 — control: one ⌘Z takes it away again, so the insert really went through the one `commit`',
       JSON.stringify(await pageNames()) === JSON.stringify(beforePage510))
     // THE NARROWING, WITH A REAL CARET IN THE CANVAS — the one thing only the deployed walk can reach (`inline.ts:230`)
-    await page.locator('section[aria-label="Canvas"]').focus()
-    const caretIn510 = await canvasFrame().evaluate(() => {
-      const el = [...document.querySelectorAll('#canvas [data-inflozo-selected] *, #canvas *')].find((e) => e.children.length === 0 && (e.textContent ?? '').trim())
-      if (!el) return false
-      const r = el.getBoundingClientRect()
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 }
-    })
-    if (caretIn510) {
-      const f510 = await page.locator('section[aria-label="Canvas"] iframe').boundingBox()
-      const k510 = await page.evaluate(() => { const f = document.querySelector('section[aria-label="Canvas"] iframe'); return f.getBoundingClientRect().width / f.offsetWidth })
-      await page.mouse.click(f510.x + caretIn510.x * k510, f510.y + caretIn510.y * k510)
-      await page.waitForTimeout(200)
-      await page.mouse.click(f510.x + caretIn510.x * k510, f510.y + caretIn510.y * k510)
-      await page.waitForTimeout(400)
-    }
+    // the caret the way steps 16-22 take one (`caretInto`): the hand-rolled click here never produced a caret, so
+    // `editing510` — this check's own control — was false and the step proved nothing (review, 2026-09-20)
+    await clickOn(GRID)
+    await caretInto(GRID, TITLE)
     const editing510 = await canvasFrame().evaluate(() => document.activeElement?.isContentEditable === true)
     await page.keyboard.press(`${CMD58}+k`)
     await page.waitForTimeout(500)

@@ -21,12 +21,12 @@ import { DESKTOP } from '@/lib/device'
  *
  * `inert`, AND THAT IS WHAT KEEPS R-149 AT ONE RULE ON ONE ELEMENT. The canvas iframe needed `tabindex="-1"` and
  * cost an axe exception, because the canvas must stay pointer-editable and `inert` would have taken the pointer
- * with it. A preview takes no pointer — the card's Add button is the target and covers it — so `inert` is available
+ * with it. A preview takes no pointer — the card's Add button is the target, in the footer strip beneath it — so `inert` is available
  * here and is strictly better: nothing inside is focusable or in the accessibility tree, so `frame-focusable-content`
  * has nothing to say. Each frame still keeps a `title`, for `frame-title`.
  *
  * CREATED ONLY AS THE CARD NEARS THE VIEWPORT (NFR-1's "Section Picker preview lazy rendering", read literally), and
- * `/canvas` is one document the browser caches once and every card reuses — its weight is DW-200's, not this
+ * each frame asks `/canvas` for ONE design's stylesheet (`previewSrc`), kept by the browser under the build's address — its weight is DW-200's, not this
  * story's. A RENDER THAT THROWS KEEPS THE SKELETON and leaves the card addable: the failure is logged, never printed
  * to the customer (the I/O matrix's last row).
  */
@@ -122,6 +122,10 @@ export function SectionPreview({
         assets: canvasAssets(pool),
         icons,
       }))
+      // A CLOSED PICKER MEASURES 0 (it is kept mounted, `display:none`): a mode flip from the top bar repaints here
+      // with nothing laid out, and a 0 read as CEILING re-shaped every drawn card as a two-row tile (review,
+      // 2026-09-20). The words are repainted; the last real measurement stands, exactly as the ResizeObserver's does.
+      if (mount.scrollHeight === 0 && frame.current?.getClientRects().length === 0) return
       const drawnHeight = Math.min(mount.scrollHeight || CEILING, CEILING)
       setTall(drawnHeight)
       // the owner's test of 2026-09-20: a card's SPAN is the section's own shape, and this is the only place it is
@@ -133,7 +137,8 @@ export function SectionPreview({
     }
   }
   // the icons arrive asynchronously and the mode flips under a live picker: both repaint what is already there
-  useEffect(paint, [near, mode, icons])
+  // — and so does a canvas change: the card is keyed by design and kept, so its target and rows can change under it
+  useEffect(paint, [near, mode, icons, target, rows])
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0

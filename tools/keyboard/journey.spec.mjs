@@ -423,6 +423,31 @@ test('R-145: a deferred key does nothing and announces nothing', async ({ page }
 
 const picker = (page) => page.locator('dialog[open][aria-label="Add a section"]')
 
+/* WHERE it lands, not only THAT it lands (review, 2026-09-20): every other placement check compares lengths, so an
+   insert that always appended would have passed them all. FR-D12: a section lands where it was invoked. */
+test('a section added with ⌘K from a selected section lands directly after it, not at the end', async ({ page }) => {
+  await open(page)
+  const own = (await rows(page)).page
+  expect(own.length, 'the control: there is a section AFTER the first, so "after it" and "at the end" differ').toBeGreaterThan(1)
+  await page.locator(`[data-layer-row="${own[0]}"]`).focus()
+  await page.keyboard.press('Enter')
+  await chosen(page, own[0])
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(picker(page)).toBeVisible()
+  // a canvas design, never a site-wide one: that one goes to the Site-wide group wherever it was invoked (R-152)
+  await picker(page).locator('[data-cell]:not([aria-label*="Site-wide"])').first().focus()
+  await page.keyboard.press('Enter')
+  await expect(picker(page)).toHaveCount(0)
+  const after = (await rows(page)).page
+  expect(after).toHaveLength(own.length + 1)
+  expect(after[0]).toBe(own[0])
+  expect(own, 'the new row is the second, directly under the one it was invoked from').not.toContain(after[1])
+  expect(after.slice(2)).toEqual(own.slice(1))
+  await page.keyboard.press('ControlOrMeta+z')
+  expect((await rows(page)).page).toEqual(own)
+})
+
 test('⌘K opens the Section Picker, the arrows cross the grid, Enter places and Esc returns focus', async ({ page }) => {
   await open(page)
   const before = (await rows(page)).all.length
@@ -430,7 +455,7 @@ test('⌘K opens the Section Picker, the arrows cross the grid, Enter places and
   await page.keyboard.press('ControlOrMeta+k')
   await expect(picker(page)).toBeVisible()
 
-  // the rail lists only categories this canvas can take, each with its own count, and ALL CATEGORIES carries none
+  // the rail lists only categories this canvas can take, each with its own count, under an `All sections` row that carries what is offered here (R-154)
   const rail = picker(page).locator('[role="radiogroup"] [role="radio"]')
   expect(await rail.count(), 'the picker must offer at least one category on Home').toBeGreaterThan(0)
   // the owner's test of 2026-09-20: the rail's first row is "All sections" with its own derived count, and the

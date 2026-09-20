@@ -106,16 +106,38 @@ function LazyGroup({
 /** P0-2: THE ARROW GRID — a roving move over `[data-cell]` in the pressed container, by DOM order.
  *
  *  ONE IMPLEMENTATION, TWO GRIDS (Story 5.10). The icon picker lays its cells out in ROWS of eight, so "down" is
- *  eight cells on; the Section Picker's grid is CSS multi-column, so its cells run DOWN each column and "down" is
- *  one cell on while "right" is a whole column. The caller says which, because only the caller knows its layout —
- *  the walk itself is the same and is never written twice. */
-export function gridKeys(event: KeyboardEvent<HTMLElement>, steps: { right: number; down: number }) {
-  const step = ({ ArrowRight: steps.right, ArrowLeft: -steps.right, ArrowDown: steps.down, ArrowUp: -steps.down } as Record<string, number>)[event.key]
+ *  eight cells on; the Section Picker's grid is packed DENSE with cards that span two columns or
+ *  two rows (R-153), so no fixed count is "the card below": it says `'nearest'` and down/up go by where the cards
+ *  ARE (review, 2026-09-20). The caller says which, because only the caller knows its layout. */
+export function gridKeys(event: KeyboardEvent<HTMLElement>, steps: { right: number; down: number | 'nearest' }) {
+  const down = steps.down === 'nearest' ? 0 : steps.down
+  const step = ({ ArrowRight: steps.right, ArrowLeft: -steps.right, ArrowDown: down, ArrowUp: -down } as Record<string, number>)[event.key]
   if (step === undefined) return
   const cells = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-cell]')]
   const at = cells.indexOf(document.activeElement as HTMLElement)
   if (at < 0) return
   event.preventDefault()
+  if (step === 0) {
+    // ponytail: left/right stay DOM order; a geometric left/right if dense packing ever makes that feel wrong
+    const a = cells[at]!.getBoundingClientRect()
+    const dir = event.key === 'ArrowDown' ? 1 : -1
+    const rank = (c: HTMLElement) => {
+      const r = c.getBoundingClientRect()
+      const gap = dir > 0 ? r.top - a.bottom : a.top - r.bottom
+      if (gap < -1) return null
+      const overlaps = r.left < a.right && r.right > a.left
+      return [overlaps ? 0 : 1, gap, Math.abs(r.left - a.left)] as const
+    }
+    const best = cells
+      .flatMap((c) => {
+        const r = c === cells[at] ? null : rank(c)
+        return r === null ? [] : [{ c, r }]
+      })
+      .sort((x, y) => x.r[0] - y.r[0] || x.r[1] - y.r[1] || x.r[2] - y.r[2])[0]
+    // nothing further that way: the end of the grid, exactly as the counted step clamps
+    ;(best?.c ?? cells[dir > 0 ? cells.length - 1 : 0])?.focus()
+    return
+  }
   cells[Math.max(0, Math.min(cells.length - 1, at + step))]?.focus()
 }
 

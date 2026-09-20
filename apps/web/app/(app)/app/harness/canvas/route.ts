@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
      The pictures cannot carry the build — a relative `canvas?image=x` drops the document's query when it resolves —
      so they take a short life instead, which is all a picker session needs. */
   const live = process.env.NODE_ENV === 'production'
-  const versioned = request.nextUrl.searchParams.get('v') !== null
+  // a build, not merely a `v`: an empty one or the local fallback `dev` is never kept for a year (review, 2026-09-20)
+  const v = request.nextUrl.searchParams.get('v')
+  const versioned = !!v && v !== 'dev'
   const keep = (rule: string) => (live ? rule : 'no-store')
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' }
   const image = request.nextUrl.searchParams.get('image')

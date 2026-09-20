@@ -341,6 +341,8 @@ export function Layers({
         const last = rows[rows.length - 1]?.getBoundingClientRect().bottom ?? -Infinity
         if (event.clientY >= last) onGround()
       }}
+      // the deployed walk finds the list by this, never by its place in the aside (Story 5.10 added a footer after it)
+      data-layers-list
       className={`flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto px-2 py-[10px] ${slimScrollbar}`}
     >
       {/* D5a (:54-57): the marker is about the CANVAS, not a group, so it sits ABOVE both — R-126 drew the two groups

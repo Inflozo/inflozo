@@ -56,7 +56,7 @@ import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_W
  */
 
 /** The three reconciliations the frame needed, each stated in the spec's Design Notes rather than asked:
- *  the meta line is ONE template (S5a's words, with S5c's ` · dark mode` appended), the tier badges are the KIT's
+ *  the meta line is ONE template (S5a's count, with S5c's ` · dark mode` appended — R-154 dropped the pack from it), the tier badges are the KIT's
  *  and not S5's card-local sizes, and there is no S5b, no loading frame and no zero-result frame anywhere in the
  *  export — those are extrapolated from S5a and S5c (R-74). */
 
@@ -120,7 +120,7 @@ export function SectionPicker({
   const rows_ = useMemo(() => rail(offered), [offered])
   const shown = useMemo(() => cards(offered, category, query), [offered, category, query])
 
-  // a canvas change, or a fresh open, starts on the first category with nothing searched for
+  // a canvas change, or a fresh open, starts on All sections (`null`) with nothing searched for
   useEffect(() => {
     if (!open) return
     setQuery('')
@@ -230,11 +230,11 @@ export function SectionPicker({
 
         {/* DW-190 CLOSES HERE: the refusal a section with no root had nowhere to show on. R-37's second Post Content
             is the one thing that reaches it, and it says so in the picker, where the press was. */}
-        {refusal ? (
-          <p role="status" className="border-b border-line bg-coral-tint p-[10px_24px] text-ui-dense text-coral-text">
-            This section cannot be added — {refusal}.
-          </p>
-        ) : null}
+        {/* the REGION is always in the tree and only its words arrive: a live region inserted already filled is
+            often not announced (review, 2026-09-20) */}
+        <p role="status" className={refusal ? 'border-b border-line bg-coral-tint p-[10px_24px] text-ui-dense text-coral-text' : 'sr-only'}>
+          {refusal ? `This section cannot be added — ${refusal}.` : ''}
+        </p>
 
         {empty ? (
           <div className="flex flex-1 items-center justify-center overflow-y-auto p-6">
@@ -253,7 +253,7 @@ export function SectionPicker({
             aria-label="Designs"
             /* a real grid runs ACROSS its rows in DOM order, so "right" is one cell and "down" is a whole row —
                `COLUMNS` is the one place that number lives, and the layout below reads the same constant */
-            onKeyDown={(event) => gridKeys(event, { right: 1, down: COLUMNS })}
+            onKeyDown={(event) => gridKeys(event, { right: 1, down: 'nearest' })}
             style={{ gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`, gridAutoRows: `${ROW}px` }}
             className={`grid flex-1 gap-4 overflow-y-auto p-[20px_24px] [grid-auto-flow:row_dense] ${slimScrollbar}`}
           >
@@ -282,9 +282,8 @@ export function SectionPicker({
 /** S5a`:89-101` — one card, as the owner's test of 2026-09-20 re-shaped it. THE ADD BUTTON IS IN THE FOOTER STRIP,
  *  centred between the name and the tier badge, and it is an ICON, not a word: S5a's hover wash held the pill over
  *  the preview, and on a short section that rectangle is shorter than the pill, which is how he found it CUT OFF. A
- *  strip of its own cannot be cropped by the picture above it. The wash stays as the hover treatment — decoration
- *  now, `pointer-events-none` and hidden from the tree — so there is still exactly one interactive element per card
- *  and no interactive content over the `inert` preview frame. */
+ *  strip of its own cannot be cropped by the picture above it. The hover is a border and nothing else (R-154), so there is
+ *  still exactly one interactive element per card and no interactive content over the `inert` preview frame. */
 function Card({
   entry,
   first,
