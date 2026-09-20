@@ -389,6 +389,19 @@ turned that round, so read "rolls and opens" below as that build's order, not to
 mail, takes a payment or reads a Ghost — Remix swaps which design renders inside the editor's own doc. No file
 under `supabase/migrations/` is in this story's diff, so there is no Schema phase (R-99).
 
+**Deploy (2026-09-20) — the review's patched build, `269292e7`.** CI (`check`, `rls`) and the render matrix on
+`269292e7` completed `success` (`GITHUB_TOKEN`), and `deploy` promoted
+**Deployment: `dpl_rTfzAsmHgQEv7u6UEpJ2sNGwfkYe`** (`inflozo-j9heunls2-umangkagathara.vercel.app`), production,
+`READY`, `githubCommitSha` `269292e7`, serving `https://app.inflozo.com` (`VERCEL_TOKEN` / `VERCEL_TEAM_ID` /
+`VERCEL_PROJECT` by name). `origin/main` = `HEAD`. No migration in the diff, so no database step (R-99). The
+two deployed walks were re-run against THIS build, the one that carries the review's five patches:
+- `node tools/probe/run-verify-controls.cjs` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) — **0 FAIL, 112 PASS**, users
+  `13 → 13`. (The first attempt died at `page.goto` on a 30s `networkidle` timeout with 0 FAIL after 4 PASS — a
+  HARNESS ERROR, not a result; DNS and the site both answered on a re-check, and the re-run above completed.)
+- `node tools/probe/run-verify-editor.cjs` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — **0 FAIL, 466 PASS**, first attempt.
+- `https://app.inflozo.com/harness/editor` → **404**.
+
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, `remix.test.ts` and
   `keymap.test.ts` included, and `pnpm keyboard`'s journey green with its new `⇧R` stop.
