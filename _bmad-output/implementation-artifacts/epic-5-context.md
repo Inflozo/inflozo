@@ -39,6 +39,26 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 
 - **The canvas is the site.** At rest it is a pixel-faithful render with zero chrome, and nothing on it substitutes a design or decides the page at render — page-dependent choices are build-time facts, and the editor advises (AD-37).
 - **Never lose content.** Switching design carries a control both designs declare, parks one only the old design has (restored exactly on return) and defaults one only the new design has; props and list items a design does not show are kept invisibly, and Shuffle and Remix obey the same rule.
+  - **Story 5.11's planning (2026-09-20, read in the runtime and executed over the library):** the rule is
+    SMALLER THAN IT READS, and the reason is FR-G3: `contentSchema` is the CATEGORY's union and a ring never
+    leaves its category, so content, items and `data` carry across a swap UNTOUCHED and only `controlSchema`
+    — per design (FR-F7) — needs carry / park / default. `parkedControls` is keyed by design id and parks
+    `controls` AND `darkOverrides` together, because a dark override is a second value of the same control
+    (AD-30, `storedFor`) and "restored exactly" means both; it lives inside `project_templates.doc`, which is
+    `jsonb`, so there is no migration and **no Schema phase**. What does NOT exist anywhere: a per-design item
+    cap (FR-D13's "8 items · 3 shown in this design") — `PropDef.max` is the union's ceiling and cannot narrow
+    per design, and CSS decides the fit, so the design must DECLARE it: `data-items-limit` joins `DIRECTIVES`
+    beside `data-repeat-limit` and is applied inside `expandItems`, the ONE function both emitters share, so
+    agreement holds by construction. A30's `surface` partition also has no field, so `SectionRegistryEntry`
+    gains an optional one that nothing declares until Epic 10. **AND THE LIBRARY HOLDS NO RING AT ALL** — every
+    category in `packages/library/designs/` holds exactly one design — so the whole rule would be asserted
+    vacuously; the proof is a SECOND FIXTURE DESIGN in `packages/library/fixtures/controls/`, which is a real
+    validated category with an authored array and a `darkOverride` control, is already read by `controls.test.ts`
+    and by the deployed `/controls`, and is not the shipped library (AD-35 untouched). **DW-209 is this story's**
+    (the wheel over 5.10's "+" pill), and the frames disagree once: B1b draws an ink pill at the section's
+    top-LEFT with the counter, Shuffle and a `⋯`, while S4b and `S6:67` both draw the counter and arrows in the
+    white quick-action pill at `top:10px;right:10px` that Story 5.4 already built and R-125 already placed — so
+    S4b + S6 govern the pill and B1b governs the affordance.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`
