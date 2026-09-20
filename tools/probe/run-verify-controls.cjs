@@ -394,7 +394,7 @@ async function main() {
     check('step 17 — focus moves to Show controls', g17.focus === 'Show controls', String(g17.focus))
     await page.keyboard.press('Enter')
     const g17b = await page.evaluate(() => ({ asideVisible: !!document.querySelector('aside#section-controls')?.offsetParent, focus: document.activeElement?.getAttribute('aria-label'), pageRange: document.scrollingElement.scrollHeight - document.scrollingElement.clientHeight, w: document.querySelector('iframe[title="The controls sample section"]').getBoundingClientRect().width }))
-    check('step 17 — the strip\'s button brings the panel back as it was, focus on Collapse', g17b.asideVisible && g17b.focus === 'Collapse controls' && g17b.pageRange === 0 && g17b.w === wBefore, `${JSON.stringify(g17b)} · wBefore ${wBefore} · at step 2 the page range was ${geo.pageRange}`)
+    check('step 17 — the strip\'s button brings the panel back as it was, focus on Collapse', g17b.asideVisible && g17b.focus === 'Collapse controls' && g17b.pageRange === 0 && g17b.w === wBefore, `${JSON.stringify(g17b)} · wBefore ${wBefore} · at step 2 the page range was ${geo.pageRange} (DW-210)`)
 
     // ── step 19 (Story 5.3) — a prop's character limit stops typing and a paste, and the field says which
     // The limits are the sample's own (`packages/library/fixtures/controls/content.json`), read here rather than

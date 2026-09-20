@@ -468,6 +468,25 @@ rather than all. The fix is the ledger's own: both pills forward their wheel to 
 (`section-pill.tsx`'s `onWheel` → `editor.tsx`'s `wheelToCanvas`), and the same control re-run after it reads
 **500px** on both pills. A customer felt the identical stall, so this is a fix and not a test repair.
 
+**Run at Dev (2026-09-20), all against the deployed build `1b5e4805`:**
+- `pnpm check` · `pnpm keyboard` (28 stops, five of them this story's) · `python3 tools/doc-audit.py --check` ·
+  `bash supabase/tests/run-rls-gate.sh` — all green. CI's `check`, `rls` and `deploy` jobs green on both pushes.
+- `node tools/probe/run-verify-controls.cjs` on **production** (R-82) — **97 PASS, 1 FAIL**. Every ring assertion
+  passed: the Design block counts a real ring of three, ▶ changes the section in place and announces its position,
+  a carried setting and the typed words survive, a setting only the outgoing design has disappears from the panel,
+  the item cap reads *"3 items · 2 shown in this design"* and draws two of three, ▶ at the end wraps and the
+  **parked value comes back exactly — the long way round, through an intermediate design** — ◀ wraps the other
+  way, `Try a design` names its destination before the press and shuffles, and the pill carries the counter, the
+  arrows and an icon-only Shuffle whose words are its name and its title. The one FAIL is **DW-210**, a ~35px
+  window scroll on that page after the panel is folded and unfolded; it is measured, filed, and not this story's
+  (the page range is still 0 with the Design block drawn, and the block scrolls inside the panel).
+  Two FAILs in that run were repaired rather than recorded: step 2's panel head (the head keeps the DESIGN's name
+  on `/controls`, which has no layer name) and step 5's R-136 moon reader, which still read the badge's SVG
+  `<title>` as printed words — the mistake R-136's own note names and `run-verify-editor.cjs`'s `moonOn` already
+  avoids. Two more were bugs in this story's own new checks (they read `.cx__title`, design 1's class, on a design
+  drawing `.cy__title`) and are fixed.
+- `node tools/probe/run-verify-editor.cjs` — **NOT RUN at Dev**; step 86 is written and is Review's to run.
+
 **Commands:**
 - `pnpm check` -- expected: lint, typecheck and every package test green, including the new partition,
   carry / park / default, round-trip, item-cap and `parkedControls`-default cases, with `agreement.test.ts`

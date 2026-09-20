@@ -4918,3 +4918,27 @@ fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium thr
   re-run after it reads 500px on both. It is a CUSTOMER fix, not a test repair: a pointer resting on a pill stalled
   the page. Step 15 b's own pass is Story 5.11's Review to record.
 
+
+### DW-210: the `/controls` review's window scrolls ~35px once its panel has been folded and unfolded
+
+plain: The internal Controls review page is built so the window itself never scrolls — the section scrolls inside
+  its frame and the settings panel scrolls on its own. After you collapse the panel and open it again, the whole
+  window gains about thirty pixels of scroll. Nothing is cut off; a second scrollbar simply appears beside the
+  panel's, which is the thing the page was re-laid-out to stop.
+status: open
+severity: low
+origin: Story 5.11's Dev (2026-09-20), `run-verify-controls.cjs` step 17, on production at `1b5e4805`.
+owner: unassigned — the next story that touches `/controls`.
+location: `apps/web/app/(app)/app/(authed)/controls/review.tsx` · `apps/web/components/shell/shell.tsx`
+reason: MEASURED, AND THE BOX IS NOT VISIBLE. At step 2 the window's scroll range is 0; after step 17's collapse and
+  re-expand it is 24–35px and it VARIES between runs (24 at `6a09cecc`, 30 and 35 at `1b5e4805`), which says it
+  depends on what the walk has typed rather than on the layout alone. The collapsed state is 0, so it is the panel
+  being present that does it. But nothing in the document is below the fold: `document.body.scrollHeight` is 900,
+  every child of `<body>` ends at or above 900, and no element with an unclipped path to the root has a bottom past
+  the viewport — while `document.scrollingElement.scrollHeight` reads 935. So the 35px is not a box this reader can
+  see, and guessing at it costs a deploy per guess.
+  NOT STORY 5.11'S DOING as far as the measurements go: its Design block sits INSIDE the panel, which is
+  `overflow-y: auto` and scrolls on its own, and the page range is still 0 at step 2 with the block drawn. It is
+  recorded here rather than chased because `/controls` is an internal review page and the failure is cosmetic —
+  but it IS the exact complaint the page was re-laid-out for (the owner's findings 5 and 6, 2026-09-13: two
+  scrollbars side by side "looks really bad"), so it is not dismissed either.
