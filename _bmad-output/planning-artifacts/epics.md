@@ -1923,10 +1923,22 @@ and the sidebar states the count — "8 items · 3 shown in this design"
 **And** **`[` and `]` are bound HERE** — FR-D11's keys land with the ring they drive and join Story 5.9's one
 table and its `?` card, carrying the single-key focus condition, and the keyboard journey grows a stop for them
 (**R-145**)
-**And** the picker matches B1a, the on-section nav matches B1b, and shuffle matches `S6 Variant Shuffle.dc.html`.
+**And** the ring is **proved where a ring exists** — **R-158** (owner, 2026-09-20): the shipped library holds one
+design per category, so no design is authored here (`packages/library/designs/` untouched, AD-35) and the samples are
+**two more fixture designs** in `packages/library/fixtures/controls/`, giving a ring of three that the deployed
+**Controls review** page, the keyboard harness and the unit tests all drive; in the editor itself the block reads
+**"Design 1 of 1"** with the arrows and Shuffle **absent** (UX-DR3) until Epic 9 fills a category
+**And** **Shuffle is built in BOTH places** — **R-159** (owner, 2026-09-20): S6`:140`'s **`Try a design`** card at the
+foot of the panel's Design block, and a Shuffle control in the section's pill **with the ring, before the divider**,
+icon-only there through `DESIGN.md:534-536`'s carve-out; both absent where the ring holds one
+**And** the picker matches B1a and shuffle matches `S6 Variant Shuffle.dc.html` — while the **on-section nav matches
+S4b and S6`:67`, not B1b's ink pill** (R-159's second half): two frames agree, R-118 already put `◀ ▶` in S4b's pill
+and R-125 placed it, so **S4b + S6 govern the pill and B1b governs the affordance** (the counter and arrows riding on
+the section); B1b's colour, its top-left seat and its `⋯` are not built (R-126).
 
-**FRs:** FR-D13, FR-D19, FR-D2 (◀ ▶), FR-D11 (`[` `]`). · **Frame:** `B Missing Surfaces.dc.html` B1a · B1b · `S6 Variant Shuffle.dc.html`. ·
-**UX-DRs:** UX-DR5, UX-DR12. · **Owner test:** yes.
+**FRs:** FR-D13, FR-D19, FR-D2 (◀ ▶), FR-D11 (`[` `]`). · **Frame:** `B Missing Surfaces.dc.html` B1a · B1b ·
+`S4 Editor.dc.html` S4b · `S6 Variant Shuffle.dc.html`. · **UX-DRs:** UX-DR5, UX-DR12. · **Rulings:** R-158, R-159. ·
+**Owner test:** yes.
 
 ### Story 5.12: Site Remix
 

@@ -351,6 +351,26 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     for a layout that cannot hold the word — D6a's project-level row, which has the width, still prints them.
     A control row's words are its name and title: read them with `getAttribute`/`aria-label`, never `textContent`,
     which includes an inline SVG's `<title>` (`run-verify-editor.cjs` step 48).
+  - **R-158 · R-159 (owner, 2026-09-20, Story 5.11's Q1 and Q2).** **R-158:** the shipped library holds ONE
+    design per category, so the design ring has nowhere to ride and the whole carry / park / default claim
+    would be asserted vacuously — **no design is authored here** (`packages/library/designs/` untouched,
+    AD-35, in his own words *"I do not want to build all designs. Just a couple of samples enough for
+    testing"*) and the samples are **two more fixture designs** in `packages/library/fixtures/controls/`,
+    giving a ring of THREE (two make `◀` and `▶` identical and cannot show a value parked against design 1
+    surviving while the customer is on design 3). The deployed **`/controls`** review page mounts the picker
+    over them, so the owner and `run-verify-controls.cjs` exercise the rule on production (R-82); the
+    keyboard harness takes the same ring, so `pnpm keyboard` walks it on every commit (R-146). The editor
+    itself reads **"Design 1 of 1"** with the arrows and Shuffle **absent** (UX-DR3) and gains them the day
+    Epic 9 fills a category, because every count is derived. **R-159:** Shuffle is built in **BOTH** places —
+    S6`:140`'s **`Try a design`** card at the foot of the panel's Design block (the one place that shows
+    where a shuffle would take you BEFORE the press) and a control in the section's pill **with the ring,
+    before the divider**, because that divider separates *which design* from *this section*; in the pill it
+    is **icon-only** (the Kit's `Refresh`, its words as accessible name and hover title) through
+    `DESIGN.md:534-536`'s carve-out, the one R-132 and R-136 already use. **R-159 also settles the pill**:
+    B1b draws an ink pill top-LEFT with the counter, Shuffle and a `⋯`, while S4b and `S6:67` draw the
+    counter and arrows in the white quick-action pill Story 5.4 built and R-125 placed — two frames agree
+    and R-118 already said `◀ ▶` arrive in S4b's, so **S4b + S6 govern the pill and B1b governs the
+    affordance**; B1b's `⋯` is not built (R-126 stands).
   - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
     **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
     every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's

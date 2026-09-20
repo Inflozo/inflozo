@@ -3280,6 +3280,55 @@ wait… he needs to add many sections as he builds"*.
   5.10's AC) · ✅ `apps/web/pilots.test.ts` (the address) · ✅ `run-verify-editor.cjs` step 83 (the header and the
   kept picker, on the deployed site).
 
+**R-158 — the design ring is proved on the Controls review page, and the shipped library gains no design.**
+Story 5.11's Question 1, ruled **option 1** (owner, 2026-09-20): *"Build it, and make the Controls review page a
+real ring … I do not want to build all designs. Just a couple of samples enough for testing."*
+
+- **Why it was a question.** Every category in `packages/library/designs/` holds **exactly one** design — the five
+  pilots Story 4.10 chose — so `[`/`]`, the on-section arrows and Shuffle have nowhere to go in the editor. The
+  story's whole claim is what happens **between** two designs, so on the deployed editor every assertion would be
+  vacuous and the owner's test (R-80) would be a test of absence: "the arrows are correctly not there".
+- **What it binds.** Two more designs in **`packages/library/fixtures/controls/`** — the fixture category that
+  already carries a validated `content.json` with an authored array, a full control schema and the library's one
+  `darkOverride` control, is already read by `controls.test.ts` and by the deployed `/controls`, and is **not** the
+  shipped library. Three in the ring rather than two, because two make `◀` and `▶` indistinguishable and cannot
+  prove a parked value surviving an **intermediate** design (1 → 2 → 3 → 1). `/controls` mounts the design picker
+  over them, so the rule is exercised on **production** by the owner and by `run-verify-controls.cjs` (R-82); the
+  keyboard harness takes the same ring, so `pnpm keyboard` walks it on every commit (R-146).
+- **What it explicitly does NOT do, in his own words.** No library design is authored here. `packages/library/designs/`
+  is untouched (AD-35), Epics 9 and 10 still author every shipped design, and *"a couple of samples enough for
+  testing"* is exactly the fixture pair — not a pilot, not a category, not a third surface.
+- **What the editor shows meanwhile.** The Design block, the strip, and the counter reading **"Design 1 of 1"** with
+  one sentence saying the category has one design so far; the arrows and Shuffle are **absent**, never greyed
+  (UX-DR3, R-118). The day Epic 9 fills a category they appear with no further work, because every count is derived.
+- Targets: ✅ this entry · ✅ Story 5.11's spec (Question 1, its tasks, its verification and its owner test) ·
+  ✅ `epics.md` (Story 5.11's AC) · ✅ `epic-5-context.md` · ⬜ `B1`, on the next library pass.
+
+**R-159 — Shuffle is built in BOTH places, and the two frames that disagree about the section's pill are
+reconciled.** Story 5.11's Question 2, ruled **option 2** (owner, 2026-09-20): *"In both places."*
+
+- **Why it was a question.** Shuffle has two drawn homes and one of them no longer exists: `S6 Variant Shuffle.dc.html:140` draws a
+  **`Try a design`** card (the destination's thumbnail, its name, *"Same words, new look"*, its tier badge) inside
+  the Style group, and R-113 abolished S4c's pinned card that the group's pinned position belonged to; `B1b` draws
+  **Shuffle** in a pill on the section itself, which S4b and S6 both draw without it.
+- **What it binds.** Both. The panel's Design block ends with S6's **`Try a design`** card, which is the one place
+  that can show **where a shuffle would take you before you press** — its whole argument — and the section's pill
+  gains a Shuffle control **with the ring, before the divider**, because the divider in the built pill separates
+  *which design* from *this section* (Duplicate · Delete · drag) and a shuffle is a which-design act. In the pill it
+  is **icon-only** (the Kit's `Refresh`, its words carried as accessible name and hover title) through
+  `DESIGN.md:534-536`'s carve-out — the same one R-132's mode button and R-136's moon badge use — because every
+  other control in that pill is a 26px round icon target and a word would be the only text in it. Both are **absent**
+  where the ring holds one design (UX-DR3).
+- **And the pill itself is settled.** B1b draws an **ink** pill at the section's **top-left**; S4b and S6`:67` both
+  draw the counter and arrows in the **white** quick-action pill at `top:10px;right:10px` that Story 5.4 built and
+  R-125 placed. Two frames agree, one is the outlier, and R-118 already said `◀ ▶` arrive **in S4b's pill** — so
+  **S4b + S6 govern the pill and B1b governs the affordance**. B1b's colour, its seat and its `⋯` are not built
+  (R-126 keeps the `⋯` as the Layers row's one control).
+- Targets: ✅ this entry · ✅ Story 5.11's spec (Question 2, its tasks and its owner test) · ✅ `EXPERIENCE.md`
+  § *Drawn, but on the wrong mechanism* (the new **B1** row) · ✅ `epics.md` (Story 5.11's AC) ·
+  ✅ `epic-5-context.md` · ⬜ `B1`, on the next library pass.
+
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
