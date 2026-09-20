@@ -3281,6 +3281,12 @@ async function main() {
         atDesktop: frames.every((f) => f.getBoundingClientRect().width > 0 && Number(getComputedStyle(f).width.replace('px', '')) === 1440),
         painted: frames.filter((f) => (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0).length,
         focusable: frames.filter((f) => (f.contentDocument?.querySelectorAll('a[href], button, input, [tabindex]').length ?? 0) > 0).length,
+        // the owner's ruling of 2026-09-20 (option 3): ONE design's stylesheet per frame, not the library's. The
+        // emitted `/* {id} */` marker is the count, read out of the frame's own document.
+        narrowed: frames.map((f) => {
+          const sheet = f.contentDocument?.querySelector('[data-order="3-pilots"]')?.textContent ?? ''
+          return { asked: new URL(f.src, location.href).searchParams.get('design'), sheets: (sheet.match(/\/\* [a-z0-9]+\/\d+ \*\//g) ?? []).length }
+        }),
       }
     })
     // R-137: the frame's CSS pixel size IS the device's, so the design's own media queries fire and the miniature is
@@ -3288,6 +3294,13 @@ async function main() {
     check('step 83 — every preview is a LIVE render in an `inert`, titled frame at Desktop width, and every card has one',
       previews510.frames === previews510.cards && previews510.frames > 0 && previews510.allInert && previews510.allTitled &&
       previews510.uniqueTitles && previews510.atDesktop && previews510.painted === previews510.frames, JSON.stringify(previews510))
+    // THE PAYLOAD, as the owner ruled it on 2026-09-20: each preview asks for its own design and is served exactly
+    // one stylesheet. Before this the frame carried EVERY design's, so the parse cost grew with the square of the
+    // library — on this library, 50,577 bytes a frame against ~16,000.
+    check('step 83 — every preview asks for ITS OWN design and is served exactly one stylesheet, never the library\'s',
+      previews510.narrowed.length > 0 && previews510.narrowed.every((n) => n.asked !== null && n.sheets === 1),
+      JSON.stringify(previews510.narrowed))
+
     // R-149 stays ONE rule on ONE element: `inert` takes the preview frames out of the accessibility tree entirely
     check('step 83 — `inert` is what keeps R-149 at one exception: nothing inside a preview frame is focusable to axe',
       previews510.allInert, JSON.stringify(previews510))

@@ -87,6 +87,24 @@ test('a query the design fixes is handed its fixed rows, newest first', () => {
 
 // Vercel ships a function with only the files the build traced; a path joined at runtime (from the module's own
 // address, since Story 4.11) is invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
+test('the canvas document NARROWS to one design when asked, and to the library when not (the owner\'s ruling of 2026-09-20)', () => {
+  const whole = pilotsCanvasDocument()
+  const ids = pilotIds()
+  assert.ok(ids.length > 1, 'this only means anything with more than one design in the library')
+  for (const id of ids) {
+    const one = pilotsCanvasDocument(id)
+    // its own stylesheet, and NOT the others — the marker is the emitted `/* id */` comment
+    assert.ok(one.includes(`/* ${id} */`), `${id}'s own stylesheet is missing from its narrowed document`)
+    for (const other of ids) if (other !== id) assert.ok(!one.includes(`/* ${other} */`), `${id}'s document still carries ${other}`)
+    // and everything that is NOT a design stylesheet is untouched: the tokens, the mount point, the chrome
+    assert.ok(one.includes('--bg-page') && one.includes('<div id="canvas"></div>') && one.includes('data-order="4-editor"'))
+    assert.ok(!/<script/i.test(one), 'a narrowed document must carry no script either')
+    assert.ok(one.length < whole.length, `${id}'s document is no smaller than the whole library's`)
+  }
+  // an id that is not in the library throws rather than quietly serving everything — the route turns that into a 404
+  assert.throws(() => pilotsCanvasDocument('a1/9999'))
+})
+
 test('every file the canvas document and the pilots review read is traced for every route that reads them', () => {
   const config = readFileSync('next.config.ts', 'utf8')
   // the PILOTS_FILES list itself: a glob in another route's list traces nothing for these two

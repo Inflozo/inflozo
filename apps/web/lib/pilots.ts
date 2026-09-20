@@ -99,16 +99,24 @@ export function pilotImage(name: string): Buffer | null {
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
- * THE CANVAS DOCUMENT: the reference tokens, every pilot's stylesheet (each scoped by its own class prefix), the
+ * THE CANVAS DOCUMENT: the reference tokens, the pilots' stylesheets (each scoped by its own class prefix), the
  * editor's chrome stylesheet (every rule keyed on `data-inflozo-*`, so inert at rest) and an empty mount point — and
  * NO script, so it needs no nonce. The editor and the pilots review write sections into `#canvas` from the parent
  * document (same origin) and set `data-mode` on this `<html>` for Light and Dark; `/canvas` serves it to both. A whole document in an
  * iframe, for AD-21's reason: the section inherits nothing of the app, and the iframe's width IS the viewport the
  * design's media queries read.
+ *
+ * `only` NARROWS IT TO ONE DESIGN, which is the Section Picker's whole payload problem (the owner's ruling of
+ * 2026-09-20, option 3 of Question 4). A canvas that holds a document needs every stylesheet, because it may draw
+ * any section; a PREVIEW draws exactly one, and carrying the rest is waste that grows with the square of the
+ * library — N frames × N stylesheets. Measured on 2026-09-20, with five designs in the library: the whole document
+ * is 50,577 bytes of which 42,511 are design stylesheets, so one design's is ~16 KB against 50 KB, and at forty
+ * designs it is ~16 KB against ~347 KB. An unknown id throws through `pilot()`, which is the route's 404.
  */
-export function pilotsCanvasDocument(): string {
+export function pilotsCanvasDocument(only?: string): string {
   const tokens = readFileSync(TOKENS(), 'utf8')
-  const css = pilots().map((e) => `/* ${e.id} */\n${e.css}`).join('\n')
+  const carried = only === undefined ? pilots() : [pilot(only)]
+  const css = carried.map((e) => `/* ${e.id} */\n${e.css}`).join('\n')
   return `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">` +
     `<title>${esc('Pilot sections')}</title>` +

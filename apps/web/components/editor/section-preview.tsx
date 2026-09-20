@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, type Mode } from '@inflozo/section-runtime'
 import { Skeleton } from '@/components/kit/loading'
-import { canvasAssets, mountSections, renderSection, type DesignRows } from '@/lib/canvas'
+import { canvasAssets, mountSections, previewSrc, renderSection, type DesignRows } from '@/lib/canvas'
 import { DESKTOP } from '@/lib/device'
 
 /* ────────────────────────────────── Story 5.10 — ONE CARD'S LIVE PREVIEW (S5a's card, FR-D12, NFR-1).
@@ -153,7 +153,9 @@ export function SectionPreview({
       {near ? (
         <iframe
           ref={frame}
-          src={src}
+          // ONE DESIGN'S STYLESHEET, NOT THE LIBRARY'S (the owner's ruling of 2026-09-20): every frame used to carry
+          // every design's CSS, so the parse cost grew with the square of the library
+          src={previewSrc(src, entry.id)}
           // unique per frame (axe `frame-title-unique`): two categories can hold a design of the same name
           title={`${entry.categoryTitle} — ${entry.name} preview`}
           // nothing inside is focusable or in the accessibility tree, so R-149's exception is not needed twice

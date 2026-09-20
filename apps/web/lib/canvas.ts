@@ -15,6 +15,12 @@ export type DesignRows = Readonly<Record<string, { newest: readonly unknown[]; o
 /** The canvas document's own address, beside the page: `/canvas` on the app host, `/app/canvas` on localhost. */
 export const canvasSrc = (appPrefixed: boolean) => `${appPrefixed ? '/app' : ''}/canvas`
 
+/** THE SAME DOCUMENT, NARROWED TO ONE DESIGN — a Section Picker preview's address (the owner's ruling of
+ *  2026-09-20). A preview draws exactly one section, so it carries exactly one stylesheet; the editor's canvas,
+ *  which may draw any of them, keeps `canvasSrc`. A picture inside it still resolves against the document's own
+ *  address, and relative resolution drops a query, so `canvas?image=x` lands on the unnarrowed route as before. */
+export const previewSrc = (src: string, designId: string) => `${src}?design=${encodeURIComponent(designId)}`
+
 /** Orbit Weekly's pictures, pointed at the canvas route — relative, so the canvas document resolves it against its
  *  own address. The one place the reserved origin is mapped for a canvas. */
 export const withImages = (html: string) =>

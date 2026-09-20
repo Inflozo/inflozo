@@ -1879,6 +1879,9 @@ to remember (R-153's standing half, his item 5)
 **And** the rail leads with an **`All sections`** row carrying its own derived count, the heading beneath it reads
 **`CATEGORIES`**, the meta line is the **count alone** and names no pack, and a hovered card takes a **1px coral
 border and nothing else** — no wash, no shadow, no lift (**R-154**, owner, 2026-09-20)
+**And** each preview is served **one design's stylesheet**, not the library's — `/canvas?design={id}`, an unknown id a
+404 — so the picker's parse cost grows with the library rather than with its square (**R-155**, owner, 2026-09-20,
+Question 4 option 3); the editor's own canvas still carries them all, because it may draw any section
 **And** the overlay matches S5a and S5c dark.
 
 **FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Rulings:** R-150, R-151, R-152. · **Owner test:** yes.

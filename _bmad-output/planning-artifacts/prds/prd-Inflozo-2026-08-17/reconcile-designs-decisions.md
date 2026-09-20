@@ -3198,6 +3198,32 @@ small border around it. And do not lift up on hover."*
 - Targets: ✅ this entry · ✅ Story 5.10's spec (its findings, tasks and owner test) · ✅ `EXPERIENCE.md`
   § *Drawn, but on the wrong mechanism* · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`, on the next library pass.
 
+**R-155 — a Section Picker preview is served ONE design's stylesheet, and the work lands in Story 5.10 rather than
+waiting for Epic 9.** Story 5.10's Question 4, ruled **option 3** (owner, 2026-09-20): *"I would like to go with
+option 3."*
+
+- **Why it was a question.** The picker was slow on the deployed editor and the owner asked for options rather than a
+  fix. Three costs were measured on the harness at 1600×1000 on 2026-09-20: `/canvas` is served `cache-control:
+  no-store`, so every preview frame **re-downloads** it (50,877 bytes each); the picker is **unmounted on close**, so
+  every open pays again; and `pilotsCanvasDocument()` puts **every** design's stylesheet in **every** frame, so the
+  parse cost grows with the square of the library. Option 3 is the third.
+- **What it binds.** `pilotsCanvasDocument(only?)` narrows to one design; `/canvas?design={id}` serves it, with an
+  unknown id a **404** rather than a quiet fallback to the whole library; `previewSrc()` is the one place a preview's
+  address is built. **The editor's own canvas is unchanged** and still carries every stylesheet, because it may draw
+  any section in its document. Executed, same harness, same run shape: **50,877 bytes a frame → 14,675–19,687**, and
+  the four previews land at **213 ms against 278 ms**. The byte split is why it is worth doing at five designs:
+  42,511 of the document's 50,577 bytes ARE design stylesheets.
+- **Where it lands, and why not its own story.** In **Story 5.10**. It changes only the surface this story built and
+  the route that surface reads, it has **no user-visible change at all** — every preview draws exactly as before, which
+  is the acceptance criterion — and the alternative was a story in Epic 9 whose own trigger (**DW-200**) is a payload
+  problem this halves in advance. A separate story would repeat a whole review-deploy-test cycle for a change with no
+  screen. **DW-200 is NOT closed**: its subject is the editor's *initial* payload — every placeable design handed to
+  `read.ts` — which this does not touch.
+- **What was NOT ruled, and stays open.** Options 1, 2 and 4 of that question. Option 1's caching is the half that
+  makes a SECOND open free, and the owner chose 3 over it; it is recorded here so a later story does not re-derive it.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (Question 4, its tasks and its verification) · ✅ `epics.md`
+  (Story 5.10's AC) · ✅ `deferred-work.md` (DW-200's note that the picker half is answered).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

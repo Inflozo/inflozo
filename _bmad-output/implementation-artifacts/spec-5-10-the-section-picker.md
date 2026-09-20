@@ -357,6 +357,20 @@ globe on the card instead of a sentence.
 - [x] `apps/web/picker.test.ts` · `tools/keyboard/journey.spec.mjs` · `tools/probe/run-verify-editor.cjs` -- the
       meta line without a pack, `CATEGORIES` rather than `ALL CATEGORIES`, and `All sections` first in the rail.
 
+**The Fix phase, third pass (R-155 — Question 4, option 3: one design's stylesheet per preview).**
+
+- [x] `apps/web/lib/pilots.ts` -- `pilotsCanvasDocument(only?)` carries one design's stylesheet when asked and the
+      library's when not; an unknown id throws through `pilot()`, which is the route's 404.
+- [x] `apps/web/app/…/(authed)/canvas/route.ts` · `harness/canvas/route.ts` -- `?design={id}`, validated against
+      `pilotIds()` exactly as `?image=` is, and **404 on an unknown id** -- never a quiet fallback to the whole library.
+- [x] `apps/web/lib/canvas.ts` -- `previewSrc(src, designId)`, the one place a preview's address is built.
+- [x] `apps/web/components/editor/section-preview.tsx` -- the frame asks for its own design.
+- [x] `apps/web/pilots.test.ts` -- every design's narrowed document carries its own stylesheet and **none of the
+      others**, still carries the tokens, the mount and the chrome, still carries no script, and is smaller than the
+      whole; an unknown id throws.
+- [x] `tools/probe/run-verify-editor.cjs` -- step 83 asserts on the deployed site that every frame asked for a design
+      and was served **exactly one** stylesheet.
+
 **Acceptance Criteria:**
 - Given a canvas with sections, when I hover the gap between two of them, then a 2px coral hairline and the
   **"+ Add section"** pill appear on that boundary and breathe in opacity; **and both match `S4 Editor.dc.html:181`**.
@@ -573,6 +587,15 @@ card's `+` centred in its footer strip between the name and the badge. **After R
 `CATEGORIES`, the meta line reading `4 designs`, and a hovered card carrying a coral border with its picture
 undimmed and unmoved.
 
+**The Fix phase, third pass (R-155), measured on the harness at 1600×1000, same run shape as the numbers above.**
+Per-frame payload **50,877 bytes → 14,675-19,687** (the four designs differ); the four previews land at
+**145 · 187 · 187 · 213 ms** against **136 · 189 · 253 · 278 ms**; and every preview draws **identically** — the
+narrowing changes no pixel, which is its acceptance criterion, checked against the same screenshots. `pnpm check`
+**exit 0** · `pnpm keyboard` **20 passed** · `pnpm build` **exit 0** · `node --test apps/web/pilots.test.ts`
+**9 pass · 0 fail**, the new narrowing test among them (run from `apps/web`, which is where its relative reads
+resolve). The byte split that makes this worth doing at five designs: of the whole document's 50,577 bytes,
+**42,511 are design stylesheets** — tokens are 3,415 and the editor chrome 3,985.
+
 **Owed to Review, and not run here (R-82).** The deployed walk. `tools/probe/run-verify-editor.cjs` gains
 **steps 81-85** inside step 5's one CSP session — the picker's shape against S5a and S5c, the rail, the search,
 R-152's globe and its accessible name, the hairline and the pressed pill measured on a hovered gap, the placement
@@ -706,7 +729,12 @@ You may pick more than one.
 
 **My recommendation: option 1 now, option 3 when the library grows, and 2 and 4 not at all unless 1 disappoints.**
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 3 (owner, 2026-09-20).** *"I would like to go with option 3."* Recorded as **R-155**, and **built in
+this story** rather than deferred — his follow-up question was whether it needed one of its own. It does not: it
+changes only the surface this story built and the route that surface reads, it has **no user-visible change at all**,
+and the Epic 9 story it would otherwise wait for (**DW-200**) is triggered by a payload problem this halves in
+advance. **Options 1, 2 and 4 were not ruled**; option 1's caching is the half that would make a *second* open free,
+and R-155 records that so a later story does not re-derive it.
 
 ### Question 1 — should the picker have a "Free only" switch?
 

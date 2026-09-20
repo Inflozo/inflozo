@@ -4769,6 +4769,10 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (the 
 reason: the shape of the durable answer is clear — the editor asks the server for a design when a doc names one it has
   not got — but it is a new route, a new cache and a new failure mode on the undo path, and none of it is measurable
   against a library of five. Doing it now would be inventing a budget for a payload nobody can weigh.
+note (2026-09-20, Story 5.10's Fix, R-155): the SECTION PICKER's half of this is answered and does not wait for Epic 9
+  — a preview frame is served `/canvas?design={id}`, one stylesheet rather than the library's (50,877 bytes a frame →
+  ~16,000, measured). THIS ENTRY IS STILL OPEN: its subject is the editor's INITIAL payload, every placeable design
+  handed over by `read.ts` on load, which R-155 does not touch.
 
 ### DW-201: the Projects page runs zod's `Function("")` probe, which the content-security policy refuses
 

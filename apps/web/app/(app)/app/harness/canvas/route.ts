@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { HARNESS } from '@/lib/harness'
-import { pilotImage, pilotsCanvasDocument } from '@/lib/pilots'
+import { pilotIds, pilotImage, pilotsCanvasDocument } from '@/lib/pilots'
 
 /**
  * STORY 5.9 — the keyboard harness's canvas document, and it is the SAME BYTES the app's own `/canvas` serves
@@ -23,5 +23,12 @@ export async function GET(request: NextRequest) {
       headers: { ...headers, 'content-type': 'image/svg+xml', 'x-content-type-options': 'nosniff' },
     })
   }
-  return new NextResponse(pilotsCanvasDocument(), { headers: { ...headers, 'content-type': 'text/html; charset=utf-8' } })
+  // STORY 5.10, the owner's ruling of 2026-09-20 (Question 4, option 3): a PREVIEW asks for one design and is
+  // served one design's stylesheet. The editor's own canvas asks for none and is served them all, because it may
+  // draw any section in the document. An unknown id is a 404 like an unknown picture — never served as "all".
+  const design = request.nextUrl.searchParams.get('design')
+  if (design !== null && !pilotIds().includes(design)) {
+    return new NextResponse('that design is not in the library', { status: 404, headers })
+  }
+  return new NextResponse(pilotsCanvasDocument(design ?? undefined), { headers: { ...headers, 'content-type': 'text/html; charset=utf-8' } })
 }
