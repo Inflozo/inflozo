@@ -347,7 +347,7 @@ function Card({
           // the first card is the grid's one Tab stop; the arrows rove from there (the icon picker's own pattern)
           tabIndex={first ? 0 : -1}
           // R-152's words are part of the name, because a glyph and a hover are invisible to a screen reader
-          aria-label={`Add ${entry.name}, ${entry.tier === 'pro' ? 'Pro' : 'Free'}${siteWide ? `, ${SITE_WIDE_WORDS}` : ''}`}
+          aria-label={`Add ${entry.name}, ${entry.categoryTitle}, ${entry.tier === 'pro' ? 'Pro' : 'Free'}${siteWide ? `, ${SITE_WIDE_WORDS}` : ''}`}
           title="Add"
           onClick={() => onAdd({ entry, siteWide })}
           /* shown on hover, on focus, and ALWAYS where there is no pointer to hover with — a tablet is inside this
@@ -356,7 +356,13 @@ function Card({
         >
           <Plus size={14} aria-hidden />
         </button>
-        <span className="flex justify-end">{entry.tier === 'pro' ? <ProBadge /> : <FreeBadge />}</span>
+        {/* the owner's ruling of 2026-09-20: the CATEGORY before the tier pill, in the rail heading's own mono 10.5 —
+            it is a label beside a name, not a second name, and a search crosses the rail so the card must say where
+            it came from. No new size and no new token. */}
+        <span className="flex min-w-0 items-center justify-end gap-[6px]">
+          <span className="truncate font-mono text-[10.5px] tracking-[0.02em] text-ink-soft-aa">{entry.categoryTitle}</span>
+          {entry.tier === 'pro' ? <ProBadge /> : <FreeBadge />}
+        </span>
       </div>
     </div>
   )

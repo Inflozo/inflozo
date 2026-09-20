@@ -3224,6 +3224,30 @@ option 3."*
 - Targets: ✅ this entry · ✅ Story 5.10's spec (Question 4, its tasks and its verification) · ✅ `epics.md`
   (Story 5.10's AC) · ✅ `deferred-work.md` (DW-200's note that the picker half is answered).
 
+**R-156 — choosing a Layers row brings its section into view, and a picker card names its category.** Two more from
+the owner's walk of the deployed Story 5.10 (owner, 2026-09-20): *"When selecting a card in Left Layers Panel, the
+canvas should smooth scroll to that section so that section is in view. Add minor space at the top of that section
+and do not touch to the top edge… Show section category in minimal fonts before the Free/Pro pills. Right now it just
+shows the name."*
+
+- **The reveal.** The canvas iframe is exactly the device's size (R-137) and its own document is longer, so the
+  scroll is `contentWindow.scrollTo`, not the stage's. It is smooth, honours `prefers-reduced-motion` in JS (this is
+  not a CSS animation, and `canvas-chrome.css` cannot carry a `scroll-behavior` rule — every selector in it must be
+  keyed on `data-inflozo-`), and leaves **24 canvas pixels of air** above the section, which shrink with the fit
+  exactly as the section does. **Only from Layers**: a press on the canvas is already looking at the section, and
+  moving the page under that pointer would be a fault rather than a courtesy.
+- **One exemption, found by execution rather than reasoning.** A **sticky** section — a site-wide header — travels
+  with the viewport and is in view wherever the page is. Measured on the harness canvas at scroll 2425: the stuck
+  root reports `getBoundingClientRect().top` **0** and `offsetTop` **2425**, so *neither* number is its layout
+  position, and a naive reveal nudged the page 24px for nothing. Sticky and fixed roots are therefore left alone.
+  A section near the document's END is a second honest limit: the browser runs out of scroll and clamps, which is
+  right, and is why the journey's stop derives both ends of its walk instead of taking the last row.
+- **The category on the card.** In the rail heading's own mono 10.5 on `--color-ink-soft-aa`, immediately before the
+  tier pill, and in the card's accessible name between the design's name and its tier. No new size, no new token. A
+  search crosses the rail (UX-DR6), so a card has to be able to say where it came from.
+- Targets: ✅ this entry · ✅ Story 5.10's spec (its findings, tasks and owner test) · ✅ `EXPERIENCE.md` (the Layers
+  surface row) · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`, on the next library pass.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

@@ -525,6 +525,68 @@ test('⌘K with the caret in a field does NOT open the picker — it is the link
 
 // ── keyboard completeness: every drag has a keyboard path, and the toolbar is reachable ─────────────────────────
 
+test("choosing a Layers row scrolls the canvas to that section, with air above it (the owner's ruling of 2026-09-20)", async ({ page }) => {
+  await open(page)
+  const all = (await rows(page)).all
+  const GAP = 24
+
+  const scrollY = () => page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe').contentWindow.scrollY)
+  /** How far the section of a given row sits below the canvas's top edge, right now. The scroll is SMOOTH, so every
+   *  assertion POLLS this rather than reading it once — a value read mid-animation is not the resting one. */
+  const topOf = (key) => page.evaluate((k) => {
+    const f = document.querySelector('section[aria-label="Canvas"] iframe')
+    const n = [...document.querySelectorAll('[data-layer-row]')].findIndex((r) => r.dataset.layerRow === k)
+    const root = f.contentDocument.querySelectorAll('#canvas > *')[n]
+    return root ? Math.round(root.getBoundingClientRect().top) : null
+  }, key)
+
+  // BOTH ENDS OF THE WALK ARE DERIVED, and each exclusion is a real case rather than a fixture quirk. A STICKY
+  // section (a site-wide header) travels with the viewport, so it is in view wherever the page is and the reveal
+  // leaves it alone. A section near the document's END cannot be brought to the top at all — the browser runs out
+  // of scroll and clamps — so asserting the gap on it would assert the wrong thing.
+  const walk = await page.evaluate((keys) => {
+    const f = document.querySelector('section[aria-label="Canvas"] iframe')
+    const d = f.contentDocument.documentElement
+    const room = d.scrollHeight - d.clientHeight
+    const bodies = f.contentDocument.querySelectorAll('#canvas > *')
+    const list = [...document.querySelectorAll('[data-layer-row]')].map((r) => r.dataset.layerRow)
+    let near = null
+    let far = null
+    let sticky = null
+    keys.forEach((k) => {
+      const root = bodies[list.indexOf(k)]
+      if (!root) return
+      if (['sticky', 'fixed'].includes(f.contentWindow.getComputedStyle(root).position)) { sticky ??= k; return }
+      const top = root.getBoundingClientRect().top + f.contentWindow.scrollY
+      if (top + 24 <= room) { near ??= k; far = k }
+    })
+    return { near, far, sticky, room }
+  }, all)
+  expect(walk.room, 'the fixture canvas must be taller than its viewport for this to mean anything').toBeGreaterThan(0)
+  expect(walk.far, 'the fixture must hold a section below the fold that is not at the very end').not.toBeNull()
+  expect(walk.near, 'and one above it to come back to').not.toBeNull()
+  expect(walk.far).not.toBe(walk.near)
+
+  expect(await scrollY()).toBe(0)
+  await select(page, walk.far)
+  await expect.poll(scrollY, { message: 'the canvas scrolled to the chosen section' }).toBeGreaterThan(0)
+  // THE WHOLE OF THE RULING, IN ONE NUMBER: it comes to rest exactly that much below the top edge — in view, and
+  // not against it
+  await expect.poll(() => topOf(walk.far), { message: 'the chosen section settles a little below the top edge' }).toBe(GAP)
+
+  // and back up, so the reveal is a real scroll rather than a one-way trip
+  await select(page, walk.near)
+  await expect.poll(() => topOf(walk.near)).toBe(GAP)
+
+  // a STICKY section is already in view wherever the page is, so choosing it moves nothing at all
+  if (walk.sticky) {
+    const before = await scrollY()
+    await select(page, walk.sticky)
+    await page.waitForTimeout(600)
+    expect(await scrollY(), 'a sticky section is in view by construction — the reveal must not nudge the page').toBe(before)
+  }
+})
+
 test('the Layers row answers ⌥↑ / ⌥↓, and the move is announced in its own words', async ({ page }) => {
   await open(page)
   const { page: own } = await rows(page)

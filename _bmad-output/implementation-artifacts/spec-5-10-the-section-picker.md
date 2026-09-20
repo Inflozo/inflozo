@@ -371,6 +371,16 @@ globe on the card instead of a sentence.
 - [x] `tools/probe/run-verify-editor.cjs` -- step 83 asserts on the deployed site that every frame asked for a design
       and was served **exactly one** stylesheet.
 
+**The Fix phase, fourth pass (R-156 — the Layers reveal and the card's category).**
+
+- [x] `apps/web/app/…/(editor)/editor.tsx` -- `reveal(pick)` beside `rootOf`, called from **Layers' `onSelect`
+      only**: `contentWindow.scrollTo` to the section's top less `REVEAL_GAP` (24 canvas pixels), smooth unless
+      `prefers-reduced-motion`, and **sticky and fixed roots are left alone** because they travel with the viewport.
+- [x] `apps/web/components/editor/section-picker.tsx` -- the card names its **category** in mono 10.5 before the
+      tier pill, and in its accessible name between the design's name and its tier.
+- [x] `tools/keyboard/journey.spec.mjs` -- a stop that derives both ends of its walk, asserts the section settles
+      **exactly `REVEAL_GAP`** below the top edge in both directions, and asserts a sticky section moves nothing.
+
 **Acceptance Criteria:**
 - Given a canvas with sections, when I hover the gap between two of them, then a 2px coral hairline and the
   **"+ Add section"** pill appear on that boundary and breathe in opacity; **and both match `S4 Editor.dc.html:181`**.
@@ -548,6 +558,28 @@ of those is a round trip to a serverless function. Two further facts the numbers
 and `pilotsCanvasDocument()` puts **every** design's stylesheet in **every** frame, so the parse cost grows with the
 square of the library. The options are Question 4's.
 
+### Fourth pass — the reveal, the card's category, and the answer to his question about option 1 (R-156)
+
+> *"Along with the option 3, did you also implement option 1? — If not, then will it benefit if we implement option 1
+> too? Also, add one more feature — When selecting a card in Left Layers Panel, the canvas should smooth scroll to
+> that section so that section is in view. Add minor space at the top of that section and do not touch to the top
+> edge… Show section category in minimal fonts before the Free/Pro pills."*
+
+**Option 1 was not implemented, and the honest answer is that it now buys something different from what it would
+have bought before.** Measured: with option 3 in, each frame fetches its **own** URL, so caching no longer lets
+frames share one download — the first open costs the same either way. What option 1 buys is every open **after**
+the first: today the picker is unmounted on close and `/canvas` is `no-store`, so a re-open re-fetches every frame
+(measured at 122-148 ms and 14,675-19,687 bytes a frame on localhost, and a server round trip each on production).
+That is exactly the *"each time he will have to wait"* he opened with. It is **Question 5**, below.
+
+**The reveal and the card's category are built (R-156).** Both in the register with their reasoning; the two things
+worth carrying here are the executed ones. A **sticky** section reports `getBoundingClientRect().top` **0** and
+`offsetTop` **2425** when stuck — *neither* is its layout position — so the reveal leaves sticky and fixed roots
+alone, which is also correct on its own terms: they are in view wherever the page is. And a section near the
+document's end **cannot** be brought to the top, because the browser runs out of scroll and clamps, so the journey's
+stop derives both ends of its walk rather than taking the last row (it settled 298px down, not 24, which is what
+found this).
+
 ## Verification
 
 **Run on 2026-09-20 at `e794046b`, on this machine unless a line says otherwise. Every one green.**
@@ -595,6 +627,10 @@ narrowing changes no pixel, which is its acceptance criterion, checked against t
 **9 pass · 0 fail**, the new narrowing test among them (run from `apps/web`, which is where its relative reads
 resolve). The byte split that makes this worth doing at five designs: of the whole document's 50,577 bytes,
 **42,511 are design stylesheets** — tokens are 3,415 and the editor chrome 3,985.
+
+**The Fix phase, fourth pass (R-156).** `pnpm check` **exit 0** · `pnpm keyboard` **21 passed**, the new reveal stop
+among them · `pnpm build` **exit 0** · the gate green twice. Photographed: each card's footer now reads
+`{name} … + … {Category} {tier}` — `Headers Free`, `Heroes ✦ Pro`, `Post Grids Free`, `Newsletter Free`.
 
 **Owed to Review, and not run here (R-82).** The deployed walk. `tools/probe/run-verify-editor.cjs` gains
 **steps 81-85** inside step 5's one CSP session — the picker's shape against S5a and S5c, the rail, the search,
@@ -685,6 +721,21 @@ to your account at Story 5.1.
 20. **Same screen.** Hover a card. **Expect:** a **thin coral outline** appears around it and **nothing else** — the
     picture is not dimmed or covered, and the card does **not** move up.
 
+**Added after your fourth pass of 2026-09-20 (R-155, R-156).**
+
+21. **Same screen.** Open the picker and look at the bottom strip of any card. **Expect:** the section's name on the
+    left, the **+** in the middle, and now the **category** in small grey letters just before the Free or ✦ Pro tag —
+    for example `Headers  Free`.
+22. **Same screen.** Close the picker. In the **Layers** list on the left, click a section that is further down the
+    page — one you cannot currently see. **Expect:** the canvas **glides** down to it and stops with the section just
+    below the top edge, with **a little space above it** rather than jammed against the edge. Click a section higher
+    up: it glides back the same way.
+23. **Same screen.** Click your **header** in the Layers list (the one in the Site-wide group). **Expect:** the page
+    does **not** jump — a header stays at the top of the screen as you scroll, so it is already in view.
+24. **Same screen.** Nothing to do for this one, but worth knowing: each picture now loads only its own section's
+    styling instead of the whole library's. It should feel quicker, and it will feel much quicker as the library
+    grows.
+
 ## Questions for the owner
 
 ### Question 4 — how should the picker's previews load faster?
@@ -735,6 +786,34 @@ changes only the surface this story built and the route that surface reads, it h
 and the Epic 9 story it would otherwise wait for (**DW-200**) is triggered by a payload problem this halves in
 advance. **Options 1, 2 and 4 were not ruled**; option 1's caching is the half that would make a *second* open free,
 and R-155 records that so a later story does not re-derive it.
+
+### Question 5 — should a re-opened picker be instant, as well as a first open being lighter?
+
+You chose option 3, and it is built: each picture now loads only its own section's styling instead of the whole
+library's. Option 1 was the other half and it is **not** built. It does something different now that 3 is in: it no
+longer speeds up the *first* open at all — each picture has its own address, so each is fetched once either way —
+but it makes **every open after the first** cost nothing, because the pictures are still in the browser's memory
+and the picker itself is still in the window.
+
+**Example.** You add a hero, then a post grid, then a newsletter block. Today that is three presses of `⌘K` and the
+pictures are fetched again from the server every single time. With this, the first press fetches them and the second
+and third show instantly.
+
+**Measured.** A re-open today costs 122–148 ms on my machine and re-downloads every picture's page; on the real site
+each of those is a trip to the server. With this it is zero of both.
+
+1. **Yes — let the browser keep the pages, and keep the picker in the window once opened.** (RECOMMENDED) This is the
+   half that answers what you first complained about: *"each time he will have to wait"*. The address carries the
+   published version, so a new publish is picked up at once and you can never be shown a stale picture.
+   - **Cost:** the picker holds its pictures in memory while the editor is open. Nothing else in the builder changes,
+     and the main canvas gets the same benefit for free.
+2. **Only keep the picker in the window, and leave the caching alone.** Re-opens are instant in the same session, but
+   a reload pays full price again.
+   - **Cost:** almost the same work as option 1 for less of the benefit.
+3. **No — leave it as it is.** Option 3's lighter pages are enough.
+   - **Cost:** every `⌘K` fetches everything again, and you press `⌘K` once per section you add.
+
+**Ruled:** _(awaiting the owner)_
 
 ### Question 1 — should the picker have a "Free only" switch?
 

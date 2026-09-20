@@ -1295,6 +1295,29 @@ export function Editor({
     const n = pick ? stack.findIndex((i) => same(i, pick)) : -1
     return n === -1 ? null : (roots.current[n] ?? null)
   }
+  /** THE CANVAS SCROLLS TO A SECTION CHOSEN IN LAYERS (the owner's ruling of 2026-09-20). Only from Layers: a press
+   *  ON the canvas is already looking at the section, and moving the page under that pointer would be a bug rather
+   *  than a courtesy. The canvas document is what scrolls — the iframe is exactly the device's size (R-137) and its
+   *  own document is longer — so this is `contentWindow.scrollTo`, never the stage's.
+   *
+   *  `REVEAL_GAP` is in CANVAS pixels, so it shrinks with the fit exactly as the section does.
+   *  ponytail: 24 is a guess at "minor space", the owner's words. It is the one number here. */
+  const REVEAL_GAP = 24
+  const reveal = (pick: Pick | null) => {
+    const root = pick && rootOf(pick)
+    const win = frame.current?.contentWindow
+    if (!root || !win) return
+    // A SECTION THAT TRAVELS WITH THE VIEWPORT IS ALREADY IN VIEW, and there is nothing to scroll to — a sticky
+    // header is the case, and it is not a guess: executed on the harness canvas at scroll 2425, the stuck root
+    // reported `getBoundingClientRect().top` 0 AND `offsetTop` 2425, so neither number says where it lives. Without
+    // this the reveal read 2425 as its position and nudged the page 24px for nothing.
+    if (['sticky', 'fixed'].includes(win.getComputedStyle(root).position)) return
+    // reduced motion is honoured in JS because this scroll is not a CSS animation — and `canvas-chrome.css` cannot
+    // carry a `scroll-behavior` rule anyway: every selector in it must be keyed on `data-inflozo-` (`pilots.test.ts`)
+    const still = win.matchMedia('(prefers-reduced-motion: reduce)').matches
+    win.scrollTo({ top: Math.max(0, root.getBoundingClientRect().top + win.scrollY - REVEAL_GAP), behavior: still ? 'auto' : 'smooth' })
+  }
+
   const chosen = selected ? stack.find((i) => same(i, selected)) : undefined
   const pointed = hovered ? stack.find((i) => same(i, hovered)) : undefined
   const entry = chosen ? entries[chosen.designId] : undefined
@@ -1700,7 +1723,8 @@ export function Editor({
             hoveredKey={hovered ? keyOf(hovered) : null}
             drag={drag}
             onDrag={setDrag}
-            onSelect={choose}
+            // the owner's ruling of 2026-09-20: choosing a row brings its section into view, with a little air above it
+            onSelect={(pick) => { choose(pick); reveal(pick) }}
             onGround={() => choose(null)}
             onToggleHidden={onToggleHidden}
             onRename={onRename}
