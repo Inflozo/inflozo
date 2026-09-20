@@ -606,11 +606,14 @@ async function main() {
       pill511 !== null && /^\d+ \/ 3$/.test(pill511.count ?? '') && /^Shuffle/.test(pill511.shuffle ?? '') && pill511.shuffle === pill511.titled && pill511.words === '',
       JSON.stringify(pill511))
     const wasShuffle511 = (await counter511.innerText()).trim()
+    // the words as they stand NOW, not a literal: the WCAG step above deliberately typed `[]` into the Heading
+    // and that character is still there — which is itself the point, so the carry is asserted against it
+    const wordsShuffle511 = await drawnHeading()
     await page.locator('[data-pill-shuffle]').click()
     await page.waitForTimeout(500)
     check('ring — and it SHUFFLES: a different design of the same ring, carrying the words the same way (FR-D13)',
-      (await counter511.innerText()).trim() !== wasShuffle511 && (await drawnHeading()) === 'Ring words',
-      `${wasShuffle511} → ${(await counter511.innerText()).trim()} · ${await drawnHeading()}`)
+      (await counter511.innerText()).trim() !== wasShuffle511 && (await drawnHeading()) === wordsShuffle511 && /^Ring words/.test(wordsShuffle511 ?? ''),
+      `${wasShuffle511} → ${(await counter511.innerText()).trim()} · ${JSON.stringify(wordsShuffle511)} → ${JSON.stringify(await drawnHeading())}`)
     await page.screenshot({ path: `${OUT}/controls-ring-1440.png` })
     await page.screenshot({ path: `${OUT}/controls-review-1440.png` })
     await context.close()
