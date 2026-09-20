@@ -4921,14 +4921,19 @@ fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium thr
 
 ### DW-210: the `/controls` review's window scrolls ~35px once its panel has been folded and unfolded
 
+status: does not reproduce since 2026-09-20 at `730e713a` — step 17 reads a window scroll range of **0** after
+  the same fold-and-unfold that measured 24, 30 and 35px at `6a09cecc` and `1b5e4805`. The owner's own test of the
+  page removed the `Try a design` card and the `Cycle designs` footer from the panel between those two readings,
+  which is the shorter panel the measurements pointed at; that is the LIKELY cause and not a proved one, because
+  no control isolated it. Left here rather than deleted so a future reading of 24-35px is recognised.
+
 plain: The internal Controls review page is built so the window itself never scrolls — the section scrolls inside
   its frame and the settings panel scrolls on its own. After you collapse the panel and open it again, the whole
   window gains about thirty pixels of scroll. Nothing is cut off; a second scrollbar simply appears beside the
   panel's, which is the thing the page was re-laid-out to stop.
-status: open
 severity: low
 origin: Story 5.11's Dev (2026-09-20), `run-verify-controls.cjs` step 17, on production at `1b5e4805`.
-owner: unassigned — the next story that touches `/controls`.
+owner: closed by the owner's own test of the page, the same day — see the `status` line above.
 location: `apps/web/app/(app)/app/(authed)/controls/review.tsx` · `apps/web/components/shell/shell.tsx`
 reason: MEASURED, AND THE BOX IS NOT VISIBLE. At step 2 the window's scroll range is 0; after step 17's collapse and
   re-expand it is 24–35px and it VARIES between runs (24 at `6a09cecc`, 30 and 35 at `1b5e4805`), which says it
@@ -4942,3 +4947,4 @@ reason: MEASURED, AND THE BOX IS NOT VISIBLE. At step 2 the window's scroll rang
   recorded here rather than chased because `/controls` is an internal review page and the failure is cosmetic —
   but it IS the exact complaint the page was re-laid-out for (the owner's findings 5 and 6, 2026-09-13: two
   scrollbars side by side "looks really bad"), so it is not dismissed either.
+  **RESOLVED BY THE PANEL GETTING SHORTER (2026-09-20).** See the `status` line at the head of this entry.

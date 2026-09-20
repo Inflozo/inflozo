@@ -677,3 +677,35 @@ stands: **S4b + S6 govern the pill, B1b governs the affordance**, and in the pil
 carve-out, the one R-132's mode button and R-136's moon badge already use: every other control in that pill
 is a 26px round icon target and a word would be the only text in it. Both are absent where the ring holds
 one design. **R-159 also settles the pill itself** — S4b + S6 govern it, B1b governs the affordance.
+
+### Question 3 — you changed a setting on one design, then went back to an earlier one that also has it. Which value should it show?
+
+Two of the promises in this story pull in opposite directions in one narrow case, and the spec did not say
+which wins. It is reachable today on the Controls review page, so you may well hit it while testing.
+
+**An example.** *Rule under heading* is a setting that samples **1** and **3** both have, and sample **2**
+does not.
+
+1. On sample 1 you set **Rule under heading** to *None*.
+2. You press ▶ to sample 2. That sample has no such setting, so the value is **put aside against sample 1**
+   — "it comes back exactly as you left it".
+3. You press ▶ to sample 3, which has the setting again. It starts at its own default, *Line*. You change it
+   to something else — say you leave it on *Line*.
+4. You press ▶ once more and wrap round to sample 1. **What should Rule under heading say?**
+
+*None* is what you left sample 1 with. *Line* is what you set two seconds ago. Both rules in the spec are
+being kept; they simply disagree here.
+
+1. **(RECOMMENDED) Show *None* — what you left that design with.** Going back to a design always looks
+   exactly the way you left it, which is the promise the whole story is sold on and the one your test of it
+   checks (step 9). This is what is built today.
+2. **Show *Line* — what you set most recently.** The setting follows you as you browse and only the ones a
+   design does not have are ever put aside. Simpler to say in one sentence, but it means returning to a
+   design does *not* always look the way you left it, and the thing that changed it is a design you have
+   since left.
+
+**Ruled:** _(awaiting the owner)_
+
+Nothing waits on this. The built behaviour is option 1, it is documented beside the code and covered by a
+test, and switching to option 2 later is one line. It is here because it is a choice you would want to make
+rather than inherit.
