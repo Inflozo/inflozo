@@ -3144,6 +3144,32 @@ shown on all templates. Instead for such Global sections — use a Globe icon wi
 - Targets: ✅ this entry · ✅ Story 5.10's spec (Question 3, its I/O matrix, its tasks and the owner's test) ·
   ✅ `EXPERIENCE.md` (the Site-wide singleton row) · ✅ `epics.md` (Story 5.10's AC).
 
+**R-153 — the Section Picker's grid is FOUR COLUMNS OF TILES, a card's shape says what the section is, and the
+`Add` lives in the footer strip.** The owner's test of the deployed Story 5.10, in his own words (owner, 2026-09-20):
+*"I cannot clearly see what Rail section is. It is very thin. When I hover over it Add button is cut off. 1. Make the
+grid 4 columns only. 2. On hover, show the Add button (only show icon, no text) in the bottom strip of the section
+between name and Free/Pro. The Add icon buttons should be center aligned. 3. For thin/wider sections, can we span two
+columns, so they are clearly visible. 4. For Longer sections we can span them two rows."*
+
+- **Why it was wrong as drawn.** S5a`:88` draws **CSS multi-column** (`column-width:300px`), which gives every card
+  the width of a column and the height of **its own content**. At 1440 that is five narrow columns, and a header —
+  about 100px tall at Desktop width — is drawn as a ~20px sliver with its name under it. The fault he actually
+  pressed follows from the same geometry: S5a's hover wash is the `Add` button and runs `top:0 → bottom:41px`, so on
+  a section shorter than the pill inside it **the pill is cropped**. The frame was drawn with stress-fill cards of
+  one comfortable height; the real library is not one height, and the miniature is the point of this surface.
+- **What it binds.** (1) The grid is **four columns** of a fixed row unit, packed `dense`. (2) A card's **span is
+  measured from the design's own drawn aspect** — its height at Desktop width, which the preview already knows:
+  a **band** spans two columns, a **feed** spans two rows, everything between is one tile (`apps/web/lib/picker.ts`'s
+  `spanFor`, the only place the two thresholds live). (3) The `Add` is an **icon, not a word**, in the card's
+  **footer strip**, centred on the card between the name and the tier badge, revealed on hover and on focus — and
+  always present where there is no pointer to hover with. S5a's wash stays as the hover treatment, decoration only.
+- **What it does NOT touch.** Everything else in S5a and S5c stands: the 22px-inset panel, the 240px rail and its
+  rows, `ALL CATEGORIES` with no number, the search field and its `⌘K` chip, the header, the card's own chrome, the
+  tier badges, and S5c's rule that only the preview interiors invert. **S5a and S5c are superseded on the grid's
+  shape and the `Add`'s seat alone.**
+- Targets: ✅ this entry · ✅ Story 5.10's spec (its findings, its tasks, its owner test) · ✅ `EXPERIENCE.md`
+  § *Drawn, but on the wrong mechanism* · ✅ `epics.md` (Story 5.10's AC) · ⬜ `S5`'s grid, on the next library pass.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

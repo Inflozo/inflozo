@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import type { SectionRegistryEntry } from '@inflozo/library'
-import { cards, emptyState, invokedAt, isSiteWide, matches, metaLine, offeredHere, rail, SITE_WIDE_WORDS } from './lib/picker.ts'
+import { cards, emptyState, invokedAt, isSiteWide, matches, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor, TALL_OVER, WIDE_UNDER } from './lib/picker.ts'
 
 /* Story 5.10 — the Section Picker's I/O matrix, over the one pure module the rail, the grid, the counts and every
    empty state read (`lib/picker.ts`). Nothing here touches the DOM: `node --test` strips types but cannot load a
@@ -149,4 +149,28 @@ test('the invoked position counts the canvas\'s own sections at or before the ga
   // an empty canvas has one position, and it is 0
   assert.equal(invokedAt([{ doc: 'site' }], 'home', 0), 0)
   assert.equal(invokedAt([], 'home', null), 0)
+})
+
+// ── the owner's test of 2026-09-20: a card's SHAPE is the section's own, and four columns is the grid ────────────
+
+test("spanFor: a band spans two columns, a feed two rows, and everything between is one tile", () => {
+  // a header at 120px over Desktop's 1440, an announcement bar at 60 — both far wider than they are tall
+  assert.equal(spanFor(120 / 1440), 'wide')
+  assert.equal(spanFor(60 / 1440), 'wide')
+  // a hero at 600px is neither: it is close enough to a tile's own shape to be one
+  assert.equal(spanFor(600 / 1440), null)
+  // a post grid of twelve cards is a page and a half of scroll — it earns the second row
+  assert.equal(spanFor(2000 / 1440), 'tall')
+  // and a preview that has not been drawn yet knows nothing, so it is a tile like any other
+  assert.equal(spanFor(0), null)
+  assert.equal(spanFor(-1), null)
+})
+
+test('spanFor: the two thresholds are the only numbers, and each is a boundary a design can sit on', () => {
+  // exactly at a threshold is NOT the exception — strictly under is wide, strictly over is tall
+  assert.equal(spanFor(WIDE_UNDER), null)
+  assert.equal(spanFor(WIDE_UNDER - 0.001), 'wide')
+  assert.equal(spanFor(TALL_OVER), null)
+  assert.equal(spanFor(TALL_OVER + 0.001), 'tall')
+  assert.ok(WIDE_UNDER < TALL_OVER, 'a design can never be both wide and tall')
 })

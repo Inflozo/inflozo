@@ -3,7 +3,7 @@ title: 'Story 5.10 — The Section Picker'
 type: 'feature'
 created: '2026-09-19'
 status: 'in-progress'
-owner_test: pending
+owner_test: issues
 baseline_commit: '5ab1ddd7f53d42a7e2931c318da1fa0da38ef3ad'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -328,6 +328,23 @@ globe on the card instead of a sentence.
       CSP session, and one more `axeRun()` with the picker open -- **asserting no second node exception is
       needed** (R-149), which is what the `inert` preview frames buy.
 
+**The Fix phase (R-153, the owner's test of 2026-09-20).** Four changes, one fault.
+
+- [x] `apps/web/components/editor/section-picker.tsx` -- the grid becomes `COLUMNS` (4) tracks over a fixed `ROW`,
+      packed `dense`; the arrow step follows it (`right: 1`, `down: COLUMNS`, one constant for both the layout and
+      the keys); and the card is a flex column whose footer holds the `Add` as a centred icon between the name and
+      the tier badge, with S5a's wash demoted to `pointer-events-none` decoration.
+- [x] `apps/web/lib/picker.ts` -- `spanFor(aspect)`, with `WIDE_UNDER` and `TALL_OVER`: the only place a card's
+      shape is decided, and pure, so `node --test` reaches it.
+- [x] `apps/web/components/editor/section-preview.tsx` -- the preview FILLS its tile instead of setting its own
+      height, reports its drawn aspect once, crops what is taller and centres what is shorter.
+- [x] `apps/web/picker.test.ts` -- `spanFor` over a band, a hero, a feed, an undrawn card and both thresholds.
+- [x] `tools/keyboard/journey.spec.mjs` -- the arrow walk is a real grid's now: `→` is the next card, `←` returns,
+      `↓` crosses a row.
+- [x] `tools/probe/run-verify-editor.cjs` -- step 83 gains the three assertions his findings deserve on the
+      deployed site: four columns, a band two wide and a feed two tall, and the `Add` an icon in the footer strip,
+      centred on the card and whole.
+
 **Acceptance Criteria:**
 - Given a canvas with sections, when I hover the gap between two of them, then a 2px coral hairline and the
   **"+ Add section"** pill appear on that boundary and breathe in opacity; **and both match `S4 Editor.dc.html:181`**.
@@ -437,6 +454,40 @@ makes, which is a screen reader's sole access to a glyph and a hover.
 published yet. Everything else in § Verification below is green on this machine.
 
 
+## Owner's test findings
+
+**Tested on the deployed editor, 2026-09-20. Four findings, all one fault — the grid.** In his own words:
+
+> *"The section picker needs major work in the grid/layout it shows the sections. Right now, I cannot clearly see what
+> Rail section is. It is very thin. When I hover over it Add button is cut off. Do following changes: 1. Make the grid
+> 4 columns only. 2. On hover, show the Add button (only show icon, no text) in the bottom strip of the section between
+> name and Free/Pro. The Add icon buttons should be center aligned. 3. For thin/wider sections, can we span two columns,
+> so they are clearly visible. 4. For Longer sections we can span them two rows."*
+
+**Recorded as R-153** (`reconcile-designs-decisions.md` §A10), because it supersedes a frame and R-74 makes the export
+the design authority: **S5a and S5c are superseded on the grid's shape and the `Add`'s seat alone**, and every other
+pixel of both frames stands. The register entry carries why the frame was wrong; the short version is that S5a`:88` is
+**CSS multi-column** (`column-width:300px`), which gives every card a column's width and **its own content's height** —
+so the `a1` header, about 100px tall at Desktop width, was drawn as a ~20px sliver. The cut-off `Add` is the same
+geometry: S5a's hover wash **is** the button, `top:0 → bottom:41px`, so on a section shorter than the pill inside it the
+pill is cropped. The frame was drawn with stress-fill cards of one comfortable height; the real library is not one
+height, and the miniature is this surface's whole point.
+
+**The fix, in one line each.**
+1. **Four columns** of a fixed row unit (`COLUMNS`, `ROW` in `section-picker.tsx`), packed `dense` so a two-column band
+   leaves no hole behind it.
+2. **The `Add` is an icon in the footer strip**, centred on the card between the name and the tier badge — on hover, on
+   focus, and always where there is no pointer to hover with (a tablet is inside this surface's range,
+   `EXPERIENCE.md:60`). S5a's wash stays as the hover treatment, decoration only: `pointer-events-none` and
+   `aria-hidden`, so there is still exactly one interactive element per card.
+3. **A band spans two columns** and **4. a feed spans two rows** — `lib/picker.ts`'s `spanFor`, measured from the
+   design's **own drawn aspect** (its height at Desktop width), which the preview already knows, so no design carries a
+   hand-written shape and a new category needs no entry anywhere.
+
+**One thing his four changes needed that he did not ask for, and it is stated rather than asked:** a tile's height is
+now the grid's, not the content's, so a **taller** section is cropped at the bottom and a **shorter** one is **centred**
+in its tile rather than hung from the top. Without that a band still sat against the rule with all its air beneath it.
+
 ## Verification
 
 **Run on 2026-09-20 at `e794046b`, on this machine unless a line says otherwise. Every one green.**
@@ -464,6 +515,14 @@ are not read by this story.
 `deploy` was skipped — **DW-132**, not this story: the run crossed midnight, so the generated boards' `updated:`
 stamp went from 2026-09-19 to 2026-09-20 between the pre-commit hook and CI. The regenerated boards ride on this
 phase's second commit and CI is green from there.
+
+**The Fix phase, re-run 2026-09-20 after R-153.** `pnpm check` **exit 0** · `pnpm keyboard` **20 passed** (the
+picker's arrow walk rewritten for a real grid: `→` the next card, `←` back, `↓` a whole row) ·
+`node --test --experimental-strip-types apps/web/picker.test.ts` **12 pass · 0 fail**, `spanFor`'s two new tests
+among them · `python3 tools/doc-audit.py --check` green twice · `pnpm build` **exit 0**. And the grid was
+**photographed** on the harness editor at 1600 and 1280 (`tools/keyboard`'s own dev server, Chromium): four tracks
+at both widths, `a1/1` two columns wide, `a17/1` two rows tall, `a4/13` and `a22/1` one tile each, and the hovered
+card's `+` centred in its footer strip between the name and the badge.
 
 **Owed to Review, and not run here (R-82).** The deployed walk. `tools/probe/run-verify-editor.cjs` gains
 **steps 81-85** inside step 5's one CSP session — the picker's shape against S5a and S5c, the rail, the search,
@@ -532,6 +591,17 @@ to your account at Story 5.1.
     ones are simply not there, with no greyed-out rows and no explanations.
 14. **Same screen.** Use only the keyboard: `⌘K` to open, arrow keys to move between cards, `Enter` to place
     one. **Expect:** it works, and when the picker closes the outline is back on the button you started from.
+
+**Added after your test of 2026-09-20 (R-153) — these are the four you asked for.**
+
+15. **Same screen.** Open the picker. **Expect:** the cards sit in **four columns**, never five thin ones.
+16. **Same screen.** Look at the **Rail** header card. **Expect:** it is **twice as wide** as an ordinary card, so you
+    can read what it is. Look at **Three Up**, the post grid. **Expect:** it is **twice as tall**. Everything else is
+    one ordinary card.
+17. **Same screen.** Hover any card. **Expect:** a small round coral **+** button appears in the **bottom strip**, in
+    the **middle**, with the section's name to its left and its Free or ✦ Pro tag to its right. It is a plus sign with
+    no word beside it, and it is **never cut off**, on any card, however short the picture above it is. Click it:
+    the section is added exactly as before.
 
 ## Questions for the owner
 

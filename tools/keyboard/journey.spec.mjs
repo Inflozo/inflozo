@@ -437,19 +437,24 @@ test('⌘K opens the Section Picker, the arrows cross the grid, Enter places and
   // R-150: the rail footer's Free only switch is NOT built — absent, never greyed
   await expect(picker(page)).not.toContainText(/free only/i)
 
-  // the grid's one Tab stop, then the arrows: a multi-column list runs DOWN each column. A SITE-WIDE card is
-  // deliberately not the one walked from — picking one REPLACES the site's header rather than adding a section
-  // (R-152), which is its own assertion below.
+  // the grid's one Tab stop, then the arrows. Since the owner's test of 2026-09-20 the grid is a REAL grid of
+  // four columns, which runs ACROSS its rows in DOM order — so the neighbouring card is one step RIGHT, and one
+  // step DOWN is a whole row. A SITE-WIDE card is deliberately not the one walked from — picking one REPLACES the
+  // site's header rather than adding a section (R-152), which is its own assertion below.
   const cells = picker(page).locator('[data-cell]:not([aria-label*="Site-wide"])')
   const total = await cells.count()
   expect(total, 'the grid must draw at least two page cards to walk between').toBeGreaterThan(1)
   await cells.first().focus()
   const first = await page.evaluate(() => document.activeElement?.dataset.design)
-  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowRight')
   const second = await page.evaluate(() => document.activeElement?.dataset.design)
-  expect(second, 'ArrowDown moves to another card').not.toBe(first)
-  await page.keyboard.press('ArrowUp')
+  expect(second, 'ArrowRight moves to the next card').not.toBe(first)
+  await page.keyboard.press('ArrowLeft')
   expect(await page.evaluate(() => document.activeElement?.dataset.design)).toBe(first)
+  // and ↓ is the other axis: a whole row of the grid, which on a short library is the last card it holds
+  await page.keyboard.press('ArrowDown')
+  expect(await page.evaluate(() => document.activeElement?.dataset.design), 'ArrowDown crosses a row').not.toBe(first)
+  await cells.first().focus()
 
   // Enter places: one section more, the picker closed behind it, and the placement announced politely
   await page.keyboard.press('Enter')

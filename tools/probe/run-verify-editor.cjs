@@ -3283,6 +3283,52 @@ async function main() {
     check('step 83 — `inert` is what keeps R-149 at one exception: nothing inside a preview frame is focusable to axe',
       previews510.allInert, JSON.stringify(previews510))
 
+    // THE OWNER'S TEST OF 2026-09-20, guarded where he found it: four columns, and a card's SHAPE says what the
+    // section is — a band two columns wide, a feed two rows tall, everything between one tile. And the `Add` he
+    // found cut off is now in the footer strip, an icon between the name and the tier badge, centred on the card.
+    const grid510 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open][aria-label="Add a section"]')
+      const g = d.querySelector('[data-picker-grid]')
+      const tracks = getComputedStyle(g).gridTemplateColumns.split(' ')
+      const unit = parseFloat(tracks[0])
+      const cards = [...g.children]
+      const heights = cards.map((c) => c.getBoundingClientRect().height)
+      const row = Math.min(...heights)
+      return {
+        columns: tracks.length,
+        shapes: cards.map((c) => {
+          const box = c.getBoundingClientRect()
+          return {
+            id: c.querySelector('[data-cell]')?.dataset.design,
+            // the gap is the grid's own, so a two-column card is two tracks plus one gap wide
+            cols: Math.round((box.width + 16) / (unit + 16)),
+            rows: Math.round((box.height + 16) / (row + 16)),
+          }
+        }),
+        strips: cards.map((c) => {
+          const add = c.querySelector('[data-cell]')
+          const box = c.getBoundingClientRect()
+          const seat = add.getBoundingClientRect()
+          return {
+            // centred on the CARD, not on what is left over beside the name
+            centred: Math.abs((seat.left + seat.width / 2) - (box.left + box.width / 2)) <= 1,
+            // in the FOOTER — the card's last child — which is what a short preview can no longer crop
+            inStrip: c.lastElementChild.contains(add),
+            whole: seat.top >= box.top && seat.bottom <= box.bottom,
+            words: (add.textContent ?? '').trim(),
+            glyph: add.querySelector('svg') !== null,
+          }
+        }),
+      }
+    })
+    check('step 83 — the grid is FOUR columns (the owner\'s test of 2026-09-20), and every card spans one or two of them',
+      grid510.columns === 4 && grid510.shapes.every((c) => c.cols === 1 || c.cols === 2), JSON.stringify(grid510.shapes))
+    check('step 83 — a BAND spans two columns and a FEED two rows, so neither is drawn as a sliver',
+      grid510.shapes.some((c) => c.cols === 2) && grid510.shapes.some((c) => c.rows === 2), JSON.stringify(grid510.shapes))
+    check('step 83 — the `Add` is an ICON in the footer strip, centred on the card and whole — never cropped by a short preview',
+      grid510.strips.length > 0 && grid510.strips.every((s) => s.centred && s.inStrip && s.glyph && s.words === '' && s.whole),
+      JSON.stringify(grid510.strips))
+
     // ── step 84 — R-152: the globe before the press, the replacement, and ONE undo step (AD-15, AD-16) ──
     const siteCard510 = await page.evaluate(() => {
       const d = document.querySelector('dialog[open][aria-label="Add a section"]')

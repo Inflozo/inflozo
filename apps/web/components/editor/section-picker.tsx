@@ -10,11 +10,11 @@ import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { closeOnBackdrop } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
-import { Globe, X } from '@/components/kit/icons'
+import { Globe, Plus, X } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { radioKeys, tabStop } from '@/components/kit/segmented'
 import type { DesignRows } from '@/lib/canvas'
-import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS } from '@/lib/picker'
+import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor } from '@/lib/picker'
 
 /* ─────────────────────────────────────────── Story 5.10 — THE SECTION PICKER (`S5 Section Picker.dc.html`, S5a/S5c).
  *
@@ -22,8 +22,9 @@ import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_W
  * `--color-paper`, `--radius-lg`, `--shadow-modal`, `display:flex; overflow:hidden`. A 240px rail with a right rule
  * and 16px/12px padding, holding the Kit's search field (placeholder `Find a section…`, its `⌘K` chip) over the
  * `ALL CATEGORIES` heading and the category rows; a header with the category title in Bricolage 20/700, the meta
- * line in mono 12, the dark control and the close ×; and a CSS multi-column grid of cards, each a live miniature
- * with a hover wash, a coral `Add` and its tier badge.
+ * line in mono 12, the dark control and the close ×; and a grid of cards, each a live miniature with a hover wash,
+ * a coral `Add` and its tier badge. The grid's own shape is the OWNER'S TEST of 2026-09-20 rather than S5a's — see
+ * `COLUMNS` below, and `Card`, which is where the `Add` now lives.
  *
  * A NATIVE MODAL `<dialog>`, WHICH IS THREE OF `EXPERIENCE.md:502`'S FOUR REQUIREMENTS FOR NOTHING: `Esc`, the focus
  * trap and the return of focus to the invoking control are all the platform's. It settles a subtlety too —
@@ -54,6 +55,18 @@ import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_W
  *  the meta line is ONE template (S5a's words, with S5c's ` · dark mode` appended), the tier badges are the KIT's
  *  and not S5's card-local sizes, and there is no S5b, no loading frame and no zero-result frame anywhere in the
  *  export — those are extrapolated from S5a and S5c (R-74). */
+
+/* THE GRID IS FOUR COLUMNS OF TILES, AND THAT IS THE OWNER'S TEST OF 2026-09-20, NOT S5a.
+ * S5a draws CSS multi-column, which gave each card the width of a 300px column and the height of its own content:
+ * at 1440 that is five thin columns, a header drawn 20px tall, and — the fault he actually pressed — a hover wash
+ * shorter than the `Add` pill inside it, so the button was CUT OFF. Four fixed columns over a row unit fix all
+ * three at once, and a card's SHAPE now says what the section is: a band spans two columns, a feed spans two rows
+ * (`spanFor`, measured from the design's own drawn aspect). The `Add` moved out of the wash and into the footer
+ * strip, where it cannot be cropped by a short preview. */
+const COLUMNS = 4
+/** One row of the grid, in pixels — a tile is this tall, a two-row tile twice it plus the gap.
+ *  ponytail: a guessed unit, not a rule. Raise it if the miniatures read too small on his screen. */
+const ROW = 190
 
 export type Placement = { entry: SectionRegistryEntry; siteWide: boolean }
 
@@ -216,21 +229,19 @@ export function SectionPicker({
             </div>
           </div>
         ) : (
-          /* S5a`:88`: CSS multi-column, `column-gap:16px`, cards `break-inside:avoid; margin-bottom:16px`. A `group`
-             with a label and the arrow walk on it, exactly as the icon picker's grid is. */
+          /* S5a`:88`'s grid, re-shaped by the owner's test: `COLUMNS` tiles of `ROW`, packed DENSE so a two-column
+             band does not leave a hole behind it. A `group` with a label and the arrow walk on it, exactly as the
+             icon picker's grid is. */
           <div
             ref={grid}
             data-picker-grid=""
             role="group"
             aria-label="Designs"
-            onKeyDown={(event) => {
-              // a multi-column list runs DOWN each column, so "down" is one cell and "right" is a whole column —
-              // read from the layout rather than assumed, because the column count changes with the window
-              const cells = [...event.currentTarget.querySelectorAll<HTMLElement>('[data-cell]')]
-              const first = cells[0]?.offsetLeft
-              gridKeys(event, { right: Math.max(1, cells.filter((c) => c.offsetLeft === first).length), down: 1 })
-            }}
-            className={`flex-1 overflow-y-auto p-[20px_24px] [column-gap:16px] [column-width:300px] ${slimScrollbar}`}
+            /* a real grid runs ACROSS its rows in DOM order, so "right" is one cell and "down" is a whole row —
+               `COLUMNS` is the one place that number lives, and the layout below reads the same constant */
+            onKeyDown={(event) => gridKeys(event, { right: 1, down: COLUMNS })}
+            style={{ gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`, gridAutoRows: `${ROW}px` }}
+            className={`grid flex-1 gap-4 overflow-y-auto p-[20px_24px] [grid-auto-flow:row_dense] ${slimScrollbar}`}
           >
             {shown.map((entry, n) => (
               <Card
@@ -254,10 +265,12 @@ export function SectionPicker({
   )
 }
 
-/** S5a`:89-101` — one card. The WASH IS THE BUTTON: S5a draws it `top:0;left:0;right:0;bottom:41px` with the coral
- *  `Add` centred inside it, so making that rectangle the control gives the whole picture as a press target, keeps
- *  the name and the badge legible below it, and leaves exactly one interactive element per card (no nested
- *  interactive content over the `inert` preview frame). */
+/** S5a`:89-101` — one card, as the owner's test of 2026-09-20 re-shaped it. THE ADD BUTTON IS IN THE FOOTER STRIP,
+ *  centred between the name and the tier badge, and it is an ICON, not a word: S5a's hover wash held the pill over
+ *  the preview, and on a short section that rectangle is shorter than the pill, which is how he found it CUT OFF. A
+ *  strip of its own cannot be cropped by the picture above it. The wash stays as the hover treatment — decoration
+ *  now, `pointer-events-none` and hidden from the tree — so there is still exactly one interactive element per card
+ *  and no interactive content over the `inert` preview frame. */
 function Card({
   entry,
   first,
@@ -281,24 +294,33 @@ function Card({
   src: string
   onAdd: (placement: Placement) => void
 }) {
+  // measured once, when the preview has been drawn; until then the card is one tile like any other
+  const [span, setSpan] = useState<'wide' | 'tall' | null>(null)
+
   return (
-    <div className="group relative mb-4 overflow-hidden rounded-[12px] border border-line bg-surface shadow-sm transition-[box-shadow,transform] hover:-translate-y-[2px] hover:shadow-canvas-page [break-inside:avoid] focus-within:-translate-y-[2px] focus-within:shadow-canvas-page">
-      <SectionPreview entry={entry} target={target} rows={rows} pool={pool} icons={icons} mode={mode} src={src} />
-      <button
-        type="button"
-        data-cell=""
-        data-design={entry.id}
-        // the first card is the grid's one Tab stop; the arrows rove from there (the icon picker's own pattern)
-        tabIndex={first ? 0 : -1}
-        // R-152's words are part of the name, because a glyph and a hover are invisible to a screen reader
-        aria-label={`Add ${entry.name}, ${entry.tier === 'pro' ? 'Pro' : 'Free'}${siteWide ? `, ${SITE_WIDE_WORDS}` : ''}`}
-        onClick={() => onAdd({ entry, siteWide })}
-        className={`absolute inset-x-0 bottom-[41px] top-0 flex items-center justify-center bg-ink/25 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 ${ring}`}
-      >
-        <span className="rounded-[12px] bg-coral-text p-[8px_22px] text-ui-dense font-semibold text-surface shadow-md">Add</span>
-      </button>
-      {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, both outside the wash */}
-      <div className="flex h-[41px] items-center justify-between gap-2 p-[10px_14px]">
+    <div
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[12px] border border-line bg-surface shadow-sm transition-[box-shadow,transform] hover:-translate-y-[2px] hover:shadow-canvas-page focus-within:-translate-y-[2px] focus-within:shadow-canvas-page ${
+        span === 'wide' ? 'col-span-2' : span === 'tall' ? 'row-span-2' : ''
+      }`}
+    >
+      <SectionPreview
+        entry={entry}
+        target={target}
+        rows={rows}
+        pool={pool}
+        icons={icons}
+        mode={mode}
+        src={src}
+        onAspect={(aspect) => setSpan(spanFor(aspect))}
+      />
+      {/* S5a`:89-98`'s wash, now decoration only: it dims the picture under the pointer and takes no press */}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 bottom-[41px] bg-ink/25 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+      />
+      {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three
+          tracks, the middle one auto, so the button is centred on the CARD however long the name is. */}
+      <div className="grid h-[41px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-[10px_14px]">
         <span className="flex min-w-0 items-center gap-[5px]">
           <span className="truncate text-ui-dense font-semibold text-ink">{entry.name}</span>
           {/* R-152: the mark, before the press. `title` on the wrapper, because an SVG's own title is not a tooltip */}
@@ -308,7 +330,23 @@ function Card({
             </span>
           ) : null}
         </span>
-        {entry.tier === 'pro' ? <ProBadge /> : <FreeBadge />}
+        <button
+          type="button"
+          data-cell=""
+          data-design={entry.id}
+          // the first card is the grid's one Tab stop; the arrows rove from there (the icon picker's own pattern)
+          tabIndex={first ? 0 : -1}
+          // R-152's words are part of the name, because a glyph and a hover are invisible to a screen reader
+          aria-label={`Add ${entry.name}, ${entry.tier === 'pro' ? 'Pro' : 'Free'}${siteWide ? `, ${SITE_WIDE_WORDS}` : ''}`}
+          title="Add"
+          onClick={() => onAdd({ entry, siteWide })}
+          /* shown on hover, on focus, and ALWAYS where there is no pointer to hover with — a tablet is inside this
+             surface's range (`EXPERIENCE.md:60`) and an add button it can never reveal is an add button it has not got */
+          className={`inline-flex size-[26px] items-center justify-center rounded-[8px] bg-coral-text text-surface opacity-0 shadow-sm transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100 ${ring}`}
+        >
+          <Plus size={14} aria-hidden />
+        </button>
+        <span className="flex justify-end">{entry.tier === 'pro' ? <ProBadge /> : <FreeBadge />}</span>
       </div>
     </div>
   )

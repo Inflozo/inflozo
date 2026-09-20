@@ -106,3 +106,17 @@ export function invokedAt(stack: readonly { doc: string }[], ownDoc: string, fro
   if (from === null || from < 0 || from >= stack.length) return own
   return stack.slice(0, from + 1).filter((i) => i.doc === ownDoc).length
 }
+
+/** A CARD'S SHAPE, FROM THE SECTION'S OWN DRAWN ASPECT — its height at Desktop width, measured once by the preview
+ *  (the owner's test of 2026-09-20, which found a four-column grid of equal tiles unreadable for the sections that
+ *  are not square). A BAND is far wider than it is tall — a header, an announcement bar — and spans two columns so
+ *  it can be seen at all; a FEED is far taller and spans two rows. Everything between is one tile, and a card whose
+ *  preview has not been drawn yet is one tile too, because nothing is known about it.
+ *
+ *  ponytail: two guessed thresholds, not a rule — WIDE_UNDER is a section shorter than 288px at Desktop width and
+ *  TALL_OVER one taller than about a viewport. Move them if a real design lands in the wrong shape; the grid reads
+ *  this function and nothing else reads the numbers. */
+export const WIDE_UNDER = 0.2
+export const TALL_OVER = 0.7
+export const spanFor = (aspect: number): 'wide' | 'tall' | null =>
+  aspect <= 0 ? null : aspect < WIDE_UNDER ? 'wide' : aspect > TALL_OVER ? 'tall' : null

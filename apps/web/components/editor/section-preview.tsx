@@ -32,9 +32,10 @@ import { DESKTOP } from '@/lib/device'
  */
 
 /** How tall a preview may grow before it is cropped, in canvas pixels.
- *  ponytail: two Desktop viewports — a guessed ceiling, not a rule. It exists because a multi-column grid with
- *  `break-inside: avoid` cannot flow a card taller than a column, and every pilot draws well inside it (a Post Grid,
- *  the tallest, is about one and a quarter). Lower it if a real design ever makes a column unusable. */
+ *  ponytail: two Desktop viewports — a guessed ceiling, not a rule. Since the owner's test of 2026-09-20 a tile
+ *  CROPS what does not fit, so this is a render-cost bound rather than a layout one: past it there is nothing left
+ *  to see in a tile that tall. Every pilot draws well inside it (a Post Grid, the tallest, is about one and a
+ *  quarter). Lower it if a real design ever makes the grid slow. */
 const CEILING = DESKTOP.height * 2
 
 export function SectionPreview({
@@ -45,6 +46,7 @@ export function SectionPreview({
   icons,
   mode,
   src,
+  onAspect,
 }: {
   entry: SectionRegistryEntry
   /** the template file this canvas compiles into, so the design renders in the context it will really be placed in */
@@ -55,6 +57,8 @@ export function SectionPreview({
   mode: Mode
   /** the canvas document's own address, as the editor resolves it — never a second literal */
   src: string
+  /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
+  onAspect: (aspect: number) => void
 }) {
   const box = useRef<HTMLDivElement>(null)
   const frame = useRef<HTMLIFrameElement>(null)
@@ -64,6 +68,8 @@ export function SectionPreview({
   const [tall, setTall] = useState(0)
   /** the card's width in SCREEN pixels, watched so the fit follows a column reflow */
   const [wide, setWide] = useState(0)
+  /** and its height, which the GRID gives it now that a tile is a row unit and not the content's own length */
+  const [high, setHigh] = useState(0)
 
   useEffect(() => {
     const el = box.current
@@ -84,7 +90,11 @@ export function SectionPreview({
   useEffect(() => {
     const el = box.current
     if (!el) return
-    const watch = new ResizeObserver(([row]) => row && setWide(row.contentRect.width))
+    const watch = new ResizeObserver(([row]) => {
+      if (!row) return
+      setWide(row.contentRect.width)
+      setHigh(row.contentRect.height)
+    })
     watch.observe(el)
     return () => watch.disconnect()
   }, [])
@@ -109,7 +119,11 @@ export function SectionPreview({
         assets: canvasAssets(pool),
         icons,
       }))
-      setTall(Math.min(mount.scrollHeight || CEILING, CEILING))
+      const drawnHeight = Math.min(mount.scrollHeight || CEILING, CEILING)
+      setTall(drawnHeight)
+      // the owner's test of 2026-09-20: a card's SPAN is the section's own shape, and this is the only place it is
+      // measured — a band is wide, a feed is long, and neither is knowable before the design has been drawn once
+      onAspect(drawnHeight / DESKTOP.width)
     } catch (error) {
       // the card keeps its skeleton and stays addable; every other card is unaffected (the I/O matrix)
       console.warn(`the preview of ${entry.id} could not be drawn`, error)
@@ -120,13 +134,16 @@ export function SectionPreview({
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0
+  /** a section shorter than its tile is CENTRED in it, never hung from the top — the tile's height is the grid's
+   *  now, so a 100px band in a 150px window would otherwise sit against the rule with all the air beneath it */
+  const top = drawn ? Math.max(0, Math.round((high - tall * fit) / 2)) : 0
 
   return (
     <div
       ref={box}
-      // S5a`:101`: the preview sits on the raised paper, above the card's own footer rule
-      className="relative overflow-hidden border-b border-line bg-paper-raised"
-      style={{ height: drawn ? Math.round(tall * fit) : 132 }}
+      // S5a`:101`: the preview sits on the raised paper, above the card's own footer rule. It FILLS the card, whose
+      // height is the grid row's (the owner's test of 2026-09-20) — a taller section is cropped, a shorter centred.
+      className="relative min-h-0 flex-1 overflow-hidden border-b border-line bg-paper-raised"
     >
       {drawn ? null : (
         <div className="p-[18px]">
@@ -142,8 +159,8 @@ export function SectionPreview({
           // nothing inside is focusable or in the accessibility tree, so R-149's exception is not needed twice
           inert
           onLoad={paint}
-          className="pointer-events-none absolute left-0 top-0 block origin-top-left border-0"
-          style={{ width: DESKTOP.width, height: tall || CEILING, transform: `scale(${fit || 0.0001})`, visibility: drawn ? undefined : 'hidden' }}
+          className="pointer-events-none absolute left-0 block origin-top-left border-0"
+          style={{ top, width: DESKTOP.width, height: tall || CEILING, transform: `scale(${fit || 0.0001})`, visibility: drawn ? undefined : 'hidden' }}
         />
       ) : null}
     </div>

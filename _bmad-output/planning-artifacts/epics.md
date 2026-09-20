@@ -1870,6 +1870,10 @@ position, because the stack order is derived; **a second one in the same categor
 and a site-wide design is marked on its picker card by the Kit's **`Globe`** with a hover title and the same words as
 its accessible name — **never a sentence, a toast or a banner** (**R-152**, owner, 2026-09-19). Layers still carries
 no glyph (R-126 stands)
+**And** the grid is **four columns of a fixed row unit**, a card's **span is its section's own drawn shape** — a band
+spans two columns, a feed two rows — and the **`Add` is an icon in the card's footer strip**, centred between the name
+and the tier badge (**R-153**, the owner's test of the deployed story, 2026-09-20): S5a's multi-column drew a header as
+a sliver and its hover wash cropped the `Add` pill on any short section
 **And** the overlay matches S5a and S5c dark.
 
 **FRs:** FR-D12, FR-D2 (the "+"), FR-D11 (⌘K). · **Frame:** `S5 Section Picker.dc.html` S5a · S5c · `S4 Editor.dc.html` S4b (the "+"). · **Rulings:** R-150, R-151, R-152. · **Owner test:** yes.
