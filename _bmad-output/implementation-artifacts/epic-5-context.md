@@ -78,6 +78,22 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     customer felt the same stall. Every ring in the shipped library is length 1, so in the editor itself every one
     of these controls is ABSENT (UX-DR3) and the block reads "1 of 1" beside its `Design` label; the rule is walked on the deployed
     `/controls` and, on every commit, by `pnpm keyboard` over the three fixture designs.
+  - **Story 5.12's planning (2026-09-20, read in the journal and executed over the library):** Remix needs NO
+    new mechanism — `ringFor` + `switchDesign` are the whole of it, and the only real decision is the
+    TRANSACTION. `commit(written, touched)` journals ONE doc and `undo()` restores ONE doc
+    (`journal.ts:109-119`, whose header says so in words), so a re-roll that touched the site doc as well
+    would cost two `⌘Z` presses and FR-D17's single-step undo would be false — which is why **R-161** scopes
+    the dice to the current canvas and leaves `journal.ts` untouched (the tick-box and the `txn`-grouped undo
+    land with the first site-wide ring; `unsyncedEdits` already counts by `txn`). The fold is one loop over
+    `switchDesign` into one next doc and ONE `commit`, so FR-D9's "never half-applying" is one check before
+    one assignment. **FR-D17's "pack only" scope cannot exist yet**: `lib/style-pack.ts` calls Paper *"the
+    only pack that exists today"*, E6 owns the column and the editor neither reads nor writes it — so B8's
+    whole "Re-roll what" group is ABSENT (UX-DR3, R-118 again), and so is its "Every page" row, which FR-D17
+    never asked for. The picks are pure and importless in `apps/web/lib/remix.ts` beside `ring.ts`, handed
+    their `random` (AD-1) and reusing `shuffleTo` rather than a second "a different member of this ring".
+    No toast: EXPERIENCE.md:541 makes the section count a POLITE canvas-status announcement and `#editor-said`
+    is the one live region, while R-143 already gave undo its single seat. `parkedControls` and the doc schema
+    are untouched, so there is **no Schema phase**.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`
@@ -390,6 +406,22 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     counter and arrows in the white quick-action pill Story 5.4 built and R-125 placed — two frames agree
     and R-118 already said `◀ ▶` arrive in S4b's, so **S4b + S6 govern the pill and B1b governs the
     affordance**; B1b's `⋯` is not built (R-126 stands).
+  - **R-161 · R-162 · R-163 (owner, 2026-09-20, Story 5.12's Q1–Q3, option 1 each).** **R-161:** Site Remix
+    re-rolls **the canvas you are looking at** and leaves the header and footer alone — B8's *"Include the
+    header and footer"* tick-box and its "Every page" row are ABSENT, not greyed (UX-DR3, R-118), because
+    including a site-wide section means a second doc and therefore a second `⌘Z`, and FR-D17 makes single-step
+    undo a hard requirement; it is also unprovable today, the header category holding one design. **R-162:**
+    the dice is built in BOTH places — the editor's top bar and the deployed **Controls review** page, which
+    already carries R-158's three fixture designs — so the owner watches a real re-roll on production while his
+    own editor's confirm tells the truth ("nothing to remix yet", **Close** alone, R-12's shape as R-134 already
+    answers an empty Clear). No shipped design is authored (AD-35, R-158 stands). **R-163:** the control is a
+    **rolling 3D cube** — six faces on `--color-surface` with a `--color-line` edge and `--color-coral` pips,
+    ~900ms with a settling curve, icon-only with its words as accessible name and hover title
+    (`DESIGN.md:534-536`'s carve-out) — and it is **R-92's THIRD stated exception**: R-130 and R-142 admitted a
+    Tabler path the owner named, this admits a drawing of our own in token colours, because the export draws no
+    Site Remix control at all (`EXPERIENCE.md:154` gives `⇧R` as the surface's only door) and no icon set has a
+    tumbling die. The confirm opens on the roll's own `transitionend`, so `globals.css`'s reduced-motion block
+    both flattens the roll and opens the popup at once, with no timer to keep in step with the CSS.
   - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
     **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
     every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's

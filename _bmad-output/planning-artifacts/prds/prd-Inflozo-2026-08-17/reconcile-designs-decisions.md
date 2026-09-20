@@ -3354,6 +3354,65 @@ exactly the way you left it, which is the promise the whole story is sold on."*
   owner's own test of the page checks (step 9). The other reading is one line and is not built.
 - Targets: ✅ this entry · ✅ Story 5.11's spec (Question 3) · ✅ `epic-5-context.md` · ✅ the comment beside `switchControls`.
 
+**R-161 — Site Remix re-rolls the canvas you are looking at, and the header and footer are left alone.**
+Story 5.12's Question 1, ruled **option 1** (owner, 2026-09-20): *"Leave the header and footer alone in this
+story … undo stays exactly as safe as it is now."*
+
+- **Why it was a question.** FR-D17 names both halves as hard requirements — "site-wide singletons are excluded
+  **unless explicitly included**" *and* **single-step undo** — and the two collide in the code: `commit(written,
+  touched)` journals ONE doc and `undo()` restores ONE doc (`apps/web/lib/journal.ts:109-119`, whose own header
+  says *"one transaction touches exactly one doc"*). Including the header therefore means a Remix touching two
+  docs, so either undo learns to restore several at once or *"one undo, always"* becomes false.
+- **What it binds.** The dice re-rolls the **current canvas's doc only**, in one `commit`, so the whole re-roll
+  stays one journal entry and one `⌘Z` and the journal is untouched by this story. B8's *"Include the header and
+  footer"* tick-box is **ABSENT, not greyed** (UX-DR3, R-118 applied again) — and so is B8's "Every page" row,
+  which FR-D17 never asked for.
+- **Why it is deferrable rather than dropped.** It is unprovable today either way: the header category in
+  `packages/library/designs/` holds one design, so a ticked box would change nothing on any surface in the repo.
+  The tick-box, and the `txn`-grouped undo it needs, land in the first story that has a site-wide ring to prove
+  them on — `unsyncedEdits` already counts by `txn` in anticipation.
+- Targets: ✅ this entry · ✅ Story 5.12's spec (Question 1, its Boundaries and its I/O matrix) ·
+  ✅ `epic-5-context.md` · ⬜ `epics.md` (Story 5.12's AC, at this story's Done) · ⬜ `B8`, on the next library pass.
+
+**R-162 — the dice is built in BOTH places: the editor's top bar and the Controls review page.** Story 5.12's
+Question 2, ruled **option 1** (owner, 2026-09-20): *"The editor and the Controls review page."*
+
+- **Why it was a question.** R-158's problem, one story later and one level up: every ring in the shipped library
+  is length 1, so a Remix in the owner's own editor can move nothing and his test (R-80) would again be a test of
+  absence. `/controls` already carries R-158's three fixture designs.
+- **What it binds.** The dice, its roll and its confirm are mounted in the editor's top bar **and** beside the
+  Controls review page's heading, over that page's own `ControlState`. On `/controls` the owner presses it and
+  watches a section really change design with his typed words carrying; in the editor the confirm tells the truth
+  — one sentence saying there is nothing to remix yet, with **Close** alone (R-12's shape, as R-134 already answers
+  an empty "Clear dark overrides"). `run-verify-controls.cjs` proves the re-roll on production (R-82) and
+  `pnpm keyboard` walks `⇧R` over the harness's ringed canvas on every commit (R-146).
+- **What it does NOT do.** No design is authored in `packages/library/designs/` (AD-35, R-158 stands). `/controls`
+  saves nothing and has no journal, so `⌘Z` is proved in the editor harness and not there.
+- Targets: ✅ this entry · ✅ Story 5.12's spec (Question 2, its tasks, its verification and its owner test) ·
+  ✅ `epic-5-context.md`.
+
+**R-163 — the Site Remix control is a rolling 3D cube in Inflozo's own colours, and it is R-92's third stated
+exception.** Story 5.12's Question 3, ruled **option 1** (owner, 2026-09-20): *"A real little cube. Six faces in
+3D, coral pips on the app's paper white with our hairline edge, tumbling for about a second and settling on a
+face."*
+
+- **Why it was a question.** The export draws **no control at all** for Site Remix — `EXPERIENCE.md:154` gives
+  `⇧R` as the surface's only door — so there is no frame to read, and R-92 says a glyph the export does not draw is
+  a Claude Design prompt and never a new drawing in the repository, unless the owner names one (R-130, R-142).
+- **What it binds.** A CSS 3D cube of six faces on `--color-surface` with a `--color-line` edge and pips in
+  `--color-coral`, ~900 ms with a settling curve, inside a button with `mode-toggle.tsx`'s own geometry and its
+  words carried as an accessible name and hover title (`DESIGN.md:534-536`'s carve-out — R-132, R-136, R-159).
+  It is **icon-only with no label and no key chip**, in the owner's words *"just dice and no additional button or
+  text"*. `globals.css`'s reduced-motion block flattens the roll, and the confirm opens on the roll's own
+  `transitionend`, so a reader who asks for no motion gets the popup at once.
+- **How it differs from R-130 and R-142.** Those two admitted a **Tabler path** the owner named. This one admits a
+  **drawing of our own**, in token colours, because no icon set has a tumbling die — so R-92's scope now reads:
+  the export governs every glyph it draws, and what it does not draw enters only where the owner names it, whether
+  that is a Tabler path or, here, a shape built from the token layer. No hex enters a `.tsx`
+  (`tokens.test.ts:125`).
+- Targets: ✅ this entry · ✅ Story 5.12's spec (Question 3, its tasks and its Design Notes) ·
+  ✅ `epic-5-context.md` · ⬜ `B8`, on the next library pass (the control it never drew).
+
 
 ## B · Approved decisions superseded by this session
 

@@ -21,7 +21,7 @@ arrow you already have) puts it all back exactly as it was.
 **One thing to know before you test it.** The library still holds one design per category, so in your own
 editor there is nothing for the dice to roll to yet — the popup will say so honestly rather than pretend.
 You see the real thing work on the internal **Controls review** page, which has three sample designs
-(your ruling R-158).
+(your rulings R-158 and R-162).
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -69,9 +69,9 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
   `shortcutFor` / `singleKeyOwned`, with no new guard.
 
 **Ask First:**
-- Any change to `undo()` / `redo()` restoring more than one doc. That is Question 1's option 1 and is not
-  built unless he rules it.
-- Authoring any design under `packages/library/designs/` (AD-35, R-158) — Question 2's option 3.
+- Any change to `undo()` / `redo()` restoring more than one doc. **R-161 refuses it for this story** — a
+  re-roll that needs it has been mis-scoped.
+- Authoring any design under `packages/library/designs/` (AD-35, R-158, restated by R-162).
 - Any second Undo control (B8 draws one in its toast; R-143 put undo beside the save state on purpose).
 
 **Never:**
@@ -182,11 +182,11 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
       accessible name, the CSP session records no new violation, pressing it opens the dialog on Cancel,
       and on the real project the dialog carries `NOTHING_TO_REMIX` and no Remix button. `/harness/editor`
       still 404s in production.
-- [ ] `apps/web/app/(app)/app/(authed)/controls/review.tsx` -- **pending Question 2's ruling:** mount the
+- [ ] `apps/web/app/(app)/app/(authed)/controls/review.tsx` -- **R-162:** mount the
       same `<RemixDice>` beside the page's heading over the page's own `ControlState`, and widen its
       existing key effect (`:251-272`, which already routes `[` and `]` through `shortcutFor`) to accept
       `remix` — never a second key table (standing rule 3).
-- [ ] `tools/probe/run-verify-controls.cjs` -- **pending Question 2's ruling:** the dice on the deployed
+- [ ] `tools/probe/run-verify-controls.cjs` -- **R-162:** the dice on the deployed
       Controls review page really re-rolls the sample section through its ring, and `⌘Z`'s equivalent
       there (the page stores nothing) is out of scope — the ring's own arrows are the way back.
 
@@ -208,7 +208,7 @@ one confirm dialog when it settles. `⇧R` calls the same handler.
   glyph, its sentence, its coral primary and its "one undo, always available" line — without the
   "Re-roll what" group (one Style Pack exists, R-118), without "Every page" (FR-D17 re-rolls the canvas)
   and without the toast (EXPERIENCE.md:541 makes the count a polite announcement). The dice itself has no
-  frame: it is extrapolated from the control it sits beside, `mode-toggle.tsx` (R-74), pending Question 3.
+  frame: it is extrapolated from the control it sits beside, `mode-toggle.tsx` (R-74, R-163).
 
 ## Design Notes
 
@@ -254,7 +254,7 @@ uses a coral primary".
   the honest "nothing to remix" sentence on the real project, zero CSP violations and `/harness/editor`
   still 404.
 - `node tools/probe/run-verify-controls.cjs` -- expected: 0 FAIL on the deployed `/controls`, with the
-  re-roll proved over R-158's three-design ring (pending Question 2).
+  re-roll proved over R-158's three-design ring (R-162).
 - `python3 tools/doc-audit.py --check` -- expected: exit 0.
 
 **Manual checks (if no CLI):**
@@ -285,8 +285,7 @@ seeded to your account at Story 5.1.
    **Site Remix `⇧R`**. It was deliberately missing until today.
 7. **URL:** `https://app.inflozo.com/controls` · **Screen:** the **Controls review** page — an internal
    page we use to check the editor's parts, not a customer screen. **Expect:** the same dice at the top of
-   the page, beside the **Controls review** heading. *(This step exists only if you rule Question 2
-   option 1.)*
+   the page, beside the **Controls review** heading (R-162).
 8. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same. Type something you will recognise
    into the sample section's heading, and set **Card tint** to *Strong* in the panel. Then **press the
    dice** and, this time, press **Remix** in the popup. **Expect:** the sample section **changes shape**,
@@ -326,7 +325,12 @@ design.
 3. **Always include the header and footer**, with no tick-box. Simplest popup of all, but it means one
    press changes every page of your site at once with no way to ask for less.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-20).** *"Leave the header and footer alone in this story … undo stays
+exactly as safe as it is now."* Recorded as **R-161**. The dice re-rolls the current canvas's doc alone, in
+one `commit`, so the re-roll is one journal entry and one `⌘Z` and `journal.ts` is untouched by this story.
+B8's *"Include the header and footer"* tick-box is **absent, not greyed** (UX-DR3, R-118), and so is its
+"Every page" row. The tick-box — and the `txn`-grouped undo it needs — land in the first story with a
+site-wide ring to prove them on.
 
 ### Question 2 — where should you be able to actually watch a Remix happen?
 
@@ -350,7 +354,11 @@ R-158. Putting the dice there too costs about an hour.
    reverses R-158 and is a category story's work (Epic 9), which would hold up this story and the two
    after it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-20).** *"The editor and the Controls review page."* Recorded as
+**R-162**. The dice, its roll and its confirm are mounted in both places — over the editor's docs in the
+top bar, and over `/controls`'s own `ControlState` beside that page's heading. R-158 stands: no design is
+authored in `packages/library/designs/`. Steps 7–10 of the owner's test are therefore live, and the
+`review.tsx` and `run-verify-controls.cjs` tasks are in scope rather than conditional.
 
 ### Question 3 — what should the dice look like, exactly?
 
@@ -370,4 +378,9 @@ coral dots, and the other is a line-drawn dice picture that spins flat like a co
 3. **Neither yet — have it drawn in Claude Design first**, and build it from the drawing. Most faithful to
    R-74, and it costs a design session before this story can finish.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-20).** *"A real little cube. Six faces in 3D, coral pips on the app's
+paper white with our hairline edge, tumbling for about a second and settling on a face."* Recorded as
+**R-163**, and it is **R-92's third stated exception** — the first two (R-130, R-142) admitted a Tabler
+path he named; this one admits a drawing of our own in token colours, because no icon set has a tumbling
+die. No hex enters a `.tsx` (`tokens.test.ts:125`): the faces and pips are `var(--color-surface)`,
+`var(--color-line)` and `var(--color-coral)` in `globals.css`.
