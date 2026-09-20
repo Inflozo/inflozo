@@ -3,7 +3,7 @@ title: 'Story 5.10 — The Section Picker'
 type: 'feature'
 created: '2026-09-19'
 status: 'in-review'
-owner_test: issues
+owner_test: pending
 baseline_commit: '5ab1ddd7f53d42a7e2931c318da1fa0da38ef3ad'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -735,6 +735,12 @@ project; control `select=style_pack_nope` → 400 `42703`. No migration in the d
 scrolled the canvas 0px — DW-209) and steps 66, 66b, 69b (Story 5.8's save landing on `Retrying` from this machine —
 the run also ended on `read ETIMEDOUT`; DW-204's family). Neither touches a file this story's diff changed the
 behaviour of, and neither was re-run in isolation, so neither is claimed as a flake.
+
+**Deploy (2026-09-20).** CI on `635bf157` (`check` and the render matrix) completed successfully; `deploy` promoted
+**Deployment: `dpl_7jgHB31LipDRneyACPvcxfsH3sTM`** (`inflozo-j2plx9a0u-umangkagathara.vercel.app`), production,
+`readyState: READY`, built from `635bf157` — aliased to `https://app.inflozo.com` and `https://inflozo.com`
+(`VERCEL_TOKEN` / `VERCEL_TEAM_ID` / `VERCEL_PROJECT` by name). No migration in this story's diff, so no database
+step here (R-99).
 
 ## Owner's manual test
 
