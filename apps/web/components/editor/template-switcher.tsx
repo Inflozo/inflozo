@@ -4,10 +4,10 @@ import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import {
   CanvasAuthor, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPost, CanvasPrivate, CanvasSignin,
-  CanvasSignup, CanvasTag, Check, ChevronDown, ChevronRight, ChevronUp, CircleOff,
+  CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff,
 } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
-import { BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
+import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
 import { CANVASES, canvasPath, isMembership, type CanvasKey } from '@/lib/editor'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { isApp } from '@/routing'
@@ -21,8 +21,8 @@ import { isApp } from '@/routing'
    dots and words; the owner asked for it to look like View as's, so its card, heading, scrolling list and rows are
    `bar-menu.tsx`'s, which View as uses too: 284 wide (D5b's), radius 12, 6px padding, `shadow-lg`, headed
    "Templates", and each row a Tabler glyph for its canvas, the name at 13/500 over ONE line saying what the template
-   is (`CANVASES[key].caption`), and a trailing slot. The current row carries S4d's coral check and no tint, as View
-   as's does; the Membership group's rows are indented to 31px under a 13/600 heading with its 12px chevron. The list
+   is (`CANVASES[key].caption`), and a trailing slot. The current row is HIGHLIGHTED — D5b's coral tint and its name at
+   600 — and carries no tick (R-172), as View as's does; the Membership group's rows are indented to 31px under a 13/600 heading with its 12px chevron. The list
    scrolls inside the card when it outgrows 420px, and opens on the checked row. `openMenu` places it, clamps both
    edges (R-126) and flips it, and the platform gives light dismiss, Escape and focus return because it is a
    `popover="auto"`.
@@ -98,7 +98,7 @@ export function TemplateSwitcher({
   empty,
 }: {
   projectId: string
-  /** the canvas the editor is showing — its row takes the check and navigates nowhere */
+  /** the canvas the editor is showing — its row is highlighted and navigates nowhere */
   current: CanvasKey
   /** every canvas this project offers, in D5b's row order */
   canvases: readonly CanvasKey[]
@@ -150,7 +150,7 @@ export function TemplateSwitcher({
       <li key={key} className="flex flex-col">
         <BarMenuRow
           data-canvas={key}
-          aria-current={key === current ? 'true' : undefined}
+          current={key === current}
           aria-disabled={busy || undefined}
           aria-busy={busy || undefined}
           onClick={() => go(key)}
@@ -163,7 +163,6 @@ export function TemplateSwitcher({
             <>
               <Mark state={state} word={word} />
               {word === null ? null : <span data-word className="sr-only">{word}</span>}
-              {key === current ? <Check size={13} strokeWidth={2} className="shrink-0 text-coral-deep" /> : null}
             </>
           }
         />
@@ -206,7 +205,7 @@ export function TemplateSwitcher({
           if (opening) setGroupOpen(true)
         }}
         onKeyDown={arrowKeys}
-        className="border-0 bg-transparent p-0"
+        className={BAR_POPOVER}
       >
         {/* A PLAIN LIST UNDER ITS HEADING, as every menu in the app is (`kit/select.tsx`'s `Menu`), and the group is a
             nested labelled list. `role="menu"` would make each `<li>` an invalid child and buy nothing the Kit's

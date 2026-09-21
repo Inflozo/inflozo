@@ -14,7 +14,8 @@ import { ring, slimScrollbar } from '@/components/kit/greyed'
  *     much"): the card stops at 420px, or 70% of a short window, and never runs past the viewport. `overscroll-contain`
  *     keeps a wheel at the list's end from scrolling the editor behind it, and `openMenu` already ignores a scroll that
  *     happens inside its menu (Story 5.13's finding).
- *   - A ROW: a 15px glyph, the name at 13/500 over ONE line at 11px muted, and a trailing slot — S4d's row.
+ *   - A ROW: a 15px glyph, the name at 13/500 over ONE line at 11px muted, and a trailing slot — S4d's row. The row in
+ *     force is HIGHLIGHTED, never ticked (R-172).
  *
  * Widths stay each frame's (284 and 260) and shrink to the window on a narrow one; `openMenu` clamps the rest. */
 
@@ -22,6 +23,12 @@ export const triggerClass = (open: boolean) =>
   `flex h-8 items-center gap-2 rounded-sm border bg-surface px-3 transition-colors hover:border-line-strong ${open ? 'border-line-strong' : 'border-line'} ${ring}`
 export const TRIGGER_LABEL = 'text-control-label font-medium text-ink-soft'
 export const TRIGGER_VALUE = 'text-[12.5px] font-semibold'
+
+/** The popover that holds a card: the platform's own `[popover]` box with its border, padding and ground taken away,
+ *  and its UA `overflow: auto` too — the card scrolls its own list, so the popover never scrolls (the owner's "two
+ *  scrollbars"), and with overflow visible the card's `shadow-lg` is drawn as S4d and D5b draw it rather than clipped
+ *  to the popover's edge. */
+export const BAR_POPOVER = 'overflow-visible border-0 bg-transparent p-0'
 
 /** The card and its heading, with the scrolling list as its child. `width` is a whole Tailwind class, never built. */
 export function BarMenuCard({ width, headingId, heading, children }: { width: string; headingId: string; heading: string; children: ReactNode }) {
@@ -38,24 +45,36 @@ export function BarMenuCard({ width, headingId, heading, children }: { width: st
 }
 
 /** One row: glyph, name over its one line, and whatever the menu puts in the trailing slot. `indent` is D5b's
- *  Membership group, whose rows sit 31px in under their heading. */
+ *  Membership group, whose rows sit 31px in under their heading.
+ *
+ *  THE ROW IN FORCE IS HIGHLIGHTED, NOT TICKED (R-172, the owner, 2026-09-21: "For active template or view as —
+ *  instead of showing a tick mark, show that list item as highlighted"): D5b's own current-row treatment, the coral
+ *  tint and the name at 600, now for both menus, and `aria-current` says it to a screen reader. It keeps its tint under
+ *  the pointer rather than flickering to the hover ground.
+ *
+ *  `relative`, BECAUSE A ROW CARRIES `sr-only` WORDS (R-169's "Not viewed", R-171's "Auto-generated" / "Empty"). An
+ *  `sr-only` span is absolutely positioned, and without a positioned row its containing block was the popover itself —
+ *  so the words of rows scrolled out of the list still stood at their unscrolled places and gave the POPOVER a
+ *  scrollbar of its own beside the list's (the owner's finding, 2026-09-21: "there are two scrollbars"). */
 export function BarMenuRow({
   glyph,
   name,
   caption,
   trailing,
+  current = false,
   indent = false,
   ...button
-}: ButtonHTMLAttributes<HTMLButtonElement> & { glyph: ReactNode; name: string; caption: string; trailing?: ReactNode; indent?: boolean }) {
+}: ButtonHTMLAttributes<HTMLButtonElement> & { glyph: ReactNode; name: string; caption: string; trailing?: ReactNode; current?: boolean; indent?: boolean }) {
   return (
     <button
       type="button"
       {...button}
-      className={`flex w-full items-center gap-[10px] rounded-sm py-[9px] pr-[10px] text-left transition-colors hover:bg-paper ${indent ? 'pl-[31px]' : 'pl-[10px]'} ${ring}`}
+      aria-current={current ? 'true' : undefined}
+      className={`relative flex w-full items-center gap-[10px] rounded-sm py-[9px] pr-[10px] text-left transition-colors ${current ? 'bg-coral-tint' : 'hover:bg-paper'} ${indent ? 'pl-[31px]' : 'pl-[10px]'} ${ring}`}
     >
       {glyph}
       <span className="flex min-w-0 flex-1 flex-col gap-px">
-        <span data-name className="truncate text-ui-dense font-medium">{name}</span>
+        <span data-name className={`truncate text-ui-dense ${current ? 'font-semibold' : 'font-medium'}`}>{name}</span>
         <span data-caption className="truncate text-helper-caption text-ink-soft">{caption}</span>
       </span>
       {trailing}

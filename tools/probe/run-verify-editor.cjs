@@ -137,7 +137,9 @@
 // mark TRAILING the name with its word heard and not printed, no tint on the current row, and the list scrolling inside
 // its card; step 43 opens it on 404, its last row, and finds that row focused and scrolled into view; and step 90
 // presses the canvas with each of the bar's menus open, which must close it (the owner's finding: the canvas is another
-// document, and a popover's light dismiss never heard a press there).
+// document, and a popover's light dismiss never heard a press there). R-172, the same day: the row in force is highlighted
+// with the coral tint and no row carries a tick, read in steps 40 and 90; and step 40 finds the popover itself never
+// scrolling — the owner's "two scrollbars", whose second belonged to the popover.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -1888,10 +1890,14 @@ async function main() {
               word: word?.textContent ?? '',
               heard: !word || (wb.width <= 1 && wb.height <= 1),
               checked: b.getAttribute('aria-current') === 'true',
+              // R-172: no row carries a tick — the Kit's check is the one polyline a row could hold
+              tick: !!b.querySelector('polyline'),
               tint: getComputedStyle(b).backgroundColor,
               indent: getComputedStyle(b).paddingLeft,
             }
           }),
+          // the owner's "two scrollbars": the popover itself never scrolls — only the list inside its card does
+          popoverScrolls: pop.scrollHeight > pop.clientHeight + 1 || pop.offsetWidth > pop.clientWidth + 1,
           heading: document.getElementById('editor-template-heading')?.textContent ?? null,
           // the list scrolls INSIDE the card, which stops at 420px or 70% of the window
           list: (() => {
@@ -1920,10 +1926,10 @@ async function main() {
     // with no tint, as S4d draws View as's
     check('step 40 — R-171: every row leads with its canvas\'s glyph and carries its one line under the name, under a "Templates" heading',
       d5b.heading === 'Templates' && d5b.rows.every((r) => r.glyph && r.caption === CANVASES[r.key].caption), JSON.stringify({ heading: d5b.heading, rows: d5b.rows.map((r) => ({ key: r.key, glyph: r.glyph, caption: r.caption })) }))
-    check('step 40 — the current canvas takes the check, and only it, with no tint (as View as\'s rows)', d5b.rows.filter((r) => r.checked).length === 1 && d5b.rows.find((r) => r.checked)?.name === CANVASES.home.label && d5b.rows.every((r) => r.tint === 'rgba(0, 0, 0, 0)'), JSON.stringify(d5b.rows.filter((r) => r.checked)))
-    check('step 40 — a list longer than the card SCROLLS inside it: the card stops at 420px (or 70% of the window) and ends inside the window',
-      d5b.list.overflowY === 'auto' && d5b.list.card <= Math.min(420, Math.round(d5b.list.vh * 0.7)) + 1 && d5b.list.bottom <= d5b.list.vh && (d5b.list.scroll <= d5b.list.client || d5b.list.card >= Math.min(420, Math.round(d5b.list.vh * 0.7)) - 1),
-      JSON.stringify(d5b.list))
+    check('step 40 — R-172: the current canvas is HIGHLIGHTED — the coral tint — and only it, and no row carries a tick', d5b.rows.filter((r) => r.checked).length === 1 && d5b.rows.find((r) => r.checked)?.name === CANVASES.home.label && d5b.rows.every((r) => r.tint === (r.checked ? TINT : 'rgba(0, 0, 0, 0)') && !r.tick), JSON.stringify(d5b.rows.map((r) => ({ key: r.key, checked: r.checked, tint: r.tint, tick: r.tick }))))
+    check('step 40 — a list longer than the card SCROLLS inside it, and the popover around it never does (ONE scrollbar): the card stops at 420px (or 70% of the window) and ends inside the window',
+      d5b.popoverScrolls === false && d5b.list.overflowY === 'auto' && d5b.list.card <= Math.min(420, Math.round(d5b.list.vh * 0.7)) + 1 && d5b.list.bottom <= d5b.list.vh && (d5b.list.scroll <= d5b.list.client || d5b.list.card >= Math.min(420, Math.round(d5b.list.vh * 0.7)) - 1),
+      JSON.stringify({ ...d5b.list, popoverScrolls: d5b.popoverScrolls }))
     const memberRows = d5b.rows.filter((r, n) => isMembership(OFFERED[n]))
     check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
     check('step 40 — R-128: no "+ New template", no FROM THE ROUTES MANAGER heading and no rule — they arrive with Story 7.16', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 0, JSON.stringify({ rules: d5b.rules, text: d5b.text.slice(0, 200) }))
@@ -4141,7 +4147,7 @@ async function main() {
         titles: rows.map((r) => r.querySelector('[data-name]')?.textContent ?? null),
         words: rows.map((r) => r.textContent.replace(/\s+/g, ' ').trim()),
         current: rows.filter((r) => r.getAttribute('aria-current') === 'true').map((r) => r.dataset.visitor),
-        // S4d's check is the row's one polyline: the three glyphs are paths and circles
+        // a tick would be the row's one polyline (the three glyphs are paths and circles) — R-172 draws none
         checked: rows.filter((r) => r.querySelector('polyline')).map((r) => r.dataset.visitor),
         dots: dotted.map((r) => r.dataset.visitor),
         // the dot as DRAWN, and its word: in the row for a screen reader, and printed nowhere (a box of at most 1px)
@@ -4152,7 +4158,7 @@ async function main() {
           const wb = w?.getBoundingClientRect()
           return { w: b.width, h: b.height, bg: getComputedStyle(d).backgroundColor, word: !!w && wb.width <= 1 && wb.height <= 1 }
         }),
-        // S4d draws the current row with NO tint
+        // R-172: the current row takes the coral tint in place of S4d's tick
         tint: rows.filter((r) => r.getAttribute('aria-current') === 'true').map((r) => getComputedStyle(r).backgroundColor),
       }
     }, VA.NOT_VIEWED)
@@ -4250,9 +4256,9 @@ async function main() {
       same90(shown90.visitors, VA.VISITORS) && same90(shown90.titles, VA.VISITORS.map(name90)) &&
       VA.VISITORS.every((v, n) => shown90.words[n].includes(VA.ROWS[v].caption)) && !shown90.words.some((w) => /comped|tier|supporter|patron/i.test(w)),
       JSON.stringify(shown90))
-    check('step 90 — the check is on the current row only, with no tint; the menu is 260 wide and centred under the trigger (S4d :399)',
-      shown90 !== null && same90(shown90.current, [ANON90]) && same90(shown90.checked, [ANON90]) &&
-      shown90.tint.every((t) => t === 'rgba(0, 0, 0, 0)') && shown90.width === 260 && Math.abs(shown90.centreOff) < 1 && shown90.below,
+    check('step 90 — R-172: the current row is HIGHLIGHTED with the coral tint and no row carries a tick; the menu is 260 wide and centred under the trigger (S4d :399)',
+      shown90 !== null && same90(shown90.current, [ANON90]) && same90(shown90.checked, []) &&
+      shown90.tint.every((t) => t === TINT) && shown90.width === 260 && Math.abs(shown90.centreOff) < 1 && shown90.below,
       JSON.stringify(shown90 && { current: shown90.current, checked: shown90.checked, tint: shown90.tint, width: shown90.width, centreOff: shown90.centreOff }))
     check('step 90 — R-169: each unviewed row, and only those, carries ONE coral dot — 8px, coral-deep — with its word "Not viewed" in the row for a screen reader and printed nowhere',
       shown90 !== null && same90(shown90.dots, VA.unviewed([ANON90])) &&

@@ -331,8 +331,8 @@ it only reminds you and never stops you.
   - **Step 90**, new, on the **deployed** editor. It checks:
     - The trigger's words (R-170's name, and "Anonymous" nowhere in the bar), 32px height and eye; the group
       centred to within 2px in all three visitors.
-    - S4d's menu: the heading, three rows (no tier row and no comped row), and the check on the current row
-      only.
+    - S4d's menu: the heading, three rows (no tier row and no comped row), and the current row highlighted
+      with no tick (R-172; it was S4d's check until the owner's finding).
     - Paid: Rail shows Account and no Sign in; the Inline Row shows "Signed in" and no form. Free: the same.
       The Logged out user: back again.
     - A section set to Paid members is absent for Free and present for Paid.
@@ -404,6 +404,14 @@ it only reminds you and never stops you.
     journey checks that each menu opens on its checked row.
   - **Documents:** the ledger (R-171), `prd.md` FR-D6, `epics.md` (UX-DR8, Story 7.16, and Story 5.22's narrow top
     bar), `DESIGN.md`'s carve-out, and `EXPERIENCE.md`'s Template Switcher row.
+- [x] **The owner's fourth round** (2026-09-21), findings 8 and 9, **R-172**:
+  - `bar-menu.tsx`'s row is `relative`, so its `sr-only` words stay inside the scrolling list. Its popover class
+    `BAR_POPOVER` also sets `overflow-visible`, so the popover never scrolls and the card's shadow is drawn.
+  - The row in force takes `bg-coral-tint` and a semibold name, and carries no tick in either menu.
+  - **Tests:** the walk's step 40 reads the popover's own scroll, and it and step 90 read the tint in place of the
+    tick.
+  - **Documents:** the ledger (R-172) and `EXPERIENCE.md`'s Template Switcher row. `DESIGN.md` already names
+    `coral-tint` as the ground of a selected row, so it needs no change.
 
 **Acceptance Criteria:**
 
@@ -414,7 +422,8 @@ it only reminds you and never stops you.
   is centred in the bar. **It matches the frame**, S4a `:33`, with R-170's name for the value.
 - **Given** View as is pressed
   **Then** S4d's menu opens: "Preview as", then Logged out user / Free member / Paid member, each with its
-  caption and icon, and the check on the current row. No tier or comped row appears (B9: "only"). **It matches
+  caption and icon, and the current row **highlighted** with the coral tint (R-172, in place of S4d's check). No
+  tier or comped row appears (B9: "only"). **It matches
   the frame**, S4d `:399-404`.
 - **Given** a visitor is chosen
   **Then** the canvas repaints as that visitor through `renderSection`'s one door. The members-aware pilots
@@ -773,6 +782,34 @@ and `VERCEL_PROJECT`, under Node 24.
   - **The bar's own limit, 1280 down to 880:** the group clears the right-hand cluster by **6px at 960** and meets it
     at **940 (−4)**. That is recorded on Story 5.22's card.
 
+**The fourth round (findings 8 and 9, R-172), run at Dev (2026-09-21), locally:**
+
+- `pnpm check`: **exit 0**, with `apps/web` at **457, 0 fail** and `check-snapshots` **unchanged**.
+- `pnpm keyboard`: **37 passed**.
+- **The second scrollbar, measured in the harness with real scrollbars turned on.**
+  - Before the fix, the popover itself was `284 × 420` on screen but scrolled `546` tall, with a 15px scrollbar of
+    its own (`offsetWidth` 299). The overflow was the `sr-only` words of rows scrolled out of the list, standing
+    unscrolled.
+  - After the fix, the popover's client, scroll and offset boxes are all **284 × 420**, and only the list scrolls
+    (378 of 538).
+- **The highlight.** In both menus the current row takes the coral tint with its name at 600, and no row draws a tick.
+  The card's shadow now shows around both menus.
+
+**The deployed walk at `545b815e` (the third round), stated plainly.**
+
+- Its first attempt died on a harness timeout, which is not a result.
+- The second ran to its end at **2 FAIL, 517 PASS**, and every new R-171 stop passed:
+  - step 40's glyphs, one-liners and in-card scroll
+  - step 43's list opening on 404, `scrollTop` 160
+  - step 90's eyeless trigger and the canvas press closing both menus
+- **The two FAILs were step 90's stored record.** It read `["anonymous"]` for the whole 10-second wait, and after a
+  reload the list dotted Free. By the step's second reload the record held all three: the writes landed, late.
+- **A targeted probe on production could not reproduce it.** It used the same two canvas presses, then Paid, Free and
+  the logged out user, and each case stored all three within **606ms** and **239ms**. That run also found that Chrome
+  reports some of these server-action requests as `ERR_ABORTED` about 600–700ms in, while the write still lands.
+- **This run was not clean:** I had a local harness compiling beside it, loading the same machine. The walk of the
+  fourth round, below, is the record.
+
 **Commands:**
 
 - `pnpm check`. Expected:
@@ -818,11 +855,11 @@ clicking outside, all from 2026-09-21.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | Two buttons that look alike: **"Template Home"** and right beside it **"View as Logged out user"**, with no eye. **Nothing** sits to the right of them: no "not viewed" tag. On the page, the header shows **Sign in** and **Subscribe**, and the newsletter band shows its email box. |
-| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows, each with its icon on the left: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member", each with a small **coral dot** at its right end, meaning "not looked at yet". Hold the pointer on a dot and it says **Not viewed**. |
+| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows, each with its icon on the left: "Logged out user — Not signed in" **highlighted in pale coral** (the one you are on), then "Free member" and "Paid member", each with a small **coral dot** at its right end, meaning "not looked at yet". Hold the pointer on a dot and it says **Not viewed**. |
 | 2a | the same | Editor, Home | Click anywhere on the page itself, below the list. | — | The list **closes**. Open it again and press Esc: it closes too. |
-| 2b | the same | Editor, Home | Press **Template**. | — | A list headed **TEMPLATES** that looks like the View as list: every row has an **icon** on the left (a house for Home, an article for Post, a page for Page, a tag, a person for Author, a person-plus for Signup, a door-arrow for Signin, a person-in-circle for Member home, "404" for 404), the name, and **one grey line** saying what the template is — "Your site's front page", "A single article", "Where visitors join" and so on. On the right of each row is its small mark: a filled dot for a designed page, a hollow dot for an auto-generated one, a crossed-out circle for an empty one — with **no "Auto-generated" or "Empty" words**. Hold the pointer on a mark and it says what it means. Home has the tick. |
-| 2c | the same | the open Template list | Scroll the list with your mouse wheel or trackpad. | — | The list **scrolls inside its card**, with a thin rounded scrollbar, and the card stays the same height. The page behind does not move. Click on the page: the list closes. |
-| 3 | the same | the open list | Choose **Paid member**. | — | The page changes at once. The header's Sign in and Subscribe become **Account**, and the newsletter's email box becomes **"Signed in · Manage your preferences"**. The button reads "View as Paid member". Open the list again: Paid member has the tick, and only **Free member** still has a dot. |
+| 2b | the same | Editor, Home | Press **Template**. | — | A list headed **TEMPLATES** that looks like the View as list: every row has an **icon** on the left (a house for Home, an article for Post, a page for Page, a tag, a person for Author, a person-plus for Signup, a door-arrow for Signin, a person-in-circle for Member home, "404" for 404), the name, and **one grey line** saying what the template is — "Your site's front page", "A single article", "Where visitors join" and so on. On the right of each row is its small mark: a filled dot for a designed page, a hollow dot for an auto-generated one, a crossed-out circle for an empty one — with **no "Auto-generated" or "Empty" words**. Hold the pointer on a mark and it says what it means. **Home is highlighted**, and no row has a tick. |
+| 2c | the same | the open Template list | Scroll the list with your mouse wheel or trackpad. | — | The list **scrolls inside its card**, with **one** thin rounded scrollbar inside the card and none outside it, and the card stays the same height. The page behind does not move. Click on the page: the list closes. |
+| 3 | the same | the open list | Choose **Paid member**. | — | The page changes at once. The header's Sign in and Subscribe become **Account**, and the newsletter's email box becomes **"Signed in · Manage your preferences"**. The button reads "View as Paid member". Open the list again: **Paid member is highlighted**, and only **Free member** still has a dot. |
 | 4 | the same | Editor, Home | Choose **Free member**. | — | The page looks like the paid one, because these sample sections treat both kinds of member the same (step 7 shows the difference). Open the list: **no row has a dot** — you have looked at Home all three ways. |
 | 5 | the same | Editor, Home | **Reload the page**, then open the list. | — | "View as" is back to **Logged out user**. Like the device and light/dark buttons, it is not saved. **No dots**: the editor remembered that you looked at Home all three ways. |
 | 6 | the same | Editor, Home | Click the newsletter's heading, "One letter a week, on Friday morning", add a word, then open the View as list. | add `really` | The dots come back on **Free member** and **Paid member**. The page changed, so those two views are out of date. |
@@ -841,7 +878,7 @@ R-169.**
 
 - The coral tag beside the button is gone.
 - In the list, each visitor you have not looked at this page as carries one coral dot at the right end of its
-  row, in the tick's own place. The row you are on has the tick, never a dot.
+  row. The row you are on never has one: since your finding 9 it is highlighted instead.
 - A screen reader still hears "Not viewed" on those rows, because the word is there for it and hidden from the
   eye.
 - With the tags gone, the grey second lines fit on one line again.
@@ -909,6 +946,22 @@ link designs?"**
   about 960px wide and touches them below about 950px, measured in the harness from 1280 down to 880.
 - Below that width, the right-hand buttons should move into one overflow menu, as the design for narrow screens
   draws. That is Story 5.22's job, and its story card now says so.
+
+**8. "When there is a scrollbar in dropdown, there are two scrollbars. One is inside the dropdown container and one is
+outside."** (the owner, 2026-09-21, on `545b815e`). **Fixed in this story.**
+
+- The outside one belonged to the list's pop-up box itself, and was caused by the words kept for screen readers
+  ("Empty", "Not viewed").
+- Those words are hidden by placing them absolutely. Without a positioned row around them, they stood at their
+  unscrolled places below the card, so the pop-up box grew a scrollbar of its own.
+- Each row now holds its own words. The pop-up box can no longer scroll at all: only the list inside the card does.
+- A side effect the designs wanted: the card's soft shadow now shows. Before, the pop-up box clipped it.
+
+**9. "For active template or view as — instead of showing a tick mark, show that list item as highlighted."** (the
+same day). **Fixed in this story; ruled as R-172.**
+
+- In both lists, the row you are on is highlighted in pale coral with its name in bold, and no row has a tick.
+- A screen reader is still told which one is current.
 
 *`owner_test` stays `pending`* rather than moving to `issues`: these arrived during Dev, from the owner looking at
 the deployed build early, and are fixed inside the Dev phase, as Story 5.13's scroll finding was. His formal test of

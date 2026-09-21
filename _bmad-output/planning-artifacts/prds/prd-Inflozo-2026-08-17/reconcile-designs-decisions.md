@@ -3611,7 +3611,8 @@ confusion."*
     - S4d's card (radius 12, 6px padding, `shadow-lg`), headed in 11/600 uppercase: "Templates" and "Preview as".
     - A list that scrolls inside the card.
     - Rows of a 15px glyph, the name at 13/500 over one 11px line, and a trailing slot.
-    - The current row carries the coral check and no tint.
+    - The current row carries the coral check and no tint. *(Superseded the same day by **R-172**: the row in force
+      is highlighted, not ticked.)*
   - **The Template rows.** Each leads with a Tabler glyph: `home` · `article` (Post) · `file-text` (Page) · `tag` ·
     `user` (Author) · `user-plus` (Signup) · `login-2` (Signin) · `user-circle` (Member home) · `error-404` · `lock`
     (Private). A custom template from Story 7.16's Routes Manager takes `template`. Each glyph is emitted from
@@ -3636,6 +3637,21 @@ confusion."*
   Story 5.22's narrow top bar (the wider group touches the right-hand cluster below about 950px) ·
   ✅ `DESIGN.md`'s carve-out · ✅ `EXPERIENCE.md`'s Template Switcher row · ✅ the deployed walk (steps 40, 43, 90)
   and the keyboard journey — Story 5.14's Dev (2026-09-21). ⬜ `D5b` and `S4a`, on the next library pass.
+
+**R-172 — the row in force is highlighted, not ticked, in both of the bar's menus.** The owner, on Story 5.14's
+deployed build (`545b815e`, 2026-09-21): *"For active template or view as — instead of showing a tick mark, show that
+list item as highlighted."*
+
+- **What it binds.** In the Template list and in View as's, the current row takes D5b's own current-row treatment: the
+  `coral-tint` ground and its name at 600. No row carries a tick. The row keeps its tint under the pointer, and
+  `aria-current` tells a screen reader which row it is. It is built once, in `bar-menu.tsx`'s row.
+- **What it supersedes.** S4d's check with no tint on View as's current row, R-171's "current row carries the coral
+  check and no tint", and D5b's check beside its tint.
+- **What it does NOT change.** The not-viewed dots (R-169) and the state marks (R-171), which keep the trailing slot.
+  `DESIGN.md` already names `coral-tint` as the ground of a selected row. The export is untouched (R-74).
+- Targets: ✅ this entry · ✅ Story 5.14's spec (finding 9, its criteria, tasks and owner test) · ✅ `bar-menu.tsx`,
+  `template-switcher.tsx`, `view-as.tsx` · ✅ `EXPERIENCE.md`'s Template Switcher row · ✅ the deployed walk (steps
+  40 and 90) — Story 5.14's Dev (2026-09-21). ⬜ `S4d` and `D5b`, on the next library pass.
 
 
 ## B · Approved decisions superseded by this session

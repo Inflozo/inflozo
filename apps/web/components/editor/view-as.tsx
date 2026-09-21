@@ -1,8 +1,8 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
-import { Check, ChevronDown, ChevronUp, Crown, Eye, Person } from '@/components/kit/icons'
+import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
+import { ChevronDown, ChevronUp, Crown, Eye, Person } from '@/components/kit/icons'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { HEADING, LABEL, NOT_VIEWED, ROWS, VISITORS, unviewed, type Visitor } from '@/lib/view-as'
 
@@ -22,17 +22,18 @@ import { HEADING, LABEL, NOT_VIEWED, ROWS, VISITORS, unviewed, type Visitor } fr
  *
  * THE MENU IS S4d's (`:399-404`): 260 wide, headed "Preview as", then three rows — each a 15px glyph, a 13/500 title and
  * an 11px caption — and exactly three (B9: "only"): `comped` and Ghost 6's `gift` preview as Paid, so no tier row and
- * no comped row exist to draw. The current row carries S4d's 13px coral check and NO tint, as drawn. A plain labelled
+ * no comped row exist to draw. The current row is HIGHLIGHTED with the coral tint and carries no tick (R-172, which
+ * replaced S4d's check-and-no-tint on the owner's word). A plain labelled
  * list on `openMenu`'s `popover="auto"`, as every menu in the app is: the platform gives light dismiss, Escape and the
  * return of focus to this trigger, `arrowKeys` the movement, `aria-current` the row in force. Centred under the trigger
  * as S4d draws it (`openMenu`'s `align: 'center'`), and it opens on the checked row, as the Template list does.
  *
  * THE REMINDER IS A CORAL DOT, AND ONLY IN THE MENU (R-169). Each visitor this page has not been looked at as carries
- * one 8px dot in the row's trailing slot — the slot the check takes on the current row, which is always viewed, so
- * the two never meet. Nothing sits beside the trigger. The dot's word, "Not viewed", is in the row for screen readers
+ * one 8px dot in the row's trailing slot. The current row is always viewed, so it never carries one. Nothing sits
+ * beside the trigger. The dot's word, "Not viewed", is in the row for screen readers
  * only: the owner wants no printed word, and a sighted reader's signal is the dot's PRESENCE, a shape, so colour never
- * carries it alone. 8px is D5b's row mark (the Template list's `size-2`), and `coral-deep` is the check's own ink in
- * the same slot. The reminder never blocks.
+ * carries it alone. 8px is D5b's row mark (the Template list's `size-2`), and `coral-deep` is the coral that S4d drew
+ * the check in, before R-172 took the check away. The reminder never blocks.
  *
  * NO KEY BINDS IT (FR-D11: set-and-forget context), and no colour literal lives here (`tokens.test.ts`): every value
  * above is a token.
@@ -86,7 +87,7 @@ export function ViewAs({
         popover="auto"
         onToggle={(event) => setOpen((event as unknown as ToggleEvent).newState === 'open')}
         onKeyDown={arrowKeys}
-        className="border-0 bg-transparent p-0"
+        className={BAR_POPOVER}
       >
         <BarMenuCard width="w-[min(260px,calc(100vw-16px))]" headingId="editor-view-as-heading" heading={HEADING}>
           {VISITORS.map((v) => {
@@ -96,7 +97,7 @@ export function ViewAs({
               <li key={v} className="flex flex-col">
                 <BarMenuRow
                   data-visitor={v}
-                  aria-current={on ? 'true' : undefined}
+                  current={on}
                   onClick={() => {
                     // the platform returns focus to the trigger as the menu hides, and the canvas repaints behind it
                     menu.current?.hidePopover()
@@ -106,9 +107,8 @@ export function ViewAs({
                   name={ROWS[v].title}
                   caption={ROWS[v].caption}
                   trailing={
-                    on ? (
-                      <Check size={13} strokeWidth={2} className="shrink-0 text-coral-deep" />
-                    ) : missing.includes(v) ? (
+                    // the row in force is highlighted (R-172), and it is always viewed, so it carries nothing here
+                    !on && missing.includes(v) ? (
                       <>
                         {/* its word is the dot's hover title as well as the row's `sr-only` text (DESIGN.md's carve-out) */}
                         <span aria-hidden data-not-viewed title={NOT_VIEWED} className="size-2 shrink-0 rounded-full bg-coral-deep" />

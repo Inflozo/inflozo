@@ -323,6 +323,13 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       press, because light dismiss never hears the iframe.
     - Links typed with the text toolbar render browser blue, because no stylesheet applies R-112's `--link-color` /
       `--link-decoration` to an inline `a` mark. That is Question 3, awaiting the owner. It touches `packages/`.
+  - **The owner's fourth round (2026-09-21), R-172:** the row in force is highlighted, `coral-tint` with a semibold name,
+    and is not ticked, in both menus.
+    - "Two scrollbars" was the POPOVER scrolling: an unpositioned row let its absolute `sr-only` words escape the
+      list, so the popover grew a scrollbar of its own.
+    - Fixed by `relative` rows, plus `overflow-visible` on the popover (`BAR_POPOVER`), which also lets the card's
+      `shadow-lg` show. The app's other popovers keep the UA's `overflow: auto`, which clips a child's shadow. That
+      follows from the CSS and was not measured on them.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
