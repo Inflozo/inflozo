@@ -5124,3 +5124,22 @@ reason: FR-D16 names that pass as the thing its nudge makes reliable, and §4 de
   and exercising the controls, with no member state anywhere in it. Adding a row (look at every members-aware design as
   Anonymous, Free and Paid before approving) changes the owner's own sign-off, so it is his to rule and not a Dev run's to
   write. Nothing in the product is wrong meanwhile: the nudge works whether or not the gate asks for it.
+
+### DW-222: the deployed editor walk's step 36 fails intermittently — the hover follows the section a scroll moves under a still pointer
+
+status: open
+severity: low
+origin: Story 5.14's Dev run (2026-09-21), the deployed walk at `d4d6e266` — and Story 5.9's (2026-09-19), whose spec
+  recorded the same failure ("intermittent, Story 5.4's") without a ledger row.
+owner: whoever next touches the section pill or the walk (Story 5.22's responsive pass moves both).
+location: `tools/probe/run-verify-editor.cjs` step 36 (`:1722-1777`) · the pill's placement in `editor.tsx`
+plain: One automated check on the little floating toolbar above a section sometimes fails and sometimes passes on the
+  same build. Nothing you would see as a customer is known to be wrong; the check's own assumption is the suspect.
+reason: At `d4d6e266` one walk failed both of step 36's checks and the next, on the same deployment, passed them
+  (0 FAIL, 515 PASS). In the failed run the settled pill sat at the right corner rule (10px in from the right edge) but
+  10px below the NEXT section's top (`top 272`, the grid's bottom `262`): it had moved to the section that the 300px wheel
+  scroll carried under a pointer that never moved, and the per-frame sampler then read up to 126px against the new
+  hover. The likely cause is a HYPOTHESIS, not executed (standing rule 1): Chromium dispatching a synthetic mouse move
+  once a scroll settles, which would make "does the hover change inside the check's 700ms window" a race. The check
+  assumes the hover stays on the grid; telling whether the product or the check should change needs its own look, not a
+  guess inside a story that does not touch the pill.

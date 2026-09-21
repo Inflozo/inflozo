@@ -592,6 +592,50 @@ version of a page never goes out unseen; it only reminds you and never stops you
   This is read in source, not recorded on T1 or T3.
 - **Not touched, and not claimed:** T1, T3, Resend and Dodo.
 
+**GitHub Actions and Vercel, at the Dev push `d4d6e266`.** Read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`
+and `VERCEL_PROJECT`, by name:
+
+- `CI` **success**: `check` (with `pnpm keyboard`), `rls` and `deploy` all passed. `Render matrix` **success**.
+- Production is `dpl_Cd2TKiR2ZERF2fUjXbeHLCE9y5PH`, **READY**, with `githubCommitSha` `d4d6e266` = `HEAD`.
+
+**The deployed walk (2026-09-21), against `https://app.inflozo.com` at `d4d6e266`.** This is R-82's own test:
+`node tools/probe/run-verify-editor.cjs` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`
+and `VERCEL_PROJECT`, under Node 24.
+
+- **0 FAIL, 515 PASS.** Users went **13 → 13**, and both throwaway accounts were deleted in `finally`.
+- **Step 2:** the centred group spans 542.5 to 897.5 in the 1440 bar, which is centred, and holds `editor-template`
+  then `editor-view-as`.
+- **All 22 of step 90's checks passed on production:**
+  - **The trigger** is named "View as Anonymous" by its own words: the eye, 32px, and `aria-label` null.
+  - **The marker** reads "2 not viewed". It is 2px off the trigger, 20px high, radius 24px, `rgb(255, 237, 232)` on
+    `rgb(194, 56, 31)`, at 10.5px/600. It clears the right-hand cluster by **150px at 1440 and 70px at 1280**, and
+    the group stays centred at both widths.
+  - **S4d's menu:** "Preview as" drawn uppercase, then exactly `anonymous · free · paid`. The check is on the current
+    row only, with no tint. The menu is 260 wide and centred to **0px**.
+  - **Paid:** Rail shows `["Account"]`; the Inline Row has no form and shows "Signed in"; `#editor-said` says "The
+    canvas is previewing a paying member."; the marker reads "1 not viewed" and names Free.
+  - **Free:** the marker is absent. **Anonymous:** the signed-out render comes back. Template's left edge stayed at
+    542.5 in all four states.
+  - **The stored row** holds `member_states_viewed = ["anonymous","free","paid"]` against this user's id: the
+    column's first writer. After a reload, View as is back to Anonymous and the marker is absent.
+  - **Every printable key**, plus Space, Enter, Delete and Backspace, moved no visitor, and after a reload the record
+    still held.
+  - **R-167:** one edit (Member visibility → Paid members) brought back "2 not viewed", naming Free and Paid.
+  - **R-168:** for a free member the section is left out (3 of 4 roots) while Layers keeps all 4 rows, and the caption
+    reads "The canvas is previewing a free member, so this section is not drawn here." For a paying member the section
+    is drawn, with no caption.
+  - **Home → Post:** Paid is kept, Post's own record gives "2 not viewed", and Rail shows `["Account"]`.
+  - **⌘K under Paid:** the Inline Row's card draws "Signed in" and no form.
+- **Other steps that cover this story:**
+  - step 5: the scripted session records **zero** CSP violations, with View as inside it
+  - step 8: axe finds **zero** violations with the marker showing and the menu open
+  - step 37: still passes at the Anonymous default
+  - step 79: `/harness/editor` and `/harness/canvas` both answer **404**
+- ***Stated plainly:*** the first walk against the same deployment ended **2 FAIL, 513 PASS**. Both failures were step
+  36, Story 5.4's check on the section pill during a canvas scroll, and every step-90 check passed in that run too. The
+  second walk passed step 36. Story 5.9 saw the same failure and recorded it only in its spec. It is now **DW-222**,
+  with the failed run's numbers.
+
 **Commands:**
 
 - `pnpm check`. Expected:
