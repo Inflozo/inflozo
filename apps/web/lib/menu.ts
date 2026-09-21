@@ -160,7 +160,8 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
  *  close the dropdowns"). Every popover in the app is a `popover="auto"` menu or picker, so closing all of them is
  *  exactly light dismiss, extended to that one other document. */
 export function closeMenus() {
-  for (const open of document.querySelectorAll<HTMLElement>(':popover-open')) open.hidePopover()
+  // hiding an outer auto popover closes the ones nested in it, and `hidePopover()` THROWS on a closed one (review, 2026-09-21)
+  for (const open of document.querySelectorAll<HTMLElement>(':popover-open')) if (open.matches(':popover-open')) open.hidePopover()
 }
 
 /**

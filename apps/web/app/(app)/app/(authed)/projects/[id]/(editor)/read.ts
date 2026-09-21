@@ -4,7 +4,7 @@ import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, typ
 import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
-import { CANVASES, canvasesOf, isUuid, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfTemplateKey, canvasesOf, isUuid, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
@@ -242,7 +242,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
      value nobody in the product wrote, and it is dropped. */
   const viewed: Record<string, readonly Visitor[]> = {}
   for (const row of prefs.data ?? []) {
-    viewed[row.template_key as string] = readViewed(row.member_states_viewed)
+    // a row whose key no canvas owns stays out: `afterChange` walks every key on a header or footer change, and
+    // `setViewedStates` refuses a whole batch for one key it does not know (review, 2026-09-21)
+    if (canvasOfTemplateKey(row.template_key as string) !== null) viewed[row.template_key as string] = readViewed(row.member_states_viewed)
     const value = row.preview_subject as { kind?: unknown; slug?: unknown } | null
     if (value === null || typeof value !== 'object') continue
     const { kind, slug } = value

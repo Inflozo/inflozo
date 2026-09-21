@@ -106,7 +106,7 @@ export default function EditorHarness() {
     // Story 5.13 — no stored preview subject, so every canvas resolves to its fixture. The harness proves the
     // keyboard wiring (R-146) and the subject binds no key, so there is nothing here for it to press.
     subjects: {},
-    // Story 5.14 — no canvas has been looked at yet, so each opens with S4d's marker. The record's write fails here
+    // Story 5.14 — no canvas has been looked at yet, so View as's menu dots every other visitor (R-169). The record's write fails here
     // (there is no database), which is the matrix's "Save refused" row: logged, never said, and the canvas unaffected.
     viewed: {},
   }

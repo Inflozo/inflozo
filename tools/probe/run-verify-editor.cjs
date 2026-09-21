@@ -121,7 +121,7 @@
 // Story 5.14 adds step 90, inside the same session, and CHANGES STEP 2: S4a's centred group is now Template AND View as,
 // so it is the GROUP that is measured against the bar and not the switcher alone. Step 90 reads the trigger (R-170's
 // one name, NO eye since R-171, 32px, no aria-label, "Anonymous" nowhere) and S4d's menu (the heading, exactly three rows and no
-// tier or comped row, the check on the current row only, 260 wide and centred under the trigger); repaints as Paid,
+// tier or comped row, the current row highlighted and no tick since R-172, 260 wide and centred under the trigger); repaints as Paid,
 // Free and back to the logged out user with Rail's actions and the Inline Row's slot read by their own classes and
 // `#editor-said` announcing each; walks R-169's coral dots 2 → 1 → none on exactly the rows still to look at, each dot
 // 8px in `coral-deep` with its word held for a screen reader, and NO marker in the bar; reads the
@@ -134,7 +134,7 @@
 // expectation is `apps/web/lib/view-as.ts`'s, never restated here; step 37's caption reads the same module. Step 8's
 // axe runs once more with the menu open and its dots in it. R-171 (the owner, 2026-09-21) made the Template list look
 // like View as's, so step 40 now reads each row's Tabler glyph, its one line (`lib/editor.ts`'s own words), the state
-// mark TRAILING the name with its word heard and not printed, no tint on the current row, and the list scrolling inside
+// mark TRAILING the name with its word heard and not printed, the current row highlighted (R-172), and the list scrolling inside
 // its card; step 43 opens it on 404, its last row, and finds that row focused and scrolled into view; and step 90
 // presses the canvas with each of the bar's menus open, which must close it (the owner's finding: the canvas is another
 // document, and a popover's light dismiss never heard a press there). R-172, the same day: the row in force is highlighted
@@ -1933,8 +1933,8 @@ async function main() {
     const wrong = d5b.rows.filter((r) => r.dot !== wantMark(r.key) || r.word !== WORD_OF[wantMark(r.key)] || !r.trails || !r.heard)
     check('step 40 — R-130\'s three marks, since R-171 TRAILING the name with their words heard and not printed: a designed canvas a FILLED dot, an auto-generated one a hollow dot and "Auto-generated", one never auto-built the circle-off glyph and "Empty"', wrong.length === 0, JSON.stringify({ wrong, rows: d5b.rows }))
     // R-171 (owner, 2026-09-21): the Template list looks like View as's — a glyph at the head of every row, the canvas's
-    // one line under its name (`lib/editor.ts`'s own words, never restated), a heading, and the current row checked
-    // with no tint, as S4d draws View as's
+    // one line under its name (`lib/editor.ts`'s own words, never restated), a heading, and the current row
+    // highlighted with no tick (R-172, which reversed R-171's tick on both menus)
     check('step 40 — R-171: every row leads with its canvas\'s glyph and carries its one line under the name, under a "Templates" heading',
       d5b.heading === 'Templates' && d5b.rows.every((r) => r.glyph && r.caption === CANVASES[r.key].caption), JSON.stringify({ heading: d5b.heading, rows: d5b.rows.map((r) => ({ key: r.key, glyph: r.glyph, caption: r.caption })) }))
     check('step 40 — R-172: the current canvas is HIGHLIGHTED — the coral tint — and only it, and no row carries a tick', d5b.rows.filter((r) => r.checked).length === 1 && d5b.rows.find((r) => r.checked)?.name === CANVASES.home.label && d5b.rows.every((r) => r.tint === (r.checked ? TINT : 'rgba(0, 0, 0, 0)') && !r.tick), JSON.stringify(d5b.rows.map((r) => ({ key: r.key, checked: r.checked, tint: r.tint, tick: r.tick }))))

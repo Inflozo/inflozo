@@ -5152,3 +5152,46 @@ reason: At `d4d6e266` one walk failed both of step 36's checks and the next, on 
   once a scroll settles, which would make "does the hover change inside the check's 700ms window" a race. The check
   assumes the hover stays on the grid; telling whether the product or the check should change needs its own look, not a
   guess inside a story that does not touch the pill.
+
+## Deferred from: code review of spec-5-14-member-state-preview-and-the-nudge-that-names-what-i-have-not-looked-at.md (2026-09-21)
+
+### DW-223: a preview-article choice can land late, so a quick reload shows the previous article once
+
+status: open
+severity: low
+origin: Story 5.14's code review (2026-09-21), the Real-infra verifier's second walk at `f313b1b0`.
+owner: whoever next touches the editor's server-action writes.
+location: `editor.tsx` `recordViewed` → `setViewedStates`, and the `setPreviewSubject` call
+plain: If you pick a preview article and reload the page within a second or two, the old article can come back once.
+  The choice is saved; it just arrives a moment late.
+reason: Step 89 failed once in two completed walks with nothing else running on the machine: after choosing article B
+  and waiting 1200ms, the reload read A, and the next check read the stored row as B. The cause is a HYPOTHESIS, not
+  executed (standing rule 1): Next dispatches a client's server actions one at a time, and this story adds a stream of
+  them (`setViewedStates`, on every canvas switch, visitor pick and edit) to the queue `setPreviewSubject` shares.
+
+### DW-224: R-173's plain-link rule is document-wide, and a pack with no underline hides a link on a coloured ground
+
+status: open
+severity: medium
+origin: Story 5.14's code review (2026-09-21), the Acceptance Auditor, the Blind Hunter and the Edge Case Hunter.
+owner: Epic 6 — the story that emits the token block into `default.hbs` and the one that builds the packs.
+location: `packages/section-runtime/src/tokens.ts` `LINK_RULES` · `reference-tokens.css`
+plain: Nothing is wrong today. When Style Packs arrive, a pack that turns link underlines off would make a link typed
+  on a dark, accent or photo band look like ordinary text; and the rule will also restyle links inside a post's body.
+reason: On contrast, accent and image grounds the words take `color: inherit`, so the underline is the link's only
+  sign (WCAG 1.4.1); no rule forces it there and no test covers `--link-decoration: none`. `:where(a:not([class]))` is
+  unscoped, so once the block is in a theme it reaches `{{content}}` — reasoned from the selector, not executed against
+  a theme. An anchor with `class=""` also escapes it.
+
+### DW-225: two tabs of one project each write their own whole "looked at" record
+
+status: open
+severity: low
+origin: Story 5.14's code review (2026-09-21), the Edge Case Hunter.
+owner: whoever builds Story 7.18's Pre-flight, which is the record's first reader that matters.
+location: `editor.tsx` `recordViewed`
+plain: With the same project open in two tabs, looking at a page in the second tab can bring back "viewed" marks that an
+  edit in the first tab had just cleared. One tab is unaffected.
+reason: Each tab merges into its own copy of the record and writes whole arrays; an edit made in the other tab never
+  invalidates this one's copy. The fix is an array-union RPC or a re-read on the save path's "another session wrote".
+

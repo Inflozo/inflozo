@@ -358,6 +358,7 @@ export function Editor({
    * changed nothing (Story 5.13 said its refusal because a subject is an explicit choice; this is not one). */
   const [viewed, setViewed] = useState<Viewed>(storedViewed)
   const viewedWrites = useRef<Promise<void>>(Promise.resolve())
+  const unsavedViewed = useRef<Record<string, readonly Visitor[]>>({})
 
   /** the section a swap has just landed on, for `canvas-chrome.css`'s 180ms settle — cleared when it is over */
   const swapped = useRef<Pick | null>(null)
@@ -483,10 +484,14 @@ export function Editor({
     const next: Viewed = { ...latest.current.viewed, ...changed }
     latest.current = { ...latest.current, viewed: next }
     setViewed(next)
-    const rows = keys.map((templateKey) => ({ templateKey, states: [...(changed[templateKey] ?? [])] }))
     viewedWrites.current = viewedWrites.current.then(async () => {
+      // A REFUSED WRITE RIDES THE NEXT ONE (review, 2026-09-21): a lost `seen` only brings a reminder back, but a lost
+      // `afterChange` leaves the database saying "viewed" of a page that has since changed — the reminder wrongly silent
+      const sending = { ...unsavedViewed.current, ...changed }
+      const rows = Object.keys(sending).map((templateKey) => ({ templateKey, states: [...(sending[templateKey] ?? [])] }))
       // a thrown call (the network dropped, the session is gone) is the same refusal as a returned one
       const answer = await setViewedStates(project.id, rows).catch((error: unknown) => ({ error: String(error) }))
+      unsavedViewed.current = 'error' in answer ? sending : {}
       if ('error' in answer) console.warn('the looked-at record was not saved; the reminder may come back after a reload', answer.error)
     })
   }

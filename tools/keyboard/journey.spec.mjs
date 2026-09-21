@@ -514,6 +514,33 @@ test('View as: Tab reaches it, Enter opens S4d\'s menu, ↓ moves, Enter picks �
   expect(await canvas.locator('#canvas').innerHTML()).toBe(signedOut)
 })
 
+test('R-167: an edit brings the other visitors\' dots back, and so does the undo of it', async ({ page }) => {
+  await open(page)
+  const pick = async (visitor) => {
+    await page.locator('#editor-view-as').focus()
+    await page.keyboard.press('Enter')
+    // `openMenu` focuses the current row a frame after opening — wait for it, or it takes the focus back
+    await expect(page.locator('#editor-view-as-menu [aria-current="true"]')).toBeFocused()
+    await page.locator(`#editor-view-as-menu [data-visitor="${visitor}"]`).focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-view-as-menu')).toBeHidden()
+  }
+  await pick('free')
+  await pick('paid')
+  expect(await dotted(page), 'all three looked at').toEqual([])
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await page.keyboard.press('Delete')
+  expect(await dotted(page), 'an edit leaves the page viewed only as the visitor on screen').toEqual(['anonymous', 'free'])
+  await pick('anonymous')
+  await pick('free')
+  expect(await dotted(page)).toEqual([])
+  // undo is a change too: `restore()` calls `afterChange`, and nothing else checked that it does (review, 2026-09-21)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  expect(await dotted(page), 'an undo is a change').toEqual(['anonymous', 'paid'])
+})
+
 test('no key binds View as: every single key leaves the visitor where it was (FR-D11 — R-145\'s table gains no row)', async ({ page }) => {
   await open(page)
   const was = await viewAsOf(page)

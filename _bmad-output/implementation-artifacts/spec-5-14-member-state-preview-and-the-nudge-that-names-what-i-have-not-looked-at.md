@@ -2,9 +2,9 @@
 title: 'Story 5.14 — Member-state preview, and the nudge that names what I have not looked at'
 type: 'feature'
 created: '2026-09-21'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '02685eaac078a9c5bbf9b5c551d131092a07810d'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -468,6 +468,39 @@ Pack's links, dark ink with an orange underline (orange in dark mode), instead o
   **Then** it takes the pack's link style, never the browser's blue: in light, ink words with the accent underline;
   in dark, the accent words. On a contrast ground it keeps the ground's own words, with the contrast accent
   underline. A design that styles its own links keeps them.
+
+### Review Findings
+
+Code review, 2026-09-21, five layers at `f313b1b0` (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier). No acceptance criterion is violated; nothing needed the owner's decision.
+
+- [x] [Review][Patch] `closeMenus()` could throw from the canvas's `pointerdown`: hiding an outer auto popover closes the ones nested in it, and `hidePopover()` throws on a closed one — each is now asked `:popover-open` first [apps/web/lib/menu.ts]
+- [x] [Review][Patch] One stored row whose key no canvas owns made every header or footer change's record write refuse WHOLE (`afterChange` walks every key; `setViewedStates` refuses the batch for one unknown key) — `editorData` now leaves such a row out [(editor)/read.ts]
+- [x] [Review][Patch] A refused `afterChange` write failed on the WRONG side: the database kept "viewed" for a page since changed, so after a reload the reminder was silent. Refused rows now ride the next write [(editor)/editor.tsx `recordViewed`]
+- [x] [Review][Patch] R-167's call in `restore()` (undo and redo) had no check at any level — deleting it failed nothing. The CI-run keyboard journey now edits, views all three, undoes, and reads the dots back; CONTROL: with the call commented out the new test went red (37 passed, 1 failed), restored → 38 passed [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] Comments contradicting R-169/R-172 beside assertions that are right: "S4d's marker", "the check on the current row only", "no tint on the current row", "checked with no tint" [harness/editor/page.tsx · tools/probe/run-verify-editor.cjs]
+- [x] [Review][Defer] A preview-subject choice landed LATE on production in one of two completed walks (step 89: reload after 1.2s showed the previous article; the row held the new one a moment later) [(editor)/editor.tsx] — deferred, DW-223
+- [x] [Review][Defer] R-173's `:where(a:not([class]))` is document-wide, and a pack that sets `--link-decoration: none` leaves a typed link on a contrast, accent or image ground with no sign at all [packages/section-runtime/src/tokens.ts] — deferred to Epic 6, DW-224
+- [x] [Review][Defer] Two tabs of one project each write their own whole record, so the later one can restore visitors the other tab's edit had reset [(editor)/editor.tsx] — deferred, DW-225
+
+Dismissed, with the reason: the upsert naming `user_id` (the same shape `setPreviewSubject` has had since 5.13; a
+project has one owner and RLS's WITH CHECK holds — the verifier read both policies on production); a failed prefs read
+overwriting a good record (costs reminders, never silence — the spec's stated safe side); "viewed" recorded before the
+frame paints, a visitor change mid-inline-edit, the centred menu's clamp and the name's `calc` width (the deployed walk
+measures each); the colour literals in the walk (they are the computed answers to derived tokens, read on production).
+
+**The real infrastructure (R-82), 2026-09-21.** Vercel: production `READY` from `f313b1b0`. Supabase production
+through `SUPABASE_DB_POOLER_URL`, read-only: all six columns the code names exist, the `(project_id, template_key)` key
+the upsert conflicts on exists, both RLS policies present; control `no_such_column_control` → missing (R-99: no
+migration, no mismatch). **Standing rule 1 on the upsert, now through the two server actions themselves on
+`app.inflozo.com`** (a throwaway account, deleted after; users 13 → 13): subject then record, and record then subject —
+both columns survive in both orders; a later record replaces the array; control: a PATCH naming `preview_subject: null`
+does clear it. The action's own refusals — a state `gold`, the key `site`, two rows for one key, no rows — each
+answered the refusal sentence and left the row byte-identical; with no cookies it wrote nothing; the table with no
+session answered `42501`. The deployed walk, three runs: the first died at 167 PASS on the known Playwright timeout
+(not a result); the second 1 FAIL, 519 PASS (step 89, DW-223); the third 0 FAIL, 520 PASS. `pnpm check` exit 0 and
+`pnpm keyboard` 38 passed after the patches. Not touched and not claimed: T1, T3, Resend, Dodo. The patches above are
+not yet walked on production — the Deploy phase's walk does that.
 
 ## Spec Change Log
 
