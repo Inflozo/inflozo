@@ -439,6 +439,21 @@ publication is the source until Story 5.18.
   other runs and in the 490-PASS run above); the others ended on the harness's known Playwright timeouts
   (`page.goBack`, `page.waitForFunction`) with 0 FAIL up to that point. The flake is DW-220.
 
+### Deploy (2026-09-21) — production confirmed at `8d3f06ee`
+
+CI on `8d3f06ee` (`check`, `rls`) and the render matrix completed `success` (`GITHUB_TOKEN`), and `deploy` promoted
+**Deployment: `dpl_4JEzuMx7cD7SZhSQLSXyKEmsUsMs`** (`inflozo-4flfyz27n-umangkagathara.vercel.app`), production,
+`READY`, `githubCommitSha` `8d3f06ee` = `HEAD` = `origin/main`, serving `https://app.inflozo.com` (`VERCEL_TOKEN` /
+`VERCEL_TEAM_ID` / `VERCEL_PROJECT` by name). `8d3f06ee` differs from the code-bearing `efda9d6c` only in the spec.
+No file under `supabase/migrations/` is in the story's diff, so there is no database step and `RLS-TEST.sql` has
+nothing new to prove (R-99); CI's `rls` job was green on the commit regardless.
+
+`node tools/probe/run-verify-editor.cjs` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+`VERCEL_PROJECT`) against THIS deployment: **0 FAIL, 492 PASS**, all of step 89's checks green, users `13 → 13`.
+`https://app.inflozo.com/harness/editor` → **404**. *Stated plainly: a first run of the same walk finished at
+**4 FAIL, 443 PASS**, all four in step 66b/66c and none in step 89 — the autosave-on-tab-hide flake registered as
+DW-220 at Review, in code this story does not touch. The re-run above passed those same stops.*
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the URLs. Use the **Pilot sections** project — the one
@@ -447,16 +462,16 @@ seeded to your account at Story 5.1.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the **bottom** of the page you are designing, in the grey area just under it. | — | A small pill with a **dashed** outline and a **grey** dot, reading **"Previewing with: Sample content"**. It has nothing to open on this page, and it does not sit on top of your page. |
-| 2 | the same | Editor, Home | Press `2` and then `3` to switch to the tablet and phone sizes. | — | The pill stays clear of the page at every size — it never covers the bottom of your design. This is the step that matters most on this list. |
-| 3 | `…/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | Look at the same pill. | — | It now says **two** things: the source, and **which article** the page is showing — *Style-guide article*. |
-| 4 | the same | Editor, Post | **Press the pill.** | — | A list opens upward. At the top, **"Style-guide article — The one every post design is designed against"**, ticked. Below it, real articles with their dates, and some carrying a small **"has image"** label — the words, not just a picture. |
-| 5 | the same | the open list | Type `archive` in the search box. | `archive` | The list narrows to the two articles with that word in the title — *The archive as argument* and *A quiet week in the archive*. Nothing loads; it is instant. |
-| 6 | the same | the open list | Clear the search and pick an article that **does** say "has image". | — | The page redraws with that article's title, date and author, and a **picture across the top**. The pill's second half now names that article. |
-| 7 | the same | the open list | Press the pill again and pick an article with **no** "has image" label. | — | The picture at the top is **gone entirely** — not a grey box, not a gap. That is the whole point of this story: two articles, two genuinely different pages. |
-| 8 | the same | Editor, Post | **Reload the page** in your browser. | — | The article you picked is still the one showing. Your choice was saved. |
-| 9 | `…/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag | Look at the pill, then at the list of posts on the page. | — | The pill names a tag. The posts on the page are **only** that tag's posts. Before today this page showed every post on the site, which no real tag page ever does. |
-| 10 | the same | Editor, Tag | Press the pill and choose a different tag. | — | The posts change to that tag's posts. Go back to Post — its article is still the one you picked in step 7; each page remembers its own. |
-| 11 | `…/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Press the pill. | — | **Nothing opens.** Home is not about one article, so there is nothing to choose — the pill just tells you what it is made of. |
+| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Press `2` and then `3` to switch to the tablet and phone sizes. | — | The pill stays clear of the page at every size — it never covers the bottom of your design. This is the step that matters most on this list. |
+| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | Look at the same pill. | — | It now says **two** things: the source, and **which article** the page is showing — *Style-guide article*. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | **Press the pill.** | — | A list opens upward. At the top, **"Style-guide article — The one every post design is designed against"**, ticked. Below it, real articles with their dates, and some carrying a small **"has image"** label — the words, not just a picture. |
+| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | the open list | Type `archive` in the search box. | `archive` | The list narrows to the two articles with that word in the title — *The archive as argument* and *A quiet week in the archive*. Nothing loads; it is instant. |
+| 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | the open list | Clear the search and pick an article that **does** say "has image". | — | The page redraws with that article's title, date and author, and a **picture across the top**. The pill's second half now names that article. |
+| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | the open list | Press the pill again and pick an article with **no** "has image" label. | — | The picture at the top is **gone entirely** — not a grey box, not a gap. That is the whole point of this story: two articles, two genuinely different pages. |
+| 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | **Reload the page** in your browser. | — | The article you picked is still the one showing. Your choice was saved. |
+| 9 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag | Look at the pill, then at the list of posts on the page. | — | The pill names a tag. The posts on the page are **only** that tag's posts. Before today this page showed every post on the site, which no real tag page ever does. |
+| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag | Press the pill and choose a different tag. | — | The posts change to that tag's posts. Go back to Post — its article is still the one you picked in step 7; each page remembers its own. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Press the pill. | — | **Nothing opens.** Home is not about one article, so there is nothing to choose — the pill just tells you what it is made of. |
 
 **One thing to know before you test it.** The pill's *other* state — a solid outline and a green dot,
 naming **your** Ghost site — cannot appear yet, because nothing in the editor reads your site's posts
