@@ -119,18 +119,20 @@
 // `templateContext`, never restated here. It also carries the owner's finding of 2026-09-21, which belongs to EVERY
 // menu in the app rather than to this one: a menu with its own scrolling list must not close when that list scrolls.
 // Story 5.14 adds step 90, inside the same session, and CHANGES STEP 2: S4a's centred group is now Template AND View as,
-// so it is the GROUP that is measured against the bar and not the switcher alone. Step 90 reads S4a's trigger (its
-// words, the eye, 32px, no aria-label) and S4d's menu (the heading, exactly three rows and no tier or comped row, the
-// check on the current row only, 260 wide and centred under the trigger); repaints as Paid, Free and back to
-// Anonymous with Rail's actions and the Inline Row's slot read by their own classes and `#editor-said` announcing
-// each; walks S4d's marker 2 → 1 → absent with each unviewed row's chip naming exactly what is left; reads the
-// `project_template_prefs.member_states_viewed` row back — the column's first writer — and a reload that keeps the
-// marker away; presses every printable key at the canvas and moves no visitor; sets the newsletter to Paid members,
-// which is ONE EDIT that brings the reminder back (R-167) and a section LEFT OUT for Free with the caption naming the
-// visitor (R-168); switches to Post keeping the visitor and counting Post's own record; and opens ⌘K under Paid to
-// find the Inline Row's card signed in. The marker is measured clear of the right-hand cluster at 1440 and 1280. Every
-// expectation is `apps/web/lib/view-as.ts`'s, never restated here. Step 8's axe runs once more with the marker
-// showing and the menu open.
+// so it is the GROUP that is measured against the bar and not the switcher alone. Step 90 reads S4a's trigger (R-170's
+// one name, the eye, 32px, no aria-label, "Anonymous" nowhere) and S4d's menu (the heading, exactly three rows and no
+// tier or comped row, the check on the current row only, 260 wide and centred under the trigger); repaints as Paid,
+// Free and back to the logged out user with Rail's actions and the Inline Row's slot read by their own classes and
+// `#editor-said` announcing each; walks R-169's coral dots 2 → 1 → none on exactly the rows still to look at, each dot
+// 8px in `coral-deep` with its word held for a screen reader, and NO marker in the bar; reads the
+// `project_template_prefs.member_states_viewed` row back — the column's first writer — and a reload that brings no dot
+// back; presses every printable key at the canvas and moves no visitor; sets the newsletter to Paid members, which is
+// ONE EDIT that brings the dots back (R-167) and a section LEFT OUT for Free with the caption naming the visitor
+// (R-168); switches to Post keeping the visitor and dotting Post's own record; and opens ⌘K under Paid to find the
+// Inline Row's card signed in. The trigger is measured clear of the right-hand cluster at 1440 and 1280, and a project
+// name at its limit clear of the group beside the widest canvas label (the name's `max-w` grew for View as). Every
+// expectation is `apps/web/lib/view-as.ts`'s, never restated here; step 37's caption reads the same module. Step 8's
+// axe runs once more with the menu open and its dots in it.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -187,6 +189,8 @@ async function main() {
   } else note('LOCAL RUN', `${APP}${PREFIX} — not a deployed result`)
 
   const { seed, TEMPLATES } = await import(require('node:url').pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
+  // Story 5.14 — View as's pure module: every visitor, name and sentence steps 37 and 90 expect is its own, never restated
+  const VA = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/view-as.ts')).href)
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
   const stale = all.filter((u) => /^editor-harness-[ab]-\d+@inflozo\.com$/.test(u.email || ''))
@@ -1798,13 +1802,13 @@ async function main() {
     await page.waitForTimeout(500)
     const gated = await controlsAside().evaluate((a) => a.textContent)
     check('step 37 — R-114: a named SELECT with A22\'s four values, not a pill row', /Everyone/.test(options.join(' ')) && /Logged out/.test(options.join(' ')) && /Free members/.test(options.join(' ')) && /Paid members/.test(options.join(' ')) && (await controlsAside().getByRole('radiogroup', { name: 'Member visibility' }).count()) === 0, options.join(' | ').replace(/\n/g, ' '))
-    check('step 37 — set to Paid members the section leaves the canvas, its Layers row stays, and the control says which visitor the canvas previews', (await rootCount()) === before30 - 1 && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length && /not signed in/.test(gated), `roots ${await rootCount()} of ${before30}`)
+    check('step 37 — set to Paid members the section leaves the canvas, its Layers row stays, and the control says which visitor the canvas previews', (await rootCount()) === before30 - 1 && (await page.locator('#editor-layers [data-layer-row]').count()) === B7.rows.length && gated.includes(VA.PREVIEWING.anonymous), `roots ${await rootCount()} of ${before30}`)
     await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
     await page.waitForTimeout(250)
     await page.getByRole('button', { name: 'Everyone', exact: true }).click()
     await page.waitForTimeout(500)
     check('step 37 — back to Everyone and the section returns', (await rootCount()) === before30)
-    // the canvas previews a visitor who is not signed in, so "Logged out" IS drawn and the second hint stays away
+    // the canvas previews the logged out user (View as's default), so "Logged out" IS drawn and the second hint stays away
     // (review, 2026-09-18: the hint used to claim the section was not drawn for every audience but Everyone)
     await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
     await page.waitForTimeout(250)
@@ -4027,15 +4031,19 @@ async function main() {
     await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}`, { method: 'DELETE' })
     await freshLoad()
 
-    /* ── step 90 — STORY 5.14, VIEW AS AND THE NUDGE THAT NAMES WHAT I HAVE NOT LOOKED AT (FR-D16, R-167, R-168) ─────
-       Every word, visitor and count below is DERIVED from `apps/web/lib/view-as.ts` — the one module the trigger, its
-       menu, its marker, R-124's caption and the live region all read — and never restated here (standing rule 4). The
-       two members-aware pilots are read by their own classes: Rail (`a1/1`, the site-wide header) and the Inline Row
-       (`a22/1`, on Home). On both of them Free and Paid draw the same thing, so a section whose Member visibility
-       separates the two is the only place they can be told apart before Epics 9 and 10 — which is what R-168's half
-       of this step uses. It opens on a CLEAN record: every `project_template_prefs` row of the project goes first. */
-    const VA = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/view-as.ts')).href)
+    /* ── step 90 — STORY 5.14, VIEW AS AND THE NUDGE THAT NAMES WHAT I HAVE NOT LOOKED AT (FR-D16, R-167 to R-170) ───
+       Every name, visitor and count below is DERIVED from `apps/web/lib/view-as.ts` — the one module the trigger, its
+       menu, its dots, R-124's caption and the live region all read — and never restated here (standing rule 4). The
+       owner amended S4d on this story's deployed build (2026-09-21): R-169 moved the reminder from a "2 not viewed"
+       marker beside the button to a coral dot on each unviewed row of the menu, and R-170 gave each visitor ONE name,
+       the menu row's title, so "Anonymous" is gone. The two members-aware pilots are read by their own classes: Rail
+       (`a1/1`, the site-wide header) and the Inline Row (`a22/1`, on Home). On both of them Free and Paid draw the same
+       thing, so a section whose Member visibility separates the two is the only place they can be told apart before
+       Epics 9 and 10 — which is what R-168's half of this step uses. It opens on a CLEAN record: every
+       `project_template_prefs` row of the project goes first. */
     const [ANON90, FREE90, PAID90] = VA.VISITORS
+    /** R-170: a visitor's one name, the menu row's title — the trigger prints it too */
+    const name90 = (v) => VA.ROWS[v].title
     /** S4a's eye (`S4 Editor.dc.html:33`), the trigger's first glyph */
     const EYE90 = 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z'
     const bar90 = () => page.evaluate(() => {
@@ -4043,33 +4051,41 @@ async function main() {
       const header = document.querySelector('header')
       const trig = document.getElementById('editor-view-as')
       const group = document.getElementById('editor-centre')
-      const marker = document.getElementById('editor-view-as-marker')
       const hb = box(header)
       const gb = box(group)
+      // the bar's own words: every leaf OUTSIDE a popover, so an open menu's rows are never read as the bar
+      const bare = [...(header?.querySelectorAll('*') ?? [])].filter((el) => el.children.length === 0 && !el.closest('[popover]')).map((el) => el.textContent).join(' ')
       return {
         value: trig?.querySelector('[data-current]')?.textContent ?? null,
-        // innerText leaves out the two words held `invisible` for the slot's width, as the accessible name does
+        // innerText leaves out the two names held `invisible` for the slot's width, as the accessible name does
         name: (trig?.innerText ?? '').replace(/\s+/g, ' ').trim(),
         label: trig?.getAttribute('aria-label') ?? null,
         describedBy: trig?.getAttribute('aria-describedby') ?? null,
         eye: trig?.querySelector('svg path')?.getAttribute('d') ?? null,
         groupOff: gb && hb ? (gb.left + gb.right) / 2 - (hb.left + hb.right) / 2 : null,
         template: box(document.getElementById('editor-template'))?.left ?? null,
-        marker: marker ? marker.textContent : null,
-        markerCss: marker && (({ height, borderRadius, backgroundColor, color, fontSize, fontWeight }) => ({ height, borderRadius, backgroundColor, color, fontSize, fontWeight }))(getComputedStyle(marker)),
+        // R-169: S4d's marker is not built — nothing sits beside the trigger, and no word of it is in the bar
+        marker: document.getElementById('editor-view-as-marker') !== null || /not viewed/i.test(bare),
+        anonymous: /anonymous/i.test(bare),
+        // the control for the two absences above: the same reading DOES find the bar's words
+        reads: bare.includes('View as') && bare.includes('Template'),
         trigBox: box(trig),
-        markerBox: box(marker),
         // S4a's right-hand cluster: the dice, the sun, the device track and Theme settings
         clusterBox: box(document.getElementById('editor-theme-settings')?.parentElement),
       }
     })
-    const menu90 = () => page.evaluate(() => {
+    /** R-169's dots, by visitor — read from the document whether or not the menu is open: a closed popover's rows are
+     *  still in it, only not drawn */
+    const dots90 = () => page.evaluate(() => [...document.querySelectorAll('#editor-view-as-menu [data-visitor]')]
+      .filter((r) => r.querySelector('[data-not-viewed]')).map((r) => r.dataset.visitor))
+    const menu90 = () => page.evaluate((word) => {
       const m = document.getElementById('editor-view-as-menu')
       if (!m || !m.matches(':popover-open')) return null
       const tb = document.getElementById('editor-view-as').getBoundingClientRect()
       const mb = m.getBoundingClientRect()
       const h = document.getElementById('editor-view-as-heading')
       const rows = [...m.querySelectorAll('[data-visitor]')]
+      const dotted = rows.filter((r) => r.querySelector('[data-not-viewed]'))
       return {
         heading: h?.textContent ?? null,
         upper: h ? getComputedStyle(h).textTransform : null,
@@ -4082,19 +4098,34 @@ async function main() {
         current: rows.filter((r) => r.getAttribute('aria-current') === 'true').map((r) => r.dataset.visitor),
         // S4d's check is the row's one polyline: the three glyphs are paths and circles
         checked: rows.filter((r) => r.querySelector('polyline')).map((r) => r.dataset.visitor),
-        chips: rows.filter((r) => r.querySelector('[data-not-viewed]')).map((r) => r.dataset.visitor),
-        chipWords: [...new Set(rows.map((r) => r.querySelector('[data-not-viewed]')?.textContent).filter(Boolean))],
+        dots: dotted.map((r) => r.dataset.visitor),
+        // the dot as DRAWN, and its word: in the row for a screen reader, and printed nowhere (a box of at most 1px)
+        dotLook: dotted.map((r) => {
+          const d = r.querySelector('[data-not-viewed]')
+          const b = d.getBoundingClientRect()
+          const w = [...r.querySelectorAll('span')].find((s) => s.textContent === word)
+          const wb = w?.getBoundingClientRect()
+          return { w: b.width, h: b.height, bg: getComputedStyle(d).backgroundColor, word: !!w && wb.width <= 1 && wb.height <= 1 }
+        }),
         // S4d draws the current row with NO tint
         tint: rows.filter((r) => r.getAttribute('aria-current') === 'true').map((r) => getComputedStyle(r).backgroundColor),
       }
-    })
+    }, VA.NOT_VIEWED)
     const openMenu90 = async () => {
-      await page.locator('#editor-view-as').click()
-      await page.waitForTimeout(350)
+      if ((await menu90()) === null) {
+        await page.locator('#editor-view-as').click()
+        await page.waitForTimeout(350)
+      }
       return menu90()
     }
+    const closeMenu90 = async () => {
+      if ((await menu90()) !== null) {
+        await page.keyboard.press('Escape')
+        await page.waitForTimeout(200)
+      }
+    }
     const pick90 = async (v) => {
-      if ((await menu90()) === null) await openMenu90()
+      await openMenu90()
       await page.locator(`#editor-view-as-menu [data-visitor="${v}"]`).click()
       await page.waitForTimeout(600)
     }
@@ -4107,104 +4138,131 @@ async function main() {
     const signedIn90 = (m) => m.rail.includes('Account') && !m.rail.includes('Sign in') && m.form === 0 && m.signed.includes('Signed in')
     const signedOut90 = (m) => m.rail.includes('Sign in') && !m.rail.includes('Account') && m.form > 0 && m.signed.length === 0
     const meets90 = (a, b) => !!a && !!b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+    const same90 = (a, b) => JSON.stringify(a) === JSON.stringify(b)
     const storedViewed90 = async (key) => (await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}&template_key=eq.${key}&select=member_states_viewed,user_id`)).body ?? []
 
     await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}`, { method: 'DELETE' })
     await freshLoad()
     await page.mouse.move(120, 400)
 
-    // ── opening: S4a's trigger, the centred group, and S4d's marker ──
+    // ── opening: S4a's trigger, the centred group, and nothing beside it ──
     const open90 = await bar90()
-    check('step 90 — S4a: the trigger reads "View as" and "Anonymous" with the eye, at 32px, named by its own words (no aria-label, WCAG 2.5.3)',
-      open90.value === VA.VALUE[ANON90] && open90.name === `${VA.LABEL} ${VA.VALUE[ANON90]}` && open90.eye === EYE90 &&
-      open90.trigBox?.height === 32 && open90.label === null, JSON.stringify({ value: open90.value, name: open90.name, eye: open90.eye === EYE90, h: open90.trigBox?.height, label: open90.label }))
-    check('step 90 — S4d: a first visit records Anonymous, so the marker reads "2 not viewed", 2px off the trigger, centred on it, and the trigger is described by it',
-      open90.marker === VA.markerWords(VA.unviewed([ANON90]).length) && open90.describedBy === 'editor-view-as-marker' &&
-      Math.abs(open90.markerBox.left - open90.trigBox.right - 2) < 1 &&
-      Math.abs((open90.markerBox.top + open90.markerBox.bottom) / 2 - (open90.trigBox.top + open90.trigBox.bottom) / 2) < 1 &&
-      open90.markerCss.height === '20px' && open90.markerCss.borderRadius === '24px' && open90.markerCss.backgroundColor === TINT &&
-      open90.markerCss.color === 'rgb(194, 56, 31)' && open90.markerCss.fontSize === '10.5px' && open90.markerCss.fontWeight === '600',
-      JSON.stringify({ marker: open90.marker, css: open90.markerCss, gap: open90.markerBox && open90.markerBox.left - open90.trigBox.right }))
-    const offsets90 = [['Anonymous, with the marker', open90.groupOff]]
-    check('step 90 — the canvas is the signed-out render: Rail offers Sign in and no Account, and the Inline Row draws its form', signedOut90(await members90()), JSON.stringify(await members90()))
+    check('step 90 — S4a: the trigger reads "View as" and R-170\'s "Logged out user" with the eye, at 32px, named by its own words (no aria-label, WCAG 2.5.3), and "Anonymous" is nowhere in the bar',
+      open90.value === name90(ANON90) && open90.name === `${VA.LABEL} ${name90(ANON90)}` && open90.eye === EYE90 &&
+      open90.trigBox?.height === 32 && open90.label === null && open90.reads && open90.anonymous === false,
+      JSON.stringify({ value: open90.value, name: open90.name, eye: open90.eye === EYE90, h: open90.trigBox?.height, label: open90.label, reads: open90.reads, anonymous: open90.anonymous }))
+    check('step 90 — R-169: no marker beside the trigger and no "not viewed" anywhere in the bar, the trigger described by nothing, and the canvas the signed-out render (Rail offers Sign in, the Inline Row its form)',
+      open90.reads && open90.marker === false && open90.describedBy === null && signedOut90(await members90()),
+      JSON.stringify({ reads: open90.reads, marker: open90.marker, describedBy: open90.describedBy, canvas: await members90() }))
+    const offsets90 = [[name90(ANON90), open90.groupOff]]
 
-    // ── the marker hangs clear of the right-hand cluster, at 1440 and at 1280 ──
+    // ── the group stays centred and the trigger clear of the right-hand cluster, at 1440 and at 1280 ──
     const clear90 = []
     for (const width of [1440, 1280]) {
       await page.setViewportSize({ width, height: 900 })
       await page.waitForTimeout(400)
       const b = await bar90()
-      clear90.push({ width, meets: meets90(b.markerBox, b.clusterBox), room: b.markerBox && b.clusterBox && Math.round(b.clusterBox.left - b.markerBox.right), groupOff: b.groupOff })
+      clear90.push({ width, meets: meets90(b.trigBox, b.clusterBox), room: b.trigBox && b.clusterBox && Math.round(b.clusterBox.left - b.trigBox.right), groupOff: b.groupOff })
     }
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.waitForTimeout(400)
-    check('step 90 — at 1440 and 1280 the marker\'s box never meets the right-hand cluster\'s, and the group stays centred at both',
+    check('step 90 — at 1440 and 1280 the group stays centred and the trigger never meets the right-hand cluster',
       clear90.every((c) => c.meets === false && c.room > 0 && Math.abs(c.groupOff) < 2), JSON.stringify(clear90))
 
-    // ── S4d's menu ──
+    // ── and the LEFT cluster never runs under the group: a project name at its limit, beside the widest canvas label ──
+    const labels90 = Object.values(CANVASES).map((c) => c.label)
+    const room90 = []
+    for (const width of [1440, 1280]) {
+      await page.setViewportSize({ width, height: 900 })
+      await page.waitForTimeout(400)
+      room90.push({ width, ...(await page.evaluate((labels) => {
+        // React's OWN text nodes are borrowed and given back, so nothing it renders afterwards is left detached
+        const nameText = document.querySelector('header > span.truncate')?.firstChild
+        const labelText = document.querySelector('#editor-template span.font-semibold')?.firstChild
+        if (!nameText || !labelText) return { room: null }
+        const [name, label] = [nameText.nodeValue, labelText.nodeValue]
+        nameText.nodeValue = 'An exceptionally long project name that runs far past any sensible length for a publication'
+        const leftEnds = document.getElementById('editor-history').getBoundingClientRect().right
+        // the widest label is whichever pushes the centred group furthest left — measured, never named here
+        const widest = labels.map((l) => {
+          labelText.nodeValue = l
+          return { l, left: document.getElementById('editor-centre').getBoundingClientRect().left }
+        }).sort((a, b) => a.left - b.left)[0]
+        nameText.nodeValue = name
+        labelText.nodeValue = label
+        return { widest: widest.l, room: Math.round(widest.left - leftEnds) }
+      }, labels90)) })
+    }
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.waitForTimeout(400)
+    check('step 90 — a project name at its limit still ends clear of the centred group beside the widest canvas label, at 1440 and 1280',
+      room90.every((r) => r.room !== null && r.room >= 8), JSON.stringify(room90))
+
+    // ── S4d's menu, and R-169's dots in it ──
     const shown90 = await openMenu90()
-    check('step 90 — S4d: "Preview as" (drawn uppercase), then exactly the three visitors in order — no tier row and no comped row (B9: "only")',
+    check('step 90 — S4d: "Preview as" (drawn uppercase), then exactly the three visitors in order, each with its one name and caption — no tier row and no comped row (B9: "only")',
       shown90 !== null && shown90.heading === VA.HEADING && shown90.upper === 'uppercase' &&
-      JSON.stringify(shown90.visitors) === JSON.stringify(VA.VISITORS) &&
-      JSON.stringify(shown90.titles) === JSON.stringify(VA.VISITORS.map((v) => VA.ROWS[v].title)) &&
+      same90(shown90.visitors, VA.VISITORS) && same90(shown90.titles, VA.VISITORS.map(name90)) &&
       VA.VISITORS.every((v, n) => shown90.words[n].includes(VA.ROWS[v].caption)) && !shown90.words.some((w) => /comped|tier|supporter|patron/i.test(w)),
       JSON.stringify(shown90))
     check('step 90 — the check is on the current row only, with no tint; the menu is 260 wide and centred under the trigger (S4d :399)',
-      shown90 !== null && JSON.stringify(shown90.current) === JSON.stringify([ANON90]) && JSON.stringify(shown90.checked) === JSON.stringify([ANON90]) &&
+      shown90 !== null && same90(shown90.current, [ANON90]) && same90(shown90.checked, [ANON90]) &&
       shown90.tint.every((t) => t === 'rgba(0, 0, 0, 0)') && shown90.width === 260 && Math.abs(shown90.centreOff) < 1 && shown90.below,
       JSON.stringify(shown90 && { current: shown90.current, checked: shown90.checked, tint: shown90.tint, width: shown90.width, centreOff: shown90.centreOff }))
-    check('step 90 — the menu NAMES what the marker counts: each unviewed row, and only those, carries "Not viewed"',
-      shown90 !== null && JSON.stringify(shown90.chips) === JSON.stringify(VA.unviewed([ANON90])) && JSON.stringify(shown90.chipWords) === JSON.stringify([VA.NOT_VIEWED]),
-      JSON.stringify(shown90 && { chips: shown90.chips, words: shown90.chipWords }))
+    check('step 90 — R-169: each unviewed row, and only those, carries ONE coral dot — 8px, coral-deep — with its word "Not viewed" in the row for a screen reader and printed nowhere',
+      shown90 !== null && same90(shown90.dots, VA.unviewed([ANON90])) &&
+      shown90.dotLook.every((d) => d.w === 8 && d.h === 8 && d.bg === 'rgb(232, 75, 52)' && d.word === true),
+      JSON.stringify(shown90 && { dots: shown90.dots, look: shown90.dotLook }))
 
-    // ── Paid: repainted as a paying member, announced, and the marker counts down ──
+    // ── Paid: repainted as a paid member, announced, and one dot left ──
     await pick90(PAID90)
     const paid90 = await bar90()
     const paidCanvas90 = await members90()
     check('step 90 — Paid: Rail\'s Sign in and Subscribe become Account, the Inline Row\'s form becomes "Signed in", the trigger names the visitor, and #editor-said announces it',
-      signedIn90(paidCanvas90) && paid90.value === VA.VALUE[PAID90] && (await saidNow59()) === VA.VIEW_AS_SAID(PAID90),
+      signedIn90(paidCanvas90) && paid90.value === name90(PAID90) && (await saidNow59()) === VA.VIEW_AS_SAID(PAID90),
       JSON.stringify({ canvas: paidCanvas90, value: paid90.value, said: await saidNow59() }))
-    offsets90.push(['Paid', paid90.groupOff])
-    check('step 90 — the marker reads "1 not viewed" and the menu names exactly the one visitor still to look at',
-      paid90.marker === VA.markerWords(1) && JSON.stringify((await openMenu90())?.chips) === JSON.stringify(VA.unviewed([ANON90, PAID90])),
-      JSON.stringify({ marker: paid90.marker, chips: (await menu90())?.chips }))
+    offsets90.push([name90(PAID90), paid90.groupOff])
+    check('step 90 — one dot is left, on exactly the one visitor still to look at', same90((await openMenu90())?.dots, VA.unviewed([ANON90, PAID90])),
+      JSON.stringify((await menu90())?.dots))
 
-    // ── Free: the same as Paid on these pilots, and the marker goes ──
+    // ── Free: the same as Paid on these pilots, and the last dot goes ──
     await pick90(FREE90)
     const free90 = await bar90()
-    check('step 90 — Free: the same signed-in render (both pilots draw Free and Paid alike), announced, and the marker is ABSENT (UX-DR3) with nothing described',
-      signedIn90(await members90()) && free90.value === VA.VALUE[FREE90] && (await saidNow59()) === VA.VIEW_AS_SAID(FREE90) &&
-      free90.marker === null && free90.describedBy === null, JSON.stringify({ value: free90.value, marker: free90.marker, said: await saidNow59() }))
-    offsets90.push(['Free, without the marker', free90.groupOff])
+    check('step 90 — Free: the same signed-in render (both pilots draw Free and Paid alike), and announced',
+      signedIn90(await members90()) && free90.value === name90(FREE90) && (await saidNow59()) === VA.VIEW_AS_SAID(FREE90),
+      JSON.stringify({ value: free90.value, said: await saidNow59() }))
+    offsets90.push([name90(FREE90), free90.groupOff])
     const allSeen90 = await openMenu90()
-    check('step 90 — with all three looked at, no row of the menu says "Not viewed"', allSeen90 !== null && allSeen90.chips.length === 0, JSON.stringify(allSeen90 && allSeen90.chips))
+    check('step 90 — with all three looked at, no row of the menu carries a dot', allSeen90 !== null && allSeen90.dots.length === 0, JSON.stringify(allSeen90 && allSeen90.dots))
 
-    // ── Anonymous: back again ──
+    // ── the logged out user: back again ──
     await pick90(ANON90)
     const anon90 = await bar90()
-    check('step 90 — Anonymous: back to the signed-out render', signedOut90(await members90()) && anon90.value === VA.VALUE[ANON90], JSON.stringify(await members90()))
-    offsets90.push(['Anonymous, without the marker', anon90.groupOff])
-    check('step 90 — the centred group is centred to within 2px in all three visitors, with and without the marker, and Template never moved',
+    check('step 90 — back to the logged out user: the signed-out render', signedOut90(await members90()) && anon90.value === name90(ANON90), JSON.stringify(await members90()))
+    offsets90.push([`${name90(ANON90)}, again`, anon90.groupOff])
+    check('step 90 — the centred group is centred to within 2px in all three visitors, and Template never moved',
       offsets90.every(([, off]) => off !== null && Math.abs(off) < 2) && [paid90, free90, anon90].every((b) => b.template === open90.template),
       JSON.stringify({ offsets: offsets90, template: [open90, paid90, free90, anon90].map((b) => b.template) }))
 
-    // ── the record is REAL: the stored row holds all three, and a reload keeps the marker away ──
+    // ── the record is REAL: the stored row holds all three, and a reload keeps every dot away ──
     let stored90 = []
     for (let i = 0; i < 20; i++) {
       stored90 = await storedViewed90('home')
-      if (JSON.stringify(stored90[0]?.member_states_viewed) === JSON.stringify(VA.VISITORS)) break
+      if (same90(stored90[0]?.member_states_viewed, VA.VISITORS)) break
       await page.waitForTimeout(500)
     }
     check('step 90 — `project_template_prefs.member_states_viewed` holds all three for Home, against this user — the column\'s first writer',
-      stored90.length === 1 && JSON.stringify(stored90[0].member_states_viewed) === JSON.stringify(VA.VISITORS) && stored90[0].user_id === ids[0],
+      stored90.length === 1 && same90(stored90[0].member_states_viewed, VA.VISITORS) && stored90[0].user_id === ids[0],
       JSON.stringify(stored90))
     await pick90(PAID90)
     await page.reload({ waitUntil: 'load' })
     await painted('home')
     await page.waitForTimeout(600)
     const reloaded90 = await bar90()
-    check('step 90 — a reload puts View as back to Anonymous (a mode, never stored), and the marker stays ABSENT: the record came back from the database',
-      reloaded90.value === VA.VALUE[ANON90] && reloaded90.marker === null && signedOut90(await members90()), JSON.stringify({ value: reloaded90.value, marker: reloaded90.marker }))
+    const reloadedDots90 = await dots90()
+    check('step 90 — a reload puts View as back to the logged out user (a mode, never stored), and the menu carries no dot: the record came back from the database',
+      reloaded90.value === name90(ANON90) && reloadedDots90.length === 0 && reloaded90.marker === false && signedOut90(await members90()),
+      JSON.stringify({ value: reloaded90.value, dots: reloadedDots90 }))
 
     // ── no key binds it (FR-D11): every printable character and the named keys, pressed on the canvas ──
     const keys90 = [...[...Array(94).keys()].map((n) => String.fromCharCode(33 + n)), 'Space', 'Enter', 'Delete', 'Backspace']
@@ -4214,14 +4272,14 @@ async function main() {
       await page.keyboard.press(key)
       if ((await page.locator('dialog[open]').count()) > 0) await page.keyboard.press('Escape')
       const now = await bar90()
-      if (now.value !== VA.VALUE[ANON90] || /The canvas is previewing/.test(await saidNow59())) moved90.push(key)
+      if (now.value !== name90(ANON90) || /The canvas is previewing/.test(await saidNow59())) moved90.push(key)
     }
     check('step 90 — no key changes the visitor: every printable character and Space, Enter, Delete and Backspace leave View as where it was', moved90.length === 0 && (await menu90()) === null, JSON.stringify(moved90))
     // the keys moved the mode, the device and the folds, which are session state: a reload puts them back
     await page.reload({ waitUntil: 'load' })
     await painted('home')
     await page.waitForTimeout(600)
-    check('step 90 — and the record still holds: nothing the keys did was a change to the page', (await bar90()).marker === null, JSON.stringify((await bar90()).marker))
+    check('step 90 — and the record still holds: nothing the keys did was a change to the page, so no dot came back', (await dots90()).length === 0, JSON.stringify(await dots90()))
 
     // ── R-168 and R-167 together: a section set to Paid members, and the edit that set it ──
     const roots90 = await rootCount()
@@ -4232,39 +4290,37 @@ async function main() {
     await page.waitForTimeout(250)
     await page.getByRole('button', { name: 'Paid members', exact: true }).click()
     await page.waitForTimeout(600)
-    const edited90 = await bar90()
-    check('step 90 — R-167: one edit brings the reminder back — "2 not viewed", the page now viewed only as the visitor on screen',
-      edited90.marker === VA.markerWords(2) && JSON.stringify((await openMenu90())?.chips) === JSON.stringify(VA.unviewed([ANON90])),
-      JSON.stringify({ marker: edited90.marker, chips: (await menu90())?.chips }))
-    await page.keyboard.press('Escape')
-    await page.waitForTimeout(200)
+    check('step 90 — R-167: one edit brings the reminder back — the other two rows are dotted again, the page now viewed only as the visitor on screen',
+      same90((await openMenu90())?.dots, VA.unviewed([ANON90])), JSON.stringify((await menu90())?.dots))
+    await closeMenu90()
     const caption90 = async () => ((await controlsAside().innerText()).match(/The canvas is previewing[^\n]*/) ?? [null])[0]
     const layerRows90 = await page.locator('#editor-layers [data-layer-row]').count()
     await pick90(FREE90)
     const freeGated90 = { roots: await rootCount(), caption: await caption90(), rows: await page.locator('#editor-layers [data-layer-row]').count() }
-    check('step 90 — R-168: set to Paid members, the section is LEFT OUT for a free member, its Layers row stays, and the panel\'s caption names "a free member"',
+    check('step 90 — R-168: set to Paid members, the section is LEFT OUT for a free member, its Layers row stays, and the panel\'s caption names the visitor in its one name',
       freeGated90.roots === roots90 - 1 && freeGated90.rows === layerRows90 && (freeGated90.caption ?? '').includes(VA.PREVIEWING[FREE90]),
       JSON.stringify({ ...freeGated90, before: roots90 }))
     await pick90(PAID90)
     const paidGated90 = { roots: await rootCount(), caption: await caption90() }
-    check('step 90 — and for a paying member it is drawn, with no caption', paidGated90.roots === roots90 && paidGated90.caption === null, JSON.stringify(paidGated90))
+    check('step 90 — and for a paid member it is drawn, with no caption', paidGated90.roots === roots90 && paidGated90.caption === null, JSON.stringify(paidGated90))
     await controlsAside().getByRole('button', { name: 'Member visibility', exact: false }).first().click()
     await page.waitForTimeout(250)
     await page.getByRole('button', { name: 'Everyone', exact: true }).click()
     await page.waitForTimeout(600)
 
-    // ── a canvas switch keeps the visitor, and the marker counts THAT canvas's own record ──
+    // ── a canvas switch keeps the visitor, and the menu dots THAT canvas's own record ──
     await page.locator('#editor-template').click()
     await page.waitForTimeout(300)
     await page.locator('#editor-template-menu [data-canvas="post"]').click()
     await painted('post')
     await page.waitForTimeout(800)
     const post90 = await bar90()
-    check('step 90 — Home → Post: View as is unchanged, Post records the visitor, and the marker counts Post\'s own record ("2 not viewed")',
-      post90.value === VA.VALUE[PAID90] && post90.marker === VA.markerWords(2) && (await members90()).rail.includes('Account'),
-      JSON.stringify({ value: post90.value, marker: post90.marker, rail: (await members90()).rail }))
+    const postDots90 = await dots90()
+    check('step 90 — Home → Post: View as is unchanged, Post records the visitor, and the menu dots Post\'s own record',
+      post90.value === name90(PAID90) && same90(postDots90, VA.unviewed([PAID90])) && (await members90()).rail.includes('Account'),
+      JSON.stringify({ value: post90.value, dots: postDots90, rail: (await members90()).rail }))
 
-    // ── ⌘K under Paid: the Inline Row's card is drawn as a paying member sees it ──
+    // ── ⌘K under Paid: the Inline Row's card is drawn as a paid member sees it ──
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press(`${CMD58}+k`)
     await page.waitForTimeout(1200)
@@ -4592,18 +4648,17 @@ async function main() {
     check('step 8 — axe: zero violations with R-147\'s shortcuts card open', cardAxe.length === 0 && (await axePage.locator('dialog[open][data-shortcuts-sheet]').count()) === 1, cardAxe.join('; '))
     await axePage.keyboard.press('Escape')
     await axePage.waitForTimeout(300)
-    // Story 5.14's own state: S4d's marker beside View as, and its menu open with its "Not viewed" chips
+    // Story 5.14's own state: S4d's menu open, with R-169's not-viewed dots and their screen-reader words in it
     await axePage.locator('#editor-view-as').focus()
     await axePage.keyboard.press('Enter')
     await axePage.waitForTimeout(400)
     const viewAsAxe = await axeRun()
     const viewAsShown = await axePage.evaluate(() => ({
-      marker: document.getElementById('editor-view-as-marker')?.textContent ?? null,
       open: document.getElementById('editor-view-as-menu')?.matches(':popover-open') === true,
-      chips: document.querySelectorAll('#editor-view-as-menu [data-not-viewed]').length,
+      dots: document.querySelectorAll('#editor-view-as-menu [data-not-viewed]').length,
     }))
-    check('step 8 — axe: zero violations with View as\'s marker showing and S4d\'s menu open, its "Not viewed" chips in it',
-      viewAsAxe.length === 0 && viewAsShown.marker !== null && viewAsShown.open && viewAsShown.chips > 0, `${JSON.stringify(viewAsShown)} · ${viewAsAxe.join('; ')}`)
+    check('step 8 — axe: zero violations with S4d\'s menu open and its not-viewed dots in it (R-169)',
+      viewAsAxe.length === 0 && viewAsShown.open && viewAsShown.dots > 0, `${JSON.stringify(viewAsShown)} · ${viewAsAxe.join('; ')}`)
     await axePage.keyboard.press('Escape')
     await axePage.waitForTimeout(300)
 

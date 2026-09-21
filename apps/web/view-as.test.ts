@@ -3,11 +3,11 @@ import assert from 'node:assert/strict'
 import { MEMBER_STATES } from '@inflozo/library'
 import { SITE } from './lib/editor.ts'
 import {
-  HEADING, LABEL, NOT_VIEWED, PREVIEWING, ROWS, VALUE, VIEW_AS_SAID, VISITORS, afterChange, markerWords, readViewed, seen,
-  unviewed, type Viewed, type Visitor,
+  HEADING, LABEL, NOT_VIEWED, PREVIEWING, ROWS, VIEW_AS_SAID, VISITORS, afterChange, readViewed, seen, unviewed,
+  type Viewed, type Visitor,
 } from './lib/view-as.ts'
 
-/* Story 5.14 — View as and its not-viewed nudge, over the one pure module the toggle, its menu, its marker, the panel's
+/* Story 5.14 — View as and its not-viewed nudge, over the one pure module the toggle, its menu, its dots, the panel's
    caption and the live region all read (`lib/view-as.ts`). Every row of the spec's I/O matrix that is not a pixel is
    here; the pixels are the deployed walk's (`run-verify-editor.cjs` step 90) and the keyboard's `pnpm keyboard`'s.
 
@@ -24,41 +24,38 @@ test('the visitors are the library\'s member states without the audience "everyo
   for (const status of ['comped', 'gift']) assert.ok(!(VISITORS as readonly string[]).includes(status), `${status} is not a visitor of its own`)
 })
 
-test('every visitor has its words — the trigger value, S4d\'s row, the caption\'s phrase — and the frame\'s wording', () => {
-  for (const v of VISITORS) {
-    assert.ok(VALUE[v].length > 0, `${v} has no trigger value`)
-    assert.ok(ROWS[v].title.length > 0 && ROWS[v].caption.length > 0, `${v} has no menu row`)
-    assert.ok(PREVIEWING[v].length > 0, `${v} has no caption phrase`)
-    assert.equal(VIEW_AS_SAID(v), `The canvas is previewing ${PREVIEWING[v]}.`)
-  }
-  // S4a and S4d, verbatim (R-74): the trigger says Anonymous, the menu row says Logged out user
+test('R-170: each visitor has ONE name — S4d\'s row title — and every sentence that names it is derived from it', () => {
+  // S4d's words, verbatim (R-74), and "Anonymous" is retired (R-170: "rename Anonymous to Logged out user")
   assert.equal(LABEL, 'View as')
   assert.equal(HEADING, 'Preview as')
-  assert.equal(NOT_VIEWED, 'Not viewed')
-  assert.deepEqual(VISITORS.map((v) => VALUE[v]), ['Anonymous', 'Free member', 'Paid member'])
   assert.deepEqual(VISITORS.map((v) => [ROWS[v].title, ROWS[v].caption]), [
     ['Logged out user', 'Not signed in'],
     ['Free member', 'Signed in, no subscription'],
     ['Paid member', 'Sees members-only content'],
   ])
-  // R-124's caption keeps its own words, now read from here (`sidebar.tsx` imports this one list)
-  assert.equal(PREVIEWING[PAID], 'a paying member')
-  assert.equal(PREVIEWING[FREE], 'a free member')
+  for (const v of VISITORS) {
+    // R-124's caption and the live region say the SAME name the menu and the trigger print
+    assert.equal(PREVIEWING[v], `a ${ROWS[v].title.toLowerCase()}`)
+    assert.equal(VIEW_AS_SAID(v), `The canvas is previewing ${PREVIEWING[v]}.`)
+    assert.ok(!/anonymous/i.test(ROWS[v].title + PREVIEWING[v] + VIEW_AS_SAID(v)), `${v} is named "Anonymous" somewhere`)
+  }
+  assert.equal(PREVIEWING[ANON], 'a logged out user')
+  assert.equal(PREVIEWING[PAID], 'a paid member')
+  // R-169: the dot's word, which is in the row for screen readers only
+  assert.equal(NOT_VIEWED, 'Not viewed')
 })
 
-test('matrix "Opening": a first visit records Anonymous and the marker reads "2 not viewed"', () => {
+test('matrix "Opening": a first visit records the logged out user, and the menu dots the other two', () => {
   const record = seen([], ANON)
   assert.deepEqual(record, [ANON])
-  assert.equal(markerWords(unviewed(record).length), '2 not viewed')
   assert.deepEqual(unviewed(record), [FREE, PAID])
 })
 
-test('matrix "Choosing Paid": the record gains the visitor, in canonical order, and the marker counts down', () => {
+test('matrix "Choosing Paid": the record gains the visitor, in canonical order, and one row keeps its dot', () => {
   const opened = seen([], ANON)
   const paid = seen(opened, PAID)
   assert.deepEqual(paid, [ANON, PAID])
-  assert.equal(markerWords(unviewed(paid).length), '1 not viewed')
-  assert.deepEqual(unviewed(paid), [FREE], 'the menu names the one still to look at')
+  assert.deepEqual(unviewed(paid), [FREE], 'the menu dots the one still to look at')
   // canonical order whatever order they were looked at in
   assert.deepEqual(seen(seen([], PAID), ANON), [ANON, PAID])
 })
@@ -71,17 +68,9 @@ test('seen keeps THE SAME ARRAY when nothing changes, so the caller writes nothi
   assert.deepEqual(record, [ANON, FREE], 'and it never mutates the record it was handed')
 })
 
-test('matrix "All three viewed": nothing unviewed, and the marker is ABSENT — null, never "0 not viewed"', () => {
+test('matrix "All three viewed": nothing unviewed, so no row of the menu carries a dot', () => {
   const all = VISITORS.reduce<readonly Visitor[]>((r, v) => seen(r, v), [])
   assert.deepEqual(unviewed(all), [])
-  assert.equal(markerWords(0), null)
-  assert.equal(markerWords(unviewed(all).length), null)
-})
-
-test('the marker\'s words at 2, 1 and 0', () => {
-  assert.equal(markerWords(2), '2 not viewed')
-  assert.equal(markerWords(1), '1 not viewed')
-  assert.equal(markerWords(0), null)
 })
 
 test('matrix "Reload" and "Stored junk": the record comes back in canonical order, junk dropped, each visitor once', () => {
@@ -94,8 +83,8 @@ test('matrix "Reload" and "Stored junk": the record comes back in canonical orde
 test('matrix "A change" (R-167): an edit to the canvas on screen leaves it viewed only as the visitor on screen', () => {
   const records: Viewed = { home: [ANON, FREE, PAID], post: [ANON, FREE] }
   assert.deepEqual(afterChange(records, 'home', 'home', FREE), { home: [FREE] })
-  // the marker then reads "2 not viewed" again
-  assert.equal(markerWords(unviewed(afterChange(records, 'home', 'home', FREE).home!).length), '2 not viewed')
+  // the menu then dots the other two again
+  assert.deepEqual(unviewed(afterChange(records, 'home', 'home', FREE).home!), [ANON, PAID])
   // only the canvas that changed is returned: Post is untouched
   assert.equal('post' in afterChange(records, 'home', 'home', FREE), false)
   // a canvas already at [visitor] does not change, so nothing is written
@@ -127,6 +116,6 @@ test('matrix "Canvas switch": each canvas counts its own record', () => {
   const records: Viewed = { home: [ANON, FREE, PAID] }
   const post = seen(records.post ?? [], PAID)
   assert.deepEqual(post, [PAID])
-  assert.equal(markerWords(unviewed(post).length), '2 not viewed')
-  assert.equal(markerWords(unviewed(records.home ?? []).length), null)
+  assert.deepEqual(unviewed(post), [ANON, FREE], 'Post dots its own two')
+  assert.deepEqual(unviewed(records.home ?? []), [], 'Home, looked at all three ways, dots nothing')
 })

@@ -98,7 +98,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-D13** Variant Shuffle: cycles a section through its category's designs in place, carrying content and control values under the carry/park/default rule, restricted to designs sharing the instance's binding context and compile target.
 - **FR-D14** Canvas is site-width, fit-to-viewport, no zoom in v1, no cap on sections per template; holds NFR-1 on the 40-section fixture, degrading gracefully beyond it.
 - **FR-D15** Content-source pill naming the site or sample content, and the preview subject.
-- **FR-D16** Member-state preview — Anonymous / Free member / Paid member — with the proven `@member` field set, the shimmed announcement strip following visibility, gated bodies always rendering the fixture, and a nudge naming the states not yet looked at.
+- **FR-D16** Member-state preview — Logged out user / Free member / Paid member — with the proven `@member` field set, the shimmed announcement strip following visibility, gated bodies always rendering the fixture, and a nudge naming the states not yet looked at.
 - **FR-D17** Site Remix: one action re-rolls pack and/or every placed design with all content preserved. Never-lose-content covers **control values** as well as content props, and the gate is mechanical.
 - **FR-D18** Edit lock: one editing context per project across tabs, browsers and devices, with the request/no-response/take-over protocol and the unsynced-edit count stated in edits. Deploy and ZIP export require the lock.
 - **FR-D19** Design navigation — the library's primary control: `[` `]`, hover arrows, and the sidebar Design picker showing position. Switching obeys **carry, park, default**.
@@ -2009,7 +2009,8 @@ So that I never ship a logged-in state nobody has seen.
 
 **Given** the top-bar eye — **View as**, beside Template in S4a's centred group
 **When** I switch member state
-**Then** the canvas renders as **Anonymous / Free member / Paid member** — **three states** — and Appendix B's
+**Then** the canvas renders as **Logged out user / Free member / Paid member** — **three states**, each with **one
+name** on the button, in the menu, in the panel and in the announcement (**R-170**, owner, 2026-09-21) — and Appendix B's
 fourth status `comped` **previews as Paid**, differing in billing rather than access; so does Ghost 6's `gift`,
 because Ghost's own `paid` is `status !== 'free'` (read in source on both majors)
 **And** members-aware sections re-render accordingly — nav auth links and subscribe CTAs, through the one render
@@ -2018,7 +2019,7 @@ door every canvas surface paints through, the Section Picker's cards and the Des
 sees it** — **R-168** (owner, 2026-09-21): never ghosted, labelled or outlined on the canvas; its Layers row stays
 and the panel says which visitor is being previewed
 **And** **the shimmed announcement strip follows the same visitor** (`announcement_visibility`, so a bar set to
-paid members only is absent while previewing as Anonymous) — built with the strip in **Story 5.21**, whose criteria
+paid members only is absent while previewing as a logged out user) — built with the strip in **Story 5.21**, whose criteria
 already honour the toggle — and **the paywall** is Story 5.20's surface
 **And** the member object is Ghost's own — `uuid · email · name · firstname · avatar_image · subscriptions · paid ·
 status`, `null` when logged out (R-4) — and **none of its identifying fields is ever printed** (R-28, AD-38): the
@@ -2030,16 +2031,17 @@ with sample text" indicator, which **lands with Story 5.20**, the first canvas t
 with `access` worked out per visitor (DW-128); the fidelity layers exclude gated-body equivalence (NFR-6(c3),
 Story 7.34)
 **And** the editor **tracks which member states each canvas has been viewed in** (`project_template_prefs`, AD-22)
-**and surfaces the unchecked combinations** — S4d's quiet "N not viewed" marker beside the toggle, each unviewed
-state named in its menu — and **any change to the page brings the reminder back** — **R-167** (owner,
+**and surfaces the unchecked combinations** — a **coral dot on each unviewed state in the toggle's own menu**, and
+nothing beside the toggle (**R-169**, owner, 2026-09-21, replacing S4d's "N not viewed" marker) — and **any change
+to the page brings the reminder back** — **R-167** (owner,
 2026-09-21): a canvas edit, undo and redo included, leaves that canvas viewed only as the visitor on screen, and a
 header or footer edit does the same and empties every other canvas's record — which **never blocks**; the same
 record is listed again before deploy, in **Story 7.18's Pre-flight step**, and is what makes the owner's manual
 member-state pass at each category gate reliable rather than dependent on memory
-**And** the toggle matches S4a and S4d as corrected, with B9.
+**And** the toggle matches S4a and S4d as corrected, with B9, as R-169 and R-170 amend them.
 
 **FRs:** FR-D16. · **Frame:** `S4 Editor.dc.html` S4a · S4d · `B Missing Surfaces.dc.html` B9. · **Rulings:** R-167,
-R-168. · **Owner test:** yes.
+R-168, R-169, R-170. · **Owner test:** yes.
 
 ### Story 5.15: Behaviours off while designing, and the Preview toggle
 

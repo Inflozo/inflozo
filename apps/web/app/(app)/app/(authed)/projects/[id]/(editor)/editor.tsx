@@ -175,15 +175,16 @@ import type { EditorData } from './read'
    available). NO ZOOM CONTROL and no per-breakpoint editing (UX-DR17, UX-DR20, FR-D8): the fit is derived and only
    reported. `1` `2` `3` are Story 5.9's whole keyboard map, and D8b's collapse into `⋯` below 1440 is Story 5.22's.
 
-   VIEW AS (Story 5.14 — S4a's eye, S4d's menu and marker, B9, FR-D16, R-167, R-168). A MODE LIKE THE DEVICE: session
-   state, back to Anonymous on reload, never in the URL (`EXPERIENCE.md:230`), and it sits in S4a's CENTRED GROUP beside
-   Template, where every drawn bar puts it. A CHOICE IS A REPAINT, never a re-stamp: Story 4.10's `gateMembers` REMOVES
-   an element gated to another visitor, so the visitor reaches `renderSection`'s one `member` option and the render
-   decides the rest — the canvas, R-124's caption, the picker's cards and the ring's tiles all through that one door. A
-   section whose Member visibility excludes the visitor is LEFT OUT of the page, exactly as that visitor sees it (R-168),
-   with its Layers row kept and the panel naming who is being previewed. The per-canvas "looked at" record is
+   VIEW AS (Story 5.14 — S4a's eye, S4d's menu, B9, FR-D16, R-167 to R-170). A MODE LIKE THE DEVICE: session state,
+   back to the logged out user on reload, never in the URL (`EXPERIENCE.md:230`), and it sits in S4a's CENTRED GROUP
+   beside Template, where every drawn bar puts it. A CHOICE IS A REPAINT, never a re-stamp: Story 4.10's `gateMembers`
+   REMOVES an element gated to another visitor, so the visitor reaches `renderSection`'s one `member` option and the
+   render decides the rest — the canvas, R-124's caption, the picker's cards and the ring's tiles all through that one
+   door. A section whose Member visibility excludes the visitor is LEFT OUT of the page, exactly as that visitor sees it
+   (R-168), with its Layers row kept and the panel naming who is being previewed. The per-canvas "looked at" record is
    `project_template_prefs.member_states_viewed`, and R-167's rule for when it runs out is `lib/view-as.ts`'s
-   `afterChange`, run by `commit()` and `restore()` alone. S4d's "N not viewed" marker only reminds; it never blocks.
+   `afterChange`, run by `commit()` and `restore()` alone. The reminder is a coral dot on each unviewed row of View as's
+   own menu and nothing in the bar (R-169); it only reminds, and never blocks.
 
    ABSENT, NOT GREYED (UX-DR3), each until its story: "Saved", saving and Undo/Redo (5.8 — until then an edit lives for
    the session and a reload starts from the stored docs),
@@ -310,7 +311,7 @@ export function Editor({
   const [device, setDevice] = useState<Device>(DESKTOP)
   /** Story 5.14 — the visitor the canvas PREVIEWS (FR-D16). Session state like the mode and the device, and for the
    *  same reason: it is a property of the person looking and not of the canvas, so it survives a canvas switch (this
-   *  component stays mounted), goes back to Anonymous on reload, and is never in the URL or a column —
+   *  component stays mounted), goes back to the logged out user on reload, and is never in the URL or a column —
    *  `EXPERIENCE.md:230` makes View as a mode. It reaches every surface through `renderSection`'s one `member` option:
    *  the canvas, R-124's caption, the Section Picker's cards and the Design ring's tiles. */
   const [viewAs, setViewAs] = useState<Visitor>('anonymous')
@@ -1939,7 +1940,15 @@ export function Editor({
         >
           <ChevronLeft size={15} />
         </Link>
-        <span className="max-w-[calc(50%-320px)] truncate text-ui-dense font-semibold">{project.name}</span>
+        {/* THE NAME STOPS SHORT OF THE CENTRED GROUP, which since Story 5.14 holds View as too. The widest group today —
+            "Template · Member home" beside View as's slot at its widest name — starts 213px left of centre; with the
+            name at its limit, the bar's left cluster (padding, back link, name, indicator, undo pair and their gaps)
+            ends at `50% + 132px - N`. So `N = 360` leaves a 15px gap at any width — measured in the harness at 1440
+            and 1280, where the old `320` let a long name run 25px under the group. The deployed walk's step 90
+            measures it with a long name.
+            ponytail: a constant sized to today's widest canvas label; Story 7.16's custom templates can carry longer
+            names, and then the bar wants a three-column grid (`1fr auto 1fr`) instead of a number */}
+        <span className="max-w-[calc(50%-360px)] truncate text-ui-dense font-semibold">{project.name}</span>
         {/* S4a`:32` — the bar's third item, directly after the project name. Since R-142 it is an ICON IN A CIRCLE
             rather than B6's dot and label, and since R-144 its resting state reports what is OWED: a green check
             when everything is on the server, a grey clock the moment there is an edit that is not. The words are
@@ -1983,13 +1992,14 @@ export function Editor({
             top bar puts the eye (S4a–c, S6, S7, S14, P0-6, D8, M1). The owner removed the marker CHIP that stood
             beside the switcher at his test of Story 5.5 (R-130); he did not remove the group's second control, which
             Story 5.14 built. ABSOLUTELY centred, as the frame draws it, so it does not move as the project's name
-            grows — and neither of View as's two moving parts moves it either: its value slot is as wide as its widest
-            word, and S4d's marker hangs outside the group, absolutely placed off the trigger's right edge. The deployed
-            walk measures THIS group against the bar (step 2), not the switcher alone. */}
+            grows — and a change of visitor does not move it either, because View as's value slot is as wide as its
+            widest name. S4d's "2 not viewed" marker is not drawn here: the owner moved the reminder into the menu
+            (R-169), so nothing hangs off the trigger. The deployed walk measures THIS group against the bar (step 2),
+            not the switcher alone. */}
         <div id="editor-centre" className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
-          {/* this canvas's record, with the visitor on screen already in it: the menu's row in force is never
-              "Not viewed", and the marker never counts the page you are looking at */}
+          {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
+              dot, because the page you are looking at is being looked at */}
           <ViewAs visitor={viewAs} viewed={seen(viewed[templateKeyOf(key)] ?? [], viewAs)} onChoose={chooseVisitor} />
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY

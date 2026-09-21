@@ -297,6 +297,17 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     draws one (the frame draws no chip). Both the 260 and the chip are the spec's, so it is built as specified and the
     owner's test (step 2) names the wrap for him to judge (R-80); a wider menu would be a departure from S4d. The
     trigger's value is LEFT-aligned in its fixed slot, so each word sits S4a's 7px after "View as".
+  - **The owner's findings on the deployed build `d4d6e266` (2026-09-21): R-169 and R-170.**
+    - **R-169:** the "N not viewed" marker and the rows' "Not viewed" chips are gone. Each unviewed row of the menu
+      carries one 8px `coral-deep` dot in the check's slot, with its word kept `sr-only`, and nothing sits beside the
+      trigger. That also ends the caption wrap noted above.
+    - **R-170:** each visitor has ONE name, S4d's row title: "Logged out user · Free member · Paid member".
+      - It appears on the trigger, in the menu, in R-124's caption and in `#editor-said`.
+      - `VALUE` is gone, and `PREVIEWING` is derived from the titles: "a logged out user", "a free member", "a paid
+        member".
+      - The Controls panel's audience list keeps "Logged out · Free members · Paid members".
+    - **Also found:** the wider centred group let a long project name run 25px under it, so the name's limit is now
+      `calc(50% - 360px)`. Step 90 measures it.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
@@ -556,6 +567,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     nor outlined (A2-0); its Layers row stays and R-124's caption names the visitor, and A2's own `audience`
     control inherits the rule in Epic 9. S4d governs the toggle, its menu and its "N not viewed" marker; the menu's
     unviewed rows carry the marker's own "Not viewed" chip, which is how the nudge NAMES what S4d only counts.
+    - *Amended on the deployed build by **R-169** and **R-170** (owner, 2026-09-21):* the marker and its chips became
+      one coral dot on each unviewed row of the menu, and the trigger's "Anonymous" became "Logged out user". See
+      Story 5.14's as-built note above.
   - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
     **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
     every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's

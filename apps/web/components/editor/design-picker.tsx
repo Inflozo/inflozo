@@ -111,7 +111,7 @@ export function DesignPicker({
    *  do; omitted on `/controls`, which has no canvas */
   subject?: orbitWeekly.Subject | null
   /** Story 5.14 — the visitor View as is previewing, so a tile draws its design as that visitor sees it; omitted on
-   *  `/controls`, which has no View as, and then the preview's own default (a visitor who is not signed in) */
+   *  `/controls`, which has no View as, and then the preview's own default (the logged out user) */
   member?: Visitor
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]

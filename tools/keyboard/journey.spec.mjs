@@ -64,6 +64,12 @@ const stopsIn = (page, selector) =>
 /** Story 5.14 — the visitor View as names: its ONE visible value, never a word held in the slot for its width. */
 const viewAsOf = (page) => page.locator('#editor-view-as [data-current]').innerText()
 
+/** R-169 — the menu's rows that carry the coral not-viewed dot, by visitor. Read from the DOM whether or not the menu is
+ *  open: a closed popover's rows are still in the document, only not drawn. */
+const dotted = (page) =>
+  page.locator('#editor-view-as-menu [data-visitor]').evaluateAll((rows) =>
+    rows.filter((r) => r.querySelector('[data-not-viewed]')).map((r) => r.dataset.visitor))
+
 /** The Layers rows, by their `{doc}:{instanceId}` key — a site-wide row is the one whose doc is `site`. */
 async function rows(page) {
   const keys = await page.locator('[data-layer-row]').evaluateAll((els) => els.map((e) => e.dataset.layerRow))
@@ -447,9 +453,11 @@ test('View as: Tab reaches it, Enter opens S4d\'s menu, ↓ moves, Enter picks �
   const bar = await stopsIn(page, 'header')
   for (let n = 0; n < bar && (await focused(page)) !== 'BUTTON#editor-view-as'; n++) await page.keyboard.press('Tab')
   expect(await focused(page), 'View as is in the tab order, in the bar').toBe('BUTTON#editor-view-as')
-  expect(await viewAsOf(page)).toBe('Anonymous')
-  // S4d's marker: this canvas has been looked at as one visitor, so two are still to see
-  await expect(page.locator('#editor-view-as-marker')).toHaveText('2 not viewed')
+  // R-170: the logged-out visitor is "Logged out user" on the button, as in the menu
+  expect(await viewAsOf(page)).toBe('Logged out user')
+  // R-169: this canvas has been looked at as one visitor, so the menu dots the other two — and nothing is in the bar
+  await expect(page.locator('#editor-view-as-marker')).toHaveCount(0)
+  expect(await dotted(page)).toEqual(['free', 'paid'])
   const signedOut = await canvas.locator('#canvas').innerHTML()
   // the record made on open has been written and refused (the harness has no database) before the pick below, so the
   // refusal counted after the pick is the pick's own — the one write chain lands them in order
@@ -477,26 +485,29 @@ test('View as: Tab reaches it, Enter opens S4d\'s menu, ↓ moves, Enter picks �
   expect(second).toBe('free')
   expect(await said(page)).toMatch(/previewing a free member/i)
   expect(await canvas.locator('#canvas').innerHTML(), 'a members-aware section re-renders for a signed-in visitor').not.toBe(signedOut)
-  await expect(page.locator('#editor-view-as-marker')).toHaveText('1 not viewed')
+  expect(await dotted(page), 'one visitor is left to look at').toEqual(['paid'])
   // THE MATRIX'S "SAVE REFUSED" ROW: the harness has no database, so every write of the record is refused — and that is
-  // LOGGED, never said, while the session's record stands (the marker above) and the canvas is unaffected (the repaint)
+  // LOGGED, never said, while the session's record stands (the dots above) and the canvas is unaffected (the repaint)
   await expect.poll(() => refused.length, { message: 'the pick\'s refused write is logged' }).toBeGreaterThan(beforePick)
   expect(await said(page), 'a refused record is never said').toMatch(/previewing a free member/i)
-  await expect(page.locator('#editor-view-as-marker')).toHaveText('1 not viewed')
+  expect(await dotted(page), 'the session\'s record stands after the refusal').toEqual(['paid'])
 
-  // Esc closes the menu and focus returns to the trigger, with the visitor where it was
+  // Esc closes the menu and focus returns to the trigger, with the visitor where it was — and while it is open, the one
+  // row left carries R-169's dot, drawn, with its word in the row for a screen reader
   await page.keyboard.press('Enter')
   await expect(menu).toBeVisible()
+  await expect(menu.locator('[data-visitor="paid"] [data-not-viewed]')).toBeVisible()
+  await expect(menu.locator('[data-visitor="paid"]')).toContainText('Not viewed')
   await page.keyboard.press('Escape')
   await expect(menu).toBeHidden()
   expect(await focused(page)).toBe('BUTTON#editor-view-as')
   expect(await viewAsOf(page)).toBe('Free member')
 
-  // and back to Anonymous: byte for byte the signed-out render it started as
+  // and back to the logged out user: byte for byte the signed-out render it started as
   await page.keyboard.press('Enter')
   await expect(menu.locator('[data-visitor="anonymous"]')).toBeFocused()
   await page.keyboard.press('Enter')
-  expect(await viewAsOf(page)).toBe('Anonymous')
+  expect(await viewAsOf(page)).toBe('Logged out user')
   expect(await canvas.locator('#canvas').innerHTML()).toBe(signedOut)
 })
 

@@ -26,7 +26,7 @@ every non-placeable design**, using the host context named here:
 
 | Category | Count | Chosen where | Host context for the render matrix and the gallery |
 |---|---|---|---|
-| **A32** Paywall / Content CTA | 12 | Standalone **Paywall Template** editor — one design active per project | A gated `post.hbs`, rendered at the members-only cutoff via `partials/content-cta.hbs`; member state Anonymous and Free (FR-D16); live or sample tiers (FR-H6) |
+| **A32** Paywall / Content CTA | 12 | Standalone **Paywall Template** editor — one design active per project | A gated `post.hbs`, rendered at the members-only cutoff via `partials/content-cta.hbs`; member state Logged out user and Free member (FR-D16); live or sample tiers (FR-H6) |
 | **A33** Koenig Card Treatments | 6 | The **card design module** (FR-Q7), or Theme Settings where no Post Content section is placed (FR-Q9) — one treatment active per project | The **style-guide fixture** (FR-H3) rendered on `post.hbs` — a body exercising every Koenig card type, styled by the emitted `cards.css` |
 | **A34** Pagination Styles | 10 | Pagination style control on the designated main feed (FR-H2), or Theme Settings where no feed is placed (FR-Q9) | A paginated `index.hbs` whose main feed (A17 #1) runs over the bundled feed at the default `posts_per_page` 12 — five pages (Story 4.4 grew it to the owner's Q2 size), so the matrix renders each design on page 1, on the **middle** page (previous *and* next present) and on the partial last page (FR-H3, FR-D21) |
 

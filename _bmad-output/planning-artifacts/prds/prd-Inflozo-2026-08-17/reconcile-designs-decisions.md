@@ -3548,6 +3548,54 @@ sees the page."*
   ✅ `epics.md` (Story 5.14's criteria) · ✅ `prd.md` FR-D16's first paragraph, at Story 5.14's Dev (2026-09-21) ·
   ⬜ `P0 Editor Primitives - Spec.md` and `A2 Announcement Bars - Spec.md`, on the next library pass.
 
+**R-169 — the not-viewed reminder is a coral dot on each unviewed row of View as's menu, and nothing beside the
+button.** The owner, on Story 5.14's deployed build (`d4d6e266`, 2026-09-21): *"Remove '2 not viewed' text. Instead
+just show a coral dot in the dropdown items. Dot means that list items is yet to be viewed."*
+
+- **What it binds.**
+  - No marker sits beside the View as button: S4d's "2 not viewed" chip (`S4 Editor.dc.html:405`) is not built.
+  - In the menu, each visitor this page has not been looked at as carries ONE coral dot in the row's trailing slot,
+    where the check sits on the current row. The current row is always viewed, so the two never meet.
+  - The dot is 8px, D5b's row mark and the app's one dot in a menu row, in `coral-deep`, the check's own ink.
+  - The dot's word, "Not viewed", is kept in the row **for screen readers only**. A sighted reader's signal is the
+    dot's presence, which is a shape, so colour never carries it alone.
+- **What it supersedes.**
+  - S4d's marker, and Story 5.14's "N not viewed" marker and its "Not viewed" chip on each row.
+  - FR-D16's "a quiet marker beside the toggle".
+  - The spec's boundary "every dot has its word beside it". The word stays, held for assistive technology.
+  - This departs, for this one control and on the owner's word, from R-130's "the shape never travels alone", which
+    governs D5b's switcher rows.
+- **What it does NOT change.** R-167's record and when it runs out. `unviewed`, and Story 7.18's Pre-flight row,
+  which reads it. The reminder never blocks. The export is untouched (R-74).
+- Targets: ✅ this entry · ✅ Story 5.14's spec (its Boundaries, matrix, tasks, criteria, owner test and findings) ·
+  ✅ `apps/web/components/editor/view-as.tsx` · ✅ `apps/web/lib/view-as.ts` (the marker's words removed) ·
+  ✅ `prd.md` FR-D16's second paragraph · ✅ `epics.md` Story 5.14's criteria · ✅ `EXPERIENCE.md`'s S4d row ·
+  ✅ `epic-5-context.md` · ✅ the deployed walk's step 90 and step 8, and the keyboard journey — Story 5.14's Dev
+  (2026-09-21).
+
+**R-170 — each visitor has one name, and the signed-out one is "Logged out user".** The owner, the same day: *"rename
+Anonymous to Logged out user like it is in Controls and View as dropdown value. All of these should be same to avoid
+confusion."*
+
+- **What it binds.**
+  - The button's value, the menu's row, R-124's panel caption and the live-region sentence all name each visitor with
+    S4d's row title: **Logged out user · Free member · Paid member**.
+  - In a sentence they read "a logged out user", "a free member" and "a paid member", no longer "a visitor who is not
+    signed in" and "a paying member".
+  - `lib/view-as.ts` derives every sentence from the rows, so the four places cannot drift apart.
+- **What it supersedes.** S4a's trigger value "Anonymous" (`S4 Editor.dc.html:33`) and B9's "Anonymous"
+  (`B Missing Surfaces.dc.html:1417`), and "Anonymous" as FR-D16's word for the first state.
+- **What it does NOT change.**
+  - The Controls panel's Member visibility list keeps A22's audience words: Everyone · Logged out · Free members ·
+    Paid members. The owner named it as the model, and its entries are audiences, plural beside plural.
+  - The ids `anonymous`, `free` and `paid` in `MEMBER_STATES` and in the stored record.
+  - The export is untouched (R-74).
+- Targets: ✅ this entry · ✅ Story 5.14's spec · ✅ `apps/web/lib/view-as.ts` (`VALUE` removed, `PREVIEWING` derived) ·
+  ✅ `view-as.tsx` · ✅ `prd.md` FR-D16, FR-H5's strip sentence and Appendix A's A32 row ·
+  ✅ `sections-inventory.md`'s A32 row · ✅ `epics.md` (FR-D16's summary and Story 5.14's criteria) ·
+  ✅ `EXPERIENCE.md` (the IA row and S4d's) · ✅ `epic-5-context.md` · ✅ the deployed walk (steps 37 and 90) and the
+  keyboard journey — Story 5.14's Dev (2026-09-21). ⬜ `B9` and `S4a`, on the next library pass.
+
 
 ## B · Approved decisions superseded by this session
 

@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────── Story 5.14 — VIEW AS, AND THE NUDGE THAT NAMES WHAT I HAVE NOT LOOKED AT.
  *
- * FR-D16 at the surface. Everything the toggle, its menu, its marker and the panel's caption decide that is not a
- * pixel lives here: the three visitors, the words S4a and S4d draw, the sentence the live region says, and R-167's
- * rule for when a page's "looked at" record runs out.
+ * FR-D16 at the surface. Everything the toggle, its menu, its not-viewed dots and the panel's caption decide that is
+ * not a pixel lives here: the three visitors, their one name each (R-170), the words S4d draws, the sentence the live
+ * region says, and R-167's rule for when a page's "looked at" record runs out.
  *
  * PURE, AND ITS ONLY IMPORTS ARE THE LIBRARY'S VOCABULARY AND THE URL SCHEME, because `node --test` strips types but
  * cannot load a `.tsx` (`lib/device.ts`, `lib/ring.ts` and `lib/preview-subject.ts` are the standing precedent,
@@ -14,9 +14,9 @@
  * through, and nothing renders a visitor its own way.
  *
  * VIEW AS IS A MODE (`EXPERIENCE.md:230`): session state beside the mode and the device, never in the URL, never
- * stored, back to Anonymous on reload. What IS stored is the per-canvas record of which visitors have been looked at,
- * in `project_template_prefs.member_states_viewed` — the column AD-22 names for exactly this, which never enters the
- * doc, the journal or `⌘Z`.
+ * stored, back to the logged out user on reload. What IS stored is the per-canvas record of which visitors have been
+ * looked at, in `project_template_prefs.member_states_viewed` — the column AD-22 names for exactly this, which never
+ * enters the doc, the journal or `⌘Z`.
  */
 
 import { MEMBER_STATES } from '@inflozo/library'
@@ -34,12 +34,12 @@ export const VISITORS: readonly Visitor[] = MEMBER_STATES.filter((s): s is Visit
 /** S4a's trigger label (`S4 Editor.dc.html:33`). */
 export const LABEL = 'View as'
 
-/** S4a's trigger value per visitor. The frame names the first visitor twice over (R-74, built as drawn): the trigger
- *  says **Anonymous**, as S4a, FR-D16 and B9 all do, while S4d's menu row says **Logged out user** — Story 5.13 built
- *  D5e's mixture of words the same way. */
-export const VALUE: Readonly<Record<Visitor, string>> = { anonymous: 'Anonymous', free: 'Free member', paid: 'Paid member' }
-
-/** S4d's menu rows (`S4 Editor.dc.html:401-403`), title and caption, verbatim. */
+/** S4d's menu rows (`S4 Editor.dc.html:401-403`), title and caption, verbatim — and each TITLE IS THE VISITOR'S ONE
+ *  NAME. R-170 (owner, 2026-09-21): *"All of these should be same to avoid confusion"*, so the trigger's value, the
+ *  menu's row, R-124's caption and the live region all read these three words and no others. S4a's trigger drew
+ *  "Anonymous" beside S4d's "Logged out user"; the owner retired "Anonymous". The Controls panel's Member visibility
+ *  list keeps A22's AUDIENCE words ("Logged out", beside "Free members" and "Paid members"), which he named as the
+ *  model. */
 export const ROWS: Readonly<Record<Visitor, { title: string; caption: string }>> = {
   anonymous: { title: 'Logged out user', caption: 'Not signed in' },
   free: { title: 'Free member', caption: 'Signed in, no subscription' },
@@ -49,17 +49,18 @@ export const ROWS: Readonly<Record<Visitor, { title: string; caption: string }>>
 /** S4d's menu heading (`:400`), drawn uppercase by CSS so the words stay a sentence. */
 export const HEADING = 'Preview as'
 
-/** The marker's own word on an unviewed row of the menu — S4d draws a COUNT, and FR-D16 asks for NAMES, so each row
- *  still to look at carries the marker's chip with its word. */
+/** The word a not-viewed dot stands for. R-169 (owner, 2026-09-21) makes the reminder a coral dot on each unviewed
+ *  row of the menu and nothing else, so this word is never PRINTED: it sits in the row for screen readers only, and
+ *  a sighted reader's signal is the dot's presence — a shape, so colour never carries it alone. */
 export const NOT_VIEWED = 'Not viewed'
 
-/** What the canvas is previewing, in a sentence. R-124's caption and the live region read this ONE list — it moved
- *  here from `sidebar.tsx`, where it was written when the visitor was a constant. */
-export const PREVIEWING: Readonly<Record<Visitor, string>> = {
-  anonymous: 'a visitor who is not signed in',
-  free: 'a free member',
-  paid: 'a paying member',
-}
+/** What the canvas is previewing, in a sentence. R-124's caption and the live region read this ONE list, DERIVED from
+ *  the rows' titles (R-170), so a sentence can never name the visitor differently from the menu: "a logged out user",
+ *  "a free member", "a paid member". It moved here from `sidebar.tsx`, where it was written when the visitor was a
+ *  constant. */
+export const PREVIEWING: Readonly<Record<Visitor, string>> = Object.fromEntries(
+  VISITORS.map((v) => [v, `a ${ROWS[v].title.toLowerCase()}`]),
+) as Record<Visitor, string>
 
 /** The polite announcement a choice makes, through `#editor-said` — the editor's one live region, never a toast. */
 export const VIEW_AS_SAID = (v: Visitor): string => `The canvas is previewing ${PREVIEWING[v]}.`
@@ -75,11 +76,9 @@ export const readViewed = (raw: unknown): Visitor[] =>
 export const seen = (record: readonly Visitor[], v: Visitor): readonly Visitor[] =>
   record.includes(v) ? record : VISITORS.filter((x) => x === v || record.includes(x))
 
-/** The visitors this canvas has not been looked at as, in canonical order — what the marker counts and the menu names. */
+/** The visitors this canvas has not been looked at as, in canonical order — the menu's rows that carry R-169's dot, and
+ *  the list Story 7.18's Pre-flight row reads. */
 export const unviewed = (record: readonly Visitor[]): Visitor[] => VISITORS.filter((v) => !record.includes(v))
-
-/** S4d's marker (`:405`): "2 not viewed", or NOTHING at zero — the marker is absent, never a "0" (UX-DR3). */
-export const markerWords = (n: number): string | null => (n > 0 ? `${n} not viewed` : null)
 
 /** The per-canvas records, keyed by `template_key` as the docs are. */
 export type Viewed = Readonly<Record<string, readonly Visitor[]>>

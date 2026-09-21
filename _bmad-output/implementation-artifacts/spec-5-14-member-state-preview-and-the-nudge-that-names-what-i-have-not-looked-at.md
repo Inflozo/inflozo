@@ -12,11 +12,11 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 ## In plain English
 
 A new **View as** button beside "Template" at the top of the editor lets you see your page as each of
-three visitors: someone who is not signed in, a free member, and a paying member. Choosing one redraws the
-page at once, so the header's "Sign in" and "Subscribe" turn into "Account" and the newsletter band's email
-box turns into "Signed in". A small coral tag beside the button, such as **"2 not viewed"**, counts the
-visitors you have not yet looked at this page as, and the list under the button names them, so a members'
-version of a page never goes out unseen; it only reminds you and never stops you.
+three visitors: a **Logged out user**, a **Free member** and a **Paid member**, the same names everywhere.
+Choosing one redraws the page at once, so the header's "Sign in" and "Subscribe" turn into "Account" and the
+newsletter band's email box turns into "Signed in". In the list under the button, a small **coral dot** marks
+each visitor you have not yet looked at this page as, so a members' version of a page never goes out unseen;
+it only reminds you and never stops you.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -41,9 +41,9 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - **One door.** Hand the visitor to the one door every canvas surface already paints through:
   `renderSection`'s existing `member` option. That covers the editor canvas, the panel's caption, the
   Section Picker's cards and the Design ring's tiles.
-- **The record and the marker.** Record per canvas which visitors have been looked at, in the column that has
-  been waiting. Draw S4d's "N not viewed" marker beside the toggle, and put its words on each unviewed row of
-  the menu.
+- **The record and the dots.** Record per canvas which visitors have been looked at, in the column that has
+  been waiting. Put a coral dot on each unviewed row of the toggle's own menu, and nothing beside the toggle
+  (**R-169**, owner, 2026-09-21, replacing S4d's "N not viewed" marker).
 - **What does not change.** No runtime change and no migration, so there is **no Schema phase**.
 
 ## Boundaries & Constraints
@@ -53,13 +53,17 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - **The canvas is the site, for the chosen visitor, through ONE door.**
   - `renderSection(… { member })` and Story 4.10's `gateMembers` decide everything. No surface renders a
     visitor its own way.
-  - Anonymous is Ghost's `@member === null`. Free is a member with `paid: false`. Paid is a member with
-    `paid: true`.
+  - The Logged out user (`anonymous`) is Ghost's `@member === null`. Free is a member with `paid: false`. Paid is
+    a member with `paid: true`.
   - That is Ghost's own rule, `paid: status !== 'free'` (`update-local-template-options.js:27-40`, identical on
     6.58.0 and 5.130.6). So `comped`, and Ghost 6's `gift`, both preview as Paid. The menu offers exactly three
     rows (B9: "only").
+  - **Each visitor has one name** (**R-170**, owner, 2026-09-21): S4d's row title — Logged out user · Free member ·
+    Paid member — on the button, in the menu, in the panel's caption and in the announcement. "Anonymous" is not
+    used. The Controls panel's Member visibility list keeps its audience words (Logged out · Free members · Paid
+    members).
 - **View as is a MODE** (`EXPERIENCE.md:230`). It is session state beside `mode` and `device`: never in the
-  URL, never stored, back to Anonymous on reload, and kept across a canvas switch.
+  URL, never stored, back to the Logged out user on reload, and kept across a canvas switch.
 - **Looking is never an edit.**
   - Nothing reaches `commit()`, the journal or `⌘Z`.
   - An untouched canvas stays untouched. AD-22 names `project_template_prefs` as the home for "FR-D16's viewed
@@ -72,9 +76,11 @@ version of a page never goes out unseen; it only reminds you and never stops you
   - A change to the site doc (the header or footer, which appear on every page) does the same for the canvas
     on screen, and empties every other canvas's record.
   - Undo and redo are changes. A hydrate is not.
-- **The nudge reminds and never blocks.**
-  - S4d's marker sits beside the toggle and is absent when nothing is unviewed (UX-DR3).
-  - Every dot has its word beside it; colour never carries the signal alone.
+- **The nudge reminds and never blocks** (**R-169**, owner, 2026-09-21).
+  - Each unviewed row of the menu carries one coral dot. Nothing sits beside the toggle, and a row that has been
+    viewed carries no dot (UX-DR3).
+  - The dot's word, "Not viewed", is in the row for screen readers only. The dot's presence is a shape, so colour
+    never carries the signal alone.
 - **A section whose Member visibility excludes the visitor is left out of the page**, exactly as that visitor
   sees it and exactly as today (**R-168**, owner, 2026-09-21). It is never ghosted, labelled or outlined on the
   canvas. Its Layers row stays, and the panel's caption names the visitor being previewed.
@@ -106,15 +112,15 @@ version of a page never goes out unseen; it only reminds you and never stops you
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Opening | Any canvas, first visit | The trigger reads "View as · Anonymous". The canvas is the signed-out render, byte for byte what it is today. This canvas's record gains `anonymous`. The marker reads "2 not viewed". | N/A |
-| Choosing Paid | Menu → Paid member | Repainted as a paying member: Rail's Sign in and Subscribe become Account, and the Inline Row's form becomes "Signed in". The trigger names the visitor. `#editor-said` announces it. The record gains `paid`. | N/A |
+| Opening | Any canvas, first visit | The trigger reads "View as · Logged out user" (R-170). The canvas is the signed-out render, byte for byte what it is today. This canvas's record gains `anonymous`. In the menu, the other two rows each carry a coral dot, and nothing sits beside the trigger (R-169). | N/A |
+| Choosing Paid | Menu → Paid member | Repainted as a paid member: Rail's Sign in and Subscribe become Account, and the Inline Row's form becomes "Signed in". The trigger names the visitor. `#editor-said` announces it. The record gains `paid`. | N/A |
 | Member visibility | A section set to Paid members, viewed as Free | Not drawn. Its Layers row stays. The panel's caption names "a free member". | N/A |
-| All three viewed | Record holds all three | The marker is absent (UX-DR3). No menu row carries "Not viewed". | N/A |
-| Reload | After viewing all three | View as is back to Anonymous. The record comes back from `project_template_prefs`, so the marker stays absent. | N/A |
-| A change (R-167) | Any edit to this canvas's doc, undo and redo included | The record becomes `[visitor on screen]`, and the marker reads "2 not viewed". | N/A |
+| All three viewed | Record holds all three | No row of the menu carries a dot (UX-DR3). | N/A |
+| Reload | After viewing all three | View as is back to the Logged out user. The record comes back from `project_template_prefs`, so no dot comes back. | N/A |
+| A change (R-167) | Any edit to this canvas's doc, undo and redo included | The record becomes `[visitor on screen]`, and the other two rows are dotted again. | N/A |
 | Header or footer change | An edit to the site doc | The canvas on screen becomes `[visitor]`. Every other canvas with a record becomes `[]`. Only rows that change are written. | N/A |
-| Canvas switch | Home → Post | View as is unchanged. Post records the visitor. The marker counts Post's own record. | N/A |
-| Picker and ring | `⌘K`, or the Design block, under Paid | Cards and tiles render as a paying member. | N/A |
+| Canvas switch | Home → Post | View as is unchanged. Post records the visitor. The menu dots Post's own record. | N/A |
+| Picker and ring | `⌘K`, or the Design block, under Paid | Cards and tiles render as a paid member. | N/A |
 | Save refused | The upsert fails (offline, RLS) | The session's record stands. The canvas is unaffected. | Logged, not said: a lost record only brings the reminder back after a reload |
 | Stored junk | The column holds a value that is not a visitor | Ignored on read. | N/A |
 | Keyboard | Tab to View as, then Enter, ↓, Enter, Esc | Opens, moves, picks (repainted and announced), closes, and focus returns to the trigger. | N/A |
@@ -169,7 +175,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - `apps/web/components/kit/icons.tsx` has `Eye` (`:154`), `Person` (`:445`) and `Check`, each S4d's own path.
   It has no crown.
 - `apps/web/components/kit/badge.tsx:60-78` has `StatusChip tone='recommended'`: `bg-coral-tint
-  text-coral-text`, which is the marker's palette.
+  text-coral-text`, which was the marker's palette until R-169 took the marker out.
 - `apps/web/components/controls/sidebar.tsx`:
   - `VisibilityRow.previews` is at `:67-74`.
   - `PREVIEWING` (`:214-218`) moves to `lib/view-as.ts`.
@@ -211,7 +217,8 @@ version of a page never goes out unseen; it only reminds you and never stops you
   field is a compile error until the harness supplies it.
 - `tools/probe/run-verify-editor.cjs`, the deployed walk:
   - Step 2's centring check (`:356`, `:375`) measures `#editor-template` alone.
-  - Step 37 (`:1770-1800`) pins the Anonymous default and stays valid.
+  - Step 37 (`:1770-1800`) pins the default visitor, and its caption expectation is now read from
+    `lib/view-as.ts` (R-170 renamed the visitor).
   - Step 89 (`:3719-4012`) is Story 5.13's, and step 79's block starts at `:4013`.
 - `tools/keyboard/journey.spec.mjs`:
   - `open()` is at `:38` and `said()` at `:54`.
@@ -220,8 +227,8 @@ version of a page never goes out unseen; it only reminds you and never stops you
 
 **Frames:**
 
-- `S4 Editor.dc.html:33` is S4a's centred group: Template ▾ Home, a gap of 8, then View as ▾ Anonymous. The
-  View as trigger is:
+- `S4 Editor.dc.html:33` is S4a's centred group: Template ▾ Home, a gap of 8, then View as ▾ Anonymous (the
+  value is "Logged out user" since R-170). The View as trigger is:
   - `gap:7px; height:32px; padding:0 11px`, `#FFF`, a `1px #E7E2DB` border, radius 8
   - a 13px eye, "View as" at 12/500 in `#6E6A64`, the value at 12.5/600, and a 12px chevron
 - `S4 Editor.dc.html:391-416` is S4d:
@@ -231,9 +238,10 @@ version of a page never goes out unseen; it only reminds you and never stops you
     - rows padded `9px 10px`, each a 15px icon, a 13/500 title and an 11px caption
     - the current row carries a trailing 13px `#E84B34` check and **no tint**
   - The marker (`:405`): 20px high, `0 8px` padding, radius 24, `#FFEDE8` and `#C2381F` at 10.5/600, with a 5px
-    dot, reading "2 not viewed".
+    dot, reading "2 not viewed". **Not built: R-169** replaced it with a coral dot on each unviewed row.
   - The gated label (`:410`) is Story 5.20's.
 - `B Missing Surfaces.dc.html:1417` is B9: "View as, which offers Anonymous, Free member and Paid member only".
+  Its "only" binds; its "Anonymous" is superseded by R-170's "Logged out user".
 - `EXPERIENCE.md`:
   - `:161`: the IA row (S4d + B9, the "top bar eye", three states)
   - `:230`: View as is a mode
@@ -247,17 +255,18 @@ version of a page never goes out unseen; it only reminds you and never stops you
   - `VISITORS`: `MEMBER_STATES` without `'everyone'`, in its order.
   - The words, exactly as drawn:
     - `LABEL`: "View as"
-    - `VALUE`: S4a's Anonymous · Free member · Paid member
-    - `ROWS`: S4d's three titles and captions
+    - `ROWS`: S4d's three titles and captions. Since **R-170**, each title is the visitor's ONE name and the
+      trigger prints it too, so the `VALUE` list that held S4a's "Anonymous" is gone.
     - `HEADING`: "Preview as"
-    - `NOT_VIEWED`: "Not viewed"
+    - `NOT_VIEWED`: "Not viewed", the dot's word for screen readers (R-169)
   - `PREVIEWING`, **moved** here from `sidebar.tsx`, so the panel's caption and the live region read one list.
+    Since R-170 it is **derived** from the row titles: "a logged out user", "a free member", "a paid member".
   - `VIEW_AS_SAID(v)`, which returns "The canvas is previewing {PREVIEWING[v]}."
   - `readViewed(raw)`: the known visitors in canonical order, with junk dropped.
   - `seen(record, v)`: returns the **same array** when `v` is already in it, so the caller writes only when
     something changed.
   - `unviewed(record)`.
-  - `markerWords(n)`: "`n` not viewed", or `null` at 0.
+  - ~~`markerWords(n)`~~: removed with the marker (R-169).
   - `afterChange(records, touched, onScreen, visitor)`: returns **only the records that change**, under
     R-167's rule.
 - [x] `apps/web/view-as.test.ts` — **new**. It covers every matrix row over the pure half:
@@ -265,7 +274,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
   - `seen` keeps the same array when nothing changes.
   - `afterChange` is tested for a canvas edit, and for a site edit where other canvases' empty records are not
     returned.
-  - The marker's words at 2, 1 and 0.
+  - Since R-169 and R-170: the dotted rows through `unviewed`, and every name and sentence derived from `ROWS`.
 - [x] `apps/web/lib/menu.ts` — `Placement.align` gains `'center'`.
   - The menu's centre sits under the trigger's, as in S4d `:399` (`left:50%; transform:translateX(-50%)`).
   - It is placed in `openMenu`'s next-frame pass, where the menu has a width, and clamped by the same rule.
@@ -283,13 +292,11 @@ version of a page never goes out unseen; it only reminds you and never stops you
     - three rows, `px-[10px] py-[9px] gap-[10px] rounded-sm`, each with its 15px `Eye` / `Person` / `Crown`, a
       13/500 title and an 11px `ink-soft` caption, and `arrowKeys` between them
     - the current row carries a 13px `text-coral-deep` `Check` and no tint, as S4d draws it
-    - each **unviewed** row carries the marker's chip, reading "Not viewed", in the same trailing slot. The
-      current row is always viewed, so the check and the chip never meet.
-  - **The marker**, S4d's: `h-5 px-2 rounded-pill bg-coral-tint text-coral-text`, 10.5px/600, with a 5px
-    `bg-coral-text` dot.
-    - It is placed **absolutely**, 2px from the trigger as S4d draws it, so the centred group never moves as it
-      comes and goes.
-    - The trigger is `aria-describedby` the marker.
+    - each **unviewed** row carries **one coral dot** in the same trailing slot (**R-169**): 8px, `rounded-full
+      bg-coral-deep`, with "Not viewed" beside it as `sr-only` text. The current row is always viewed, so the check
+      and the dot never meet.
+  - ~~**The marker**~~: **not built (R-169).** Nothing sits beside the trigger, and the trigger is described by
+    nothing.
 - [x] `(editor)/actions.ts` — add `setViewedStates(projectId, rows: { templateKey, states }[])`.
   - **Validation:** `isUuid`; every key passes `canvasOfTemplateKey(key) !== null`; every state is in
     `VISITORS`; states are deduplicated; at most one row per canvas.
@@ -302,7 +309,8 @@ version of a page never goes out unseen; it only reminds you and never stops you
       and returns nothing.
 - [x] `apps/web/app/(app)/app/harness/editor/page.tsx` — add `viewed: {}` to the fixture.
 - [x] `editor.tsx`:
-  - Add `viewAs`, starting at Anonymous, as session state beside `mode` and `device`, and put it in `latest`.
+  - Add `viewAs`, starting at the Logged out user, as session state beside `mode` and `device`, and put it in
+    `latest`.
   - **Delete `PREVIEWS`.** `paint()` passes the visitor from `latest`. The panel's `previews` and both
     `SectionPreview` callers take `viewAs`.
   - `chooseVisitor(v)`: update `latest` first, then `paint()`, then `setSaid(VIEW_AS_SAID(v))`.
@@ -321,20 +329,22 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - [x] `tools/probe/run-verify-editor.cjs`:
   - **Step 2** measures the centred **group** against the bar (S4a), not `#editor-template` alone.
   - **Step 90**, new, on the **deployed** editor. It checks:
-    - The trigger's words, 32px height and eye; the group centred to within 2px in all three visitors, with
-      and without the marker.
+    - The trigger's words (R-170's name, and "Anonymous" nowhere in the bar), 32px height and eye; the group
+      centred to within 2px in all three visitors.
     - S4d's menu: the heading, three rows (no tier row and no comped row), and the check on the current row
       only.
     - Paid: Rail shows Account and no Sign in; the Inline Row shows "Signed in" and no form. Free: the same.
-      Anonymous: back again.
+      The Logged out user: back again.
     - A section set to Paid members is absent for Free and present for Paid.
     - The panel's caption names the visitor, and `#editor-said` announces the choice.
-    - The marker goes 2 → 1 → absent. The unviewed rows' chips name exactly the visitors not yet viewed.
-    - A reload restores Anonymous and keeps the marker absent, and the stored row really holds all three.
-    - One edit brings back "2 not viewed".
+    - R-169's dots go 2 → 1 → none, on exactly the visitors not yet viewed, each 8px in `coral-deep` with its word
+      held for a screen reader; no marker is in the bar.
+    - A reload restores the Logged out user and brings no dot back, and the stored row really holds all three.
+    - One edit brings the dots back on the other two rows.
     - A canvas switch keeps the visitor.
     - A `⌘K` card for the Inline Row under Paid shows "Signed in".
-    - At 1440 and 1280, the marker's box does not intersect the right-hand cluster's.
+    - At 1440 and 1280, the trigger's box does not intersect the right-hand cluster's, and a project name at its
+      limit ends clear of the group beside the widest canvas label.
     - No key changes the visitor.
     - Zero CSP violations (step 5) and zero axe violations (step 8).
 - [x] `tools/keyboard/journey.spec.mjs` — add one journey:
@@ -362,13 +372,29 @@ version of a page never goes out unseen; it only reminds you and never stops you
   - `deferred-work.md`:
     - DW-128 moves to Story 5.20.
     - A new entry: §4 names no member-state pass, although FR-D16 relies on one.
+- [x] **The owner's two rulings on the deployed build** (2026-09-21), recorded as **R-169** and **R-170** in
+      `reconcile-designs-decisions.md`:
+  - **R-169:** `view-as.tsx` loses the marker and puts the coral dot on each unviewed row, and `lib/view-as.ts`
+    loses `markerWords`.
+  - **R-170:** `lib/view-as.ts` loses `VALUE`, the trigger prints the row title, and `PREVIEWING` is derived from
+    the titles.
+  - **Tests:** `view-as.test.ts`; the keyboard journey (the name, the dots, and no marker); the deployed walk's
+    step 90, its step 8 axe state, and step 37's caption, now read from the module.
+  - **Found while re-measuring the bar:** `editor.tsx`'s project-name limit grows from `50% - 320px` to
+    `50% - 360px`. The centred group now holds View as, so a long name ran up to 25px under it. Step 90 measures it.
+  - **Documents** (standing rule 3, then a grep for "Anonymous" and "not viewed", standing rule 7):
+    - `prd.md`: FR-D16's two paragraphs, FR-H5's strip sentence, and Appendix A's A32 row
+    - `sections-inventory.md`: the A32 row
+    - `epics.md`: FR-D16's summary line and Story 5.14's criteria
+    - `EXPERIENCE.md`: the IA row and S4d's row
+    - `epic-5-context.md`
 
 **Acceptance Criteria:**
 
 - **Given** the editor at 1440
   **When** it opens
-  **Then** the centred group holds Template and **View as · Anonymous** (eye, words, chevron). The group is
-  centred in the bar. **It matches the frame**, S4a `:33`.
+  **Then** the centred group holds Template and **View as · Logged out user** (eye, words, chevron). The group
+  is centred in the bar. **It matches the frame**, S4a `:33`, with R-170's name for the value.
 - **Given** View as is pressed
   **Then** S4d's menu opens: "Preview as", then Logged out user / Free member / Paid member, each with its
   caption and icon, and the check on the current row. No tier or comped row appears (B9: "only"). **It matches
@@ -378,10 +404,10 @@ version of a page never goes out unseen; it only reminds you and never stops you
   change (Rail's actions, the Inline Row's form), a section's Member visibility is honoured, the trigger names
   the visitor, and `#editor-said` announces it.
 - **Given** a canvas viewed as fewer than three visitors
-  **Then** S4d's marker reads "N not viewed" beside the trigger, and each unviewed row of the menu says "Not
-  viewed". Once all three are viewed the marker is absent. **It matches the frame**, S4d `:405`.
+  **Then** each unviewed row of the menu carries one coral dot, with "Not viewed" for screen readers, and
+  nothing sits beside the trigger (**R-169**). Once all three are viewed, no row carries a dot.
 - **Given** a reload
-  **Then** View as is Anonymous and the marker reflects the stored record.
+  **Then** View as is the Logged out user and the dots reflect the stored record.
 - **Given** any change to the page's doc, or to the header or footer
   **Then** the record follows R-167's rule, and only the records that changed are written.
 - **Given** the Section Picker or the Design ring under a visitor
@@ -397,6 +423,19 @@ version of a page never goes out unseen; it only reminds you and never stops you
   in the diff.
 
 ## Spec Change Log
+
+- **2026-09-21, the owner renegotiated two frozen lines on the deployed build `d4d6e266`** (the human owns the
+  intent, so the frozen block was amended on his word):
+  - **R-169:** *"Remove '2 not viewed' text. Instead just show a coral dot in the dropdown items."*
+    - Changed: Approach's "The record and the marker", Boundaries' "The nudge reminds and never blocks", and the
+      Opening, All three viewed, Reload, A change and Canvas switch rows of the matrix.
+    - S4d's marker is not built.
+  - **R-170:** *"rename Anonymous to Logged out user … All of these should be same to avoid confusion."*
+    - Changed: the Opening and Reload rows, the Boundaries' member bullets and the View-as-is-a-mode bullet.
+    - "a paying member" became "a paid member" in the rows that name the visitor, and the sentence the panel
+      and the live region say is derived from the menu's titles.
+  - Unchanged: R-167, R-168, the record, the one door, and everything else in the block.
+  - Recorded: this spec's `## Owner's test findings` and the ledger.
 
 ## Design Notes
 
@@ -419,27 +458,38 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - R-130 removed a **chip** from that group ("a notification adjacent to the Template dropdown"). It did not
   remove the group's second control. So step 2's centring check moves from the switcher to the group, exactly
   as S4a centres it.
-- The marker hangs outside the centring, and the value slot is as wide as its widest word. Neither the marker
-  appearing nor a change of visitor moves Template.
-- At 1440 and 1280 there is room between the marker and the right-hand cluster, and step 90 measures it at
-  both widths. On narrower windows the two eventually meet. Those widths are Story 5.22's responsive floor,
-  and 5.22 inherits the marker in its measurements.
+- The value slot is as wide as its widest name, so a change of visitor never moves Template. (The marker that
+  once hung outside the centring is gone, R-169.)
+- At 1440 and 1280 there is room between the trigger and the right-hand cluster, and step 90 measures it at
+  both widths. On narrower windows the two eventually meet. Those widths are Story 5.22's responsive floor.
+- **The left side needed room too, and the first build missed it.** A group that holds View as reaches 213px
+  left of centre with the widest canvas label, "Member home". The project name's limit (`50% - 320px`) was
+  sized for the switcher alone, so a long name ran up to 25px under the group. It is now `50% - 360px`, which
+  leaves 15px. Step 90 measures it with a long name at 1440 and 1280.
 
-**The marker counts, and the menu names.**
+**The menu names what is unviewed, with a dot (R-169).**
 
-- S4d draws a count ("2 not viewed"). The story's own title, and FR-D16's "surfaces the unchecked
-  combinations", ask for names.
-- The count is built as drawn, and each unviewed row in the menu carries the marker's own chip with its word.
-  That is an extension of S4d's drawn menu made from S4d's own component, with no second vocabulary.
-- With three visitors and the current one always viewed, "2 not viewed" is self-explanatory, and "1 not
-  viewed" is answered by opening the menu.
+- S4d draws a count ("2 not viewed") beside the button. The story's own title, and FR-D16's "surfaces the
+  unchecked combinations", ask for names.
+- The first build drew the count as drawn and put the marker's own chip, "Not viewed", on each unviewed row.
+  On that build the owner ruled: no count, and a coral dot on each unviewed row instead (R-169).
+- So the menu is the one place the reminder lives. The dot is D5b's 8px row mark in the check's own
+  `coral-deep`, and it sits in the check's slot, so the row reads "viewed ✓ / not yet ●".
+- Its word is kept for screen readers. This departs, on the owner's word and for this control alone, from
+  R-130's "the shape never travels alone", which D5b's switcher rows keep.
+- Without the chip, the unviewed rows' captions fit on one line again, as S4d draws them.
 
-**The words are the frame's, and the frame uses two for the first visitor.**
+**One name per visitor (R-170).**
 
-- The trigger reads **Anonymous**: S4a, S4d `:374`, FR-D16 and B9 all say so.
-- The menu row reads **Logged out user / Not signed in** (S4d `:401`).
-- Both are built as drawn (R-74), the way Story 5.13 built D5e's mixture of words.
-- The panel's Member visibility select keeps A22's own "Logged out" (R-124).
+- The frames use two words for the first visitor. The trigger reads **Anonymous** (S4a, S4d `:374`, FR-D16 and
+  B9), and the menu row reads **Logged out user / Not signed in** (S4d `:401`).
+- The first build drew both, as Story 5.13 built D5e's mixture of words. The owner ruled: *"All of these should
+  be same"*.
+- So each visitor's one name is its menu row's title, and the trigger, the panel's caption and the announcement
+  all read it: "Logged out user", "a free member", "a paid member". `PREVIEWING` is derived from the titles, so
+  the sentence cannot drift from the list.
+- The panel's Member visibility select keeps A22's own audience words ("Logged out", beside "Free members" and
+  "Paid members", R-124), which the owner named as the model.
 
 **The member object: a later ruling governs an earlier sentence.**
 
@@ -515,20 +565,20 @@ version of a page never goes out unseen; it only reminds you and never stops you
   `view-as.test.ts`.
 - **The keyboard journey is two tests.** One is the walk: Tab, Enter, ↓, Enter, Esc and back. The other presses every
   printable key, plus Space, Enter, Delete and Backspace, and checks that the `?` card has no row for View as.
-- **Step 8 gains one axe run with the marker showing and S4d's menu open**, so its zero covers the new surface.
+- **Step 8 gains one axe run with S4d's menu open** (with the marker showing, until R-169 took it out), so its zero
+  covers the new surface.
 - **Edits beyond the spec's document list:**
   - the R-167 and R-168 ledger targets ticked in `reconcile-designs-decisions.md`
   - `docs/section-authoring.md`'s `data-members` table now names Ghost 6's `gift`
   - an as-built note in `epic-5-context.md`
-- **S4d's 260px menu, with a "Not viewed" chip on each unviewed row, wraps those rows' captions to two lines.** The
-  frame draws no chip. The width and the chip are both the spec's, so it is built as specified, and step 2 of the
-  owner's test now says so.
+- **S4d's 260px menu, with a "Not viewed" chip on each unviewed row, wrapped those rows' captions to two lines.**
+  *Superseded by R-169:* the chip became an 8px dot, and every caption fits on one line again.
 
 **What covers the matrix rows that the deployed walk does not drive:**
 
 - **Save refused** is walked by the keyboard harness, which has no database, so every write there is refused. The
   View as journey asserts the refusal is **logged** (the console warning), **never said** (`#editor-said` still names
-  the visitor), and that the session's record stands ("1 not viewed" after the pick).
+  the visitor), and that the session's record stands: after the pick, only Paid member's row keeps its dot (R-169).
 - **Header or footer change** is `afterChange`'s site half, tested in `view-as.test.ts`: the canvas on screen goes
   to `[visitor]`, every other record goes to `[]`, and empty or missing records are not returned. The editor calls it
   on the same line as a canvas edit, and a canvas edit is on the deployed walk.
@@ -636,6 +686,27 @@ and `VERCEL_PROJECT`, under Node 24.
   second walk passed step 36. Story 5.9 saw the same failure and recorded it only in its spec. It is now **DW-222**,
   with the failed run's numbers.
 
+**The owner's two findings (R-169, R-170), run at Dev (2026-09-21), locally, Node 24.18.1:**
+
+- `pnpm check`: **exit 0**.
+  - `apps/web` ran **456** tests with 0 fail. That is one fewer than before, because the marker's words and their
+    test went with the marker.
+  - `node tools/check-snapshots.mjs`: **PASS, unchanged**.
+  - No file under `packages/` or `supabase/` is in the diff.
+- `node --test apps/web/view-as.test.ts`: **11 tests, 0 fail**. One of them asserts that every name and sentence
+  comes from `ROWS` and that none says "Anonymous".
+- `pnpm keyboard`: **37 passed**, and `apps/web/next-env.d.ts` was left clean.
+- **Control (standing rule 2):** I put a dot on every row that is not the current one, and the View as journey
+  failed on *"one visitor is left to look at"*. The file was then put back byte for byte, checked with `cmp`.
+- **The harness editor at 1440, measured in Chromium:**
+  - The trigger is **218 × 32**, reading "View as Logged out user", with no marker. The centred group still
+    measures centred.
+  - The menu dots only the unviewed rows. Each dot is 8px in `coral-deep`, and every caption fits on one line.
+  - **With a project name at its limit**, the gap between the left cluster and the group was **41px** with Home and
+    **15px** with "Member home", at both 1440 and 1280. The old `50% - 320px` gave **1px** with Home and **−25px**
+    with Member home, which is the finding recorded under the task list.
+- `python3 tools/doc-audit.py --check`: **PASS twice**.
+
 **Commands:**
 
 - `pnpm check`. Expected:
@@ -672,23 +743,56 @@ and `VERCEL_PROJECT`, under Node 24.
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build. Use the **Pilot sections** project, the one seeded to
-your account at Story 5.1. **Step 6** is your ruling **R-167** (any change brings the reminder back), and
-**steps 7 and 8** are your ruling **R-168** (a hidden section is left out of the page), both from 2026-09-21.
+your account at Story 5.1. **Step 6** is your ruling **R-167** (any change brings the reminder back), **steps 7
+and 8** are **R-168** (a hidden section is left out of the page), and **steps 1 to 5** are your two findings on
+this build, **R-169** (a coral dot in the list, nothing beside the button) and **R-170** (one name for each
+visitor), all from 2026-09-21.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | "Template · Home", and right beside it an eye with **"View as Anonymous"**. Just to its right is a small coral tag reading **"2 not viewed"**. On the page, the header shows **Sign in** and **Subscribe**, and the newsletter band shows its email box. |
-| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member". Each of the last two carries a small **"Not viewed"** tag, and to make room for it their grey second line wraps onto two lines (the design draws the list without the tags). |
-| 3 | the same | the open list | Choose **Paid member**. | — | The page changes at once. The header's Sign in and Subscribe become **Account**, and the newsletter's email box becomes **"Signed in · Manage your preferences"**. The button reads "View as Paid member", and the tag reads **"1 not viewed"**. |
-| 4 | the same | Editor, Home | Press View as again and choose **Free member**. | — | The page looks like the paid one, because these sample sections treat both kinds of member the same (step 7 shows the difference). The coral tag is **gone**: you have looked at Home all three ways. |
-| 5 | the same | Editor, Home | **Reload the page.** | — | "View as" is back to **Anonymous**. Like the device and light/dark buttons, it is not saved. The coral tag stays **away**: the editor remembered that you looked at Home all three ways. |
-| 6 | the same | Editor, Home | Click the newsletter's heading, "One letter a week, on Friday morning", and add a word. | add `really` | The tag comes back: **"2 not viewed"**. The page changed, so the other two views are out of date. |
-| 7 | the same | Editor, Home, right-hand panel | With the newsletter selected, set **Member visibility** to **Paid members**. | — | The band **disappears**, because a visitor who is not signed in never sees it. The panel says "The canvas is previewing a visitor who is not signed in, so this section is not drawn here." |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | "Template · Home", and right beside it an eye with **"View as Logged out user"**. **Nothing** sits to the right of that button: no "not viewed" tag. On the page, the header shows **Sign in** and **Subscribe**, and the newsletter band shows its email box. |
+| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member", each with a small **coral dot** at its right end, meaning "not looked at yet". Every grey second line fits on one line. |
+| 3 | the same | the open list | Choose **Paid member**. | — | The page changes at once. The header's Sign in and Subscribe become **Account**, and the newsletter's email box becomes **"Signed in · Manage your preferences"**. The button reads "View as Paid member". Open the list again: Paid member has the tick, and only **Free member** still has a dot. |
+| 4 | the same | Editor, Home | Choose **Free member**. | — | The page looks like the paid one, because these sample sections treat both kinds of member the same (step 7 shows the difference). Open the list: **no row has a dot** — you have looked at Home all three ways. |
+| 5 | the same | Editor, Home | **Reload the page**, then open the list. | — | "View as" is back to **Logged out user**. Like the device and light/dark buttons, it is not saved. **No dots**: the editor remembered that you looked at Home all three ways. |
+| 6 | the same | Editor, Home | Click the newsletter's heading, "One letter a week, on Friday morning", add a word, then open the View as list. | add `really` | The dots come back on **Free member** and **Paid member**. The page changed, so those two views are out of date. |
+| 7 | the same | Editor, Home, right-hand panel | With the newsletter selected, set **Member visibility** to **Paid members**. | — | The band **disappears**, because a logged out user never sees it. The panel says "The canvas is previewing a logged out user, so this section is not drawn here." |
 | 8 | the same | Editor, Home | Switch View as to **Paid member**, then to **Free member**. | — | For Paid member the band is **back**. For Free member it is **gone** again, and the panel's sentence now says "a free member". |
 | 9 | the same | Editor, Home | Set Member visibility back to **Everyone**, and remove the word you added in step 6. | — | The band is back for every visitor, and the heading reads as it did. |
-| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | Switch Template to **Post**. | — | View as keeps the visitor you had chosen. Post counts on its own, so its tag reads **"2 not viewed"**. |
+| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | Switch Template to **Post**, then open the View as list. | — | View as keeps the visitor you had chosen. Post counts on its own: the two visitors you have not looked at Post as each carry a **dot**. |
 | 11 | the same | Editor, Post | Switch View as to **Paid member**, then press `⌘K` and look at a **Newsletter** card. | — | The card shows "Signed in" rather than an email box, because the picker previews what you are viewing as. Press Esc to close it. |
 | 12 | the same | Editor, Post | Press `?`. | — | The shortcuts card has **no row for View as**. It has no key, on purpose, because it is set-and-forget. |
+
+## Owner's test findings
+
+**1. "Remove '2 not viewed' text. Instead just show a coral dot in the dropdown items. Dot means that list items is
+yet to be viewed."** (the owner, 2026-09-21, on the deployed build `d4d6e266`). **Fixed in this story; ruled as
+R-169.**
+
+- The coral tag beside the button is gone.
+- In the list, each visitor you have not looked at this page as carries one coral dot at the right end of its
+  row, in the tick's own place. The row you are on has the tick, never a dot.
+- A screen reader still hears "Not viewed" on those rows, because the word is there for it and hidden from the
+  eye.
+- With the tags gone, the grey second lines fit on one line again.
+
+**2. "Rename Anonymous to Logged out user like it is in Controls and View as dropdown value. All of these should
+be same to avoid confusion."** (the same day). **Fixed in this story; ruled as R-170.**
+
+- The button now reads "View as **Logged out user**", the same name as the list's first row.
+- The panel's sentence and the announcement use the same names: "a logged out user", "a free member" and "a paid
+  member", no longer "a visitor who is not signed in" and "a paying member".
+- All of them come from one list, so they cannot drift apart again.
+- The Controls panel's Member visibility list is unchanged: Everyone · Logged out · Free members · Paid members.
+  You named it as the model, and its entries are groups of visitors rather than one visitor.
+
+**Found while fixing them:** a very long project name could run under the middle of the top bar, because the
+middle group now holds two buttons. The name now stops shorter, leaving a gap. The walk measures it with a long
+name.
+
+*`owner_test` stays `pending`* rather than moving to `issues`: these arrived during Dev, from the owner looking at
+the deployed build early, and are fixed inside the Dev phase, as Story 5.13's scroll finding was. His formal test of
+the finished story, the manual test above, has not run yet.
 
 ## Questions for the owner
 

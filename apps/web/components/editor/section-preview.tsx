@@ -72,7 +72,7 @@ export function SectionPreview({
   subject?: orbitWeekly.Subject | null
   /** Story 5.14 — the visitor View as is previewing, so a card or a tile draws the section as the canvas behind it
    *  does (FR-D16), through `renderSection`'s one `member` door. Omitted on `/controls`, which has no View as, and
-   *  then Story 4.10's own default — a visitor who is not signed in — exactly as before. */
+   *  then Story 4.10's own default — the logged out user — exactly as before. */
   member?: Visitor
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
