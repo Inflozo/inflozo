@@ -2,7 +2,7 @@
 title: 'Story 5.14 — Member-state preview, and the nudge that names what I have not looked at'
 type: 'feature'
 created: '2026-09-21'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '02685eaac078a9c5bbf9b5c551d131092a07810d'
@@ -242,7 +242,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `apps/web/lib/view-as.ts` — **new, and pure**, following `ring.ts`, `device.ts` and
+- [x] `apps/web/lib/view-as.ts` — **new, and pure**, following `ring.ts`, `device.ts` and
       `preview-subject.ts`, so that `node --test` reaches it. It holds:
   - `VISITORS`: `MEMBER_STATES` without `'everyone'`, in its order.
   - The words, exactly as drawn:
@@ -260,18 +260,18 @@ version of a page never goes out unseen; it only reminds you and never stops you
   - `markerWords(n)`: "`n` not viewed", or `null` at 0.
   - `afterChange(records, touched, onScreen, visitor)`: returns **only the records that change**, under
     R-167's rule.
-- [ ] `apps/web/view-as.test.ts` — **new**. It covers every matrix row over the pure half:
+- [x] `apps/web/view-as.test.ts` — **new**. It covers every matrix row over the pure half:
   - `VISITORS` is asserted against `MEMBER_STATES`, never against a list written in the test.
   - `seen` keeps the same array when nothing changes.
   - `afterChange` is tested for a canvas edit, and for a site edit where other canvases' empty records are not
     returned.
   - The marker's words at 2, 1 and 0.
-- [ ] `apps/web/lib/menu.ts` — `Placement.align` gains `'center'`.
+- [x] `apps/web/lib/menu.ts` — `Placement.align` gains `'center'`.
   - The menu's centre sits under the trigger's, as in S4d `:399` (`left:50%; transform:translateX(-50%)`).
   - It is placed in `openMenu`'s next-frame pass, where the menu has a width, and clamped by the same rule.
-- [ ] `apps/web/components/kit/icons.tsx` — add `Crown`, copying S4d `:403`'s path verbatim. R-92 says a
+- [x] `apps/web/components/kit/icons.tsx` — add `Crown`, copying S4d `:403`'s path verbatim. R-92 says a
       glyph the export draws is read from the export.
-- [ ] `apps/web/components/editor/view-as.tsx` — **new**. Three parts:
+- [x] `apps/web/components/editor/view-as.tsx` — **new**. Three parts:
   - **The trigger**, S4a's, with id `editor-view-as`: `h-8 rounded-sm border border-line bg-surface
     px-[11px] gap-[7px]`, hovering to `border-line-strong`, with the 13px `Eye`, "View as" in `TemplateSwitcher`'s
     label class, the value at 12.5px/600, and S4a's 12px chevron. The value slot is as wide as the widest of the
@@ -290,18 +290,18 @@ version of a page never goes out unseen; it only reminds you and never stops you
     - It is placed **absolutely**, 2px from the trigger as S4d draws it, so the centred group never moves as it
       comes and goes.
     - The trigger is `aria-describedby` the marker.
-- [ ] `(editor)/actions.ts` — add `setViewedStates(projectId, rows: { templateKey, states }[])`.
+- [x] `(editor)/actions.ts` — add `setViewedStates(projectId, rows: { templateKey, states }[])`.
   - **Validation:** `isUuid`; every key passes `canvasOfTemplateKey(key) !== null`; every state is in
     `VISITORS`; states are deduplicated; at most one row per canvas.
   - **The write:** **one** upsert of `{ project_id, user_id, template_key, member_states_viewed, updated_at }`
     on `project_id,template_key`, through the caller's session.
   - It names nothing else, so it can never clear a subject, and `setPreviewSubject` can never clear a record.
   - A failure logs `{ code }` and answers `{ error }`.
-- [ ] `(editor)/read.ts` — add `member_states_viewed` to the prefs select, and return
+- [x] `(editor)/read.ts` — add `member_states_viewed` to the prefs select, and return
       `EditorData.viewed: Record<string, Visitor[]>` through `readViewed`. A failed read uses the existing log
       and returns nothing.
-- [ ] `apps/web/app/(app)/app/harness/editor/page.tsx` — add `viewed: {}` to the fixture.
-- [ ] `editor.tsx`:
+- [x] `apps/web/app/(app)/app/harness/editor/page.tsx` — add `viewed: {}` to the fixture.
+- [x] `editor.tsx`:
   - Add `viewAs`, starting at Anonymous, as session state beside `mode` and `device`, and put it in `latest`.
   - **Delete `PREVIEWS`.** `paint()` passes the visitor from `latest`. The panel's `previews` and both
     `SectionPreview` callers take `viewAs`.
@@ -312,13 +312,13 @@ version of a page never goes out unseen; it only reminds you and never stops you
   - Send writes through **one** promise chain so answers land in order. A refusal is logged and never said.
   - Place `<ViewAs>` right after `<TemplateSwitcher>` in the centred group.
   - Correct the two comments listed in the Code Map.
-- [ ] `apps/web/components/controls/sidebar.tsx` — import `PREVIEWING` from `lib/view-as.ts`. The caption
+- [x] `apps/web/components/controls/sidebar.tsx` — import `PREVIEWING` from `lib/view-as.ts`. The caption
       itself does not change.
-- [ ] `section-preview.tsx`, with its callers `section-picker.tsx:329` and `design-picker.tsx:76` — add an
+- [x] `section-preview.tsx`, with its callers `section-picker.tsx:329` and `design-picker.tsx:76` — add an
       optional `member`.
   - It defaults to `'anonymous'`, so `/controls` is unchanged.
   - It is passed to `renderSection` and added to the paint effect's dependency list.
-- [ ] `tools/probe/run-verify-editor.cjs`:
+- [x] `tools/probe/run-verify-editor.cjs`:
   - **Step 2** measures the centred **group** against the bar (S4a), not `#editor-template` alone.
   - **Step 90**, new, on the **deployed** editor. It checks:
     - The trigger's words, 32px height and eye; the group centred to within 2px in all three visitors, with
@@ -337,13 +337,13 @@ version of a page never goes out unseen; it only reminds you and never stops you
     - At 1440 and 1280, the marker's box does not intersect the right-hand cluster's.
     - No key changes the visitor.
     - Zero CSP violations (step 5) and zero axe violations (step 8).
-- [ ] `tools/keyboard/journey.spec.mjs` — add one journey:
+- [x] `tools/keyboard/journey.spec.mjs` — add one journey:
   - Tab reaches View as; Enter opens it; ↓ moves; Enter picks, and the canvas is repainted and announced.
   - Esc closes the menu and focus returns to the trigger.
   - Pressing each single key changes no visitor.
   - The UX-DR9 Tab budget is **derived** from the header's own focusable controls, instead of `+14` (standing
     rule 4).
-- [ ] **Documents** (standing rule 3, then grep for the old wording, standing rule 7):
+- [x] **Documents** (standing rule 3, then grep for the old wording, standing rule 7):
   - `prd.md` FR-D16 (`:233`, `:235`):
     - Name the member object as R-4's eight fields, of which R-28 and AD-38 let none be printed.
     - Say that `comped`, and Ghost 6's `gift`, preview as Paid.
@@ -503,6 +503,95 @@ version of a page never goes out unseen; it only reminds you and never stops you
 
 ## Verification
 
+**As built.** Where the build departs from the spec's letter, and why:
+
+- **The trigger's value is left-aligned in its fixed slot** (`text-left`). A button centres its text, which put the
+  slot's spare width on both sides of "Anonymous" and opened the gap after "View as" to about 11px. Measured in the
+  harness after the change: the word sits **7px** after "View as" for all three visitors, as S4a draws it.
+- **The centred menu is placed with a plain `left`, not S4d's `translateX(-50%)`.** It is set in `openMenu`'s
+  next-frame pass, so the clamp that follows measures the box it moves, which is the spec's own condition.
+- **An undo that restores a canvas that is not on screen leaves that canvas viewed by nobody.** R-167 says a changed
+  page is viewed only as the visitor on screen, and nobody is looking at a page that is not on screen. Tested in
+  `view-as.test.ts`.
+- **The keyboard journey is two tests.** One is the walk: Tab, Enter, ↓, Enter, Esc and back. The other presses every
+  printable key, plus Space, Enter, Delete and Backspace, and checks that the `?` card has no row for View as.
+- **Step 8 gains one axe run with the marker showing and S4d's menu open**, so its zero covers the new surface.
+- **Edits beyond the spec's document list:**
+  - the R-167 and R-168 ledger targets ticked in `reconcile-designs-decisions.md`
+  - `docs/section-authoring.md`'s `data-members` table now names Ghost 6's `gift`
+  - an as-built note in `epic-5-context.md`
+- **S4d's 260px menu, with a "Not viewed" chip on each unviewed row, wraps those rows' captions to two lines.** The
+  frame draws no chip. The width and the chip are both the spec's, so it is built as specified, and step 2 of the
+  owner's test now says so.
+
+**What covers the matrix rows that the deployed walk does not drive:**
+
+- **Save refused** is walked by the keyboard harness, which has no database, so every write there is refused. The
+  View as journey asserts the refusal is **logged** (the console warning), **never said** (`#editor-said` still names
+  the visitor), and that the session's record stands ("1 not viewed" after the pick).
+- **Header or footer change** is `afterChange`'s site half, tested in `view-as.test.ts`: the canvas on screen goes
+  to `[visitor]`, every other record goes to `[]`, and empty or missing records are not returned. The editor calls it
+  on the same line as a canvas edit, and a canvas edit is on the deployed walk.
+- **The ring half of Picker and ring is true by construction.** The Design block draws tiles only for a ring longer
+  than one, and every ring in the shipped library has length 1, so no tile exists to look at. `member` reaches each
+  `Tile` through the same `preview` object as `subject`.
+
+**Run at Dev (2026-09-21), locally, Node 24.18.1:**
+
+- `pnpm check`: **exit 0**. Lint, typecheck and every package test passed:
+  - `apps/web`: **457, 0 fail**, `view-as.test.ts`'s 12 among them
+  - `packages/library`: **165**
+  - `packages/section-runtime`: **220**
+  - `packages/ghost-shim`: **34**
+  - `packages/theme-compiler`: **1**
+  - `node tools/check-snapshots.mjs`: **PASS, unchanged**, *5 designs at 10 targets match 6 committed snapshot
+    files*. No file under `packages/` or `supabase/` is in the diff, so there is no Schema phase (R-99).
+- `node --test apps/web/view-as.test.ts`: **12 tests, 0 fail**.
+- `pnpm keyboard`: **37 passed**, including the View as walk, "no key binds View as" and UX-DR9's Tab walk, whose
+  budget is now counted off the page. `apps/web/next-env.d.ts` was left clean.
+- **Controls (standing rule 2).** Each break below was made on purpose, made its test fail, and was put back
+  byte for byte (checked with `cmp`):
+  - no `paint()` in `chooseVisitor`: the View as journey failed on its repaint assertion
+  - `afterChange` with its site half removed: `view-as.test.ts` went to **1 fail, 11 pass**, on the header-or-footer
+    test
+  - the refusal *said* through `#editor-said`: the journey failed on *said*, with "The looked-at record could not
+    be saved."
+- `bash tools/matrix/run-matrix-gate.sh`: **passed**. *180 cases · 5 designs · 1 packs · 0 violations*, 182
+  Playwright tests, and no file under `tools/matrix/` changed.
+- `python3 tools/doc-audit.py --check`: **PASS twice**, 0 warnings.
+- **Geometry in the harness editor at 1440×900**, measured in Chromium:
+  - The centred group spans 542.5 to 897.5, which is centred to **0px** in the 1440 bar. It holds Template (148)
+    then 8px then View as (**199 × 32**).
+  - The marker is **2px** off the trigger's right edge, 20px high and vertically centred on the trigger.
+  - The menu is **260** wide. Its centre is the trigger's centre, and it sits 6px below the trigger.
+  - Set beside a render of S4d's own markup (`S4 Editor.dc.html:391-416`), the rows, heading, check and marker
+    match its words, sizes, inks and radii.
+
+**Real infrastructure at Dev (R-82):**
+
+- **Supabase production.** Standing rule 1 on the upsert was executed ahead of Review:
+  - Setup: one throwaway account through the Auth Admin API (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), seeded with
+    "Pilot sections". Its own session came from a magic-link `verifyOtp` over `SUPABASE_PUBLISHABLE_KEY`.
+  - The writes: each server action's own payload through supabase-js 2.115.0, RLS on.
+  - **Subject first, then record:** answered **201** then **200**, and both columns survived.
+  - **Record first, then subject:** the INSERT half answered **201** and the UPDATE half **200**, and both survived.
+  - A later record **replaces** the array (`["free"]`), and the subject is kept.
+  - **The control:** a write that names `preview_subject: null` does clear it, and the same read sees that. So
+    "survived" was a reading that could have failed.
+  - **With no session**, a read and a write both answered **`401 / 42501`**.
+  - Result: **0 FAIL**, users **13 → 13**, and the account was deleted in `finally`.
+  - Review repeats this through the two server actions themselves. It adds the action's own refusal of a state that
+    is not a visitor, which the actions' validation decides.
+- **Ghost's own source, read in both releases' npm tarballs** (`ghost-6.58.0.tgz`, `ghost-5.130.6.tgz`): the four
+  facts in `MEASUREMENTS.md` §46 were read again independently, with the same lines found:
+  - the member block: `:27-40` on 6 and `:25-38` on 5, identical
+  - `has.js:128`, and `evaluateList` at `:109-119`
+  - the announcement audience: `:35-41`, differing only in the `require` path
+  - `members.status`: `isIn` at `:440` on 6 (with `gift`) and `:449` on 5
+  - `member-bread-service.js:135` on 6
+  This is read in source, not recorded on T1 or T3.
+- **Not touched, and not claimed:** T1, T3, Resend and Dodo.
+
 **Commands:**
 
 - `pnpm check`. Expected:
@@ -545,7 +634,7 @@ your account at Story 5.1. **Step 6** is your ruling **R-167** (any change bring
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | "Template · Home", and right beside it an eye with **"View as Anonymous"**. Just to its right is a small coral tag reading **"2 not viewed"**. On the page, the header shows **Sign in** and **Subscribe**, and the newsletter band shows its email box. |
-| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member". Each of the last two carries a small **"Not viewed"** tag. |
+| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member". Each of the last two carries a small **"Not viewed"** tag, and to make room for it their grey second line wraps onto two lines (the design draws the list without the tags). |
 | 3 | the same | the open list | Choose **Paid member**. | — | The page changes at once. The header's Sign in and Subscribe become **Account**, and the newsletter's email box becomes **"Signed in · Manage your preferences"**. The button reads "View as Paid member", and the tag reads **"1 not viewed"**. |
 | 4 | the same | Editor, Home | Press View as again and choose **Free member**. | — | The page looks like the paid one, because these sample sections treat both kinds of member the same (step 7 shows the difference). The coral tag is **gone**: you have looked at Home all three ways. |
 | 5 | the same | Editor, Home | **Reload the page.** | — | "View as" is back to **Anonymous**. Like the device and light/dark buttons, it is not saved. The coral tag stays **away**: the editor remembered that you looked at Home all three ways. |

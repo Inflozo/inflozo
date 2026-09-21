@@ -448,6 +448,14 @@ export const Person = (p: IconProps) => (
     <circle cx="12" cy="7" r="4" />
   </Icon>
 )
+/* S4d's **Paid member** row (`S4 Editor.dc.html:403`), read verbatim — the export draws it, so R-92's scope applies
+   unchanged and no Tabler path is owed. Story 5.14's View as menu is its first reader; its two siblings there are
+   `Eye` and `Person` above, S4d's own drawings too. */
+export const Crown = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 8l4 4 5-6 5 6 4-4v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+  </Icon>
+)
 export const Card = (p: IconProps) => (
   <Icon {...p}>
     <rect x="2" y="5" width="20" height="14" rx="2" />

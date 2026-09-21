@@ -53,6 +53,17 @@ const deviceOf = (page) => page.locator('#editor-device [role="radio"][aria-chec
 
 const said = (page) => page.locator('#editor-said').innerText()
 
+/** The tab stops a region holds, COUNTED OFF THE PAGE: every element Tab would land on that is drawn. A closed
+ *  popover's rows are `display:none`, a roving radio group's unchecked radios are `tabindex="-1"`, a hidden pill is
+ *  `visibility: hidden`, and Tab passes all three by, so this does too. Nothing here is a number written down. */
+const stopsIn = (page, selector) =>
+  page.locator(selector).evaluate((root) =>
+    [...root.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')]
+      .filter((el) => el.tabIndex >= 0 && !el.disabled && el.checkVisibility({ visibilityProperty: true })).length)
+
+/** Story 5.14 — the visitor View as names: its ONE visible value, never a word held in the slot for its width. */
+const viewAsOf = (page) => page.locator('#editor-view-as [data-current]').innerText()
+
 /** The Layers rows, by their `{doc}:{instanceId}` key — a site-wide row is the one whose doc is `site`. */
 async function rows(page) {
   const keys = await page.locator('[data-layer-row]').evaluateAll((els) => els.map((e) => e.dataset.layerRow))
@@ -170,9 +181,13 @@ test('UX-DR9: the canvas is ONE tab stop between Layers and Controls, and no lin
   await open(page)
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('tabindex', '-1')
   const stops = []
-  // as many presses as it takes to get past the Controls sidebar, derived from the rows Layers actually holds
-  const { all } = await rows(page)
-  for (let n = 0; n < all.length * 2 + 14; n++) {
+  // AS MANY PRESSES AS THERE ARE STOPS UP TO THE CONTROLS SIDEBAR'S TOGGLE, COUNTED OFF THE PAGE (standing rule 4):
+  // the header's own focusable controls, Layers' (every row's two among them), the canvas container with anything
+  // drawn inside it, and the Controls sidebar's. It was `rows * 2 + 14` until Story 5.14 — a hand count of the header
+  // that the next control in the bar (View as) made one short. Exact, so the walk can never wrap round to the canvas.
+  const budget = (await stopsIn(page, 'header')) + (await stopsIn(page, '#editor-layers')) +
+    1 + (await stopsIn(page, 'section[aria-label="Canvas"]')) + (await stopsIn(page, '#editor-controls'))
+  for (let n = 0; n < budget; n++) {
     await page.keyboard.press('Tab')
     stops.push(await page.evaluate(() => {
       const d = document.activeElement
@@ -417,6 +432,96 @@ test('R-145: a deferred key does nothing and announces nothing', async ({ page }
   expect(await deviceOf(page)).toBe(before.device)
   expect(await said(page)).toBe('')
   await expect(page.locator('dialog[open]')).toHaveCount(0)
+})
+
+/* ── Story 5.14 — View as (FR-D16, S4a, S4d) ───────────────────────────────────────────────────────────────────────
+   The harness has no database, so the looked-at record's write is REFUSED here — the matrix's "Save refused" row, on
+   every commit: the session's record stands, the canvas is unaffected, and nothing is said about it. */
+
+test('View as: Tab reaches it, Enter opens S4d\'s menu, ↓ moves, Enter picks — the canvas repaints and says so — and Esc gives focus back', async ({ page }) => {
+  // the matrix's "Save refused" row is read below: listened for from the start, so the write made on open is heard too
+  const refused = []
+  page.on('console', (m) => { if (m.type() === 'warning' && /looked-at record was not saved/.test(m.text())) refused.push(m.text()) })
+  const canvas = await open(page)
+  // Tab reaches it — within as many presses as the bar has stops, counted off the page
+  const bar = await stopsIn(page, 'header')
+  for (let n = 0; n < bar && (await focused(page)) !== 'BUTTON#editor-view-as'; n++) await page.keyboard.press('Tab')
+  expect(await focused(page), 'View as is in the tab order, in the bar').toBe('BUTTON#editor-view-as')
+  expect(await viewAsOf(page)).toBe('Anonymous')
+  // S4d's marker: this canvas has been looked at as one visitor, so two are still to see
+  await expect(page.locator('#editor-view-as-marker')).toHaveText('2 not viewed')
+  const signedOut = await canvas.locator('#canvas').innerHTML()
+  // the record made on open has been written and refused (the harness has no database) before the pick below, so the
+  // refusal counted after the pick is the pick's own — the one write chain lands them in order
+  await expect.poll(() => refused.length, { message: 'the write made on open is refused and logged' }).toBeGreaterThan(0)
+  const beforePick = refused.length
+
+  // Enter opens S4d's menu, and focus steps onto its first row
+  await page.keyboard.press('Enter')
+  const menu = page.locator('#editor-view-as-menu')
+  await expect(menu).toBeVisible()
+  await expect(menu.locator('[data-visitor]')).toHaveCount(3)
+  await expect(page.locator('#editor-view-as')).toHaveAttribute('aria-expanded', 'true')
+  await expect(menu.locator('[data-visitor]').first()).toBeFocused()
+  // ↓ moves to the next row
+  await page.keyboard.press('ArrowDown')
+  const second = await menu.locator('[data-visitor]').nth(1).getAttribute('data-visitor')
+  await expect(menu.locator('[data-visitor]').nth(1)).toBeFocused()
+
+  // Enter picks it: the menu closes, focus is back on the trigger, the canvas has REPAINTED as that visitor and the
+  // choice is announced through the editor's one live region
+  await page.keyboard.press('Enter')
+  await expect(menu).toBeHidden()
+  expect(await focused(page)).toBe('BUTTON#editor-view-as')
+  expect(await viewAsOf(page)).toBe('Free member')
+  expect(second).toBe('free')
+  expect(await said(page)).toMatch(/previewing a free member/i)
+  expect(await canvas.locator('#canvas').innerHTML(), 'a members-aware section re-renders for a signed-in visitor').not.toBe(signedOut)
+  await expect(page.locator('#editor-view-as-marker')).toHaveText('1 not viewed')
+  // THE MATRIX'S "SAVE REFUSED" ROW: the harness has no database, so every write of the record is refused — and that is
+  // LOGGED, never said, while the session's record stands (the marker above) and the canvas is unaffected (the repaint)
+  await expect.poll(() => refused.length, { message: 'the pick\'s refused write is logged' }).toBeGreaterThan(beforePick)
+  expect(await said(page), 'a refused record is never said').toMatch(/previewing a free member/i)
+  await expect(page.locator('#editor-view-as-marker')).toHaveText('1 not viewed')
+
+  // Esc closes the menu and focus returns to the trigger, with the visitor where it was
+  await page.keyboard.press('Enter')
+  await expect(menu).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(menu).toBeHidden()
+  expect(await focused(page)).toBe('BUTTON#editor-view-as')
+  expect(await viewAsOf(page)).toBe('Free member')
+
+  // and back to Anonymous: byte for byte the signed-out render it started as
+  await page.keyboard.press('Enter')
+  await expect(menu.locator('[data-visitor="anonymous"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  expect(await viewAsOf(page)).toBe('Anonymous')
+  expect(await canvas.locator('#canvas').innerHTML()).toBe(signedOut)
+})
+
+test('no key binds View as: every single key leaves the visitor where it was (FR-D11 — R-145\'s table gains no row)', async ({ page }) => {
+  await open(page)
+  const was = await viewAsOf(page)
+  // every printable character and the named keys a single-key shortcut could hide behind — the character range is
+  // the list, never the map's own keys, so a binding added to the map later is pressed here too
+  const keys = [...[...Array(94).keys()].map((n) => String.fromCharCode(33 + n)), 'Space', 'Enter', 'Delete', 'Backspace']
+  for (const key of keys) {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(key)
+    // a key that opens a dialog (⇧R's confirm, ?'s card) is closed again, so the next key reaches the shell
+    if ((await page.locator('dialog[open]').count()) > 0) await page.keyboard.press('Escape')
+    expect(await viewAsOf(page), `${key} changed the visitor`).toBe(was)
+    expect(await said(page), `${key} announced a visitor`).not.toMatch(/The canvas is previewing/)
+  }
+  await expect(page.locator('#editor-view-as-menu')).toBeHidden()
+  // and the `?` card, which lists exactly the keys that work (R-145), has no row for it
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('?')
+  const sheet = page.locator('dialog[open][data-shortcuts-sheet]')
+  await expect(sheet).toBeVisible()
+  await expect(sheet).not.toContainText(/view as|preview as|visitor/i)
+  await page.keyboard.press('Escape')
 })
 
 /* ── Story 5.10 — ⌘K and the Section Picker (FR-D11, FR-D12, `EXPERIENCE.md:502`) ───────────────────────────────

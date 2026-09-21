@@ -276,6 +276,27 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     cites FR-J13, which is 7.20's backup gate). Also found: §4 names no member-state pass though FR-D16 relies on
     one (a DW at Dev), and on every pilot Free and Paid render alike (Rail's two Account links, the Inline Row's two
     "Signed in" slots), so only a section's Member visibility separates them before Epics 9 and 10.
+  - **As built (Story 5.14, 2026-09-21):** `PREVIEWS` is gone and the visitor is `viewAs`, session state in `latest`
+    beside the mode and the device, handed to `renderSection`'s existing `member` — so the canvas, R-124's caption, the
+    Section Picker's cards and the Design ring's tiles all paint it through the one door, and a choice is `paint()`
+    (update `latest`, paint, then `#editor-said`) because `gateMembers` removes elements. `apps/web/lib/view-as.ts` is
+    the pure half: `VISITORS` derived from `MEMBER_STATES`, S4a's and S4d's words, `PREVIEWING` (moved out of
+    `sidebar.tsx`, so the caption and the live region read one list), `readViewed`, `seen` (the SAME array when nothing
+    changed, so nothing is written), `unviewed`, `markerWords` and R-167's `afterChange`, which returns only the
+    records that change and is called by `commit()` and `restore()` alone; an undo that restores a canvas NOT on screen
+    leaves it viewed as nobody. The record is written by `setViewedStates`, one upsert naming only its own column,
+    through ONE promise chain, and a refusal is logged and never said — the harness has no database, so `pnpm keyboard`
+    walks that refusal on every commit. `components/editor/view-as.tsx` is S4a's trigger (the value slot as wide as its
+    widest word, the three words stacked in one grid cell, so Template never moves; no `aria-label`), S4d's menu on
+    `openMenu`'s new `align: 'center'` (centred in the next-frame pass, where the menu has a width, then clamped by the
+    same rule) and S4d's marker hung absolutely 2px off the trigger — measured on the frame — so the centred group
+    (`#editor-centre`, now what step 2 measures) never moves. `Crown` joined `kit/icons.tsx` from S4d `:403`. The
+    UX-DR9 Tab budget in `journey.spec.mjs` is now COUNTED off the page: View as made the hand-written `+ 14` one short.
+    §4's missing member-state pass is DW-221, and DW-128 moved to Story 5.20. Found at Dev: in S4d's 260px menu an
+    unviewed row's "Not viewed" chip leaves the caption about 112px, so those captions wrap to two lines where the frame
+    draws one (the frame draws no chip). Both the 260 and the chip are the spec's, so it is built as specified and the
+    owner's test (step 2) names the wrap for him to judge (R-80); a wider menu would be a departure from S4d. The
+    trigger's value is LEFT-aligned in its fixed slot, so each word sits S4a's 7px after "View as".
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).

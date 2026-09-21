@@ -3321,7 +3321,12 @@ plain: For a paid post in a feed, the editor would show a reading time that a si
 status: open
 severity: low
 origin: Story 4.6 (2026-09-14) — recorded on both majors (MEASUREMENTS §41d)
-owner: Story 5.14 (member-state preview), which is where the canvas first knows who is looking
+owner: **Story 5.20** (the Paywall editor), the first canvas that draws a gated body — moved there from Story 5.14 by that
+  story's planning (2026-09-21, recorded at its Dev). Story 5.14 gives the canvas its visitor, but no canvas draws a body
+  yet (no Post Content design exists and `renderSection` passes no fixtures), and working out what a visitor may read is
+  Ghost's `checkPostAccess` (`members/content-gating.js`) — the same value 5.20's "Gated content — shown with sample
+  text" indicator needs. So the indicator, `access` per visitor and this reading time land together, with the surface
+  that makes them true (R-118). The criterion is in `epics.md` Story 5.20.
 location: packages/section-runtime/src/core.ts `bindValue` (bare `reading_time`) · packages/ghost-shim/src/index.ts `readingTime`
 reason: Ghost's `{{reading_time}}` counts the post's body and prints nothing when the body is withheld; the
   number guard (`includeZero=true`) is true because the field is 0, so the element keeps its place with no
@@ -5099,3 +5104,23 @@ reason: Story 5.13 touches no save code, and the same stops passed at `112514d4`
   `efda9d6c`; 66c's failures follow from 66b's (the revision it expects never moved). Telling a flaky check from a
   flaky save needs its own look, not a guess inside this review.
 
+## Deferred from: Story 5.14's Dev run (2026-09-21)
+
+### DW-221: FR-D16 leans on the owner's member-state pass at each category gate, and §4's gate has no such pass
+
+plain: The requirement behind the new "View as" reminder says it makes your own check of each kind of visitor, at every
+  category's sign-off, reliable. But the sign-off itself never asks you to look at a page as a signed-out visitor, a free
+  member and a paid member, so the reminder is supporting a step that is not written down anywhere.
+status: open
+severity: low
+origin: Story 5.14's planning (2026-09-21), recorded at its Dev run — read in `prd.md` §4 and FR-D16's second paragraph.
+owner: the owner's ruling first, then the first category gate that runs it (Epic 9's shell block, whose header category
+  is the first members-aware one).
+location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` §4 ("The category owner gate (normative)":
+  the automated sheet's six items and the owner's hands-on pass) · FR-D16's second paragraph ("the owner's manual
+  member-state pass at each category gate (§4)")
+reason: FR-D16 names that pass as the thing its nudge makes reliable, and §4 describes an automated sheet — deploy, the
+  real-Ghost comparison, accessibility, compile, the render matrix, the design ring — then the owner composing, deploying
+  and exercising the controls, with no member state anywhere in it. Adding a row (look at every members-aware design as
+  Anonymous, Free and Paid before approving) changes the owner's own sign-off, so it is his to rule and not a Dev run's to
+  write. Nothing in the product is wrong meanwhile: the nudge works whether or not the gate asks for it.

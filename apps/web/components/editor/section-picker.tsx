@@ -15,6 +15,7 @@ import { SearchInput } from '@/components/kit/input'
 import { radioKeys, tabStop } from '@/components/kit/segmented'
 import type { DesignRows } from '@/lib/canvas'
 import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor } from '@/lib/picker'
+import type { Visitor } from '@/lib/view-as'
 
 /* ─────────────────────────────────────────── Story 5.10 — THE SECTION PICKER (`S5 Section Picker.dc.html`, S5a/S5c).
  *
@@ -88,6 +89,7 @@ export function SectionPicker({
   darkEnabled,
   src,
   subject,
+  member,
   refusal,
   onAdd,
   onClose,
@@ -110,6 +112,8 @@ export function SectionPicker({
   src: string
   /** Story 5.13 — the canvas's resolved preview subject, worn by every preview card (`EXPERIENCE.md:877`) */
   subject?: orbitWeekly.Subject | null
+  /** Story 5.14 — the visitor View as is previewing, which every card draws the section as (FR-D16) */
+  member?: Visitor
   /** the sentence the last Add answered with, shown in the picker's own refusal line (DW-190) */
   refusal: string | null
   onAdd: (placement: Placement) => void
@@ -273,6 +277,7 @@ export function SectionPicker({
                 mode={mode}
                 src={src}
                 subject={subject}
+                member={member}
                 onAdd={onAdd}
               />
             ))}
@@ -299,6 +304,7 @@ function Card({
   mode,
   src,
   subject,
+  member,
   onAdd,
 }: {
   entry: SectionRegistryEntry
@@ -312,6 +318,8 @@ function Card({
   src: string
   /** Story 5.13 — what the canvas behind the picker is rendering, so a card previews THAT page */
   subject?: orbitWeekly.Subject | null
+  /** Story 5.14 — and as whom */
+  member?: Visitor
   onAdd: (placement: Placement) => void
 }) {
   // measured once, when the preview has been drawn; until then the card is one tile like any other
@@ -335,6 +343,7 @@ function Card({
         mode={mode}
         src={src}
         subject={subject}
+        member={member}
         onAspect={(aspect) => setSpan(spanFor(aspect))}
       />
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three

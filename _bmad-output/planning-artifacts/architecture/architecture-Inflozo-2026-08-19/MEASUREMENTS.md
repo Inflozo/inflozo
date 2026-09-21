@@ -3306,3 +3306,75 @@ has a logo and both allow self-signup, so `{{#if @site.logo}}`'s LOGO arm and `{
 empty arm were never printed by Ghost — the contract test derives their expectation from the box's own site row and
 cannot tell. A snapshot is the runtime's text with
 content and controls at their defaults — not a compiled `partials/sections/…` file.
+
+## 46. Member-state preview — the member object, `{{#has}}`, the announcement audience and `gift`, read in source on both majors · 2026-09-21
+
+Story 5.14 builds FR-D16's View as. Its planning read four facts in both releases' npm tarballs, and the Dev run read
+them again with the commands below (2026-09-21) — read-in-source under standing rule 1, not recorded on T1 or T3: no
+member was created on either box (outside every recorder's writes, as §45(e) says of the signed-in arms), and until Story
+5.18 the canvas previews the bundled publication rather than a connected site. Command, into a scratch directory:
+
+    curl -sSL https://registry.npmjs.org/ghost/-/ghost-5.130.6.tgz | tar -xz -C 5
+    curl -sSL https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz | tar -xz -C 6
+
+**(a) The member object — `core/frontend/services/theme-engine/middleware/update-local-template-options.js`**, lines
+`:25-38` on 5.130.6 and `:27-40` on 6.58.0. The block is **character-identical**; `diff` of the two files differs only in
+the `url-utils` import, 6's `admin_url` and 6's `getHelperDeduplication` query cache:
+
+```js
+const member = req.member ? {
+    uuid: req.member.uuid,
+    email: req.member.email,
+    name: req.member.name,
+    firstname: req.member.name && req.member.name.split(' ')[0],
+    avatar_image: req.member.avatar_image,
+    subscriptions: req.member.subscriptions && req.member.subscriptions.map((sub) => { … }),
+    paid: req.member.status !== 'free',
+    status: req.member.status
+} : null;
+```
+
+**Finding.** Exactly R-4's eight fields, and `null` when no member is signed in. `paid` is `status !== 'free'`, so every
+status but `free` is a paying member to a theme — which is why View as offers three visitors and no fourth: `comped`
+previews as Paid, and so does (d)'s `gift`. The line range R-4 and Story 5.14's spec cite, `:27-40`, is 6.58.0's; on
+5.130.6 the same block is `:25-38`.
+
+**(b) `{{#has any="@member"}}` — `core/frontend/helpers/has.js:128`**, identical on both majors:
+
+```js
+const data = _.pick(options.data, ['site', 'config', 'labs']);
+```
+
+and `evaluateList` (`:109-119`) looks an `@`-path up in that `data` alone (`_.has(data, prop.replace(/@/, ''))`). **Finding.**
+`@member` is never in it, so `{{#has any="@member"}}` is false for every visitor on both majors and can never test for a
+signed-in one — FR-D16's rule, now with its line. Neither emitter writes a `{{#has` (`core.ts:480` and `:1492` say so),
+and the only one in the repository is a recording row of the probe theme (`tools/probe/theme-shim/index.hbs:63`).
+
+**(c) The announcement bar's audience** — 5.130.6 `core/server/services/announcement-bar-service/AnnouncementBarSettings.js`
+and 6.58.0 `…/announcement-bar-settings.js`, `:35-41`, identical but for the `require` path of the values file:
+
+```js
+if (visibilities.includes(AnnouncementVisibilityValues.VISITORS) && !member) {
+    announcement = announcementContent;
+} else if (visibilities.includes(AnnouncementVisibilityValues.FREE_MEMBERS) && (member?.status === 'free')) {
+    announcement = announcementContent;
+} else if (visibilities.includes(AnnouncementVisibilityValues.PAID_MEMBERS) && (member && member.status !== 'free')) {
+    announcement = announcementContent;
+}
+```
+
+**Finding.** `paid_members` means any status but `free`, so a comped (and on 6 a gift) member sees a paid-members bar —
+the same line as (a). Story 5.21's strip follows View as with exactly these three audiences.
+
+**(d) `gift`, a status no Inflozo document named** — `core/server/data/schema/schema.js`, `members.status`:
+`isIn: [['free', 'paid', 'comped']]` on 5.130.6 (`:449`) and `isIn: [['free', 'paid', 'comped', 'gift']]` on 6.58.0
+(`:440`); and 6.58.0's `core/server/services/members/members-api/services/member-bread-service.js:135`,
+`if (member.status === 'comped' || member.status === 'gift') {`, which builds a gift member a non-Stripe subscription
+named "Gift subscription". **Finding.** Ghost 6 has a fourth member status. Through (a) it is `paid: true`, so it previews
+as Paid like `comped`; FR-D16 and Appendix B now say so.
+
+**(e) What this does NOT say.** Nothing here was rendered by Ghost: no signed-in member exists on either probe box, so
+every member arm is read, not recorded. `checkPostAccess` (`members/content-gating.js`), which decides what a visitor
+may READ, was not read — it is Story 5.20's, with the gated-body indicator and DW-128. And no emitter changed: the canvas
+previews the tier through Story 4.10's `data-members`, whose truth table is `agreement.test.ts`'s and whose theme arms
+are `tools/check-snapshots.mjs`'s, both untouched by Story 5.14.

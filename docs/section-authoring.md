@@ -1149,14 +1149,14 @@ register 45(c)'s sentence: **with JavaScript off, nothing happens** (R-5).
 
 **Rendered since Story 4.10 — exit construct 2.** Ghost's own member test, read in both releases
 (`update-local-template-options.js`): `@member` is `null` signed out, and `@member.paid` is `status !== 'free'`,
-so a **comped** member is paid.
+so a **comped** member is paid — and so is a **gift** member, Ghost 6's fourth status (`MEASUREMENTS.md` §46, Story 5.14).
 
 | `data-members` | Theme | Canvas keeps it when `RenderInput.member` is |
 |---|---|---|
 | `everyone` | no wrapper | always |
 | `anonymous` | `{{#if @member}}{{else}}…{{/if}}` | `anonymous` (the default) |
 | `free` | `{{#if @member}}{{#if @member.paid}}{{else}}…{{/if}}{{/if}}` | `free` |
-| `paid` | `{{#if @member.paid}}…{{/if}}` | `paid` (comped previews as paid) |
+| `paid` | `{{#if @member.paid}}…{{/if}}` | `paid` (comped, and Ghost 6's gift, preview as paid) |
 
 `{{#if}}` only — never `{{#unless}}`, never `{{#has}}` (FR-D16) — and no member field is ever printed (R-28). The
 gate is the **outermost** wrapper of its element. Refused by name: a `data-members` inside another, and one

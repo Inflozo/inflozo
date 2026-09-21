@@ -2221,9 +2221,16 @@ newsletter gating posts to members is exactly a site this editor serves — with
 section its user did not place
 **And** **a member's own details are never server-rendered** — no `@member.email`, name or billing detail reaches
 the page; anything identifying is a hand-off to Ghost's own account panel (AD-38)
+**And** **this is the first canvas that draws a gated body, so FR-D16's gated half lands here** (moved from Story 5.14,
+2026-09-21): the body is always the style-guide fixture, and wherever the visitor **View as** is previewing may not
+read it, the body carries S4d's **"Gated content — shown with sample text"** indicator; **`access` is worked out per
+visitor** through Ghost's own `checkPostAccess` (`members/content-gating.js`), so the paywall cut, the indicator and
+the reading time all follow 5.14's visitor — **DW-128**: Ghost prints no reading time for a body it withholds, and the
+canvas must not either; switching View as to Paid member is how the owner checks the cut disappears (`C Post Body.dc.html:1548`:
+"View as stays in the chrome because switching to Paid member is the only way to check that the cut disappears")
 **And** the editor matches C3a and its empty state matches C3b as corrected.
 
-**FRs:** FR-H6. · **Frame:** `C Post Body.dc.html` C3a · C3b. · **Owner test:** yes. · **Verification:** T1 with
+**FRs:** FR-H6, FR-D16 (the gated body). · **Frame:** `C Post Body.dc.html` C3a · C3b · `S4 Editor.dc.html` S4d's gated label. · **Owner test:** yes. · **Verification:** T1 with
 members enabled and T3 with members off (R-82). · **Depends on E10:** the editor is built and tested here against
 whatever paywall designs exist; **A32's twelve arrive in E10**, and the two meet at A32's own owner gate. Same
 shape as §8's declared A25 → FR-Q7 dependency. *(Declared by the step-6 stress test, finding F3.)*
@@ -3059,9 +3066,14 @@ mismatch; Starter-plan block
 **And** the wizard requires the **edit lock**, so a stale cloud snapshot can never silently ship
 **And** **`⌘⏎` is bound HERE** — the last key of FR-D11's map, landing with the action it drives and joining
 Story 5.9's one table and its `?` card; **with it the map is complete** (**R-145**)
+**And** **Pre-flight lists every canvas that ships with a member state nobody has looked at** (FR-D16, the pre-deploy
+half of Story 5.14's nudge): it reads `project_template_prefs.member_states_viewed` through `lib/view-as.ts`'s
+`unviewed` for each canvas the deploy compiles, names the canvas and the visitors still unviewed, and **never blocks**
+— the row reminds and Ship it stays pressable; R-167 decides when a record runs out, so an edit since the last look
+puts the canvas back on this list
 **And** the screens match S8a, S8b, S8c, S8d and S8d′ on failure.
 
-**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
+**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
 
 ### Story 7.19: The first-deploy credential step, and its decline path

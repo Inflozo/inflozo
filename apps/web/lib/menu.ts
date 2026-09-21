@@ -29,8 +29,9 @@ export const item =
 type Placement = {
   /** `up` puts the menu's bottom above the trigger (the sidebar chip); `down` below it. */
   side: 'up' | 'down'
-  /** Which of the menu's edges lines up with the trigger's same edge. */
-  align: 'left' | 'right'
+  /** Which of the menu's edges lines up with the trigger's same edge — or, `center`, the menu's centre under the
+   *  trigger's, which S4d draws for View as (`S4 Editor.dc.html:399`, `left:50%; transform:translateX(-50%)`). */
+  align: 'left' | 'right' | 'center'
 }
 
 export function anchorTo(menu: HTMLElement, trigger: Element, { side, align }: Placement, gap = 6) {
@@ -45,12 +46,14 @@ export function anchorTo(menu: HTMLElement, trigger: Element, { side, align }: P
     s.top = `${t.bottom + gap}px`
     s.bottom = 'auto'
   }
-  if (align === 'left') {
-    s.left = `${Math.max(8, t.left)}px`
-    s.right = 'auto'
-  } else {
+  if (align === 'right') {
     s.right = `${Math.max(8, window.innerWidth - t.right)}px`
     s.left = 'auto'
+  } else {
+    // `center` starts from the trigger's left edge: the popover is still `display:none` here and has no width to
+    // halve, so `openMenu`'s next-frame pass moves it once it has one
+    s.left = `${Math.max(8, t.left)}px`
+    s.right = 'auto'
   }
 }
 
@@ -103,6 +106,15 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
       anchorTo(menu, trigger, { ...placement, side: 'up' })
     } else if (placement.side === 'up' && box.top < 0) {
       anchorTo(menu, trigger, { ...placement, side: 'down' })
+    }
+    /* A CENTRED MENU IS CENTRED HERE (Story 5.14), for the reason every sideways correction below is made here: this is
+       the first moment the menu has a width to halve. It is written as a plain `left` and never a transform, so the
+       clamp that follows measures the very box it moves and one rule keeps every menu in the app inside the window.
+       Like the rest of this frame it runs before the first paint of the opened menu, so it never jumps. */
+    if (placement.align === 'center') {
+      const t = trigger.getBoundingClientRect()
+      menu.style.left = `${t.left + t.width / 2 - menu.getBoundingClientRect().width / 2}px`
+      menu.style.right = 'auto'
     }
     /* AND THE SAME CORRECTION SIDEWAYS (the owner's finding, 2026-09-18). `anchorTo` can only clamp the edge it
        anchors — it runs while the popover is still `display:none` and has no width — so a RIGHT-aligned menu whose

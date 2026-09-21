@@ -25,6 +25,7 @@ import { GhostList, ItemList } from './item-list'
 import { LinkPicker, type LinkResources } from './link-picker'
 import { RichField, TokenRow } from './rich-field'
 import { limitSentence } from '@/lib/inline'
+import { PREVIEWING, type Visitor } from '@/lib/view-as'
 
 /* THE CONTROLS PANEL — what Epic 5 mounts beside its canvas (Story 4.5).
 
@@ -69,8 +70,9 @@ export type Edit = 'control' | 'content'
  *  control register decides, not the PRD's list, while the two disagree). */
 export type VisibilityRow = {
   value: MemberState
-  /** the visitor the canvas is drawing for, so the control can say why the section is not there */
-  previews: Exclude<MemberState, 'everyone'>
+  /** the visitor the canvas is drawing for — View as's, since Story 5.14 — so the control can say why the section is
+   *  not there (R-168: left out of the page, and the panel says for whom) */
+  previews: Visitor
   onChange: (value: MemberState) => void
 }
 
@@ -210,12 +212,8 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
   { value: 'paid', label: 'Paid members' },
 ]
 
-/** What the canvas is previewing, in the words the audience list uses. */
-const PREVIEWING: Readonly<Record<Exclude<MemberState, 'everyone'>, string>> = {
-  anonymous: 'a visitor who is not signed in',
-  free: 'a free member',
-  paid: 'a paying member',
-}
+// What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
+// live region that announces a View-as choice read ONE list.
 
 export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark }: SidebarProps) {
   const base = useId()

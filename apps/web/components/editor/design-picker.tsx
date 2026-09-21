@@ -9,6 +9,7 @@ import { ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight } from '@/components/kit/icons'
 import type { DesignRows } from '@/lib/canvas'
 import { NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, position, strip } from '@/lib/ring'
+import type { Visitor } from '@/lib/view-as'
 
 /* ────────────────────────────── Story 5.11 — B1a, THE DESIGN BLOCK AT THE HEAD OF THE PANEL (FR-D19, R-74).
  *
@@ -57,9 +58,10 @@ const TILE_HEIGHT = 44
 
 /** One tile's picture: the design's own render, under a transparent press. */
 function Tile({
-  entry, target, rows, pool, icons, mode, src, assets, subject, className = '', style,
+  entry, target, rows, pool, icons, mode, src, assets, subject, member, className = '', style,
 }: {
   subject?: orbitWeekly.Subject | null
+  member?: Visitor
   entry: SectionRegistryEntry
   target: string
   rows: DesignRows | undefined
@@ -83,6 +85,7 @@ function Tile({
         src={src}
         assets={assets}
         subject={subject}
+        member={member}
         onAspect={() => {}}
       />
     </span>
@@ -100,12 +103,16 @@ export function DesignPicker({
   src,
   assets,
   subject,
+  member,
   onDesign,
   onStep,
 }: {
   /** the canvas's resolved preview subject (Story 5.13) — a tile previews the page behind it, as the picker's cards
    *  do; omitted on `/controls`, which has no canvas */
   subject?: orbitWeekly.Subject | null
+  /** Story 5.14 — the visitor View as is previewing, so a tile draws its design as that visitor sees it; omitted on
+   *  `/controls`, which has no View as, and then the preview's own default (a visitor who is not signed in) */
+  member?: Visitor
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
   /** where in the ring this section is */
@@ -139,7 +146,7 @@ export function DesignPicker({
     </button>
   )
 
-  const preview = { target, pool, icons, mode, src, assets, subject }
+  const preview = { target, pool, icons, mode, src, assets, subject, member }
 
   return (
     <section

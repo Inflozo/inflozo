@@ -6,6 +6,7 @@ import { defaultContent, type Mode } from '@inflozo/section-runtime'
 import { Skeleton } from '@/components/kit/loading'
 import { canvasAssets, mountSections, previewSrc, renderSection, type DesignRows } from '@/lib/canvas'
 import { DESKTOP } from '@/lib/device'
+import type { Visitor } from '@/lib/view-as'
 
 /* ────────────────────────────────── Story 5.10 — ONE CARD'S LIVE PREVIEW (S5a's card, FR-D12, NFR-1).
  *
@@ -48,6 +49,7 @@ export function SectionPreview({
   src,
   assets,
   subject,
+  member = 'anonymous',
   onAspect,
 }: {
   entry: SectionRegistryEntry
@@ -68,6 +70,10 @@ export function SectionPreview({
    *  shape — a post with a feature image and one without are different pages, which is the whole point of the
    *  choice. Omitted where there is no canvas behind the preview (`/controls`), and then the fixture is drawn. */
   subject?: orbitWeekly.Subject | null
+  /** Story 5.14 — the visitor View as is previewing, so a card or a tile draws the section as the canvas behind it
+   *  does (FR-D16), through `renderSection`'s one `member` door. Omitted on `/controls`, which has no View as, and
+   *  then Story 4.10's own default — a visitor who is not signed in — exactly as before. */
+  member?: Visitor
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
@@ -128,7 +134,7 @@ export function SectionPreview({
         target,
         rows,
         feed: 'first',
-        member: 'anonymous',
+        member,
         visibility: 'everyone',
         assets: assets ?? canvasAssets(pool),
         icons,
@@ -151,7 +157,8 @@ export function SectionPreview({
   // the icons arrive asynchronously and the mode flips under a live picker: both repaint what is already there
   // — and so does a canvas change: the card is keyed by design and kept, so its target and rows can change under it
   // — and so does a new preview subject, by its VALUE: `resolveSubject` hands back a fresh object every render
-  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug])
+  // — and so does a new visitor (Story 5.14): the paint reads it, so it is here, which is Story 5.13's review's rule
+  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug, member])
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0

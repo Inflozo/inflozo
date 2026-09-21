@@ -3519,8 +3519,9 @@ exactly as it is."*
   journal or `⌘Z` (AD-22). View as itself stays a session mode, back to Anonymous on reload (`EXPERIENCE.md:230`).
   Story 7.18's Pre-flight step reads the same record through `unviewed`.
 - Targets: ✅ this entry · ✅ Story 5.14's spec (Question 1, its Boundaries and matrix, its tasks, its acceptance
-  criteria and its owner test) · ✅ `epic-5-context.md` · ✅ `epics.md` (Story 5.14's criteria) · ⬜ `prd.md`
-  FR-D16's second paragraph, and ⬜ `epics.md` Story 7.18's Pre-flight row, both at Story 5.14's Dev.
+  criteria and its owner test) · ✅ `epic-5-context.md` · ✅ `epics.md` (Story 5.14's criteria) · ✅ `prd.md`
+  FR-D16's second paragraph, and ✅ `epics.md` Story 7.18's Pre-flight row, both at Story 5.14's Dev (2026-09-21) ·
+  ✅ `apps/web/lib/view-as.ts` (`afterChange`) and `editor.tsx` (`commit()`, `restore()`), the same Dev.
 
 **R-168 — a section hidden from the visitor being previewed is left out of the page, exactly as that visitor sees
 it.** Story 5.14's Question 2, ruled **option 1** (owner, 2026-09-21): *"Leave it out, exactly as a paid member
@@ -3544,7 +3545,7 @@ sees the page."*
   about who can see a section. The export is untouched (R-74). The P0·4 ghost and A2-0's outline are superseded on
   this point, and this entry is the record.
 - Targets: ✅ this entry · ✅ Story 5.14's spec (Question 2 and its Boundaries) · ✅ `epic-5-context.md` ·
-  ✅ `epics.md` (Story 5.14's criteria) · ⬜ `prd.md` FR-D16's first paragraph, at Story 5.14's Dev ·
+  ✅ `epics.md` (Story 5.14's criteria) · ✅ `prd.md` FR-D16's first paragraph, at Story 5.14's Dev (2026-09-21) ·
   ⬜ `P0 Editor Primitives - Spec.md` and `A2 Announcement Bars - Spec.md`, on the next library pass.
 
 

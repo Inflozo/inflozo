@@ -9,6 +9,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
+import { readViewed, type Visitor } from '@/lib/view-as'
 
 /**
  * THE EDITOR'S TWO READS (Story 5.1), both through the user's own session, so RLS decides what exists for them.
@@ -113,6 +114,10 @@ export type EditorData = {
    *  subject of the wrong kind or naming a row the source no longer holds. A canvas with no row here is untouched
    *  and renders its fixture, which is the same answer. */
   subjects: Readonly<Record<string, orbitWeekly.Subject>>
+  /** Story 5.14 — FR-D16's per-canvas "looked at" record (`project_template_prefs.member_states_viewed`), keyed by
+   *  `template_key` as `docs` and `subjects` are, each value read through `readViewed`: the known visitors in canonical
+   *  order, junk dropped. A canvas with no row here has been looked at as nobody, which is the same answer. */
+  viewed: Readonly<Record<string, readonly Visitor[]>>
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -132,7 +137,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 5.13 — `project_template_prefs`' FIRST READER ANYWHERE (FR-D22). RLS scopes it to this caller's own
     // rows. ONE ROW PER CANVAS PER PROJECT — the table's key is `(project_id, template_key)` — so it is "per user"
     // only because a project has one owner today; a second member would share the row (review, 2026-09-21, DW ledger).
-    sb.from('project_template_prefs').select('template_key, preview_subject').eq('project_id', projectId),
+    // Story 5.14 — and its viewed member states, the column's first reader too (FR-D16, AD-22)
+    sb.from('project_template_prefs').select('template_key, preview_subject, member_states_viewed').eq('project_id', projectId),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -228,9 +234,15 @@ export async function editorData(projectId: string): Promise<EditorData> {
    * THE SHAPE IS CHECKED AND NOTHING ELSE IS. The column is `jsonb` and nothing but this story has ever written it,
    * so a row of another shape is a row nobody in the product made; `resolveSubject` is the guard that decides
    * whether the value still names anything, and it answers the fixture with `fellBack` when it does not. */
-  if (prefs.error) console.error('editorData: preview subjects could not be read', { code: prefs.error.code })
+  if (prefs.error) console.error('editorData: preview subjects and viewed member states could not be read', { code: prefs.error.code })
   const subjects: Record<string, orbitWeekly.Subject> = {}
+  /* STORY 5.14 — the viewed member states ride the SAME read and take the SAME safe side: a failed read is the one log
+     above and answers none, because a record nobody could read only brings the reminder back — it never blanks an
+     editor. The column is `text[]` with no CHECK, so `readViewed` is its guard: a value that is not a visitor is a
+     value nobody in the product wrote, and it is dropped. */
+  const viewed: Record<string, readonly Visitor[]> = {}
   for (const row of prefs.data ?? []) {
+    viewed[row.template_key as string] = readViewed(row.member_states_viewed)
     const value = row.preview_subject as { kind?: unknown; slug?: unknown } | null
     if (value === null || typeof value !== 'object') continue
     const { kind, slug } = value
@@ -258,5 +270,6 @@ export async function editorData(projectId: string): Promise<EditorData> {
     defaults,
     dropped,
     subjects,
+    viewed,
   }
 }

@@ -10,7 +10,7 @@ import {
   moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
   stampControls, storedFor, switchDesign,
 } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
@@ -22,6 +22,7 @@ import { SourcePill } from '@/components/editor/source-pill'
 import { SaveState } from '@/components/editor/save-state'
 import { openShortcuts, ShortcutsSheet } from '@/components/editor/shortcuts-sheet'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
+import { ViewAs } from '@/components/editor/view-as'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
@@ -51,8 +52,9 @@ import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, subjectOptions } from '@/lib/preview-subject'
+import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
-import { setPreviewSubject } from './actions'
+import { setPreviewSubject, setViewedStates } from './actions'
 import type { EditorData } from './read'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
@@ -173,8 +175,18 @@ import type { EditorData } from './read'
    available). NO ZOOM CONTROL and no per-breakpoint editing (UX-DR17, UX-DR20, FR-D8): the fit is derived and only
    reported. `1` `2` `3` are Story 5.9's whole keyboard map, and D8b's collapse into `⋯` below 1440 is Story 5.22's.
 
+   VIEW AS (Story 5.14 — S4a's eye, S4d's menu and marker, B9, FR-D16, R-167, R-168). A MODE LIKE THE DEVICE: session
+   state, back to Anonymous on reload, never in the URL (`EXPERIENCE.md:230`), and it sits in S4a's CENTRED GROUP beside
+   Template, where every drawn bar puts it. A CHOICE IS A REPAINT, never a re-stamp: Story 4.10's `gateMembers` REMOVES
+   an element gated to another visitor, so the visitor reaches `renderSection`'s one `member` option and the render
+   decides the rest — the canvas, R-124's caption, the picker's cards and the ring's tiles all through that one door. A
+   section whose Member visibility excludes the visitor is LEFT OUT of the page, exactly as that visitor sees it (R-168),
+   with its Layers row kept and the panel naming who is being previewed. The per-canvas "looked at" record is
+   `project_template_prefs.member_states_viewed`, and R-167's rule for when it runs out is `lib/view-as.ts`'s
+   `afterChange`, run by `commit()` and `restore()` alone. S4d's "N not viewed" marker only reminds; it never blocks.
+
    ABSENT, NOT GREYED (UX-DR3), each until its story: "Saved", saving and Undo/Redo (5.8 — until then an edit lives for
-   the session and a reload starts from the stored docs), View as (5.14),
+   the session and a reload starts from the stored docs),
    Ship it (7.18), the name's rename underline (no story yet),
    "+ Add section" and the hairline "+" between sections (5.10),
    and the Style Pack card (6.3)
@@ -183,10 +195,6 @@ import type { EditorData } from './read'
    (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
    P0-2's filled-slot popover. S4a's posts-per-page note and S4c's pinned Quick Controls card are never
    built (FR-Q1, R-113). */
-
-/** The visitor the canvas previews until Story 5.14's View as: Story 4.10's own default, named here because R-124's
- *  Member visibility control says which visitor it is when a section is gated away. */
-const PREVIEWS: Exclude<MemberState, 'everyone'> = 'anonymous'
 
 // `EMPTY_DOC`, the template count and AD-22's round trip are `lib/round-trip.ts`'s, where `node --test` reaches them.
 
@@ -259,6 +267,7 @@ export function Editor({
   synthesized,
   defaults: stacks,
   subjects: storedSubjects,
+  viewed: storedViewed,
   darkEnabled,
   revision,
   userId,
@@ -299,6 +308,12 @@ export function Editor({
    *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
    *  card fills the room available. */
   const [device, setDevice] = useState<Device>(DESKTOP)
+  /** Story 5.14 — the visitor the canvas PREVIEWS (FR-D16). Session state like the mode and the device, and for the
+   *  same reason: it is a property of the person looking and not of the canvas, so it survives a canvas switch (this
+   *  component stays mounted), goes back to Anonymous on reload, and is never in the URL or a column —
+   *  `EXPERIENCE.md:230` makes View as a mode. It reaches every surface through `renderSection`'s one `member` option:
+   *  the canvas, R-124's caption, the Section Picker's cards and the Design ring's tiles. */
+  const [viewAs, setViewAs] = useState<Visitor>('anonymous')
   /* ─── Story 5.13 — FR-D22's PREVIEW SUBJECT, and the pill that names it ──────────────────────────────────────
    *
    * PER CANVAS (and per user only while a project has one owner: the table's key is `(project_id, template_key)`,
@@ -324,6 +339,23 @@ export function Editor({
     () => (previewing.subject === null ? [] : subjectOptions(source, previewing.subject.kind)),
     [source, previewing.subject?.kind],
   )
+  /* ─── Story 5.14 — FR-D16's "LOOKED AT" RECORD, and the nudge that names what I have not looked at ──────────────
+   *
+   * PER CANVAS, keyed by `template_key` as `subjects` is, and stored in `project_template_prefs.member_states_viewed` —
+   * the column AD-22 names for "FR-D16's viewed member states", in the schema since day one with no reader and no
+   * writer until now, so there is no migration (R-99). LOOKING IS NEVER AN EDIT: nothing here reaches `commit()`, the
+   * journal or `⌘Z`, and an untouched canvas stays untouched.
+   *
+   * A visitor counts as viewed THE MOMENT THE CANVAS IS SHOWN IN THAT STATE (the effect below). R-167 (owner,
+   * 2026-09-21) says when that runs out — at ANY change to the page — and `afterChange` decides it, called from
+   * `commit()` and `restore()` and nowhere else, so undo and redo are changes and the hydrate is not.
+   *
+   * EVERY WRITE GOES DOWN ONE PROMISE CHAIN, so the answers land in the order the records were made and an early
+   * answer arriving late can never stand over a later record. A refusal is LOGGED AND NEVER SAID: the record is
+   * bookkeeping, and losing it costs one reminder after a reload, where announcing it would interrupt someone who
+   * changed nothing (Story 5.13 said its refusal because a subject is an explicit choice; this is not one). */
+  const [viewed, setViewed] = useState<Viewed>(storedViewed)
+  const viewedWrites = useRef<Promise<void>>(Promise.resolve())
 
   /** the section a swap has just landed on, for `canvas-chrome.css`'s 180ms settle — cleared when it is over */
   const swapped = useRef<Pick | null>(null)
@@ -438,8 +470,24 @@ export function Editor({
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed }
+
+  /** Story 5.14 — the changed records, into the session and down the one write chain. Only rows that CHANGE reach it:
+   *  `seen` hands back the same array and `afterChange` returns only what moved, so an empty map writes nothing. */
+  const recordViewed = (changed: Readonly<Record<string, readonly Visitor[]>>) => {
+    const keys = Object.keys(changed)
+    if (keys.length === 0) return
+    const next: Viewed = { ...latest.current.viewed, ...changed }
+    latest.current = { ...latest.current, viewed: next }
+    setViewed(next)
+    const rows = keys.map((templateKey) => ({ templateKey, states: [...(changed[templateKey] ?? [])] }))
+    viewedWrites.current = viewedWrites.current.then(async () => {
+      // a thrown call (the network dropped, the session is gone) is the same refusal as a returned one
+      const answer = await setViewedStates(project.id, rows).catch((error: unknown) => ({ error: String(error) }))
+      if ('error' in answer) console.warn('the looked-at record was not saved; the reminder may come back after a reload', answer.error)
+    })
+  }
 
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
@@ -461,6 +509,8 @@ export function Editor({
     latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key) }
     setDocs(next.docs)
     journalise(touched, before, next.docs[touched] ?? EMPTY_DOC)
+    // STORY 5.14 — R-167: a change to the page makes its other visitors unviewed again, decided in ONE place
+    recordViewed(afterChange(latest.current.viewed, touched, templateKeyOf(now.key), now.viewAs))
     return next.back
   }
 
@@ -543,6 +593,8 @@ export function Editor({
     latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key), journal: r.journal }
     setDocs(next.docs)
     setJournal(r.journal)
+    // STORY 5.14 — R-167: undo and redo are changes, so they run the same rule `commit()` does
+    recordViewed(afterChange(latest.current.viewed, r.docKey, templateKeyOf(now.key), now.viewAs))
     // a selection cannot outlive the section it was on, exactly as `apply()` decides it
     if (now.selected && !next.docs[now.selected.doc]?.instances.some((i) => i.instanceId === now.selected?.instanceId)) choose(null)
     paint()
@@ -772,6 +824,21 @@ export function Editor({
     })
   }
 
+  /** STORY 5.14's PRESS — the visitor the canvas previews, and it is NOT an edit (FR-D16, AD-22).
+   *
+   * A REPAINT, NEVER 5.6's RE-STAMP: `gateMembers` REMOVES an element gated to another visitor on the canvas
+   * (`core.ts`), so a change of visitor changes which elements exist and only a paint can draw that — through the one
+   * door, `renderSection`'s `member`. `latest` is updated first because `paint()` reads through it in this same task,
+   * before React has re-rendered — `chooseSubject`'s order exactly. The record follows in the effect below, the moment
+   * the canvas is shown this way; no key presses this (FR-D11), and nothing reaches the doc, the journal or `⌘Z`. */
+  const chooseVisitor = (next: Visitor) => {
+    if (next === latest.current.viewAs) return
+    latest.current = { ...latest.current, viewAs: next }
+    setViewAs(next)
+    paint()
+    setSaid(VIEW_AS_SAID(next))
+  }
+
   const choose = (pick: Pick | null) => {
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
@@ -825,7 +892,8 @@ export function Editor({
         // door, here as it does in `restampAll` and `onChange`, so no repaint ever silently returns to light
         // Story 5.13: the canvas's resolved subject reaches every section through the ONE door. A site-wide section
         // compiles to `default.hbs`, which carries no resource of its own, so the argument is simply unused there.
-        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: PREVIEWS, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
+        // Story 5.14: and so does the visitor View as is previewing — Story 4.10's `gateMembers` decides the rest.
+        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
       })
       mountSections(mount, parts.join(''))
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
@@ -1248,6 +1316,18 @@ export function Editor({
   useEffect(() => {
     if (previewing.fellBack && previewing.subject !== null) setSaid(GONE(previewing.subject))
   }, [key, previewing.fellBack])
+
+  /** Story 5.14 — A VISITOR COUNTS AS VIEWED THE MOMENT THE CANVAS IS SHOWN IN THAT STATE: on open, on a change of
+   *  canvas and on every choice, and only once the hydrate has settled which docs this session shows. `seen` hands back
+   *  the same array when the visitor is already in the record, so a canvas looked at before writes nothing. */
+  useEffect(() => {
+    if (!hydrated) return
+    const stored = templateKeyOf(key)
+    const was = latest.current.viewed[stored] ?? []
+    const next = seen(was, viewAs)
+    if (next !== was) recordViewed({ [stored]: next })
+    // `recordViewed` reads the latest record through `latest`
+  }, [hydrated, key, viewAs])
 
   useEffect(() => {
     let alive = true
@@ -1899,16 +1979,23 @@ export function Editor({
             <RedoIcon size={14} />
           </IconButton>
         </div>
-        {/* D5a's centred group (:37), now the switcher ALONE: the owner removed the marker chip that stood beside it
-            at his test of Story 5.5 (R-130) — the switcher's own row already carries the hollow dot and the word, and
-            the Layers row still carries the sentence. ABSOLUTELY centred, as the frame draws it, so it does not move
-            as the project's name grows. */}
-        <div className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center">
+        {/* S4a's CENTRED GROUP (`S4 Editor.dc.html:33`, D5a :37): Template, a gap of 8, then View as — where every drawn
+            top bar puts the eye (S4a–c, S6, S7, S14, P0-6, D8, M1). The owner removed the marker CHIP that stood
+            beside the switcher at his test of Story 5.5 (R-130); he did not remove the group's second control, which
+            Story 5.14 built. ABSOLUTELY centred, as the frame draws it, so it does not move as the project's name
+            grows — and neither of View as's two moving parts moves it either: its value slot is as wide as its widest
+            word, and S4d's marker hangs outside the group, absolutely placed off the trigger's right edge. The deployed
+            walk measures THIS group against the bar (step 2), not the switcher alone. */}
+        <div id="editor-centre" className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
+          {/* this canvas's record, with the visitor on screen already in it: the menu's row in force is never
+              "Not viewed", and the marker never counts the page you are looking at */}
+          <ViewAs visitor={viewAs} viewed={seen(viewed[templateKeyOf(key)] ?? [], viewAs)} onChoose={chooseVisitor} />
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
-            RIGHT OF IT, as the frame draws them; View as (5.14), undo/redo (5.8) and Ship it (7.18) land beside them
-            later (R-118).
+            RIGHT OF IT, as the frame draws them; Ship it (7.18) lands beside them later (R-118). Undo and redo left
+            for the indicator's side at R-143. View as was once expected here, and that was an earlier story's guess and
+            never a ruling: every drawn bar puts it in the centred group above, which is where Story 5.14 built it.
             The sun is ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so
             many words): there is no toggle rather than a theme that declares less. The device track is NOT scoped by
             dark — R-135 scopes the mode and nothing else — so it is drawn on every project. */}
@@ -2167,6 +2254,8 @@ export function Editor({
               mode={mode}
               src={src}
               subject={previewing.subject}
+              // Story 5.14 — a tile previews the page as the visitor View as is previewing, through the same door
+              member={viewAs}
               onDesign={(to) => onDesign(chosen, to)}
               onStep={(by) => stepDesign(chosen, by)}
             />
@@ -2193,7 +2282,8 @@ export function Editor({
                 memberVisibility[chosen.designId] === true
                   ? {
                       value: chosen.memberVisibility,
-                      previews: PREVIEWS,
+                      // Story 5.14: R-124's caption follows View as — R-168's "left out, and the panel says for whom"
+                      previews: viewAs,
                       onChange: (value) => edit(chosen, (doc) => setMemberVisibility(doc, chosen.instanceId, value)),
                     }
                   : undefined
@@ -2319,6 +2409,8 @@ export function Editor({
           // EXPERIENCE.md:877 — a preview card wears the project's content source, which since this story includes
           // WHICH page it is: a card previewing a different post from the canvas behind it shows the wrong shape
           subject={previewing.subject}
+          // Story 5.14 — and as the visitor the canvas behind it is previewing (FR-D16)
+          member={viewAs}
           refusal={pickerRefusal}
           onAdd={onPlace}
           onClose={() => {
