@@ -2,8 +2,8 @@
 title: 'Story 5.13 — The content-source pill and the preview subject'
 type: 'feature'
 created: '2026-09-20'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '680ad91b5defe28c2eeed9d20638b658b0e47e2d'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -510,6 +510,10 @@ scroll at all would otherwise pass by standing still), and the menu is still ope
 the deployed build early, and is fixed inside the Dev phase. His formal test of the finished story — the eleven
 steps below — has not run yet, and the board clears an `issues` only on a `Fix` commit, which would have made it
 read as a test that happened.
+
+**The owner's test (2026-09-21).** Tested on `app.inflozo.com` on the deployment confirmed at the Deploy phase
+(`8d3f06ee`, `dpl_4JEzuMx7cD7SZhSQLSXyKEmsUsMs`), all eleven steps of the manual test. His word: *"passed"*. No
+further findings beyond the scroll finding above, which was fixed inside Dev. The story moves to Done.
 
 ## Questions for the owner
 
