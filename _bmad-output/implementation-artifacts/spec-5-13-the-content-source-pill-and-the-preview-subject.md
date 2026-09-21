@@ -167,8 +167,10 @@ the choice persists in the column that has been waiting for it. No migration, so
 - [x] `packages/library/orbit-weekly/dataset.json` — `subjects` gains `"tag": "field-notes"` and
       `"author": "rosa-menendez"`, as **slugs** of rows that already exist, with the `note` extended to say
       why these two differ in shape from `post`/`page`. Chosen for coverage, not alphabetically:
-      `field-notes` carries more posts than any other tag and Rosa is tied for the most-published author,
-      so both archives render a full first page. **Derive the counts, never restate them.**
+      `field-notes` carries more posts than any other tag and Rosa is tied for the most-published author, so each
+      is the deepest archive of its kind the bundled publication can draw. **Derive the counts, never restate
+      them.** *(Corrected at Dev: the Create draft said "both archives render a full first page", which no author
+      archive can — every author is tied well under `posts_per_page`, and the tag alone spills onto a second page.)*
 - [x] `packages/library/src/orbit-weekly.ts` — `Subject = { kind: 'post'|'page'|'tag'|'author'; slug: string }`
       (the column's own shape, minus the `id` nothing needs offline); `fixtureSubject(file)` → the Subject
       a file gets untouched; `resolveSubject(file, stored)` → `{ subject, fellBack }`, PURE — a stored
@@ -283,6 +285,103 @@ caption explaining the absence. The pill's *not-connected* state is not a placeh
 state of every project in the product today.
 
 ## Verification
+
+**As built.** Four departures from the spec's letter, each for a mechanical reason:
+- **`subjectLabel(subject, rows)` and `SUBJECT_SAID(subject, rows)` take the rows.** The pill prints the row's
+  *title*, and a `{kind, slug}` cannot supply one — the sketch's one-argument signatures could only have printed
+  the slug.
+- **`subjectKindOf(file)` sits between `nativeResourceOf` and the fixture.** The `NATIVE` table answers
+  `page.hbs` → `post`, because §3 says a page IS a post object; the SUBJECT it carries is nonetheless the
+  style-guide *page*. One derived widening over the same table, rather than a second table (standing rule 3).
+- **`feedPagination` now delegates to a private `paginationOver(total, n, of)`.** An archive's pagination is
+  sized on its own rows, and a refusal that said "the bundled feed has pages 1–5" about a tag's archive would
+  name the wrong list.
+- **D5e's menu chrome takes the FRAME's word and its sentences take the customer's.** The frame draws
+  `SUBJECT · WHICH POST THIS CANVAS RENDERS` and `Search posts` over rows headed `Style-guide article`; that
+  mixture is the export, so it is what is built (R-74). `KIND_WORDS` ("article") is kept for every sentence the
+  customer reads — `GONE`, `SUBJECT_SAID` — and for nothing else.
+
+**One I/O matrix row has no behavioural stop, and it is named rather than claimed.** *Save refused* is asserted
+at the sentence (`SAVE_REFUSED` in `preview-subject.test.ts`) and its one path is three lines — the action's
+`{ error }` → `setSubjectRefusal` → the menu's `data-subject-refusal` paragraph, the same paragraph the
+`fellBack` banner uses and the deployed walk reads. It is not driven end to end because **no refusal is reachable
+from the UI**: every input the action validates is well-formed by construction, and an RLS denial needs another
+user's project id, which no control can produce. Every other row has a stop that ran — the library's six tests
+over the pure half (the control first), `preview-subject.test.ts`'s eight, and step 89's checks on the walk below.
+
+**The linked-site row is true by CONSTRUCTION, not by a test.** Nothing in this story's code reads
+`projects.linked_site_id`: `SOURCE_WORDS.sample` is a constant and `bundledSource()` takes no project. A project
+whose site is linked therefore cannot say anything but "Sample content", which is what R-118 asks for.
+
+**Run at Dev (2026-09-21), locally:**
+- `pnpm check` — **exit 0** (Node 24.18.1). Lint, typecheck and every package test: `packages/library` **165, 0
+  fail** with `orbit-weekly.test.ts`'s six new tests in it — *THE CONTROL — with no subject passed,
+  templateContext answers exactly what it answered before this story* first; `apps/web` **445, 0 fail** with
+  `preview-subject.test.ts`'s eight; `packages/section-runtime` **220, 0 fail**; `packages/ghost-shim` **34**;
+  `packages/theme-compiler` **1**. Each run prints its own count.
+- `node tools/check-snapshots.mjs` (inside `pnpm test`) — **PASS, unchanged**: *5 designs at 10 targets match 6
+  committed snapshot files*, and no file under `packages/library/snapshots/` is in this story's diff. **This is
+  the byte-level control for the whole story** — `check-snapshots` calls `templateContext` with two arguments,
+  and the fixture default is what it has always been.
+- `node --test apps/web/preview-subject.test.ts` — **8 tests, 0 fail**.
+- `python3 tools/doc-audit.py --check` — **exit 0** (run twice; the first regenerated the story board, as its
+  sub-tools do).
+- **No file under `supabase/migrations/` is in this story's diff**, so there is no Schema phase (R-99). The
+  column, its grants and both policies have been in place since the complete-schema migration; this story is its
+  first reader and its first writer.
+
+**GitHub Actions (`GITHUB_TOKEN`), the real gate:**
+- `15ae12c3` (the first Dev push) — `CI` **failure**: `check` stopped at step 7, `python3 tools/doc-audit.py
+  --check`, and `deploy` was **skipped**, so nothing reached production from it. The cause is **DW-132**, the
+  HEAD-date stamp going stale between the pre-commit hook and CI, and not this story. `rls` **success**, `Render
+  matrix` **success**.
+- `9e5af087` (the board regeneration that followed) and `6ca5676f` (this run's own fix commit) — `CI`
+  **success** on both: `check`, `rls` and `deploy` all green; `Render matrix` **success**. Two things ride in
+  `check` and are therefore proved against the commit rather than on a laptop: **`pnpm keyboard`**, which is
+  **unchanged** — this story binds no key and R-145's map gains no row — and **`bash tools/matrix/run-matrix-gate.sh`**,
+  which is the `Render matrix` workflow (R-116), green with the matrix passing no subject (NFR-6(a)).
+
+**The DEPLOYED walk (2026-09-21), against `https://app.inflozo.com` at `6ca5676f` — R-82's own test.** Vercel
+(`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): production `dpl_HghwRrkFwPe5NCT5F2GaN2DqpiD9`,
+`READY`, `githubCommitSha` `6ca5676f` = `HEAD`. Supabase (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): two throwaway
+accounts through the Auth Admin API, users **13 → 13**, both deleted in `finally`.
+
+`node tools/probe/run-verify-editor.cjs` — **0 FAIL, 483 PASS**, and **all 23 of step 89's checks green on
+production**:
+- **The geometry first, because R-166 is a ruling about geometry (R-164).** The pill's box against the page
+  card's, measured from the rects: Desktop **gap 128px**, Tablet **4px**, Mobile **4px**, `meets: false` at all
+  three — and the ground still `32px` top and bottom, so no card lost a pixel (R-139 untouched). The page card is
+  still the ground's `firstElementChild`.
+- **B9's pill**: `border-style: dashed`, the dot `rgb(201, 194, 184)` (`line-strong`), radius `24px`, height
+  **24px**, reading *Previewing with: Sample content*. On **Home** it is a `SPAN` with `data-has-subject="false"`,
+  **no glyph and no menu in the document at all** (R-118 — absent, not greyed).
+- **D5e's menu**: heading `SUBJECT · WHICH POST THIS CANVAS RENDERS` — the frame's own words — the search taking
+  focus, **53 rows** with *Style-guide article* first, captioned and ticked, **no SOURCE group**, nothing greyed,
+  and `has image` as WORDS on **39 of 39** rows that carry a picture. Typing narrows to **2 of 53**, exactly
+  `filterSubjects`' own answer, with **zero** requests to Supabase or `/api/` to do it.
+- **FR-H8's structural claim, by hand**: one article renders `<figure>` + `<img srcset=…>`; another loses the
+  **whole element** — `figure: false, img: false`. Two articles, two genuinely different pages.
+- **Persisted**: the choice survives a reload and is the `project_template_prefs` row —
+  `{kind: 'post', slug: 'rosa-ferreira-…'}` against this user's id, its first writer and its first reader.
+- **The archive fix**: the Tag canvas names *Field Notes*, and every post on the page carries that tag with no
+  stranger drawn — `{"missing":[],"strangers":[],"total":14}`. Choosing another tag re-filters it. The Post
+  canvas's article did not follow: the preference is per canvas.
+- **A subject that is gone**: a planted `{kind:'post', slug:'a-post-that-was-deleted'}` renders the **fixture**,
+  announces `GONE` through `#editor-said`, repeats it in the menu, and the stored row is **KEPT**.
+- **Step 5's whole scripted session records zero `securitypolicyviolation` events** in either document with the
+  pill, its menu, its search, two picks, a reload and the planted fallback inside it — with the eval control
+  firing from BOTH documents, so the zero is a result. **Step 8's axe-core: zero WCAG 2.1 AA violations** at every
+  state. **Step 79**: `/harness/editor` and `/harness/canvas` both **404** on the deployed site.
+
+*Three runs were needed and the third is the one recorded. Each of the first two died on a 30s Playwright
+timeout at a different `goto`/`get` — **0 FAIL, 14 PASS** and **0 FAIL, 448 PASS** (step 89 complete and green in
+the second) — and a HARNESS ERROR with no FAIL is not a result (standing rule 2). The third died the same way at
+the very last step, step 9's skeleton-stream loop, after everything above had passed; `dig @1.1.1.1` and a plain
+`curl` both answered normally throughout, which is this machine's known intermittent stub, not the app. Step 9 is
+Story 5.1's and is untouched by this story; Review re-runs the whole walk.*
+
+**Not hit by this story, and not claimed:** Resend, Dodo and the Ghost test servers T1/T3. Nothing here sends
+mail, takes a payment or reads a Ghost — the bundled publication is the source until Story 5.18 (R-165).
 
 **Commands:**
 - `pnpm check` — expected: lint, typecheck and every package test green, with `orbit-weekly.test.ts`'s
