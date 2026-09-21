@@ -3596,6 +3596,47 @@ confusion."*
   ✅ `EXPERIENCE.md` (the IA row and S4d's) · ✅ `epic-5-context.md` · ✅ the deployed walk (steps 37 and 90) and the
   keyboard journey — Story 5.14's Dev (2026-09-21). ⬜ `B9` and `S4a`, on the next library pass.
 
+**R-171 — the top bar's two menus, Template and View as, share one look.** The owner, on Story 5.14's deployed build
+(`6f2944ef`, 2026-09-21):
+
+> *"Add icons for dropdown items in Template at top. Use relevant icons from Tabler icons. Use a relevant icon for any
+> custom template a user may create. Remove eye icon from the View As dropdown. Just keep the icons in the dropdown
+> items. Both Template and View as dropdown to look similar. Add relevant one liners below the template name. Add
+> 'Custom template' one liner below custom templates. Remove Auto generated and Empty text from right of list items.
+> Instead show the relevant icons there which are currently shown on left."*
+
+- **What it binds.**
+  - **One anatomy for both menus**, in `apps/web/components/editor/bar-menu.tsx`:
+    - D5b's trigger (32px, `0 12px`, an 8px gap, label and value, chevron).
+    - S4d's card (radius 12, 6px padding, `shadow-lg`), headed in 11/600 uppercase: "Templates" and "Preview as".
+    - A list that scrolls inside the card.
+    - Rows of a 15px glyph, the name at 13/500 over one 11px line, and a trailing slot.
+    - The current row carries the coral check and no tint.
+  - **The Template rows.** Each leads with a Tabler glyph: `home` · `article` (Post) · `file-text` (Page) · `tag` ·
+    `user` (Author) · `user-plus` (Signup) · `login-2` (Signin) · `user-circle` (Member home) · `error-404` · `lock`
+    (Private). A custom template from Story 7.16's Routes Manager takes `template`. Each glyph is emitted from
+    `packages/library/icons/tabler.json`, which is R-92's third owner-named exception after R-130 and R-142.
+  - **The one-liners.** Under each name sits one line (`CANVASES[key].caption`), and a custom template's reads
+    "Custom template".
+  - **The marks.** R-130's three state marks move to the row's trailing slot, beside the check on the current row.
+    Their words, "Auto-generated" and "Empty", are no longer printed. Each is the mark's hover title and the row's
+    `sr-only` text, which is `DESIGN.md`'s carve-out (R-132, R-136, R-159).
+  - **View as's trigger loses its eye.** Its rows keep their glyphs.
+  - **Both menus open on their checked row**, scrolled into view.
+- **What it supersedes.**
+  - D5b's row drawing: dot first, word on the right, the coral tint on the current row.
+  - S4a's eye on the View as trigger.
+  - R-130's "the word 'Empty' stays beside it": the shape now travels with its word as a title and a screen reader's
+    text, not in print, on the owner's word.
+- **What it does NOT change.** The Membership group, the rows' order and states, R-128's absent rows, and R-98's
+  "Opening…", which is now said on the pressed row's one line. The export is untouched (R-74).
+- Targets: ✅ this entry · ✅ Story 5.14's spec (its owner's findings, tasks, criteria and owner test) ·
+  ✅ `bar-menu.tsx`, `template-switcher.tsx`, `view-as.tsx`, `kit/icons.tsx` (eleven Tabler glyphs), `lib/editor.ts`
+  (the captions) · ✅ `prd.md` FR-D6's switcher sentence · ✅ `epics.md` UX-DR8, Story 7.16's custom-template rows and
+  Story 5.22's narrow top bar (the wider group touches the right-hand cluster below about 950px) ·
+  ✅ `DESIGN.md`'s carve-out · ✅ `EXPERIENCE.md`'s Template Switcher row · ✅ the deployed walk (steps 40, 43, 90)
+  and the keyboard journey — Story 5.14's Dev (2026-09-21). ⬜ `D5b` and `S4a`, on the next library pass.
+
 
 ## B · Approved decisions superseded by this session
 

@@ -535,7 +535,9 @@ button and inventing one would be a value R-74 never gave us.
 - Don't use marigold for anything but Pro and celebration, and never for an error.
 - **Don't let a shape carry a signal on its own, any more than a colour may.** A moon badge, a
   hollow-versus-filled dot, a ✦ — each carries its word, or an accessible label where the layout
-  genuinely cannot hold one. Same rule, same reason (`EXPERIENCE.md` § Accessibility Floor).
+  genuinely cannot hold one. Same rule, same reason (`EXPERIENCE.md` § Accessibility Floor). Where the
+  owner has ruled the word off the screen — View as's not-viewed dot (R-169) and the Template list's
+  state marks (R-171), 2026-09-21 — it is still carried, as the mark's hover title and a screen reader's text.
 - Don't use coral in a banner's link — that is sky. (A banner that asks for an answer may carry the
   Kit's 32px primary and secondary buttons instead of a link; the owner ruled that for the passkey
   nudge on 2026-09-06. The sky rule still governs anything that is a link.)

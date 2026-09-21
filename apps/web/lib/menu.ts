@@ -136,13 +136,31 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     // next frame, AFTER the click handler had armed the listener below. So the listener is armed
     // from this frame, once that event has been delivered, and the focus is asked not to scroll,
     // so stepping into a row cannot be the scroll that closes the menu either.
-    menu.querySelector<HTMLElement>('a[href], button')?.focus({ preventScroll: true })
+    //
+    // A MENU WITH A ROW IN FORCE OPENS ON THAT ROW (Story 5.14, R-171 — the owner's "if dropdown list grows in size,
+    // add scrollbar"): the Template list now scrolls, and a menu that opened on its first row would leave 404, its
+    // last, checked and out of sight. The checked row is focused and scrolled into view HERE, in the one frame that
+    // focuses at all — a second frame scheduled from the popover's `toggle` raced a fast keyboard: the arrow moved
+    // focus, then that late frame took it back (executed, the View as journey). The scroll is the list's own, which
+    // the listener armed below ignores; a menu with no row in force opens on its first item, as before.
+    const current = menu.querySelector<HTMLElement>('[aria-current="true"]')
+    ;(current ?? menu.querySelector<HTMLElement>('a[href], button'))?.focus({ preventScroll: true })
+    current?.scrollIntoView({ block: 'nearest' })
     // `closed`: a menu shut and reopened inside this one frame must not arm the listener of the open that already
     // left — nothing would ever remove it now that `once` is gone (review, 2026-09-21)
     if (!closed && menu.matches(':popover-open')) {
       window.addEventListener('scroll', onScroll, { capture: true, passive: true })
     }
   })
+}
+
+/** Every open menu in THIS document, closed. The platform's light dismiss only hears presses in the popover's own
+ *  document, so a press inside an iframe — the editor's canvas — never closes one; the editor calls this from the
+ *  canvas document's `pointerdown` (the owner's finding, 2026-09-21: "Clicking anywhere outside the dropdowns should
+ *  close the dropdowns"). Every popover in the app is a `popover="auto"` menu or picker, so closing all of them is
+ *  exactly light dismiss, extended to that one other document. */
+export function closeMenus() {
+  for (const open of document.querySelectorAll<HTMLElement>(':popover-open')) open.hidePopover()
 }
 
 /**

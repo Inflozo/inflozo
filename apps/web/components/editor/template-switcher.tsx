@@ -2,8 +2,12 @@
 
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
-import { Check, ChevronDown, ChevronRight, ChevronUp, CircleOff } from '@/components/kit/icons'
+import {
+  CanvasAuthor, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPost, CanvasPrivate, CanvasSignin,
+  CanvasSignup, CanvasTag, Check, ChevronDown, ChevronRight, ChevronUp, CircleOff,
+} from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
+import { BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
 import { CANVASES, canvasPath, isMembership, type CanvasKey } from '@/lib/editor'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { isApp } from '@/routing'
@@ -11,27 +15,31 @@ import { isApp } from '@/routing'
 /* D5b · THE TEMPLATE SWITCHER (`D5 Canvas Markers and Template Switcher.dc.html`:99-266) — the editor's first control
    that changes canvas, and its FIRST SOFT NAVIGATION.
 
-   THE FRAME, MEASURED. The closed control is a 32px pill, 12px padding, 8px gap, white on a 1px `line` border at
-   radius 8, with `Template` at 12/500 muted, the canvas's name at 12.5/600 and a 12px chevron — down closed, up open,
-   as D5b draws it open (:106). The menu is 284 wide, radius 12, 6px padding, 1px gaps and `shadow-lg`, which IS the
-   shadow D5b draws it with, value for value; a row is 7/10 at radius 8 with a 9px gap; the current row takes `coral-tint`,
-   600 and a 13px check; the Membership group's rows are indented to 31px under a 13/600 heading with its 12px
-   chevron. `openMenu` places it, clamps both edges (R-126) and flips it, and the platform gives light dismiss, Escape
-   and focus return because it is a `popover="auto"` — which is why this is built WITH `openMenu` and the Kit's row
-   shape rather than by widening `Menu`'s contract: D5b has group headings and indents that `Menu` has no place for.
+   THE FRAME, MEASURED — AND THEN AMENDED BY THE OWNER (R-171, 2026-09-21). The closed control is D5b's 32px pill, 12px
+   padding, 8px gap, white on a 1px `line` border at radius 8, with `Template` at 12/500 muted, the canvas's name at
+   12.5/600 and a 12px chevron — down closed, up open, as D5b draws it open (:106). D5b drew the menu as a plain list of
+   dots and words; the owner asked for it to look like View as's, so its card, heading, scrolling list and rows are
+   `bar-menu.tsx`'s, which View as uses too: 284 wide (D5b's), radius 12, 6px padding, `shadow-lg`, headed
+   "Templates", and each row a Tabler glyph for its canvas, the name at 13/500 over ONE line saying what the template
+   is (`CANVASES[key].caption`), and a trailing slot. The current row carries S4d's coral check and no tint, as View
+   as's does; the Membership group's rows are indented to 31px under a 13/600 heading with its 12px chevron. The list
+   scrolls inside the card when it outgrows 420px, and opens on the checked row. `openMenu` places it, clamps both
+   edges (R-126) and flips it, and the platform gives light dismiss, Escape and focus return because it is a
+   `popover="auto"`.
 
-   THE WORD IS NOT OPTIONAL (D5b's own caption). A designed canvas carries a FILLED dot and no word; an untouched one
-   carries a HOLLOW dot AND the word "Auto-generated". "A shape alone is the same failure as a colour alone", and this
-   menu is where a user decides which canvas to open.
+   THE MARK MOVED, AND ITS WORD IS HEARD RATHER THAN PRINTED (R-171). A designed canvas carries a FILLED dot, an
+   untouched one a HOLLOW dot — in the row's trailing slot now, where D5b printed "Auto-generated". The owner asked for
+   the words to go and the marks to take their place; each word stays in the row for a screen reader (`sr-only`), so
+   no one is left with a shape and no meaning. This departs, on his word, from the rule R-130 set here that a shape
+   never travels alone.
 
    AND THERE IS A THIRD STATE THE FRAME DOES NOT DRAW, NOW RULED (R-130, the owner, 2026-09-18). A canvas that is
    never synthesized — R-129's three membership ones and Private — and that the user has not designed is neither: a
    filled dot would SAY it is designed, which is false, and "Auto-generated" would be false too
    (`sections-inventory.md:785`). D5b draws Signup filled and Signin auto-generated, which FR-D6 contradicts for both,
    so the frame illustrates the two states across its rows rather than asserting these. The owner answered his own
-   Question 4 with a GLYPH rather than a word: Tabler's `circle-off`, which is why it is the one Tabler path in
-   `kit/icons.tsx` (its header carries the licence and the scope R-92 now excepts). The word "Empty" stays beside it —
-   his rule that a shape never travels alone is exactly why the icon needed answering for in the first place.
+   Question 4 with a GLYPH rather than a word: Tabler's `circle-off` (`kit/icons.tsx`'s header carries the licence and
+   the scope R-92 now excepts). Its word, "Empty", is a screen reader's since R-171, like "Auto-generated".
 
    WHAT IT DOES NOT SHIP, AND WHY (R-128, the owner, 2026-09-18): the rule, the `FROM THE ROUTES MANAGER` heading and
    the `+ New template` row are ABSENT until Story 7.16 builds the Routes Manager for them to reach — R-118's rule, a
@@ -47,20 +55,40 @@ import { isApp } from '@/routing'
    `<form>` (`sites/panel-link.tsx:88` is the built precedent). The editor stays mounted across the push: the canvas
    lives in the `[id]` layout, which survives a change of its child segment. */
 
-const ROW = 'flex w-full items-center gap-[9px] rounded-sm py-[7px] pr-[10px] text-left transition-colors'
+/** R-171 (the owner, 2026-09-21): each canvas carries a Tabler glyph at the head of its row — "Use relevant icons from
+ *  Tabler icons" — and a custom template from Story 7.16's Routes Manager will carry `CanvasCustom`. Keyed by canvas,
+ *  so a canvas added to `CANVASES` without a glyph is a type error, never a row that silently draws nothing. */
+const GLYPH: Readonly<Record<CanvasKey, typeof CanvasHome>> = {
+  home: CanvasHome,
+  post: CanvasPost,
+  page: CanvasPage,
+  tag: CanvasTag,
+  author: CanvasAuthor,
+  'custom-signup': CanvasSignup,
+  'custom-signin': CanvasSignin,
+  'custom-member-home': CanvasMemberHome,
+  error: CanvasError,
+  private: CanvasPrivate,
+}
 
-/** The row's mark, in D5b's two states plus R-130's third. `data-mark` is the state itself, so a reader — the probe
- *  included — asks the element what it is instead of inferring it from a computed border, which an icon has none of. */
-const Mark = ({ state }: { state: 'designed' | 'auto' | 'empty' }) =>
-  state === 'empty' ? (
-    <CircleOff size={9} data-mark={state} className="shrink-0 text-ink-soft" />
-  ) : (
-    <span
-      aria-hidden
-      data-mark={state}
-      className={`size-2 shrink-0 rounded-full ${state === 'designed' ? 'bg-ink' : 'border-[1.5px] border-line-strong'}`}
-    />
-  )
+/** The row's state mark, in D5b's two states plus R-130's third — since R-171 in the row's TRAILING slot, where its
+ *  printed word used to be. `data-mark` is the state itself, so a reader — the probe included — asks the element what
+ *  it is instead of inferring it from a computed border, which an icon has none of. Its word is the mark's hover
+ *  title here and the row's `sr-only` text below: `DESIGN.md`'s carve-out for a word the screen does not print, the
+ *  shape R-132, R-136 and R-159 already use. */
+const Mark = ({ state, word }: { state: 'designed' | 'auto' | 'empty'; word: string | null }) => (
+  <span title={word ?? undefined} className="inline-flex shrink-0">
+    {state === 'empty' ? (
+      <CircleOff size={9} data-mark={state} className="text-ink-soft" />
+    ) : (
+      <span
+        aria-hidden
+        data-mark={state}
+        className={`size-2 rounded-full ${state === 'designed' ? 'bg-ink' : 'border-[1.5px] border-line-strong'}`}
+      />
+    )}
+  </span>
+)
 
 export function TemplateSwitcher({
   projectId,
@@ -111,31 +139,34 @@ export function TemplateSwitcher({
   }
 
   const row = (key: CanvasKey) => {
-    // three states: designed (filled, no word), auto-generated (hollow, "Auto-generated") and
-    // never-auto-generated-and-not-yet-designed (R-130's `circle-off`, "Empty") — see the note above
+    // three states: designed (filled), auto-generated (hollow) and never-auto-generated-and-not-yet-designed (R-130's
+    // `circle-off`) — see the note above. Since R-171 the mark is the row's trailing glyph and its word is heard, not
+    // printed: "Remove Auto generated and Empty text from right of list items. Instead show the relevant icons there".
     const state = auto.has(key) ? 'auto' : empty.has(key) ? 'empty' : 'designed'
     const word = state === 'auto' ? 'Auto-generated' : state === 'empty' ? 'Empty' : null
     const busy = going === key
+    const Glyph = GLYPH[key]
     return (
       <li key={key} className="flex flex-col">
-        <button
-          type="button"
+        <BarMenuRow
           data-canvas={key}
           aria-current={key === current ? 'true' : undefined}
           aria-disabled={busy || undefined}
           aria-busy={busy || undefined}
           onClick={() => go(key)}
-          className={`${ROW} ${isMembership(key) ? 'pl-[31px]' : 'pl-[10px]'} ${ring} ${
-            key === current ? 'bg-coral-tint' : 'hover:bg-paper'
-          }`}
-        >
-          <Mark state={state} />
-          <span data-name className={`flex-1 text-ui-dense ${key === current ? 'font-semibold' : 'font-medium'}`}>
-            {CANVASES[key].label}
-          </span>
-          <span data-word className="text-[10px] text-ink-soft">{busy ? 'Opening…' : word}</span>
-          {key === current ? <Check size={13} className="shrink-0 text-coral-deep" /> : null}
-        </button>
+          indent={isMembership(key)}
+          glyph={<Glyph size={15} className="shrink-0 text-ink-soft" />}
+          name={CANVASES[key].label}
+          // R-98: the pressed row's line says what is happening while the transition runs
+          caption={busy ? 'Opening…' : CANVASES[key].caption}
+          trailing={
+            <>
+              <Mark state={state} word={word} />
+              {word === null ? null : <span data-word className="sr-only">{word}</span>}
+              {key === current ? <Check size={13} strokeWidth={2} className="shrink-0 text-coral-deep" /> : null}
+            </>
+          }
+        />
       </li>
     )
   }
@@ -149,19 +180,19 @@ export function TemplateSwitcher({
 
   return (
     <>
+      {/* NO `aria-label`: the button is named by its own words, "Template Home" (WCAG 2.5.3 — View as's rule, R-171) */}
       <button
         type="button"
         id="editor-template"
-        aria-label={`Template: ${CANVASES[current].label}`}
         aria-expanded={open}
         popoverTarget="editor-template-menu"
         onClick={(event) => {
           if (menu.current) openMenu(menu.current, event.currentTarget, { side: 'down', align: 'left' })
         }}
-        className={`flex h-8 items-center gap-2 rounded-sm border bg-surface px-3 transition-colors hover:border-line-strong ${open ? 'border-line-strong' : 'border-line'} ${ring}`}
+        className={triggerClass(open)}
       >
-        <span className="text-control-label font-medium text-ink-soft">Template</span>
-        <span className="text-[12.5px] font-semibold">{CANVASES[current].label}</span>
+        <span className={TRIGGER_LABEL}>Template</span>
+        <span className={TRIGGER_VALUE}>{CANVASES[current].label}</span>
         {open ? <ChevronUp size={12} className="text-ink-soft" /> : <ChevronDown size={12} className="text-ink-soft" />}
       </button>
       <div
@@ -177,14 +208,11 @@ export function TemplateSwitcher({
         onKeyDown={arrowKeys}
         className="border-0 bg-transparent p-0"
       >
-        {/* A PLAIN LIST WITH A LABEL, as every menu in the app is (`kit/select.tsx`'s `Menu`), and the group is a
+        {/* A PLAIN LIST UNDER ITS HEADING, as every menu in the app is (`kit/select.tsx`'s `Menu`), and the group is a
             nested labelled list. `role="menu"` would make each `<li>` an invalid child and buy nothing the Kit's
             shape does not already give: the popover is the focus trap, `arrowKeys` the movement, `aria-current` the
-            row in force. */}
-        <ul
-          aria-label="Template"
-          className="flex max-h-[min(420px,70vh)] w-[284px] list-none flex-col gap-px overflow-y-auto rounded border border-line bg-surface p-[6px] shadow-lg"
-        >
+            row in force. The card, its heading and the scrolling list are View as's too (`bar-menu.tsx`, R-171). */}
+        <BarMenuCard width="w-[min(284px,calc(100vw-16px))]" headingId="editor-template-heading" heading="Templates">
           {before.map(row)}
           {membership.length > 0 ? (
             <li className="flex flex-col">
@@ -220,7 +248,7 @@ export function TemplateSwitcher({
             </li>
           ) : null}
           {after.map(row)}
-        </ul>
+        </BarMenuCard>
       </div>
     </>
   )

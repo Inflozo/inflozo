@@ -119,8 +119,8 @@
 // `templateContext`, never restated here. It also carries the owner's finding of 2026-09-21, which belongs to EVERY
 // menu in the app rather than to this one: a menu with its own scrolling list must not close when that list scrolls.
 // Story 5.14 adds step 90, inside the same session, and CHANGES STEP 2: S4a's centred group is now Template AND View as,
-// so it is the GROUP that is measured against the bar and not the switcher alone. Step 90 reads S4a's trigger (R-170's
-// one name, the eye, 32px, no aria-label, "Anonymous" nowhere) and S4d's menu (the heading, exactly three rows and no
+// so it is the GROUP that is measured against the bar and not the switcher alone. Step 90 reads the trigger (R-170's
+// one name, NO eye since R-171, 32px, no aria-label, "Anonymous" nowhere) and S4d's menu (the heading, exactly three rows and no
 // tier or comped row, the check on the current row only, 260 wide and centred under the trigger); repaints as Paid,
 // Free and back to the logged out user with Rail's actions and the Inline Row's slot read by their own classes and
 // `#editor-said` announcing each; walks R-169's coral dots 2 → 1 → none on exactly the rows still to look at, each dot
@@ -132,7 +132,12 @@
 // Inline Row's card signed in. The trigger is measured clear of the right-hand cluster at 1440 and 1280, and a project
 // name at its limit clear of the group beside the widest canvas label (the name's `max-w` grew for View as). Every
 // expectation is `apps/web/lib/view-as.ts`'s, never restated here; step 37's caption reads the same module. Step 8's
-// axe runs once more with the menu open and its dots in it.
+// axe runs once more with the menu open and its dots in it. R-171 (the owner, 2026-09-21) made the Template list look
+// like View as's, so step 40 now reads each row's Tabler glyph, its one line (`lib/editor.ts`'s own words), the state
+// mark TRAILING the name with its word heard and not printed, no tint on the current row, and the list scrolling inside
+// its card; step 43 opens it on 404, its last row, and finds that row focused and scrolled into view; and step 90
+// presses the canvas with each of the bar's menus open, which must close it (the owner's finding: the canvas is another
+// document, and a popover's light dismiss never heard a press there).
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -1865,14 +1870,35 @@ async function main() {
             const h = document.getElementById('editor-template-membership')
             return h && { tag: h.tagName, expanded: h.getAttribute('aria-expanded'), controls: h.getAttribute('aria-controls') }
           })(),
-          rows: [...pop.querySelectorAll('button[data-canvas]')].map((b) => ({
-            key: b.dataset.canvas,
-            name: b.querySelector('[data-name]').textContent,
-            dot: dot(b),
-            word: b.querySelector('[data-word]').textContent,
-            checked: b.getAttribute('aria-current') === 'true',
-            indent: getComputedStyle(b).paddingLeft,
-          })),
+          rows: [...pop.querySelectorAll('button[data-canvas]')].map((b) => {
+            const name = b.querySelector('[data-name]')
+            const mark = b.querySelector('[data-mark]')
+            const word = b.querySelector('[data-word]')
+            const wb = word?.getBoundingClientRect()
+            return {
+              key: b.dataset.canvas,
+              name: name.textContent,
+              // R-171: the row's head is its canvas's glyph, and its one line sits under the name
+              glyph: b.firstElementChild?.tagName.toLowerCase() === 'svg' && !b.firstElementChild.hasAttribute('data-mark'),
+              caption: b.querySelector('[data-caption]')?.textContent ?? null,
+              dot: dot(b),
+              // the mark TRAILS the name now, in the slot the printed word held
+              trails: !!mark && !!(name.compareDocumentPosition(mark) & Node.DOCUMENT_POSITION_FOLLOWING),
+              // and its word is a screen reader's: in the row, with a box of at most a pixel
+              word: word?.textContent ?? '',
+              heard: !word || (wb.width <= 1 && wb.height <= 1),
+              checked: b.getAttribute('aria-current') === 'true',
+              tint: getComputedStyle(b).backgroundColor,
+              indent: getComputedStyle(b).paddingLeft,
+            }
+          }),
+          heading: document.getElementById('editor-template-heading')?.textContent ?? null,
+          // the list scrolls INSIDE the card, which stops at 420px or 70% of the window
+          list: (() => {
+            const ul = pop.querySelector('ul')
+            const card = pop.firstElementChild.getBoundingClientRect()
+            return { card: Math.round(card.height), bottom: card.bottom, vh: innerHeight, client: ul.clientHeight, scroll: ul.scrollHeight, overflowY: getComputedStyle(ul).overflowY }
+          })(),
           groups: [...pop.querySelectorAll('ul[aria-labelledby]')].map((g) => document.getElementById(g.getAttribute('aria-labelledby'))?.textContent.trim()),
           text: pop.textContent,
           rules: pop.querySelectorAll('hr').length,
@@ -1887,9 +1913,17 @@ async function main() {
     // not draw (never-synthesized and not yet designed: R-129's three and Private).
     const wantMark = (key) => (Object.keys(TEMPLATES).includes(templateKeyOf(key)) ? 'designed' : isSynthesizable(CANVASES[key].file) ? 'auto' : 'empty')
     const WORD_OF = { designed: '', auto: 'Auto-generated', empty: 'Empty' }
-    const wrong = d5b.rows.filter((r) => r.dot !== wantMark(r.key) || r.word !== WORD_OF[wantMark(r.key)])
-    check('step 40 — R-130\'s three marks, each with its own word: a designed canvas is a FILLED dot and no word, an auto-generated one a hollow dot and "Auto-generated", and one that is never auto-built the circle-off glyph and "Empty" — never a shape without its word', wrong.length === 0, JSON.stringify({ wrong, rows: d5b.rows }))
-    check('step 40 — the current canvas takes the check, and only it', d5b.rows.filter((r) => r.checked).length === 1 && d5b.rows.find((r) => r.checked)?.name === CANVASES.home.label, JSON.stringify(d5b.rows.filter((r) => r.checked)))
+    const wrong = d5b.rows.filter((r) => r.dot !== wantMark(r.key) || r.word !== WORD_OF[wantMark(r.key)] || !r.trails || !r.heard)
+    check('step 40 — R-130\'s three marks, since R-171 TRAILING the name with their words heard and not printed: a designed canvas a FILLED dot, an auto-generated one a hollow dot and "Auto-generated", one never auto-built the circle-off glyph and "Empty"', wrong.length === 0, JSON.stringify({ wrong, rows: d5b.rows }))
+    // R-171 (owner, 2026-09-21): the Template list looks like View as's — a glyph at the head of every row, the canvas's
+    // one line under its name (`lib/editor.ts`'s own words, never restated), a heading, and the current row checked
+    // with no tint, as S4d draws View as's
+    check('step 40 — R-171: every row leads with its canvas\'s glyph and carries its one line under the name, under a "Templates" heading',
+      d5b.heading === 'Templates' && d5b.rows.every((r) => r.glyph && r.caption === CANVASES[r.key].caption), JSON.stringify({ heading: d5b.heading, rows: d5b.rows.map((r) => ({ key: r.key, glyph: r.glyph, caption: r.caption })) }))
+    check('step 40 — the current canvas takes the check, and only it, with no tint (as View as\'s rows)', d5b.rows.filter((r) => r.checked).length === 1 && d5b.rows.find((r) => r.checked)?.name === CANVASES.home.label && d5b.rows.every((r) => r.tint === 'rgba(0, 0, 0, 0)'), JSON.stringify(d5b.rows.filter((r) => r.checked)))
+    check('step 40 — a list longer than the card SCROLLS inside it: the card stops at 420px (or 70% of the window) and ends inside the window',
+      d5b.list.overflowY === 'auto' && d5b.list.card <= Math.min(420, Math.round(d5b.list.vh * 0.7)) + 1 && d5b.list.bottom <= d5b.list.vh && (d5b.list.scroll <= d5b.list.client || d5b.list.card >= Math.min(420, Math.round(d5b.list.vh * 0.7)) - 1),
+      JSON.stringify(d5b.list))
     const memberRows = d5b.rows.filter((r, n) => isMembership(OFFERED[n]))
     check('step 40 — R-129\'s three membership canvases sit under a "Membership" heading, indented', d5b.groups.includes('Membership') && memberRows.length === OFFERED.filter(isMembership).length && memberRows.every((r) => r.indent === '31px'), JSON.stringify({ groups: d5b.groups, member: memberRows }))
     check('step 40 — R-128: no "+ New template", no FROM THE ROUTES MANAGER heading and no rule — they arrive with Story 7.16', !/New template/i.test(d5b.text) && !/ROUTES MANAGER/i.test(d5b.text) && d5b.rules === 0, JSON.stringify({ rules: d5b.rules, text: d5b.text.slice(0, 200) }))
@@ -1973,6 +2007,17 @@ async function main() {
     // ── step 43 — a membership canvas is NEVER synthesized: empty, and unmarked ──
     await page.locator('#editor-template').click()
     await page.waitForTimeout(300)
+    // R-171: the list is taller than its card, and 404 is its LAST row — so opening it on 404 must land ON that row,
+    // focused and scrolled into view (`scrollTop` above 0 is the proof it moved: the list opens at its top otherwise)
+    const onCurrent43 = await page.evaluate(() => {
+      const ul = document.querySelector('#editor-template-menu ul')
+      const row = document.querySelector('#editor-template-menu button[aria-current="true"]')
+      const u = ul.getBoundingClientRect()
+      const r = row.getBoundingClientRect()
+      return { key: row.dataset.canvas, focused: document.activeElement === row, inView: r.top >= u.top - 1 && r.bottom <= u.bottom + 1, scrolled: ul.scrollTop }
+    })
+    check('step 43 — R-171: on 404, the list\'s last row, the Template list opens ON the checked row, focused and scrolled into view',
+      onCurrent43.key === 'error' && onCurrent43.focused && onCurrent43.inView && onCurrent43.scrolled > 0, JSON.stringify(onCurrent43))
     await page.locator('#editor-template-menu button[data-canvas="custom-signup"]').click()
     await painted('custom-signup')
     await page.waitForTimeout(400)
@@ -4044,8 +4089,6 @@ async function main() {
     const [ANON90, FREE90, PAID90] = VA.VISITORS
     /** R-170: a visitor's one name, the menu row's title — the trigger prints it too */
     const name90 = (v) => VA.ROWS[v].title
-    /** S4a's eye (`S4 Editor.dc.html:33`), the trigger's first glyph */
-    const EYE90 = 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z'
     const bar90 = () => page.evaluate(() => {
       const box = (el) => (el ? el.getBoundingClientRect().toJSON() : null)
       const header = document.querySelector('header')
@@ -4061,7 +4104,9 @@ async function main() {
         name: (trig?.innerText ?? '').replace(/\s+/g, ' ').trim(),
         label: trig?.getAttribute('aria-label') ?? null,
         describedBy: trig?.getAttribute('aria-describedby') ?? null,
-        eye: trig?.querySelector('svg path')?.getAttribute('d') ?? null,
+        // R-171 took the eye off the trigger: its one glyph is the chevron
+        glyphs: trig ? trig.querySelectorAll('svg').length : null,
+        eye: trig ? [...trig.querySelectorAll('svg path')].some((p) => p.getAttribute('d') === 'M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z') : null,
         groupOff: gb && hb ? (gb.left + gb.right) / 2 - (hb.left + hb.right) / 2 : null,
         template: box(document.getElementById('editor-template'))?.left ?? null,
         // R-169: S4d's marker is not built — nothing sits beside the trigger, and no word of it is in the bar
@@ -4147,10 +4192,10 @@ async function main() {
 
     // ── opening: S4a's trigger, the centred group, and nothing beside it ──
     const open90 = await bar90()
-    check('step 90 — S4a: the trigger reads "View as" and R-170\'s "Logged out user" with the eye, at 32px, named by its own words (no aria-label, WCAG 2.5.3), and "Anonymous" is nowhere in the bar',
-      open90.value === name90(ANON90) && open90.name === `${VA.LABEL} ${name90(ANON90)}` && open90.eye === EYE90 &&
+    check('step 90 — the trigger reads "View as" and R-170\'s "Logged out user" at 32px, with NO eye since R-171 (its one glyph the chevron), named by its own words (no aria-label, WCAG 2.5.3), and "Anonymous" is nowhere in the bar',
+      open90.value === name90(ANON90) && open90.name === `${VA.LABEL} ${name90(ANON90)}` && open90.glyphs === 1 && open90.eye === false &&
       open90.trigBox?.height === 32 && open90.label === null && open90.reads && open90.anonymous === false,
-      JSON.stringify({ value: open90.value, name: open90.name, eye: open90.eye === EYE90, h: open90.trigBox?.height, label: open90.label, reads: open90.reads, anonymous: open90.anonymous }))
+      JSON.stringify({ value: open90.value, name: open90.name, glyphs: open90.glyphs, eye: open90.eye, h: open90.trigBox?.height, label: open90.label, reads: open90.reads, anonymous: open90.anonymous }))
     check('step 90 — R-169: no marker beside the trigger and no "not viewed" anywhere in the bar, the trigger described by nothing, and the canvas the signed-out render (Rail offers Sign in, the Inline Row its form)',
       open90.reads && open90.marker === false && open90.describedBy === null && signedOut90(await members90()),
       JSON.stringify({ reads: open90.reads, marker: open90.marker, describedBy: open90.describedBy, canvas: await members90() }))
@@ -4213,6 +4258,26 @@ async function main() {
       shown90 !== null && same90(shown90.dots, VA.unviewed([ANON90])) &&
       shown90.dotLook.every((d) => d.w === 8 && d.h === 8 && d.bg === 'rgb(232, 75, 52)' && d.word === true),
       JSON.stringify(shown90 && { dots: shown90.dots, look: shown90.dotLook }))
+
+    // ── THE OWNER'S FINDING (2026-09-21): a press on the CANVAS closes an open menu, as a press anywhere else does. The
+    //    canvas is another document, so the platform's light dismiss never heard it; both of the bar's menus, open
+    //    first (the control), then pressed away ──
+    const canvasPress90 = async () => {
+      const f = await page.locator('section[aria-label="Canvas"] iframe').boundingBox()
+      await page.mouse.click(f.x + f.width / 2, f.y + f.height - 12)
+      await page.waitForTimeout(300)
+    }
+    const viewAsWasOpen90 = (await menu90()) !== null
+    await canvasPress90()
+    const viewAsClosed90 = (await menu90()) === null
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    const templateWasOpen90 = await page.evaluate(() => document.getElementById('editor-template-menu').matches(':popover-open'))
+    await canvasPress90()
+    const templateClosed90 = await page.evaluate(() => !document.getElementById('editor-template-menu').matches(':popover-open'))
+    check('step 90 — a press on the canvas closes an open menu — View as\'s and Template\'s — as a press anywhere else in the editor does',
+      viewAsWasOpen90 && viewAsClosed90 && templateWasOpen90 && templateClosed90,
+      JSON.stringify({ viewAsWasOpen90, viewAsClosed90, templateWasOpen90, templateClosed90 }))
 
     // ── Paid: repainted as a paid member, announced, and one dot left ──
     await pick90(PAID90)

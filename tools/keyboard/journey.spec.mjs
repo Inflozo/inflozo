@@ -464,7 +464,7 @@ test('View as: Tab reaches it, Enter opens S4d\'s menu, ↓ moves, Enter picks �
   await expect.poll(() => refused.length, { message: 'the write made on open is refused and logged' }).toBeGreaterThan(0)
   const beforePick = refused.length
 
-  // Enter opens S4d's menu, and focus steps onto its first row
+  // Enter opens S4d's menu, and focus steps onto its CHECKED row (R-171: both bar menus open on it) — here the first
   await page.keyboard.press('Enter')
   const menu = page.locator('#editor-view-as-menu')
   await expect(menu).toBeVisible()
@@ -503,8 +503,11 @@ test('View as: Tab reaches it, Enter opens S4d\'s menu, ↓ moves, Enter picks �
   expect(await focused(page)).toBe('BUTTON#editor-view-as')
   expect(await viewAsOf(page)).toBe('Free member')
 
-  // and back to the logged out user: byte for byte the signed-out render it started as
+  // and back to the logged out user: the list opens on its checked row, Free (R-171), ↑ steps to the first, Enter
+  // picks it — byte for byte the signed-out render it started as
   await page.keyboard.press('Enter')
+  await expect(menu.locator('[data-visitor="free"]')).toBeFocused()
+  await page.keyboard.press('ArrowUp')
   await expect(menu.locator('[data-visitor="anonymous"]')).toBeFocused()
   await page.keyboard.press('Enter')
   expect(await viewAsOf(page)).toBe('Logged out user')

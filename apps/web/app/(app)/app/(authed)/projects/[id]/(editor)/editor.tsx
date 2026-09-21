@@ -47,6 +47,7 @@ import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
+import { closeMenus } from '@/lib/menu'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
@@ -1197,6 +1198,10 @@ export function Editor({
       pressedIn = latest.current.selected
       // the link panel's light dismiss never sees a press inside the frame: it closes here, committing nothing
       tools.current?.closeLink()
+      // AND NEITHER DOES A MENU'S (the owner, 2026-09-21: "Clicking anywhere outside the dropdowns should close the
+      // dropdowns"). A popover's light dismiss listens to ITS document, and the canvas is another one, so a press on
+      // the page left Template, View as or any panel menu open. It closes here, as the link panel does.
+      closeMenus()
     }, true)
     doc.addEventListener('mousedown', (e) => {
       press.current.on = true

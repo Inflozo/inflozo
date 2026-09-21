@@ -30,6 +30,10 @@
  * and verified path for path, and each is inlined for R-130's reason (importing `@inflozo/library/icons` for
  * five glyphs would pull the whole set into the editor's client bundle).
  *
+ * AND ELEVEN ON 2026-09-21 (ruling R-171, Story 5.14): the Template switcher's rows, one glyph per canvas plus one
+ * for any custom template a user creates — D5b draws none, and the owner asked for "relevant icons from Tabler
+ * icons". The third stated exception, and the same shape: emitted from `tabler.json`, never retyped.
+ *
  * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
  * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
@@ -143,6 +147,107 @@ export const SyncUpload = ({ strokeWidth = 2.5, ...p }: IconProps) => (
     <path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2 -2v-2" />
     <path d="M7 9l5 -5l5 5" />
     <path d="M12 4l0 12" />
+  </Icon>
+)
+/* ── R-171's canvas glyphs, one per template in the Template switcher (Story 5.14) ───────────────────────────────
+   The owner named them on 2026-09-21 — "Add icons for dropdown items in Template at top. Use relevant icons from
+   Tabler icons. Use a relevant icon for any custom template a user may create" — and D5b draws no glyph for any
+   row, so there is no export drawing to read: the third stated exception to R-92, shaped exactly like R-130 and
+   R-142. Each is `packages/library/icons/tabler.json`'s own `outline`, EMITTED from that file by script rather
+   than retyped, and inlined for R-130's reason. They take the file's 1.5 stroke, as S4d's `Eye`, `Person` and
+   `Crown` do in the View as rows these rows now match. */
+/** Tabler `home` — Home */
+export const CanvasHome = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 12l-2 0l9 -9l9 9l-2 0" />
+    <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2 -2v-7" />
+    <path d="M9 21v-6a2 2 0 0 1 2 -2h2a2 2 0 0 1 2 2v6" />
+  </Icon>
+)
+/** Tabler `article` — Post */
+export const CanvasPost = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 6a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2l0 -12" />
+    <path d="M7 8h10" />
+    <path d="M7 12h10" />
+    <path d="M7 16h10" />
+  </Icon>
+)
+/** Tabler `file-text` — Page */
+export const CanvasPage = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M14 3v4a1 1 0 0 0 1 1h4" />
+    <path d="M17 21h-10a2 2 0 0 1 -2 -2v-14a2 2 0 0 1 2 -2h7l5 5v11a2 2 0 0 1 -2 2" />
+    <path d="M9 9l1 0" />
+    <path d="M9 13l6 0" />
+    <path d="M9 17l6 0" />
+  </Icon>
+)
+/** Tabler `tag` — Tag */
+export const CanvasTag = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M6.5 7.5a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+    <path d="M3 6v5.172a2 2 0 0 0 .586 1.414l7.71 7.71a2.41 2.41 0 0 0 3.408 0l5.592 -5.592a2.41 2.41 0 0 0 0 -3.408l-7.71 -7.71a2 2 0 0 0 -1.414 -.586h-5.172a3 3 0 0 0 -3 3" />
+  </Icon>
+)
+/** Tabler `user` — Author */
+export const CanvasAuthor = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+    <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
+  </Icon>
+)
+/** Tabler `user-plus` — Signup */
+export const CanvasSignup = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+    <path d="M16 19h6" />
+    <path d="M19 16v6" />
+    <path d="M6 21v-2a4 4 0 0 1 4 -4h4" />
+  </Icon>
+)
+/** Tabler `login-2` — Signin */
+export const CanvasSignin = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M9 8v-2a2 2 0 0 1 2 -2h7a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-7a2 2 0 0 1 -2 -2v-2" />
+    <path d="M3 12h13l-3 -3" />
+    <path d="M13 15l3 -3" />
+  </Icon>
+)
+/** Tabler `user-circle` — Member home */
+export const CanvasMemberHome = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 12a9 9 0 1 0 18 0a9 9 0 1 0 -18 0" />
+    <path d="M9 10a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" />
+    <path d="M6.168 18.849a4 4 0 0 1 3.832 -2.849h4a4 4 0 0 1 3.834 2.855" />
+  </Icon>
+)
+/** Tabler `error-404` — 404 */
+export const CanvasError = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M3 8v3a1 1 0 0 0 1 1h3" />
+    <path d="M7 8v8" />
+    <path d="M17 8v3a1 1 0 0 0 1 1h3" />
+    <path d="M21 8v8" />
+    <path d="M10 10v4a2 2 0 1 0 4 0v-4a2 2 0 1 0 -4 0" />
+  </Icon>
+)
+/** Tabler `lock` — Private */
+export const CanvasPrivate = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 13a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2v6a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-6" />
+    <path d="M11 16a1 1 0 1 0 2 0a1 1 0 0 0 -2 0" />
+    <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
+  </Icon>
+)
+/** Tabler `template` — any custom template a user creates (Story 7.16) */
+export const CanvasCustom = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M4 5a1 1 0 0 1 1 -1h14a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-14a1 1 0 0 1 -1 -1l0 -2" />
+    <path d="M4 13a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v6a1 1 0 0 1 -1 1h-4a1 1 0 0 1 -1 -1l0 -6" />
+    <path d="M14 12l6 0" />
+    <path d="M14 16l6 0" />
+    <path d="M14 20l6 0" />
   </Icon>
 )
 

@@ -388,12 +388,29 @@ it only reminds you and never stops you.
     - `epics.md`: FR-D16's summary line and Story 5.14's criteria
     - `EXPERIENCE.md`: the IA row and S4d's row
     - `epic-5-context.md`
+- [x] **The owner's third round on the deployed build** (2026-09-21), recorded as **R-171** and findings 4, 5 and 7:
+  - **R-171:** `components/editor/bar-menu.tsx` is new: the one trigger shape, card, heading, scrolling list and row
+    that both menus now use.
+    - `template-switcher.tsx` takes the shared parts: a Tabler glyph per canvas, `CANVASES[key].caption` as the one
+      line, the state mark trailing (its word as its title and `sr-only`), no tint, and no `aria-label`.
+    - `view-as.tsx` takes them too and loses the trigger's eye.
+    - `kit/icons.tsx` gains eleven glyphs emitted from `tabler.json`, `CanvasCustom` among them for Story 7.16.
+    - `lib/editor.ts` gains the captions and `CUSTOM_TEMPLATE_CAPTION`.
+  - **Scrolling (finding 4):** the list scrolls inside a card that stops at 420px or 70% of the window, and
+    `focusCurrent` opens each menu on its checked row.
+  - **Click outside (finding 5):** `lib/menu.ts`'s `closeMenus()` runs from the canvas document's `pointerdown`.
+  - **Tests:** `editor.test.ts` checks the captions. The walk's steps 40, 43 and 90 check the glyphs, the lines, the
+    trailing marks, the scrolling, opening on the checked row, the eyeless trigger and a canvas press. The keyboard
+    journey checks that each menu opens on its checked row.
+  - **Documents:** the ledger (R-171), `prd.md` FR-D6, `epics.md` (UX-DR8, Story 7.16, and Story 5.22's narrow top
+    bar), `DESIGN.md`'s carve-out, and `EXPERIENCE.md`'s Template Switcher row.
 
 **Acceptance Criteria:**
 
 - **Given** the editor at 1440
   **When** it opens
-  **Then** the centred group holds Template and **View as · Logged out user** (eye, words, chevron). The group
+  **Then** the centred group holds Template and **View as · Logged out user** (words and chevron, no eye since R-171,
+  in the Template trigger's own shape). The group
   is centred in the bar. **It matches the frame**, S4a `:33`, with R-170's name for the value.
 - **Given** View as is pressed
   **Then** S4d's menu opens: "Preview as", then Logged out user / Free member / Paid member, each with its
@@ -734,6 +751,28 @@ and `VERCEL_PROJECT`, under Node 24.
     not a result.
   - The one after that is the clean run recorded above.
 
+**The owner's third round (R-171 and findings 4, 5 and 7), run at Dev (2026-09-21), locally, Node 24.18.1:**
+
+- `pnpm check`: **exit 0**. `apps/web` ran **457** tests with 0 fail, `editor.test.ts`'s caption test among them.
+  `check-snapshots`: **PASS, unchanged**.
+- `pnpm keyboard`: **37 passed**, with `next-env.d.ts` left clean.
+  - The first run failed the View as walk: *Expected "Free member", Received "Logged out user"*.
+  - The cause: each menu first opened on its checked row from a second frame, scheduled from the popover's `toggle`.
+    That frame could land AFTER a fast ↓ and take focus back, so Enter pressed the wrong row.
+  - The fix: `openMenu`'s own frame, the one frame that focuses at all, now focuses and scrolls to the checked row.
+    The rerun passed.
+- **The harness editor, measured in Chromium:**
+  - **The Template list:** every row leads with its Tabler glyph and carries its own line; the state mark trails the
+    name; "Auto-generated" and "Empty" are `sr-only`; and Home, the current row, has the check with no tint.
+  - **Scrolling:** the card measures **284 × 420**, and the list scrolls inside it at **378 of 538px**. With real
+    scrollbars turned on, the Kit's slim rounded thumb sits inside the card under the heading. Every caption fits on
+    one line, after three membership captions were shortened for the indented rows.
+  - **View as:** the trigger's only glyph is its chevron.
+  - **Click outside:** a press on the canvas closed each open menu.
+  - **Narrow windows:** the Template card stayed inside the window at **1024 × 700** and **834 × 600**.
+  - **The bar's own limit, 1280 down to 880:** the group clears the right-hand cluster by **6px at 960** and meets it
+    at **940 (−4)**. That is recorded on Story 5.22's card.
+
 **Commands:**
 
 - `pnpm check`. Expected:
@@ -773,12 +812,16 @@ Do this on the real site after Deploy confirms the build. Use the **Pilot sectio
 your account at Story 5.1. **Step 6** is your ruling **R-167** (any change brings the reminder back), **steps 7
 and 8** are **R-168** (a hidden section is left out of the page), and **steps 1 to 5** are your two findings on
 this build, **R-169** (a coral dot in the list, nothing beside the button) and **R-170** (one name for each
-visitor), all from 2026-09-21.
+visitor), and **steps 2a to 2c** are **R-171** (the two lists look alike) and your findings on scrolling and on
+clicking outside, all from 2026-09-21.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | "Template · Home", and right beside it an eye with **"View as Logged out user"**. **Nothing** sits to the right of that button: no "not viewed" tag. On the page, the header shows **Sign in** and **Subscribe**, and the newsletter band shows its email box. |
-| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member", each with a small **coral dot** at its right end, meaning "not looked at yet". Every grey second line fits on one line. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the middle of the top bar. | — | Two buttons that look alike: **"Template Home"** and right beside it **"View as Logged out user"**, with no eye. **Nothing** sits to the right of them: no "not viewed" tag. On the page, the header shows **Sign in** and **Subscribe**, and the newsletter band shows its email box. |
+| 2 | the same | Editor, Home | Press **View as**. | — | A list headed **PREVIEW AS** with three rows, each with its icon on the left: "Logged out user — Not signed in" with a tick, then "Free member" and "Paid member", each with a small **coral dot** at its right end, meaning "not looked at yet". Hold the pointer on a dot and it says **Not viewed**. |
+| 2a | the same | Editor, Home | Click anywhere on the page itself, below the list. | — | The list **closes**. Open it again and press Esc: it closes too. |
+| 2b | the same | Editor, Home | Press **Template**. | — | A list headed **TEMPLATES** that looks like the View as list: every row has an **icon** on the left (a house for Home, an article for Post, a page for Page, a tag, a person for Author, a person-plus for Signup, a door-arrow for Signin, a person-in-circle for Member home, "404" for 404), the name, and **one grey line** saying what the template is — "Your site's front page", "A single article", "Where visitors join" and so on. On the right of each row is its small mark: a filled dot for a designed page, a hollow dot for an auto-generated one, a crossed-out circle for an empty one — with **no "Auto-generated" or "Empty" words**. Hold the pointer on a mark and it says what it means. Home has the tick. |
+| 2c | the same | the open Template list | Scroll the list with your mouse wheel or trackpad. | — | The list **scrolls inside its card**, with a thin rounded scrollbar, and the card stays the same height. The page behind does not move. Click on the page: the list closes. |
 | 3 | the same | the open list | Choose **Paid member**. | — | The page changes at once. The header's Sign in and Subscribe become **Account**, and the newsletter's email box becomes **"Signed in · Manage your preferences"**. The button reads "View as Paid member". Open the list again: Paid member has the tick, and only **Free member** still has a dot. |
 | 4 | the same | Editor, Home | Choose **Free member**. | — | The page looks like the paid one, because these sample sections treat both kinds of member the same (step 7 shows the difference). Open the list: **no row has a dot** — you have looked at Home all three ways. |
 | 5 | the same | Editor, Home | **Reload the page**, then open the list. | — | "View as" is back to **Logged out user**. Like the device and light/dark buttons, it is not saved. **No dots**: the editor remembered that you looked at Home all three ways. |
@@ -816,6 +859,56 @@ be same to avoid confusion."** (the same day). **Fixed in this story; ruled as R
 **Found while fixing them:** a very long project name could run under the middle of the top bar, because the
 middle group now holds two buttons. The name now stops shorter, leaving a gap. The walk measures it with a long
 name.
+
+**3. "Add icons for dropdown items in Template at top. Use relevant icons from Tabler icons. Use a relevant icon for any
+custom template a user may create. Remove eye icon from the View As dropdown. Just keep the icons in the dropdown
+items. Both Template and View as dropdown to look similar. Add relevant one liners below the template name. Add
+'Custom template' one liner below custom templates. Remove Auto generated and Empty text from right of list items.
+Instead show the relevant icons there which are currently shown on left."** (the owner, 2026-09-21, on `6f2944ef`).
+**Fixed in this story; ruled as R-171.**
+
+- The two buttons and their lists are now built from one set of parts, so they look alike and cannot drift apart.
+- **The Template list:**
+  - Every row has a Tabler icon, and one grey line under the name saying what the template is.
+  - The auto-generated and empty marks moved to the right of the row. The words "Auto-generated" and "Empty" are
+    gone from the screen.
+  - Holding the pointer on a mark shows its word, and a screen reader still reads it.
+- **Custom templates** you create later (the Routes Manager, Story 7.16) will show Tabler's "template" icon and the
+  line "Custom template". Both are ready and recorded on that story.
+- The eye is gone from the View as button. Its list keeps its icons.
+
+**4. "If dropdown list grows in size, add scrollbar and ensure the dropdown looks good with scrollbar for vertical
+scrolling. Do not increase the height of dropdown much."** **Fixed in this story.**
+
+- Both lists stop at the height the Template list already had, and scroll inside their card with the app's thin
+  rounded scrollbar.
+- The heading stays put while the list scrolls.
+- A list opens on the ticked row, scrolled into view. On 404, the Template list's last row, you land on 404 rather
+  than at the top.
+
+**5. "Clicking anywhere outside the dropdowns should close the dropdowns."** **Fixed in this story.** A click on the
+page itself (the canvas) did not close an open list. That is because the page sits in a frame of its own, which the
+browser's own "click outside" never hears. Now a press on the page closes any open list, as a press anywhere else in
+the editor already did.
+
+**6. "Any text that is made an anchor link using the text controls becomes blue. Is there any story to make anchor
+link designs?"**
+
+- **Part of this exists.** Your ruling R-112 (15 Sep) already decided how a link looks: ink words with an orange
+  underline, and orange words in dark mode. Story 6.1 makes that look a per-Style-Pack setting.
+- **The missing part:** no story connects that look to a link made with the text toolbar inside a section. So the
+  browser's default blue shows on the canvas, and a published site would show the same.
+- Fixing it changes the engine that draws every section, which this story's spec says to ask about first.
+  **Question 3 below.**
+
+**7. "Ensure all changes are responsive."**
+
+- Both lists narrow to fit the window, stop at 70% of a short window's height, and truncate a long line rather than
+  wrapping it. Measured at 1440, 1024 × 700 and 834 × 600.
+- **One limit remains:** the top bar itself. With both buttons in its middle, it clears the right-hand buttons down to
+  about 960px wide and touches them below about 950px, measured in the harness from 1280 down to 880.
+- Below that width, the right-hand buttons should move into one overflow menu, as the design for narrow screens
+  draws. That is Story 5.22's job, and its story card now says so.
 
 *`owner_test` stays `pending`* rather than moving to `issues`: these arrived during Dev, from the owner looking at
 the deployed build early, and are fixed inside the Dev phase, as Story 5.13's scroll finding was. His formal test of
@@ -889,3 +982,29 @@ ghost with its "Hidden for this audience" pill (`P0 Editor Primitives - Spec.md:
 accepted) and A2-0's dashed outline (`A2-0 Category Proof.dc.html:44`), which no story had built. A2's own
 `audience` control, when its Epic 9 story builds it, follows the same rule. The export is untouched (R-74);
 `reconcile-designs-decisions.md` is the record.
+
+### Question 3 — Links typed into a section's text show the browser's plain blue. Where should they be fixed?
+
+**In plain English.** You already decided how a link should look (ruling R-112, 15 September): the words stay in the
+text colour with an orange underline, and in dark mode the words turn orange. Each Style Pack will get its own link
+look later (Story 6.1). But no story connects that look to a link you make with the text toolbar inside a section.
+So today the browser's default blue shows on the canvas, and a published site would show the same, because the theme
+is built from the same section styles. Fixing it is a small change to the engine that draws every section, in the
+editor and in the published theme alike. This
+story's spec says to ask before changing that engine.
+
+**An example.** In the Hero's title you select "Friday", press the link button and paste an address. Today "Friday"
+turns bright blue and underlined. After the fix it stays dark ink with an orange underline, and in dark mode it turns
+orange.
+
+1. **Fix it in its own small story, straight after this one (RECOMMENDED).**
+   - The same fix, and View as's review stays about View as.
+   - The change reaches every link on every page and in the published theme, so it gets its own check on your two
+     Ghost test sites.
+2. **Fix it inside this story now.**
+   - The same fix, reviewed and tested together with View as.
+   - This story takes longer to finish.
+3. **Leave it for the Style Packs** (Epic 6, Story 6.1).
+   - Nothing changes until then, and links stay blue.
+
+**Ruled:** _(awaiting the owner)_

@@ -2,7 +2,8 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, CONDITIONAL,
-  isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, SYNC, syncPath, templateKeyOf, type CanvasKey,
+  CUSTOM_TEMPLATE_CAPTION, isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, SYNC, syncPath, templateKeyOf,
+  type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 
@@ -163,4 +164,17 @@ test('UX-DR17: the chip states the TRUE SIZE first and the shrinking second, as 
   assert.equal(viewportWords(DESKTOP, 0.001), 'viewport 1440 × 900 · shown at 1%')
   // the live region says the device NOW SHOWING and its real size, never the press (`modeShown`'s shape)
   assert.equal(deviceShown(TABLET), 'Tablet — 834 × 1112')
+})
+
+test('R-171: every canvas carries its own one line for the Template list, and a custom template reads "Custom template"', () => {
+  const captions = Object.values(CANVASES).map((c) => c.caption)
+  for (const [key, c] of Object.entries(CANVASES)) {
+    assert.ok(c.caption.length > 0 && !c.caption.includes('\n'), `${key} has no one-line caption`)
+    // a ONE-liner: the menu truncates past its width, so a line this long would lose its end on the indented rows
+    assert.ok(c.caption.length <= 30, `${key}'s caption "${c.caption}" is longer than one line of the 284px menu`)
+    assert.notEqual(c.caption.toLowerCase(), c.label.toLowerCase(), `${key}'s caption only repeats its name`)
+  }
+  assert.equal(new Set(captions).size, captions.length, 'no two templates are described the same way')
+  // the owner's own words for Story 7.16's custom templates
+  assert.equal(CUSTOM_TEMPLATE_CAPTION, 'Custom template')
 })

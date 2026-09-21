@@ -290,7 +290,7 @@ work and is not story material**; it is cited here only where it names the frame
 - **UX-DR5 · The design picker always shows position** ("Design 7 of 18"), `]` past the last returns to the first, and switching carries, parks and defaults.
 - **UX-DR6 · Every empty state is designed, not omitted.** § State Patterns answers "what does this show when it has nothing to show" for Dashboard, Editor, Control Sidebar, Section Picker, Layers, Routes Manager, Assets, Deploy History, Notifications, Sites, Paywall Editor, Suggestions, the main feed, a secondary `{{#get}}` feed and a user-authored section — each with its loading, error and refusal columns.
 - **UX-DR7 · Partial and degraded states are first-class, not errors.** Partially credentialed · Preview-only (sky, not danger) · uploaded-not-activated · read-only project (export still works) · read-only session · no local storage · offline · `pro_past_due`.
-- **UX-DR8 · Colour classifies; it never carries the only signal, and neither does shape.** Every state has a text equivalent — four persistence *labels* and one dot, the word **Pro** beside the ✦, "Auto-generated" beside the hollow dot, "has image" beside the marker, "Dark override" naming the moon badge — as its accessible name and its hover title rather than printed beside it, which is **R-136** (owner, 2026-09-19) applying `DESIGN.md`'s carve-out for where the layout cannot hold the word: a 12px chip in a 280px control row whose head already holds the label, the value and the reset arrow.
+- **UX-DR8 · Colour classifies; it never carries the only signal, and neither does shape.** Every state has a text equivalent — four persistence *labels* and one dot, the word **Pro** beside the ✦, "Auto-generated" beside the hollow dot, "has image" beside the marker, "Dark override" naming the moon badge — as its accessible name and its hover title rather than printed beside it, which is **R-136** (owner, 2026-09-19) applying `DESIGN.md`'s carve-out for where the layout cannot hold the word: a 12px chip in a 280px control row whose head already holds the label, the value and the reset arrow. **The owner extended the same carve-out by choice on 2026-09-21**: View as's coral not-viewed dot (**R-169**, "Not viewed") and the Template list's state marks (**R-171**, "Auto-generated", "Empty") carry their words as a hover title and a screen reader's text, not in print.
 - **UX-DR9 · The focus model across the canvas iframe boundary** — §7.3's named deliverable, discharged in `EXPERIENCE.md`: the canvas is one tab stop between Layers and the Controls sidebar, is reachable and escapable by keyboard, and selection survives the crossing.
 - **UX-DR10 · Keyboard completeness beyond FR-D11's global map.** Layers and every reorderable list: ↑↓ move focus, **`⌥↑`/`⌥↓` move the section itself** with the canvas following and the move announced, `Enter` selects, `Space` toggles visibility. Item lists take the same pattern. Section Picker: arrows across the grid, `Enter` places, `Esc` closes and **returns focus to the invoking position**. Design picker: ←→ mirroring `[` `]`. Assets: the drop zone is **also a file input with a visible "Choose files" button** — a drag-only upload has no keyboard path. Every menu, popover and sheet traps focus and returns it. **A drag with no keyboard equivalent is a defect.**
 - **UX-DR11 · WCAG 2.1.4 Character Key Shortcuts.** Every single-character shortcut is live **only while the editor shell holds focus**, never while a text field or `contenteditable` has it. axe-core does not detect this.
@@ -2287,6 +2287,10 @@ icon rail, the Controls sidebar becomes an overlay panel, and the canvas keeps i
 **And** **this is browser zoom, which Inflozo does not own and may not defeat** (WCAG 1.4.4) — it is not the
 canvas scale FR-D14 refuses, and the two never meet
 **And** the Dashboard, Sign In, Billing, Suggestions and every marketing page stay **fully usable at 390**
+**And** **the top bar's centred group never meets the right-hand cluster**. Since Story 5.14 the group holds both
+Template and View as, and measured on 2026-09-21 it clears the cluster down to about 960px and touches it below
+about 950px. Below that width the cluster's controls move into the one overflow menu, as D8 draws, rather than the
+two buttons shrinking or losing their labels.
 **And** the states match D8a at 834, D8b at 720 and D4f at 390.
 
 **FRs:** FR-D1 (the floor). · **Frame:** `D8 Editor Below 1440.dc.html` D8a · D8b · `D4 Dashboard Sheets and
@@ -3000,7 +3004,9 @@ naming step**: I type a display name, **see the derived filename and the Ghost d
 and am refused a name colliding with another template in the project or one already deployed
 **And** **renaming a deployed template is not offered at all, and the UI says why** — Ghost stores the filename on
 every page that selected it and never repairs it
-**And** custom templates appear in the template switcher as designable canvases, and **"+ New template" is a
+**And** custom templates appear in the template switcher as designable canvases — each row with Tabler's `template`
+glyph (`kit/icons.tsx`'s `CanvasCustom`) and the one line **"Custom template"** (`lib/editor.ts`'s
+`CUSTOM_TEMPLATE_CAPTION`), in the shared row of R-171 — and **"+ New template" is a
 shortcut that deep-links into this flow** — one creation flow, two entry points
 **And** deleting a custom template or its route **warns when the template has designed content**, the canvas is
 deleted with it and recoverable via undo, and an editor viewing it switches to Home with a notice

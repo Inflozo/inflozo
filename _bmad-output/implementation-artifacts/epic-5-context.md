@@ -308,6 +308,21 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       - The Controls panel's audience list keeps "Logged out · Free members · Paid members".
     - **Also found:** the wider centred group let a long project name run 25px under it, so the name's limit is now
       `calc(50% - 360px)`. Step 90 measures it.
+  - **The owner's third round (2026-09-21), R-171:** the Template and View as menus now share one anatomy,
+    `components/editor/bar-menu.tsx`.
+    - The shared parts: D5b's trigger shape, S4d's card and uppercase heading, a list that scrolls inside a card
+      capped at 420px or 70vh on the Kit's slim scrollbar, and rows of glyph · name over one line · trailing slot.
+      The current row has the check and no tint.
+    - Template rows: an eleven-glyph Tabler set emitted from `tabler.json` into `kit/icons.tsx`, including
+      `CanvasCustom` for Story 7.16, and `CANVASES[key].caption`. R-130's marks moved to the trailing slot, with their
+      words given as a title and as `sr-only` text.
+    - View as lost its trigger eye.
+    - `openMenu` now opens every menu on its `aria-current` row, focused and scrolled into view. A second frame from
+      `toggle` raced fast keyboards, as the journey executed.
+    - `lib/menu.ts`'s `closeMenus()`, run from the canvas document's `pointerdown`, closes open popovers on a canvas
+      press, because light dismiss never hears the iframe.
+    - Links typed with the text toolbar render browser blue, because no stylesheet applies R-112's `--link-color` /
+      `--link-decoration` to an inline `a` mark. That is Question 3, awaiting the owner. It touches `packages/`.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
