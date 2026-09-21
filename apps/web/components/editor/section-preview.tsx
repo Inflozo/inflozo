@@ -150,7 +150,8 @@ export function SectionPreview({
   }
   // the icons arrive asynchronously and the mode flips under a live picker: both repaint what is already there
   // — and so does a canvas change: the card is keyed by design and kept, so its target and rows can change under it
-  useEffect(paint, [near, mode, icons, target, rows, entry])
+  // — and so does a new preview subject, by its VALUE: `resolveSubject` hands back a fresh object every render
+  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug])
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0

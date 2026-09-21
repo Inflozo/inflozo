@@ -2,9 +2,9 @@
 title: 'Story 5.13 — The content-source pill and the preview subject'
 type: 'feature'
 created: '2026-09-20'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '680ad91b5defe28c2eeed9d20638b658b0e47e2d'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -241,6 +241,27 @@ the choice persists in the column that has been waiting for it. No migration, so
   today — `py-8` unchanged (R-138, R-139, **R-166**).
 - **Given** `pnpm check` **Then** `tools/check-snapshots.mjs` is unchanged and green — the fixture default
   is byte-identical to today.
+
+### Review Findings
+
+Review of 2026-09-21, all five layers run (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). Nothing needed the owner's decision.
+
+- [x] [Review][Patch] A picker card drawn once kept the OLD article after a new subject was chosen — the paint effect did not depend on the subject and the picker stays mounted [apps/web/components/editor/section-preview.tsx:153]
+- [x] [Review][Patch] The Design ring's tiles never received the subject at all, so on a Tag or Author canvas they drew the whole feed behind a filtered archive [apps/web/components/editor/design-picker.tsx:136 · editor.tsx, the `DesignPicker` call]
+- [x] [Review][Patch] A refused save was invisible: its sentence lived only in the menu the choice had just closed. It is now also said through `#editor-said`; a thrown call is the same refusal, never the error boundary; and an answer overtaken by a later choice or a canvas switch is dropped [editor.tsx `chooseSubject`]
+- [x] [Review][Patch] After a fallback, pressing the ticked style-guide row did nothing, so the "no longer there" notice could not be cleared by choosing the fixture [apps/web/components/editor/source-pill.tsx `choose`]
+- [x] [Review][Patch] The slug had no length bound at the trust boundary; capped at Ghost's own 191 [(editor)/actions.ts]
+- [x] [Review][Patch] A feed post's slug stored under `page` resolved as a real page; a page has no feed, so it now falls back, with a unit test [packages/library/src/orbit-weekly.ts `subjectExists`]
+- [x] [Review][Patch] `openMenu`: a menu shut and reopened inside one frame armed a scroll listener nothing would remove now `once` is gone [apps/web/lib/menu.ts]
+- [x] [Review][Patch] The test's "derived, never listed" file list was a hand-written list; it now reads `NATIVE_FILES` from `placement.ts` [packages/library/src/orbit-weekly.test.ts:394]
+- [x] [Review][Patch] Step 89 had no control that a scroll OUTSIDE the menu still closes it, no stop proving a picker card wears the subject, and a synthetic wheel that scrolled nothing described as "the first wheel" [tools/probe/run-verify-editor.cjs]
+- [x] [Review][Patch] "Per canvas AND per user" overstated the schema — the key is `(project_id, template_key)`; the comments now say so [editor.tsx:304 · read.ts:133]
+- [x] [Review][Patch] The style-guide head row's `hasImage` used a looser rule than every other row; a no-op `hover:border-line-strong` removed [apps/web/lib/preview-subject.ts:108 · source-pill.tsx]
+- [x] [Review][Patch] The recorded deployed walk was for `6ca5676f`, not the HEAD that changed `openMenu` — re-run by this review, recorded under Verification below
+- [x] [Review][Defer] The preview subject is one row per canvas per PROJECT, not per user [supabase/migrations/20260904120000_complete_schema.sql:266] — deferred, pre-existing (DW-217)
+- [x] [Review][Defer] An archive canvas is handed the home feed's `paginationBase` and `currentUrl` (`/`) [packages/library/src/orbit-weekly.ts `templateContext`] — deferred, pre-existing (DW-218)
+- [x] [Review][Defer] `setPreviewSubject`'s refusals, and the Author and Page canvases, have no stop on the deployed walk [tools/probe/run-verify-editor.cjs step 89] — deferred (DW-219)
 
 ## Design Notes
 

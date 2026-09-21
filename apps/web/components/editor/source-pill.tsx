@@ -103,7 +103,9 @@ export function SourcePill({
 
   const choose = (row: SubjectRow) => {
     menu.current?.hidePopover()
-    if (row.slug !== subject.slug) onChoose({ kind, slug: row.slug })
+    // `fellBack`: the row in force is the fixture the canvas FELL BACK to, and the stored value is still the one
+    // that has gone — so pressing it is a real choice, the only one that clears the notice (review, 2026-09-21)
+    if (fellBack || row.slug !== subject.slug) onChoose({ kind, slug: row.slug })
   }
 
   return (
@@ -121,7 +123,7 @@ export function SourcePill({
         onClick={(event) => {
           if (menu.current) openMenu(menu.current, event.currentTarget, { side: 'up', align: 'left' })
         }}
-        className={`${skin} ${ring} transition-colors hover:border-line-strong hover:bg-paper`}
+        className={`${skin} ${ring} transition-colors hover:bg-paper`}
       >
         {words}
         <span className="sr-only">— change what this canvas is previewing</span>

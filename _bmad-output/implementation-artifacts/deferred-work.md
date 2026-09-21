@@ -5045,3 +5045,44 @@ plain: The check that every dice face really shows a different number of dots ex
   could miss the others.
 reason: The three are an ESM Playwright spec and two standalone CommonJS probes with no shared module between them
   today; one shared file is the fix, and it is not worth a new module for fifteen lines until the drawing changes.
+
+## Deferred from: code review of spec-5-13-the-content-source-pill-and-the-preview-subject.md (2026-09-21)
+
+### DW-217: the preview subject is stored per canvas per PROJECT, not per user
+
+status: open
+severity: low
+origin: Story 5.13's Review (2026-09-21), Blind Hunter, Verification Gap reviewer and the Real-infra verifier (read on production).
+owner: the first story that lets a second person open a project.
+location: `supabase/migrations/20260904120000_complete_schema.sql` (`project_template_prefs`' primary key); `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts`
+plain: Which article a canvas previews is remembered once per project. Today a project has one owner, so that is the
+  same as "per person". If two people ever share a project, the second person's choice would replace the first's.
+reason: The table's key is `(project_id, template_key)` and has been since the complete-schema migration; making it
+  per user is a migration and a decision about shared projects, neither of which this story owns. The comments
+  beside the code now say what the schema really holds.
+
+### DW-218: an archive canvas carries the home feed's pager address
+
+status: open
+severity: low
+origin: Story 5.13's Review (2026-09-21), Blind Hunter.
+owner: the first story that draws a pager or a current-page nav mark on a Tag or Author canvas (Epic 9's archive categories).
+location: `packages/library/src/orbit-weekly.ts` (`templateContext`, the archive branch: `paginationBase: '/'`, `currentUrl: '/'`)
+plain: On a Tag or Author canvas the list of posts is now the right one, but "Older posts" would still point at the
+  home page's page 2, and the menu would mark Home as the current page. No design that ships today shows either.
+reason: Pre-existing — the archive branch inherited both values from the home feed. What Ghost serves for an archive's
+  pager is a claim to read in source or execute on T1/T3 before it is written down, and no shipped design binds it.
+
+### DW-219: the preview subject's refusals, and the Author and Page canvases, are not on the deployed walk
+
+status: open
+severity: low
+origin: Story 5.13's Review (2026-09-21), Verification Gap reviewer and Acceptance Auditor.
+owner: Story 5.23, or whoever next extends step 89.
+location: `tools/probe/run-verify-editor.cjs` (step 89); `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts`
+plain: The automated walk proves choosing an article works and is saved. It does not try a deliberately bad choice to
+  see it refused, and it visits the Post and Tag canvases but not Author or Page, which only unit tests cover.
+reason: The refusal guards run inside a server action the harness cannot call with forged arguments without its own
+  signed-in action client; the read side (`resolveSubject`) already falls back on anything bad and IS tested. Author
+  and Page share every line with Tag and Post.
+

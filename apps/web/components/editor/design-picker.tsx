@@ -1,7 +1,7 @@
 'use client'
 
 import type { CSSProperties, KeyboardEvent } from 'react'
-import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import type { Mode } from '@inflozo/section-runtime'
 import { SectionPreview } from '@/components/editor/section-preview'
 import { gridKeys } from '@/components/controls/icon-picker'
@@ -57,8 +57,9 @@ const TILE_HEIGHT = 44
 
 /** One tile's picture: the design's own render, under a transparent press. */
 function Tile({
-  entry, target, rows, pool, icons, mode, src, assets, className = '', style,
+  entry, target, rows, pool, icons, mode, src, assets, subject, className = '', style,
 }: {
+  subject?: orbitWeekly.Subject | null
   entry: SectionRegistryEntry
   target: string
   rows: DesignRows | undefined
@@ -81,6 +82,7 @@ function Tile({
         mode={mode}
         src={src}
         assets={assets}
+        subject={subject}
         onAspect={() => {}}
       />
     </span>
@@ -97,9 +99,13 @@ export function DesignPicker({
   mode,
   src,
   assets,
+  subject,
   onDesign,
   onStep,
 }: {
+  /** the canvas's resolved preview subject (Story 5.13) — a tile previews the page behind it, as the picker's cards
+   *  do; omitted on `/controls`, which has no canvas */
+  subject?: orbitWeekly.Subject | null
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
   /** where in the ring this section is */
@@ -133,7 +139,7 @@ export function DesignPicker({
     </button>
   )
 
-  const preview = { target, pool, icons, mode, src, assets }
+  const preview = { target, pool, icons, mode, src, assets, subject }
 
   return (
     <section

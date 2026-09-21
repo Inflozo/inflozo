@@ -83,6 +83,9 @@ const NATIVE: Readonly<Record<string, readonly BindingContext[]>> = {
   'private.hbs': ['none', 'private'],
 }
 
+/** The files `NATIVE` has a row for — so a walk over "every template" reads the table and never a list beside it. */
+export const NATIVE_FILES: readonly string[] = Object.keys(NATIVE)
+
 /** Every binding context a design may reach on one template: its native set (§3) plus §5's `{{#get}}` resources,
  *  which R-7 withholds from `error.hbs` and `private.hbs`. A `custom-{name}.hbs` route renders through the list
  *  path with a flat root and only the data keys Inflozo itself declared (§3, the custom-route row), so it carries

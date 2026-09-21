@@ -130,7 +130,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // column's own default and the safe side of this one: autosave off is the state that sends less.
     sb.from('profiles').select('autosave_enabled').eq('user_id', user.id).maybeSingle(),
     // Story 5.13 — `project_template_prefs`' FIRST READER ANYWHERE (FR-D22). RLS scopes it to this caller's own
-    // rows, which is what makes the preference per user as well as per canvas.
+    // rows. ONE ROW PER CANVAS PER PROJECT — the table's key is `(project_id, template_key)` — so it is "per user"
+    // only because a project has one owner today; a second member would share the row (review, 2026-09-21, DW ledger).
     sb.from('project_template_prefs').select('template_key, preview_subject').eq('project_id', projectId),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)

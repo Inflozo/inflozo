@@ -50,7 +50,7 @@ import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
-import { GONE, SUBJECT_SAID, bundledSource, subjectOptions } from '@/lib/preview-subject'
+import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, subjectOptions } from '@/lib/preview-subject'
 import { isApp, stripApp } from '@/routing'
 import { setPreviewSubject } from './actions'
 import type { EditorData } from './read'
@@ -301,7 +301,8 @@ export function Editor({
   const [device, setDevice] = useState<Device>(DESKTOP)
   /* ─── Story 5.13 — FR-D22's PREVIEW SUBJECT, and the pill that names it ──────────────────────────────────────
    *
-   * PER CANVAS AND PER USER, stored in `project_template_prefs.preview_subject` — a column that has been in the
+   * PER CANVAS (and per user only while a project has one owner: the table's key is `(project_id, template_key)`,
+   * review 2026-09-21), stored in `project_template_prefs.preview_subject` — a column that has been in the
    * schema since day one with no reader anywhere, so this story is its first of both and adds no migration (R-99).
    * It is NOT part of the doc: it never enters 5.8's journal, `⌘Z` does not touch it and it never materialises an
    * untouched canvas (FR-D11 calls it "set-and-forget context, not a per-edit action").
@@ -315,6 +316,7 @@ export function Editor({
   /** the last save's refusal, carried in the menu: the choice stands for the session and will not survive a reload */
   const [subjectRefusal, setSubjectRefusal] = useState<string | null>(null)
   const [, startSubject] = useTransition()
+  const subjectTurn = useRef(0)
   /** the bundled publication, the source until Story 5.18 reads the connected site (R-165) */
   const source = useMemo(bundledSource, [])
   const previewing = orbitWeekly.resolveSubject(canvas.file, subjects[templateKeyOf(key)])
@@ -757,9 +759,16 @@ export function Editor({
     latest.current = { ...latest.current, subject: next }
     paint()
     setSaid(SUBJECT_SAID(next, subjectRows))
+    const turn = ++subjectTurn.current
     startSubject(async () => {
-      const answer = await setPreviewSubject(project.id, stored, next)
-      if ('error' in answer) setSubjectRefusal(answer.error)
+      // a thrown call (the network dropped) is the same refusal as a returned one, never the error boundary
+      const answer = await setPreviewSubject(project.id, stored, next).catch(() => ({ error: SAVE_REFUSED }))
+      // review, 2026-09-21: an answer that a later choice or a canvas switch has overtaken is dropped — a refusal
+      // belongs to the canvas and the choice it was refused on. And it is SAID: the menu that carries the sentence
+      // closed with the choice, so `#editor-said` is the only place it can be heard.
+      if (!('error' in answer) || turn !== subjectTurn.current || templateKeyOf(latest.current.key) !== stored) return
+      setSubjectRefusal(answer.error)
+      setSaid(answer.error)
     })
   }
 
@@ -2157,6 +2166,7 @@ export function Editor({
               icons={icons.current}
               mode={mode}
               src={src}
+              subject={previewing.subject}
               onDesign={(to) => onDesign(chosen, to)}
               onStep={(by) => stepDesign(chosen, by)}
             />

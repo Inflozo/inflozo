@@ -105,7 +105,7 @@ const postRow = (p: PostLike): SubjectRow => ({
 export function subjectOptions(source: SubjectSource, kind: SubjectKind): SubjectRow[] {
   if (kind === 'post' || kind === 'page') {
     const fixture = source.styleGuide[kind]
-    const head: SubjectRow = { slug: fixture.slug, title: STYLE_GUIDE[kind].title, meta: null, caption: STYLE_GUIDE[kind].caption, hasImage: typeof fixture.feature_image === 'string' }
+    const head: SubjectRow = { slug: fixture.slug, title: STYLE_GUIDE[kind].title, meta: null, caption: STYLE_GUIDE[kind].caption, hasImage: typeof fixture.feature_image === 'string' && fixture.feature_image !== '' }
     return kind === 'page' ? [head] : [head, ...source.posts.map(postRow)]
   }
   return (kind === 'tag' ? source.tags : source.authors).map((r) => ({

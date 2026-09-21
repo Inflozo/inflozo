@@ -86,8 +86,10 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     if (event.target instanceof Node && menu.contains(event.target)) return
     if (menu.matches(':popover-open')) menu.hidePopover()
   }
+  let closed = false
   const onToggle = (event: Event) => {
     if ((event as ToggleEvent).newState !== 'closed') return
+    closed = true
     window.removeEventListener('scroll', onScroll, { capture: true })
     menu.removeEventListener('toggle', onToggle)
   }
@@ -123,7 +125,9 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     // from this frame, once that event has been delivered, and the focus is asked not to scroll,
     // so stepping into a row cannot be the scroll that closes the menu either.
     menu.querySelector<HTMLElement>('a[href], button')?.focus({ preventScroll: true })
-    if (menu.matches(':popover-open')) {
+    // `closed`: a menu shut and reopened inside this one frame must not arm the listener of the open that already
+    // left — nothing would ever remove it now that `once` is gone (review, 2026-09-21)
+    if (!closed && menu.matches(':popover-open')) {
       window.addEventListener('scroll', onScroll, { capture: true, passive: true })
     }
   })

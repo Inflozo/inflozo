@@ -3849,7 +3849,8 @@ async function main() {
     const scrolled513 = await page.evaluate(async () => {
       const list = document.querySelector('#editor-source-menu ul')
       const before = list.scrollTop
-      list.dispatchEvent(new WheelEvent('wheel', { deltaY: 240, bubbles: true, cancelable: true }))
+      // the list is moved by assignment: what is proved is that its `scroll` EVENT no longer closes the menu, and
+      // `overflows` is what says a wheel would move it (a synthetic WheelEvent scrolls nothing — review, 2026-09-21)
       list.scrollTop = before + 120
       await new Promise((r) => setTimeout(r, 250))
       return {
@@ -3860,6 +3861,16 @@ async function main() {
     })
     check('step 89 — the menu\'s own list scrolls and scrolling it does NOT close the menu (a capturing window listener hears every element\'s scroll)',
       scrolled513.overflows && scrolled513.moved > 0 && scrolled513.open, JSON.stringify(scrolled513))
+    // AND THE OTHER HALF (the review, 2026-09-21): the ground moving STILL closes it — the guard that ignores the
+    // menu's own scroll must not have become one that ignores every scroll. `openMenu` is every menu in the app.
+    const outside513 = await page.evaluate(async () => {
+      document.dispatchEvent(new Event('scroll'))
+      await new Promise((r) => setTimeout(r, 250))
+      return document.getElementById('editor-source-menu')?.matches(':popover-open') === true
+    })
+    check('step 89 — and a scroll OUTSIDE the menu still closes it, so a fixed-position menu never floats away from its pill', outside513 === false, JSON.stringify({ open: outside513 }))
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
 
     // the search is pure and client-side: nothing is fetched, and the count is the pure module's own answer
     const QUERY513 = 'archive'
@@ -3893,6 +3904,26 @@ async function main() {
       saidPick513 === SUBJ.SUBJECT_SAID({ kind: 'post', slug: WITH513.slug }, POSTS513) &&
       (await page.evaluate(() => document.querySelectorAll('[role="alert"], [data-toast]').length)) === 0, JSON.stringify({ said: saidPick513 }))
 
+    /* A PICKER CARD WEARS THE CANVAS'S SUBJECT, AND REPAINTS WHEN IT CHANGES (the review's finding, 2026-09-21:
+       the card's paint effect did not depend on the subject, and the picker is kept mounted, so a card drawn once
+       kept the old article). The control is the FIRST reading: the card must have drawn the picture before the
+       second reading's absence means anything. */
+    const cardFigure513 = async () => {
+      await page.locator('section[aria-label="Canvas"]').focus()
+      await page.keyboard.press(`${CMD58}+k`)
+      await page.waitForTimeout(1200)
+      // every card is walked into view, so the lazy ones draw — no design id is written down here
+      for (const cell of await page.locator('dialog[open][aria-label="Add a section"] [data-cell]').all()) await cell.scrollIntoViewIfNeeded()
+      await page.waitForTimeout(1500)
+      const seen = await page.evaluate(() => [...document.querySelectorAll('dialog[open][aria-label="Add a section"] iframe')]
+        .map((f) => f.contentDocument).filter((d) => d && d.querySelector('[class^="a24-1"]'))
+        .map((d) => d.querySelector('.a24-1__figure') !== null))
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(400)
+      return seen
+    }
+    const cardWith513 = await cardFigure513()
+
     await page.locator('#editor-source').click()
     await page.waitForTimeout(500)
     await page.locator(`#editor-source-menu [data-subject-row="${WITHOUT513.slug}"]`).click()
@@ -3901,6 +3932,10 @@ async function main() {
     check('step 89 — FR-H8: an article with no picture loses the WHOLE element — not an empty box, not a gap. Two articles, two different pages.',
       noPic513.figure === false && noPic513.img === false && (await sourcePill()).subject === WITHOUT513.title,
       JSON.stringify({ with: withPic513, without: noPic513 }))
+    const cardWithout513 = await cardFigure513()
+    check('step 89 — a picker card previews the article the canvas is previewing, and repaints when it changes (the card was already drawn)',
+      cardWith513.length > 0 && cardWith513.every((f) => f === true) && cardWithout513.length > 0 && cardWithout513.every((f) => f === false),
+      JSON.stringify({ with: cardWith513, without: cardWithout513 }))
 
     // ── the choice is a STATED, STORED one: it survives a reload, and it is per canvas ──
     await page.waitForTimeout(1200)

@@ -29,12 +29,16 @@ import { signedIn, supabaseServer } from '@/lib/supabase/server'
  * with a sentence, which is also what must happen when a row that existed at write time is gone by read time.
  */
 
+/** Ghost's own bound on a slug (`posts.slug varchar(191)`): the slug is not checked against the source here, so
+ *  its length is the one guard left on caller-controlled text that is stored and echoed into the pill. */
+const SLUG_MAX = 191
+
 export type SubjectResult = { ok: true } | { error: string }
 
 export async function setPreviewSubject(projectId: string, templateKey: string, subject: Subject): Promise<SubjectResult> {
   if (!isUuid(projectId)) return { error: SAVE_REFUSED }
   const canvas = canvasOfTemplateKey(templateKey)
-  if (canvas === null || typeof subject?.slug !== 'string' || subject.slug === '') return { error: SAVE_REFUSED }
+  if (canvas === null || typeof subject?.slug !== 'string' || subject.slug === '' || subject.slug.length > SLUG_MAX) return { error: SAVE_REFUSED }
   if (orbitWeekly.subjectKindOf(CANVASES[canvas].file) !== subject.kind) return { error: SAVE_REFUSED }
 
   const user = await signedIn()

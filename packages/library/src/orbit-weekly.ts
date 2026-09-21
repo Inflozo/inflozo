@@ -162,6 +162,8 @@ export function fixtureSubject(file: string): Subject | null {
 function subjectExists({ kind, slug }: Subject): boolean {
   if (kind === 'tag') return dataset.tags.some((t) => t.slug === slug)
   if (kind === 'author') return dataset.authors.some((a) => a.slug === slug)
+  // a PAGE has no feed: a post's slug stored under `page` names no page (review, 2026-09-21)
+  if (kind === 'page') return slug === dataset.subjects.page.slug
   return slug === dataset.subjects[kind].slug || dataset.posts.some((p) => p.slug === slug)
 }
 

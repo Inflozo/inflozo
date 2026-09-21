@@ -24,7 +24,7 @@ import {
   styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants,
 } from './orbit-weekly.ts'
 import type { Major, Subject } from './orbit-weekly.ts'
-import { nativeResourceOf } from './placement.ts'
+import { NATIVE_FILES, nativeResourceOf } from './placement.ts'
 import type { DataBinding } from './registry.ts'
 import referenceDesign from '../fixtures/reference-design/design.json' with { type: 'json' }
 
@@ -391,7 +391,7 @@ test('the simulated bundle is exactly the complement of the derived exclude list
 
 /** Every template file the library has an opinion about, derived from `placement.ts`'s own table rather than
  *  listed — a template added later joins this walk by construction (standing rule 4). */
-const FILES = ['default.hbs', 'home.hbs', 'index.hbs', 'post.hbs', 'page.hbs', 'tag.hbs', 'author.hbs', 'error.hbs', 'private.hbs', 'custom-signup.hbs']
+const FILES = [...NATIVE_FILES, 'custom-signup.hbs'] // + one custom route, which has no row by design
 
 test('THE CONTROL — with no subject passed, templateContext answers exactly what it answered before this story', () => {
   for (const target of FILES) {
@@ -501,6 +501,8 @@ test('a subject that is gone falls back to the fixture and SAYS SO — and the c
   // WRONG KIND for the file — a post subject stored under the tag canvas — is the same answer
   assert.deepEqual(resolveSubject('tag.hbs', { kind: 'post', slug: subject('post').slug }), { subject: fixtureSubject('tag.hbs'), fellBack: true })
   assert.deepEqual(resolveSubject('post.hbs', { kind: 'page', slug: subject('page').slug }), { subject: fixtureSubject('post.hbs'), fellBack: true })
+  // a PAGE has no feed: a feed post's slug stored under `page` names no page (review, 2026-09-21)
+  assert.deepEqual(resolveSubject('page.hbs', { kind: 'page', slug: posts()[0]!.slug }), { subject: fixtureSubject('page.hbs'), fellBack: true })
   // a canvas with no subject at all never reports a fallback, whatever is stored against it
   assert.deepEqual(resolveSubject('home.hbs', { kind: 'post', slug: 'anything' }), { subject: null, fellBack: false })
   // and the render door itself never empties: a slug nothing holds still draws the fixture
