@@ -107,8 +107,10 @@ test('the sentences read as plain English, name the kind, and say the choice is 
   assert.match(GONE({ kind: 'author', slug: 'x' }), /^The author /)
   const rows = subjectOptions(source, 'tag')
   assert.equal(SUBJECT_SAID({ kind: 'tag', slug: rows[0].slug }, rows), `Previewing the tag ${rows[0].title}.`)
-  assert.equal(SUBJECT_HEADING('post'), 'SUBJECT · WHICH ARTICLE THIS CANVAS RENDERS')
-  assert.equal(SEARCH_WORDS('post'), 'Search articles')
+  // D5e's chrome is the frame's, verbatim on the canvas it was drawn for (`D5 …:212`, `:215`)
+  assert.equal(SUBJECT_HEADING('post'), 'SUBJECT · WHICH POST THIS CANVAS RENDERS')
+  assert.equal(SEARCH_WORDS('post'), 'Search posts')
+  assert.equal(SUBJECT_HEADING('author'), 'SUBJECT · WHICH AUTHOR THIS CANVAS RENDERS')
   // D5e's helper line, verbatim on the canvas it was drawn for
   assert.equal(
     SUBJECT_HELP('post'),

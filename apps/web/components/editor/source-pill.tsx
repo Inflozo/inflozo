@@ -91,7 +91,11 @@ export function SourcePill({
   // states the source and carries no chevron and no menu — absent, never a control that opens an empty list.
   if (subject === null || kind === undefined) {
     return (
-      <span id="editor-source" data-source-pill data-has-subject="false" className={skin}>
+      // `pointer-events-none` for `ViewportChip`'s own reason: this variant is NOT pressable, so a press on it must
+      // land on the ground `<section>` itself and R-123's deselect must still read `e.target === e.currentTarget`.
+      // The pressable variant below is a control and does not want that; a span that swallowed presses would be a
+      // fourth ground nobody declared.
+      <span id="editor-source" data-source-pill data-has-subject="false" className={`${skin} pointer-events-none`}>
         {words}
       </span>
     )

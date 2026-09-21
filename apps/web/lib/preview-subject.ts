@@ -139,11 +139,17 @@ export const GONE = (subject: Subject): string =>
 export const SUBJECT_SAID = (subject: Subject, rows: readonly SubjectRow[]): string =>
   `Previewing the ${KIND_WORDS[subject.kind]} ${subjectLabel(subject, rows)}.`
 
-/** D5e's group heading, per kind — the frame's own words with the kind in them. */
-export const SUBJECT_HEADING = (kind: SubjectKind): string => `SUBJECT · WHICH ${KIND_WORDS[kind].toUpperCase()} THIS CANVAS RENDERS`
+/* D5e'S OWN WORDS, AND WHY THESE TWO ARE NOT `KIND_WORDS`. The frame draws the menu's chrome in the RESOURCE's word
+   — `SUBJECT · WHICH POST THIS CANVAS RENDERS`, `Search posts` — and its rows in the customer's — `Style-guide
+   article`. That is the export, so that is what is built (R-74): the chrome takes the kind's own word, verbatim on
+   the canvas D5e was drawn for and extrapolated the same way on the three it was not, while every SENTENCE the
+   customer reads keeps `KIND_WORDS`. */
 
-/** D5e's search placeholder. */
-export const SEARCH_WORDS = (kind: SubjectKind): string => `Search ${KIND_WORDS[kind]}s`
+/** D5e's group heading (`D5 …:212`), per kind. */
+export const SUBJECT_HEADING = (kind: SubjectKind): string => `SUBJECT · WHICH ${kind.toUpperCase()} THIS CANVAS RENDERS`
+
+/** D5e's search placeholder (`D5 …:215`). */
+export const SEARCH_WORDS = (kind: SubjectKind): string => `Search ${kind}s`
 
 /** D5e's helper line, at the foot of the menu. The post wording is the frame's, verbatim; an archive's says the same
  *  thing about the filter, which is what its subject changes. */
