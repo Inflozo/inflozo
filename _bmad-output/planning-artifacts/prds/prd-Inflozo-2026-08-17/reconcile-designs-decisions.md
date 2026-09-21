@@ -3497,6 +3497,53 @@ exactly as it is."*
 - Targets: ✅ this entry · ✅ Story 5.13's spec (Question 2, its Boundaries, its Design Notes, its tasks and its
   acceptance criteria) · ✅ `epic-5-context.md` · ⬜ `B9`, on the next library pass.
 
+**R-167 — a page's "looked at" record runs out at any change to the page.** Story 5.14's Question 1, ruled
+**option 1** (owner, 2026-09-21): *"Any change to the page brings it back."*
+
+- **Why it was a question.** FR-D16 says the editor "tracks which member states each canvas has been viewed in and
+  surfaces the unchecked combinations", and gives the reason: "a design checked only as Anonymous ships a
+  logged-in state nobody has seen". No document says when that record goes stale, and
+  `project_template_prefs.member_states_viewed` (AD-22) holds only a set per canvas. A record that never expires
+  clears the reminder for good after the first pass on each page, which is the forgetting FR-D16 exists to catch.
+  A record that expires only on structural changes (a section added, removed or swapped, or its Member
+  visibility changed) misses a members-only line reworded from the panel while previewing a signed-out visitor.
+- **What it binds.** Any change to a canvas's doc, undo and redo included, leaves that canvas viewed only as the
+  visitor on screen. A change to the site doc (the header or footer, which render on every page) does the same for
+  the canvas on screen and empties every other canvas's record. A hydrate is not a change. Only the records that
+  change are written, through one server action in one ordered chain. `afterChange` in `apps/web/lib/view-as.ts`
+  is the ONE place the rule is decided, and `commit()` and `restore()` are its only callers.
+- **What it does NOT change.** The reminder never blocks (FR-D16). The record is never part of the doc, the
+  journal or `⌘Z` (AD-22). View as itself stays a session mode, back to Anonymous on reload (`EXPERIENCE.md:230`).
+  Story 7.18's Pre-flight step reads the same record through `unviewed`.
+- Targets: ✅ this entry · ✅ Story 5.14's spec (Question 1, its Boundaries and matrix, its tasks, its acceptance
+  criteria and its owner test) · ✅ `epic-5-context.md` · ✅ `epics.md` (Story 5.14's criteria) · ⬜ `prd.md`
+  FR-D16's second paragraph, and ⬜ `epics.md` Story 7.18's Pre-flight row, both at Story 5.14's Dev.
+
+**R-168 — a section hidden from the visitor being previewed is left out of the page, exactly as that visitor sees
+it.** Story 5.14's Question 2, ruled **option 1** (owner, 2026-09-21): *"Leave it out, exactly as a paid member
+sees the page."*
+
+- **Why it was a question.** Three sources disagreed, and none had been ruled.
+  - `P0 Editor Primitives - Spec.md:376-377` and `P0-4 Member Action Editor.dc.html:152` say a section hidden for
+    the current View-as audience "ghosts to 40 % with a 'Hidden for this audience' pill; it is never removed from
+    the editor". It is flagged ⚑, and `reconcile-designs.md`'s P0·4 table lists it as "Owner: accept", which was
+    never given.
+  - `A2-0 Category Proof.dc.html:44` draws the bar normally, with a dashed outline and a line such as "Not shown to
+    free members".
+  - What Stories 4.10 and 5.4 built, and the owner tested at 5.4, leaves the section out of the page. FR-D1's
+    pixel-faithful canvas with zero chrome at rest points the same way.
+- **What it binds.** On the canvas, `gateMembers` leaves out a section whose Member visibility excludes the visitor
+  being previewed, as it already does. No ghost, pill or outline is drawn over the page. The section's Layers row
+  stays, and R-124's caption names the visitor ("The canvas is previewing a paying member, so this section is not
+  drawn here"), now following View as rather than the constant it read until Story 5.14. A2's own `audience`
+  control follows the same rule when its Epic 9 story builds it.
+- **What it does NOT change.** R-124's select and its four values, and R-126's Layers panel, which draws nothing
+  about who can see a section. The export is untouched (R-74). The P0·4 ghost and A2-0's outline are superseded on
+  this point, and this entry is the record.
+- Targets: ✅ this entry · ✅ Story 5.14's spec (Question 2 and its Boundaries) · ✅ `epic-5-context.md` ·
+  ✅ `epics.md` (Story 5.14's criteria) · ⬜ `prd.md` FR-D16's first paragraph, at Story 5.14's Dev ·
+  ⬜ `P0 Editor Primitives - Spec.md` and `A2 Announcement Bars - Spec.md`, on the next library pass.
+
 
 ## B · Approved decisions superseded by this session
 

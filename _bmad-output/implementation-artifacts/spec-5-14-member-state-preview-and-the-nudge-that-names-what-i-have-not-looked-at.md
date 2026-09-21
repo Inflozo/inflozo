@@ -67,7 +67,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - **The viewed record is per canvas**, in `project_template_prefs.member_states_viewed`.
   - It is written through the caller's own session, as `setPreviewSubject` is.
   - A visitor counts as viewed the moment the canvas is shown in that state.
-- **Any change to a page makes its other visitors unviewed again** (Question 1, option 1, as drafted).
+- **Any change to a page makes its other visitors unviewed again** (**R-167**, owner, 2026-09-21).
   - A change to a canvas's doc leaves that canvas viewed only in the visitor on screen.
   - A change to the site doc (the header or footer, which appear on every page) does the same for the canvas
     on screen, and empties every other canvas's record.
@@ -75,8 +75,9 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - **The nudge reminds and never blocks.**
   - S4d's marker sits beside the toggle and is absent when nothing is unviewed (UX-DR3).
   - Every dot has its word beside it; colour never carries the signal alone.
-- **A section whose Member visibility excludes the visitor is not drawn**, exactly as today (Question 2,
-  option 1, as drafted). Its Layers row stays, and the panel's caption names the visitor being previewed.
+- **A section whose Member visibility excludes the visitor is left out of the page**, exactly as that visitor
+  sees it and exactly as today (**R-168**, owner, 2026-09-21). It is never ghosted, labelled or outlined on the
+  canvas. Its Layers row stays, and the panel's caption names the visitor being previewed.
 - **No key binds View as.** FR-D11 calls it set-and-forget context, and R-145's table gains no row.
 
 **Ask First:**
@@ -110,7 +111,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
 | Member visibility | A section set to Paid members, viewed as Free | Not drawn. Its Layers row stays. The panel's caption names "a free member". | N/A |
 | All three viewed | Record holds all three | The marker is absent (UX-DR3). No menu row carries "Not viewed". | N/A |
 | Reload | After viewing all three | View as is back to Anonymous. The record comes back from `project_template_prefs`, so the marker stays absent. | N/A |
-| A change (Q1) | Any edit to this canvas's doc, undo and redo included | The record becomes `[visitor on screen]`, and the marker reads "2 not viewed". | N/A |
+| A change (R-167) | Any edit to this canvas's doc, undo and redo included | The record becomes `[visitor on screen]`, and the marker reads "2 not viewed". | N/A |
 | Header or footer change | An edit to the site doc | The canvas on screen becomes `[visitor]`. Every other canvas with a record becomes `[]`. Only rows that change are written. | N/A |
 | Canvas switch | Home → Post | View as is unchanged. Post records the visitor. The marker counts Post's own record. | N/A |
 | Picker and ring | `⌘K`, or the Design block, under Paid | Cards and tiles render as a paying member. | N/A |
@@ -139,7 +140,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - Where the pages change:
   - `:453-465`, `commit(written, touched)`, is every edit. `touched` is `'site'` or a canvas's `template_key`.
   - `:533-552`, `restore`, is undo and redo.
-  - The Q1 rule runs in these two and nowhere else. It never runs on the hydrate (`:1293-1298`).
+  - R-167's rule runs in these two and nowhere else. It never runs on the hydrate (`:1293-1298`).
 - `:722-730`, `flip`, is the mode's re-stamp. A visitor change **cannot** reuse it: `gateMembers` removes
   elements on the canvas (`core.ts:1508`), so a visitor change is a **repaint**.
 - `:754-773`, `chooseSubject`, is the precedent: update `latest` first, then `paint()`, then `setSaid`, then
@@ -257,8 +258,8 @@ version of a page never goes out unseen; it only reminds you and never stops you
     something changed.
   - `unviewed(record)`.
   - `markerWords(n)`: "`n` not viewed", or `null` at 0.
-  - `afterChange(records, touched, onScreen, visitor)`: returns **only the records that change**, under Q1's
-    rule.
+  - `afterChange(records, touched, onScreen, visitor)`: returns **only the records that change**, under
+    R-167's rule.
 - [ ] `apps/web/view-as.test.ts` — **new**. It covers every matrix row over the pure half:
   - `VISITORS` is asserted against `MEMBER_STATES`, never against a list written in the test.
   - `seen` keeps the same array when nothing changes.
@@ -347,9 +348,9 @@ version of a page never goes out unseen; it only reminds you and never stops you
     - Name the member object as R-4's eight fields, of which R-28 and AD-38 let none be printed.
     - Say that `comped`, and Ghost 6's `gift`, preview as Paid.
     - Replace the "(FR-J13)" citation with the deploy wizard's Pre-flight step (FR-J8, S8b).
+    - State R-167's expiry rule in its second paragraph, and R-168's "left out, never ghosted" in its first.
   - `prd.md` Appendix B's `@member` line (`:926`), which lists four of the eight fields.
-  - `epics.md`:
-    - Story 5.14's criteria say where each moved item went.
+  - `epics.md` (Story 5.14's own criteria were rewritten with R-167 and R-168 at Create, 2026-09-21):
     - Story 5.20 gains the gated indicator and `access` worked out per visitor, with DW-128.
     - Story 7.18 gains the Pre-flight member-state row. It reads `unviewed` over this column for every canvas
       that ships, and never blocks.
@@ -382,7 +383,7 @@ version of a page never goes out unseen; it only reminds you and never stops you
 - **Given** a reload
   **Then** View as is Anonymous and the marker reflects the stored record.
 - **Given** any change to the page's doc, or to the header or footer
-  **Then** the record follows Q1's rule, and only the records that changed are written.
+  **Then** the record follows R-167's rule, and only the records that changed are written.
 - **Given** the Section Picker or the Design ring under a visitor
   **Then** the previews render as that visitor.
 - **Given** the keyboard
@@ -538,9 +539,8 @@ version of a page never goes out unseen; it only reminds you and never stops you
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build. Use the **Pilot sections** project, the one seeded to
-your account at Story 5.1. Two steps depend on how you rule the questions below. **Step 6** assumes
-**Question 1** is ruled option 1, and **steps 7 and 8** assume **Question 2** is ruled option 1. If you rule
-otherwise, those steps change to match your ruling before Deploy.
+your account at Story 5.1. **Step 6** is your ruling **R-167** (any change brings the reminder back), and
+**steps 7 and 8** are your ruling **R-168** (a hidden section is left out of the page), both from 2026-09-21.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -585,7 +585,13 @@ see that line.
 Under options 1 and 3, a change to the header or footer counts for every page, because they appear on every
 page.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-21).** *"Any change to the page brings it back."* Recorded as **R-167**. A
+change to a canvas's doc, undo and redo included, leaves that canvas viewed only as the visitor on screen. A
+change to the header or footer does the same for the canvas on screen, and empties every other canvas's
+record, because they appear on every page. A hydrate is not a change. `afterChange` in `apps/web/lib/view-as.ts`
+is the one place the rule is decided, and `commit()` and `restore()` are its only callers. The reminder still
+never blocks, and the record is still never part of the doc, the journal or `⌘Z` (AD-22). Story 7.18's
+Pre-flight step reads the same record.
 
 ### Question 2 — A section hidden from the visitor you are viewing as: leave it out, or show it faded?
 
@@ -610,4 +616,12 @@ another.
    - The easiest to edit.
    - The least like the real page.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-21).** *"Leave it out, exactly as a paid member sees the page."* Recorded as
+**R-168**. On the canvas, `gateMembers` leaves out a section whose Member visibility excludes the visitor being
+previewed, as Stories 4.10 and 5.4 already built it. Nothing is ghosted, labelled or outlined over the page. Its
+Layers row stays, and R-124's caption names the visitor ("The canvas is previewing a paying member, so this
+section is not drawn here"), now following View as rather than a constant. This supersedes the P0·4 spec's 40%
+ghost with its "Hidden for this audience" pill (`P0 Editor Primitives - Spec.md:376-377`, flagged ⚑ and never
+accepted) and A2-0's dashed outline (`A2-0 Category Proof.dc.html:44`), which no story had built. A2's own
+`audience` control, when its Epic 9 story builds it, follows the same rule. The export is untouched (R-74);
+`reconcile-designs-decisions.md` is the record.

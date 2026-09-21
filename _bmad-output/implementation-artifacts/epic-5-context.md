@@ -252,6 +252,30 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
+  - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
+    both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built
+    `RenderInput.member`, `MEMBER_GATE` and `gateMembers` — on the canvas an element gated to another visitor is
+    REMOVED, so a visitor change is a REPAINT, never 5.6's re-stamp — `/pilots` already switches it, and the
+    editor pinned it to `PREVIEWS = 'anonymous'`, whose three readers are the paint, R-124's caption and the
+    picker/ring previews. `project_template_prefs.member_states_viewed text[]` has been in the complete-schema
+    migration since day one with no reader (AD-22 names it), so **no Schema phase**. View as is a MODE like the
+    device (`EXPERIENCE.md:230`): session state, never stored. It sits beside Template in the centred group, where
+    every drawn bar puts it (S4a–c, S6, S7, S14, P0-6, D8, M1) — the right-cluster comment was a guess, and R-130
+    removed a chip from that group, not its second control. **The member object was read in source:**
+    `update-local-template-options.js:27-40` gives exactly FR-D16's eight fields and `null`, with
+    `paid: status !== 'free'`, so `comped` AND Ghost 6's `gift` (`member-bread-service.js:135`, which no document
+    names) preview as Paid; `has.js:128` picks only `site`, `config` and `labs`, so `{{#has any="@member"}}` can
+    never be true. FR-D16's "bindable member object" (2026-08-19) predates R-4, R-28 and AD-38 (2026-08-27), which
+    let none of the six identifying fields be printed and whose targets missed FR-D16 — so nothing binds
+    `@member` and the canvas previews the TIER. Three borrowed parts land elsewhere (R-118): Ghost's strip →
+    5.21 (its criteria already honour the toggle; the audience rule `visitors · free_members · paid_members`, paid
+    meaning any status but free, was read on both majors); the "Gated content — shown with sample text"
+    indicator, `access` per visitor (`checkPostAccess`) and DW-128 → 5.20, the first canvas that draws a gated
+    body (no canvas draws a body today, and the default Post subject is `visibility: members`, so a
+    subject-keyed indicator would describe an article that is not on screen); the Pre-flight row → 7.18 (FR-D16
+    cites FR-J13, which is 7.20's backup gate). Also found: §4 names no member-state pass though FR-D16 relies on
+    one (a DW at Dev), and on every pilot Free and Paid render alike (Rail's two Account links, the Inline Row's two
+    "Signed in" slots), so only a section's Member visibility separates them before Epics 9 and 10.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
@@ -501,6 +525,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     the canvas … the other two are status … the source pill is a border style"*. D5e inherited the ink treatment
     from the D5 prompt's blanket *"THE PILL SPEC IS SHARED AND ALREADY SET"* line, which generalised a rule B9 had
     scoped to the other two.
+  - **R-167 · R-168 (owner, 2026-09-21, Story 5.14's Q1 and Q2, option 1 each).** **R-167:** a page's "looked at"
+    record runs out at ANY change to the page — a canvas edit, undo and redo included, leaves that canvas viewed
+    only as the visitor on screen; a header or footer edit does the same for the canvas on screen and empties every
+    other canvas's record; a hydrate is not a change. `afterChange` in `lib/view-as.ts` decides it once, for
+    `commit()` and `restore()`, and only the records that change are written. **R-168:** a section whose Member
+    visibility excludes the visitor being previewed is LEFT OUT, exactly as that visitor sees the page — as 4.10 and
+    5.4 already built it — never ghosted at 40 % with a "Hidden for this audience" pill (P0·4's ⚑, never accepted)
+    nor outlined (A2-0); its Layers row stays and R-124's caption names the visitor, and A2's own `audience`
+    control inherits the rule in Epic 9. S4d governs the toggle, its menu and its "N not viewed" marker; the menu's
+    unviewed rows carry the marker's own "Not viewed" chip, which is how the nudge NAMES what S4d only counts.
   - **R-150 · R-151 · R-152 (owner, 2026-09-19, Story 5.10's Q1–Q3, option 1 each).** **R-150:** S5a's rail-footer
     **`Free only`** toggle is NOT built — R-77's reasoning generalised from Site Remix to browsing the library, so
     every offered design is shown and the ✦ Pro tag is the only Pro signal (UX-DR19). **R-151:** the picker header's
@@ -561,6 +595,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **5.13's half is settled and is no longer a lean (R-165, owner, 2026-09-20):** the subject picker is built at
     5.13 over the bundled publication, whose rows are pure and already in the repo, and Story 5.18 changes only
     where those rows come from. 5.16's page 2 still needs 5.19.
+  - **5.14's lean is settled too (2026-09-21):** 5.14 builds the visitor and 5.21's strip reads it (its criteria
+    already honour the toggle); the gated-body indicator, `access` per visitor and DW-128 move to 5.20, the first
+    canvas that draws a gated body; and the pre-deploy half of the nudge is 7.18's Pre-flight row.
 - **Across epics:** Epic 3's daily settings snapshot feeds the shims and members checks; Epic 6 replaces the token set; Epic 7 compiles the doc, gates deploy and export on the lock and flush, and repeats the warnings pre-deploy; A34's (5.19) and A32's (5.20) designs arrive in Epic 10.
 - **Undeclared forward dependencies:** the library holds only the provisional pilots, so 5.11, 5.12 and 5.23's round trip have no second design to move to, and the repo's only 40-section fixture is `tools/stress`'s compile-sizing archetypes; the Synthesis Defaults and Post Content (5.4, 5.5) name designs Epics 9–10 author; pack re-roll and undo (5.12, 5.8) have one token set until Epic 6.
   - **Story 5.1, Question 1 ruled option 1 (owner, 2026-09-17)** — nothing places a section before 5.10, so the owner's tests of 5.2–5.9 run on "Pilot sections": the pilots across `site`, `home` and `post`, added once to his own account by 5.1's Deploy through `tools/probe/seed-editor-project.mjs`. Reuse it; never seed a second.

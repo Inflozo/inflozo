@@ -2005,26 +2005,39 @@ So that I never ship a logged-in state nobody has seen.
 
 **Acceptance Criteria:**
 
-**Given** the top-bar eye
+**Given** the top-bar eye — **View as**, beside Template in S4a's centred group
 **When** I switch member state
 **Then** the canvas renders as **Anonymous / Free member / Paid member** — **three states** — and Appendix B's
-fourth status `comped` **previews as Paid**, differing in billing rather than access
-**And** members-aware sections re-render accordingly — nav auth links, subscribe CTAs, the paywall — **and so
-does the shimmed announcement strip**, which follows `announcement_visibility`, so a bar set to paid members only
-is absent while previewing as Anonymous
-**And** the bindable member object is exactly `uuid · email · name · firstname · avatar_image · subscriptions ·
-paid · status`, and is `null` when logged out
+fourth status `comped` **previews as Paid**, differing in billing rather than access; so does Ghost 6's `gift`,
+because Ghost's own `paid` is `status !== 'free'` (read in source on both majors)
+**And** members-aware sections re-render accordingly — nav auth links and subscribe CTAs, through the one render
+door every canvas surface paints through, the Section Picker's cards and the Design ring's tiles included
+**And** **a section whose Member visibility excludes the visitor is left out of the page, exactly as that visitor
+sees it** — **R-168** (owner, 2026-09-21): never ghosted, labelled or outlined on the canvas; its Layers row stays
+and the panel says which visitor is being previewed
+**And** **the shimmed announcement strip follows the same visitor** (`announcement_visibility`, so a bar set to
+paid members only is absent while previewing as Anonymous) — built with the strip in **Story 5.21**, whose criteria
+already honour the toggle — and **the paywall** is Story 5.20's surface
+**And** the member object is Ghost's own — `uuid · email · name · firstname · avatar_image · subscriptions · paid ·
+status`, `null` when logged out (R-4) — and **none of its identifying fields is ever printed** (R-28, AD-38): the
+canvas previews the visitor's **tier**, through `data-members`
 **And** **`{{#has any="@member"}}` is always false** and is never emitted as a logged-in test
 **And** **gated post bodies are never previewed from the connected site** — the browser-safe Content API never
 returns members-only content, so a gated body renders the **style-guide fixture** behind a "gated content — shown
-with sample text" indicator, and the fidelity layers exclude gated-body equivalence
-**And** the editor **tracks which member states each canvas has been viewed in and surfaces the unchecked
-combinations** — a quiet marker beside the toggle, and again in the pre-deploy check — which **never blocks**,
-and is what makes the owner's manual member-state pass at each category gate reliable rather than dependent on
-memory
-**And** the toggle matches S4d as corrected, with B9.
+with sample text" indicator, which **lands with Story 5.20**, the first canvas that draws a gated body, together
+with `access` worked out per visitor (DW-128); the fidelity layers exclude gated-body equivalence (NFR-6(c3),
+Story 7.34)
+**And** the editor **tracks which member states each canvas has been viewed in** (`project_template_prefs`, AD-22)
+**and surfaces the unchecked combinations** — S4d's quiet "N not viewed" marker beside the toggle, each unviewed
+state named in its menu — and **any change to the page brings the reminder back** — **R-167** (owner,
+2026-09-21): a canvas edit, undo and redo included, leaves that canvas viewed only as the visitor on screen, and a
+header or footer edit does the same and empties every other canvas's record — which **never blocks**; the same
+record is listed again before deploy, in **Story 7.18's Pre-flight step**, and is what makes the owner's manual
+member-state pass at each category gate reliable rather than dependent on memory
+**And** the toggle matches S4a and S4d as corrected, with B9.
 
-**FRs:** FR-D16. · **Frame:** `S4 Editor.dc.html` S4d · `B Missing Surfaces.dc.html` B9. · **Owner test:** yes.
+**FRs:** FR-D16. · **Frame:** `S4 Editor.dc.html` S4a · S4d · `B Missing Surfaces.dc.html` B9. · **Rulings:** R-167,
+R-168. · **Owner test:** yes.
 
 ### Story 5.15: Behaviours off while designing, and the Preview toggle
 
