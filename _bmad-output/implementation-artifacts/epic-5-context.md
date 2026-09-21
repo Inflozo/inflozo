@@ -330,6 +330,11 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     - Fixed by `relative` rows, plus `overflow-visible` on the popover (`BAR_POPOVER`), which also lets the card's
       `shadow-lg` show. The app's other popovers keep the UA's `overflow: auto`, which clips a child's shadow. That
       follows from the CSS and was not measured on them.
+  - **R-173 (owner, 2026-09-21, Story 5.14's Q3, option 2): a typed link takes the pack's link style.** The token
+    block (`tokens.ts`'s `LINK_RULES`) gives every `<a>` with no class `--link-color` and `--link-decoration` at zero
+    specificity, and on a contrast, accent or image ground the link keeps the ground's words. So any later story that
+    draws links in a section writes its own rule only when it wants a different look, and then draws it on every
+    ground it offers (`docs/section-authoring.md`).
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).

@@ -164,8 +164,28 @@ const block = (selector: string, values: Readonly<Record<string, string>>) =>
     .map(([k, v]) => `  ${k}: ${v};`)
     .join('\n')}\n}`
 
-/** The stylesheet, emitted from the contract. FR-E4 owns mode RESOLUTION in Epic 6; the three
- *  blocks here are the minimum that makes both modes reachable on the canvas — system preference,
+/** FR-E1's LINK STYLE, APPLIED (R-173, the owner, 2026-09-21: "Fix it inside this story now"). R-112 gave the two link
+ *  tokens their values and nothing read them, so a link a customer typed into a section's text with P0-1's toolbar
+ *  drew the browser's default blue — on the canvas, and in any theme built from these sections.
+ *
+ *  A PLAIN LINK — an `<a>` with no class, which is every link the `a` mark writes (`marks.ts`'s `openTag`) and every
+ *  link Ghost's own helpers print, and never one a design authors (every design anchor carries its class) — takes the
+ *  pack's link colour and decoration. AT ZERO SPECIFICITY (`:where`), so a design that draws its own links keeps them
+ *  with any selector at all (A4-13's `.a4-13__sub a`), and Epic 6's packs restyle every link by changing two tokens.
+ *
+ *  AND NEVER INVISIBLE: on a ground a section recolours — contrast, accent, image — the page-ground link colour would
+ *  be the wrong ink (Paper's ink link on its ink contrast ground), so there the words keep the ground's own text
+ *  colour, which the section already set, and the underline takes the contrast accent on contrast and the words' own
+ *  colour elsewhere. `data-bg` is the one attribute both emitters stamp on every section root for its Background role
+ *  (the BACKGROUND_ROLES vocabulary). No mode is named: the tokens carry it (AD-30). */
+const LINK_RULES = [
+  ':where(a:not([class])) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
+  ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class])) { color: inherit; text-decoration-color: currentcolor; }',
+  ':where([data-bg="contrast"]) :where(a:not([class])) { text-decoration-color: var(--accent-on-contrast); }',
+].join('\n')
+
+/** The stylesheet, emitted from the contract, with FR-E1's link rule after it. FR-E4 owns mode RESOLUTION in Epic 6;
+ *  the three token blocks here are the minimum that makes both modes reachable on the canvas — system preference,
  *  and an explicit `data-mode`, which FR-E4 defines as the VISITOR's override written by the
  *  `mode-toggle` module; the canvas reuses that same attribute to preview a mode, deliberately, so
  *  no fourth mode signal exists. FR-E4's other input, the owner's server-rendered `scheme-*` body
@@ -181,6 +201,7 @@ export function referenceTokensCss(): string {
       .map((l) => `  ${l}`)
       .join('\n')}\n}`,
     block(':root[data-mode="dark"]', REFERENCE_TOKENS.dark),
+    `/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173) */\n${LINK_RULES}`,
     '',
   ].join('\n\n')
 }

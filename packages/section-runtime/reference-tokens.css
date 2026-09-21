@@ -120,3 +120,8 @@
   --tag-accent: var(--border-hairline);
 }
 
+/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173) */
+:where(a:not([class])) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }
+:where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class])) { color: inherit; text-decoration-color: currentcolor; }
+:where([data-bg="contrast"]) :where(a:not([class])) { text-decoration-color: var(--accent-on-contrast); }
+

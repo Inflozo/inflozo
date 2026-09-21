@@ -3653,6 +3653,28 @@ list item as highlighted."*
   `template-switcher.tsx`, `view-as.tsx` · ✅ `EXPERIENCE.md`'s Template Switcher row · ✅ the deployed walk (steps
   40 and 90) — Story 5.14's Dev (2026-09-21). ⬜ `S4d` and `D5b`, on the next library pass.
 
+**R-173 — a link typed into a section's text takes the Style Pack's link look.** The owner, answering Story 5.14's
+Question 3 (2026-09-21) with option 2: *"Fix it inside this story now."* His finding on the deployed build: *"Any
+text that is made an anchor link using the text controls becomes blue … I want to make them look good and not
+generic blue anchor links."*
+
+- **What it binds.** A plain link, an `<a>` with no class, reads FR-E1's link style: the pack's `--link-color` and
+  `--link-decoration`, the two tokens R-112 gave values that nothing read. That covers every link the `a` mark writes
+  and every link Ghost's helpers print. In Paper it is ink words with the accent underline in light, and accent words
+  in dark.
+  - **At zero specificity**, so a design that draws its own links keeps them.
+  - **Never invisible.** On a contrast, accent or image ground the link keeps the ground's own words, and on
+    contrast the underline takes `--accent-on-contrast`.
+  - **One rule, in the token block** (`tokens.ts`'s `referenceTokensCss()`). It reaches the canvas, `/pilots`,
+    `/controls`, the render matrix, and the theme through Epic 6's pack blocks. It names no mode (AD-30).
+- **What it does NOT change.** R-112's values; FR-D4's four marks and the link record; any design's own link rule;
+  any design's pixels (the render matrix is unchanged). The export is untouched (R-74).
+- Targets: ✅ this entry · ✅ Story 5.14's spec (finding 6, Question 3, the frozen block on his word, its criteria,
+  tasks and owner test) · ✅ `packages/section-runtime/src/tokens.ts` and the regenerated `reference-tokens.css` ·
+  ✅ `tokens.test.ts` · ✅ the deployed walk (step 20) · ✅ `prd.md` FR-E1 and FR-D4 · ✅ `epics.md` Story 5.14 and
+  Story 6.1 · ✅ `docs/section-authoring.md` — Story 5.14's Dev (2026-09-21). ⬜ T1 and T3, when a theme first ships
+  the token block (Story 6.1).
+
 
 ## B · Approved decisions superseded by this session
 

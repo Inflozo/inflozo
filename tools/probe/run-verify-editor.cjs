@@ -139,7 +139,8 @@
 // presses the canvas with each of the bar's menus open, which must close it (the owner's finding: the canvas is another
 // document, and a popover's light dismiss never heard a press there). R-172, the same day: the row in force is highlighted
 // with the coral tint and no row carries a tick, read in steps 40 and 90; and step 40 finds the popover itself never
-// scrolling — the owner's "two scrollbars", whose second belonged to the popover.
+// scrolling — the owner's "two scrollbars", whose second belonged to the popover. R-173, the same day: step 20's pasted
+// link is read for the pack's link style — ink words and the accent underline, not the browser's blue.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -1172,6 +1173,16 @@ async function main() {
     const pwned = [await page.evaluate(() => window.__pwned), await canvasFrame().evaluate(() => window.__pwned)]
     check('step 20 — a paste into a four-mark field keeps bold, italic, underline and the https link, and everything else as its text', pastedGrid === '<strong>Bold</strong> <em>it</em> <u>un</u> <a href="https://x.example/">ok</a> badred', pastedGrid)
     check('step 20 — no script ran and no image loaded, in either document', pwned.every((v) => v === undefined) && !/<img|<script|<span|style=|javascript:/.test(pastedGrid), JSON.stringify(pwned))
+    // R-173: a plain link is drawn in the pack's link style from the deployed token block — Paper's light base ground is
+    // ink words with the accent underline, never the browser's blue (the grounds and dark are the unit test's and the
+    // harness sweep's; this proves the rule reaches the deployed canvas)
+    const pastedLook = await canvasFrame().evaluate(([n, selector]) => {
+      const root = document.querySelectorAll('#canvas > *')[n]
+      const cs = getComputedStyle(root.querySelector(`${selector} a[href="https://x.example/"]`))
+      const ground = (root.matches('[data-bg]') ? root : root.querySelector('[data-bg]'))?.getAttribute('data-bg')
+      return { color: cs.color, line: cs.textDecorationLine, lineColor: cs.textDecorationColor, ground, mode: document.documentElement.getAttribute('data-mode') }
+    }, [GRID, GRID_SUB])
+    check('step 20 — the pasted link is ink words with the accent underline on the light base ground, not the browser\'s blue (R-173)', pastedLook.color === 'rgb(35, 32, 25)' && pastedLook.line === 'underline' && pastedLook.lineColor === 'rgb(217, 108, 63)', JSON.stringify(pastedLook))
     await clickOn(HERO)
     await caretInto(HERO, HERO_SUB)
     await page.keyboard.press('ControlOrMeta+a')

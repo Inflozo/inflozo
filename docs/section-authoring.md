@@ -520,6 +520,13 @@ marks its chrome is keyed on — so a design never writes one.
 **An `a` mark whose record names no destination writes no anchor** *(Story 5.3, DW-120)*: its words stay and
 the mark is dropped, which is the `url` prop sink's rule for an unset link (FR-F8) at the other sink.
 
+**A typed link is drawn by the pack, unless the design draws it** *(Story 5.14, R-173)*. The anchor an `a` mark
+writes has no class, and the token block gives every such plain link the pack's `--link-color` and
+`--link-decoration`. On a contrast, accent or image ground the link keeps that ground's words, so it never
+disappears. The rule sits at zero specificity (`:where`), so a design that wants its own link look writes it with
+any selector at all (A4-13's `.a4-13__sub a`) and wins. It must then draw that look on every ground it offers,
+because the token block's ground rule no longer reaches it. A design that writes nothing gets the pack's link.
+
 **A link is one record, and a `url` prop and an `a` mark hold the same one** (AD-4, FR-F6):
 
 ```json

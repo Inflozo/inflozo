@@ -2038,10 +2038,14 @@ to the page brings the reminder back** — **R-167** (owner,
 header or footer edit does the same and empties every other canvas's record — which **never blocks**; the same
 record is listed again before deploy, in **Story 7.18's Pre-flight step**, and is what makes the owner's manual
 member-state pass at each category gate reliable rather than dependent on memory
-**And** the toggle matches S4a and S4d as corrected, with B9, as R-169 and R-170 amend them.
+**And** the toggle matches S4a and S4d as corrected, with B9, as R-169 and R-170 amend them
+**And** **a link typed with the text toolbar takes the pack's link style, never the browser's blue** — **R-173**
+(owner, 2026-09-21, answering this story's Question 3): the token block gives every plain link, an `<a>` with no
+class, FR-E1's `--link-color` and `--link-decoration` at zero specificity, so a design's own link rule wins, and on
+a contrast, accent or image ground the link keeps that ground's words.
 
-**FRs:** FR-D16. · **Frame:** `S4 Editor.dc.html` S4a · S4d · `B Missing Surfaces.dc.html` B9. · **Rulings:** R-167,
-R-168, R-169, R-170. · **Owner test:** yes.
+**FRs:** FR-D16, FR-E1 (the link style, applied). · **Frame:** `S4 Editor.dc.html` S4a · S4d · `B Missing
+Surfaces.dc.html` B9. · **Rulings:** R-167, R-168, R-169, R-170, R-171, R-172, R-173. · **Owner test:** yes.
 
 ### Story 5.15: Behaviours off while designing, and the Preview toggle
 
@@ -2352,6 +2356,10 @@ on-accent), heading and body font from the curated pool, radius scale (Sharp/Sof
 (Compact/Comfortable/Airy — **a pack-level token, distinct from the per-section Vertical spacing scale**), site
 width (Narrow/Normal/Wide) and gutters (**Tight/Normal/Loose — its own scale, deliberately not the Vertical
 spacing labels**), button style, shadow level and link style
+**And** **every pack's token block carries R-173's link rule** (Story 5.14): a plain link, an `<a>` with no class,
+reads the pack's `--link-color` and `--link-decoration` at zero specificity, and keeps its ground's words on a
+contrast, accent or image ground. A pack emitted through `referenceTokensCss()` carries it already; one written any
+other way must carry it too. **The first theme that ships the token block proves it on T1 and T3**, on both majors
 **And** sections span the site width by default and stay responsive within it.
 
 **FRs:** FR-E1. · **Owner test:** none (the engine).

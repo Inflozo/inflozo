@@ -16,7 +16,8 @@ three visitors: a **Logged out user**, a **Free member** and a **Paid member**, 
 Choosing one redraws the page at once, so the header's "Sign in" and "Subscribe" turn into "Account" and the
 newsletter band's email box turns into "Signed in". In the list under the button, a small **coral dot** marks
 each visitor you have not yet looked at this page as, so a members' version of a page never goes out unseen;
-it only reminds you and never stops you.
+it only reminds you and never stops you. And a link you make with the text toolbar now looks like your Style
+Pack's links, dark ink with an orange underline (orange in dark mode), instead of the browser's plain blue.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -44,7 +45,9 @@ it only reminds you and never stops you.
 - **The record and the dots.** Record per canvas which visitors have been looked at, in the column that has
   been waiting. Put a coral dot on each unviewed row of the toggle's own menu, and nothing beside the toggle
   (**R-169**, owner, 2026-09-21, replacing S4d's "N not viewed" marker).
-- **What does not change.** No runtime change and no migration, so there is **no Schema phase**.
+- **What does not change.** No migration, so there is **no Schema phase**, and the runtime's render is untouched.
+  The one change under `packages/` is the owner's **R-173** (2026-09-21): the token block gives a plain link the
+  pack's link style.
 
 ## Boundaries & Constraints
 
@@ -89,7 +92,8 @@ it only reminds you and never stops you.
 **Ask First:**
 
 - Any change under `packages/`. The runtime already takes the visitor, and a change there moves
-  `check-snapshots` and the render matrix.
+  `check-snapshots` and the render matrix. *Asked once, as Question 3. The answer is R-173, the token block's link
+  rule, and nothing else under `packages/` changes.*
 - Any migration.
 
 **Never:**
@@ -124,7 +128,8 @@ it only reminds you and never stops you.
 | Save refused | The upsert fails (offline, RLS) | The session's record stands. The canvas is unaffected. | Logged, not said: a lost record only brings the reminder back after a reload |
 | Stored junk | The column holds a value that is not a visitor | Ignored on read. | N/A |
 | Keyboard | Tab to View as, then Enter, ↓, Enter, Esc | Opens, moves, picks (repainted and announced), closes, and focus returns to the trigger. | N/A |
-| Pilots, snapshots, matrix | `/pilots`, `check-snapshots`, the render matrix | Unchanged: nothing under `packages/` changes. | N/A |
+| Pilots, snapshots, matrix | `/pilots`, `check-snapshots`, the render matrix | Unchanged. The one change under `packages/` (R-173) restyles only a plain link, and no design's markup or default content holds one. | N/A |
+| A typed link (R-173) | A link made with the text toolbar, in light and dark, on each ground a design offers | Light: ink words with the accent underline. Dark: accent words. On a contrast ground the words keep the ground's own colour and the underline takes the contrast accent. A design that styles its own links keeps them. Never the browser's blue. | N/A |
 
 </frozen-after-approval>
 
@@ -412,6 +417,16 @@ it only reminds you and never stops you.
     tick.
   - **Documents:** the ledger (R-172) and `EXPERIENCE.md`'s Template Switcher row. `DESIGN.md` already names
     `coral-tint` as the ground of a selected row, so it needs no change.
+- [x] **The owner's answer to Question 3** (2026-09-21), finding 6, **R-173**:
+  - `packages/section-runtime/src/tokens.ts` — `LINK_RULES`, appended to `referenceTokensCss()`. A plain link, an
+    `<a>` with no class, reads `--link-color` and `--link-decoration` at zero specificity. On a contrast, accent or
+    image ground it keeps the ground's own words, and on contrast the underline takes `--accent-on-contrast`.
+    `reference-tokens.css` is regenerated from it.
+  - **Tests:** `tokens.test.ts` holds the rule to zero specificity, to contract tokens only and no literal colour,
+    and to the recoloured grounds. Its control, the same rule with specificity, fails it. The walk's step 20 reads
+    the pasted link's colour and underline on production.
+  - **Documents:** the ledger (R-173), `prd.md` FR-E1 and FR-D4, `epics.md` (Story 5.14 and Story 6.1), and
+    `docs/section-authoring.md`.
 
 **Acceptance Criteria:**
 
@@ -445,8 +460,13 @@ it only reminds you and never stops you.
   **Then** the canvas has repainted before a busy label could describe anything, and the background write
   carries none. No route is added, so no skeleton is owed. `busy.test.ts` stays green.
 - **Given** `pnpm check`
-  **Then** `tools/check-snapshots.mjs` and the render matrix are unchanged, because no file under `packages/` is
-  in the diff.
+  **Then** `tools/check-snapshots.mjs` and the render matrix are unchanged. The one file under `packages/` in the
+  diff is the token block (R-173), and it restyles only a plain link, which no design's markup or default content
+  holds.
+- **Given** a link typed with the text toolbar (**R-173**)
+  **Then** it takes the pack's link style, never the browser's blue: in light, ink words with the accent underline;
+  in dark, the accent words. On a contrast ground it keeps the ground's own words, with the contrast accent
+  underline. A design that styles its own links keeps them.
 
 ## Spec Change Log
 
@@ -462,10 +482,16 @@ it only reminds you and never stops you.
       and the live region say is derived from the menu's titles.
   - Unchanged: R-167, R-168, the record, the one door, and everything else in the block.
   - Recorded: this spec's `## Owner's test findings` and the ledger.
+- **2026-09-21, the owner answered Question 3 with option 2, "Fix it inside this story now"** (**R-173**). That
+  answer is the "Ask First" the block's `packages/` line required, so the block moved on his word:
+  - Changed: Approach's "What does not change" (one change under `packages/`, the token block's link rule), the
+    Ask First line (asked and answered), the Pilots, snapshots, matrix row, and a new row, A typed link.
+  - Unchanged: no migration and no Schema phase; the render, the record, the one door and every other row.
+  - Recorded: finding 6, Question 3, the ledger.
 
 ## Design Notes
 
-**Why nothing under `packages/` changes.**
+**Why nothing under `packages/` changes for View as.**
 
 - Story 4.10 built the whole mechanism: `RenderInput.member`, `MEMBER_GATE` for the theme, and `gateMembers`,
   which on the canvas **removes** an element gated to another visitor.
@@ -473,6 +499,22 @@ it only reminds you and never stops you.
 - The editor never used any of it, because nothing could set the visitor.
 - This story is the setter. The runtime's existing tests are the control: `agreement.test.ts:1172-1245`'s truth
   table, and `check-snapshots.mjs:496-516`'s member arms.
+
+**Where R-173's link rule lives, and why it cannot hide a link.**
+
+- **In the token block**, `tokens.ts`'s `referenceTokensCss()`. It is the one stylesheet every surface that draws a
+  section already loads: the canvas, `/pilots`, `/controls`, the render matrix, and Epic 6's pack blocks in the
+  theme's `default.hbs`. It reads the two tokens R-112 gave values that nothing read.
+- **Only a plain link.** The rule matches an `<a>` with no class. That is every link the `a` mark writes
+  (`marks.ts`'s `openTag`) and every link Ghost's helpers print. Every anchor a design authors carries its class.
+- **At zero specificity** (`:where`), so any rule a design writes wins. A4-13's `.a4-13__sub a` keeps its own look,
+  and A1-1's navigation keeps its `text-decoration: none`.
+- **Never invisible.** Paper's light link is ink, and its contrast ground is ink too. On a contrast, accent or image
+  ground the link keeps the words the section already set, and on contrast the underline takes the contrast
+  accent. `data-bg` is the attribute both emitters stamp on every section root for its Background role.
+- **No mode is named** (AD-30). The tokens carry the mode.
+- **Epic 6 must carry it.** A pack's token block that is not emitted through `referenceTokensCss()` would lose the
+  rule, so Story 6.1's criteria now name it.
 
 **Why View as sits beside Template, and not where the code comment says.**
 
@@ -833,11 +875,36 @@ machine.**
   - Steps 36 and 66b, the two known intermittents, both passed. Step 5's CSP count was zero. Step 8's axe found zero
     violations with the menu and its dots open.
 
+**R-173, the typed link (2026-09-21), on this machine before the push.**
+
+- `node tools/stress/test-vocabulary.mjs`: **21 checks passed**, so `reference-tokens.css` holds exactly the bytes
+  `referenceTokensCss()` emits.
+- **`tokens.test.ts`'s R-173 test, and its control.** The same rule written as `a:not([class])`, which has
+  specificity, **failed** it ("not zero-specificity"). The file was then restored and compared byte for byte.
+- `pnpm check`: exit 0.
+  - `packages/section-runtime` **221** pass, one of them new; `packages/library` 165, `ghost-shim` 34,
+    `theme-compiler` 1, `apps/web` 457; none fail.
+  - `check-snapshots: PASS — 5 designs at 10 targets match 6 committed snapshot files`, unchanged.
+- `bash tools/matrix/run-matrix-gate.sh`: **180 cases · 5 designs · 1 packs · 0 violations — passed**, and no
+  baseline changed. No design's pixels moved, in either mode or at any width.
+- `pnpm keyboard`: **37 passed**.
+- **A sweep in the keyboard harness** (`INFLOZO_HARNESS=1 next dev` and a scratch script) put a plain link into
+  **every element that holds words** in every placed section. It did so on base, surface and contrast, in light and
+  dark: 126 links over 30 rows.
+  - **None was blue.**
+  - The lowest contrast of a link's words against the ground behind it, on a ground its design offers, was
+    **5.91:1** (dark, surface).
+  - On contrast, the words took the ground's own text (15.46:1 light, 14.8:1 dark), and the underline took the
+    contrast accent (7.99:1, 6.28:1).
+  - A4-13's sub kept its own link style.
+  - I checked pictures of a link in the newsletter's blurb by eye, in all four states.
+
 **Commands:**
 
 - `pnpm check`. Expected:
   - lint, typecheck and every package test green, including `view-as.test.ts`
-  - `node tools/check-snapshots.mjs` **unchanged**, the control: no file under `packages/` is in the diff
+  - `node tools/check-snapshots.mjs` **unchanged**, the control: the one file under `packages/` in the diff is the
+    token block (R-173), which restyles only a plain link
 - `node --test apps/web/view-as.test.ts`. Expected: every I/O row over the pure module.
 - `pnpm keyboard`. Expected: the View as journey and the UX-DR9 walk, whose budget is now derived, green in
   CI's `check` job.
@@ -864,7 +931,9 @@ machine.**
      `401 / 42501` with no session.
 - **The deployed app** on `app.inflozo.com`.
 - **Not touched, and not claimed:** T1, T3, Resend and Dodo. The canvas previews the bundled publication until
-  Story 5.18, and nothing here sends mail or takes payment.
+  Story 5.18, and nothing here sends mail or takes payment. **R-173 included:** no theme built from these sections
+  reaches a Ghost site before Epic 7, so its rule is checked on T1 and T3 when a theme first ships the token block
+  (Story 6.1's criterion).
 
 ## Owner's manual test
 
@@ -873,7 +942,8 @@ your account at Story 5.1. **Step 6** is your ruling **R-167** (any change bring
 and 8** are **R-168** (a hidden section is left out of the page), and **steps 1 to 5** are your two findings on
 this build, **R-169** (a coral dot in the list, nothing beside the button) and **R-170** (one name for each
 visitor), and **steps 2a to 2c** are **R-171** (the two lists look alike) and your findings on scrolling and on
-clicking outside, all from 2026-09-21.
+clicking outside, and **steps 13 to 15** are **R-173** (a link you type looks like your Style Pack's links), all
+from 2026-09-21.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -892,6 +962,9 @@ clicking outside, all from 2026-09-21.
 | 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | Switch Template to **Post**, then open the View as list. | — | View as keeps the visitor you had chosen. Post counts on its own: the two visitors you have not looked at Post as each carry a **dot**. |
 | 11 | the same | Editor, Post | Switch View as to **Paid member**, then press `⌘K` and look at a **Newsletter** card. | — | The card shows "Signed in" rather than an email box, because the picker previews what you are viewing as. Press Esc to close it. |
 | 12 | the same | Editor, Post | Press `?`. | — | The shortcuts card has **no row for View as**. It has no key, on purpose, because it is set-and-forget. |
+| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Switch Template back to **Home**. Click into the newsletter's grey text under its heading and select the word **corrections** (double-click it, or drag across it). In the small toolbar press the **link** button, type `night`, choose the post, then press **Done**. | `night` → *The night shift at the port of Algeciras* | **corrections** is **dark ink with a thin orange underline**, not blue, and a little darker than the grey words around it. |
+| 14 | the same | Editor, Home | Press **Preview dark mode** in the top bar, then **Back to light mode**. | — | In dark mode the word is **orange**, underlined in orange. Back in light it is ink again. |
+| 15 | the same | Editor, Home, right-hand panel | With the newsletter selected, set **Background role** to **Contrast**. Then set it back to **Base**, select **corrections** again and press **Remove link** in the toolbar. | — | On the dark band the word is **light like the text around it**, with a **pale orange** underline, so it never disappears. Afterwards the band and the word are as they were. |
 
 ## Owner's test findings
 
@@ -960,6 +1033,10 @@ link designs?"**
   browser's default blue shows on the canvas, and a published site would show the same.
 - Fixing it changes the engine that draws every section, which this story's spec says to ask about first.
   **Question 3 below.**
+- **Fixed in this story; ruled as R-173** (your answer to Question 3). A link you make with the text toolbar is now
+  dark ink with an orange underline, and orange in dark mode. On a dark (Contrast) band it takes the band's light
+  text with a pale orange underline, so it never disappears. A section that draws its own links, like the Hero's
+  small text, keeps its own look.
 
 **7. "Ensure all changes are responsive."**
 
@@ -1083,4 +1160,7 @@ orange.
 3. **Leave it for the Style Packs** (Epic 6, Story 6.1).
    - Nothing changes until then, and links stay blue.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-21).** *"Fix it inside this story now."* Recorded as **R-173**. A link typed with the
+text toolbar takes R-112's link look, from the Style Pack's own `--link-color` and `--link-decoration` tokens, on the
+canvas and in the published theme alike. It is fixed inside Story 5.14; this ruling is the "ask first" the spec's
+`packages/` boundary required.
