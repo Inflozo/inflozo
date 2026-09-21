@@ -1,7 +1,7 @@
 'use client'
 
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
-import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import type { Mode } from '@inflozo/section-runtime'
 import { gridKeys } from '@/components/controls/icon-picker'
 import { ModeToggle } from '@/components/editor/mode-toggle'
@@ -87,6 +87,7 @@ export function SectionPicker({
   onMode,
   darkEnabled,
   src,
+  subject,
   refusal,
   onAdd,
   onClose,
@@ -107,6 +108,8 @@ export function SectionPicker({
   onMode: (next: Mode) => void
   darkEnabled: boolean
   src: string
+  /** Story 5.13 — the canvas's resolved preview subject, worn by every preview card (`EXPERIENCE.md:877`) */
+  subject?: orbitWeekly.Subject | null
   /** the sentence the last Add answered with, shown in the picker's own refusal line (DW-190) */
   refusal: string | null
   onAdd: (placement: Placement) => void
@@ -269,6 +272,7 @@ export function SectionPicker({
                 icons={icons}
                 mode={mode}
                 src={src}
+                subject={subject}
                 onAdd={onAdd}
               />
             ))}
@@ -294,6 +298,7 @@ function Card({
   icons,
   mode,
   src,
+  subject,
   onAdd,
 }: {
   entry: SectionRegistryEntry
@@ -305,6 +310,8 @@ function Card({
   icons: IconLookup | null
   mode: Mode
   src: string
+  /** Story 5.13 — what the canvas behind the picker is rendering, so a card previews THAT page */
+  subject?: orbitWeekly.Subject | null
   onAdd: (placement: Placement) => void
 }) {
   // measured once, when the preview has been drawn; until then the card is one tile like any other
@@ -327,6 +334,7 @@ function Card({
         icons={icons}
         mode={mode}
         src={src}
+        subject={subject}
         onAspect={(aspect) => setSpan(spanFor(aspect))}
       />
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three

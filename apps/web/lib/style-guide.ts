@@ -152,7 +152,7 @@ function scripts(nonce: string): string {
     `<script nonce="${esc(nonce)}">${fit}</script>`
 }
 
-function postHead(p: ReturnType<typeof orbitWeekly.subject>, withTitle = true): string {
+function postHead(p: orbitWeekly.PostRow, withTitle = true): string {
   if (!withTitle) return ''
   const a = p.primary_author
   const date = String(p.published_at).slice(0, 10)

@@ -20,6 +20,7 @@ import dataset from '../orbit-weekly/dataset.json' with { type: 'json' }
 import corpus from '../orbit-weekly/corpus.json' with { type: 'json' }
 import { CAPTURE_COMMAND, RECORDINGS } from '../orbit-weekly/fixtures/index.ts'
 import type { DataBinding } from './registry.ts'
+import { nativeResourceOf } from './placement.ts'
 import { GET_SOURCES } from './vocabulary.ts'
 
 /** The one value `previewSeed` has, and what it resolves to. */
@@ -83,13 +84,19 @@ export const site = () => dataset.site
 export const brand = () => dataset.brand
 export const postsPerPage = (): number => dataset.config.posts_per_page
 
-/** The pagination context of page `n` of the bundled feed, in the shape `paginationContext()` reads. */
-export function feedPagination(n: number): { page: number; pages: number; limit: number; total: number } {
-  const total = dataset.posts.length
+/** The pagination context of page `n` over `total` rows, in the shape `paginationContext()` reads. `of` names the
+ *  list in the refusal, because since Story 5.13 the rows can be an ARCHIVE's rather than the whole feed and a
+ *  message about "the bundled feed" would be about the wrong list. */
+function paginationOver(total: number, n: number, of: string): { page: number; pages: number; limit: number; total: number } {
   const limit = postsPerPage()
   const pages = Math.max(1, Math.ceil(total / limit))
-  if (!Number.isInteger(n) || n < 1 || n > pages) throw new Error(`the bundled feed has pages 1–${pages}; page ${n} does not exist`)
+  if (!Number.isInteger(n) || n < 1 || n > pages) throw new Error(`${of} has pages 1–${pages}; page ${n} does not exist`)
   return { page: n, pages, limit, total }
+}
+
+/** The pagination context of page `n` of the bundled feed, in the shape `paginationContext()` reads. */
+export function feedPagination(n: number): { page: number; pages: number; limit: number; total: number } {
+  return paginationOver(dataset.posts.length, n, 'the bundled feed')
 }
 
 /** The rows on page `n` of the feed. */
@@ -103,11 +110,96 @@ export function feedPage(n: number): PostRow[] {
  *  `pagination`, so the depth is carried here and no post is invented (reconcile-designs.md A34). */
 export const deepPagination = (): { page: number; pages: number; limit: number; total: number } => dataset.pagination.deep
 
-/** The two preview subjects (FR-D22): the style-guide post and page — the third fixture, the comments
- *  block, is drawn (`commentsFixture`) and has no subject row. Reachable only by name. */
-export function subject(which: 'post' | 'page'): PostRow & Json {
-  const raw = dataset.subjects[which]
-  return hydrate(raw, dataset.posts)
+// ─── the preview subject (FR-D22, Story 5.13) ─────────────────────────────────
+//
+// A canvas that renders ONE resource has a subject whether or not anybody chose it, and until this story the choice
+// was hard-coded and unsayable. Three things live here: the FIXTURE each file gets untouched, the RESOLUTION of a
+// stored choice against rows that may have moved, and — below, on `templateContext` — the render itself.
+//
+// WHICH FILES HAVE ONE IS DERIVED, never listed: `placement.ts`'s `NATIVE` table already says which templates carry
+// a singular resource, and `nativeResourceOf` is the one query over it, so a template added later is right by
+// construction (standing rule 3, standing rule 4).
+
+/** The four kinds `project_template_prefs.preview_subject` records. */
+export type SubjectKind = 'post' | 'page' | 'tag' | 'author'
+
+/** The stored column's own shape (`{kind, id, slug}`) minus the `id` nothing needs offline: a slug identifies a row
+ *  in the bundled publication and in Ghost's Content API alike, and an id would only be a second name to keep true. */
+export type Subject = { kind: SubjectKind; slug: string }
+
+/** The preview subjects (FR-D22). `post` and `page` are HIDDEN ROWS — never in `posts`, so no feed, Source or count
+ *  can reach them — while `tag` and `author` are SLUGS of rows that already exist, because an archive's posts come
+ *  from the feed and a hidden taxonomy would render an empty archive (`dataset.json`'s note). The third fixture, the
+ *  comments block, is drawn (`commentsFixture`) and has no subject row. Reachable only by name. */
+export function subject(which: 'post' | 'page'): PostRow & Json
+export function subject(which: 'tag'): TagRow
+export function subject(which: 'author'): AuthorRow
+export function subject(which: SubjectKind): (PostRow & Json) | TagRow | AuthorRow
+export function subject(which: SubjectKind): (PostRow & Json) | TagRow | AuthorRow {
+  if (which === 'tag') return tagRow(dataset.subjects.tag, dataset.posts)
+  if (which === 'author') return authorRow(dataset.subjects.author, dataset.posts)
+  return hydrate(dataset.subjects[which], dataset.posts)
+}
+
+/** The subject KIND a template's canvas carries, or null where it carries none — `nativeResourceOf` widened by the
+ *  one distinction §3 draws that a RESOURCE cannot: `page.hbs` carries the same `post` object as `post.hbs` and is a
+ *  different PRODUCT (§4.2), and their fixtures are two different rows. */
+export const subjectKindOf = (file: string): SubjectKind | null => {
+  const native = nativeResourceOf(file)
+  return native === null ? null : native === 'post' && file === 'page.hbs' ? 'page' : native
+}
+
+/** The subject a canvas renders when nobody has chosen one: the style-guide post on `post.hbs`, the style-guide page
+ *  on `page.hbs`, and the fixed Orbit Weekly tag and author on the archives. Null where the file has no subject. */
+export function fixtureSubject(file: string): Subject | null {
+  const kind = subjectKindOf(file)
+  if (kind === null) return null
+  return { kind, slug: kind === 'tag' || kind === 'author' ? dataset.subjects[kind] : subject(kind).slug }
+}
+
+/** Is there a row this subject names? The two hidden fixtures are reachable only through `subjects`, so they are
+ *  tested there; every other subject must be in the source the canvas draws from. */
+function subjectExists({ kind, slug }: Subject): boolean {
+  if (kind === 'tag') return dataset.tags.some((t) => t.slug === slug)
+  if (kind === 'author') return dataset.authors.some((a) => a.slug === slug)
+  return slug === dataset.subjects[kind].slug || dataset.posts.some((p) => p.slug === slug)
+}
+
+/** The post or page row a subject names: the hidden fixture when it is the fixture's own slug, otherwise the feed's
+ *  row. A slug no row holds answers the FIXTURE rather than nothing — `resolveSubject` is the guard, and a render
+ *  door that emptied the canvas behind it would break FR-D22's "never empties the canvas" by construction. */
+const postOf = (kind: 'post' | 'page', slug: string): PostRow & Json => {
+  if (slug === dataset.subjects[kind].slug) return subject(kind)
+  const row = dataset.posts.find((p) => p.slug === slug)
+  return row === undefined ? subject(kind) : (hydrate(row, dataset.posts) as PostRow & Json)
+}
+
+/** The taxonomy row a subject names, falling back to the fixture for the same reason `postOf` does. */
+const subjectRow = (kind: 'tag' | 'author', slug: string): TagRow | AuthorRow => {
+  const known = kind === 'tag' ? dataset.tags.some((t) => t.slug === slug) : dataset.authors.some((a) => a.slug === slug)
+  const use = known ? slug : dataset.subjects[kind]
+  return kind === 'tag' ? tagRow(use, dataset.posts) : authorRow(use, dataset.posts)
+}
+
+/**
+ * WHICH SUBJECT IS THIS CANVAS ACTUALLY RENDERING, AND DID THE STORED ONE SURVIVE (FR-D22).
+ *
+ * PURE, and separate from `templateContext` on purpose: that function returns a render context and has no way to
+ * report *"the one you asked for is gone"*. Splitting the resolution out keeps its return shape unchanged for its
+ * three existing callers, gives the pill one honest answer to print, and makes the fallback a unit test rather than
+ * a browser observation.
+ *
+ * A stored subject of the wrong KIND for this file, or naming a slug no row holds, falls back to the fixture with
+ * `fellBack: true`. It is never emptied and the stored value is never deleted by the fallback — a resource that
+ * comes back brings the choice back with it.
+ */
+export function resolveSubject(file: string, stored?: Subject | null): { subject: Subject | null; fellBack: boolean } {
+  const fixture = fixtureSubject(file)
+  if (fixture === null || stored === undefined || stored === null) return { subject: fixture, fellBack: false }
+  if (stored.kind !== fixture.kind || typeof stored.slug !== 'string' || !subjectExists(stored)) {
+    return { subject: fixture, fellBack: true }
+  }
+  return { subject: stored, fellBack: false }
 }
 
 // ─── what a template hands a section (Story 4.10) ───────────────────────────────
@@ -120,16 +212,52 @@ export type FeedState = 'first' | 'middle' | 'last' | 'empty'
  *  context (`@site` everywhere; the feed page and its `pagination` on a paginated template; the style-guide post or
  *  page inside the block post.hbs and page.hbs open), and `site` is what the shim needs to imitate the connected
  *  site. One copy for the snapshot check and the pilots review page, so the two render against the same publication.
- *  The member counts are FR-H5's sample, as on any unlinked project. */
-export function templateContext(target: string, feed: FeedState = 'first'): {
+ *  The member counts are FR-H5's sample, as on any unlinked project.
+ *
+ *  STORY 5.13 — `of` IS THE PREVIEW SUBJECT (FR-D22), and it is OPTIONAL on purpose. Passing nothing is exactly
+ *  today's render, which is why `/pilots`, `tools/check-snapshots.mjs` (NFR-6(c1)) and the render matrix are
+ *  untouched and is the story's control. Passing one names the post or page the entry templates render, or the tag
+ *  or author whose ARCHIVE the list templates render — and an archive is the one place the argument changes more
+ *  than a row: without it, `tag.hbs` and `author.hbs` are handed the WHOLE bundled feed, which is a page Ghost
+ *  would never serve. The subject is expected to have come through `resolveSubject`; a slug no row holds still
+ *  answers the fixture here rather than an empty canvas. */
+export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null): {
   ghost: Record<string, unknown>
   site: { url: string; navigation: Json[]; pagination?: Json; paginationBase?: string; currentUrl: string }
 } {
   const at = dataset.site
   const ghost: Record<string, unknown> = { '@site': at, '@config': { posts_per_page: postsPerPage() } }
   const base = { url: at.url, navigation: at.navigation as Json[], currentUrl: '/' }
-  if (target === 'post.hbs' || target === 'page.hbs') return { ghost: { ...ghost, ...subject(target === 'post.hbs' ? 'post' : 'page') }, site: base }
+  if (target === 'post.hbs' || target === 'page.hbs') {
+    const kind = target === 'post.hbs' ? 'post' : 'page'
+    // THE DEFAULT IS TODAY'S RENDER, BYTE FOR BYTE (the story's control): no subject passed is the hard-coded
+    // fixture `/pilots`, `check-snapshots` and the render matrix have always drawn.
+    const row = of === undefined || of === null || of.kind !== kind ? subject(kind) : postOf(kind, of.slug)
+    return { ghost: { ...ghost, ...row }, site: base }
+  }
   if (!['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'].includes(target)) return { ghost, site: base }
+  // AN ARCHIVE RENDERS ITS OWN POSTS (§3: the taxonomy object at the root, `posts` and `pagination` flat beside it).
+  // Until Story 5.13 `tag.hbs` and `author.hbs` were handed the WHOLE bundled feed — the same rows `home.hbs` gets —
+  // so the canvas drew a page Ghost would never serve. FR-D22's subject IS the filter, which is why the fix arrives
+  // with it and not as an extra.
+  if ((target === 'tag.hbs' || target === 'author.hbs') && of != null && of.kind === (target === 'tag.hbs' ? 'tag' : 'author')) {
+    const kind = of.kind as 'tag' | 'author'
+    // the ROW decides the slug, so an unknown one filters against the fixture it fell back to rather than against
+    // itself — which would draw the fixture's name over an empty archive
+    const row = subjectRow(kind, of.slug)
+    const mine = posts().filter((p) => (kind === 'tag' ? p.tags : p.authors).some((r) => r.slug === row.slug))
+    const of_ = `the ${kind} "${row.slug}"`
+    const deep = paginationOver(mine.length, 1, of_).pages
+    const at_ = feed === 'middle' ? Math.ceil(deep / 2) : feed === 'last' ? deep : 1
+    const pagination = feed === 'empty'
+      ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 }
+      : paginationOver(mine.length, at_, of_)
+    const rows = feed === 'empty' ? [] : mine.slice((at_ - 1) * pagination.limit, at_ * pagination.limit)
+    return {
+      ghost: { ...ghost, [kind]: row, posts: rows, pagination },
+      site: { ...base, pagination, paginationBase: '/' },
+    }
+  }
   const pages = feedPagination(1).pages
   const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : 1
   const pagination = feed === 'empty' ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 } : feedPagination(n)

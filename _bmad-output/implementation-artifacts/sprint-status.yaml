@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-09-20
+last_updated: 2026-09-21
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -98,7 +98,7 @@ development_status:
   5-10-the-section-picker: done
   5-11-the-design-ring-navigation-shuffle-and-carry-park-default: done
   5-12-site-remix: done
-  5-13-the-content-source-pill-and-the-preview-subject: ready-for-dev
+  5-13-the-content-source-pill-and-the-preview-subject: in-progress
   5-14-member-state-preview-and-the-nudge-that-names-what-i-have-no: backlog
   5-15-behaviours-off-while-designing-and-the-preview-toggle: backlog
   5-16-previewing-page-2: backlog

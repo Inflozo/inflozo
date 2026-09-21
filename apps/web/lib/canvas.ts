@@ -76,9 +76,13 @@ export function renderSection(
     icons: IconLookup
     /** Story 5.3 — the editor asks for the editing stamps (`takeStamps` lifts them off as it mounts); `/pilots` does not */
     editing?: boolean
+    /** Story 5.13 — WHICH post, page, tag or author this canvas renders (FR-D22), already resolved against the
+     *  source by `orbitWeekly.resolveSubject`. Omitting it keeps the render exactly as it was, which is why
+     *  `/pilots`, `tools/check-snapshots.mjs` and the render matrix are untouched — and is the story's control. */
+    subject?: orbitWeekly.Subject | null
   },
 ): string {
-  const ctx = orbitWeekly.templateContext(o.target, o.feed)
+  const ctx = orbitWeekly.templateContext(o.target, o.feed, o.subject)
   return withImages(renderCanvas(doc as unknown as RuntimeDocument, entry.html, {
     target: o.target,
     content: state.content,

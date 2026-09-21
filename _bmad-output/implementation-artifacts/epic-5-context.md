@@ -234,6 +234,21 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     subjects for the archives cannot be hidden rows the way `subjects.post` and `subjects.page` are — an archive's
     posts come from the feed — so they join `dataset.subjects` as SLUGS of rows that already exist. No shortcut
     (FR-D11 names the preview subject *"set-and-forget context"*), no journal entry, **no Schema phase**.
+  - **As built (Story 5.13, 2026-09-21):** the seam is exactly one optional argument — `templateContext(target,
+    feed, subject?)` — threaded through `renderSection`'s `o` object, and a two-argument call still answers what it
+    answered before: asserted as the FIRST test in `orbit-weekly.test.ts` and byte for byte by
+    `tools/check-snapshots.mjs` and the render-matrix gate, both unchanged and green. `resolveSubject(file, stored)`
+    and `fixtureSubject(file)` are pure and sit beside `subjectKindOf`, which widens `placement.ts`'s new
+    `nativeResourceOf(file)` by the one distinction a RESOURCE cannot draw (§4.2: `page.hbs` carries the same `post`
+    object and is a different product). `dataset.subjects` gained `tag: field-notes` and `author: rosa-menendez` as
+    slugs of rows that already exist. `apps/web/lib/preview-subject.ts` is the pure half of the surface — the words,
+    D5e's rows, the search and the two sentences — and its `SubjectSource` argument is the seam Story 5.18 moves;
+    `components/editor/source-pill.tsx` is B9's pill at R-166's 24px with D5e's menu on `openMenu`'s own
+    `popover="auto"` vocabulary. The pill carries **no `aria-label`**: a hand-written name over visible text fails
+    WCAG 2.5.3 the moment the two are punctuated differently, so the button's name is its own words plus one
+    `sr-only` line. `(editor)/actions.ts` is the first writer of `project_template_prefs` and `read.ts` its first
+    reader; a failed prefs read is logged and answered with NONE, because the fixture is a correct canvas and a
+    preference must never black out an editor.
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).

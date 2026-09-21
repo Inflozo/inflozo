@@ -106,6 +106,17 @@
 // pressed "+ Add section" pill measured on a hovered gap, placing one section there and ⌘K refusing to open with a
 // REAL caret in a canvas text prop, which is the story's most important line (`lib/inline.ts:230`). Step 8's axe runs
 // once more with the picker open, asserting NO SECOND NODE EXCEPTION is needed.
+// Story 5.13 adds step 89, inside the same session, and it opens with the MEASUREMENT because R-166 is a ruling about
+// geometry: B9's pill at the canvas foot, dashed with its grey dot, at 24px, its box never intersecting the page
+// card's at Desktop, Tablet OR Mobile, with R-139's 32px ground unmoved either side; R-118's absences on Home (no
+// subject named, not a control, no menu at all); D5e opening upward with the style-guide entry first and ticked, its
+// search taking focus and narrowing to exactly what `filterSubjects` answers with nothing fetched, and the has-image
+// marker as WORDS on exactly the rows that carry one; FR-H8's structural claim BY HAND — one article's picture with
+// its srcset, another's whole `<figure>` ABSENT; the choice surviving a reload as the `project_template_prefs` row it
+// has been waiting for since day one; the Tag canvas rendering ITS OWN posts and no others, which it did not before
+// this story; and a planted subject that no row holds rendering the fixture, saying so in `#editor-said` and in the
+// menu, with the stored value KEPT. Every expectation is derived from `lib/preview-subject.ts` and the library's own
+// `templateContext`, never restated here.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -3704,6 +3715,245 @@ async function main() {
     await page.waitForTimeout(300)
     await freshLoad()
 
+    /* ── step 89 — STORY 5.13, THE CONTENT-SOURCE PILL AND THE PREVIEW SUBJECT (FR-D15, FR-D22) ───────────────
+       Every expectation here is DERIVED from the two pure modules the surface reads — `apps/web/lib/preview-subject.ts`
+       for the words and the rows, and the library's own `templateContext` for what an archive renders — so a word, a
+       row or a count that changes there changes this walk with it and is never restated (standing rule 4).
+
+       THE FIRST THING MEASURED IS THE GEOMETRY, because R-166 is a ruling about geometry and R-164's rule is that
+       such a ruling is proved by measuring it: the pill's box must not intersect the page card's box at Desktop,
+       Tablet OR Mobile, which is R-138's own invariant asked of a second thing in that ground. */
+    const SUBJ = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/preview-subject.ts')).href)
+    const OW513 = await import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/orbit-weekly.ts')).href)
+    const SRC513 = SUBJ.bundledSource()
+    const POSTS513 = SUBJ.subjectOptions(SRC513, 'post')
+    const meets = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+
+    const sourcePill = () => page.evaluate(() => {
+      const el = document.getElementById('editor-source')
+      if (!el) return null
+      const stage = document.querySelector('section[aria-label="Canvas"]')
+      const card = stage.firstElementChild
+      const cs = getComputedStyle(el)
+      const dot = el.querySelector('[data-dot]')
+      const pr = el.getBoundingClientRect()
+      const cr = card.getBoundingClientRect()
+      return {
+        tag: el.tagName,
+        words: el.textContent.replace(/\s+/g, ' ').trim(),
+        source: el.querySelector('[data-source]')?.textContent ?? null,
+        subject: el.querySelector('[data-subject]')?.textContent ?? null,
+        has: el.dataset.hasSubject,
+        border: cs.borderStyle,
+        radius: cs.borderRadius,
+        height: Math.round(pr.height),
+        dot: dot && getComputedStyle(dot).backgroundColor,
+        glyphs: el.querySelectorAll('svg').length,
+        box: { left: pr.left, top: pr.top, right: pr.right, bottom: pr.bottom },
+        cardBox: { left: cr.left, top: cr.top, right: cr.right, bottom: cr.bottom },
+        // the page card must still be this ground's `firstElementChild` — how the harness and step 27's gutter find it
+        cardIsCard: card.querySelector('iframe') !== null,
+        menu: document.getElementById('editor-source-menu') !== null,
+      }
+    })
+    const canvasWords = () => canvasFrame().evaluate(() => document.getElementById('canvas').textContent)
+    /** FR-H8's media guard, at the element: `a24/1` wraps its picture in a `<figure data-if="feature_image">`, so a
+     *  subject with no picture loses the WHOLE element rather than gaining an empty one. */
+    const featureNow = () => canvasFrame().evaluate(() => {
+      const fig = document.querySelector('#canvas .a24-1__figure')
+      const img = document.querySelector('#canvas .a24-1__image')
+      return { figure: fig !== null, img: img !== null, srcset: img?.getAttribute('srcset') ?? null, src: img?.getAttribute('src') ?? null }
+    })
+
+    await freshLoad()
+    const pill513Home = await sourcePill()
+    check('step 89 — B9: a pill at the canvas foot says what the canvas is made of — dashed, a grey dot, and the words the pure module owns',
+      pill513Home !== null && pill513Home.source === SUBJ.SOURCE_WORDS.sample && pill513Home.words.startsWith(SUBJ.SOURCE_WORDS.lead) &&
+      pill513Home.border === 'dashed' && pill513Home.dot === 'rgb(201, 194, 184)' && /^24px$/.test(pill513Home.radius.split(' ')[0]),
+      JSON.stringify(pill513Home && { ...pill513Home, box: undefined, cardBox: undefined }))
+    check('step 89 — R-166: it is built at 24px, and the page card is still this ground\'s firstElementChild',
+      pill513Home !== null && pill513Home.height === 24 && pill513Home.cardIsCard, JSON.stringify(pill513Home && { height: pill513Home.height, cardIsCard: pill513Home.cardIsCard }))
+    check('step 89 — R-118: Home renders no single resource, so the pill names no subject, is not a control and has nothing to open',
+      pill513Home !== null && pill513Home.has === 'false' && pill513Home.subject === null && pill513Home.tag === 'SPAN' &&
+      pill513Home.glyphs === 0 && pill513Home.menu === false, JSON.stringify(pill513Home && { has: pill513Home.has, tag: pill513Home.tag, glyphs: pill513Home.glyphs, menu: pill513Home.menu }))
+
+    // R-166 / R-138, MEASURED AT EVERY DEVICE — the step that matters most on the owner's own list
+    const clear513 = []
+    for (const name of ['desktop', 'tablet', 'mobile']) {
+      await deviceButton(name).click()
+      await page.waitForTimeout(400)
+      const p = await sourcePill()
+      clear513.push({ name, meets: p && meets(p.box, p.cardBox), gap: p && Math.round(p.box.top - p.cardBox.bottom) })
+    }
+    check('step 89 — R-166 / R-138: the pill\'s box never intersects the page card\'s box, at Desktop, Tablet or Mobile — measured from the rects',
+      clear513.every((d) => d.meets === false && d.gap >= 0), JSON.stringify(clear513))
+    // and the card did NOT shrink to make room: `py-8` is untouched, which is the other half of R-166
+    const ground513 = await page.evaluate(() => {
+      const cs = getComputedStyle(document.querySelector('section[aria-label="Canvas"]'))
+      return { top: cs.paddingTop, bottom: cs.paddingBottom }
+    })
+    check('step 89 — R-139 is untouched: the ground is still 32px top and bottom, so no page card lost a pixel at any size',
+      ground513.top === '32px' && ground513.bottom === '32px', JSON.stringify(ground513))
+    await deviceButton('desktop').click()
+    await page.waitForTimeout(300)
+
+    // ── the Post canvas: the pill NAMES the subject, and D5e opens ──
+    await page.goto(editorUrl('post'), { waitUntil: 'load' })
+    await painted('post').catch(() => null)
+    await page.waitForTimeout(400)
+    const pill513Post = await sourcePill()
+    check('step 89 — FR-D22: on a canvas that renders one article the pill also NAMES it, and untouched that is the fixture',
+      pill513Post !== null && pill513Post.has === 'true' && pill513Post.tag === 'BUTTON' && pill513Post.subject === POSTS513[0].title &&
+      pill513Post.source === SUBJ.SOURCE_WORDS.sample, JSON.stringify(pill513Post && { has: pill513Post.has, tag: pill513Post.tag, subject: pill513Post.subject }))
+    check('step 89 — and it still clears the page card here, where the card is a post rather than a feed',
+      pill513Post !== null && !meets(pill513Post.box, pill513Post.cardBox), JSON.stringify(pill513Post && { box: pill513Post.box, cardBox: pill513Post.cardBox }))
+
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    const menu513 = await page.evaluate(() => {
+      const m = document.getElementById('editor-source-menu')
+      if (m === null || !m.matches(':popover-open')) return null
+      const rows = [...m.querySelectorAll('[data-subject-row]')]
+      return {
+        heading: m.querySelector('#editor-source-heading')?.textContent ?? null,
+        focus: document.activeElement?.id ?? null,
+        rows: rows.length,
+        first: rows[0]?.querySelector('[data-name]')?.textContent ?? null,
+        firstWords: (rows[0]?.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        checked: rows.filter((r) => r.getAttribute('aria-current') === 'true').map((r) => r.dataset.subjectRow),
+        // D5e's own caption: the marker never travels alone, so "has image" is real text in the row
+        marked: rows.filter((r) => /has image/.test(r.textContent)).map((r) => r.dataset.subjectRow),
+        dated: rows.filter((r) => /^\d{1,2} [A-Z][a-z]{2} \d{4}$/.test(r.querySelector('[data-meta]')?.textContent ?? '')).length,
+        // R-118: there is no SOURCE group and nothing greyed anywhere in it
+        sourceGroup: /\bSOURCE\b/.test(m.textContent),
+        greyed: m.querySelectorAll('[aria-disabled="true"], :disabled').length,
+        help: m.textContent.includes('different shapes'),
+      }
+    })
+    check('step 89 — D5e opens upward on the press, the style-guide entry FIRST with its caption and its tick, and every other row is the source\'s own',
+      menu513 !== null && menu513.rows === POSTS513.length && menu513.first === POSTS513[0].title &&
+      menu513.firstWords.includes(POSTS513[0].caption) && JSON.stringify(menu513.checked) === JSON.stringify([POSTS513[0].slug]) &&
+      menu513.dated === POSTS513.length - 1 && menu513.help, JSON.stringify(menu513))
+    check('step 89 — the has-image marker is WORDS and it is on exactly the rows that carry a picture (D5e\'s own caption)',
+      menu513 !== null && JSON.stringify(menu513.marked) === JSON.stringify(POSTS513.filter((r) => r.hasImage && r.caption === null).map((r) => r.slug)),
+      JSON.stringify(menu513 && { marked: menu513.marked.length, want: POSTS513.filter((r) => r.hasImage && r.caption === null).length }))
+    check('step 89 — R-118: no SOURCE group, nothing greyed, and the search takes the focus',
+      menu513 !== null && menu513.sourceGroup === false && menu513.greyed === 0 && menu513.focus === 'editor-source-search', JSON.stringify(menu513 && { sourceGroup: menu513.sourceGroup, greyed: menu513.greyed, focus: menu513.focus }))
+
+    // the search is pure and client-side: nothing is fetched, and the count is the pure module's own answer
+    const QUERY513 = 'archive'
+    const requests513 = []
+    const watch513 = (r) => requests513.push(r.url())
+    page.on('request', watch513)
+    await page.locator('#editor-source-search').fill(QUERY513)
+    await page.waitForTimeout(400)
+    page.off('request', watch513)
+    // "nothing is fetched" means no DATA went out for it — a stray prefetch of another route is Next's and not the
+    // search's, so the claim is scoped to the two places rows could possibly come from
+    const fetched513 = requests513.filter((u) => /supabase|\/api\//.test(u))
+    const narrowed513 = await page.evaluate(() => document.querySelectorAll('#editor-source-menu [data-subject-row]').length)
+    check('step 89 — typing narrows the list to exactly what `filterSubjects` answers, and nothing is fetched to do it',
+      narrowed513 === SUBJ.filterSubjects(POSTS513, QUERY513).length && narrowed513 > 0 && narrowed513 < POSTS513.length &&
+      fetched513.length === 0, JSON.stringify({ narrowed: narrowed513, want: SUBJ.filterSubjects(POSTS513, QUERY513).length, fetched: fetched513 }))
+
+    // ── THE STRUCTURAL CLAIM, BY HAND (R-165): two subjects, two genuinely different pages ──
+    const WITH513 = POSTS513.find((r) => r.caption === null && r.hasImage)
+    const WITHOUT513 = POSTS513.find((r) => r.caption === null && !r.hasImage)
+    await page.locator('#editor-source-search').fill('')
+    await page.waitForTimeout(200)
+    await page.locator(`#editor-source-menu [data-subject-row="${WITH513.slug}"]`).click()
+    await page.waitForTimeout(600)
+    const withPic513 = await featureNow()
+    const saidPick513 = await saidNow59()
+    check('step 89 — choosing an article repaints the canvas at once: its picture is there with its srcset, and the pill\'s second half names it',
+      withPic513.figure && withPic513.img && (withPic513.srcset ?? '').length > 0 &&
+      (await sourcePill()).subject === WITH513.title, JSON.stringify({ ...withPic513, said: saidPick513 }))
+    check('step 89 — and the choice is announced politely through the editor\'s one live region, never a toast',
+      saidPick513 === SUBJ.SUBJECT_SAID({ kind: 'post', slug: WITH513.slug }, POSTS513) &&
+      (await page.evaluate(() => document.querySelectorAll('[role="alert"], [data-toast]').length)) === 0, JSON.stringify({ said: saidPick513 }))
+
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    await page.locator(`#editor-source-menu [data-subject-row="${WITHOUT513.slug}"]`).click()
+    await page.waitForTimeout(600)
+    const noPic513 = await featureNow()
+    check('step 89 — FR-H8: an article with no picture loses the WHOLE element — not an empty box, not a gap. Two articles, two different pages.',
+      noPic513.figure === false && noPic513.img === false && (await sourcePill()).subject === WITHOUT513.title,
+      JSON.stringify({ with: withPic513, without: noPic513 }))
+
+    // ── the choice is a STATED, STORED one: it survives a reload, and it is per canvas ──
+    await page.waitForTimeout(1200)
+    await page.reload({ waitUntil: 'load' })
+    await page.waitForTimeout(1200)
+    const afterReload513 = await sourcePill()
+    check('step 89 — the choice survives a reload: `project_template_prefs.preview_subject`, its first writer and its first reader',
+      afterReload513 !== null && afterReload513.subject === WITHOUT513.title && (await featureNow()).figure === false, JSON.stringify(afterReload513 && { subject: afterReload513.subject }))
+    const stored513 = (await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}&template_key=eq.post&select=template_key,preview_subject,user_id`)).body ?? []
+    check('step 89 — and it is the row the schema has been holding since day one, against this user',
+      stored513.length === 1 && stored513[0].preview_subject?.slug === WITHOUT513.slug && stored513[0].preview_subject?.kind === 'post' && stored513[0].user_id === ids[0],
+      JSON.stringify(stored513))
+
+    // ── THE ARCHIVE, WHICH WAS WRONG BEFORE ANYBODY CHOSE ANYTHING ──
+    await page.goto(editorUrl('tag'), { waitUntil: 'load' })
+    await page.waitForTimeout(1200)
+    const tagFixture513 = OW513.fixtureSubject('tag.hbs')
+    const tagCtx513 = OW513.templateContext('tag.hbs', 'first', tagFixture513)
+    const tagRows513 = SUBJ.subjectOptions(SRC513, 'tag')
+    const tagPill513 = await sourcePill()
+    const tagText513 = await canvasWords()
+    const mine513 = tagCtx513.ghost.posts.map((p) => p.title)
+    const others513 = OW513.posts().map((p) => p.title).filter((t) => !mine513.includes(t))
+    check('step 89 — the Tag canvas names its tag, untouched, and the tag it names is the fixture the library derives',
+      tagPill513 !== null && tagPill513.has === 'true' && tagPill513.subject === tagRows513.find((r) => r.slug === tagFixture513.slug).title,
+      JSON.stringify(tagPill513 && { subject: tagPill513.subject, want: tagFixture513.slug }))
+    check('step 89 — AND IT RENDERS THAT TAG\'S OWN POSTS: every post on the page carries the tag, and no post that does not is drawn. Before this story it drew the whole site.',
+      mine513.every((t) => tagText513.includes(t)) && !others513.some((t) => tagText513.includes(t)),
+      JSON.stringify({ missing: mine513.filter((t) => !tagText513.includes(t)), strangers: others513.filter((t) => tagText513.includes(t)).slice(0, 3), total: tagCtx513.ghost.pagination.total }))
+    // and each canvas remembers its OWN subject — the Post canvas's choice did not follow us here
+    check('step 89 — the preference is PER CANVAS: the article chosen on Post is not what the Tag canvas is showing',
+      tagPill513 !== null && tagPill513.subject !== WITHOUT513.title, JSON.stringify(tagPill513 && { tag: tagPill513.subject, post: WITHOUT513.title }))
+    // choosing a different tag re-filters the page
+    const otherTag513 = tagRows513.find((r) => r.slug !== tagFixture513.slug)
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    await page.locator(`#editor-source-menu [data-subject-row="${otherTag513.slug}"]`).click()
+    await page.waitForTimeout(800)
+    const other513 = OW513.templateContext('tag.hbs', 'first', { kind: 'tag', slug: otherTag513.slug }).ghost.posts.map((p) => p.title)
+    const otherText513 = await canvasWords()
+    check('step 89 — choosing a different tag re-filters the page to THAT tag\'s posts',
+      other513.every((t) => otherText513.includes(t)) && (await sourcePill()).subject === otherTag513.title,
+      JSON.stringify({ tag: otherTag513.slug, missing: other513.filter((t) => !otherText513.includes(t)) }))
+
+    // ── A SUBJECT THAT IS GONE: the fixture renders, the canvas is never empty, and it SAYS SO ──
+    await page.goto('about:blank')
+    await page.waitForTimeout(400)
+    await call('/rest/v1', '/project_template_prefs', {
+      method: 'POST',
+      headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+      body: JSON.stringify({ project_id: P, user_id: ids[0], template_key: 'post', preview_subject: { kind: 'post', slug: 'a-post-that-was-deleted' } }),
+    })
+    await page.goto(editorUrl('post'), { waitUntil: 'load' })
+    await page.waitForTimeout(1400)
+    const gone513 = await sourcePill()
+    const goneSaid513 = await saidNow59()
+    check('step 89 — FR-D22: a stored subject that no row holds renders the FIXTURE — the canvas is never empty — and the fallback is announced',
+      gone513 !== null && gone513.subject === POSTS513[0].title && goneSaid513 === SUBJ.GONE({ kind: 'post', slug: 'a-post-that-was-deleted' }),
+      JSON.stringify({ subject: gone513 && gone513.subject, said: goneSaid513 }))
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    const goneMenu513 = await page.evaluate(() => document.querySelector('#editor-source-menu [data-subject-gone]')?.textContent ?? null)
+    check('step 89 — and the menu says it too, where the choice was made',
+      goneMenu513 === SUBJ.GONE({ kind: 'post', slug: 'a-post-that-was-deleted' }), JSON.stringify({ menu: goneMenu513 }))
+    const kept513 = (await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}&template_key=eq.post&select=preview_subject`)).body ?? []
+    check('step 89 — the stored value is KEPT, not deleted: a resource that comes back brings the choice back with it',
+      kept513[0]?.preview_subject?.slug === 'a-post-that-was-deleted', JSON.stringify(kept513))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+
+    // the walk leaves the project as it found it — the docs to `freshLoad`, the preferences to none
+    await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}`, { method: 'DELETE' })
+    await freshLoad()
+
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     for (const path of ['/harness/editor', '/harness/canvas']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
@@ -3743,7 +3993,7 @@ async function main() {
     // session, and that page's zod JIT probe is a recorded violation of its own (DW-201) — the review's first complete
     // run failed here on that one event and no other
     const session = violations.splice(0).filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R` — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code

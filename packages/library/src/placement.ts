@@ -92,6 +92,20 @@ export const CONTEXTS_BY_TARGET = (file: string): readonly BindingContext[] => {
   return GET_FORBIDDEN_TARGETS.has(file) ? native : [...new Set([...native, ...GETTABLE])]
 }
 
+/** THE SINGULAR RESOURCE this template carries natively, or null where it carries none — Story 5.13's one export
+ *  over the SAME `NATIVE` table above (FR-D22).
+ *
+ *  It exists because `CONTEXTS_BY_TARGET` folds `GETTABLE` into its answer, so it can no longer say what a template
+ *  carries of its OWN: every gettable target would claim `posts`, `tags` and `authors`. "Which canvases have a
+ *  preview subject" is exactly "which templates carry a singular resource", so the two questions read one table and
+ *  a template added later is right by construction rather than by a list of four written down (standing rule 3, and
+ *  standing rule 4 on the count).
+ *
+ *  `error` and `private` are not resources anything is previewed AS, and they are not in the returned set for the
+ *  same reason they are not in `GETTABLE`: there is no row to choose. */
+export const nativeResourceOf = (file: string): 'post' | 'tag' | 'author' | null =>
+  (NATIVE[file] ?? []).find((c) => c === 'post' || c === 'tag' || c === 'author') as 'post' | 'tag' | 'author' | undefined ?? null
+
 /** THE ONE QUERY THE PICKER READS — the rail, the grid, the counts and every empty state (FR-D12).
  *
  *  Three conditions, all of them absences rather than refusals (UX-DR3): the design must be placeable at all, it

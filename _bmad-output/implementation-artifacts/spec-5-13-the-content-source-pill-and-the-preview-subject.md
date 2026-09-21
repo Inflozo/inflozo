@@ -2,7 +2,7 @@
 title: 'Story 5.13 — The content-source pill and the preview subject'
 type: 'feature'
 created: '2026-09-20'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '680ad91b5defe28c2eeed9d20638b658b0e47e2d'
@@ -164,37 +164,37 @@ the choice persists in the column that has been waiting for it. No migration, so
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/library/orbit-weekly/dataset.json` — `subjects` gains `"tag": "field-notes"` and
+- [x] `packages/library/orbit-weekly/dataset.json` — `subjects` gains `"tag": "field-notes"` and
       `"author": "rosa-menendez"`, as **slugs** of rows that already exist, with the `note` extended to say
       why these two differ in shape from `post`/`page`. Chosen for coverage, not alphabetically:
       `field-notes` carries more posts than any other tag and Rosa is tied for the most-published author,
       so both archives render a full first page. **Derive the counts, never restate them.**
-- [ ] `packages/library/src/orbit-weekly.ts` — `Subject = { kind: 'post'|'page'|'tag'|'author'; slug: string }`
+- [x] `packages/library/src/orbit-weekly.ts` — `Subject = { kind: 'post'|'page'|'tag'|'author'; slug: string }`
       (the column's own shape, minus the `id` nothing needs offline); `fixtureSubject(file)` → the Subject
       a file gets untouched; `resolveSubject(file, stored)` → `{ subject, fellBack }`, PURE — a stored
       subject of the wrong kind for the file, or naming a slug in no row, resolves to the fixture with
       `fellBack: true`. `subject(which)` widens to the four kinds. `templateContext(target, feed, subject?)`
       renders it: post/page spread flat at the root; `tag`/`author` put the taxonomy object at the root
       **alongside** the filtered `posts` and a `pagination` sized on those rows (§3, §3a).
-- [ ] `packages/library/src/orbit-weekly.test.ts` — every matrix row over the pure half: the fixture per
+- [x] `packages/library/src/orbit-weekly.test.ts` — every matrix row over the pure half: the fixture per
       file; an archive's rows are exactly the rows carrying that tag/author and its `pagination.total`
       matches their count; a bad slug and a wrong-kind subject both fall back with `fellBack`; **and the
       control — `templateContext(t, f)` with no third argument returns what it returns today, for every
       target.**
-- [ ] `packages/library/src/placement.ts` — `NATIVE` is module-private and `CONTEXTS_BY_TARGET` folds
+- [x] `packages/library/src/placement.ts` — `NATIVE` is module-private and `CONTEXTS_BY_TARGET` folds
       `GETTABLE` into it, so neither answers "what singular resource does this file carry". Export one
       query — `nativeResourceOf(file)` → `'post' | 'tag' | 'author' | null` — over the SAME table, so the
       picker's filter and the subject's existence can never disagree about a template (standing rule 3).
-- [ ] `apps/web/lib/preview-subject.ts` — NEW, pure and importless (`ring.ts`/`device.ts`'s precedent, so
+- [x] `apps/web/lib/preview-subject.ts` — NEW, pure and importless (`ring.ts`/`device.ts`'s precedent, so
       `node --test` reaches it): `hasSubject(file)` = `nativeResourceOf(file) !== null`;
       `subjectLabel(subject)` (what the pill's second half prints); `SOURCE_WORDS` ("Previewing with:",
       "Sample content"); `subjectOptions(source, kind)` → the rows D5e lists, style-guide entry first,
       each with its title, date and whether it carries a feature image; `filterSubjects(rows, query)`;
       `GONE(subject)` — FR-D22's "says so" sentence; `SUBJECT_SAID(subject)` for `#editor-said`.
-- [ ] `apps/web/preview-subject.test.ts` — NEW. The pure module's rows, the sentences' singular/plural, and
+- [x] `apps/web/preview-subject.test.ts` — NEW. The pure module's rows, the sentences' singular/plural, and
       `hasSubject` true for exactly the canvases the `NATIVE` table gives a singular resource — asserted
       over `CANVASES` rather than against a written list.
-- [ ] `apps/web/components/editor/source-pill.tsx` — NEW. **B9's pill** (`B Missing Surfaces.dc.html:1391-1420`)
+- [x] `apps/web/components/editor/source-pill.tsx` — NEW. **B9's pill** (`B Missing Surfaces.dc.html:1391-1420`)
       at the canvas foot, in the stage's own ground, **at 24px (R-166)** so it clears the page card on every
       device without `py-8` moving; **D5e's menu**
       (`D5 …:189-263`) as a `popover="auto"` placed by `openMenu` with `side: 'up'`: the SUBJECT heading,
@@ -202,19 +202,19 @@ the choice persists in the column that has been waiting for it. No migration, so
       the **"has image"** chip whose *words* carry the meaning and whose glyph is decoration beside them
       (D5e's own caption), and D5e's helper line verbatim. No SOURCE group (R-118). No chevron and no menu
       where `hasSubject` is false.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` — NEW: `setPreviewSubject`, an
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` — NEW: `setPreviewSubject`, an
       upsert on `(project_id, template_key)` setting `user_id`, returning ok or one sentence. Called from
       the client handler inside a transition, **not** a form submit — the canvas has already repainted, so
       there is no wait for R-98's busy label to describe.
-- [ ] `read.ts` — the `project_template_prefs` select joins the existing `Promise.all`; `EditorData` gains
+- [x] `read.ts` — the `project_template_prefs` select joins the existing `Promise.all`; `EditorData` gains
       `subjects: Record<string, Subject>` keyed by `template_key` as `docs` is.
-- [ ] `editor.tsx` — the canvas's resolved subject (via `resolveSubject`) is state; `renderSection`'s call
+- [x] `editor.tsx` — the canvas's resolved subject (via `resolveSubject`) is state; `renderSection`'s call
       at `:765` passes it; `<SourcePill>` renders after `ViewportChip` so the page card stays the ground's
       `firstElementChild`; choosing announces through `#editor-said`; a `fellBack` resolution announces on
       open.
-- [ ] `section-preview.tsx:121` — passes the canvas's subject, so a picker card previews the page the
+- [x] `section-preview.tsx:121` — passes the canvas's subject, so a picker card previews the page the
       canvas is actually rendering (`EXPERIENCE.md:877`).
-- [ ] `tools/probe/run-verify-editor.cjs` — steps **89+** on the **deployed** editor: the pill's words and
+- [x] `tools/probe/run-verify-editor.cjs` — steps **89+** on the **deployed** editor: the pill's words and
       dashed state on Home and Post; **its box never intersects the page card's box at Desktop, Tablet and
       Mobile**, measured from rects as R-138 required; the menu opens, filters and picks; the canvas's
       feature-image element is present for one subject and **absent** for another; the choice survives a
@@ -311,7 +311,7 @@ seeded to your account at Story 5.1.
 | 2 | the same | Editor, Home | Press `2` and then `3` to switch to the tablet and phone sizes. | — | The pill stays clear of the page at every size — it never covers the bottom of your design. This is the step that matters most on this list. |
 | 3 | `…/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/post` | Editor, Post | Look at the same pill. | — | It now says **two** things: the source, and **which article** the page is showing — *Style-guide article*. |
 | 4 | the same | Editor, Post | **Press the pill.** | — | A list opens upward. At the top, **"Style-guide article — The one every post design is designed against"**, ticked. Below it, real articles with their dates, and some carrying a small **"has image"** label — the words, not just a picture. |
-| 5 | the same | the open list | Type `harbour` in the search box. | `harbour` | The list narrows as you type. Nothing loads; it is instant. |
+| 5 | the same | the open list | Type `archive` in the search box. | `archive` | The list narrows to the two articles with that word in the title — *The archive as argument* and *A quiet week in the archive*. Nothing loads; it is instant. |
 | 6 | the same | the open list | Clear the search and pick an article that **does** say "has image". | — | The page redraws with that article's title, date and author, and a **picture across the top**. The pill's second half now names that article. |
 | 7 | the same | the open list | Press the pill again and pick an article with **no** "has image" label. | — | The picture at the top is **gone entirely** — not a grey box, not a gap. That is the whole point of this story: two articles, two genuinely different pages. |
 | 8 | the same | Editor, Post | **Reload the page** in your browser. | — | The article you picked is still the one showing. Your choice was saved. |

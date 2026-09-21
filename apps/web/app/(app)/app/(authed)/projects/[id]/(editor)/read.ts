@@ -108,6 +108,11 @@ export type EditorData = {
    *  library, so it empties itself as Epics 9 and 10 land; nothing draws it, and it is here because a drop that
    *  nothing can read is a drop nobody can check. */
   dropped: Readonly<Record<string, readonly DroppedRow[]>>
+  /** Story 5.13 — FR-D22's STORED preview subject per canvas, keyed by `template_key` as `docs` is. It is handed over
+   *  RAW: `orbitWeekly.resolveSubject` is the one guard, and it answers the fixture with a `fellBack` flag for a
+   *  subject of the wrong kind or naming a row the source no longer holds. A canvas with no row here is untouched
+   *  and renders its fixture, which is the same answer. */
+  subjects: Readonly<Record<string, orbitWeekly.Subject>>
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -116,7 +121,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // Story 5.8: the user is needed for its own sake now — the local store is named after them — so `signedIn()` is
   // awaited once and its id used twice rather than read a second time.
   const user = await signedIn()
-  const [{ data, error }, { plan }, project, profile] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -124,6 +129,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // FR-D10's toggle is per USER, not per device (`schema:118`). A read that FAILS answers true, which is the
     // column's own default and the safe side of this one: autosave off is the state that sends less.
     sb.from('profiles').select('autosave_enabled').eq('user_id', user.id).maybeSingle(),
+    // Story 5.13 — `project_template_prefs`' FIRST READER ANYWHERE (FR-D22). RLS scopes it to this caller's own
+    // rows, which is what makes the preference per user as well as per canvas.
+    sb.from('project_template_prefs').select('template_key, preview_subject').eq('project_id', projectId),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -209,6 +217,26 @@ export async function editorData(projectId: string): Promise<EditorData> {
    */
   for (const id of pilotIds()) if (isPlaceable(id)) held(id)
 
+  /* STORY 5.13 — the stored preview subjects, by template key.
+   *
+   * A FAILED READ IS THE FIXTURE, NOT A BLACK CANVAS. Unlike a doc, a preview subject is set-and-forget context
+   * (FR-D11): the canvas renders perfectly well without one — it renders the fixture, which is exactly what an
+   * untouched canvas renders — so a read that fails is logged and answered with none, the same safe side
+   * `autosave_enabled` takes above. Throwing here would blank an editor over a preference.
+   *
+   * THE SHAPE IS CHECKED AND NOTHING ELSE IS. The column is `jsonb` and nothing but this story has ever written it,
+   * so a row of another shape is a row nobody in the product made; `resolveSubject` is the guard that decides
+   * whether the value still names anything, and it answers the fixture with `fellBack` when it does not. */
+  if (prefs.error) console.error('editorData: preview subjects could not be read', { code: prefs.error.code })
+  const subjects: Record<string, orbitWeekly.Subject> = {}
+  for (const row of prefs.data ?? []) {
+    const value = row.preview_subject as { kind?: unknown; slug?: unknown } | null
+    if (value === null || typeof value !== 'object') continue
+    const { kind, slug } = value
+    if (typeof slug !== 'string' || (kind !== 'post' && kind !== 'page' && kind !== 'tag' && kind !== 'author')) continue
+    subjects[row.template_key as string] = { kind, slug }
+  }
+
   return {
     docs,
     entries,
@@ -228,5 +256,6 @@ export async function editorData(projectId: string): Promise<EditorData> {
     synthesized,
     defaults,
     dropped,
+    subjects,
   }
 }

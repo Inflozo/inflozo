@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import { defaultContent, type Mode } from '@inflozo/section-runtime'
 import { Skeleton } from '@/components/kit/loading'
 import { canvasAssets, mountSections, previewSrc, renderSection, type DesignRows } from '@/lib/canvas'
@@ -47,6 +47,7 @@ export function SectionPreview({
   mode,
   src,
   assets,
+  subject,
   onAspect,
 }: {
   entry: SectionRegistryEntry
@@ -62,6 +63,11 @@ export function SectionPreview({
    *  frame route, so the design ring mounted there hands its map in rather than resolving `canvas?image=` against
    *  a path that route does not answer. Omitted everywhere else, which is the editor and the Section Picker. */
   assets?: Readonly<Record<string, string>>
+  /** Story 5.13 — the subject the CANVAS is rendering (FR-D22, `EXPERIENCE.md:877`: a preview wears the project's
+   *  content source). A card that previewed a different post from the page behind it would be showing the wrong
+   *  shape — a post with a feature image and one without are different pages, which is the whole point of the
+   *  choice. Omitted where there is no canvas behind the preview (`/controls`), and then the fixture is drawn. */
+  subject?: orbitWeekly.Subject | null
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
@@ -126,6 +132,7 @@ export function SectionPreview({
         visibility: 'everyone',
         assets: assets ?? canvasAssets(pool),
         icons,
+        subject,
       }))
       // A CLOSED PICKER MEASURES 0 (it is kept mounted, `display:none`): a mode flip from the top bar repaints here
       // with nothing laid out, and a 0 read as CEILING re-shaped every drawn card as a two-row tile (review,

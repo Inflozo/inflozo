@@ -20,10 +20,11 @@ import {
   DEFAULT_LIMIT, DEFAULT_ORDER, MAJORS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
   articleOrder, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
   deepPagination, feedPage, feedPagination, newsletters, postsPerPage, posts, previewFixtures, recording,
-  resolvePreviewSeed, resolveSource, simulatedChunks, sortRows, styleGuideBody, styleGuidePageBody, subject,
-  tags, tiers, variants,
+  fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, sortRows, styleGuideBody,
+  styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants,
 } from './orbit-weekly.ts'
-import type { Major } from './orbit-weekly.ts'
+import type { Major, Subject } from './orbit-weekly.ts'
+import { nativeResourceOf } from './placement.ts'
 import type { DataBinding } from './registry.ts'
 import referenceDesign from '../fixtures/reference-design/design.json' with { type: 'json' }
 
@@ -376,4 +377,135 @@ test('the simulated bundle is exactly the complement of the derived exclude list
     assert.deepEqual([...inc, ...exc].sort(), [...chunks].sort())
     assert.ok(inc.every((c) => !exc.includes(c)))
   }
+})
+
+// ─── Story 5.13 — the preview subject (FR-D22) ────────────────────────────────
+//
+// The I/O matrix's rows over the PURE half. The pill, the menu and the write are `apps/web`'s
+// (`preview-subject.test.ts` and the deployed walk); what is asserted here is the resolution and the render.
+//
+// THE CONTROL IS THE FIRST TEST AND IT IS THE WHOLE STORY'S: `templateContext(target, feed)` with no third
+// argument answers exactly what it answered before this story, so `/pilots`, `tools/check-snapshots.mjs`
+// (NFR-6(c1)) and the render matrix are untouched. Its BYTE-level half is `node tools/check-snapshots.mjs`,
+// which calls this function with two arguments and compares every committed snapshot.
+
+/** Every template file the library has an opinion about, derived from `placement.ts`'s own table rather than
+ *  listed — a template added later joins this walk by construction (standing rule 4). */
+const FILES = ['default.hbs', 'home.hbs', 'index.hbs', 'post.hbs', 'page.hbs', 'tag.hbs', 'author.hbs', 'error.hbs', 'private.hbs', 'custom-signup.hbs']
+
+test('THE CONTROL — with no subject passed, templateContext answers exactly what it answered before this story', () => {
+  for (const target of FILES) {
+    for (const feed of ['first', 'middle', 'last', 'empty'] as const) {
+      const ctx = templateContext(target, feed)
+      assert.deepEqual(ctx, templateContext(target, feed, undefined), `${target}/${feed}: undefined is not the same as absent`)
+      assert.deepEqual(ctx, templateContext(target, feed, null), `${target}/${feed}: null is not the same as absent`)
+      if (target === 'post.hbs' || target === 'page.hbs') {
+        // the hard-coded fixture, spread FLAT — §3a's wrapper is the shim's, not this context's
+        assert.equal(ctx.ghost['slug'], subject(target === 'post.hbs' ? 'post' : 'page').slug)
+      }
+      if (target === 'tag.hbs' || target === 'author.hbs') {
+        // and the archives still get the WHOLE bundled feed, with no taxonomy object: today's behaviour, wrong
+        // on its own terms and deliberately unchanged where nothing states a subject
+        assert.equal(ctx.ghost['tag'], undefined, `${target}: an unstated subject must not invent a taxonomy`)
+        assert.equal(ctx.ghost['author'], undefined)
+        assert.deepEqual(ctx.ghost['pagination'], templateContext('home.hbs', feed).ghost['pagination'], `${target}: not the feed's own pagination`)
+      }
+    }
+  }
+})
+
+test('a canvas has a subject exactly where the NATIVE table gives it a singular resource — derived, never listed', () => {
+  for (const file of FILES) {
+    const native = nativeResourceOf(file)
+    assert.equal(fixtureSubject(file) === null, native === null, file)
+    assert.equal(subjectKindOf(file) === null, native === null, file)
+  }
+  // §4.2's one distinction a RESOURCE cannot draw: page.hbs carries the same `post` object and is a different
+  // product, and the two fixtures are two different rows
+  assert.equal(nativeResourceOf('page.hbs'), nativeResourceOf('post.hbs'))
+  assert.equal(subjectKindOf('post.hbs'), 'post')
+  assert.equal(subjectKindOf('page.hbs'), 'page')
+})
+
+test('untouched, every canvas with a subject gets its fixture — the style-guide post and page, and the fixed archives', () => {
+  assert.deepEqual(fixtureSubject('post.hbs'), { kind: 'post', slug: subject('post').slug })
+  assert.deepEqual(fixtureSubject('page.hbs'), { kind: 'page', slug: subject('page').slug })
+  assert.deepEqual(fixtureSubject('tag.hbs'), { kind: 'tag', slug: subject('tag').slug })
+  assert.deepEqual(fixtureSubject('author.hbs'), { kind: 'author', slug: subject('author').slug })
+  // the two archive fixtures are rows that REALLY EXIST, which is what lets their archives fill
+  assert.ok(tags().some((t) => t.slug === subject('tag').slug))
+  assert.ok(authors().some((a) => a.slug === subject('author').slug))
+  // and each was chosen for coverage: a full first page. The counts are DERIVED (standing rule 4).
+  assert.ok(subject('tag').count.posts > postsPerPage(), 'the fixture tag must fill a first page and have a second')
+  assert.ok(subject('author').count.posts > 0)
+  // resolving with nothing stored is the fixture, and nothing fell back
+  for (const file of FILES) {
+    assert.deepEqual(resolveSubject(file), { subject: fixtureSubject(file), fellBack: false }, file)
+    assert.deepEqual(resolveSubject(file, null), { subject: fixtureSubject(file), fellBack: false }, file)
+  }
+})
+
+test('an archive renders ITS OWN posts, with a pagination sized on those rows and the taxonomy object at the root', () => {
+  for (const [file, kind] of [['tag.hbs', 'tag'], ['author.hbs', 'author']] as const) {
+    const of = fixtureSubject(file) as Subject
+    const ctx = templateContext(file, 'first', of)
+    const rows = ctx.ghost['posts'] as { slug: string }[]
+    const pagination = ctx.ghost['pagination'] as { total: number; pages: number; limit: number }
+    // §3: the taxonomy object at the root, `posts` and `pagination` flat beside it
+    const taxonomy = ctx.ghost[kind] as { slug: string; count: { posts: number } }
+    assert.equal(taxonomy.slug, of.slug)
+    // EXACTLY the rows carrying it — the same set the hydrated count derives, never a subset and never the feed
+    const mine = posts().filter((p) => (kind === 'tag' ? p.tags : p.authors).some((r) => r.slug === of.slug))
+    assert.ok(mine.length > 0 && mine.length < posts().length, 'the fixture must be a real, proper subset')
+    assert.equal(pagination.total, mine.length)
+    assert.equal(pagination.total, taxonomy.count.posts, 'the pagination and the hydrated count must agree')
+    assert.equal(pagination.pages, Math.max(1, Math.ceil(mine.length / postsPerPage())))
+    assert.deepEqual(rows.map((r) => r.slug), mine.slice(0, pagination.limit).map((r) => r.slug))
+    // and the LAST page is the remainder of those rows, never the feed's
+    const last = templateContext(file, 'last', of)
+    assert.equal((last.ghost['pagination'] as { page: number }).page, pagination.pages)
+    assert.deepEqual(
+      (last.ghost['posts'] as { slug: string }[]).map((r) => r.slug),
+      mine.slice((pagination.pages - 1) * pagination.limit).map((r) => r.slug),
+    )
+    // the site half carries the same pagination the pager reads
+    assert.deepEqual(ctx.site.pagination, pagination)
+  }
+})
+
+test('choosing a subject changes the row the canvas renders — and never the body', () => {
+  const chosen = posts().find((p) => p['feature_image'] === null || p['feature_image'] === undefined) ?? posts()[posts().length - 1]
+  const ctx = templateContext('post.hbs', 'first', { kind: 'post', slug: chosen.slug })
+  assert.equal(ctx.ghost['slug'], chosen.slug)
+  assert.equal(ctx.ghost['title'], chosen.title)
+  assert.notEqual(ctx.ghost['slug'], subject('post').slug)
+  // FR-H8's structural claim, at the data: the two subjects differ by WHETHER the field is there at all
+  const withImage = posts().find((p) => typeof p['feature_image'] === 'string')
+  assert.ok(withImage !== undefined)
+  assert.equal(typeof templateContext('post.hbs', 'first', { kind: 'post', slug: withImage.slug }).ghost['feature_image'], 'string')
+  // `{{content}}` is never read from the row — the style-guide fixture is the body for every subject (Story 4.4)
+  assert.equal(previewFixtures('6').content, styleGuideBody('6'))
+})
+
+test('a subject that is gone falls back to the fixture and SAYS SO — and the canvas is never empty', () => {
+  const bad: Subject[] = [
+    { kind: 'post', slug: 'no-such-post' },
+    { kind: 'tag', slug: 'no-such-tag' },
+    { kind: 'author', slug: 'no-such-author' },
+  ]
+  for (const stored of bad) {
+    const file = stored.kind === 'post' ? 'post.hbs' : `${stored.kind}.hbs`
+    const answer = resolveSubject(file, stored)
+    assert.deepEqual(answer, { subject: fixtureSubject(file), fellBack: true }, JSON.stringify(stored))
+  }
+  // WRONG KIND for the file — a post subject stored under the tag canvas — is the same answer
+  assert.deepEqual(resolveSubject('tag.hbs', { kind: 'post', slug: subject('post').slug }), { subject: fixtureSubject('tag.hbs'), fellBack: true })
+  assert.deepEqual(resolveSubject('post.hbs', { kind: 'page', slug: subject('page').slug }), { subject: fixtureSubject('post.hbs'), fellBack: true })
+  // a canvas with no subject at all never reports a fallback, whatever is stored against it
+  assert.deepEqual(resolveSubject('home.hbs', { kind: 'post', slug: 'anything' }), { subject: null, fellBack: false })
+  // and the render door itself never empties: a slug nothing holds still draws the fixture
+  assert.equal(templateContext('post.hbs', 'first', { kind: 'post', slug: 'no-such-post' }).ghost['slug'], subject('post').slug)
+  const ghost = templateContext('tag.hbs', 'first', { kind: 'tag', slug: 'no-such-tag' }).ghost
+  assert.equal((ghost['tag'] as { slug: string }).slug, subject('tag').slug)
+  assert.ok((ghost['posts'] as unknown[]).length > 0, 'the fallback archive must not be empty')
 })

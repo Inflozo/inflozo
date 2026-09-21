@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useLayoutEffect, useRef, useState, type HTMLAttributes } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, orbitWeekly, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, duplicateSection, getPath, insertSection, isDesigned,
   moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
@@ -18,6 +18,7 @@ import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
 import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
+import { SourcePill } from '@/components/editor/source-pill'
 import { SaveState } from '@/components/editor/save-state'
 import { openShortcuts, ShortcutsSheet } from '@/components/editor/shortcuts-sheet'
 import { TemplateSwitcher } from '@/components/editor/template-switcher'
@@ -49,7 +50,9 @@ import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
+import { GONE, SUBJECT_SAID, bundledSource, subjectOptions } from '@/lib/preview-subject'
 import { isApp, stripApp } from '@/routing'
+import { setPreviewSubject } from './actions'
 import type { EditorData } from './read'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
@@ -255,6 +258,7 @@ export function Editor({
   canvases,
   synthesized,
   defaults: stacks,
+  subjects: storedSubjects,
   darkEnabled,
   revision,
   userId,
@@ -295,6 +299,30 @@ export function Editor({
    *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
    *  card fills the room available. */
   const [device, setDevice] = useState<Device>(DESKTOP)
+  /* ─── Story 5.13 — FR-D22's PREVIEW SUBJECT, and the pill that names it ──────────────────────────────────────
+   *
+   * PER CANVAS AND PER USER, stored in `project_template_prefs.preview_subject` — a column that has been in the
+   * schema since day one with no reader anywhere, so this story is its first of both and adds no migration (R-99).
+   * It is NOT part of the doc: it never enters 5.8's journal, `⌘Z` does not touch it and it never materialises an
+   * untouched canvas (FR-D11 calls it "set-and-forget context, not a per-edit action").
+   *
+   * THE RESOLUTION IS THE LIBRARY'S and it is pure: `resolveSubject` answers which subject this canvas is actually
+   * rendering and whether the stored one survived, so the pill has one honest answer to print and the fallback is a
+   * unit test rather than a browser observation. A canvas with no singular resource resolves to null, and the pill
+   * then states the source and offers nothing to open.
+   */
+  const [subjects, setSubjects] = useState(storedSubjects)
+  /** the last save's refusal, carried in the menu: the choice stands for the session and will not survive a reload */
+  const [subjectRefusal, setSubjectRefusal] = useState<string | null>(null)
+  const [, startSubject] = useTransition()
+  /** the bundled publication, the source until Story 5.18 reads the connected site (R-165) */
+  const source = useMemo(bundledSource, [])
+  const previewing = orbitWeekly.resolveSubject(canvas.file, subjects[templateKeyOf(key)])
+  const subjectRows = useMemo(
+    () => (previewing.subject === null ? [] : subjectOptions(source, previewing.subject.kind)),
+    [source, previewing.subject?.kind],
+  )
+
   /** the section a swap has just landed on, for `canvas-chrome.css`'s 180ms settle — cleared when it is over */
   const swapped = useRef<Pick | null>(null)
   /** `markSwapped`'s one pending timer, cleared on unmount so a swap 180ms before leaving never marks a torn-down
@@ -408,8 +436,8 @@ export function Editor({
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject }
 
   /** EVERY WRITE TO THE SESSION'S DOCS GOES THROUGH HERE, so AD-22's round trip is decided ONCE rather than at each of
    *  the three places that edit a doc. Two rules, and they are the whole of FR-D6's "untouched is a real state":
@@ -711,6 +739,30 @@ export function Editor({
     setSaid(deviceShown(next))
   }
 
+  /** STORY 5.13's PRESS — FR-D22's stated choice, and it is deliberately NOT an edit.
+   *
+   * THE CANVAS REPAINTS FIRST and the write follows in a transition, which is why this is not a form submit: the
+   * page has already changed, so there is nothing for R-98's busy label to describe. A REFUSED write leaves the
+   * choice on the canvas for the session and puts one sentence in the menu — what the customer needs to know is
+   * that it will not survive a reload, not that something failed.
+   *
+   * It never reaches `commit()`, so the doc, 5.8's journal, `⌘Z` and D5a's untouched marker are all untouched
+   * (FR-D11: "set-and-forget context, not a per-edit action"; AD-15). And no key presses it (R-145 gains no row).
+   */
+  const chooseSubject = (next: orbitWeekly.Subject) => {
+    const stored = templateKeyOf(latest.current.key)
+    setSubjects((was) => ({ ...was, [stored]: next }))
+    setSubjectRefusal(null)
+    // `latest`, not the state: `paint()` reads through it in this same task, before React has re-rendered
+    latest.current = { ...latest.current, subject: next }
+    paint()
+    setSaid(SUBJECT_SAID(next, subjectRows))
+    startSubject(async () => {
+      const answer = await setPreviewSubject(project.id, stored, next)
+      if ('error' in answer) setSubjectRefusal(answer.error)
+    })
+  }
+
   const choose = (pick: Pick | null) => {
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
@@ -762,7 +814,9 @@ export function Editor({
         if (i.hidden) return ''
         // Story 5.6: a repaint in dark must draw the DARK render — the mode picks the stored slice handed to the one
         // door, here as it does in `restampAll` and `onChange`, so no repaint ever silently returns to light
-        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: PREVIEWS, visibility: i.memberVisibility, assets, icons: lookup, editing: true })
+        // Story 5.13: the canvas's resolved subject reaches every section through the ONE door. A site-wide section
+        // compiles to `default.hbs`, which carries no resource of its own, so the argument is simply unused there.
+        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: PREVIEWS, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
       })
       mountSections(mount, parts.join(''))
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
@@ -1173,9 +1227,18 @@ export function Editor({
   useEffect(() => {
     latest.current.selected = null
     setSelected(null)
+    // Story 5.13: a refusal belongs to the canvas it was refused on, and each canvas holds its own subject
+    setSubjectRefusal(null)
     paint()
     // paint reads the latest values through `latest`
   }, [key])
+
+  /** FR-D22's "says so", ON OPEN. A stored subject that no row holds falls back to the fixture — the canvas is
+   *  never empty and the stored value is never deleted — and the fallback is announced politely through the
+   *  editor's one live region as well as shown in the menu. Silence would be the same failure as an empty canvas. */
+  useEffect(() => {
+    if (previewing.fellBack && previewing.subject !== null) setSaid(GONE(previewing.subject))
+  }, [key, previewing.fellBack])
 
   useEffect(() => {
     let alive = true
@@ -2013,6 +2076,17 @@ export function Editor({
               the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's gutter
               find it — and out of flow it paints over the ground either way. */}
           <ViewportChip device={device} fit={scale} />
+          {/* B9's CONTENT-SOURCE PILL at the canvas foot (FR-D15, FR-D22), and LAST for the same reason the chip is:
+              the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's
+              gutter find it. R-166 builds it at 24px inside R-139's existing 32px ground, so it clears the card on
+              every device and `py-8` does not move — the measurement the deployed walk makes first. */}
+          <SourcePill
+            subject={previewing.subject}
+            rows={subjectRows}
+            fellBack={previewing.fellBack}
+            refusal={subjectRefusal}
+            onChoose={chooseSubject}
+          />
           {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
               (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last */}
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling} resources={links} handle={tools} />
@@ -2232,6 +2306,9 @@ export function Editor({
           onMode={flip}
           darkEnabled={darkEnabled}
           src={src}
+          // EXPERIENCE.md:877 — a preview card wears the project's content source, which since this story includes
+          // WHICH page it is: a card previewing a different post from the canvas behind it shows the wrong shape
+          subject={previewing.subject}
           refusal={pickerRefusal}
           onAdd={onPlace}
           onClose={() => {

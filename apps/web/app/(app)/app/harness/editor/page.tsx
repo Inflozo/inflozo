@@ -103,6 +103,9 @@ export default function EditorHarness() {
     synthesized: [],
     defaults: {},
     dropped: {},
+    // Story 5.13 — no stored preview subject, so every canvas resolves to its fixture. The harness proves the
+    // keyboard wiring (R-146) and the subject binds no key, so there is nothing here for it to press.
+    subjects: {},
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

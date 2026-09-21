@@ -1,5 +1,5 @@
 {
-  "note": "Orbit Weekly — the bundled sample publication (FR-H3). Rows carry the Content API field names the shim reads by dotted path; tags and authors are referenced by slug and hydrated by packages/library/src/orbit-weekly.ts, which also derives every count. The three fixture subjects live under `subjects`, never in `posts`, so no feed, Source or count can reach them.",
+  "note": "Orbit Weekly — the bundled sample publication (FR-H3). Rows carry the Content API field names the shim reads by dotted path; tags and authors are referenced by slug and hydrated by packages/library/src/orbit-weekly.ts, which also derives every count. The post and page fixture subjects live under `subjects` as whole rows, never in `posts`, so no feed, Source or count can reach them. The tag and author subjects (Story 5.13, FR-D22) CANNOT be hidden that way — an archive's posts come from the feed, so a hidden taxonomy would render an empty archive — and are therefore SLUGS of rows that already exist, which is also what makes each a stated choice rather than an accident of sort order.",
   "site": {
     "title": "Orbit Weekly",
     "description": "Seven links, checked by hand, every Thursday.",
@@ -1913,7 +1913,9 @@
         "rosa-menendez"
       ],
       "show_title_and_feature_image": true
-    }
+    },
+    "tag": "field-notes",
+    "author": "rosa-menendez"
   },
   "comments": [
     {
