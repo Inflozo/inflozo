@@ -5103,6 +5103,11 @@ plain: The automated walk's "save when the tab is hidden" check failed once and 
 reason: Story 5.13 touches no save code, and the same stops passed at `112514d4` and in two of three runs at
   `efda9d6c`; 66c's failures follow from 66b's (the revision it expects never moved). Telling a flaky check from a
   flaky save needs its own look, not a guess inside this review.
+evidence (Story 5.14's Dev, 2026-09-21, at `6f2944ef`): step 66b failed again once — **2 FAIL, 513 PASS**, "Saved on
+  this device → synced false · revision 10 → 10" — and the next complete walk on the same deployment passed it (**0 FAIL,
+  515 PASS**). Story 5.14 adds no request inside 66b: its one write, the "looked at" record, fires only when the record
+  CHANGES, and by step 66b Home's record already holds the visitor on screen, so the undo/redo that owes the edit writes
+  nothing. Two stories and two builds now, the same stop.
 
 ## Deferred from: Story 5.14's Dev run (2026-09-21)
 

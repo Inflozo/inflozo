@@ -707,6 +707,33 @@ and `VERCEL_PROJECT`, under Node 24.
     with Member home, which is the finding recorded under the task list.
 - `python3 tools/doc-audit.py --check`: **PASS twice**.
 
+**The deployed walk at `6f2944ef` (2026-09-21), the owner's two findings on production.**
+
+- **CI** (`GITHUB_TOKEN`): `check`, `rls` and `deploy` all passed, and `Render matrix` passed.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): production `dpl_2yWtYkEt4pot9v5CfmSgK7HE2zh9`,
+  **READY**, built from `6f2944ef` = `HEAD`.
+- **The walk:** `node tools/probe/run-verify-editor.cjs` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY` and the three
+  Vercel keys, under Node 24. Result: **0 FAIL, 515 PASS**, users **13 → 13**, and both throwaway accounts were
+  deleted in `finally`. All 22 of step 90's checks passed:
+  - **R-170:** the trigger reads "View as Logged out user", named by its own words, and "Anonymous" is nowhere in
+    the bar. The control reads the bar's own words back.
+  - **R-169:** no marker, and no "not viewed", in the bar. In the menu, `["free","paid"]` each carry one dot, 8 × 8,
+    `rgb(232, 75, 52)`, with the word held at 1px for a screen reader.
+  - The dots go `["free"]` → `[]` as visitors are looked at. After a reload there are none. After one edit (R-167)
+    `["free","paid"]` are dotted again. On Post, the dots follow Post's own record: `["anonymous","free"]`.
+  - `#editor-said` says "The canvas is previewing a paid member.", and R-168's caption says "a free member".
+  - Clearances measured: the trigger clears the right-hand cluster by **238px** at 1440 and **158px** at 1280.
+  - **The long-name check:** a project name at its limit ends **15px** clear of the group beside the widest canvas
+    label, which the walk measured as "Member home", at both widths.
+  - Step 37's caption expectation, now read from the module, passed. Step 5's CSP count was zero, step 8's axe was
+    zero with the menu and its dots open, and step 79 answered 404.
+- ***Stated plainly:***
+  - The first walk of this deployment ended **2 FAIL, 513 PASS**. Both failures were step 66b, the known save-on-tab-hide
+    flake **DW-220**, now with this run's evidence, and every step-90 check passed in that run too.
+  - The next attempt died on a 30s `waitForURL` timeout at **0 FAIL, 489 PASS**. That is the known harness flake, and
+    not a result.
+  - The one after that is the clean run recorded above.
+
 **Commands:**
 
 - `pnpm check`. Expected:
