@@ -3660,12 +3660,13 @@ text that is made an anchor link using the text controls becomes blue … I want
 generic blue anchor links."*
 
 - **What it binds.** A plain link, an `<a>` with no class, reads FR-E1's link style: the pack's `--link-color` and
-  `--link-decoration`, the two tokens R-112 gave values that nothing read. That covers every link the `a` mark writes
-  and every link Ghost's helpers print. In Paper it is ink words with the accent underline in light, and accent words
-  in dark.
+  `--link-decoration`, the two tokens R-112 gave values that nothing read. That covers every link the `a` mark writes.
+  In Paper it is ink words with the accent underline in light, and accent words in dark.
   - **At zero specificity**, so a design that draws its own links keeps them.
   - **Never invisible.** On a contrast, accent or image ground the link keeps the ground's own words, and on
-    contrast the underline takes `--accent-on-contrast`.
+    contrast the underline takes `--accent-on-contrast`. The ground is the Background role in force (`data-bg`),
+    so a design drawn on a ground of its own locks that role or writes its own link rule
+    (`docs/section-authoring.md`).
   - **One rule, in the token block** (`tokens.ts`'s `referenceTokensCss()`). It reaches the canvas, `/pilots`,
     `/controls`, the render matrix, and the theme through Epic 6's pack blocks. It names no mode (AD-30).
 - **What it does NOT change.** R-112's values; FR-D4's four marks and the link record; any design's own link rule;

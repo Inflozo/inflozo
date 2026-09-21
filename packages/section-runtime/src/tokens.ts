@@ -168,16 +168,19 @@ const block = (selector: string, values: Readonly<Record<string, string>>) =>
  *  tokens their values and nothing read them, so a link a customer typed into a section's text with P0-1's toolbar
  *  drew the browser's default blue — on the canvas, and in any theme built from these sections.
  *
- *  A PLAIN LINK — an `<a>` with no class, which is every link the `a` mark writes (`marks.ts`'s `openTag`) and every
- *  link Ghost's own helpers print, and never one a design authors (every design anchor carries its class) — takes the
- *  pack's link colour and decoration. AT ZERO SPECIFICITY (`:where`), so a design that draws its own links keeps them
- *  with any selector at all (A4-13's `.a4-13__sub a`), and Epic 6's packs restyle every link by changing two tokens.
+ *  A PLAIN LINK — an `<a>` with no class, which is every link the `a` mark writes (`marks.ts`'s `openTag`) and each
+ *  link of the navigation partial `core.ts` builds (A1-1 styles those itself), and never one a design authors (every
+ *  design anchor carries its class) — takes the pack's link colour and decoration. AT ZERO SPECIFICITY (`:where`), so
+ *  a design that draws its own links keeps them with any selector at all (A4-13's `.a4-13__sub a`), and Epic 6's
+ *  packs restyle every link by changing two tokens.
  *
  *  AND NEVER INVISIBLE: on a ground a section recolours — contrast, accent, image — the page-ground link colour would
  *  be the wrong ink (Paper's ink link on its ink contrast ground), so there the words keep the ground's own text
  *  colour, which the section already set, and the underline takes the contrast accent on contrast and the words' own
  *  colour elsewhere. `data-bg` is the one attribute both emitters stamp on every section root for its Background role
- *  (the BACKGROUND_ROLES vocabulary). No mode is named: the tokens carry it (AD-30). */
+ *  (the BACKGROUND_ROLES vocabulary), and the only ground this rule can see: a design drawn on a ground of its own
+ *  locks the role there or writes its own link rule (`docs/section-authoring.md`). No mode is named: the tokens
+ *  carry it (AD-30). */
 const LINK_RULES = [
   ':where(a:not([class])) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
   ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class])) { color: inherit; text-decoration-color: currentcolor; }',

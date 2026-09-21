@@ -527,6 +527,13 @@ disappears. The rule sits at zero specificity (`:where`), so a design that wants
 any selector at all (A4-13's `.a4-13__sub a`) and wins. It must then draw that look on every ground it offers,
 because the token block's ground rule no longer reaches it. A design that writes nothing gets the pack's link.
 
+**The ground is read from `data-bg`**, the Background role in force, and from nothing else. So a design whose own
+ground is not the page's (a Contrast Band, a Cover or Full Bleed over a photograph, a bar on the accent) must do
+one of two things. It locks the Background role at that ground, as the export's specs do ("the locked Background
+roles make the ground claims real"). Or it writes its own link rule. With the role left at Base, a typed link on
+an inverted ground takes the page's link colour, and in Paper's light mode that is ink on ink. A panel inside the
+section with a fill of its own is the same case: the token block knows only the section's ground.
+
 **A link is one record, and a `url` prop and an `a` mark hold the same one** (AD-4, FR-F6):
 
 ```json

@@ -507,12 +507,16 @@ Pack's links, dark ink with an orange underline (orange in dark mode), instead o
   section already loads: the canvas, `/pilots`, `/controls`, the render matrix, and Epic 6's pack blocks in the
   theme's `default.hbs`. It reads the two tokens R-112 gave values that nothing read.
 - **Only a plain link.** The rule matches an `<a>` with no class. That is every link the `a` mark writes
-  (`marks.ts`'s `openTag`) and every link Ghost's helpers print. Every anchor a design authors carries its class.
+  (`marks.ts`'s `openTag`), and each link of the navigation partial `core.ts` builds, which A1-1 styles itself.
+  Every anchor a design authors carries its class.
 - **At zero specificity** (`:where`), so any rule a design writes wins. A4-13's `.a4-13__sub a` keeps its own look,
   and A1-1's navigation keeps its `text-decoration: none`.
 - **Never invisible.** Paper's light link is ink, and its contrast ground is ink too. On a contrast, accent or image
   ground the link keeps the words the section already set, and on contrast the underline takes the contrast
   accent. `data-bg` is the attribute both emitters stamp on every section root for its Background role.
+- **The ground is read from `data-bg` alone.** A design drawn on a ground of its own must lock the Background role
+  at that ground, or write its own link rule (`docs/section-authoring.md`). No built design is drawn that way, and
+  the sweep measured the real fill behind every text element of every built one.
 - **No mode is named** (AD-30). The tokens carry the mode.
 - **Epic 6 must carry it.** A pack's token block that is not emitted through `referenceTokensCss()` would lose the
   rule, so Story 6.1's criteria now name it.
@@ -913,6 +917,10 @@ machine.**
   underline, on the `base` ground in `light`. Those are Paper's ink and accent, and not the browser's blue.
 - Everything else held. All 23 of step 90's checks passed, and so did steps 36 and 66b, the two known
   intermittents. Step 8's axe found zero violations, including with the link panel open.
+- **After the walk**, a sweep of the design export's grounds sharpened the words: the rule reads the ground from
+  `data-bg` alone, so a design drawn on a ground of its own locks the Background role there or writes its own link
+  rule (`docs/section-authoring.md`). Only `tokens.ts`'s comment and the documents changed. `reference-tokens.css`
+  is byte-identical, which `test-vocabulary.mjs` checks (21 passed), and `pnpm lint` and the typecheck are green.
 
 **Commands:**
 
