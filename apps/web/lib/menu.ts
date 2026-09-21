@@ -71,7 +71,19 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
   // Fixed coordinates do not follow a scroll, so the menu closes rather than floats away. The
   // listener leaves WITH the menu: closed by Escape, an item or a click outside, it used to stay
   // armed — one more per open — until the next scroll (review, 2026-09-06).
-  const onScroll = () => {
+  //
+  // A SCROLL INSIDE THE MENU IS NOT THE PAGE MOVING (the owner's finding, 2026-09-21, on Story 5.13's
+  // subject picker: its 53 rows scroll, and the menu shut on the first wheel). A capturing listener on
+  // `window` hears the `scroll` of EVERY element, not just the document's — element scroll does not
+  // bubble, but capture reaches it on the way down — so a menu with its own scrolling list closed itself
+  // the moment that list moved. `kit/select.tsx`'s `openPopover` learned this at Story 4.5 for the icon
+  // picker's grid and guarded it THERE; the same guard never reached here, which is standing rule 3 exactly.
+  // It is one condition, and it is the whole difference: the menu closes when the ground under it moves and
+  // not when its own rows do. `once` is gone with it — an ignored inner scroll would have spent the
+  // listener and left a later page scroll unheard — and `onToggle` below owns the lifetime, as it does
+  // for `openPopover`.
+  const onScroll = (event: Event) => {
+    if (event.target instanceof Node && menu.contains(event.target)) return
     if (menu.matches(':popover-open')) menu.hidePopover()
   }
   const onToggle = (event: Event) => {
@@ -112,7 +124,7 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     // so stepping into a row cannot be the scroll that closes the menu either.
     menu.querySelector<HTMLElement>('a[href], button')?.focus({ preventScroll: true })
     if (menu.matches(':popover-open')) {
-      window.addEventListener('scroll', onScroll, { once: true, capture: true, passive: true })
+      window.addEventListener('scroll', onScroll, { capture: true, passive: true })
     }
   })
 }

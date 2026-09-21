@@ -116,7 +116,8 @@
 // has been waiting for since day one; the Tag canvas rendering ITS OWN posts and no others, which it did not before
 // this story; and a planted subject that no row holds rendering the fixture, saying so in `#editor-said` and in the
 // menu, with the stored value KEPT. Every expectation is derived from `lib/preview-subject.ts` and the library's own
-// `templateContext`, never restated here.
+// `templateContext`, never restated here. It also carries the owner's finding of 2026-09-21, which belongs to EVERY
+// menu in the app rather than to this one: a menu with its own scrolling list must not close when that list scrolls.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -3839,6 +3840,26 @@ async function main() {
       JSON.stringify(menu513 && { marked: menu513.marked.length, want: POSTS513.filter((r) => r.hasImage && r.caption === null).length }))
     check('step 89 — R-118: no SOURCE group, nothing greyed, and the search takes the focus',
       menu513 !== null && menu513.sourceGroup === false && menu513.greyed === 0 && menu513.focus === 'editor-source-search', JSON.stringify(menu513 && { sourceGroup: menu513.sourceGroup, greyed: menu513.greyed, focus: menu513.focus }))
+
+    /* THE MENU'S OWN LIST SCROLLS, AND SCROLLING IT DOES NOT CLOSE IT (the owner's finding, 2026-09-21).
+       `openMenu` arms a CAPTURING `scroll` listener on `window`, and capture reaches the scroll of every
+       element, not only the document's — so a menu with 53 rows shut itself the moment its list moved.
+       The control is in the assertion: `moved` must be non-zero, or a menu that refused to scroll at all
+       would pass this stop by standing still. */
+    const scrolled513 = await page.evaluate(async () => {
+      const list = document.querySelector('#editor-source-menu ul')
+      const before = list.scrollTop
+      list.dispatchEvent(new WheelEvent('wheel', { deltaY: 240, bubbles: true, cancelable: true }))
+      list.scrollTop = before + 120
+      await new Promise((r) => setTimeout(r, 250))
+      return {
+        overflows: list.scrollHeight > list.clientHeight,
+        moved: list.scrollTop - before,
+        open: document.getElementById('editor-source-menu')?.matches(':popover-open') === true,
+      }
+    })
+    check('step 89 — the menu\'s own list scrolls and scrolling it does NOT close the menu (a capturing window listener hears every element\'s scroll)',
+      scrolled513.overflows && scrolled513.moved > 0 && scrolled513.open, JSON.stringify(scrolled513))
 
     // the search is pure and client-side: nothing is fetched, and the count is the pure module's own answer
     const QUERY513 = 'archive'

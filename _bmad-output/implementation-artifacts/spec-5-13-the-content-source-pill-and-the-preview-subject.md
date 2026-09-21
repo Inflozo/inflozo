@@ -423,6 +423,39 @@ naming **your** Ghost site — cannot appear yet, because nothing in the editor 
 until Story 5.18. Today every project previews with the bundled sample publication, so "Sample content"
 is the honest answer rather than a missing feature.
 
+## Owner's test findings
+
+**1. The subject picker's list could not be scrolled — scrolling it closed the menu** (the owner, 2026-09-21,
+on the deployed build `6ca5676f`). **Fixed in this story.**
+
+**In plain English.** The list of articles is long, so it scrolls inside its own box. Rolling the wheel over it
+shut the whole list instead of moving it, so only the first handful of articles could ever be reached.
+
+**The cause was not the pill's, and neither is the fix.** `lib/menu.ts`'s `openMenu` — the one helper every
+menu in the app opens through — closes a menu when the page scrolls under it, because a menu is placed at fixed
+coordinates and would otherwise float away from its button. It listened for that with a **capturing** listener
+on `window`, and a capturing listener hears the scroll of *every element on the page*, not only the document's.
+So a menu with its own scrolling list closed itself the moment that list moved.
+
+**It was already known, in one place, and never propagated — standing rule 3 exactly.** `components/kit/select.tsx`'s
+`openPopover` carries the identical guard, written at Story 4.5 because the icon picker's grid scrolls, and its
+own header says so in as many words. `openMenu` never received it. The fix is that one condition, moved to where
+every menu reads it: **the menu closes when the ground under it moves and not when its own rows do.**
+
+**What else it was silently breaking.** The template switcher's list carries the same `overflow-y-auto` and
+would have done the same thing on any window short enough to make it scroll — it simply has ten rows rather than
+fifty-three, so nobody had met it. Both are fixed by the one change, which is why it went into the shared helper
+rather than into the pill.
+
+**Proved, not asserted.** `tools/probe/run-verify-editor.cjs` step 89 gains a check on the **deployed** editor:
+the list really overflows, a wheel over it really moves it (`scrollTop` must change — a menu that refused to
+scroll at all would otherwise pass by standing still), and the menu is still open afterwards.
+
+*`owner_test` stays `pending`* rather than moving to `issues`: this arrived during Dev, from the owner looking at
+the deployed build early, and is fixed inside the Dev phase. His formal test of the finished story — the eleven
+steps below — has not run yet, and the board clears an `issues` only on a `Fix` commit, which would have made it
+read as a test that happened.
+
 ## Questions for the owner
 
 ### Question 1 — should you be able to choose the article now, or only once your own site is connected?
