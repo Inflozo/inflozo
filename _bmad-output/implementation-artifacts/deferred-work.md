@@ -3803,6 +3803,10 @@ owner: the owner, at Story 4.10's owner test (step 14 compares arrangement and s
   no Paper object names — `--border-fade` and `--scrim` (rgba of `#1c1a17`), and both modes' `--accent-on-contrast`
   (`#e8a87c` / `#8a3b12`, the pre-Paper accent on Paper's contrast ground); and Light `--link-color`, which took the
   accent and was Story 4.10's Q5 — ruled R-112: ink words, accent underline (that row leaves this list)
+amended: Story 5.14 (Dev, 2026-09-21), R-173 — **`--accent-on-contrast` is now drawn.** The token block's link rule
+  underlines a typed link on a contrast ground with it, so the pre-Paper `#e8a87c` / `#8a3b12` on this list is now
+  visible on the canvas (7.99:1 and 6.28:1 on Paper's contrast grounds, measured by Story 5.14's sweep). Epic 6's
+  value for the row replaces it with nothing else to change.
 location: packages/section-runtime/src/tokens.ts (`--site-width` 72rem, `--space-gutter` 1.5rem) · every pilot's style.css
 reason: changing a row no Paper object names would be inventing the value; the frames draw it, so it is a one-row
   token change once ruled. A1, A22, A24 and A4 also carry their own section padding as literals where the frame's

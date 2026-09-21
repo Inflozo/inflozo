@@ -2157,6 +2157,7 @@ with an orange underline."*
 - **What it binds.** Light `--link-color` is the ink `#232019` and `--link-decoration` is `underline #D96C3F`, in
   `packages/section-runtime/src/tokens.ts` and the emitted `reference-tokens.css`. Dark is unchanged: `#E0805A` on
   `#171511` is 6.43:1. Epic 6's Paper pack takes the same values; the contract (its two link rows) did not change.
+  *(Applied since **R-173**, 2026-09-21: the token block gives every plain link these two tokens.)*
 - Targets:
   - ✅ Story 4.10's spec · ✅ `deferred-work.md` (DW-155) · ✅ `tokens.ts` and `reference-tokens.css`.
 - **Deliberately not touched:** the export (R-74).
@@ -3672,8 +3673,8 @@ generic blue anchor links."*
 - Targets: ✅ this entry · ✅ Story 5.14's spec (finding 6, Question 3, the frozen block on his word, its criteria,
   tasks and owner test) · ✅ `packages/section-runtime/src/tokens.ts` and the regenerated `reference-tokens.css` ·
   ✅ `tokens.test.ts` · ✅ the deployed walk (step 20) · ✅ `prd.md` FR-E1 and FR-D4 · ✅ `epics.md` Story 5.14 and
-  Story 6.1 · ✅ `docs/section-authoring.md` — Story 5.14's Dev (2026-09-21). ⬜ T1 and T3, when a theme first ships
-  the token block (Story 6.1).
+  Story 6.1 · ✅ `docs/section-authoring.md` · ✅ R-112's entry · ✅ `deferred-work.md` (DW-155) — Story 5.14's Dev
+  (2026-09-21). ⬜ T1 and T3, when a theme first ships the token block (Story 6.1).
 
 
 ## B · Approved decisions superseded by this session

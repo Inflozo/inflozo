@@ -425,8 +425,9 @@ Pack's links, dark ink with an orange underline (orange in dark mode), instead o
   - **Tests:** `tokens.test.ts` holds the rule to zero specificity, to contract tokens only and no literal colour,
     and to the recoloured grounds. Its control, the same rule with specificity, fails it. The walk's step 20 reads
     the pasted link's colour and underline on production.
-  - **Documents:** the ledger (R-173), `prd.md` FR-E1 and FR-D4, `epics.md` (Story 5.14 and Story 6.1), and
-    `docs/section-authoring.md`.
+  - **Documents:** the ledger (R-173, and a pointer on R-112), `prd.md` FR-E1 and FR-D4, `epics.md` (Story 5.14
+    and Story 6.1), `docs/section-authoring.md`, and `deferred-work.md`'s DW-155, whose `--accent-on-contrast` is now
+    drawn.
 
 **Acceptance Criteria:**
 
@@ -899,6 +900,20 @@ machine.**
   - A4-13's sub kept its own link style.
   - I checked pictures of a link in the newsletter's blurb by eye, in all four states.
 
+**The deployed walk at `27877769` (2026-09-21), R-173 on production, run with nothing else on the machine.**
+
+- **CI** (`GITHUB_TOKEN`): the `CI` run (`check`, `rls`, `deploy`) and `Render matrix` both succeeded.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): production `dpl_ApmFUPMyBWFeSyuX5DHSEKrDDNqR`,
+  **READY**, built from `27877769` = `HEAD`.
+- **The walk:** `node tools/probe/run-verify-editor.cjs` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY` and the three
+  Vercel keys.
+  - The first attempt died on a harness timeout at 0 FAIL, which is not a result.
+  - The second ran to its end at **0 FAIL, 520 PASS**, with users **13 → 13**.
+- **Step 20, the new check:** the pasted link read `rgb(35, 32, 25)` words, `underline`, and an `rgb(217, 108, 63)`
+  underline, on the `base` ground in `light`. Those are Paper's ink and accent, and not the browser's blue.
+- Everything else held. All 23 of step 90's checks passed, and so did steps 36 and 66b, the two known
+  intermittents. Step 8's axe found zero violations, including with the link panel open.
+
 **Commands:**
 
 - `pnpm check`. Expected:
@@ -963,7 +978,7 @@ from 2026-09-21.
 | 11 | the same | Editor, Post | Switch View as to **Paid member**, then press `⌘K` and look at a **Newsletter** card. | — | The card shows "Signed in" rather than an email box, because the picker previews what you are viewing as. Press Esc to close it. |
 | 12 | the same | Editor, Post | Press `?`. | — | The shortcuts card has **no row for View as**. It has no key, on purpose, because it is set-and-forget. |
 | 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Switch Template back to **Home**. Click into the newsletter's grey text under its heading and select the word **corrections** (double-click it, or drag across it). In the small toolbar press the **link** button, type `night`, choose the post, then press **Done**. | `night` → *The night shift at the port of Algeciras* | **corrections** is **dark ink with a thin orange underline**, not blue, and a little darker than the grey words around it. |
-| 14 | the same | Editor, Home | Press **Preview dark mode** in the top bar, then **Back to light mode**. | — | In dark mode the word is **orange**, underlined in orange. Back in light it is ink again. |
+| 14 | the same | Editor, Home | Press the **sun** button in the top bar (its tip says "Preview dark mode"), then press it again. | — | In dark mode the word is **orange**, underlined in orange. Back in light it is ink again. |
 | 15 | the same | Editor, Home, right-hand panel | With the newsletter selected, set **Background role** to **Contrast**. Then set it back to **Base**, select **corrections** again and press **Remove link** in the toolbar. | — | On the dark band the word is **light like the text around it**, with a **pale orange** underline, so it never disappears. Afterwards the band and the word are as they were. |
 
 ## Owner's test findings
