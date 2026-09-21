@@ -810,6 +810,29 @@ and `VERCEL_PROJECT`, under Node 24.
 - **This run was not clean:** I had a local harness compiling beside it, loading the same machine. The walk of the
   fourth round, below, is the record.
 
+**The deployed walk at `52c1ff3f` (2026-09-21), the fourth round on production, run with nothing else on the
+machine.**
+
+- **CI** (`GITHUB_TOKEN`): `check`, `rls` and `deploy` passed, and `Render matrix` passed.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): production `dpl_HtaEKbrQHjSHMuaZp4F4qQjCCNdK`,
+  **READY**, built from `52c1ff3f` = `HEAD`.
+- **The walk:** `node tools/probe/run-verify-editor.cjs` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY` and the three
+  Vercel keys. Result: **0 FAIL, 519 PASS on its first attempt**, with users **13 → 13**. All 23 of step 90's checks
+  passed. Among them:
+  - **Step 40 (R-171, R-172):**
+    - every Template row has its glyph and its own line under "Templates"
+    - Home, the current row, reads `rgb(255, 237, 232)`; every other row is transparent, and no row has a tick
+    - the list scrolls **378 of 538** inside a **420** card
+    - `popoverScrolls: false`, so there is one scrollbar
+  - **Step 43:** opened on 404, the list lands on it, focused and in view, with `scrollTop` **160**.
+  - **Step 90:**
+    - View as's current row is highlighted with no tick.
+    - A canvas press closes both menus.
+    - The stored record holds **`["anonymous","free","paid"]`**, and after the reload no dot comes back. The lag seen
+      at `545b815e` did not recur.
+  - Steps 36 and 66b, the two known intermittents, both passed. Step 5's CSP count was zero. Step 8's axe found zero
+    violations with the menu and its dots open.
+
 **Commands:**
 
 - `pnpm check`. Expected:
