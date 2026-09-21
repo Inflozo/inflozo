@@ -420,6 +420,25 @@ mail, takes a payment or reads a Ghost — the bundled publication is the source
 on the production project) and the deployed app on `app.inflozo.com`. No Ghost server: the bundled
 publication is the source until Story 5.18.
 
+### The Review's runs on the real infrastructure (2026-09-21, R-82)
+
+- **Before the patches, at `112514d4`** (Vercel `dpl_CJ8Q8BwZL15fW42Y8gt1YPqpajCx` READY, built from that commit):
+  `node tools/probe/run-verify-editor.cjs` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID` — **0 FAIL, 490 PASS**, every step-89 check green, users 13 → 13. This is the run the owner's
+  scroll finding lacked a record of.
+- **Production's schema (R-99), read through `SUPABASE_DB_POOLER_URL`:** the diff adds no migration;
+  `project_template_prefs` holds every column the upsert writes, key `(project_id, template_key)`, both policies and
+  the grants. **Negative control:** `select=no_such_column_control` answered `400 / 42703` while the real select
+  answered 200; with no session the table answers `401 / 42501`.
+- **After the patches, at `efda9d6c`** (`dpl_8GYNeKdAerhncn4fT4yZDiuTQthr` READY, built from that commit): step 89
+  ran to its end three times and was green every time, including the review's three new stops — inner scroll keeps
+  the menu open `{"moved":120,"open":true}`, a scroll OUTSIDE closes it `{"open":false}`, and a picker card drawn
+  with the pictured article repaints without it `{"with":[true],"without":[false]}`.
+  **Stated plainly: no single run of the whole walk finished clean.** One run reached its end at **4 FAIL, 488 PASS**,
+  all four in step 66b/66c (autosave on tab-hide — code this story does not touch; the same stops PASSED in the two
+  other runs and in the 490-PASS run above); the others ended on the harness's known Playwright timeouts
+  (`page.goBack`, `page.waitForFunction`) with 0 FAIL up to that point. The flake is DW-220.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the URLs. Use the **Pilot sections** project — the one

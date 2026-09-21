@@ -5086,3 +5086,16 @@ reason: The refusal guards run inside a server action the harness cannot call wi
   signed-in action client; the read side (`resolveSubject`) already falls back on anything bad and IS tested. Author
   and Page share every line with Tag and Post.
 
+### DW-220: the deployed editor walk's step 66b/66c failed once in three runs on unchanged code
+
+status: open
+severity: low
+origin: Story 5.13's Review (2026-09-21), the deployed walk at `efda9d6c`.
+owner: Story 5.23, or whoever next touches autosave or the walk.
+location: `tools/probe/run-verify-editor.cjs` (steps 66b, 66c)
+plain: The automated walk's "save when the tab is hidden" check failed once and passed twice on the same build. Either
+  the check is timing-sensitive or the save on tab-hide occasionally does not land; nobody knows which yet.
+reason: Story 5.13 touches no save code, and the same stops passed at `112514d4` and in two of three runs at
+  `efda9d6c`; 66c's failures follow from 66b's (the revision it expects never moved). Telling a flaky check from a
+  flaky save needs its own look, not a guess inside this review.
+
