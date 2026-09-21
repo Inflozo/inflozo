@@ -104,7 +104,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-D19** Design navigation — the library's primary control: `[` `]`, hover arrows, and the sidebar Design picker showing position. Switching obeys **carry, park, default**.
 - **FR-D20** Preview toggle: JavaScript behaviours do not run on the canvas while designing; layout-affecting CSS always does. Each module declares `edit-safe`, and the non-edit-safe ones render in their resting state.
 - **FR-D21** Paginated preview: any canvas showing a paginated feed can be previewed on page 2, deliberately a middle page carrying both a previous and a next link.
-- **FR-D22** Preview subject: every single-resource canvas renders one chosen resource — the fixture by default, overridable once a site is connected, persisted per canvas and named in the pill.
+- **FR-D22** Preview subject: every single-resource canvas renders one chosen resource — the fixture by default, overridable from the sample publication now and from the site's own content once connected (R-165), persisted per canvas and named in the pill.
 
 **FR-E · Style Packs**
 
@@ -1981,21 +1981,23 @@ So that the canvas is reproducible rather than an accident of query order.
 **Given** a canvas
 **When** I look at the content-source pill
 **Then** it reads "Previewing with: {site} / Sample content" and is switchable when a site is linked
-**And** once a site is linked it **also names the preview subject** — which post, page, tag or author the
-single-resource canvases are rendering
-**And** untouched, and always before a site is linked, **the subject is the fixture**: the style-guide post on
-Post, the style-guide page on Page, and a fixed Orbit Weekly tag and author on the archives
-**And** once connected I may **override the subject** from the same picker the Data group uses, per canvas,
-persisted with the project
+**And** it **also names the preview subject** — which post, page, tag or author the single-resource canvases
+are rendering — with or without a linked site
+**And** untouched, **the subject is the fixture**: the style-guide post on Post, the style-guide page on Page, and
+a fixed Orbit Weekly tag and author on the archives
+**And** I may **override the subject** from the same picker the Data group uses, per canvas, persisted with the
+project — **R-165** (owner, 2026-09-20): the picker is built now, over the bundled sample publication, and Story
+5.18 swaps in the connected site's own content and rebuilds nothing
 **And** this is not cosmetic: a subject **with** a feature image and one **without** produce structurally
 different markup under the media guards, so an unstated subject makes the canvas non-reproducible and NFR-6(c1)'s
 diffs noisy
 **And** a subject that disappears from the connected site — deleted, unpublished or newly gated — **falls back to
 the fixture and says so, rather than emptying the canvas**
-**And** the pill matches B9 and the picker matches D5e.
+**And** the pill matches B9 — built at **24px** rather than the drawn 27–30px, so it never covers the page card
+(**R-166**, owner, 2026-09-20) — and the picker matches D5e.
 
 **FRs:** FR-D15, FR-D22. · **Frame:** `B Missing Surfaces.dc.html` B9 · `D5 Canvas Markers and Template
-Switcher.dc.html` D5e. · **Owner test:** yes.
+Switcher.dc.html` D5e. · **Rulings:** R-165, R-166. · **Owner test:** yes.
 
 ### Story 5.14: Member-state preview, and the nudge that names what I have not looked at
 

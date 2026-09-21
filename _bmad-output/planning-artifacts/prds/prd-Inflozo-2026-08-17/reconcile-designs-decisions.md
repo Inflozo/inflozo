@@ -3471,8 +3471,10 @@ now, over the sample publication."*
   Story 3.4's "Use your brand"**, because the pill describes the canvas and never the paperwork. No design is
   authored and no Ghost server is touched.
 - Targets: ✅ this entry · ✅ Story 5.13's spec (Question 1, its Boundaries, its tasks and its owner test) ·
-  ✅ `epic-5-context.md` · ⬜ `epics.md` (Story 5.13's AC, at this story's Done) · ⬜ `prd.md` FR-D22's
-  *"once a site is connected"*, at this story's Done.
+  ✅ `epic-5-context.md` · ✅ `epics.md` (Story 5.13's criteria and the FR-D22 summary line) · ✅ `prd.md` FR-D22's
+  *"once a site is connected"*, and the same condition in FR-D15 and the glossary's *Preview subject* row. The
+  last two were promised "at this story's Done", missed by Story 5.13's Done commit, and landed on 2026-09-21 at
+  the owner's request, found while planning Story 5.14.
 
 **R-166 — the content-source pill is built smaller than it is drawn, so the page card never moves.** Story
 5.13's Question 2, ruled **option 1** (owner, 2026-09-20): *"Make the pill a little smaller, and leave your page
@@ -3495,7 +3497,8 @@ exactly as it is."*
   compares the pill's box to the page card's box at all three devices, and a pill that grew back past the ground
   fails it.
 - Targets: ✅ this entry · ✅ Story 5.13's spec (Question 2, its Boundaries, its Design Notes, its tasks and its
-  acceptance criteria) · ✅ `epic-5-context.md` · ⬜ `B9`, on the next library pass.
+  acceptance criteria) · ✅ `epic-5-context.md` · ✅ `epics.md` (Story 5.13's criteria, 2026-09-21) · ⬜ `B9`, on
+  the next library pass.
 
 **R-167 — a page's "looked at" record runs out at any change to the page.** Story 5.14's Question 1, ruled
 **option 1** (owner, 2026-09-21): *"Any change to the page brings it back."*
