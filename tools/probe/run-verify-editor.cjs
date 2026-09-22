@@ -4900,7 +4900,10 @@ async function main() {
     await page.waitForTimeout(400)
     check('step 92 — a change of canvas made on page 2 opens the next canvas on page 1, with no pill', (await pageNow92()) === '1' && (await page.locator('[data-page-two-pill]').count()) === 0, await pageNow92())
     // THE ARCHIVES — the Tag canvas previews its fixture tag, whose own posts run to a second page: page 2 is THAT tag's
-    // page 2, and a change there writes `tag-paged` while page 1 of the archive stays untouched
+    // page 2, and a change there writes `tag-paged` while page 1 of the archive stays untouched. UNTOUCHED IS
+    // BYTE-IDENTICAL, NOT ABSENT: step 44's round trip leaves a `tag` row holding the default stack (step 6b's note),
+    // so page 1's row is read before the change and compared after it, exactly as the `home` row is above (R-178)
+    const tagBefore92 = JSON.stringify(await rowOf92('tag'))
     const tagSubject92 = OW.fixtureSubject('tag.hbs')
     const tagCtx92 = OW.templateContext('tag.hbs', 'second', tagSubject92)
     const tagRows92 = await page.locator('#editor-layers [data-layer-row]').evaluateAll((els) => els.map((r) => r.getAttribute('data-layer-row')))
@@ -4926,8 +4929,10 @@ async function main() {
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press(`${CMD58}+s`)
     const tagPaged92 = await pollRow92('tag-paged', (d) => d !== null)
-    check('step 92 — a change on the Tag canvas\'s page 2 writes a `tag-paged` row, and page 1 of the archive stays untouched (no `tag` row)',
-      tagPaged92 !== null && (tagPaged92.instances?.length ?? 0) > 0 && (await rowOf92('tag')) === null, JSON.stringify({ tagPaged: tagPaged92?.instances?.map((i) => i.controls), tag: await rowOf92('tag') }))
+    const tagAfter92 = JSON.stringify(await rowOf92('tag'))
+    check('step 92 — R-178: a change on the Tag canvas\'s page 2 writes a `tag-paged` row, and page 1 of the archive — its `tag` row, or its absence — is byte-identical before and after',
+      tagPaged92 !== null && (tagPaged92.instances?.length ?? 0) > 0 && tagAfter92 === tagBefore92,
+      JSON.stringify({ tagPaged: tagPaged92?.instances?.map((i) => i.controls), tagRow: tagBefore92 === 'null' ? 'absent' : 'present', same: tagAfter92 === tagBefore92 }))
     // PAGE 2 STOPS BEING OFFERED when the subject changes to a tag whose posts fit one page: page 1 at once, the reason
     // said, and page 2's own design KEPT (the `tag-paged` row is untouched)
     const oneTag92 = OW.tags().find((t) => OW.feedPages('tag.hbs', { kind: 'tag', slug: t.slug }) === 1)

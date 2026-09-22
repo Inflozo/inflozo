@@ -931,6 +931,40 @@ was printed.
   changed no code, so it published the tree as it stood (R-99).
 - **Not touched at Dev:** T1 and T3 (their read-only `GET /page/2/` is Review's), Resend and Dodo.
 
+**The deployed walk, after the Dev push** (`node tools/probe/run-verify-editor.cjs` against `https://app.inflozo.com`,
+with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT`). CI on `30a0d439`:
+`check` (the page-2 journeys among `pnpm keyboard`'s), `rls` and `deploy` succeeded, and so did the render-matrix
+run. Vercel served `30a0d439`, `READY`.
+
+- **Run 1 at `30a0d439`: 1 FAIL, 560 PASS.** Two throwaway accounts were created and deleted, and the account count
+  was 13 before and after.
+  - The FAIL was the walk's own premise, not the product. Step 92 asserted "no `tag` row" after the Tag canvas's page-2
+    change, but step 44's round trip leaves a `tag` row holding the default stack, as step 6b's note already says. The
+    same run shows the page-2 write landed: a `tag-paged` row with the changed Per row. The check now reads page 1's
+    row before the change and compares it after, byte for byte, as it already does for the `home` row (R-178).
+  - Every other step-92 check passed on production:
+    - D5d's row: 34 × 26 items, on the main feed only.
+    - The exact copy of page 1, with its marker.
+    - `templateContext`'s page-2 rows and "2 / 5" with both links.
+    - No `nav-current` on Home at `/page/2/`.
+    - Nothing stored on entering.
+    - The pill against D5d, clear of the card and the chip at three devices in a 1440 and a 1280 window.
+    - "Older posts" navigating nowhere.
+    - The first change writing `index` while the `home` row stayed byte-identical.
+    - The reload.
+    - R-180's ask: Cancel changed nothing, Change it everywhere changed the `site` row, and the next change asked
+      nothing.
+    - The canvas switch both ways.
+    - Field Notes' page 2 ("2 / 2", no Older link).
+    - A one-page tag taking the canvas back to page 1 with its reason.
+    - No row on the Author canvas.
+    - Every planted row restored.
+  - Outside step 92:
+    - Step 4: Home at page 1 still equals `/pilots`.
+    - Step 6: `/index` still answers 404.
+    - Step 5's CSP session, now carrying page 2, recorded zero violations behind its `EvalError` controls.
+    - Step 8's axe found zero violations on page 2, with the pill and the row showing.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, in a desktop browser window about 1440 wide. It uses two of
