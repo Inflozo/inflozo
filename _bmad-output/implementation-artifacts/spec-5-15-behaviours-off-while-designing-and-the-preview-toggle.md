@@ -826,12 +826,71 @@ written here (standing rule 4).
     reduced motion both ways, and JavaScript off at both widths (no `js-enabled`, no module ran, no page error).
   - Each server ended as it started: the theme was restored to `casper` and read back, and the probe theme was deleted.
   - So the theme's new `main.js` still runs on both Ghost majors, with JavaScript on and off.
-- **Vercel production, GitHub Actions and Supabase** are read after this commit is pushed, because CI publishes it
-  (DW-7). The deployed walk (`node tools/probe/run-verify-editor.cjs` against `https://app.inflozo.com`, with
-  `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT`) refuses a checkout that
-  production does not serve. So steps 3, 4, 5 (with its new control), 8, 77, 78, 90 and 91 run against this commit
-  once it is live, and are recorded in the next Dev commit, as Stories 5.13 and 5.14 did. `MEASUREMENTS.md`'s entry
-  stays the Review's, as planned above.
+- **Vercel production, GitHub Actions and Supabase** were read after the Dev push, because CI publishes it (DW-7).
+  The deployed walk refuses a checkout that production does not serve, so it ran against `1e147c74` once that was live
+  (below), as Stories 5.13 and 5.14 did.
+
+**GitHub Actions and Vercel, at the Dev push `1e147c74`.** Read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`
+and `VERCEL_PROJECT`, by name:
+
+- `CI` (run 35692428900) **success**: `check` (with `pnpm keyboard`), `rls` and `deploy` all passed. `Render matrix`
+  (run 35692428942) **success**.
+- Production is `dpl_HyjusRNeW4sCdTqdzjtn61v1z1JR`, **READY**, with `githubCommitSha` `1e147c74` = `HEAD`.
+
+**The deployed walk (2026-09-22), against `https://app.inflozo.com` at `1e147c74`.** This is R-82's own test:
+`node tools/probe/run-verify-editor.cjs` with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`
+and `VERCEL_PROJECT`, under Node 24.
+
+- **0 FAIL, 535 PASS, on its first run.** Users went **13 → 13**, and both throwaway accounts were deleted in
+  `finally` (HTTP 200, 200).
+- **Supabase production** answered the walk's own traffic:
+  - the two throwaway accounts, through the Auth Admin API, and the seeded "Pilot sections" project
+  - `freshLoad`'s reads and restores of the stored docs
+  - steps 66 to 66c's saves, where the revision advanced by one per save
+  This story adds no table and no migration.
+- **Standing rule 1's claim is now executed on production.** Step 5's session covered `core`, run from the editor
+  against the canvas window in both modes, and all of Preview. It recorded **zero** `securitypolicyviolation`
+  events in either document. Behind it, every control passed:
+  - `new Function('')` throws `EvalError` in each document
+  - the new control: `eval('1')`, called from the editor on the canvas window, throws `EvalError`
+  - the recorder saw a refusal from each document
+  `MEASUREMENTS.md`'s entry stays the Review's, as planned above, and records the Review's own run.
+- **Steps 3, 4, 8, 77, 78 and 90:**
+  - Step 3: no `data-inflozo-*` at rest, behind its planted control.
+  - Step 4: every root equals `/pilots'`, with `core`'s `js-enabled` taken off both sides. That covers Rail, Latest
+    Post, Three Up and Inline Row.
+  - Step 8: axe found zero violations in Preview.
+  - Step 77: the card lists `P` as "Preview", and no `⌘⏎`. Step 78: `[`, `]` and `⌘⏎` do nothing.
+  - Step 90: the right-hand cluster, now ending with the pill, clears the centred group by **124px at 1440 and 44px
+    at 1280**.
+- **Step 91, every check green:**
+  - *At rest.* Rail's bar and the Inline Row's form carry no `js-enabled`, and there is no chip.
+  - *R-175.* Rail and the Inline Row, hovered and then selected, carry no chip.
+  - *B3a's pill, as drawn.* It is the cluster's last control:
+    - white, a `1px rgb(231, 226, 219)` border, a 24px radius, `4px 10px 4px 8px` and a 7px gap
+    - "Preview" at 12/600
+    - the mono `P` cap at 10px, on `rgb(239, 236, 231)` in `rgb(107, 100, 89)`, with a 4px radius and `1px 5px`
+    - the eye at 13/1.6 in `rgb(110, 106, 100)`
+    - named by its word, with `aria-keyshortcuts="P"` and no `aria-pressed`
+  - *In by the pill.* The bar, Layers, Controls, the fit chip and the source pill are all hidden. There is no chrome
+    layer and no state mark. Focus is on Back to editing, and the editor says "Preview. Press Escape or P to come
+    back." The page is 1:1, at 0,0, 1440 × 900.
+  - *Everything runs.* Both declared mounts carry `js-enabled`.
+  - *B3b's bar, as drawn.* A toolbar named "Preview", 18px off the bottom-left:
+    - `rgb(28, 27, 26)`, a 24px radius, 5px padding, a 2px gap, and `rgba(28, 27, 26, 0.25) 0 12px 40px`
+    - Back to editing: 34px high, a 20px radius, `0 15px`, 13/600 white, `aria-keyshortcuts="Escape"`, a 14/1.7 glyph
+    - the `esc` cap: 10.5px mono on white .16, a 4px radius, `2px 6px`
+    - a divider 1 × 20 at white .18
+    - devices at 34 × 34, with Desktop lit on white .14
+  - *A press in Preview.* A hover and a click draw no chrome, no mark and no chip. After a link (to
+    `https://orbit-weekly.example/`) and a submit, the canvas is still at its own address. The field took
+    "preview@example.com".
+  - *Mobile.* The menu button shows and the links hide only in Preview, and B3b's device is the top bar's.
+  - *Back to editing.* The chrome is back and both mounts are at rest. "Post Grid — Three Up" is still selected with its
+    panel, focus is on the pill, and the editor says "Back to editing."
+  - *The keys.* `P` goes in, `Esc` and `P` come back, and focus returns to the canvas each time. `L` `.` `[` `?` did
+    nothing in Preview.
+- Step 36 and steps 66b and 66c passed on this run too. These are the known intermittent failures, DW-222 and DW-220.
 
 ## Owner's manual test
 
