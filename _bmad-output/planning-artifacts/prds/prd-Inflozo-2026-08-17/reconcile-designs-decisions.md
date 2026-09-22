@@ -3677,6 +3677,64 @@ generic blue anchor links."*
   Story 6.1 · ✅ `docs/section-authoring.md` · ✅ R-112's entry · ✅ `deferred-work.md` (DW-155) — Story 5.14's Dev
   (2026-09-21). ⬜ T1 and T3, when a theme first ships the token block (Story 6.1).
 
+**R-174 — the four moving parts the table marks "no" hold still while you design, like every other one.** Story
+5.15's Question 1, ruled **option 1** (owner, 2026-09-22): *"Hold all four still while you design; Preview shows them
+moving."*
+
+- **Why it was a question.**
+  - FR-D20 (`prd.md:243`) and Story 5.15's card named "sticky/shrink headers, scroll reveal, tabs, accordions" as
+    edit-safe modules that "run always, because designing their open and closed states requires it".
+  - Research §7, which FR-D20 itself names as the table the declaration lives in, marks `header-scroll`, `reveal`,
+    `tabs` and `accordion` **no**, and `registry.json` carries §7's values (DW-133).
+  - Only `lightbox` and `carousel` had ever been ruled directly, so the difference was the owner's (standing rule 6).
+- **What it binds.** All four are suppressed on the canvas and render at rest, which is their no-JavaScript state
+  (FR-G7(4)):
+  - tabs stack, each with its label
+  - fold-out panels stay as the section is set (A9's default state)
+  - fading content is simply shown
+  - a shrinking header keeps its full size
+
+  Preview runs them. No `editSafe` value changes, so `derive-module-reach.py --check` is untouched.
+- **What it does NOT change.** Every other §7 value. A countdown keeps ticking while you design ("ticking digits
+  interfere with nothing", §7), although B3a draws one stopped: the frames are non-normative for behaviour.
+- Targets:
+  - Done at Story 5.15's Create (2026-09-22): ✅ this entry · ✅ Story 5.15's spec · ✅ `epics.md` (Story 5.15's
+    criteria) · ✅ `epic-5-context.md`.
+  - Owed at Story 5.15's Dev: ⬜ `prd.md` FR-D20's example list · ⬜ `epics.md`'s FR-D20 summary (`:105`) ·
+    ⬜ `deferred-work.md` DW-133.
+
+**R-175 — the PAUSED chip shows only on the section pointed at or selected, and only on a part that moves by
+itself.** Story 5.15's Question 2, ruled **options 1 and 3 together** (owner, 2026-09-22): *"Only on the section you
+point at or select, but only on parts that move by themselves, not all sections be default."*
+
+- **Why it was a question.** Two approved sources disagreed on one point.
+  - B3a draws the chips on the canvas at rest, as "the one exception to a chrome-free canvas"
+    (`B Missing Surfaces.dc.html:681`), and Story 5.15's card says the states match B3a.
+  - FR-D1 (`prd.md:218`) says that with nothing hovered or selected, the canvas carries zero editing chrome.
+- **What it binds.**
+  - **When.** A chip is drawn only while its section is hovered or selected, and never at rest. FR-D1, AD-21's
+    rest-is-zero and the deployed walk's step 3 all hold.
+  - **Which.** Only on a held-still part that **moves by itself**: one that changes the page on a timer or as the
+    page scrolls, with nothing pressed. A part that waits for a press or a submit never carries one, because held
+    still it looks exactly as it does at rest: a phone menu, a sign-up form, a lightbox, tabs, a carousel's arrows.
+  - **Where it is said.** `registry.json` gains `movesByItself` on every row, the one place that says which, and the
+    editor filters `core`'s held-still mounts through it. Of the modules the table holds still, those that carry a
+    chip are `header-scroll`, `rotator`, `marquee`, `reveal`, `infinite-scroll`, `slide-in-card` and `typewriter`.
+    A part that rewrites itself once as the page loads (`toc`, `shuffle`) does not move, so it carries none.
+- **What it does NOT change.**
+  - B3a's chip itself: its look, its words, and its place on the behaviour rather than in a status bar.
+  - A carousel's optional autoplay (research §3.5) is a per-design choice that the module row cannot see, so an
+    autoplaying carousel carries no chip. Its first category story may raise it.
+  - Today's library draws no chip anywhere, because the pilots' `nav-drawer` and `member-form` both wait for a
+    press. CI draws one on controls fixture 1, which declares `marquee` for exactly that.
+  - The export is untouched (R-74).
+- Targets:
+  - Done at Story 5.15's Create (2026-09-22): ✅ this entry · ✅ Story 5.15's spec · ✅ `epics.md` (Story 5.15's
+    criteria) · ✅ `epic-5-context.md`.
+  - Owed at Story 5.15's Dev: ⬜ `registry.json` · ⬜ `prd.md` FR-D20 · ⬜ `EXPERIENCE.md:429-432` ·
+    ⬜ `docs/section-authoring.md`.
+  - Owed on the next library pass: ⬜ B3a's caption.
+
 
 ## B · Approved decisions superseded by this session
 

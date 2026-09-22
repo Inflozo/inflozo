@@ -2059,19 +2059,27 @@ So that the section stops fighting me while I work on it.
 **When** a section declares behaviour modules
 **Then** **layout-affecting CSS is always live** — sticky, hover, transitions — because it changes what the
 design *is*
-**And** **JavaScript behaviour is suppressed unless the module declares `edit-safe`**, and a suppressed section
-renders **in its resting state** with a **PAUSED chip on the behaviour itself**, not in a status bar
-**And** edit-safe modules — sticky/shrink headers, scroll reveal, tabs, accordions — **run always**, because
-designing their open and closed states requires it
+**And** **JavaScript behaviour is suppressed unless the module is `edit-safe`** in research §7's table (the
+registry's `editSafe`), and a suppressed section renders **in its resting state** — its no-JavaScript state
+(FR-G7(4))
+**And** **shrinking headers, scroll reveal, tabs and accordions hold still too** — **R-174** (owner, 2026-09-22),
+as the table already marks them: nothing placed is hidden and nothing moves under the pointer, and Preview shows them
+moving; the edit-safe ones (a countdown, a price toggle, a count-up) run always
+**And** **a PAUSED chip sits on the behaviour itself, not in a status bar — only on the section pointed at or
+selected, and only on a part that moves by itself** (on a timer or as the page scrolls, with nothing pressed) —
+**R-175** (owner, 2026-09-22): a part that waits for a press or a submit, like a phone menu or a sign-up form, never
+carries one, and the registry's `movesByItself` says which
 **And** **`lightbox` is not edit-safe**: a modal opening over the canvas when I click an image to edit its caption
 is the defining case
-**And** the **Preview toggle hides all editing chrome and runs everything for real**, and returns
+**And** the **Preview toggle hides all editing chrome and runs everything for real**, and returns — B3b's floating
+bar, `Esc` or `P`; a link or a form still never leaves the canvas
 **And** **`P` is bound HERE** — FR-D11's key lands with the toggle it drives and joins Story 5.9's one table and
 its `?` card, carrying the single-key focus condition (**R-145**)
 **And** the declaration is part of the module contract, **not a per-instance setting**
-**And** the states match B3a editing and B3b preview.
+**And** the states match B3a editing and B3b preview, as R-175 amends B3a's chips shown at rest.
 
-**FRs:** FR-D20, FR-D11 (P). · **Frame:** `B Missing Surfaces.dc.html` B3a · B3b. · **Owner test:** yes.
+**FRs:** FR-D20, FR-D11 (P). · **Frame:** `B Missing Surfaces.dc.html` B3a · B3b. · **Rulings:** R-174, R-175. ·
+**Owner test:** yes.
 
 ### Story 5.16: Previewing page 2
 

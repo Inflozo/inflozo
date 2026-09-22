@@ -337,6 +337,30 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     ground it offers. The ground is read from `data-bg` alone, so a design drawn on a ground of its own locks the
     Background role there or writes its own rule (`docs/section-authoring.md`).
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
+  - **Story 5.15's planning (2026-09-22, read in the runtime, the CSP and the frames, and swept over the library):**
+    `core` (Story 4.7) already holds still every module that is not edit-safe (`core.js:43`), and NOTHING CALLS IT:
+    the canvas document carries no script and no nonce (`pilots.test.ts:62`), the policy refuses `eval` on
+    production, and the editor paints with `mountSections`, whose blanket `js-enabled` puts every mount in its
+    JavaScript branch with nothing running. So THE EDITOR CALLS `core` AGAINST THE CANVAS WINDOW on every paint —
+    `core` reaches every platform object through `win` (`core.js:3-4`) — which needs `core.js` importable: ONE
+    EXPORTED DECLARATION, which `bundle()` pastes into the classic `main.js` without the keyword (DW-136, owned
+    here, whose "evaluate `bundle`'s strings" cannot run under the policy). At rest is FR-G7(4)'s no-JavaScript
+    branch, not B3a's frozen JavaScript looks, so at Mobile Rail lists its links while designing and shows its menu
+    button only in Preview. NO FEATURE MODULE HAS A FILE — the pilots' `nav-drawer` and `member-form` are declared
+    before their category stories write them (FR-G7(2)) — so a registry module with no file mounts as a no-op, and
+    Preview draws its JavaScript branch as `/pilots`, the picker and the render matrix do. The chip is chrome in the
+    canvas layer, not R-120's `::after` (inside the frame its 9.5px words would paint at 5.7px at the 0.6 fit), 8px
+    inside its mount's bottom-left corner because the section's top corners belong to the tag and the pill (R-125).
+    `P` lands in `KEYMAP` (R-145); in Preview only `P`, `Esc`, `1` `2` `3` and `⌘S` act, and a link or a form still
+    never leaves the canvas. No migration and **no Schema phase**.
+  - **R-174 · R-175 (owner, 2026-09-22, Story 5.15's Q1 and Q2).** **R-174:** `header-scroll`, `reveal`, `tabs` and
+    `accordion` HOLD STILL while designing, as research §7 and `registry.json` already say, and Preview shows them
+    moving; FR-D20's run-always example list and the story card are corrected to the table, closing DW-133. **R-175:**
+    the PAUSED chip is drawn ONLY on the section pointed at or selected, and ONLY on a held-still part that MOVES BY
+    ITSELF — on a timer or as the page scrolls, with nothing pressed; a part that waits for a press or a submit never
+    carries one. `registry.json` gains `movesByItself` on every row, the one place that says which (`animates` is
+    `core`'s motion gate and is `false` on `header-scroll`). So TODAY'S LIBRARY DRAWS NO CHIP ANYWHERE — both pilot
+    modules wait for a press — and CI draws one on controls fixture 1, which declares `marquee` for exactly that.
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
   - **R-141 (owner, 2026-09-19, Story 5.8's Q2) — WHEN a binding is built splits on the modifier, and the reason is

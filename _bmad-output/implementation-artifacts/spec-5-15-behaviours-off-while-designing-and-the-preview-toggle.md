@@ -13,11 +13,12 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 
 A new **Preview** button at the right end of the top bar, or the **P** key, hides every editing tool and shows your
 page the way a visitor gets it, with its moving parts running, and **Back to editing** (or **Esc**) brings everything
-back exactly as you left it. While you design, a moving part that would get in your way holds still, and a small grey
-**PAUSED** tag marks it when you point at its section. On your pages today the only such parts are the header's phone
-menu and the newsletter's sign-up form, so at phone size your header lists its links while you design and shows its
-menu button in Preview; the menu that opens from that button, and every other moving part, arrive with their own
-designs in Epics 9 and 10.
+back exactly as you left it. While you design, every moving part that would get in your way holds still, and one that
+moves by itself, such as a rotating headline, a ticker or a header that shrinks as you scroll, shows a small grey
+**PAUSED** tag when you point at its section. On your pages today the only moving parts are the header's phone menu
+and the newsletter's sign-up form, which wait for a press and so carry no tag, and at phone size your header lists its
+links while you design and shows its menu button in Preview; the menu that opens from that button, and every other
+moving part, arrive with their own designs in Epics 9 and 10.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -41,8 +42,10 @@ designs in Epics 9 and 10.
 - **`core` never enters the canvas as a script.** The canvas carries no script and no nonce, and the policy refuses
   `eval`. So `core.js` becomes importable: one exported declaration, which `bundle()` pastes into `main.js` without the
   keyword, so no theme's `main.js` ever carries an `export`.
-- **A mount the editing rule holds still stays at rest.** At rest means its no-JavaScript state (FR-G7(4)). It carries
-  B3a's PAUSED chip whenever its section is pointed at or selected (Question 2).
+- **A mount the editing rule holds still stays at rest.** At rest means its no-JavaScript state (FR-G7(4)). That
+  includes the four the table marks no (**R-174**).
+- **B3a's PAUSED chip marks a held-still part only while its section is pointed at or selected, and only if the part
+  moves by itself** (**R-175**). A new `movesByItself` mark on every registry row decides which parts qualify.
 - **B3a's Preview pill and `P`** hide every piece of editing chrome, repaint, and run every module. **B3b's floating
   bar, `Esc` or `P`** come back.
 - No migration, so there is **no Schema phase**.
@@ -52,8 +55,10 @@ designs in Epics 9 and 10.
 **Always:**
 
 - **One decision, and it is `core`'s.** Whether a mount runs is `core`'s editing rule over the registry's `editSafe`
-  (R-21, research §7); the editor keeps no second list. `core` hands back the mounts it held still, and the chips read
-  exactly that list.
+  (R-21, research §7); the editor keeps no second list. `core` hands back the mounts it held still. The chips read
+  exactly that list, narrowed by the registry's `movesByItself`.
+- **The four hold still** (**R-174**, owner, 2026-09-22). `header-scroll`, `reveal`, `tabs` and `accordion` keep §7's
+  **no**, and no `editSafe` value changes.
 - **At rest means the no-JavaScript branch** (`prd.md` FR-G7(4), `core.js:14-16`, `section-authoring.md:765-768`).
   - A paused mount carries no `js-enabled`.
   - The editor's canvas stops using `mountSections`' blanket class. `/pilots` and the Section Picker's cards keep it.
@@ -77,17 +82,25 @@ designs in Epics 9 and 10.
   - In Preview only `P`, `Esc`, `1` `2` `3` and `⌘S` act. Every other binding does nothing.
 - **One name** (R-170): **Preview** on the pill, the card's row, the bar's name and the announcement. The way back is
   **Back to editing**.
-- **The chip never exists at rest** (FR-D1, AD-21, walk step 3). This is Question 2's recommended answer, and it is
-  re-cut if the owner rules otherwise. The chip is chrome in the canvas layer, which exists only while a section is
-  hovered or selected, and no `data-inflozo-*` attribute marks the mount.
+- **The chip is drawn only on the section pointed at or selected, and only on a part that moves by itself**
+  (**R-175**, owner, 2026-09-22).
+  - A part moves by itself when it changes the page on a timer or as the page scrolls, with nothing pressed.
+  - A part that waits for a press or a submit never carries a chip. So on today's library no chip is ever drawn: the
+    pilots' `nav-drawer` and `member-form` both wait for a press.
+  - The chip never exists at rest (FR-D1, AD-21, walk step 3). It is chrome in the canvas layer, which exists only
+    while a section is hovered or selected, and no `data-inflozo-*` attribute marks the mount.
 - **Tokens only** in `.tsx` (`tokens.test.ts:125`). Every glyph the frames draw is read from the frames (R-92).
 
 **Ask First:**
 
-- **Any change under `packages/` beyond what this story names:** `core.js`'s `export`, `report` and `paused`;
-  `core.d.ts`; `bundle()` stripping its one keyword; and the package's `./core` export. None of those moves a render,
-  and `check-snapshots` and the render matrix unchanged are the control.
-- **Any change to a registry `editSafe` value.** That is Question 1's.
+- **Any change under `packages/` beyond what this story names:**
+  - `core.js`'s `export`, `report` and `paused`, and `core.d.ts`
+  - `bundle()` stripping its one keyword, and the package's `./core` export
+  - `registry.json`'s `movesByItself` and its `ModuleRow` type (R-175)
+  - controls fixture 1's one `data-module`
+
+  None of those moves a render, and `check-snapshots` and the render matrix unchanged are the control.
+- **Any change to a registry `editSafe` value.** R-174 kept them all.
 - **Any migration.**
 
 **Never:**
@@ -108,7 +121,8 @@ designs in Epics 9 and 10.
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
 | Opening | Any canvas | Every section is at rest: Rail's `.a1-1__bar` and the Inline Row's form carry no `js-enabled`. No chip and no `data-inflozo-*` attribute: the page at rest is the site. At Desktop the page looks as it does today. | N/A |
-| Pointing | Hover Rail, or select it | Its outline and name tag, plus one PAUSED chip 8px inside the bottom-left corner of `.a1-1__bar`. On the Inline Row the chip sits on its form. Three Up and Latest Post get none. Moving away takes the chip with the outline. | N/A |
+| Pointing | Hover Rail or the Inline Row, or select either | The outline and name tag, and **no chip**: their parts, the phone menu and the sign-up form, wait for a press (R-175). | N/A |
+| A part that moves by itself | In the harness, hover controls fixture 1, whose feature list declares `marquee` (held still, and it moves by itself) | One PAUSED chip, 8px inside the list's bottom-left corner. It goes when the pointer leaves, and there is none at rest and none in Preview. | N/A |
 | Mobile, editing | `3` | Rail's links are listed under its logo and there is no menu button: the no-JavaScript branch (`a1/1/style.css:94`). | N/A |
 | Enter Preview | The pill, or `P` with the shell focused | One repaint, and every declared mount gets `js-enabled` (no-op stand-ins). The chrome is hidden. The stage is the whole window, with R-137's fit (1:1 in a 1440 × 900 window). B3b's bar sits at the bottom-left, focus lands on Back to editing, and `#editor-said` says "Preview. Press Escape or P to come back." | N/A |
 | Mobile, Preview | The bar's phone button, or `3` | Rail shows its menu button and hides its links (`style.css:96-97`). Pressing the button does nothing, because no `nav-drawer` file exists yet. | N/A |
@@ -139,7 +153,13 @@ designs in Epics 9 and 10.
   - `nav-drawer` (`:4`) and `member-form` (`:17`) are the only rows any design declares (`designs/a1/1/index.html:4`,
     `designs/a22/1/index.html:11`), and both are `false`.
   - No feature module has a file, so `modules/` holds only `core.js`, `core.test.mjs` and the registry.
+  - The file has no "moves by itself" field. `derive-module-reach.py` (`:86-143`) reads only `editSafe` and
+    `animates`, so a new key passes it untouched.
+  - `animates` is **not** that mark. It is `core`'s motion gate: `header-scroll`, which shrinks as the page scrolls,
+    carries `false` there.
 - `src/modules.ts`:
+  - `ModuleRow` (`:13-19`) is the registry row's type.
+  - `parseModuleDeclaration` (`:58-80`) turns `data-module="accordion:768"` into its name.
   - `bundle()` (`:95-123`) pastes each source verbatim inside one wrapping function, `core` first, then
     `core(window, rows)` with no options.
   - `topLevelShape` (`:170-190`) refuses any top level but one `function <fn>(…) { … }`, and it refuses `export`.
@@ -154,6 +174,12 @@ designs in Epics 9 and 10.
   - `src/modules.test.ts:51` and `:59-70` hold `bundle`'s shape refusals.
 - `tools/stress/build.js:209-218` globs `modules/*.js` (which `core.d.ts` does not match) and bundles `[]`. Its theme
   must still pass the gate on both majors.
+- `fixtures/controls/1/index.html` — controls fixture 1, which the harness places on Home
+  (`harness/editor/page.tsx:70-83`) and `/controls` opens on.
+  - Its `<ul class="cx__features">` gains `data-module="marquee"`, the only way CI can put a held-still part that
+    moves by itself on a canvas.
+  - `/controls` runs no `core` and carries no marquee style, so it looks exactly as before.
+  - It is read by `apps/web/controls.test.ts` and `packages/section-runtime/src/controls.test.ts`.
 
 **The canvas:**
 
@@ -303,6 +329,16 @@ designs in Epics 9 and 10.
   - The return is `{ stop(): void; readonly paused: readonly Element[] }`.
 - [ ] `packages/library/package.json` — `"./core": "./modules/core.js"` in `exports`. The root index stays the
       rulebook.
+- [ ] `packages/library/modules/registry.json` — **R-175's mark**: `"movesByItself"` on every row, and one sentence
+      in `about` giving the rule: *"true when the module changes the page on a timer or as the page scrolls, with
+      nothing pressed; it decides which held-still mounts the editor marks PAUSED (R-175)"*.
+  - **`true`:** `header-scroll`, `rotator`, `countdown`, `marquee`, `count-up`, `reveal`, `scroll-spy`,
+    `reading-progress`, `infinite-scroll`, `slide-in-card`, `typewriter`.
+  - **`false`:** every other row. `carousel` is `false`, because its arrows and dots wait for a press and its
+    autoplay is a per-design option that a module row cannot see.
+  - No `editSafe` value changes (R-174).
+- [ ] `packages/library/src/modules.ts` — `ModuleRow` gains a required `movesByItself: boolean`, and `modules.test.ts`
+      asserts every row carries one. The type makes a row without it a compile error.
 - [ ] `packages/library/src/modules.ts`:
   - `topLevelShape` accepts exactly one **exported** declaration of the expected name, and still refuses anything else.
   - `bundle()` removes that one `export ` before pasting, so `main.js` never carries one.
@@ -327,8 +363,12 @@ designs in Epics 9 and 10.
   - `CANVAS_MODULES`: every `MODULES` row, in registry order, as `[name, fn, row]`. `fn` is the module's own function,
     and a no-op where no file exists yet. That fallback carries a `ponytail:` note naming FR-G7(2) and the day it goes.
   - `startBehaviours(win, editing, report)`, the one call of `core` in the app.
+  - `movesByItself(declaration)`, R-175's filter. It reads a mount's `data-module` through `parseModuleDeclaration`
+    and answers from the registry row, so `accordion:768` is `accordion`.
 - [ ] `apps/web/behaviours.test.ts` — **new**:
   - `CANVAS_MODULES` holds every registry row in order.
+  - `movesByItself` is true for `marquee` and `header-scroll:768`, and false for `nav-drawer`, `member-form`,
+    `carousel` and a malformed or unknown declaration.
   - **Every file in `packages/library/modules/` other than `core.*` and the registry is imported into it.** The list is
     derived from the directory, so the first module file lands red until the canvas runs it.
 - [ ] `apps/web/lib/keymap.ts`:
@@ -343,6 +383,9 @@ designs in Epics 9 and 10.
     it.
 - [ ] `apps/web/lib/canvas-layer.ts` — `place()` gains `'bottom-left'`: 8px inside the anchor's bottom-left corner. An
       anchor with no box keeps its element hidden.
+- [ ] `packages/library/fixtures/controls/1/index.html` — `data-module="marquee"` on `<ul class="cx__features">`,
+      with a comment saying why: the harness's one held-still part that moves by itself (R-175). The fixture must
+      still validate. Both `controls.test.ts` files stay green, and `/controls` looks unchanged.
 - [ ] `apps/web/components/kit/icons.tsx` — three glyphs, each copied verbatim from its frame (R-92):
   - `Pause` (B3a `:659`)
   - `PreviewEye` (B3a `:646`)
@@ -369,8 +412,8 @@ designs in Epics 9 and 10.
     - After `wire(doc)`, start `startBehaviours(doc.defaultView, !preview, report)`, where `report` logs to
       `console.error` with the module's name.
     - Keep the handle and its `paused`. The mount effect's cleanup stops it.
-  - **The chips.** One chip for each paused mount inside the hovered root and inside the selected root, portalled into
-    `layerFor(root)` and placed `bottom-left` by the rAF loop.
+  - **The chips.** One chip for each paused mount that `movesByItself` (R-175), inside the hovered root and inside the
+    selected root, portalled into `layerFor(root)` and placed `bottom-left` by the rAF loop.
     - Classes: `ViewportChip`'s palette, Inter 9.5/600 with tracking .02em, the 9px `Pause` glyph and a 5px gap. The
       chip is `aria-hidden` and carries no pointer events.
     - None in Preview.
@@ -403,40 +446,48 @@ designs in Epics 9 and 10.
     - The top bar, both asides and the section pill are hidden, and the bar is shown.
     - `.a1-1__bar` and `.a22-1__form` have no `js-enabled` while designing, have it in Preview, and lose it again on
       return.
-    - A hovered Rail carries exactly one `[data-chrome="paused"]` in its layer, and there is none at rest.
+    - **R-175, both halves:**
+      - A hovered Rail and a hovered Inline Row carry **no** `[data-chrome="paused"]`.
+      - A hovered controls fixture 1 carries exactly one, on its `marquee` list: B3a's size, colours and words, 8px
+        inside the list's bottom-left corner, and clear of the name tag and the section pill.
+      - There is none at rest and none in Preview.
     - `L` `.` `[` `?` do nothing in Preview, and `1` `2` `3` change the device.
     - A `p` typed in a panel field is a letter.
     - The Tab budget stays derived.
 - [ ] `tools/probe/run-verify-editor.cjs` — the deployed walk:
   - Step 4 compares with `js-enabled` removed from both sides; the class is `core`'s, and step 91 reads it.
   - Step 5's session gains Preview in and out with `core` running. Its violations sentence names them.
-  - Step 8 scans a hovered Rail with its chip, and Preview.
+  - Step 8 scans Preview.
   - Steps 77 and 78: `P` is live, and only `⌘⏎` is owed.
   - Step 90's sweep leaves Preview after `p`, and its 1280 room check stays positive with the pill in the cluster.
   - **Step 91**, new:
-    - At rest there is no chip. On hover, Rail and the Inline Row each carry one chip: B3a's painted size and colours,
-      clear of the name tag and the section pill.
+    - No chip anywhere, at rest or on a hovered or selected Rail or Inline Row (R-175). The shipped library holds no
+      held-still part that moves by itself, so the chip's own look is measured by the keyboard journey in CI.
     - `js-enabled` is absent while designing, present in Preview and absent after.
     - At Mobile the menu button is displayed only in Preview.
     - A link and a submit in Preview leave the page where it is.
     - The pill and the bar match B3a and B3b.
     - Zero CSP violations with `core` running, behind step 5's `EvalError` control.
-- [ ] **Documents** (standing rule 3, then a grep for `Preview Mode`, `story: '5.15'`, `never run by the product` and
-      `A CLASSIC script` under standing rule 7). Written here for the RECOMMENDED options, and re-cut when the owner
-      rules:
+- [ ] **Documents** (standing rule 3, then a grep for `Preview Mode`, `story: '5.15'`, `never run by the product`,
+      `A CLASSIC script` and `run always` under standing rule 7). R-174 and R-175 are in the ledger, and this story's
+      criteria in `epics.md` and its `epic-5-context.md` sub-bullets were written at Create. What remains:
   - `prd.md`:
     - FR-D11 names `P` (Preview) and `⇧R` (Site Remix, which 5.12 missed).
-    - FR-D20's example list follows the table (Question 1), and the chip rule follows Question 2.
+    - FR-D20:
+      - Its run-always example list goes, and the four hold still (R-174).
+      - The chip is drawn only on the section pointed at or selected, and only on a part that moves by itself
+        (R-175).
     - FR-G7(4) says the editor calls `core` against the canvas.
   - `epics.md`:
     - The FR-D11 (`:96`) and FR-D20 (`:105`) summaries.
-    - Story 5.15's criteria.
     - `:5549`, `:5571` and `:5677` stop restating an edit-safe value and cite the registry. `:5549`'s "yes" is the
       export's inverted sense (DW-133).
     - Story 5.22: the right-hand cluster now meets the centred group at about 1190px, not 950px.
   - Research §7:
     - `:606` says each module's first category story confirms its value on this canvas (VERIFY-AT-BUILD row 50).
     - The `cards.js` row's confirmation moves to Story 5.20, the first canvas that draws a post body.
+    - A preamble line says the "moves by itself" mark lives in `registry.json` alone, by R-175's rule. It is one
+      source, never restated.
   - `ARCHITECTURE-SPINE.md`:
     - AD-21's PAUSED clause: chrome in the layer, not `::after`.
     - The repo tree's "never runs" (`:494`).
@@ -445,8 +496,9 @@ designs in Epics 9 and 10.
     - The module shape is `export function`, and `bundle` strips the keyword.
     - The Editing and `main.js` paragraphs.
     - `report` and `paused`.
+    - A new module's row takes `movesByItself` by R-175's rule.
   - `EXPERIENCE.md`:
-    - `:429-432`: the chip, and at rest.
+    - `:429-432`: the chip, on the section pointed at or selected, and only on a part that moves by itself (R-175).
     - `:885`: a countdown ticks while you design too.
     - `:460-464`: the Esc ladder's Preview rung.
     - `:389`: "Preview".
@@ -454,25 +506,31 @@ designs in Epics 9 and 10.
     - A pointer under R-120's PAUSED clause.
     - An erratum under R-21, whose title reads its own sense backwards.
   - `deferred-work.md`:
-    - Close DW-133 with Question 1's ruling, and DW-136.
+    - Close DW-133 by R-174, and DW-136.
     - New entries:
-      - A width-declared module (`accordion:768`) is chipped at every width. The owner is the first width-declared
-        design on the canvas.
+      - A width-declared module that moves by itself (`header-scroll:768`) is chipped at every width. The owner is the
+        first such design on the canvas.
+      - An autoplaying carousel carries no chip, because `movesByItself` is per module (R-175). The owner is the
+        carousel's first category story.
       - `restampAll` and the control fast path strip a root-level mount's `data-i18n-*` (`editor.tsx:768-777`,
         `:1918-1920`). The owner is the first design with strings on a root mount.
     - Append to DW-164: epics' "none" module lists for 9.1–10.41 against §2.1, A1-16 Reveal being in no story, and
       designs "declaring" `core`.
     - Append to DW-150: A1 spec `:185`'s "pinned open while selected".
-  - `epic-5-context.md`: sub-bullets under "Behaviours hold still while designing".
+  - `epic-5-context.md`: the as-built sub-bullet under "Behaviours hold still while designing".
 
 **Acceptance Criteria:**
 
 - **Given** the editor at 1440, **when** it opens, **then** the right-hand cluster ends with the Preview pill:
   eye · Preview · `P`. **It matches the frame**, B3a `:645-648`, and its name is "Preview".
-- **Given** a section with a paused behaviour, **when** it is hovered or selected, **then** that behaviour carries
-  B3a's PAUSED chip: pause glyph, "PAUSED" at 9.5/600, the `paper` / `line-strong` pill. The chip sits 8px inside the
-  mount's bottom-left corner, clear of the name tag, the Pro badge and the section pill. **It matches the frame**, B3a
-  `:658-660`, and at rest there is none (Question 2).
+- **Given** a held-still part that moves by itself (in CI, controls fixture 1's `marquee`), **when** its section is
+  hovered or selected, **then** the part carries B3a's PAUSED chip: pause glyph, "PAUSED" at 9.5/600, the `paper` /
+  `line-strong` pill. The chip sits 8px inside the mount's bottom-left corner, clear of the name tag, the Pro badge
+  and the section pill. **It matches the frame**, B3a `:658-660`. At rest there is none (R-175).
+- **Given** a held-still part that waits for a press (Rail's phone menu, the Inline Row's sign-up form), **when** its
+  section is hovered or selected, **then** no chip is drawn (R-175).
+- **Given** any of the four R-174 holds still (`header-scroll`, `reveal`, `tabs`, `accordion`), **when** the registry
+  is read, **then** each is still `editSafe: false`, and `derive-module-reach.py --check` is green.
 - **Given** the editor, **when** Preview is entered by the pill or by `P`, **then** every editing surface is hidden and
   B3b's bar is shown at the bottom-left, with Back to editing, `esc`, the divider and the three devices, the current
   one lit. Every declared mount is running, and no hover, click or tap selects or outlines anything. **It matches the
@@ -490,6 +548,17 @@ designs in Epics 9 and 10.
   carries no `export` and runs with JavaScript on and off, and `derive-module-reach.py --check` is green.
 
 ## Spec Change Log
+
+- **2026-09-22, the owner ruled both questions at Create, and the frozen block moved on his word:**
+  - **R-174** (Question 1, option 1): *"Hold all four still while you design; Preview shows them moving."*
+    - Added to Approach and to Always as a named rule.
+    - No `editSafe` value changes, so no matrix row moved.
+  - **R-175** (Question 2, options 1 and 3 together): *"Only on the section you point at or select, but only on parts
+    that move by themselves, not all sections be default."*
+    - Changed: Approach's chip line, Always' "one decision" and chip bullets, and Ask First's `packages/` list. That
+      list gains `registry.json`'s `movesByItself` and controls fixture 1's declaration.
+    - The matrix's Pointing row changed, and a new row was added, A part that moves by itself.
+  - Unchanged: the mechanism, the no-op stand-in, Preview, the keys and every other row.
 
 ## Design Notes
 
@@ -536,6 +605,29 @@ designs in Epics 9 and 10.
 - **It is temporary, and a test keeps it honest.** The day a module file lands, `behaviours.test.ts` fails until the
   canvas imports it.
 
+**Which parts move by themselves (R-175), and why it is a new mark.**
+
+- **The rule.** The owner's two lists were "a countdown, a rotating headline, a scrolling ticker" against "the phone
+  menu or a sign-up form". So a part moves by itself when it changes the page on a timer or as the page scrolls, with
+  nothing pressed.
+  - A part that scrolls with the page counts, because nothing is pressed. That is why `header-scroll`, `reveal`,
+    `slide-in-card` and `infinite-scroll` carry the mark.
+  - A part that rewrites itself once as the page loads (`toc`, `shuffle`, `nav-transform`, `group-headings`) does
+    not move, so it does not.
+- **Why `animates` cannot be reused.** It is `core`'s motion gate, true only where the reduced-motion state is the
+  no-JavaScript state. `header-scroll`, a header that shrinks as you scroll, which the owner named in Question 1,
+  carries `false` there.
+- **Why the mark lives only in `registry.json`.** Every value follows from the one sentence in its `about`, so there
+  is nothing to restate in §7 and nothing for `derive-module-reach.py` to hold in step.
+- **Only held-still rows matter.** A countdown carries `true` and never shows a chip, because it is edit-safe and runs.
+- **What this means for the owner's pages.** Both pilot modules wait for a press, so today's library draws no chip
+  anywhere. Research §2.1 lists `header-scroll` for A1-1 onward, and Story 9.1 builds A1's first designs, so the first
+  chip he sees will likely be on a header that shrinks as you scroll. That story's own card still says its designs
+  declare no module (DW-164).
+- **Why fixture 1 gains a `marquee`.** CI needs one held-still part that moves by itself, or the chip's own drawing
+  is never tested. Fixture 1 is already on the harness's Home canvas, and `/controls` runs no `core`, so the
+  declaration is invisible there.
+
 **Where the chip is drawn, and where it sits.**
 
 - **Not as `::after`.** R-120's clause and AD-21's rule text say PAUSED is `::after` inside the frame. At the 1440
@@ -546,8 +638,8 @@ designs in Epics 9 and 10.
   layer only exists while a section is hovered or selected.
 - **In the bottom-left corner.** B3a sets it at the behaviour's trailing end, in flow, which a chip drawn over a design
   cannot do. A section's top corners already belong to the name tag (top-left) and the pill and Pro badge (top-right,
-  R-125). A full-width mount such as Rail's bar is only a few dozen screen pixels tall at the 1440 window's 0.6 fit,
-  and the pill covers most of its right end. Step 91 measures the clearance.
+  R-125). A full-width bar is only a few dozen screen pixels tall at the 1440 window's 0.6 fit, and the pill covers
+  most of its right end. The keyboard journey measures the clearance on fixture 1's list.
 
 **The rest of the frame, as built.**
 
@@ -564,9 +656,11 @@ designs in Epics 9 and 10.
 
 **What the owner can and cannot see.**
 
-- **No behaviour moves anywhere in the product yet.** The PAUSED chips and Preview's JavaScript branch are visible on
-  his pages. A real function actually running is proved by `core.test.mjs`, the same code path the editor calls.
-- **The CI journey proves the wiring,** the class flipping on the real editor, on every commit.
+- **No behaviour moves anywhere in the product yet.** On his pages he sees Preview, the bar, the header's JavaScript
+  branch at phone size, and no chip (R-175). A real function actually running is proved by `core.test.mjs`, the same
+  code path the editor calls.
+- **The CI journey proves the wiring** on the real editor, on every commit: the class flipping, and the chip on
+  fixture 1's list.
 - **No samples.** R-158's shape, sample designs on `/controls`, is not repeated. This is a routine call, stated in one
   line to the owner.
 
@@ -574,8 +668,11 @@ designs in Epics 9 and 10.
 window. The pill adds about 118px, so they now meet at about 1190px. The 1280 check stays positive (about 44px), and
 anything narrower is Story 5.22's responsive floor.
 
-**Known ceiling.** A width-declared module (`accordion:768`, R-38) is chipped at every width, although at a wide width
-it would not run even in Preview. No pilot declares a width, so this is a new DW entry and not code.
+**Known ceilings, both new DW entries and not code.**
+
+- A width-declared module that moves by itself (`header-scroll:768`, R-38) is chipped at every width, although at a
+  wide width it would not run even in Preview. No pilot declares a width.
+- An autoplaying carousel carries no chip, because the mark is per module and autoplay is per design.
 
 ## Verification
 
@@ -587,7 +684,8 @@ it would not run even in Preview. No pilot declares a width, so this is a new DW
   - every package test green, including `core.test.mjs`, `modules.test.ts`, `keymap.test.ts` and
     `behaviours.test.ts`;
   - `node tools/check-snapshots.mjs` **unchanged**.
-- `pnpm keyboard`. Expected: the Preview journeys and the updated sweep are green in CI's `check` job.
+- `pnpm keyboard`. Expected: the Preview journeys, R-175's chip on fixture 1 (and none on Rail or the Inline Row),
+  and the updated sweep are all green in CI's `check` job.
 - **The control for `main.js`.** `modules.test.ts`'s new assertion is the byte check: the bundle is the source minus
   its one keyword, with no `export` anywhere. `core.test.mjs:245` runs that bundle with JavaScript on and off. Then
   `cd tools/stress && npm install && node build.js && node gate.js theme`. Expected: 0 errors and 0 warnings on both
@@ -598,7 +696,7 @@ it would not run even in Preview. No pilot declares a width, so this is a new DW
   `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT`. Expected:
   - 0 FAIL, including steps 3, 4, 77, 78, 90 and 91;
   - step 5 at zero violations, with Preview and `core` in its session, behind its `EvalError` control;
-  - step 8 at zero axe violations in Preview and on a chipped hover.
+  - step 8 at zero axe violations in Preview.
 - `python3 tools/doc-audit.py --check`, run twice. Expected: exit 0.
 
 **Real services this story touches (R-82):**
@@ -619,15 +717,16 @@ it would not run even in Preview. No pilot declares a width, so this is a new DW
 Do this on the real site after Deploy confirms the build. Use the **Pilot sections** project, the one seeded to your
 account at Story 5.1, in a desktop browser window about 1440 wide.
 
-**Steps 1 to 3 assume Question 2 is ruled option 1**: tags only on the section you point at. If you rule otherwise, those
-steps change to match your ruling before Deploy. Question 1 changes no step, because none of the four parts it asks
-about is on your pages yet.
+**Steps 2 and 3 are your ruling R-175** (2026-09-22): a PAUSED tag appears only on the section you point at, and only
+on a part that moves by itself. Your pages hold no such part yet, so you will see **no tag at all** in this test. The
+automated check draws one on a sample section on every commit. Your ruling R-174 (the four hold still) changes no
+step, because none of those four parts is on your pages yet.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Look at the right end of the top bar, then at the page. | — | After "Theme settings", a white pill with an eye, the word **Preview** and a small grey **P**. Nothing on the page carries a PAUSED tag, and the page looks exactly as it did before this story. |
-| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Point at the header, without clicking. | — | Its outline and name tag, and a small grey tag with a pause sign reading **PAUSED** near the header's bottom-left corner. Move the pointer away and the tag goes with the outline. |
-| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Point at the newsletter band ("One letter a week, on Friday morning"), then at the three-column band and at the latest-post band. | — | The newsletter shows **PAUSED** at the bottom-left of its email form, because the sign-up does nothing while you design. The other two show no tag: they have no moving part. |
+| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Point at the header, without clicking. | — | Its outline and name tag, and **no PAUSED tag**. Its only moving part, the phone menu, waits for a tap, and by your ruling R-175 only a part that moves by itself gets a tag. |
+| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Point at the newsletter band ("One letter a week, on Friday morning"), then click it to select it. | — | Its outline, name tag and panel, and **no PAUSED tag**, pointed at or selected. Its sign-up form waits for a press, and it does nothing while you design. |
 | 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Press the **phone** button in the top bar. | — | The page becomes phone-sized. The header now **lists its links under the logo** and shows **no menu button**, because its phone menu is paused while you design. |
 | 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home, phone size | Press **Preview**. | — | The top bar, both side panels and every outline disappear, and the phone-sized page stands alone on the grey ground. At the bottom-left is a dark bar: **Back to editing** with a small **esc**, a thin line, and three device buttons, the phone one lit. The header now shows its **menu button** (three lines) and hides its links, as on the live site. |
 | 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Preview | Press the menu button. Then click a link in the page. Then type an email into the newsletter box and press **Subscribe**. | `test@example.com` | The menu button does nothing yet: the menu that opens from it arrives with the header designs in Epic 9. The link goes nowhere and nothing is sent, because in Preview a link or a form never leaves the page. The email box takes your typing. |
@@ -668,7 +767,19 @@ the canvas shows the tabs as visitors see them, and you reach the Yearly panel b
 Whichever you choose, a countdown keeps ticking while you design, because the table says ticking digits get in the way
 of nothing. The drawing for this screen shows one stopped.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-22).** *"Hold all four still while you design; Preview shows them moving."*
+Recorded as **R-174**.
+
+- `header-scroll`, `reveal`, `tabs` and `accordion` keep research §7's **no**, as `registry.json` already carries
+  it. On the canvas each renders at rest, in its no-JavaScript state:
+  - tabs stack with their labels
+  - fold-out panels stay as the section is set
+  - fading content is simply shown
+  - a shrinking header keeps its full size
+
+  Preview runs them.
+- No `editSafe` value changes. FR-D20's run-always list and this story's card are corrected to the table, and that
+  closes DW-133.
 
 ### Question 2 — Should the PAUSED tag show all the time while you design, or only on the section you point at?
 
@@ -691,4 +802,14 @@ where that menu does nothing you can see.
    Parts that wait for a click, like the phone menu or a sign-up form, show it only when you point at them.
    - This needs a new "moves by itself" mark on every moving part in the table.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: options 1 and 3 together (owner, 2026-09-22).** *"Only on the section you point at or select, but only on
+parts that move by themselves, not all sections be default."* Recorded as **R-175**.
+
+- **When.** A chip is drawn only while its section is pointed at or selected, and never at rest.
+- **Which.** Only on a held-still part that moves by itself: one that changes the page on a timer or as the page
+  scrolls, with nothing pressed.
+  - A part that waits for a press or a submit never carries one: the phone menu, a sign-up form, a lightbox, tabs, a
+    carousel's arrows.
+  - `registry.json` gains `movesByItself` on every row, the one place that says which.
+- **So your pages show no tag in this story.** Both of their moving parts wait for a press. The automated check draws
+  one on a sample section (controls fixture 1) on every commit.
