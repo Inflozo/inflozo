@@ -1097,6 +1097,25 @@ variable name; nothing printed; nothing written outside a rolled-back transactio
   `fail 0`, `check-snapshots` PASS with nothing changed; `pnpm keyboard` — every journey passed, the page-2 ones among
   them, and `apps/web/next-env.d.ts` was left clean.
 
+**Deploy (2026-09-22) — the real services, executed, under R-82.** No migration in this phase: the Schema phase
+already applied `tag-paged` and `author-paged` and proved them, and nothing schema-shaped changed since. Every key was
+read into a command's environment by its variable name; nothing was printed.
+
+- **GitHub Actions**, `GITHUB_TOKEN` (read-only): CI on `5c60dc52` (HEAD, the Review commit) — `check`, `rls`,
+  `matrix` and `deploy` all completed `success`.
+- **Vercel production**, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`: the latest READY production deployment is
+  `dpl_Dmag1wR4nUoVE2mCXjff5wCuiNnA`, built from `5c60dc52` (HEAD), and `app.inflozo.com` is aliased to it.
+  **Deployment: `https://app.inflozo.com` (`dpl_Dmag1wR4nUoVE2mCXjff5wCuiNnA`, `5c60dc52`).**
+- **The deployed walk**, `node tools/probe/run-verify-editor.cjs` against `https://app.inflozo.com`, with
+  `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT` — the two step-92
+  checks Review deferred here (the typed-header R-180 ask and cancel, and R-167's page-2 read-back) among them:
+  **0 FAIL, 563 PASS, on its first attempt.** Two throwaway accounts were created and deleted in `finally`; the
+  account count was 13 before and after. Every other step-92 row (the exact copy, the marker, "2 / 5" with both
+  links, no `nav-current` on Home at `/page/2/`, the pill against D5d and clear of the card and the chip at three
+  devices in a 1440 and a 1280 window, "Older posts" navigating nowhere, the `index` row written with the `home` row
+  byte-identical around it, the reload, the Tag canvas's `tag-paged` row with its `tag` row byte-identical around it,
+  the one-page tag and Author cases, and every planted row restored) passed alongside them.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, in a desktop browser window about 1440 wide. It uses two of
