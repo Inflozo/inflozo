@@ -2118,7 +2118,39 @@ project's `posts_per_page`
 and R-109 its numbered pager.
 
 **FRs:** FR-D21. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5d. · **Rulings:** R-127, R-176,
-R-177, R-178, R-179, R-180. · **Owner test:** yes. · **Schema phase:** yes (R-99), for the two archive page-2 keys.
+R-177, R-178, R-179, R-180, R-181 (the note under the Preview page row). · **Owner test:** yes. · **Schema phase:** yes
+(R-99), for the two archive page-2 keys.
+
+### Story 5.16a: The page number token
+
+As a user designing a paginated page,
+I want to type `{page_number}` into any text,
+So that a header, a hero or any section shows the number of the page a visitor is on.
+
+*Added straight after Story 5.16 on the owner's word — **R-184** (owner, 2026-09-22): "Its own story, straight after
+this one". Its request, the same day: "I want to have a {page_number} dynamic data that I can add anywhere where I can
+edit text inline. So users can add a header, hero and show the Page number there."*
+
+**Acceptance Criteria:**
+
+**Given** any text I can edit, inline on the canvas or in the panel, in any section
+**When** I type `{page_number}`, or press its chip under the field
+**Then** the canvas shows the number of the page on screen: 1 on page 1 and 2 on page 2 — **R-182** (owner,
+2026-09-22)
+**And** clicking into the words to change them shows the token again, so it can be seen and edited
+**And** it is **the one token every text field accepts**: R-182 amends R-27's per-field lists for it alone, and every
+other word in braces still prints exactly as typed
+**And** **nothing adds a page number by itself** — it appears only where it was typed, on page 1 as on page 2 (R-182)
+**And** on the live site each page prints its own number, so page 3, which shows page 2's design (R-177), prints 3;
+and **a post, a page and the 404 page print nothing** — **R-183** (owner, 2026-09-22)
+**And** the name is `{page_number}`, in `{members}`'s form: Ghost has no `{{page}}` helper, and the token never passes
+through Ghost's `{{t}}` (read in source on both majors, R-182)
+**And** where Ghost serves `pagination.page` to the header in `default.hbs` is read in source and recorded on T1 and
+T3 before anything is emitted for it (standing rule 1)
+**And** the chip matches P0-1's typed tokens.
+
+**FRs:** FR-D4 and FR-G3 (amended by R-182), FR-D21. · **Frame:** `P0-1 Inline Text Toolbar.dc.html` (typed tokens,
+`:174-204`). · **Rulings:** R-27, R-177, R-182, R-183, R-184. · **Owner test:** yes.
 
 ### Story 5.17: The edit lock and the take-over choreography
 

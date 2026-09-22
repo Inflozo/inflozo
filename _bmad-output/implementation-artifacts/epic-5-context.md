@@ -325,7 +325,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       walk's step 92 covers the rest on production.
     - ***The owner, after Dev (2026-09-22).*** **R-181**: under D5d's row, the Kit's helper caption "Pages 3, 4, 5 and on
       use page 2's design." (`LATER_PAGES`), the radio group's description. **`{page_number}`**, a token every text
-      field would accept, is the spec's Questions 5 to 7 — it amends R-27's per-field token lists.
+      field would accept, is the spec's Questions 5 to 7 — it amends R-27's per-field token lists. Ruled the same day:
+      **R-182** (the canvas shows the page's own number; the name stays `{page_number}`, since Ghost has no `{{page}}`
+      helper and the token never passes through `{{t}}`; nothing shows a number the user did not type), **R-183**
+      (nothing where a page has no number) and **R-184** (its own story: **Story 5.16a**, straight after this one).
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

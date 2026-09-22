@@ -709,6 +709,13 @@ of the owner's projects store `posts_per_page` 12, and none has an `index` row.
     Three choices change what gets built: what the canvas shows, what a page with no number shows, and whether it
     belongs to this story.
 
+- **2026-09-22, the owner ruled Questions 5 to 7 the same day, and none of this story's code moves:**
+  - **R-182** (Question 5): the canvas shows the current page number. The name stays `{page_number}`, in `{members}`'s
+    form, after a check in Ghost's source found no clash. Nothing shows a page number the user did not type.
+  - **R-183** (Question 6): nothing, where a page has no page number.
+  - **R-184** (Question 7): its own story, straight after this one. That is **Story 5.16a, "The page number token"**,
+    added to `epics.md` and `sprint-status.yaml`. It starts from R-182 and R-183.
+
 ## Design Notes
 
 **Why page 2 is a doc of its own, and why that brings a Schema phase.**
@@ -1196,7 +1203,26 @@ chip under the text field in the panel.
    - The canvas shows "The archive — page {page_number}" on every page, the way `{members}` shows today.
    - The number appears only on the live site.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1, the current page number, named `{page_number}` (owner, 2026-09-22).** *"The current page number.
+Ghost uses a helper {{page}} and I think we need to use {{page}} or {page} instead of {page_number}. We need to use
+same format like we have used for member count - {members}. If we do not have any issues in using {page_number} then
+only we should use it as it is more informative. Page 1 should respect the design user created. If user does not uses
+{page_number} then we should not show it."* Recorded as **R-182**.
+
+- **The canvas shows the number**: "1" on page 1 and "2" on page 2, as a visitor sees them.
+- **The name is `{page_number}`, in `{members}`'s form:** single braces, typed into the text or pressed as a chip.
+  - It was checked, as asked, in Ghost's own source on both majors (5.130.6 and 6.58.0). There is no `{{page}}`
+    helper: `core/frontend/helpers/` holds `page_url.js` and `pagination.js`, and no `page.js`.
+  - `{{page}}` appears only inside the `{{pagination}}` helper's own template (`helpers/tpl/pagination.hbs`), which
+    that helper renders after merging `pagination`'s properties onto its context (`pagination.js:52`, identical on
+    both majors), so there `{{page}}` is `pagination.page`. Ghost 6 writes its words there as
+    `{{t "Page {page} of {totalPages}" …}}`.
+  - Our token is substituted by Inflozo and never passes through Ghost's `{{t}}`, so neither name clashes. The more
+    informative one stands.
+- **Nothing is shown that the user did not type.** A page number appears only where `{page_number}` was typed, and
+  nothing adds one by itself, on page 1 or on page 2. Read as: where the user did type it on page 1, page 1 shows "1".
+  - So a header reading "page {page_number}" shows "page 1" on Home, "page 2" at `/page/2/`, and "page" with no
+    number on a post (R-183).
 
 ### Question 6 — On a page that has no page number, what does `{page_number}` show?
 
@@ -1212,7 +1238,11 @@ posts too.
 2. **Nothing.**
    - On the post the header reads "Orbit Weekly · page", with the number missing.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2, nothing (owner, 2026-09-22).** *"If there are no page number - show nothing."* Recorded as
+**R-183**.
+
+- On a post, a page and the 404 page, `{page_number}` prints nothing: the header in the example reads "Orbit Weekly ·
+  page".
 
 ### Question 7 — Should `{page_number}` be built in this story, or as a story of its own?
 
@@ -1233,4 +1263,12 @@ the review and your test of page 2 wait until the page number is built as well.
 Read, and say so if it is wrong: **every** text field of **every** section accepts `{page_number}` — "anywhere where I
 can edit text inline" — and the header and the hero are your examples, not a limit.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1, its own story, straight after this one (owner, 2026-09-22).** *"Its own story, straight after
+this one"* Recorded as **R-184**.
+
+- It is **Story 5.16a, "The page number token"**, added to `epics.md` and `sprint-status.yaml` straight after Story
+  5.16, where the board's lettered numbering puts it. No other story is renumbered.
+- R-182 and R-183 are its starting rulings, and its Create run plans it. That plan amends R-27 for this one token, and
+  it finds where Ghost serves `pagination.page` to the header, read in source and recorded on T1 and T3 (standing
+  rule 1).
+- Story 5.16 goes to Review as it stands. None of its code changes for this.

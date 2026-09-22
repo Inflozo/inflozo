@@ -3907,6 +3907,49 @@ Story 5.16's Dev (2026-09-22): *"Add a note that subsequent pages will take desi
   test) · ✅ `lib/page-two.ts`, `kit/segmented.tsx`, `kit/labels.tsx`, `controls/sidebar.tsx` · ✅ `page-two.test.ts`,
   the entering journey and step 92 · ✅ `EXPERIENCE.md`'s Page 2 Preview row — Story 5.16, after its Dev (2026-09-22).
 
+**R-182 — `{page_number}` prints the page's own number, in `{members}`'s form, and only where it was typed.** Story
+5.16's Question 5, ruled **option 1** (owner, 2026-09-22): *"The current page number. Ghost uses a helper {{page}} and
+I think we need to use {{page}} or {page} instead of {page_number}. We need to use same format like we have used for
+member count - {members}. If we do not have any issues in using {page_number} then only we should use it as it is more
+informative. Page 1 should respect the design user created. If user does not uses {page_number} then we should not
+show it."* Asked after his request of the same day: *"I want to have a {page_number} dynamic data that I can add
+anywhere where I can edit text inline. So users can add a header, hero and show the Page number there."*
+
+- **What it binds.**
+  - `{page_number}` is an inline token in R-27's form: single braces, typed into a text or pressed as a chip.
+  - **Every text field of every section accepts it.** That is the one exception to R-27's per-field lists; every
+    other word in braces still prints exactly as typed.
+  - On the canvas it shows the page on screen: 1 on page 1 and 2 on page 2. On the live site each page shows its own
+    number, so page 3, which uses page 2's design (R-177), shows 3.
+  - Nothing adds a page number by itself, on any page. Where the user typed the token on page 1, page 1 shows 1.
+- **The name, checked as he asked** (read in Ghost's source, 5.130.6 and 6.58.0). There is no `{{page}}` helper: no
+  `page.js` in `core/frontend/helpers/`. `{{page}}` appears only inside the `{{pagination}}` helper's own template,
+  which that helper renders after merging `pagination`'s properties onto its context (`pagination.js:52`), so there
+  `{{page}}` is `pagination.page`. Ghost 6 words it `{{t "Page {page} of {totalPages}" …}}`. Inflozo substitutes its
+  own token and never passes it through `{{t}}`, so `{page_number}` clashes with neither, and the more informative
+  name stands.
+- **What it does NOT decide.** How the theme emits it, and where Ghost serves `pagination.page` to the header in
+  `default.hbs`: both are Story 5.16a's to read in source and record on T1 and T3 (standing rule 1).
+- Targets: ✅ this entry · ✅ Story 5.16's spec (Question 5) · ✅ `epics.md` Story 5.16a — Story 5.16, 2026-09-22.
+  ⬜ Story 5.16a's spec · ⬜ `prd.md` FR-D4 and FR-G3 (the one token every field accepts) · ⬜ `ARCHITECTURE-SPINE.md`
+  AD-4 (R-27's amendment) · ⬜ `vocabulary.ts`'s `INLINE_TOKENS` and the panel's token chips — at Story 5.16a.
+
+**R-183 — where a page has no page number, `{page_number}` prints nothing.** Story 5.16's Question 6, ruled **option
+2** (owner, 2026-09-22): *"If there are no page number - show nothing."*
+
+- **What it binds.** On a post, a page and the 404 page, the token prints nothing. A header reading "Orbit Weekly ·
+  page {page_number}" reads "Orbit Weekly · page" there.
+- Targets: ✅ this entry · ✅ Story 5.16's spec (Question 6) · ✅ `epics.md` Story 5.16a — Story 5.16, 2026-09-22.
+  ⬜ Story 5.16a's spec.
+
+**R-184 — the page number token is its own story, straight after Story 5.16.** Story 5.16's Question 7, ruled
+**option 1** (owner, 2026-09-22): *"Its own story, straight after this one"*.
+
+- **What it binds.** It is **Story 5.16a, "The page number token"**, numbered with the board's lettered suffix so it
+  sorts straight after 5.16 and no other story is renumbered. Story 5.16 goes to Review as it stands.
+- Targets: ✅ this entry · ✅ Story 5.16's spec (Question 7) · ✅ `epics.md` (Story 5.16a's card) ·
+  ✅ `sprint-status.yaml` (its backlog row) · ✅ `epic-5-context.md` — Story 5.16, 2026-09-22.
+
 
 ## B · Approved decisions superseded by this session
 
