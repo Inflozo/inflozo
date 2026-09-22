@@ -2092,14 +2092,24 @@ So that a pagination treatment is designable at all.
 **Given** a canvas showing a paginated feed
 **When** I switch to the page-2 preview
 **Then** the canvas renders page 2, **deliberately a middle page carrying both a previous and a next link** —
-the only state in which a numbered treatment shows its full range
+the only state in which a numbered treatment shows its full range — which the bundled feed guarantees on Home
+**And** **Home's page 2 is `indexStack`, the Home doc from its designated main feed down (R-127)**, rendered at
+`index.hbs`, the file Ghost serves at `/page/2/`, with the page's own address, so the header marks what Ghost marks
+**And** **where a page has no page 2, no page-2 preview is offered at all** — **R-176** (owner, 2026-09-22): a Tag or
+Author page whose posts fit on one page shows no page-2 control, greyed or otherwise, because Ghost itself answers
+"page not found" there; where page 2 exists it is the real one
+**And** **page 2 is edited exactly as page 1 is, and stands for every page after it** — **R-177** (owner,
+2026-09-22): any section page 2 shows can be picked and changed; a change there is made to that section, so pages 3,
+4, 5… carry it, and so does page 1, which shows the same sections; a section page 2 leaves out is greyed in Layers;
+and no page 3 or later is offered
 **And** "Back to page 1" is offered
-**And** the shim supplies the page-2 context and the fixture carries enough posts for a second page to exist
-under the project's `posts_per_page`
+**And** the shim supplies the page-2 context and the fixture carries enough posts for Home's page 2 to exist under the
+project's `posts_per_page`
 **And** it carries **no keyboard shortcut**, deliberately
-**And** the state matches D5d.
+**And** the state matches D5d, as R-177 amends its greyed layers and R-109 its numbered pager.
 
-**FRs:** FR-D21. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5d. · **Owner test:** yes.
+**FRs:** FR-D21. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5d. · **Rulings:** R-127, R-176,
+R-177. · **Owner test:** yes.
 
 ### Story 5.17: The edit lock and the take-over choreography
 

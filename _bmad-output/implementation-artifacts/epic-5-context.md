@@ -251,6 +251,28 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     preference must never black out an editor.
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.
+  - **Story 5.16's planning (2026-09-22, read in the runtime, the frames and Ghost's source on both majors):** page 2
+    needs NO migration and NO new mechanism beyond one seam. `FeedState` has no page 2 (`middle` is page 3 of the
+    bundled five), so `templateContext` gains `'second'` plus `feedPages(target, subject)`, the one question asked
+    before offering it. What Home's page 2 IS stays R-127's `indexStack`, rendered at `index.hbs` (Ghost puts
+    `home.hbs` first only at exactly `/`, `templates.js:67`), and **the page enters at `stackOf`, not at the paint**,
+    because roots, picks, marks, restamps, the panel's fast path and every edit are aligned with `latest.stack`.
+    **THE PAGE'S ADDRESS WAS WRONG BEFORE ANYONE ASKED FOR PAGE 2** (DW-218): every branch answered `currentUrl: '/'`
+    and the header renders at `default.hbs`, which always gets `/`, while Ghost sets `nav-current` on an exact
+    `relativeUrl` match only (`utils.js:61`, executed on both majors) and Rail draws it — so the canvas address comes
+    from one function and is handed to every section. It is offered on the canvas's own `isMainFeed` section, read
+    never written: synthesis sets it on every untouched Home, Tag and Author page, and the owner's Ghost 5 Project Home
+    kept one, while his Pilot sections Home (seeded before the flag) has none. Only a17/1 draws a pager; only Home's
+    feed reaches five pages; Field Notes and Reporting reach two and no writer reaches two. D5d's numbered pager is
+    R-109's, not built. **No Schema phase.**
+  - **R-176 · R-177 (owner, 2026-09-22, Story 5.16's Q1 and Q2).** **R-176:** where a page has no page 2 — a one-page
+    archive, a hidden main feed — no page-2 preview is offered at all, not even greyed; where it exists it is the real
+    one (Ghost 404s past the last page, `channel.js:55-60`). **R-177:** page 2 is edited exactly as page 1 is — every
+    section it shows, on the canvas, in Layers and by key — and stands for every page after it: a change there is
+    made to that section, so pages 3, 4, 5… and page 1 carry it, and no page 3 or later is offered. Only a row page 2
+    leaves out (Home, above the main feed) is greyed, superseding D5d's greyed layers. The one piece of page-1
+    arithmetic was `invokedAt`, which moves to identity, and a placement from above the feed on Home's page 2 lands
+    directly below it.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built
@@ -704,6 +726,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **5.14's lean is settled too (2026-09-21):** 5.14 builds the visitor and 5.21's strip reads it (its criteria
     already honour the toggle); the gated-body indicator, `access` per visitor and DW-128 move to 5.20, the first
     canvas that draws a gated body; and the pre-deploy half of the nudge is 7.18's Pre-flight row.
+  - **5.16's lean is settled as well (2026-09-22, a routine call stated to the owner):** page 2 is offered on the
+    section that already carries `isMainFeed`, which synthesis has set since 5.5, so it lands before 5.19; 5.19 adds
+    the Pagination control above its row and the lifecycle that marks a placed feed, and rebuilds nothing here.
 - **Across epics:** Epic 3's daily settings snapshot feeds the shims and members checks; Epic 6 replaces the token set; Epic 7 compiles the doc, gates deploy and export on the lock and flush, and repeats the warnings pre-deploy; A34's (5.19) and A32's (5.20) designs arrive in Epic 10.
 - **Undeclared forward dependencies:** the library holds only the provisional pilots, so 5.11, 5.12 and 5.23's round trip have no second design to move to, and the repo's only 40-section fixture is `tools/stress`'s compile-sizing archetypes; the Synthesis Defaults and Post Content (5.4, 5.5) name designs Epics 9–10 author; pack re-roll and undo (5.12, 5.8) have one token set until Epic 6.
   - **Story 5.1, Question 1 ruled option 1 (owner, 2026-09-17)** — nothing places a section before 5.10, so the owner's tests of 5.2–5.9 run on "Pilot sections": the pilots across `site`, `home` and `post`, added once to his own account by 5.1's Deploy through `tools/probe/seed-editor-project.mjs`. Reuse it; never seed a second.

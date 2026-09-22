@@ -2616,6 +2616,8 @@ dropped, the grid itself carries on with the next posts, and everything below it
   - ⬜ `epics.md` Story 7.3 and Story 5.16 · ⬜ `sections-inventory.md` § Synthesis Defaults §3's heading, which today
     reads "(both, only when Home is untouched)" and never says what follows — at those stories, or at the next edit
     of that document, whichever is first.
+  - ✅ `epics.md` Story 5.16 — Story 5.16's Create (2026-09-22). Story 7.3's card and the heading are still owed; the
+    heading is in Story 5.16's Dev task list.
 - **Deliberately not touched:** the Synthesis Defaults' own stacks and the main-feed rule (`:849-861`), both unchanged;
   FR-D21 and Story 5.16, which decide how page 2 is *previewed*, not what it is made of; the export (R-74), which
   draws no `index.hbs` surface because there is none.
@@ -3744,6 +3746,55 @@ point at or select, but only on parts that move by themselves, not all sections 
     ✅ `prd.md` FR-D20 · ✅ `EXPERIENCE.md`'s behaviours paragraph · ✅ `docs/section-authoring.md` · ✅ research §7's
     preamble · ✅ `ARCHITECTURE-SPINE.md` AD-21 · ✅ R-120's pointer above.
   - Owed on the next library pass: ⬜ B3a's caption.
+
+**R-176 — where a page has no page 2, no page-2 preview is offered at all.** Story 5.16's Question 1, ruled **option 1,
+with the control absent rather than greyed** (owner, 2026-09-22): *"Do not give option to preview Page 2. As it will not
+exist."*
+
+- **Why it was a question.** FR-D21 (`prd.md:245`) says the fixture "carries enough posts for a second page to exist"
+  and that page 2 is "deliberately a middle page". That holds on Home, where 52 posts at 12 a page make five pages. It
+  does not hold on an archive, which since Story 5.13 lists only its own tag's or writer's posts: no sample writer has
+  more than 7, and only two tags have more than 12. Read in Ghost's source on both majors, a page past the last is a
+  404 (`routing/controllers/channel.js:55-60`), so FR-D21's promise and FR-H3's sizes disagreed on archives.
+- **What it binds.**
+  - Page 2 is previewed only where it exists: the page's shown main feed lists more posts than one page holds.
+    Where it exists it is the real one — on the sample tags Field Notes and Reporting, the last page.
+  - Where it does not, the **Preview page** row is **absent**: no greyed value and no sentence. A hidden main feed
+    shows no list, so it offers none either.
+  - Nothing is invented: no deeper `pagination`, no page-1 rows relabelled (FR-H3).
+  - When page 2 stops existing while it is on screen, the canvas returns to page 1 and `#editor-said` says why.
+- **What it does NOT change.** The sample publication (FR-H3's sizes, the owner's at Story 4.4) stays as it is, and
+  Home's page 2 is still the middle page FR-D21 describes.
+- Targets:
+  - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
+    ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
+  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21.
+
+**R-177 — page 2 is edited exactly as page 1 is, and stands for every page after it.** Story 5.16's Question 2, ruled
+**option 2, with page 2 standing for every later page** (owner, 2026-09-22): *"Page 2 should allow to change
+everything - any change in Page 2 will be same for all subsequent pages - 3,4,5.. So do not allow to change Page 3 and
+onwards."*
+
+- **Why it was a question.** D5d draws page 2 as a focused view — every layer but the main feed's greyed, no outline —
+  and FR-D21 says nothing about what can be changed there. The frames are non-normative for behaviour (build-sequence
+  standing rule 6), so the difference was the owner's.
+- **What it binds.**
+  - Every section page 2 shows can be pointed at, selected, edited on the canvas, changed in its panel, duplicated,
+    deleted, moved, re-rolled and added after — on the canvas, in Layers and by key — as on page 1.
+  - A change there is made to that section. Pages 3, 4, 5… are the same page design (read in Ghost's source: an
+    archive keeps one template on every page, and `/page/N/` always renders `index.hbs`), so they carry it — and so
+    does page 1, which shows the same sections (R-127 on Home, one template on an archive).
+  - A section page 2 leaves out — on Home, anything above the main feed — is greyed in Layers and cannot be picked.
+  - No page 3 or later is previewed or changed. Links on the canvas never navigate, so the pager's Older link does not
+    open page 3.
+  - A section added on Home's page 2 from the gap above the main feed lands directly below it, the first place page 2
+    has (R-127 puts nothing above the feed on page 2).
+- **What it does NOT change.** D5d's pill, its row and its words; R-127's rule for what page 2 is made of; the export,
+  which is untouched (R-74). D5d's greyed layers are superseded by this entry, which is the record of the divergence.
+- Targets:
+  - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
+    ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
+  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21.
 
 
 ## B · Approved decisions superseded by this session
