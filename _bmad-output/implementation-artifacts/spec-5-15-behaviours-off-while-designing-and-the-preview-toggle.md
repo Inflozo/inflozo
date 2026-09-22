@@ -935,6 +935,24 @@ Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier), and every R-
   meets View as (Story 5.22's card already carries the new figure).
 - **No question for the owner was raised by this review.**
 
+**The Deploy (2026-09-22), `3872e389`.** Deployment: `dpl_5S1RhzS51FhNf3ciReqoJiPF7Jus`
+(`inflozo-m4dlrc7u1-umangkagathara.vercel.app`), served on `https://app.inflozo.com`.
+
+- The Review commit `3813ece6`'s first CI run (`35700016977`) failed the `check` job's `pnpm keyboard` step on a
+  Turbopack `next/font/google` resolution error (`Can't resolve '@vercel/turbopack-next/internal/font/google/font'`)
+  unrelated to this story's diff, which touches no font or layout code; the identical import passed CI on the two
+  preceding commits (`1e147c74`, `61290c1b`). An empty retry commit, `3872e389`, reran the same tree unchanged and CI
+  passed clean — confirming the first run was a CI-runner network flake, not a regression (standing rules 1 and 2).
+- **CI** (`GITHUB_TOKEN`): run `35701828191` (`check`, `rls`, `deploy`, all success) and `Render matrix` `35701828217`
+  success, both on `3872e389`.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): production `dpl_5S1RhzS51FhNf3ciReqoJiPF7Jus`,
+  **READY**, built from `3872e38954172111fb32d935cadf73aadbdfdba3` = `HEAD`.
+- **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): the owner's-test project `b6d4db35-8e5e-45e1-a70f-4daa28916d51`
+  ("Pilot sections") exists, unchanged.
+- **Production** (no key): `/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` on `https://app.inflozo.com` answers 307
+  to `/sign-in` when logged out.
+- No schema change in this story, so no migration to apply. `owner_test` stays `pending`.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build. Use the **Pilot sections** project, the one seeded to your
