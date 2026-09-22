@@ -4855,6 +4855,23 @@ async function main() {
       await page.waitForTimeout(400)
       return value
     }
+    // review, 2026-09-22 — A SECOND DOOR INTO THE HOLD: typing on the canvas. The header's own words are a text prop, and
+    // `commit()` holds every door alike; the journey drives the panel's radio only, so this is the one place the inline
+    // door is proved. Cancel puts the typed character back.
+    const ctaBefore92 = await wordsOf(HEADER, '.a1-1__cta')
+    await caretInto(HEADER, '.a1-1__cta')
+    await page.keyboard.type('q')
+    await page.waitForTimeout(400)
+    const askTyped92 = await page.evaluate(() => document.querySelector('dialog[open]')?.querySelector('h2')?.textContent.trim() ?? null)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    check('step 92 — R-180: typing into the header on the canvas while on page 2 asks first too, and Cancel puts the words back',
+      askTyped92 === PT.SITE_WIDE_ASK.title(headerName92) && (await wordsOf(HEADER, '.a1-1__cta')) === ctaBefore92 && (await page.locator('dialog[open]').count()) === 0,
+      JSON.stringify({ askTyped92, cta: await wordsOf(HEADER, '.a1-1__cta'), ctaBefore92 }))
+    await rowAt(HEADER).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await openGroup('Layout')
+    await page.waitForTimeout(250)
     await pickOther92()
     const ask92 = await page.evaluate(() => {
       const d = document.querySelector('dialog[open]')
@@ -4880,6 +4897,14 @@ async function main() {
     const navValue92 = site92?.instances?.[0]?.controls?.['nav-position'] ?? null
     check('step 92 — R-180: Change it everywhere changes the `site` row — the header on every page, page 1 included',
       JSON.stringify(site92) !== siteBefore92 && navValue92 !== navSeed92 && navDef92.values.includes(navValue92), JSON.stringify({ navSeed92, navValue92 }))
+    // review, 2026-09-22 — R-167 ON PAGE 2 ROUND-TRIPS THROUGH THE SERVER ACTION: the page-2 key keeps a "looked at"
+    // record of its own (`index`, accepted by `setViewedStates` since this story), and the header change made here ran
+    // page 1's record out in the same batch. Read back from Supabase, never inferred from the screen.
+    await page.waitForTimeout(1500)
+    const viewed92 = async (key) => (await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}&template_key=eq.${key}&select=member_states_viewed`)).body?.[0]?.member_states_viewed ?? null
+    const [viewedIndex92, viewedHome92] = [await viewed92('index'), await viewed92('home')]
+    check('step 92 — R-167: page 2 keeps its own "looked at" record under `index`, written through the server action; the header change ran page 1\'s out',
+      Array.isArray(viewedIndex92) && viewedIndex92.length === 1 && (viewedHome92 === null || viewedHome92.length === 0), JSON.stringify({ viewedIndex92, viewedHome92 }))
     const asksAgain92 = await (async () => {
       await pickOther92()
       return page.locator('dialog[open]').count()

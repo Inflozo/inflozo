@@ -251,7 +251,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     preference must never black out an editor.
 - **Zero items has three answers.** The main feed shows its designed empty state and is never back-filled, a secondary `{{#get}}` feed renders nothing, a bound prop follows its guard, and a user-authored list renders nothing at zero.
 - **One main feed per natively paginated template, designated by this epic.** It binds the native `posts` context sized by `posts_per_page` or the route's `limit:` and alone offers Pagination style; other feeds cap Count at 100 and never emit `limit="all"`, and hand-picked order is the dragged order, warned past 25.
-  - **Story 5.16's planning (2026-09-22, read in the runtime, the frames and Ghost's source on both majors):** page 2
+  - **Story 5.16's planning (2026-09-22, read in the runtime, the frames and Ghost's source on both majors) — SUPERSEDED
+    by the owner's R-178 to R-180 and the *As built* sub-bullet below, kept as the record of the first plan:** page 2
     needs NO migration and NO new mechanism beyond one seam. `FeedState` has no page 2 (`middle` is page 3 of the
     bundled five), so `templateContext` gains `'second'` plus `feedPages(target, subject)`, the one question asked
     before offering it. What Home's page 2 IS stays R-127's `indexStack`, rendered at `index.hbs` (Ghost puts

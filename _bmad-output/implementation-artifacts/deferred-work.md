@@ -5369,3 +5369,34 @@ owner: Story 5.19 (the Pagination style control), which must pick one vocabulary
 location: `prd.md` FR-H2 · `epics.md` Story 5.19 · `sections-inventory.md` A34 · the D5c/D5d frames (never edited, R-74)
 reason: Story 5.16 builds only the Preview page row under that control and draws no Pagination row, so it settles
   none of the four; recording them here keeps Story 5.19 from inheriting a silent choice.
+
+## Deferred from: code review of spec-5-16-previewing-page-2 (2026-09-22)
+
+### DW-234: a page 2 that deletes its own main feed compiles with no list of posts
+
+plain: On page 2 you may delete anything, the post grid included (R-177). Page 1 that loses its grid still lists posts
+  on `/page/2/` through R-127's fallback; a page 2 of its own that loses its grid has no fallback, so the compiled
+  `/page/2/` (and every later page) would show no posts. Nothing compiles yet, so nothing is broken today. And once
+  page 2's own design has no main feed, the Preview page row is gone from page 2's panel: the pill is the one way back.
+status: open
+severity: medium
+origin: Story 5.16's review (2026-09-22), the Blind Hunter over `pageTwoStack` rule 1 (`synthesize.ts`): a stored page
+  2 is returned as it is, whatever it holds, and FR-I1's "never emitted empty" reasons about page 1 only.
+owner: Story 7.3 (the compiler decides — refuse, fall back to the Synthesis Default stack, or compile as designed) with
+  Story 5.19 (the main-feed designation's lifecycle, which may forbid deleting the feed on page 2 as it does elsewhere).
+location: `packages/section-runtime/src/synthesize.ts` `pageTwoStack` · `apps/web/lib/page-two.ts` `mainFeedOn` ·
+  `epics.md` Story 7.3 and 5.19
+
+### DW-235: the sync route validates a template key's name, never the doc stored under it
+
+plain: The save route checks that a key is one of the allowed names and that the doc parses, but not that every design
+  in the doc may sit on that key's file. A bad doc saved under `index` (or any key) is caught on the next load, where
+  the whole editor refuses to open, rather than at the save.
+status: open
+severity: low
+origin: Story 5.16's review (2026-09-22). Pre-existing for every key — `read.ts` has always been the one place the
+  `compileTarget` check runs — and this story added three keys to the same pattern.
+owner: Epic 7's compile path, or the first story that makes the route validate placement (a `compilesTo` check against
+  `fileOf(key)` at the write).
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` `TEMPLATE_KEY` · `read.ts` `editorData`
+

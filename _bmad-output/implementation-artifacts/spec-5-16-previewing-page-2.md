@@ -2,7 +2,7 @@
 title: 'Story 5.16 — Previewing page 2'
 type: 'feature'
 created: '2026-09-22'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'af70bf0bd3757760c86264ce857f76ae4aa6ef80'
@@ -640,6 +640,66 @@ of the owner's projects store `posts_per_page` 12, and none has an `index` row.
 - **Given** `pnpm check`, **when** it runs, **then** `check-snapshots` and the render matrix are unchanged, and
   5.13's control is green.
 
+### Review Findings
+
+Review of 2026-09-22 (five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). No acceptance criterion failed; the frozen block, the Never list and every named document held. Every real
+service the story touches was executed at Review (below, under `## Verification`).
+
+- [x] [Review][Patch] The hydrate that takes a local doc over the server's was the third door page 2 could stop
+      existing through, and the only one without `pageInForce` [`editor.tsx`, the hydrate effect] — guarded as `restore()`
+      and `chooseSubject` are: page 1 before the paint, and `#editor-said` says why.
+- [x] [Review][Patch] R-180's asked set recorded the REPLACED header's id on a site-wide placement, so the new header
+      asked again on the same visit [`editor.tsx` `onPlace`, the confirm] — the hold carries `also`, and the confirm marks
+      both.
+- [x] [Review][Patch] A held move landed silently on Change it everywhere, and its drag caller read the hold as a
+      refusal [`editor.tsx` `moveTo`, the confirm] — the hold carries `said`, spoken once the change lands.
+- [x] [Review][Patch] Two site-wide sections changed in the same frame: the second hold replaced the first, whose change
+      was then neither landed nor refused [`editor.tsx` `holdChange`] — one section is held at a time; a second section's
+      change while an ask is pending is dropped, never swapped in.
+- [x] [Review][Patch] A site doc that moved under the open dialog (a hydrate landing) would have been overwritten by the
+      stale hold on confirm [`editor.tsx`, the confirm] — the hold carries the doc it was made over, and a stale one is
+      dropped and repainted; the next change asks again.
+- [x] [Review][Patch] R-180's hold was proved through one door, the panel's radio [`tools/probe/run-verify-editor.cjs`
+      step 92] — the deployed walk now types into the header on the canvas on page 2 and expects the ask, with Cancel
+      putting the words back. (The harness journey cannot drive the canvas's own caret; `journey.spec.mjs:95-101`.)
+- [x] [Review][Patch] R-167's page-2 record had no round trip through the server action [`run-verify-editor.cjs` step
+      92] — the walk reads `project_template_prefs` back: `index` holds the visitor on screen, and the header change ran
+      `home`'s record out.
+- [x] [Review][Patch] The Kit's inline layout draws no greyed caption, moon or aside and said nothing about it
+      [`segmented.tsx`] — a comment scopes it to D5d's row.
+- [x] [Review][Patch] FR-D21's first half still promised a middle page 2 on every canvas, against R-176 [`prd.md:245`]
+      — qualified: Home's page 2 is the middle page; an archive's is its own, offered only where it exists; a hidden main
+      feed still offers it.
+- [x] [Review][Patch] MEASUREMENTS §48 owed the T1/T3 execution [`MEASUREMENTS.md` §48(h)] — recorded, with the two
+      things a later grep must know: the class is the label's slug (`nav-ghost-5-home`), never a literal `nav-home`, and
+      T1's menu holds no `/` item, so T3 is the proof.
+- [x] [Review][Patch] `epic-5-context.md`'s first Story 5.16 bullet stated the first plan as fact ("No Schema phase")
+      with its reversal three sub-bullets down — the bullet now says it is superseded, and by what.
+- [x] [Review][Defer] A page 2 that deletes its own main feed compiles with no list of posts, and its panel loses the
+      row [`synthesize.ts` `pageTwoStack`] — deferred, DW-234 (Story 7.3 with 5.19).
+- [x] [Review][Defer] The sync route validates a key's name, never the doc under it [`sync/route.ts`] — deferred,
+      pre-existing for every key, DW-235.
+
+**Read, and recorded rather than changed (each a consequence of the owner's rulings as written):**
+
+- **Showing a hidden header again on page 2 asks "Change {name} everywhere?"**, and R-133's clear-dark on a site-wide
+  section on page 2 asks twice (its own confirm, then R-180's). FR-D5's "showing again asks nothing" is page 1's rule;
+  on page 2 every change to a site-wide section is a change every page sees, and R-180 names "a control, a word, its
+  design or its order" without excepting one. One guard in `commit()` if the owner wants Show excepted.
+- **Deleting the only section of a following page 2** (an untouched Tag or Author page's grid) brings the copy straight
+  back with the marker, and says "removed" — exactly what deleting the last section of an auto-generated page 1 does,
+  where the Synthesis Default returns. The one difference is that nothing is journaled, because nothing was stored
+  before or after (AD-22), so ⌘Z has nothing to take back.
+
+**Dismissed as noise (nine):** an archive subject of the wrong kind (`resolveSubject` binds it to the file); the archive
+pager's base moving the snapshots (`/pilots` renders no subject, so its base is still `/`, and CI's matrix passed
+unchanged); `compilesTo`'s runtime import (`@inflozo/library` is the runtime's declared dependency, with no cycle);
+the no-key sweep's device state (the Tab budget is derived); `data-auto-generated` keyed to the words (one caller);
+the key list's fifth copy (the RLS gate diffs the migrations against `SCHEMA.sql`); R-170's sentences "split" (the
+pair EXPERIENCE names is read from it, the rest live once in `lib/page-two.ts`); the walk deleting every prefs row of
+its throwaway project; and `'second'` throwing where a list has one page (every door is guarded, the hydrate now too).
+
 ## Spec Change Log
 
 - **2026-09-22, the owner ruled both questions at Create, and the frozen block moved on his word:**
@@ -1017,6 +1077,25 @@ run. Vercel served `30a0d439`, `READY`.
   - **The deployed walk at `6408d049`: 0 FAIL, 561 PASS, on its first attempt.** Step 92's row check read the note as
     "Pages 3, 4, 5 and on use page 2's design." and found it named as the group's description. Step 8's axe found zero
     violations on page 2 with the row and its note showing. The account count was 13 before and after.
+
+**Review (2026-09-22) — the real services, executed, under R-82.** Every key read into a command's environment by its
+variable name; nothing printed; nothing written outside a rolled-back transaction.
+
+- **Supabase production**, through `SUPABASE_DB_POOLER_URL` (R-99 check): `pg_constraint` shows `template_key_shape` on
+  both `project_templates` and `project_template_prefs`, `convalidated` true, listing `tag-paged` and `author-paged` —
+  identical to the migration. In one `BEGIN … ROLLBACK`: both keys inserted on both tables, and the negative control
+  `home-paged` was refused with `23514` on both. Probe rows after the rollback: none.
+- **T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`**, read-only `GET`, no key: recorded as MEASUREMENTS §48(h).
+  T3's `/` item carries `nav-current` on `/` (the control) and not on `/page/2/`; `pagination.prev` is `/` on both;
+  `/page/999/` answers 404 on both. T1's menu holds no `/` item, so T3 alone proves the `nav-current` claim.
+- **Vercel production**: the latest READY production deployment is `308d41a9`, HEAD; `https://app.inflozo.com`
+  answers. **GitHub Actions** (`GITHUB_TOKEN`, read-only): CI and the render-matrix run on `308d41a9` both succeeded.
+- **The sync route's `TEMPLATE_KEY`** and the constraint: the same eleven keys and pattern, word for word.
+- **Not run at Review:** the deployed walk (its result at `6408d049` stands above; the two step-92 checks this review
+  added run at Deploy's walk), `record-*.py`, and anything against Resend or Dodo.
+- **Locally, after the patches, under Node 24.18.1:** `pnpm check` exit 0 — lint, typecheck, every package test at
+  `fail 0`, `check-snapshots` PASS with nothing changed; `pnpm keyboard` — every journey passed, the page-2 ones among
+  them, and `apps/web/next-env.d.ts` was left clean.
 
 ## Owner's manual test
 

@@ -3490,6 +3490,22 @@ rows left behind           0 on project_templates, 0 on project_template_prefs
 green; with the migration withheld (a scratch copy of `supabase/`, `INFLOZO_ARCH_DIR` at the prior `SCHEMA.sql`) it
 aborts at that block with `23514`, exit 3.
 
-**What this does NOT say.** Nothing here was rendered by Ghost for this story: the recorded rows are Story 4.10's.
-Review's read-only `GET /page/2/` on T1 and T3 — no key, nothing written — is the one execution this section still
-owes, and it lands here beside the reading it tests.
+**What this does NOT say.** Nothing above was rendered by Ghost for this story: the recorded rows are Story 4.10's.
+Review's read-only `GET /page/2/` on T1 and T3 — no key, nothing written — was the one execution this section still
+owed, and it landed at Review:
+
+**(h) Executed at Review (2026-09-22), read-only public `GET`, no key, on both test servers.**
+- **T3 `ghost5.inflozo.com` (5.130.6).** `/` → 200 with `<li class="nav-ghost-5-home nav-current">` for the `/` item —
+  the control: on page 1 the home item DOES carry `nav-current`. `/page/2/` → 200 with `<li class="nav-ghost-5-home">`
+  for the same item — **no `nav-current`**, (c) as read. Its pager: `<link rel="prev" href="https://ghost5.inflozo.com/">`
+  and `<a class="newer-posts" href="/">` — `pagination.prev` is `/`, (d) as read; on `/`, `rel="next"` and
+  `older-posts` point at `/page/2/`. `/page/999/` → **404**, (e) as read.
+- **T1 `ghost6.inflozo.com` (6.58.0).** `/` → 200, `/page/2/` → 200 with `rel="prev"` → `https://ghost6.inflozo.com/`
+  and `newer-posts` → `/`; `/page/999/` → **404**. **T1's navigation holds no `/` item** (its items are the site's own
+  five pages), so the `nav-current` claim is testable on T3 alone — which is why the spec words it "where the site's
+  menu holds `/`".
+- **Two things to know before grepping either page for a class.** Ghost writes the item's class from its LABEL, slugged
+  — `nav-ghost-5-home`, never a literal `nav-home` — so "the item gets only its own class" means that slug class; and
+  on T3's `/` the Portal item (`href="#/portal/"`) also carries `nav-current`, because a fragment link matches the page
+  it is on. Neither is this story's, and neither moves (c): the `/` item alone is what the shim's `nav-current` is
+  about.

@@ -278,6 +278,11 @@ const same = (a: Pick | null | undefined, b: Pick | null | undefined) => !!a && 
  *  announces nothing and shows no refusal. The confirm lands it and repaints. */
 const HELD: unique symbol = Symbol('held')
 
+/** What a change is ABOUT, for R-180's ask on page 2: the site-wide section it changes, by id and name. `also` is a
+ *  second id the confirm marks as asked — a placement's NEW header, asked about under the one it replaces — and `said`
+ *  is what `#editor-said` says once the held change lands (a move's own sentence), since the caller could not. */
+type About = { instanceId: string; name: string; also?: string; said?: string }
+
 /** A section's identity ACROSS THE PAGE SWITCH: page 2's copy of a section is the same section (R-179), so the panel
  *  stays mounted over the switch and focus stays on D5d's row when the row was pressed. */
 const acrossPages = (p: Pick) => {
@@ -540,6 +545,9 @@ export function Editor({
   /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
    *  every change of page, so a section asks again the next time page 2 is shown. */
   const asked = useRef(new Set<string>())
+  /** …and the section whose change is HELD right now, until the dialog answers: a second section's change arriving in
+   *  the same frame is dropped rather than silently replacing the one the dialog is about (review, 2026-09-22) */
+  const holding = useRef<string | null>(null)
 
   /** Story 5.14 — the changed records, into the session and down the one write chain. Only rows that CHANGE reach it:
    *  `seen` hands back the same array and `afterChange` returns only what moved, so an empty map writes nothing. */
@@ -576,7 +584,7 @@ export function Editor({
    *  Page 2's round trip is `committed()`'s own: the first change stores the copy with it, zero instances returns page 2
    *  to following. And R-180's ask sits HERE, the one door every change passes: on page 2 the first change to each
    *  site-wide section is HELD, and FR-D5's dialog asks before it lands (`about` names the section). Null means held. */
-  const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: { instanceId: string; name: string }): boolean | null => {
+  const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: About): boolean | null => {
     const now = latest.current
     if (now.page === 2 && touched === SITE.key && about !== undefined && !asked.current.has(about.instanceId)) {
       holdChange(written, touched, about)
@@ -1647,6 +1655,13 @@ export function Editor({
           setDocs(held.docs)
           setAuto(new Set(back))
           setJournal(kept)
+          // review, 2026-09-22: the THIRD door page 2 can stop existing through — a local doc that outranks the server's
+          // may have no main feed on page 1 — guarded as `restore()` and `chooseSubject` are: page 1 BEFORE the paint
+          const force = pageInForce(latest.current.page, latest.current.key, held.docs, latest.current.subject)
+          if (force.page !== latest.current.page) {
+            switchPage(force.page)
+            setSaid(leftBecause(force.reason ?? ''))
+          }
           if (landed) void opened.save(project.id, { baseRevision: revision, docs: held.docs, auto: back, journal: kept })
           if (unsynced(kept)) rest()
           settle(true)
@@ -1863,7 +1878,7 @@ export function Editor({
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null.
    *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default. */
-  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string, about?: { instanceId: string; name: string }): string | null | typeof HELD => {
+  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string, about?: About): string | null | typeof HELD => {
     // Story 5.10: a canvas with NO ROW YET is a canvas you can add the first section to — R-129's three membership
     // templates and Private are never synthesized, so `docs` holds nothing for them until something is placed. Every
     // other caller addresses a doc it drew a row from, so the fallback only ever answers the picker. Story 5.16: the
@@ -2017,7 +2032,7 @@ export function Editor({
    *  must open the same one. */
   const [ask, setAsk] = useState<
     | { kind: 'hide' | 'remove'; pick: Pick; name: string }
-    | { kind: 'change'; pick: Pick; name: string; held: { written: Readonly<Record<string, ProjectDoc>>; touched: string } }
+    | { kind: 'change'; pick: Pick; name: string; held: { written: Readonly<Record<string, ProjectDoc>>; touched: string; base: ProjectDoc | undefined; also?: string; said?: string } }
     | null
   >(null)
   const confirm = useRef<HTMLDialogElement>(null)
@@ -2030,9 +2045,14 @@ export function Editor({
    *  in its words adapted to a change (`lib/page-two.ts`'s `SITE_WIDE_ASK`), opening on Cancel. Change it everywhere
    *  lands the held change — on every page, page 1 included — and Cancel drops it and repaints, so nothing a field or
    *  a stamp already showed survives it. That section asks nothing more on this visit to page 2. */
-  const holdChange = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about: { instanceId: string; name: string }) => {
-    // the LATEST change is the one held: characters typed before the dialog takes the focus all land with the confirm
-    setAsk({ kind: 'change', pick: { doc: SITE.key, instanceId: about.instanceId }, name: about.name, held: { written, touched } })
+  const holdChange = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about: About) => {
+    // one section at a time: a change to ANOTHER section while this one's ask is pending is dropped, never swapped in
+    if (holding.current !== null && holding.current !== about.instanceId) return
+    holding.current = about.instanceId
+    // the LATEST change to that section is the one held: characters typed before the dialog takes the focus all land
+    // with the confirm. `base` is the site doc the change was made over, so a doc that moved under the dialog (a
+    // hydrate landing) is never overwritten by the stale one
+    setAsk({ kind: 'change', pick: { doc: SITE.key, instanceId: about.instanceId }, name: about.name, held: { written, touched, base: latest.current.docs[SITE.key], also: about.also, said: about.said } })
     // asked again INSIDE the frame: two changes before it runs must not call `showModal` twice
     requestAnimationFrame(() => { if (!confirm.current?.open) openOnCancel(confirm.current) })
   }
@@ -2107,7 +2127,9 @@ export function Editor({
     // R-180: a site-wide placement made on page 2 changes every page, so it asks — about the section it REPLACES where
     // it replaces one (a header already asked about on this visit does not ask again), else about itself
     const replacing = siteWide ? (now.docs[SITE.key]?.instances ?? []).find((i) => categoryOf(i.designId) === design.category) : undefined
-    const about = replacing === undefined ? { instanceId: instance.instanceId, name: layerName } : { instanceId: replacing.instanceId, name: replacing.layerName }
+    const about: About = replacing === undefined
+      ? { instanceId: instance.instanceId, name: layerName }
+      : { instanceId: replacing.instanceId, name: replacing.layerName, also: instance.instanceId }
     const refused = apply({ doc: docKey, instanceId: instance.instanceId }, (doc) => {
       if (!siteWide) return insertSection(doc, invokedAt(now.stack, docKey, invoked), instance)
       // category for category: a header replaces a header, never a footer
@@ -2140,7 +2162,7 @@ export function Editor({
     const doc = docOf(pick.doc)
     const moved = doc ? moveSection(doc, pick.instanceId, to) : 'there is no template to edit'
     if (typeof moved === 'string') return null
-    if (apply(pick, () => moved.doc) === HELD) return null
+    if (apply(pick, () => moved.doc, { instanceId: pick.instanceId, name: layerNameOf(pick), said: moved.announce }) === HELD) return null
     setSaid(moved.announce)
     return moved.announce
   }
@@ -2689,6 +2711,7 @@ export function Editor({
         ref={confirm}
         onClick={closeOnBackdrop}
         onClose={() => {
+          holding.current = null
           // a held change that was not confirmed is dropped: the canvas is painted again from the docs, so a stamp or a
           // typed character it already showed goes with it
           if (ask?.kind === 'change' && !asked.current.has(ask.pick.instanceId)) paint()
@@ -2726,10 +2749,19 @@ export function Editor({
               // on page 2 this confirm IS the section's ask (R-180): the change it confirms, and every one after it on
               // this visit, lands without asking again
               asked.current.add(ask.pick.instanceId)
+              if (ask.kind === 'change' && ask.held.also !== undefined) asked.current.add(ask.held.also)
               confirm.current?.close()
               if (ask.kind === 'change') {
+                // a site doc that moved while the dialog was open (a hydrate landing) is not overwritten by the stale
+                // hold: the change is dropped and the next one asks again
+                if (latest.current.docs[SITE.key] !== ask.held.base) {
+                  asked.current.delete(ask.pick.instanceId)
+                  paint()
+                  return
+                }
                 commit(ask.held.written, ask.held.touched)
                 paint()
+                if (ask.held.said !== undefined) setSaid(ask.held.said)
                 return
               }
               edit(ask.pick, (doc) => (ask.kind === 'remove' ? removeSection(doc, ask.pick.instanceId) : setHidden(doc, ask.pick.instanceId, true)))

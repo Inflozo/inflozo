@@ -89,6 +89,8 @@ export function Segmented({
   const caption = greyed ?? (off === undefined ? undefined : { reason: off })
   const stop = tabStop(list, on)
   const live = onChange !== undefined && !greyed
+  // the inline layout is D5d's row alone: a page of the canvas is never greyed, has no moon and no aside, so this
+  // branch draws none of them (review, 2026-09-22 — a caller that needs them uses the stacked layout)
   if (layout === 'inline') {
     return (
       <div className="flex flex-col gap-[5px]">
