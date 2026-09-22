@@ -2,8 +2,8 @@
 title: 'Story 5.14 — Member-state preview, and the nudge that names what I have not looked at'
 type: 'feature'
 created: '2026-09-21'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '02685eaac078a9c5bbf9b5c551d131092a07810d'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
