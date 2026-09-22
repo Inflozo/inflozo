@@ -118,6 +118,7 @@ export {
   switchDesign,
 } from './doc-edit.ts'
 // Story 5.5 — FR-D6's synthesis: ONE core function over the normative Synthesis Defaults, called by the editor now
-// and by Story 7.3's compiler and Story 5.16's page-2 preview later (AD-27(d)).
-export { indexStack, isSynthesizable, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
+// and by Story 7.3's compiler later (AD-27(d)). Story 5.16 — `pageTwoStack` is what page 2 of a paginated canvas is
+// made of (R-179), and it replaced R-127's `indexStack`: the editor's page-2 preview and the compiler call it alike.
+export { isSynthesizable, pageTwoStack, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
 export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrary } from './synthesize.ts'

@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { compilesTo } from '@inflozo/library'
 import {
-  indexStack, isDesigned, isSynthesizable, removeSection, setHidden, synthesize, SYNTHESIS_DEFAULTS,
+  defaultContent, isDesigned, isSynthesizable, pageTwoStack, parseDoc, removeSection, setHidden, synthesize, SYNTHESIS_DEFAULTS,
   type ProjectDoc, type SynthesisLibrary,
 } from '@inflozo/section-runtime'
 import { CANVASES, CONDITIONAL, canvasesOf, isMembership, templateKeyOf, type CanvasKey } from './lib/editor.ts'
@@ -54,7 +55,7 @@ test('against the library as it stands, each untouched canvas opens on exactly t
     const file = CANVASES[key].file
     const rows = SYNTHESIS_DEFAULTS[file] ?? []
     // DERIVED, never listed: a row is present iff the library holds that design AND it compiles to this file
-    const want = rows.filter((r) => held(r.designId)?.compileTarget.includes(file) === true)
+    const want = rows.filter((r) => { const e = held(r.designId); return e !== undefined && compilesTo(e.compileTarget, file) })
     const { instances, dropped } = synthesize(file, held)
     assert.deepEqual(instances.map((i) => i.designId), want.map((r) => r.designId), file)
     assert.deepEqual(dropped.map((d) => d.designId), rows.filter((r) => !want.includes(r)).map((r) => r.designId), file)
@@ -148,12 +149,36 @@ test('the site-wide count is the templates that SHIP, not every canvas the switc
   assert.equal(canvases.length, Object.keys(CANVASES).length - Object.keys(CONDITIONAL).length, 'every canvas but the conditional ones')
 })
 
-test('R-127 on the owner\'s own project: a designed Home with no main feed gives page 2 the default stack', () => {
+test('R-179 on the real library: page 2 is an exact copy of page 1 on Home, Tag and Author — every design it holds may sit there', () => {
+  // the owner's Ghost 5 Project Home, widened: EVERY Home design the library holds, the feed designated — a band ABOVE
+  // the grid included. Through AD-27's one schema, so each instance is a doc the editor could have stored.
+  const feed = synthesize('home.hbs', held).instances.find((i) => i.isMainFeed)?.designId
+  const home = parseDoc({
+    schemaVersion: 1,
+    instances: pilotIds().map(pilot).filter((e) => e.compileTarget.includes('home.hbs')).map((e, n) => ({
+      instanceId: `h${n}`, layerName: e.name, designId: e.id, content: defaultContent(e.contentSchema), controls: {}, data: {},
+      darkOverrides: {}, isMainFeed: e.id === feed,
+    })),
+  }, 'home')
+  assert.ok(home.instances.some((i) => i.isMainFeed) && home.instances.length > 1, 'the control: a Home with a feed and something beside it')
+  const two = pageTwoStack('home.hbs', home, null, held)
+  assert.deepEqual(two.instances.map((i) => i.instanceId), home.instances.map((i) => i.instanceId), 'every section, in order')
+  // COPYING PAGE 1 NEVER REFUSES A SECTION: every design the copy holds may sit on index.hbs, which is what `read.ts`
+  // asks of a stored `index` doc on the next load
+  for (const i of two.instances) assert.ok(compilesTo(pilot(i.designId).compileTarget, 'index.hbs'), i.designId)
+  // an archive's page 2 is its own page 1, on its own file
+  for (const key of ['tag', 'author'] as const) {
+    const one = doc(synthesize(CANVASES[key].file, held).instances)
+    assert.deepEqual(pageTwoStack(CANVASES[key].file, one, null, held).instances, one.instances, key)
+  }
+})
+
+test("R-127's fallback on the owner's own project: a designed Home with no main feed gives page 2 the default stack", () => {
   // "Pilot sections" as `seed-editor-project.mjs` writes it — three instances, none carrying `isMainFeed`
   const home = doc(synthesize('home.hbs', held).instances.map((i) => ({ ...i, isMainFeed: false })))
   assert.ok(home.instances.length > 0 && !home.instances.some((i) => i.isMainFeed))
-  assert.deepEqual(indexStack(home, held), synthesize('index.hbs', held))
-  // and with one designated, page 2 is that doc from the feed down
+  assert.deepEqual(pageTwoStack('home.hbs', home, null, held), synthesize('index.hbs', held))
+  // and with one designated, page 2 is the whole of page 1 (R-179), no longer the feed down (R-127)
   const withFeed = doc(home.instances.map((i, n) => ({ ...i, isMainFeed: n === home.instances.length - 1 })))
-  assert.deepEqual(indexStack(withFeed, held).instances, withFeed.instances.slice(-1))
+  assert.deepEqual(pageTwoStack('home.hbs', withFeed, null, held).instances, withFeed.instances)
 })

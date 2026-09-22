@@ -3413,3 +3413,83 @@ a result. Step 8's axe scan of Preview: zero violations, behind its planted `ima
 drawn on production — the shipped library has no held-still part that moves by itself (R-175) — and its look is the
 keyboard journey's, in CI, on controls fixture 1. T1 and T3 were not touched at Review: `core.js` is byte-identical to
 the Dev commit's, whose `run-verify-core.py` run (22 of 22 rows on both majors) stands.
+
+## 48. Page 2 — which template Ghost renders at `/page/N/`, the page's address, its pager and its 404, read in source on both majors; and `template_key_shape` widened on production · 2026-09-22
+
+Story 5.16 makes page 2 of a paginated canvas visible and designable (FR-D21, R-176 to R-180). Its Create run read
+these facts in both releases' npm tarballs, and the Dev run read them again with the commands below (2026-09-22) —
+read-in-source under standing rule 1; the recorded rows cited are Story 4.10's, captured on T1 and T3 on 2026-09-14
+(`packages/library/contexts/fixtures/ghost{5,6}.json`, `tools/probe/record-contexts.py`). Command, into a scratch
+directory:
+
+    curl -sSL https://registry.npmjs.org/ghost/-/ghost-5.130.6.tgz | tar -xz -C 5
+    curl -sSL https://registry.npmjs.org/ghost/-/ghost-6.58.0.tgz | tar -xz -C 6
+
+**(a) Which template renders `/page/2/` — `core/frontend/services/rendering/templates.js:67`**, identical on both
+majors:
+
+```js
+if (routerOptions.frontPageTemplate && (requestOptions.path === '/' || requestOptions.path === '/' && requestOptions.page === 1)) {
+    templateList.unshift(routerOptions.frontPageTemplate);
+}
+```
+
+with `frontPageTemplate: 'home'` set by the collection router (5.130.6 `routing/CollectionRouter.js:107`, 6.58.0
+`routing/collection-router.js:117`). **Finding.** `home` is put first only when the path is exactly `/`, so `/page/2/`
+renders `index.hbs`: Home's page 2 is `index.hbs`, and the canvas renders it there. Recorded, both majors: `/` →
+`home.hbs` and `/page/2/` → `index.hbs` (`ghost5.json`, `ghost6.json`, the `template` of each page row).
+
+**(b) An archive keeps ONE file on every page, and page 2 on is `paged`.** `getEntriesTemplateHierarchy` (`:48-72`)
+builds `tag-{slug} → tag → index` (and the author's) whatever the page number, so there is no second archive file to
+design; `core/frontend/services/rendering/context.js` pushes `paged` when `pageParam > 1` (5.130.6 `:35-36`, 6.58.0
+`:32-33`). **Finding.** An archive's page-2 design has to live inside that one file, behind `{{#is "paged"}}` — which is
+why Tag and Author store their page 2 under keys of their own (`tag-paged`, `author-paged`, R-178) and Story 7.3
+compiles the branch.
+
+**(c) `nav-current` is an exact match — `core/frontend/helpers/tpl/navigation.hbs:3`** is
+`<li class="{{link_class for=(url) class=(concat "nav-" slug)}}">`, and `core/frontend/services/theme-engine/handlebars/
+utils.js` — `diff` of the two majors' files prints nothing — decides the class: `_urlMatch` (`:21-30`) strips a leading
+and a trailing slash from both and compares them for equality; `buildLinkClasses` pushes `nav-current` on that match
+(`:61`) and otherwise `nav-current-parent` when `_urlParentMatch` (`:33-50`) finds the item's path a prefix of the
+location's (`:63`). **Finding.** On `/page/2/` the `/` item compares `''` with `page/2` and gets `nav-{slug}` alone — no
+`nav-current` and no `-parent` (its one part, `''`, is not `page`); on an archive's page 2 that archive's own item gets
+`nav-current-parent`, which `ghost-shim`'s `navigationItems` does not draw (a DW). Recorded on T3: `/` draws
+`nav-ghost-5-home nav-current`, and `/page/2/`, both posts, the page, `/tag/archive/`, `/author/priya-raman/` and the 404
+draw `nav-ghost-5-home` ALONE (`ghost5.json`; T1's menu carries no `/` item). So the canvas is right to mark Home on
+Home's page 1 only — and wrong while Post, Page and 404 are still handed `/` (a DW; the archives are fixed by this story).
+
+**(d) The pager's links — `core/frontend/helpers/page_url.js:16`** calls `getPaginatedUrl(page, options.data.root)`,
+`core/frontend/meta/paginated-url.js:4-36`, identical on both majors: the base is whatever precedes `/page/N/`
+(`baseUrlPattern = new RegExp('(.+)?(/page/\\d+/)')`, `:15`) or the URL itself on page 1, and `prev` on page 2 is `/`
+joined to that base. **Finding.** On `/tag/news/page/2/` the Newer link is `/tag/news/` and the Older link
+`/tag/news/page/3/`; an archive's pager is based on the archive, never on `/` — the other half of DW-218, fixed by
+`templateContext`'s `paginationBase` (`orbit-weekly.test.ts` holds it to the shim's `pageUrl`).
+
+**(e) Past the last page is a 404 — `core/frontend/services/routing/controllers/channel.js:56`** and `collection.js:56`,
+identical on both majors: `if (pathOptions.page > result.meta.pagination.pages) { return next(new errors.NotFoundError(…)) }`.
+**Finding.** Where a list fits on one page Ghost serves no page 2, so the editor offers none (R-176); on the bundled
+publication that is every writer's archive and every tag but two (`orbit-weekly.test.ts` derives which).
+
+**(f) What no canvas reads.** `core/frontend/helpers/body_class.js` adds `home-template` only in the `home` context
+(`:21-22`, whose pattern is `^\/$`, `context.js` 5.130.6 `:20`, 6.58.0 `:17`) and `paged` from page 2 on (`:44-45`);
+`core/frontend/meta/title.js:22-23` adds ` (Page N)`. No section design reads either, so the canvas renders none.
+
+**(g) The Schema phase, on production** (`SUPABASE_DB_POOLER_URL`, PostgreSQL 17.6, 2026-09-22 — R-99, pushed alone as
+`c8eff23d`). `pg_constraint` before: both `template_key_shape` checks list `site · home · index · post · page · tag ·
+author · error · private` plus the `custom:` pattern. In a transaction that was ROLLED BACK, on the same database:
+
+```
+before the apply           index INSERTS on both tables · tag-paged and author-paged REFUSED 23514 (template_key_shape)
+applied, one transaction   both constraints read back listing tag-paged and author-paged, convalidated true
+after the apply            index, tag-paged and author-paged INSERT on both tables
+                           home-paged and tag-page still REFUSED 23514 — the control
+rows left behind           0 on project_templates, 0 on project_template_prefs
+```
+
+`bash supabase/tests/run-rls-gate.sh` exits 0 with the migration and `SCHEMA.sql` agreeing, its Story 5.16 block
+green; with the migration withheld (a scratch copy of `supabase/`, `INFLOZO_ARCH_DIR` at the prior `SCHEMA.sql`) it
+aborts at that block with `23514`, exit 3.
+
+**What this does NOT say.** Nothing here was rendered by Ghost for this story: the recorded rows are Story 4.10's.
+Review's read-only `GET /page/2/` on T1 and T3 — no key, nothing written — is the one execution this section still
+owes, and it lands here beside the reading it tests.

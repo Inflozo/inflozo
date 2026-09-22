@@ -2611,13 +2611,12 @@ dropped, the grid itself carries on with the next posts, and everything below it
     Story 7.3's compiler and Story 5.16's page-2 preview call it; neither re-derives it.
 - Targets:
   - ✅ Story 5.5's spec · ✅ `epic-5-context.md` — Story 5.5's Create run (2026-09-18).
-  - ⬜ `packages/section-runtime/src/synthesize.ts` and its test · ⬜ `apps/web/lib/editor.ts` (the settled reserved
-    segment) — at 5.5's Dev.
-  - ⬜ `epics.md` Story 7.3 and Story 5.16 · ⬜ `sections-inventory.md` § Synthesis Defaults §3's heading, which today
-    reads "(both, only when Home is untouched)" and never says what follows — at those stories, or at the next edit
-    of that document, whichever is first.
-  - ✅ `epics.md` Story 5.16 — Story 5.16's Create (2026-09-22). Story 7.3's card and the heading are still owed; the
-    heading is in Story 5.16's Dev task list.
+  - ✅ `packages/section-runtime/src/synthesize.ts` and its test · ✅ `apps/web/lib/editor.ts` (the settled reserved
+    segment) — at 5.5's Dev; since Story 5.16's Dev the function is `pageTwoStack` (R-179).
+  - ✅ `epics.md` Story 7.3 and Story 5.16 · ✅ `sections-inventory.md` § Synthesis Defaults §3's heading, which read
+    "(both, only when Home is untouched)" and never said what follows — Story 5.16's Dev (2026-09-22).
+  - ✅ `epics.md` Story 5.16 — Story 5.16's Create (2026-09-22). Story 7.3's card and the heading followed at Story
+    5.16's Dev (2026-09-22).
 - **Amended by R-178 (owner, 2026-09-22):** page 2 is now a design of its own. It starts as a copy of page 1 and is
   made page 2's own by the first change on it, so "`index.hbs` is that doc from its designated main feed onward" is at
   most page 2's starting point, which Story 5.16's Question 3 settles. `/index` stays a 404 and the switcher gains no
@@ -3777,7 +3776,7 @@ exist."*
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
     ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
-  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21.
+  - Done at Story 5.16's Dev (2026-09-22): ✅ `prd.md` FR-D21.
 
 **R-177 — page 2 is edited exactly as page 1 is, and stands for every page after it.** Story 5.16's Question 2, ruled
 **option 2, with page 2 standing for every later page** (owner, 2026-09-22): *"Page 2 should allow to change
@@ -3803,7 +3802,7 @@ onwards."*
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
     ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
-  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21.
+  - Done at Story 5.16's Dev (2026-09-22): ✅ `prd.md` FR-D21.
 - **Amended the same day by R-178:** a change made on page 2 does NOT reach page 1. The second bullet of "What it
   binds" above records the reading the owner corrected.
 
@@ -3841,9 +3840,10 @@ same design as that of Page 2. Page 1 should remain an independently designed pa
     spec (its Question 2, the two questions it opened, and its status back to `draft`) · ✅ `epics.md` (Story 5.16's
     criteria) · ✅ `epic-5-context.md`.
   - ✅ Story 5.16's spec, rewritten when Questions 3 and 4 were ruled — the same day, R-179 and R-180 below.
-  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21, FR-D6 and FR-I1 · ⬜ `ARCHITECTURE-SPINE.md` AD-22 and AD-27(d) ·
-    ⬜ `sections-inventory.md` `:804-806` · ⬜ `epics.md` Story 7.3, which compiles page 2's own design and an
-    archive's page-2 branch · ⬜ DW-194.
+  - Done at Story 5.16's Dev (2026-09-22): ✅ `prd.md` FR-D21, FR-D6 and FR-I1 · ✅ `ARCHITECTURE-SPINE.md` AD-22
+    (page 2's round trip, and its three keys) and AD-27(d) (`pageTwoStack`) · ✅ `sections-inventory.md` `:804-806` and
+    §3's heading · ✅ `epics.md` Story 7.3, which compiles page 2's own design and an archive's page-2 branch ·
+    ✅ DW-194 (its note).
 
 **R-179 — page 2 starts as an exact copy of page 1, on Home, Tag and Author alike.** Story 5.16's Question 3, ruled
 **option 2** (owner, 2026-09-22): *"Page 2 starts as an exact copy of Page 1. User can edit each section/style of page 2
@@ -3870,7 +3870,7 @@ independently from Page 1. Users can also edit Page 2 indepenedntly for Authors,
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec, re-planned whole ·
     ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md` · ✅ the pointers under R-127 and R-176.
-  - Owed at Story 5.16's Dev: as R-178's.
+  - Done at Story 5.16's Dev (2026-09-22): as R-178's, all ✅.
 
 **R-180 — the header and footer can be changed from page 2, and the existing site-wide prompt says it changes them
 everywhere.** Story 5.16's Question 4, ruled **option 2, with the prompt** (owner, 2026-09-22): *"Yes allow them to
@@ -3891,7 +3891,7 @@ change from Page 2 too. Keep the existing prompt stating that this will change i
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec · ✅ `epics.md` (Story 5.16's
     criteria) · ✅ `epic-5-context.md`.
-  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D5's site-wide sentence and FR-D21.
+  - Done at Story 5.16's Dev (2026-09-22): ✅ `prd.md` FR-D5's site-wide sentence and FR-D21.
 
 
 ## B · Approved decisions superseded by this session

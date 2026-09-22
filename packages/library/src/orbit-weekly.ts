@@ -207,8 +207,51 @@ export function resolveSubject(file: string, stored?: Subject | null): { subject
 // ─── what a template hands a section (Story 4.10) ───────────────────────────────
 
 /** The four feed states a paginated pilot is reviewed at: the first page, a true middle page, the last, and a feed
- *  with nothing in it. */
-export type FeedState = 'first' | 'middle' | 'last' | 'empty'
+ *  with nothing in it — and, since Story 5.16, `second`: PAGE 2 of the list the target renders, which is what the
+ *  editor's page-2 preview paints (FR-D21, D5d). It is its own state and not `middle`, which is page 3 of the bundled
+ *  feed's five; `/pilots`, the snapshots and the render matrix keep the four they always reviewed. */
+export type FeedState = 'first' | 'second' | 'middle' | 'last' | 'empty'
+
+/** THE PAGE'S OWN ADDRESS, Ghost's rule (`meta/paginated-url.js:15-36`, identical on 5.130.6 and 6.58.0): page 1 is
+ *  the list's own address and page n is `page/n/` beneath it — so `/page/2/` on the home feed and
+ *  `/tag/field-notes/page/2/` on an archive. The shim's `pageUrl` is the same rule for a pager's links; this package
+ *  cannot import the shim (the shim depends on it), so `orbit-weekly.test.ts` holds the two to one answer. */
+const addressOf = (n: number, base: string): string => (n <= 1 ? base : `${base}page/${n}/`)
+
+/** The list a paginated template renders, and the address it sits at: an ARCHIVE with its subject renders that tag's
+ *  or writer's own posts under `/tag/<slug>/` or `/author/<slug>/` (§3: the taxonomy object at the root, `posts` and
+ *  `pagination` flat beside it), and every other paginated render is the whole bundled feed under `/`. Null where the
+ *  target does not paginate. ONE implementation for `templateContext` and `feedPages`, so the pages a render draws and
+ *  the pages the editor offers can never disagree. */
+function listOf(target: string, of?: Subject | null): {
+  rows: PostRow[]
+  base: string
+  of: string
+  taxonomy?: { kind: 'tag' | 'author'; row: TagRow | AuthorRow }
+} | null {
+  if (!['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'].includes(target)) return null
+  if ((target === 'tag.hbs' || target === 'author.hbs') && of != null && of.kind === (target === 'tag.hbs' ? 'tag' : 'author')) {
+    const kind = of.kind as 'tag' | 'author'
+    // the ROW decides the slug, so an unknown one filters against the fixture it fell back to rather than against
+    // itself — which would draw the fixture's name over an empty archive
+    const row = subjectRow(kind, of.slug)
+    return {
+      rows: posts().filter((p) => (kind === 'tag' ? p.tags : p.authors).some((r) => r.slug === row.slug)),
+      base: `/${kind}/${row.slug}/`,
+      of: `the ${kind} "${row.slug}"`,
+      taxonomy: { kind, row },
+    }
+  }
+  return { rows: posts(), base: '/', of: 'the bundled feed' }
+}
+
+/** HOW MANY PAGES the list `target` renders has — the one question the editor asks before it offers page 2 (R-176:
+ *  where Ghost serves no page 2 there is no page 2 to offer). 1 on a target that does not paginate. Derived from the
+ *  same rows `templateContext` renders, never a count kept beside them. */
+export function feedPages(target: string, of?: Subject | null): number {
+  const list = listOf(target, of)
+  return list === null ? 1 : paginationOver(list.rows.length, 1, list.of).pages
+}
 
 /** Orbit Weekly as a template hands it to a section on `target`, in `RenderInput`'s shape: `ghost` is the render
  *  context (`@site` everywhere; the feed page and its `pagination` on a paginated template; the style-guide post or
@@ -222,7 +265,14 @@ export type FeedState = 'first' | 'middle' | 'last' | 'empty'
  *  or author whose ARCHIVE the list templates render — and an archive is the one place the argument changes more
  *  than a row: without it, `tag.hbs` and `author.hbs` are handed the WHOLE bundled feed, which is a page Ghost
  *  would never serve. The subject is expected to have come through `resolveSubject`; a slug no row holds still
- *  answers the fixture here rather than an empty canvas. */
+ *  answers the fixture here rather than an empty canvas.
+ *
+ *  STORY 5.16 — `second` IS PAGE 2 of the list the target renders: the bundled feed's page 2 on `home.hbs` and
+ *  `index.hbs`, and an archive's own page 2 on `tag.hbs` and `author.hbs` with a subject. It THROWS where that list has
+ *  one page, because past the last page Ghost answers 404 (`routing/controllers/channel.js:55-60`, R-176): the caller
+ *  asks `feedPages` first. AND THE PAGE KNOWS ITS ADDRESS (DW-218): `currentUrl` is Ghost's own on every page of a
+ *  list — `/`, `/page/2/`, `/tag/<slug>/`, `/tag/<slug>/page/2/` — and an archive's pager is based on the archive,
+ *  never on `/`. Every other target keeps `/`: Post, Page and 404 are a later story's (a DW). */
 export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null): {
   ghost: Record<string, unknown>
   site: { url: string; navigation: Json[]; pagination?: Json; paginationBase?: string; currentUrl: string }
@@ -237,35 +287,22 @@ export function templateContext(target: string, feed: FeedState = 'first', of?: 
     const row = of === undefined || of === null || of.kind !== kind ? subject(kind) : postOf(kind, of.slug)
     return { ghost: { ...ghost, ...row }, site: base }
   }
-  if (!['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs'].includes(target)) return { ghost, site: base }
   // AN ARCHIVE RENDERS ITS OWN POSTS (§3: the taxonomy object at the root, `posts` and `pagination` flat beside it).
   // Until Story 5.13 `tag.hbs` and `author.hbs` were handed the WHOLE bundled feed — the same rows `home.hbs` gets —
   // so the canvas drew a page Ghost would never serve. FR-D22's subject IS the filter, which is why the fix arrives
-  // with it and not as an extra.
-  if ((target === 'tag.hbs' || target === 'author.hbs') && of != null && of.kind === (target === 'tag.hbs' ? 'tag' : 'author')) {
-    const kind = of.kind as 'tag' | 'author'
-    // the ROW decides the slug, so an unknown one filters against the fixture it fell back to rather than against
-    // itself — which would draw the fixture's name over an empty archive
-    const row = subjectRow(kind, of.slug)
-    const mine = posts().filter((p) => (kind === 'tag' ? p.tags : p.authors).some((r) => r.slug === row.slug))
-    const of_ = `the ${kind} "${row.slug}"`
-    const deep = paginationOver(mine.length, 1, of_).pages
-    const at_ = feed === 'middle' ? Math.ceil(deep / 2) : feed === 'last' ? deep : 1
-    const pagination = feed === 'empty'
-      ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 }
-      : paginationOver(mine.length, at_, of_)
-    const rows = feed === 'empty' ? [] : mine.slice((at_ - 1) * pagination.limit, at_ * pagination.limit)
-    return {
-      ghost: { ...ghost, [kind]: row, posts: rows, pagination },
-      site: { ...base, pagination, paginationBase: '/' },
-    }
-  }
-  const pages = feedPagination(1).pages
-  const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : 1
-  const pagination = feed === 'empty' ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 } : feedPagination(n)
+  // with it and not as an extra. `listOf` is that filter, and `feedPages` reads the same one.
+  const list = listOf(target, of)
+  if (list === null) return { ghost, site: base }
+  const pages = paginationOver(list.rows.length, 1, list.of).pages
+  const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : feed === 'second' ? 2 : 1
+  const pagination = feed === 'empty'
+    ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 }
+    : paginationOver(list.rows.length, n, list.of)
+  const rows = feed === 'empty' ? [] : list.rows.slice((n - 1) * pagination.limit, n * pagination.limit)
+  const taxonomy = list.taxonomy === undefined ? {} : { [list.taxonomy.kind]: list.taxonomy.row }
   return {
-    ghost: { ...ghost, posts: feed === 'empty' ? [] : feedPage(n), pagination },
-    site: { ...base, pagination, paginationBase: '/' },
+    ghost: { ...ghost, ...taxonomy, posts: rows, pagination },
+    site: { ...base, pagination, paginationBase: list.base, currentUrl: addressOf(pagination.page, list.base) },
   }
 }
 

@@ -49,7 +49,7 @@ export const instanceSchema = z.strictObject({
   memberVisibility: z.enum(MEMBER_STATES).default('everyone'),
   /** Story 5.5 — FR-H2's main feed: THIS instance binds the template's native paginated collection. Written here
    *  only by `synthesize`, which designates the A17 row of every collection template (`sections-inventory.md:849-861`);
-   *  Story 5.19 owns the lifecycle — the control, the visible marker and reassignment. `indexStack` READS it, which
+   *  Story 5.19 owns the lifecycle — the control, the visible marker and reassignment. `pageTwoStack` READS it, which
    *  is why the field and its writer land in one change (the header rule above). Defaulted for the same reason as
    *  `hidden`: every stored doc predates it. */
   isMainFeed: z.boolean().default(false),

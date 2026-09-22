@@ -162,7 +162,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Pro Design Badge** | B10 | selection of a Pro design | A price tag, not a lock. No sheet on click, ever |
 | **Auto-Generated Marker** | D5a | any untouched synthesized template | "Auto-generated — edit anything to make it yours" (FR-D6, Appendix H) |
 | **Main Feed Marker** | D5c | Layers · the section itself | Which feed is the paginated one, and reassign (FR-H2) |
-| **Page 2 Preview** | D5d | main-feed section · pagination control | "Page 2" with "Back to page 1" (FR-D21, Appendix H) |
+| **Page 2 Preview** | D5d | main-feed section · its **Preview page** row | Page 2 seen AND designed (Story 5.16): an exact copy of page 1 until the first change on it, then a design of its own that pages 3, 4, 5… share, never changing page 1 — the header and footer excepted, after the site-wide prompt; offered only where Ghost serves a page 2. "Page 2" with "Back to page 1" (FR-D21, R-176 to R-180, Appendix H) |
 | **Empty Template Warning** | D5f | removing the last section of a custom template | "The page still loads, wearing a different design" (FR-I1) |
 | **Editor Cards** | `S14 Editor Cards.dc.html` S14a–e | Editor left nav → Template surfaces | Every Koenig card, six A33 treatments, per-card reset (FR-Q7) |
 | **Paywall Editor** | `C Post Body.dc.html` **C3a** | Editor left nav → Template surfaces | Its own canvas, one design active per project (FR-H6) |

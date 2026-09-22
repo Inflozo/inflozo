@@ -10,12 +10,13 @@ import {
   moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
   stampControls, storedFor, switchDesign,
 } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, Mode, ProjectDoc, PropValue, RuntimeElement } from '@inflozo/section-runtime'
+import type { ControlState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
+import { PageTwoPill } from '@/components/editor/page-two-pill'
 import { PreviewBar, PreviewButton } from '@/components/editor/preview-toggle'
 import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
@@ -38,7 +39,7 @@ import { movesByItself, startBehaviours } from '@/lib/behaviours'
 import { canvasAssets, canvasSrc, renderSection, shownRows, wheelToFrame } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
-import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfPath, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
   flushDecision, hydrationFor, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn, unsynced,
@@ -52,6 +53,10 @@ import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
 import { closeMenus } from '@/lib/menu'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
+import {
+  carry, COPY_MARKER, editedDoc, ENTERED_SAID, follows, followersOf, leftBecause, LEFT_SAID, mainFeedOn, offersPageTwo,
+  ownKeyOf, PAGE_TWO_WORDS, pageFileOf, pageInForce, SITE_WIDE_ASK, stackOf, type Page, type Placed,
+} from '@/lib/page-two'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
@@ -260,20 +265,25 @@ function Rail({ fold, label, controls, side, hidden }: { fold: ReturnType<typeof
  *  names the module in the error, because `core` hands on whatever the module threw. */
 const reportBehaviour = (error: unknown) => console.error('A behaviour on the canvas failed, and its section stays at rest.', error)
 
-type Placed = DocInstance & { target: string; doc: string }
-/** A section on this canvas, by the doc that stores it — a site-wide section lives in `site` */
+/** A section on this canvas, by the doc that stores it — a site-wide section lives in `site`. Story 5.5: a canvas's
+ *  own doc is keyed by its `template_key`, which stopped being its URL segment when the membership canvases arrived
+ *  (`custom-signup` → `custom:custom-signup.hbs`), and since Story 5.16 a section of PAGE 2 lives under page 2's own
+ *  key (`index`, `tag-paged`, `author-paged`). `Pick.doc` is the STORED key throughout, so every operation below
+ *  addresses the row it will one day save; the stack itself is `lib/page-two.ts`'s `stackOf`, page-aware. */
 type Pick = { doc: string; instanceId: string }
 
 const same = (a: Pick | null | undefined, b: Pick | null | undefined) => !!a && !!b && a.doc === b.doc && a.instanceId === b.instanceId
 
-/** Story 5.5: a canvas's own doc is keyed by its `template_key`, which stopped being its URL segment when the
- *  membership canvases arrived (`custom-signup` → `custom:custom-signup.hbs`). `Pick.doc` is the STORED key
- *  throughout, so every operation below addresses the row it will one day save. */
-const stackOf = (docs: Readonly<Record<string, ProjectDoc>>, key: CanvasKey): Placed[] =>
-  canvasStack(
-    (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string })),
-    (docs[templateKeyOf(key)]?.instances ?? []).map((i) => ({ ...i, target: CANVASES[key].file as string, doc: templateKeyOf(key) })),
-  )
+/** Story 5.16 — what `apply` answers when R-180 HELD the change for its ask: neither landed nor refused, so the caller
+ *  announces nothing and shows no refusal. The confirm lands it and repaints. */
+const HELD: unique symbol = Symbol('held')
+
+/** A section's identity ACROSS THE PAGE SWITCH: page 2's copy of a section is the same section (R-179), so the panel
+ *  stays mounted over the switch and focus stays on D5d's row when the row was pressed. */
+const acrossPages = (p: Pick) => {
+  const paged = canvasOfPageTwoKey(p.doc)
+  return `${paged === null ? p.doc : templateKeyOf(paged)}:${p.instanceId}`
+}
 
 export function Editor({
   project,
@@ -314,7 +324,21 @@ export function Editor({
   /** Story 5.5 — the canvases that are UNTOUCHED right now: D5a's Layers marker and D5b's hollow dot read this one set.
    *  It starts as the server's `synthesized` and `commit()` is the only thing that changes it. */
   const [auto, setAuto] = useState<ReadonlySet<CanvasKey>>(() => new Set(synthesized))
-  const stack = stackOf(docs, key)
+  /** Story 5.16 — the library as page 2 asks it: R-127's fallback in `pageTwoStack` synthesizes, and that reads the
+   *  designs this editor holds. `entries` never changes in a session, so every render's copy reads the same map. */
+  const library: SynthesisLibrary = (designId) => entries[designId]
+  /* ─── Story 5.16 — PAGE 2 (FR-D21, D5d, R-176 to R-180) ────────────────────────────────────────────────────────
+   *
+   * A CANVAS STATE beside the mode, the device, View as and Preview: session state, never in the URL, never stored,
+   * never an edit. It is KEYED TO THE CANVAS it was chosen on, so the render that shows another canvas already shows
+   * its page 1, and the `[key]` effect below puts it back to page 1 for good — the way back included. Which pages
+   * exist, what page 2 is and which stack it paints are `lib/page-two.ts`'s; the stack KNOWS THE PAGE, so the roots,
+   * the picks, the marks, the restamps, the panel's fast path and every edit agree with what is painted. */
+  const [shownPage, setShownPage] = useState<{ key: CanvasKey; page: Page }>({ key, page: 1 })
+  const page: Page = shownPage.key === key ? shownPage.page : 1
+  /** the doc this canvas EDITS on the page in force — page 2's own key on page 2; the preview SUBJECT stays the canvas's */
+  const own = ownKeyOf(key, page)
+  const stack = stackOf(docs, key, page, library)
   /** How many templates a site-wide section really reaches — the Site-wide heading's number and the confirm's. */
   const templates = templatesOpen(canvases, docs, auto)
   /** D5b's third dot state: a canvas with no default stack — R-129's three and Private — that nothing has designed
@@ -363,6 +387,10 @@ export function Editor({
   /** the bundled publication, the source until Story 5.18 reads the connected site (R-165) */
   const source = useMemo(bundledSource, [])
   const previewing = orbitWeekly.resolveSubject(canvas.file, subjects[templateKeyOf(key)])
+  /** Story 5.16 — does this canvas have a page 2 at all (R-176): a main feed on page 1 whose list runs past one page */
+  const offered = offersPageTwo(key, docs, previewing.subject)
+  /** …and the section whose panel carries D5d's row: page 1's main feed, or on page 2 its copy */
+  const feedHere = offered ? mainFeedOn(docs, key, page, library) : null
   const subjectRows = useMemo(
     () => (previewing.subject === null ? [] : subjectOptions(source, previewing.subject.kind)),
     [source, previewing.subject?.kind],
@@ -507,8 +535,11 @@ export function Editor({
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page }
+  /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
+   *  every change of page, so a section asks again the next time page 2 is shown. */
+  const asked = useRef(new Set<string>())
 
   /** Story 5.14 — the changed records, into the session and down the one write chain. Only rows that CHANGE reach it:
    *  `seen` hands back the same array and `afterChange` returns only what moved, so an empty map writes nothing. */
@@ -538,21 +569,45 @@ export function Editor({
    *
    *  THE LAST SECTION OFF GIVES IT BACK. A synthesizable canvas whose doc now holds no instances is untouched again,
    *  so its Synthesis Default stack re-renders and the marker returns. HIDING every section does NOT do this
-   *  (FR-D5): a hidden instance is retained, so `isDesigned` is still true. */
-  const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string) => {
+   *  (FR-D5): a hidden instance is retained, so `isDesigned` is still true.
+   *
+   *  STORY 5.16 — ONE DOC IS WRITTEN, `touched`, and nothing else in `written` is read: an edit on page 2 is handed page
+   *  2's doc AS EDITED (its own, or the copy of page 1), and a map carrying that copy must never write it anywhere else.
+   *  Page 2's round trip is `committed()`'s own: the first change stores the copy with it, zero instances returns page 2
+   *  to following. And R-180's ask sits HERE, the one door every change passes: on page 2 the first change to each
+   *  site-wide section is HELD, and FR-D5's dialog asks before it lands (`about` names the section). Null means held. */
+  const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: { instanceId: string; name: string }): boolean | null => {
     const now = latest.current
+    if (now.page === 2 && touched === SITE.key && about !== undefined && !asked.current.has(about.instanceId)) {
+      holdChange(written, touched, about)
+      return null
+    }
     // STORY 5.8: the touched doc either side of the transaction — the journal's whole record, taken HERE because this
     // is the only place that knows both (`addendum.md` §AD4). `before` is the SETTLED doc, so restoring it and running
-    // `committed()` over it again is a no-op on the round trip rather than a second decision.
+    // `committed()` over it again is a no-op on the round trip rather than a second decision. For a page 2 that follows
+    // it is NOTHING — what is stored for it — so an undo of its first change makes it follow again.
     const before = now.docs[touched] ?? EMPTY_DOC
-    const next = committed(written, touched, stacks, now.auto)
+    const next = committed({ ...now.docs, [touched]: written[touched] ?? EMPTY_DOC }, touched, stacks, now.auto)
+    const after = next.docs[touched] ?? EMPTY_DOC
+    // a following page 2 emptied of its copy's last section stores nothing, as it stored nothing before: no edit
+    if (canvasOfPageTwoKey(touched) !== null && !isDesigned(before) && !isDesigned(after)) return next.back
     if (next.auto !== now.auto) setAuto(next.auto)
-    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key) }
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library) }
     setDocs(next.docs)
-    journalise(touched, before, next.docs[touched] ?? EMPTY_DOC)
-    // STORY 5.14 — R-167: a change to the page makes its other visitors unviewed again, decided in ONE place
-    recordViewed(afterChange(latest.current.viewed, touched, templateKeyOf(now.key), now.viewAs))
+    journalise(touched, before, after)
+    // STORY 5.14 — R-167: a change to the page makes its other visitors unviewed again, decided in ONE place. Story
+    // 5.16: the page on screen is the page in force, and a page 2 that follows the doc changed has changed with it.
+    recordViewed(afterChange(latest.current.viewed, touched, ownKeyOf(now.key, now.page), now.viewAs, followersOf(next.docs, touched)))
     return next.back
+  }
+
+  /** The doc the editor EDITS under a stored key — a page 2 that follows is edited as its copy of page 1, so its first
+   *  change is made to the copy and stores it (`lib/page-two.ts`). Read through `latest`, as every handler reads. */
+  const docOf = (docKey: string) => editedDoc(latest.current.docs, docKey, library)
+  /** …as the one-key map `withState` takes: the change to one section, of the one doc that holds it. */
+  const editable = (docKey: string): Record<string, ProjectDoc> => {
+    const doc = docOf(docKey)
+    return doc === undefined ? {} : { [docKey]: doc }
   }
 
   /* ─── Story 5.8 — one gesture, one transaction, one undo step, one edit (AD-16) ───────────────────────────────── */
@@ -631,13 +686,23 @@ export function Editor({
     const now = latest.current
     const next = committed({ ...now.docs, [r.docKey]: r.doc }, r.docKey, stacks, now.auto)
     if (next.auto !== now.auto) setAuto(next.auto)
-    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key), journal: r.journal }
+    latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal }
     setDocs(next.docs)
     setJournal(r.journal)
+    // STORY 5.16 — AN UNDO CAN TAKE PAGE 2 AWAY WHILE IT IS SHOWN: the journal is one list for the whole project, so ⌘Z
+    // on page 2 can reach back into page 1 and remove its main feed. The canvas goes to page 1 BEFORE the paint and says
+    // why — never a paint of a page that does not exist.
+    const force = pageInForce(now.page, now.key, next.docs, now.subject)
+    if (force.page !== now.page) {
+      switchPage(force.page)
+      setSaid(leftBecause(force.reason ?? ''))
+    }
     // STORY 5.14 — R-167: undo and redo are changes, so they run the same rule `commit()` does
-    recordViewed(afterChange(latest.current.viewed, r.docKey, templateKeyOf(now.key), now.viewAs))
-    // a selection cannot outlive the section it was on, exactly as `apply()` decides it
-    if (now.selected && !next.docs[now.selected.doc]?.instances.some((i) => i.instanceId === now.selected?.instanceId)) choose(null)
+    recordViewed(afterChange(latest.current.viewed, r.docKey, ownKeyOf(now.key, latest.current.page), now.viewAs, followersOf(next.docs, r.docKey)))
+    // a selection cannot outlive the section it was on, exactly as `apply()` decides it — read in the doc as EDITED, so
+    // a page 2 that follows again still holds the copy's sections
+    const pick = latest.current.selected
+    if (pick && !docOf(pick.doc)?.instances.some((i) => i.instanceId === pick.instanceId)) choose(null)
     paint()
     rest()
     store(r.journal, next.docs, next.auto)
@@ -853,8 +918,12 @@ export function Editor({
     setSubjectRefusal(null)
     // `latest`, not the state: `paint()` reads through it in this same task, before React has re-rendered
     latest.current = { ...latest.current, subject: next }
+    // STORY 5.16 — a subject whose archive fits one page has no page 2 (R-176): the canvas goes to page 1 BEFORE the
+    // paint, and the sentence says why
+    const force = pageInForce(latest.current.page, latest.current.key, latest.current.docs, next)
+    if (force.page !== latest.current.page) switchPage(force.page)
     paint()
-    setSaid(SUBJECT_SAID(next, subjectRows))
+    setSaid(force.reason === null ? SUBJECT_SAID(next, subjectRows) : `${SUBJECT_SAID(next, subjectRows)} ${leftBecause(force.reason)}`)
     const turn = ++subjectTurn.current
     startSubject(async () => {
       // a thrown call (the network dropped) is the same refusal as a returned one, never the error boundary
@@ -904,6 +973,50 @@ export function Editor({
     setSaid(BACK_SAID)
   }
 
+  /** STORY 5.16 — THE ONE DOOR EVERY CHANGE OF PAGE PASSES: D5d's row both ways, the pill's Back to page 1, an undo that
+   *  took page 2 away and a subject that has none. `latest` first, because `paint()` reads it in the same task; the
+   *  selection CARRIED to the same section on the other page where it exists (a site-wide one is on every page); the
+   *  hover let go; R-180's asks forgotten. NEVER AN EDIT: nothing reaches `commit()`, the journal or `⌘Z`. The caller
+   *  paints and speaks. */
+  const switchPage = (to: Page) => {
+    const now = latest.current
+    if (to === now.page) return
+    const selected = carry(now.selected, to, now.key, now.docs, library)
+    latest.current = { ...now, page: to, selected, hovered: null, stack: stackOf(now.docs, now.key, to, library) }
+    setShownPage({ key: now.key, page: to })
+    setSelected(selected)
+    setHovered(null)
+    asked.current.clear()
+    showNote(null)
+  }
+  /** D5d's row, pressed to 2 — `chooseVisitor`'s shape: `latest`, the state, ONE repaint, then the sentence. Only where
+   *  page 2 exists (R-176); the row is not drawn anywhere else, so this is the guard and never a refusal. */
+  const enterPageTwo = () => {
+    const now = latest.current
+    if (now.page === 2 || !offersPageTwo(now.key, now.docs, now.subject)) return
+    switchPage(2)
+    paint()
+    setSaid(ENTERED_SAID)
+  }
+  /** Back to page 1 — the pill's button or the row's 1. Focus goes to the canvas from the pill, and stays on the row
+   *  from the row: the panel is keyed across the switch (`acrossPages`), so the pressed radio is the same element. */
+  const leavePageTwo = (from: 'pill' | 'row') => {
+    if (latest.current.page === 1) return
+    switchPage(1)
+    paint()
+    setSaid(LEFT_SAID)
+    if (from === 'pill') stage.current?.focus()
+  }
+  /** The row's choice, either way. A selection that could not be carried leaves no row to keep focus on, so it falls to
+   *  the canvas, the stop the pill's way back lands on. */
+  const choosePage = (to: Page) => {
+    if (to === 2) enterPageTwo()
+    else leavePageTwo('row')
+    requestAnimationFrame(() => {
+      if (document.activeElement === null || document.activeElement === document.body) stage.current?.focus()
+    })
+  }
+
   const choose = (pick: Pick | null) => {
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
@@ -946,6 +1059,13 @@ export function Editor({
     showNote(null)
     try {
       const assets = canvasAssets(pool)
+      // STORY 5.16 — THE PAGE IN FORCE, at the render door: `second` is page 2 of the list this page renders, and the
+      // page's own ADDRESS — `/`, `/page/2/`, `/tag/<slug>/`… — is handed to EVERY section, the site-wide header
+      // included, which renders at `default.hbs` and would otherwise always be told `/`. So `{{navigation}}` marks what
+      // Ghost marks on that address (DW-218). The address comes from `templateContext` itself, the one place it is
+      // computed. Post, Page and 404 keep `/` (a DW).
+      const feed = now.page === 2 ? 'second' : 'first'
+      const url = orbitWeekly.templateContext(pageFileOf(now.key, now.page), feed, now.subject).site.currentUrl
       const parts = now.stack.map((i) => {
         const entry: SectionRegistryEntry | undefined = entries[i.designId]
         if (!entry) throw new Error(`${i.designId} was not read for this project`)
@@ -958,7 +1078,7 @@ export function Editor({
         // Story 5.13: the canvas's resolved subject reaches every section through the ONE door. A site-wide section
         // compiles to `default.hbs`, which carries no resource of its own, so the argument is simply unused there.
         // Story 5.14: and so does the visitor View as is previewing — Story 4.10's `gateMembers` decides the rest.
-        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
+        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed, url, member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
       })
       // Story 5.15: the behaviours running on the markup about to be replaced stop first, putting every mount back
       // at rest — and the new markup is written PLAIN. Whether a mount runs is `core`'s to say, mount by mount, below;
@@ -983,6 +1103,8 @@ export function Editor({
       mark()
       setPaints((n) => n + 1)
       frame.current.dataset.painted = now.key
+      // Story 5.16 — which page was painted, for the deployed walk to wait on: a change of page is a same-canvas repaint
+      frame.current.dataset.page = String(now.page)
     } catch (error) {
       setFailure(error instanceof Error ? error : new Error(String(error)))
     }
@@ -1067,7 +1189,7 @@ export function Editor({
     const fr = f?.getBoundingClientRect()
     const k = f && fr ? fitOf(f, fr) : 1
     let last = 0
-    return (latest.current.docs[docKey]?.instances ?? []).map((inst) => {
+    return (docOf(docKey)?.instances ?? []).map((inst) => {
       const n = latest.current.stack.findIndex((placed) => placed.doc === docKey && placed.instanceId === inst.instanceId)
       const r = (n === -1 ? null : roots.current[n])?.getBoundingClientRect()
       if (!r) return { offsetTop: last, offsetHeight: 0 }
@@ -1113,7 +1235,8 @@ export function Editor({
         if (!at || !entry) return
         const state = setContent(entry, at, me.path, next, me.item)
         if (typeof state === 'string') return
-        commit(withState(now.docs, at.doc, at.instanceId, state), at.doc)
+        // held for R-180's ask on page 2: the dialog takes the focus, which ends this field, and it repaints either way
+        if (commit(withState(editable(at.doc), at.doc, at.instanceId, state), at.doc, { instanceId: at.instanceId, name: at.layerName }) === null) return
         // the limit's pill stays until the next edit
         if (noteRef.current?.kind === 'limit') showNote(null)
         // the same prop drawn twice follows as it is typed
@@ -1411,6 +1534,11 @@ export function Editor({
     setSelected(null)
     // Story 5.13: a refusal belongs to the canvas it was refused on, and each canvas holds its own subject
     setSubjectRefusal(null)
+    // Story 5.16: a change of canvas is page 1 — the render already shows it (`shownPage` is keyed to its canvas), and
+    // this makes it stick, so the canvas left on page 2 opens on page 1 on the way back too
+    latest.current = { ...latest.current, page: 1, stack: stackOf(latest.current.docs, key, 1, library) }
+    setShownPage({ key, page: 1 })
+    asked.current.clear()
     paint()
     // paint reads the latest values through `latest`
   }, [key])
@@ -1427,12 +1555,13 @@ export function Editor({
    *  the same array when the visitor is already in the record, so a canvas looked at before writes nothing. */
   useEffect(() => {
     if (!hydrated) return
-    const stored = templateKeyOf(key)
+    // Story 5.16: the PAGE on screen — page 2 keeps a record of its own (R-167)
+    const stored = ownKeyOf(key, page)
     const was = latest.current.viewed[stored] ?? []
     const next = seen(was, viewAs)
     if (next !== was) recordViewed({ [stored]: next })
     // `recordViewed` reads the latest record through `latest`
-  }, [hydrated, key, viewAs])
+  }, [hydrated, key, viewAs, page])
 
   useEffect(() => {
     let alive = true
@@ -1514,7 +1643,7 @@ export function Editor({
           const back = autoFrom(held.auto, canvases) as CanvasKey[]
           const kept = landed ? flushed(held.journal, held.journal.stamp, maxSeq(held.journal)) : held.journal
           base.current = landed ? revision : held.baseRevision
-          latest.current = { ...latest.current, docs: held.docs, auto: new Set(back), journal: kept, stack: stackOf(held.docs, latest.current.key) }
+          latest.current = { ...latest.current, docs: held.docs, auto: new Set(back), journal: kept, stack: stackOf(held.docs, latest.current.key, latest.current.page, library) }
           setDocs(held.docs)
           setAuto(new Set(back))
           setJournal(kept)
@@ -1723,7 +1852,8 @@ export function Editor({
    *  canvas's. Doc order, not `canvasStack`'s: the row's `at` is the position `moveSection` is given, and B7 draws
    *  the card's rows as the site doc stores them (DW-187: the `a3/` footers compile last whatever that order). */
   const rowsOf = (docKey: string): LayerRow[] =>
-    (docs[docKey]?.instances ?? []).map((i, at) => ({
+    // the doc AS EDITED: on page 2 its own design, or while it follows, the copy of page 1 (Story 5.16)
+    (editedDoc(docs, docKey, library)?.instances ?? []).map((i, at) => ({
       doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at,
       // R-133: the `⋯` item is ABSENT where nothing could be cleared, and the engine's own definition decides.
       // R-135 (owner, 2026-09-19): and absent on a LIGHT-ONLY project, where Theme settings greys the same act with
@@ -1731,21 +1861,25 @@ export function Editor({
       darkOverride: darkEnabled && darkOverridesInForce(entries[i.designId] ?? { controlSchema: [] }, i).length > 0,
     }))
 
-  /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null. */
-  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string): string | null => {
-    const now = latest.current
+  /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null.
+   *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default. */
+  const apply = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string, about?: { instanceId: string; name: string }): string | null | typeof HELD => {
     // Story 5.10: a canvas with NO ROW YET is a canvas you can add the first section to — R-129's three membership
     // templates and Private are never synthesized, so `docs` holds nothing for them until something is placed. Every
-    // other caller addresses a doc it drew a row from, so the fallback only ever answers the picker.
-    const doc = now.docs[pick.doc] ?? EMPTY_DOC
+    // other caller addresses a doc it drew a row from, so the fallback only ever answers the picker. Story 5.16: the
+    // doc AS EDITED, so an operation on a following page 2 is made to its copy of page 1.
+    const doc = docOf(pick.doc) ?? EMPTY_DOC
     const next = op(doc)
     if (typeof next === 'string') return next
-    const back = commit({ ...now.docs, [pick.doc]: next }, pick.doc)
+    const now = latest.current
+    const back = commit({ [pick.doc]: next }, pick.doc, about ?? { instanceId: pick.instanceId, name: layerNameOf(pick) })
+    // R-180: held for its ask — nothing has changed yet, so there is nothing to repaint and nothing refused
+    if (back === null) return HELD
     // a selection cannot outlive the section it was on — and neither can it (or a hover) outlive a canvas returning to
     // untouched. `back` is asked, not the ids: synthesis DERIVES them (`auto-tag-1`), so the default stack that returns
     // can repeat the id of the very section just removed, and a test by id would keep the panel open on a new instance
-    // (review, 2026-09-18).
-    const gone = !latest.current.docs[pick.doc]?.instances.some((i) => i.instanceId === pick.instanceId)
+    // (review, 2026-09-18). A page 2 that follows page 1 again is the same case: its copy repeats page 1's ids.
+    const gone = !docOf(pick.doc)?.instances.some((i) => i.instanceId === pick.instanceId)
     if (back && now.hovered?.doc === pick.doc) point(null)
     if (now.selected?.doc === pick.doc && (back || (same(now.selected, pick) && gone))) choose(null)
     paint()
@@ -1760,8 +1894,10 @@ export function Editor({
     const root = rootOf(pick)
     if (root) showNote({ el: root, kind: 'limit', words })
   }
+  /** True when the change LANDED — a held one (R-180) has not yet, so its caller says nothing. */
   const edit = (pick: Pick, op: (doc: ProjectDoc) => ProjectDoc | string) => {
     const refused = apply(pick, op)
+    if (refused === HELD) return false
     if (refused !== null) refuse(pick, refused)
     return refused === null
   }
@@ -1778,7 +1914,11 @@ export function Editor({
     const name = layerNameOf(pick)
     if (edit(pick, (doc) => duplicateSection(doc, pick.instanceId, crypto.randomUUID()))) setSaid(`${name} duplicated`)
   }
-  const onRename = (pick: Pick, name: string) => apply(pick, (doc) => renameSection(doc, pick.instanceId, name))
+  const onRename = (pick: Pick, name: string) => {
+    const refused = apply(pick, (doc) => renameSection(doc, pick.instanceId, name))
+    // held for R-180's ask is not a refusal: the rename dialog closes, and the site-wide dialog asks
+    return refused === HELD ? null : refused
+  }
 
   /* ─── Story 5.11 — THE DESIGN RING: four doors, one handler, one edit (FR-D19, AD-15, AD-16) ─────────────────
    *
@@ -1859,27 +1999,42 @@ export function Editor({
    */
   const onRemix = () => {
     const now = latest.current
-    const docKey = templateKeyOf(now.key)
-    const picks = remixPicks(now.docs[docKey]?.instances ?? [], ringOf, Math.random)
+    // Story 5.16: the doc on screen — on page 2, page 2's design (R-177: re-rolled like page 1, never page 1 itself)
+    const docKey = ownKeyOf(now.key, now.page)
+    const picks = remixPicks(docOf(docKey)?.instances ?? [], ringOf, Math.random)
     if (picks.length === 0) return
     const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, (doc) =>
       remixFold(doc, picks, (next, p) => switchDesign(next, p.instanceId, p.to, ringOf(p.from))),
     )
     // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541). A refusal
     // is SAID too (review, 2026-09-20): the cube has already rolled, and a roll that lands on silence reads as broken
-    setSaid(refused ?? remixSaid(picks.length, canvas.label))
+    setSaid(typeof refused === 'string' ? refused : remixSaid(picks.length, canvas.label))
   }
 
   /** FR-D5: a site-wide section is ONE shared instance, so removing or hiding it changes every template — the app's
    *  one dialog vocabulary asks first, opening on Cancel (EXPERIENCE § destructive confirms). SHOWING one again asks
    *  nothing: it is the restoring half. The dialog lives here and not in Layers, because the canvas pill's Delete
    *  must open the same one. */
-  const [ask, setAsk] = useState<{ kind: 'hide' | 'remove'; pick: Pick; name: string } | null>(null)
+  const [ask, setAsk] = useState<
+    | { kind: 'hide' | 'remove'; pick: Pick; name: string }
+    | { kind: 'change'; pick: Pick; name: string; held: { written: Readonly<Record<string, ProjectDoc>>; touched: string } }
+    | null
+  >(null)
   const confirm = useRef<HTMLDialogElement>(null)
   const askFirst = (kind: 'hide' | 'remove', row: Pick & { layerName: string }) => {
     setAsk({ kind, pick: { doc: row.doc, instanceId: row.instanceId }, name: row.layerName })
     // opened on the frame after the one that filled its words in
     requestAnimationFrame(() => openOnCancel(confirm.current))
+  }
+  /** STORY 5.16 — R-180: THE FIRST CHANGE TO A SITE-WIDE SECTION MADE ON PAGE 2 IS HELD while FR-D5's own dialog asks,
+   *  in its words adapted to a change (`lib/page-two.ts`'s `SITE_WIDE_ASK`), opening on Cancel. Change it everywhere
+   *  lands the held change — on every page, page 1 included — and Cancel drops it and repaints, so nothing a field or
+   *  a stamp already showed survives it. That section asks nothing more on this visit to page 2. */
+  const holdChange = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about: { instanceId: string; name: string }) => {
+    // the LATEST change is the one held: characters typed before the dialog takes the focus all land with the confirm
+    setAsk({ kind: 'change', pick: { doc: SITE.key, instanceId: about.instanceId }, name: about.name, held: { written, touched } })
+    // asked again INSIDE the frame: two changes before it runs must not call `showModal` twice
+    requestAnimationFrame(() => { if (!confirm.current?.open) openOnCancel(confirm.current) })
   }
   /** R-133's ONE confirm, for BOTH entry points — the Controls panel's foot and the Layers `⋯` — beside Delete's and
    *  Hide's and for the same reason (`layers.tsx`'s header): two entry points, one act, one dialog. It asks first,
@@ -1932,7 +2087,8 @@ export function Editor({
    */
   const onPlace = ({ entry: design, siteWide }: Placement) => {
     const now = latest.current
-    const docKey = siteWide ? SITE.key : templateKeyOf(now.key)
+    // Story 5.16: the page on screen — a section added on page 2 lands in page 2's design (R-177), never page 1's
+    const docKey = siteWide ? SITE.key : ownKeyOf(now.key, now.page)
     const layerName = `${design.categoryTitle} — ${design.name}`
     const instance = {
       instanceId: crypto.randomUUID(),
@@ -1948,6 +2104,10 @@ export function Editor({
       isMainFeed: false,
     }
     let replaced: string | null = null
+    // R-180: a site-wide placement made on page 2 changes every page, so it asks — about the section it REPLACES where
+    // it replaces one (a header already asked about on this visit does not ask again), else about itself
+    const replacing = siteWide ? (now.docs[SITE.key]?.instances ?? []).find((i) => categoryOf(i.designId) === design.category) : undefined
+    const about = replacing === undefined ? { instanceId: instance.instanceId, name: layerName } : { instanceId: replacing.instanceId, name: replacing.layerName }
     const refused = apply({ doc: docKey, instanceId: instance.instanceId }, (doc) => {
       if (!siteWide) return insertSection(doc, invokedAt(now.stack, docKey, invoked), instance)
       // category for category: a header replaces a header, never a footer
@@ -1956,7 +2116,12 @@ export function Editor({
       replaced = doc.instances[at]?.layerName ?? null
       const cleared = removeSection(doc, doc.instances[at]!.instanceId)
       return typeof cleared === 'string' ? cleared : insertSection(cleared, at, instance)
-    })
+    }, about)
+    // R-180: a site-wide placement made on page 2 is held while the site-wide dialog asks; the picker makes way for it
+    if (refused === HELD) {
+      picker.current?.close()
+      return
+    }
     if (refused !== null) {
       // DW-190: the refusal has a home now — the picker itself, which is where the press was. Nothing is written.
       setPickerRefusal(refused)
@@ -1972,10 +2137,10 @@ export function Editor({
 
   /** The drop, and `⌥↑`/`⌥↓`: one `moveSection`, announced politely in its own words (UX-DR12). */
   const moveTo = (pick: Pick, to: number): string | null => {
-    const doc = latest.current.docs[pick.doc]
+    const doc = docOf(pick.doc)
     const moved = doc ? moveSection(doc, pick.instanceId, to) : 'there is no template to edit'
     if (typeof moved === 'string') return null
-    apply(pick, () => moved.doc)
+    if (apply(pick, () => moved.doc) === HELD) return null
     setSaid(moved.announce)
     return moved.announce
   }
@@ -2012,7 +2177,7 @@ export function Editor({
     onPointerDown: (event) => {
       const pick = latest.current.hovered
       if (event.button !== 0 || drag !== null || !pick) return
-      const from = (latest.current.docs[pick.doc]?.instances ?? []).findIndex((i) => i.instanceId === pick.instanceId)
+      const from = (docOf(pick.doc)?.instances ?? []).findIndex((i) => i.instanceId === pick.instanceId)
       if (from === -1) return
       event.currentTarget.setPointerCapture(event.pointerId)
       pillDrag.current = { y: event.clientY, layout: captureLayout(screenRows(pick.doc)) }
@@ -2027,7 +2192,7 @@ export function Editor({
       if (!drag) return
       const { doc, from, to } = drag
       setDrag(null)
-      const moved = latest.current.docs[doc]?.instances[from]
+      const moved = docOf(doc)?.instances[from]
       if (to !== from && moved) moveTo({ doc, instanceId: moved.instanceId }, to)
     },
     onPointerCancel: () => setDrag(null),
@@ -2041,7 +2206,9 @@ export function Editor({
     const now = latest.current
     const pick = now.selected
     if (!pick) return
-    commit(withState(now.docs, pick.doc, pick.instanceId, next), pick.doc)
+    // Story 5.16: the doc as edited (page 2's copy while it follows), and held for R-180's ask on page 2 — then nothing
+    // is stamped: the panel still shows the value in force until the change lands
+    if (commit(withState(editable(pick.doc), pick.doc, pick.instanceId, next), pick.doc, { instanceId: pick.instanceId, name: layerNameOf(pick) }) === null) return
     const n = now.stack.findIndex((i) => same(i, pick))
     const root = roots.current[n]
     const design = entries[now.stack[n]?.designId ?? '']
@@ -2146,7 +2313,7 @@ export function Editor({
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
               dot, because the page you are looking at is being looked at */}
-          <ViewAs visitor={viewAs} viewed={seen(viewed[templateKeyOf(key)] ?? [], viewAs)} onChoose={chooseVisitor} />
+          <ViewAs visitor={viewAs} viewed={seen(viewed[own] ?? [], viewAs)} onChoose={chooseVisitor} />
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
             RIGHT OF IT, as the frame draws them; Ship it (7.18) lands beside them later (R-118). Undo and redo left
@@ -2165,7 +2332,7 @@ export function Editor({
               library every ring is length 1, so it is 0 and the confirm says so honestly. */}
           <RemixDice
             canvas={canvas.label}
-            count={remixable(docs[templateKeyOf(key)]?.instances ?? [], ringOf)}
+            count={remixable(editedDoc(docs, own, library)?.instances ?? [], ringOf)}
             undoable
             onRemix={onRemix}
             handle={remixDice}
@@ -2199,12 +2366,15 @@ export function Editor({
           {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`) */}
           <Layers
             site={rowsOf(SITE.key)}
-            page={rowsOf(templateKeyOf(key))}
-            label={canvas.label}
+            page={rowsOf(own)}
+            // Story 5.16: on page 2 the group heads "This page · Home · Page 2", over page 2's own rows
+            label={page === 2 ? `${canvas.label} · ${PAGE_TWO_WORDS}` : canvas.label}
             siteKey={SITE.key}
             // derived, never written down (standing rule 4): the templates this project's site-wide sections reach
             templates={templates}
-            autoGenerated={auto.has(key)}
+            autoGenerated={page === 2 ? follows(docs, key) : auto.has(key)}
+            // page 2's marker, while it follows page 1: D5a's row with its own sentence
+            markerWords={page === 2 ? COPY_MARKER : undefined}
             selectedKey={selected ? keyOf(selected) : null}
             hoveredKey={hovered ? keyOf(hovered) : null}
             drag={drag}
@@ -2265,7 +2435,9 @@ export function Editor({
           // two sides are S4a's.
           // Story 5.15: in Preview the stage is the whole window, so the ground's padding goes with the chrome and R-137's
           // fit is 1:1 in a 1440 × 900 window (B3b, "the site runs edge to edge")
-          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground ${preview ? '' : 'px-7 py-8'}`}
+          // Story 5.16: on page 2 the ground's top padding is D5d's pill's bottom (4px + its 38) plus R-138's 8px, so the
+          // pill never meets the page card on any device — the ground grows rather than the pill's 30px targets shrink
+          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground ${preview ? '' : page === 2 ? 'px-7 pb-8 pt-[50px]' : 'px-7 py-8'}`}
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
               ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage.
@@ -2365,6 +2537,9 @@ export function Editor({
                 the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's gutter
                 find it — and out of flow it paints over the ground either way. */}
             <ViewportChip device={device} fit={scale} />
+            {/* STORY 5.16 — D5d's pill at the ground's top centre while page 2 is shown, 4px down (R-138's inset, the chip's),
+                and LAST for the chip's reason: the page card stays this ground's `firstElementChild` */}
+            {page === 2 ? <PageTwoPill onBack={() => leavePageTwo('pill')} /> : null}
             {/* B9's CONTENT-SOURCE PILL at the canvas foot (FR-D15, FR-D22), and LAST for the same reason the chip is:
                 the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's
                 gutter find it. R-166 builds it at 24px inside R-139's existing 32px ground, so it clears the card on
@@ -2455,7 +2630,9 @@ export function Editor({
             />
             {/* R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it */}
             <Sidebar
-              key={`${chosen.doc}:${chosen.instanceId}`}
+              // Story 5.16: keyed ACROSS THE PAGE SWITCH — page 2's copy of a section is that section — so the panel stays
+              // mounted, its open groups stay open, and focus stays on D5d's row when the row was pressed
+              key={acrossPages(chosen)}
               entry={entry}
               state={chosen}
               onChange={onChange}
@@ -2465,6 +2642,8 @@ export function Editor({
               mode={mode}
               // R-135: absent on a Light-only project — `sidebar.tsx` draws no row at all without this
               onClearDark={darkEnabled ? () => askClearDark(chosen) : undefined}
+              // Story 5.16 — D5d's row, on the main feed of a page that has a page 2 (R-176): a plain callback, never an edit
+              page={feedHere !== null && same(chosen, feedHere) ? { value: page, onChange: choosePage } : undefined}
               timezone={timezone}
               links={links}
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}
@@ -2501,39 +2680,62 @@ export function Editor({
         {said}
       </p>
 
-      {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu (Hide or Delete), and the canvas pill's bin */}
+      {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu (Hide or Delete), and the canvas pill's bin.
+          STORY 5.16 — AND R-180's ASK, the same dialog adapted to a change made on page 2: "Change {name} everywhere?",
+          `lib/page-two.ts`'s words, opening on Cancel. Cancel — the button, Esc or the scrim — drops the held change and
+          repaints; Change it everywhere lands it. Hide and Delete keep their own words on every page, and on page 2 their
+          confirm IS that section's ask. */}
       <dialog
         ref={confirm}
         onClick={closeOnBackdrop}
+        onClose={() => {
+          // a held change that was not confirmed is dropped: the canvas is painted again from the docs, so a stamp or a
+          // typed character it already showed goes with it
+          if (ask?.kind === 'change' && !asked.current.has(ask.pick.instanceId)) paint()
+        }}
         aria-labelledby="editor-sitewide-title"
         aria-describedby="editor-sitewide-body"
         className={`${sheet} gap-[18px]`}
       >
         <div className="flex flex-col gap-[6px]">
           <h2 id="editor-sitewide-title" className={title}>
-            {ask?.kind === 'remove' ? 'Delete' : 'Hide'} {ask?.name ?? 'this section'}?
+            {ask?.kind === 'change' ? SITE_WIDE_ASK.title(ask.name) : `${ask?.kind === 'remove' ? 'Delete' : 'Hide'} ${ask?.name ?? 'this section'}?`}
           </h2>
           <p id="editor-sitewide-body" className="text-ui-dense leading-[1.55] text-ink-soft">
-            This section is site-wide: it is one shared thing that appears on every template of your site, so{' '}
-            {ask?.kind === 'remove' ? 'deleting' : 'hiding'} it here changes all {templates}{' '}
-            templates.
+            {ask?.kind === 'change' ? (
+              SITE_WIDE_ASK.body
+            ) : (
+              <>
+                This section is site-wide: it is one shared thing that appears on every template of your site, so{' '}
+                {ask?.kind === 'remove' ? 'deleting' : 'hiding'} it here changes all {templates}{' '}
+                templates.
+              </>
+            )}
           </p>
         </div>
         <div className="flex justify-end gap-[10px]">
           <Button type="button" variant="secondary" size={36} data-cancel onClick={() => confirm.current?.close()}>
-            Cancel
+            {SITE_WIDE_ASK.cancel}
           </Button>
           <Button
             type="button"
             variant={ask?.kind === 'remove' ? 'danger' : 'coral'}
             size={36}
             onClick={() => {
+              if (!ask) return confirm.current?.close()
+              // on page 2 this confirm IS the section's ask (R-180): the change it confirms, and every one after it on
+              // this visit, lands without asking again
+              asked.current.add(ask.pick.instanceId)
               confirm.current?.close()
-              if (!ask) return
+              if (ask.kind === 'change') {
+                commit(ask.held.written, ask.held.touched)
+                paint()
+                return
+              }
               edit(ask.pick, (doc) => (ask.kind === 'remove' ? removeSection(doc, ask.pick.instanceId) : setHidden(doc, ask.pick.instanceId, true)))
             }}
           >
-            {ask?.kind === 'remove' ? 'Delete section' : 'Hide section'}
+            {ask?.kind === 'change' ? SITE_WIDE_ASK.confirm : ask?.kind === 'remove' ? 'Delete section' : 'Hide section'}
           </Button>
         </div>
       </dialog>

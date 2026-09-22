@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
-import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
+import { defaultContent, parseDoc, SYNTHESIS_DEFAULTS, type ProjectDoc } from '@inflozo/section-runtime'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { harnessCanvasSrc } from '@/lib/canvas'
@@ -48,7 +48,13 @@ export const metadata: Metadata = { title: 'Editor harness — Inflozo', robots:
 
 const HARNESS_PROJECT = { id: '00000000-0000-4000-8000-000000000009', name: 'Pilot sections' }
 
-const instanceOf = (entry: SectionRegistryEntry) => ({
+/** STORY 5.16 — CI'S ONE MAIN FEED. Page 2 is offered only on a page whose main feed runs past one page (R-176), and
+ *  nothing in this fixture carried `isMainFeed` — the real "Pilot sections" was seeded before the flag, so the owner's
+ *  own Home has none until Story 5.19. The Home design the Synthesis Defaults designate as the feed (the post grid) is
+ *  marked here, DERIVED from that table rather than named, so `pnpm keyboard` walks page 2 on every commit. */
+const MAIN_FEED = SYNTHESIS_DEFAULTS['home.hbs']?.find((row) => row.isMainFeed === true)?.designId
+
+const instanceOf = (entry: SectionRegistryEntry, key: string) => ({
   instanceId: randomUUID(),
   layerName: `${entry.category.toUpperCase()} — ${entry.name}`,
   designId: entry.id,
@@ -56,13 +62,14 @@ const instanceOf = (entry: SectionRegistryEntry) => ({
   controls: {},
   data: {},
   darkOverrides: {},
+  isMainFeed: key === templateKeyOf('home') && entry.id === MAIN_FEED,
 })
 
 /** Through AD-27's ONE schema, exactly as `read.ts` and the seed do — so every field a later story defaults is
  *  defaulted here too, and a fixture the real editor could not have stored throws at the harness rather than in the
  *  browser. */
 const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc =>
-  parseDoc({ schemaVersion: 1, instances: entries.map(instanceOf) }, key)
+  parseDoc({ schemaVersion: 1, instances: entries.map((entry) => instanceOf(entry, key)) }, key)
 
 export default function EditorHarness() {
   if (!HARNESS) notFound()

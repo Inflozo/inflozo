@@ -1,10 +1,10 @@
 import { cache } from 'react'
-import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
+import { compilesTo, isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
 import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc } from '@inflozo/section-runtime'
 import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
-import { CANVASES, canvasOfTemplateKey, canvasesOf, isUuid, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, isUuid, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
@@ -65,11 +65,18 @@ export type Project = { id: string; name: string; dark_enabled: boolean; revisio
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
  *  their shape). Every row of the project is checked, so a key with no `.hbs` of its own — `paywall` (5.20), `cards`
  *  (7.13) — throws for the whole editor the day its writer lands; the story that writes it extends this map in the
- *  same change (review, 2026-09-17). */
-const fileOf = (key: string) =>
-  key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
+ *  same change (review, 2026-09-17). Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names —
+ *  `index` to `index.hbs`, and an archive's `tag-paged` and `author-paged` to the archive's own file. */
+const fileOf = (key: string) => {
+  const paged = canvasOfPageTwoKey(key)
+  if (paged !== null) return PAGE_TWO[paged]?.file as string
+  return key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
+}
 
 export type EditorData = {
+  /** every stored doc, by `template_key` — the site's, each canvas's, and since Story 5.16 each PAGE 2 that has a
+   *  design of its own (`PAGE_TWO`'s keys). A page 2 with no row, or a row with no instances, FOLLOWS its page 1: it is
+   *  an exact copy stored nowhere (R-179, AD-22), which `lib/page-two.ts` derives in the browser from these same docs. */
   docs: Readonly<Record<string, ProjectDoc>>
   entries: Readonly<Record<string, SectionRegistryEntry>>
   rows: Readonly<Record<string, DesignRows>>
@@ -116,7 +123,8 @@ export type EditorData = {
   subjects: Readonly<Record<string, orbitWeekly.Subject>>
   /** Story 5.14 — FR-D16's per-canvas "looked at" record (`project_template_prefs.member_states_viewed`), keyed by
    *  `template_key` as `docs` and `subjects` are, each value read through `readViewed`: the known visitors in canonical
-   *  order, junk dropped. A canvas with no row here has been looked at as nobody, which is the same answer. */
+   *  order, junk dropped. A canvas with no row here has been looked at as nobody, which is the same answer. Story 5.16:
+   *  a page 2 keeps its own record under its own key (R-167). */
   viewed: Readonly<Record<string, readonly Visitor[]>>
 }
 
@@ -160,7 +168,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
       } catch (e) {
         throw new Error(`${where}: ${(e as Error).message}`)
       }
-      if (!entry.compileTarget.includes(file)) {
+      // `compilesTo`, the library's one rule (Story 5.16): a Home design may sit on `index.hbs`, Home's page 2, because
+      // Ghost hands the two files the same posts — so R-179's exact copy of a Home never blacks out this editor
+      if (!compilesTo(entry.compileTarget, file)) {
         throw new Error(`${where}: the design compiles to ${entry.compileTarget.join(', ')}, never ${file}`)
       }
       entries[instance.designId] = entry
@@ -243,8 +253,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
   const viewed: Record<string, readonly Visitor[]> = {}
   for (const row of prefs.data ?? []) {
     // a row whose key no canvas owns stays out: `afterChange` walks every key on a header or footer change, and
-    // `setViewedStates` refuses a whole batch for one key it does not know (review, 2026-09-21)
-    if (canvasOfTemplateKey(row.template_key as string) !== null) viewed[row.template_key as string] = readViewed(row.member_states_viewed)
+    // `setViewedStates` refuses a whole batch for one key it does not know (review, 2026-09-21). Story 5.16 — a page-2
+    // key is a page of its own with a record of its own (R-167), so it is read like a canvas's.
+    const known = canvasOfTemplateKey(row.template_key as string) !== null || canvasOfPageTwoKey(row.template_key as string) !== null
+    if (known) viewed[row.template_key as string] = readViewed(row.member_states_viewed)
     const value = row.preview_subject as { kind?: unknown; slug?: unknown } | null
     if (value === null || typeof value !== 'object') continue
     const { kind, slug } = value

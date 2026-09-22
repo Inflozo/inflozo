@@ -2218,6 +2218,10 @@ requested order and a re-sort silently renumbers an ordinal design
 case that bites — **the budget is per page, not per section** — with the pre-deploy check warning per template
 **And** the Data group's `fallback` field **selects how the designed empty state renders and never what else to
 show instead**
+**And** **the main feed on page 2's own copy is a main feed too** (Story 5.16): page 2 starts as an exact copy of page
+1, `isMainFeed` included (R-179), so the designation's lifecycle, its visible marker and the Pagination control above
+D5d's **Preview page** row apply to page 2's copy as its own section — and `duplicateSection` still copies the flag,
+which this story's one-feed rule settles (DW-194)
 **And** the marker matches D5c.
 
 **FRs:** FR-H2. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c. · **Owner test:** yes. ·
@@ -2323,6 +2327,11 @@ Template and View as, and since Story 5.15 the cluster ends with B3a's Preview p
 on 2026-09-22 it clears the group by 44px at 1280 and meets it between about 1190 and 1195px (it met it near 950px
 before the pill). Below that width the cluster's controls move into the one overflow menu, as D8 draws, rather than the
 two buttons shrinking or losing their labels.
+**And** **D5d's page-2 pill never meets the viewport chip** (Story 5.16). Centred 4px from the ground's top, it clears
+the page card on every device by the ground's grown top padding, but with both panels open it can meet the chip, which
+is pinned to the ground's corner: measured in the keyboard harness on 2026-09-22 it clears the chip by 118px at 1440,
+38px at 1280 and 3px at 1210, and overlaps it by 2px at 1200 on Desktop and Tablet (at Mobile, whose chip reads
+shorter, by 1px at 1190). Below that width one of the two moves, as this story's floor decides.
 **And** the states match D8a at 834, D8b at 720 and D4f at 390.
 
 **FRs:** FR-D1 (the floor). · **Frame:** `D8 Editor Below 1440.dc.html` D8a · D8b · `D4 Dashboard Sheets and
@@ -2612,6 +2621,13 @@ because a route whose template is missing raises `IncorrectUsageError` and the U
 fallback to `page.hbs` is silent and "the page still loads, wearing a different design" is exactly the failure a
 user discovers weeks later
 **And** **absence is the signal for an untouched template** (AD-22)
+**And** **`index.hbs` compiles Home's page 2** through **`pageTwoStack`**, the one function the editor's page-2
+preview already calls (AD-27(d), Story 5.16): page 2's own design where one is stored under `index`, otherwise an
+**exact copy** of the Home doc (R-179), and for a Home with no designated main feed the Synthesis Default stack, so
+`/page/2/` of a landing page still lists posts (R-127's fallback)
+**And** **an archive's page-2 design** — stored under `tag-paged` or `author-paged` (R-178) — compiles into that
+archive's own `tag.hbs` or `author.hbs` inside **`{{#is "paged"}}`**, the context Ghost adds from page 2 on
+(`context.js`, both majors), with page 1's design in its `{{else}}`
 **And** the warning matches D5f.
 
 **FRs:** FR-I1. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** yes (the
@@ -3560,6 +3576,9 @@ bars and edge rails
 **And** runs are **serialized per target**, because theme activation is globally stateful, so concurrent runs
 queue and never interleave
 **And** **the T1 droplet is confirmed available to it**, which is the other half of §4's precondition
+**And** it exercises **a page-2 URL**, which FR-D21 promised and no story carried (Story 5.16's Create): Home's
+`/page/2/` and page 2 of an archive whose own posts run past one page, each compared against the canvas's page-2
+preview
 **And** **the CI lane is a costed line item, not an aside**.
 
 **FRs:** none — this builds NFR-6(c3). · **Owner test:** none (a harness). · **Verification:** T1 (6.58.0) and

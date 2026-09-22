@@ -295,6 +295,34 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       on `index.hbs` (one rule in `placement.ts`), or R-179's copy of a Home holding a22/1 or a4/13 would black out
       `read.ts`. Page 2's rows are a whole doc, so ⌘K's `invokedAt` and the pill's drag need no change, and no layer is
       greyed on page 2.
+    - ***As built (Story 5.16, 2026-09-22).*** The Schema phase went first and alone (`c8eff23d`, applied through the
+      pooler and read back, MEASUREMENTS §48 (g)). **`docs` holds what is STORED**: a page 2 that follows holds nothing,
+      and `lib/page-two.ts` derives its live copy through the runtime's `pageTwoStack` wherever it is read — the stack
+      (`stackOf(docs, canvas, page)`, page 2's rows stamped with page 2's key and file), Layers, and every edit, which
+      reads `editedDoc` (`apply`, `withState`'s one-key map, `moveTo`, Remix, the pill's drag). `commit()` writes the
+      TOUCHED key alone, so a map carrying a copy can never store it, and the flush, the local store and the hydrate
+      needed no change at all. `committed()` is page 2's round trip: zero instances store the empty doc (a zero-instance
+      row reads as following, AD-22) and say `back`; the first change's journal `before` is the stored nothing, so its
+      undo follows again. **The page is keyed to its canvas** (`shownPage`), so the render that shows another canvas is
+      already page 1, and the `[key]` effect makes it stick. `switchPage` is the one door (row, pill, an undo that took
+      page 1's main feed away, a subject whose archive fits one page — the last two say why, "Back to page 1: …");
+      it CARRIES the selection by instance id, which the copy shares with page 1, and the panel is keyed across pages
+      (`acrossPages`), so focus stays on D5d's row. **The address**: `templateContext` computes every page's own
+      (`listOf` + `addressOf`, pinned to the shim's `pageUrl`), `second` throws past a one-page list, `feedPages` reads
+      the same rows, and `paint()` hands the page's `currentUrl` to every section as `renderSection`'s new `url` —
+      `/pilots`, `check-snapshots` and the matrix pass none and are byte-unchanged. `placement.ts`'s `compilesTo` is the
+      one Home-and-index rule (`read.ts`, `synthesize`'s drop, `offeredOn`). **R-180** is a hold in `commit()`: on page
+      2 a site-wide change is kept in FR-D5's dialog as the `change` kind (`apply` answers a `HELD` symbol, so nothing
+      announces a change that has not landed), the confirm lands it, Cancel repaints, the Hide/Delete confirm counts as
+      the ask, and every change of page empties the asked set. The pill is `components/editor/page-two-pill.tsx`; on
+      page 2 the ground's top padding is 50px (the 38px pill 4px down, plus R-138's 8), measured, and the pill meets
+      the chip below about 1205px with both panels open (Story 5.22's card). Page 2 keeps its own "looked at" record,
+      and `afterChange`'s `followers` runs out a following page 2's with page 1's. Two readings differ from the spec's
+      Code Map and are the behaviour's: the viewed-record effect reads the page-aware key (R-167's own record), and D5b's
+      "empty" dots and the Section Picker keep the canvas's own file (identical offers, cards unchanged). CI walks it:
+      the harness Home's post grid carries `isMainFeed`, derived from `SYNTHESIS_DEFAULTS`, and the journeys cover the
+      entry, following and forking, R-180, the pill, the no-key sweep and page 2 stopping being offered; the deployed
+      walk's step 92 covers the rest on production.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

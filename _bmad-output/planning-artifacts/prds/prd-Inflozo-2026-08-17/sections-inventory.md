@@ -801,9 +801,9 @@ Unless a row below says otherwise, all universal controls sit at schema defaults
 
 ### 3. Default stacks
 
-#### `home.hbs` and `index.hbs` (both, only when Home is untouched)
+#### `home.hbs` and `index.hbs` — Home, and Home's page 2
 
-Ghost resolves **`home.hbs` for the site root** and **`index.hbs` for `/page/N/`**, so an untouched Home synthesizes the **same stack into both files** — the root and its paginated continuation must not disagree about what the feed is.
+Ghost resolves **`home.hbs` for the site root** and **`index.hbs` for `/page/N/`**, so an untouched Home synthesizes the **same stack into both files** — the root and its paginated continuation must not disagree about what the feed is. **Once Home is designed, `index.hbs` is Home's PAGE 2** (FR-D21, Story 5.16, the owner's R-178 and R-179, superseding R-127's "from the main feed down"): page 2's own design where one is stored (under `index`), otherwise an **exact copy** of the Home doc — every section, in order — and, for a designed Home with no designated main feed, the stack below (R-127's fallback, kept, so `/page/2/` of a landing page still lists posts). One function says which: `pageTwoStack`, beside `synthesize` (AD-27(d)). An archive has no second file: its page 2 is designed the same way under `tag-paged` or `author-paged` and compiles into its own file inside `{{#is "paged"}}`.
 
 | # | Section | Key values |
 |---|---|---|

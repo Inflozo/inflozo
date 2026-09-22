@@ -4,7 +4,8 @@ import { greyedProps, labelTone, marked, reason, ring, type Greyed } from './gre
 import { MoonBadge } from './moon-badge'
 
 /* Editor Sidebar Kit.dc.html:63 — segmented. A pill track on paper-sunk; the active
-   segment is surface + sm. NAMED VALUES ONLY, never numbers (Appendix C).
+   segment is surface + sm. A DESIGN'S CONTROLS take NAMED VALUES ONLY, never numbers (Appendix C) —
+   the rule is about a count stored in a design's `controlSchema`; a page of the canvas is not one (Story 5.16).
    Greyed (P0-0): the track goes grey-field and the pill stays on the value IN FORCE —
    and when that value is not one of its own, `greyed.value: null` marks none (R-69).
    P0-0 :96 fills the greyed active pill one unit off paper-raised (…F6 for …F5), read as the
@@ -14,7 +15,12 @@ import { MoonBadge } from './moon-badge'
    ONE Tab stop, the arrows move the choice (WAI-ARIA's radio group), and a single value switched off
    inside the live row — P0-0's "one grey, one meaning" — is placeholder-grey, `aria-disabled`,
    skipped by the arrows, and its sentence sits in the caption slot. No hooks: without `onChange` it
-   is the static drawing `/kit` renders on the server, with no handler attached. */
+   is the static drawing `/kit` renders on the server, with no handler attached.
+
+   Story 5.16 — THE INLINE LAYOUT is D5d's "Preview page" row (`D5 Canvas Markers and Template Switcher.dc.html:429`):
+   the label on the left at 12/500, the track on the right, and fixed 34 × 26 items at 12px, the current one surface
+   at a 20px radius and 12/600 with no shadow, as D5d draws it. The radio group and its keys are the Kit's own, above;
+   only the drawing differs. */
 
 /** A value, and the words the panel prints for it. A bare string is both. */
 export type Option = string | { value: string; label: string; greyed?: string }
@@ -55,6 +61,7 @@ export function Segmented({
   greyed,
   moon = false,
   aside,
+  layout = 'stacked',
   onChange,
 }: {
   id: string
@@ -66,6 +73,8 @@ export function Segmented({
   moon?: boolean
   /** beside the label: the moon's words, the reset icon */
   aside?: ReactNode
+  /** `inline` is D5d's row: label left, track right, fixed 34 × 26 items (Story 5.16) */
+  layout?: 'stacked' | 'inline'
   onChange?: (value: string) => void
 }) {
   const on = marked(active, greyed)
@@ -75,6 +84,41 @@ export function Segmented({
   const caption = greyed ?? (off === undefined ? undefined : { reason: off })
   const stop = tabStop(list, on)
   const live = onChange !== undefined && !greyed
+  if (layout === 'inline') {
+    return (
+      <div className="flex items-center justify-between gap-2">
+        <span id={`${id}-label`} className={`text-control-label font-medium ${labelTone(greyed)}`}>
+          {label}
+        </span>
+        <div
+          id={id}
+          role="radiogroup"
+          aria-labelledby={`${id}-label`}
+          className={`flex shrink-0 rounded-pill bg-paper-sunk p-[3px] ${ring}`}
+          onKeyDown={live ? (event) => radioKeys(event, list, onChange) : undefined}
+        >
+          {list.map((option, i) => {
+            const active_ = option.value === on
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="radio"
+                aria-checked={active_}
+                tabIndex={!greyed && i === stop ? 0 : -1}
+                onClick={live ? () => onChange(option.value) : undefined}
+                className={`flex h-[26px] w-[34px] items-center justify-center rounded-[20px] text-[12px] ${ring} ${
+                  active_ ? 'bg-surface font-semibold text-ink' : 'text-ink-soft'
+                }`}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col gap-[5px]">
       <span className={`flex items-center gap-[6px] text-control-label font-medium ${labelTone(greyed)}`}>

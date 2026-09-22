@@ -1,7 +1,7 @@
 'use server'
 
 import { orbitWeekly } from '@inflozo/library'
-import { CANVASES, canvasOfTemplateKey, isUuid } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, isUuid } from '@/lib/editor'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
 import { VISITORS, readViewed } from '@/lib/view-as'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
@@ -80,7 +80,8 @@ export async function setPreviewSubject(projectId: string, templateKey: string, 
  * real database (standing rule 1), in both orders, before anyone relies on it.
  *
  * WHAT IS VALIDATED HERE, at the trust boundary: the project id's shape; that every key names a canvas this product
- * opens (`canvasOfTemplateKey`, so `site` and junk are refused); that every state is one of the three visitors; and at
+ * opens (`canvasOfTemplateKey`, so `site` and junk are refused) or a canvas's PAGE 2, which keeps a record of its own
+ * since Story 5.16 (R-167; `canvasOfPageTwoKey`); that every state is one of the three visitors; and at
  * most one row per canvas — two rows for one key in one upsert is a malformed call, and Postgres would refuse it anyway.
  * The states are deduplicated into canonical order by `readViewed`, the reader's own guard. A refusal is ONE answer and
  * the editor only logs it: the record is bookkeeping, and a lost one costs a reminder after a reload.
@@ -95,7 +96,9 @@ export async function setViewedStates(
   const keys = new Set<string>()
   for (const row of rows) {
     const key = row?.templateKey
-    if (typeof key !== 'string' || canvasOfTemplateKey(key) === null || keys.has(key)) return { error: VIEWED_REFUSED }
+    // a canvas, or a canvas's page 2 (Story 5.16); the SUBJECT stays per canvas — `setPreviewSubject` accepts no page-2 key
+    const page = typeof key === 'string' && (canvasOfTemplateKey(key) !== null || canvasOfPageTwoKey(key) !== null)
+    if (!page || keys.has(key)) return { error: VIEWED_REFUSED }
     if (!Array.isArray(row.states) || !row.states.every((state: unknown) => (VISITORS as readonly unknown[]).includes(state))) {
       return { error: VIEWED_REFUSED }
     }

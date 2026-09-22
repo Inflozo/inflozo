@@ -1,10 +1,11 @@
 // THE SYNTHESIS DEFAULTS, AND THE ONE FUNCTION THAT READS THEM (Story 5.5 — FR-D6, AD-27(d)).
 //
 // ONE IMPLEMENTATION, NEVER TWO. The editor calls `synthesize` so an untouched canvas opens already built, and Story
-// 7.3's compiler will call this same one at compile time; `indexStack` is R-127's rule for `index.hbs` and Story 5.16's
-// page-2 preview calls it too. AD-27(d) exists precisely so the stacks, the main-feed designation and the drop rule are
-// not written twice. The spine's `:530` mermaid puts `synthesize` as the first node INSIDE the pure core: no clock, no
-// I/O, no app state — the library is HANDED in, the same way the DOM is handed to `renderCanvas`.
+// 7.3's compiler will call this same one at compile time; `pageTwoStack` is what page 2 of a paginated canvas is made
+// of (R-179), and the editor's page-2 preview and Story 7.3's compiler call it alike. AD-27(d) exists precisely so the
+// stacks, the main-feed designation and the drop rule are not written twice. The spine's `:530` mermaid puts
+// `synthesize` as the first node INSIDE the pure core: no clock, no I/O, no app state — the library is HANDED in, the
+// same way the DOM is handed to `renderCanvas`.
 //
 // THE TABLE IS A CITATION, NOT A DECISION. `sections-inventory.md § Synthesis Defaults` (:778-867) is normative and is
 // its own single source of truth (its Invariant 1): the per-template stacks are :802-847, the main-feed rule :849-861,
@@ -26,6 +27,7 @@
 
 import { defaultContent } from './controls.ts'
 import type { DocInstance, ProjectDoc } from './doc-schema.ts'
+import { compilesTo } from '@inflozo/library'
 import type { PropDef } from '@inflozo/library'
 
 /** What synthesis asks the library about one design — the same two questions `editorData` asks (`read.ts:84-90`),
@@ -59,7 +61,7 @@ export type Synthesis = { instances: DocInstance[]; dropped: DroppedRow[] }
 const FEED: readonly DefaultRow[] = [{ designId: 'a17/1', layerName: 'Post grid', isMainFeed: true }]
 
 /** The seven synthesizable files (`sections-inventory.md:786`) and their stacks (:802-847). Six have a canvas; the
- *  seventh, `index.hbs`, has none and is `indexStack`'s (R-127). */
+ *  seventh, `index.hbs`, is Home's PAGE 2 and has no canvas of its own: it is `pageTwoStack`'s (R-127, R-179). */
 export const SYNTHESIS_DEFAULTS: Readonly<Record<string, readonly DefaultRow[]>> = {
   'home.hbs': FEED,
   'index.hbs': FEED,
@@ -89,6 +91,8 @@ export const isSynthesizable = (file: string): boolean => Object.hasOwn(SYNTHESI
 
 /** `index.hbs`'s own file name, so R-127's fallback and the table cannot drift apart. */
 const INDEX = 'index.hbs'
+/** Home's own file: the one page 1 whose page 2 is a different FILE, and so the one that keeps R-127's fallback. */
+const HOME = 'home.hbs'
 
 /**
  * One untouched template's starting stack. Pure, and total: a file with no default stack answers no instances, which
@@ -108,7 +112,9 @@ export function synthesize(file: string, library: SynthesisLibrary): Synthesis {
       dropped.push({ designId: row.designId, reason: `the library holds no design ${row.designId}` })
       continue
     }
-    if (!entry.compileTarget.includes(file)) {
+    // `compilesTo`, the library's one rule — a Home design may sit on `index.hbs` (Story 5.16) — and never a second
+    // copy of it here
+    if (!compilesTo(entry.compileTarget, file)) {
       dropped.push({ designId: row.designId, reason: `${row.designId} compiles to ${entry.compileTarget.join(', ')}, never ${file}` })
       continue
     }
@@ -130,16 +136,35 @@ export function synthesize(file: string, library: SynthesisLibrary): Synthesis {
 }
 
 /**
- * R-127 (the owner, 2026-09-18): WHAT PAGE 2 IS MADE FROM. `index.hbs` has no canvas — permanently — so it is derived
- * from the Home doc instead: everything above the designated main feed is dropped, the feed and everything below it are
- * kept in order. A welcome banner is meant once; a newsletter band and a closing CTA carry on.
+ * WHAT PAGE 2 IS MADE OF (Story 5.16 — R-178, R-179, AD-27(d)), for a paginated canvas whose page 1 is on `file`:
+ * `home.hbs`, `tag.hbs` or `author.hbs`. Page 2 — and every later page, which shows its design (R-177) — is a design
+ * of its own, stored under its own key, and it STARTS AS AN EXACT COPY OF PAGE 1:
  *
- * Two fallbacks, and both end at the same place — the Synthesis Default stack, because `index.hbs` is ALWAYS compiled
- * and must never ship empty (FR-I1): an UNTOUCHED Home, where :804-806 already says the same stack goes into both
- * files; and a DESIGNED Home with no designated main feed, which is the owner's own "Pilot sections" project today.
+ *   1. page 2's own doc, where it has instances — the first change made on page 2 stored it (AD-22: only an edit
+ *      materialises);
+ *   2. otherwise page 1's instances, every one in order with its words and settings — the same OBJECTS, ids and all,
+ *      so a selection carries across the switch to the same section;
+ *   3. except on `home.hbs` when page 1 carries no designated main feed: R-127's fallback, kept, which is the Synthesis
+ *      Default stack. A landing-page Home offers no page 2 in the editor (R-176), and `index.hbs` is always compiled
+ *      (FR-I1), so `/page/2/` of such a site still lists its posts rather than repeating a page with none.
+ *
+ * AN UNTOUCHED PAGE 1 — no doc, or no instances (AD-22) — IS its Synthesis Default stack, so that stack is what is
+ * copied: :804-806's "the same stack into both files" on Home, and the archive's own stack on Tag and Author. The
+ * editor never meets this arm (`read.ts` hands every untouched canvas its stack as a doc); the compiler, handed a
+ * stored doc that is absent, does.
+ *
+ * It replaces R-127's `indexStack`, which sliced Home from its main feed down: the owner's R-179 made page 2 the whole
+ * of page 1. Story 7.3's compiler calls this same function, and compiles an archive's page-2 design inside
+ * `{{#is "paged"}}` — Ghost adds `paged` to the context from page 2 on (`context.js`, both majors).
  */
-export function indexStack(home: ProjectDoc | null | undefined, library: SynthesisLibrary): Synthesis {
-  const instances = home?.instances ?? []
-  const feed = instances.findIndex((i) => i.isMainFeed)
-  return instances.length === 0 || feed === -1 ? synthesize(INDEX, library) : { instances: instances.slice(feed), dropped: [] }
+export function pageTwoStack(
+  file: string,
+  pageOne: ProjectDoc | null | undefined,
+  pageTwo: ProjectDoc | null | undefined,
+  library: SynthesisLibrary,
+): Synthesis {
+  if ((pageTwo?.instances.length ?? 0) > 0) return { instances: [...(pageTwo as ProjectDoc).instances], dropped: [] }
+  const first = pageOne?.instances ?? []
+  if (first.length === 0 || (file === HOME && !first.some((i) => i.isMainFeed))) return synthesize(file === HOME ? INDEX : file, library)
+  return { instances: [...first], dropped: [] }
 }

@@ -80,9 +80,16 @@ export function renderSection(
      *  source by `orbitWeekly.resolveSubject`. Omitting it keeps the render exactly as it was, which is why
      *  `/pilots`, `tools/check-snapshots.mjs` and the render matrix are untouched — and is the story's control. */
     subject?: orbitWeekly.Subject | null
+    /** Story 5.16 — THE PAGE'S OWN ADDRESS (`/`, `/page/2/`, `/tag/<slug>/`…), handed to the render as
+     *  `site.currentUrl` so `{{navigation}}` marks what Ghost marks there (`utils.js:61`, an exact match only). The
+     *  editor hands the SAME address to every section of a page — the header renders at `default.hbs`, which on its own
+     *  would always answer `/`. Omitting it is exactly today's render: `/pilots`, the picker's cards and the ring's
+     *  tiles pass none. */
+    url?: string
   },
 ): string {
   const ctx = orbitWeekly.templateContext(o.target, o.feed, o.subject)
+  const site = o.url === undefined ? ctx.site : { ...ctx.site, currentUrl: o.url }
   return withImages(renderCanvas(doc as unknown as RuntimeDocument, entry.html, {
     target: o.target,
     content: state.content,
@@ -94,7 +101,7 @@ export function renderSection(
     dataBindings: entry.dataBindings,
     getRows: shownRows(entry, state, o.rows),
     ghost: ctx.ghost,
-    site: ctx.site,
+    site,
     member: o.member,
     visibility: o.visibility,
     assets: o.assets,

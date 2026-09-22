@@ -97,8 +97,20 @@ export type Viewed = Readonly<Record<string, readonly Visitor[]>>
  *
  * RETURNS ONLY THE RECORDS THAT CHANGE, so the caller writes exactly those rows: a canvas already at `[visitor]`, an
  * empty record, and a canvas with no record at all are not returned.
+ *
+ * STORY 5.16 — A PAGE 2 IS A PAGE, with a record of its own under its own key (R-167): `onScreen` is the page on
+ * screen, page 2's key while page 2 is shown, and a change to page 2 runs out page 2's record and never page 1's
+ * (R-178). `followers` are the pages that are a LIVE COPY of the one touched — a page 2 that follows its page 1 — so a
+ * change to page 1 changes them too and runs out their records as well. A header or footer change already reaches
+ * every record there is, page 2's included.
  */
-export function afterChange(records: Viewed, touched: string, onScreen: string, visitor: Visitor): Record<string, Visitor[]> {
+export function afterChange(
+  records: Viewed,
+  touched: string,
+  onScreen: string,
+  visitor: Visitor,
+  followers: readonly string[] = [],
+): Record<string, Visitor[]> {
   const changed: Record<string, Visitor[]> = {}
   const becomes = (key: string, next: Visitor[]) => {
     const was = records[key] ?? []
@@ -107,6 +119,6 @@ export function afterChange(records: Viewed, touched: string, onScreen: string, 
   if (touched === SITE.key) {
     for (const key of Object.keys(records)) if (key !== onScreen) becomes(key, [])
     becomes(onScreen, [visitor])
-  } else becomes(touched, touched === onScreen ? [visitor] : [])
+  } else for (const key of [touched, ...followers]) becomes(key, key === onScreen ? [visitor] : [])
   return changed
 }

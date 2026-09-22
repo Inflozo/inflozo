@@ -25,6 +25,7 @@ import { GhostList, ItemList } from './item-list'
 import { LinkPicker, type LinkResources } from './link-picker'
 import { RichField, TokenRow } from './rich-field'
 import { limitSentence } from '@/lib/inline'
+import { PREVIEW_PAGE, type Page } from '@/lib/page-two'
 import { PREVIEWING, type Visitor } from '@/lib/view-as'
 
 /* THE CONTROLS PANEL — what Epic 5 mounts beside its canvas (Story 4.5).
@@ -61,9 +62,18 @@ import { PREVIEWING, type Visitor } from '@/lib/view-as'
    place that knows what a mode means (`storedFor`). The panel's own dark-mode job is ONE ROW: R-133's "Clear dark
    overrides" directly under "Reset this design", in the same shape, ALWAYS PRESENT, saying there is nothing to clear
    when there is nothing rather than asking (R-12). The CONFIRM is not here — it lives in `editor.tsx`, because the
-   Layers `⋯` menu opens the same one, exactly as Delete's and Hide's two paths already share one. */
+   Layers `⋯` menu opens the same one, exactly as Delete's and Hide's two paths already share one.
+
+   STORY 5.16 — D5d's "Preview page" row (`D5 Canvas Markers and Template Switcher.dc.html:429`), drawn only on the
+   canvas's main feed while its page has a page 2 (R-176), between the groups and the foot: the groups start closed
+   (R-113), so a row inside one would be hidden behind a press. It is the Kit's segmented control in its inline layout,
+   and its choice is A CANVAS STATE, NEVER AN EDIT — a plain callback, like `onClearDark`'s, so nothing reaches the
+   engine, the journal or `⌘Z`. With no `page` there is no row. */
 
 export type Edit = 'control' | 'content'
+
+/** Story 5.16 — D5d's row: the page the canvas shows, and where to send a choice. */
+export type PageRow = { value: Page; onChange: (to: Page) => void }
 
 /** R-124's row: the instance's own audience, the visitor the canvas previews, and where to send a change.
  *  Absent — the whole prop left out — for a section whose category carries no Member visibility row (DW-185: the
@@ -94,6 +104,8 @@ export type SidebarProps = {
   /** Story 5.6, R-133 — open the editor's ONE "Clear dark overrides" confirm for this section. The row is drawn only
    *  where there is a doc to clear, so `/controls` and `/pilots` (in-memory state, no instance) draw none. */
   onClearDark?: () => void
+  /** Story 5.16 — D5d's "Preview page" row, on the main feed of a page that has a page 2. Absent, no row. */
+  page?: PageRow
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -215,7 +227,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
 // What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
 // live region that announces a View-as choice read ONE list.
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark }: SidebarProps) {
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -410,6 +422,20 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           )
         })}
       </div>
+
+      {/* Story 5.16 — D5d's row, always visible between the groups and the foot, on the main feed alone */}
+      {page === undefined ? null : (
+        <div data-page-row>
+          <Segmented
+            id={`${base}-page`}
+            label={PREVIEW_PAGE}
+            options={['1', '2']}
+            active={String(page.value)}
+            layout="inline"
+            onChange={(value) => page.onChange(value === '2' ? 2 : 1)}
+          />
+        </div>
+      )}
 
       <div className="flex flex-col items-start gap-2 border-t border-line pt-3">
         <button

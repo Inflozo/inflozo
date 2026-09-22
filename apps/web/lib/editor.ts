@@ -4,8 +4,9 @@
 // `/projects/<uuid>` is Home; `/projects/<uuid>/<key>` is another canvas; `/projects/<uuid>/home` 308s to the first.
 // The address names the project and the canvas and nothing else — selection, device, mode and folds are never in it.
 // Reserved and unknown segments (`paywall`, `cards`, an unbuilt `custom-…`) answer 404 until their story opens them,
-// and `index` answers 404 PERMANENTLY (R-127: page 2 has no canvas; it is derived from the Home doc by `indexStack`).
-// The spec's Design Notes are the record of why.
+// and `index` answers 404 PERMANENTLY (R-127: page 2 has no canvas of its own; since Story 5.16 it is a design of its
+// own, reached from the page-2 switch on its canvas and stored under `PAGE_TWO`'s keys below). The spec's Design Notes
+// are the record of why.
 //
 // STORY 5.5 — THE SEGMENT AND THE STORED KEY STOP BEING THE SAME STRING. R-129's three membership canvases are custom
 // templates, so their `project_templates.template_key` names their file (`custom:custom-signup.hbs`) while their URL
@@ -77,6 +78,27 @@ export const canvasOfTemplateKey = (key: string): CanvasKey | null =>
  *  names its file; every other canvas's key IS its segment. */
 export const templateKeyOf = (key: CanvasKey): string =>
   isMembership(key) ? `custom:${CANVASES[key].file}` : key
+
+/** STORY 5.16 — PAGE 2 OF EACH CANVAS THAT PAGINATES, as data (R-178, R-179): the `project_templates.template_key` its
+ *  own design is stored under, and the file that design compiles to. It is a design of its own, shared by every later
+ *  page (R-177), and until its first change it follows page 1 as a live copy stored nowhere.
+ *
+ *  Home's page 2 is `index` — the file Ghost serves at `/page/N/`, a key the schema has accepted since day one — and
+ *  an archive, having no second FILE, stores its page 2 under a key of its own (`20260922120000_page_two_template_keys`
+ *  adds `tag-paged` and `author-paged` to `template_key_shape` on both tables). NONE OF THESE IS A CANVAS: `index`
+ *  stays refused by the scheme (R-127) and the Template switcher gains no row; page 2 is reached from its canvas. */
+export const PAGE_TWO: Partial<Readonly<Record<CanvasKey, { key: string; file: string }>>> = {
+  home: { key: 'index', file: 'index.hbs' },
+  tag: { key: 'tag-paged', file: 'tag.hbs' },
+  author: { key: 'author-paged', file: 'author.hbs' },
+}
+
+/** The key a canvas's page 2 is stored under, or null for a canvas with no page 2. */
+export const pageTwoKeyOf = (canvas: CanvasKey): string | null => PAGE_TWO[canvas]?.key ?? null
+
+/** `pageTwoKeyOf`'s inverse: the canvas a stored page-2 key belongs to, or null for every other key. */
+export const canvasOfPageTwoKey = (key: string): CanvasKey | null =>
+  (Object.keys(PAGE_TWO) as CanvasKey[]).find((canvas) => PAGE_TWO[canvas]?.key === key) ?? null
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 

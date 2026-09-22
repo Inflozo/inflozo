@@ -688,6 +688,16 @@ export const FromGhost = ({ strokeWidth = 2, ...p }: IconProps) => (
   </Icon>
 )
 
+/* Story 5.16 — D5d's page glyph (`D5 Canvas Markers and Template Switcher.dc.html:390`), read verbatim at the frame's
+   own 1.8 stroke: a page with two lines, beside "Page 2" in the canvas's page-2 pill. */
+export const PageLines = ({ strokeWidth = 1.8, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <rect x="4" y="4" width="16" height="16" rx="2" />
+    <path d="M9 9h6" />
+    <path d="M9 13h6" />
+  </Icon>
+)
+
 /* The panel glyph — D8's "Show layers" (`D8 Editor Below 1440.dc.html:194`), read verbatim: a frame with
    its rail on the left. The controls review mirrors it with a transform for the rail on the RIGHT
    (the owner's finding 3 on Story 4.5), so the path stays the frame's own. */

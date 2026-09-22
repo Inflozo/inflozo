@@ -1,8 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { byCategory, categoryOf, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, ringFor, samePartition } from './placement.ts'
+import { byCategory, categoryOf, compilesTo, CONTEXTS_BY_TARGET, isPlaceable, NON_PLACEABLE, offeredOn, placementRefusal, POST_CONTENT, ringFor, samePartition } from './placement.ts'
 import type { BindingContext } from './vocabulary.ts'
 import type { Surface } from './registry.ts'
+import feedDesign from '../designs/a17/1/design.json' with { type: 'json' }
+import bandDesign from '../designs/a22/1/design.json' with { type: 'json' }
 
 // Story 5.4 — the matrix's placement rows. Neither rule can be exercised on the deployed editor, because
 // `packages/library/designs/` holds no A25, A32, A33 or A34 design: this is their whole proof.
@@ -139,4 +141,35 @@ test('a malformed id has no ring, and cannot drag one in with it', () => {
   const junk = ringDesign('../a17/1')
   assert.deepEqual(ringFor([junk, ringDesign('a17/1')], junk), [])
   assert.equal(samePartition(junk, junk), false)
+})
+
+// ─── Story 5.16 — a design that may sit on Home may sit on its page 2 (R-179, `templates.js:67`) ─────────────────
+//
+// Ghost hands `home.hbs` and `index.hbs` the same posts and pagination, so Home's page 2 — an exact copy of page 1 until
+// it is changed — must be able to hold every design page 1 holds. The two real designs are read from their own
+// descriptors, so the day either one's targets move this test follows rather than lying.
+
+test('compilesTo: a design listing home.hbs may sit on index.hbs, and the widening reaches no other file', () => {
+  // a17/1 lists both files — the control: nothing is widened for it
+  assert.ok(feedDesign.compileTarget.includes('home.hbs') && feedDesign.compileTarget.includes('index.hbs'), 'the control: a17/1 lists both')
+  assert.equal(compilesTo(feedDesign.compileTarget, 'index.hbs'), true)
+  // a22/1 lists home.hbs and NOT index.hbs: it may sit on Home's page 2 all the same
+  assert.ok(bandDesign.compileTarget.includes('home.hbs') && !bandDesign.compileTarget.includes('index.hbs'), 'the control: a22/1 lists home.hbs alone')
+  assert.equal(compilesTo(bandDesign.compileTarget, 'index.hbs'), true)
+  // ONE widening, in ONE direction: index.hbs does not open home.hbs, and home.hbs opens nothing else
+  assert.equal(compilesTo(['index.hbs'], 'home.hbs'), false)
+  for (const file of ['tag.hbs', 'author.hbs', 'post.hbs', 'default.hbs', 'error.hbs']) {
+    assert.equal(compilesTo(['home.hbs'], file), false, file)
+  }
+  // and everything a design lists is still a file it sits on
+  for (const file of bandDesign.compileTarget) assert.equal(compilesTo(bandDesign.compileTarget, file), true, file)
+})
+
+test('offeredOn asks the same rule: the Section Picker on Home\'s page 2 offers what Home offers', () => {
+  const band = entry('a22/1', bandDesign.bindingContext as BindingContext[], bandDesign.compileTarget)
+  assert.equal(offeredOn(band, 'home.hbs'), true)
+  assert.equal(offeredOn(band, 'index.hbs'), true, 'a Home design is offered on page 2')
+  assert.equal(offeredOn(entry('a4/13', ['none'], ['home.hbs']), 'index.hbs'), true)
+  // and a design that sits on neither is still withheld there
+  assert.equal(offeredOn(entry('a24/1', ['post'], ['post.hbs']), 'index.hbs'), false)
 })

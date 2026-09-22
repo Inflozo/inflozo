@@ -1672,3 +1672,363 @@ test('WCAG 2.1.4: with the caret in a panel field or on the canvas, `p` types a 
   await page.keyboard.type('p')
   await expect(bar(page)).toHaveCount(0)
 })
+
+/* ── Story 5.16 — PAGE 2 (FR-D21, D5d, R-176 to R-180) ──────────────────────────────────────────────────────────
+   The harness Home carries CI's one main feed (the post grid the Synthesis Defaults designate), so page 2 is walked on
+   every commit: entered from D5d's row on the main feed's panel, left by the pill or the row, and edited like page 1.
+   Every expectation that is a value — the rows page 2 lists, its pager, the address the header is told, the words — is
+   DERIVED from the library's own `templateContext` and `lib/page-two.ts`, read from this checkout, never written here. */
+
+const LIB = await import(new URL('../../packages/library/src/index.ts', import.meta.url).href)
+const TWO = await import(new URL('../../apps/web/lib/page-two.ts', import.meta.url).href)
+
+/** The page the canvas painted last — `editor.tsx` writes it beside `painted`. */
+const pageOf = (page) => page.locator('iframe[title$="canvas"]').getAttribute('data-page')
+/** D5d's row on the panel, and its radios. */
+const pageRow = (page) => page.locator('#editor-controls [data-page-row]')
+/** The pill at the ground's top, while page 2 is shown. */
+const pagePill = (page) => page.locator('[data-page-two-pill]')
+
+/** The harness's own local record (IndexedDB is per origin, and the harness names its own database): the doc keys it
+ *  STORES. A page 2 that follows page 1 stores nothing, so its key is absent until the first change made on it. */
+const storedKeys = (page) =>
+  page.evaluate(() => new Promise((resolve, reject) => {
+    const open = indexedDB.open('inflozo-doc-harness')
+    open.onerror = () => reject(open.error)
+    open.onsuccess = () => {
+      const db = open.result
+      const get = db.transaction('meta', 'readonly').objectStore('meta').get('00000000-0000-4000-8000-000000000009')
+      get.onerror = () => reject(get.error)
+      get.onsuccess = () => {
+        resolve(Object.keys(get.result?.docs ?? {}))
+        db.close()
+      }
+    }
+  }))
+
+/** The page's own rows, by instance id — a page-2 row's key is `index:<id>`, page 1's `home:<id>`. */
+const ownIds = async (page) => (await rows(page)).page.map((k) => k.split(':').slice(1).join(':'))
+
+/** The main feed's Layers row, found by what it carries: the one section whose panel draws D5d's row. */
+async function feedRow(page) {
+  for (const key of (await rows(page)).page) {
+    await select(page, key)
+    if ((await pageRow(page).count()) > 0) return key
+  }
+  throw new Error('no section on this page carries the Preview page row — the harness Home has lost its main feed')
+}
+
+/** Into page 2 from the keyboard alone: the main feed's panel, its row's checked radio, → */
+async function toPageTwo(page) {
+  await feedRow(page)
+  await pageRow(page).locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
+}
+
+test('Page 2: the main feed\'s row enters it, and page 2 is an EXACT copy of page 1 at /page/2/ — nothing stored', async ({ page }) => {
+  const canvas = await open(page)
+  const one = await ownIds(page)
+  const key = await feedRow(page)
+  // D5d's row: "Preview page", 1 and 2, 1 on — at the panel's foot, above "Reset this design"
+  await expect(pageRow(page)).toContainText(TWO.PREVIEW_PAGE)
+  await expect(pageRow(page).locator('[role="radio"]')).toHaveText(['1', '2'])
+  await expect(pageRow(page).locator('[role="radio"][aria-checked="true"]')).toHaveText('1')
+  const footTop = await page.locator('#editor-controls button', { hasText: 'Reset this design' }).evaluate((b) => b.getBoundingClientRect().top)
+  expect((await pageRow(page).boundingBox()).y, 'the row sits above the foot').toBeLessThan(footTop)
+  // no other section of the page carries it (R-176's "Not offered: any other section")
+  for (const other of (await rows(page)).page.filter((k) => k !== key)) {
+    await select(page, other)
+    await expect(pageRow(page), `${other} is not the main feed`).toHaveCount(0)
+  }
+  await select(page, key)
+  // ONE REPAINT, never a reload: the canvas document is marked, and so is every section root
+  await canvas.locator('body').evaluate((b) => {
+    b.ownerDocument.defaultView.__before = true
+    for (const root of b.querySelectorAll('#canvas > *')) root.dataset.before = ''
+  })
+  expect(await canvas.locator('#canvas > [data-before]').count(), 'the control: the roots carry the mark').toBeGreaterThan(0)
+  await pageRow(page).locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
+  expect(await canvas.locator('body').evaluate((b) => b.ownerDocument.defaultView.__before), 'the canvas document is the same one').toBe(true)
+  await expect(canvas.locator('#canvas > [data-before]'), 'every section root was painted anew').toHaveCount(0)
+  expect(await said(page)).toBe(TWO.ENTERED_SAID)
+  // focus STAYS on the row, now on 2 — the panel is the same section's across the switch
+  await expect(pageRow(page).locator('[role="radio"][aria-checked="true"]')).toBeFocused()
+  await expect(pageRow(page).locator('[role="radio"][aria-checked="true"]')).toHaveText('2')
+  // AN EXACT COPY: every section of page 1, in order, under page 2's own key — and the marker says so
+  expect(await ownIds(page)).toEqual(one)
+  expect((await rows(page)).page.every((k) => k.startsWith('index:'))).toBe(true)
+  await expect(page.locator('#editor-layers [data-auto-generated="page-2"]')).toHaveText(TWO.COPY_MARKER)
+  await expect(page.locator('#editor-layers')).toContainText(`This page · Home · ${TWO.PAGE_TWO_WORDS}`, { ignoreCase: true })
+  // …rendered at index.hbs with page 2's context, DERIVED: its rows, "2 / 5" with BOTH links, and its address
+  const ctx = LIB.orbitWeekly.templateContext('index.hbs', 'second')
+  const posts = ctx.ghost.posts.map((p) => p.title)
+  await expect(canvas.locator('.a17-1__post-title')).toHaveText(posts)
+  const pager = ctx.ghost.pagination
+  await expect(canvas.locator('[class$="__numbers"]')).toHaveText(`${pager.page} / ${pager.pages}`)
+  await expect(canvas.locator('.a17-1__newer')).toHaveAttribute('href', '/')
+  await expect(canvas.locator('.a17-1__older')).toHaveAttribute('href', `/page/${pager.page + 1}/`)
+  // THE HEADER IS TOLD /page/2/, so the menu's `/` item carries no `nav-current` (Ghost's exact match, `utils.js:61`)
+  expect(ctx.site.currentUrl).toBe('/page/2/')
+  const home = LIB.orbitWeekly.site().navigation.find((i) => i.url === '/')
+  const cls = `.nav-${home.label.toLowerCase()}`
+  expect(await canvas.locator(cls).count(), 'the control: the header draws the Home item').toBeGreaterThan(0)
+  for (const c of await canvas.locator(cls).evaluateAll((els) => els.map((e) => e.className))) expect(c).not.toContain('nav-current')
+  // NOTHING IS STORED: page 2 follows page 1, so no edit was made and the device holds no page-2 doc
+  await expect(page.locator('#editor-undo')).toHaveAttribute('aria-disabled', 'true')
+  expect(await storedKeys(page)).not.toContain('index')
+  // and back on page 1 the same header marks Home again
+  await pagePill(page).getByRole('button', { name: TWO.BACK_TO_PAGE_ONE }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+  expect(await canvas.locator(cls).first().getAttribute('class')).toContain('nav-current')
+})
+
+test('Page 2 follows page 1 until its first change, which stores it; page 1 never follows back; ⌘Z and emptying follow again', async ({ page }) => {
+  await open(page)
+  const was = await ownIds(page)
+  expect(was.length, 'the control: the harness Home has sections enough to move and remove').toBeGreaterThan(2)
+  // (1) ON PAGE 1, a change: the second section moves down one
+  await page.locator(`[data-layer-row="home:${was[1]}"]`).focus()
+  await page.keyboard.press('Alt+ArrowDown')
+  const one = await ownIds(page)
+  expect(one).not.toEqual(was)
+  // …and page 2, which follows, shows it
+  await toPageTwo(page)
+  expect(await ownIds(page), 'a following page 2 is page 1 as it stands').toEqual(one)
+  await expect(page.locator('#editor-layers [data-auto-generated="page-2"]')).toBeVisible()
+  // (2) THE FIRST CHANGE ON PAGE 2 — a section deleted through Layers — stores page 2 and the marker goes
+  const gone = one[2]
+  await select(page, `index:${gone}`)
+  await page.keyboard.press('Delete')
+  const two = await ownIds(page)
+  expect(two).toEqual(one.filter((id) => id !== gone))
+  await expect(page.locator('#editor-layers [data-auto-generated]')).toHaveCount(0)
+  await expect.poll(() => storedKeys(page), { message: 'the first change stores page 2 under its own key' }).toContain('index')
+  // (3) PAGE 1 STILL HAS IT (R-178)
+  await pagePill(page).getByRole('button', { name: TWO.BACK_TO_PAGE_ONE }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+  expect(await ownIds(page)).toEqual(one)
+  // (4) a later change to page 1 does not reach page 2
+  await page.locator(`[data-layer-row="home:${one[one.length - 1]}"]`).focus()
+  await page.keyboard.press('Alt+ArrowUp')
+  const oneLater = await ownIds(page)
+  expect(oneLater).not.toEqual(one)
+  await toPageTwo(page)
+  expect(await ownIds(page), 'page 2 is its own now').toEqual(two)
+  // (5) ⌘Z — ONE LIST FOR THE WHOLE PROJECT (Story 5.8): the first takes back page 1's move, the second page 2's
+  // first change, and page 2 follows page 1 again, marker and all
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  expect(await ownIds(page), 'the first ⌘Z undid page 1\'s move, which page 2 never had').toEqual(two)
+  await page.keyboard.press('ControlOrMeta+z')
+  expect(await ownIds(page), 'the second undid page 2\'s first change: it follows page 1 again').toEqual(one)
+  await expect(page.locator('#editor-layers [data-auto-generated="page-2"]')).toHaveText(TWO.COPY_MARKER)
+  // (6) REMOVING EVERY SECTION FROM PAGE 2 follows again too (AD-22)
+  for (let n = 0; n < one.length; n++) {
+    const left = (await rows(page)).page
+    if (n > 0 && (await page.locator('#editor-layers [data-auto-generated="page-2"]').count()) > 0) break
+    await select(page, left[0])
+    await page.keyboard.press('Delete')
+  }
+  await expect(page.locator('#editor-layers [data-auto-generated="page-2"]'), 'emptied, page 2 follows page 1 again').toBeVisible()
+  expect(await ownIds(page)).toEqual(one)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
+})
+
+test('R-180: a site-wide section changed on page 2 asks first — Cancel changes nothing, the confirm reaches page 1; Hide keeps FR-D5\'s words', async ({ page }) => {
+  const canvas = await open(page)
+  await toPageTwo(page)
+  const { site } = await rows(page)
+  const header = site[0]
+  await select(page, header)
+  const name = (await page.locator(`[data-layer-row="${header}"] button[aria-label^="More for "]`).getAttribute('aria-label')).slice('More for '.length)
+  await openEveryGroup(page)
+  // a pill row of the header's own, and the root attribute it writes (AD-3)
+  const row = page.locator('#editor-controls [id$="-control-nav-position"]')
+  const attr = () => canvas.locator('[data-nav-position]').first().getAttribute('data-nav-position')
+  const before = await attr()
+  const checked = await row.locator('[role="radio"][aria-checked="true"]').innerText()
+  await row.locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  const dialog = page.locator('dialog[open]')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('h2')).toHaveText(TWO.SITE_WIDE_ASK.title(name))
+  await expect(dialog).toContainText(TWO.SITE_WIDE_ASK.body)
+  await expect(page.locator('dialog[open] [data-cancel]'), 'it opens on Cancel').toBeFocused()
+  // CANCEL CHANGES NOTHING — not the canvas, not the panel, not the undo arrow
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+  expect(await attr()).toBe(before)
+  await expect(row.locator('[role="radio"][aria-checked="true"]'), 'the panel still shows the value in force').toHaveText(checked)
+  await expect(page.locator('#editor-undo')).toHaveAttribute('aria-disabled', 'true')
+  // CHANGE IT EVERYWHERE lands it
+  await row.locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(dialog).toBeVisible()
+  await page.keyboard.press('Tab')
+  await expect(dialog.getByRole('button', { name: TWO.SITE_WIDE_ASK.confirm })).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(dialog).toHaveCount(0)
+  const changed = await attr()
+  expect(changed, 'the confirmed change lands on the canvas').not.toBe(before)
+  // A SECOND CHANGE DOES NOT ASK: the section asked once on this visit to page 2
+  await row.locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(dialog).toHaveCount(0)
+  const last = await attr()
+  expect(last).not.toBe(changed)
+  // …and it reached PAGE 1: one header for the whole site (FR-D5)
+  await pagePill(page).getByRole('button', { name: TWO.BACK_TO_PAGE_ONE }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+  expect(await attr(), 'page 1 carries the header as page 2 changed it').toBe(last)
+  // NOTHING NEW ASKS ON PAGE 1
+  await select(page, header)
+  await openEveryGroup(page)
+  await row.locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(dialog, 'page 1 asks nothing').toHaveCount(0)
+  // A FRESH VISIT TO PAGE 2 ASKS AGAIN — the asks are forgotten when page 2 is left
+  await toPageTwo(page)
+  await select(page, header)
+  await openEveryGroup(page)
+  await row.locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(dialog, 'the next visit asks again').toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+  // HIDE ON PAGE 2 asks with FR-D5's own words, as it does on every page
+  await page.locator(`[data-layer-row="${header}"]`).focus()
+  await page.keyboard.press(' ')
+  await expect(dialog).toBeVisible()
+  await expect(dialog.locator('h2')).toHaveText(`Hide ${name}?`)
+  await expect(dialog).toContainText('This section is site-wide: it is one shared thing that appears on every template of your site')
+  await page.keyboard.press('Escape')
+  await expect(dialog).toHaveCount(0)
+})
+
+test('the pill: its words, focus to the canvas and "Back to page 1." — the row leaves too, keeping focus; Preview shows no pill', async ({ page }) => {
+  await open(page)
+  await toPageTwo(page)
+  const pill = pagePill(page)
+  await expect(pill).toBeVisible()
+  await expect(pill).toContainText(TWO.PAGE_TWO_WORDS)
+  // "Page 2" is WORDS, and "Back to page 1" is the one control, named by its own words (WCAG 2.5.3)
+  await expect(pill.getByRole('button')).toHaveCount(1)
+  await expect(pill.getByRole('button')).toHaveAccessibleName(TWO.BACK_TO_PAGE_ONE)
+  // PREVIEW ON PAGE 2 SHOWS PAGE 2 WITH NO PILL, and comes back to page 2 with it
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect(bar(page)).toBeVisible()
+  await expect(pill).toBeHidden()
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
+  // NO PAGE 3 (R-177): Enter on "Older posts →" is its click, and nothing navigates — read 300ms later, so a navigation
+  // would have had time to start
+  const canvas = page.frameLocator('iframe[title$="canvas"]')
+  const address = await canvas.locator('body').evaluate((b) => b.ownerDocument.location.href)
+  const older = canvas.locator('.a17-1__older')
+  expect(await older.evaluate((a) => a.href), 'the control: the link leads away from the canvas').not.toBe(address)
+  await older.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(300)
+  expect(await canvas.locator('body').evaluate((b) => b.ownerDocument.location.href), 'Older posts did not navigate the canvas').toBe(address)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
+  await page.keyboard.press('Escape')
+  await expect(pill).toBeVisible()
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
+  // the pill's way back: page 1, focus on the canvas, and it is said
+  await pill.getByRole('button').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+  await expect(pill).toHaveCount(0)
+  expect(await focused(page)).toBe('SECTION[Canvas]')
+  expect(await said(page)).toBe(TWO.LEFT_SAID)
+  // the row's way back keeps focus ON the row, now on 1
+  await toPageTwo(page)
+  await pageRow(page).locator('[role="radio"][aria-checked="true"]').focus()
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+  await expect(pageRow(page).locator('[role="radio"][aria-checked="true"]')).toHaveText('1')
+  await expect(pageRow(page).locator('[role="radio"][aria-checked="true"]')).toBeFocused()
+  expect(await said(page)).toBe(TWO.LEFT_SAID)
+})
+
+test('no key changes the page, the `?` card lists none, and on page 2 the Tab budget is still counted off the page (FR-D21)', async ({ page }) => {
+  await open(page)
+  await toPageTwo(page)
+  // nothing selected, so Delete and Backspace have nothing to act on
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('Escape')
+  const keys = [...[...Array(94).keys()].map((n) => String.fromCharCode(33 + n)), 'Space', 'Enter', 'Delete', 'Backspace']
+  for (const key of keys) {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(key)
+    if ((await page.locator('dialog[open]').count()) > 0 || (await page.locator('#editor-preview-bar').count()) > 0) await page.keyboard.press('Escape')
+    expect(await pageOf(page), `${key} changed the page`).toBe('2')
+  }
+  // `l` folded Layers along the way; the walk below starts from the panels as they were
+  if (!(await page.locator('#editor-layers').isVisible())) {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('l')
+  }
+  await expect(page.locator('#editor-layers')).toBeVisible()
+  // the `?` card, which lists exactly the keys that work (R-145), has no row for a page
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('?')
+  const sheet = page.locator('dialog[open][data-shortcuts-sheet]')
+  await expect(sheet).toBeVisible()
+  await expect(sheet).not.toContainText(/page 2|preview page|back to page/i)
+  await page.keyboard.press('Escape')
+  // UX-DR9 ON PAGE 2: the budget counted off the page — the pill's one button among the canvas's stops — and the walk
+  // passes the canvas container once, the pill after it, and never a stop inside the site. It starts ON the shell's
+  // first stop, D8c's skip link: a blur leaves the browser's sequential-navigation point where focus was, so only a
+  // focus at the top really starts the walk at the top — and the link is one of the header's own stops, counted
+  await page.locator('[data-skip-canvas]').focus()
+  const budget = (await stopsIn(page, 'header')) + (await stopsIn(page, '#editor-layers')) +
+    1 + (await stopsIn(page, 'section[aria-label="Canvas"]')) + (await stopsIn(page, '#editor-controls'))
+  const stops = []
+  for (let n = 0; n < budget - 1; n++) {
+    await page.keyboard.press('Tab')
+    stops.push(await page.evaluate(() => {
+      const d = document.activeElement
+      if (!d) return 'nothing'
+      if (d.tagName === 'IFRAME') return 'INSIDE THE CANVAS'
+      if (d.closest('[data-page-two-pill]')) return 'PILL'
+      const label = d.getAttribute('aria-label')
+      return `${d.tagName}${d.id ? `#${d.id}` : ''}${label ? `[${label}]` : ''}`
+    }))
+  }
+  expect(stops).not.toContain('INSIDE THE CANVAS')
+  const at = stops.indexOf('SECTION[Canvas]')
+  expect(at).toBeGreaterThan(-1)
+  expect(stops.filter((s) => s === 'PILL')).toHaveLength(1)
+  expect(stops.indexOf('PILL'), 'the pill comes after the canvas container').toBeGreaterThan(at)
+  expect(stops.indexOf('BUTTON[Collapse controls]')).toBeGreaterThan(stops.indexOf('PILL'))
+})
+
+test('page 2 stops being offered while it is shown — page 1 loses its main feed to a redo — and the canvas goes back to page 1 and says why', async ({ page }) => {
+  await open(page)
+  // page 1's main feed deleted, and put back: the history now holds a change that takes it away again
+  const feed = await feedRow(page)
+  await page.keyboard.press('Delete')
+  await expect(page.locator(`[data-layer-row="${feed}"]`), 'the control: the feed is gone from page 1').toHaveCount(0)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator(`[data-layer-row="${feed}"]`)).toHaveCount(1)
+  // onto page 2, and the redo — ONE LIST FOR THE WHOLE PROJECT (Story 5.8) — deletes page 1's feed from there
+  await toPageTwo(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+Shift+z')
+  await expect(page.locator('iframe[title$="canvas"]'), 'never a paint of a page that does not exist').toHaveAttribute('data-page', '1')
+  await expect(pagePill(page)).toHaveCount(0)
+  expect(await said(page)).toMatch(new RegExp(`^${TWO.BACK_TO_PAGE_ONE}: `))
+  // and page 1 really has no main feed, so no section's panel offers page 2 (R-176)
+  for (const key of (await rows(page)).page) {
+    await select(page, key)
+    await expect(pageRow(page), `${key} offers no page 2`).toHaveCount(0)
+  }
+})

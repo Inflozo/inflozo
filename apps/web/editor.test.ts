@@ -1,9 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import {
-  CANVASES, canvasesOf, canvasFromSegment, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack, CONDITIONAL,
-  CUSTOM_TEMPLATE_CAPTION, isEditorPath, isMembership, isUuid, SETTINGS, settingsPath, SYNC, syncPath, templateKeyOf,
-  type CanvasKey,
+  CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, isEditorPath, isMembership, isUuid, PAGE_TWO, pageTwoKeyOf, SETTINGS, settingsPath,
+  SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 
@@ -177,4 +179,53 @@ test('R-171: every canvas carries its own one line for the Template list, and a 
   assert.equal(new Set(captions).size, captions.length, 'no two templates are described the same way')
   // the owner's own words for Story 7.16's custom templates
   assert.equal(CUSTOM_TEMPLATE_CAPTION, 'Custom template')
+})
+
+// ─── Story 5.16 — page 2's table: the key each paginated canvas's page 2 is stored under, and the file it compiles to ──
+
+test('the page-2 table: Home under `index`, Tag and Author under keys of their own, each on its own file', () => {
+  // a copy: `deepEqual` is an assertion function, and asserting the table itself would narrow its type for the rest
+  assert.deepEqual({ ...PAGE_TWO }, {
+    home: { key: 'index', file: 'index.hbs' },
+    tag: { key: 'tag-paged', file: 'tag.hbs' },
+    author: { key: 'author-paged', file: 'author.hbs' },
+  })
+  // an archive's page 2 compiles to the archive's own file; only Home's is a different file (Ghost's `/page/N/`)
+  for (const key of ['tag', 'author'] as const) assert.equal(PAGE_TWO[key]?.file, CANVASES[key].file)
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) {
+    const two = pageTwoKeyOf(key)
+    assert.equal(two, PAGE_TWO[key]?.key ?? null, key)
+    // the inverse, derived from the same table, so the two can never disagree
+    if (two !== null) assert.equal(canvasOfPageTwoKey(two), key, two)
+  }
+  for (const other of ['home', 'site', 'post', 'tag', 'custom:custom-signup.hbs', 'nonsense', '']) assert.equal(canvasOfPageTwoKey(other), null, other)
+})
+
+test('R-127 stands: no page-2 key is a canvas, a segment or a switcher row — page 2 is reached from its canvas', () => {
+  for (const { key } of Object.values(PAGE_TWO)) {
+    assert.equal(canvasOfTemplateKey(key), null, key)
+    assert.equal(canvasFromSegment(key), null, `/${key} is refused by the scheme`)
+    assert.equal(canvasOfPath(`/projects/${ID}/${key}`), null, key)
+    assert.ok(!canvasesOf(true).some((c) => templateKeyOf(c) === key), `${key} is no row of the switcher`)
+  }
+})
+
+test('every key the editor writes is accepted word for word by the sync route AND by `template_key_shape`', () => {
+  const written = [SITE.key, ...(Object.keys(CANVASES) as CanvasKey[]).map(templateKeyOf), ...Object.values(PAGE_TWO).map((p) => p.key)]
+  // the route's own pattern, read out of the file rather than restated (a route file may export only its handlers)
+  const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
+  const pattern = /const TEMPLATE_KEY = \/(.+)\/\n/.exec(route)?.[1]
+  assert.ok(pattern, 'the sync route no longer declares TEMPLATE_KEY where this test reads it')
+  const shape = new RegExp(pattern)
+  // and the constraint, as the architecture's SCHEMA.sql holds it for both tables
+  const schema = readFileSync(join(import.meta.dirname, '..', '..', '_bmad-output', 'planning-artifacts', 'architecture', 'architecture-Inflozo-2026-08-19', 'SCHEMA.sql'), 'utf8')
+  const lists = [...schema.matchAll(/template_key in \(([^)]*)\)/g)].map((m) => m[1]!.split(',').map((k) => k.trim().replace(/^'|'$/g, '')))
+  assert.equal(lists.length, 2, 'both tables carry the constraint')
+  for (const key of written) {
+    assert.ok(shape.test(key), `the sync route refuses ${key}`)
+    const custom = /^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$/.test(key)
+    for (const list of lists) assert.ok(custom || list.includes(key), `template_key_shape does not list ${key}`)
+  }
+  // and nothing wider: a near miss is refused by the route, as the constraint refuses it
+  for (const junk of ['home-paged', 'tag-page', 'index2', 'page-2']) assert.ok(!shape.test(junk), junk)
 })

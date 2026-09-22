@@ -152,6 +152,17 @@
 // Step 5 gains its negative control — `eval` called from the editor on the canvas window must throw `EvalError` — and
 // its sentence names the Preview session; step 4 compares with `core`'s `js-enabled` taken off both sides; step 8 scans
 // Preview; steps 77 and 78 find `P` live and only `⌘⏎` owed; and step 90's key sweep leaves Preview after `p`.
+// Story 5.16 adds step 92, inside step 5's session: PAGE 2. The seeded Home carries no main feed (it predates the flag),
+// so the post grid is planted as one through the service key after the editor has gone, and every row is put back at
+// the end. D5d's row measured on the main feed's panel and absent from every other; page 2 entered from it, an exact
+// copy of page 1 under page 2's key with D5d's marker, rendered at index.hbs with page 2's context — its rows, "2 / 5"
+// with both links, and a header told /page/2/, so Home carries no nav-current — all derived from `templateContext`;
+// NOTHING stored; D5d's pill measured and never meeting the card or the chip at three devices in a 1440 and a 1280
+// window; "Older posts" navigating nowhere; the first change on page 2 writing an `index` row while the `home` row stays
+// byte-identical (R-178, read back from Supabase); a reload opening on page 1 with page 2's own design read back from the
+// stored row; R-180's ask on the header, Cancel changing nothing and Change it everywhere changing the `site` row; the Tag
+// canvas's page 2 being its tag's own last page and a change there writing `tag-paged`; and the Author canvas offering
+// no row (R-176). Step 8 scans axe once more on page 2, with the pill showing.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -4649,6 +4660,309 @@ async function main() {
     await page.waitForTimeout(400)
     await freshLoad()
 
+    /* ── step 92 — Story 5.16: PAGE 2, SEEN AND DESIGNED (FR-D21, D5d, R-176 to R-180) ──────────────────────────────
+       INSIDE STEP 5's CSP SESSION, so its zero covers page 2 in and out. The seeded Home carries NO main feed — it was
+       seeded before the flag (`seed-editor-project.mjs`), which is exactly the owner's Pilot sections — so `isMainFeed`
+       is PLANTED on its post grid through the service key, after the editor has gone (step 52's pattern), and the seed
+       and every row page 2 wrote are taken back at the end. Every value below is derived from the app's own modules and
+       the library's `templateContext`, never written here: the rows page 2 lists, its pager, its address, its words. */
+    const [PT, LIBW] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/page-two.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/index.ts')).href),
+    ])
+    const OW = LIBW.orbitWeekly
+    const rowOf92 = async (key) => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key)}&select=doc`)).body?.[0]?.doc ?? null
+    const pageNow92 = () => page.locator('section[aria-label="Canvas"] iframe').getAttribute('data-page')
+    const waitPage92 = (n) => page.waitForFunction((v) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.page === v, String(n), { timeout: 30000 })
+    const saidNow92 = () => page.evaluate(() => document.getElementById('editor-said')?.textContent ?? '')
+    const pollRow92 = async (key, test) => {
+      for (let i = 0; i < 40; i++) {
+        const doc = await rowOf92(key)
+        if (test(doc)) return doc
+        await page.waitForTimeout(500)
+      }
+      return rowOf92(key)
+    }
+    // THE FEED IS THE SYNTHESIS DEFAULTS' OWN: the Home row that table designates, read from the library on disk
+    const FEED92 = autoStack('home').find((i) => i.isMainFeed)?.designId
+    const seedHome92 = SEED_DOCS.find((r) => r.template_key === 'home')
+    const plantedHome92 = { ...seedHome92.doc, instances: seedHome92.doc.instances.map((i) => ({ ...i, isMainFeed: i.designId === FEED92 })) }
+    await leaveEditor()
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: plantedHome92 }) })
+    check('step 92 — the control: the post grid is planted as Home\'s main feed, and no `index` row exists yet',
+      (await rowOf92('home'))?.instances?.filter((i) => i.isMainFeed).map((i) => i.designId).join(',') === FEED92 && (await rowOf92('index')) === null, FEED92)
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const gridAt92 = homeStack.findIndex(([d]) => d === FEED92)
+    await rowAt(gridAt92).locator('button').first().click()
+    await page.waitForTimeout(400)
+    // D5d's ROW (`:429`): label left, the track right, 34 × 26 items at 12px, the current one white at 12/600 — at the
+    // panel's foot, above "Reset this design", on the main feed and on no other section
+    const row92 = () => page.evaluate(() => {
+      const row = document.querySelector('#editor-controls [data-page-row]')
+      if (!row) return null
+      const label = row.querySelector('span')
+      const track = row.querySelector('[role="radiogroup"]')
+      const items = [...row.querySelectorAll('[role="radio"]')]
+      const reset = [...document.querySelectorAll('#editor-controls button')].find((b) => b.textContent.includes('Reset this design'))
+      const box = (el) => el.getBoundingClientRect()
+      return {
+        words: label.textContent, labelLeft: box(label).left < box(track).left, trackRight: Math.abs(box(track).right - box(row).right) < 1,
+        items: items.map((i) => ({ text: i.textContent, w: box(i).width, h: box(i).height, size: getComputedStyle(i).fontSize, weight: getComputedStyle(i).fontWeight, bg: getComputedStyle(i).backgroundColor, checked: i.getAttribute('aria-checked') })),
+        track: { bg: getComputedStyle(track).backgroundColor, radius: getComputedStyle(track).borderRadius, padding: getComputedStyle(track).padding },
+        aboveReset: reset ? box(row).bottom <= box(reset).top : false,
+      }
+    })
+    const r92 = await row92()
+    check('step 92 — D5d :429: the main feed\'s panel ends, above "Reset this design", with "Preview page" left and the 1 · 2 track right, 34 × 26 items at 12px, 1 on',
+      r92 !== null && r92.words === PT.PREVIEW_PAGE && r92.labelLeft && r92.trackRight && r92.aboveReset && r92.items.map((i) => i.text).join(',') === '1,2' &&
+      r92.items.every((i) => Math.round(i.w) === 34 && Math.round(i.h) === 26 && i.size === '12px') && r92.items[0].checked === 'true' && r92.items[0].weight === '600' &&
+      r92.items[0].bg === 'rgb(255, 255, 255)' && r92.track.radius === '24px' && r92.track.padding === '3px', JSON.stringify(r92))
+    // R-176 — no other section of the page carries it
+    let others92 = 0
+    for (const n of homeStack.map((_, i) => i).filter((i) => i !== gridAt92)) {
+      await rowAt(n).locator('button').first().click()
+      await page.waitForTimeout(250)
+      others92 += await page.locator('#editor-controls [data-page-row]').count()
+    }
+    check('step 92 — R-176: no other section\'s panel carries the row', others92 === 0, `${others92} rows`)
+    await rowAt(gridAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+    const homeBefore92 = JSON.stringify(await rowOf92('home'))
+    await page.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
+    await waitPage92(2)
+    await page.waitForTimeout(400)
+    // PAGE 2 FOLLOWS PAGE 1: every section of page 1, in order, rendered at index.hbs with page 2's context — DERIVED
+    const ctx92 = OW.templateContext('index.hbs', 'second')
+    const page92 = await canvasFrame().evaluate(() => ({
+      titles: [...document.querySelectorAll('.a17-1__post-title')].map((t) => t.textContent.trim()),
+      numbers: document.querySelector('.a17-1__numbers')?.textContent.trim() ?? null,
+      newer: document.querySelector('.a17-1__newer')?.getAttribute('href') ?? null,
+      older: document.querySelector('.a17-1__older')?.getAttribute('href') ?? null,
+      home: [...document.querySelectorAll('.nav-home')].map((li) => li.className),
+    }))
+    const layers92 = await page.evaluate(() => ({
+      marker: document.querySelector('#editor-layers [data-auto-generated="page-2"]')?.textContent ?? null,
+      heading: [...document.querySelectorAll('#editor-layers [data-layers-list] span')].map((x) => x.textContent.trim()).find((t) => /^This page ·/i.test(t)) ?? null,
+      names: [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => r.getAttribute('data-layer-row').split(':')[0]),
+    }))
+    check('step 92 — Page 2 follows page 1: an EXACT copy of it — every section, in order, under page 2\'s key — with D5d\'s marker in its words',
+      JSON.stringify(await pageNames()) === JSON.stringify(stackOf('home').map(([, name]) => name)) && layers92.names.filter((k) => k !== 'site').every((k) => k === 'index') &&
+      layers92.marker === PT.COPY_MARKER && /^This page · Home · Page 2$/i.test(layers92.heading ?? ''), JSON.stringify(layers92))
+    check('step 92 — rendered at index.hbs with page 2\'s context: its rows, "2 / 5" with a Newer AND an Older link (FR-D21\'s middle page), derived from templateContext',
+      JSON.stringify(page92.titles) === JSON.stringify(ctx92.ghost.posts.map((p) => p.title)) && page92.numbers === `${ctx92.ghost.pagination.page} / ${ctx92.ghost.pagination.pages}` &&
+      page92.newer === '/' && page92.older === `/page/${ctx92.ghost.pagination.page + 1}/`, JSON.stringify({ page92, want: ctx92.ghost.posts.length }))
+    check('step 92 — DW-218: the header is told /page/2/, so Rail\'s Home link carries no nav-current, exactly as Ghost marks it (`utils.js:61`)',
+      ctx92.site.currentUrl === '/page/2/' && page92.home.length > 0 && page92.home.every((c) => !c.includes('nav-current')), JSON.stringify(page92.home))
+    check('step 92 — entering says "Page 2." and stores nothing: no `index` row, and the home row untouched',
+      (await saidNow92()) === PT.ENTERED_SAID && (await rowOf92('index')) === null && JSON.stringify(await rowOf92('home')) === homeBefore92, await saidNow92())
+    // D5d's PILL (`:388-396`): ink, a 10px radius, 4px padding and gap, the modal's .25 — "Page 2" as words on white at
+    // .08 and "Back to page 1" the one control, 30px, in the frame's warm grey — with no coral
+    const pill92 = await page.evaluate(() => {
+      const p = document.querySelector('[data-page-two-pill]')
+      if (!p) return null
+      const cs = getComputedStyle(p)
+      const [words, back] = [...p.children]
+      return {
+        bg: cs.backgroundColor, radius: cs.borderRadius, padding: cs.padding, gap: cs.gap, shadow: cs.boxShadow,
+        words: words.textContent.trim(), wordsTag: words.tagName, wordsH: words.getBoundingClientRect().height, wordsBg: getComputedStyle(words).backgroundColor,
+        back: back.textContent.trim(), backTag: back.tagName, backH: back.getBoundingClientRect().height, backColor: getComputedStyle(back).color,
+        glyphs: p.querySelectorAll('svg').length, coral: /194, 56, 31|255, 89, 65/.test([cs.backgroundColor, getComputedStyle(words).color, getComputedStyle(back).color].join(' ')),
+      }
+    })
+    check('step 92 — D5d :388-396: the pill is ink at a 10px radius with 4px padding and gap and the .25 shadow, "Page 2" WORDS then "Back to page 1" the 30px button, and no coral',
+      pill92 !== null && pill92.bg === 'rgb(28, 27, 26)' && pill92.radius === '10px' && pill92.padding === '4px' && pill92.gap === '4px' && /0\.25\)/.test(pill92.shadow) &&
+      pill92.words === PT.PAGE_TWO_WORDS && pill92.wordsTag === 'SPAN' && Math.round(pill92.wordsH) === 30 && /\/ 0\.08\)|, 0\.08\)/.test(pill92.wordsBg) &&
+      pill92.back === PT.BACK_TO_PAGE_ONE && pill92.backTag === 'BUTTON' && Math.round(pill92.backH) === 30 && /\/ 0\.66\)|, 0\.66\)/.test(pill92.backColor) && pill92.glyphs === 2 && !pill92.coral,
+      JSON.stringify(pill92))
+    // R-138 EXTENDED: the pill never meets the page card or the viewport chip, at all three devices, at 1440 and 1280
+    const meets92 = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+    const clear92 = []
+    for (const width of [1440, 1280]) {
+      await page.setViewportSize({ width, height: 900 })
+      for (const [n, device] of DEVICE.DEVICES.entries()) {
+        await page.locator('section[aria-label="Canvas"]').focus()
+        await page.keyboard.press(String(n + 1))
+        await page.waitForTimeout(400)
+        const at = await page.evaluate(() => {
+          const r = (s) => document.querySelector(s)?.getBoundingClientRect().toJSON() ?? null
+          return { pill: r('[data-page-two-pill]'), card: r('section[aria-label="Canvas"] > div'), chip: r('#editor-viewport') }
+        })
+        clear92.push({ width, device: device.label, card: at.pill && at.card ? !meets92(at.pill, at.card) : false, chip: at.pill && at.chip ? !meets92(at.pill, at.chip) : false, gap: at.pill && at.card ? Math.round(at.card.top - at.pill.bottom) : null })
+      }
+    }
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('1')
+    await page.waitForTimeout(400)
+    check('step 92 — the pill never meets the page card or the viewport chip, at Desktop, Tablet and Mobile, in a 1440 and a 1280 window',
+      clear92.length === 2 * DEVICE.DEVICES.length && clear92.every((c) => c.card && c.chip), JSON.stringify(clear92))
+    // "Older posts →" never navigates: links on the canvas are prevented, so there is no page 3 (R-177)
+    const olderUrl92 = await canvasFrame().evaluate(() => location.href)
+    await canvasFrame().locator('.a17-1__older').click()
+    await page.waitForTimeout(400)
+    check('step 92 — "Older posts →" on page 2 navigates nowhere: no page 3, and the canvas is still page 2',
+      (await canvasFrame().evaluate(() => location.href)) === olderUrl92 && (await pageNow92()) === '2', await pageNow92())
+    // THE FIRST CHANGE ON PAGE 2 — the newsletter section deleted from Layers — STORES page 2 under `index`, and the home
+    // row is BYTE-IDENTICAL before and after (R-178's proof, read back from Supabase)
+    const bandAt92 = homeStack.findIndex(([d]) => d === TEMPLATES.home[TEMPLATES.home.length - 1][0])
+    await rowAt(bandAt92).getByRole('button', { name: /^More for / }).click()
+    await page.waitForTimeout(250)
+    await page.getByRole('button', { name: 'Delete', exact: true }).click()
+    await page.waitForTimeout(500)
+    const markerGone92 = (await page.locator('#editor-layers [data-auto-generated]').count()) === 0
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+s`)
+    const index92 = await pollRow92('index', (d) => d !== null)
+    const wantIndex92 = TEMPLATES.home.slice(0, -1).map(([d]) => d)
+    check('step 92 — R-178: the first change on page 2 writes an `index` row — the copy without the section — and the marker goes',
+      markerGone92 && JSON.stringify(index92?.instances?.map((i) => i.designId)) === JSON.stringify(wantIndex92), JSON.stringify({ markerGone92, index: index92?.instances?.map((i) => i.designId) }))
+    check('step 92 — R-178: the `home` row is byte-identical before and after — nothing done on page 2 changed page 1',
+      JSON.stringify(await rowOf92('home')) === homeBefore92, 'home row compared as stored JSON')
+    // A RELOAD with the device's copy dropped reads page 2 back from the STORED row, and the editor opens on page 1
+    await dropLocal()
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const opensOn92 = await pageNow92()
+    await rowAt(gridAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
+    await waitPage92(2)
+    await page.waitForTimeout(400)
+    const reloaded92 = await page.evaluate(() => ({
+      marker: document.querySelectorAll('#editor-layers [data-auto-generated]').length,
+      rows: [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => r.getAttribute('data-layer-row').split(':')[0]),
+    }))
+    check('step 92 — a reload opens on page 1, and page 2 is its OWN design, read back from the stored `index` row (no marker, the section still gone)',
+      opensOn92 === '1' && reloaded92.marker === 0 && reloaded92.rows.filter((k) => k === 'index').length === wantIndex92.length, JSON.stringify({ opensOn92, reloaded92 }))
+    // R-180 — THE HEADER CHANGED ON PAGE 2 ASKS FIRST, in FR-D5's dialog adapted; Cancel changes nothing, Change it
+    // everywhere changes the `site` row — every page, page 1 included
+    const siteBefore92 = JSON.stringify(await rowOf92('site'))
+    await rowAt(HEADER).locator('button').first().click()
+    await page.waitForTimeout(300)
+    const headerName92 = TEMPLATES.site[0][1]
+    await openGroup('Layout')
+    await page.waitForTimeout(250)
+    const navRow92 = controlsAside().getByRole('radiogroup', { name: 'Nav position' })
+    const pickOther92 = async () => {
+      const off = navRow92.locator('[role="radio"][aria-checked="false"]').first()
+      const value = (await off.textContent()).trim()
+      await off.click()
+      await page.waitForTimeout(400)
+      return value
+    }
+    await pickOther92()
+    const ask92 = await page.evaluate(() => {
+      const d = document.querySelector('dialog[open]')
+      return d ? { title: d.querySelector('h2')?.textContent.trim(), body: d.querySelector('p')?.textContent.replace(/\s+/g, ' ').trim(), focus: document.activeElement?.hasAttribute('data-cancel') } : null
+    })
+    check('step 92 — R-180: the first change to the header on page 2 asks first — "Change {name} everywhere?" — opening on Cancel',
+      ask92 !== null && ask92.title === PT.SITE_WIDE_ASK.title(headerName92) && ask92.body === PT.SITE_WIDE_ASK.body && ask92.focus === true, JSON.stringify(ask92))
+    await page.locator('dialog[open]').getByRole('button', { name: PT.SITE_WIDE_ASK.cancel, exact: true }).click()
+    await page.waitForTimeout(400)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+s`)
+    await page.waitForTimeout(1500)
+    check('step 92 — R-180: Cancel changes nothing — the `site` row is as it was', JSON.stringify(await rowOf92('site')) === siteBefore92)
+    await pickOther92()
+    await page.locator('dialog[open]').getByRole('button', { name: PT.SITE_WIDE_ASK.confirm, exact: true }).click()
+    await page.waitForTimeout(400)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+s`)
+    const site92 = await pollRow92('site', (d) => JSON.stringify(d) !== siteBefore92)
+    // the value is the design's own vocabulary, read from the library, and it is no longer the seed's
+    const navDef92 = pilot(TEMPLATES.site[0][0]).controlSchema.find((c) => c.name === 'nav-position')
+    const navSeed92 = JSON.parse(siteBefore92)?.instances?.[0]?.controls?.['nav-position'] ?? navDef92.default
+    const navValue92 = site92?.instances?.[0]?.controls?.['nav-position'] ?? null
+    check('step 92 — R-180: Change it everywhere changes the `site` row — the header on every page, page 1 included',
+      JSON.stringify(site92) !== siteBefore92 && navValue92 !== navSeed92 && navDef92.values.includes(navValue92), JSON.stringify({ navSeed92, navValue92 }))
+    const asksAgain92 = await (async () => {
+      await pickOther92()
+      return page.locator('dialog[open]').count()
+    })()
+    check('step 92 — R-180: the header\'s next change on this visit asks nothing', asksAgain92 === 0, `${asksAgain92} dialogs`)
+    await page.getByRole('button', { name: PT.BACK_TO_PAGE_ONE, exact: true }).click()
+    await waitPage92(1)
+    await page.waitForTimeout(300)
+    check('step 92 — Back to page 1 is said, focus goes to the canvas, and the pill is gone',
+      (await saidNow92()) === PT.LEFT_SAID && (await page.evaluate(() => document.activeElement?.getAttribute('aria-label'))) === 'Canvas' && (await page.locator('[data-page-two-pill]').count()) === 0,
+      await saidNow92())
+    // A CHANGE OF CANVAS IS PAGE 1 — viewing page 2 is session state: Home left ON page 2 by the Template switcher (a
+    // soft navigation, step 41's) opens the Tag canvas on page 1
+    await rowAt(gridAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
+    await waitPage92(2)
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-template-menu button[data-canvas="tag"]').click()
+    await painted('tag')
+    await page.waitForTimeout(400)
+    check('step 92 — a change of canvas made on page 2 opens the next canvas on page 1, with no pill', (await pageNow92()) === '1' && (await page.locator('[data-page-two-pill]').count()) === 0, await pageNow92())
+    // THE ARCHIVES — the Tag canvas previews its fixture tag, whose own posts run to a second page: page 2 is THAT tag's
+    // page 2, and a change there writes `tag-paged` while page 1 of the archive stays untouched
+    const tagSubject92 = OW.fixtureSubject('tag.hbs')
+    const tagCtx92 = OW.templateContext('tag.hbs', 'second', tagSubject92)
+    const tagRows92 = await page.locator('#editor-layers [data-layer-row]').evaluateAll((els) => els.map((r) => r.getAttribute('data-layer-row')))
+    const tagGrid92 = tagRows92.findIndex((k) => !k.startsWith('site:'))
+    await rowAt(tagGrid92).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
+    await waitPage92(2)
+    await page.waitForTimeout(400)
+    const tag92 = await canvasFrame().evaluate(() => ({
+      titles: [...document.querySelectorAll('.a17-1__post-title')].map((t) => t.textContent.trim()),
+      numbers: document.querySelector('.a17-1__numbers')?.textContent.trim() ?? null,
+      older: document.querySelector('.a17-1__older') !== null,
+      newer: document.querySelector('.a17-1__newer')?.getAttribute('href') ?? null,
+    }))
+    check('step 92 — the Tag canvas\'s page 2 is its tag\'s own last page: its posts, "2 / 2", a Newer link to the archive and no Older link',
+      OW.feedPages('tag.hbs', tagSubject92) === 2 && JSON.stringify(tag92.titles) === JSON.stringify(tagCtx92.ghost.posts.map((p) => p.title)) &&
+      tag92.numbers === `2 / ${tagCtx92.ghost.pagination.pages}` && tag92.older === false && tag92.newer === `/tag/${tagSubject92.slug}/`, JSON.stringify(tag92))
+    await openGroup('Layout')
+    await page.waitForTimeout(250)
+    await controlsAside().getByRole('radiogroup', { name: 'Per row' }).locator('[role="radio"][aria-checked="false"]').first().click()
+    await page.waitForTimeout(400)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+s`)
+    const tagPaged92 = await pollRow92('tag-paged', (d) => d !== null)
+    check('step 92 — a change on the Tag canvas\'s page 2 writes a `tag-paged` row, and page 1 of the archive stays untouched (no `tag` row)',
+      tagPaged92 !== null && (tagPaged92.instances?.length ?? 0) > 0 && (await rowOf92('tag')) === null, JSON.stringify({ tagPaged: tagPaged92?.instances?.map((i) => i.controls), tag: await rowOf92('tag') }))
+    // PAGE 2 STOPS BEING OFFERED when the subject changes to a tag whose posts fit one page: page 1 at once, the reason
+    // said, and page 2's own design KEPT (the `tag-paged` row is untouched)
+    const oneTag92 = OW.tags().find((t) => OW.feedPages('tag.hbs', { kind: 'tag', slug: t.slug }) === 1)
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    await page.locator(`#editor-source-menu [data-subject-row="${oneTag92.slug}"]`).click()
+    await page.waitForTimeout(800)
+    const tagPagedAfter92 = await rowOf92('tag-paged')
+    check('step 92 — R-176: choosing a tag whose posts fit one page takes the canvas back to page 1 at once and says why; page 2\'s own design is kept',
+      oneTag92 !== undefined && (await pageNow92()) === '1' && (await saidNow92()).includes(`${PT.BACK_TO_PAGE_ONE}: `) &&
+      JSON.stringify(tagPagedAfter92) === JSON.stringify(tagPaged92) && (await page.locator('#editor-controls [data-page-row]').count()) === 0,
+      JSON.stringify({ tag: oneTag92?.slug, page: await pageNow92(), said: await saidNow92() }))
+    // …and the way back: Home, left on page 1 and switched to from the Tag canvas's page 2, opens on page 1 too
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    await page.locator('#editor-template-menu button[data-canvas="home"]').click()
+    await painted('home')
+    await page.waitForTimeout(400)
+    check('step 92 — and the way back: the Tag canvas left on its page 2 brings Home back on page 1', (await pageNow92()) === '1', await pageNow92())
+    // …and the Author canvas offers NO page 2: every writer's posts fit on one page (R-176)
+    await page.goto(editorUrl('author'), { waitUntil: 'load' })
+    await painted('author')
+    const authorRows92 = await page.locator('#editor-layers [data-layer-row]').evaluateAll((els) => els.map((r) => r.getAttribute('data-layer-row')))
+    await rowAt(authorRows92.findIndex((k) => !k.startsWith('site:'))).locator('button').first().click()
+    await page.waitForTimeout(300)
+    check('step 92 — R-176: the Author canvas offers no row, because its writer\'s posts fit on one page',
+      OW.feedPages('author.hbs', OW.fixtureSubject('author.hbs')) === 1 && (await page.locator('#editor-controls [data-page-row]').count()) === 0 && (await page.locator('#editor-controls').getAttribute('aria-label')) === 'Section settings')
+    // THE WALK LEAVES THE PROJECT AS IT FOUND IT: page 2's rows and records gone, and the seed — the planted feed with it
+    await leaveEditor()
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=in.(index,tag-paged,author-paged)`, { method: 'DELETE' })
+    await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}`, { method: 'DELETE' })
+    await freshLoad()
+    check('step 92 — restored: no page-2 row left, and the home row is the seed again (no planted feed)',
+      (await rowOf92('index')) === null && (await rowOf92('tag-paged')) === null && JSON.stringify(await rowOf92('home')) === JSON.stringify(seedHome92.doc))
+
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     for (const path of ['/harness/editor', '/harness/canvas']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
@@ -4688,7 +5002,7 @@ async function main() {
     // session, and that page's zod JIT probe is a recorded violation of its own (DW-201) — the review's first complete
     // run failed here on that one event and no other
     const session = violations.splice(0).filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — and Story 5.15\'s `core`, run from the editor against the canvas window while designing and in Preview, and Preview itself — in by the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing pressed in it — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — and Story 5.15\'s `core`, run from the editor against the canvas window while designing and in Preview, and Preview itself — in by the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing pressed in it — and Story 5.16\'s page 2, entered from D5d\'s row on Home and on Tag, edited, reloaded, measured at three devices in two windows, its header\'s R-180 ask cancelled and confirmed, and left by its pill — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -5017,6 +5331,35 @@ async function main() {
     check('step 8 — axe: zero violations in Preview, with B3b\'s bar the one piece of chrome and the editing chrome hidden',
       previewAxe.length === 0 && previewShown.bar && previewShown.header === false, `${JSON.stringify(previewShown)} · ${previewAxe.join('; ')}`)
     await axePage.keyboard.press('Escape')
+    await axePage.waitForTimeout(400)
+    /* STORY 5.16's own state: PAGE 2, with D5d's pill over the ground and D5d's row on the feed's panel. The main feed is
+       planted for it as step 92 plants it — after this editor has gone, so its departing flush cannot overwrite it — and
+       the seed's own Home is put back before the context closes. Axe is injected again: the reload is a new document. */
+    // this context's OWN device copy goes first, or the reload hydrates it (the revisions agree) and never reads the plant
+    await axePage.evaluate((u) => new Promise((done) => {
+      const req = indexedDB.deleteDatabase(`inflozo-doc-${u}`)
+      req.onsuccess = req.onerror = req.onblocked = () => done(true)
+    }), ids[0]).catch(() => null)
+    await axePage.goto('about:blank')
+    await axePage.waitForTimeout(600)
+    const seedHome8 = SEED_DOCS.find((r) => r.template_key === 'home')
+    const feed8 = autoStack('home').find((i) => i.isMainFeed)?.designId
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: { ...seedHome8.doc, instances: seedHome8.doc.instances.map((i) => ({ ...i, isMainFeed: i.designId === feed8 })) } }) })
+    await axePage.goto(editorUrl(), { waitUntil: 'load' })
+    await axePage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await axePage.locator('#editor-layers [data-layer-row]').nth(homeStack.findIndex(([d]) => d === feed8)).locator('button').first().click()
+    await axePage.waitForTimeout(400)
+    await axePage.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
+    await axePage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.page === '2', null, { timeout: 30000 })
+    await axePage.waitForTimeout(400)
+    for (const f of axePage.frames()) await f.addScriptTag({ path: AXE }).catch(() => {})
+    const pageTwoShown = await axePage.evaluate(() => ({ pill: document.querySelector('[data-page-two-pill]') !== null, row: document.querySelector('#editor-controls [data-page-row]') !== null }))
+    const pageTwoAxe = await axeRun()
+    check('step 8 — axe: zero violations on PAGE 2, with D5d\'s pill over the ground and its row on the main feed\'s panel (Story 5.16)',
+      pageTwoAxe.length === 0 && pageTwoShown.pill && pageTwoShown.row, `${JSON.stringify(pageTwoShown)} · ${pageTwoAxe.join('; ')}`)
+    await axePage.goto('about:blank')
+    await axePage.waitForTimeout(600)
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: seedHome8.doc }) })
     await axeContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──

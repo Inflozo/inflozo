@@ -109,6 +109,16 @@ export const CONTEXTS_BY_TARGET = (file: string): readonly BindingContext[] => {
 export const nativeResourceOf = (file: string): 'post' | 'tag' | 'author' | null =>
   (NATIVE[file] ?? []).find((c) => c === 'post' || c === 'tag' || c === 'author') as 'post' | 'tag' | 'author' | undefined ?? null
 
+/** STORY 5.16 — MAY A DESIGN SIT ON THIS FILE? Its `compileTarget` answers, with ONE widening: a design that may sit
+ *  on `home.hbs` may sit on `index.hbs`. Ghost hands the two files THE SAME POSTS AND PAGINATION — `/` renders
+ *  `home.hbs` and `/page/N/` renders `index.hbs` off one collection router (`templates.js:67` puts `home` first only
+ *  at exactly `/`), and `index.hbs` differs only in that `home` is not in its context, which no design reads. Home's
+ *  page 2 is an exact copy of its page 1 until it is changed (R-179), so without this rule the copy of a Home holding
+ *  a design that lists `home.hbs` alone would be refused on the next load. ONE rule for the three places that ask it:
+ *  `offeredOn` below, `read.ts`'s stored-doc refusal and `synthesize`'s drop. */
+export const compilesTo = (compileTarget: readonly string[], file: string): boolean =>
+  compileTarget.includes(file) || (file === 'index.hbs' && compileTarget.includes('home.hbs'))
+
 /** THE ONE QUERY THE PICKER READS — the rail, the grid, the counts and every empty state (FR-D12).
  *
  *  Three conditions, all of them absences rather than refusals (UX-DR3): the design must be placeable at all, it
@@ -118,7 +128,7 @@ export const offeredOn = (
   entry: { id: string; compileTarget: readonly string[]; bindingContext: readonly BindingContext[] },
   file: string,
 ): boolean => {
-  if (!isPlaceable(entry.id) || !entry.compileTarget.includes(file)) return false
+  if (!isPlaceable(entry.id) || !compilesTo(entry.compileTarget, file)) return false
   const here = CONTEXTS_BY_TARGET(file) as readonly string[]
   return entry.bindingContext.some((c) => here.includes(c))
 }

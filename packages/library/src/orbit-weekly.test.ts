@@ -15,12 +15,12 @@ import assert from 'node:assert/strict'
 // dependency would be a cycle; the two rows below that need the shim (the page links and the
 // `{{content}}` refusal) are the seam this story fills, and asserting them against the real shim is
 // the point. Move them if `library` ever grows a dev-dependency graph of its own.
-import { bareHelper, paginationContext } from '../../ghost-shim/src/index.ts'
+import { bareHelper, navigationItems, pageUrl, paginationContext } from '../../ghost-shim/src/index.ts'
 import {
   DEFAULT_LIMIT, DEFAULT_ORDER, MAJORS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
   articleOrder, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
-  deepPagination, feedPage, feedPagination, newsletters, postsPerPage, posts, previewFixtures, recording,
-  fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, sortRows, styleGuideBody,
+  deepPagination, feedPage, feedPagination, feedPages, newsletters, postsPerPage, posts, previewFixtures, recording,
+  fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, site, sortRows, styleGuideBody,
   styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants,
 } from './orbit-weekly.ts'
 import type { Major, Subject } from './orbit-weekly.ts'
@@ -510,4 +510,133 @@ test('a subject that is gone falls back to the fixture and SAYS SO — and the c
   const ghost = templateContext('tag.hbs', 'first', { kind: 'tag', slug: 'no-such-tag' }).ghost
   assert.equal((ghost['tag'] as { slug: string }).slug, subject('tag').slug)
   assert.ok((ghost['posts'] as unknown[]).length > 0, 'the fallback archive must not be empty')
+})
+
+// ─── Story 5.16 — page 2, and the page's own address (FR-D21, R-176, DW-218) ───────────────────────────────────
+//
+// `second` is PAGE 2 of the list a target renders, and `feedPages` is the one question the editor asks before it
+// offers one. Every expectation is DERIVED from the dataset's own rows and `posts_per_page` — no page count, post
+// count or slug of a row is written down here, beyond the fixture subjects the library itself names.
+
+const tagOf = (slug: string): Subject => ({ kind: 'tag', slug })
+const authorOf = (slug: string): Subject => ({ kind: 'author', slug })
+const pagesOf = (total: number) => Math.max(1, Math.ceil(total / postsPerPage()))
+
+test('`second` on the home feed is page 2 of the bundled feed: its own rows, and BOTH links (FR-D21\'s middle page)', () => {
+  for (const target of ['home.hbs', 'index.hbs']) {
+    const ctx = templateContext(target, 'second')
+    const pagination = ctx.ghost['pagination'] as { page: number; pages: number }
+    assert.deepEqual(pagination, feedPagination(2), target)
+    assert.deepEqual((ctx.ghost['posts'] as { slug: string }[]).map((p) => p.slug), feedPage(2).map((p) => p.slug), target)
+    const pager = paginationContext(pagination)
+    assert.ok(pager.prev !== null && pager.next !== null, `${target}: page 2 of the feed must carry a Newer and an Older link`)
+    assert.ok(pagination.pages > 2, 'the control: the feed must run past page 2 for page 2 to be a middle page')
+    assert.deepEqual(ctx.site.pagination, pagination)
+  }
+  // and it is NOT `middle`, which is the feed's own middle page — page 3 of five
+  assert.notDeepEqual(templateContext('index.hbs', 'second').ghost['pagination'], templateContext('index.hbs', 'middle').ghost['pagination'])
+})
+
+test('an archive\'s `second` is ITS OWN page 2, and throws where the archive has one page (R-176)', () => {
+  // every tag, derived: a tag with a second page renders its own remainder; one without has no page 2 to render
+  for (const t of tags()) {
+    const of = tagOf(t.slug)
+    const mine = posts().filter((p) => p.tags.some((r) => r.slug === t.slug))
+    if (pagesOf(mine.length) < 2) {
+      assert.throws(() => templateContext('tag.hbs', 'second', of), /page 2 does not exist/, `${t.slug} has no page 2`)
+      continue
+    }
+    const ctx = templateContext('tag.hbs', 'second', of)
+    const pagination = ctx.ghost['pagination'] as { page: number; pages: number; total: number; limit: number }
+    assert.equal(pagination.page, 2)
+    assert.equal(pagination.total, mine.length)
+    assert.deepEqual(
+      (ctx.ghost['posts'] as { slug: string }[]).map((p) => p.slug),
+      mine.slice(pagination.limit, 2 * pagination.limit).map((p) => p.slug),
+      t.slug,
+    )
+    assert.equal((ctx.ghost['tag'] as { slug: string }).slug, t.slug)
+  }
+  // the fixture tag is the one the Tag canvas opens on: two pages, so its page 2 is its LAST — a Newer and no Older
+  const fixture = templateContext('tag.hbs', 'second', fixtureSubject('tag.hbs'))
+  const pager = paginationContext(fixture.ghost['pagination'] as Record<string, unknown>)
+  assert.equal(pager.page, pager.pages, 'the fixture tag\'s page 2 is its last page')
+  assert.ok(pager.prev !== null && pager.next === null)
+  // every writer's archive fits on one page, so no Author canvas can render a page 2
+  for (const a of authors()) assert.throws(() => templateContext('author.hbs', 'second', authorOf(a.slug)), /page 2 does not exist/, a.slug)
+})
+
+test('`feedPages` agrees with the rows on every tag and every writer, and is 1 where nothing paginates', () => {
+  for (const t of tags()) assert.equal(feedPages('tag.hbs', tagOf(t.slug)), pagesOf(t.count.posts), t.slug)
+  for (const a of authors()) {
+    assert.equal(feedPages('author.hbs', authorOf(a.slug)), pagesOf(a.count.posts), a.slug)
+    // R-176's premise, stated as the data: no writer reaches a second page, so no Author page offers one
+    assert.equal(feedPages('author.hbs', authorOf(a.slug)), 1, a.slug)
+  }
+  for (const target of ['home.hbs', 'index.hbs']) assert.equal(feedPages(target), feedPagination(1).pages, target)
+  // the same answer `templateContext` renders from — the pages it counts are the pages it draws
+  for (const t of tags()) {
+    assert.equal((templateContext('tag.hbs', 'first', tagOf(t.slug)).ghost['pagination'] as { pages: number }).pages, feedPages('tag.hbs', tagOf(t.slug)))
+  }
+  for (const target of ['default.hbs', 'post.hbs', 'page.hbs', 'error.hbs', 'private.hbs', 'custom-signup.hbs']) {
+    assert.equal(feedPages(target), 1, target)
+  }
+  // a subject of the wrong kind is no archive: the tag canvas with no tag subject is the whole feed, as it renders
+  assert.equal(feedPages('tag.hbs', authorOf(authors()[0]!.slug)), feedPagination(1).pages)
+})
+
+test('DW-218: every page of a list knows its OWN address, and the pager is based on the list it sits on', () => {
+  const home = (feed: 'first' | 'second') => templateContext('home.hbs', feed).site
+  assert.equal(home('first').currentUrl, '/')
+  assert.equal(templateContext('index.hbs', 'second').site.currentUrl, '/page/2/')
+  assert.equal(home('first').paginationBase, '/')
+  const fixture = fixtureSubject('tag.hbs') as Subject
+  const archive = `/tag/${fixture.slug}/`
+  const one = templateContext('tag.hbs', 'first', fixture).site
+  const two = templateContext('tag.hbs', 'second', fixture).site
+  assert.equal(one.currentUrl, archive)
+  assert.equal(two.currentUrl, `${archive}page/2/`)
+  assert.equal(one.paginationBase, archive)
+  const writer = fixtureSubject('author.hbs') as Subject
+  assert.equal(templateContext('author.hbs', 'first', writer).site.currentUrl, `/author/${writer.slug}/`)
+  // THE ADDRESS IS GHOST'S RULE, the one the shim's `pageUrl` already is: page 1 is the list itself, page n beneath it
+  for (const [ctx, n] of [[one, 1], [two, 2]] as const) assert.equal(ctx.currentUrl, pageUrl(n, ctx.paginationBase))
+  // `meta/paginated-url.js`, read on both majors: on page 2 the Newer link is the list itself, the Older link page 3
+  const feed2 = templateContext('index.hbs', 'second').site
+  const at2 = paginationContext(feed2.pagination as Record<string, unknown>)
+  assert.equal(pageUrl(at2.prev, feed2.paginationBase), '/')
+  assert.equal(pageUrl(at2.next, feed2.paginationBase), '/page/3/')
+  assert.equal(pageUrl(paginationContext(two.pagination as Record<string, unknown>).prev, two.paginationBase), archive)
+  // every other target keeps `/` (Post, Page and 404 are a later story's — a DW)
+  for (const target of ['default.hbs', 'post.hbs', 'page.hbs', 'error.hbs']) assert.equal(templateContext(target, 'first').site.currentUrl, '/', target)
+})
+
+test('`{{navigation}}` marks what Ghost marks on that address — `nav-current` on an exact match only (`utils.js:61`)', () => {
+  const current = (url: string) =>
+    navigationItems(site().navigation as { label?: unknown; url?: unknown }[], { currentUrl: url, siteUrl: site().url }).filter((i) => i.current).map((i) => i.label)
+  const home = site().navigation.find((i) => i.url === '/')
+  assert.ok(home, 'the control: the bundled menu carries a `/` item for any of this to be about')
+  assert.deepEqual(current(templateContext('home.hbs', 'first').site.currentUrl), [home.label], 'page 1 of Home marks Home')
+  assert.deepEqual(current(templateContext('index.hbs', 'second').site.currentUrl), [], '/page/2/ marks nothing — the `/` item gets nav-home alone')
+  // an archive's page 1 marks its own item where the menu has one, and Home never
+  const fixture = fixtureSubject('tag.hbs') as Subject
+  const own = site().navigation.filter((i) => i.url === `/tag/${fixture.slug}/`).map((i) => i.label)
+  assert.deepEqual(current(templateContext('tag.hbs', 'first', fixture).site.currentUrl), own)
+  const menuTag = site().navigation.find((i) => /^\/tag\/[^/]+\/$/.test(i.url))
+  if (menuTag) {
+    const slug = menuTag.url.split('/')[2]!
+    assert.deepEqual(current(templateContext('tag.hbs', 'first', tagOf(slug)).site.currentUrl), [menuTag.label], `${slug}'s archive marks its own item`)
+  }
+})
+
+test('THE CONTROL, again — no caller of the four review states is moved by `second`: /pilots, the snapshots and the matrix', () => {
+  // the four states still answer their own pages on the feed; `second` is an addition beside them, never a rename
+  const page = (feed: 'first' | 'middle' | 'last' | 'empty') => (templateContext('index.hbs', feed).ghost['pagination'] as { page: number }).page
+  const pages = feedPagination(1).pages
+  assert.deepEqual([page('first'), page('middle'), page('last'), page('empty')], [1, Math.ceil(pages / 2), pages, 1])
+  // and with no subject an archive is still the whole feed on every one of them, as Story 5.13 left it
+  for (const feed of ['first', 'middle', 'last', 'empty'] as const) {
+    assert.deepEqual(templateContext('tag.hbs', feed).ghost['posts'], templateContext('home.hbs', feed).ghost['posts'], feed)
+    assert.equal(templateContext('tag.hbs', feed).site.paginationBase, '/', feed)
+  }
 })

@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { indexStack, isSynthesizable, synthesize, SYNTHESIS_DEFAULTS, type SynthesisLibrary } from './synthesize.ts'
+import { compilesTo } from '@inflozo/library'
+import { isSynthesizable, pageTwoStack, synthesize, SYNTHESIS_DEFAULTS, type SynthesisLibrary } from './synthesize.ts'
 import { parseDoc, type ProjectDoc } from './doc-schema.ts'
 
 // Story 5.5 — FR-D6's synthesis, over the normative Synthesis Defaults (`sections-inventory.md:778-867`).
@@ -25,7 +26,7 @@ const EMPTY = libraryOf([])
 
 /** The rows of `file` the given library can place, derived — never a written list. */
 const placeable = (file: string, library: SynthesisLibrary) =>
-  (SYNTHESIS_DEFAULTS[file] ?? []).filter((r) => library(r.designId)?.compileTarget.includes(file) === true)
+  (SYNTHESIS_DEFAULTS[file] ?? []).filter((r) => { const e = library(r.designId); return e !== undefined && compilesTo(e.compileTarget, file) })
 
 const COLLECTIONS = ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs']
 
@@ -116,46 +117,80 @@ test('an empty library drops every row of every file and throws nothing — the 
   }
 })
 
-// ─── R-127: what page 2 is made from ───
+// ─── Story 5.16 — what page 2 is made of (R-178, R-179; R-127's fallback kept) ───
 
 const doc = (...instances: unknown[]): ProjectDoc => parseDoc({ schemaVersion: 1, instances }, 'home')
 const inst = (instanceId: string, designId: string, extra: object = {}): unknown => ({
   instanceId, layerName: instanceId, designId, content: {}, controls: {}, data: {}, darkOverrides: {}, ...extra,
 })
 
-test('R-127 · a designed Home WITH a main feed: index.hbs is that doc from the feed down, in order', () => {
-  const home = doc(
-    inst('banner', 'a4/13'),
-    inst('welcome', 'a22/1'),
-    inst('grid', 'a17/1', { isMainFeed: true }),
-    inst('news', 'a22/1'),
-    inst('cta', 'a4/13'),
-  )
-  const { instances, dropped } = indexStack(home, FULL)
-  assert.deepEqual(instances.map((i) => i.instanceId), ['grid', 'news', 'cta'])
-  assert.deepEqual(dropped, [], 'nothing is synthesized, so nothing can drop')
-  // the kept rows are the SAME objects, values and all — page 2 is the Home page, not a copy of its recipe
-  assert.deepEqual(instances, home.instances.slice(2))
+/** Page 1 as the owner's Ghost 5 Project holds it: a newsletter band ABOVE a designated grid, with a CTA below. */
+const pageOne = () => doc(inst('band', 'a22/1'), inst('grid', 'a17/1', { isMainFeed: true }), inst('cta', 'a4/13'))
+const PAGINATED = ['home.hbs', 'tag.hbs', 'author.hbs']
+
+test('R-179 · with no doc of its own, page 2 is an EXACT copy of page 1 — every section, in order, the same objects', () => {
+  for (const file of PAGINATED) {
+    const one = pageOne()
+    for (const two of [null, undefined, doc()]) {
+      const { instances, dropped } = pageTwoStack(file, one, two, FULL)
+      // the same OBJECTS, ids and all: a selection carries to the same section, and nothing is re-derived from a recipe
+      assert.equal(instances.length, one.instances.length, file)
+      instances.forEach((i, n) => assert.equal(i, one.instances[n], `${file} row ${n}`))
+      assert.deepEqual(dropped, [], 'nothing is synthesized, so nothing can drop')
+    }
+    // and it is a COPY of the list, not the list: page 2's array is never page 1's
+    assert.notEqual(pageTwoStack(file, one, null, FULL).instances, one.instances)
+  }
+  // the band ABOVE the grid is included (R-179 replaced R-127's "from the main feed down")
+  assert.deepEqual(pageTwoStack('home.hbs', pageOne(), null, FULL).instances.map((i) => i.instanceId), ['band', 'grid', 'cta'])
 })
 
-test('R-127 · a designed Home with NO main feed falls back to the default stack — index.hbs is never empty (FR-I1)', () => {
-  // the owner's "Pilot sections" project: three designed sections, no instance carries isMainFeed
-  const home = doc(inst('hero', 'a4/13'), inst('grid', 'a17/1'), inst('news', 'a22/1'))
-  assert.ok(!home.instances.some((i) => i.isMainFeed), 'the fixture must exercise the fallback')
-  assert.deepEqual(indexStack(home, FULL), synthesize('index.hbs', FULL))
-})
-
-test('R-127 · an UNTOUCHED Home is unchanged: the same synthesized stack into both files (:804-806)', () => {
-  for (const home of [null, undefined, doc()]) {
-    assert.deepEqual(indexStack(home, FULL), synthesize('index.hbs', FULL), String(home))
-    assert.deepEqual(indexStack(home, FULL).instances.map((i) => i.designId), synthesize('home.hbs', FULL).instances.map((i) => i.designId))
+test('R-178 · once page 2 has a doc with instances it is page 2 — page 1 is not read at all', () => {
+  const two = doc(inst('grid', 'a17/1', { isMainFeed: true, controls: { 'per-row': 'two' } }))
+  for (const file of PAGINATED) {
+    const { instances, dropped } = pageTwoStack(file, pageOne(), two, FULL)
+    assert.deepEqual(instances, two.instances, file)
+    assert.deepEqual(dropped, [])
+    // whatever page 1 holds — even nothing, even no main feed — page 2's own design stands
+    assert.deepEqual(pageTwoStack(file, doc(inst('hero', 'a4/13')), two, EMPTY).instances, two.instances, file)
   }
 })
 
-test('R-127 · the fallback degrades with the library, and still never throws', () => {
-  assert.deepEqual(indexStack(doc(), EMPTY).instances, [])
-  assert.deepEqual(indexStack(doc(), EMPTY).dropped, synthesize('index.hbs', EMPTY).dropped)
-  // a designed Home with a feed needs no library at all
-  const home = doc(inst('grid', 'a17/1', { isMainFeed: true }))
-  assert.deepEqual(indexStack(home, EMPTY).instances.map((i) => i.instanceId), ['grid'])
+test('AD-22 · a page-2 doc with no instances FOLLOWS page 1, exactly as having no doc does', () => {
+  for (const file of PAGINATED) assert.deepEqual(pageTwoStack(file, pageOne(), doc(), FULL), pageTwoStack(file, pageOne(), null, FULL), file)
+})
+
+test("R-127's fallback, kept: a Home with NO main feed gives page 2 the Synthesis Default stack — and only Home does", () => {
+  // the owner's "Pilot sections" project: three designed sections, none carrying isMainFeed
+  const landing = doc(inst('hero', 'a4/13'), inst('grid', 'a17/1'), inst('news', 'a22/1'))
+  assert.ok(!landing.instances.some((i) => i.isMainFeed), 'the fixture must exercise the fallback')
+  assert.deepEqual(pageTwoStack('home.hbs', landing, null, FULL), synthesize('index.hbs', FULL))
+  // `/page/2/` of a landing page still lists posts: the fallback IS the feed
+  assert.ok(pageTwoStack('home.hbs', landing, null, FULL).instances.some((i) => i.isMainFeed))
+  // an archive has no second FILE, so it has no fallback to take: its page 2 is its page 1, main feed or not
+  for (const file of ['tag.hbs', 'author.hbs']) assert.deepEqual(pageTwoStack(file, landing, null, FULL).instances, landing.instances, file)
+})
+
+test('an UNTOUCHED page 1 is its Synthesis Default stack, so that is what page 2 copies (:804-806 on Home)', () => {
+  for (const one of [null, undefined, doc()]) {
+    assert.deepEqual(pageTwoStack('home.hbs', one, null, FULL), synthesize('index.hbs', FULL), String(one))
+    // the root and its continuation never disagree about what the feed is
+    assert.deepEqual(pageTwoStack('home.hbs', one, null, FULL).instances.map((i) => i.designId), synthesize('home.hbs', FULL).instances.map((i) => i.designId))
+    for (const file of ['tag.hbs', 'author.hbs']) assert.deepEqual(pageTwoStack(file, one, null, FULL), synthesize(file, FULL), `${file} ${String(one)}`)
+  }
+})
+
+test('the fallback degrades with the library and never throws; a copy needs no library at all', () => {
+  assert.deepEqual(pageTwoStack('home.hbs', doc(), null, EMPTY).instances, [])
+  assert.deepEqual(pageTwoStack('home.hbs', doc(), null, EMPTY).dropped, synthesize('index.hbs', EMPTY).dropped)
+  for (const file of PAGINATED) assert.deepEqual(pageTwoStack(file, pageOne(), null, EMPTY).instances.map((i) => i.instanceId), ['band', 'grid', 'cta'], file)
+})
+
+test('`compilesTo` is the drop rule too: a Home design that does not list index.hbs is still placed on it (Story 5.16)', () => {
+  // the feed narrowed to home.hbs alone — Ghost hands the two files the same posts, so index.hbs keeps it
+  const narrowed = libraryOf(NAMED, { 'a17/1': ['home.hbs'] })
+  assert.deepEqual(synthesize('index.hbs', narrowed).instances.map((i) => i.designId), synthesize('home.hbs', narrowed).instances.map((i) => i.designId))
+  assert.deepEqual(synthesize('index.hbs', narrowed).dropped, [])
+  // and the widening goes one way only: a design on index.hbs alone is still dropped from home.hbs
+  assert.deepEqual(synthesize('home.hbs', libraryOf(NAMED, { 'a17/1': ['index.hbs'] })).dropped.map((d) => d.designId), ['a17/1'])
 })

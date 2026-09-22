@@ -4678,6 +4678,13 @@ location: `packages/section-runtime/src/synthesize.ts` (`indexStack`) · `doc-sc
   `doc-edit.ts` (`duplicateSection`)
 reason: unreachable today — no surface writes `isMainFeed: true`, and the owner's own project has none, which is
   R-127's second fallback. Guarding it now would mean deciding FR-H2's refusal wording before the story that owns it.
+note (Story 5.16, 2026-09-22): `indexStack` is GONE — R-179 made page 2 an exact copy of page 1, and `pageTwoStack`
+  replaced it (AD-27(d)). Two of the three cases are answered: the `compileTarget` blind spot, because a design that may
+  sit on `home.hbs` now may sit on `index.hbs` (`placement.ts`'s `compilesTo`, which `read.ts`, `synthesize` and the
+  Section Picker all ask), so the copy never holds a design page 2 cannot; and the hidden feed, which since R-179 is a
+  real design of its own and still offers page 2. What STANDS, for Story 5.19: several `isMainFeed` rows (`mainFeedOf`
+  and `findIndex` take the first), `docSchema`'s missing "at most one" refine, and `duplicateSection` (⌘D on a main
+  feed) copying the flag — which page 2's copy of page 1 now also carries onto page 2, by design (R-179).
 
 ## Deferred from: Story 5.6's Create run (2026-09-18)
 
@@ -5105,7 +5112,14 @@ reason: The table's key is `(project_id, template_key)` and has been since the c
 
 ### DW-218: an archive canvas carries the home feed's pager address
 
-status: open
+status: done 2026-09-22 (Story 5.16)
+resolution: Story 5.16 (2026-09-22) — `templateContext` gives every page of a list its OWN address, from one function
+  (`addressOf`, held to the shim's `pageUrl` by `orbit-weekly.test.ts`): `currentUrl` is `/`, `/page/2/`,
+  `/tag/<slug>/` or `/tag/<slug>/page/2/` (and the author's), and an archive's `paginationBase` is the archive, so its
+  Older link is `/tag/<slug>/page/2/` and never the home feed's. The editor hands the page's address to EVERY section
+  (`renderSection`'s new `url`), the site-wide header included, so `{{navigation}}` marks what Ghost marks — an exact
+  match only, read in source on both majors (MEASUREMENTS §48 (c), (d)). The Tag and Author canvases no longer mark Home.
+  Post, Page and 404 still hand the header `/` — DW-230.
 severity: low
 origin: Story 5.13's Review (2026-09-21), Blind Hunter.
 owner: the first story that draws a pager or a current-page nav mark on a Tag or Author canvas (Epic 9's archive categories).
@@ -5289,3 +5303,69 @@ reason: the chip is chrome in the canvas layer, drawn only while a section is po
   still while you design, and runs in Preview" — has no spoken equivalent. The fix is a sentence, not a chip: a
   sr-only line in the selected section's panel, or on the selection announcement, derived from the same `paused` list
   narrowed by `movesByItself`. It waits for a real part so it is measured on one (R-82), not on a fixture.
+
+## Deferred from: Story 5.16's Dev (2026-09-22) — page 2, seen and designed
+
+### DW-230: the Post, Page and 404 canvases still tell the header it is on the home page
+
+plain: On a Post, Page or 404 canvas your header still underlines "Home" as the page you are on, which the live site
+  does not do. Home, its page 2 and the Tag and Author pages are right since Story 5.16.
+status: open
+severity: low
+origin: Story 5.16's Create (2026-09-22), read in Ghost's source on both majors and in the recorded rows
+  (MEASUREMENTS §48 (c)): Ghost sets `nav-current` on an exact `relativeUrl` match only, and T3's recording draws
+  `nav-ghost-5-home` ALONE on both posts, the page and the 404.
+owner: Story 5.18 (live content from the connected site), whose subjects carry a real address to hand over — a post's
+  and a page's own URL — and the 404's is the missed path itself.
+location: `packages/library/src/orbit-weekly.ts` (`templateContext`, the `post.hbs`/`page.hbs` branch and the
+  non-paginated return: `currentUrl: '/'`) · `editor.tsx` `paint()` (the address it hands every section)
+reason: the bundled post and page fixtures carry no URL of their own that a menu item could match, so the canvas keeps
+  today's `/` there rather than invent one (FR-H3). The fix is the subject's own `url` as `currentUrl` in those two
+  branches, plus a non-matching address for the 404, and `orbit-weekly.test.ts`'s address test widened to them.
+
+### DW-231: the shim draws no `nav-current-parent`, which Ghost adds on an archive's later pages
+
+plain: On page 2 of a tag page, the live site marks that tag's menu item with a "parent" class a theme can style; the
+  canvas never adds it. No design styles it today.
+status: open
+severity: low
+origin: Story 5.16's Dev (2026-09-22), read in `core/frontend/services/theme-engine/handlebars/utils.js:33-50, :63` on
+  both majors (MEASUREMENTS §48 (c)): an item whose path is a prefix of the location gets `nav-current-parent`.
+owner: the first design that styles `.nav-current-parent` (A1's category story, Epic 9)
+location: `packages/ghost-shim/src/index.ts` (`navigationItems`, which computes `current` alone)
+reason: nothing reads the class, so the canvas and the theme agree on every pixel today. `_urlParentMatch` also has an
+  oddity worth recording before it is copied — it compares ONLY the item's last path part (`parent` is overwritten on
+  each loop turn) — so the shim should reproduce that loop, not an idealised prefix test, and record it on T1 and T3.
+
+### DW-232: the Synthesis Defaults name A34 #1 Numbers, and the all-Free rule forbids it
+
+plain: The standard page-2 style the untouched pages are supposed to use is a Pro design, while the rule for untouched
+  pages says they only ever use Free ones. Nothing shows this yet, because pagination styles arrive in Epic 10.
+status: open
+severity: medium
+origin: Story 5.16's Create (2026-09-22), read in the documents: `sections-inventory.md` § Synthesis Defaults §3 and
+  §4 set "Pagination style = A34 #1 Numbers" on every collection template, while Invariant 1 says defaults reference
+  only [Free] designs, and the export's `A34 Pagination Styles - Spec.md:9` makes A34's [Free] designs **#2 Prev and
+  Next** and **#9 Cards** — and `prd.md`'s entitlement table (`:1168`) says "A34 #1–#2 are [Free]", a third answer.
+owner: Story 5.19 (the Pagination style control on the main feed), with the owner: which Free design an untouched
+  template's pager is.
+location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/sections-inventory.md` §3–§4 · `prd.md:1168`
+reason: a documents disagreement with no code behind it yet — `SYNTHESIS_DEFAULTS` carries no pagination value
+  (`synthesize.ts`'s FEED row says why) and no A34 design is authored. Choosing one is the owner's (R-17 chose the Free
+  pair), so it waits for the story that builds the control.
+
+### DW-233: the four Pagination style lists disagree
+
+plain: The pagination choices are listed four different ways in the plans and drawings, so the control Story 5.19
+  builds has no single list to show. Nothing on screen offers it yet.
+status: open
+severity: medium
+origin: Story 5.16's Create (2026-09-22), read in the documents: FR-H2 (`prd.md:312`) and Story 5.19's card offer
+  **Numbered / Load More / Infinite scroll**; D5c and D5d (`D5 Canvas Markers and Template Switcher.dc.html:350, :428`)
+  draw **None / Older/Newer / Numbers**; A34's roster is ten designs (Numbers, Prev and Next, Bar, Pill, Counter, …);
+  and `sections-inventory.md`'s A34 entry speaks of Numbered, Load More and Infinite as design families.
+owner: Story 5.19 (the Pagination style control), which must pick one vocabulary before it draws the row above D5d's
+  Preview page row
+location: `prd.md` FR-H2 · `epics.md` Story 5.19 · `sections-inventory.md` A34 · the D5c/D5d frames (never edited, R-74)
+reason: Story 5.16 builds only the Preview page row under that control and draws no Pagination row, so it settles
+  none of the four; recording them here keeps Story 5.19 from inheriting a silent choice.
