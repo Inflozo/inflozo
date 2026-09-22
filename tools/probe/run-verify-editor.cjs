@@ -141,6 +141,17 @@
 // with the coral tint and no row carries a tick, read in steps 40 and 90; and step 40 finds the popover itself never
 // scrolling — the owner's "two scrollbars", whose second belonged to the popover. R-173, the same day: step 20's pasted
 // link is read for the pack's link style — ink words and the accent underline, not the browser's blue.
+// Story 5.15 adds step 91, inside step 5's session, because the editor now RUNS `core` against the canvas window on every
+// paint (DW-136), and "code in the editor's realm acting on that window raises no violation" is reasoned until this walk
+// executes it (standing rule 1): at rest every held-still mount at rest (no js-enabled) and no PAUSED chip; Rail and the
+// Inline Row hovered and selected with no chip (R-175: both parts wait for a press — the chip's own look is the
+// keyboard journey's, on controls fixture 1, since the shipped library holds no part that moves by itself); B3a's pill
+// measured where it is drawn; Preview by the pill with the chrome hidden, the page 1:1 in the 1440 × 900 window, every
+// mount running and B3b's bar measured; a hover, a click, a link, a submit and typing in Preview, none of which leaves
+// the canvas; at Mobile the header's menu button only in Preview; and the way back by Back to editing, `Esc` and `P`.
+// Step 5 gains its negative control — `eval` called from the editor on the canvas window must throw `EvalError` — and
+// its sentence names the Preview session; step 4 compares with `core`'s `js-enabled` taken off both sides; step 8 scans
+// Preview; steps 77 and 78 find `P` live and only `⌘⏎` owed; and step 90's key sweep leaves Preview after `p`.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -422,7 +433,16 @@ async function main() {
     await page.mouse.move(120, 400)
     await page.waitForTimeout(250)
     // the roots are read BEFORE any screenshot: Playwright's screenshot leaves `style=""` on a focusable input (executed)
-    const roots = async () => canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].map((e) => e.outerHTML))
+    /* STORY 5.15: `js-enabled` is `core`'s, set on a mount it RUNS and never authored. While designing the editor holds
+       every module that is not edit-safe at rest (R-174) and `/pilots` draws the JavaScript-on look, so the class comes
+       off BOTH sides — on every mount, so both sides' class attributes are serialised the same way — before they are
+       compared. Step 91 reads the class where it means something. */
+    const unclassed = () => [...document.querySelectorAll('#canvas > *')].map((e) => {
+      const c = e.cloneNode(true)
+      for (const el of [c, ...c.querySelectorAll('[data-module]')]) if (el.hasAttribute('data-module')) el.classList.remove('js-enabled')
+      return c.outerHTML
+    })
+    const roots = async () => canvasFrame().evaluate(unclassed)
     const homeRoots = await roots()
     await page.screenshot({ path: `${OUT}/editor-home-1440x900.png` })
 
@@ -463,14 +483,14 @@ async function main() {
       await pilotsPage.waitForFunction((want) => document.querySelector('iframe[data-pilot]')?.dataset.pilot === want, id)
       await pilotsPage.waitForTimeout(250)
       const f = pilotsPage.frames().find((x) => x !== pilotsPage.mainFrame())
-      return f.evaluate(() => document.querySelector('#canvas > *')?.outerHTML)
+      return f.evaluate(unclassed).then((all) => all[0])
     }
     for (const [key, designs] of ['home', 'post'].map((k) => [k, stackOf(k).map(([id]) => id)])) {
       check(`step 4 — ${key}: one root per section, in stack order`, editorRoots[key].length === designs.length, `${editorRoots[key].length} roots`)
       for (const [n, id] of designs.entries()) {
         // /pilots draws each design at its first compileTarget; a1/1 → default.hbs, the others' first is this canvas
         const want = await pilotsRoot(id)
-        check(`step 4 — ${key} · ${id} (${designName(id)}): outerHTML equals /pilots' at Desktop · Light · Signed out · Everyone · First`, !!want && editorRoots[key][n] === want, diff(editorRoots[key][n] ?? '', want ?? ''))
+        check(`step 4 — ${key} · ${id} (${designName(id)}): outerHTML equals /pilots' at Desktop · Light · Signed out · Everyone · First, core's js-enabled taken off both`, !!want && editorRoots[key][n] === want, diff(editorRoots[key][n] ?? '', want ?? ''))
       }
     }
     await pilotsPage.close()
@@ -3255,9 +3275,10 @@ async function main() {
     // Story 5.10: ⌘K MOVED FROM THE FIRST LIST TO THE SECOND, because this story built the picker it presses (R-145)
     // Story 5.11: `[` AND `]` MOVED FROM THE FIRST LIST TO THE SECOND, because this story bound them (R-145)
     // Story 5.12: ⇧R MOVED, because this story built Site Remix — it was deliberately missing until today
-    check('step 77 — R-145: the card lists exactly the keys that WORK — no P, no ⌘⏎ — and never greys or captions one',
-      card59 !== null && ['P', '⌘⏎'].every((k) => !card59.chips.includes(k)) &&
-      ['⌘K', '[', ']', '⇧R', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
+    // Story 5.15: P MOVED, because this story built Preview — `lib/preview.ts`'s one name is the card's row too (R-170)
+    check('step 77 — R-145: the card lists exactly the keys that WORK — P as "Preview", no ⌘⏎ — and never greys or captions one',
+      card59 !== null && ['⌘⏎'].every((k) => !card59.chips.includes(k)) && card59.actions.includes('Preview') &&
+      ['⌘K', '[', ']', '⇧R', 'P', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?'].every((k) => card59.chips.includes(k)) &&
       !/not yet|coming soon|unavailable/i.test(card59.words), JSON.stringify(card59 && card59.chips))
     await page.keyboard.press('Escape')
     await page.waitForTimeout(300)
@@ -3266,11 +3287,11 @@ async function main() {
     // ── step 78 — R-145: a key whose action has not been built does nothing at all ──
     const beforeDead59 = { names: await pageNames(), mode: await modeNow59(), device: await deviceNow59(), said: await saidNow59() }
     await page.locator('section[aria-label="Canvas"]').focus()
-    // ⌘K left this loop at Story 5.10 and has steps 81-85 of its own, and ⇧R at Story 5.12 with step 88; `[` and
-    // `]` stay because with nothing selected they still do nothing, which is ⌘D's own rule
-    for (const key of ['[', ']', 'p', `${CMD58}+Enter`]) await page.keyboard.press(key)
+    // ⌘K left this loop at Story 5.10 and has steps 81-85 of its own, ⇧R at Story 5.12 with step 88 and P at Story
+    // 5.15 with step 91; `[` and `]` stay because with nothing selected they still do nothing, which is ⌘D's own rule
+    for (const key of ['[', ']', `${CMD58}+Enter`]) await page.keyboard.press(key)
     await page.waitForTimeout(500)
-    check('step 78 — R-145: `[`, `]`, P and ⌘⏎ change nothing, announce nothing and open nothing — absent, never greyed',
+    check('step 78 — R-145: `[`, `]` and ⌘⏎ change nothing, announce nothing and open nothing — ⌘⏎ absent, never greyed',
       JSON.stringify(await pageNames()) === JSON.stringify(beforeDead59.names) && (await modeNow59()) === beforeDead59.mode &&
       (await deviceNow59()) === beforeDead59.device && (await saidNow59()) === beforeDead59.said &&
       (await page.evaluate(() => document.querySelectorAll('dialog[open], :popover-open').length)) === 0,
@@ -4132,7 +4153,8 @@ async function main() {
         // the control for the two absences above: the same reading DOES find the bar's words
         reads: bare.includes('View as') && bare.includes('Template'),
         trigBox: box(trig),
-        // S4a's right-hand cluster: the dice, the sun, the device track and Theme settings
+        // S4a's right-hand cluster: the dice, the sun, the device track, Theme settings and, since Story 5.15, B3a's
+        // Preview pill last — measured 44px of room at 1280 in the harness (2026-09-22), meeting the group near 1190
         clusterBox: box(document.getElementById('editor-theme-settings')?.parentElement),
       }
     })
@@ -4352,7 +4374,8 @@ async function main() {
     for (const key of keys90) {
       await page.locator('section[aria-label="Canvas"]').focus()
       await page.keyboard.press(key)
-      if ((await page.locator('dialog[open]').count()) > 0) await page.keyboard.press('Escape')
+      // a dialog is closed again so the next key reaches the shell — and so is Preview, which `p` enters since Story 5.15
+      if ((await page.locator('dialog[open]').count()) > 0 || (await page.locator('#editor-preview-bar').count()) > 0) await page.keyboard.press('Escape')
       const now = await bar90()
       if (now.value !== name90(ANON90) || /The canvas is previewing/.test(await saidNow59())) moved90.push(key)
     }
@@ -4420,6 +4443,210 @@ async function main() {
     await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}`, { method: 'DELETE' })
     await freshLoad()
 
+    /* ── step 91 — Story 5.15: behaviours hold still while designing, and Preview runs them (FR-D20, B3a · B3b, R-174,
+       R-175, DW-136) ─────────────────────────────────────────────────────────────────────────────────────────────────
+       INSIDE STEP 5's CSP SESSION, so its zero covers `core` running from the editor against the canvas window in BOTH
+       modes — "code in the editor's realm acting on the canvas window compiles nothing there" is reasoned, and this is
+       where it is executed (standing rule 1); its negative control, `eval` called from the editor on the canvas window,
+       is step 5's, after the zero is read. The SHIPPED LIBRARY HOLDS NO HELD-STILL PART THAT MOVES BY ITSELF — the pilots'
+       `nav-drawer` and `member-form` both wait for a press — so no chip is drawn anywhere here (R-175), and the chip's
+       own look is the keyboard journey's, in CI, on controls fixture 1. Every word is the app's own. */
+    const PV = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/preview.ts')).href)
+    const chips91 = () => canvasFrame().evaluate(() => [...document.querySelectorAll('[data-inflozo-chrome]')].reduce((n, h) => n + (h.shadowRoot?.querySelectorAll('[data-chrome="paused"]').length ?? 0), 0))
+    const branches91 = () => canvasFrame().evaluate(() => ({
+      bar: document.querySelector('.a1-1__bar')?.classList.contains('js-enabled') ?? null,
+      form: document.querySelector('.a22-1__form')?.classList.contains('js-enabled') ?? null,
+      mounts: document.querySelectorAll('#canvas [data-module]').length,
+      enabled: document.querySelectorAll('#canvas .js-enabled').length,
+    }))
+    const header91 = () => canvasFrame().evaluate(() => {
+      const shown = (s) => getComputedStyle(document.querySelector(s)).display !== 'none'
+      return { menu: shown('.a1-1__menu'), links: shown('.a1-1__nav') }
+    })
+    const chrome91 = () => page.evaluate(() => ({
+      bar: document.getElementById('editor-preview-bar') !== null,
+      header: document.querySelector('header')?.checkVisibility() ?? null,
+      layers: document.getElementById('editor-layers')?.checkVisibility() ?? null,
+      controls: document.getElementById('editor-controls')?.checkVisibility() ?? null,
+      chip: document.getElementById('editor-viewport')?.checkVisibility() ?? null,
+      source: document.getElementById('editor-source')?.checkVisibility() ?? null,
+      hosts: document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.querySelectorAll('[data-inflozo-chrome]').length,
+      marks: [...document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.querySelectorAll('*')].filter((el) => [...el.attributes].some((a) => a.name.startsWith('data-inflozo-'))).length,
+      // an id, else a name, else the words: the canvas container is `Canvas`, Back to editing is its words
+      focus: ((d) => d?.id || d?.getAttribute('aria-label') || (d?.textContent ?? '').replace(/\s+/g, ' ').trim() || d?.tagName)(document.activeElement),
+    }))
+    const alpha = (colour, a) => new RegExp(`(?:/ |, )${String(a).replace('.', '\\.')}\\)$`).test(colour)
+
+    // ── at rest: every held-still mount at rest, and no chip ──
+    const rest91 = await branches91()
+    check('step 91 — at rest, every mount the table holds still is AT REST: Rail\'s bar and the Inline Row\'s form carry no js-enabled, and no PAUSED chip exists (R-174, FR-G7(4), R-175)',
+      rest91.mounts > 0 && rest91.bar === false && rest91.form === false && rest91.enabled === 0 && (await chips91()) === 0, JSON.stringify(rest91))
+
+    // ── R-175: Rail and the Inline Row, hovered and then selected — their parts wait for a press ──
+    for (const n of [HEADER, NEWS]) {
+      await hoverOn(n)
+      const hovered = { tag: (await tagNow())?.text ?? null, chips: await chips91() }
+      await clickOn(n)
+      const selected = { selected: (await onScreen(n)).selected, chips: await chips91() }
+      check(`step 91 — R-175: ${layerOf(n)} hovered and then selected carries NO PAUSED chip — its part waits for a press`,
+        hovered.tag === layerOf(n) && hovered.chips === 0 && selected.selected && selected.chips === 0, JSON.stringify({ hovered, selected }))
+    }
+    await page.keyboard.press('Escape')
+    await page.mouse.move(120, 400)
+    await page.waitForTimeout(300)
+
+    // ── B3a's pill, measured where it is drawn ──
+    const pill91 = await page.evaluate(() => {
+      const b = document.getElementById('editor-preview')
+      if (!b) return null
+      const c = getComputedStyle(b)
+      const word = b.querySelector('span.font-semibold')
+      const cap = b.querySelector('span[aria-hidden]')
+      const svg = b.querySelector('svg')
+      const [w, k] = [getComputedStyle(word), getComputedStyle(cap)]
+      return {
+        last: b.parentElement.lastElementChild === b && b.parentElement === document.getElementById('editor-theme-settings')?.parentElement,
+        label: b.getAttribute('aria-label'), keys: b.getAttribute('aria-keyshortcuts'), pressed: b.getAttribute('aria-pressed'),
+        fill: c.backgroundColor, line: `${c.borderTopWidth} ${c.borderTopColor}`, radius: c.borderRadius, padding: c.padding, gap: c.gap,
+        word: { text: word?.textContent, size: w.fontSize, weight: w.fontWeight },
+        cap: { text: cap?.textContent, size: k.fontSize, mono: /mono/i.test(k.fontFamily), fill: k.backgroundColor, ink: k.color, radius: k.borderRadius, padding: k.padding },
+        eye: { size: svg?.getAttribute('width'), stroke: svg?.getAttribute('stroke-width'), ink: getComputedStyle(svg).color },
+      }
+    })
+    // `B Missing Surfaces.dc.html:645-649` — white, a 1px line (#E7E2DB), the pill radius, `4px 10px 4px 8px`, a 7px gap; the
+    // eye 13px at 1.6 in #6E6A64; "Preview" 12/600; the mono P cap 10px on #EFECE7 in #6B6459, a 4px radius and `1px 5px`
+    check('step 91 — B3a: the Preview pill is the right-hand cluster\'s last control, as drawn — eye · "Preview" · the P cap — named by its word with aria-keyshortcuts="P" and no aria-pressed',
+      pill91 !== null && pill91.last && pill91.label === null && pill91.keys === 'P' && pill91.pressed === null &&
+      pill91.fill === 'rgb(255, 255, 255)' && pill91.line === '1px rgb(231, 226, 219)' && pill91.radius === '24px' && pill91.padding === '4px 10px 4px 8px' && pill91.gap === '7px' &&
+      pill91.word.text === PV.PREVIEW && pill91.word.size === '12px' && pill91.word.weight === '600' &&
+      pill91.cap.text === 'P' && pill91.cap.size === '10px' && pill91.cap.mono && pill91.cap.fill === 'rgb(239, 236, 231)' && pill91.cap.ink === 'rgb(107, 100, 89)' && pill91.cap.radius === '4px' && pill91.cap.padding === '1px 5px' &&
+      pill91.eye.size === '13' && pill91.eye.stroke === '1.6' && pill91.eye.ink === 'rgb(110, 106, 100)', JSON.stringify(pill91))
+
+    // ── in, by the pill: B3b, the chrome gone, and every module running ──
+    await freshLoad()
+    await clickOn(GRID)
+    const chosen91 = layerOf(GRID)
+    await page.mouse.move(120, 400)
+    await page.locator('#editor-preview').click()
+    await page.waitForTimeout(700)
+    const in91 = await chrome91()
+    const card91 = await page.evaluate(() => document.querySelector('section[aria-label="Canvas"]').firstElementChild.getBoundingClientRect().toJSON())
+    const said91 = await saidNow59()
+    check('step 91 — the pill goes in: every piece of editing chrome is hidden (the bar, Layers, Controls, the fit chip, the source pill, the chrome layer, every state mark), B3b\'s bar is shown with focus on Back to editing, and it is said',
+      in91.bar && in91.header === false && in91.layers === false && in91.controls === false && in91.chip === false && in91.source === false && in91.hosts === 0 && in91.marks === 0 &&
+      in91.focus.startsWith(PV.BACK) && said91 === PV.PREVIEW_SAID, JSON.stringify({ ...in91, said: said91 }))
+    check('step 91 — the stage is the whole window: in a 1440 × 900 window the page is 1:1, edge to edge (R-137\'s fit, B3b)',
+      card91.left === 0 && card91.top === 0 && card91.width === DEVICE_DESKTOP.width && card91.height === DEVICE_DESKTOP.height, JSON.stringify(card91))
+    const preview91 = await branches91()
+    check('step 91 — Preview runs everything the build carries: every declared mount carries js-enabled, the two pilots\' no-op stand-ins included (FR-G7(2))',
+      preview91.mounts > 0 && preview91.enabled === preview91.mounts && preview91.bar === true && preview91.form === true, JSON.stringify(preview91))
+    const bar91 = await page.evaluate(() => {
+      const b = document.getElementById('editor-preview-bar')
+      const c = getComputedStyle(b)
+      const r = b.getBoundingClientRect()
+      const back = b.querySelector('button')
+      const bc = getComputedStyle(back)
+      const esc = back.querySelector('span[aria-hidden]')
+      const ec = getComputedStyle(esc)
+      const divider = b.querySelector(':scope > span[aria-hidden]')
+      const dc = getComputedStyle(divider)
+      return {
+        role: b.getAttribute('role'), label: b.getAttribute('aria-label'), left: r.left, bottom: innerHeight - r.bottom,
+        fill: c.backgroundColor, radius: c.borderRadius, padding: c.padding, gap: c.gap, shadow: c.boxShadow,
+        back: { h: back.getBoundingClientRect().height, radius: bc.borderRadius, padding: bc.padding, size: bc.fontSize, weight: bc.fontWeight, ink: bc.color, keys: back.getAttribute('aria-keyshortcuts'), glyph: `${back.querySelector('svg')?.getAttribute('width')}/${back.querySelector('svg')?.getAttribute('stroke-width')}` },
+        esc: { text: esc.textContent, hidden: esc.getAttribute('aria-hidden'), size: ec.fontSize, mono: /mono/i.test(ec.fontFamily), fill: ec.backgroundColor, radius: ec.borderRadius, padding: ec.padding },
+        divider: { w: divider.getBoundingClientRect().width, h: divider.getBoundingClientRect().height, fill: dc.backgroundColor },
+        devices: [...b.querySelectorAll('[role="radio"]')].map((d) => ({ label: d.getAttribute('aria-label'), on: d.getAttribute('aria-checked') === 'true', w: d.getBoundingClientRect().width, h: d.getBoundingClientRect().height, fill: getComputedStyle(d).backgroundColor })),
+      }
+    })
+    // `B Missing Surfaces.dc.html:700-710` — ink, the pill radius, 5px padding, a 2px gap and B3b's .24 shadow (`modal`'s .25)
+    // at 18px off the window's bottom-left; Back to editing 34px high at a 20px radius and `0 15px`, the 14px slashed eye at
+    // 1.7, 13/600 white words and the mono `esc` cap at 10.5px on white .16; a 1px × 20px divider at white .18; the three
+    // devices at 34px, the current one on white .14
+    check('step 91 — B3b: the floating bar as drawn — ink, 18px off the bottom-left, Back to editing with its esc cap, the divider and the three devices, the current one lit',
+      bar91.role === 'toolbar' && bar91.label === PV.PREVIEW && bar91.left === 18 && bar91.bottom === 18 &&
+      bar91.fill === 'rgb(28, 27, 26)' && bar91.radius === '24px' && bar91.padding === '5px' && bar91.gap === '2px' && /rgba\(28, 27, 26, 0\.25\) 0px 12px 40px/.test(bar91.shadow) &&
+      bar91.back.h === 34 && bar91.back.radius === '20px' && bar91.back.padding === '0px 15px' && bar91.back.size === '13px' && bar91.back.weight === '600' && bar91.back.ink === 'rgb(255, 255, 255)' && bar91.back.keys === 'Escape' && bar91.back.glyph === '14/1.7' &&
+      bar91.esc.text === 'esc' && bar91.esc.hidden === 'true' && bar91.esc.size === '10.5px' && bar91.esc.mono && alpha(bar91.esc.fill, 0.16) && bar91.esc.radius === '4px' && bar91.esc.padding === '2px 6px' &&
+      bar91.divider.w === 1 && bar91.divider.h === 20 && alpha(bar91.divider.fill, 0.18) &&
+      JSON.stringify(bar91.devices.map((d) => d.label)) === JSON.stringify(LABELS) && bar91.devices.every((d) => d.w === 34 && d.h === 34) &&
+      bar91.devices.filter((d) => d.on).map((d) => d.label).join() === DEVICE_DESKTOP.label && bar91.devices.every((d) => (d.on ? alpha(d.fill, 0.14) : d.fill === 'rgba(0, 0, 0, 0)')),
+      JSON.stringify(bar91))
+
+    // ── a press in Preview reaches the page, and never leaves the canvas ──
+    const href91 = await canvasFrame().evaluate(() => location.href)
+    await hoverOn(GRID)
+    const hoveredIn91 = await chrome91()
+    await clickOn(GRID)
+    const clickedIn91 = await chrome91()
+    check('step 91 — in Preview a hover and a click select and outline NOTHING: no chrome layer, no state mark, no chip',
+      hoveredIn91.hosts === 0 && hoveredIn91.marks === 0 && clickedIn91.hosts === 0 && clickedIn91.marks === 0 && (await chips91()) === 0, JSON.stringify({ hoveredIn91, clickedIn91 }))
+    const link91 = await canvasFrame().evaluate(() => {
+      const a = document.querySelector('.a1-1__items a[href]')
+      a.scrollIntoView({ block: 'center' })
+      const r = a.getBoundingClientRect()
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, href: a.href }
+    })
+    const frameBox91 = await page.locator('section[aria-label="Canvas"] iframe').boundingBox()
+    // through the fit, which is 1 in Preview's 1440 × 900 window, and never assumed to be
+    const k91 = frameBox91.width / DEVICE_DESKTOP.width
+    await page.mouse.click(frameBox91.x + link91.x * k91, frameBox91.y + link91.y * k91)
+    await page.waitForTimeout(600)
+    const afterLink91 = await canvasFrame().evaluate(() => location.href)
+    await canvasFrame().evaluate(() => document.querySelector('.a22-1__field').scrollIntoView({ block: 'center' }))
+    await page.waitForTimeout(200)
+    const field91 = await canvasFrame().evaluate(() => { const r = document.querySelector('.a22-1__field').getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2 } })
+    await page.mouse.click(frameBox91.x + field91.x * k91, frameBox91.y + field91.y * k91)
+    await page.keyboard.type('preview@example.com')
+    const typed91 = await canvasFrame().evaluate(() => document.querySelector('.a22-1__field').value)
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(800)
+    const afterSubmit91 = { href: await canvasFrame().evaluate(() => location.href), bar: (await chrome91()).bar }
+    check('step 91 — a link and a submit in Preview leave the page where it is (AD-21), while the page\'s own field takes typing — a p included — and Preview stays on',
+      afterLink91 === href91 && link91.href !== href91 && typed91 === 'preview@example.com' && afterSubmit91.href === href91 && afterSubmit91.bar, JSON.stringify({ href91, link91, afterLink91, typed91, afterSubmit91 }))
+
+    // ── Mobile: the header's JavaScript branch only in Preview ──
+    await page.locator(`#editor-preview-device [role="radio"][aria-label="${DEVICE.MOBILE.label}"]`).click()
+    await page.waitForTimeout(700)
+    const mobileIn91 = { header: await header91(), device: await page.evaluate(() => document.querySelector('#editor-device [aria-checked="true"]')?.getAttribute('aria-label')) }
+    await page.locator('#editor-preview-bar button').first().click()
+    await page.waitForTimeout(700)
+    const out91 = await chrome91()
+    const mobileOut91 = { header: await header91(), branches: await branches91(), panel: await page.evaluate(() => document.getElementById('editor-controls')?.getAttribute('aria-label')), head: await page.evaluate(() => document.getElementById('editor-panel-name')?.textContent), said: await saidNow59() }
+    check('step 91 — at Mobile Rail shows its menu button and hides its links only in Preview; back to editing it lists its links again and shows no menu button, and B3b\'s device is the top bar\'s (one control, R-141)',
+      mobileIn91.header.menu === true && mobileIn91.header.links === false && mobileIn91.device === DEVICE.MOBILE.label &&
+      mobileOut91.header.menu === false && mobileOut91.header.links === true, JSON.stringify({ mobileIn91, mobileOut91 }))
+    check('step 91 — Back to editing comes back: the chrome is shown, every held-still mount is at rest again, the selection made before Preview is still selected with its panel, focus is back on the pill, and it is said',
+      out91.bar === false && out91.header && out91.layers && out91.controls && mobileOut91.branches.enabled === 0 &&
+      mobileOut91.panel === 'Section settings' && mobileOut91.head === chosen91 && out91.focus === 'editor-preview' && mobileOut91.said === PV.BACK_SAID,
+      JSON.stringify({ out91, mobileOut91 }))
+
+    // ── `P` and `Esc` are the other two ways, and a key that is not one of Preview's does nothing there ──
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('p')
+    await page.waitForTimeout(600)
+    const byKey91 = await chrome91()
+    for (const key of ['l', '.', '[', '?']) await page.keyboard.press(key)
+    await page.waitForTimeout(400)
+    const deadIn91 = { bar: (await chrome91()).bar, dialogs: await page.evaluate(() => document.querySelectorAll('dialog[open]').length), mode: await modeNow59() }
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(600)
+    const byEsc91 = await chrome91()
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('p')
+    await page.waitForTimeout(500)
+    await page.keyboard.press('p')
+    await page.waitForTimeout(600)
+    const byP91 = await chrome91()
+    check('step 91 — `P` goes in, `Esc` and `P` come back, focus returning to the canvas each time, and in Preview L . [ ? do nothing',
+      byKey91.bar && byKey91.focus.startsWith(PV.BACK) && deadIn91.bar && deadIn91.dialogs === 0 && deadIn91.mode === 'light' &&
+      byEsc91.bar === false && byEsc91.layers && byEsc91.focus === 'Canvas' && byP91.bar === false && byP91.focus === 'Canvas',
+      JSON.stringify({ byKey91, deadIn91, byEsc91, byP91 }))
+    // the walk leaves the device where it found it — the next steps measure at Desktop
+    await page.keyboard.press('1')
+    await page.waitForTimeout(400)
+    await freshLoad()
+
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     for (const path of ['/harness/editor', '/harness/canvas']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
@@ -4459,7 +4686,7 @@ async function main() {
     // session, and that page's zod JIT probe is a recorded violation of its own (DW-201) — the review's first complete
     // run failed here on that one event and no other
     const session = violations.splice(0).filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — and Story 5.15\'s `core`, run from the editor against the canvas window while designing and in Preview, and Preview itself — in by the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing pressed in it — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code
@@ -4485,6 +4712,25 @@ async function main() {
     const canvasEval = await evalIn(canvasFrame(), /'nonce-([^']+)'/.exec((await reloaded.allHeaders())['content-security-policy'] || '')?.[1])
     check('step 5 — control: new Function(\'\') throws EvalError in the editor document, from a script carrying its nonce', editorEval === 'EvalError', editorEval)
     check('step 5 — control: new Function(\'\') throws EvalError in the canvas document, from a script carrying its nonce', canvasEval === 'EvalError', canvasEval)
+    /* STORY 5.15's NEGATIVE CONTROL (the spec's Verification, standing rule 1). `eval`, reached from the EDITOR'S realm on
+       the canvas window — the road a canvas-side wrapper evaluating `bundle`'s strings would have needed (DW-136's
+       "likely shape") — is refused by the CANVAS's policy: the realm of the function called decides. That is why `core`
+       is imported and run from the editor's own bundle, and it is what makes step 91's zero a result rather than a
+       blind spot: code acting on that window is not exempt from its policy, it simply compiles nothing there. Run on a
+       TIMER from a script carrying the editor's own nonce, for `evalIn`'s reason. Executed first in Chromium 149 against a
+       local page pair carrying this policy (2026-09-22, Story 5.15's Dev): `EvalError`, reported by the child. */
+    const crossEval = await (async () => {
+      await page.evaluate((n) => {
+        delete window.__crossEval
+        const s = document.createElement('script')
+        s.nonce = n
+        s.textContent = "setTimeout(() => { try { document.querySelector('section[aria-label=Canvas] iframe').contentWindow.eval('1'); window.__crossEval = 'allowed' } catch (e) { window.__crossEval = e.name } }, 0)"
+        document.head.append(s)
+        s.remove()
+      }, await page.evaluate(() => document.querySelector('script[nonce]')?.nonce))
+      return page.waitForFunction(() => window.__crossEval, null, { timeout: 5000 }).then((h) => h.jsonValue(), () => 'the nonce script did not run')
+    })()
+    check('step 5 — control (Story 5.15): eval(\'1\') called from the editor on the canvas window throws EvalError under the canvas\'s policy — nothing is compiled in the canvas from the editor\'s side either', crossEval === 'EvalError', crossEval)
     // WAITED FOR, not slept at: each report is an `exposeBinding` round-trip, and a fixed 300ms lost both of them once
     // on a loaded machine (2026-09-18) — which under standing rule 2 would have voided step 5's zero for the whole run.
     // Waiting weakens nothing: the control still fails if the refusals never reach the recorder.
@@ -4757,6 +5003,17 @@ async function main() {
     const pickerAxe = await axeRun()
     check('step 8 — axe: zero violations with the Section Picker open, WITH NO EXCEPTION BEYOND R-149\'s ONE (the `inert` preview frames are what buy it)',
       pickerAxe.length === 0 && pickerShown === 1, `${pickerShown} picker · ${pickerAxe.join('; ')}`)
+    await axePage.keyboard.press('Escape')
+    await axePage.waitForTimeout(400)
+    // Story 5.15's own state: Preview — every editing surface hidden, B3b's bar the one piece of chrome, and every
+    // module running in the page. A repaint writes the canvas's markup and never reloads its document, so axe stays in it.
+    await axePage.locator('section[aria-label="Canvas"]').focus()
+    await axePage.keyboard.press('p')
+    await axePage.waitForTimeout(600)
+    const previewShown = await axePage.evaluate(() => ({ bar: document.getElementById('editor-preview-bar') !== null, header: document.querySelector('header')?.checkVisibility() ?? null }))
+    const previewAxe = await axeRun()
+    check('step 8 — axe: zero violations in Preview, with B3b\'s bar the one piece of chrome and the editing chrome hidden',
+      previewAxe.length === 0 && previewShown.bar && previewShown.header === false, `${JSON.stringify(previewShown)} · ${previewAxe.join('; ')}`)
     await axePage.keyboard.press('Escape')
     await axeContext.close()
 

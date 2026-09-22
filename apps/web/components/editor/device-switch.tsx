@@ -25,9 +25,15 @@ import { DEVICES, viewportWords, type Device, type DeviceName } from '@/lib/devi
 
 const GLYPH: Record<DeviceName, typeof DeviceDesktop> = { desktop: DeviceDesktop, tablet: DeviceTablet, mobile: DeviceMobile }
 
-export function DeviceSwitch({ device, onDevice }: { device: Device; onDevice: (next: Device) => void }) {
+/* STORY 5.15 — THE SAME TRACK ON B3b's INK BAR, as a second instance, so Preview's three devices and the top bar's are
+   one control with one handler (R-141). `id` is a parameter because two elements carrying `editor-device` would be one
+   duplicated id — `ModeToggle`'s own reason (R-151). The `ink` tone is B3b's `:707-709`: 34px round buttons, the current
+   one on white at .14 and the others hovering to .12 (`surface/14`, `surface/12`); the glyphs stay S4a's, which Story
+   5.7 made the editor's, where B3b redraws them at a 1.7 stroke. */
+export function DeviceSwitch({ device, onDevice, id = 'editor-device', tone = 'paper' }: { device: Device; onDevice: (next: Device) => void; id?: string; tone?: 'paper' | 'ink' }) {
   const list = choices(DEVICES.map((d) => ({ value: d.name, label: d.label })))
   const stop = tabStop(list, device.name)
+  const ink = tone === 'ink'
   const pick = (value: string) => {
     const next = DEVICES.find((d) => d.name === value)
     if (next) onDevice(next)
@@ -36,10 +42,10 @@ export function DeviceSwitch({ device, onDevice }: { device: Device; onDevice: (
     // the frame's pill fill is the value the token layer calls `paper-sunk` and its radius is `radius-sm`, both exact
     // (`S4 Editor.dc.html:36`) — no hex is written here, which `tokens.test.ts` enforces across `apps/web`
     <div
-      id="editor-device"
+      id={id}
       role="radiogroup"
       aria-label="Device"
-      className="flex rounded-sm bg-paper-sunk p-[2px]"
+      className={ink ? 'flex gap-[2px]' : 'flex rounded-sm bg-paper-sunk p-[2px]'}
       onKeyDown={(event) => radioKeys(event, list, pick)}
     >
       {DEVICES.map((d, i) => {
@@ -58,7 +64,11 @@ export function DeviceSwitch({ device, onDevice }: { device: Device; onDevice: (
             onMouseDown={(event) => event.preventDefault()}
             onClick={() => onDevice(d)}
             // the frame's active segment: `surface` under the house `shadow-sm`, which is the very shadow it draws
-            className={`inline-flex h-[26px] w-7 items-center justify-center rounded-[6px] ${ring} ${on ? 'bg-surface text-ink shadow-sm' : 'text-ink-soft'}`}
+            className={
+              ink
+                ? `inline-flex size-[34px] items-center justify-center rounded-[20px] text-surface transition-colors ${ring} ${on ? 'bg-surface/14' : 'hover:bg-surface/12'}`
+                : `inline-flex h-[26px] w-7 items-center justify-center rounded-[6px] ${ring} ${on ? 'bg-surface text-ink shadow-sm' : 'text-ink-soft'}`
+            }
           >
             <Glyph size={14} />
           </button>

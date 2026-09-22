@@ -1,5 +1,5 @@
 // ONE PER-SECTION RENDER, for every page that draws sections into the canvas document (Story 5.1): `/pilots` and the
-// editor call these and nothing else, so the two emit the same markup for the same design and state. Client-safe —
+// editor call `renderSection` and nothing else, so the two emit the same markup for the same design and state. Client-safe —
 // no `node:` import — because both call it in the browser, writing into a same-origin iframe that carries no script.
 //
 // Extracted from `pilots/review.tsx`'s `paint()` and `shown()` (Story 4.10) without a change in behaviour.
@@ -103,8 +103,10 @@ export function renderSection(
   }))
 }
 
-/** Writes sections into the mount and leaves every module mount in the state `core` leaves it on a live page
- *  (Story 4.7): the `js-enabled` class, and no script. */
+/** Writes sections into the mount and puts every module mount in its JavaScript branch, with no script running:
+ *  the `js-enabled` class `core` sets on a live page (Story 4.7). It is `/pilots`' and the Section Picker's cards'
+ *  look of a page with JavaScript on. The editor's canvas is NOT drawn through this since Story 5.15: there `core`
+ *  itself runs, holding every module that is not edit-safe at rest while designing (`lib/behaviours.ts`). */
 export function mountSections(mount: Element, html: string) {
   mount.innerHTML = html
   for (const el of mount.querySelectorAll('[data-module]')) el.classList.add('js-enabled')

@@ -361,6 +361,25 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     carries one. `registry.json` gains `movesByItself` on every row, the one place that says which (`animates` is
     `core`'s motion gate and is `false` on `header-scroll`). So TODAY'S LIBRARY DRAWS NO CHIP ANYWHERE — both pilot
     modules wait for a press — and CI draws one on controls fixture 1, which declares `marquee` for exactly that.
+  - **As built (Story 5.15, 2026-09-22):** `core.js` is ONE EXPORTED DECLARATION (`packages/library/package.json`'s
+    `./core`, typed by `modules/core.d.ts`) and `bundle()` removes that one keyword as it pastes, so `main.js` carries
+    none — `core.test.mjs` holds the real file's bytes and still runs the bundle with JavaScript on and off; it gained
+    `options.report` (DW-136(b)) and the handle's `paused`, and nothing else in it moved. `apps/web/lib/behaviours.ts`
+    is the app's ONE call (`startBehaviours`) over `CANVAS_MODULES` — every registry row, a no-op standing in where no
+    module file exists (FR-G7(2)), and `behaviours.test.ts` goes red the day a file lands un-imported — plus R-175's
+    `movesByItself`, read through `parseModuleDeclaration`. `paint()` stops the old handle, writes the markup PLAIN
+    (`mountSections` is `/pilots`' and the picker's now) and starts `core` after `wire(doc)`; a restamp keeps the nodes,
+    so running mounts survive it. The chip is portalled into the chrome layer and placed by `place()`'s new
+    `bottom-left`. Preview is `preview` in `latest` beside the device: the chrome HIDDEN (never unmounted), `showing`
+    and `layerFor` false, `mark()` writing no state mark, the stage unpadded and the card square, B3b's bar
+    (`components/editor/preview-toggle.tsx`) the one piece of chrome, its devices a second `DeviceSwitch` (an `id` and
+    an `ink` tone). `P` is `KEYMAP`'s row with `lib/preview.ts`'s one name (R-170), `IN_PREVIEW` is the set of gestures
+    that act there, and `onEscape`'s Preview rung sits above every other, after the popover and dialog guard. EXECUTED,
+    not only reasoned: in Chromium 149 against a page pair carrying the app's nonce policy, `core` run from the parent
+    realm raised zero violations and `eval` called on the child window threw `EvalError` — step 5's new control on
+    production. Measured in the harness: the cluster now meets View as between 1190 and 1195px (44px of room at 1280).
+    New: DW-226 (a width-declared mover chipped at every width), DW-227 (an autoplaying carousel unchipped), DW-228 (a
+    re-stamp strips a root mount's `data-i18n-*`, which matters now that edit-safe mounts keep running through it).
 - **The canvas renders no untrusted HTML.** Content API values are text nodes, Ghost URLs are http/https only, excerpts are text-only, and `codeinjection_*` is never read in, though a browser settings read returned it on T3 (MEASUREMENTS §38b); no `'unsafe-eval'` is a requirement to prove on the real canvas, not a measured fact.
 - **Keyboard-complete, with a device-test floor.** Single-key shortcuts work only while the shell holds focus, the canvas is one tab stop with a skip link and an `Esc` ladder, and every drag has a keyboard path; a coarse pointer below 834 gets the Small Screen Notice, while a desktop at 200% zoom keeps a reflowed editor (R-76, R-87).
   - **R-141 (owner, 2026-09-19, Story 5.8's Q2) — WHEN a binding is built splits on the modifier, and the reason is

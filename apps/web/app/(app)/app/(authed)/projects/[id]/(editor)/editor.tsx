@@ -16,6 +16,7 @@ import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/l
 import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
+import { PreviewBar, PreviewButton } from '@/components/editor/preview-toggle'
 import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
 import { SourcePill } from '@/components/editor/source-pill'
@@ -31,9 +32,10 @@ import { AddButton, Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
-import { ChevronLeft, Panel, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
+import { ChevronLeft, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
-import { canvasAssets, canvasSrc, mountSections, renderSection, shownRows, wheelToFrame } from '@/lib/canvas'
+import { movesByItself, startBehaviours } from '@/lib/behaviours'
+import { canvasAssets, canvasSrc, renderSection, shownRows, wheelToFrame } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPath, canvasStack, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
@@ -42,7 +44,8 @@ import {
   flushDecision, hydrationFor, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn, unsynced,
   vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
-import { holdsCaret, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { BACK_SAID, PAUSED, PREVIEW_SAID } from '@/lib/preview'
 import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
@@ -187,16 +190,30 @@ import type { EditorData } from './read'
    `afterChange`, run by `commit()` and `restore()` alone. The reminder is a coral dot on each unviewed row of View as's
    own menu and nothing in the bar (R-169); it only reminds, and never blocks.
 
-   ABSENT, NOT GREYED (UX-DR3), each until its story: "Saved", saving and Undo/Redo (5.8 — until then an edit lives for
-   the session and a reload starts from the stored docs),
-   Ship it (7.18), the name's rename underline (no story yet),
-   "+ Add section" and the hairline "+" between sections (5.10),
-   and the Style Pack card (6.3)
-   (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the VISITOR's `mode-toggle` and a
-   different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's docked bar at 390
-   (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a linked site (5.18) and
-   P0-2's filled-slot popover. S4a's posts-per-page note and S4c's pinned Quick Controls card are never
-   built (FR-Q1, R-113). */
+   BEHAVIOURS HOLD STILL WHILE DESIGNING, AND PREVIEW RUNS THEM (Story 5.15 — B3a, B3b, FR-D20, R-174, R-175). THIS
+   COMPONENT RUNS `core` ITSELF, against the canvas window, on every paint (`lib/behaviours.ts`, DW-136): the canvas
+   document carries no script and no nonce and the policy refuses `eval`, so nothing can run inside it, and `core`
+   reaches every platform object through the `win` it is handed. While designing it holds still every module that is
+   not edit-safe — `header-scroll`, `reveal`, `tabs` and `accordion` included (R-174) — and each such mount stays AT
+   REST, its no-JavaScript state (FR-G7(4)): so at 390 Rail lists its links and shows no menu button. The markup is
+   written plain and never through `mountSections`' blanket `js-enabled`. `core` hands back the mounts it held still,
+   and B3a's PAUSED chip marks one only while its section is hovered or selected and only if the part MOVES BY ITSELF
+   (R-175, the registry's `movesByItself`) — chrome in the canvas layer, 8px inside the mount's bottom-left corner, so
+   the page at rest is still the site and no `data-inflozo-*` marks the mount. On today's library no chip is drawn: the
+   pilots' `nav-drawer` and `member-form` both wait for a press. PREVIEW is B3a's pill or `P`, and B3b's bar, `Esc` or
+   `P` come back: a MODE like the device (`EXPERIENCE.md:230`) — session state, never in the URL, never an edit — that
+   HIDES every piece of editing chrome, never unmounting it, so every panel and the selection come back as they were;
+   one repaint runs every module the build carries (a registry module no file implements yet runs as a no-op, so its
+   mount draws its JavaScript branch as `/pilots` does). A link still never navigates the canvas and a form never
+   submits (AD-21's traps); every other press reaches the page, and only `P`, `Esc`, `1` `2` `3` and `⌘S` act.
+
+   ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet) and
+   the Style Pack card (6.3) (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
+   VISITOR's `mode-toggle` and a different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before
+   Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's
+   docked bar at 390 (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a
+   linked site (5.18) and P0-2's filled-slot popover. S4a's posts-per-page note, S4c's pinned Quick Controls card
+   (FR-Q1, R-113) and a "preview in a new tab" (B3's notes: the deploy preview URL's job) are never built. */
 
 // `EMPTY_DOC`, the template count and AD-22's round trip are `lib/round-trip.ts`'s, where `node --test` reaches them.
 
@@ -219,10 +236,10 @@ function useFold() {
   return { folded, hide, show, toggle }
 }
 
-/** D8's 44px rail with its one Show button. */
-function Rail({ fold, label, controls, side }: { fold: ReturnType<typeof useFold>; label: string; controls: string; side: 'left' | 'right' }) {
+/** D8's 44px rail with its one Show button. `hidden` in Preview (Story 5.15), never unmounted. */
+function Rail({ fold, label, controls, side, hidden }: { fold: ReturnType<typeof useFold>; label: string; controls: string; side: 'left' | 'right'; hidden: boolean }) {
   return (
-    <div className={`flex w-11 shrink-0 flex-col items-center bg-paper py-[6px] ${side === 'left' ? 'border-r' : 'border-l'} border-line`}>
+    <div hidden={hidden} className={`flex w-11 shrink-0 flex-col items-center bg-paper py-[6px] ${side === 'left' ? 'border-r' : 'border-l'} border-line`}>
       <button
         ref={fold.show}
         type="button"
@@ -238,6 +255,10 @@ function Rail({ fold, label, controls, side }: { fold: ReturnType<typeof useFold
     </div>
   )
 }
+
+/** Story 5.15 — where a behaviour's error goes: LOGGED, NEVER SAID, and its section stays at rest. `lib/behaviours.ts`
+ *  names the module in the error, because `core` hands on whatever the module threw. */
+const reportBehaviour = (error: unknown) => console.error('A behaviour on the canvas failed, and its section stays at rest.', error)
 
 type Placed = DocInstance & { target: string; doc: string }
 /** A section on this canvas, by the doc that stores it — a site-wide section lives in `site` */
@@ -316,6 +337,11 @@ export function Editor({
    *  `EXPERIENCE.md:230` makes View as a mode. It reaches every surface through `renderSection`'s one `member` option:
    *  the canvas, R-124's caption, the Section Picker's cards and the Design ring's tiles. */
   const [viewAs, setViewAs] = useState<Visitor>('anonymous')
+  /** Story 5.15 — PREVIEW (FR-D20, B3a · B3b). Session state like the mode, the device and the visitor, and for the
+   *  same reason: `EXPERIENCE.md:230` makes it a mode. It is never in the URL, never stored and never an edit — nothing
+   *  reaches `commit()`, the journal or `⌘Z` — and a reload is back to editing. View as, the mode, the device and the
+   *  preview subject all carry into it, because `paint()` reads them all through `latest`. */
+  const [preview, setPreview] = useState(false)
   /* ─── Story 5.13 — FR-D22's PREVIEW SUBJECT, and the pill that names it ──────────────────────────────────────
    *
    * PER CANVAS (and per user only while a project has one owner: the table's key is `(project_id, template_key)`,
@@ -424,6 +450,14 @@ export function Editor({
   const icons = useRef<IconLookup | null>(null)
   /** index-aligned with the stack last painted; null where a section rendered nothing */
   const roots = useRef<(HTMLElement | null)[]>([])
+  /** Story 5.15 — `core`'s handle for the canvas painted last: `stop()` before the next paint, and `paused`, the mounts
+   *  it held still, which the PAUSED chips read (R-175). Null before the first paint. */
+  const behaviours = useRef<ReturnType<typeof startBehaviours> | null>(null)
+  /** each PAUSED chip's element, by the mount it marks — placed by the chrome loop */
+  const chipEls = useRef(new Map<Element, HTMLElement>())
+  /** B3b's Back to editing, which takes focus on the way in, and where focus was before it (Story 5.15) */
+  const backButton = useRef<HTMLButtonElement>(null)
+  const cameFrom = useRef<HTMLElement | null>(null)
   const [size, setSize] = useState({ width: 0, height: 0 })
   // A section that will not draw is a broken doc or design, not a canvas to show around it: thrown in render, so the
   // app's error boundary shows it (the spec's "never a partly drawn canvas").
@@ -473,8 +507,8 @@ export function Editor({
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview }
 
   /** Story 5.14 — the changed records, into the session and down the one write chain. Only rows that CHANGE reach it:
    *  `seen` hands back the same array and `afterChange` returns only what moved, so an empty map writes nothing. */
@@ -740,18 +774,21 @@ export function Editor({
   /** Each root's two attributes, from the latest selection and hover — after every paint, stamp and change of either. */
   const mark = () => {
     const now = latest.current
+    // Story 5.15: in Preview the page IS the site, so no root carries a state mark and nothing inside the frame can
+    // paint on one. The selection itself stays in state and is marked again on the way back.
+    const on = !now.preview
     roots.current.forEach((root, n) => {
       const placed = now.stack[n]
       if (!root || !placed) return
-      root.toggleAttribute('data-inflozo-selected', same(placed, now.selected))
-      root.toggleAttribute('data-inflozo-hover', same(placed, now.hovered))
+      root.toggleAttribute('data-inflozo-selected', on && same(placed, now.selected))
+      root.toggleAttribute('data-inflozo-hover', on && same(placed, now.hovered))
       // Story 5.10 — S4b's insertion hairline, painted inside the frame from `lib/canvas-chrome.css`. A SECOND mark
       // and not `data-inflozo-hover`, because the two genuinely differ: a canvas nothing can be placed on is hovered
       // exactly as any other and offers no gap to press.
-      root.toggleAttribute('data-inflozo-insert', now.canAdd && same(placed, now.hovered))
+      root.toggleAttribute('data-inflozo-insert', on && now.canAdd && same(placed, now.hovered))
       // Story 5.11 — the swap's 180ms settle. Re-applied here after every stamp for the same reason the two
       // above are: `stampControls` strips every root `data-*` it does not own.
-      root.toggleAttribute('data-inflozo-swapped', same(placed, swapped.current))
+      root.toggleAttribute('data-inflozo-swapped', on && same(placed, swapped.current))
     })
   }
   /** The stored slice each root's attributes come from, in the mode being shown — `stampControls`' single door,
@@ -846,6 +883,27 @@ export function Editor({
     setSaid(VIEW_AS_SAID(next))
   }
 
+  /** STORY 5.15's TWO DOORS — B3a's pill or `P` in, B3b's bar, `Esc` or `P` out — and they are `chooseVisitor`'s shape:
+   *  `latest` first, because `paint()` reads it in this same task; then ONE repaint, so `core` starts again over the new
+   *  nodes with Preview's answer (everything runs, or everything that is not edit-safe holds still); then the sentence.
+   *  NEVER AN EDIT: nothing reaches `commit()`, the journal or `⌘Z`. Focus moves after the commit that hides or shows
+   *  the chrome (the effect below): in to Back to editing, and out to wherever it was. */
+  const enterPreview = () => {
+    if (latest.current.preview) return
+    cameFrom.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
+    latest.current = { ...latest.current, preview: true }
+    setPreview(true)
+    paint()
+    setSaid(PREVIEW_SAID)
+  }
+  const leavePreview = () => {
+    if (!latest.current.preview) return
+    latest.current = { ...latest.current, preview: false }
+    setPreview(false)
+    paint()
+    setSaid(BACK_SAID)
+  }
+
   const choose = (pick: Pick | null) => {
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
@@ -902,13 +960,23 @@ export function Editor({
         // Story 5.14: and so does the visitor View as is previewing — Story 4.10's `gateMembers` decides the rest.
         return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed: 'first', member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
       })
-      mountSections(mount, parts.join(''))
+      // Story 5.15: the behaviours running on the markup about to be replaced stop first, putting every mount back
+      // at rest — and the new markup is written PLAIN. Whether a mount runs is `core`'s to say, mount by mount, below;
+      // `mountSections`' blanket `js-enabled` drew every mount in its JavaScript branch with nothing running.
+      behaviours.current?.stop()
+      behaviours.current = null
+      mount.innerHTML = parts.join('')
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
       stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>('[data-inflozo-prop], [data-inflozo-ghost]'))
       const back = lock && lock.at >= 0 ? sameLock(lock.words)[lock.at] : undefined
       if (back && lock) showNote({ el: back, kind: 'lock', words: lock.words })
       roots.current = sectionRoots(parts, mount) as (HTMLElement | null)[]
       wire(doc)
+      // STORY 5.15 — `core` STARTS HERE, over the new nodes, against the canvas's own window (DW-136). While designing
+      // it holds still every module that is not edit-safe and hands those mounts back for the PAUSED chip (R-174,
+      // R-175); in Preview everything runs. A restamp keeps the nodes, so it never reaches here and running mounts
+      // survive it.
+      if (doc.defaultView) behaviours.current = startBehaviours(doc.defaultView, !now.preview, reportBehaviour)
       // the hovered root was replaced, and the pointer has not said where it is since
       latest.current.hovered = null
       setHovered(null)
@@ -1083,9 +1151,9 @@ export function Editor({
    * functions the pill and the `⋯` menu call — so a key and its button cannot drift (R-141's rule, already proved by
    * ⌘Z at Story 5.8). Nothing below decides what a key DOES; `shortcutFor` decides what a press IS.
    *
-   * A BINDING WHOSE ACTION IS NOT BUILT NEVER REACHES HERE (R-145): `⌘K`, `[`, `]`, `⇧R`, `P` and `⌘⏎` carry no keys
-   * in the table, so `shortcutFor` returns null for them, nothing is prevented, nothing is announced and the `?` card
-   * does not list them.
+   * A BINDING WHOSE ACTION IS NOT BUILT NEVER REACHES HERE (R-145): `⌘⏎` carries no keys in the table — `⌘K`, `[`,
+   * `]`, `⇧R` and `P` left that list with the actions they drive — so `shortcutFor` returns null for it, nothing is
+   * prevented, nothing is announced and the `?` card does not list it.
    *
    * TWO GUARDS, AND THE SPLIT IS THE MODIFIER'S. A single-character press is inert while ANY text holds the caret
    * (UX-DR11, WCAG 2.1.4) — typing "dark" into a headline must never flip the canvas — and gives way to an open
@@ -1130,6 +1198,9 @@ export function Editor({
       // STORY 5.12 — the key presses the DICE, not the fold: the confirm opens at once and the cube rolls only on
       // the confirmed Remix (R-164), so `⇧R` and the button are one control down to the animation (R-141)
       case 'remix': return remixDice.current?.press()
+      // STORY 5.15 — `P` is B3a's pill on the way in and B3b's Back to editing on the way out: one toggle, the very
+      // handlers the two buttons call (R-141)
+      case 'preview': return latest.current.preview ? leavePreview() : enterPreview()
       // the ladder below owns it; `shortcutFor` never returns it, and this arm is here so the union stays exhaustive
       case 'deselect': return
       default: {
@@ -1152,6 +1223,9 @@ export function Editor({
     if (gesture !== 'save' && target?.ownerDocument?.querySelector(owner)) return
     // a `<select>` has no caret but it does have type-ahead: `l` there is a letter of an option's name (review)
     if (SINGLE_KEY.has(gesture) && (target?.tagName === 'SELECT' || active?.tagName === 'SELECT')) return
+    // STORY 5.15 — IN PREVIEW ONLY `P`, `⌘S` AND THE THREE DEVICES ACT (`IN_PREVIEW`). Every other binding drives chrome
+    // that is hidden, so it does nothing — and is still claimed, so ⌘D never bookmarks the page instead
+    if (latest.current.preview && !IN_PREVIEW.has(gesture)) return void e.preventDefault()
     // A HELD KEY IS ONE PRESS: auto-repeat would stack a duplicate per tick and strobe the panel. ⌘Z and ⇧⌘Z repeat
     // on purpose, as they do everywhere.
     if (e.repeat && gesture !== 'undo' && gesture !== 'redo') return void e.preventDefault()
@@ -1172,8 +1246,16 @@ export function Editor({
     if (e.key !== 'Escape' || e.defaultPrevented) return
     const target = e.target as HTMLElement | null
     const doc = target?.ownerDocument
-    // an open popover or dialog anywhere in that document owns the key, whichever element holds focus
-    if (doc?.querySelector(':popover-open, dialog[open]') || !escDeselects(target)) return
+    // an open popover or dialog anywhere in that document owns the key, whichever element holds focus — in Preview
+    // that includes a module's own `<dialog>` in the page: the first Esc closes it, the next comes back
+    if (doc?.querySelector(':popover-open, dialog[open]')) return
+    // STORY 5.15 — THE PREVIEW RUNG, above every other: `Esc` is B3b's way back, from anywhere in either document
+    if (latest.current.preview) {
+      e.preventDefault()
+      leavePreview()
+      return
+    }
+    if (!escDeselects(target)) return
     if (latest.current.selected) {
       choose(null)
       stage.current?.focus()
@@ -1209,6 +1291,9 @@ export function Editor({
       closeMenus()
     }, true)
     doc.addEventListener('mousedown', (e) => {
+      // STORY 5.15 — IN PREVIEW A PRESS REACHES THE PAGE: nothing starts editing and nothing is prevented, so words
+      // select and a field takes focus and typing as a visitor's does
+      if (latest.current.preview) return
       press.current.on = true
       // the primary button alone starts editing: a right press would put the caret in and open the browser's editing
       // menu over it, and a middle press on Linux pastes the primary selection (review, 2026-09-18)
@@ -1244,11 +1329,12 @@ export function Editor({
       // capture: a section's own scrolling box (a carousel, an overflow row) moves the words under the toolbar too
     }, { passive: true, capture: true })
     // hover is the mouse's and the pen's: touch has the hold, so a tap never flashes an outline before it selects
+    // Story 5.15: and in Preview nothing hovers — no outline, no tag, no pill, no chip
     doc.addEventListener('pointerover', (e) => {
-      if (e.pointerType !== 'touch') point(pickAt(e.target))
+      if (e.pointerType !== 'touch' && !latest.current.preview) point(pickAt(e.target))
     })
     doc.addEventListener('pointerout', (e) => {
-      if (e.pointerType === 'touch' || e.relatedTarget !== null) return
+      if (e.pointerType === 'touch' || e.relatedTarget !== null || latest.current.preview) return
       // Story 5.4: the pointer crossing from the iframe onto S4b's pill arrives HERE, as a `pointerout` with a null
       // relatedTarget — the pill is outside the frame (AD-21) — so clearing the hover would take the pill away from
       // under the pointer that is inside it. Tested by GEOMETRY and not by the pill's own `pointerenter`, because two
@@ -1270,7 +1356,8 @@ export function Editor({
       return outcome
     }
     doc.addEventListener('pointerdown', (e) => {
-      if (e.pointerType !== 'touch') return
+      // Story 5.15: in Preview a touch is the visitor's, and no hold starts
+      if (e.pointerType !== 'touch' || latest.current.preview) return
       // a second finger is not a press: the first one's hold or tap is off, and neither lift is a tap (review, 2026-09-17)
       if (state.at) {
         clearTimeout(timer)
@@ -1297,6 +1384,13 @@ export function Editor({
       step({ type: 'cancel' })
     })
     doc.addEventListener('click', (e) => {
+      // STORY 5.15 — IN PREVIEW EVERY CLICK REACHES THE PAGE and selects nothing, except the one AD-21 trap a click owns:
+      // a link never navigates the canvas (`submit`, `auxclick` and the drops stay prevented above, in both modes).
+      // `closest` rather than `instanceof`: the target lives in the canvas document's realm.
+      if (latest.current.preview) {
+        if ((e.target as Element | null)?.closest?.('a[href]')) e.preventDefault()
+        return
+      }
       e.preventDefault()
       if (step({ type: 'click' }) === 'swallow') return
       // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away
@@ -1364,6 +1458,9 @@ export function Editor({
     return () => {
       alive = false
       clearTimeout(settle.current)
+      // Story 5.15: the behaviours running on the canvas stop with the editor, taking their listeners with them
+      behaviours.current?.stop()
+      behaviours.current = null
       el?.removeEventListener('load', ready)
       window.removeEventListener('keydown', onEscape)
       window.removeEventListener('keydown', onShortcut)
@@ -1497,6 +1594,21 @@ export function Editor({
     return () => watch.disconnect()
   }, [])
   useLayoutEffect(mark, [selected, hovered])
+  /* Story 5.15 — FOCUS FOLLOWS PREVIEW, after the commit that hides or shows the chrome: in, onto B3b's Back to editing;
+     out, back to where it was — or onto the pill, if that element has gone. `previewed` stays false until Preview has
+     been entered once, so the first render moves nothing. */
+  const previewed = useRef(false)
+  useLayoutEffect(() => {
+    if (preview) {
+      previewed.current = true
+      backButton.current?.focus()
+      return
+    }
+    if (!previewed.current) return
+    const was = cameFrom.current
+    cameFrom.current = null
+    ;(was && was.isConnected && was !== document.body ? was : document.getElementById('editor-preview'))?.focus()
+  }, [preview])
 
   const rootOf = (pick: Pick | null) => {
     const n = pick ? stack.findIndex((i) => same(i, pick)) : -1
@@ -1543,7 +1655,9 @@ export function Editor({
   // THE CHROME LAYER (the owner's finding, 2026-09-17): the boxes, the tag and the badge are portalled into the canvas
   // document, so the compositor scrolls them with their section in the same frame (`lib/canvas-layer.ts`)
   const [chrome, setChrome] = useState<ChromeLayers | null>(null)
-  const showing = !!(hoveredRoot || selectedRoot)
+  // Story 5.15: in Preview the layer is dropped, so no outline, tag, badge, lock pill or chip can exist — while the
+  // selection itself stays in state and is drawn again on the way back
+  const showing = !preview && !!(hoveredRoot || selectedRoot)
   useLayoutEffect(() => {
     const doc = frame.current?.contentDocument
     if (!showing || !doc) {
@@ -1557,17 +1671,33 @@ export function Editor({
     if (chrome?.doc !== doc) setChrome(chromeLayers(doc))
     // `chrome` is read, not a dependency: it is what this effect sets
   }, [showing, paints])
-  const layerFor = (root: HTMLElement | null) => (!root || !chrome ? null : pinned(root) ? chrome.view : chrome.page)
+  const layerFor = (root: HTMLElement | null) => (preview || !root || !chrome ? null : pinned(root) ? chrome.view : chrome.page)
+
+  /* STORY 5.15 — B3a's PAUSED CHIPS (R-175). One for each mount `core` held still whose part MOVES BY ITSELF — on a
+     timer or as the page scrolls, with nothing pressed (the registry's `movesByItself`) — inside the hovered root and
+     inside the selected one, and none in Preview. The list is `core`'s own (`paused`), never a second one kept here,
+     so a part that waits for a press — a phone menu, a sign-up form — never carries one. */
+  const chips = preview
+    ? []
+    : [...new Set([hoveredRoot, selectedRoot])].flatMap((root) =>
+        !root
+          ? []
+          : (behaviours.current?.paused ?? [])
+              .filter((el) => root.contains(el) && movesByItself(el.getAttribute('data-module') ?? ''))
+              .map((el) => ({ el: el as HTMLElement, root })),
+      )
 
   // positions follow layout, not scroll: a section that grows, a header that shrinks, a fold that re-fits the canvas
   useLayoutEffect(() => {
     if (!chrome) return
-    const all: [HTMLElement | null, HTMLElement | null, 'fill' | 'top-left' | 'top-right' | 'above'][] = [
+    const all: [HTMLElement | null, HTMLElement | null, Parameters<typeof place>[3]][] = [
       [hoverBox.current, hoveredRoot, 'fill'],
       [selectedBox.current, selectedRoot, 'fill'],
       [tag.current, hoveredRoot, 'top-left'],
       [badge.current, selectedRoot, 'top-right'],
       [noteBox.current, note?.el ?? null, 'above'],
+      // Story 5.15: each PAUSED chip, 8px inside its mount's bottom-left corner
+      ...chips.map(({ el }): [HTMLElement | null, HTMLElement, 'bottom-left'] => [chipEls.current.get(el) ?? null, el, 'bottom-left']),
     ]
     const tick = () => {
       for (const [el, root, how] of all) if (el && root) place(el, root, scale, how)
@@ -1923,7 +2053,9 @@ export function Editor({
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-paper text-ink">
-      <header className="relative flex h-12 shrink-0 items-center gap-[10px] border-b border-line bg-paper px-3">
+      {/* Story 5.15: in Preview the whole bar is HIDDEN, never unmounted — its menus, its focus and every value in it
+          come back exactly as they were */}
+      <header hidden={preview} className="relative flex h-12 shrink-0 items-center gap-[10px] border-b border-line bg-paper px-3">
         {/* D8c (`D8 Editor Below 1440.dc.html:311-345`) — THE FIRST FOCUSABLE THING IN THE SHELL, not rendered at
             rest and drawn on the first Tab as the frame draws it: a surface pill at left 10 / top 9, 30px high,
             `0 13px`, 12 radius, 1px line, the sm shadow AND the corrected 2px ring together (A7 item 7) — one
@@ -2046,11 +2178,14 @@ export function Editor({
           >
             Theme settings
           </Link>
+          {/* STORY 5.15 — B3a's Preview pill (`B Missing Surfaces.dc.html:645-649`), LAST in the cluster: B3a draws it
+              immediately left of the ship button, and Story 7.18 places "Ship it" to its right. */}
+          <PreviewButton onPress={enterPreview} />
         </div>
       </header>
 
       <div className="flex min-h-0 flex-1">
-        <aside id="editor-layers" aria-label="Layers" hidden={layers.folded} className="flex w-[240px] shrink-0 flex-col border-r border-line bg-paper">
+        <aside id="editor-layers" aria-label="Layers" hidden={layers.folded || preview} className="flex w-[240px] shrink-0 flex-col border-r border-line bg-paper">
           <div className="flex items-center gap-2 px-4 pt-[10px]">
             <span className="flex-1 text-[12.5px] font-semibold">Layers</span>
             <IconButton ref={layers.hide} label="Collapse layers" title="Collapse layers" aria-expanded aria-controls="editor-layers" onClick={() => layers.toggle(true)}>
@@ -2093,7 +2228,7 @@ export function Editor({
             </div>
           ) : null}
         </aside>
-        {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" /> : null}
+        {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" hidden={preview} /> : null}
 
         <section
           ref={stage}
@@ -2112,7 +2247,8 @@ export function Editor({
           // phone-shaped card would silently stop deselecting. The chip is absolutely positioned and pointer-transparent,
           // so it is out of the centring and out of this test.
           onPointerDown={(e) => {
-            if (e.button === 0 && e.target === e.currentTarget) choose(null)
+            // Story 5.15: in Preview the ground is the page's backdrop, and a selection survives Preview whole
+            if (!preview && e.button === 0 && e.target === e.currentTarget) choose(null)
           }}
           // R-138 (owner, 2026-09-19): `pt-8`, not S4a`:62`'s 24px. THE CHIP IS PINNED TO THIS CORNER AND THE CARD
           // MOVES, so a height-bound card rose to meet it — measured on the deployed editor at 1440 × 900: Tablet put
@@ -2123,7 +2259,9 @@ export function Editor({
           // longer stands on the bottom of the window", and a height-bound card (Tablet, Mobile, a folded or short-window
           // Desktop) still did, with its shadow cut off. Tablet 74% → 71%, Mobile 97% → 93% on the 1440 × 900 stage. The
           // two sides are S4a's.
-          className="relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 py-8"
+          // Story 5.15: in Preview the stage is the whole window, so the ground's padding goes with the chrome and R-137's
+          // fit is 1:1 in a 1440 × 900 window (B3b, "the site runs edge to edge")
+          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground ${preview ? '' : 'px-7 py-8'}`}
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
               ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage.
@@ -2132,7 +2270,8 @@ export function Editor({
               old card was `w-full overflow-hidden` and clipped the same state, this one is `shrink-0`. */}
           <div
             style={{ width: device.width * scale, height: device.height * scale, visibility: size.width > 0 && size.height > 0 ? undefined : 'hidden' }}
-            className="relative shrink-0 overflow-hidden rounded-[6px] bg-paper-raised shadow-canvas-page"
+            // Story 5.15: and the card loses its radius and its shadow — the page is the site, edge to edge
+            className={`relative shrink-0 overflow-hidden bg-paper-raised ${preview ? '' : 'rounded-[6px] shadow-canvas-page'}`}
           >
             <iframe
               ref={frame}
@@ -2187,29 +2326,60 @@ export function Editor({
               : null}
             {/* P0-1's pill (R-122, and the limit's sentence): chrome in the canvas's own layer, so it scrolls with its words */}
             {note && chosen && layerFor(selectedRoot) ? createPortal(<CanvasNote ref={noteBox} kind={note.kind} words={note.words} />, layerFor(selectedRoot) as ShadowRoot) : null}
+            {/* STORY 5.15 — B3a's PAUSED chip (`B Missing Surfaces.dc.html:658-661`), R-175's two conditions above. Chrome
+                in the canvas layer and not R-120's `::after`: inside the frame its 9.5px words would paint at 5.7px at
+                the 1440 window's 0.6 fit, take over a design's own `::after` and need a positioned mount. So it is the
+                name tag's kind — one screen pixel per unit, Inter, the pointer passing through — in `ViewportChip`'s two
+                rounded colours (B3a's fill and hairline, drawn as `paper` and `line-strong` as that chip names them),
+                with the frame's 9px pause glyph, "PAUSED" at 9.5/600 tracked .02em, `2px 8px` and a 5px gap. */}
+            {chips.map(({ el, root }, n) =>
+              layerFor(root)
+                ? createPortal(
+                    <span
+                      ref={(node) => {
+                        if (node) chipEls.current.set(el, node)
+                        else chipEls.current.delete(el)
+                      }}
+                      aria-hidden
+                      data-chrome="paused"
+                      className="pointer-events-none absolute flex items-center gap-[5px] whitespace-nowrap rounded-pill border border-line-strong bg-paper px-2 py-[2px] text-[9.5px] font-semibold tracking-[.02em] text-ink-soft-aa"
+                      style={{ visibility: 'hidden' }}
+                    >
+                      <Pause size={9} className="shrink-0" />
+                      {PAUSED}
+                    </span>,
+                    layerFor(root) as ShadowRoot,
+                    `paused-${n}`,
+                  )
+                : null,
+            )}
           </div>
-          {/* B11's chip: the true size first, the fit second, and nothing sets it (UX-DR17, UX-DR20). LAST, not first:
-              the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's gutter
-              find it — and out of flow it paints over the ground either way. */}
-          <ViewportChip device={device} fit={scale} />
-          {/* B9's CONTENT-SOURCE PILL at the canvas foot (FR-D15, FR-D22), and LAST for the same reason the chip is:
-              the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's
-              gutter find it. R-166 builds it at 24px inside R-139's existing 32px ground, so it clears the card on
-              every device and `py-8` does not move — the measurement the deployed walk makes first. */}
-          <SourcePill
-            subject={previewing.subject}
-            rows={subjectRows}
-            fellBack={previewing.fellBack}
-            refusal={subjectRefusal}
-            onChoose={chooseSubject}
-          />
+          {/* Story 5.15: B11's chip and B9's pill are hidden in Preview, never unmounted — `contents`, so the wrapper
+              draws no box of its own, and both stay positioned against this ground */}
+          <div hidden={preview} className="contents">
+            {/* B11's chip: the true size first, the fit second, and nothing sets it (UX-DR17, UX-DR20). LAST, not first:
+                the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's gutter
+                find it — and out of flow it paints over the ground either way. */}
+            <ViewportChip device={device} fit={scale} />
+            {/* B9's CONTENT-SOURCE PILL at the canvas foot (FR-D15, FR-D22), and LAST for the same reason the chip is:
+                the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's
+                gutter find it. R-166 builds it at 24px inside R-139's existing 32px ground, so it clears the card on
+                every device and `py-8` does not move — the measurement the deployed walk makes first. */}
+            <SourcePill
+              subject={previewing.subject}
+              rows={subjectRows}
+              fellBack={previewing.fellBack}
+              refusal={subjectRefusal}
+              onChoose={chooseSubject}
+            />
+          </div>
           {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
-              (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last */}
-          <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling} resources={links} handle={tools} />
+              (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last, and in Preview */}
+          <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling || preview} resources={links} handle={tools} />
           <SectionPill
             shown={!!pointed}
             canAdd={canAdd}
-            hidden={scrolling}
+            hidden={scrolling || preview}
             boxOf={pillBox}
             // FR-D5: a site-wide section is one shared instance, so its Duplicate is absent here as it is in Layers
             canDuplicate={pointed?.doc !== SITE.key}
@@ -2237,11 +2407,11 @@ export function Editor({
           />
         </section>
 
-        {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" /> : null}
+        {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}
         <aside
           id="editor-controls"
           aria-label={chosen ? 'Section settings' : 'Page settings'}
-          hidden={controls.folded}
+          hidden={controls.folded || preview}
           className={`flex w-[280px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-line bg-paper p-4 ${slimScrollbar}`}
         >
           {/* -6px each way: the 28px toggle leaves the label where S4a draws it, 16px from the top */}
@@ -2315,6 +2485,11 @@ export function Editor({
           )}
         </aside>
       </div>
+
+      {/* STORY 5.15 — B3b's floating bar (`B Missing Surfaces.dc.html:700-710`), the one piece of chrome Preview keeps:
+          the way back and the three devices, the current one lit. Its devices are the top bar's own control and
+          handler (`pickDevice`, R-141), so a device chosen here is the device you come back to. */}
+      {preview ? <PreviewBar device={device} onDevice={pickDevice} onBack={leavePreview} back={backButton} /> : null}
 
       {/* A completed move, announced politely in `moveSection`'s own words — from here, so a drop on either grip
           (a Layers row's or the canvas pill's) reads out through one live region (UX-DR12) */}

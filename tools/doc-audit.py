@@ -300,7 +300,7 @@ DOCS = [
   'motion and 1024 -> 600 -> 1024 px, expecting no page error but the probe\'s own; restores the previous '
   'theme in a finally, re-reads it, then deletes the probe theme and re-reads the list (owner, Q1). Creates no content, touches no '
   'setting and writes nothing to disk; a page without the nonce voids the run. Also '
-  'covers packages/library/modules/core.js, registry.json and core.test.mjs, and '
+  'covers packages/library/modules/core.js, core.d.ts, registry.json and core.test.mjs, and '
   'packages/library/src/modules.ts and modules.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/vendor-icons.py', 'tool', 'Tabler icon vendoring',
   "Story 4.5's vendoring of every Tabler icon as data (R-26, R-92, R-104): downloads @tabler/icons at a "
@@ -505,7 +505,10 @@ DOCS = [
   "script recording securitypolicyviolation in every frame and new Function('') run from a script carrying each "
   "document's own nonce as the control; the URL scheme's statuses, identical 404s and Back; the canvas scrolling while "
   'the window cannot; axe-core at WCAG 2.1 AA after a positive control; and the skeleton in the raw stream. Both accounts '
-  'deleted with the user count read before and after. Refuses a dirty tree or a deployment that is not HEAD.'),
+  'deleted with the user count read before and after. Refuses a dirty tree or a deployment that is not HEAD. Story 5.15 '
+  "adds step 91 inside the CSP session — core run from the editor against the canvas window while designing and in "
+  "Preview, B3a's pill and B3b's bar measured, a link and a submit in Preview, the header's menu only in Preview at "
+  "Mobile — and step 5's second control, eval called from the editor on the canvas window throwing EvalError."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
@@ -907,7 +910,11 @@ DOCS = [
   'contenteditable and a panel field, a menu owning the key while it is up, the three-rung Esc ladder, the card listing '
   'exactly the keys that work and no deferred one (R-145), the ⌥-arrow reorder of a Layers row, ⌥F10 into the mark toolbar, and the '
   'settings panel\'s reset wiring, its confirm and its Esc (DW-167). Its first test reads its own source and fails if a '
-  'pointer API appears below the sentinel, which is how "no pointer events" is checked rather than remembered. Stores no '
+  'pointer API appears below the sentinel, which is how "no pointer events" is checked rather than remembered — with ONE '
+  "stated exception since Story 5.15: R-175's PAUSED chip is drawn on a pointed section, so those stops synthesize the "
+  "canvas's own pointerover in the page (never the pointer device, and reaching no task a keyboard could not); Story "
+  "5.15 also walks Preview (P in, Back to editing, Esc and P out, the chrome hidden, core's js-enabled flipping, only "
+  "P, Esc, 1 2 3 and ⌘S acting there) and the chip on controls fixture 1's marquee list. Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
   'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '

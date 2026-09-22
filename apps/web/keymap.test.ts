@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { DEVICES } from './lib/device.ts'
-import { holdsCaret, KEYMAP, SINGLE_KEY, sheetRows, shortcutFor } from './lib/keymap.ts'
+import { holdsCaret, IN_PREVIEW, KEYMAP, SINGLE_KEY, sheetRows, shortcutFor } from './lib/keymap.ts'
+import { PREVIEW } from './lib/preview.ts'
 
 /* STORY 5.9 — FR-D11's map, asserted where `node --test` can reach it. The I/O matrix's KEY rows are here; the
    gestures themselves are the keyboard journey's (`tools/keyboard/journey.spec.mjs`, `pnpm keyboard` — its own step in CI's `check` job) and the
@@ -113,9 +114,9 @@ test('R-145: every deferred row names its story, binds nothing and is not on the
     assert.ok(!listed.has(b), `${b.action}: the card must not advertise a key that does nothing`)
     assert.match(b.story as string, /^\d+\.\d+$/, `${b.action}: name the story that lands it`)
   }
-  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10, `[` `]` at Story 5.11 and
-  // ⇧R at Story 5.12, each with the action it drives (R-145), and each row below leaves it the same way
-  for (const chip of ['P', '⌘⏎']) {
+  // and the keys still owed are owed by their chips — ⌘K left this list at Story 5.10, `[` `]` at Story 5.11, ⇧R at
+  // Story 5.12 and P at Story 5.15, each with the action it drives (R-145), and the last row leaves it the same way
+  for (const chip of ['⌘⏎']) {
     assert.ok(deferred.some((b) => b.chips.includes(chip)), `${chip} is owed and must stay named`)
     assert.ok(!sheetRows().some((b) => b.chips.includes(chip)), `${chip} must not be on the card`)
   }
@@ -204,4 +205,29 @@ test('R-145: `⇧R` is Site Remix, a bare `r` is a letter, and in a field it typ
   // ⌘⇧R is the browser's hard reload, and it is not this
   assert.equal(shortcutFor(press('r', { shiftKey: true }), false), null)
   assert.ok(SINGLE_KEY.has('remix'), 'a single-key binding carries WCAG 2.1.4\'s focus condition')
+})
+
+/* STORY 5.15 — `P` IS LANDED, R-145's fifth owed key, and like `⇧R` it is a single key: WCAG 2.1.4's condition rides
+   on it, so a `p` typed into a headline — or into the page's own email box in Preview — is a letter. Its words are
+   `lib/preview.ts`'s, the pill's and the bar's too (R-170). */
+test('R-145: `P` is Preview, `⇧P` is nothing, in a field it types its letter, and SINGLE_KEY holds it', () => {
+  const preview = KEYMAP.find((b) => b.gesture === 'preview')
+  assert.ok(preview, 'P has no row')
+  assert.equal(preview.story, undefined, 'the row is live now')
+  assert.deepEqual(preview.chips, ['P'])
+  assert.equal(preview.action, PREVIEW, 'the card reads the one name the pill and the bar read (R-170)')
+  assert.ok(preview.keys?.includes('p'))
+  assert.equal(preview.shift, false, 'a capital P is typing, never the toggle')
+  assert.notEqual(preview.meta, true, 'it carries no modifier')
+  assert.ok(sheetRows().includes(preview), 'the card lists it, because it works')
+  assert.equal(shortcutFor(bare('p'), false), 'preview')
+  assert.equal(shortcutFor(bare('P', { shiftKey: true }), false), null, '⇧P is nobody\'s binding')
+  assert.equal(shortcutFor(bare('p'), true), null, 'in a field it types a p and previews nothing')
+  assert.equal(shortcutFor(press('p'), false), null, '⌘P is the browser\'s Print')
+  assert.ok(SINGLE_KEY.has('preview'), 'a single-key binding carries WCAG 2.1.4\'s focus condition')
+})
+
+test('in Preview only P, ⌘S and the three devices act — every other binding does nothing', () => {
+  // the devices walked off S4a's own track, never written down
+  assert.deepEqual([...IN_PREVIEW].sort(), ['preview', 'save', ...DEVICES.map((d) => d.name)].sort())
 })

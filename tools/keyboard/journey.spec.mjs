@@ -10,6 +10,11 @@
 // the claim is checked rather than remembered. `focus()` is allowed and used only to enter a region whose tab path
 // another test has already proved — it moves focus the way a script does, not the way a pointer does.
 //
+// ONE STATED EXCEPTION, AND IT PRESSES NOTHING (Story 5.15): R-175's PAUSED chip is drawn on a POINTED section, and a
+// keyboard cannot point. So those stops SYNTHESIZE the canvas document's own `pointerover` in the page — the event the
+// editor listens for — to read what the chip looks like and where it sits; it is never the pointer device, it reaches
+// no task a keyboard could not, and the selected half of the same rule is walked from the keyboard alone.
+//
 // WHAT IT CANNOT PROVE is the deployed walk's, which R-82 requires of every story anyway: the read, the session, the
 // sync route and the CSP. A harness proves the wiring and never the stack — `tools/probe/run-verify-editor.cjs` runs
 // the same journey on the deployed editor with a real session, from step 71.
@@ -405,13 +410,13 @@ test('R-147: ? opens the card, it lists exactly the keys that work, and Esc retu
   expect(listed.length).toBeGreaterThan(0)
   const chips = await page.locator('[data-shortcut-row] span span').allInnerTexts()
   // R-145: a key whose action is not built is ABSENT — not greyed, not captioned, not listed
-  for (const dead of ['P', '⌘⏎']) {
+  for (const dead of ['⌘⏎']) {
     expect(chips, `${dead} has nothing to press yet and must not be advertised`).not.toContain(dead)
   }
   // ⌘K joined this list at Story 5.10, which built the Section Picker it presses, `[` `]` at Story 5.11, which
-  // built the design ring they cycle, and ⇧R at Story 5.12, which built Site Remix (R-145: a shortcut arrives
-  // with the action it drives)
-  for (const live of ['⌘K', '[', ']', '⇧R', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
+  // built the design ring they cycle, ⇧R at Story 5.12, which built Site Remix, and P at Story 5.15, which built
+  // Preview (R-145: a shortcut arrives with the action it drives)
+  for (const live of ['⌘K', '[', ']', '⇧R', 'P', 'L', '.', '⌘D', 'Del', '⌘Z', '⇧⌘Z', '⌘S', 'Esc', '?']) {
     expect(chips, `${live} works and must be listed`).toContain(live)
   }
   await expect(sheet).not.toContainText(/not yet|coming|soon|unavailable/i)
@@ -427,10 +432,10 @@ test('R-145: a deferred key does nothing and announces nothing', async ({ page }
   await select(page, own[0])
   const before = { rows: (await rows(page)).all.length, mode: await modeOf(page), device: await deviceOf(page) }
   await page.locator('section[aria-label="Canvas"]').focus()
-  // ⌘K LEFT THIS LIST AT STORY 5.10, `[` `]` AT STORY 5.11 and ⇧R AT STORY 5.12, each with the action it
-  // presses — R-145's rule is that a shortcut arrives with its action, so a key leaves here and gets a stop of
-  // its own below. Two are still owed.
-  for (const key of ['p', 'P', 'ControlOrMeta+Enter']) {
+  // ⌘K LEFT THIS LIST AT STORY 5.10, `[` `]` AT STORY 5.11, ⇧R AT STORY 5.12 and P AT STORY 5.15, each with the
+  // action it presses — R-145's rule is that a shortcut arrives with its action, so a key leaves here and gets a
+  // stop of its own below. One is still owed.
+  for (const key of ['ControlOrMeta+Enter']) {
     await page.keyboard.press(key)
   }
   expect((await rows(page)).all).toHaveLength(before.rows)
@@ -550,8 +555,9 @@ test('no key binds View as: every single key leaves the visitor where it was (FR
   for (const key of keys) {
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press(key)
-    // a key that opens a dialog (⇧R's confirm, ?'s card) is closed again, so the next key reaches the shell
-    if ((await page.locator('dialog[open]').count()) > 0) await page.keyboard.press('Escape')
+    // a key that opens a dialog (⇧R's confirm, ?'s card) is closed again, so the next key reaches the shell — and so is
+    // Preview, which `p` enters since Story 5.15 and Esc leaves
+    if ((await page.locator('dialog[open]').count()) > 0 || (await page.locator('#editor-preview-bar').count()) > 0) await page.keyboard.press('Escape')
     expect(await viewAsOf(page), `${key} changed the visitor`).toBe(was)
     expect(await said(page), `${key} announced a visitor`).not.toMatch(/The canvas is previewing/)
   }
@@ -1275,4 +1281,371 @@ test('prefers-reduced-motion: the cube does not tumble, and the re-roll lands at
   // the re-roll rides the SAME flattened transition, so a reader who asked for no motion waits for nothing —
   // there is no timer anywhere to wait out, which is the whole reason it is an event and not a `setTimeout`
   await expect(designName(page), 'and the canvas lands immediately').not.toHaveText(was)
+})
+
+/* ── Story 5.15 — BEHAVIOURS HOLD STILL WHILE DESIGNING, AND PREVIEW RUNS THEM (FR-D20, B3a · B3b, R-174, R-175) ────
+   `P` is R-145's fifth owed key to arrive with its action. The editor runs `core` itself against the canvas window
+   (DW-136), so what these stops read is `core`'s own doing: the `js-enabled` class on each mount, and the PAUSED chip
+   drawn from the mounts `core` held still. */
+
+const bar = (page) => page.locator('#editor-preview-bar')
+const back = (page) => page.locator('#editor-preview-bar button').first()
+
+/** Whether `core` put each declared mount in its JavaScript branch: the two pilots' and controls fixture 1's list. */
+const branches = (page) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body) =>
+    Object.fromEntries(['.a1-1__bar', '.a22-1__form', '.cx__features'].map((s) => [s, body.ownerDocument.querySelector(s)?.classList.contains('js-enabled') ?? null])))
+
+/** Every element of the canvas's chrome layer matching a selector — the layer's shadow roots are not in the document. */
+const inChrome = (page, selector) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body, sel) =>
+    [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].flatMap((h) => [...(h.shadowRoot?.querySelectorAll(sel) ?? [])]).length, selector)
+
+/** Every element in the canvas document carrying a `data-inflozo-*` attribute: the page at rest carries none. */
+const marked = (page) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body) =>
+    [...body.ownerDocument.querySelectorAll('*')].filter((el) => [...el.attributes].some((a) => a.name.startsWith('data-inflozo-'))).length)
+
+/* R-175's chip is drawn on a POINTED section, and pointing is the one thing a keyboard cannot do. So the hover is
+   SYNTHESIZED as the canvas document's own `pointerover` on the element — the very event `editor.tsx` listens for —
+   and never driven through the pointer device: the first test's rule, that no pointer API drives this journey, holds.
+   The SELECTED half of the same rule is walked from the keyboard (a Layers row and Enter). */
+const pointAt = (page, selector) =>
+  page.frameLocator('iframe[title$="canvas"]').locator(selector).first().evaluate((el) => {
+    el.scrollIntoView({ block: 'center' })
+    el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, pointerType: 'mouse' }))
+  })
+/** …and the pointer leaving the canvas, as `pointerout` with no `relatedTarget` */
+const pointAway = (page) =>
+  page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body) =>
+    body.dispatchEvent(new PointerEvent('pointerout', { bubbles: true, pointerType: 'mouse', clientX: 0, clientY: 0, relatedTarget: null })))
+
+test('Preview: P goes in, and Back to editing, Esc and P each come back — focus in and out, said both ways (R-170)', async ({ page }) => {
+  await open(page)
+  const pill = page.locator('#editor-preview')
+  await expect(pill, "B3a: the pill is drawn in the bar at rest").toBeVisible()
+  // R-170: ONE name — the pill's, the card's row's (asserted in R-147's stop above) and the bar's
+  await expect(pill).toHaveAccessibleName('Preview')
+  await expect(pill).toHaveAttribute('aria-keyshortcuts', 'P')
+  // the pill LEADS nothing: it is the right-hand cluster's last control, where B3a draws it beside the ship button
+  expect(await page.locator('#editor-theme-settings').evaluate((el) => el.parentElement.lastElementChild.id)).toBe('editor-preview')
+  const ways = [
+    ['Back to editing', () => page.keyboard.press('Enter')],
+    ['Esc', () => page.keyboard.press('Escape')],
+    ['P', () => page.keyboard.press('p')],
+  ]
+  for (const [way, leave] of ways) {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('p')
+    await expect(bar(page)).toBeVisible()
+    await expect(bar(page)).toHaveAttribute('aria-label', 'Preview')
+    await expect(back(page), 'focus lands on Back to editing').toBeFocused()
+    await expect(back(page)).toHaveAccessibleName('Back to editing')
+    expect(await said(page)).toBe('Preview. Press Escape or P to come back.')
+    await leave()
+    await expect(bar(page), `${way} comes back`).toHaveCount(0)
+    await expect(page.locator('header')).toBeVisible()
+    expect(await focused(page), `${way}: focus returns to where it was`).toBe('SECTION[Canvas]')
+    expect(await said(page)).toBe('Back to editing.')
+  }
+  // the matrix's fallback: with focus nowhere (the body) when Preview began, it comes back to the pill, never to nothing
+  await page.evaluate(() => document.activeElement?.blur())
+  expect(await focused(page), 'the control: nothing holds focus').toBe('BODY')
+  await page.keyboard.press('p')
+  await expect(back(page)).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(pill, 'focus with nowhere to return to lands on the pill').toBeFocused()
+})
+
+test('Preview hides every piece of editing chrome — never unmounted, so a selection comes back whole — and shows B3b\'s bar', async ({ page }) => {
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  const device = await deviceOf(page)
+  // the viewport the fit is taken over, read off B11's chip before Preview hides it
+  const [dw, dh] = (await page.locator('#editor-viewport').innerText()).match(/(\d+) × (\d+)/).slice(1).map(Number)
+  await pointAt(page, '.a22-1')
+  await expect(page.locator('[data-section-pill]'), 'the control: a hovered section shows its pill').toBeVisible()
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect(bar(page)).toBeVisible()
+  for (const region of ['header', '#editor-layers', '#editor-controls', '[data-skip-canvas]', '#editor-viewport', '#editor-source', '[data-section-pill]']) {
+    await expect(page.locator(region).first(), `${region} is hidden in Preview`).toBeHidden()
+  }
+  // HIDDEN, NEVER UNMOUNTED: the bar and both asides are still in the document, holding what they held
+  for (const region of ['header', '#editor-layers', '#editor-controls']) await expect(page.locator(region)).toHaveCount(1)
+  await expect(page.locator('#editor-controls')).toHaveAttribute('aria-label', 'Section settings')
+  // the page IS the site: no outline, tag or badge layer, and no state mark on any root
+  expect(await inChrome(page, '*')).toBe(0)
+  expect(await marked(page)).toBe(0)
+  // the stage is the whole window, and the card is R-137's fit of the device into it — one fit, never a zoom
+  const view = page.viewportSize()
+  const stage = await page.locator('section[aria-label="Canvas"]').boundingBox()
+  expect(stage).toEqual({ x: 0, y: 0, width: view.width, height: view.height })
+  const card = await page.locator('section[aria-label="Canvas"] > div').first().boundingBox()
+  const fit = Math.min(1, view.width / dw, view.height / dh)
+  expect(Math.abs(card.width - dw * fit)).toBeLessThan(1)
+  expect(Math.abs(card.height - dh * fit)).toBeLessThan(1)
+  // B3b: the way back, a divider and the three devices, the one showing lit — the top bar's own track, counted off it
+  await expect(bar(page).locator('[role="radio"]')).toHaveCount(await page.locator('#editor-device [role="radio"]').count())
+  await expect(bar(page).locator('[role="radio"][aria-checked="true"]')).toHaveAttribute('aria-label', device)
+  await expect(bar(page).locator('[role="radiogroup"]')).toHaveAttribute('id', 'editor-preview-device')
+  // and on the way back everything is as it was: the section still selected, with its panel
+  await page.keyboard.press('Escape')
+  await chosen(page, own[0])
+  await expect(page.locator('#editor-layers')).toBeVisible()
+  expect(await deviceOf(page)).toBe(device)
+})
+
+test('R-174 · FR-G7(4): while designing every mount the table holds still is AT REST, and Preview runs every one', async ({ page }) => {
+  await open(page)
+  const rest = { '.a1-1__bar': false, '.a22-1__form': false, '.cx__features': false }
+  const running = { '.a1-1__bar': true, '.a22-1__form': true, '.cx__features': true }
+  expect(await branches(page), 'at rest is the no-JavaScript branch, mount by mount').toEqual(rest)
+  // A REPAINT, NEVER A RELOAD, each way: the canvas document survives (a stamp on its window), while every section root
+  // is a new node — `core` stopped over the old ones and started over these
+  const stamp = () => page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body) => {
+    body.ownerDocument.defaultView.__sameDocument = true
+    for (const root of body.ownerDocument.querySelectorAll('#canvas > *')) root.__painted = 'before'
+  })
+  const repainted = () => page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body) => ({
+    sameDocument: body.ownerDocument.defaultView.__sameDocument === true,
+    oldRoots: [...body.ownerDocument.querySelectorAll('#canvas > *')].filter((root) => root.__painted === 'before').length,
+  }))
+  await stamp()
+  expect((await repainted()).oldRoots, 'the control: every root carries the stamp, so "none left" can fail').toBeGreaterThan(0)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect.poll(() => branches(page), { message: 'Preview runs everything the build carries' }).toEqual(running)
+  expect(await repainted(), 'in: one repaint of the same document').toEqual({ sameDocument: true, oldRoots: 0 })
+  await stamp()
+  expect((await repainted()).oldRoots).toBeGreaterThan(0)
+  await page.keyboard.press('Escape')
+  await expect.poll(() => branches(page), { message: 'and back to editing, every one is at rest again' }).toEqual(rest)
+  expect(await repainted(), 'out: one repaint of the same document').toEqual({ sameDocument: true, oldRoots: 0 })
+
+  // THE ONE VISIBLE CONSEQUENCE ON THE OWNER'S PAGES: at Mobile, Rail lists its links while you design and shows its
+  // menu button only in Preview (`a1/1/style.css`'s ≤767 block keys on `js-enabled`)
+  const header = (page) => page.frameLocator('iframe[title$="canvas"]').locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    const shown = (s) => doc.defaultView.getComputedStyle(doc.querySelector(s)).display !== 'none'
+    return { menu: shown('.a1-1__menu'), links: shown('.a1-1__nav') }
+  })
+  const devices = await page.locator('#editor-device [role="radio"]').count()
+  await page.keyboard.press(String(devices))
+  await expect.poll(() => header(page)).toEqual({ menu: false, links: true })
+  await page.keyboard.press('p')
+  await expect.poll(() => header(page)).toEqual({ menu: true, links: false })
+  // …and pressing that menu button does nothing yet: no `nav-drawer` file exists, so its mount runs the no-op stand-in
+  // (FR-G7(2)) — the button stays shut, the links stay hidden, and Preview stays on
+  const menu = page.frameLocator('iframe[title$="canvas"]').locator('.a1-1__menu')
+  await menu.focus()
+  await expect(menu, 'the control: the press lands on the button').toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(menu).toHaveAttribute('aria-expanded', 'false')
+  expect(await header(page)).toEqual({ menu: true, links: false })
+  await expect(bar(page), 'and Preview is still on').toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect.poll(() => header(page)).toEqual({ menu: false, links: true })
+})
+
+test('R-175: a pointed section whose held-still part moves by itself carries B3a\'s PAUSED chip — and no other part does', async ({ page }) => {
+  await open(page)
+  const chips = () => inChrome(page, '[data-chrome="paused"]')
+  expect(await chips(), 'none at rest: the page at rest is the site').toBe(0)
+  expect(await marked(page)).toBe(0)
+
+  // THE FIRST HALF: the pilots' parts wait for a press — the phone menu and the sign-up form — so a pointed Rail or
+  // Inline Row shows its outline and name tag and NO chip
+  for (const root of ['.a1-1', '.a22-1']) {
+    await pointAt(page, root)
+    await expect.poll(() => inChrome(page, '[data-chrome="tag"]'), { message: `the control: ${root} really is pointed at` }).toBe(1)
+    expect(await chips(), `${root} carries no PAUSED chip`).toBe(0)
+  }
+
+  // THE SECOND HALF: controls fixture 1's list declares `marquee`, which the table holds still and which moves by
+  // itself — the one such part CI can put on a canvas
+  await pointAt(page, '.cx__features')
+  await expect.poll(chips, { message: 'exactly one chip, on the list' }).toBe(1)
+  const look = await page.evaluate(() => {
+    const f = document.querySelector('section[aria-label="Canvas"] iframe')
+    const fr = f.getBoundingClientRect()
+    const k = fr.width / f.offsetWidth
+    const doc = f.contentDocument
+    const find = (sel) => [...doc.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector(sel)).find(Boolean) ?? null
+    const onScreen = (el) => {
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      return { left: fr.left + r.left * k, top: fr.top + r.top * k, right: fr.left + r.right * k, bottom: fr.top + r.bottom * k }
+    }
+    const chip = find('[data-chrome="paused"]')
+    const c = doc.defaultView.getComputedStyle(chip)
+    const glyph = chip.querySelector('svg')
+    const pill = document.querySelector('[data-section-pill]')?.getBoundingClientRect()
+    return {
+      words: chip.textContent, hidden: chip.getAttribute('aria-hidden'), events: c.pointerEvents, visibility: c.visibility,
+      size: c.fontSize, weight: c.fontWeight, tracking: c.letterSpacing, family: c.fontFamily,
+      ink: c.color, fill: c.backgroundColor, line: c.borderTopColor, radius: c.borderRadius, padding: c.padding, gap: c.gap,
+      glyph: glyph && { size: glyph.getAttribute('width'), stroke: glyph.getAttribute('stroke-width') },
+      chip: onScreen(chip), list: onScreen(doc.querySelector('.cx__features')), tag: onScreen(find('[data-chrome="tag"]')),
+      pill: pill && { left: pill.left, top: pill.top, right: pill.right, bottom: pill.bottom },
+    }
+  })
+  // B3a `:658-660`: "PAUSED" in literal capitals at 9.5/600 tracked .02em, the 9px pause glyph at a 2.4 stroke, `2px 8px`
+  // and a 5px gap on the pill radius — in `ViewportChip`'s two rounded colours, B3a's #F4F1EC and #D8D2C7 being `paper`
+  // (rgb 247 245 242) and `line-strong` (rgb 201 194 184), and its ink #6B6459 exactly `ink-soft-aa`
+  expect(look.words).toBe('PAUSED')
+  expect(look).toMatchObject({ hidden: 'true', events: 'none', visibility: 'visible', size: '9.5px', weight: '600', radius: '24px', padding: '2px 8px', gap: '5px' })
+  expect(Math.abs(parseFloat(look.tracking) - 9.5 * 0.02)).toBeLessThan(0.01)
+  expect(look.family).toMatch(/Inter/)
+  expect([look.ink, look.fill, look.line]).toEqual(['rgb(107, 100, 89)', 'rgb(247, 245, 242)', 'rgb(201, 194, 184)'])
+  expect(look.glyph).toEqual({ size: '9', stroke: '2.4' })
+  // 8px inside the list's bottom-left corner, on screen — the section's top corners belong to the tag and the pill
+  expect(Math.abs(look.chip.left - look.list.left - 8), JSON.stringify(look)).toBeLessThanOrEqual(1)
+  expect(Math.abs(look.list.bottom - look.chip.bottom - 8), JSON.stringify(look)).toBeLessThanOrEqual(1)
+  const meets = (a, b) => !!a && !!b && a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+  expect(look.tag, 'the control: the name tag is drawn').not.toBeNull()
+  expect(look.pill, 'the control: the section pill is drawn').not.toBeNull()
+  expect(meets(look.chip, look.tag), 'clear of the name tag').toBe(false)
+  expect(meets(look.chip, look.pill), 'clear of the section pill').toBe(false)
+
+  // gone when the pointer leaves — and back on the SELECTED section, chosen from the keyboard
+  await pointAway(page)
+  await expect.poll(chips).toBe(0)
+  const own = (await rows(page)).page
+  await select(page, own[own.length - 1])
+  await expect.poll(chips, { message: 'a selected section carries it too' }).toBe(1)
+
+  // THE MATRIX'S "REPAINT AND RESTAMP" ROW. A restamp — a mode flip — keeps the nodes, so `core`'s handle and its
+  // `paused` stand and the chip stays on the SAME list; a repaint — a change of visitor — stops `core` and starts it
+  // over NEW nodes, and the chip is drawn again from the new handle's `paused`, the list still at rest
+  const list = page.frameLocator('iframe[title$="canvas"]').locator('.cx__features')
+  await list.evaluate((el) => { el.__painted = 'before' })
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('.')
+  expect(await modeOf(page), 'the control: the mode really flipped').toBe('dark')
+  await expect.poll(chips, { message: 'a restamp keeps the chip' }).toBe(1)
+  expect(await list.evaluate((el) => el.__painted), 'on the same node').toBe('before')
+  await page.keyboard.press('.')
+  expect(await modeOf(page)).toBe('light')
+  await page.locator('#editor-view-as').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-view-as-menu [aria-current="true"]')).toBeFocused()
+  await page.locator('#editor-view-as-menu [data-visitor="free"]').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-view-as-menu')).toBeHidden()
+  expect(await list.evaluate((el) => el.__painted ?? 'new'), 'the control: the visitor repainted the canvas').toBe('new')
+  await expect.poll(chips, { message: 'a repaint draws the chip again, on the new node' }).toBe(1)
+  expect((await branches(page))['.cx__features'], 'and the new list is at rest too').toBe(false)
+
+  // and none in Preview, pointed or selected
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect(bar(page)).toBeVisible()
+  await pointAt(page, '.cx__features')
+  expect(await chips(), 'nothing is pointed at in Preview').toBe(0)
+  expect(await marked(page)).toBe(0)
+  await page.keyboard.press('Escape')
+  await expect.poll(chips, { message: 'the selection comes back with its chip' }).toBe(1)
+})
+
+test('in Preview only P, Esc, 1 2 3 and ⌘S act — L . [ ? do nothing — and the page\'s own email box takes a p', async ({ page }) => {
+  const canvas = await open(page)
+  await selectRinged(page)
+  // ONE EDIT BEFORE PREVIEW, so a ⌘Z that reached the journal from in there would visibly take it back
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press(']')
+  await expect(counter(page), 'the control: the edit landed').toHaveText(/^2 of \d+$/)
+  const before = { design: await counter(page).innerText(), mode: await modeOf(page), rows: (await rows(page)).all.length }
+  await page.keyboard.press('p')
+  await expect(bar(page)).toBeVisible()
+  // the ring's own section is selected, so `[` `]`, Del, ⌘D, ⌘Z and ⇧⌘Z would each change the page if they reached it
+  const dead = ['l', '.', '[', ']', '?', 'Shift+R', 'Delete', 'ControlOrMeta+d', 'ControlOrMeta+k', 'ControlOrMeta+z', 'ControlOrMeta+Shift+z']
+  for (const key of dead) await page.keyboard.press(key)
+  await expect(bar(page), 'still in Preview').toBeVisible()
+  await expect(page.locator('dialog[open]'), 'no card, no confirm and no picker opened').toHaveCount(0)
+  expect(await modeOf(page), '. did not flip the page').toBe(before.mode)
+  // the devices DO act, from the keyboard as from the bar's own buttons, and both tracks agree
+  const labels = await page.locator('#editor-device [role="radio"]').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))
+  for (const [n, label] of labels.entries()) {
+    await page.keyboard.press(String(n + 1))
+    await expect(bar(page).locator('[role="radio"][aria-checked="true"]'), `${n + 1} is ${label}`).toHaveAttribute('aria-label', label)
+    expect(await deviceOf(page)).toBe(label)
+  }
+  await page.keyboard.press('1')
+  // ⌘S DOES act in there: the edit made before Preview is owed, so the save sends it. The harness has no database, so the
+  // write itself is refused — the SEND is what is asserted, and it is the only request this test makes
+  const sent = page.waitForRequest((r) => r.method() === 'POST' && new URL(r.url()).pathname.endsWith('/sync'), { timeout: 5000 })
+  await page.keyboard.press('ControlOrMeta+s')
+  await sent
+  await expect(bar(page), 'and Preview stays on').toBeVisible()
+  // a link in the page goes nowhere: Enter on one is its click, which Preview still stops (AD-21) — given the time a
+  // navigation would need to start, so "the same address" is a reading that could have failed
+  const address = await canvas.locator('body').evaluate((b) => b.ownerDocument.location.href)
+  const link = canvas.locator('.a1-1__items a[href]').first()
+  await link.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(300)
+  expect(await canvas.locator('body').evaluate((b) => b.ownerDocument.location.href), 'the link did not navigate the canvas').toBe(address)
+  await expect(bar(page)).toBeVisible()
+  // the page's own field in Preview is a visitor's: a `p` is a letter there, and nothing leaves Preview
+  const field = canvas.locator('.a22-1__field')
+  await field.focus()
+  await page.keyboard.type('p@example.com')
+  await expect(field).toHaveValue('p@example.com')
+  await expect(bar(page)).toBeVisible()
+  // …and its submit goes nowhere: AD-21's trap holds in Preview too
+  await page.keyboard.press('Enter')
+  await page.waitForTimeout(300)
+  expect(await canvas.locator('body').evaluate((b) => b.ownerDocument.location.href), 'the submit did not navigate the canvas').toBe(address)
+  // Esc leaves from the page's own field too, and nothing the keys pressed in Preview happened
+  await page.keyboard.press('Escape')
+  await expect(bar(page)).toHaveCount(0)
+  await expect(page.locator('#editor-layers'), 'L did not fold Layers').toBeVisible()
+  await expect(counter(page), '[ and ] did not change the design, and ⌘Z did not take the edit before Preview back').toHaveText(before.design)
+  expect((await rows(page)).all, 'Del and ⌘D did not touch the page').toHaveLength(before.rows)
+  // the control for ⌘Z's silence in there: back to editing, the same key does take that edit back
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(counter(page)).toHaveText(/^1 of \d+$/)
+})
+
+test('a module\'s own dialog in the page owns the first Esc in Preview, and the next one comes back', async ({ page }) => {
+  const canvas = await open(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect(bar(page)).toBeVisible()
+  // what a future lightbox does in Preview: a modal `<dialog>` in the page, focus inside it
+  await canvas.locator('body').evaluate((body) => {
+    const d = body.ownerDocument.createElement('dialog')
+    d.id = 'probe-dialog'
+    d.innerHTML = '<button type="button">A page control</button>'
+    body.append(d)
+    d.showModal()
+    d.querySelector('button').focus()
+  })
+  await expect(canvas.locator('#probe-dialog')).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(canvas.locator('#probe-dialog'), 'the first Esc is the dialog\'s').toBeHidden()
+  await expect(bar(page), 'and Preview is still on').toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(bar(page), 'the next Esc comes back').toHaveCount(0)
+})
+
+test('WCAG 2.1.4: with the caret in a panel field or on the canvas, `p` types a p and nothing previews', async ({ page }) => {
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  await openGroup(page)
+  const field = page.locator('#editor-controls input[type="text"]:visible').first()
+  await field.focus()
+  await expect(field, 'a field nothing focused would prove nothing').toBeFocused()
+  const was = await field.inputValue()
+  await page.keyboard.type('p')
+  await expect(field).toHaveValue(`${was}p`)
+  await expect(bar(page)).toHaveCount(0)
+  // and in a canvas contenteditable, where the caret usually is
+  await caretIntoCanvas(page)
+  await page.keyboard.type('p')
+  await expect(bar(page)).toHaveCount(0)
 })

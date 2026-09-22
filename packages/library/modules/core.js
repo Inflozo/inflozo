@@ -1,7 +1,7 @@
 // FR-G7(4): the one runtime every generated theme carries, `core`. It mounts each module a section
-// declares, and nothing else. A CLASSIC script, never an ES module: `bundle()` (src/modules.ts) pastes this
-// file verbatim inside one wrapping function, loaded `defer`, and ends with `core(window, rows)`. So the top
-// level is this one declaration, and every platform object is reached through `win` — no global is read.
+// declares, and nothing else. One exported declaration, which `bundle()` (src/modules.ts) pastes into the classic
+// `main.js` without the keyword, inside one wrapping function, loaded `defer`, ending with `core(window, rows)`. So
+// the top level is this one declaration, and every platform object is reached through `win` — no global is read.
 //
 // The contract a module is written against (docs/section-authoring.md, "Behaviour modules"):
 //   function lightbox(el, ctx) — called once per mount, on the element carrying data-module="lightbox"
@@ -14,17 +14,20 @@
 // `js-enabled` is set on the MOUNT ELEMENT before the module runs and removed when the mount stops, never on
 // <html> or <body>. So JavaScript off, suppression while editing, the motion gate and a width outside the
 // declaration all leave that element in its no-JS CSS branch, which is what every research §7 line assumes.
-function core(win, modules, options) {
+export function core(win, modules, options) {
   const editing = options !== undefined && options !== null && options.editing === true
+  // DW-136(b): a caller that hands its own `report` (the editor) is given every error in place of the timer's throw
+  const given = options !== undefined && options !== null && typeof options.report === 'function' ? options.report : null
   const rows = new Map()
   for (const [name, fn, row] of modules) rows.set(name, { fn, editSafe: row.editSafe === true, animates: row.animates === true })
 
   const life = new win.AbortController() // core's own listeners; stop() aborts it
-  const report = (error) => { win.setTimeout(() => { throw error }, 0) } // reported, never swallowed
+  const report = given !== null ? given : (error) => { win.setTimeout(() => { throw error }, 0) } // reported, never swallowed
   const reduce = win.matchMedia('(prefers-reduced-motion: reduce)')
   const widths = new Map() // one (width < Npx) query per declared width
   const observers = new Map() // root -> "rootMargin|threshold" -> { io, callbacks: Map<target, Set<fn>> }
   const mounts = []
+  const paused = [] // the mounts the editing rule held still, in document order — the editor marks them (R-175)
 
   // ponytail: ONE scan, at start. A module that appends markup carrying data-module (load-more is the first)
   // needs a rescan of what it inserted; add it with that module, FR-G7(4).
@@ -40,7 +43,10 @@ function core(win, modules, options) {
       report(new Error(`data-module="${declared}" names no module this main.js carries`))
       continue
     }
-    if (editing && !row.editSafe) continue // R-21: suppressed on the canvas, the section at rest
+    if (editing && !row.editSafe) { // R-21: suppressed on the canvas, the section at rest
+      paused.push(el)
+      continue
+    }
     let query = null
     if (m[2] !== undefined) {
       query = widths.get(m[2])
@@ -141,6 +147,7 @@ function core(win, modules, options) {
   sync()
 
   return {
+    paused,
     stop() {
       life.abort()
       for (const mount of mounts) halt(mount)

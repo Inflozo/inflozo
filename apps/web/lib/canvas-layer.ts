@@ -136,13 +136,19 @@ export const pinned = (root: HTMLElement) => {
 }
 
 /** Places one chrome element over its root, in its host's units (one unit is one screen pixel); writes only on change. */
-export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fill' | 'top-left' | 'top-right' | 'above') {
+export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fill' | 'top-left' | 'top-right' | 'above' | 'bottom-left') {
   const host = (el.getRootNode() as ShadowRoot).host as HTMLElement | undefined
   if (!host) return
   const transform = `scale(${1 / fit})`
   if (host.style.transform !== transform) host.style.transform = transform
   const h = host.getBoundingClientRect()
   const r = root.getBoundingClientRect()
+  // Story 5.15's PAUSED chip is anchored to a MOUNT inside a section, which the design may draw at no size at all
+  // (a phone menu at Desktop): an anchor with no box keeps its chip hidden rather than drawn at its corner of nothing
+  if (how === 'bottom-left' && r.width === 0 && r.height === 0) {
+    if (el.style.visibility !== 'hidden') el.style.visibility = 'hidden'
+    return
+  }
   const left = (r.left - h.left) * fit
   const top = (r.top - h.top) * fit
   // Story 5.3's pill (P0-1 :138-147): centred 8px above its words, or below them when their top is within 48px of the
@@ -158,8 +164,11 @@ export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fil
       ? { left: `${left}px`, top: `${top}px`, width: `${r.width * fit}px`, height: `${r.height * fit}px` }
       : how === 'top-left'
         ? { left: `${left}px`, top: `${top}px` }
-        // B10: 8px inside the top-right corner
-        : { left: `${(r.right - h.left) * fit - 8 - el.offsetWidth}px`, top: `${top + 8}px` }
+        // Story 5.15: 8px inside the bottom-left corner — a section's top corners are the tag's and the pill's (R-125)
+        : how === 'bottom-left'
+          ? { left: `${left + 8}px`, top: `${(r.bottom - h.top) * fit - 8 - el.offsetHeight}px` }
+          // B10: 8px inside the top-right corner
+          : { left: `${(r.right - h.left) * fit - 8 - el.offsetWidth}px`, top: `${top + 8}px` }
   for (const [key, value] of Object.entries(style)) {
     if (el.style.getPropertyValue(key) !== value) el.style.setProperty(key, value)
   }

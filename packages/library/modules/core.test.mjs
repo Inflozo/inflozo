@@ -1,15 +1,20 @@
-// Story 4.7 — every `core` row of the I/O matrix, on core.js's SHIPPED BYTES and on `bundle`'s bytes,
-// in jsdom with a fake `matchMedia` and `IntersectionObserver` (jsdom has neither). The same rows run in
-// real Chromium on T1 and T3 through `python3 tools/probe/run-verify-core.py` (R-82).
+// Story 4.7 — every `core` row of the I/O matrix, on core.js and on `bundle`'s bytes of it, in jsdom with a
+// fake `matchMedia` and `IntersectionObserver` (jsdom has neither). The same rows run in real Chromium on T1
+// and T3 through `python3 tools/probe/run-verify-core.py` (R-82).
+//
+// STORY 5.15: `core` is IMPORTED and called from this realm against a jsdom window — exactly the shape the editor
+// uses, which calls it from its own bundle against the canvas window (DW-136). The theme's shape is the last
+// tests', which run `bundle`'s bytes of the real file as the classic script a site loads.
 //
 // It reads a file, so it lives beside the module rather than in `src/`, where AD-1 bans `node:fs`; and it
-// is `.mjs` because core.js is browser code the product never runs, outside AD-1's lint (eslint.config.js).
+// is `.mjs` because core.js is browser code, outside AD-1's lint (eslint.config.js).
 
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { JSDOM, VirtualConsole } from 'jsdom'
 import { bundle } from '../src/modules.ts'
+import { core } from './core.js'
 
 const CORE = readFileSync(new URL('./core.js', import.meta.url), 'utf8')
 const tick = () => new Promise((resolve) => setTimeout(resolve, 20))
@@ -57,15 +62,14 @@ function fakePlatform(win, env) {
   }
 }
 
-/** A page with core.js evaluated from its bytes, and every error the page reports collected. */
+/** A page, the imported `core` to call against its window, and every error the page reports collected. */
 function page(body, env = {}) {
-  const dom = new JSDOM(`<!doctype html><html><body>${body}</body></html>`, { runScripts: 'outside-only', virtualConsole: new VirtualConsole() })
+  const dom = new JSDOM(`<!doctype html><html><body>${body}</body></html>`, { virtualConsole: new VirtualConsole() })
   const win = dom.window
   Object.assign(env, { width: 1024, reduce: false, ...env })
   fakePlatform(win, env)
   const errors = []
   win.addEventListener('error', (e) => { errors.push(e.error); e.preventDefault() })
-  const core = win.eval(`${CORE}\ncore`)
   const $ = (sel) => win.document.querySelector(sel)
   return { win, env, errors, core, $ }
 }
@@ -242,8 +246,49 @@ test('review — observe after the mount stopped observes nothing, and one throw
   assert.deepEqual(errors.map((e) => e.message), ['cb'], 'reported, not swallowed')
 })
 
+// ── Story 5.15 — the editor's two doors into `core` (DW-136) ─────────────────────────────────────────────────
+
+test('report: a caller that hands its own is given a mount\'s throw and a malformed declaration, and no timer throws', async () => {
+  const { win, errors, core, $ } = page('<div id="a" data-module="Bad!"></div><div id="b" data-module="boom"></div><div id="c" data-module="probe"></div>')
+  const told = []
+  const boom = new Error('the probe threw')
+  assert.doesNotThrow(() => core(win, [
+    ['boom', () => { throw boom }, { editSafe: true, animates: false }],
+    ['probe', () => {}, { editSafe: true, animates: false }],
+  ], { report: (error) => told.push(error) }))
+  assert.equal(told.length, 2, 'both, at once — nothing waits on a timer')
+  assert.match(told[0].message, /data-module="Bad!" is not a module declaration/)
+  assert.equal(told[1], boom, 'the module\'s own error, untouched')
+  assert.ok(!enabled($('#b')), 'the mount that threw stays at rest')
+  assert.ok(enabled($('#c')), 'and the next one still mounts')
+  await tick()
+  assert.deepEqual(errors, [], 'the page saw no error: nothing was thrown from a timer')
+})
+
+test('paused: exactly the mounts the editing rule held still, in document order — and none without editing', () => {
+  const html = '<div id="a" data-module="held"></div><div id="b" data-module="runs"></div><div id="c" data-module="held:768"></div><div id="d" data-module="nobody"></div>'
+  const rows = [['held', () => {}, { editSafe: false, animates: false }], ['runs', () => {}, { editSafe: true, animates: false }]]
+  const quiet = { report: () => {} }
+  const editing = page(html)
+  const held = editing.core(editing.win, rows, { editing: true, ...quiet })
+  assert.deepEqual(held.paused.map((el) => el.id), ['a', 'c'], 'a width does not change that it is held; an unknown name is reported, never paused')
+  assert.ok(held.paused.every((el) => !enabled(el)), 'and each is at rest, in its no-JS state')
+  const live = page(html)
+  assert.deepEqual(live.core(live.win, rows, quiet).paused, [], 'nothing is held still when nothing is being edited')
+})
+
+test("the real core.js, bundled: its header, the file with exactly its one `export ` removed, the start call — and no `export` anywhere", () => {
+  const main = bundle([], { core: CORE })
+  const at = CORE.indexOf('export function core(')
+  assert.ok(at >= 0 && CORE.indexOf('export ', at + 1) === -1, 'core.js is one exported declaration')
+  const [header, ...rest] = main.split('\n')
+  assert.match(header, /^\/\/ Inflozo main\.js, made by bundle\(\) .*: core$/)
+  assert.equal(rest.join('\n'), `;(function () {\n'use strict'\n${CORE.slice(0, at)}${CORE.slice(at + 'export '.length)}\ncore(window, [])\n})()\n`)
+  assert.doesNotMatch(main, /\bexport\b/, 'a classic script carrying `export` is a SyntaxError on every site')
+})
+
 test("bundle's bytes, with probe rows, mount with JavaScript on and nothing with JavaScript off", () => {
-  const sources = { core: CORE, probe: 'function probe(el, ctx) {\n  el.setAttribute("data-said", ctx.t("hello", { who: "T1" }))\n}\n' }
+  const sources = { core: CORE, probe: 'export function probe(el, ctx) {\n  el.setAttribute("data-said", ctx.t("hello", { who: "T1" }))\n}\n' }
   const main = bundle(['probe'], sources, [{ name: 'probe', editSafe: false, animates: false }])
   const html = `<!doctype html><html><body><section id="s" data-module="probe" data-i18n-hello="Hi {who}"></section><script>${main}</script></body></html>`
   const env = {}

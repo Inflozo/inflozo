@@ -386,7 +386,7 @@ the three. The shortcuts are FR-D11's, and they are the complete set:
 | `⌘S` | save now |
 | `1` `2` `3` | device preview |
 | `L` | Layers · `.` dark toggle · `Esc` deselect |
-| `P` | Preview Mode · `⇧R` Site Remix · `⌘⏎` Ship it |
+| `P` | Preview · `⇧R` Site Remix · `⌘⏎` Ship it |
 | `?` | the shortcuts card — **the one key added to FR-D11's list, R-147** (owner, 2026-09-19, Story 5.9's Q3). `S3 Dashboard.dc.html:362` draws it on the account menu's **Keyboard shortcuts** row, and the editor draws no account menu, so inside the editor it is the card's only door. A single-character shortcut, carrying the identical focus condition below |
 
 **States added after the shortcut map carry no shortcut, deliberately** (FR-D11): the paginated
@@ -427,9 +427,14 @@ one edit. **No operation count is ever surfaced anywhere in the product** (AD-16
 three minutes, on tab close, on lock release, and before any deploy or export (FR-D10).
 
 **Behaviours are off while editing** (FR-D20). Layout-affecting CSS — sticky, hover, transitions —
-is always live because it changes what the design *is*. JavaScript behaviour is suppressed, and its
-section renders in its resting state, with a **PAUSED chip on the behaviour itself** rather than in
-a status bar (B3a). Preview Mode runs everything and hides all chrome.
+is always live because it changes what the design *is*. JavaScript behaviour is suppressed unless the
+module is edit-safe, and its section renders at rest — its no-JavaScript state (R-174: shrinking headers,
+scroll reveal, tabs and accordions hold still too). A held-still part that **moves by itself** — on a timer
+or as the page scrolls, with nothing pressed — carries a **PAUSED chip on the behaviour itself** rather than
+in a status bar (B3a), **only while its section is pointed at or selected**, never at rest; a part that waits
+for a press, like a phone menu or a sign-up form, carries none (**R-175**, Story 5.15). Preview Mode — B3a's
+**Preview** pill or `P` — runs everything and hides all chrome but B3b's floating bar, whose **Back to
+editing**, `Esc` or `P` return to exactly the editor you left.
 
 ---
 
@@ -458,9 +463,10 @@ documents each hold their own focus and selection.
   link — "Skip the canvas"** — and the canvas container itself offers the same on focus.
   *(Drawn: `D8 Editor Below 1440.dc.html` D8c — not rendered at rest, visible on the first Tab, in the corrected focus ring.)*
 - **Escapable, by one key with a defined ladder rather than a second key to learn.** `Esc` steps
-  outward, one level per press, and announces where it landed: *inside inline editing* → leaves text
-  editing, the section stays selected · *section selected* → deselects, focus rests on the canvas
-  container · *canvas container* → focus leaves the canvas for the editor chrome. From anywhere,
+  outward, one level per press, and announces where it landed: *in Preview* → back to editing, above every
+  other rung and from anywhere in either document — a dialog the page itself opened closes first (Story 5.15) ·
+  *inside inline editing* → leaves text editing, the section stays selected · *section selected* → deselects,
+  focus rests on the canvas container · *canvas container* → focus leaves the canvas for the editor chrome. From anywhere,
   holding `Esc` is never required and focus is never trapped.
 
 **(2) Selection survives the chrome taking focus.** Moving focus to the Controls sidebar, the
@@ -882,7 +888,7 @@ a closed control vocabulary.
 | 7 | **Style Packs** | She opens the panel, hovers Tangerine, and the whole canvas crossfades over 300ms |
 | 8 | **Template Switcher** | Home → Post → Page → Tag → Author. The six untouched synthesizable templates already render their default stacks, each carrying the **Auto-Generated Marker** until her first edit materialises it |
 | 9 | **Layers** | `L`. The Site-wide group sits at the top with its template count; below a hairline, this page's sections. She drags one and the canvas follows |
-| 10 | **Preview Mode** | `P`. Every chip, outline and handle vanishes; the countdown ticks and the rotator rotates. `Esc` returns |
+| 10 | **Preview Mode** | `P`. Every chip, outline and handle vanishes, and the rotator rotates — the countdown, being edit-safe, was ticking while she designed too. `Esc` returns |
 | 11 | **Device Preview** | `3`. The canvas becomes 390 × 844 — a phone-shaped viewport that scrolls inside itself — so she can see where the fold lands |
 | 12 | **Site Remix** | `⇧R`. One button re-rolls every design on the site, keeping every word she typed. One undo, always |
 | 13 | **Deploy Wizard** | Four steps, because this project has shipped to this site before |

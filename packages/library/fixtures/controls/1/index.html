@@ -2,7 +2,11 @@
      beside its panel. A FIXTURE, not a library design — it lives outside `designs/`, and its category
      id `controls` names no category. It uses only directives the runtime renders, and its root
      carries every control and universal so it validates on its own; the runtime replaces them with
-     the engine's resolved values whenever it is handed the schema. -->
+     the engine's resolved values whenever it is handed the schema.
+     Story 5.15 (R-175): the feature list declares `marquee` so the keyboard harness's canvas holds one part
+     that the editor holds still AND that moves by itself — the only way CI draws the PAUSED chip, because no
+     shipped design declares such a part yet. No marquee file or style exists, and /controls runs no `core`, so
+     nothing here looks or behaves any differently. -->
 <section class="cx" data-bg="base" data-spacing="comfortable" data-divider="none"
          data-columns="3" data-card="outlined" data-align="start" data-icons="on" data-rule="line"
          data-image="top" data-tint="none">
@@ -13,7 +17,7 @@
   </header>
   <div class="cx__body">
     <img class="cx__picture" data-prop-attr="src:picture;alt:pictureAlt" data-empty="hide" alt="">
-    <ul class="cx__features">
+    <ul class="cx__features" data-module="marquee">
       <li class="cx__feature" data-items="features">
         <span class="cx__icon" data-prop="features[].icon"></span>
         <span class="cx__feature-title" data-prop="features[].title">A feature</span>

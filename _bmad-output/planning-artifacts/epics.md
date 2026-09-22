@@ -93,7 +93,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-D8** Device preview — Desktop / Tablet 834 / Mobile 390, display only, resizing the canvas in both axes to a real device size.
 - **FR-D9** Undo/redo: 100-step history over content, controls, ordering, shuffles and pack changes; persists locally across reloads; cleared on a superseding hydrate.
 - **FR-D10** Local-first persistence: every change written immediately to local storage, cloud sync on an interval and at defined moments, manual ⌘S, four indicator states, and an honest fallback when local storage is unavailable.
-- **FR-D11** Keyboard map: ⌘K · `[` `]` · ⌘D · Del · ⌘Z/⇧⌘Z · ⌘S · 1/2/3 · L · `.` · Esc. Later states carry no shortcut, deliberately.
+- **FR-D11** Keyboard map: ⌘K · `[` `]` · ⌘D · Del · ⌘Z/⇧⌘Z · ⌘S · 1/2/3 · L · `.` · Esc · ⇧R (Site Remix) · P (Preview). Later states carry no shortcut, deliberately.
 - **FR-D12** Section Picker: full-screen overlay, category rail, search, live previews in the project's own pack and content, Free/Pro badges, context filtering on `bindingContext` and `compileTarget`, non-placeable treatments absent.
 - **FR-D13** Variant Shuffle: cycles a section through its category's designs in place, carrying content and control values under the carry/park/default rule, restricted to designs sharing the instance's binding context and compile target.
 - **FR-D14** Canvas is site-width, fit-to-viewport, no zoom in v1, no cap on sections per template; holds NFR-1 on the 40-section fixture, degrading gracefully beyond it.
@@ -102,7 +102,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-D17** Site Remix: one action re-rolls pack and/or every placed design with all content preserved. Never-lose-content covers **control values** as well as content props, and the gate is mechanical.
 - **FR-D18** Edit lock: one editing context per project across tabs, browsers and devices, with the request/no-response/take-over protocol and the unsynced-edit count stated in edits. Deploy and ZIP export require the lock.
 - **FR-D19** Design navigation — the library's primary control: `[` `]`, hover arrows, and the sidebar Design picker showing position. Switching obeys **carry, park, default**.
-- **FR-D20** Preview toggle: JavaScript behaviours do not run on the canvas while designing; layout-affecting CSS always does. Each module declares `edit-safe`, and the non-edit-safe ones render in their resting state.
+- **FR-D20** Preview toggle: JavaScript behaviours do not run on the canvas while designing; layout-affecting CSS always does. Each module declares `edit-safe`, and the non-edit-safe ones — shrinking headers, scroll reveal, tabs and accordions among them (R-174) — render in their resting state; a held-still part that moves by itself carries a PAUSED chip only while its section is pointed at or selected (R-175).
 - **FR-D21** Paginated preview: any canvas showing a paginated feed can be previewed on page 2, deliberately a middle page carrying both a previous and a next link.
 - **FR-D22** Preview subject: every single-resource canvas renders one chosen resource — the fixture by default, overridable from the sample publication now and from the site's own content once connected (R-165), persisted per canvas and named in the pill.
 
@@ -2300,8 +2300,9 @@ icon rail, the Controls sidebar becomes an overlay panel, and the canvas keeps i
 canvas scale FR-D14 refuses, and the two never meet
 **And** the Dashboard, Sign In, Billing, Suggestions and every marketing page stay **fully usable at 390**
 **And** **the top bar's centred group never meets the right-hand cluster**. Since Story 5.14 the group holds both
-Template and View as, and measured on 2026-09-21 it clears the cluster down to about 960px and touches it below
-about 950px. Below that width the cluster's controls move into the one overflow menu, as D8 draws, rather than the
+Template and View as, and since Story 5.15 the cluster ends with B3a's Preview pill: measured in the keyboard harness
+on 2026-09-22 it clears the group by 44px at 1280 and meets it between about 1190 and 1195px (it met it near 950px
+before the pill). Below that width the cluster's controls move into the one overflow menu, as D8 draws, rather than the
 two buttons shrinking or losing their labels.
 **And** the states match D8a at 834, D8b at 720 and D4f at 390.
 
@@ -5554,7 +5555,7 @@ So that I can choose more widely within Post Grids on my own site.
 **Then** designs #13 Thumb Side · #14 Dense · #15 Filtered are built **against that same model**, each with its own per-design control schema
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — Thumbnail side Right is row-reverse and nothing else in the row moves. JS off: pixel-identical. l`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; a wall of 196 px cells is markup and one grid rule. The th`, `filter-strip. Edit-safe: yes — the module only marks the current pill`, `at every width; the scrollable row below 767 is n` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — Thumbnail side Right is row-reverse and nothing else in the row moves. JS off: pixel-identical. l`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; a wall of 196 px cells is markup and one grid rule. The th`, `filter-strip` — its edit-safe value is `registry.json`'s, research §7 (the export's "yes" reads the sense inverted, DW-133), `at every width; the scrollable row below 767 is n` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5576,7 +5577,7 @@ So that I can choose more widely within Post Grids on my own site.
 **Then** designs #16 Load More · #17 Panel · #18 Edge to Edge are built **against that same model**, each with its own per-design control schema
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `load-more. Edit-safe: no — it appends posts the editor did not place. JS off`, `quoted: "Ghost's numbered /page/2/ paginat`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical; the full-bleed band below 767`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the band`, `its zero gutter and its scrim at Text Over are C` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `load-more` — its edit-safe value is `registry.json`'s, research §7, `quoted: "Ghost's numbered /page/2/ paginat`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical; the full-bleed band below 767`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the band`, `its zero gutter and its scrim at Text Over are C` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5682,7 +5683,7 @@ So that I can choose more widely within Post Lists on my own site.
 **Then** designs #13 Timeline · #14 Index · #15 Load More are built **against that same model**, each with its own per-design control schema
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the rail`, `the markers and the dates are markup and CSS. sc`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — and Alphabetical is server-side`, `so it needs none. filter`, `load-more. Edit-safe: no — it appends rows the editor did not place; the module does not run while editing`, `so the edito` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the rail`, `the markers and the dates are markup and CSS. sc`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — and Alphabetical is server-side`, `so it needs none. filter`, `load-more` — its edit-safe value is `registry.json`'s, research §7, `so the edito` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**

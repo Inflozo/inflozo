@@ -51,9 +51,9 @@ contexts = _load('record_contexts', 'record-contexts.py')
 Void = contexts.Void
 
 
-# ── the probe rows: real module files in shape, one function each ──────────────
+# ── the probe rows: real module files in shape, one EXPORTED function each (Story 5.15: `bundle` removes the keyword) ──
 def counting_module(fn):
-    return f'''function {fn}(el, ctx) {{
+    return f'''export function {fn}(el, ctx) {{
   const bump = (name) => el.setAttribute(name, String(Number(el.getAttribute(name) || '0') + 1))
   bump('data-probe-mounts')
   el.setAttribute('data-probe-said', ctx.t('load-more-loading', {{ count: 12 }}))
@@ -66,7 +66,7 @@ def counting_module(fn):
 PROBE_SOURCES = {
     'probe': counting_module('probe'),
     'probe-motion': counting_module('probeMotion'),
-    'probe-throws': "function probeThrows(el) {\n  el.setAttribute('data-probe-mounts', '1')\n  throw new Error('" + THROWN + "')\n}\n",
+    'probe-throws': "export function probeThrows(el) {\n  el.setAttribute('data-probe-mounts', '1')\n  throw new Error('" + THROWN + "')\n}\n",
 }
 PROBE_ROWS = [
     {'name': 'probe', 'editSafe': True, 'animates': False},
@@ -85,7 +85,8 @@ process.stdout.write(JSON.stringify({
   main,
   refused: checkThemeJs({ 'assets/js/main.js': main }, repo),
   passes: checkThemeJs({ 'assets/js/main.js': bundle([], repo) }, repo),
-  coreVerbatim: main.includes(repo.core),
+  // Story 5.15: core.js is one EXPORTED declaration, and main.js carries it with exactly that one keyword removed
+  coreVerbatim: main.includes(repo.core.replace(/export (?=function core\()/, '')) && !/\bexport\b/.test(main),
 }))
 '''
 
@@ -185,7 +186,7 @@ def probe_theme(nonce):
     if b['passes'] != []:
         raise Void(f'CONTROL FAILED — checkThemeJs refused bundle([]) over the repo\'s own sources: {b["passes"]}')
     if not b['coreVerbatim']:
-        raise Void('the probe main.js does not carry core.js verbatim')
+        raise Void('the probe main.js does not carry core.js with exactly its one export removed, or it still carries an export')
     print(f'    checkThemeJs refuses the probe theme (control): {b["refused"][0][:110]}…')
     print('    checkThemeJs passes bundle([]) over packages/library/modules/ (the neighbour)')
     section = lambda ident, decl, body: (f'<section id="{ident}" data-module="{decl}" data-i18n-load-more-loading="Loading {{count}} more">'

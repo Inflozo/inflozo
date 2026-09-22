@@ -2,7 +2,7 @@
 title: 'Story 5.15 — Behaviours off while designing, and the Preview toggle'
 type: 'feature'
 created: '2026-09-22'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'a16f5a5cdca2950da2661b71909a25116aa4ff09'
@@ -317,19 +317,19 @@ moving part, arrive with their own designs in Epics 9 and 10.
 
 **Execution:**
 
-- [ ] `packages/library/modules/core.js` — three changes, all within DW-136:
+- [x] `packages/library/modules/core.js` — three changes, all within DW-136:
   - `export` on its one declaration.
   - `options.report(error)`, used in place of the timer throw when it is given (DW-136(b)).
   - The handle returns `paused`: the mount elements the editing rule skipped at `:43`, in document order.
   - The header comment's "A CLASSIC script, never an ES module" becomes "one exported declaration, which `bundle()`
     pastes into the classic `main.js` without the keyword". Nothing else in the file changes.
-- [ ] `packages/library/modules/core.d.ts` — **new**. It types `core(win, modules, options?)`:
+- [x] `packages/library/modules/core.d.ts` — **new**. It types `core(win, modules, options?)`:
   - `modules` is `readonly [name, fn, { editSafe, animates }][]`.
   - `options` is `{ editing?: boolean; report?: (error: unknown) => void }`.
   - The return is `{ stop(): void; readonly paused: readonly Element[] }`.
-- [ ] `packages/library/package.json` — `"./core": "./modules/core.js"` in `exports`. The root index stays the
+- [x] `packages/library/package.json` — `"./core": "./modules/core.js"` in `exports`. The root index stays the
       rulebook.
-- [ ] `packages/library/modules/registry.json` — **R-175's mark**: `"movesByItself"` on every row, and one sentence
+- [x] `packages/library/modules/registry.json` — **R-175's mark**: `"movesByItself"` on every row, and one sentence
       in `about` giving the rule: *"true when the module changes the page on a timer or as the page scrolls, with
       nothing pressed; it decides which held-still mounts the editor marks PAUSED (R-175)"*.
   - **`true`:** `header-scroll`, `rotator`, `countdown`, `marquee`, `count-up`, `reveal`, `scroll-spy`,
@@ -337,62 +337,68 @@ moving part, arrive with their own designs in Epics 9 and 10.
   - **`false`:** every other row. `carousel` is `false`, because its arrows and dots wait for a press and its
     autoplay is a per-design option that a module row cannot see.
   - No `editSafe` value changes (R-174).
-- [ ] `packages/library/src/modules.ts` — `ModuleRow` gains a required `movesByItself: boolean`, and `modules.test.ts`
+- [x] `packages/library/src/modules.ts` — `ModuleRow` gains a required `movesByItself: boolean`, and `modules.test.ts`
       asserts every row carries one. The type makes a row without it a compile error.
-- [ ] `packages/library/src/modules.ts`:
+- [x] `packages/library/src/modules.ts`:
   - `topLevelShape` accepts exactly one **exported** declaration of the expected name, and still refuses anything else.
   - `bundle()` removes that one `export ` before pasting, so `main.js` never carries one.
-- [ ] `eslint.config.js:181-182` — `sourceType: 'module'` for `packages/library/modules/*.js`. `no-undef` and
+- [x] `eslint.config.js:181-182` — `sourceType: 'module'` for `packages/library/modules/*.js`. `no-undef` and
       `compat/compat` are kept. Correct the comment at `:41-43`.
-- [ ] `packages/library/modules/core.test.mjs`:
+- [x] `packages/library/modules/core.test.mjs`:
   - **Import** `core` rather than `win.eval` it, and call it from the test's realm against a jsdom window. That is the
     shape the editor uses.
   - New tests:
     - `report` receives a mount's throw and a malformed declaration, and nothing is thrown from a timer.
     - `paused` is exactly the skipped mounts under `{ editing: true }`, and it is empty without editing.
   - `:245`'s bundle, with JavaScript on and off, still runs.
-- [ ] `packages/library/src/modules.test.ts`:
+- [x] `packages/library/src/modules.test.ts`:
   - The shape tests require `export function <fn>` and refuse a bare declaration.
   - The start-call test (`:51`) pastes the source without `export`.
   - A bundle of the real `core.js` is its header, then the source with exactly its one `export ` removed, then the
     start call, and it holds no `export` anywhere.
-- [ ] `apps/web/lib/preview.ts` — **new and importless**, like `lib/device.ts`, so `keymap.ts` can read it and stay
+  - *As built:* AD-1's lint bans `node:fs` in a `src/` test, so the REAL file's bytes are held in `core.test.mjs` (which
+    exists beside the module for exactly that reason) and `modules.test.ts` holds the same shape on its in-memory
+    `core`, `export`-free across the whole bundle.
+- [x] `apps/web/lib/preview.ts` — **new and importless**, like `lib/device.ts`, so `keymap.ts` can read it and stay
       importless. It holds the words, each written once: `PREVIEW` ("Preview"), `BACK` ("Back to editing"), `PAUSED`
       ("PAUSED"), `PREVIEW_SAID` ("Preview. Press Escape or P to come back.") and `BACK_SAID` ("Back to editing.").
-- [ ] `apps/web/lib/behaviours.ts` — **new**, and pure apart from calling `core`, so `node --test` reaches it. It holds:
+- [x] `apps/web/lib/behaviours.ts` — **new**, and pure apart from calling `core`, so `node --test` reaches it. It holds:
   - `CANVAS_MODULES`: every `MODULES` row, in registry order, as `[name, fn, row]`. `fn` is the module's own function,
     and a no-op where no file exists yet. That fallback carries a `ponytail:` note naming FR-G7(2) and the day it goes.
   - `startBehaviours(win, editing, report)`, the one call of `core` in the app.
   - `movesByItself(declaration)`, R-175's filter. It reads a mount's `data-module` through `parseModuleDeclaration`
     and answers from the registry row, so `accordion:768` is `accordion`.
-- [ ] `apps/web/behaviours.test.ts` — **new**:
+  - *As built:* `startBehaviours` takes an optional fourth argument, `modules`. It is the canvas's list unless a
+    probe hands its own, as `bundle`'s `rows` are, so the matrix's "A module throws" row is tested through the real
+    call.
+- [x] `apps/web/behaviours.test.ts` — **new**:
   - `CANVAS_MODULES` holds every registry row in order.
   - `movesByItself` is true for `marquee` and `header-scroll:768`, and false for `nav-drawer`, `member-form`,
     `carousel` and a malformed or unknown declaration.
   - **Every file in `packages/library/modules/` other than `core.*` and the registry is imported into it.** The list is
     derived from the directory, so the first module file lands red until the canvas runs it.
-- [ ] `apps/web/lib/keymap.ts`:
+- [x] `apps/web/lib/keymap.ts`:
   - The `P` row goes live: `{ gesture: 'preview', action: PREVIEW, chips: ['P'], keys: ['p'], shift: false }`. The
     card's words come from `lib/preview.ts`, so the pill, the card and the bar read one name (R-170).
   - `'preview'` joins `Gesture`.
   - Correct the tense at `:10-11`, and the header's "its one import" line (`:24`), which now names two importless
     modules.
-- [ ] `apps/web/keymap.test.ts`:
+- [x] `apps/web/keymap.test.ts`:
   - `:118` loses `'P'`.
   - Add a `P` test on `⇧R`'s model: `p` is `preview`, `⇧P` is nothing, in a field it is nothing, and `SINGLE_KEY` holds
     it.
-- [ ] `apps/web/lib/canvas-layer.ts` — `place()` gains `'bottom-left'`: 8px inside the anchor's bottom-left corner. An
+- [x] `apps/web/lib/canvas-layer.ts` — `place()` gains `'bottom-left'`: 8px inside the anchor's bottom-left corner. An
       anchor with no box keeps its element hidden.
-- [ ] `packages/library/fixtures/controls/1/index.html` — `data-module="marquee"` on `<ul class="cx__features">`,
+- [x] `packages/library/fixtures/controls/1/index.html` — `data-module="marquee"` on `<ul class="cx__features">`,
       with a comment saying why: the harness's one held-still part that moves by itself (R-175). The fixture must
       still validate. Both `controls.test.ts` files stay green, and `/controls` looks unchanged.
-- [ ] `apps/web/components/kit/icons.tsx` — three glyphs, each copied verbatim from its frame (R-92):
+- [x] `apps/web/components/kit/icons.tsx` — three glyphs, each copied verbatim from its frame (R-92):
   - `Pause` (B3a `:659`)
   - `PreviewEye` (B3a `:646`)
   - `PreviewEyeOff` (B3b `:702`)
-- [ ] `apps/web/components/editor/device-switch.tsx` — `DeviceSwitch` gains an `id` and an `ink` tone for B3b's bar:
+- [x] `apps/web/components/editor/device-switch.tsx` — `DeviceSwitch` gains an `id` and an `ink` tone for B3b's bar:
       34px icon buttons, the current one on `surface/14`, hovering to `surface/12`. The glyphs stay S4a's.
-- [ ] `apps/web/components/editor/preview-toggle.tsx` — **new**. Two parts:
+- [x] `apps/web/components/editor/preview-toggle.tsx` — **new**. Two parts:
   - **`PreviewButton`**, B3a's pill, with id `editor-preview`.
     - The eye, "Preview" and the `P` cap, which is `aria-hidden`. The button carries `aria-keyshortcuts="P"`, and its
       name is its word.
@@ -401,7 +407,7 @@ moving part, arrive with their own designs in Epics 9 and 10.
     - Ink, `rounded-pill`, `p-[5px]`, `shadow-modal`, fixed 18px above the window's bottom and 18px from its left.
     - It holds the **Back to editing** button (`aria-keyshortcuts="Escape"`, the `esc` cap `aria-hidden`), a divider,
       and the ink `DeviceSwitch`.
-- [ ] `editor.tsx`:
+- [x] `editor.tsx`:
   - **The state.** `preview` is session state beside `mode`, `device` and `viewAs`, and it is in `latest`.
     `enterPreview` and `leavePreview` each write `latest`, set the state, `paint()` and `setSaid`, then move the focus:
     - Entering moves focus to Back to editing and remembers where it was.
@@ -436,9 +442,9 @@ moving part, arrive with their own designs in Epics 9 and 10.
   - **The pill** goes last in the right-hand cluster, after Theme settings. B3a puts it immediately left of the ship
     button, which Story 7.18 places to its right.
   - Correct the comments at `:190-199` and `:1086`.
-- [ ] `apps/web/lib/canvas.ts` — `mountSections`' comment says it is `/pilots'` and the picker's JavaScript-on look,
+- [x] `apps/web/lib/canvas.ts` — `mountSections`' comment says it is `/pilots'` and the picker's JavaScript-on look,
       and that the editor's canvas is `core`'s.
-- [ ] `tools/keyboard/journey.spec.mjs`:
+- [x] `tools/keyboard/journey.spec.mjs`:
   - Update `:408`, `:414`, `:433` and the sweep at `:544-566`: press `Escape` when Preview is on, as the sweep already
     does for a dialog.
   - New journeys:
@@ -454,12 +460,17 @@ moving part, arrive with their own designs in Epics 9 and 10.
     - `L` `.` `[` `?` do nothing in Preview, and `1` `2` `3` change the device.
     - A `p` typed in a panel field is a letter.
     - The Tab budget stays derived.
-- [ ] `tools/probe/run-verify-editor.cjs` — the deployed walk:
+  - *As built:* more matrix rows are walked here: the fallback to the pill, one repaint each way, restamp against
+    repaint for the chip, `⌘Z` and `⇧⌘Z` in Preview after a real edit, `⌘S` sending from there, Rail's menu button
+    pressed in Preview, and a link pressed there, each with its control (Verification).
+- [x] `tools/probe/run-verify-editor.cjs` — the deployed walk:
   - Step 4 compares with `js-enabled` removed from both sides; the class is `core`'s, and step 91 reads it.
   - Step 5's session gains Preview in and out with `core` running. Its violations sentence names them.
   - Step 8 scans Preview.
   - Steps 77 and 78: `P` is live, and only `⌘⏎` is owed.
   - Step 90's sweep leaves Preview after `p`, and its 1280 room check stays positive with the pill in the cluster.
+  - *As built:* every step is written and `node --check`ed; the walk runs against the DEPLOYED build, so it is
+    executed at Review (it refuses a checkout that is not what production serves).
   - **Step 91**, new:
     - No chip anywhere, at rest or on a hovered or selected Rail or Inline Row (R-175). The shipped library holds no
       held-still part that moves by itself, so the chip's own look is measured by the keyboard journey in CI.
@@ -468,7 +479,7 @@ moving part, arrive with their own designs in Epics 9 and 10.
     - A link and a submit in Preview leave the page where it is.
     - The pill and the bar match B3a and B3b.
     - Zero CSP violations with `core` running, behind step 5's `EvalError` control.
-- [ ] **Documents** (standing rule 3, then a grep for `Preview Mode`, `story: '5.15'`, `never run by the product`,
+- [x] **Documents** (standing rule 3, then a grep for `Preview Mode`, `story: '5.15'`, `never run by the product`,
       `A CLASSIC script` and `run always` under standing rule 7). R-174 and R-175 are in the ledger, and this story's
       criteria in `epics.md` and its `epic-5-context.md` sub-bullets were written at Create. What remains:
   - `prd.md`:
@@ -710,7 +721,117 @@ anything narrower is Story 5.22's responsive floor.
   Its negative control is `win.eval('1')` from the editor against the canvas window, which must throw `EvalError`.
   Record the result in `MEASUREMENTS.md`.
 - **Supabase** is touched only through the walk's throwaway sign-in. No table is read or written by this story.
-- **Not touched, and not claimed:** T1, T3, Resend and Dodo. Nothing here reaches Ghost, sends mail or takes payment.
+- **Not touched, and not claimed:** Resend and Dodo. Nothing here sends mail or takes payment. *(This line named T1 and
+  T3 too. They were touched at Dev after all, because `core.js` and `bundle()` changed and Story 4.7's real-Chromium
+  proof of `core` runs on them. See "Real infrastructure at Dev" below.)*
+
+**Dev (2026-09-22) — what was executed, under Node 24.18.1.** Every package test prints its own count, so none is
+written here (standing rule 4).
+
+- **`pnpm check`: exit 0.** Lint (with `packages/library/modules/*.js` as ES modules), typecheck, and every package
+  test with 0 fail, including `core.test.mjs`, `modules.test.ts`, `keymap.test.ts`, `canvas-layer.test.ts` and
+  `behaviours.test.ts`. Inside it:
+  - `check-snapshots`: PASS against the committed snapshots, untouched
+  - `derive-module-reach --check`: PASS, "registry.json agrees with research §2.1, §3.1 and §7"
+  - `test-vocabulary`, validating every controls sample, fixture 1's `marquee` included
+  - `check-baseline`'s bundle of `core` and its lint-pin control
+- **`pnpm keyboard`: every journey passed**, the Preview and R-175 stops and the updated sweep included, on a clean
+  harness boot. `apps/web/next-env.d.ts` was left clean.
+- **The matrix rows below lacked a test for the part named, and each gained one at Dev's check** (Matrix Test Audit):
+  - *Leave Preview's fallback.* Focus that was nowhere (the body) when Preview began comes back to the pill.
+  - *Enter and Leave Preview's "one repaint".* Each way, every section root is a new node and the canvas document is the
+    same one. Both stamps are checked to have landed first, so "none left" can fail.
+  - *Repaint and restamp.* A mode flip keeps the chip on the same node. A change of visitor draws it again on the new
+    node, still at rest.
+  - *Keys in Preview.* `⌘Z` and `⇧⌘Z` join the dead keys. One edit (`]`) is made before Preview, so a `⌘Z` that reached
+    the journal would take it back. The control: after Preview, the same `⌘Z` does take it back. And `⌘S` is shown to
+    ACT in there: that edit is owed, so the save sends it, and the journey waits for the POST to the sync route. The
+    harness has no database, so the write itself is refused.
+  - *A module throws.* `behaviours.test.ts` runs a throwing module through `startBehaviours` itself. `report` gets it
+    at once, named, with the module's own error as the cause. The mount stays at rest, and the next mount still runs.
+  - *Mobile, Preview.* Enter on Rail's menu button does nothing: it stays `aria-expanded="false"`, the links stay
+    hidden, and Preview stays on. The control is that focus is on the button when Enter is pressed.
+  - *A press in Preview.* Enter on a Rail link is the link's click, and the canvas stays at its address, read 300ms later
+    so a navigation would have had time to start. The submit check waits the same.
+- **Where each matrix row is tested** (the journeys are named by their titles' opening words):
+  - *Opening:* "R-174 · FR-G7(4)" (every mount at rest) and "R-175" (no chip, no `data-inflozo-*`). The Desktop look is
+    `check-snapshots` and the render matrix, both unchanged, plus `a1/1/style.css`, whose only `js-enabled` rules sit
+    in its narrow block. The deployed walk's step 4 adds production.
+  - *Pointing* and *A part that moves by itself:* "R-175", its two halves.
+  - *Mobile, editing* and *Mobile, Preview:* "R-174 · FR-G7(4)", at the last device.
+  - *Enter Preview:* "Preview: P goes in", "Preview hides every piece" and "R-174 · FR-G7(4)".
+  - *A press in Preview:* "R-175" (a section pointed at in Preview) and "in Preview only P" (a link, a submit, the box).
+    A mouse hover and click are the deployed walk's step 91.
+  - *Keys in Preview:* "in Preview only P", and `keymap.test.ts`'s `IN_PREVIEW` test.
+  - *Leave Preview:* "Preview: P goes in" and "Preview hides every piece".
+  - *A dialog in the page:* "a module's own dialog".
+  - *Typing:* "WCAG 2.1.4: with the caret in a panel field", and `keymap.test.ts`'s `P` test.
+  - *Repaint and restamp:* "R-175" and "R-174 · FR-G7(4)".
+  - *A module throws:* `core.test.mjs`'s `report` test and `behaviours.test.ts`'s named-throw test.
+  - *Pilots, snapshots, matrix:* `check-snapshots`, the matrix gate, `core.test.mjs`'s bundle runs with JavaScript on
+    and off, `modules.test.ts`'s no-`export` assertions, the stress gate, and T1 and T3 (below).
+- ***Stated plainly,* two things are not exercised by any test.** Both hold by the code's shape rather than by a run:
+  - *"Clear of the Pro badge."* Controls fixture 1 is Free, so no badge is drawn beside its chip. The badge is placed
+    at the root's top-right and the chip at the mount's bottom-left.
+  - *A tap in Preview.* The journey has no touch, and step 14's touch run is in editing mode. In Preview, `pointerdown`
+    returns before a hold starts, and `click` returns before `choose`.
+- **Controls (standing rule 2).** Each check below was broken on purpose, went red, and was put back byte for byte,
+  checked with `cmp`:
+  - a planted `packages/library/modules/lightbox.js`: `behaviours.test.ts`'s directory test went red
+  - `movesByItself` answering true for every part: the R-175 journey went red (".a1-1 carries no PAUSED chip")
+  - no `IN_PREVIEW` filter: the Preview-keys journey went red
+  - `named` passing a module's throw through unnamed: `behaviours.test.ts`'s new test went red
+  - the focus fallback removed: "focus with nowhere to return to lands on the pill" went red
+  - `undo` let into `IN_PREVIEW`: "⌘Z did not take the edit before Preview back" went red
+  - `core` not restarted on a repaint: "a repaint draws the chip again, on the new node" went red
+  - a Preview link click let through: "the link did not navigate the canvas" went red
+  - `save` taken out of `IN_PREVIEW`: the wait for `⌘S`'s POST timed out and went red
+- **The stress theme:** `node build.js && node gate.js theme` gives ERRORS 0 and WARNINGS 0 on Ghost 5 (gscan 4.49.7)
+  and Ghost 6 (gscan 6.4.2), and `checkThemeJs` is clean. Its `main.js` is `bundle([])` over the real `core.js`, and a
+  grep for `\bexport\b` in it finds nothing. *Stated plainly:* `npm install` there could not run. `tools/stress/
+  node_modules` is owned by root, from an earlier container run, so the modules already installed were used as they
+  stand.
+- **`bash tools/matrix/run-matrix-gate.sh`:** passed, with 0 violations, and no file under `tools/matrix/` changed.
+- **`python3 tools/doc-audit.py --check`:** run twice at the Dev commit, in the On Complete block. The first run
+  regenerates, and the second is the result.
+- **Standing rule 1, executed locally.** A page pair in Chromium 149 carried the app's nonce policy (no
+  `'unsafe-eval'`). The parent imported the real `core.js` and ran it against the child window: the mount that was not
+  edit-safe was held and handed back in `paused` while designing, both ran in Preview, and neither document recorded a
+  violation. `eval('1')` and `new Function` reached on the child window from the parent both threw `EvalError`,
+  reported by the CHILD's policy. So `core` from the editor compiles nothing in the canvas, and step 5's new control
+  will fire on production. This is a local page pair, not the deployed canvas. The production record is step 91's,
+  once this commit is live (below), and `MEASUREMENTS.md` records it at Review.
+- **Measured in the harness at 1440 × 900.**
+  - B3a's pill as drawn: white, a 1px `line` border, the pill radius, `4px 10px 4px 8px`, a 7px gap, the eye 13/1.6,
+    "Preview" 12/600, and the mono `P` cap 10px on `paper-sunk`. It hovers to `line-strong`.
+  - B3b's bar 18px off the bottom-left: ink, a 24px radius, 5px padding, a 2px gap and `shadow-modal`. Back to editing
+    is 34px high with a 20px radius and `0 15px`, and the `esc` cap is 10.5px on white .16. The divider is 1 × 20 at
+    white .18, and the devices are 34 × 34 with the current one on white .14.
+  - The PAUSED chip sits 8px inside the list's bottom-left corner (within a quarter pixel, from `offsetHeight`'s
+    rounding), clear of the name tag and the section pill.
+  - The right-hand cluster clears View as by 124px at 1440 and 44px at 1280, and meets it between about 1190 and
+    1195px (Story 5.22's card now says so).
+
+**Real infrastructure at Dev (R-82):**
+
+- **T3 `ghost5.inflozo.com` (Ghost 5.130.6) and T1 `ghost6.inflozo.com` (Ghost 6.58.0)**, through
+  `python3 tools/probe/run-verify-core.py`. The probe reads `GHOST5_URL`, `GHOST5_STAFF_ACCESS_TOKEN`,
+  `GHOST5_CONTENT_API_KEY` and their `GHOST6_` twins from `tools/probe/.env` itself, and prints none of them. It is
+  Story 4.7's real-Chromium proof of `core`, re-run because `core.js` and `bundle()` both changed.
+  - Its own control held first: `checkThemeJs` refused the probe theme and passed `bundle([])` over the repo's
+    sources. Its "`core.js` with exactly its one `export` removed, and no `export` left" check passed. gscan gave 0
+    errors and 0 warnings on both majors.
+  - On each server the theme uploaded with **HTTP 200**, and **22 of 22 rows held**. Those rows cover JavaScript on at
+    1024px (mounts, `ctx.t`, `ctx.observe`, the `:768` mount idle, the throwing mount unmarked), 1024 → 600 → 1024px,
+    reduced motion both ways, and JavaScript off at both widths (no `js-enabled`, no module ran, no page error).
+  - Each server ended as it started: the theme was restored to `casper` and read back, and the probe theme was deleted.
+  - So the theme's new `main.js` still runs on both Ghost majors, with JavaScript on and off.
+- **Vercel production, GitHub Actions and Supabase** are read after this commit is pushed, because CI publishes it
+  (DW-7). The deployed walk (`node tools/probe/run-verify-editor.cjs` against `https://app.inflozo.com`, with
+  `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID` and `VERCEL_PROJECT`) refuses a checkout that
+  production does not serve. So steps 3, 4, 5 (with its new control), 8, 77, 78, 90 and 91 run against this commit
+  once it is live, and are recorded in the next Dev commit, as Stories 5.13 and 5.14 did. `MEASUREMENTS.md`'s entry
+  stays the Review's, as planned above.
 
 ## Owner's manual test
 

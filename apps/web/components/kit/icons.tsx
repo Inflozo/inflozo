@@ -269,6 +269,31 @@ export const EyeOff = (p: IconProps) => (
     <line x1="4" y1="20" x2="20" y2="4" />
   </Icon>
 )
+/* ── Story 5.15 — B3's three drawings (`B Missing Surfaces.dc.html`), each read verbatim with its own stroke. The
+   frame sets no `stroke-linejoin`, so the two eyes take SVG's own miter over this file's round; the pause glyph is two
+   straight lines, where a join draws nothing. They are B3's, not S4d's `Eye`/`EyeOff` above: a flatter eye with a
+   smaller pupil, and a slash drawn from the top-left. */
+/** B3a `:659` — the PAUSED chip's glyph, 9px at a 2.4 stroke */
+export const Pause = ({ strokeWidth = 2.4, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <line x1="9" y1="5" x2="9" y2="19" />
+    <line x1="15" y1="5" x2="15" y2="19" />
+  </Icon>
+)
+/** B3a `:646` — the Preview pill's eye, 13px at a 1.6 stroke */
+export const PreviewEye = ({ strokeWidth = 1.6, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} strokeLinejoin="miter" {...p}>
+    <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z" />
+    <circle cx="12" cy="12" r="2.5" />
+  </Icon>
+)
+/** B3b `:702` — Back to editing's eye with its slash, 14px at a 1.7 stroke */
+export const PreviewEyeOff = ({ strokeWidth = 1.7, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} strokeLinejoin="miter" {...p}>
+    <path d="M4 4l16 16" />
+    <path d="M2 12s3.6-6 10-6 10 6 10 6-3.6 6-10 6-10-6-10-6z" />
+  </Icon>
+)
 export const Trash = (p: IconProps) => (
   <Icon {...p}>
     <path d="M3 6h18" />

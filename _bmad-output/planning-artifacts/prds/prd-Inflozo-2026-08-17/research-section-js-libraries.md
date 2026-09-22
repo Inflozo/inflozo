@@ -589,6 +589,10 @@ declaration lives with the module declaration, not in this table — since Story
 module's name in §2.1's order, its edit-safe value transcribed from the column below, whether `core`'s
 one reduced-motion gate stops it, and the retired names with their rulings. This table keeps the prose;
 `python3 tools/derive-module-reach.py --check` fails when the two disagree, so it stays one table.
+**Whether a module "moves by itself" lives in `registry.json` alone** *(Story 5.15, R-175)*: its
+`movesByItself` is true when the module changes the page on a timer or as the page scrolls, with nothing
+pressed, and it decides which held-still mounts the editor marks PAUSED. Every value follows from that one
+sentence, so it is one source and never restated in this table.
 **`js-enabled` is set on the mount, not on the page:** `core` adds the class to the element carrying
 `data-module` before the module runs and removes it when that mount stops. A module suppressed while
 editing, stopped for reduced motion or outside its declared width therefore leaves its own element in the
@@ -603,9 +607,12 @@ JavaScript branch with no script running.
   disagreed (`carousel`: A14 said yes, A15 said no). **The sense, fixed once (ruling R-21): a module is
   `edit-safe` if it may run inside the editor canvas without interfering with editing.** Anything marked
   **no** is suppressed on the canvas and its section renders in its resting state. The values below are
-  the architect's pass against that sense; **E4 confirms each against the real canvas** — the two the
-  owner ruled directly are `lightbox` (**no** — the defining case) and `carousel` (**no**, settling the
-  A14/A15 disagreement).
+  the architect's pass against that sense; **each module's first category story confirms its value on the
+  real canvas** — Story 5.15's, where `core` runs from the editor — because that is where a value is first
+  seen behaving (VERIFY-AT-BUILD row 50; E4 had no canvas and no module to confirm them on). The owner ruled
+  `lightbox` (**no** — the defining case) and `carousel` (**no**, settling the A14/A15 disagreement)
+  directly, and **R-174** (2026-09-22) confirmed `header-scroll`, `reveal`, `tabs` and `accordion` **no**
+  against FR-D20's old list of them as edit-safe.
 - **`search-overlay` and `search-expand` are deleted** (ruling R-24 — Ghost's native search only; no
   engine is vendored, and the zero-third-party exception D3 created in FR-G7 is **withdrawn**). A search
   affordance is now a plain element carrying `data-ghost-search`, which needs no module at all.
@@ -649,7 +656,7 @@ JavaScript branch with no script running.
 | `nav-transform` | *(new — D2)* The flat raw-prefix list renders: a visitor sees Ghost's own navigation with the literal `+Sections` / `−Essays` labels. **JavaScript-required, no accommodation built** — the owner's ruling, stated once here and nowhere else. | **yes** — rewrites labels once at load, and the transformed labels are what the editor should see |
 | `contact-form` | *(new — D28)* The honest `mailto:` link renders and works; the JS-composed draft (subject and body pre-filled) is what JavaScript adds. No tile provider, no third-party post endpoint. | **no** — suppressed so an editor cannot open a mail client from the canvas |
 | `group-headings` | *(new — ruling R-1)* **The module MAY step the headings it groups, and must** *(architect's ruling, 2026-09-03, ratifying what the A18 pass assumed)*: it inserts each group heading at the level the design declares and steps the titles it groups one level below. That is the only arrangement whose outline is correct in **both** states — with the script, a nested outline describing a grouped list; without it, a flat list of peers describing a flat list. Each state's outline then tells the truth about that state, which is what the no-JS rule asks for. The alternative — inserting a group heading as a peer of the titles it groups — would announce a nesting that is not there. The flat ruled list renders, ungrouped (P0·8 rule 4). Handlebars cannot detect a key change between items — no month, year, tag or initial heading is emitted server-side, on any Ghost version. | **yes** — the headings it inserts are derived and are not editable, so nothing is hidden from the editor |
-| `cards.js` | *(Story 4.7, DW-100 — Ghost's card behaviour, vendored and shipped beside `main.js`, not a module)* The audio and video cards show no working player, because Ghost emits neither `<audio>` nor `<video>` with `controls`; the toggle card stays closed, as Ghost renders it `data-kg-toggle-state="close"`; and gallery rows lose their proportions, because only `gallery.js` sets each image's `flex` ratio. Read in Ghost 6.58.0's vendored card scripts and the Orbit Weekly recordings (`packages/library/orbit-weekly/`). | **yes** — it acts only inside the post-body fixture, which nothing on the canvas edits (FR-H3(1)). Story 5.15 confirms both values on the real canvas |
+| `cards.js` | *(Story 4.7, DW-100 — Ghost's card behaviour, vendored and shipped beside `main.js`, not a module)* The audio and video cards show no working player, because Ghost emits neither `<audio>` nor `<video>` with `controls`; the toggle card stays closed, as Ghost renders it `data-kg-toggle-state="close"`; and gallery rows lose their proportions, because only `gallery.js` sets each image's `flex` ratio. Read in Ghost 6.58.0's vendored card scripts and the Orbit Weekly recordings (`packages/library/orbit-weekly/`). | **yes** — it acts only inside the post-body fixture, which nothing on the canvas edits (FR-H3(1)). Story 5.20, the first canvas that draws a post body, confirms both values on the real canvas *(moved from Story 5.15, whose canvases draw none)* |
 ---
 
 ## Appendix A — Method and reproducibility

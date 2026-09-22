@@ -3410,7 +3410,7 @@ plain: Two documents disagree about which moving parts keep moving while you des
   follows the architect's table, which pauses drop-downs, tabs, scroll reveals and shrinking headers on the
   canvas; the editing requirement says those four keep running. Nothing is visible yet, because the canvas does
   not exist — you will see whichever one is right when Story 5.15 is tested.
-status: open
+status: done 2026-09-22 (Story 5.15, R-174)
 amendment: Story 4.10's planning (2026-09-15) found the export uses "edit-safe" in the OPPOSITE sense: `A1 Headers -
   Spec.md:185` means "does not run while editing", where `registry.json`'s `editSafe` means "runs while editing". The
   registry's values stand (they are §7's); whoever settles this at 5.15 reads the export's word with that inversion.
@@ -3419,6 +3419,12 @@ origin: Story 4.7 (2026-09-14) — spec Design Notes, "Edit-safe values are tran
 owner: Story 5.15 (canvas suppression, the PAUSED chip and the Preview toggle), whose owner test is where the
   canvas behaviour is seen; the owner rules if the two stay apart
 location: prd.md FR-D20 · epics.md Story 5.15 · research-section-js-libraries.md §7 · packages/library/modules/registry.json
+resolution: Story 5.15 (2026-09-22) — the owner ruled **R-174** at its Create (Question 1, option 1): *"Hold all four
+  still while you design; Preview shows them moving."* §7 and `registry.json` were right and no `editSafe` value moved
+  (`derive-module-reach.py --check` green); FR-D20's list, epics.md's FR-D20 summary and Story 5.15's card now say the
+  four hold still, and the editor holds them at rest in their no-JS state because it runs `core` with
+  `{ editing: true }` on the canvas (`apps/web/lib/behaviours.ts`). The export's inverted "edit-safe" (the amendment
+  above) is noted where epics.md restated it (A17's `filter-strip`), and R-21's own title carries an erratum.
 reason: FR-D20 and 5.15 list "sticky/shrink headers, scroll reveal, tabs, accordions" as edit-safe modules that
   run always, while §7 — the architect's pass under R-21, which says "the editor obeys the table" — marks
   `header-scroll`, `reveal`, `tabs` and `accordion` **no**. Changing either text or any edit-safe value is an
@@ -3463,7 +3469,18 @@ reason: FR-J4 declares `cards.js` Ghost's MIT code, vendored by `tools/probe/rec
 plain: The editing screen will need to start the same little script the live site runs, but tell it "we are
   editing, so keep the non-edit-safe parts still", and it will need somewhere to send a module's error other than
   the browser console. Neither door exists yet; the script works only as a live site loads it today.
-status: open
+status: done 2026-09-22 (Story 5.15)
+resolution: Story 5.15 (2026-09-22) — the editor IMPORTS `core` and runs it from its own bundle against the canvas
+  window on every paint (`apps/web/lib/behaviours.ts` `startBehaviours`, the one call): `{ editing: true }` while
+  designing and none in Preview, `stop()` before each repaint and on unmount, and the handle's new `paused` — the
+  mounts the editing rule held still — feeding the PAUSED chip. (b) is `options.report`, which receives every error in
+  place of the timer's throw; the editor logs it with the module's name and never says it. This entry's "likely shape",
+  a canvas-side wrapper evaluating `bundle`'s strings, could not run: the canvas carries no script and no nonce, and the
+  policy refuses `eval` — executed in Chromium 149 at the story's Dev (`eval` called from the parent realm on a child
+  window carrying this policy threw `EvalError`, reported by the child, while `core` run the same way raised zero
+  violations), and re-executed on production by `run-verify-editor.cjs` steps 5 and 91 at Review. So `core.js` is now
+  one EXPORTED declaration and `bundle()` removes the keyword as it pastes it into the classic `main.js`
+  (`packages/library/src/modules.ts`, held byte for byte by `modules/core.test.mjs`).
 severity: medium
 origin: Story 4.7's review (2026-09-14) — Blind Hunter: `bundle` seals `core` inside one wrapping function and calls
   `core(window, [])` with no options, and a thrown module error is re-thrown from a `setTimeout`, which a Next window
@@ -3712,6 +3729,11 @@ reason: each needs a vocabulary piece, a module or a field the pilot story does 
   - (Fixed at the review, not left: Account sat inside the self-signup gate and vanished on an invite-only site;
     `A1 Headers - Spec.md:79` hides Sign in and Subscribe only. The gate is now a `display: contents` wrapper around
     the two asks.)
+  - **Added by Story 5.15 (2026-09-22):** `A1 Headers - Spec.md:185` says A1·6's takeover and A1·7's panel are "pinned
+    open while their contents are selected, because that is where their authored content lives" — a canvas behaviour
+    no story builds. Since 5.15 the editor holds `nav-drawer` still while designing, so the mount rests in its no-JS
+    state, where A1's own no-JS baseline makes the takeover's contents native `<details>`. The story building A1 #6 and
+    #7 (9.2) decides whether that resting state is enough to design them in, or asks for pinning.
 
 ### DW-151: A17 #1 Three Up — what its pilot leaves, and the one-value grey the engine cannot draw
 
@@ -3954,6 +3976,16 @@ owner: the next run of the step-6 generator, or the first E9–E11 category stor
 location: _bmad-output/planning-artifacts/epics.md (A17 and A18 story blocks, and any other with the same shape)
 reason: the fragments predate Story 4.10 and change no story's scope; fixing them means correcting the generator's
   field parse, not hand-editing the cards.
+amendment: Story 5.15's Create and Dev (2026-09-22) found three more of the same parse, all left for the generator run:
+  - **"none" where §2.1 derives a module.** The library stories from 9.1 to 10.41 carry "the behaviour modules these
+    designs declare — none —" on cards whose designs research §2.1 lists as declaring one. Story 9.1 is the first:
+    A1 #1–4 against `header-scroll`, which §2.1 derives for A1-1 onward — the first module a PAUSED chip will mark.
+  - **A1-16 Reveal is in no story.** The export draws it (`A1-16 Reveal.dc.html`) and §2.1 counts it among
+    `header-scroll`'s declarers, while A1's four stories (9.1 to 9.4) end at design #15.
+  - **Designs "declaring" `core`.** The A31 and A32 cards (Stories 10.104 to 10.109) list `core` among the modules
+    their designs declare, which FR-G7(4) forbids: `core` is the platform runtime, declared by no design.
+  - Story 5.15 hand-corrected ONE thing in these lists, at its own spec's instruction: the three cards that restated
+    `filter-strip`'s and `load-more`'s edit-safe value now cite `registry.json` instead.
 
 ### DW-165: the Data group draws only Show and Order — two queries repeat them, and a category's own query settings have no row yet
 
@@ -5195,3 +5227,48 @@ plain: With the same project open in two tabs, looking at a page in the second t
 reason: Each tab merges into its own copy of the record and writes whole arrays; an edit made in the other tab never
   invalidates this one's copy. The fix is an array-union RPC or a re-read on the save path's "another session wrote".
 
+## Deferred from: Story 5.15's Dev (2026-09-22) — behaviours held still while designing, and Preview
+
+### DW-226: a module that moves by itself and declares a width is chipped PAUSED at every width
+
+plain: When a header that shrinks as you scroll only does so on phones, the editor will still show its PAUSED tag when
+  you point at it on the desktop view, where it would not move even on your live site.
+status: open
+severity: low
+origin: Story 5.15's Dev (2026-09-22) — spec Design Notes, "Known ceilings"
+owner: the first category story that puts a width-declared module that moves by itself on the canvas (R-38's
+  `header-scroll:768` is the likely one)
+location: apps/web/lib/behaviours.ts `movesByItself` · editor.tsx's chips
+reason: the chip is drawn for every mount `core` held still whose module `movesByItself`, and `core`'s editing rule
+  skips a mount before it reads the declaration's width (`core.js:43-47`), so a held-still mount declared
+  `header-scroll:768` is chipped at 1440, where Preview would not run it either. No pilot declares a width, so nothing
+  shows it today; the fix is to ask the width's own `(width < Npx)` query before drawing the chip.
+
+### DW-227: an autoplaying carousel carries no PAUSED chip
+
+plain: A carousel that turns its slides by itself on your live site will hold still while you design, like every
+  carousel, but it will not show the PAUSED tag that tells you it moves.
+status: open
+severity: low
+origin: Story 5.15's Dev (2026-09-22) — R-175's "What it does NOT change"
+owner: the carousel's first category story (research §3.5's autoplay is a per-design option)
+location: packages/library/modules/registry.json (`carousel`'s `movesByItself`) · apps/web/lib/behaviours.ts
+reason: `movesByItself` is per MODULE, and `carousel` carries `false` because its arrows and dots wait for a press;
+  autoplay is a per-design option the registry row cannot see. The story that builds an autoplaying carousel may raise
+  it with the owner — a per-mount mark, or a separate module row.
+
+### DW-228: a re-stamp takes a ROOT-level mount's `data-i18n-*` strings off, and a running module would lose its words
+
+plain: Nothing is wrong on your pages today. When a design puts a moving part's text on the section itself, changing
+  one of its settings could make that part lose its words until the page is drawn again.
+status: open
+severity: medium
+origin: Story 5.15's Dev (2026-09-22), read in the source (`packages/section-runtime/src/core.ts:1227-1229`)
+owner: the first design whose root element is itself a module mount with strings (S5's `data-i18n-*`)
+location: packages/section-runtime/src/core.ts `stampControls` · editor.tsx `restampAll` and `onChange`'s control
+  fast path
+reason: `stampControls` removes every root `data-*` that is not a directive, and `data-i18n-*` is not one, so a mode
+  flip or a control change strips the strings both emitters stamp on a mount that IS the section root. Since Story 5.15
+  a mount that is edit-safe keeps RUNNING through a re-stamp (the nodes are kept), so a module reading `ctx.t` after
+  mounting — a countdown's labels — would read `''`. No pilot mounts on its root today. The fix belongs in the shared
+  function: keep `data-i18n-*` there, as `data-portal` already is.

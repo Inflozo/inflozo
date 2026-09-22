@@ -640,6 +640,11 @@ caption is the defining case). Every module in the registry gets a value.
 citation becomes real) · §7.3 · every spec's Behaviour field · AD-21 (the editing chrome interaction).
 *Closes:* **R6**, and the carry-forward's orphaned "lightbox edit-safe guarantee".
 
+*Erratum (Story 5.15, 2026-09-22):* this entry's TITLE reads its own sense backwards — "the script does not run in
+the editor" is what edit-safe **no** means. The ruling is the body's sentence, which every document since carries: a
+module is edit-safe if it **may run** inside the editor canvas without interfering with editing. The title is left as
+it was ruled, and this line is the correction.
+
 ---
 
 **R-22 · Ghost's comment accent colour is linked to, never written** *(reverses D17)*
@@ -2387,6 +2392,9 @@ that makes it work."*
   - `data-inflozo-hover` and `data-inflozo-selected` stay on the roots as state marks, zero at rest; `canvas-chrome.css`
     keeps no rule, and painted chrome that belongs inside (the insertion hairline, PAUSED, the empty icon slot) still
     keys on `data-inflozo-*` there with `::after`.
+    - *Pointer (Story 5.15, 2026-09-22):* PAUSED left that list. B3a's chip is chrome in the canvas LAYER beside the
+      name tag, for this entry's own three reasons, and it is drawn only on a pointed or selected section whose
+      held-still part moves by itself — **R-175** below, and `ARCHITECTURE-SPINE.md` AD-21's Story 5.15 amendment.
   - An outline's width is verified as painted pixels, never from computed style (`run-verify-editor.cjs` steps 10–11,
     a 1px control before the 1.5px check).
 - Targets:
@@ -3700,8 +3708,8 @@ moving."*
 - Targets:
   - Done at Story 5.15's Create (2026-09-22): ✅ this entry · ✅ Story 5.15's spec · ✅ `epics.md` (Story 5.15's
     criteria) · ✅ `epic-5-context.md`.
-  - Owed at Story 5.15's Dev: ⬜ `prd.md` FR-D20's example list · ⬜ `epics.md`'s FR-D20 summary (`:105`) ·
-    ⬜ `deferred-work.md` DW-133.
+  - Done at Story 5.15's Dev (2026-09-22): ✅ `prd.md` FR-D20's example list · ✅ `epics.md`'s FR-D20 summary ·
+    ✅ `deferred-work.md` DW-133, closed · ✅ research §7's confirmation line · ✅ VERIFY-AT-BUILD row 50.
 
 **R-175 — the PAUSED chip shows only on the section pointed at or selected, and only on a part that moves by
 itself.** Story 5.15's Question 2, ruled **options 1 and 3 together** (owner, 2026-09-22): *"Only on the section you
@@ -3731,8 +3739,9 @@ point at or select, but only on parts that move by themselves, not all sections 
 - Targets:
   - Done at Story 5.15's Create (2026-09-22): ✅ this entry · ✅ Story 5.15's spec · ✅ `epics.md` (Story 5.15's
     criteria) · ✅ `epic-5-context.md`.
-  - Owed at Story 5.15's Dev: ⬜ `registry.json` · ⬜ `prd.md` FR-D20 · ⬜ `EXPERIENCE.md:429-432` ·
-    ⬜ `docs/section-authoring.md`.
+  - Done at Story 5.15's Dev (2026-09-22): ✅ `registry.json` (`movesByItself` on every row, its rule in `about`) ·
+    ✅ `prd.md` FR-D20 · ✅ `EXPERIENCE.md`'s behaviours paragraph · ✅ `docs/section-authoring.md` · ✅ research §7's
+    preamble · ✅ `ARCHITECTURE-SPINE.md` AD-21 · ✅ R-120's pointer above.
   - Owed on the next library pass: ⬜ B3a's caption.
 
 

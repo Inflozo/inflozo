@@ -725,12 +725,14 @@ order and omitted when there are none. A theme's `main.js` carries the union of 
 `js` (`moduleUnion`), so removing a design removes its names — unless another placed design declares them
 too.
 
-**What a module is handed.** A module file's top level is exactly **one function declaration**, named
-for the module in camelCase (`nav-drawer` → `navDrawer`), called once per mount as `(el, ctx)`:
+**What a module is handed.** A module file's top level is exactly **one exported function declaration**,
+named for the module in camelCase (`nav-drawer` → `navDrawer`), called once per mount as `(el, ctx)`. It is
+exported because the editor imports it and runs it on the canvas (Story 5.15); `bundle` removes the keyword as it
+pastes the file into the theme's classic `main.js`, so no theme ever carries one:
 
 ```js
 // packages/library/modules/lightbox.js — a future module's shape
-function lightbox(el, ctx) {
+export function lightbox(el, ctx) {
   const dialog = el.querySelector('dialog')
   el.querySelector('.gal__close').setAttribute('aria-label', ctx.t('close'))
   el.addEventListener('click', (e) => { if (e.target.closest('a.gal__img')) { e.preventDefault(); dialog.showModal() } }, { signal: ctx.signal })
@@ -748,7 +750,8 @@ Nothing reaches a global it was not handed: `el.ownerDocument`, never `document`
 letter of it — `no-undef` over `packages/library/modules/*.js` refuses a bare `window`, `document` or
 `setTimeout` — and review holds the rest, since `el.ownerDocument.defaultView` is the window by another
 road. `bundle` refuses a file whose top level is anything
-but its one declaration — an `export`, an `import`, a second function or a statement.
+but its one exported declaration — an `import`, a second declaration, a second `export` or a statement — and a
+bare declaration too, which the editor could not import.
 
 **The floor reaches a module only partly by lint** *(Story 4.8)*. `compat/compat` (eslint-plugin-compat)
 runs over the same files against the pin — from the repo root only: started anywhere else, ESLint refuses to run,
@@ -769,7 +772,24 @@ that element in its no-JS CSS branch. Select on it in `style.css` (`.gal.js-enab
 and never write it into markup — the validator refuses it.
 
 **Editing** *(R-21)*. A module whose `editSafe` is **no** in research §7 is not mounted on the canvas, and
-its section renders at rest. The values are §7's, transcribed into the registry, never decided per design.
+its section renders at rest — its mount in its no-JS state, so write that state to be designed in, because it is
+what the customer edits. The values are §7's, transcribed into the registry, never decided per design; R-174
+confirmed `header-scroll`, `reveal`, `tabs` and `accordion` hold still with the rest. **The editor runs `core`
+itself** (Story 5.15, `apps/web/lib/behaviours.ts`), from its own bundle against the canvas window, with
+`{ editing: true }` while designing and without it in Preview, and it hands `core` two things a theme never does:
+
+| option | What it does |
+|---|---|
+| `report(error)` | every error — a malformed or unknown declaration, a mount's throw, an `observe` callback's throw — goes here instead of being thrown from a timer, so the editor logs it and never shows it (DW-136) |
+| `paused` *(on the handle `core` returns)* | the mount elements the editing rule held still, in document order — what the editor's PAUSED chip reads |
+
+**`movesByItself`** *(R-175)*. Every registry row says whether the module moves **by itself**: true when it changes
+the page on a timer or as the page scrolls, with nothing pressed (`rotator`, `marquee`, `header-scroll`, `reveal`),
+false when it waits for a press or a submit (`nav-drawer`, `member-form`, `lightbox`, `tabs`, `carousel`'s arrows)
+or rewrites itself once as the page loads (`toc`, `shuffle`). A held-still mount whose module moves by itself carries
+B3a's PAUSED chip while its section is pointed at or selected, and never at rest. **A new module's row takes the
+value by that one sentence** — `registry.json`'s `about` carries it, and the value is never restated elsewhere.
+A carousel's autoplay is a per-design choice a row cannot see, so an autoplaying carousel carries no chip.
 
 **The motion gate** *(FR-G4)*. `core` holds one `(prefers-reduced-motion: reduce)` query. A module whose
 registry row `animates` is not started while it matches, mounts when the preference clears and stops when
@@ -777,10 +797,11 @@ it returns — because for each of those modules its reduced-motion state **is**
 whose reduced-motion state would differ from its no-JS state cannot use the gate; raise it before writing it.
 
 **`main.js`.** `bundle(names, sources)` writes it: a header naming `core` and the modules, then one
-wrapping function with `'use strict'` holding each file verbatim, `core` first, then
-`core(window, rows)`. It is a **classic** script loaded `defer` (FR-J4) — never an ES module, because a
-file carrying `export`, concatenated in, would be a SyntaxError that silently turns every site to its
-no-JS state — and nothing in it lands on `window`. A module that appends markup carrying `data-module`
+wrapping function with `'use strict'` holding each file with exactly its one `export` removed and not a byte
+else, `core` first, then `core(window, rows)`. It is a **classic** script loaded `defer` (FR-J4) — never an
+ES module, because an `export` left in it would be a SyntaxError that silently turns every site to its
+no-JS state — and nothing in it lands on `window`. `checkThemeJs` compares a theme's `main.js` with `bundle`'s
+bytes over the same sources, so the keyword can never reach a theme. A module that appends markup carrying `data-module`
 (`load-more` is the first) must add a rescan of what it inserted to `core`; today `core` scans once.
 
 **`assets/js/`.** `checkThemeJs(files, sources)` is FR-G7(1) as one check: a theme's `assets/js/` holds

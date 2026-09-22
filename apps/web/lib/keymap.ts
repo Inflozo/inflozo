@@ -7,9 +7,9 @@
  * A BINDING WHOSE ACTION HAS NOT BEEN BUILT IS ABSENT (R-145 — R-118 applied to a key for the first time): not
  * bound, not listed, never greyed and never captioned (UX-DR3). Such a row carries `story` and no `keys`, which is
  * the whole of the difference — nothing matches it and `sheetRows()` leaves it out. The row still exists, because
- * the alternative is losing the fact that the key is OWED: `⌘K` landed with 5.10, `[` `]` with 5.11, and `⇧R`
- * lands with 5.12, `P` with 5.15 and `⌘⏎` with 7.18, each a criterion of that story, and the map is complete when
- * 7.18 ships. It is the shape `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses: the scheme itself
+ * the alternative is losing the fact that the key is OWED: `⌘K` landed with 5.10, `[` `]` with 5.11, `⇧R` with 5.12
+ * and `P` with 5.15, and `⌘⏎` lands with 7.18, each a criterion of that story, and the map is complete when 7.18
+ * ships. It is the shape `lib/editor.ts`'s `CANVASES` + `CONDITIONAL` already uses: the scheme itself
  * refuses what is not offered.
  *
  * EVERY SINGLE-CHARACTER SHORTCUT IS LIVE ONLY WHILE THE SHELL HOLDS FOCUS, and never while a text field or a
@@ -21,12 +21,13 @@
  * `holdsCaret` and `shortcutFor` MOVED HERE from `lib/journal.ts` at this story: the map is not the journal's
  * business, and 5.8 only kept them there because its three keys were all the map there was.
  *
- * Pure, and its one import is `lib/device.ts`, which is itself importless — so `node --test` reaches all of it
+ * Pure, and its two imports are `lib/device.ts` and `lib/preview.ts`, both importless — so `node --test` reaches all of it
  * (`keymap.test.ts`; the standing precedent is `kit-button.test.ts:6-7`, and the reason is that `node --test` strips
  * types but cannot load a `.tsx`).
  */
 
 import { DEVICES } from './device.ts'
+import { PREVIEW } from './preview.ts'
 
 /** What a matched press asks the editor to do. */
 export type Gesture =
@@ -34,7 +35,7 @@ export type Gesture =
   | 'add' | 'duplicate' | 'remove'
   | 'prev' | 'next'
   | 'layers' | 'dark' | 'shortcuts' | 'deselect'
-  | 'remix'
+  | 'remix' | 'preview'
   | 'desktop' | 'tablet' | 'mobile'
 
 export type Binding = {
@@ -100,7 +101,11 @@ export const KEYMAP: readonly Binding[] = [
   // focus model (1)), and it must also reach a field, a picker and a dialog that `shortcutFor`'s guard refuses. Its
   // handler is `editor.tsx`'s `onEscape`, over `escDeselects`; the row is here so the card lists it.
   { gesture: 'deselect', action: 'Deselect', chips: ['Esc'] },
-  { action: 'Preview Mode', chips: ['P'], story: '5.15' },
+  // Story 5.15 — R-145's fifth key to arrive with its action: B3a's pill and B3b's way back are one toggle. Single-key,
+  // so WCAG 2.1.4's focus condition rides on it (`SINGLE_KEY` is derived below) — a `p` typed into a headline, or into
+  // the page's own email box in Preview, is a letter. `shift: false` for the same reason `L` needs it. The card's words
+  // are `lib/preview.ts`'s, so the pill, this row and the bar read one name (R-170).
+  { gesture: 'preview', action: PREVIEW, chips: ['P'], keys: ['p'], shift: false },
   // Story 5.12 — R-145's fourth key to arrive with its action, and the only one that is SHIFTED: `shift: true`, so
   // a bare `r` is a letter and nobody's binding. Single-key, so WCAG 2.1.4's focus condition rides on it by
   // construction (`SINGLE_KEY` is derived below) — which is what lets a capital R still be typed into a headline.
@@ -123,6 +128,11 @@ export const sheetRows = (): readonly Binding[] => KEYMAP.filter((b) => b.story 
 export const SINGLE_KEY: ReadonlySet<Gesture> = new Set(
   KEYMAP.filter((b) => b.meta !== true && b.gesture !== undefined).map((b) => b.gesture as Gesture),
 )
+
+/** Story 5.15 — the gestures that act IN PREVIEW: `P` itself, `⌘S`, and the three devices B3b's bar carries, because
+ *  checking a behaviour at 390 is the main reason to be in there. Every other binding does nothing while the editing
+ *  chrome it drives is hidden. `Esc` is the ladder's (`editor.tsx`'s `onEscape`), never a gesture. */
+export const IN_PREVIEW: ReadonlySet<Gesture> = new Set<Gesture>(['preview', 'save', ...DEVICES.map((d) => d.name)])
 
 /** Does this element own the caret — a form field, or anything `contenteditable`? */
 /*  ONLY A FIELD WITH TEXT IN IT (Story 5.8's review): a checkbox, a range, a colour well or a `<select>` has no caret

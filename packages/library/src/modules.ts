@@ -14,6 +14,9 @@ export type ModuleRow = {
   readonly name: string
   readonly editSafe: boolean
   readonly animates: boolean
+  /** Story 5.15, R-175 — it changes the page on a timer or as the page scrolls, with nothing pressed, so a mount the
+   *  editor holds still carries the PAUSED chip. REQUIRED, so a registry row without it is a compile error. */
+  readonly movesByItself: boolean
   /** Story 4.9 — the catalog's js keys this module writes; both emitters stamp each on its mount (S5) */
   readonly strings?: readonly string[]
 }
@@ -93,11 +96,13 @@ export const moduleFunctionName = (name: string): string => name.replace(/-([a-z
 const HEADER = '// Inflozo main.js, made by bundle() from packages/library/modules/ and never edited by hand: '
 
 /** FR-J4's `main.js`: a header naming `core` and the modules, then ONE wrapping function — so nothing
- *  lands on `window` — holding each source verbatim, `core` first, then the start call. A classic script,
- *  loaded `defer`: a module file carrying `export`, concatenated here, would be a SyntaxError that
- *  silently turns every site to its no-JS state, which is why each file's top level is checked. `rows` is
- *  the registry unless a probe hands its own. Throws on an unknown name, a missing source, or a source
- *  whose top level is not exactly one declaration of the expected name. */
+ *  lands on `window` — holding each source, `core` first, then the start call. A classic script, loaded
+ *  `defer`. Each file is ONE EXPORTED DECLARATION (Story 5.15: the editor imports `core` and runs it against
+ *  the canvas window, DW-136), and its one `export` is removed as it is pasted: an `export` left in a classic
+ *  script is a SyntaxError that silently turns every site to its no-JS state, which is why each file's top
+ *  level is checked. Nothing else in a file is touched. `rows` is the registry unless a probe hands its own.
+ *  Throws on an unknown name, a missing source, or a source whose top level is not exactly one exported
+ *  declaration of the expected name. */
 export function bundle(names: readonly string[], sources: ModuleSources, rows: readonly ModuleRow[] = MODULES): string {
   const wanted = new Set(names)
   for (const r of rows) {
@@ -114,7 +119,8 @@ export function bundle(names: readonly string[], sources: ModuleSources, rows: r
     if (src === undefined) throw new Error(`${name}.js has no source — main.js carries only files authored in packages/library/modules/ (FR-G7(1))`)
     const why = topLevelShape(src, name === 'core' ? 'core' : moduleFunctionName(name))
     if (why !== null) throw new Error(`${name}.js — ${why}`)
-    return src
+    const at = skipTrivia(src, 0)
+    return src.slice(0, at) + src.slice(at).replace(/^export\s+/, '')
   })
   const start = picked
     .map((r) => `[${JSON.stringify(r.name)}, ${moduleFunctionName(r.name)}, { editSafe: ${r.editSafe === true}, animates: ${r.animates === true} }]`)
@@ -167,7 +173,7 @@ export function checkThemeJs(files: Readonly<Record<string, string>>, sources: M
 
 // ─── the top-level shape of one module file ──────────────────────────────────
 
-/** null when `src`'s top level is exactly `function <fn>(…) { … }`, comments and whitespace around it.
+/** null when `src`'s top level is exactly `export function <fn>(…) { … }`, comments and whitespace around it.
  *  ponytail: a lexical scan, not a parser — it skips comments, strings, template literals and regex
  *  literals and counts brackets. Its ceiling is the one every hand lexer has: a `/` straight after `}`
  *  or a postfix `++` is read as division, so a regex literal in exactly that spot can end the scan early
@@ -175,9 +181,9 @@ export function checkThemeJs(files: Readonly<Record<string, string>>, sources: M
  *  parser if a module ever trips it. */
 function topLevelShape(src: string, fn: string): string | null {
   const at = skipTrivia(src, 0)
-  const head = new RegExp(`^function\\s+${fn}\\s*\\(`).exec(src.slice(at))
+  const head = new RegExp(`^export\\s+function\\s+${fn}\\s*\\(`).exec(src.slice(at))
   if (head === null) {
-    return `its top level must be one function declaration named ${fn}, "function ${fn}(…) { … }", and nothing else: no export, no import, no statement`
+    return `its top level must be one exported function declaration named ${fn}, "export function ${fn}(…) { … }", and nothing else: no import, no second declaration, no statement`
   }
   const end = closeOfDeclaration(src, at + head[0].length - 1)
   if (end === -1) return `function ${fn} never closes`

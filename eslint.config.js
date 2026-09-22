@@ -39,8 +39,9 @@ if (cwdPin === undefined) {
 // Story 4.4 added `orbit-weekly/`: authored and recorded data, plus Ghost's vendored card scripts,
 // which reach `document` because that is their whole job. Its CODE half is `src/orbit-weekly.ts`.
 // Story 4.7 added `modules/`: FR-G7's behaviour modules and `core` are theme browser code, bundled into a
-// generated theme's main.js and never run by the product, so AD-1's ban is not theirs — and every future
-// module keeps its test beside it there. Their own rule is the block at the end: no global.
+// generated theme's main.js — and since Story 5.15 the editor imports `core` too and runs it against the canvas
+// window, never its own — so AD-1's ban is not theirs, and every future module keeps its test beside it there.
+// Their own rule is the block at the end: no global.
 const CORE = ['packages/*/**/*.{ts,tsx,mts,cts,js,mjs,cjs}']
 const NOT_CORE = ['packages/library/designs/**', 'packages/library/fixtures/**', 'packages/library/orbit-weekly/**', 'packages/library/modules/**']
 
@@ -164,9 +165,10 @@ export default [
     },
   },
   {
-    // Story 4.7 — a module file is a classic script whose top level is one function, and it reaches the
-    // platform only through what `core` hands it (`win`, `el`, `ctx`). With no browser globals declared,
-    // `no-undef` turns a bare `window`, `document` or `setTimeout` into an error.
+    // Story 4.7 — a module file's top level is one function, and it reaches the platform only through what `core`
+    // hands it (`win`, `el`, `ctx`). With no browser globals declared, `no-undef` turns a bare `window`, `document`
+    // or `setTimeout` into an error. Story 5.15 — that one function is EXPORTED, so the file is linted as a module;
+    // `bundle()` removes the keyword as it pastes the file into the classic main.js (DW-136).
     //
     // Story 4.8 — `compat/compat` is the JS half of FR-G8's floor. Its browsers are the pin's, read through
     // `packages/library/package.json`'s `browserslist` key (never the root's, which `next build` would reach).
@@ -179,7 +181,7 @@ export default [
     // `tools/check-baseline.mjs`, which proves the pin reached the toolchain: `new ImageCapture()` must be refused
     // naming the floor's Safari.
     files: ['packages/library/modules/*.js'],
-    languageOptions: { sourceType: 'script' },
+    languageOptions: { sourceType: 'module' },
     plugins: { compat },
     rules: { 'no-undef': 'error', 'compat/compat': 'error' },
   },
