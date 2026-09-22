@@ -2,8 +2,8 @@
 title: 'Story 5.15 — Behaviours off while designing, and the Preview toggle'
 type: 'feature'
 created: '2026-09-22'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: 'a16f5a5cdca2950da2661b71909a25116aa4ff09'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
