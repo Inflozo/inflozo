@@ -1179,3 +1179,58 @@ the existing prompt stating that this will change it everywhere."* Recorded as *
 - The existing site-wide dialog asks first: before Hide and Delete, as it always has, and before the first change to
   each of them made on page 2, in its own words — "Change Headers — Rail everywhere?".
 - Nothing new asks on page 1.
+
+### Question 5 — While you design, what does `{page_number}` show on the canvas?
+
+**In plain English.** You asked for `{page_number}`: type it into any text you can edit, and the live site shows the
+number of the page the visitor is on. On the live site each page shows its own number, so page 3, which uses page 2's
+design, says 3. The question is what the editor shows while you design. You add it by typing it, or by pressing its
+chip under the text field in the panel.
+
+**An example.** On Home's page 2 you type "The archive — page {page_number}" into the hero's heading.
+
+1. **The number (RECOMMENDED).**
+   - Page 1 shows "The archive — page 1", and page 2 shows "The archive — page 2", as a visitor sees them.
+   - When you click into the words to change them, the token shows again, so you can see it and edit it.
+2. **The token, as you typed it.**
+   - The canvas shows "The archive — page {page_number}" on every page, the way `{members}` shows today.
+   - The number appears only on the live site.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 6 — On a page that has no page number, what does `{page_number}` show?
+
+**In plain English.** A post, a page and the 404 page are never split into pages, so they have no page number of their
+own. A header or a footer is on every page of your site, posts included, so a page number typed there shows on your
+posts too.
+
+**An example.** Your header reads "Orbit Weekly · page {page_number}", and a visitor opens one of your posts.
+
+1. **"1" (RECOMMENDED).**
+   - On the post the header reads "Orbit Weekly · page 1".
+   - The words around the token always read as a sentence.
+2. **Nothing.**
+   - On the post the header reads "Orbit Weekly · page", with the number missing.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 7 — Should `{page_number}` be built in this story, or as a story of its own?
+
+**In plain English.** Page 2 is built, and the deployed walk passed on the live app. `{page_number}` is a new ability
+that reaches every text field of every section. It touches the panel's token chips, typing on the canvas, and later
+the theme that is sent to your Ghost site. Your earlier rule R-27 says each field lists its own tokens, so this is the
+one token every field would accept. Every other word in braces would still print exactly as typed.
+
+**An example.** With option 1 you test page 2 this week, and the page number follows as the next story. With option 2,
+the review and your test of page 2 wait until the page number is built as well.
+
+1. **Its own story, straight after this one (RECOMMENDED).**
+   - Story 5.16 goes to Review and to your test now.
+   - The page number gets its own plan, build and test, with Questions 5 and 6 as its starting rulings.
+2. **Inside this story.**
+   - The review and your test of page 2 wait until the page number is built too.
+
+Read, and say so if it is wrong: **every** text field of **every** section accepts `{page_number}` — "anywhere where I
+can edit text inline" — and the header and the hero are your examples, not a limit.
+
+**Ruled:** _(awaiting the owner)_
