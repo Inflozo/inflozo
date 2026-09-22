@@ -1003,6 +1003,13 @@ run. Vercel served `30a0d439`, `READY`.
     `/index` answers 404, and axe finds zero violations on page 2.
 - **The Matrix Test Audit.** Every row of the I/O matrix has a test that ran and passed: the journeys and unit tests
   named above in CI and locally, and step 92 on production for the rows it alone reaches.
+- **R-181's note, after Dev (`6408d049`).**
+  - Locally: `pnpm check` exit 0, and `pnpm keyboard` passed every journey. The entering journey now reads the note's
+    words and the radio group's `aria-describedby`.
+  - In CI: `check`, `rls` and `deploy` succeeded, and Vercel served `6408d049`, `READY`.
+  - **The deployed walk at `6408d049`: 0 FAIL, 561 PASS, on its first attempt.** Step 92's row check read the note as
+    "Pages 3, 4, 5 and on use page 2's design." and found it named as the group's description. Step 8's axe found zero
+    violations on page 2 with the row and its note showing. The account count was 13 before and after.
 
 ## Owner's manual test
 
