@@ -259,13 +259,16 @@ alter table public.profiles add constraint profiles_free_editable_fk
 create table public.project_templates (
   project_id    uuid not null references public.projects(id) on delete cascade,
   user_id       uuid not null references auth.users(id) on delete cascade,
-  template_key  text not null,   -- home|index|post|page|tag|author|error|private|custom:{filename}
+  template_key  text not null,   -- site|home|index|post|page|tag|author|error|private|tag-paged|author-paged|custom:{filename}
   doc           jsonb not null,  -- ordered instances: {instanceId, layerName, designId, content,
                                  --  controls, parkedControls, darkOverrides, hidden, isMainFeed}
   updated_at    timestamptz not null default now(),
   primary key (project_id, template_key),
+  -- Page 2 is a design of its own on every canvas that paginates (R-178, R-179): Home's under `index`, the file Ghost
+  -- serves at /page/N/, and Tag's and Author's under `tag-paged` and `author-paged`, since an archive has no second
+  -- file. Mirrors `supabase/migrations/20260922120000_page_two_template_keys.sql` on both tables (Story 5.16).
   constraint template_key_shape check (
-    template_key in ('site','home','index','post','page','tag','author','error','private')
+    template_key in ('site','home','index','post','page','tag','author','error','private','tag-paged','author-paged')
     or template_key ~ '^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$')   -- ONE backslash: DW-193
 );
 
@@ -279,8 +282,9 @@ create table public.project_template_prefs (
   member_states_viewed text[] not null default '{}',       -- FR-D16's "states you have not looked at" nudge
   updated_at    timestamptz not null default now(),
   primary key (project_id, template_key),
+  -- The same keys as `project_templates`, page 2's `tag-paged` and `author-paged` included (Story 5.16).
   constraint template_key_shape check (
-    template_key in ('site','home','index','post','page','tag','author','error','private')
+    template_key in ('site','home','index','post','page','tag','author','error','private','tag-paged','author-paged')
     or template_key ~ '^custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs$')   -- ONE backslash: DW-193
 );
 

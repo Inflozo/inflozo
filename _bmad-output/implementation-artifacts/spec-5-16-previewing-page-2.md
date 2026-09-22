@@ -2,7 +2,7 @@
 title: 'Story 5.16 — Previewing page 2'
 type: 'feature'
 created: '2026-09-22'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'af70bf0bd3757760c86264ce857f76ae4aa6ef80'
@@ -401,17 +401,25 @@ of the owner's projects store `posts_per_page` 12, and none has an `index` row.
 
 **Execution — the Schema phase first, pushed and applied on its own before any code (R-99):**
 
-- [ ] `supabase/migrations/<timestamp>_page_two_template_keys.sql` — **new**. `template_key_shape` on
+- [x] `supabase/migrations/20260922120000_page_two_template_keys.sql` — **new**. `template_key_shape` on
       `project_templates` and on `project_template_prefs` accepts `tag-paged` and `author-paged` beside today's list,
       in `20260919120000`'s shape: re-runnable, strictly wider, so added VALID.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` — the same two
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` — the same two
       constraints, and a mirror note beside `:1729`.
-- [ ] **Apply and prove it.**
+- [x] **Apply and prove it.**
   - Apply the migration through `SUPABASE_DB_POOLER_URL`.
   - Read the constraint back from `pg_constraint`.
   - In a transaction that is rolled back, insert each new key (it is accepted) and a junk key (it is still refused).
   - Run `bash supabase/tests/run-rls-gate.sh` green.
   - Commit and push `Story 5.16 - Schema - …` on its own.
+  - **Done (2026-09-22), on production (PostgreSQL 17.6).** The control ran first, on the same database, before the
+    apply: `index` inserted on both tables, and `tag-paged` and `author-paged` were refused (`23514`,
+    `template_key_shape`). The migration was then applied in one transaction and read back from `pg_constraint`:
+    both constraints list `tag-paged` and `author-paged`, `convalidated` true. In a transaction that was rolled back,
+    all three keys insert on both tables, `home-paged` and `tag-page` are still refused (`23514`), and no row was left
+    behind. `RLS-TEST.sql` gained a Story 5.16 block (the three keys insert on both tables as the tenant; the two near
+    misses are refused); the gate is green, and with the migration withheld it aborts at that block (exit 3). The
+    earlier Dev run's apply had been refused by this machine's permission classifier; this run's was allowed.
 
 **Execution — Dev:**
 

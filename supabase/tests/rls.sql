@@ -1516,3 +1516,56 @@ reset role;
 
 delete from auth.users where id in ('77777777-7777-7777-7777-777777777777',
                                     '88888888-8888-8888-8888-888888888888');
+
+-- ── STORY 5.16 — page 2's keys, on both tables ────────────────────────────────────────────────
+--
+-- BEHAVIOURAL, for 5.8's reason: a `select … from pg_constraint` passes on a constraint that exists
+-- and refuses the wrong string. Page 2 is a design of its own on every canvas that paginates (R-178,
+-- R-179): Home's under `index`, Tag's and Author's under `tag-paged` and `author-paged`. A list that
+-- does not name them refuses every write of one — the doc AND its prefs row — so all three are
+-- inserted into BOTH tables as the tenant, through RLS, and a near miss that must STILL be refused is
+-- attempted beside them on each table. A regression in either direction turns one assertion red.
+
+reset role;
+
+delete from auth.users where id = '99999999-5516-0000-0000-000000000009';
+insert into auth.users(id) values ('99999999-5516-0000-0000-000000000009');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('eeeeeeee-5516-0000-0000-000000000001','99999999-5516-0000-0000-000000000009','Paged','paged-516','{}');
+
+set role authenticated;
+set request.jwt.claim.sub = '99999999-5516-0000-0000-000000000009';
+
+do $$
+declare
+  c_proj uuid = 'eeeeeeee-5516-0000-0000-000000000001';
+  c_user uuid = '99999999-5516-0000-0000-000000000009';
+begin
+  insert into public.project_templates(project_id,user_id,template_key,doc) values
+    (c_proj,c_user,'index','{"instances":[]}'),
+    (c_proj,c_user,'tag-paged','{"instances":[]}'),
+    (c_proj,c_user,'author-paged','{"instances":[]}');
+  insert into public.project_template_prefs(project_id,user_id,template_key) values
+    (c_proj,c_user,'index'), (c_proj,c_user,'tag-paged'), (c_proj,c_user,'author-paged');
+  raise notice 'PASS (5.16): index, tag-paged and author-paged insert on both tables';
+
+  begin
+    insert into public.project_templates(project_id,user_id,template_key,doc)
+      values (c_proj,c_user,'home-paged','{}');
+    raise exception 'FAIL (5.16): `home-paged` was accepted on project_templates — Home''s page 2 is `index`, and the list is exact';
+  exception when check_violation then
+    raise notice 'PASS (5.16): a key the list does not name is still refused on project_templates (%)', sqlstate;
+  end;
+
+  begin
+    insert into public.project_template_prefs(project_id,user_id,template_key)
+      values (c_proj,c_user,'tag-page');
+    raise exception 'FAIL (5.16): `tag-page` was accepted on project_template_prefs';
+  exception when check_violation then
+    raise notice 'PASS (5.16): a key the list does not name is still refused on project_template_prefs (%)', sqlstate;
+  end;
+end $$;
+
+reset role;
+
+delete from auth.users where id = '99999999-5516-0000-0000-000000000009';
