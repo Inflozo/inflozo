@@ -897,9 +897,9 @@ here (standing rule 4).
   holding the empty doc, and the next flush writes it: a row with no instances, which `read.ts` reads as following
   exactly as no row (AD-22's own reading, `committed()` in `lib/round-trip.ts`). No design stays stored for page 2, and
   deleting the row instead would need `sync_project_doc` to delete, which is a migration this story may not make.
-- **Not executed at Dev: the deployed walk.** Step 92, the page-2 additions to steps 5 and 8, and the T1 and T3 reads
-  all need this commit live. `node --check` passes on the walk. *Canvas switch*, *Reload*, the Tag canvas and the
-  subject change stay unproved until step 92 runs.
+- **The deployed walk ran after the Dev push** (below). Step 92 and the page-2 additions to steps 5 and 8 are proved
+  on production, *Canvas switch*, *Reload*, the Tag canvas and the subject change among them. The T1 and T3 reads are
+  still Review's.
 
 **Re-run by the orchestrating session before the Dev push (2026-09-22, Node 24.18.1)**, not taken from the
 implementation run's report:
@@ -972,6 +972,17 @@ run. Vercel served `30a0d439`, `READY`.
   - The journey now waits for the pictures to be drawn before it closes the picker, which is its own premise
     ("pictures already drawn"), and counts only the frames it marked.
   - The control: cold, without the wait, 0 of 7 (FAIL); cold, with it, PASS. The full `pnpm keyboard` passes too.
+- **Run 2 at `aa933018`: 0 FAIL, 561 PASS, on its first attempt.** CI succeeded (`check`, `rls`, `deploy`), and Vercel
+  served `aa933018`, `READY`. The two throwaway accounts were deleted, and the account count was 13 before and after.
+  - Every step-92 check passed, the corrected archive check included. The Tag canvas's `tag` row was present, left
+    there by step 44, and it was byte-identical before and after the page-2 change. `tag-paged` was written with the
+    changed Per row (R-178, read back from Supabase).
+  - The pill cleared the page card and the viewport chip at all three devices in a 1440 and a 1280 window. The card sat
+    8px below it at Tablet and Mobile, and further down at Desktop, where the card is centred in a taller ground.
+  - Steps 4, 5, 6 and 8 as in run 1: Home at page 1 equals `/pilots`, zero CSP violations with page 2 in the session,
+    `/index` answers 404, and axe finds zero violations on page 2.
+- **The Matrix Test Audit.** Every row of the I/O matrix has a test that ran and passed: the journeys and unit tests
+  named above in CI and locally, and step 92 on production for the rows it alone reaches.
 
 ## Owner's manual test
 
