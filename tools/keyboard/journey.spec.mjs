@@ -714,6 +714,11 @@ test("the picker is KEPT once opened, so a second ⌘K shows the pictures alread
   await page.keyboard.press('ControlOrMeta+k')
   await expect(picker(page)).toBeVisible()
   await expect.poll(() => page.locator('dialog[aria-label="Add a section"] iframe').count()).toBeGreaterThan(0)
+  // THE PICTURES ARE DRAWN BEFORE THE PICKER CLOSES — the claim is about pictures ALREADY drawn. Pressing Esc while a
+  // frame is still loading (a cold `next dev` compiles the preview route on its first request) left the second open
+  // reading 0 of 7 painted: in CI on 7a421892 and again on a cold harness, Story 5.16's Dev, 2026-09-22
+  await expect.poll(() => page.evaluate(() => [...document.querySelectorAll('dialog[aria-label="Add a section"] iframe')]
+    .every((f) => (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0)), { timeout: 30_000 }).toBe(true)
   // mark the frames that exist now; if the picker is thrown away the marks go with them
   const drawn = await page.evaluate(() => {
     const frames = [...document.querySelectorAll('dialog[aria-label="Add a section"] iframe')]
@@ -733,8 +738,9 @@ test("the picker is KEPT once opened, so a second ⌘K shows the pictures alread
     const frames = [...document.querySelectorAll('dialog[aria-label="Add a section"] iframe')]
     return {
       marked: frames.filter((f) => f.dataset.keptMark !== undefined).length,
-      // and they are still PAINTED — the second open draws nothing again
-      painted: frames.filter((f) => (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0).length,
+      // and they are still PAINTED — the second open draws nothing again (the marked ones: a card scrolled near later
+      // may add a frame of its own)
+      painted: frames.filter((f) => f.dataset.keptMark !== undefined && (f.contentDocument?.getElementById('canvas')?.children.length ?? 0) > 0).length,
     }
   })
   expect(kept.marked, 'every preview frame survived the close — none was re-created').toBe(drawn)

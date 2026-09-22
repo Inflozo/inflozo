@@ -964,6 +964,14 @@ run. Vercel served `30a0d439`, `READY`.
     - Step 6: `/index` still answers 404.
     - Step 5's CSP session, now carrying page 2, recorded zero violations behind its `EvalError` controls.
     - Step 8's axe found zero violations on page 2, with the pill and the row showing.
+- **CI on `7a421892`, the walk's fix: `check` failed, and `deploy` was skipped, so nothing was published.** The commit
+  changed no app code. The failing keyboard journey was not this story's: "the picker is KEPT once opened…", from the
+  owner's ruling of 2026-09-20. It found 0 of 7 preview pictures painted on the second open.
+  - Reproduced on a cold harness. `next dev` compiles the preview route on its first request, so Esc landed while the
+    frames were still loading, and the journey read them at once on the second open.
+  - The journey now waits for the pictures to be drawn before it closes the picker, which is its own premise
+    ("pictures already drawn"), and counts only the frames it marked.
+  - The control: cold, without the wait, 0 of 7 (FAIL); cold, with it, PASS. The full `pnpm keyboard` passes too.
 
 ## Owner's manual test
 
