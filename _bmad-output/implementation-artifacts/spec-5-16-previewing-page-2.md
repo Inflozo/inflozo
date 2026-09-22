@@ -2,7 +2,7 @@
 title: 'Story 5.16 — Previewing page 2'
 type: 'feature'
 created: '2026-09-22'
-status: 'ready-for-dev'
+status: 'draft'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'af70bf0bd3757760c86264ce857f76ae4aa6ef80'
@@ -12,13 +12,16 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 ## In plain English
 
 Where a page lists your posts across more than one page — Home, or a Tag or Author page with enough posts — you can
-now look at its page 2: select the post grid that page lists its posts with, and at the foot of its settings switch
-**Preview page** from **1** to **2**. The canvas then shows what a visitor gets at `/page/2/` — the next twelve posts,
-the grid's pager reading **"← Newer posts · 2 / 5 · Older posts →"**, the header's Home link no longer marked as the
-page you are on, and on Home only the part of your page from the post grid down, as Ghost serves it — under a dark
-**Page 2 · Back to page 1** pill at the top. You change anything page 2 shows exactly as you would on page 1, and the
-change is the same on every page after it (and on page 1, which shares those sections); a page whose posts fit on one
-page offers no page 2 at all, and there is deliberately no keyboard shortcut.
+now design its page 2: select the post grid, and at the foot of its settings switch **Preview page** from **1** to
+**2**. Page 2 starts as a copy of page 1 and shows what a visitor gets at `/page/2/` — the next twelve posts and a pager
+reading **"← Newer posts · 2 / 5 · Older posts →"** — under a dark **Page 2 · Back to page 1** pill, and the first
+change you make there gives page 2 a design of its own, which pages 3, 4, 5 and on share and which never changes page 1.
+A page whose posts fit on one page offers no page 2 at all, there is deliberately no keyboard shortcut, and two details
+wait on you: what page 2 starts from, and whether the header and footer can be changed there.
+
+> **Being re-planned (2026-09-22).** The owner's clarification of Question 2 (**R-178**) makes page 2 a design of its
+> own, copied from page 1 and never changing it. The plan below still describes page 2 as page 1's own sections, and
+> it is rewritten when Questions 3 and 4 are ruled. Until then this spec is `draft`: do not build from it.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -527,6 +530,24 @@ of the owner's projects store `posts_per_page` 12.
       archive). The owner's reply to this Create says otherwise if he meant page 2 to differ from page 1.
   - Unchanged: what page 2 is made of, the address, the pill, the row, the no-key rule and the control rows.
 
+- **2026-09-22, the owner clarified Question 2 the same day (R-178), and the plan is being re-made:** *"No, Page 1 is
+  designed independent from Page 2, 3, 4, ... But when page 2 is being designed, it copied everything from Page 1 on
+  initial load when the user opens Page 2 the first time for edit. If user makes edits on Page 2, then Page 1 should
+  never be edited/modified. Page 1 should remain as it is. Only Page 3, 4, 5, 6, ... should have same design as that
+  of Page 2. Page 1 should remain an independently designed page."*
+  - Superseded: R-177's reading above (that page 1 carries a change made on page 2); Approach's "the stack knows the
+    page"; Always' "one implementation … Home's page 2 is exactly `indexStack`" and "a change made there … and on page
+    1"; the matrix's Enter, Home and Editing rows; the criteria that say the same; and owner test steps 4 and 5.
+  - Derived, and stated to the owner in one line each:
+    - Tag and Author pages follow the same rule. R-177 makes page 2 editable there, and only a separate page-2 design
+      lets R-177 and R-178 both hold.
+    - Page 2 follows page 1 until the first change made on page 2 ("the first time for edit", and AD-22's rule that
+      only an edit materialises). Undoing that change, or removing every section from page 2, returns it to following
+      page 1.
+    - A design that can go on the Home page can go on page 2: Ghost hands `home.hbs` and `index.hbs` the same posts
+      and pagination, so copying page 1 never refuses a section.
+  - Open: Questions 3 and 4. The status is `draft` until they are ruled and the spec is rewritten.
+
 ## Design Notes
 
 **Why this is built before Story 5.19, and where it lives until then.** A routine call, stated to the owner in one
@@ -645,6 +666,9 @@ your projects:
 - **Ghost 5 Project.** Its Home has a newsletter band above a post grid that is the page's main list of posts.
 - **Pilot sections**, for its Tag and Author pages.
 
+**Superseded by R-178 and rewritten when Questions 3 and 4 are ruled:** steps 3 to 6 below still show page 1 changing
+with page 2, which R-178 rules out.
+
 Steps 3 to 7 are your ruling **R-177**: page 2 is edited exactly like page 1, and what you change there is the same
 section on every page. Steps 12 and 13 are **R-176**: no page 2 is offered where there cannot be one. Every change
 below is taken back with ⌘Z, so your project ends as it started.
@@ -739,3 +763,53 @@ onwards."* Recorded as **R-177**.
   open page 3.
 - A section added from the gap above the post grid on Home's page 2 lands directly below the grid, the first place
   page 2 has.
+
+**Clarified the same day (owner, 2026-09-22):** *"No, Page 1 is designed independent from Page 2, 3, 4, ... But when
+page 2 is being designed, it copied everything from Page 1 on initial load when the user opens Page 2 the first time for
+edit. If user makes edits on Page 2, then Page 1 should never be edited/modified. Page 1 should remain as it is. Only
+Page 3, 4, 5, 6, ... should have same design as that of Page 2. Page 1 should remain an independently designed page."*
+Recorded as **R-178**, which replaces the second bullet above: page 1 and page 2 are two designs. Page 2 starts as a copy
+of page 1, the first change made on page 2 makes it page 2's own, nothing done on page 2 ever changes page 1, and pages
+3, 4, 5… show page 2's design. It left two points open, asked below as Questions 3 and 4.
+
+### Question 3 — Before you change page 2, what does it show?
+
+**In plain English.** Your new rule (R-178) makes page 2 a design of its own. It starts as a copy of page 1, and your
+first change on page 2 makes it separate for good. Until you change it, though, that copy is what every visitor sees on
+page 2, 3, 4 and on. Your earlier rule R-127 said page 2 shows your Home page from the post grid down, so a welcome above
+the grid appears once, on page 1. Your new words say page 2 copies "everything" from page 1.
+
+**An example.** Your Ghost 5 Project's Home has a newsletter band above its post grid. With option 1, page 2 starts
+with the post grid, and the band stays on page 1 only. With option 2, page 2 starts with the band and the grid, and you
+delete the band from page 2 if you do not want it there.
+
+1. **From the post grid down, as R-127 had it (RECOMMENDED).**
+   - A welcome or hero meant for your front page is not repeated on page 2, 3, 4 for a site that never designs page 2.
+   - Once you change page 2 it is yours: add anything to it, the band included.
+2. **Everything on page 1.**
+   - Page 2 starts as an exact copy, including what sits above the grid.
+   - Until you change page 2, every later page repeats your front page's welcome.
+
+This is about Home only. A Tag or Author page shows all of its sections on every page, so its page 2 starts as a copy of
+the whole page either way.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 4 — Can the header and footer be changed while you are on page 2?
+
+**In plain English.** Your header and footer are shared by every page of your site: there is one of each, and page 1
+shows the same ones as page 2. Your rule R-177 says page 2 lets you change everything, and your rule R-178 says a change
+made on page 2 must never change page 1. For the header and footer, both cannot hold.
+
+**An example.** On page 2 you click the header and change its background colour. With option 1 you cannot: the header
+is grey on page 2, and you make that change on page 1, where it applies to every page. With option 2 you can, and
+page 1's header changes with it.
+
+1. **Change them from page 1 only (RECOMMENDED).**
+   - On page 2 the header and footer are grey in Layers and cannot be picked on the page.
+   - Nothing you do on page 2 ever changes page 1.
+2. **Change them from page 2 as well.**
+   - A change there shows on every page, page 1 included.
+   - That is the one exception to "page 1 never changes because of page 2".
+
+**Ruled:** _(awaiting the owner)_

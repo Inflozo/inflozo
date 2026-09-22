@@ -273,6 +273,14 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     leaves out (Home, above the main feed) is greyed, superseding D5d's greyed layers. The one piece of page-1
     arithmetic was `invokedAt`, which moves to identity, and a placement from above the feed on Home's page 2 lands
     directly below it.
+    - *Amended the same day by **R-178** (owner, 2026-09-22):* page 1 and page 2 are SEPARATE designs. Page 2 starts
+      as a copy of page 1 and follows it until the first change made on page 2, which makes it page 2's own; nothing
+      done on page 2 changes page 1; pages 3, 4, 5… show page 2's design. It holds on Tag and Author pages too — only a
+      separate page-2 design lets R-177 and R-178 both hold, and Ghost's `paged` context (page 2 on) is what the theme
+      switches on. So R-177's "page 1 carries it" and the page-aware `stackOf` over `indexStack` above no longer
+      describe page 2. The spec went back to `draft`, to be re-planned once its Questions 3 (on Home, does page 2 start
+      from the post grid down, as R-127 had it, or with all of page 1?) and 4 (can the site-wide header and footer be
+      changed from page 2?) are ruled.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

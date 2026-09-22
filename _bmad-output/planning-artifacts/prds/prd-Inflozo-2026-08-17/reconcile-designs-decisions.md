@@ -2618,6 +2618,10 @@ dropped, the grid itself carries on with the next posts, and everything below it
     of that document, whichever is first.
   - ✅ `epics.md` Story 5.16 — Story 5.16's Create (2026-09-22). Story 7.3's card and the heading are still owed; the
     heading is in Story 5.16's Dev task list.
+- **Amended by R-178 (owner, 2026-09-22):** page 2 is now a design of its own. It starts as a copy of page 1 and is
+  made page 2's own by the first change on it, so "`index.hbs` is that doc from its designated main feed onward" is at
+  most page 2's starting point, which Story 5.16's Question 3 settles. `/index` stays a 404 and the switcher gains no
+  row.
 - **Deliberately not touched:** the Synthesis Defaults' own stacks and the main-feed rule (`:849-861`), both unchanged;
   FR-D21 and Story 5.16, which decide how page 2 is *previewed*, not what it is made of; the export (R-74), which
   draws no `index.hbs` surface because there is none.
@@ -3795,6 +3799,45 @@ onwards."*
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
     ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
   - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21.
+- **Amended the same day by R-178:** a change made on page 2 does NOT reach page 1. The second bullet of "What it
+  binds" above records the reading the owner corrected.
+
+**R-178 — page 1 and page 2 are designed separately: page 2 starts as a copy of page 1, nothing done on page 2 changes
+page 1, and pages 3, 4, 5… share page 2's design.** The owner, clarifying Story 5.16's Question 2 the same day
+(2026-09-22): *"No, Page 1 is designed independent from Page 2, 3, 4, ... But when page 2 is being designed, it copied
+everything from Page 1 on initial load when the user opens Page 2 the first time for edit. If user makes edits on Page
+2, then Page 1 should never be edited/modified. Page 1 should remain as it is. Only Page 3, 4, 5, 6, ... should have
+same design as that of Page 2. Page 1 should remain an independently designed page."*
+
+- **Why it was needed.** R-177 was recorded reading "any change in Page 2 will be same for all subsequent pages" as
+  reaching page 1 too, because under R-127 page 2 was page 1's own sections. The owner corrected that reading.
+- **What it binds.**
+  - Page 1 and page 2 are two designs, and pages 3, 4, 5… show page 2's.
+  - Page 2 starts as a copy of page 1 and follows it until the first change made on page 2, which makes the copy page
+    2's own ("the first time for edit", and AD-22's rule that only an edit materialises). Undoing that change, or
+    removing every section from page 2, returns it to following page 1.
+  - Nothing done on page 2 ever changes page 1.
+  - **It holds on Tag and Author pages too.** R-177 makes page 2 editable there, and only a separate page-2 design lets
+    both rulings hold. Ghost uses one file for every page of an archive, and marks page 2 and after with its `paged`
+    context (read in source on both majors, `context.js` 5:35-36 and 6:32-33), so the theme can switch designs there.
+  - On Home, page 2 is `index.hbs`, the file Ghost serves at `/page/N/`. `/index` stays a 404 and the Template switcher
+    gains no row: page 2 is reached from the page-2 switch, so R-127's "no canvas" stands, while what page 2 is made of
+    changes.
+  - A design that can go on the Home page can go on page 2: Ghost hands `home.hbs` and `index.hbs` the same posts and
+    pagination, so copying page 1 never refuses a section.
+- **What it supersedes.** R-127's rule that page 2 IS the Home doc from its main feed down, as the whole of page 2 (it
+  may stay page 2's starting point: Story 5.16's Question 3), and R-177's reading that page 1 carries a change made on
+  page 2.
+- **Open, asked the same day.** What page 2 starts from on Home — the Home page from the post grid down, or all of it
+  (Story 5.16's Question 3) — and whether the site-wide header and footer can be changed from page 2, which R-177 and
+  R-178 answer differently (Question 4).
+- Targets:
+  - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ the pointers under R-127 and R-177 · ✅ Story 5.16's
+    spec (its Question 2, the two questions it opened, and its status back to `draft`) · ✅ `epics.md` (Story 5.16's
+    criteria) · ✅ `epic-5-context.md`.
+  - Owed: ⬜ Story 5.16's spec, rewritten when Questions 3 and 4 are ruled · ⬜ `prd.md` FR-D21, FR-D6 and FR-I1 ·
+    ⬜ `ARCHITECTURE-SPINE.md` AD-22 and AD-27(d) · ⬜ `sections-inventory.md` `:804-806` · ⬜ `epics.md` Story 7.3,
+    which compiles page 2's own design and an archive's page-2 branch · ⬜ DW-194.
 
 
 ## B · Approved decisions superseded by this session
