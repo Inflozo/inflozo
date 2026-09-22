@@ -25,7 +25,7 @@ import { GhostList, ItemList } from './item-list'
 import { LinkPicker, type LinkResources } from './link-picker'
 import { RichField, TokenRow } from './rich-field'
 import { limitSentence } from '@/lib/inline'
-import { PREVIEW_PAGE, type Page } from '@/lib/page-two'
+import { LATER_PAGES, PREVIEW_PAGE, type Page } from '@/lib/page-two'
 import { PREVIEWING, type Visitor } from '@/lib/view-as'
 
 /* THE CONTROLS PANEL — what Epic 5 mounts beside its canvas (Story 4.5).
@@ -432,6 +432,8 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
             options={['1', '2']}
             active={String(page.value)}
             layout="inline"
+            // R-181 (the owner, 2026-09-22): page 2 stands for every later page, and the row says so
+            note={LATER_PAGES}
             onChange={(value) => page.onChange(value === '2' ? 2 : 1)}
           />
         </div>

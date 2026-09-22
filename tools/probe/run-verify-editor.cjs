@@ -4711,11 +4711,15 @@ async function main() {
         items: items.map((i) => ({ text: i.textContent, w: box(i).width, h: box(i).height, size: getComputedStyle(i).fontSize, weight: getComputedStyle(i).fontWeight, bg: getComputedStyle(i).backgroundColor, checked: i.getAttribute('aria-checked') })),
         track: { bg: getComputedStyle(track).backgroundColor, radius: getComputedStyle(track).borderRadius, padding: getComputedStyle(track).padding },
         aboveReset: reset ? box(row).bottom <= box(reset).top : false,
+        // R-181: the owner's note under the row, read by the group as its description
+        note: row.querySelector('[id$="-page-note"]')?.textContent ?? null,
+        describedBy: track.getAttribute('aria-describedby') !== null && track.getAttribute('aria-describedby') === row.querySelector('[id$="-page-note"]')?.id,
       }
     })
     const r92 = await row92()
-    check('step 92 — D5d :429: the main feed\'s panel ends, above "Reset this design", with "Preview page" left and the 1 · 2 track right, 34 × 26 items at 12px, 1 on',
+    check('step 92 — D5d :429: the main feed\'s panel ends, above "Reset this design", with "Preview page" left and the 1 · 2 track right, 34 × 26 items at 12px, 1 on — and R-181\'s note under it, as the group\'s description',
       r92 !== null && r92.words === PT.PREVIEW_PAGE && r92.labelLeft && r92.trackRight && r92.aboveReset && r92.items.map((i) => i.text).join(',') === '1,2' &&
+      r92.note === PT.LATER_PAGES && r92.describedBy &&
       r92.items.every((i) => Math.round(i.w) === 34 && Math.round(i.h) === 26 && i.size === '12px') && r92.items[0].checked === 'true' && r92.items[0].weight === '600' &&
       r92.items[0].bg === 'rgb(255, 255, 255)' && r92.track.radius === '24px' && r92.track.padding === '3px', JSON.stringify(r92))
     // R-176 — no other section of the page carries it

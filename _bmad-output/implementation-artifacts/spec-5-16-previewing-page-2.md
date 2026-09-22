@@ -125,6 +125,7 @@ page offers no page 2, and there is deliberately no keyboard shortcut.
   - **Page 2** and **Back to page 1** (`EXPERIENCE.md:270`'s canonical strings)
   - **Preview page** on the row
   - page 2's marker, "Copy of page 1 — edit anything to make page 2 its own"
+  - the note under the row, "Pages 3, 4, 5 and on use page 2's design." (R-181)
   - the site-wide ask's words
 - **The pill never covers the page card** on any device (R-138's invariant, extended). **Tokens only** in `.tsx`
   (`tokens.test.ts:125`). Every glyph is read from the frame (R-92).
@@ -156,7 +157,7 @@ page offers no page 2, and there is deliberately no keyboard shortcut.
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Offered | Select the main feed of a page with a page 2: an untouched Home, a Home that kept its auto-generated grid, or the Field Notes or Reporting tag page | Its panel ends, above "Reset this design", with **Preview page · 1 · 2**, 1 on | N/A |
+| Offered | Select the main feed of a page with a page 2: an untouched Home, a Home that kept its auto-generated grid, or the Field Notes or Reporting tag page | Its panel ends, above "Reset this design", with **Preview page · 1 · 2**, 1 on, and under it the note "Pages 3, 4, 5 and on use page 2's design." (R-181) | N/A |
 | Not offered | Any other section; a Post, Page or 404 canvas; a Home with no `isMainFeed` (the owner's Pilot sections); any Author page, and every other tag (R-176) | No row | N/A |
 | Enter, following | Ghost 5 Project's Home: **2** | One repaint. Page 2 is an exact copy of page 1 — the newsletter band, then the grid — rendered at `index.hbs` with page 2's context: posts 13–24 from "The paragraph is the unit", "← Newer posts · 2 / 5 · Older posts →", and Rail's Home link without `nav-current`. D5d's pill; Layers lists page 2's rows under "Copy of page 1 — edit anything to make page 2 its own"; `#editor-said` says "Page 2." Nothing is stored. | N/A |
 | The first change | On page 2, delete the newsletter band | Page 2 stores its own design without the band, and the marker goes. Page 1 still has the band. | N/A |
@@ -601,12 +602,18 @@ of the owner's projects store `posts_per_page` 12, and none has an `index` row.
       - The Synthesis Defaults name A34 #1 Numbers against the all-Free rule.
       - The four Pagination style lists disagree. Owner: Story 5.19.
   - `epic-5-context.md`: the as-built sub-bullet.
+- [x] **The owner's note (R-181, 2026-09-22, after Dev):** the Kit's helper caption under D5d's row, "Pages 3, 4, 5 and
+      on use page 2's design.", written once as `lib/page-two.ts`'s `LATER_PAGES` and read by the radio group as its
+      description (`segmented.tsx`'s inline `note`, `labels.tsx`'s `HelperCaption` taking an `id`). Checked in
+      `page-two.test.ts`, in the entering journey and in step 92's row check. R-181 in the register, and `EXPERIENCE.md`
+      `:165`.
 
 **Acceptance Criteria:**
 
 - **Given** the main feed of a page that has a page 2 is selected, **when** its panel is read, **then** it ends, above
   "Reset this design", with **Preview page · 1 · 2**. **It matches the frame**, D5d `:429`: label left, the pill track
-  right, and 34 × 26 items. **Given** a page whose posts fit on one page, **then** there is no row (R-176).
+  right, and 34 × 26 items. Under the row, in the Kit's helper caption, the note "Pages 3, 4, 5 and on use page 2's
+  design." (R-181). **Given** a page whose posts fit on one page, **then** there is no row (R-176).
 - **Given** page 2, **when** the canvas is looked at, **then** D5d's pill sits at the top centre of the ground: ink,
   10px radius, 4px padding, the page glyph with **Page 2**, then **‹ Back to page 1**, with no coral. **It matches the
   frame**, D5d `:388-396`. It never covers the page card or the viewport chip at Desktop, Tablet and Mobile in a 1440
@@ -688,6 +695,19 @@ of the owner's projects store `posts_per_page` 12, and none has an `index` row.
       replaces what R-176's entry applied to the previous plan.
     - **A Home with no main feed** offers no page 2, and its compiled page 2 keeps R-127's plain list of posts.
     - **Undo** stays one list for the whole project, as it has been since Story 5.8.
+
+- **2026-09-22, after Dev, the owner asked for two things:** *"1. Add a note that subsequent pages will take design
+  from Page 2. 2. I want to have a {page_number} dynamic data that I can add anywhere where I can edit text inline. So
+  users can add a header, hero and show the Page number there."*
+  - **The note is R-181, and it is built.** The frozen block moved on his word: the one-name list and the matrix's
+    Offered row now carry it, and so does the first criterion.
+    - Where: under D5d's **Preview page** row, as the Kit's helper caption. D5d draws the same caption under its
+      Pagination row, so the note follows the frame (R-74).
+    - Why there: it is the one place the choice of page 2 is made, on both pages.
+  - **`{page_number}` is Questions 5 to 7, open.** It amends R-27, the owner's rule that each field declares its own
+    tokens. It is read as: the one token every text field accepts, while every other word in braces stays as typed.
+    Three choices change what gets built: what the canvas shows, what a page with no number shows, and whether it
+    belongs to this story.
 
 ## Design Notes
 
@@ -999,7 +1019,7 @@ so your projects end as they started.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid ("Everything Orbit Weekly published this spring"). Look at the foot of its settings on the right. | — | Above "Reset this design", a row **Preview page** with **1** and **2**, and 1 on. |
+| 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid ("Everything Orbit Weekly published this spring"). Look at the foot of its settings on the right. | — | Above "Reset this design", a row **Preview page** with **1** and **2**, and 1 on. Under it, a small note: "Pages 3, 4, 5 and on use page 2's design." |
 | 2 | same | Editor, Home | Press **2**. | — | A dark pill at the top: **Page 2 · ‹ Back to page 1**. Page 2 is an exact copy of page 1: the newsletter band, then the grid, whose first post is "The paragraph is the unit" and whose pager reads **← Newer posts · 2 / 5 · Older posts →**. The header's **Home** link has no underline. At the top of Layers: "Copy of page 1 — edit anything to make page 2 its own". |
 | 3 | same | Page 2 | Click the newsletter band and press **Delete**. | — | The band is gone from page 2, and the "Copy of page 1" note goes: page 2 now has a design of its own. |
 | 4 | same | Page 2 | Press **Back to page 1** on the pill. | — | Page 1 still has its newsletter band. |

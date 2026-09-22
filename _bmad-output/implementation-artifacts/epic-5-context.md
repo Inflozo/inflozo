@@ -323,6 +323,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       the harness Home's post grid carries `isMainFeed`, derived from `SYNTHESIS_DEFAULTS`, and the journeys cover the
       entry, following and forking, R-180, the pill, the no-key sweep and page 2 stopping being offered; the deployed
       walk's step 92 covers the rest on production.
+    - ***The owner, after Dev (2026-09-22).*** **R-181**: under D5d's row, the Kit's helper caption "Pages 3, 4, 5 and on
+      use page 2's design." (`LATER_PAGES`), the radio group's description. **`{page_number}`**, a token every text
+      field would accept, is the spec's Questions 5 to 7 — it amends R-27's per-field token lists.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

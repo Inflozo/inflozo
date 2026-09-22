@@ -21,9 +21,9 @@ export const ControlLabel = ({ htmlFor, children }: { htmlFor?: string; children
     <span className="text-control-label font-medium text-ink-soft">{children}</span>
   )
 
-/** One line of guidance under a control. Never jargon. */
-export const HelperCaption = ({ children }: { children: ReactNode }) => (
-  <span className="text-helper-caption leading-[1.5] text-ink-soft">{children}</span>
+/** One line of guidance under a control. Never jargon. `id` lets the control it guides name it as its description. */
+export const HelperCaption = ({ id, children }: { id?: string; children: ReactNode }) => (
+  <span id={id} className="text-helper-caption leading-[1.5] text-ink-soft">{children}</span>
 )
 
 /** The counter chip beside a selected-section header: mono, "4 / 18". */

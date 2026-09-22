@@ -3893,6 +3893,20 @@ change from Page 2 too. Keep the existing prompt stating that this will change i
     criteria) · ✅ `epic-5-context.md`.
   - Done at Story 5.16's Dev (2026-09-22): ✅ `prd.md` FR-D5's site-wide sentence and FR-D21.
 
+**R-181 — a note under the Preview page row says that every page after page 2 uses its design.** The owner, after
+Story 5.16's Dev (2026-09-22): *"Add a note that subsequent pages will take design from Page 2."*
+
+- **What it binds.** Under D5d's **Preview page** row, on page 1's main feed and on page 2's copy of it, the Kit's
+  helper caption reads **"Pages 3, 4, 5 and on use page 2's design."** It is written once, as `lib/page-two.ts`'s
+  `LATER_PAGES` (R-170), and the row's radio group reads it as its description, so a screen reader hears it with the
+  choice.
+- **Where, and why there.** D5d draws the same caption under its Pagination row (`:428`), so the note follows the frame
+  (R-74). The row is where page 2 is chosen, on both pages.
+- **What it does NOT change.** R-177's rule itself; the pill; Layers; the frames (R-74).
+- Targets: ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word, its first criterion, a task and the owner's
+  test) · ✅ `lib/page-two.ts`, `kit/segmented.tsx`, `kit/labels.tsx`, `controls/sidebar.tsx` · ✅ `page-two.test.ts`,
+  the entering journey and step 92 · ✅ `EXPERIENCE.md`'s Page 2 Preview row — Story 5.16, after its Dev (2026-09-22).
+
 
 ## B · Approved decisions superseded by this session
 

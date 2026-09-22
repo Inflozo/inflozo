@@ -7,7 +7,7 @@ import { parseDoc, removeSection, renameSection, synthesize, type ProjectDoc, ty
 import { CANVASES, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './lib/editor.ts'
 import { KEYMAP } from './lib/keymap.ts'
 import {
-  BACK_TO_PAGE_ONE, carry, COPY_MARKER, editedDoc, follows, followersOf, leftBecause, mainFeedOf, mainFeedOn, noPageTwo,
+  BACK_TO_PAGE_ONE, carry, COPY_MARKER, editedDoc, follows, followersOf, LATER_PAGES, leftBecause, mainFeedOf, mainFeedOn, noPageTwo,
   offersPageTwo, ownKeyOf, PAGE_TWO_WORDS, pageFileOf, pageInForce, pageTwoOf, PREVIEW_PAGE, SITE_WIDE_ASK, stackOf,
   type Page,
 } from './lib/page-two.ts'
@@ -217,6 +217,8 @@ test('R-170: the words are EXPERIENCE.md\'s canonical strings, written once — 
   assert.ok(row.includes(`**"${PAGE_TWO_WORDS}"**`) && row.includes(`**"${BACK_TO_PAGE_ONE}"**`), row)
   // D5d's row label, and page 2's marker in D5a's shape
   assert.equal(PREVIEW_PAGE, 'Preview page')
+  // R-181, the owner's note under the row: every page after page 2 takes page 2's design (R-177)
+  assert.match(LATER_PAGES, /^Pages 3, 4, 5 and on use page 2's design\.$/)
   assert.match(COPY_MARKER, /^Copy of page 1 — edit anything to make page 2 its own$/)
   // R-180's ask, in FR-D5's vocabulary: its title names the section, and it opens on Cancel
   assert.equal(SITE_WIDE_ASK.title('Headers — Rail'), 'Change Headers — Rail everywhere?')

@@ -39,6 +39,8 @@ export const PAGE_TWO_WORDS = 'Page 2'
 export const BACK_TO_PAGE_ONE = 'Back to page 1'
 /** D5d's row (`:429`), on the main feed's panel. */
 export const PREVIEW_PAGE = 'Preview page'
+/** …and the helper caption under it, the owner's R-181: page 2 stands for every later page (R-177). */
+export const LATER_PAGES = "Pages 3, 4, 5 and on use page 2's design."
 /** Page 2's marker in Layers while it follows page 1 — D5a's row, with its own sentence. */
 export const COPY_MARKER = 'Copy of page 1 — edit anything to make page 2 its own'
 /** What `#editor-said` says, politely, as the page changes. */

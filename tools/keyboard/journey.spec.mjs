@@ -1738,6 +1738,10 @@ test('Page 2: the main feed\'s row enters it, and page 2 is an EXACT copy of pag
   const key = await feedRow(page)
   // D5d's row: "Preview page", 1 and 2, 1 on — at the panel's foot, above "Reset this design"
   await expect(pageRow(page)).toContainText(TWO.PREVIEW_PAGE)
+  // R-181: the note under the row says page 2 stands for every later page, and the group reads it as its description
+  const note = pageRow(page).locator('[id$="-page-note"]')
+  await expect(note).toHaveText(TWO.LATER_PAGES)
+  expect(await pageRow(page).locator('[role="radiogroup"]').getAttribute('aria-describedby'), 'the row is described by its note').toBe(await note.getAttribute('id'))
   await expect(pageRow(page).locator('[role="radio"]')).toHaveText(['1', '2'])
   await expect(pageRow(page).locator('[role="radio"][aria-checked="true"]')).toHaveText('1')
   const footTop = await page.locator('#editor-controls button', { hasText: 'Reset this design' }).evaluate((b) => b.getBoundingClientRect().top)

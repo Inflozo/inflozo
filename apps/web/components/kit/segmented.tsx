@@ -1,6 +1,7 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 import { nextIndex } from '@/lib/menu'
 import { greyedProps, labelTone, marked, reason, ring, type Greyed } from './greyed'
+import { HelperCaption } from './labels'
 import { MoonBadge } from './moon-badge'
 
 /* Editor Sidebar Kit.dc.html:63 — segmented. A pill track on paper-sunk; the active
@@ -20,7 +21,8 @@ import { MoonBadge } from './moon-badge'
    Story 5.16 — THE INLINE LAYOUT is D5d's "Preview page" row (`D5 Canvas Markers and Template Switcher.dc.html:429`):
    the label on the left at 12/500, the track on the right, and fixed 34 × 26 items at 12px, the current one surface
    at a 20px radius and 12/600 with no shadow, as D5d draws it. The radio group and its keys are the Kit's own, above;
-   only the drawing differs. */
+   only the drawing differs. Its `note` is the Kit's helper caption under the whole row (11px, `:31`), as D5d draws one
+   under the Pagination row, and it is the radio group's description (R-181). */
 
 /** A value, and the words the panel prints for it. A bare string is both. */
 export type Option = string | { value: string; label: string; greyed?: string }
@@ -62,6 +64,7 @@ export function Segmented({
   moon = false,
   aside,
   layout = 'stacked',
+  note,
   onChange,
 }: {
   id: string
@@ -75,6 +78,8 @@ export function Segmented({
   aside?: ReactNode
   /** `inline` is D5d's row: label left, track right, fixed 34 × 26 items (Story 5.16) */
   layout?: 'stacked' | 'inline'
+  /** the inline layout's helper caption under the row, read as the group's description (Story 5.16, R-181) */
+  note?: string
   onChange?: (value: string) => void
 }) {
   const on = marked(active, greyed)
@@ -86,36 +91,40 @@ export function Segmented({
   const live = onChange !== undefined && !greyed
   if (layout === 'inline') {
     return (
-      <div className="flex items-center justify-between gap-2">
-        <span id={`${id}-label`} className={`text-control-label font-medium ${labelTone(greyed)}`}>
-          {label}
-        </span>
-        <div
-          id={id}
-          role="radiogroup"
-          aria-labelledby={`${id}-label`}
-          className={`flex shrink-0 rounded-pill bg-paper-sunk p-[3px] ${ring}`}
-          onKeyDown={live ? (event) => radioKeys(event, list, onChange) : undefined}
-        >
-          {list.map((option, i) => {
-            const active_ = option.value === on
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="radio"
-                aria-checked={active_}
-                tabIndex={!greyed && i === stop ? 0 : -1}
-                onClick={live ? () => onChange(option.value) : undefined}
-                className={`flex h-[26px] w-[34px] items-center justify-center rounded-[20px] text-[12px] ${ring} ${
-                  active_ ? 'bg-surface font-semibold text-ink' : 'text-ink-soft'
-                }`}
-              >
-                {option.label}
-              </button>
-            )
-          })}
+      <div className="flex flex-col gap-[5px]">
+        <div className="flex items-center justify-between gap-2">
+          <span id={`${id}-label`} className={`text-control-label font-medium ${labelTone(greyed)}`}>
+            {label}
+          </span>
+          <div
+            id={id}
+            role="radiogroup"
+            aria-labelledby={`${id}-label`}
+            aria-describedby={note === undefined ? undefined : `${id}-note`}
+            className={`flex shrink-0 rounded-pill bg-paper-sunk p-[3px] ${ring}`}
+            onKeyDown={live ? (event) => radioKeys(event, list, onChange) : undefined}
+          >
+            {list.map((option, i) => {
+              const active_ = option.value === on
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active_}
+                  tabIndex={!greyed && i === stop ? 0 : -1}
+                  onClick={live ? () => onChange(option.value) : undefined}
+                  className={`flex h-[26px] w-[34px] items-center justify-center rounded-[20px] text-[12px] ${ring} ${
+                    active_ ? 'bg-surface font-semibold text-ink' : 'text-ink-soft'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
+        {note === undefined ? null : <HelperCaption id={`${id}-note`}>{note}</HelperCaption>}
       </div>
     )
   }
