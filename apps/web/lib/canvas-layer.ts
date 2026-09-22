@@ -144,8 +144,9 @@ export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fil
   const h = host.getBoundingClientRect()
   const r = root.getBoundingClientRect()
   // Story 5.15's PAUSED chip is anchored to a MOUNT inside a section, which the design may draw at no size at all
-  // (a phone menu at Desktop): an anchor with no box keeps its chip hidden rather than drawn at its corner of nothing
-  if (how === 'bottom-left' && r.width === 0 && r.height === 0) {
+  // (a phone menu at Desktop), or collapsed in one axis (an empty strip): an anchor with no box keeps its chip hidden
+  // rather than drawn at its corner of nothing
+  if (how === 'bottom-left' && (r.width === 0 || r.height === 0)) {
     if (el.style.visibility !== 'hidden') el.style.visibility = 'hidden'
     return
   }

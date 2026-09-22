@@ -1388,7 +1388,7 @@ export function Editor({
       // a link never navigates the canvas (`submit`, `auxclick` and the drops stay prevented above, in both modes).
       // `closest` rather than `instanceof`: the target lives in the canvas document's realm.
       if (latest.current.preview) {
-        if ((e.target as Element | null)?.closest?.('a[href]')) e.preventDefault()
+        if ((e.target as Element | null)?.closest?.('a[href], area[href]')) e.preventDefault()
         return
       }
       e.preventDefault()
@@ -1595,7 +1595,7 @@ export function Editor({
   }, [])
   useLayoutEffect(mark, [selected, hovered])
   /* Story 5.15 — FOCUS FOLLOWS PREVIEW, after the commit that hides or shows the chrome: in, onto B3b's Back to editing;
-     out, back to where it was — or onto the pill, if that element has gone. `previewed` stays false until Preview has
+     out, back to where it was — or onto the pill, if that element has gone or will not take it. `previewed` stays false until Preview has
      been entered once, so the first render moves nothing. */
   const previewed = useRef(false)
   useLayoutEffect(() => {
@@ -1607,7 +1607,11 @@ export function Editor({
     if (!previewed.current) return
     const was = cameFrom.current
     cameFrom.current = null
-    ;(was && was.isConnected && was !== document.body ? was : document.getElementById('editor-preview'))?.focus()
+    const there = was && was.isConnected && was !== document.body ? was : null
+    there?.focus()
+    // an element still in the document but no longer focusable (inside a panel that folded, a light-dismissed popover's
+    // row) takes nothing, so the fallback is read off the result and not off the element (review)
+    if (document.activeElement !== there) document.getElementById('editor-preview')?.focus()
   }, [preview])
 
   const rootOf = (pick: Pick | null) => {

@@ -1390,11 +1390,32 @@ test('Preview hides every piece of editing chrome — never unmounted, so a sele
   await expect(bar(page).locator('[role="radio"]')).toHaveCount(await page.locator('#editor-device [role="radio"]').count())
   await expect(bar(page).locator('[role="radio"][aria-checked="true"]')).toHaveAttribute('aria-label', device)
   await expect(bar(page).locator('[role="radiogroup"]')).toHaveAttribute('id', 'editor-preview-device')
+  // A PRESS IN PREVIEW SELECTS NOTHING (review): a click on ANOTHER section — the canvas document's own `click`, which
+  // the editor listens for, synthesized as the hover above is — and a primary press on the ground beside the page
+  // (Mobile, so there is ground) both leave the selection where it was. Read on the way back, when the panel shows.
+  await page.keyboard.press('3')
+  await page.frameLocator('iframe[title$="canvas"]').locator('.a1-1').first().evaluate((el) => el.dispatchEvent(new MouseEvent('click', { bubbles: true, button: 0 })))
+  await page.locator('section[aria-label="Canvas"]').evaluate((el) => el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse' })))
+  await expect(bar(page), 'still in Preview').toBeVisible()
   // and on the way back everything is as it was: the section still selected, with its panel
   await page.keyboard.press('Escape')
   await chosen(page, own[0])
   await expect(page.locator('#editor-layers')).toBeVisible()
+  expect(await deviceOf(page)).toBe('Mobile')
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('1')
   expect(await deviceOf(page)).toBe(device)
+  // A FOLDED PANEL'S RAIL IS HIDDEN TOO (review): fold Layers, go in, and the 44px rail with its Show button is gone
+  // with the rest, so the stage is still the whole window
+  await page.keyboard.press('l')
+  await expect(page.getByRole('button', { name: 'Show layers' }), 'the control: the rail shows while editing').toBeVisible()
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect(bar(page)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Show layers' }), 'the rail is hidden in Preview').toBeHidden()
+  expect(await page.locator('section[aria-label="Canvas"]').boundingBox()).toEqual({ x: 0, y: 0, width: view.width, height: view.height })
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('button', { name: 'Show layers' }), 'and back when editing').toBeVisible()
 })
 
 test('R-174 · FR-G7(4): while designing every mount the table holds still is AT REST, and Preview runs every one', async ({ page }) => {
@@ -1583,6 +1604,8 @@ test('in Preview only P, Esc, 1 2 3 and ⌘S act — L . [ ? do nothing — and 
   // navigation would need to start, so "the same address" is a reading that could have failed
   const address = await canvas.locator('body').evaluate((b) => b.ownerDocument.location.href)
   const link = canvas.locator('.a1-1__items a[href]').first()
+  // the control (standing rule 2): the link points somewhere ELSE, so "the same address" is a reading that could fail
+  expect(await link.evaluate((a) => a.href), 'the control: the link leads away from the canvas').not.toBe(address)
   await link.focus()
   await page.keyboard.press('Enter')
   await page.waitForTimeout(300)

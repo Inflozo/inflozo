@@ -7,8 +7,9 @@
    outline's or a border's width to whole pixels before the fit shrinks the frame. They are boxes with an inset
    box-shadow line in the chrome layer (lib/canvas-layer.ts), shadow-root hosts on this document's <body> that exist
    only while something is hovered or selected. `data-inflozo-hover` and `data-inflozo-selected` stay on the roots
-   as state marks. Painted chrome that belongs inside — the insertion hairline, PAUSED, the empty icon slot — keys its
-   rule on a data-inflozo-* attribute here. */
+   as state marks. Painted chrome that belongs inside — the insertion hairline, the empty icon slot — keys its
+   rule on a data-inflozo-* attribute here. (PAUSED is NOT painted here: since Story 5.15 it is a chip in the chrome
+   layer, like the name tag, R-120's amendment.) */
 
 /* THE FIELD BEING TYPED IN (Story 5.3, the owner's test of 2026-09-18). The browser's own focus ring is a heavy dark box
    around the whole block, which reads as a bug beside the section's hairline outline; the caret is the real signal.

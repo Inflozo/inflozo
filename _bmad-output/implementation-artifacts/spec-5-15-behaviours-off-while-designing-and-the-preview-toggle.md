@@ -2,9 +2,9 @@
 title: 'Story 5.15 — Behaviours off while designing, and the Preview toggle'
 type: 'feature'
 created: '2026-09-22'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 'a16f5a5cdca2950da2661b71909a25116aa4ff09'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -571,6 +571,8 @@ moving part, arrive with their own designs in Epics 9 and 10.
     - The matrix's Pointing row changed, and a new row was added, A part that moves by itself.
   - Unchanged: the mechanism, the no-op stand-in, Preview, the keys and every other row.
 
+- **2026-09-22, Review:** no frozen text changed. The Verification section records the Review's run and patches.
+
 ## Design Notes
 
 **Why `core` runs from the editor, and why `core.js` gains `export`.**
@@ -891,6 +893,47 @@ and `VERCEL_PROJECT`, under Node 24.
   - *The keys.* `P` goes in, `Esc` and `P` come back, and focus returns to the canvas each time. `L` `.` `[` `?` did
     nothing in Preview.
 - Step 36 and steps 66b and 66c passed on this run too. These are the known intermittent failures, DW-222 and DW-220.
+
+**Review (2026-09-22), against `https://app.inflozo.com` at `61290c1b`** — five layers ran (Blind Hunter, Edge Case
+Hunter, Verification Gap, Acceptance Auditor, Real-infra verifier), and every R-82 claim held on the real infrastructure:
+
+- **Vercel production** `dpl_HrwUpJ5JN6yNBC2aeVyJSvrN6reM` READY, built from `61290c1b` = HEAD; **GitHub Actions** `CI`
+  35693559924 and `Render matrix` 35693559932 on that commit both success (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`,
+  `VERCEL_PROJECT`, `GITHUB_TOKEN`, by name).
+- **The deployed walk, re-run at Review: 0 FAIL, 535 PASS, first run.** Supabase production answered its two throwaway
+  accounts (users 13 → 13, both deleted, HTTP 200, 200). Step 5: zero `securitypolicyviolation` events in either
+  document with `core` running in both modes, behind three controls (`new Function` in each document, `eval('1')` from
+  the editor on the canvas window, and the recorder's refusal from each). Step 8: zero axe violations in Preview. Step
+  91: all twelve checks. Steps 36, 66b and 66c passed on this run too. **Recorded as `MEASUREMENTS.md` §47.**
+- `derive-module-reach.py --check`: PASS. No migration (`git diff --stat a16f5a5c HEAD -- supabase/` is empty), so
+  nothing to check against the hosted schema (R-99).
+- **T1 and T3 were not touched at Review**, deliberately: the probe uploads and deletes a theme on both real servers, and
+  `packages/library/modules/` is byte-identical to the Dev commit's, whose 22-of-22 run stands.
+- **Patched at Review** (each with its own red-then-green control, `pnpm check` and the Preview journeys green after):
+  - `behaviours.ts` names a module's `observe`-callback throw too, not only its mount throw; the wrapper layers over
+    `core`'s ctx so `reducedMotion` stays a live getter (new test).
+  - `modules.ts`: the shape check and `bundle()` both take exactly the seven bytes `export ` — one literal space — so
+    `core.test.mjs`'s byte check and `run-verify-core.py`'s `coreVerbatim` cannot disagree with them (two new refusals).
+  - `behaviours.test.ts` reads the modules directory by `import.meta.url`, so `node --test` from the repo root reaches it.
+  - `canvas-layer.ts` hides the chip on a mount collapsed in ONE axis too (new test row).
+  - `editor.tsx`: the Preview click trap covers `area[href]`; the focus fallback on the way out is read off the result of
+    `focus()`, so an element still in the document but no longer focusable falls back to the pill.
+  - `run-verify-editor.cjs` imports `lib/preview.ts` with the other app modules before the walk starts.
+  - The journey gains four controls: the link's `href` differs from the canvas address; a synthesized click on ANOTHER
+    section and a primary press on the ground in Preview both leave the selection alone; a folded Layers rail is hidden
+    in Preview and the stage is still the whole window. Each went red with its guard removed.
+  - Comments and documents: `canvas-chrome.css`'s header no longer lists PAUSED as painted inside; "Preview Mode" is
+    "Preview" in `EXPERIENCE.md` and `epics.md` (R-170) — the name survives only in dated ruling text, the step-2 prompt
+    and the owner's walk notes, which are history; `section-authoring.md` and R-175's entry stop restating
+    `movesByItself` values by name; DW-136's resolution names both production runs.
+- **Deferred, not patched:** DW-229 (the chip has no spoken equivalent; waits for a real part). A tap in Preview stays
+  "stated plainly" above: step 14's touch run is in editing mode, and the guard is one line.
+- **Dismissed:** `role="toolbar"` on B3b's bar (the spec names it; axe is clean; its arrows are the device track's);
+  the bar and the pill sharing the name "Preview" (one concept, R-170); `paused` after `stop()` (the editor nulls the
+  handle first); Preview before the first paint (`paint()` reads `latest.preview` when it does run); focus that was
+  inside the canvas returning to the canvas (documented, step 91); the window between 1024 and 1190px where the pill
+  meets View as (Story 5.22's card already carries the new figure).
+- **No question for the owner was raised by this review.**
 
 ## Owner's manual test
 

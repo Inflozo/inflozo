@@ -48,4 +48,5 @@ test('place bottom-left: 8px inside the anchor\'s bottom-left corner, on screen 
 
 test('place bottom-left: an anchor with no box keeps its element hidden', () => {
   assert.equal(stage(rect(300, 300, 0, 0), [60, 18], 1000, 'bottom-left').visibility, 'hidden')
+  assert.equal(stage(rect(300, 300, 100, 0), [60, 18], 1000, 'bottom-left').visibility, 'hidden', 'collapsed in one axis is no box either')
 })

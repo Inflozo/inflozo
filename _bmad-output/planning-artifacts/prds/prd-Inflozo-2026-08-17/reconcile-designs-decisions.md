@@ -3726,9 +3726,10 @@ point at or select, but only on parts that move by themselves, not all sections 
     page scrolls, with nothing pressed. A part that waits for a press or a submit never carries one, because held
     still it looks exactly as it does at rest: a phone menu, a sign-up form, a lightbox, tabs, a carousel's arrows.
   - **Where it is said.** `registry.json` gains `movesByItself` on every row, the one place that says which, and the
-    editor filters `core`'s held-still mounts through it. Of the modules the table holds still, those that carry a
-    chip are `header-scroll`, `rotator`, `marquee`, `reveal`, `infinite-scroll`, `slide-in-card` and `typewriter`.
-    A part that rewrites itself once as the page loads (`toc`, `shuffle`) does not move, so it carries none.
+    editor filters `core`'s held-still mounts through it. Which modules carry a chip is read off that file — the rows
+    with `editSafe: false` and `movesByItself: true` — and is not listed here, where it would go stale with the first
+    new row (standing rule: derive, never restate). A part that rewrites itself once as the page loads does not
+    move, so it carries none.
 - **What it does NOT change.**
   - B3a's chip itself: its look, its words, and its place on the behaviour rather than in a status bar.
   - A carousel's optional autoplay (research §3.5) is a per-design choice that the module row cannot see, so an

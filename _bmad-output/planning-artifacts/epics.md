@@ -1807,7 +1807,7 @@ So that the editor is usable rather than merely compliant.
 **and `?`, which opens the shortcuts card** (**R-147**, FR-D11's fourteenth key, drawn on S3's menu row)
 **And** **the five keys whose action no story has built are ABSENT — not bound, not listed, never greyed**
 (**R-145**, R-118 applied a seventh time and the first time to a key): **⌘K** arrives with the Section Picker
-(5.10), **`[` `]`** with the design ring (5.11), **⇧R** with Site Remix (5.12), **P** with Preview Mode (5.15)
+(5.10), **`[` `]`** with the design ring (5.11), **⇧R** with Site Remix (5.12), **P** with Preview (5.15)
 and **⌘⏎** with the deploy wizard (7.18) — so the map is complete when 7.18 ships, and each key is tested by
 the story that lands it
 **And** **the map is ONE TABLE naming all thirteen with the story that lands each**, from which both the key

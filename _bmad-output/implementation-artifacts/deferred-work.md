@@ -3478,7 +3478,8 @@ resolution: Story 5.15 (2026-09-22) — the editor IMPORTS `core` and runs it fr
   a canvas-side wrapper evaluating `bundle`'s strings, could not run: the canvas carries no script and no nonce, and the
   policy refuses `eval` — executed in Chromium 149 at the story's Dev (`eval` called from the parent realm on a child
   window carrying this policy threw `EvalError`, reported by the child, while `core` run the same way raised zero
-  violations), and re-executed on production by `run-verify-editor.cjs` steps 5 and 91 at Review. So `core.js` is now
+  violations), and executed on production by `run-verify-editor.cjs` steps 5 and 91 — at Dev against `1e147c74` and
+  again at Review against `61290c1b` (MEASUREMENTS §47), zero violations both times. So `core.js` is now
   one EXPORTED declaration and `bundle()` removes the keyword as it pastes it into the classic `main.js`
   (`packages/library/src/modules.ts`, held byte for byte by `modules/core.test.mjs`).
 severity: medium
@@ -5272,3 +5273,19 @@ reason: `stampControls` removes every root `data-*` that is not a directive, and
   a mount that is edit-safe keeps RUNNING through a re-stamp (the nodes are kept), so a module reading `ctx.t` after
   mounting — a countdown's labels — would read `''`. No pilot mounts on its root today. The fix belongs in the shared
   function: keep `data-i18n-*` there, as `data-portal` already is.
+
+### DW-229: the PAUSED chip has no text equivalent for a screen reader
+
+plain: The small grey PAUSED tag is only drawn. Someone using a screen reader who selects a section with a part that
+  holds still is not told that it holds still. Nothing on your pages carries such a part yet.
+status: open
+severity: low
+origin: Story 5.15's Review (2026-09-22) — Blind Hunter
+owner: the first category story whose design declares a module that is held still and moves by itself (research
+  §2.1 lists `header-scroll` for A1-1 onward, so likely Story 9.1)
+location: editor.tsx (the chip is `aria-hidden`, as B3a's chrome) · `#editor-said` or the section's panel
+reason: the chip is chrome in the canvas layer, drawn only while a section is pointed at or selected, and `aria-hidden`
+  as every other piece of that layer is (the outline, the name tag). The information it carries — "this part holds
+  still while you design, and runs in Preview" — has no spoken equivalent. The fix is a sentence, not a chip: a
+  sr-only line in the selected section's panel, or on the selection announcement, derived from the same `paused` list
+  narrowed by `movesByItself`. It waits for a real part so it is measured on one (R-82), not on a fixture.

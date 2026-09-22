@@ -152,7 +152,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Variant Shuffle** | `S6 Variant Shuffle.dc.html` | `[` `]` · Shuffle | Cycles a section's ring in place, carrying content |
 | **Style Packs** | `S7 Style Packs.dc.html` S7a–d | sidebar "Change" | The pack roster, mid-switch crossfade, edit and create |
 | **Site Remix** | B8 *(re-specified)* | `⇧R` | Re-rolls pack and/or every design, content preserved (FR-D17) |
-| **Preview Mode** | B3a editing · B3b preview | `P` · Preview | Behaviours run, all editing chrome gone (FR-D20) |
+| **Preview** | B3a editing · B3b preview | `P` · Preview | Behaviours run, all editing chrome gone (FR-D20) |
 | **Device Preview** | B11a · B11b *(corrected 2026-09-04, A7 item 6)* | `1` `2` `3` | Both axes resize to a real device size (FR-D8, AD-21) |
 | **Persistence Indicator** | B6 *(extended)* | always in the top bar | Saved on this device · Syncing · Synced · Retrying (FR-D10) |
 | **Edit Lock** | `B Missing Surfaces.dc.html` B5a read-only bar · B5b request popover · B5c takeover modal | opening a project someone else holds · Request editing · take over | One editing context per project (FR-D18, flow **F2**): the reader's bar, the holder's popover, the takeover confirm. Its fourth state — Ship it or Export from a read-only session — is `D8 Editor Below 1440.dc.html` D8g |
@@ -405,7 +405,7 @@ the keyboard journey verifies as one walk and cannot verify one key at a time. S
 **absent**: not bound, not listed in the `?` card, never greyed and never captioned (UX-DR3). Story
 5.9 builds `L`, `.`, `1` `2` `3`, `Esc`, `⌘D`, `Del` and `?`, and finds `⌘Z`, `⇧⌘Z` and `⌘S` already
 passing; **`⌘K` lands with the Section Picker (5.10), `[` `]` with the design ring (5.11), `⇧R` with
-Site Remix (5.12), `P` with Preview Mode (5.15) and `⌘⏎` with the deploy wizard (7.18)** — each tested
+Site Remix (5.12), `P` with Preview (5.15) and `⌘⏎` with the deploy wizard (7.18)** — each tested
 by the story that lands it, and the map complete when 7.18 ships. The map is **one table** naming all
 of them with the story that lands each, and both the handler and the card's rows are derived from it,
 so a key can never be advertised without being bound or bound without being listed.
@@ -432,7 +432,7 @@ module is edit-safe, and its section renders at rest — its no-JavaScript state
 scroll reveal, tabs and accordions hold still too). A held-still part that **moves by itself** — on a timer
 or as the page scrolls, with nothing pressed — carries a **PAUSED chip on the behaviour itself** rather than
 in a status bar (B3a), **only while its section is pointed at or selected**, never at rest; a part that waits
-for a press, like a phone menu or a sign-up form, carries none (**R-175**, Story 5.15). Preview Mode — B3a's
+for a press, like a phone menu or a sign-up form, carries none (**R-175**, Story 5.15). Preview — B3a's
 **Preview** pill or `P` — runs everything and hides all chrome but B3b's floating bar, whose **Back to
 editing**, `Esc` or `P` return to exactly the editor you left.
 
@@ -519,7 +519,7 @@ one above.
 **2.1.4 Character Key Shortcuts** requires one of: turn off, remap, or active-on-focus. This product
 takes the third: **every single-character shortcut is live only while the editor shell holds focus,
 and never while a text field or a `contenteditable` has it.** Without that rule, a speech-input user
-saying a word near the canvas fires Preview Mode or a Site Remix. `⌘`-modified shortcuts are
+saying a word near the canvas fires Preview or a Site Remix. `⌘`-modified shortcuts are
 unaffected. **axe-core does not detect this**, which is exactly why it is stated here.
 
 ### What is announced, and how
@@ -888,7 +888,7 @@ a closed control vocabulary.
 | 7 | **Style Packs** | She opens the panel, hovers Tangerine, and the whole canvas crossfades over 300ms |
 | 8 | **Template Switcher** | Home → Post → Page → Tag → Author. The six untouched synthesizable templates already render their default stacks, each carrying the **Auto-Generated Marker** until her first edit materialises it |
 | 9 | **Layers** | `L`. The Site-wide group sits at the top with its template count; below a hairline, this page's sections. She drags one and the canvas follows |
-| 10 | **Preview Mode** | `P`. Every chip, outline and handle vanishes, and the rotator rotates — the countdown, being edit-safe, was ticking while she designed too. `Esc` returns |
+| 10 | **Preview** | `P`. Every chip, outline and handle vanishes, and the rotator rotates — the countdown, being edit-safe, was ticking while she designed too. `Esc` returns |
 | 11 | **Device Preview** | `3`. The canvas becomes 390 × 844 — a phone-shaped viewport that scrolls inside itself — so she can see where the fold lands |
 | 12 | **Site Remix** | `⇧R`. One button re-rolls every design on the site, keeping every word she typed. One undo, always |
 | 13 | **Deploy Wizard** | Four steps, because this project has shipped to this site before |

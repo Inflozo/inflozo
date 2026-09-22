@@ -119,8 +119,10 @@ export function bundle(names: readonly string[], sources: ModuleSources, rows: r
     if (src === undefined) throw new Error(`${name}.js has no source — main.js carries only files authored in packages/library/modules/ (FR-G7(1))`)
     const why = topLevelShape(src, name === 'core' ? 'core' : moduleFunctionName(name))
     if (why !== null) throw new Error(`${name}.js — ${why}`)
+    // exactly the seven bytes `export ` — the shape check above admits only that spelling, so this, core.test.mjs's
+    // byte check and run-verify-core.py's `coreVerbatim` all remove the same thing (review)
     const at = skipTrivia(src, 0)
-    return src.slice(0, at) + src.slice(at).replace(/^export\s+/, '')
+    return src.slice(0, at) + src.slice(at).replace(/^export /, '')
   })
   const start = picked
     .map((r) => `[${JSON.stringify(r.name)}, ${moduleFunctionName(r.name)}, { editSafe: ${r.editSafe === true}, animates: ${r.animates === true} }]`)
@@ -181,7 +183,7 @@ export function checkThemeJs(files: Readonly<Record<string, string>>, sources: M
  *  parser if a module ever trips it. */
 function topLevelShape(src: string, fn: string): string | null {
   const at = skipTrivia(src, 0)
-  const head = new RegExp(`^export\\s+function\\s+${fn}\\s*\\(`).exec(src.slice(at))
+  const head = new RegExp(`^export function\\s+${fn}\\s*\\(`).exec(src.slice(at))
   if (head === null) {
     return `its top level must be one exported function declaration named ${fn}, "export function ${fn}(…) { … }", and nothing else: no import, no second declaration, no statement`
   }

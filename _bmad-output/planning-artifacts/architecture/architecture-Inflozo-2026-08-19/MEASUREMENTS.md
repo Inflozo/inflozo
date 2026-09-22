@@ -3378,3 +3378,38 @@ every member arm is read, not recorded. `checkPostAccess` (`members/content-gati
 may READ, was not read — it is Story 5.20's, with the gated-body indicator and DW-128. And no emitter changed: the canvas
 previews the tier through Story 4.10's `data-members`, whose truth table is `agreement.test.ts`'s and whose theme arms
 are `tools/check-snapshots.mjs`'s, both untouched by Story 5.14.
+
+## 47. `core` run from the editor's realm against the canvas window raises no CSP violation — recorded on production · 2026-09-22
+
+Story 5.15 makes the editor run `core` itself, from its own bundle, against the canvas iframe's window (`apps/web/lib/
+behaviours.ts`, DW-136). The canvas document carries no script and no nonce, and both documents carry the app's nonce
+policy with no `'unsafe-eval'` (§ the CSP row). "Code in the editor's realm acting on the canvas window compiles nothing
+in the canvas, so its policy has nothing to refuse" was reasoned at Create and executed here, under standing rule 1, by
+`tools/probe/run-verify-editor.cjs` steps 5 and 91 against `https://app.inflozo.com`.
+
+**Runs.** Dev (2026-09-22) at `1e147c74`, deployment `dpl_HyjusRNeW4sCdTqdzjtn61v1z1JR`; Review (2026-09-22) at
+`61290c1b`, deployment `dpl_HrwUpJ5JN6yNBC2aeVyJSvrN6reM`, both READY and both the checkout's HEAD. Each run: 0 FAIL,
+535 PASS, first attempt. The command, keys by name: `SUPABASE_URL SUPABASE_SECRET_KEY VERCEL_TOKEN VERCEL_TEAM_ID
+VERCEL_PROJECT node tools/probe/run-verify-editor.cjs`, Node 24.18.1.
+
+**(a) Violations.** Step 5's scripted session listens for `securitypolicyviolation` in BOTH documents across the whole
+walk, and since Story 5.15 that session includes `core` running from the editor while designing and in Preview — in by
+the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing
+in Preview. Recorded: **zero events in either document** (`[]`), both runs.
+
+**(b) The mounts, read back.** Step 91 reads `js-enabled` on every `[data-module]` in the canvas: while designing
+`{ bar: false, form: false, mounts: 2, enabled: 0 }` (Rail's `nav-drawer` and the Inline Row's `member-form`, both held
+still at rest); in Preview `{ bar: true, form: true, mounts: 2, enabled: 2 }`; back to editing `enabled: 0` again. So
+`core` really ran in the canvas document from the editor's side, and the editing rule really held.
+
+**(c) The controls (standing rule 2).** `new Function('')` throws `EvalError` in each document from a script carrying
+its own nonce; **`eval('1')` called from the editor on the canvas `contentWindow` throws `EvalError` under the canvas's
+policy** (the new control: had the parent realm been able to compile in the child, (a)'s zero would mean nothing); and
+the recorder saw one refusal from each document (`/projects/<id>` and `/canvas`, directive `script-src`), so its zero is
+a result. Step 8's axe scan of Preview: zero violations, behind its planted `image-alt` control.
+
+**What this does NOT say.** No behaviour module exists yet, so what ran was `core` and its no-op stand-ins
+(`behaviours.ts`, FR-G7(2)); the first real module file is measured by its own category story. The PAUSED chip was not
+drawn on production — the shipped library has no held-still part that moves by itself (R-175) — and its look is the
+keyboard journey's, in CI, on controls fixture 1. T1 and T3 were not touched at Review: `core.js` is byte-identical to
+the Dev commit's, whose `run-verify-core.py` run (22 of 22 rows on both majors) stands.

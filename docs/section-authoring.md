@@ -784,11 +784,11 @@ itself** (Story 5.15, `apps/web/lib/behaviours.ts`), from its own bundle against
 | `paused` *(on the handle `core` returns)* | the mount elements the editing rule held still, in document order — what the editor's PAUSED chip reads |
 
 **`movesByItself`** *(R-175)*. Every registry row says whether the module moves **by itself**: true when it changes
-the page on a timer or as the page scrolls, with nothing pressed (`rotator`, `marquee`, `header-scroll`, `reveal`),
-false when it waits for a press or a submit (`nav-drawer`, `member-form`, `lightbox`, `tabs`, `carousel`'s arrows)
-or rewrites itself once as the page loads (`toc`, `shuffle`). A held-still mount whose module moves by itself carries
-B3a's PAUSED chip while its section is pointed at or selected, and never at rest. **A new module's row takes the
-value by that one sentence** — `registry.json`'s `about` carries it, and the value is never restated elsewhere.
+the page on a timer or as the page scrolls, with nothing pressed (a ticker, a rotating headline), false when it waits
+for a press or a submit (a phone menu, a sign-up form, a carousel's arrows) or rewrites itself once as the page loads
+(a table of contents). A held-still mount whose module moves by itself carries B3a's PAUSED chip while its section is
+pointed at or selected, and never at rest. **A new module's row takes the value by that one sentence** —
+`registry.json`'s `about` carries it, and the values live there alone: read the file, never a list of names in prose.
 A carousel's autoplay is a per-design choice a row cannot see, so an autoplaying carousel carries no chip.
 
 **The motion gate** *(FR-G4)*. `core` holds one `(prefers-reduced-motion: reduce)` query. A module whose

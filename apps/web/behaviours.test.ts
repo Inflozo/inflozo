@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readdirSync } from 'node:fs'
 import { MODULES, moduleFunctionName } from '@inflozo/library'
 import { CANVAS_MODULES, movesByItself, startBehaviours } from './lib/behaviours.ts'
+import type { ModuleContext } from '@inflozo/library/core'
 
 /* STORY 5.15 — the canvas's road to `core` (DW-136), asserted where `node --test` reaches it. `core` itself is
    `packages/library/modules/core.test.mjs`'s, on the same code path; the wiring on the real editor is the keyboard
@@ -29,7 +30,8 @@ test('R-175: movesByItself reads the declaration through the grammar and answers
    `bundle()` can carry, which is every one but `core.js` (tools/stress/build.js reads the same) — and a row whose
    function is not the file's own is the no-op stand-in `lib/behaviours.ts` carries for FR-G7(2). */
 test('every module file in packages/library/modules/ is imported into the canvas, never left to the stand-in', () => {
-  const files = readdirSync('../../packages/library/modules').filter((f) => /^[a-z][a-z0-9-]*\.js$/.test(f) && f !== 'core.js')
+  // by this file, not by the cwd: `node --test` from the repo root must still reach the directory (review)
+  const files = readdirSync(new URL('../../packages/library/modules', import.meta.url)).filter((f) => /^[a-z][a-z0-9-]*\.js$/.test(f) && f !== 'core.js')
   for (const file of files) {
     const name = file.slice(0, -'.js'.length)
     const fn = CANVAS_MODULES.find(([n]) => n === name)?.[1]
@@ -86,5 +88,32 @@ test('a module that throws as it mounts reaches report named, its own error as t
   assert.equal((told[0] as Error).cause, thrown, 'and its own error rides along untouched')
   assert.ok(!els[0]?.classes.has('js-enabled'), 'the mount that threw stays at rest')
   assert.ok(els[1]?.classes.has('js-enabled'), 'and the next one still mounts')
+  live.stop()
+})
+
+/* The other road a module's code takes: an `observe` callback, which `core` reports as thrown. It is named here too,
+   and the ctx a module is handed still reads `core`'s live `reducedMotion` through the wrapper (review). */
+test('an observe callback that throws reaches report named, and the wrapped ctx still reads core\'s own values', () => {
+  const told: unknown[] = []
+  const thrown = new Error('the callback threw')
+  const observers: ((entries: unknown[]) => void)[] = []
+  const { win, els } = page(['probe'])
+  ;(win as unknown as { IntersectionObserver: unknown }).IntersectionObserver = class {
+    constructor(cb: (entries: unknown[]) => void) { observers.push(cb) }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+  let seen: unknown
+  const probe = (name: string, fn: (el: Element, ctx: ModuleContext) => void) => [name, fn, { name, editSafe: true, animates: false, movesByItself: false }] as const
+  const live = startBehaviours(win, false, (e) => told.push(e), [probe('probe', (el, ctx) => {
+    seen = ctx.reducedMotion
+    ctx.observe(el, () => { throw thrown })
+  })])
+  assert.equal(seen, false, 'the wrapped ctx reads core\'s reducedMotion getter')
+  observers[0]?.([{ target: els[0] }])
+  assert.equal(told.length, 1)
+  assert.ok(told[0] instanceof Error && /the probe behaviour threw as the page scrolled/.test(told[0].message), 'the module is named')
+  assert.equal((told[0] as Error).cause, thrown)
   live.stop()
 })

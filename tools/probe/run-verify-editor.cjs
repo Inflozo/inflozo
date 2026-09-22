@@ -255,7 +255,7 @@ async function main() {
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, { UNIVERSALS }, DEVICE] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, { UNIVERSALS }, DEVICE, PV] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
@@ -263,6 +263,9 @@ async function main() {
       // Story 5.7's device table, its fit and the chip's words — read from the app's own module, so a size, a word or
       // a device added later joins this walk without an edit here (standing rule 4)
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/device.ts')).href),
+      // Story 5.15's words for step 91 — read HERE with the rest, so a path or type-strip failure surfaces before the
+      // throwaway accounts and the CSP session are spent (review)
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/preview.ts')).href),
     ])
     const DEVICE_DESKTOP = DEVICE.DESKTOP
     const LABELS = DEVICE.DEVICES.map((d) => d.label)
@@ -4451,7 +4454,6 @@ async function main() {
        is step 5's, after the zero is read. The SHIPPED LIBRARY HOLDS NO HELD-STILL PART THAT MOVES BY ITSELF — the pilots'
        `nav-drawer` and `member-form` both wait for a press — so no chip is drawn anywhere here (R-175), and the chip's
        own look is the keyboard journey's, in CI, on controls fixture 1. Every word is the app's own. */
-    const PV = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/preview.ts')).href)
     const chips91 = () => canvasFrame().evaluate(() => [...document.querySelectorAll('[data-inflozo-chrome]')].reduce((n, h) => n + (h.shadowRoot?.querySelectorAll('[data-chrome="paused"]').length ?? 0), 0))
     const branches91 = () => canvasFrame().evaluate(() => ({
       bar: document.querySelector('.a1-1__bar')?.classList.contains('js-enabled') ?? null,

@@ -13,7 +13,7 @@
  * Pure apart from calling `core`, so `node --test` reaches it (`behaviours.test.ts`). */
 
 import { MODULES, parseModuleDeclaration, type ModuleRow } from '@inflozo/library'
-import { core, type ModuleFn } from '@inflozo/library/core'
+import { core, type ModuleContext, type ModuleFn } from '@inflozo/library/core'
 
 /** ponytail: FR-G7(2) — no feature module has a file yet. Each is written by its first category story, and the pilots
  *  declare `nav-drawer` and `member-form` before theirs exist, so a mount with no file runs this no-op: Preview then
@@ -30,10 +30,22 @@ const FILES: Partial<Record<string, ModuleFn>> = {}
 export const CANVAS_MODULES: readonly (readonly [string, ModuleFn, ModuleRow])[] =
   MODULES.map((row) => [row.name, FILES[row.name] ?? noFileYet, row] as const)
 
-/** A mount's own throw, named: `core` hands `report` whatever a module threw, which need not say whose it is. */
+/** A module's own throw, named: `core` hands `report` whatever a module threw, which need not say whose it is. Both
+ *  roads a module's code takes are covered — the mount call, and every `observe` callback it registers (`core.js`
+ *  reports a callback's throw as it is, so the callback is wrapped here before `core` sees it). A malformed or unknown
+ *  declaration is `core`'s own sentence and already names itself. */
 const named = (name: string, fn: ModuleFn): ModuleFn => (el, ctx) => {
+  const observe: ModuleContext['observe'] = (target, callback, options) =>
+    ctx.observe(target, (entry) => {
+      try {
+        callback(entry)
+      } catch (error) {
+        throw new Error(`the ${name} behaviour threw as the page scrolled`, { cause: error })
+      }
+    }, options)
   try {
-    fn(el, ctx)
+    // `reducedMotion` is a getter on `core`'s ctx, read live: a spread would freeze it, so the wrapper is layered over
+    fn(el, Object.create(ctx, { observe: { value: observe } }))
   } catch (error) {
     throw new Error(`the ${name} behaviour threw as it mounted, so its section stays at rest`, { cause: error })
   }
