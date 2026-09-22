@@ -1,7 +1,7 @@
 ---
 title: Inflozo — Document Index
 generated: by `tools/doc-audit.py --generate` — do not hand-edit
-updated: 2026-09-21
+updated: 2026-09-22
 ---
 
 # Document index
