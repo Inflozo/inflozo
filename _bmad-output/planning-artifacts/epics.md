@@ -2096,8 +2096,13 @@ the only state in which a numbered treatment shows its full range — which the 
 **And** **page 1 and page 2 are designed separately** — **R-178** (owner, 2026-09-22, clarifying R-177): page 2
 starts as a copy of page 1 and follows it until the first change made on page 2, which makes the copy page 2's own;
 nothing done on page 2 ever changes page 1; pages 3, 4, 5… show page 2's design. On Home page 2 is `index.hbs`, the
-file Ghost serves at `/page/2/`; on a Tag or Author page the theme switches designs from page 2 on. What page 2 starts
-from on Home, and whether the header and footer can be changed there, are this story's Questions 3 and 4
+file Ghost serves at `/page/2/`; on a Tag or Author page the theme switches designs from page 2 on
+**And** **page 2 starts as an exact copy of page 1, on Home, Tag and Author alike** — **R-179** (owner, 2026-09-22):
+every section of page 1, in order, with its words and settings, after which each section of page 2 and each of its
+settings is changed on its own; page 2 is stored as its own doc (Home under `index`, Tag and Author under two new
+keys, a migration pushed first — R-99)
+**And** **the header and footer can be changed from page 2, and change everywhere** — **R-180** (owner, 2026-09-22):
+the existing site-wide prompt asks before Hide and Delete as always, and on page 2 before the first change to each
 **And** page 2 is rendered with the page's own address, so the header marks what Ghost marks
 **And** **where a page has no page 2, no page-2 preview is offered at all** — **R-176** (owner, 2026-09-22): a Tag or
 Author page whose posts fit on one page shows no page-2 control, greyed or otherwise, because Ghost itself answers
@@ -2109,10 +2114,11 @@ or later is offered
 **And** the shim supplies the page-2 context and the fixture carries enough posts for Home's page 2 to exist under the
 project's `posts_per_page`
 **And** it carries **no keyboard shortcut**, deliberately
-**And** the state matches D5d, as R-177 amends its greyed layers and R-109 its numbered pager.
+**And** the state matches D5d, as R-177 and R-178 amend its greyed layers (page 2's layers are its own, and all live)
+and R-109 its numbered pager.
 
 **FRs:** FR-D21. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5d. · **Rulings:** R-127, R-176,
-R-177, R-178. · **Owner test:** yes.
+R-177, R-178, R-179, R-180. · **Owner test:** yes. · **Schema phase:** yes (R-99), for the two archive page-2 keys.
 
 ### Story 5.17: The edit lock and the take-over choreography
 

@@ -281,6 +281,20 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       describe page 2. The spec went back to `draft`, to be re-planned once its Questions 3 (on Home, does page 2 start
       from the post grid down, as R-127 had it, or with all of page 1?) and 4 (can the site-wide header and footer be
       changed from page 2?) are ruled.
+    - ***R-179 · R-180** (owner, 2026-09-22, Story 5.16's Q3 and Q4), and the re-plan.* **R-179:** page 2 starts as an
+      EXACT copy of page 1 — every section, a Home's band above the grid included — on Home, Tag and Author alike, and
+      each section of page 2 and its settings is then changed on its own ("style" is a section's settings; the Style
+      Pack stays one per site). **R-180:** the site-wide header and footer CAN be changed from page 2 and change
+      everywhere; FR-D5's existing dialog asks before Hide and Delete as always, and on page 2 before the first change
+      to each (read as such, and stated to the owner). **As planned:** page 2 is a DOC OF ITS OWN — Home's under
+      `index` (a key the schema accepted from day one), Tag's and Author's under `tag-paged` and `author-paged`, which a
+      migration adds first, so **5.16 has a Schema phase** (R-99). Until its first change a page 2 follows page 1 as a
+      live copy stored nowhere (AD-22: only an edit materialises); the first change stores it; an undo back, or emptying
+      it, returns it to following. `pageTwoStack` replaces `indexStack` (AD-27(d)) — own doc, else exact copy, else for
+      a Home with no main feed R-127's Synthesis Default fallback, kept for 7.3. A design placeable on `home.hbs` may sit
+      on `index.hbs` (one rule in `placement.ts`), or R-179's copy of a Home holding a22/1 or a4/13 would black out
+      `read.ts`. Page 2's rows are a whole doc, so ⌘K's `invokedAt` and the pill's drag need no change, and no layer is
+      greyed on page 2.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

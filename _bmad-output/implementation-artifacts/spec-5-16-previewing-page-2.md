@@ -2,7 +2,7 @@
 title: 'Story 5.16 — Previewing page 2'
 type: 'feature'
 created: '2026-09-22'
-status: 'draft'
+status: 'ready-for-dev'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'af70bf0bd3757760c86264ce857f76ae4aa6ef80'
@@ -13,142 +13,168 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 
 Where a page lists your posts across more than one page — Home, or a Tag or Author page with enough posts — you can
 now design its page 2: select the post grid, and at the foot of its settings switch **Preview page** from **1** to
-**2**. Page 2 starts as a copy of page 1 and shows what a visitor gets at `/page/2/` — the next twelve posts and a pager
-reading **"← Newer posts · 2 / 5 · Older posts →"** — under a dark **Page 2 · Back to page 1** pill, and the first
-change you make there gives page 2 a design of its own, which pages 3, 4, 5 and on share and which never changes page 1.
-A page whose posts fit on one page offers no page 2 at all, there is deliberately no keyboard shortcut, and two details
-wait on you: what page 2 starts from, and whether the header and footer can be changed there.
-
-> **Being re-planned (2026-09-22).** The owner's clarification of Question 2 (**R-178**) makes page 2 a design of its
-> own, copied from page 1 and never changing it. The plan below still describes page 2 as page 1's own sections, and
-> it is rewritten when Questions 3 and 4 are ruled. Until then this spec is `draft`: do not build from it.
+**2**. Page 2 starts as an exact copy of page 1, showing what a visitor gets at `/page/2/` — the next twelve posts and a
+pager reading **"← Newer posts · 2 / 5 · Older posts →"** — under a dark **Page 2 · Back to page 1** pill; the first
+thing you change there gives page 2 a design of its own, which pages 3, 4, 5 and on share, and nothing you do on page 2
+changes page 1. The header and footer are the one exception, because the whole site has one of each: change them on
+page 2 and they change everywhere, once the site-wide prompt you already know has asked; a page whose posts fit on one
+page offers no page 2, and there is deliberately no keyboard shortcut.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
 ## Intent
 
-**Problem:** FR-D21 is unbuilt, and nothing on the canvas can show a pager's page-2 state.
+**Problem:** FR-D21 is unbuilt, and page 2 can be neither seen nor designed.
 
 - **The editor paints every canvas at page 1.** Every section is rendered with `feed: 'first'` (`editor.tsx:961`). A
-  pager's meaningful state — a Newer and an Older link, "2 / 5" — is never on screen, so a pagination treatment cannot
-  be designed at all.
+  pager's meaningful state — a Newer and an Older link, "2 / 5" — is never on screen.
 - **The runtime has no page 2 to hand out.** `FeedState` is `first · middle · last · empty` (`orbit-weekly.ts:211`),
-  and `middle` is `ceil(pages / 2)`, which is page 3 of the bundled feed's five.
-- **What page 2 of Home is made of has no caller.** R-127's `indexStack` (`synthesize.ts:141-145`) is the one
-  function Story 7.3's compiler and this story must share, and nothing in `apps/web` calls it.
+  and `middle` is page 3 of the bundled feed's five.
+- **Page 2 has no design of its own.** R-127 made `index.hbs` a slice of the Home doc (`indexStack`,
+  `synthesize.ts:141-145`, which nothing in `apps/web` calls), and a Tag or Author page has one design for every page.
+  The owner's rulings make page 2 a design of its own on all three — an exact copy of page 1 until changed, never
+  changing page 1, and shared by every later page (R-178, R-179) — and nothing stores, shows or edits one.
 - **The page's address is wrong past page 1 and on every archive.** `templateContext` answers `currentUrl: '/'` in
   every branch and `paginationBase: '/'` on archives (`orbit-weekly.ts:232`, `:260`, DW-218), and the site-wide
-  header is rendered at `default.hbs`, which always gets `/`. So Rail marks Home as the current page where Ghost marks
-  nothing.
+  header, rendered at `default.hbs`, always gets `/`. So Rail marks Home as the current page where Ghost marks nothing.
 
 **Approach:**
 
-- **Page 2 is a canvas state**, beside the mode, the device, View as and Preview: session state, never in the URL,
-  never stored, never an edit, and back to page 1 on a change of canvas.
-- **The stack knows the page.** On Home, page 2's own rows are `indexStack(home)` (R-127), rendered at `index.hbs`,
-  the file Ghost serves at `/page/2/`. On Tag and Author they are the page's own rows. So every reader of the stack —
-  picks, marks, restamps, the panel, every edit — agrees with what is painted, and **page 2 is edited exactly as page 1
-  is (R-177)**.
+- **Page 2 is its own doc, one per paginated canvas.** Home's is stored under `index` — the file Ghost serves at
+  `/page/N/`, a key the schema has accepted since day one — and Tag's and Author's under two new keys, `tag-paged` and
+  `author-paged`. A migration adds those two and is pushed first, on its own: **this story has a Schema phase** (R-99).
+- **Until its first change, page 2 follows page 1** as a live, exact copy that is stored nowhere (R-179). The first
+  change made on page 2 stores that copy with the change, and page 2 is its own from then on (R-178, and AD-22's rule
+  that only an edit materialises). Undoing that change, or removing every section from page 2, returns it to following
+  page 1.
+- **Every change made on page 2 lands in page 2's doc**, through page 1's own editing code (R-177), and never in page
+  1's.
+- **Viewing page 2 is a canvas state** beside the mode, the device, View as and Preview: session state, never in the
+  URL, and back to page 1 on a change of canvas. The stack knows the page, so every reader of it agrees with what is
+  painted.
+- **One implementation of what page 2 is** (AD-27(d)): `pageTwoStack` replaces `indexStack` beside `synthesize` —
+  page 2's own doc if it has one, otherwise an exact copy of page 1. Story 7.3's compiler calls the same function.
 - **`templateContext` gains page 2 (`'second'`) and the page's true address**, both read in Ghost's own source on both
-  majors. The editor hands that one address to every section of the page, the site-wide header included. This closes
-  DW-218.
-- **It is offered only where page 2 exists (R-176).** The entry is D5d's **Preview page 1 | 2** row at the foot of the
-  page's main feed's panel. The main feed is the section `isMainFeed` marks: synthesis sets it today, and Story 5.19's
-  lifecycle will set it on a placed feed. Where the page has no page 2 the row is absent, never greyed.
-- **D5d's ink pill** ("Page 2" · "Back to page 1") sits at the top of the canvas ground.
-- **Page 2 stands for every page after it (R-177):** no page 3 or later is offered.
-- **No key.** No migration, so there is **no Schema phase**.
+  majors, and the editor hands that address to every section. This closes DW-218.
+- **It is offered where page 2 exists (R-176):** D5d's **Preview page 1 | 2** row on the canvas's main feed's panel,
+  when its posts run past one page.
+- **The header and footer stay one for the whole site** (FR-D5). Changing one from page 2 changes it everywhere, page
+  1 included, and the first such change to each asks first in the existing site-wide dialog (R-180).
+- **D5d's ink pill** at the top of the ground. **No key.** Pages 3, 4, 5… show page 2's design, and none is previewed
+  (R-177).
 
 ## Boundaries & Constraints
 
 **Always:**
 
-- **One implementation of what page 2 is made of** (R-127, AD-27(d)). Home's page 2 is exactly
-  `indexStack(docs.home, library).instances`, never re-derived and never filtered here. DW-194's `compileTarget`
-  filter, when Story 7.3 puts it inside `indexStack`, reaches the canvas with no change here.
-- **Page 2 exists only where Ghost serves one, and is offered only there (R-176,** owner, 2026-09-22, read in source on
-  both majors — Design Notes):
-  - Home's page 2 is `index.hbs`.
-  - An archive's page 2 is the same `tag.hbs` or `author.hbs`, with that archive's own posts 13 to 24.
-  - Past the last page Ghost answers 404. So a page whose posts fit on one page has no page 2: **the row is absent —
-    no greyed value and no sentence** — and nothing is invented (FR-H3: "no post is invented").
-- **Offered only on the canvas's own shown main feed, and only when its list has a second page.** The main feed is the
-  first instance of the canvas's own doc with `isMainFeed`, which is also the one `indexStack` takes.
-  - `isMainFeed` is read here, never written (Story 5.19 owns its lifecycle).
-  - A hidden main feed shows no list, so it offers no page 2 either (R-176's rule).
-  - So `indexStack`'s fallback (rows no doc holds, such as `auto-index-1`) is never painted, and every instance on
-    page 2 is one a doc holds.
-- **The page's address is Ghost's, computed in one place and handed to every section of the page:**
+- **Nothing done on page 2 changes page 1** (R-178). No gesture made on page 2 writes page 1's doc. The one exception is
+  a site-wide section — the header, the footer — which is one shared instance on every page (FR-D5) and asks first
+  (R-180).
+- **Page 2 starts as an exact copy of page 1** (R-179): every section of page 1, in order, with its words and settings,
+  on Home as on Tag and Author.
+- **Page 2 follows page 1 until the first change made on page 2.**
+  - While it follows, nothing is stored for it, and a change on page 1 shows on page 2 as well.
+  - The first change on page 2 stores page 2's own doc: the copy, with that change.
+  - From then on, page 1 and page 2 are separate.
+  - Undoing that first change, or removing every section from page 2, returns page 2 to following page 1 (AD-22's
+    round trip).
+- **Page 2 is edited exactly as page 1 is** (R-177). Every section it shows can be pointed at, selected, edited on the
+  canvas, changed in its panel (Content, Layout, Style, Data), duplicated, deleted, moved, re-rolled or added to — on
+  the canvas, in Layers and by key — and every change lands in page 2's doc.
+- **Pages 3, 4, 5… show page 2's design**, with their own posts. None is previewed (R-177). Links on the canvas never
+  navigate, so "Older posts" does not open page 3.
+- **Where page 2 is stored.** Home under `index`, Tag under `tag-paged`, Author under `author-paged`: one table naming
+  the three, in `lib/editor.ts`. `/index` stays a 404, and the Template switcher gains no row (R-127's "no canvas"
+  stands). Page 2 is reached from the page-2 switch.
+- **One implementation** (AD-27(d)): `pageTwoStack(file, pageOne, pageTwo, library)`.
+  - Page 2's own doc, where it has one.
+  - Otherwise an exact copy of page 1.
+  - For a Home with no main feed, which offers no page 2 in the editor, the Synthesis Default stack. That is R-127's
+    fallback, kept for Story 7.3, so `/page/2/` of a landing-page Home still lists posts.
+- **A design that can go on the Home page can go on page 2.** Ghost hands `home.hbs` and `index.hbs` the same posts
+  and pagination. So one rule in `placement.ts` answers `read.ts`'s refusal, synthesis's drop and the Section Picker
+  alike, and copying page 1 never refuses a section.
+- **Page 2 exists only where Ghost serves one, and is offered only there (R-176).** Past the last page Ghost answers
+  404. So a page whose posts fit on one page has no page 2 and no row, and nothing is invented (FR-H3).
+- **The entry is the canvas's main feed.** D5d's row sits on the panel of page 1's first `isMainFeed` section, shown or
+  hidden, and on its copy on page 2, where it is the way back. `isMainFeed` is read here, never written (Story 5.19).
+- **The page's address is Ghost's**, computed in one place and handed to every section of the page:
   - `/` on Home page 1 and `/page/2/` on its page 2
   - `/tag/<slug>/` and `/tag/<slug>/page/2/` (and `/author/…`) on archives, which is also the pager's base
   - So `{{navigation}}` marks what Ghost marks: `nav-current` only on an exact match.
-  - Post, Page and 404 keep today's `/` (a new DW below).
-- **Session state.**
-  - Not in the URL: `/projects/<id>` is still Home, and `/index` stays a 404 (R-127).
-  - Never stored and never journalled.
-  - View as, the mode, the device and the preview subject all carry into it.
-  - A change of canvas returns to page 1.
-- **Page 2 is edited exactly as page 1 is (R-177,** owner, 2026-09-22):
-  - Every section page 2 shows can be pointed at, selected, edited on the canvas, changed in its panel, duplicated,
-    deleted, moved, re-rolled and added after — on the canvas, in Layers and by key — and the result is painted on
-    page 2.
-  - A change made there is made to that section, so it is the same on pages 3, 4, 5… and on page 1, which shows the
-    same sections (R-127 on Home; one template on every page of an archive).
-  - A section page 2 leaves out — on Home, anything above the main feed — is greyed in Layers and cannot be picked,
-    dragged or opened.
-  - No page 3 or later is offered. Links on the canvas never navigate, so the pager's Older link does not open page 3.
-- **A placement lands where page 2 shows it.** Every insert position is the invoking section's own place in its doc,
-  never a count of the stack. On Home's page 2 nothing placed from page 2 lands above the main feed: a placement from
-  the gap above it lands directly below it, the first place page 2 has (R-127).
-- **When page 2 stops existing, the canvas returns to page 1 before it paints, and `#editor-said` says why.** That
-  happens when the main feed is removed or hidden (by any change, undo and redo included), or when the preview subject
-  changes to a one-page archive.
+  - Post, Page and 404 keep today's `/` (a new DW).
+- **Site-wide sections on page 2 (R-180).**
+  - They can be changed there, and the change reaches every page.
+  - The first change to each while on page 2 asks first, in FR-D5's existing dialog, adapted. That covers a control,
+    a word, its design or its order.
+  - The dialog reads "Change {name} everywhere?" and opens on Cancel. **Change it everywhere** applies the change;
+    **Cancel** changes nothing.
+  - That section does not ask again until page 2 is left.
+  - Hide and Delete keep the dialog they already have, on every page. Nothing new asks on page 1.
+- **Viewing page 2 is session state.**
+  - It is not in the URL and never stored, and a canvas change returns to page 1.
+  - View as, the mode, the device and the preview subject carry into it.
+  - The selection carries across the switch to the same section on the other page, where it exists.
+- **When page 2 stops being offered, the canvas returns to page 1, and `#editor-said` says why.** That happens when
+  the preview subject changes to a one-page archive, or when page 1 loses its main feed. Page 2's own design, where it
+  has one, is kept.
+- **Page 2 keeps its own "looked at" record** (R-167). A change to page 2 runs it out, and so does a change to page 1
+  while page 2 follows it.
 - **No key** (FR-D21, FR-D11, `EXPERIENCE.md:392-393`): no `KEYMAP` row, and nothing on the `?` card.
-- **One name each** (R-170), `EXPERIENCE.md:270`'s canonical strings, written once in `lib/page-two.ts`:
-  - **Page 2** on the pill and in the announcement
-  - **Back to page 1** on the pill's button and in its announcement
+- **One name each** (R-170), written once in `lib/page-two.ts`:
+  - **Page 2** and **Back to page 1** (`EXPERIENCE.md:270`'s canonical strings)
   - **Preview page** on the row
-- **The pill never covers the page card** on any device (R-138's invariant, extended). The ground's top padding grows
-  on page 2 to hold it.
-- **Tokens only** in `.tsx` (`tokens.test.ts:125`). Every glyph is read from the frame (R-92).
+  - page 2's marker, "Copy of page 1 — edit anything to make page 2 its own"
+  - the site-wide ask's words
+- **The pill never covers the page card** on any device (R-138's invariant, extended). **Tokens only** in `.tsx`
+  (`tokens.test.ts:125`). Every glyph is read from the frame (R-92).
 
 **Ask First:**
 
-- **Any change under `packages/` beyond** `orbit-weekly.ts`'s `'second'`, its page-count query and the page addresses,
-  with their tests. None of those moves a rendered byte where no page 2 or subject is asked for.
-- **Any change to** `indexStack`, `synthesize`, or anything that writes `isMainFeed` (DW-194 is Story 5.19's and 7.3's).
-- **Any migration.**
+- **Any change under `packages/` beyond** the ones this story names, each with its tests:
+  - `orbit-weekly.ts`: `'second'`, `feedPages` and the page addresses
+  - `synthesize.ts`: `pageTwoStack` replacing `indexStack`
+  - `placement.ts`: its one home-and-index rule
+- **Any migration beyond** the two keys on `template_key_shape`.
 - **Any write to the owner's own projects.**
+- **Narrowing undo to page 2.** Since Story 5.8 the journal is one list for the whole project, so ⌘Z on page 2 can take
+  back a change made on page 1 just before.
 
 **Never:**
 
-- **A keyboard shortcut** for page 2.
-- **A preview of page 3 or later** (R-177): page 2 stands for all of them.
-- **A greyed page-2 control, or an invented page, post or page count** (R-176, FR-H3). No deeper `pagination` on the
-  canvas, and no page-1 rows relabelled.
-- **A row of numbered page links** (R-109). D5d's drawn `1 2 3 … 7` row is superseded, and a17/1's pager reads
-  "2 / 5".
+- **A change made on page 2 written into page 1's doc**, outside R-180's site-wide sections.
+- **A keyboard shortcut**, a page 3 or later preview, a greyed page-2 control, an invented page, post or page count,
+  or a row of numbered page links (R-109).
+- **`/index` as a URL or a switcher row.**
+- **A Style Pack per page.** The Style Pack is one for the whole site (Epic 6). "Style" in R-179 is each section's own
+  settings.
+- **Page 2 on `/pilots`, `/controls`, the Section Picker's cards or the design ring's tiles.**
 - **Other stories' surfaces:** designating a main feed, the Pagination style control, the MAIN FEED marker (Story
   5.19, and Epic 10's A34), and Theme Settings' posts per page (Epic 7).
-- **Page 2 on `/pilots`, `/controls`, the Section Picker's cards or the design ring's tiles.** They stay on page 1.
 
 ## I/O & Edge-Case Matrix
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Offered | Select the main feed of a page with a page 2: the Post grid of an untouched Home, of a Home that kept its auto-generated grid, or of the Field Notes or Reporting tag page | Its panel ends, above "Reset this design", with D5d's row: **Preview page**, **1 · 2**, 1 on | N/A |
-| Not offered | Any other section; a Post, Page or 404 canvas; a Home whose grid carries no `isMainFeed` (the owner's Pilot sections); a hidden main feed; any Author page, and every other tag, whose posts fit on one page (R-176) | No row at all | N/A |
-| Enter, Home | **2** on the row | One repaint. The page's own rows are `indexStack(home)`, rendered at `index.hbs` with page 2's context: every section above the feed is gone; the grid shows posts 13–24, starting "The paragraph is the unit"; its pager reads "← Newer posts · 2 / 5 · Older posts →"; Rail's Home link carries no `nav-current`. D5d's pill sits at the top of the ground, and `#editor-said` says "Page 2." | N/A |
-| Enter, archive with two pages | Tag canvas, subject Field Notes (14 posts) | The archive's real page 2: its 2 posts, the pager reading "← Newer posts · 2 / 2", and no Older link | N/A |
-| Editing on page 2 (R-177) | Point at, select, type into, restyle, duplicate, delete, move or re-roll any section page 2 shows — on the canvas, in Layers or by key | Exactly as on page 1, painted on page 2. Back on page 1 the same section carries the change. | N/A |
-| Left out of page 2 | Home's page 2, a section above the main feed | Its Layers row is greyed (`aria-disabled`): no select, grip, ⌥↑↓, Space or ⋯. Every other row works as on page 1. | N/A |
-| Adding on page 2 | "+ Add section" under the grid, or ⌘K with the grid selected | The picker places the new section directly below the grid, on page 2 | N/A |
-| Adding above the feed | Home's page 2: "+ Add section" under the site header, or ⌘K with the header selected | The new section lands directly below the grid, the first place page 2 has (R-127) | N/A |
-| No page 3 | Press the pager's "Older posts →" on page 2 | Nothing navigates, as with every canvas link; there is no page 3 to preview (R-177) | N/A |
-| Leave | **Back to page 1** on the pill, or **1** on the row | One repaint to page 1. From the pill, focus goes to the canvas; from the row, it stays on the row. `#editor-said` says "Back to page 1." | N/A |
-| Page 2 disappears | While on page 2: the main feed is deleted or hidden (directly, or by an undo or redo), or the subject changes to a one-page archive | Page 1 at once. `#editor-said` says "Back to page 1:" with the reason. | Never a paint of a page that does not exist |
+| Offered | Select the main feed of a page with a page 2: an untouched Home, a Home that kept its auto-generated grid, or the Field Notes or Reporting tag page | Its panel ends, above "Reset this design", with **Preview page · 1 · 2**, 1 on | N/A |
+| Not offered | Any other section; a Post, Page or 404 canvas; a Home with no `isMainFeed` (the owner's Pilot sections); any Author page, and every other tag (R-176) | No row | N/A |
+| Enter, following | Ghost 5 Project's Home: **2** | One repaint. Page 2 is an exact copy of page 1 — the newsletter band, then the grid — rendered at `index.hbs` with page 2's context: posts 13–24 from "The paragraph is the unit", "← Newer posts · 2 / 5 · Older posts →", and Rail's Home link without `nav-current`. D5d's pill; Layers lists page 2's rows under "Copy of page 1 — edit anything to make page 2 its own"; `#editor-said` says "Page 2." Nothing is stored. | N/A |
+| The first change | On page 2, delete the newsletter band | Page 2 stores its own design without the band, and the marker goes. Page 1 still has the band. | N/A |
+| Editing page 2 | Any change page 1 allows, to any section page 2 shows | Lands in page 2's doc. Page 1's doc is untouched. | N/A |
+| Page 1, while page 2 follows | Change page 1 before page 2 has a design of its own | Page 2 shows the change | N/A |
+| Page 1, once page 2 is its own | Change page 1 | Page 2 is unchanged | N/A |
+| Undo the first change | ⌘Z right after page 2's first change | Page 2 follows page 1 again, the marker returns, and nothing stays stored for it | N/A |
+| Empty page 2 | Remove every section from page 2 | Page 2 follows page 1 again (AD-22) | N/A |
+| A site-wide section on page 2 | The first change to the header while on page 2 | The site-wide dialog asks "Change Headers — Rail everywhere?". **Change it everywhere** applies it on every page, page 1 included; **Cancel** changes nothing. The header's later changes on this visit ask nothing. | N/A |
+| Hide or delete it on page 2 | Hide or Delete on a site-wide section | FR-D5's existing dialog, as on page 1 | N/A |
+| An archive with two pages | Tag canvas, subject Field Notes | Page 2 shows its 2 posts, "← Newer posts · 2 / 2" and no Older link. Once changed it is its own design, which every tag's page 2 and later share. Page 1 of every tag is untouched. | N/A |
+| One page | Author canvas, Tomas Lindqvist (6 posts) | No row (R-176) | N/A |
+| No page 3 | "Older posts →" on page 2 | Nothing navigates | N/A |
+| Leave | **Back to page 1** on the pill, or **1** on the row | Page 1, with the selection carried to the same section. Focus goes to the canvas from the pill and stays on the row from the row. `#editor-said` says "Back to page 1." | N/A |
+| Page 2 stops being offered | While on page 2, the subject changes to a one-page archive, or page 1 loses its main feed (an undo) | Page 1 at once, and `#editor-said` says "Back to page 1:" with the reason. Page 2's own design, where it has one, is kept. | Never a paint of a page that does not exist |
 | Canvas switch | Template to another canvas while on page 2 | It opens on page 1, and so does this canvas on the way back | N/A |
-| Preview | P on page 2 | Preview shows page 2 with no pill; Esc or P return to page 2 with it | N/A |
+| Reload | After page 2 has a design of its own | It is still there (a stored doc), and the editor opens on page 1 | N/A |
+| Preview | P on page 2 | Preview shows page 2 with no pill; Esc or P return to page 2 | N/A |
 | No key | Every printable key, Space and Enter, with the shell focused | Nothing changes the page. The `?` card lists no page key. | N/A |
 | The control | `/pilots`, `check-snapshots`, the render matrix, the picker's cards, the ring's tiles | Unchanged. They never ask for `'second'` or pass an address. | N/A |
 
@@ -170,22 +196,49 @@ wait on you: what page 2 starts from, and whether the header and footer can be c
 - **Field Notes has 14 posts, so it has 2 pages**; its page 2 is "How long a page should take to load" and "What we
   learned from four hundred renewals". Reporting has 13 (2 pages). Every other tag, and every one of the 16 writers
   (6 or 7 posts each), fits on one page, so by R-176 none of them offers page 2.
-- `orbit-weekly.test.ts`:
-  - `:42-52` is FR-H3 rule 1: a middle page exists.
-  - `:396-415` is 5.13's control: no subject equals `undefined` or `null`.
-  - `:430-446` is the fixture tag's size.
-  - `:448-474` is the archive's own pagination.
+- `orbit-weekly.test.ts`: `:42-52` (FR-H3 rule 1), `:396-415` (5.13's control), `:430-446` (the fixture tag's size) and
+  `:448-474` (the archive's own pagination).
 
 **What page 2 is made of** (`packages/section-runtime/src/synthesize.ts`):
 
-- `indexStack` `:141-145`: the slice from the first `isMainFeed` instance, or `synthesize('index.hbs')` when there is
-  none.
-- `FEED` `:59`: a17/1 "Post grid", `isMainFeed: true`, on home, index, tag and author (`:63-84`). The library holds no
+- `indexStack` `:141-145` slices the Home doc from its first `isMainFeed` instance, or falls back to
+  `synthesize('index.hbs')`. It is exported at `src/index.ts:122` and tested at `synthesize.test.ts:119-161` and, against
+  the real library, at `apps/web/canvas-switch.test.ts:150-159`. It is named in comments at `synthesize.ts:4, :62`,
+  `doc-schema.ts:52` and `apps/web/lib/editor.ts:7`. **R-179 replaces it**; every one of those moves.
+- `FEED` `:59` is a17/1 "Post grid", `isMainFeed: true`, on home, index, tag and author (`:63-84`). The library holds no
   a29, so an untouched Tag or Author page is that one grid.
-- Tested in `synthesize.test.ts:119-161` and against the real library in `apps/web/canvas-switch.test.ts:150-159`.
-- DW-194 (open, owners 5.19 and 7.3) already records that `indexStack` never checks `compileTarget`, takes the first
-  of several flags, and counts a hidden feed. `duplicateSection` copies the flag, so ⌘D on the main feed on page 2 is
-  that case too.
+- `synthesize`'s drop rule is `:111`: `compileTarget` must include the file.
+- DW-194 (open, owners 5.19 and 7.3) records `indexStack`'s `compileTarget` blind spot, several flags, and a hidden
+  feed. R-179's copy and the home-and-index rule answer the first. `duplicateSection` still copies the flag.
+
+**Storage and the schema:**
+
+- `supabase/migrations/20260904120000_complete_schema.sql:247-254`: `template_key` has accepted `index` since day one.
+  `:262-269` is the same constraint on `project_template_prefs`.
+- `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql:37-45` is the last reshaping of
+  `template_key_shape` on both tables, and the pattern to copy:
+  - idempotent `drop … if exists` then `add`
+  - strictly wider, so added VALID
+  - applied by hand through `SUPABASE_DB_POOLER_URL` (R-99)
+- `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` holds the constraint at
+  `:267-269` and `:282-284`, with the mirror note at `:1729-1730`. `supabase/tests/run-rls-gate.sh:98-102` diffs the
+  database the migrations build against this file, so the two move together.
+- `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts:38`: `TEMPLATE_KEY`, word for word with the constraint.
+- `…/projects/[id]/(editor)/read.ts`:
+  - `fileOf` `:69-70`: a key with no `.hbs` of its own throws for the whole editor until its writer extends the map.
+  - The stored-doc refusal `:144-170`: a design whose `compileTarget` lacks the key's file throws. a22/1 and a4/13 do
+    not list `index.hbs`.
+  - Synthesis and the untouched set `:195-205`, and the viewed record `:246`.
+- `…/projects/[id]/(editor)/actions.ts:41` (the subject) and `:98` (the viewed record) refuse any key
+  `canvasOfTemplateKey` does not know.
+- `apps/web/lib/editor.ts`: `canvasOfTemplateKey` and `templateKeyOf` `:73-79`, `canvasStack` `:127-130`.
+- `apps/web/lib/round-trip.ts:24-39`, `committed()`: the first edit materialises, and the last section off gives the
+  default back. It is keyed on `auto` (a set of canvases) and `stacks` (static defaults). Page 2's "default" is instead
+  a live copy of page 1.
+- `apps/web/lib/journal.ts`: one list for the whole project. An entry names its `docKey`, and `undo` takes the head
+  wherever it is (`:109-119`).
+- `packages/library/src/placement.ts:118-124`: `offeredOn` checks `compileTarget.includes(file)`.
+  `vocabulary.ts:128-130` is `PAGINATED_TARGETS`.
 
 **The pager and the address on the canvas:**
 
@@ -195,14 +248,13 @@ wait on you: what page 2 starts from, and whether the header and footer can be c
     no page.
 - `packages/ghost-shim/src/index.ts`:
   - `navigationItems` `:389-406` marks an item current only when `url === currentUrl` (`:395`).
-  - `paginationContext` `:422-435` and `pageUrl` `:440-444`.
+  - `paginationContext` `:422-435`, `pageUrl` `:440-444`.
   - The page-2 context is recorded on both majors: `packages/ghost-shim/fixtures/ghost{5,6}/index-page-2.json`, read
     by `contract.test.ts:538-546, 803-820`.
 - `packages/library/designs/a17/1/`:
   - `index.html:37-41` is the only built pager (`data-pagination="prev|numbers|next"`, "Newer posts" and "Older
     posts" from the catalog).
   - `design.json:4-5`: `bindingContext ["posts"]`, and a `compileTarget` that includes `index.hbs`.
-  - a22/1 and a4/13 do not list `index.hbs` (DW-194's case).
 - `a1/1/index.html:10` renders `{{navigation}}`, and `style.css:29-30` draws `.nav-current` as a 2px accent underline.
   So the address is **visible**.
 
@@ -213,82 +265,82 @@ picker's cards (`section-preview.tsx:133-142`) and the ring's tiles (`design-pic
 
 **The editor** (`apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`):
 
-- **State.** `mode`, `device`, `viewAs` and `preview` are at `:328`, `:333`, `:339` and `:344`, each commented as
-  session state. `latest` (`:510-511`) lists its fields twice, and a new one goes on both lines.
-  - `chooseVisitor` (`:878-884`) is the shape to copy: write `latest`, set the state, `paint()`, then `setSaid`.
-  - `enterPreview` and `leavePreview` are `:891-905`.
-- **The stack.** `stackOf` (`:272-276`) stamps each canvas row with `CANVASES[key].file`, through `canvasStack`
-  (`lib/editor.ts:127-130`). It has four call sites, and all must pass the page: `:317` (render), `:550` (`commit`),
-  `:634` (`restore`) and `:1517` (hydrate).
+- **State.** `mode`, `device`, `viewAs` and `preview` are at `:328`, `:333`, `:339` and `:344`. `latest` (`:510-511`)
+  lists its fields twice. `chooseVisitor` (`:878-884`) is the shape to copy: write `latest`, set the state, `paint()`,
+  then `setSaid`.
+- **The docs.** `docs` (`:313`) is keyed by `template_key`; `auto` (`:316`) is the untouched set; `stacks` is the
+  `defaults` prop (`:291`).
+- **The canvas's own doc key.** `templateKeyOf(key)` means "the doc this canvas edits" at nine places:
+  - `:275` (`stackOf`) and `:322`
+  - `:554` and `:638` (R-167's record)
+  - `:1862` (Remix) and `:2168` (Remix's count)
+  - `:1935` (a placement)
+  - `:2149` (View as's record)
+  - `:2202` (Layers' page rows)
+
+  It means the canvas's **subject** at `:365`, `:851`, `:865` and `:1430`. On page 2 the first group reads page 2's key,
+  and the subject stays the canvas's.
+- **The stack.** `stackOf` (`:272-276`) has four call sites: `:317`, `:550` (`commit`), `:634` (`restore`) and `:1517`
+  (hydrate).
   - `roots` is index-aligned with the last painted stack (`:451-452`, `:973`).
-  - `pickAt` (`:992-996`), `mark` (`:775-793`), `restampAll` (`:805-814`), `rootOf` (`:1617-1620`), `chosen` and
-    `pointed` (`:1644-1645`), and the Sidebar's fast path (`:2052-2054`) all read it. **Because the page enters here,
-    every one of them — and so every edit — is right on page 2 with no change of its own (R-177).**
-- **Paint** (`:923-989`). The call at `:961` passes `feed: 'first'` and `subject: now.subject`.
-  `frame.current.dataset.painted = now.key` at `:985` is what the deployed walk waits on (`run-verify-editor.cjs:309`),
-  and a same-canvas repaint does not change it.
-- **The canvas change** is the `[key]` effect (`:1409-1416`). The mode, device, View as and Preview survive it.
-- **Positions.**
-  - Moves are already by identity. Layers passes each row's own doc index (`LayerRow.at`, `layers.tsx:71-72`); the
-    pill's grip starts from the instance's doc index and lands through `screenRows` (`:1065-1077`), which maps the
-    doc's rows by identity and gives a row that is not on screen zero height.
-  - **Inserts are not.** `invokedAt` (`lib/picker.ts:105-109`) counts the canvas's own rows in the stack at or before
-    the invoking one. It is reached from the pill's "+ Add section" (`:2401`), ⌘K (`run('add')`, `:1181`) and the
-    placement itself (`:1952`). On Home's page 2 the stack starts at the main feed, so that count is short by every
-    row page 2 leaves out. Its tests are `apps/web/picker.test.ts:140-152`.
+  - `pickAt`, `mark`, `restampAll`, `rootOf`, `chosen` and `pointed`, and the Sidebar's fast path all read it.
+  - Page 2's rows are a whole doc (its own, or the copy), so ⌘K's `invokedAt` (`lib/picker.ts:105-109`) and the
+    pill's drag need no change.
+- **`commit()`** (`:542-556`) is the one door every change passes. It is where R-180's ask sits, and where a following
+  page 2 is re-derived after a change to page 1. `restore()` is `:632-640`.
+- **Paint** (`:923-989`). The call at `:961` passes `feed: 'first'`. `frame.current.dataset.painted = now.key` at
+  `:985` is what the deployed walk waits on (`run-verify-editor.cjs:309`), and a same-canvas repaint does not change it.
+- **The canvas change** is the `[key]` effect (`:1409-1416`).
+- **FR-D5's dialog.** `ask`, `askFirst`, `onRemove` and `onToggleHidden` are `:1873-1905`. The dialog itself is
+  `:2504-2535` ("This section is site-wide: it is one shared thing that appears on every template of your site, so …").
+  Its count is `templatesOpen` (`round-trip.ts:16-17`). `SITE_WIDE_WORDS` is `lib/picker.ts:93`.
 - **The stage** (`:2237-2412`):
   - Class `px-7 py-8` at `:2268` (R-138, R-139); the card is at `:2275-2279`, and the fit is `fitFor(size, device)`
-    (`:497`, `lib/device.ts:40-41`) over the stage's content box (`:1590-1595`), so padding shrinks it.
+    over the stage's content box (`:1590-1595`), so padding shrinks it.
   - `ViewportChip` is top-left, 4px/4px (`device-switch.tsx:100`). `SourcePill` is bottom-centre, 24px
-    (`source-pill.tsx:84-101`).
-  - Both come after the card and sit inside `<div hidden={preview} className="contents">` (`:2363-2379`), because
-    the card must stay the ground's `firstElementChild`.
-- **The panel.** `Sidebar` is mounted at `:2457-2485`. R-124's `visibility` row is the precedent for a row the editor
-  injects; `onClearDark` is the precedent for a plain callback that is not an edit. `isMainFeed` is written only at
-  `:1948` (a placement, always `false`) and read nowhere.
-- **Layers** is mounted at `:2201`, fed by `rowsOf` (`:1725-1732`) in doc order.
+    (`source-pill.tsx:84-101`). Both come after the card, inside `<div hidden={preview} className="contents">`
+    (`:2363-2379`).
+- **The panel.** `Sidebar` is mounted at `:2457-2485`. `onClearDark` is the precedent for a plain callback that is not
+  an edit. `isMainFeed` is written only at `:1948` (a placement, always `false`).
+- **Layers** is mounted at `:2201`, fed by `rowsOf` (`:1725-1732`).
+- **D5a's marker** is `components/editor/auto-generated.tsx`: its one sentence as `WORDS`, and the row. Page 2's marker
+  is the same row with its own sentence.
 
 **The panels and the Kit:**
 
 - `apps/web/components/controls/sidebar.tsx`:
-  - Props `:79-97`. Every group is an accordion that starts closed (`:220`, `:394-409`), so a row inside a group
-    would be hidden.
-  - The always-visible slot is between the groups (`:412`) and the foot (`:414`: "Reset this design" `:415-427`,
-    "Clear dark overrides" `:440-462`).
+  - Props `:79-97`. The groups start closed (`:220`, `:394-409`).
+  - The always-visible slot is between the groups (`:412`) and the foot (`:414`, "Reset this design" at `:415-427`).
 - `apps/web/components/kit/segmented.tsx`:
   - API `:50-70`; the radio group and `radioKeys`/`tabStop` `:27-48`, `:85-111`.
-  - The label always sits above the track, the items are `flex-1` at 11.5px, and the current one carries `shadow-sm`.
-  - `:7` says "NAMED VALUES ONLY, never numbers (Appendix C)".
-- `apps/web/components/controls/layers.tsx`: `LayerRow` `:65-76`, `LayersProps` `:83-114`, the row keys (select,
-  ⌥↑↓, Space) `:201-223`, `drawRow` `:227+`. `kit/layers-row.tsx:28-50`.
-- `apps/web/components/kit/icons.tsx`: `ChevronLeft` (`:85-89`) is D5d's `:394` chevron exactly. D5d's page glyph
-  (`:390`) is not in the Kit.
-- `apps/web/components/kit/canvas-pill.tsx:10-37`: `role="toolbar"`, `gap-px`, `shadow-lg`, icon-only buttons, used
-  only on `/kit`. `preview-toggle.tsx:56` (B3b) is the precedent for drawing an ink pill in its own component with
-  `shadow-modal`.
+  - The label sits above, the items are `flex-1` at 11.5px, and `:7` says "NAMED VALUES ONLY, never numbers
+    (Appendix C)".
+- `apps/web/components/kit/icons.tsx`: `ChevronLeft` (`:85-89`) is D5d's `:394` chevron. D5d's page glyph (`:390`) is
+  not in the Kit.
+- `apps/web/components/kit/canvas-pill.tsx:10-37` is used only on `/kit`. `preview-toggle.tsx:56` (B3b) is the
+  precedent for an ink pill in its own component with `shadow-modal`.
 - `apps/web/app/globals.css`: `ink` `:35`, `ink-soft` `:38`, `ink-faint` `:40`, `paper-sunk` `:33`, `rounded-thumb`
-  (10px) `:91`, `shadow-modal` `:102`.
+  `:91`, `shadow-modal` `:102`.
 
 **The key map** (`apps/web/lib/keymap.ts`): `KEYMAP` `:66-121`. `keymap.test.ts:147-162` requires the only keyless live
-row to be `deselect`, so no row is added for page 2, and no key is filtered on page 2 (R-177).
+row to be `deselect`, so no row is added, and no key is filtered on page 2 (R-177).
 
 **The harness and the walks:**
 
 - `apps/web/app/(app)/app/harness/editor/page.tsx`:
   - Its Home is `[a17/1, a22/1, a4/13, controls/1]` (`:78-83`), and nothing carries `isMainFeed` (`:51-59`).
   - `synthesized: []` (`:103-108`).
-  - Tag and Author are unreachable there (authed routes answer 500 without Supabase).
+  - Tag and Author are unreachable there.
 - `tools/keyboard/journey.spec.mjs`:
   - `open` `:43-51`; the canvas is read through `iframe[title$="canvas"]`.
-  - The UX-DR9 Tab budget, counted off the page, is `:191-217`.
-  - The "no key binds it" pattern is `:549-572`.
-  - Story 5.15's journeys are `:1291-1674`.
+  - The Tab budget is counted off the page (`:191-217`), and the no-key pattern is `:549-572`.
   - `KEYBOARD ONLY BELOW` is enforced at `:150-159`.
 - `tools/probe/run-verify-editor.cjs`:
-  - `check` `:176`; `painted` `:309`; step 4's `/pilots` comparison (Home and Post) `:468-500`.
-  - Step 6's `index` 404 `:4764-4769`; step 38 returns Home to its default stack `:1864-1878`.
-  - Step 89 derives the Tag rows from `templateContext` `:4062-4074`, and is the pattern for page 2's.
-  - Step 91 is the last; **step 92** is new. The seeded Home carries no `isMainFeed` (`seed-editor-project.mjs:29-33`).
+  - `check` `:176`; `painted` `:309`; step 4 (Home and Post against `/pilots`) `:468-500`.
+  - Step 6's `index` 404 `:4764-4769`; step 38's planted docs `:1864-1878`; step 89 derives rows from
+    `templateContext` (`:4062-4074`).
+  - Step 91 is the last, so **step 92** is new. The seeded Home carries no `isMainFeed`
+    (`seed-editor-project.mjs:29-33`).
 
 **Ghost, read in the npm tarballs of 5.130.6 and 6.58.0** (paths inside `package/`; same lines on both majors unless
 marked):
@@ -296,25 +348,23 @@ marked):
 - **Template choice.** `core/frontend/services/rendering/templates.js:67` puts `home` first only when the path is
   exactly `/`, so `/page/2/` renders `index.hbs`. The collection router's `frontPageTemplate: 'home'` is at
   5:`routing/CollectionRouter.js:107` and 6:`routing/collection-router.js:117`.
-- **Archives** keep `tag-<slug> → tag → index` on every page (`templates.js:52-57`). That one template on every page is
-  why a change on page 2 is the same on every page (R-177).
+- **Archives** keep `tag-<slug> → tag → index` on every page (`templates.js:52-57`). From page 2 on, Ghost adds the
+  `paged` context (`context.js` 5:35-36, 6:32-33), which is what a theme switches an archive's page-2 design on.
 - **`nav-current`.** `helpers/tpl/navigation.hbs:3` is `link_class for=(url)`, and
   `services/theme-engine/handlebars/utils.js:61` sets `nav-current` on an exact match of `relativeUrl` only.
   - Executed on both: the `/` item on `/page/2/` gets `nav-home` alone.
-  - On an archive's page 2, an item for that archive gets `nav-current-parent` (`:63`), which the shim does not draw.
+  - On an archive's page 2, that archive's item gets `nav-current-parent` (`:63`), which the shim does not draw.
 - **The pager.** On page 2 of 52 at 12 the context is `{page 2, pages 5, limit 12, total 52, next 3, prev 1}`.
   - `helpers/page_url.js:16` → `meta/paginated-url.js:15-36`: on `/tag/news/page/2/`, `prev` is `/tag/news/` and
     `next` is `/tag/news/page/3/`.
-- **Past the last page is a 404** (R-176). `routing/controllers/channel.js:55-60` and `collection.js:55-60`:
-  `if (pathOptions.page > result.meta.pagination.pages)`.
-- **No canvas reader:**
-  - `body_class` adds `paged` and drops `home-template` (`helpers/body_class.js:21-22, :44-46`).
-  - `meta_title` adds " (Page 2)" (`meta/title.js:22-24`).
+- **Past the last page is a 404** (R-176). `routing/controllers/channel.js:55-60` and `collection.js:55-60`.
+- **No canvas reader:** `body_class` adds `paged` and drops `home-template` (`helpers/body_class.js:21-22, :44-46`),
+  and `meta_title` adds " (Page 2)" (`meta/title.js:22-24`).
 - **Already recorded on T3** (`packages/library/contexts/fixtures/ghost5.json`): `/` renders `home.hbs` with
   `nav-ghost-5-home nav-current` (`:1657`), and `/page/2/` renders `index.hbs` with `nav-ghost-5-home` alone (`:2340`).
 
 **Production, read at Create** (Supabase, `SUPABASE_URL` and `SUPABASE_SECRET_KEY`, read-only, 2026-09-22). All three
-of the owner's projects store `posts_per_page` 12.
+of the owner's projects store `posts_per_page` 12, and none has an `index` row.
 
 - **"Ghost 5 Project"** (`99d4d277-…`): Home is [Newsletter — Inline Row, **Post grid with `isMainFeed`**], and the
   site header is Rail.
@@ -333,175 +383,232 @@ of the owner's projects store `posts_per_page` 12.
       `#B8B3AA`, the words at 12.5/600 in white.
     - "Back to page 1": 30px high, `0 12px`, a 7px radius, a 7px gap, the 12px chevron at stroke 2, 12.5px in
       `#B8B3AA`, and a hover fill of white at .08.
-  - Layers (`:374-386`): every row but the main feed's is `#8B857C`, with no pointer. **R-177 amends it**: only a row
-    page 2 leaves out is greyed.
+  - Layers (`:374-386`) greys every row but the main feed's. **R-177 and R-178 supersede it**: page 2's Layers are
+    page 2's own rows, all live.
   - The pager (`:411-419`): the numbered row R-109 supersedes.
   - The row (`:429`): "Preview page" at 12/500 `#6E6A64`. Its track is `#EFECE7`, radius 24, padding 3; each item is
     34 × 26 at 12px, and the current one is white, radius 20, 12/600.
 - **D5c `:351`** draws the same row's page-1 state as "Preview page 2 · Open". D5c is Story 5.19's frame.
 - **`EXPERIENCE.md`:** `:165` (the IA row), `:270` (the canonical strings), `:392-393` (no shortcut, deliberately),
   `:1793-1797` (FRAME 4).
-- **`prd.md`:** FR-D21 `:245`, FR-H2 `:312`, FR-H3 `:313-315`, FR-Q1 `:358`, and the canvas-state markers `:1337`.
-- **`reconcile-designs-decisions.md`:** R-127 `:2591-2621`, whose ledger still owes `sections-inventory.md`'s §3
-  heading. R-109 `:2089-2101`. R-176 and R-177, recorded at this Create.
+- **`prd.md`:** FR-D6 (the files and the canvases), FR-D21 `:245`, FR-H2 `:312`, FR-H3 `:313-315`, FR-I1, FR-Q1
+  `:358`, and the canvas-state markers `:1337`.
+- **`reconcile-designs-decisions.md`:** R-127 `:2591-2621`, R-109 `:2089-2101`, and R-176 to R-180, recorded at this
+  Create.
 - **`A34 Pagination Styles - Spec.md`:** every frame is drawn on page 2 (`:218-219`).
 
 ## Tasks & Acceptance
 
-**Execution:**
+**Execution — the Schema phase first, pushed and applied on its own before any code (R-99):**
+
+- [ ] `supabase/migrations/<timestamp>_page_two_template_keys.sql` — **new**. `template_key_shape` on
+      `project_templates` and on `project_template_prefs` accepts `tag-paged` and `author-paged` beside today's list,
+      in `20260919120000`'s shape: re-runnable, strictly wider, so added VALID.
+- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` — the same two
+      constraints, and a mirror note beside `:1729`.
+- [ ] **Apply and prove it.**
+  - Apply the migration through `SUPABASE_DB_POOLER_URL`.
+  - Read the constraint back from `pg_constraint`.
+  - In a transaction that is rolled back, insert each new key (it is accepted) and a junk key (it is still refused).
+  - Run `bash supabase/tests/run-rls-gate.sh` green.
+  - Commit and push `Story 5.16 - Schema - …` on its own.
+
+**Execution — Dev:**
 
 - [ ] `packages/library/src/orbit-weekly.ts` — three changes, all within Ask First:
   - `FeedState` gains `'second'`: page 2 of the list the target renders.
     - On `home.hbs` and `index.hbs` it is the bundled feed's page 2.
     - On an archive with a subject it is that archive's page 2.
-    - It throws where that list has one page, as `paginationOver` already does; the caller asks first.
-  - `feedPages(target, subject?)`: how many pages that list has, and 1 on a target that does not paginate. It is the
-    one question the editor asks before offering page 2.
+    - It throws where that list has one page; the caller asks first.
+  - `feedPages(target, subject?)`: how many pages that list has, and 1 on a target that does not paginate.
   - **The page's address, from one function that `templateContext` itself uses:**
     - `currentUrl` is `pageUrl(n, base)` on every page of the home and archive branches.
     - The archive's `paginationBase` is `/tag/<slug>/` or `/author/<slug>/`.
     - Every other branch keeps `/`.
-    - No rendered byte changes where no subject and no `'second'` is asked for: only `{{navigation}}` reads the
-      address, and only a1/1 renders it, at `default.hbs`.
 - [ ] `packages/library/src/orbit-weekly.test.ts`:
-  - **FR-D21's promise, asserted:** at the dataset's `posts_per_page`, `'second'` on `index.hbs` is page 2 of 5 with
-    both a prev and a next, and its rows are `feedPage(2)`.
-  - An archive's `'second'` is its own page 2 (Field Notes: `2 / 2`, no next). `feedPages` agrees with `paginationOver`
-    on every tag and every author, and is 1 on every author (R-176's case, derived rather than listed).
-  - The addresses: Home page 2 is `/page/2/`; the Tag canvas is `/tag/field-notes/` and `/tag/field-notes/page/2/`,
-    and its `paginationBase` is `/tag/field-notes/`.
-  - 5.13's control (`:396-415`) is untouched and green.
-- [ ] `apps/web/lib/canvas.ts` — `renderSection` takes an optional `url`, the page being previewed, which is handed to
-      `site.currentUrl`. Leaving it out is exactly today's render, which is why `/pilots`, the picker's cards and the
-      ring's tiles do not change.
-- [ ] `apps/web/lib/page-two.ts` — **new**, and pure. It holds:
-  - **The words, each written once (R-170):** "Page 2", "Back to page 1" and "Preview page"; the announcements
-    "Page 2." and "Back to page 1."; and, when the return was not asked for, "Back to page 1:" with its reason —
-    "{layer name} is no longer shown on this page." or "{Name}'s {n} posts fit on one page."
-  - **The main feed of a canvas:** the first instance of its own doc carrying `isMainFeed`.
-  - **Whether page 2 is offered (R-176):** only when that main feed exists, is shown, and `feedPages ≥ 2`.
-  - **The page in force.** It answers 2 only while 2 was asked for and page 2 is still offered, and otherwise names
-    why not.
-  - **The stack, page-aware.** `stackOf` moves here beside `canvasStack`. On Home's page 2 the canvas's own rows are
-    `indexStack(docs.home, library).instances`, each stamped `index.hbs`; on every other page and canvas nothing
-    changes. It also answers how many of the canvas's own rows page 2 leaves out, which the insert position needs.
-- [ ] `apps/web/page-two.test.ts` — **new**. Against the real library, as `canvas-switch.test.ts` does:
-  - The Home page-2 stack is the site's rows around `indexStack`'s, stamped `index.hbs`, and drops what sits above the
-    feed. No instance in it is absent from the docs.
-  - Page 1 is `stackOf` exactly as before.
-  - Offered on an untouched Home, Tag (Field Notes) and a Home that kept its grid; **not offered** on Author, on a tag
-    that fits on one page, on a hidden main feed, or where no instance carries `isMainFeed` (R-176). The words are
-    EXPERIENCE's.
-- [ ] `apps/web/lib/picker.ts` and `apps/web/picker.test.ts` — `invokedAt` answers **the invoking section's own place
-      in its doc**, never a count of the stack. On a page-2 stack that is the old count plus the rows page 2 leaves
-      out, and where the invoking section sits above the main feed (the site header's "+", ⌘K with it selected) it is
-      the place directly below the main feed. Every existing assertion (`:140-152`) keeps its answer, and the page-2
-      cases join them.
-- [ ] `apps/web/components/kit/icons.tsx` — D5d's page glyph (`:390`: a rounded square with two lines, stroke 1.8),
-      copied verbatim (R-92), as `PageLines`.
-- [ ] `apps/web/components/kit/segmented.tsx` — an **inline** layout for D5d's row: the label on the left and the
-      track on the right, with fixed 34 × 26 items at 12px.
-  - The radio group and its keys stay the Kit's own. That is one vocabulary (R-74), not a second segmented.
-  - Scope the `:7` comment: it governs a design's controls (Appendix C: a count is a number picker). This row's values
-    are pages, and the row is editor state.
-- [ ] `apps/web/components/editor/page-two-pill.tsx` — **new**. D5d's pill:
-  - The canvas pill's recipe: `bg-ink`, `rounded-thumb`, `p-1`, D5d's 4px gap, and its drawn .25 shadow, which is
-    `shadow-modal` (B3b's precedent).
-  - "Page 2" with `PageLines`, as words, not a control.
-  - **Back to page 1**: a 30px button with `ChevronLeft`.
-  - `#B8B3AA` is not a token, so it is `surface` at the alpha that reproduces it on ink (about .66). B3b's white
-    alphas are the precedent.
-  - `CanvasPill` itself is untouched.
+  - `'second'` on `index.hbs` is page 2 of 5 with a prev and a next, and its rows are `feedPage(2)`.
+  - An archive's `'second'` is its own page 2 (Field Notes: `2 / 2`, no next).
+  - `feedPages` agrees with `paginationOver` on every tag and author, and is 1 on every author (derived, never listed).
+  - The addresses are right, and 5.13's control (`:396-415`) is green.
+- [ ] `packages/library/src/placement.ts` — **one exported rule**: a design may sit on `index.hbs` when it lists
+      `index.hbs` or `home.hbs`.
+  - `offeredOn`, `read.ts`'s refusal and `synthesize`'s drop all ask it, with a comment citing Ghost's same posts and
+    pagination for the two files.
+  - Its test covers a17/1 (lists both) and a22/1 (lists `home.hbs` only).
+- [ ] `packages/section-runtime/src/synthesize.ts` — `pageTwoStack(file, pageOne, pageTwo, library)` **replaces**
+      `indexStack`:
+  - page 2's own doc if it has instances;
+  - else an exact copy of page 1's instances (R-179);
+  - else, on `home.hbs` when page 1 carries no `isMainFeed`, `synthesize('index.hbs')` (R-127's fallback, kept).
+
+  It is exported at `src/index.ts:122`. `synthesize.test.ts:119-161` is rewritten for R-179, and
+  `apps/web/canvas-switch.test.ts:150-159` runs it on the real library. A grep for `indexStack` (standing rule 7) moves
+  `synthesize.ts:4, :62`, `doc-schema.ts:52` and `apps/web/lib/editor.ts:7`.
+- [ ] `apps/web/lib/editor.ts` — **the page-2 table**:
+  - `home → index`, `tag → tag-paged`, `author → author-paged`, and the file each compiles to: `index.hbs`,
+    `tag.hbs`, `author.hbs`.
+  - `pageTwoKeyOf(canvas)` and its inverse.
+  - `/index` stays refused by the scheme.
+  - `editor.test.ts` asserts all of it.
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` — `TEMPLATE_KEY` (`:38`) gains `tag-paged` and
+      `author-paged`, word for word with the constraint.
+- [ ] `…/projects/[id]/(editor)/read.ts`:
+  - `fileOf` knows the three keys.
+  - The page-2 rows are read and checked like any other.
+  - The editor is handed each page-2 doc, and which ones follow page 1: no row, or no instances.
+  - The viewed record is read for page-2 keys too.
+- [ ] `…/projects/[id]/(editor)/actions.ts` — the viewed record accepts page-2 keys. The subject stays per canvas.
+- [ ] `apps/web/lib/round-trip.ts` — **page 2's round trip**:
+  - Its pristine doc is the current copy of page 1.
+  - The first change stores it.
+  - Zero instances, or an undo back to the copy, returns it to following.
+  - A change to page 1 re-derives a following page 2.
+
+  Its test covers each rule.
+- [ ] `apps/web/lib/view-as.ts` — `afterChange` treats a page-2 key as a page. A change to page 1 while page 2 follows
+      runs out both records.
+- [ ] `apps/web/lib/canvas.ts` — `renderSection` takes an optional `url`, handed to `site.currentUrl`. Leaving it out is
+      exactly today's render.
+- [ ] `apps/web/lib/page-two.ts` — **new**, and pure:
+  - **The words** (R-170): "Page 2", "Back to page 1", "Preview page", the marker, the announcements "Page 2." and
+    "Back to page 1." with a reason when the return was not asked for, and the site-wide ask:
+    - "Change {name} everywhere?"
+    - "This section is site-wide: it is one shared thing that appears on every page of your site, so changing it on
+      page 2 changes it on page 1 and every other page too."
+    - **Cancel** and **Change it everywhere**
+  - The main feed of a page, and whether page 2 is offered: `feedPages ≥ 2` and a main feed on page 1.
+  - The page in force, with its reason.
+  - The page-aware own doc key.
+  - The stack: on page 2, the site's rows around page 2's doc (its own, or the copy), stamped with the page-2 file.
+- [ ] `apps/web/page-two.test.ts` — **new**, on the real library:
+  - The stack, page 1 and page 2, following and designed, holds no instance absent from the docs.
+  - Offered on an untouched Home, on Field Notes and on a Home that kept its grid. **Not offered** on Author, on a
+    one-page tag, or with no `isMainFeed`.
+  - The words are EXPERIENCE's.
+- [ ] `apps/web/components/kit/icons.tsx` — D5d's page glyph (`:390`, stroke 1.8), copied verbatim (R-92), as
+      `PageLines`.
+- [ ] `apps/web/components/kit/segmented.tsx` — an **inline** layout for D5d's row: the label on the left, the track on
+      the right, and fixed 34 × 26 items at 12px. The radio group and its keys stay the Kit's own, and the `:7`
+      comment is scoped to a design's controls.
+- [ ] `apps/web/components/editor/page-two-pill.tsx` — **new**. D5d's pill in the canvas pill's recipe:
+  - `bg-ink`, `rounded-thumb`, `p-1`, D5d's 4px gap, and `shadow-modal` for its drawn .25.
+  - "Page 2" with `PageLines`, as words.
+  - **Back to page 1**, a 30px button with `ChevronLeft`.
+  - `#B8B3AA` is `surface` at about .66 on ink.
 - [ ] `apps/web/components/controls/sidebar.tsx` — an optional `page` prop: the value and a plain callback, never an
-      edit. It draws D5d's row between the groups and the foot. With no prop there is no row, so `/controls`,
-      `/pilots` and every section that is not an offering main feed show none.
-- [ ] `apps/web/components/controls/layers.tsx` and `apps/web/components/kit/layers-row.tsx` — **page 2's left-out
-      rows**, given the keys page 2 does not draw: each is greyed (`text-ink-faint`) and `aria-disabled`, with no
-      select, grip, ⌥↑↓, Space or ⋯. Every other row, and "+ Add section", work as on page 1 (R-177).
+      edit. It draws D5d's row between the groups and the foot. With no prop there is no row.
+- [ ] `apps/web/components/editor/auto-generated.tsx` — the row takes its sentence, so page 2's marker is D5a's row
+      with its own words. D5a's own sentence is unchanged.
 - [ ] `editor.tsx`:
   - **The state.** `page` is session state beside `preview`, and is in `latest` on both lines.
-    - `enterPageTwo` and `leavePageTwo` take `chooseVisitor`'s shape.
-    - The pill's button moves focus to the stage. The row keeps focus on itself.
-  - **The stack.** All four `stackOf` sites pass the page in force.
-    - When the answer is 1 while 2 was asked for, the editor sets page 1 and `setSaid`s "Back to page 1:" with the
-      reason, before the paint.
+    - `enterPageTwo` and `leavePageTwo` take `chooseVisitor`'s shape and carry the selection to the same section.
     - The `[key]` effect returns to page 1.
-  - **Paint.** `feed` is `'second'` on page 2.
-    - Every section gets `url`: the canvas's own address from `orbit-weekly.ts`, for the canvas's file (`index.hbs` on
-      Home's page 2).
-    - `frame.current.dataset.page` is set beside `painted`, so the walk can wait on a same-canvas repaint.
-  - **Everything else is page 1's (R-177).** No canvas handler, chrome layer, pill, key or panel gains a page-2 branch;
-    they are right on page 2 because the stack is. The one addition is `invokedAt`'s page-2 input, passed from the
-    stack at `:1952`.
-  - **The pill** is mounted after the card, top-centre of the ground, 4px from its top (the chip's inset, R-138), and
-    `hidden` in Preview. On page 2 the ground's top padding becomes the pill's bottom plus R-138's 8px, so no page card
-    meets it. It is measured at Dev.
-  - **The row** is passed to `Sidebar` only for the canvas's main feed, and only while page 2 is offered (R-176).
-  - **Layers** gets the keys page 2 leaves out.
+  - **The own key.** The nine "doc this canvas edits" sites read the page-aware key. The four subject sites keep the
+    canvas's.
+  - **The docs.** Page-2 docs sit in `docs` beside the others. A following one is re-derived from page 1 after every
+    page-1 change: `commit`, `restore` and the hydrate.
+  - **The stack.** All four `stackOf` sites pass the page in force. When 2 was asked for and the answer is 1, set page
+    1 and `setSaid` the reason before the paint.
+  - **Paint.** `feed` is `'second'` on page 2; every section gets the canvas's `url`; and
+    `frame.current.dataset.page` is set beside `painted`.
+  - **R-180, in `commit()`.** On page 2, the first change to each site-wide section is held while FR-D5's dialog asks
+    in the adapted words:
+    - Change it everywhere commits the change.
+    - Cancel drops it and repaints.
+    - The Hide and Delete confirm counts as that section's ask.
+    - The asked set empties when page 2 is left.
+  - **The pill** is mounted after the card, top-centre, 4px from the ground's top (the chip's inset, R-138), and
+    `hidden` in Preview. On page 2 the ground's top padding is the pill's bottom plus R-138's 8px, measured at Dev.
+  - **The row** goes to `Sidebar` for the main feed on both pages, while page 2 is offered.
+  - **Layers on page 2** shows page 2's own rows under "This page · {label} · Page 2", with the marker while page 2
+    follows.
 - [ ] `apps/web/app/(app)/app/harness/editor/page.tsx` — the harness Home's a17/1 carries `isMainFeed: true`, with a
       comment saying why: CI's one main feed. Every other journey stays green.
 - [ ] `tools/keyboard/journey.spec.mjs` — new journeys, keyboard-only:
-  - On the main feed's panel, the row is found and **2** is chosen.
-  - Page 2 is proved with values derived from `templateContext`, never written down: the canvas holds exactly the page
-    2 rows, the pager reads `2 / 5` with both links, and Rail's Home link has no `nav-current`.
-  - One section is moved above the grid with ⌥↑ first, so on page 2 it is gone from the canvas and greyed in Layers,
-    and back on page 1.
-  - **R-177 on page 2:** a section below the grid is selected through Layers and changed in its panel, and page 2
-    shows the change; back on page 1 the same section carries it; ⌘Z takes it back. ⌘K with the site header selected
-    places the new section directly below the grid. ⌘D and Delete act, and Delete on the main feed returns to page 1
-    with its reason.
-  - Hiding the main feed removes the row (R-176).
-  - The pill's words and focus, and "Page 2." and "Back to page 1." in `#editor-said`.
-  - Preview on page 2 shows no pill, and Esc comes back to it.
-  - No printable key changes the page (the `:549-572` pattern), and the Tab budget stays derived.
+  - **Entering.** The row is found on the main feed and **2** is chosen. Page 2 is an exact copy of page 1, proved with
+    values derived from `templateContext` rather than written down: the page-2 rows, "2 / 5" with both links, and no
+    `nav-current` on Home. The marker shows, and nothing is stored.
+  - **Following and forking.**
+    - A change on page 1 shows on a following page 2.
+    - The first change on page 2 (delete a section through Layers) forks it, and the marker goes.
+    - Page 1 still has that section.
+    - A later change to page 1 does not reach page 2.
+    - ⌘Z back to the copy follows again, and removing every section from page 2 follows again.
+  - **Site-wide (R-180).**
+    - A header control changed on page 2 asks first. Cancel changes nothing; Change it everywhere reaches page 1.
+    - A second change does not ask.
+    - Hide asks with FR-D5's own words.
+  - **Everything else.**
+    - The pill's words and focus, and `#editor-said` both ways.
+    - Preview on page 2 shows no pill.
+    - No printable key changes the page, and the Tab budget stays derived.
 - [ ] `tools/probe/run-verify-editor.cjs` — **step 92**, the deployed walk:
   - Plant `isMainFeed` on the seeded Home's a17/1, using step 38's planted-doc pattern, and restore the doc after.
-  - Home's page 2 drops Latest Post (its Layers row greyed) and keeps the Inline Row. Its rows and pager are derived
-    from `templateContext` (step 89's pattern). The Home link has no `nav-current`.
-  - **R-177:** on page 2 the header and the Inline Row are pointed at, selected and changed, and page 1 carries the
-    change; the change is then undone.
-  - The Tag canvas shows Field Notes' page 2. The Author canvas offers no row (R-176).
-  - The pill and the row match D5d.
-  - The pill never meets the page card or the chip at all three devices at 1440 and at 1280.
-  - Step 5's CSP session goes in and out of page 2, and step 8 scans axe on page 2.
-- [ ] **Documents** (standing rule 3), then a grep for `feed: 'first'`, `currentUrl: '/'`, `paginationBase: '/'` and
-      `Preview page 2` (standing rule 7). Done at this Create: R-176 and R-177 in the register, Story 5.16's card in
-      `epics.md` (with R-127, whose ledger box for Story 5.16 is ticked), and `epic-5-context.md`. What remains:
-  - `epics.md`: Story 7.34 carries FR-D21's orphaned "NFR-6(c3)'s comparison exercises a page-2 URL", and Story 5.22
-    gets the pill against the viewport chip, as measured.
-  - `prd.md` FR-D21: offered only where page 2 exists, and edited as page 1 is, standing for every later page (R-176,
-    R-177).
-  - `sections-inventory.md` § Synthesis Defaults §3's heading, which R-127's ledger owes "at those stories".
+  - **Home's page 2.**
+    - It follows page 1: the rows and pager derive from `templateContext`, there is no `index` row in Supabase, and
+      the Home link has no `nav-current`.
+    - A change on page 2 writes an `index` row. **The `home` row is byte-identical before and after**, read back from
+      Supabase.
+    - A reload shows page 2's own design.
+    - The header asks first, and Change it everywhere changes the `site` row.
+  - **The archives.** The Tag canvas shows Field Notes' page 2, and a change there writes `tag-paged`. The Author
+    canvas offers no row.
+  - **The rest.**
+    - The pill and the row match D5d.
+    - The pill never meets the page card or the chip at all three devices, at 1440 and at 1280.
+    - Step 5's CSP session goes in and out of page 2, and step 8 scans axe on page 2.
+- [ ] **Documents** (standing rule 3), then a grep for `indexStack`, `feed: 'first'`, `currentUrl: '/'`,
+      `paginationBase: '/'` and `Preview page 2` (standing rule 7). Done at this Create: R-176 to R-180 in the
+      register, Story 5.16's card in `epics.md`, and `epic-5-context.md`. What remains:
+  - `prd.md`:
+    - FR-D21: page 2 is designed as well as previewed. It starts as an exact copy of page 1, never changes it, and
+      stands for every later page (R-176 to R-180).
+    - FR-D6: `index.hbs` is page 2 of Home.
+    - FR-I1: page 2's own design, or its copy.
+  - `ARCHITECTURE-SPINE.md`:
+    - AD-22's round trip for page 2.
+    - AD-27(d)'s `pageTwoStack`.
+    - The storage row for `index`, `tag-paged` and `author-paged`.
+  - `sections-inventory.md` `:804-806` and § Synthesis Defaults §3's heading, which R-127's ledger owes.
+  - `epics.md`:
+    - Story 7.3 compiles `pageTwoStack`, and an archive's page-2 design inside `{{#is "paged"}}`.
+    - Story 7.34 carries FR-D21's orphaned page-2 URL.
+    - Story 5.22 gets the pill against the chip, as measured.
+    - Story 5.19 gets the main feed on page 2's own copy.
+  - `EXPERIENCE.md` `:165`: Page 2 Preview, designable.
   - `MEASUREMENTS.md`: a new § with the Ghost facts above (read in source on both majors), plus Review's read-only T1
-    and T3 run.
+    and T3 run and the Schema phase's read-back.
   - `deferred-work.md`:
     - Close DW-218.
-    - Append to DW-194: now reachable (the owner's Ghost 5 Project, every materialised Home) and visible on page 2;
-      a22/1 and a4/13 on `index.hbs`; a second native feed paginating on the canvas; ⌘D on the main feed.
+    - Append to DW-194: R-179's copy and the home-and-index rule answer its `compileTarget` case, while several flags
+      and ⌘D on a main feed stand.
     - New entries:
       - Post, Page and 404 still hand the header `/`.
       - The shim draws no `nav-current-parent`.
       - The Synthesis Defaults name A34 #1 Numbers against the all-Free rule.
-      - The four Pagination style value lists disagree (A34, A17 and A18, FR-H2, D5c and D5d). Owner: Story 5.19.
+      - The four Pagination style lists disagree. Owner: Story 5.19.
   - `epic-5-context.md`: the as-built sub-bullet.
 
 **Acceptance Criteria:**
 
 - **Given** the main feed of a page that has a page 2 is selected, **when** its panel is read, **then** it ends, above
   "Reset this design", with **Preview page · 1 · 2**. **It matches the frame**, D5d `:429`: label left, the pill track
-  right, and 34 × 26 items. **Given** a page whose posts fit on one page, or a hidden main feed, **then** there is no
-  row at all (R-176).
+  right, and 34 × 26 items. **Given** a page whose posts fit on one page, **then** there is no row (R-176).
 - **Given** page 2, **when** the canvas is looked at, **then** D5d's pill sits at the top centre of the ground: ink,
   10px radius, 4px padding, the page glyph with **Page 2**, then **‹ Back to page 1**, with no coral. **It matches the
   frame**, D5d `:388-396`. It never covers the page card or the viewport chip at Desktop, Tablet and Mobile in a 1440
   window.
 - **Given** page 2 of a feed with five pages, **when** it renders, **then** the pager shows its full range: a Newer
   link, "2 / 5" (R-109) and an Older link. That is FR-D21's middle page.
-- **Given** Home's page 2, **when** it renders, **then** every section is exactly `indexStack(home)` around the site's
-  rows, rendered at `index.hbs`, and nothing above the main feed is drawn (R-127).
-- **Given** page 2, **when** any section it shows is changed in any way page 1 allows, **then** page 2 shows the
-  change, and page 1 shows it too, because it is the same section (R-177). **And given** Home's page 2, **when** a
-  section is placed from the gap above the main feed, **then** it lands directly below the main feed.
+- **Given** a page whose page 2 has no design of its own, **when** page 2 is opened, **then** it is an exact copy of
+  page 1 — every section, in order (R-179) — and nothing is stored for it.
+- **Given** page 2, **when** any section it shows is changed in any way page 1 allows, **then** the change lands in page
+  2's doc and page 1's doc is byte-identical before and after (R-178). The first such change gives page 2 a design of
+  its own, and undoing it, or emptying page 2, returns page 2 to following page 1.
+- **Given** page 2, **when** a site-wide section is first changed there, **then** the existing site-wide dialog asks
+  first, and **Change it everywhere** changes it on every page, page 1 included (R-180).
+- **Given** a Tag or Author page with a page 2, **when** page 2 is changed, **then** the change is stored under that
+  canvas's page-2 key, and page 1 of the archive is untouched.
 - **Given** page 2, **when** the pager's Older link is pressed, **then** nothing navigates and no page 3 is offered
   (R-177).
 - **Given** any page 2, **when** the header renders `{{navigation}}`, **then** it marks what Ghost marks on that
@@ -548,69 +655,110 @@ of the owner's projects store `posts_per_page` 12.
       and pagination, so copying page 1 never refuses a section.
   - Open: Questions 3 and 4. The status is `draft` until they are ruled and the spec is rewritten.
 
+- **2026-09-22, the owner ruled Questions 3 and 4, and the spec was re-planned whole on R-178, R-179 and R-180:**
+  - **R-179** (Question 3, option 2): *"Page 2 starts as an exact copy of Page 1. User can edit each section/style of
+    page 2 independently from Page 1. Users can also edit Page 2 indepenedntly for Authors, Tags, too."*
+  - **R-180** (Question 4, option 2, with the prompt): *"Yes allow them to change from Page 2 too. Keep the existing
+    prompt stating that this will change it everywhere."*
+  - Rewritten: every section. Page 2 is now a doc of its own for each paginated canvas: Home's under `index`, Tag's
+    and Author's under two new keys. That brings a **Schema phase** (R-99). `pageTwoStack` replaces `indexStack`.
+  - Gone from the previous plan:
+    - R-127's slice as the whole of page 2
+    - the greyed "left out" layers
+    - the placement clamp and `invokedAt`'s offset: a whole page-2 doc needs neither
+  - Kept: R-176, the address, the pill, the row, the no-key rule and the control rows.
+  - Read, and stated to the owner in one line each:
+    - **"Keep the existing prompt"**: FR-D5's site-wide dialog also asks before the first change to each site-wide
+      section made on page 2. Hide and Delete ask as they always have.
+    - **"Style"**: each section's own settings. The Style Pack stays one for the whole site (Epic 6).
+    - **The hidden main feed**: the row now shows on a hidden main feed too, since page 2 is its own design. That
+      replaces what R-176's entry applied to the previous plan.
+    - **A Home with no main feed** offers no page 2, and its compiled page 2 keeps R-127's plain list of posts.
+    - **Undo** stays one list for the whole project, as it has been since Story 5.8.
+
 ## Design Notes
 
-**Why this is built before Story 5.19, and where it lives until then.** A routine call, stated to the owner in one
-line.
+**Why page 2 is a doc of its own, and why that brings a Schema phase.**
 
-- **The epic's lean.** The epic context records "5.16's page 2 still needs 5.19". 5.19 owns the main feed's lifecycle
-  and its Pagination control. D5d says page 2 is "reached from the Pagination control".
-- **What exists already is enough.** `isMainFeed` has existed since 5.5, and synthesis sets it on every untouched
-  Home, Tag and Author page. The owner's own Ghost 5 Project kept it on a designed Home.
-- **So the row lands now** on the panel of the feed that already carries the mark. The Pagination control and the
-  lifecycle arrive above it with 5.19, which rebuilds nothing here. That is R-118's rule for a control, and R-165's
-  shape for a lean.
-- **The Pilot sections Home shows no row.** Its grid was placed before the mark could be written. The manual test
-  says so, and uses the Ghost 5 Project's Home.
+- R-178 makes page 1 and page 2 two designs. R-179 makes page 2 start as a copy and extends it to Tag and Author.
+- The editor already does everything per doc key: `commit`, the journal, the flush and the sync route, the untouched
+  round trip, and the prefs rows. So page 2 is one more doc per paginated canvas, and none of that machinery learns a
+  second shape.
+- Home's key is `index`, the file Ghost serves at `/page/N/`. The complete schema listed it on day one, and the sync
+  route already accepts it.
+- An archive has no second file, so its page 2 needs keys of its own. `template_key_shape` refuses any key it does not
+  list, on both tables, so the migration comes first, alone (R-99). Story 5.8 took the same path: SQL mirrored in
+  `SCHEMA.sql`, applied through the pooler, and read back.
+- The alternative, a `paged` field inside the page-1 row, needs no migration. But every edit, undo and untouched rule
+  would have to learn two designs inside one doc, and editing page 2 of an untouched page would risk materialising page
+  1. That is more code, and it is the one thing R-178 forbids.
 
-**Why the stack, not the paint, knows the page — and why that is all R-177 needs.**
+**Why page 2 follows page 1 until its first change.**
 
-- The roots, `pickAt`, `mark`, `restampAll`, `chosen`, `rootOf`, the panel's fast path and every edit are
-  index-aligned with, or keyed through, `latest.stack`.
-- A paint that drew a different list than `stackOf` returned would outline, restamp and edit the wrong sections.
-- So the page enters at the one function all four `stackOf` call sites use, and page 2 is then edited by page 1's own
-  code. Moves were already by identity. The only arithmetic that assumed page 1 is `invokedAt`, which moves to
-  identity.
+- The owner's words are "copied everything from Page 1 on initial load when the user opens Page 2 the first time for
+  edit".
+- AD-22 already says a template is materialised by an edit and never by a look. So opening page 2 stores nothing, a
+  following page 2 is re-derived whenever page 1 changes, and the first change on page 2 takes the copy.
+- Undoing that change, or removing every section, returns page 2 to following page 1, which is AD-22's round trip.
+  The owner was told this and did not object.
+- Page 2's marker is D5a's row with its own sentence, so the state is said in words (UX-DR3's markers carry words).
 
-**Why a placement from above the feed lands below it.** On Home's page 2 the gap between the site header and the post
-grid is drawn, but R-127 makes the post grid the first thing page 2 has: a section placed in that gap would sit above
-the feed and never appear on page 2. So a placement from that gap, or ⌘K with the header selected, lands in the first
-place page 2 has — directly below the grid — where the owner sees it arrive. A move is different: it is dragged to a
-slot the owner can see, and a row moved above the feed turns grey in Layers, so moves are not restricted.
+**Why the site-wide prompt reads this way (R-180).**
+
+- The existing prompt — FR-D5's dialog, "This section is site-wide: it is one shared thing that appears on every
+  template of your site" — asks before Hide and Delete, on every page, and it keeps doing that.
+- The owner asked to keep a prompt "stating that this will change it everywhere" for changes made from page 2. On page
+  2, a site-wide section is the one thing that is not independent, so the first change to each asks, in that dialog's
+  vocabulary, once per section per visit.
+- Asking at every keystroke would make the header uneditable in practice.
+- If the owner meant only Hide and Delete, the ask is one guard in `commit()` to remove.
+
+**Why a landing-page Home keeps R-127's fallback.**
+
+- R-179's copy is page 2's starting point wherever page 2 can be designed, and that needs a main feed on page 1: the
+  row lives on it.
+- A Home with no main feed offers no page 2 in the editor. An exact copy there would make `/page/2/` repeat the landing
+  page with no posts, which is the duplicate FR-H2's "home case, solved structurally" exists to avoid.
+- So `pageTwoStack` keeps the Synthesis Default stack for that one case. It is Story 7.3's to compile, and the DW names
+  it.
+
+**Why a design that can go on Home can go on page 2.**
+
+- Ghost hands `home.hbs` and `index.hbs` the same posts and pagination (read in source). `index.hbs` differs only in
+  that `home` is not in its context, and no design reads that.
+- Without the rule, R-179's exact copy of a Home holding a22/1 or a4/13 would be refused by `read.ts` on the next load
+  and black out the editor.
+
+**Why the stack knows the page.** The roots, `pickAt`, `mark`, `restampAll`, `chosen`, `rootOf`, the panel's fast path
+and every edit read `latest.stack` or key through it. On page 2 the stack's own rows are page 2's whole doc, so every
+one of them, ⌘K's insert position and the pill's drag included, is right with no page-2 branch.
 
 **Why `index.hbs`, and why the address travels to every section.**
 
-- Ghost chooses `home.hbs` only at exactly `/` (`templates.js:67`). The context of the two files is the same
-  (`templateContext` treats them alike), but FR-H7's binding check and R-7's pagination check read the target, and
-  the truthful target is the one that ships.
+- Ghost chooses `home.hbs` only at exactly `/` (`templates.js:67`), and FR-H7's binding check and R-7's pagination
+  check read the target. The truthful target is the one that ships.
 - `{{navigation}}` reads the request's `relativeUrl`, while the header is compiled into `default.hbs`. A per-section
-  target can never tell it which page it is on, so the page's address is handed to every section.
-- Rail draws `.nav-current`, so this is visible: Home stops being underlined on page 2, and on the Tag and Author
-  pages at page 1 too.
+  target can never tell it which page it is on.
+- Rail draws `.nav-current`, so this is visible: Home stops being underlined on page 2, and on the Tag and Author pages
+  at page 1 too.
 
-**Why `'second'` and not `'middle'`.** FR-D21 and D5d name **page 2**. On the bundled feed page 2 of 5 is already a
-middle page (prev 1, next 3), while `middle` is page 3. `/pilots`, the snapshots and the matrix keep their four states.
+**Why `'second'` and not `'middle'`.** FR-D21 and D5d name page 2. On the bundled feed page 2 of 5 is already a middle
+page, while `middle` is page 3. `/pilots`, the snapshots and the matrix keep their four states.
 
-**R-176: no page 2, no control.** Ghost answers 404 past the last page (`channel.js:55-60`), and FR-H3 says no post is
-invented. The owner went one step further than the recommended option: rather than a greyed **2** with a sentence, the
-row is simply not there. A hidden main feed shows no list, so it offers none either. When page 2 stops existing while
-it is on screen, `#editor-said` still says why the page changed, because a screen reader has no other way to know.
+**The row: D5d's control for both pages.**
 
-**The row: D5d's control for both states.**
-
-- D5c draws the page-1 state as "Preview page 2 · Open", and D5d draws the page-2 state as a segmented control. One
-  control for one choice keeps one name (R-170), and D5d is this story's frame.
-- The Kit's "never numbers" line is Appendix C's rule for a count in a design's controls. These are pages, and this is
-  editor state.
+- One control for one choice keeps one name (R-170). D5c's "Preview page 2 · Open" is Story 5.19's frame.
+- The Kit's "never numbers" line is Appendix C's rule for a count in a design's controls. These are pages.
 - It sits at the panel's foot because R-113's groups start closed.
+- It shows on page 1's main feed, shown or hidden, and on page 2's copy of that feed, which is the way back.
 
 **The pill, as built.**
 
 - Top centre, as drawn, but 4px from the ground's top rather than D5d's 16px, for the reason R-138 tucked the chip.
-- The ground grows on page 2 instead of the pill shrinking. R-166's 24px trade would cost the 30px targets.
+- The ground grows on page 2 rather than the pill shrinking, because R-166's 24px trade would cost its 30px targets.
 - Below roughly 1235px with both panels open it can meet the chip. That is Story 5.22's floor, and its card gets the
   measured figure.
-- `shadow-modal` is D5d's own .25. `CanvasPill` (the `lg` shadow, a toolbar role, icon-only buttons) stays `/kit`'s.
+- `shadow-modal` is D5d's own .25.
 
 **D5d's pager is not built.** R-109 ruled the numbered row out. a17/1 draws "2 / 5".
 
@@ -619,23 +767,26 @@ it is on screen, `#editor-said` still says why the page changed, because a scree
 - Only a17/1 has a pager, and on Orbit Weekly only Home's feed reaches five pages.
 - Field Notes and Reporting reach two, so their page 2 is the last page. No writer reaches two, so no Author page
   offers page 2 (R-176).
-- The canvas uses the dataset's 12 per page. That equals every project's stored value, read on production, and Story
-  5.19 threads the project's own.
+- His Ghost 5 Project's Home is the one of his pages with a marked main feed, and his Pilot sections Home has none
+  until Story 5.19.
+- The canvas uses the dataset's 12 per page, which is every project's stored value (read on production).
 
-**Known ceilings, recorded as DWs, not code:**
-
-- DW-194's cases are now visible on page 2, ⌘D on the main feed among them.
-- Post, Page and 404 keep `/`.
-- The shim has no `nav-current-parent`.
+**Undo is one list for the whole project** (Story 5.8), so ⌘Z pressed on page 2 can take back a change made on page 1
+just before. That is the existing behaviour on every canvas. Narrowing it is Ask First.
 
 ## Verification
 
 **Commands** (under Node 24):
 
+- **The Schema phase.**
+  - The migration is applied through `SUPABASE_DB_POOLER_URL`.
+  - `pg_constraint` read back.
+  - Rolled-back inserts of `tag-paged` and `author-paged` accepted; a junk key refused.
+  - `bash supabase/tests/run-rls-gate.sh`. Expected: green, with `SCHEMA.sql` and the migrations agreeing.
 - `pnpm check`. Expected:
   - lint and typecheck green;
-  - every package test green, including `orbit-weekly.test.ts`, `page-two.test.ts`, `picker.test.ts`,
-    `keymap.test.ts` and `canvas-switch.test.ts`;
+  - every package test green, including `orbit-weekly.test.ts`, `synthesize.test.ts`, the placement test,
+    `page-two.test.ts`, `canvas-switch.test.ts`, `editor.test.ts` and `keymap.test.ts`;
   - `node tools/check-snapshots.mjs` **unchanged**.
 - `pnpm keyboard`. Expected: the page-2 journeys green in CI's `check` job, with the Tab budget derived.
 - `bash tools/matrix/run-matrix-gate.sh`. Expected: green and unchanged.
@@ -648,10 +799,15 @@ it is on screen, `#editor-said` still says why the page changed, because a scree
 
 **Real services this story touches (R-82):**
 
+- **Supabase production.**
+  - Read-only at Create: the owner's three projects.
+  - At the Schema phase: the constraint applied and read back.
+  - At Review: the walk's throwaway accounts.
+    - An `index` row written by a change on page 2, with the `home` row byte-identical around it (R-178's proof).
+    - A `tag-paged` row.
+    - The `site` row changed through R-180's ask.
+    - Every planted doc restored.
 - **Vercel production**, `app.inflozo.com`: the deployed editor and the walk.
-- **Supabase production**:
-  - at Create, read-only, the owner's three projects;
-  - at Review, the walk's throwaway accounts, with the seeded Home's planted main feed, which is restored.
 - **T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`**, read-only public `GET /page/2/` at Review, with no key.
   - Where the site's menu holds `/`, the `/` item carries no `nav-current`.
   - `pagination.prev` is `/`.
@@ -666,29 +822,29 @@ your projects:
 - **Ghost 5 Project.** Its Home has a newsletter band above a post grid that is the page's main list of posts.
 - **Pilot sections**, for its Tag and Author pages.
 
-**Superseded by R-178 and rewritten when Questions 3 and 4 are ruled:** steps 3 to 6 below still show page 1 changing
-with page 2, which R-178 rules out.
-
-Steps 3 to 7 are your ruling **R-177**: page 2 is edited exactly like page 1, and what you change there is the same
-section on every page. Steps 12 and 13 are **R-176**: no page 2 is offered where there cannot be one. Every change
-below is taken back with ⌘Z, so your project ends as it started.
+Steps 2 to 8 are your rulings **R-178** and **R-179**: page 2 starts as an exact copy of page 1 and becomes its own the
+moment you change it, without touching page 1. Step 9 is **R-180**: the header changes everywhere, after the site-wide
+prompt. Steps 14 and 15 are **R-176**: no page 2 where there cannot be one. Every change is taken back before the end,
+so your projects end as they started.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid ("Everything Orbit Weekly published this spring"). Look at the foot of its settings on the right. | — | Above "Reset this design", a row **Preview page** with **1** and **2**, and 1 on. |
-| 2 | same | Editor, Home | Press **2**. | — | A dark pill at the top: **Page 2 · ‹ Back to page 1**. The newsletter band above the grid is gone. The first post is "The paragraph is the unit". The pager under the grid reads **← Newer posts · 2 / 5 · Older posts →**. The header's **Home** link has no underline. |
-| 3 | same | Page 2 | Look at Layers on the left, and click the newsletter row. Then point at the header on the page and click it. | — | Only the newsletter row is grey, because it is not on page 2, and clicking it does nothing. The header gets its outline and name tag, and its settings open. |
-| 4 | same | Page 2 | Click the post grid. In its settings open **Layout** and set **Per row** to **Two**. | — | Page 2 now shows two cards a row. |
-| 5 | same | Page 2 | Press **Back to page 1** on the pill. | — | Page 1, with the newsletter band back and the first post "The night shift at the Port of Algeciras" — and its grid is **two a row as well**, because it is the same grid. Press **⌘Z**: three a row again. |
-| 6 | same | Editor, Home | Press **2** again. Point at the grid, press **+ Add section** under it, and choose any section in the picker. Then press **⌘Z**. | — | The new section appears right under the grid, on page 2. ⌘Z takes it away, still on page 2. |
-| 7 | same | Page 2 | Click **Older posts →** under the grid. | — | Nothing happens: there is no page 3 to open. Page 2 stands for every page after it. |
-| 8 | same | Page 2 | Press the **phone** button in the top bar, then the **desktop** one. | — | The page becomes phone-sized with the pill above it, never over it. Then it is desktop again. |
-| 9 | same | Page 2 | Press **P**, then **Esc**. | — | Preview shows page 2 with no pill. Esc brings the editor back on page 2, with the pill. |
-| 10 | same | Page 2 | Press **Back to page 1**, press **2** again, then switch **Template** to **Post** and back to **Home**. | — | Home opens on page 1, with Home underlined in the header. |
-| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag (Field Notes) | Look at the header. Click the post grid and press **2**. | — | Home is not underlined, even on page 1, because on a tag page Ghost underlines nothing. Page 2 shows two posts, "How long a page should take to load" and "What we learned from four hundred renewals", and the pager reads **← Newer posts · 2 / 2**, with no Older link. |
-| 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/author` | Editor, Author (Tomas Lindqvist) | Click the post grid. | — | No **Preview page** row: Tomas Lindqvist's 6 posts fit on one page, so there is no page 2 to offer. |
-| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click "Post Grids — Three Up". | — | No Preview page row. This grid was placed before a page's main post list could be marked, and Story 5.19 adds the way. |
-| 14 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the grey ground beside the page and press **?**. | — | The shortcuts card has no row for page 2. |
+| 2 | same | Editor, Home | Press **2**. | — | A dark pill at the top: **Page 2 · ‹ Back to page 1**. Page 2 is an exact copy of page 1: the newsletter band, then the grid, whose first post is "The paragraph is the unit" and whose pager reads **← Newer posts · 2 / 5 · Older posts →**. The header's **Home** link has no underline. At the top of Layers: "Copy of page 1 — edit anything to make page 2 its own". |
+| 3 | same | Page 2 | Click the newsletter band and press **Delete**. | — | The band is gone from page 2, and the "Copy of page 1" note goes: page 2 now has a design of its own. |
+| 4 | same | Page 2 | Press **Back to page 1** on the pill. | — | Page 1 still has its newsletter band. |
+| 5 | same | Editor, Home | Press **2**. Click the grid, open **Layout** and set **Per row** to **Two**. Then press **Back to page 1**. | — | Page 2 has no band and two cards a row. Page 1 still has its band and three cards a row. |
+| 6 | same | Editor, Home | On page 1, change the band's heading to something else. Press **2**. | `Every Friday` | Page 2 is unchanged: no band, two a row. Page 1 and page 2 are separate now. Go back to page 1 and press **⌘Z** to put the heading back. |
+| 7 | same | Editor, Home | Press **2**, then press **⌘Z** twice. | — | The two changes on page 2 are undone one by one. After the second, page 2 is a copy of page 1 again, band included, and the "Copy of page 1" note is back. |
+| 8 | same | Page 2 | Press **Back to page 1**, change the band's heading, then press **2**. | `Every Friday` | Page 2, still a copy, shows the new heading too. Go back and press **⌘Z**. |
+| 9 | same | Page 2 | Press **2**. Click the header and, in its settings under **Style**, choose another **Background**. | — | A prompt asks **"Change Headers — Rail everywhere?"**, saying it is site-wide. Press **Change it everywhere**. The header changes, and after **Back to page 1** page 1's header has changed too. Press **⌘Z** to put it back. |
+| 10 | same | Page 2 | Click **Older posts →** under the grid. | — | Nothing happens: there is no page 3 to open. Page 2 stands for every page after it. |
+| 11 | same | Page 2 | Press the **phone** button in the top bar, then the **desktop** one. | — | The page becomes phone-sized with the pill above it, never over it. Then it is desktop again. |
+| 12 | same | Page 2 | Press **P**, then **Esc**. | — | Preview shows page 2 with no pill. Esc brings the editor back on page 2, with the pill. |
+| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag (Field Notes) | Look at the header. Click the post grid and press **2**. | — | Home is not underlined, even on page 1, because on a tag page Ghost underlines nothing. Page 2 shows two posts, "How long a page should take to load" and "What we learned from four hundred renewals", and the pager reads **← Newer posts · 2 / 2**, with no Older link. |
+| 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/author` | Editor, Author (Tomas Lindqvist) | Click the post grid. | — | No **Preview page** row: Tomas Lindqvist's 6 posts fit on one page, so there is no page 2 to offer. |
+| 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click "Post Grids — Three Up". | — | No Preview page row. This grid was placed before a page's main post list could be marked, and Story 5.19 adds the way. |
+| 16 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the grey ground beside the page and press **?**. | — | The shortcuts card has no row for page 2. |
 
 ## Questions for the owner
 
@@ -793,7 +949,14 @@ delete the band from page 2 if you do not want it there.
 This is about Home only. A Tag or Author page shows all of its sections on every page, so its page 2 starts as a copy of
 the whole page either way.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2, on Home, Tag and Author alike (owner, 2026-09-22).** *"Page 2 starts as an exact copy of Page 1.
+User can edit each section/style of page 2 independently from Page 1. Users can also edit Page 2 indepenedntly for
+Authors, Tags, too."* Recorded as **R-179**.
+
+- Page 2 starts as an exact copy of page 1 — every section, the newsletter band above the grid included — and follows
+  page 1 until you change something on it.
+- Each section of page 2, and each of its settings, is then changed on its own, never touching page 1.
+- The same holds on Tag and Author pages.
 
 ### Question 4 — Can the header and footer be changed while you are on page 2?
 
@@ -812,4 +975,10 @@ page 1's header changes with it.
    - A change there shows on every page, page 1 included.
    - That is the one exception to "page 1 never changes because of page 2".
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2, with the site-wide prompt (owner, 2026-09-22).** *"Yes allow them to change from Page 2 too. Keep
+the existing prompt stating that this will change it everywhere."* Recorded as **R-180**.
+
+- The header and footer can be changed from page 2, and the change shows on every page, page 1 included.
+- The existing site-wide dialog asks first: before Hide and Delete, as it always has, and before the first change to
+  each of them made on page 2, in its own words — "Change Headers — Rail everywhere?".
+- Nothing new asks on page 1.

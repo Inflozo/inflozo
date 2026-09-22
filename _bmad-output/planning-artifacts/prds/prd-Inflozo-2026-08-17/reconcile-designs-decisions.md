@@ -2622,6 +2622,9 @@ dropped, the grid itself carries on with the next posts, and everything below it
   made page 2's own by the first change on it, so "`index.hbs` is that doc from its designated main feed onward" is at
   most page 2's starting point, which Story 5.16's Question 3 settles. `/index` stays a 404 and the switcher gains no
   row.
+- **Then by R-179 (owner, 2026-09-22):** page 2 starts as an exact copy of page 1, so the slice from the main feed down
+  is gone. What survives is the fallback for a Home with no main feed, where `index.hbs` is the Synthesis Default stack,
+  now inside `pageTwoStack`.
 - **Deliberately not touched:** the Synthesis Defaults' own stacks and the main-feed rule (`:849-861`), both unchanged;
   FR-D21 and Story 5.16, which decide how page 2 is *previewed*, not what it is made of; the export (R-74), which
   draws no `index.hbs` surface because there is none.
@@ -3769,6 +3772,8 @@ exist."*
   - When page 2 stops existing while it is on screen, the canvas returns to page 1 and `#editor-said` says why.
 - **What it does NOT change.** The sample publication (FR-H3's sizes, the owner's at Story 4.4) stays as it is, and
   Home's page 2 is still the middle page FR-D21 describes.
+- **Amended by R-179 (owner, 2026-09-22):** page 2 is its own design, so a hidden main feed on page 1 no longer removes
+  the page-2 control. A page whose posts fit on one page still offers none.
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec (the frozen block on his word) ·
     ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md`.
@@ -3830,14 +3835,63 @@ same design as that of Page 2. Page 1 should remain an independently designed pa
   page 2.
 - **Open, asked the same day.** What page 2 starts from on Home — the Home page from the post grid down, or all of it
   (Story 5.16's Question 3) — and whether the site-wide header and footer can be changed from page 2, which R-177 and
-  R-178 answer differently (Question 4).
+  R-178 answer differently (Question 4). **Both ruled the same day: R-179 and R-180.**
 - Targets:
   - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ the pointers under R-127 and R-177 · ✅ Story 5.16's
     spec (its Question 2, the two questions it opened, and its status back to `draft`) · ✅ `epics.md` (Story 5.16's
     criteria) · ✅ `epic-5-context.md`.
-  - Owed: ⬜ Story 5.16's spec, rewritten when Questions 3 and 4 are ruled · ⬜ `prd.md` FR-D21, FR-D6 and FR-I1 ·
-    ⬜ `ARCHITECTURE-SPINE.md` AD-22 and AD-27(d) · ⬜ `sections-inventory.md` `:804-806` · ⬜ `epics.md` Story 7.3,
-    which compiles page 2's own design and an archive's page-2 branch · ⬜ DW-194.
+  - ✅ Story 5.16's spec, rewritten when Questions 3 and 4 were ruled — the same day, R-179 and R-180 below.
+  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D21, FR-D6 and FR-I1 · ⬜ `ARCHITECTURE-SPINE.md` AD-22 and AD-27(d) ·
+    ⬜ `sections-inventory.md` `:804-806` · ⬜ `epics.md` Story 7.3, which compiles page 2's own design and an
+    archive's page-2 branch · ⬜ DW-194.
+
+**R-179 — page 2 starts as an exact copy of page 1, on Home, Tag and Author alike.** Story 5.16's Question 3, ruled
+**option 2** (owner, 2026-09-22): *"Page 2 starts as an exact copy of Page 1. User can edit each section/style of page 2
+independently from Page 1. Users can also edit Page 2 indepenedntly for Authors, Tags, too."*
+
+- **Why it was a question.** R-127 made page 2 the Home doc from its main feed down, so a welcome above the grid
+  appears once, on page 1. R-178's words said page 2 "copied everything from Page 1", and the two disagreed on where
+  page 2 starts.
+- **What it binds.**
+  - Page 2 starts as every section of page 1, in order, with its words and settings: the band above a Home's grid
+    included. It follows page 1 until the first change made on it (R-178).
+  - Each section of page 2, and each of its settings, is then changed on its own. "Style" is each section's own
+    settings, and the Style Pack stays one for the whole site (Epic 6).
+  - Tag and Author pages likewise.
+  - Page 2 is its own doc: Home's under `index` (the file Ghost serves at `/page/N/`), and Tag's and Author's under
+    `tag-paged` and `author-paged`, which a migration adds first (R-99).
+  - `pageTwoStack` replaces `indexStack` as the one implementation (AD-27(d)): page 2's own doc, else an exact copy of
+    page 1.
+- **What it keeps.** On a Home with no main feed — a landing page, which offers no page 2 in the editor — the compiled
+  page 2 stays R-127's plain list of posts, so `/page/2/` does not repeat a landing page with no posts. That is Story
+  7.3's to compile. `/index` stays a 404, and the Template switcher gains no row.
+- **What it supersedes.** R-127's slice as page 2's content, and R-176's application to a hidden main feed: page 2 is
+  its own design, so a hidden grid on page 1 still offers page 2.
+- Targets:
+  - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec, re-planned whole ·
+    ✅ `epics.md` (Story 5.16's criteria) · ✅ `epic-5-context.md` · ✅ the pointers under R-127 and R-176.
+  - Owed at Story 5.16's Dev: as R-178's.
+
+**R-180 — the header and footer can be changed from page 2, and the existing site-wide prompt says it changes them
+everywhere.** Story 5.16's Question 4, ruled **option 2, with the prompt** (owner, 2026-09-22): *"Yes allow them to
+change from Page 2 too. Keep the existing prompt stating that this will change it everywhere."*
+
+- **Why it was a question.** A site-wide section is one shared instance on every page (FR-D5). R-177 said page 2 lets
+  you change everything, and R-178 said nothing done on page 2 may change page 1. For the header and footer, both could
+  not hold.
+- **What it binds.**
+  - A site-wide section can be changed from page 2, and the change shows on every page, page 1 included. It is
+    R-178's one exception.
+  - FR-D5's existing dialog asks before Hide and Delete, on every page, as it always has. On page 2 it also asks before
+    the first change to each site-wide section, in its own vocabulary: "Change {name} everywhere?", opening on Cancel,
+    with **Change it everywhere** and **Cancel**. A confirmed section asks nothing more until page 2 is left.
+  - Nothing new asks on page 1.
+- **Read, and stated to the owner.** "Keep the existing prompt" is read as extending that dialog to a change made from
+  page 2. If only Hide and Delete were meant, the extra ask is one guard to remove.
+- Targets:
+  - Done at Story 5.16's Create (2026-09-22): ✅ this entry · ✅ Story 5.16's spec · ✅ `epics.md` (Story 5.16's
+    criteria) · ✅ `epic-5-context.md`.
+  - Owed at Story 5.16's Dev: ⬜ `prd.md` FR-D5's site-wide sentence and FR-D21.
 
 
 ## B · Approved decisions superseded by this session
