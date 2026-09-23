@@ -511,6 +511,27 @@ while it is the thing being waited on. There is no busy *colour* and no spinner 
 the label and the cursor are the whole treatment, because the export draws no third state for a
 button and inventing one would be a value R-74 never gave us.
 
+**The placeholder menu — read this before building anything with a placeholder in it.** A dynamic
+placeholder is a `{word}` a user types into a field that the product replaces at render:
+`{page_number}`, `{members}`, and every one added later. **There is exactly one way to reach them,
+and it holds for placeholders nobody has thought of yet** (ruling **R-185**, owner, 2026-09-23 —
+*"This should be done for all future placeholders and existing ones"*):
+
+- **A small `{}` button beside the field's LABEL**, on every field that accepts any placeholder, and
+  **nothing under the field** — no caption, no chip row, no sentence. This **withdraws**
+  `P0-1 Inline Text Toolbar.dc.html:174-204`, whose chip row would otherwise repeat under every text
+  box in a panel once `{page_number}` became the token every field accepts (R-182).
+- **The menu is S4d's and D5b's menu** (R-171), not a new one: the same card at radius 12 with 6px
+  padding and `shadow-lg`, the same uppercase heading, the same list scrolling inside the card, and
+  rows that are a name at 13/500 over **one line at 11px muted**. It is built from
+  `components/editor/bar-menu.tsx`, so Template, View as and this can never drift apart.
+- **A row is the placeholder's code, its one-line description under it, and Copy + Insert on the
+  right.** The sentence "Anything else in braces prints exactly as you typed it" is said **once**, at
+  the foot of the menu.
+- **A placeholder with no description cannot ship.** Its one-liner lives beside its declaration in
+  `vocabulary.ts`'s `PLACEHOLDERS`, and `validate.ts` refuses a declared placeholder that has none —
+  the mechanism that keeps this rule true rather than remembered. Built at Story 5.16a.
+
 ---
 
 ## Do's and Don'ts

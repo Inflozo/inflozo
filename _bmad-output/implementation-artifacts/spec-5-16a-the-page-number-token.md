@@ -15,8 +15,9 @@ Type `{page_number}` into any text you can edit — a header, a hero, a heading,
 number of the page the visitor is on: **1** on your front page, **2** at `/page/2/`, **3** on page 3, and **nothing at
 all** on a post, a standalone page or the 404. While you design, the canvas shows the number the same way a visitor
 sees it, and the moment you click into the words to change them the token shows again, so you can see it and edit it.
-Under every text box in the settings panel there is now a small `{page_number}` chip that puts it in at your cursor, and
-every other word you write in braces still prints exactly as you typed it.
+Beside the label of every text box in the settings panel there is now a small **`{}`** button: press it and a short menu
+lists the placeholders that box accepts, each with one line saying what it does and, on the right, **Copy** and
+**Insert** — and every other word you write in braces still prints exactly as you typed it.
 
 ## Intent
 
@@ -30,7 +31,8 @@ it alone. The canvas substitutes the number it is painting (`templateContext`'s 
 Story 5.16 already computes for the page's address) and nothing where the page has none. The theme emitter substitutes a
 single constant Handlebars expression, `{{@root.pagination.page}}`, which Ghost answers on every paginated page, in
 `default.hbs` and in partials, and answers empty where there is no pagination — so R-183 is Ghost's own behaviour rather
-than a rule we enforce. Under every text field the P0-1 chip row now offers it.
+than a rule we enforce. Every text field reaches it from the `{}` button beside its label (R-185), the one way
+every placeholder is offered from here on.
 
 **No Schema phase.** Nothing is stored that was not stored before: the token is characters in a prop's text, and
 `content` is already `z.record(z.string(), z.unknown())` (`doc-schema.ts:22`).
@@ -53,8 +55,19 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
   triple-stache. The canvas emitter can never emit a mustache at all, by construction.
 - **Every other word in braces still prints exactly as typed** (R-27, unchanged), and a token split across a mark
   boundary is still not substituted (`marks.ts:121-122`).
-- **Whole or nothing** (R-27): the chip refuses to insert a token that would not fit the field's `maxChars`, and says
-  why in the limit sentence. That is built; it must keep working for a 13-character token.
+- **Whole or nothing** (R-27): Insert refuses a token that would not fit the field's `maxChars`, and says why in the
+  limit sentence. That is built; it must keep working for a 13-character token.
+- **Every dynamic placeholder is reached one way: a `{}` button beside the field's label** (R-185, owner, 2026-09-23).
+  P0-1's caption, chip row and info box **under** the field are withdrawn for every placeholder, existing and future.
+  The menu lists the placeholders **that field** accepts, each as its code over one line of description, with **Copy**
+  and **Insert** on the right, and says the "anything else in braces" sentence **once**, at its foot.
+- **The menu is S4d's and D5b's menu, not a new one.** It is built from `components/editor/bar-menu.tsx` — R-171's own
+  anatomy, whose row is already a name over one line at 11px muted with a trailing slot — and placed by `lib/menu.ts`'s
+  `openMenu`, which gives light dismiss, Escape and focus return. Same components, same tokens (R-74's extrapolation
+  rule).
+- **No placeholder without a description.** Every placeholder's one-liner lives in one exported map, and a design that
+  declares a placeholder absent from it is refused by `validate.ts`. That is what makes R-185 hold for placeholders
+  nobody has thought of yet.
 - **Standing rule 1.** Where Ghost serves `pagination.page` to `default.hbs` is read in Ghost's own source on both
   majors **and executed on T1 and T3, recorded in `MEASUREMENTS.md` §49, before anything is emitted for it.**
 - **R-82.** Review runs against the real infrastructure: T1 `ghost6.inflozo.com` (6.58.0), T3 `ghost5.inflozo.com`
@@ -62,10 +75,10 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
 
 **Ask First:**
 
-- Question 1 below (where the token row's explanation line goes) is the owner's and is open. Build the RECOMMENDED
-  option; if he rules otherwise, change it inside this story.
 - Emitting anything other than the single constant expression — a guard, a helper, a partial — changes what AD-5
   promises. Halt and ask.
+- Adding anything to the placeholder menu beyond a row's code, its one line, Copy and Insert, plus the one closing
+  sentence. R-185's words are "clean and minimal" and it governs every placeholder from here on.
 - Giving any *other* token a live Handlebars form. That is the theme-side token debt (`deferred-work.md:3762`,
   `:3776-3778`) and it is not this story.
 
@@ -75,8 +88,10 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
   (AD-4, FR-G3).
 - Never substitute the token inside a link's attributes or any other attribute sink: `escapeUserText` is called in
   exactly two places (`marks.ts:102` for link attributes, `marks.ts:173` for text), and only the text one substitutes.
-- Never add a chip to the canvas's floating mark toolbar. The four marks and the link are what P0-1 puts there; the
-  token chip lives under the panel field, which is where P0-1 draws it (`:174-204`) and how R-182 words it.
+- Never add a placeholder control to the canvas's floating mark toolbar. The four marks and the link are what P0-1 puts
+  there; the placeholders are reached from the panel field's `{}` button (R-185).
+- Never keep `TokenRow` beside the new menu, and never leave the old row on the one field that has a token of its own.
+  R-185 is one way for every placeholder, existing and future — two ways is the thing it was ruled to stop.
 - Never change what `/pilots`, the Section Picker's cards, the design ring's tiles, `tools/check-snapshots.mjs` or the
   render matrix emit. They pass no token values and must stay byte-identical — that is this story's control.
 - No migration, no new stored field, no change to `commit()`, the flush, the local store or the hydrate.
@@ -92,7 +107,11 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
 | Theme emitter, any target | the same heading | `The archive — page {{@root.pagination.page}}` — one expression, unescaped, spliced by `UserText.substitute` | N/A |
 | Theme emitter, a typed `{{page_number}}` | the user typed double braces | `&#123;{{@root.pagination.page}}&#125;` — prints `{3}` on page 3, never a triple-stache | AD-36 vector |
 | Either emitter, `{pagenumber}` · `{Page_Number}` · `{page_number }` | not the token | literal, escaped exactly as today | N/A |
-| Chip pressed, field at its limit | `maxChars` leaves fewer than 13 characters | nothing is inserted; the limit sentence appears under the field | whole-or-nothing (R-27) |
+| **Insert** pressed, field at its limit | `maxChars` leaves fewer than 13 characters | nothing is inserted; the limit sentence appears under the field | whole-or-nothing (R-27) |
+| **Copy** pressed | any row | `{page_number}` on the clipboard, the button says so briefly, the menu stays open | a clipboard the browser refuses leaves the menu usable and says nothing false |
+| The `{}` button on the Newsletter's "Join {members} readers" box | that prop declares `members` | the menu lists **two** rows — `{members}` and `{page_number}` — each with its own line | N/A |
+| The `{}` button on any other text box | no prop-declared tokens | the menu lists `{page_number}` alone | N/A |
+| An `image`, `url`, `icon` or `date` field | not a text field | no `{}` button — the field accepts no placeholder | N/A |
 | A design declares `tokens: ["page_number"]` | `validate.ts` | `bad-inline-token`, with a sentence naming R-182: every text prop accepts it already, so it is never declared | authoring refusal |
 | `/pilots`, picker cards, ring tiles, `check-snapshots`, the render matrix | no token values passed | unchanged, byte for byte | the story's control |
 
@@ -145,15 +164,33 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
 
 **The panel and the canvas's inline editor**
 
-- `apps/web/components/controls/rich-field.tsx:32-62` — `TokenRow`: caption `TOKENS THIS FIELD ACCEPTS`, the chips
-  (pressed when the text already holds one), and the grey info box. `:35` is the early return that makes a field with no
-  tokens show no row. Used at `:148-158`.
-- `apps/web/components/controls/sidebar.tsx:293-321` — the one-line `text` field and its own `TokenRow` at `:308-320`,
-  with the hand-rolled insert-at-selection at `:311-319`.
+- `apps/web/components/controls/rich-field.tsx:32-62` — **`TokenRow`, which R-185 withdraws**: caption
+  `TOKENS THIS FIELD ACCEPTS`, the chips, the grey info box, and the early return at `:35`. Deleted, with its two call
+  sites. Its insert handler at `:148-158` is the behaviour the new menu's **Insert** keeps — whole-or-nothing against
+  `maxChars`, `session.insert` while the field is live, `replaceRange` at the end when it is not.
+- `apps/web/components/controls/sidebar.tsx:293-321` — the one-line `text` field, its `TokenRow` at `:308-320` (also
+  deleted) and the hand-rolled insert-at-selection at `:311-319` that **Insert** keeps. `field()` at `:274-326` is where
+  both field kinds are dispatched, so it is where the `{}` button is attached to the label for both.
+- `apps/web/components/editor/bar-menu.tsx` — **what the new menu is built from** (R-171): `BAR_POPOVER` `:31`,
+  `BarMenuCard` `:34-45` (radius 12, 6px padding, `shadow-lg`, an 11/600 uppercase heading, the list scrolling inside
+  the card on the Kit's slim scrollbar), `BarMenuRow` `:59-83` — a glyph, the name at 13/500 over **one line at 11px
+  muted**, and a **trailing slot**. The header comment `:1-20` is the anatomy, and it is the owner's own.
+  **One adaptation:** `BarMenuRow` is itself a `<button>`, and R-185 puts two buttons on the right, so the placeholder
+  row is a sibling in this file with the same parts and measures — never a second look.
+- `apps/web/lib/menu.ts` — `openMenu` (placement, both-edge clamping R-126, flip, and the scroll-inside-the-menu rule
+  from Story 5.13) and `arrowKeys`. A `popover="auto"` gives light dismiss, Escape and focus return for nothing.
+  Pitfalls that have bitten: rows must be `relative` or an sr-only word gives the card a second scrollbar, and focus a
+  row only inside `openMenu`'s own frame.
+- `apps/web/components/kit/icons.tsx` — the Tabler set; **no braces glyph yet**, so `Braces` is added here beside the
+  rest and nowhere else.
+- `apps/web/components/editor/template-switcher.tsx:14-30` — the worked example of the same anatomy, including how
+  `CANVASES[key].caption` supplies each row's one line. The placeholder descriptions are that pattern.
 - `apps/web/lib/inline.ts:71-73` `markup()` and `:304` — **serialize with no token values while editing**, the comment
-  already says why. `:323-330` `Inline.insert`, the chip's door on the canvas-mounted fields.
+  already says why. `:323-330` `Inline.insert`, **Insert**'s door on the canvas-mounted fields.
 - `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/P0-1 Inline Text Toolbar.dc.html:174-204` — the
-  frame. `:197` "A FIELD WITH NO TOKENS SHOWS NO ROW AT ALL" is the rule Question 1 puts to the owner.
+  chip row, **withdrawn by R-185**, and `:197`'s "A FIELD WITH NO TOKENS SHOWS NO ROW AT ALL" with it. The frame stays
+  the authority for everything else it draws; this surface is extrapolated from S4d/D5b's menu as `bar-menu.tsx`
+  already builds it (R-74's own rule for a surface with no frame).
 
 **Read-only evidence already gathered (Ghost's source, both majors, 2026-09-23)**
 
@@ -195,12 +232,15 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
       what `default.hbs` was served on both majors, page by page, with the command and the date. -- the record standing
       rule 1 requires; §48's neighbour.
 - [ ] `packages/library/src/vocabulary.ts` -- export `PAGE_NUMBER = 'page_number'` beside `INLINE_TOKENS`, with the
-      comment saying it is the one token no prop declares because every `text` and `richtext` prop accepts it (R-182).
-      Leave `INLINE_TOKENS` at its three. -- keeps the closed per-field universe and the universal token distinct, so
-      the authoring refusal below still fires.
+      comment saying it is the one token no prop declares because every `text` and `richtext` prop accepts it (R-182);
+      and export `PLACEHOLDERS`, one **one-line description per placeholder**, covering every `INLINE_TOKENS` entry and
+      `PAGE_NUMBER`. Leave `INLINE_TOKENS` at its three. -- keeps the closed per-field universe and the universal token
+      distinct; the descriptions are what R-185's menu is for, and one map is the only place they can be.
 - [ ] `packages/library/src/validate.ts` -- in `bad-inline-token` (`:676-677`), branch on `PAGE_NUMBER` and say that
-      every text prop accepts `{page_number}` already, so it is never declared. -- a designer who tries it gets the
-      reason, not the closed-set list.
+      every text prop accepts `{page_number}` already, so it is never declared; and refuse a declared token that has no
+      `PLACEHOLDERS` entry, naming R-185. Add the unit assertion that every token in the closed set plus `PAGE_NUMBER`
+      has a description. -- **this is how R-185 reaches placeholders nobody has thought of yet**: a new one cannot ship
+      without the line the menu shows.
 - [ ] `packages/section-runtime/src/marks.ts` -- put `page_number` in `TOKEN_SET` and in every prop's `declared` list;
       export `PAGE_NUMBER_HBS = '{{@root.pagination.page}}'`; give `serializeMarks` a fourth argument saying it is
       emitting for the theme; interleave escaping and substitution in `esc` so the page number's replacement is inserted
@@ -217,11 +257,26 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- in `paint()`, keep the whole `site` from the
       `templateContext` call already made at `:1076` and hand `site.pagination?.page` to every section beside `url`.
       -- one more field of a call that is already made; Post, Page and 404 return no pagination, so they hand none.
-- [ ] `apps/web/components/controls/rich-field.tsx` -- `TokenRow` is handed the field's own tokens **plus**
-      `{page_number}`, so every `richtext` field shows the row; place the grey info box per Question 1's RECOMMENDED
-      option. -- P0-1's chip, for the one token every field accepts.
-- [ ] `apps/web/components/controls/sidebar.tsx` -- the same for the one-line `text` field, and place the once-per-panel
-      info box where Question 1's RECOMMENDED option puts it. -- the two field kinds stay one behaviour.
+- [ ] `apps/web/components/kit/icons.tsx` -- add the Tabler `Braces` glyph. -- one glyph, in the one place glyphs live.
+- [ ] `apps/web/components/editor/bar-menu.tsx` -- add the placeholder row beside `BarMenuRow`: the same 10px gutters,
+      the code at 13/500 in the mono face over **one line at 11px muted**, and a trailing slot holding **Copy** and
+      **Insert** as two small buttons. It is a `<li>` with two buttons, not a button with buttons inside. -- R-185's
+      row, in the file whose whole purpose is that the menus cannot drift apart.
+- [ ] `apps/web/components/controls/placeholder-menu.tsx` -- new: the `{}` trigger and its menu. The trigger is a small
+      `Braces` button beside the field's label, labelled for a screen reader with the field's name; the card is
+      `BarMenuCard` headed "Placeholders", the rows are that field's tokens in `PLACEHOLDERS`' order with their
+      descriptions, and the foot carries the one sentence "Anything else in braces prints exactly as you typed it —
+      {this} stays {this} on the page." **Insert** calls the handler the caller passes (the field's existing
+      whole-or-nothing insert), **Copy** writes the code to the clipboard and says so on the button for a moment.
+      Placement, clamping, light dismiss, Escape and focus return come from `openMenu`; rows are `relative` so no
+      sr-only word gives the card a second scrollbar. -- one surface, used by both field kinds and by every placeholder
+      there will ever be (R-185).
+- [ ] `apps/web/components/controls/rich-field.tsx` -- delete `TokenRow` and its call site; put the `{}` trigger beside
+      the field's label, handing it the field's tokens plus `{page_number}` and the existing insert handler
+      (`session.insert`, else `replaceRange` at the end, whole or nothing). -- the row goes, the behaviour stays.
+- [ ] `apps/web/components/controls/sidebar.tsx` -- the same at the one-line `text` field, keeping its
+      insert-at-selection and its refusal caption; the `{}` trigger is attached where `field()` (`:274-326`) draws each
+      label, so both kinds get it from one place. -- the two field kinds stay one behaviour.
 - [ ] `packages/section-runtime/src/agreement.test.ts` -- extend R-27's case (`:290-300`) and add the page number's: the
       canvas prints the handed number, prints nothing when handed none, and the theme prints `{{@root.pagination.page}}`;
       a prop declaring no tokens gets it too; `{members}` undeclared still stays literal on both sides. -- §7.3's exit
@@ -234,28 +289,42 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
       no token values, so the token shows again on click-in and the caret can sit inside it. -- R-182's second sentence;
       today it is a comment and nothing fails if it is lost.
 - [ ] `tools/probe/run-verify-editor.cjs` -- a journey: type `{page_number}` into a heading on page 1, see the number,
-      press **2** and see 2, click back into the words and see the token, press the chip under a panel field, switch to
-      the Post canvas and see nothing. Record two runs if the first dies on a Playwright timeout (DW-222). -- the
-      deployed walk is where R-80's test is rehearsed.
-- [ ] `docs/section-authoring.md` -- amend `:478-491`: the per-prop list, and the one token that is not in it.
-      -- authoring is a documented deliverable (FR-G3).
+      press **2** and see 2, click back into the words and see the token, open a field's `{}` menu and press **Insert**,
+      open the Newsletter's `{members}` box and see **two** rows, switch to the Post canvas and see nothing. Record two
+      runs if the first dies on a Playwright timeout (DW-222). -- the deployed walk is where R-80's test is rehearsed.
+- [ ] `apps/web/a11y` (the nearest existing home, beside `busy.test.ts`) -- the menu: the trigger names the field it
+      belongs to, the card is reachable and dismissable by keyboard, arrow keys walk the rows, Escape returns focus to
+      the `{}` button, and **Copy**'s confirmation is announced rather than only coloured. -- R-98's neighbourhood: a
+      control that does something says so.
+- [ ] `docs/section-authoring.md` -- amend `:478-491`: the per-prop list, the one token that is not in it, and **the
+      description every declared token must carry**, with the refusal that enforces it. -- authoring is a documented
+      deliverable (FR-G3), and this is the page an author reads before declaring a placeholder.
+- [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` § Components -- **the note the owner
+      asked for**, written at Create rather than deferred, because being missed is the thing he asked us to prevent:
+      the component entry "The placeholder menu" — every dynamic placeholder, existing and future, reached from a `{}`
+      button beside the field's label and never from a row under the field; what the menu holds; P0-1:174-204
+      withdrawn; and the refusal that keeps it true (R-185). **Build to it; do not restate it.**
+- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- the field's affordance in one
+      line, pointing at DESIGN.md's entry. -- the two spines say the same thing about a surface or neither is trusted.
 - [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- FR-D4 (`:221`) and FR-G3 (`:282`): the
       per-field sentence gains R-182's one exception. -- R-182's own propagation targets.
 - [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` -- AD-4
       (`:112`) and AD-5's neighbourhood (`:391`): one constant expression is emitted raw, and why that is not a hole.
       -- standing rule 3; the invariant is where the rule must live.
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- tick R-182's and
-      R-183's remaining ⬜ target rows (`:3934-3936`, `:3943-3944`) as this story lands them. -- the ledger is the record
-      of what has reached where.
+- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- tick R-182's,
+      R-183's and **R-185's** remaining ⬜ target rows as this story lands them. -- the ledger is the record of what has
+      reached where.
 - [ ] `_bmad-output/implementation-artifacts/epic-5-context.md` -- an indented sub-bullet under Story 5.16's entry:
       what 5.16a built, in DW-73's shape. Append; never rewrite the file. -- the next story reads this, not the specs.
-- [ ] grep the repository for `INLINE_TOKENS`, `substituteTokens` and "per-field" before the Dev commit. -- standing
-      rule 7: a propagation list cannot audit itself.
+- [x] `_bmad-output/planning-artifacts/epics.md` -- Story 5.16a's card carries R-185's criterion, its **Rulings** line
+      gains R-171 and R-185, and its **Frame** line says the surface is extrapolated rather than drawn. Done at Create.
+- [ ] grep the repository for `INLINE_TOKENS`, `substituteTokens`, `TokenRow` and "per-field" before the Dev commit.
+      -- standing rule 7: a propagation list cannot audit itself.
 
 **Acceptance Criteria:**
 
-- Given any `text` or `richtext` prop in any section, when the user types `{page_number}` or presses its chip, then the
-  token is accepted — no prop declares it and none has to (R-182, amending R-27).
+- Given any `text` or `richtext` prop in any section, when the user types `{page_number}` or presses **Insert** in its
+  `{}` menu, then the token is accepted — no prop declares it and none has to (R-182, amending R-27).
 - Given the canvas painting Home page 1, when a section's text holds the token, then the canvas prints `1`; and on
   page 2, `2` (R-182).
 - Given the canvas painting Post, Page or 404 — including the site-wide header, which is on every one of them — when the
@@ -268,10 +337,18 @@ than a rule we enforce. Under every text field the P0-1 chip row now offers it.
   standalone page and the 404, nothing — executed on T1 and T3 and recorded in MEASUREMENTS §49 (standing rule 1).
 - Given any other word in braces, when it is typed into any field, then it prints exactly as typed on both emitters
   (R-27, unchanged).
-- Given the panel, when a text field is shown, then its token row matches the frame — `P0-1 Inline Text Toolbar.dc.html`
-  `:174-204`: the caption `TOKENS THIS FIELD ACCEPTS`, a 24px mono chip reading `{page_number}` that draws pressed when
-  the field already holds it, and the grey "anything else in braces" line placed per the owner's ruling on Question 1
-  (R-74).
+- Given the panel, when a text field is shown, then beside its label — and nowhere else — there is a small `{}` button,
+  and under the field there is no caption, no chip and no sentence (R-185).
+- Given that button, when it is pressed, then a menu opens **matching `bar-menu.tsx`'s anatomy part for part** — S4d's
+  and D5b's card, heading, scrolling list and rows as R-171 set them, at radius 12 with 6px padding and `shadow-lg`,
+  each row the placeholder's code at 13/500 over one line at 11px muted — listing exactly the placeholders that field
+  accepts, with **Copy** and **Insert** on the right of each and the "anything else in braces" sentence once at the
+  foot (R-185, and R-74's extrapolation rule: same components, same tokens).
+- Given a field whose prop declares a token of its own, when the menu opens, then that token and `{page_number}` are
+  both listed, each with its own description; and given a field that is not `text` or `richtext`, then there is no `{}`
+  button at all.
+- Given any placeholder declared anywhere in the library, when the library is validated, then it has a one-line
+  description or validation fails naming R-185 — so no future placeholder can reach the menu without one.
 - Given `/pilots`, the Section Picker's cards, the design ring's tiles, `tools/check-snapshots.mjs` and the render
   matrix, when they render, then their output is byte-identical to the baseline commit — the story's control.
 
@@ -310,6 +387,20 @@ channel, from the same call, for the same reason.
 missing path as the empty string. On the canvas, `templateContext` returns no pagination for those targets. Both sides
 answer R-183 without a rule.
 
+**Why the placeholder menu is not a new design.** R-185 asks for a list of choices, each a code with a short
+description under it and actions on the right. That is R-171's menu row, already built: `BarMenuRow` is a name at
+13/500 over one line at 11px muted with a trailing slot, in a card the owner already specified (radius 12, 6px padding,
+`shadow-lg`, an uppercase heading, the list scrolling inside the card). Building the placeholder menu from
+`bar-menu.tsx` means the Template switcher, View as and this menu are the same object with different rows — which is
+the file's stated reason to exist, and R-74's rule for a surface the export does not draw. The only new parts are the
+`{}` trigger and a row that carries two buttons instead of being one.
+
+**Why the description lives with the token and not in the component.** "This should be done for all future placeholders"
+is a promise that decays unless something refuses to let it decay. Putting the one-liner in `PLACEHOLDERS` beside the
+token, and refusing a declared token that has no entry, means a placeholder added in E9, E10 or Story 5.18 arrives with
+its description or does not arrive. The note in DESIGN.md tells a later story *what the surface is*; the refusal makes
+sure it cannot be half-built.
+
 ## Verification
 
 **Commands:**
@@ -329,8 +420,9 @@ answer R-183 without a rule.
 
 **Manual checks (if no CLI):**
 
-- The panel's token row against `P0-1 Inline Text Toolbar.dc.html:174-204` at 1440 wide: caption, chip size, mono face,
-  the pressed tint when the field holds the token, and the info box where Question 1 puts it.
+- The placeholder menu beside the Template switcher's, at 1440 wide: the same card radius, padding, shadow, heading
+  size and row rhythm, differing only in its rows' contents and their two trailing buttons (R-185, R-171).
+- The panel with the menu closed: nothing at all under a text field that was not there before this story.
 
 ## Owner's manual test
 
@@ -340,8 +432,9 @@ your projects, and every change is taken back before the end, so they finish as 
 - **Ghost 5 Project** — its Home has a post grid that is the page's main list, so it has a page 2.
 - **Pilot sections** — for a post and a hero.
 
-Steps 1 to 4 are **R-182**: the number on the canvas, and the token back when you click in. Step 5 is the chip. Steps 6
-and 7 are **R-183**: nothing where a page has no number. Step 8 is the one thing that must *not* change.
+Steps 1 to 4 are **R-182**: the number on the canvas, and the token back when you click in. Steps 5 and 6 are your
+**R-185**: the `{}` button beside a field's label, its menu, Copy and Insert. Steps 7 and 8 are **R-183**: nothing where
+a page has no number. Step 9 is the one thing that must *not* change.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -349,10 +442,11 @@ and 7 are **R-183**: nothing where a page has no number. Step 8 is the one thing
 | 2 | same | Editor, Home | Click the grey ground beside the page, so nothing is selected. | — | The eyebrow now reads **The archive — page 1**. |
 | 3 | same | Editor, Home | Click the post grid, and in its settings on the right press **2** in the **Preview page** row. | — | Page 2 opens, and its eyebrow reads **The archive — page 2**. |
 | 4 | same | Page 2 | Click into the eyebrow words. | — | The words change back to **The archive — page {page_number}** so you can edit them. Click the ground again and the **2** comes back. |
-| 5 | same | Page 2 | Press **Back to page 1**. Click the post grid and find its **Heading** box in the settings on the right. Click at the end of the heading, then press the small **{page_number}** chip under the box. | — | `{page_number}` is added where your cursor was, the chip turns coral, and on the canvas the heading ends in **1**. Press **⌘Z** twice to take step 5 and step 1 back. |
-| 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the header's button words at the top right and type over them. | `Page {page_number}` | The button reads **Page 1**. |
-| 7 | same | Editor, Post | Open the **Template** menu in the top bar and choose **Post**. | — | The same header button now reads **Page** with no number, because a post has no page number. Choose **Home** again, click the button words and press **⌘Z** to put them back. |
-| 8 | same | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all — on the canvas and on your site. Press **⌘Z**. |
+| 5 | same | Page 2 | Press **Back to page 1**. Click the post grid and find its **Heading** box in the settings on the right. Click at the end of the heading, then press the small **`{}`** button beside the word "Heading". | — | A small menu opens, headed **Placeholders**, with one row: **`{page_number}`** and under it a line saying what it does. On its right, **Copy** and **Insert**. Nothing appears under the box itself. |
+| 6 | same | Page 2 | Press **Insert**. | — | `{page_number}` is added where your cursor was and the canvas heading ends in **1**. Press **Esc** if the menu is still open, then **⌘Z** twice to take step 5 and step 1 back. |
+| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the header's button words at the top right and type over them. | `Page {page_number}` | The button reads **Page 1**. |
+| 8 | same | Editor, Post | Open the **Template** menu in the top bar and choose **Post**. | — | The same header button now reads **Page** with no number, because a post has no page number. Choose **Home** again, click the button words and press **⌘Z** to put them back. |
+| 9 | same | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all — on the canvas and on your site. Press **⌘Z**. |
 
 ## Questions for the owner
 
@@ -388,4 +482,21 @@ you scroll about twice as far to reach the bottom of the panel.
 Whichever you choose, typing `{page_number}` works in every text box, on the canvas and in the panel, and every other
 word in braces still prints exactly as you typed it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: none of the three — a design of his own (owner, 2026-09-23).** *"It should not repeat. Change in how dynamic
+placeholders ({members}, {page_numbers} etc to be shown. We will show a small '{}' icon near the label of the field
+where we can have dynamic placeholders. On click of that, it will show the list of placeholders we can choose and a
+small descriptions below each. On right side we will have option to copy that code and insert that code. Keep overall
+design clean and minimal. This should be done for all future placeholders and existing ones. Add a note about this
+design so it is not missed when we work on them in future."* Recorded as **R-185**.
+
+- **Nothing goes under the field any more.** P0-1's caption, chip row and grey info box are withdrawn — for
+  `{page_number}`, for `{members}`, and for every placeholder that comes later.
+- **A small `{}` button sits beside the field's label**, on every field that accepts a placeholder — which, since
+  R-182, is every text box.
+- **Its menu** lists the placeholders *that field* accepts: the code, one line under it saying what it does, and
+  **Copy** and **Insert** on the right. The "anything else in braces prints exactly as you typed it" sentence is said
+  **once**, at the foot of the menu.
+- **It is not a new look.** The menu is the one already agreed for Template and View as (R-171) — the same card, the
+  same heading, the same rows of a name over one muted line with a slot on the right. Only the rows' contents differ.
+- **The note asked for** is a component entry in `DESIGN.md`, and it is backed by a refusal: a placeholder declared
+  without its one-line description fails validation, so a later story cannot add one that the menu cannot explain.

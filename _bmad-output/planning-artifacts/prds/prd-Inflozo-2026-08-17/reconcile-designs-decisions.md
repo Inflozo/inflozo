@@ -3950,6 +3950,35 @@ anywhere where I can edit text inline. So users can add a header, hero and show 
 - Targets: ✅ this entry · ✅ Story 5.16's spec (Question 7) · ✅ `epics.md` (Story 5.16a's card) ·
   ✅ `sprint-status.yaml` (its backlog row) · ✅ `epic-5-context.md` — Story 5.16, 2026-09-22.
 
+**R-185 — every dynamic placeholder is reached from one `{}` icon beside the field's label, and P0-1's chip row is
+withdrawn.** Story 5.16a's Question 1, answered with a design of the owner's own (owner, 2026-09-23): *"It should not
+repeat. Change in how dynamic placeholders ({members}, {page_numbers} etc to be shown. We will show a small '{}' icon
+near the label of the field where we can have dynamic placeholders. On click of that, it will show the list of
+placeholders we can choose and a small descriptions below each. On right side we will have option to copy that code and
+insert that code. Keep overall design clean and minimal. This should be done for all future placeholders and existing
+ones. Add a note about this design so it is not missed when we work on them in future."*
+
+- **What it binds, for every placeholder there will ever be.** A field that accepts any placeholder carries **a small
+  `{}` icon beside its label** and nothing else — no caption, no chip row, no sentence under the field. The icon opens
+  a menu listing the placeholders **that field** accepts: per row, the placeholder's code, **a one-line description
+  under it**, and on the right **Copy** and **Insert**. The sentence "Anything else in braces prints exactly as you
+  typed it" is said **once**, at the foot of that menu.
+- **It replaces a drawn frame, deliberately.** `P0-1 Inline Text Toolbar.dc.html:174-204` drew the caption
+  `TOKENS THIS FIELD ACCEPTS`, a chip row and a grey info box **under** the field, and `:197` ruled "a field with no
+  tokens shows no row at all". R-182 made `{page_number}` a token every text field accepts, which would have put that
+  block under every text box — eight times in the Newsletter's panel. **The owner withdrew it rather than repeat it.**
+  R-74 still stands: the export remains the design authority for everything it draws that a later ruling has not
+  replaced, and this surface is **extrapolated from the nearest frame that has these parts** — S4d's and D5b's menu
+  anatomy, already built as `apps/web/components/editor/bar-menu.tsx` under R-171, whose row is a name over **one line
+  of description** with a **trailing slot**. No second vocabulary is invented.
+- **A placeholder cannot arrive without its description.** The description is not decoration; it is what the menu is
+  for. Every placeholder is declared in one place with its one-liner, and a design declaring a placeholder that has
+  none is **refused at authoring time** — so "all future placeholders" is a gate, not a habit.
+- Targets: ✅ this entry · ✅ Story 5.16a's spec (Question 1, and the surface it builds) · ✅ `DESIGN.md` § Components
+  (the note the owner asked for, written at Create so a later story cannot miss it) · ✅ `epics.md` Story 5.16a's card
+  — Story 5.16a, 2026-09-23. ⬜ `docs/section-authoring.md` (what an author declares, and the description they must
+  write) · ⬜ `EXPERIENCE.md` (the field's affordance) · ⬜ `epic-5-context.md` — at Story 5.16a's Dev.
+
 
 ## B · Approved decisions superseded by this session
 

@@ -2147,10 +2147,17 @@ and **a post, a page and the 404 page print nothing** — **R-183** (owner, 2026
 through Ghost's `{{t}}` (read in source on both majors, R-182)
 **And** where Ghost serves `pagination.page` to the header in `default.hbs` is read in source and recorded on T1 and
 T3 before anything is emitted for it (standing rule 1)
-**And** the chip matches P0-1's typed tokens.
+**And** **every placeholder is reached from one `{}` button beside the field's label** — **R-185** (owner,
+2026-09-23), which **withdraws P0-1's chip row under the field** for `{page_number}`, for `{members}` and for every
+placeholder added later: the button opens S4d's and D5b's own menu (R-171, `bar-menu.tsx`), each row the code over one
+line of description with **Copy** and **Insert** on the right, the "anything else in braces" sentence once at its foot,
+and nothing under the field at all; a placeholder declared without its description is refused by `validate.ts`, and
+`DESIGN.md` § Components carries the note he asked for.
 
-**FRs:** FR-D4 and FR-G3 (amended by R-182), FR-D21. · **Frame:** `P0-1 Inline Text Toolbar.dc.html` (typed tokens,
-`:174-204`). · **Rulings:** R-27, R-177, R-182, R-183, R-184. · **Owner test:** yes.
+**FRs:** FR-D4 and FR-G3 (amended by R-182), FR-D21. · **Frame:** none of its own — the placeholder menu is
+extrapolated from S4d · D5b's menu anatomy as `bar-menu.tsx` builds it (R-74's rule for a surface the export does not
+draw); `P0-1 Inline Text Toolbar.dc.html:174-204` is withdrawn by R-185. · **Rulings:** R-27, R-171, R-177, R-182,
+R-183, R-184, R-185. · **Owner test:** yes.
 
 ### Story 5.17: The edit lock and the take-over choreography
 
