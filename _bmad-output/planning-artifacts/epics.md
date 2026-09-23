@@ -2175,27 +2175,30 @@ So that two tabs never quietly overwrite each other.
 
 **Given** a project already open elsewhere
 **When** I open it
-**Then** I get **read-only mode** with a "Request editing" nudge and the banner "…is editing this site — you are
-reading along" (UX-DR7)
+**Then** I get **read-only mode** with a "Request editing" nudge and the banner "You are editing this site somewhere
+else — you are reading along here" (UX-DR7) — **no surface names a person, because a project has one owner and team
+seats are out of v1, so the other session is always another tab, browser or device of yours** (**R-189**, owner,
+2026-09-23; "Or message Rosa" is withdrawn with it)
 **And** on accept, the current holder **syncs its changes to the cloud, releases the lock and becomes
 read-only**, and the requester gains edit rights
 **And** the lock heartbeat carries the holder's **unsynced-edit count in user-perceived edits, never raw
 operations** — a shuffle is one edit however many ops it costs — because this number appears verbatim in the
 string that tells a user what they lost
-**And** if a nudge goes unanswered the requester is told "No response; that session has X unsaved edits" and may
+**And** if a nudge goes unanswered the requester is told "No response; that session has X unsynced edits" and may
 **take over anyway**: the lock transfers and the requester refreshes to the last synced snapshot
 **And** a revived former holder becomes read-only and is told concretely what was lost — "That session had 14
-unsaved edits; they were not included" — and those edits are **not recoverable**
+unsynced edits; they were not included" — and those edits are **not recoverable**; **`unsynced` is the word in every
+string, never `unsaved`** (**R-190**, owner, 2026-09-23)
 **And** **the nudge timer is a no-response timer, not a decision timer: it stops the moment the holder interacts
 with the popover at all, including focusing it** (UX-DR13)
 **And** the request is announced **assertively**, and so is the takeover notice (UX-DR12)
 **And** the takeover confirm **opens with focus on the cancelling action** (UX-DR14)
 **And** **Deploy and ZIP export require the lock**: from a read-only session, Ship it or Export first prompts a
-take-over surfacing "X unsaved edits exist elsewhere", so a stale cloud snapshot can never silently ship
+take-over surfacing "X unsynced edits exist elsewhere", so a stale cloud snapshot can never silently ship
 **And** the states match B5a, B5b, B5c and the fourth state D8g.
 
 **FRs:** FR-D18. · **Frame:** `B Missing Surfaces.dc.html` B5a · B5b · B5c · `D8 Editor Below 1440.dc.html` D8g.
-· **UX-DRs:** UX-DR12, UX-DR13, UX-DR14. · **Owner test:** yes.
+· **UX-DRs:** UX-DR12, UX-DR13, UX-DR14. · **Rulings:** R-189, R-190. · **Owner test:** yes.
 
 ### Story 5.18: Live content from the connected site
 

@@ -181,6 +181,30 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     reassurance sentence is untouched.
 - **Undo counts edits.** One gesture is one transaction, one undo step and one edit (a Shuffle is one); 100 edits, replayable after a reload in the session, cleared only by a hydrate that supersedes the local doc, and no operation count is ever surfaced (AD-15, AD-16).
 - **One editing context per project.** A second opener reads along and may request editing; the holder flushes then releases, an unanswered request may take over from the last synced snapshot, the displaced session is told its `unsynced_edits`, and deploy and export require the lock.
+  - **Story 5.17's planning (2026-09-23), and two rulings that decide every string.** The whole DB side already
+    exists and NOTHING uses it: the table, both guard triggers and the RLS gate's F4 assertions have been there since
+    the complete-schema migration, and `unsyncedEdits(j)` (`journal.ts:140`) was written, tested and rendered nowhere
+    by Story 5.8. **No migration is expected**: `lock_generation` is in the UPDATE grant and out of the INSERT grant,
+    so acquire and take-over are an OPTIMISTIC COMPARE-AND-SWAP (`generation N → N+1` filtered on `N`) that
+    `guard_lock_takeover` was written to enforce — executed against the real Supabase as the story's first task
+    before any UI, because that is a PostgREST claim and therefore a hypothesis. Transport has three layers, cheapest
+    first: `BroadcastChannel` (same browser, free), a Supabase Realtime BROADCAST channel (ephemeral, so no
+    publication and no migration), and the heartbeat's own ~15 s round trip as the floor — `addendum.md:45` is the
+    only statement of that transport in the project and **nothing has ever executed it**. **D8g, the deploy/export
+    gate, is NOT built**: Ship it (7.18) and Export (7.26) do not exist, so the prompt is unreachable — DW-238, and
+    `lock-takeover.tsx` takes its strings as props so those two render it.
+  - ***The owner's two rulings, the same day.*** **R-189 — there is no Rosa.** A project carries one `user_id` and
+    team seats are out of v1, so the other editing context is ALWAYS the same person; B5a/B5b/B5c keep their shapes
+    and escalation and lose the person: *"You are editing this site somewhere else — you are reading along here"*,
+    *"Your other session wants to edit"*, *"Take over from your other session?"*, **"Or message Rosa" withdrawn**,
+    the avatar carrying the Kit's `Lock` instead of initials, and the displaced session reading *"**This** session
+    had X unsynced edits; they were not included."* **R-190 — `unsynced`, never `unsaved`**, in every string, because
+    the indicator on the same screen prints "Saved on this device" then "Synced" (R-170 a third time). The stored
+    column stays `unsynced_edits` and the count stays EDITS, never ops (AD-16).
+  - ***Two wordings this story corrects, not reverses.*** F-079 ruled the holder's countdown **restarts** on any
+    interaction including focus; `UX-DR13` and EXPERIENCE.md § Time limits still say "stops", and so did this story's
+    own AC. Restart is the built behaviour and the three wordings are a task (standing rule 3). And §AD4's ~30 s is
+    the countdown, not B5b's drawn "60s" — EXPERIENCE.md rules that difference explicitly not a finding.
 - **The canvas is a viewport.** The iframe is viewport-sized and scrolls internally, device preview resizes both axes (834; 390 × 844), the only scale is the automatic fit shown in a chip, and there is no zoom control, per-breakpoint editing or section cap.
   - **R-137 (owner, 2026-09-19, Story 5.7's Q1) — Desktop is a viewport too, and there is ONE rule for three
     devices:** **1440 × 900** · **834 × 1112** (`D8a`, `EXPERIENCE.md:62`) · **390 × 844** (UX-DR17), fitted by

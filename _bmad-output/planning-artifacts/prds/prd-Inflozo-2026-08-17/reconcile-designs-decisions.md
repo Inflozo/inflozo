@@ -4084,6 +4084,55 @@ sections."*
   `PLACEHOLDER_ACTION`, `placeholder-menu.tsx`, the sweep in `tools/stress/test-vocabulary.mjs` and step 93 of the
   deployed walk — Story 5.16a's Fix, 2026-09-23.
 
+**R-189 — there is no Rosa: the edit lock says WHERE, never WHO.** Story 5.17's Create, Question 1 (owner,
+2026-09-23): *"Say where, not who — 'somewhere else'."* The three frames for FR-D18 — `B Missing
+Surfaces.dc.html` B5a, B5b, B5c — were drawn assuming two people share a project. **They cannot happen.** A project
+carries one `user_id` and team seats are explicitly out of v1 (`prd.md` Appendix G), so the other editing context is
+**always the same person** — another tab, another browser, another device. The choreography, the escalation and every
+frame's shape are untouched; only the words change, and **"Or message Rosa" is removed entirely, because there is
+nobody to message**.
+
+- **The strings, and they are the whole ruling.** The reader's bar (B5a): **"You are editing this site somewhere
+  else — you are reading along here"** with **Request editing**. The holder's popover (B5b): **"Your other session
+  wants to edit"** over *"If you hand over, your unsynced edits are sent first. You keep reading along."* The
+  take-over confirm (B5c): **"Take over from your other session?"** over *"That session has not responded for
+  <duration>. It has edits that never reached the server."*, and its danger panel's second line becomes **"They exist
+  only in that session. We cannot retrieve them from here."** — the frame's own sentence with the person taken out,
+  which EXPERIENCE.md already called *exactly right*.
+- **Two things the person's removal takes with it.** B5b's 32 × 32 avatar keeps its size and its place in row one —
+  the mark-then-ask shape is what makes the popover readable — and carries the Kit's `Lock`, B5a's own padlock,
+  in place of initials. And the revived former holder's sentence is read **by the session it is about**, so it is
+  **"This session had 7 unsynced edits; they were not included."** — one pronoun, so the sentence is true from where
+  it is read. Both are routine judgements inside his ruling, recorded here rather than asked.
+- **Already-approved strings that survive word for word**, and are why option 1 was the recommendation: *"No
+  response; that session has X unsynced edits"* — there "that session" IS the other one — and the revived holder's
+  sentence above. One vocabulary across the whole flow.
+- **The export is NOT edited and EXPERIENCE.md's Appendix A is NOT edited** (R-74, and the same reason standing
+  rule 5 gives). The frames stay as Claude Design drew them and F2 re-specifies them, which is the pattern F2
+  already used for B5c's itemised list; Appendix A's prompts are the dated record of what was asked of the designer
+  and rewriting one would make it lie about what produced the export. A future session finding "Rosa" there has
+  found the record, not a miss.
+- Targets: ✅ this entry · ✅ Story 5.17's spec, Question 1 and its string table — Story 5.17's Create, 2026-09-23.
+  ✅ `EXPERIENCE.md` F2, § State Patterns, § Destructive confirms and the IA row · ✅ `prd.md` FR-D18 ·
+  ✅ `epics.md` Story 5.17 · ✅ `epic-5-context.md` · ⬜ built: `lock-bar.tsx`, `lock-request.tsx`,
+  `lock-takeover.tsx` — Story 5.17's Dev.
+
+**R-190 — an edit that is on your computer but not on the server is UNSYNCED, everywhere.** Story 5.17's Create,
+Question 2 (owner, 2026-09-23): *"'unsynced' everywhere."* The approved wording named one number with two words —
+B5c's *"7 **unsynced** edits will be lost"* against FR-D18's *"That session had 14 **unsaved** edits"* — seconds
+apart in the same flow. **`unsynced` wins, and `unsaved` appears nowhere in the product.** The reason is the
+indicator on the same screen: `persistence-indicator.tsx` prints **"Saved on this device"** and then **"Synced"**, so
+an edit written locally and not yet sent genuinely *has* been saved; calling it unsaved would contradict the badge
+two inches above it. This is R-170 applied a third time — one name for one thing, across bar, popover, confirm and
+announcement.
+
+- **What it does NOT change:** the stored column and the wire field stay `unsynced_edits`, which they already were
+  (§AD2 — *"Edits is canonical, everywhere"*), and the number still counts **user-perceived edits, never operations**
+  (AD-16), so a Shuffle or a Site Remix is one edit however many ops it cost.
+- Targets: ✅ this entry · ✅ Story 5.17's spec — Story 5.17's Create, 2026-09-23. ✅ `EXPERIENCE.md` F2 ·
+  ✅ `prd.md` FR-D18 · ✅ `epics.md` Story 5.17 · ✅ `epic-5-context.md` · ⬜ built: every string in Story 5.17's
+  three surfaces — Story 5.17's Dev.
+
 
 ## B · Approved decisions superseded by this session
 

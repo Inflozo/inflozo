@@ -155,7 +155,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Preview** | B3a editing · B3b preview | `P` · Preview | Behaviours run, all editing chrome gone (FR-D20) |
 | **Device Preview** | B11a · B11b *(corrected 2026-09-04, A7 item 6)* | `1` `2` `3` | Both axes resize to a real device size (FR-D8, AD-21) |
 | **Persistence Indicator** | B6 *(extended)* | always in the top bar | Saved on this device · Syncing · Synced · Retrying (FR-D10) |
-| **Edit Lock** | `B Missing Surfaces.dc.html` B5a read-only bar · B5b request popover · B5c takeover modal | opening a project someone else holds · Request editing · take over | One editing context per project (FR-D18, flow **F2**): the reader's bar, the holder's popover, the takeover confirm. Its fourth state — Ship it or Export from a read-only session — is `D8 Editor Below 1440.dc.html` D8g |
+| **Edit Lock** | `B Missing Surfaces.dc.html` B5a read-only bar · B5b request popover · B5c takeover modal | opening a project another session of yours holds · Request editing · take over | One editing context per project (FR-D18, flow **F2**): the reader's bar, the holder's popover, the takeover confirm. Its fourth state — Ship it or Export from a read-only session — is `D8 Editor Below 1440.dc.html` D8g |
 | **Content Source Pill** | B9 | canvas foot | "Previewing with: {site} / Sample content", and the preview subject (FR-D15, FR-D22) |
 | **Preview Subject Picker** | D5e *(from B9's menu)* | Content Source Pill | Which post / page / tag / author this canvas renders (FR-D22) |
 | **Member State Preview** | S4d *(corrected 2026-09-04, A7 item 18)* + B9 | top bar eye | Logged out user · Free member · Paid member — **three states**, one name each (FR-D16, R-170); a coral dot marks each one not yet looked at, in the menu only (R-169) |
@@ -366,7 +366,7 @@ whose Loading cell is "—": a surface with nothing to shimmer still has control
 | **Preview-only** | Preview-Only Notice, Preview-Only Destination, Sites | Sky, not danger. Probed, never asked. Clears automatically |
 | **Uploaded, not activated** | Partial Success | A **partial success**, recorded as one. Re-activate is one click. Sends no failure email |
 | **Read-only project** (over limit) | Editor | Canvas legible, sidebar dimmed, nothing responds. **Export still works** (FR-J12) |
-| **Read-only session** (someone else holds the lock) | Editor | Same treatment, different banner: "Rosa is editing this site — you are reading along", + Request editing |
+| **Read-only session** (another session of yours holds the lock) | Editor | Same treatment, different banner: "You are editing this site somewhere else — you are reading along here", + Request editing (R-189) |
 | **No local storage** | Persistence Indicator | Falls back to per-change cloud sync **and says so in the indicator** — never a false "Saved on this device" (the label; FR-D10's "Saved locally" is the state name — Appendix H) |
 | **Offline** | Persistence Indicator | "Retrying · 12s", counting down. Expanded: "Your work is safe on this device." + Retry now |
 | **`pro_past_due`** | Grace Banner | Every Pro capability is kept for 7 days. Not a plan, and never shown as one |
@@ -563,7 +563,7 @@ nothing: the link itself is valid for 15 minutes and "Use a different email" is 
 
 ### Destructive confirms
 
-**A confirm whose primary action is irreversible opens with focus on the cancelling action** — drawn as the rule on D8f ("Take over from Rosa?", focus on Wait) and applied on D8g. Stated
+**A confirm whose primary action is irreversible opens with focus on the cancelling action** — drawn as the rule on D8f (focus on Wait) and applied on D8g. The frame's own heading reads "Take over from Rosa?"; the shipped one is "Take over from your other session?" (R-189), and the rule is the focus, not the words. Stated
 as a rule rather than a list, because the list would go stale — it already covers Take over anyway,
 Delete account, Roll back, project delete, delete-in-use assets and "Overwrite and ship anyway", and
 it covers whatever is added next.
@@ -1023,19 +1023,23 @@ grows only as the stakes do. That escalation is the design and it stands.
 
 | Party | Surface | What they see |
 |---|---|---|
-| **The reader** (opened it second) | **Editor**, read-only | B5a: a bar — "Rosa is editing this site — you are reading along" + **Request editing**. The canvas stays fully legible; the sidebar dims to 55% so controls are *visible* but nothing responds |
-| **The holder** | **Editor** | B5b: a **popover, not a modal** — the holder is mid-sentence. It states the sync position *before* asking: "All your changes are synced · 0 pending". **Hand over** / **Keep editing**, with a countdown. **The countdown is a no-response timer and it restarts the instant the holder interacts with the popover at all, focus included** — so a present holder is never hurried into a decision that loses someone else's work. **It does not stop:** §AD2's nudge is answered only by **Hand over** or **Keep editing**, and a holder who focuses the popover and does nothing has not answered it, so §AD4's ~30 s runs again from their last interaction and then the requester's take-over is offered exactly as §AD2 says (F-079 — the smallest rule consistent with §AD2, taken here; the constant stays §AD4's). **B5b is announced assertively** (§ Accessibility Floor), because a request that arrives silently is a request a screen-reader user answers by not answering |
-| **The requester, unanswered** | **Editor** | After ~30 seconds: "No response; that session has X unsaved edits", and **take over anyway** is offered |
-| **The revived former holder** | **Editor**, read-only | "That session had 14 unsaved edits; they were not included." It flips to read-only and its local journal is cleared |
+| **The reader** (opened it second) | **Editor**, read-only | B5a: a bar — **"You are editing this site somewhere else — you are reading along here"** (R-189) + **Request editing**, which swaps to **Asking…** while in flight. The canvas stays fully legible; the sidebar dims to 55% so controls are *visible* but nothing responds |
+| **The holder** | **Editor** | B5b: a **popover, not a modal** — the holder is mid-sentence. **"Your other session wants to edit"** (R-189), with the Kit's `Lock` in the avatar's place. It states the sync position *before* asking: "All your edits are synced · 0 pending", or "N unsynced edits will be sent first · N pending" (R-190). **Hand over** / **Keep editing**, with a countdown. **The countdown is a no-response timer and it restarts the instant the holder interacts with the popover at all, focus included** — so a present holder is never hurried into a decision that loses someone else's work. **It does not stop:** §AD2's nudge is answered only by **Hand over** or **Keep editing**, and a holder who focuses the popover and does nothing has not answered it, so §AD4's ~30 s runs again from their last interaction and then the requester's take-over is offered exactly as §AD2 says (F-079 — the smallest rule consistent with §AD2, taken here; the constant stays §AD4's). **B5b is announced assertively** (§ Accessibility Floor), because a request that arrives silently is a request a screen-reader user answers by not answering |
+| **The requester, unanswered** | **Editor** | After ~30 seconds: "No response; that session has X unsynced edits" (R-190 — there "that session" IS the other one, so R-189 leaves it), and **take over anyway** is offered |
+| **The revived former holder** | **Editor**, read-only | **"This session had 14 unsynced edits; they were not included."** (R-190, and R-189's one pronoun: the sentence is read *by* the session it is about). It flips to read-only and its local journal is cleared |
 
-**The takeover — B5c, and three things about it are decided.**
+**The takeover — B5c, and these things about it are decided.**
 
 1. **A takeover is allowed.** It is not a wall.
 2. **The count is `unsynced_edits`, and it is edits, never operations** (AD-16, §AD2). A Variant
    Shuffle is several operations and **one edit**, because the number appears verbatim in the string
    that tells a person what they lost. **No operation count is ever surfaced, stored in the heartbeat
    or logged for display.**
-3. **The message is honest rather than reassuring.** A takeover is not a graceful hand-off. Work that
+3. **Nobody is named, because there is nobody to name** (**R-189**, owner, 2026-09-23). A project carries one
+   `user_id` and team seats are out of v1 (`prd.md` Appendix G), so the other editing context is always the same
+   person — another tab, another browser, another device. Every string says WHERE, never WHO; no avatar carries
+   initials; **"Or message Rosa" does not exist**. The frames' shapes and their escalation are untouched.
+4. **The message is honest rather than reassuring.** A takeover is not a graceful hand-off. Work that
    had not synced is genuinely gone — the losing device's journal is cleared unconditionally on its
    next hydrate, there is no merge path, and orphaned edits are never recovered.
 
@@ -1043,15 +1047,17 @@ grows only as the stakes do. That escalation is the design and it stands.
 > "Home hero — design and two controls · Footer — three link labels · Post template — measure" —
 > until A9 item 4 corrected it on 2026-09-04. **That detail does not exist.** The heartbeat carries `unsynced_edits` and nothing else; the
 > requester's browser has never seen the holder's journal. The modal keeps its shape, its danger
-> fill and its "Or message Rosa" escape, and its body becomes: **"7 unsynced edits will be lost.
-> They exist only in Rosa's browser. We cannot retrieve them from here."** The second sentence is
-> the frame's own and it is exactly right.
+> fill — its "Or message Rosa" escape is withdrawn with the person (**R-189**) — and its body
+> becomes: **"7 unsynced edits will be lost. They exist only in that session. We cannot retrieve
+> them from here."** The second sentence is the frame's own and it is exactly right; only the name
+> left it. The whole danger panel is ABSENT when the count is 0 (UX-DR3), because a confirm that
+> warns in red about nothing is not a warning.
 >
 > Also: **B5c says "changes"; §AD2 says edits is canonical, everywhere** — the field name, the
 > heartbeat, the FR's prose and every user-visible string.
 
 **Deploy and export require the lock.** From a read-only session, Ship it or Export first prompts a
-take-over, **surfacing "X unsaved edits exist elsewhere"** — so a stale cloud snapshot can never
+take-over, **surfacing "X unsynced edits exist elsewhere"** (R-190) — so a stale cloud snapshot can never
 silently ship. This state is `D8 Editor Below 1440.dc.html` D8g — B5c's confirm reused at the entry
 point that had none, "Take over to ship?", focus opening on Wait — and it joins B5's family.
 

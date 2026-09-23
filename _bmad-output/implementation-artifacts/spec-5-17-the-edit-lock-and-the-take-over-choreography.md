@@ -75,6 +75,12 @@ migration, which means a Schema phase pushed on its own before Dev (R-99)** — 
   (`components/kit/dialog.ts:52`) already does exactly this; the cancelling button carries `data-cancel`.
 - **B5b prints "edits", never "changes"** — §AD2 makes *edits* canonical in every user-visible string, and the A9
   item-4 correction pass of 2026-09-04 fixed B5c and D8f but never reached B5b (EXPERIENCE.md:1049-1051).
+- **Every surface says WHERE, never WHO** (**R-189**). The other editing context is always the same person, so no
+  string names one, no avatar carries initials, and **"Or message Rosa" does not exist**. The frames' shapes,
+  escalation and treatment are untouched; only their words are.
+- **An edit on the device and not on the server is "unsynced", everywhere** (**R-190**). The word *unsaved* appears
+  nowhere in the product — the indicator on the same screen says "Saved on this device" and then "Synced", so
+  *unsaved* would contradict it.
 - **B5c never itemises the loss per section.** The frame once drew "Home hero — design and two controls · …"; that
   detail **does not exist** and cannot — the heartbeat carries one number (EXPERIENCE.md:1042-1051).
 - **The canvas stays fully legible and the sidebar dims to 55%** — controls *visible* so the reader can see what is
@@ -87,9 +93,9 @@ migration, which means a Schema phase pushed on its own before Dev (R-99)** — 
 
 **Ask First:**
 
-- **The two questions under `## Questions for the owner`** — what the other session is *called*, and *unsaved* vs
-  *unsynced*. Every user-visible string in this story waits on them; build the mechanism first and wire the words
-  last.
+- **Both owner questions are RULED (2026-09-23) and nothing waits on them** — **R-189** (say where, never who; there
+  is no Rosa) and **R-190** (*unsynced*, never *unsaved*). The settled strings are in *Design Notes*, and they are
+  the strings: a surface that invents its own wording is wrong even if it reads well (R-170).
 - **If the compare-and-swap cannot be expressed through PostgREST** (a filtered UPDATE returning its rows), the
   fallback is one `security definer` RPC. **Stop, say so, and push it as a `Schema` commit on its own before any
   Dev code** (R-99) — and mirror it into `SCHEMA.sql`, or `run-rls-gate.sh`'s `pg_dump` diff fails.
@@ -128,6 +134,7 @@ migration, which means a Schema phase pushed on its own before Dev (R-99)** — 
 | Keep editing | holder presses it | nudge columns cleared; requester told, and no take-over is offered from this request | N/A |
 | Nudge unanswered ~30 s | requester's timer runs out | "No response; that session has **X** unsynced edits" + **take over anyway** | X is read from the row; if the row has vanished, the lock is free — acquire normally |
 | Take over | requester confirms | CAS to a new `holder_session_id` at `generation N+1`, filtered on `N`; then hydrate from the cloud snapshot | 0 rows ⇒ the generation moved under us → re-read and report the new state, never retry blindly. A `42501` means the guard refused a non-advancing write — a bug, surfaced, never swallowed |
+| Take over with nothing owed | the holder's `unsynced_edits` is `0` | the confirm still asks — it still ends another session — but the danger panel is **absent** (not empty) and the confirm is not a danger fill: nothing is being lost | N/A |
 | Displaced holder | its next beat changes 0 rows, or a broadcast arrives, or a read shows a generation past its own | **read-only**; assertive notice stating its own last `unsynced_edits`; journal cleared unconditionally on the next hydrate | N/A |
 | Realtime unreachable | channel never subscribes, or drops | everything still works on the heartbeat floor (≤ ~15 s); nothing is announced about the transport | reconnect is attempted; never block the editor on it |
 | Tab closed while holding | `visibilitychange` / unmount | the existing `'unload'` flush, then a best-effort release | if the release does not land, the row goes stale in ~60 s and the next opener acquires it |
@@ -312,8 +319,37 @@ The security argument that usually motivates the RPC does not apply here at all 
 account and team seats are explicitly out of v1** (`prd.md:1298`, Appendix G), so every session that can reach the
 row is the same person's. The whole of this story is one user's devices negotiating with each other.
 
-**That fact is also why the copy is a question.** Every string on B5a, B5b and B5c names another *person* — "Rosa",
-"Dai", a "DM" avatar, "Or message Rosa". None of them can happen in v1. See Question 1.
+**That fact is also why the copy was a question, and it is now ruled.** Every string on B5a, B5b and B5c named
+another *person* — "Rosa", "Dai", a "DM" avatar, "Or message Rosa" — and none of them can happen in v1. The owner
+ruled **R-189** (say where, never who) and **R-190** (*unsynced*, never *unsaved*) on 2026-09-23.
+
+**The strings, settled. These are the strings.**
+
+| Where | What it says |
+|---|---|
+| B5a, the reader's bar | **"You are editing this site somewhere else — you are reading along here"** · button **Request editing**, which swaps to **Asking…** while in flight (R-98) |
+| B5b, title | **"Your other session wants to edit"** |
+| B5b, body | *"If you hand over, your unsynced edits are sent first. You keep reading along."* |
+| B5b, sync strip — nothing owed | mint dot · *"All your edits are synced"* · mono **"0 pending"** |
+| B5b, sync strip — N owed | grey dot · *"N unsynced edits will be sent first"* · mono **"N pending"** |
+| B5b, actions | **Hand over** (ink primary) · **Keep editing** (secondary) · *"Expires in 30s"* |
+| The requester, unanswered | **"No response; that session has X unsynced edits"** · **Take over anyway** |
+| B5c, heading | **"Take over from your other session?"** |
+| B5c, body | *"That session has not responded for &lt;duration&gt;. It has edits that never reached the server."* — the duration is time since the request was sent; the second sentence is absent when nothing is owed |
+| B5c, danger panel | *"X unsynced edits will be lost"* / *"They exist only in that session. We cannot retrieve them from here."* — the whole panel is **absent** when X is 0 |
+| B5c, actions | **Take over anyway** (danger fill) · **Wait** (`data-cancel`, focus opens here). **No "Or message Rosa".** |
+| The displaced session | the B5a bar, plus assertively: **"This session had X unsynced edits; they were not included."** |
+
+Two routine judgements sit inside R-189 and are recorded there rather than asked. B5b's 32 × 32 avatar **keeps its
+size and its place** — the mark-then-ask shape is what makes the popover readable — and carries the Kit's `Lock`
+(`icons.tsx:449`), B5a's own padlock, instead of initials. And the displaced session's sentence reads **"This
+session"**, not the approved "That session", because it is read *by* the session it is about; one pronoun, so the
+sentence is true from where it is read.
+
+**Two extrapolations from the frames, both within R-74.** Nothing draws the requester's waiting state or a take-over
+with nothing owed. The first is R-98's own rule and needs no new surface — the pressed button says **Asking…** and
+the bar is unchanged. The second reuses B5c with its danger panel absent rather than zeroed (UX-DR3: absent, never
+empty), because a confirm that says "0 unsynced edits will be lost" in red is a warning about nothing.
 
 **The three transport layers, cheapest first.** `BroadcastChannel` is free and covers the overwhelmingly common
 case (two tabs — which is DW-203 verbatim). Supabase Realtime **broadcast** — ephemeral pub/sub, not Postgres
@@ -373,24 +409,25 @@ behave the same way. Everything you type is taken back before the end.
 Use **Pilot sections** — `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`.
 
 Steps 1–3 are the reader's bar (**B5a**). Steps 4–7 are the request and the hand-over (**B5b**). Steps 8–12 are the
-no-response take-over and what the session you took it from is told (**B5c**). Step 13 is the one thing that must
-*not* happen.
+no-response take-over (**B5c**). Step 13 is what the session you took it from is told. Every sentence below is the
+wording you ruled on 2026-09-23 — **R-189** (it says where, never who, and nobody is named) and **R-190**
+(*unsynced*, never *unsaved*).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open it in **tab A** and click the hero's big headline. Type over it. | `Tab A was here` | The words change, and the save indicator beside the project's name turns to a grey clock — one edit is not on the server yet. |
-| 2 | same | Editor, Home | Open the **same address in a second tab (tab B)** and wait for it to finish loading. | — | A bar across the top of tab B says the site is being edited somewhere else, with a **Request editing** button on the right. The page itself is perfectly readable. |
+| 2 | same | Editor, Home | Open the **same address in a second tab (tab B)** and wait for it to finish loading. | — | A bar across the top of tab B reads **"You are editing this site somewhere else — you are reading along here"**, with a **Request editing** button on the right. The page itself is perfectly readable. **No name anywhere** — it never pretends someone else is in your account. |
 | 3 | tab B | Editor, Home | Try to click the hero's headline and type. Then look at the settings panel on the right. | `nope` | **Nothing happens** — no letters appear, and nothing jumps or flickers. The settings panel is dimmed but you can still read every setting. |
-| 4 | tab B | Editor, Home | Press **Request editing**. | — | The button says it is asking, and tab B tells you it is waiting. |
-| 5 | tab A | Editor, Home | Switch to tab A. | — | A small card has appeared — **not** a full-screen box. It says a request has arrived, tells you whether your work is on the server yet (it is not — you have 1 edit waiting), and offers **Hand over** and **Keep editing**, with a countdown of about 30 seconds. |
+| 4 | tab B | Editor, Home | Press **Request editing**. | — | The button changes to **Asking…** while it works. |
+| 5 | tab A | Editor, Home | Switch to tab A. | — | A small card has appeared — **not** a full-screen box — headed **"Your other session wants to edit"**, with a padlock in the circle where a photo would go. Under it: *"If you hand over, your unsynced edits are sent first. You keep reading along."* and a strip reading **"1 unsynced edit will be sent first · 1 pending"**. Then **Hand over**, **Keep editing**, and *"Expires in 30s"*. |
 | 6 | tab A | Editor, Home | Move your mouse over the card and leave it there, without pressing anything, for a full minute. | — | The countdown keeps **starting again** rather than running out — a card you are looking at never hurries you. |
 | 7 | tab A | Editor, Home | Press **Hand over**. | — | Your edit is sent first (the indicator goes green), then tab A gets the same reading-along bar tab B had. |
 | 8 | tab B | Editor, Home | Switch to tab B. | — | The bar is gone. Click the headline and type — it works, and it already says **Tab A was here**, so nothing was lost. |
 | 9 | tab B | Editor, Home | Type over the headline again. | `Tab B was here` | The words change and the indicator shows a grey clock. |
 | 10 | tab A | Editor, Home | Switch to tab A, press **Request editing**, and then **switch away to any other tab and leave it for a minute**. | — | Do not touch tab B. |
-| 11 | tab A | Editor, Home | Come back to tab A. | — | It says there was no response and names how many edits that session has not sent — **1** — and offers to take over anyway. |
-| 12 | tab A | Editor, Home | Press it, read the box, then confirm. | — | A box in red asks first and says plainly that 1 edit will be lost and cannot be retrieved. **Your keyboard starts on the cancelling button**, not the red one. After you confirm, tab A is editing and the headline reads **Tab A was here** — tab B's word is gone, as the box said. |
-| 13 | tab B | Editor, Home | Switch to tab B and look at it. | — | It now has the reading-along bar and a message telling you it had **1** unsent edit that was not included. Press **⌘Z** — **nothing comes back**, which is what the message promised. |
+| 11 | tab A | Editor, Home | Come back to tab A. | — | It reads **"No response; that session has 1 unsynced edit"** and offers **Take over anyway**. |
+| 12 | tab A | Editor, Home | Press it, read the box, then confirm. | — | A box headed **"Take over from your other session?"** with a pink panel reading **"1 unsynced edit will be lost"** and *"They exist only in that session. We cannot retrieve them from here."* **Your keyboard starts on Wait**, not on the red **Take over anyway** — press Space and it cancels rather than committing. There is **no "message someone" line**. Confirm, and tab A is editing with the headline reading **Tab A was here** — tab B's word is gone, as the box said. |
+| 13 | tab B | Editor, Home | Switch to tab B and look at it. | — | It now has the reading-along bar and the message **"This session had 1 unsynced edit; they were not included."** Press **⌘Z** — **nothing comes back**, which is what the message promised. |
 
 Afterwards: in the editing tab, press **⌘Z** until the headline reads what it did at the start, and check the
 indicator turns green.
@@ -429,7 +466,10 @@ you are reading along"*, which reads as though you had a colleague.
    - It reads as though someone else is in your account, which is the one thing it must not suggest, and "Or message
      Rosa" would have to go anyway.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-23)** — *"Say where, not who — 'somewhere else'."* Recorded as **R-189**. "Or
+message Rosa" is removed, the avatar carries the Kit's `Lock` instead of initials, and the displaced session's own
+sentence reads "**This** session had X unsynced edits" so it is true from where it is read. The settled strings are
+the table in *Design Notes*.
 
 ### Question 2 — Is an edit that is on your computer but not on the server "unsaved" or "unsynced"?
 
@@ -460,4 +500,5 @@ not yet sent has genuinely been *saved* — it just has not been *synced*.
 Whichever you pick, the number itself is unchanged: it counts **things you did**, not the machinery underneath, so a
 Shuffle or a Site Remix is one edit however much it moved.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-23)** — *"'unsynced' everywhere."* Recorded as **R-190**. *unsaved* appears
+nowhere in the product; the stored column and the wire field stay `unsynced_edits`, which they already were.
