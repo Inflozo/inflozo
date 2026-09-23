@@ -649,7 +649,10 @@ tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` an
 - No migration in the diff (R-99 holds; no pooler read needed).
 - The two code findings were **executed before they were fixed** — the `data-i18n-*` vector emitted the raw constant
   on the unfixed `core.ts` and passes on the fix — and `pnpm check` (Node 24) is green with them in.
-- The deployed walk with step 93's new rich-field check is recorded below once this commit has deployed.
+- `node tools/probe/run-verify-editor.cjs` against the deployed `app.inflozo.com` at the review commit `ae436ea8`
+  (CI `check`, `rls`, `deploy` success first): **0 FAIL, 575 PASS**, the whole run, one run. Step 93's new check held
+  in a real browser — Insert from the Title's `{}` menu put `{page_number}` at the **start** of the Title, where the
+  caret was, and the words had focus again when the menu closed.
 
 **Manual checks (if no CLI):**
 
