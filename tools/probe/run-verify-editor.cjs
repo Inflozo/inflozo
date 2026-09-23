@@ -269,6 +269,22 @@ async function main() {
     }
     const editorUrl = (key) => at(key ? `/projects/${P}/${key}` : `/projects/${P}`)
 
+    /* STORY 5.17 — HAND THE LOCK BACK BEFORE A CONTEXT GOES, or the next one opens as a READER.
+     *
+     * This walk runs five browser contexts on ONE project, each closed before the next opens — and since FR-D18 that
+     * is five editing sessions of one person, which the lock exists to reduce to one. `context.close()` does not wait
+     * for the release the editor sends on `pagehide`, and a lock whose tab merely CLOSED is still live for §AD4's
+     * ~60 s, so the next context is a reader and every edit it makes is refused. That is the lock working exactly as
+     * it should; what a real second device does is wait the window out or take over, and what this walk does instead
+     * is release, which costs no time. Through the app's own route under the page's own session, because
+     * `edit_locks` is invisible to the service key (MEASUREMENTS.md §50). */
+    const handBack = (p) =>
+      p.evaluate(async (url) => {
+        const id = sessionStorage.getItem('inflozo-lock-session')
+        if (!id) return
+        await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session: id }) })
+      }, `${PREFIX}/projects/${P}/lock`).catch(() => {})
+
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
@@ -5427,6 +5443,7 @@ async function main() {
     await page.waitForTimeout(600)
     const scroll = { window: await page.evaluate(() => ({ scrollHeight: document.documentElement.scrollHeight, innerHeight, scrollY })), canvas: await canvasFrame().evaluate(() => document.scrollingElement.scrollTop) }
     check('step 7 — the window cannot scroll, and the wheel over the canvas scrolls the canvas document', scroll.window.scrollHeight === scroll.window.innerHeight && scroll.window.scrollY === 0 && scroll.canvas > 0, JSON.stringify(scroll))
+    await handBack(page)
     await context.close()
 
     // ── step 70 — FR-D10's honest fallback, in its OWN context ──
@@ -5475,6 +5492,7 @@ async function main() {
     // own violation (zod's JIT probe, DW below) is not this context's subject
     const noIdbOwn = noIdbViolations.filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
     check('step 70 — that context records zero CSP violations of its own in the editor or the canvas', noIdbOwn.length === 0, JSON.stringify(noIdbViolations))
+    await handBack(noIdbPage)
     await noIdb.close()
 
     // ── step 8 — axe, in its own context (bypassCSP: axe is injected, which the policy would refuse) ──
@@ -5621,6 +5639,9 @@ async function main() {
     const pageTwoAxe = await axeRun()
     check('step 8 — axe: zero violations on PAGE 2, with D5d\'s pill over the ground and its row on the main feed\'s panel (Story 5.16)',
       pageTwoAxe.length === 0 && pageTwoShown.pill && pageTwoShown.row, `${JSON.stringify(pageTwoShown)} · ${pageTwoAxe.join('; ')}`)
+    // released BEFORE the page leaves the app's origin: `about:blank` has neither this session's `sessionStorage`
+    // nor a relative URL to post to
+    await handBack(axePage)
     await axePage.goto('about:blank')
     await axePage.waitForTimeout(600)
     await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: seedHome8.doc }) })
@@ -5706,6 +5727,7 @@ async function main() {
     await touchPage.keyboard.press('Escape')
     await touchPage.waitForTimeout(200)
     check('step 14 — the touch context records zero securitypolicyviolation events in the editor or the canvas across the hold, the tap and the moving finger', touchSession().length === 0, JSON.stringify(touchViolations))
+    await handBack(touchPage)
     await touchContext.close()
 
     // ── step 9 — the skeleton streams first ──

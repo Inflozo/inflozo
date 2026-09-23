@@ -2,7 +2,7 @@
 title: 'Story 5.17 — The edit lock and the take-over choreography'
 type: 'feature'
 created: '2026-09-23'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'f92409a17bfa06a29e4471d858ca5a527859206e'
@@ -141,6 +141,45 @@ migration, which means a Schema phase pushed on its own before Dev (R-99)** — 
 
 ## Code Map
 
+**EXECUTED FIRST, 2026-09-23 — `MEASUREMENTS.md` §50, `tools/probe/record-edit-lock.py`.** The four
+hypotheses this approach rests on are now facts, against the real Supabase project, through the
+`authenticated` role under RLS and the column grants:
+
+- **The CAS is expressible through PostgREST. THERE IS NO SCHEMA PHASE and no migration.**
+  `PATCH /edit_locks?project_id=eq.<id>&lock_generation=eq.<N>` with `Prefer: return=representation`
+  returns the row it changed, and returns `[]` at **HTTP 200** — not an error — when the filter
+  misses. Two sessions racing the same CAS produced exactly one winner (control: the uncontended CAS
+  immediately before, one row).
+- **`guard_lock_takeover` answers `42501`** to a holder change at an unchanged generation; PostgREST
+  surfaces it as **HTTP 403** with the SQLSTATE in the body. Control: the same change with the
+  generation advanced is accepted.
+- **`lock_generation` really is outside the INSERT grant** — an INSERT naming it is `42501`, a plain
+  INSERT defaults it to 1, and a second INSERT for the same project is `23505` at HTTP **409**.
+- **`edit_locks` is absent from the `service_role` grant loop** (`…complete_schema.sql:1163-1177`).
+  The service key cannot so much as `select` from it, silently returning nothing. Every read and
+  write of this table — in the app, in the harness, in the probe — is a **user session's**.
+
+**AND THE ONE THING THAT CHANGES THE SHAPE: THERE IS NO BROWSER SUPABASE CLIENT.**
+`apps/web/lib/supabase/server.ts` is "THE ONLY PLACE A SUPABASE CLIENT IS MADE"; there is no
+`NEXT_PUBLIC_*` key anywhere in `apps/web`; and `lib/supabase/cookies.ts` sets the session cookie
+`httpOnly: true` *because* the app has no browser client. So "the client drives the whole protocol"
+cannot mean the browser PATCHing PostgREST — it means **the browser drives it through one of the
+app's own route handlers**, exactly as Story 5.8's flush does (`projects/[id]/sync/route.ts`). The
+route calls `supabaseServer()`, which is the same `authenticated` role, the same RLS and the same
+grants §50 executed, so **every fact above transfers unchanged**. The design is untouched; only the
+hop is.
+
+**The Realtime layer is the one part with nowhere to live, and it is the owner's** (the spec's own
+Ask First). §50: a **public** broadcast channel `lock:<project id>` works — subscribed, received in
+23–38 ms, payload intact, and another project's channel stayed out — but its topic is joinable by
+anyone holding the publishable key and a project id. A **private** channel is refused outright
+(`CHANNEL_ERROR: Unauthorized: You do not have permissions to read from this Channel topic`) and
+needs an RLS policy on `realtime.messages`, which is a migration. Either way the **browser** cannot
+open the socket without a browser-side client and a script-readable session. **Layer 2 is therefore
+deferred to the owner's ruling (Question 3); layers 1 and 3 — `BroadcastChannel` and the ~15 s
+heartbeat floor — are built, and the matrix's "Realtime unreachable" row is the shipped behaviour
+rather than a fallback.**
+
 **The database — everything exists, nothing is used.**
 
 - `supabase/migrations/20260904120000_complete_schema.sql:500-511` — `create table public.edit_locks`: `project_id`
@@ -161,6 +200,15 @@ migration, which means a Schema phase pushed on its own before Dev (R-99)** — 
   take-over block) — the assertions to extend. `supabase/tests/run-rls-gate.sh` refuses to run unless
   `supabase/tests/rls.sql` is byte-identical to `architecture-…/RLS-TEST.sql`: **edit the architecture copy, then
   `cp`**.
+
+**The one door for every `edit_locks` write — new, in `sync/route.ts`'s shape.**
+
+- `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` — **the model, and it is followed
+  line for line**: `export const dynamic = 'force-dynamic'`, `currentUser()` rather than `signedIn()`
+  so an expired session gets a status the editor can read, `isUuid` on the id, `no()`/`json()` with
+  `Cache-Control: no-store`, and the Postgres **code** logged, never the message.
+- `apps/web/lib/editor.ts:130` — `syncPath()`. The lock route's address is its neighbour, and
+  `editor.tsx:761`'s `syncUrl()` is the `isApp(pathname)` rule both fetches share.
 
 **The editor — the named seams.**
 
@@ -223,7 +271,7 @@ Grepped; the only hits are the two comments above and a docstring aside in
 
 **Execution:**
 
-- [ ] `tools/probe/record-edit-lock.py` -- **FIRST, before any UI.** Against the real Supabase (R-82, keys in
+- [x] `tools/probe/record-edit-lock.py` -- **FIRST, before any UI.** Against the real Supabase (R-82, keys in
       `tools/probe/.env`), with two real user sessions minted the way
       `generate_link` + `verifyOtp` already gives a script one: execute (a) a filtered `UPDATE` that returns its
       changed rows and returns **none** when the filter misses; (b) the CAS at `lock_generation N → N+1` filtered on
@@ -232,53 +280,85 @@ Grepped; the only hits are the two comments above and a docstring aside in
       the round trip, and record whether it needs a publication or a policy. Record every verdict in
       `MEASUREMENTS.md` as the **first execution of §AD2's transport claim**. -- the whole approach rests on these
       four facts and every one is currently a hypothesis (standing rule 1).
-- [ ] `apps/web/lib/lock.ts` -- new: the pure rules, no I/O, `node --test`-reachable as `journal.ts` is. `isStale`,
+      **DONE 2026-09-23 — §50. (a) (b) (c) all held; the CAS is expressible, so there is NO SCHEMA PHASE.
+      (d) public broadcast works at 23-38 ms, private is refused without a policy on `realtime.messages`,
+      and the browser has no Supabase client to open either — see the Code Map and Question 3.**
+- [x] `apps/web/lib/lock.ts` -- new: the pure rules, no I/O, `node --test`-reachable as `journal.ts` is. `isStale`,
       `nextGeneration`, `displacedBy(heldGeneration, rowGeneration)`, the party a session is in
       (`holder | reader | requesting | displaced`), and the nudge timer's restart rule. -- pure rules unit-test
       without a browser, which is what made Story 5.8's journal provable.
-- [ ] `apps/web/lib/journal.ts` -- add `'release'` to `FlushCall` and teach `flushDecision` that it always flushes;
+- [x] `apps/web/lib/journal.ts` -- add `'release'` to `FlushCall` and teach `flushDecision` that it always flushes;
       add the generation half of AD-15's clearing rule **beside** `hydrationFor`, not inside it, replacing the
       comment at `:270`. -- `hydrationFor` stays the one revision rule; the generation test is independent by design.
-- [ ] `apps/web/lib/lock-client.ts` -- new: the I/O. Acquire (INSERT, then CAS on `23505`), heartbeat (filtered
-      UPDATE carrying `unsyncedEdits`), nudge write and clear, release (DELETE filtered on my session), take-over
-      (CAS), and the three-layer transport: `BroadcastChannel` for same-browser, a Supabase Realtime broadcast
-      channel per project, and the heartbeat as the floor. -- one file owns every write to `edit_locks`, so the
-      protocol cannot drift across call sites.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- extend `EditorData` with the lock's server
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` -- new: **the one door every `edit_locks`
+      write passes**, in `sync/route.ts`'s shape and for its reason — a tab that is going cannot call a Server
+      Action, and the release rides a `keepalive` fetch. One POST with an `intent` (`acquire` · `beat` · `nudge` ·
+      `keep` · `release` · `takeover`), each an INSERT, a CAS or a filtered UPDATE through `supabaseServer()`.
+      -- the browser holds no Supabase client and no key (Code Map); this is the only hop that can reach the row,
+      and one route means one place the compare-and-set can be got wrong.
+- [x] `apps/web/lib/lock-client.ts` -- new: the I/O, addressed at the route above rather than at PostgREST.
+      Acquire (INSERT, then CAS on `23505`), heartbeat (filtered UPDATE carrying `unsyncedEdits`), nudge write and
+      clear, release (DELETE filtered on my session), take-over (CAS), and the transport that the browser CAN have:
+      `BroadcastChannel` for same-browser tabs and the heartbeat as the floor beneath it. **Supabase Realtime is
+      Question 3's and is not built** -- one file owns every call, so the protocol cannot drift across call sites.
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- extend `EditorData` with the lock's server
       truth at first paint (holder session, generation, `unsynced_edits`, heartbeat age), beside `revision` and
       `autosave`. -- a reader must not flash an editable shell before the client learns it is a reader.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hold the lock state beside `autosave`
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- hold the lock state beside `autosave`
       and mirror it in `latest`; **one early return in `commit()`** when not the holder; mount the heartbeat,
       the transport and the release on unmount/`visibilitychange`; dim the settings `<aside>` to 55 %; add the
       **second, assertive** live region beside `#editor-said` and never widen that one. -- `commit()` is the one
       door, so the guard is one line and cannot be forgotten at a call site.
-- [ ] `apps/web/components/editor/lock-bar.tsx` -- new: **B5a**. The bar above the canvas — `Lock` glyph, the
+- [x] `apps/web/components/editor/lock-bar.tsx` -- new: **B5a**. The bar above the canvas — `Lock` glyph, the
       sentence, **Request editing** on the right as a real secondary button (the frame draws a `<span>`; that is a
       drawing shortcut). -- the reader's whole affordance, and D8g will reuse the bar verbatim when 7.18 lands.
-- [ ] `apps/web/components/editor/lock-request.tsx` -- new: **B5b**, a **popover, not a modal** — 440 wide, the
+- [x] `apps/web/components/editor/lock-request.tsx` -- new: **B5b**, a **popover, not a modal** — 440 wide, the
       identity row, the sync-position strip (mint dot, the sentence, the mono count), **Hand over** (ink primary) /
       **Keep editing** (secondary), and the countdown. Announced assertively. The countdown **restarts** on any
       interaction inside it, focus included. -- the holder is mid-sentence and must not be interrupted by a modal.
-- [ ] `apps/web/components/editor/lock-takeover.tsx` -- new: **B5c**, a `<dialog>` opened with `openOnCancel` —
+- [x] `apps/web/components/editor/lock-takeover.tsx` -- new: **B5c**, a `<dialog>` opened with `openOnCancel` —
       440 wide, radius 16, the head block, the inset danger panel with the count and the honest second sentence,
       **Take over anyway** (danger fill) / **Wait** (`data-cancel`). **Never itemises the loss.** -- this is the
       component Stories 7.18 and 7.26 will reuse for D8g, so it takes its strings as props.
-- [ ] `apps/web/lock.test.ts` -- new: the I/O matrix's cases against `lib/lock.ts` — staleness, the CAS outcomes,
+- [x] `apps/web/lock.test.ts` -- new: the I/O matrix's cases against `lib/lock.ts` — staleness, the CAS outcomes,
       the displaced test, the timer restart, and that a Remix reports **one** edit. -- the matrix is the contract.
-- [ ] `apps/web/journal.test.ts` -- extend for `'release'` and the generation-clearing rule. -- the journal's
+- [x] `apps/web/journal.test.ts` -- extend for `'release'` and the generation-clearing rule. -- the journal's
       existing proofs are where this half belongs.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` -- add the CAS
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` -- add the CAS
       assertions in the file's existing shape (do the forbidden write, expect `42501`), then
       `cp` to `supabase/tests/rls.sql`. -- the gate refuses to run on a drifted copy.
-- [ ] `tools/probe/run-verify-lock.cjs` -- new: the deployed walk, two real browser contexts on
+- [x] `tools/probe/run-verify-lock.cjs` -- new: the deployed walk, two real browser contexts on
       `app.inflozo.com`, covering every row of the matrix that has a screen. -- R-82; a review that did not touch
       the real site is not a review.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- append **DW-238**: D8g, the deploy-and-export
-      take-over, owned by Stories 7.18 and 7.26. -- the AC names it and it is unbuildable today; a deferral that is
-      not written down is a deferral that is lost.
-- [ ] `_bmad-output/planning-artifacts/epics.md` + `…/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- correct
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- append **DW-238**: D8g, the deploy-and-export
+      take-over, owned by Stories 7.18 and 7.26; and **DW-239**: §AD2's Realtime transport layer, which needs a
+      browser-side Supabase client the app does not have (Question 3). -- the AC names D8g and it is unbuildable
+      today; a deferral that is not written down is a deferral that is lost.
+- [x] `_bmad-output/planning-artifacts/epics.md` + `…/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- correct
       UX-DR13 and § Time limits from "stops" to "restarts from the last interaction", citing F-079. -- standing
       rule 3: the ruling never reached the two documents that summarise it, and three places now disagree.
+
+**Four things execution changed, and each is a comment beside the code it governs:**
+
+- **There is no browser Supabase client, so the protocol runs through one of the app's own route handlers**
+  (`MEASUREMENTS.md` §50(d)). `lock/route.ts` is `sync/route.ts`'s shape under the caller's own session — the same
+  `authenticated` role, the same RLS and the same grants §50 executed — so the design is untouched and only the hop is.
+- **The first poll must be `acquire`, and it cannot ask the STATE.** The opening state is optimistic — a first paint
+  with no row shows an editable shell rather than making the customer wait a round trip — so a poll that read it sent
+  the very first call as a `beat`, which matched no row: the first opener became the reader of a lock that did not
+  exist and only acquired ~15 s later. It asks `heldGeneration`, which is set only when the server confirmed the lock
+  is ours. **And a session that is no longer the holder clears it**, or a holder whose ROW VANISHED beat a row that
+  was not there for ever — the displacement test cannot fire on a null row.
+- **The release rides `pagehide` alone; the unmount does not release.** A soft navigation out of the editor and back
+  raced itself, because the new mount's `acquire` and the old one's `release` carry the SAME session id from
+  `sessionStorage` — so the release deleted the row the re-acquire had just inserted. The same id is what makes not
+  releasing free: the tab comes back, re-reads its own row and beats. And the take-over's own reload suppresses the
+  release outright (`keeping`), or the `pagehide` deleted the row the take-over had just won and the displaced
+  session — testing `displacedBy(1, 1)` — was never told.
+- **`run-verify-editor.cjs` runs five browser contexts on one project**, which since FR-D18 is five editing sessions
+  of one person. `context.close()` does not wait for the `pagehide` release and a closed tab's lock is live for
+  §AD4's ~60 s, so every context after the first opened as a reader — the lock working exactly as it should. It now
+  hands the lock back before each context goes (`handBack`).
 
 **Acceptance Criteria:**
 
@@ -502,3 +582,45 @@ Shuffle or a Site Remix is one edit however much it moved.
 
 **Ruled: option 1 (owner, 2026-09-23)** — *"'unsynced' everywhere."* Recorded as **R-190**. *unsaved* appears
 nowhere in the product; the stored column and the wire field stay `unsynced_edits`, which they already were.
+
+### Question 3 — When you edit on your phone, how fast should your laptop notice? (raised at Dev, 2026-09-23)
+
+**In plain English.** The plan had three ways for one session to tell the other one something: a free
+one that works between two tabs of the same browser, a middle one through Supabase's live-messaging
+service, and a slowest one that just waits for the next check-in with the server. Building it, two
+things turned up that were never checked before.
+
+The free one works and is **instant**. The slowest one works and takes **up to about fifteen seconds**.
+The middle one **cannot be built as the app stands**: our pages talk to Supabase only from our own
+server, never from your browser — that is deliberate, it is why our sign-in cookie cannot be read by
+any script on the page — and the live-messaging service also refuses a private channel until we add a
+permission rule to the database. Both of those are changes to how the product is built, not
+engineering details, so they are yours.
+
+Nothing is broken either way. Everything in this story works today; the only question is the delay.
+
+**An example.** You are editing your site on your laptop. You pick up your phone and open the same
+project, and press **Request editing**. With what is built now, your laptop shows the little card
+within about fifteen seconds. Two tabs of the same browser on the laptop show it instantly.
+
+1. **Leave it at about fifteen seconds. (RECOMMENDED)**
+   - Two tabs of one browser — by far the commonest case, and the one that caused the original
+     problem — are already instant, and cost nothing.
+   - Laptop-to-phone waits up to about fifteen seconds, once, at the moment you ask to take over.
+   - Nothing new is exposed, nothing is added to the database, and nothing costs more.
+2. **Make other devices instant too.**
+   - We would put a Supabase connection in the browser page itself. That means publishing a key into
+     the page, letting the page read your signed-in session, and adding a permission rule to the
+     database (a migration, applied by hand before it ships).
+   - Instant everywhere, on any device.
+   - It reverses a deliberate decision — today nothing about Supabase is reachable from the page — so
+     it is a security change, and it would be its own story rather than part of this one.
+3. **Ask the server more often instead — say every five seconds.**
+   - No new key and no database change; the delay drops from about fifteen seconds to about five.
+   - Every editing session would send three times as many background requests, all day, for a card
+     that appears a handful of times ever — more battery on a phone and more cost on every plan.
+
+Whatever you choose, the take-over itself, the warnings and the counts are unchanged — this is only
+about how long the other session waits before it hears.
+
+**Ruled:** _(awaiting the owner)_

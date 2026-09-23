@@ -5461,3 +5461,30 @@ owner: Story 7.18 (the deploy wizard) for Ship it, Story 7.26 (theme zip export)
   `lock-takeover.tsx` with D8g's strings and refuses to start without the lock (AD-15's flush contract).
 location: `apps/web/components/editor/lock-takeover.tsx` · `apps/web/lib/keymap.ts:113` ·
   `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:1053-1056`
+
+### DW-239: the lock's middle transport layer needs a Supabase client the browser does not have
+
+plain: When you edit on your laptop and then open the same site on your phone, the phone can ask the laptop to hand
+  over. Two tabs of one browser hear each other instantly and cost nothing; another device waits up to about fifteen
+  seconds for the next check-in with the server. Making it instant everywhere means putting a Supabase connection in
+  the page itself, which is a change to how the product is built rather than an engineering detail — so the owner is
+  asked before anything is done, and nothing is broken meanwhile.
+status: open
+severity: low
+origin: Story 5.17's Dev (2026-09-23), Question 3. `addendum.md:45` names three transport layers and is the only
+  statement of them in the project; `tools/probe/record-edit-lock.py` executed the middle one for the first time and
+  `MEASUREMENTS.md` §50 records what it found.
+reason: two things turned up that had never been checked. A PUBLIC Realtime broadcast channel `lock:<project id>`
+  works (subscribed, received in 23-38 ms, payload intact, another project's channel isolated) but its topic is
+  joinable by anyone holding the publishable key and a project id. A PRIVATE channel is refused outright
+  (`CHANNEL_ERROR: Unauthorized … Channel topic`) and needs an RLS policy on `realtime.messages`, which is a
+  migration. And EITHER way the browser cannot open the socket at all: `apps/web/lib/supabase/server.ts` is "THE ONLY
+  PLACE A SUPABASE CLIENT IS MADE", there is no `NEXT_PUBLIC_*` key in `apps/web`, and `lib/supabase/cookies.ts` sets
+  the session cookie `httpOnly` BECAUSE the app has none. Reversing that is a security decision, not an engineering
+  one. Layers 1 and 3 — `BroadcastChannel` and the ~15 s heartbeat floor — are built and the choreography completes
+  on them, so the I/O matrix's "Realtime unreachable" row is the SHIPPED behaviour rather than a fallback.
+owner: the owner rules Question 3 in `spec-5-17-…md`; a "make other devices instant" answer is its own story (a
+  browser-side client, a published key, a `realtime.messages` policy applied by hand before it ships, R-99).
+location: `apps/web/lib/lock-client.ts`'s transport section ·
+  `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` §50(c)(d) ·
+  `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/addendum.md:45`

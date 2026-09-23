@@ -3559,3 +3559,43 @@ owed, and it landed at Review:
 - **The one place the two spellings differ is inside `{{#foreach}}`**, and the table measures it: the in-loop `{{title}}` control prints, so the block ran, and `{{pagination.page}}` is empty inside it while `{{@root.pagination.page}}` is not. That is Handlebars, not Ghost — a path lookup does not walk out to the parent context. **It costs nothing today: no design in the library puts a `data-prop` inside a `data-repeat`** (the authored-array props a design does repeat are expanded by `expandItems` on BOTH emitters, never as `{{#foreach}}`), so the emitted constant never lands inside one. `docs/section-authoring.md` says so where an author would need to know it.
 
 **What this does NOT say.** Nothing here was rendered through Inflozo's own emitter: the markers are the raw expressions, written by hand into a probe theme. That the emitter produces exactly this string, once per occurrence and with every other character of user text escaped, is `agreement.test.ts`'s and `ad36.test.ts`'s, per commit.
+
+## 50. `edit_locks` — the compare-and-swap, the take-over guard and Realtime broadcast, executed on the real Supabase project · 2026-09-23
+
+`python3 tools/probe/record-edit-lock.py`. Story 5.17. The first execution of FR-D18's protocol and of `addendum.md:45`'s transport claim — MEASUREMENTS.md carried no occurrence of "realtime" or "broadcast" before this. One throwaway account and two projects of its own, created and deleted in a `finally`; two real GoTrue sessions of that one account, because the lock is one person's devices negotiating with each other. Every write below went through the `authenticated` role under RLS and the column grants — never the service key.
+
+### (a) The protocol, step by step
+
+| Step | Verdict | What the real project answered |
+|---|---|---|
+| `filtered-update/hit` | **PASS** | HTTP 200, 1 row(s) returned |
+| `filtered-update/miss` | **PASS** | HTTP 200, 0 row(s) returned, unsynced_edits still 7 |
+| `cas-race/control` | **PASS** | uncontended CAS 1 -> 2: HTTP 200, 1 row(s) |
+| `cas-race/one-wins` | **PASS** | both fired at 2 -> 3: session 0 HTTP 200 1 row(s) in 362 ms · session 1 HTTP 200 0 row(s) in 836 ms · the row now holds racer-0 at generation 3 |
+| `takeover-guard/refused` | **PASS** | HTTP 403, SQLSTATE 42501; the holder is still racer-0 at generation 3 |
+| `takeover-guard/control` | **PASS** | the same holder change at generation 3 -> 4: HTTP 200, 1 row(s) |
+| `insert-grant/named-refused` | **PASS** | INSERT naming lock_generation: HTTP 403, SQLSTATE 42501 |
+| `insert-grant/defaults-to-1` | **PASS** | plain INSERT: HTTP 201, lock_generation 1 |
+| `insert-grant/second-is-23505` | **PASS** | a second INSERT for the same project: HTTP 409, SQLSTATE 23505 |
+| `realtime/public` | RECORD | subscribed, received in 23 ms, payload intact, and a message on another project's channel did NOT arrive |
+| `realtime/private` | RECORD | subscribed=False received=None isolated=None — CHANNEL_ERROR: Unauthorized: You do not have permissions to read from this Channel topic: lock:23d50c0d-4b64-42ab-aaab-50905922f863 |
+
+### (b) What it means
+
+- **The CAS is expressible through PostgREST, so FR-D18 needs no migration and Story 5.17 has no Schema phase.** `PATCH /edit_locks?project_id=eq.<id>&lock_generation=eq.<N>` with `Prefer: return=representation` returns the row it changed and an EMPTY ARRAY — HTTP 200, not an error — when the filter misses. The empty array is the whole protocol: it is how a session learns it was beaten without a second round trip.
+- **Two sessions racing the same CAS produce exactly one winner.** Postgres re-evaluates the `WHERE` after the row lock is released under READ COMMITTED, so the loser's filter no longer matches and it changes nothing. No advisory lock, no `security definer` function and no serializable retry is needed.
+- **`guard_lock_takeover` is live and answers `42501`** to a holder change at an unchanged generation, which PostgREST surfaces as HTTP 403 with the SQLSTATE in the body. The displaced device's detection signal therefore cannot be routed around by a client.
+- **`lock_generation` is genuinely outside the INSERT grant**: an INSERT that names it is refused, a plain INSERT defaults it to 1, and a second INSERT for the same project is `23505` — the matrix's fall-through to the CAS path, executed.
+
+### (c) Realtime broadcast
+
+- **A public channel `lock:<project id>` WORKS.** Subscribed, the message arrived in **23 ms** with its payload intact, and a message sent on ANOTHER project's channel did not arrive — the isolation control, without which "it was received" proves only that something arrived.
+- **A private channel is REFUSED.** subscribed: `False` — `CHANNEL_ERROR: Unauthorized: You do not have permissions to read from this Channel topic: lock:23d50c0d-4b64-42ab-aaab-50905922f863`.
+
+**No publication and no Postgres Changes are involved.** Broadcast is ephemeral pub/sub over the Realtime socket; nothing is read from WAL, so nothing here would have needed a migration on the publication. **A PRIVATE channel is a different matter**: Realtime authorises it against `realtime.messages`, this project has no policy there, and adding one is a migration — which is the Ask First the spec names. A PUBLIC channel needs no policy and carries the opposite cost: the topic is `lock:<project id>`, so anyone holding the publishable key and a project id could join it and watch the nudges go by.
+
+### (d) What this does NOT say — and it decides the story
+
+Every call above was made by a **Node script holding a user access token**. The app has no such thing in the browser: `apps/web/lib/supabase/server.ts` is "THE ONLY PLACE A SUPABASE CLIENT IS MADE", there is no `NEXT_PUBLIC_*` key, and `lib/supabase/cookies.ts` sets the session cookie `httpOnly: true` precisely because "this app has none, so the cookie is closed to script". So the **browser cannot open a Realtime socket and cannot PATCH PostgREST directly** without a browser-side client, a public key and a script-readable session — none of which exists, and each of which is an architectural change the owner has not been asked for.
+
+The CAS is unaffected: it runs from a **route handler under the user's own session** (`projects/[id]/sync/route.ts`'s shape), which is the same `authenticated` role, the same RLS and the same grants this section executed. Realtime's middle transport layer is the part that has nowhere to live, and it is put to the owner rather than invented.

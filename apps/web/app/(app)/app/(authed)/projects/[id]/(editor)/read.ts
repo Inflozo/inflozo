@@ -5,6 +5,7 @@ import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, isUuid, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
 import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
@@ -121,6 +122,12 @@ export type EditorData = {
    *  subject of the wrong kind or naming a row the source no longer holds. A canvas with no row here is untouched
    *  and renders its fixture, which is the same answer. */
   subjects: Readonly<Record<string, orbitWeekly.Subject>>
+  /** STORY 5.17 — FR-D18's LOCK, AS SERVER TRUTH AT FIRST PAINT. A second opener must not flash an editable shell
+   *  before the client learns it is a reader, so the row is read ABOVE the boundary beside `revision` and
+   *  `autosave` rather than asked for afterwards. `null` is "nobody holds it", and a row whose `ageMs` is past
+   *  §AD4's ~60 s is a session that has gone — the staleness is that comparison and nothing else, because the
+   *  table has no expiry column. `lib/lock.ts` owns both the shape and the test. */
+  lock: LockRow | null
   /** Story 5.14 — FR-D16's per-canvas "looked at" record (`project_template_prefs.member_states_viewed`), keyed by
    *  `template_key` as `docs` and `subjects` are, each value read through `readViewed`: the known visitors in canonical
    *  order, junk dropped. A canvas with no row here has been looked at as nobody, which is the same answer. Story 5.16:
@@ -134,7 +141,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // Story 5.8: the user is needed for its own sake now — the local store is named after them — so `signedIn()` is
   // awaited once and its id used twice rather than read a second time.
   const user = await signedIn()
-  const [{ data, error }, { plan }, project, profile, prefs] = await Promise.all([
+  const [{ data, error }, { plan }, project, profile, prefs, lock] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -147,6 +154,13 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // only because a project has one owner today; a second member would share the row (review, 2026-09-21, DW ledger).
     // Story 5.14 — and its viewed member states, the column's first reader too (FR-D16, AD-22)
     sb.from('project_template_prefs').select('template_key, preview_subject, member_states_viewed').eq('project_id', projectId),
+    // Story 5.17 — `edit_locks`' FIRST READER ANYWHERE (FR-D18). Through the user's own session, which is the only
+    // key that can see this table at all: it is absent from the `service_role` grant loop, so the secret key
+    // returns nothing without saying so (`MEASUREMENTS.md` §50). RLS scopes it to the caller's own project.
+    sb.from('edit_locks')
+      .select('holder_session_id, lock_generation, unsynced_edits, heartbeat_at, nudge_requested_by, nudge_requested_at')
+      .eq('project_id', projectId)
+      .maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -285,5 +299,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
     dropped,
     subjects,
     viewed,
+    /* STORY 5.17 — A FAILED READ IS "NOBODY HOLDS IT", and it takes the same safe side `autosave_enabled` and the
+       preview subjects take: a lock that cannot be read must not blank an editor over a row that decides nothing
+       about the document. The client's own `acquire` on mount is the real decision either way — this is only what
+       it paints with for the one round trip before that answer arrives. */
+    lock: lock.error || !lock.data ? null : rowFrom(lock.data, Date.now()),
   }
 }

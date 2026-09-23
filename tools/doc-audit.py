@@ -291,6 +291,19 @@ DOCS = [
   'generated index.ts a core test imports them through (--index rebuilds it from disk alone). '
   'Also covers packages/library/src/contexts.ts and contexts.test.ts and '
   'packages/section-runtime/src/contexts.test.ts, which the catalogue cannot index under packages/.'),
+ ('tools/probe/record-edit-lock.py', 'tool', 'Edit-lock protocol recorder',
+  "Story 5.17's recorder (standing rule 1, R-82): the four facts FR-D18's protocol rests on, executed against the "
+  'real Supabase project before a line of the choreography was written, through the authenticated role under RLS and '
+  'the column grants — never the service key, which cannot see edit_locks at all. (a) a PostgREST filtered UPDATE '
+  'with Prefer: return=representation returns the row it changed and an EMPTY ARRAY at HTTP 200 when the filter '
+  "misses; (b) two real sessions of one account firing the same lock_generation N->N+1 CAS at one barrier, exactly "
+  'one winning, with the uncontended CAS immediately before as its control; (c) guard_lock_takeover answering 42501 '
+  'to a holder change at an unchanged generation, controlled by the same change with the generation advanced; (c2) '
+  'lock_generation outside the INSERT grant, defaulting to 1, and a second INSERT for one project as 23505; (d) a '
+  'Supabase Realtime BROADCAST channel per project, public and private, with the round trip measured and another '
+  "project's channel as the isolation control. One throwaway account and its own projects, deleted in a finally with "
+  'the Admin-API user count read before and after. Writes MEASUREMENTS.md §50 and nothing else. Its verdict decided '
+  'that the story has NO Schema phase.'),
  ('tools/probe/record-page-number.py', 'tool', 'Page-number guard recorder',
   "Story 5.16a's recorder (standing rule 1, R-82): R-186's page-1 guard, executed on T1 and T3 before "
   'anything is emitted for it. Generates a probe theme whose default.hbs — the layout, where a site-wide '
@@ -532,6 +545,20 @@ DOCS = [
   "the dialog states what it costs (AD-15: the timer alone stops), that Cancel writes nothing, that confirming writes "
   'profiles.autosave_enabled = false per USER, and that turning it back on asks nothing. Every assertion is read back '
   'off the database rather than off the switch. Takes APP_ORIGIN/APP_PREFIX for a local build.'),
+ ('tools/probe/run-verify-lock.cjs', 'tool', 'Edit-lock harness',
+  "Story 5.17: FR-D18's whole choreography on the deployed editor (R-82), in TWO browser contexts of ONE account — "
+  'which is what "two sessions" means here, because a project carries one user_id and team seats are out of v1 '
+  '(R-189). Its own throwaway account and seeded "Pilot sections" project, deleted in a finally with the user count '
+  'read before and after. Walks every row of the I/O matrix that has a screen: the first opener inserting at '
+  "lock_generation 1; the heartbeat carrying AD-16's EDIT count; the second opener getting B5a's bar in the ruled "
+  "words, its settings sidebar at 55% and aria-disabled rather than hidden, and commit() refusing so no row moves; "
+  'Request editing writing the nudge; B5b arriving as a POPOVER at 440, announced assertively, stating its sync '
+  'position before asking; F-079 — focusing the card RESTARTING the countdown rather than stopping it; Hand over '
+  'flushing BEFORE the row is deleted; the unanswered request offering the take-over; B5c opening with focus on Wait, '
+  'naming the count, never itemising the loss and naming nobody; the CAS advancing the generation by exactly one; and '
+  "the displaced session flipping to read-only, told assertively, with its journal cleared unconditionally. Every "
+  "expectation is imported from apps/web/lib/lock.ts's LOCK_COPY and constants rather than restated (R-170, standing "
+  'rule 4). Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/APP_PREFIX for a local build.'),
  ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
   'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '
   "way createProject makes them, and site, home and post project_templates rows holding the pilots at their default "

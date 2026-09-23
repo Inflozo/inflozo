@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, hydrationFor, ownFlushLanded, labelOf, maxSeq, panelOpen, redo, undo, unsynced,
+  flushPayload, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, panelOpen, redo, undo, unsynced,
   restingState, unsyncedEdits, vanishedDesign, type Journal, type SyncState,
 } from './lib/journal.ts'
 
@@ -257,4 +257,37 @@ test('a tab-close flush of our own is recognised on the way back in, and another
   assert.equal(ownFlushLanded(local, 5, { home: { instances: [] } }), false, 'the control: a different doc is another session')
   assert.equal(ownFlushLanded(local, 5, {}), false)
   assert.equal(ownFlushLanded({ ...local, journal: EMPTY_JOURNAL }, 5, sameReordered), false, 'nothing was owed, so it was not us')
+})
+
+/* ── STORY 5.17: the two halves this story adds, where the journal's own proofs live ────────────────────────────
+   `'release'` is Hand over's flush, and `journalCleared` is the generation half of AD-15's clearing rule — beside
+   `hydrationFor` and deliberately not inside it. */
+
+test('AD-15\'s flush contract: `release` sends whatever is owed, autosave off included', () => {
+  const owing = edit(EMPTY_JOURNAL, 'home', doc(), doc('a')).journal
+  // UNSYNCED WORK NEVER CROSSES A LOCK BOUNDARY, so Hand over flushes BEFORE it releases — and like `manual` and
+  // `unload` it falls through the autosave test, because AD-15 stops the TIMER alone.
+  assert.equal(flushDecision(owing, 'release', false), 'send')
+  assert.equal(flushDecision(owing, 'release', true), 'send')
+  assert.equal(flushDecision(owing, 'timer', false), 'nothing', 'the half this story must not have widened')
+  // nothing owed is nothing to send: a release is not a keystroke, so it is not acknowledged either
+  assert.equal(flushDecision(EMPTY_JOURNAL, 'release', true), 'nothing')
+  assert.equal(flushDecision(EMPTY_JOURNAL, 'manual', true), 'acknowledge')
+})
+
+test('AD-15: the journal goes for EITHER reason, and the generation decides on its own', () => {
+  const same = hydrationFor({ baseRevision: 9 }, 9)
+  const moved = hydrationFor({ baseRevision: 9 }, 10)
+  const fresh = hydrationFor(null, 0)
+  // the revision half, unchanged by Story 5.17
+  assert.equal(journalCleared(same, false), false)
+  assert.equal(journalCleared(moved, false), true)
+  assert.equal(journalCleared(fresh, false), true)
+  // THE GENERATION HALF DECIDES ON ITS OWN, with no revision comparison involved — which is the whole reason it is
+  // beside `hydrationFor` and not inside it: a take-over whose new holder has written nothing leaves the revisions
+  // EQUAL, so a folded rule would never clear the displaced session's journal.
+  assert.equal(journalCleared(same, true), true)
+  assert.equal(journalCleared(moved, true), true)
+  // and `hydrationFor` itself is untouched: it still answers the revision question and only that
+  assert.deepEqual(same, { kind: 'local' })
 })

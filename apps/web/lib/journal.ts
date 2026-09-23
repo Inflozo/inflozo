@@ -134,8 +134,9 @@ export function redo(j: Journal): Restore | null {
  * watermark — distinct because the record's shape may one day let one transaction write two rows, and the count must
  * not become an operation count the day it does.
  *
- * NOTHING RENDERS THIS. It is the quantity AD-16 names as the only legitimate one, kept here so the day a surface
- * needs it there is one definition rather than a second one invented beside it.
+ * STORY 5.17 IS THE SURFACE IT WAS WRITTEN FOR, and it is still the only one. The heartbeat carries this number,
+ * B5b prints it, B5c's danger panel prints it and the displaced session's assertive notice prints it — all from
+ * this one definition, so an operation count can never become the thing a person is told they lost.
  */
 export const unsyncedEdits = (j: Journal) => new Set(j.entries.filter((e) => e.seq > j.synced).map((e) => e.txn)).size
 
@@ -152,8 +153,13 @@ export const flushed = (j: Journal, sentStamp: number, upTo: number): Journal =>
   pending: Object.fromEntries(Object.entries(j.pending).filter(([, at]) => at > sentStamp)),
 })
 
-/** Who asked for a flush. `unload` is the tab going, which cannot be acknowledged and cannot be refused. */
-export type FlushCall = 'timer' | 'manual' | 'change' | 'retry' | 'unload'
+/** Who asked for a flush. `unload` is the tab going, which cannot be acknowledged and cannot be refused.
+ *  `release` is STORY 5.17'S HAND OVER, and it is a member rather than a second function because the flush itself
+ *  is this story's and is not rewritten: AD-15's flush contract is "unsynced work never crosses a lock boundary",
+ *  so Hand over flushes BEFORE it releases and the lock is let go only if the flush landed. Like `manual` and
+ *  `unload` it falls through the autosave test below — AD-15's timer ALONE stops — so a session with autosave off
+ *  still sends its work before it gives up the lock. */
+export type FlushCall = 'timer' | 'manual' | 'change' | 'retry' | 'unload' | 'release'
 
 /**
  * WHETHER A FLUSH GOES OUT, in one place — three matrix rows that were each a condition written at the caller.
@@ -267,12 +273,26 @@ export type Hydration =
  * ONE RECOGNITION SITS IN FRONT OF IT since Story 5.8's review — `ownFlushLanded` below — and it is not a second rule:
  * it finds the case where nothing differs at all.
  *
- * THE TAKEOVER HALF OF AD-15'S JOURNAL-CLEARING RULE IS NOT HERE, and its absence is deliberate: `lock_generation`
- * advancing is the other reason a journal is cleared, and nothing writes `edit_locks` until Story 5.17, so it has
- * nothing to read. The revision half is, and is reachable today — a second tab is all it takes.
+ * THE TAKEOVER HALF OF AD-15'S JOURNAL-CLEARING RULE IS `journalCleared` BELOW, and it is deliberately BESIDE this
+ * function rather than inside it (Story 5.17). `hydrationFor` stays the one REVISION rule; the generation test is
+ * independent by design, which is the whole point of AD-15's second clause — a take-over whose new holder has
+ * written nothing leaves the revisions equal, so a rule that folded the two would never clear.
  */
 export const hydrationFor = (local: { baseRevision: number } | null, cloudRevision: number): Hydration =>
   local === null ? { kind: 'first' } : local.baseRevision === cloudRevision ? { kind: 'local' } : { kind: 'cloud' }
+
+/**
+ * DOES THE JOURNAL GO? (AD-15, Story 5.17.)
+ *
+ * TWO INDEPENDENT REASONS, OR-ed and never folded. The revision reason is `hydrationFor`'s above: the cloud doc
+ * supersedes the local one, so the snapshots the journal holds are no longer true. The generation reason is
+ * `lib/lock.ts`'s `displacedBy`: this session was taken over from, and the ruling is that its unsynced edits are
+ * GONE — there is no merge path and no recovery of orphaned edits, so a journal that could still undo them would be
+ * offering work the server will never accept.
+ *
+ * `takenOver` DECIDES ON ITS OWN, with no revision comparison involved — the acceptance criterion in those words.
+ */
+export const journalCleared = (how: Hydration, takenOver: boolean): boolean => takenOver || how.kind !== 'local'
 
 /**
  * OUR OWN TAB-CLOSE FLUSH, RECOGNISED ON THE WAY BACK IN (Story 5.8's review).

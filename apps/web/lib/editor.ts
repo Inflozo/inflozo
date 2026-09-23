@@ -129,6 +129,19 @@ export const settingsPath = (projectId: string) => `/projects/${projectId}/${SET
 export const SYNC = 'sync'
 export const syncPath = (projectId: string) => `/projects/${projectId}/${SYNC}`
 
+/** THE SCHEME'S THIRD NON-CANVAS SEGMENT (Story 5.17, R-131 applied a third time): the edit lock's one door — the
+ *  only path that writes `edit_locks`, so there is exactly one place FR-D18's compare-and-set can be got wrong.
+ *
+ *  A ROUTE HANDLER FOR `sync`'s OWN TWO REASONS, and a third of its own. A tab that is going cannot call a Server
+ *  Action and the release rides a `keepalive` fetch; and the browser holds NO Supabase client and no key at all
+ *  (`lib/supabase/server.ts` is "THE ONLY PLACE A SUPABASE CLIENT IS MADE", the session cookie is `httpOnly`), so
+ *  a route under the caller's own session is the only hop that can reach the row — the same `authenticated` role,
+ *  the same RLS and the same column grants `MEASUREMENTS.md` §50 executed. A STATIC sibling of `[template]`, so
+ *  Next resolves it first and `canvasFromSegment` is never asked about it; `editor.test.ts` carries the same three
+ *  assertions for it that it carries for `settings` and `sync`, so the day anything DOES ask, it is refused. */
+export const LOCK = 'lock'
+export const lockPath = (projectId: string) => `/projects/${projectId}/${LOCK}`
+
 /** The canvas a segment names, or null for a reserved, unknown or CONDITIONAL one — a canvas the switcher offers to
  *  nobody must not be reachable by typing its address either, and refusing it here is the only refusal that is
  *  synchronous (see `CONDITIONAL`). `'home'` is a key; the route 308s it. */

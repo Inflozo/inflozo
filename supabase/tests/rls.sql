@@ -836,6 +836,50 @@ begin
   raise notice 'PASS (F4): a takeover that advances the generation succeeds (gen now %)', gen;
 end $$;
 
+-- F4, second half: FR-D18's PROTOCOL, which Round 1 decision 32 deferred to a state diagram and Story 5.17 built.
+-- The guards above say what may not happen; these say that the compare-and-swap the app actually performs DOES
+-- happen, and that the losing side of a race changes nothing. Executed against the real Supabase project first
+-- (MEASUREMENTS.md §50) and asserted here so the gate keeps it.
+do $$
+declare hit int; gen bigint; owed int; bad text;
+begin
+  update public.edit_locks set holder_session_id='cas-a', lock_generation=10, unsynced_edits=7
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001';
+
+  -- THE CAS ITSELF: holder and generation in ONE statement, FILTERED ON THE GENERATION JUST READ.
+  update public.edit_locks set holder_session_id='cas-b', lock_generation=11
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and lock_generation=10;
+  get diagnostics hit = row_count;
+  if hit <> 1 then raise exception 'FAIL (F4): the compare-and-swap changed % row(s) on the generation it read', hit; end if;
+  raise notice 'PASS (F4): the CAS at generation N -> N+1, filtered on N, changes exactly one row';
+
+  -- AND THE LOSER OF A RACE CHANGES NOTHING. A second session firing the same CAS reads the generation it read
+  -- before, which no longer matches -- zero rows, no error, and the row still holds the winner. This is the whole
+  -- protocol: it is how a session learns it was beaten without a second round trip.
+  update public.edit_locks set holder_session_id='cas-c', lock_generation=11
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and lock_generation=10;
+  get diagnostics hit = row_count;
+  if hit <> 0 then raise exception 'FAIL (F4): a CAS on a generation that had moved changed % row(s)', hit; end if;
+  select holder_session_id, lock_generation into strict bad, gen from public.edit_locks
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001';
+  if bad <> 'cas-b' or gen <> 11 then raise exception 'FAIL (F4): the loser overwrote the winner (% at %)', bad, gen; end if;
+  raise notice 'PASS (F4): the losing CAS changes no row and the winner still holds the lock';
+
+  -- THE HEARTBEAT IS FILTERED ON THE HOLDER'S OWN SESSION, so a displaced device's next beat changes zero rows --
+  -- which is the OTHER way AD-15's displacement is detected, beside the generation read.
+  update public.edit_locks set heartbeat_at=now(), unsynced_edits=3
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and holder_session_id='cas-a';
+  get diagnostics hit = row_count;
+  if hit <> 0 then raise exception 'FAIL (F4): a displaced session''s heartbeat still changed % row(s)', hit; end if;
+
+  -- ...and the count the displaced device is told is NOT reset by the takeover (the table's own comment): the
+  -- incoming holder writes its own on its own heartbeats.
+  select unsynced_edits into owed from public.edit_locks
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001';
+  if owed <> 7 then raise exception 'FAIL (F4): the takeover reset unsynced_edits to % -- the displaced device is told the wrong number', owed; end if;
+  raise notice 'PASS (F4): a displaced heartbeat changes nothing and unsynced_edits survives the takeover';
+end $$;
+
 -- FR-J7's pin floor, against the OWNER — the plan-specific cap lives in the server route, so this
 -- is the database floor underneath it and must hold even against the service role (AD-31).
 do $$

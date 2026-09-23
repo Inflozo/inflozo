@@ -555,9 +555,9 @@ ALWAYS VISIBLE is not.**
 ### Time limits
 
 **One timed interaction exists: the edit-lock nudge** (F2). It is a **no-response** timer, not a
-decision timer, and the distinction is what keeps it compliant: **it stops the moment the holder
-interacts with the popover at all — including focusing it** — and only runs out when nobody is
-there. A holder who is present is never hurried, and B5b is announced assertively so a screen-reader
+decision timer, and the distinction is what keeps it compliant: **it restarts the moment the holder
+interacts with the popover at all — including focusing it — and it does not stop** (F-079), so it
+only runs out when nobody is there. A holder who is present is never hurried, and B5b is announced assertively so a screen-reader
 user learns about it while the timer is still running. The magic-link resend countdown (S1b) blocks
 nothing: the link itself is valid for 15 minutes and "Use a different email" is always available.
 

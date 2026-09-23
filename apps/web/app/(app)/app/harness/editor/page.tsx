@@ -116,6 +116,10 @@ export default function EditorHarness() {
     // Story 5.14 — no canvas has been looked at yet, so View as's menu dots every other visitor (R-169). The record's write fails here
     // (there is no database), which is the matrix's "Save refused" row: logged, never said, and the canvas unaffected.
     viewed: {},
+    // Story 5.17 — NOBODY HOLDS THE LOCK, so the harness opens as the holder and every journey keeps its keys. Its
+    // own `acquire` on mount reaches no database and answers nothing, which the client reads as "the server was not
+    // reached": the state it opened with stands, and nothing about the lock is on screen (`lib/lock-client.ts`).
+    lock: null,
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

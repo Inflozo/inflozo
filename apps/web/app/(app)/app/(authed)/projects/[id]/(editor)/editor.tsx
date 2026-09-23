@@ -17,6 +17,9 @@ import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
 import { PageTwoPill } from '@/components/editor/page-two-pill'
+import { LockBar } from '@/components/editor/lock-bar'
+import { LockRequest } from '@/components/editor/lock-request'
+import { LockTakeover } from '@/components/editor/lock-takeover'
 import { PreviewBar, PreviewButton } from '@/components/editor/preview-toggle'
 import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
@@ -42,9 +45,13 @@ import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device
 import { CANVASES, canvasOfPageTwoKey, canvasOfPath, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  flushDecision, hydrationFor, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn, unsynced,
-  vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
+  flushDecision, hydrationFor, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn,
+  unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
+import {
+  displacedBy, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, stillAsking, type LockRow,
+} from '@/lib/lock'
+import { askLock, lockSignals, lockUrl, tabSession, type LockAnswer, type LockSignal } from '@/lib/lock-client'
 import { holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PREVIEW_SAID } from '@/lib/preview'
 import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
@@ -283,6 +290,27 @@ const HELD: unique symbol = Symbol('held')
  *  is what `#editor-said` says once the held change lands (a move's own sentence), since the caller could not. */
 type About = { instanceId: string; name: string; also?: string; said?: string }
 
+/** STORY 5.17 — the edit lock as this component holds it. The four PARTIES are derived, never stored twice:
+ *  `holder` is the only one the editor gates on, and `lib/lock.ts`'s `partyOf` is the rule the tests assert. */
+type LockUi = {
+  /** this session holds the lock and may edit. `commit()`'s one early return reads it. */
+  holder: boolean
+  /** the row as last heard, or null when nobody holds it */
+  row: LockRow | null
+  /** this session's Request editing is in flight or waiting (R-98's swapped label reads it) */
+  asking: boolean
+  /** when the request landed — the requester's own ~30 s runs from here, and B5c prints the duration */
+  askedAt: number | null
+  /** ~30 s passed with no answer: the bar offers the take-over */
+  unanswered: boolean
+  /** Hand over is in flight: the flush goes out BEFORE the release */
+  handingOver: boolean
+  /** the flush refused, so the lock was NOT released — unsynced work never crosses a lock boundary (AD-15) */
+  handOverFailed: boolean
+  /** the take-over's confirm is in flight */
+  taking: boolean
+}
+
 /** A section's identity ACROSS THE PAGE SWITCH: page 2's copy of a section is the same section (R-179), so the panel
  *  stays mounted over the switch and focus stays on D5d's row when the row was pressed. */
 const acrossPages = (p: Pick) => {
@@ -310,6 +338,7 @@ export function Editor({
   revision,
   userId,
   autosave,
+  lock: heldOnServer,
   canvasSrc: canvasPath,
 }: EditorData & {
   project: { id: string; name: string }
@@ -470,6 +499,60 @@ export function Editor({
   const gone = useRef(false)
   const clocks = useRef<{ retry?: ReturnType<typeof setInterval> }>({})
 
+  /* ─── Story 5.17 — FR-D18's EDIT LOCK: one editing context per project, across tabs, browsers and devices ──────
+   *
+   * THE STATE IS THIS COMPONENT'S OWN, exactly as `autosave` and `revision` are — there is no context, no provider
+   * and no store in this editor, and this story adds none. `lib/lock.ts` holds every rule `node --test` can reach,
+   * `lib/lock-client.ts` holds the I/O, and `projects/[id]/lock/route.ts` is the one door every `edit_locks` write
+   * passes. What lives here is the state, the timers and the four gestures.
+   *
+   * THE WHOLE PROTOCOL IS AN OPTIMISTIC COMPARE-AND-SWAP ON `lock_generation` (AD-15), executed against the real
+   * Supabase before any of this was written (`MEASUREMENTS.md` §50). NOTHING ABOUT THE TRANSPORT IS EVER SHOWN: two
+   * tabs of one browser hear each other instantly through `BroadcastChannel`, everything else waits for the ~15 s
+   * heartbeat, and Realtime's middle layer is the owner's to rule (Question 3, DW-239).
+   */
+  const [lock, setLock] = useState<LockUi>(() => ({
+    // A READER MUST NOT FLASH AN EDITABLE SHELL, so the first paint is decided by the row `read.ts` read above the
+    // boundary: a live lock held by somebody else is read-only from the very first frame, and the `acquire` below
+    // only confirms it.
+    holder: isStale(heldOnServer),
+    row: heldOnServer,
+    asking: false,
+    askedAt: null,
+    unanswered: false,
+    handingOver: false,
+    handOverFailed: false,
+    taking: false,
+  }))
+  /** the generation this session ACQUIRED at, or null when it has never held the lock — or gave it away, which is
+   *  not being displaced. AD-15's take-over test compares the row's generation against this and nothing else. */
+  const heldGeneration = useRef<number | null>(null)
+  /** the request this holder has already ANSWERED or let expire, by the asking session's id. Without it B5b would
+   *  come straight back on the next beat: Keep editing clears the columns, but the expiry deliberately does not —
+   *  the requester's own timer owns that half. */
+  const [dismissed, setDismissed] = useState<string | null>(null)
+  /** UX-DR12's SECOND live region, and it is ASSERTIVE. `#editor-said` is the editor's polite one and stays polite:
+   *  widening it would make every design-ring announcement shout. Only this story writes here. */
+  const [announced, setAnnounced] = useState('')
+  /** when this session deliberately handed the lock over. It then stops trying to `acquire` for one nudge's worth
+   *  of time, so it cannot take back the lock it just gave away before the requester's next poll reaches it.
+   *  ponytail: one grace window; if hand-over ever needs to be instant across devices, the release becomes a CAS
+   *  straight to `nudge_requested_by` instead of a DELETE. */
+  const gaveAt = useRef(0)
+  /** THIS PAGE IS COMING BACK, so the release on the way out must not fire. The take-over reloads — a reload IS a
+   *  hydrate — and without this the `pagehide` release DELETED the row it had just won, so the re-acquire INSERTed
+   *  a fresh one at generation 1 and the session that had been taken over from never learned it (executed against a
+   *  local build, 2026-09-23: the displaced session was told nothing, because `displacedBy(1, 1)` is false). The tab
+   *  id survives the reload in `sessionStorage`, so the lock is simply still ours on the way back in.
+   *  ponytail: it covers a reload WE start. A customer's own F5 still releases and re-acquires, which is harmless —
+   *  the same session id comes back and takes the row again — but leaves a sub-second window in which another
+   *  session's poll could acquire first. A reload-aware release would need `navigation.type`, which is only readable
+   *  on the way back IN. */
+  const keeping = useRef(false)
+  /** the `BroadcastChannel`'s send, mounted with the lock effect below */
+  const tell = useRef<(signal: LockSignal) => void>(() => {})
+  const takeover = useRef<HTMLDialogElement>(null)
+
   const layers = useFold()
   const controls = useFold()
   const frame = useRef<HTMLIFrameElement>(null)
@@ -540,8 +623,8 @@ export function Editor({
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page }
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock }
   /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
    *  every change of page, so a section asks again the next time page 2 is shown. */
   const asked = useRef(new Set<string>())
@@ -586,6 +669,17 @@ export function Editor({
    *  site-wide section is HELD, and FR-D5's dialog asks before it lands (`about` names the section). Null means held. */
   const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: About): boolean | null => {
     const now = latest.current
+    // STORY 5.17 — FR-D18'S READ-ONLY GUARD, AND IT IS ONE EARLY RETURN. This is the one door every change passes,
+    // which is why the rule cannot be forgotten at a call site: a session that does not hold the lock writes nothing
+    // to the docs, nothing to the journal and nothing to the device. The control that was pressed is CONTROLLED by
+    // the value in force, so it never moves — not even for a frame (B5a). Typing on the canvas is stopped a step
+    // earlier, in `startEditing`, because a `contenteditable` element has already changed by the time it gets here.
+    //
+    // IT ANSWERS `null`, WHICH ALREADY MEANS "NOTHING HAPPENED — SAY NOTHING, REPAINT NOTHING" (R-180's hold, the
+    // `HELD` symbol below). That is not a shortcut, it is the only answer that reaches every caller: `false` is a
+    // SUCCESS that merely had no round trip, so `onChange` would go on to stamp the canvas root with the refused
+    // value and `edit()` would announce "X duplicated" over a change that never landed.
+    if (!now.lock.holder) return null
     if (now.page === 2 && touched === SITE.key && about !== undefined && !asked.current.has(about.instanceId)) {
       holdChange(written, touched, about)
       return null
@@ -843,6 +937,251 @@ export function Editor({
     setPressingRetry(true)
     void flush('retry').finally(() => setPressingRetry(false))
   }
+
+  /* ─── Story 5.17 — FR-D18's lock: the heartbeat, the transport and the four gestures ─────────────────────────
+   *
+   * ONE ROUTE, ONE RECONCILER. Every answer from `lock/route.ts` lands in `land()`, so the generation test, the
+   * displacement and the state of my own request are read in ONE place rather than after each of six calls.
+   */
+
+  /** THIS TAB'S IDENTITY, and it survives a reload (`sessionStorage`) so a refresh keeps the lock rather than
+   *  orphaning it for ~60 s. A second TAB never shares it — that tab IS the other editing context. */
+  const tabId = useRef('')
+  const lockAt = () => lockUrl(project.id, isApp(pathname))
+  /** AD-16's count for THIS session: EDITS above the watermark, never operations. `remixFold` already makes a Site
+   *  Remix one `commit`, so a re-roll of any size reports 1. */
+  const owedNow = () => unsyncedEdits(latest.current.journal)
+
+  const putLock = (next: LockUi) => {
+    latest.current = { ...latest.current, lock: next }
+    setLock(next)
+  }
+
+  /** AD-15'S SECOND CLEARING RULE (`journalCleared`, beside `hydrationFor`): the journal of a displaced session
+   *  goes UNCONDITIONALLY. There is no merge path and no recovery of orphaned edits, so an undo that could still
+   *  reach them would be offering work the server will never accept. The DOCS are untouched — the canvas stays
+   *  legible, which is the whole of B5a — and a reload runs §AD1.1 and brings the cloud's back. */
+  const dropJournal = () => {
+    latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
+    setJournal(EMPTY_JOURNAL)
+    const store = local.current
+    if (!store) return
+    void store.clearJournal(project.id)
+    void store.save(project.id, { baseRevision: base.current, docs: { ...latest.current.docs }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL })
+  }
+
+  const land = (answer: LockAnswer | null) => {
+    // `null` is "the server was not reached" — offline, a 5xx, a stall. A lock that cannot be heard from is not a
+    // lock that was lost: change nothing and ask again on the next beat.
+    if (answer === null) return
+    const was = latest.current.lock
+    const { row, held: mine } = answer
+
+    // THE TAKE-OVER TEST IS THE GENERATION AND NOTHING ELSE (AD-15), which is why a take-over whose new holder has
+    // written nothing still clears this journal: the revisions would be equal and the revision half would not fire.
+    if (!mine && row !== null && heldGeneration.current !== null && displacedBy(heldGeneration.current, row.generation)) {
+      const owed = owedNow()
+      heldGeneration.current = null
+      dropJournal()
+      // UX-DR12: assertively, because it is work that is already gone. "**This** session", not "that": the sentence
+      // is read BY the session it is about (R-189).
+      setAnnounced(LOCK_COPY.displaced(owed))
+    }
+    // AND A SESSION THAT IS NO LONGER THE HOLDER GOES BACK TO ACQUIRING. Without this a holder whose ROW VANISHED —
+    // the displacement test cannot fire on a null row — kept beating a row that was not there, and every beat changed
+    // zero rows, so it was a reader of a free lock FOR EVER (executed against a local build, 2026-09-23: a soft
+    // navigation out of the editor and back wedged the panel read-only). `heldGeneration` is the poll's own question,
+    // so clearing it is the whole recovery: the next poll acquires, which against a live lock is simply a read.
+    heldGeneration.current = mine && row !== null ? row.generation : null
+
+    // my own request, as the row now answers it: still mine → waiting; cleared → the holder pressed Keep editing;
+    // the row gone → the lock is free and the next poll simply acquires it.
+    const waiting = was.askedAt !== null && stillAsking(row, tabId.current)
+    if (was.askedAt !== null && !waiting && !mine && row !== null) setAnnounced(LOCK_COPY.kept)
+
+    putLock({
+      ...was,
+      holder: mine,
+      row,
+      asking: waiting,
+      askedAt: waiting ? was.askedAt : null,
+      unanswered: waiting && was.unanswered,
+      handOverFailed: mine ? was.handOverFailed : false,
+    })
+  }
+
+  /** B5a's **Request editing** — the reader's whole affordance. */
+  const requestEditing = async () => {
+    const was = latest.current.lock
+    if (was.asking) return
+    putLock({ ...was, asking: true, unanswered: false })
+    const answer = await askLock(lockAt(), { intent: 'nudge', session: tabId.current })
+    if (answer === null || !answer.won) {
+      // the write did not land: the button reports it by coming back, and stays pressable (the matrix's own row)
+      putLock({ ...latest.current.lock, asking: false, askedAt: null })
+      return
+    }
+    tell.current('nudge')
+    putLock({ ...latest.current.lock, row: answer.row, asking: true, askedAt: Date.now(), unanswered: false })
+  }
+
+  /** B5b's **Hand over** — AD-15's flush contract, in the order the contract names. */
+  const handOver = async () => {
+    const was = latest.current.lock
+    if (was.handingOver) return
+    putLock({ ...was, handingOver: true, handOverFailed: false })
+    // THE FLUSH GOES FIRST. `'release'` falls through the autosave test exactly as `manual` and `unload` do — AD-15
+    // stops the TIMER alone — so a session with autosave off still sends its work before it gives up the lock.
+    await flush('release')
+    if (unsynced(latest.current.journal)) {
+      // IT REFUSED (offline, a 409, a 5xx). THE ROW IS NOT DELETED: unsynced work never crosses a lock boundary, so
+      // the popover says so and stays, and the lock is still this session's.
+      putLock({ ...latest.current.lock, handingOver: false, handOverFailed: true })
+      return
+    }
+    const answer = await askLock(lockAt(), { intent: 'release', session: tabId.current })
+    if (answer === null) {
+      putLock({ ...latest.current.lock, handingOver: false, handOverFailed: true })
+      return
+    }
+    gaveAt.current = Date.now()
+    heldGeneration.current = null
+    setDismissed(null)
+    tell.current('released')
+    putLock({ ...latest.current.lock, holder: false, row: null, handingOver: false, handOverFailed: false, asking: false, askedAt: null, unanswered: false })
+  }
+
+  /** B5b's **Keep editing** — the nudge columns are cleared, and no take-over is offered from that request. */
+  const keepEditing = async () => {
+    setDismissed(latest.current.lock.row?.nudgeRequestedBy ?? null)
+    const answer = await askLock(lockAt(), { intent: 'keep', session: tabId.current })
+    tell.current('answered')
+    land(answer)
+  }
+
+  /** B5c's **Take over anyway** — the CAS, and then the last synced snapshot. */
+  const takeOver = async () => {
+    const was = latest.current.lock
+    const row = was.row
+    if (row === null) {
+      // the row has vanished, so the lock is free: acquire normally rather than compare against nothing
+      takeover.current?.close()
+      land(await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: owedNow() }))
+      return
+    }
+    putLock({ ...was, taking: true })
+    const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: owedNow() })
+    takeover.current?.close()
+    if (answer === null || !answer.won) {
+      // ZERO ROWS MEANS THE GENERATION MOVED UNDER US. Re-read and report the new state, never retry blindly.
+      putLock({ ...latest.current.lock, taking: false })
+      land(answer)
+      return
+    }
+    tell.current('took-over')
+    heldGeneration.current = answer.row?.generation ?? row.generation + 1
+    putLock({ ...latest.current.lock, taking: false, holder: true, row: answer.row, asking: false, askedAt: null, unanswered: false })
+    // AND I AM EDITING THE LAST SYNCED SNAPSHOT. A RELOAD IS A HYDRATE — the conflict dialog beside this one says so
+    // in as many words — so §AD1.1 runs exactly and the cloud doc is what comes back. This tab's session id survives
+    // it in `sessionStorage`, so the lock just taken is still ours on the way back in — and `keeping` is what stops
+    // the release on the way out from deleting the row this take-over has just won.
+    keeping.current = true
+    window.location.reload()
+  }
+
+  /** A RELOAD THAT KEPT ITS TAB ID IS THE SAME SESSION, so it keeps the lock rather than flashing B5a's bar at its
+   *  own reflection — which the take-over's own reload would otherwise do every single time, and which would make
+   *  `commit()` refuse for the round trip it lasted. A LAYOUT effect, before the browser paints: the server render
+   *  cannot know the tab's id (`sessionStorage` is the browser's), so this is the first moment it can be asked, and
+   *  asking it a frame later would be a frame of the wrong screen. */
+  useLayoutEffect(() => {
+    tabId.current = tabSession()
+    if (heldOnServer !== null && heldOnServer.holderSessionId === tabId.current) {
+      heldGeneration.current = heldOnServer.generation
+      putLock({ ...latest.current.lock, holder: true, row: heldOnServer })
+    }
+    // mount only — one tab, one id
+  }, [])
+
+  useEffect(() => {
+    let alive = true
+
+    const poll = async () => {
+      // THE HOLDER BEATS; EVERY OTHER SESSION TRIES TO ACQUIRE, which is how the first opener, a released lock and a
+      // stale one are all picked up with no seventh intent — an `acquire` against a LIVE lock writes nothing and
+      // answers the row, so a reader polls through the same call.
+      //
+      // IT ASKS `heldGeneration`, NOT THE STATE. The opening state is optimistic — a first paint with no row shows
+      // an editable shell rather than making the customer wait a round trip for one — and reading it here sent the
+      // very first call as a `beat`, which matches no row, so the first opener became a reader of a lock that did
+      // not exist and only acquired ~15 s later (executed against a local build, 2026-09-23). `heldGeneration` is
+      // set ONLY when the server confirmed the lock is ours, which is exactly the question this asks.
+      const holding = heldGeneration.current !== null || Date.now() - gaveAt.current < NUDGE_MS
+      const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: owedNow() })
+      if (alive) land(answer)
+    }
+
+    // LAYER 1 — the same browser, free and instant, and it is the case DW-203 is written about. NOTHING IS TRUSTED
+    // FROM IT: a signal only says "read the row now", so a message that arrives late, twice or out of order costs
+    // one request and can never move the protocol on its own.
+    const channel = lockSignals(project.id, (signal) => {
+      if (signal === 'released') gaveAt.current = 0
+      void poll()
+    })
+    tell.current = channel.send
+    void poll()
+    // LAYER 3 — the floor, and with Realtime unbuilt (DW-239) it is what another device waits for. Nothing about
+    // the transport is ever shown to the user.
+    const beating = setInterval(() => void poll(), HEARTBEAT_MS)
+
+    /** THE TAB IS GOING: the release rides `keepalive`, the only thing the browser promises to finish.
+     *
+     *  `pagehide` AND NOT `visibilitychange`, and the difference is load-bearing. `hidden` is also an ordinary TAB
+     *  SWITCH — the flush uses it deliberately for exactly that — and a holder that released every time its tab lost
+     *  focus would hand the lock to the other tab the moment you looked at it, which is the opposite of one editing
+     *  context. A release that never lands costs nothing: the row goes stale in ~60 s and the next opener acquires
+     *  it (the matrix's own error column).
+     *
+     *  AND IT IS `pagehide` ALONE — THE UNMOUNT DOES NOT RELEASE, unlike the flush's, which is a difference worth
+     *  stating because it looks like an omission. A soft navigation out of the editor (Theme settings, the
+     *  dashboard) keeps this TAB the editing context, and the tab is what the lock is about; releasing there raced
+     *  the way back in, because the new mount's `acquire` and the old one's `release` carry the SAME session id from
+     *  `sessionStorage`, so the release deleted the row the re-acquire had just inserted (executed, 2026-09-23). The
+     *  same id is also what makes not releasing free: coming back re-reads its own row and simply beats. */
+    const leaving = () => {
+      if (keeping.current || !latest.current.lock.holder) return
+      void askLock(lockAt(), { intent: 'release', session: tabId.current }, true)
+    }
+    window.addEventListener('pagehide', leaving)
+    return () => {
+      alive = false
+      clearInterval(beating)
+      window.removeEventListener('pagehide', leaving)
+      channel.stop()
+    }
+    // one project, one mount — the `[id]` layout keeps this component through every canvas change
+  }, [])
+
+  /** UX-DR12: B5b IS ANNOUNCED ASSERTIVELY, because a request that arrives silently is a request a screen-reader
+   *  user answers by not answering. It is the title alone — the popover's own body, strip and buttons are read when
+   *  focus reaches them, and a region that read the whole card would talk over whatever was being typed. */
+  useEffect(() => {
+    if (lock.holder && (lock.row?.nudgeRequestedBy ?? null) !== null && (lock.row?.nudgeRequestedBy ?? null) !== dismissed) {
+      setAnnounced(LOCK_COPY.askTitle)
+    }
+  }, [lock.holder, lock.row?.nudgeRequestedBy, dismissed])
+
+  /** THE REQUESTER'S OWN ~30 s (§AD4). It runs from the moment the request LANDED, and running out is the only
+   *  thing that offers the take-over — B5c is never reachable from a request that was answered. */
+  useEffect(() => {
+    const at = lock.askedAt
+    if (at === null || lock.unanswered || lock.holder) return
+    const timer = setTimeout(() => {
+      const now = latest.current.lock
+      if (now.askedAt === at) putLock({ ...now, unanswered: true })
+    }, NUDGE_MS)
+    return () => clearTimeout(timer)
+  }, [lock.askedAt, lock.unanswered, lock.holder])
 
   /** Each root's two attributes, from the latest selection and hover — after every paint, stamp and change of either. */
   const mark = () => {
@@ -1213,6 +1552,10 @@ export function Editor({
   }
 
   const startEditing = (target: HTMLElement, stamp: { path: string; item?: number }, n: number, caret: 'pointer' | 'end') => {
+    // STORY 5.17 — the read-only session never begins an inline field. `commit()`'s guard would refuse the value,
+    // but a `contenteditable` element shows the typed character before anything is committed, and B5a's rule is that
+    // nothing moves at all. Refusing here leaves the press as an ordinary selection, which is what it was before 5.3.
+    if (!latest.current.lock.holder) return false
     const placed = latest.current.stack[n]
     const def = placed ? entries[placed.designId]?.contentSchema[stamp.path] : undefined
     if (!placed || !def) return false
@@ -1646,7 +1989,11 @@ export function Editor({
       // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this
       const landed = held !== null && ownFlushLanded(held, revision, stored)
       const how = landed ? ({ kind: 'local' } as const) : hydrationFor(held, revision)
-      if (how.kind === 'local' && held) {
+      // STORY 5.17 — AD-15's clearing rule, BOTH halves in one call: the revision half above, and the generation
+      // half — a take-over — which cannot have happened before this mount, because this session has never held the
+      // lock. It is passed explicitly rather than assumed, so the rule has one expression and not two. In session,
+      // `land()` runs the same rule when the generation moves past the one this session holds.
+      if (!journalCleared(how, false) && held) {
         // A LOCAL DOC MAY NAME A DESIGN THE SERVER'S DOCS DO NOT, and `entries` was built from the server's — so the
         // library is asked before the local document is trusted. Since 5.10 and 5.11 two surfaces can put one there
         // (a placement and a design swap), and the alternative to asking is a canvas that throws for the whole
@@ -2027,6 +2374,10 @@ export function Editor({
     const refused = apply({ doc: docKey, instanceId: picks[0]!.instanceId }, (doc) =>
       remixFold(doc, picks, (next, p) => switchDesign(next, p.instanceId, p.to, ringOf(p.from))),
     )
+    // NOTHING HAPPENED IS NOT A REFUSAL AND NOT A ROLL: R-180's hold (the dialog is still asking) and Story 5.17's
+    // read-only guard both answer `HELD`, and announcing "Remixed 6 sections" over either would be a sentence about
+    // a change that did not land.
+    if (refused === HELD) return
     // UX-DR12, and never a toast: `#editor-said` is the editor's one live region (EXPERIENCE.md:541). A refusal
     // is SAID too (review, 2026-09-20): the cube has already rolled, and a roll that lands on silence reads as broken
     setSaid(typeof refused === 'string' ? refused : remixSaid(picks.length, canvas.label))
@@ -2228,6 +2579,11 @@ export function Editor({
 
   if (failure) throw failure
 
+  /** STORY 5.17 — is a request waiting on THIS session? Derived, never stored twice: the row's own nudge columns,
+   *  minus the one this holder has already answered or let expire. */
+  const askedBy = lock.holder ? (lock.row?.nudgeRequestedBy ?? null) : null
+  const nudged = askedBy !== null && askedBy !== tabId.current && askedBy !== dismissed
+
   const src = canvasPath ?? canvasSrc(isApp(pathname))
 
   const onChange = (next: ControlState, kind: Edit) => {
@@ -2382,6 +2738,25 @@ export function Editor({
           <PreviewButton onPress={enterPreview} />
         </div>
       </header>
+
+      {/* STORY 5.17 — B5a's bar, ABOVE the canvas and below the top bar, where the frame draws it. Hidden in
+          Preview with everything else: Preview is the site, and the site has no chrome. */}
+      {lock.holder ? null : (
+        <LockBar
+          hidden={preview}
+          asking={lock.asking}
+          onRequest={() => void requestEditing()}
+          unanswered={
+            lock.unanswered
+              ? {
+                  // X is the OTHER session's count, read off its last heartbeat — never this one's
+                  words: LOCK_COPY.noResponse(lock.row?.unsyncedEdits ?? 0),
+                  onTakeOver: () => openOnCancel(takeover.current),
+                }
+              : null
+          }
+        />
+      )}
 
       <div className="flex min-h-0 flex-1">
         <aside id="editor-layers" aria-label="Layers" hidden={layers.folded || preview} className="flex w-[240px] shrink-0 flex-col border-r border-line bg-paper">
@@ -2615,11 +2990,25 @@ export function Editor({
         </section>
 
         {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}
+        {/* STORY 5.17 — B5a: THE SETTINGS SIDEBAR DIMS TO 55% and the canvas stays fully legible. The controls stay
+            VISIBLE so the reader can see what is set, stay in the tab order and stay announced — `aria-disabled` on
+            the panel, never `inert` and never `hidden`, either of which would take them out of the accessibility
+            tree and leave a screen-reader user unable to read their own site. NOTHING RESPONDS because `commit()`
+            is the one door and refuses: every control is CONTROLLED by the value in force, so a press never moves
+            it, not even for a frame. The panel still SCROLLS, which is what `pointer-events-none` would have cost.
+            Layers is untouched — the frame dims this one aside and no other.
+            WHY IT IS DESCRIBED AND NOT `aria-disabled`: `aria-disabled` is not a global ARIA attribute, so on a
+            `complementary` landmark it is `aria-allowed-attr` — a WCAG 4.1.2 violation axe reports. `describedby`
+            points at B5a's own sentence, which is the honest answer to "why does nothing here respond". */}
         <aside
           id="editor-controls"
           aria-label={chosen ? 'Section settings' : 'Page settings'}
           hidden={controls.folded || preview}
-          className={`flex w-[280px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-line bg-paper p-4 ${slimScrollbar}`}
+          aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
+          data-readonly={lock.holder ? undefined : ''}
+          className={`flex w-[280px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-line bg-paper p-4 ${slimScrollbar} ${
+            lock.holder ? '' : 'opacity-[.55]'
+          }`}
         >
           {/* -6px each way: the 28px toggle leaves the label where S4a draws it, 16px from the top */}
           <div className="-my-[6px] flex items-center justify-between gap-2">
@@ -2712,6 +3101,14 @@ export function Editor({
           (a Layers row's or the canvas pill's) reads out through one live region (UX-DR12) */}
       <p id="editor-said" aria-live="polite" className="sr-only">
         {said}
+      </p>
+
+      {/* STORY 5.17 — UX-DR12'S SECOND REGION, AND IT IS ASSERTIVE: the edit-lock request and the take-over notice
+          are the only two things in this editor that interrupt, because one is a request waiting on this person and
+          the other is work that is already gone. `#editor-said` above STAYS POLITE — widening it would make every
+          design-ring announcement, every Shuffle and every completed move shout. Nothing else writes here. */}
+      <p id="editor-announced" aria-live="assertive" className="sr-only">
+        {announced}
       </p>
 
       {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu (Hide or Delete), and the canvas pill's bin.
@@ -2825,6 +3222,31 @@ export function Editor({
           </Button>
         </div>
       </dialog>
+
+      {/* STORY 5.17 — B5b, the request as it reaches the HOLDER. A popover and not a modal: the holder is
+          mid-sentence. It is mounted only while a request is outstanding, so its countdown starts with it. */}
+      {nudged ? (
+        <LockRequest
+          owed={unsyncedEdits(journal)}
+          handingOver={lock.handingOver}
+          failed={lock.handOverFailed}
+          onHandOver={() => void handOver()}
+          onKeep={() => void keepEditing()}
+          // F-079: it runs out only when nobody is there — every interaction inside it, focus and a resting pointer
+          // included, has already put the countdown back to the start.
+          onExpire={() => setDismissed(askedBy)}
+        />
+      ) : null}
+
+      {/* STORY 5.17 — B5c. Mounted always so `openOnCancel` has a dialog to open; a closed `<dialog>` draws
+          nothing. Its strings are props, which is the whole of what this story owes D8g (DW-238). */}
+      <LockTakeover
+        dialog={takeover}
+        body={LOCK_COPY.takeoverBody(lock.askedAt === null ? 0 : Date.now() - lock.askedAt, (lock.row?.unsyncedEdits ?? 0) > 0)}
+        owed={lock.row?.unsyncedEdits ?? 0}
+        taking={lock.taking}
+        onConfirm={() => void takeOver()}
+      />
 
       {/* R-147's card, opened by `?` — the editor draws no account menu (`shell.tsx:295-297`), so this is its only
           door from in here. Its rows are the map's own (R-145): exactly the keys that work. */}

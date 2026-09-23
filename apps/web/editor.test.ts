@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, isEditorPath, isMembership, isUuid, PAGE_TWO, pageTwoKeyOf, SETTINGS, settingsPath,
-  SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, isEditorPath, isMembership, isUuid, LOCK, lockPath, PAGE_TWO, pageTwoKeyOf,
+  SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 
@@ -26,7 +26,7 @@ test('every canvas key round-trips through its address', () => {
 })
 
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
-  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC]) {
+  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
@@ -54,6 +54,20 @@ test('Story 5.8: `sync` is the scheme\'s SECOND non-canvas segment — the same 
   // (3) and it is not `settings` either — two static siblings of `[template]`, never one word twice
   assert.notEqual(syncPath(ID), settingsPath(ID))
   assert.ok(isEditorPath(syncPath(ID)), 'it is under the project, so the Shell reads it as an editor path')
+})
+
+test('Story 5.17: `lock` is the scheme\'s THIRD non-canvas segment — the same three assertions again', () => {
+  assert.equal(lockPath(ID), `/projects/${ID}/${LOCK}`)
+  // (1) it resolves as no canvas — it compiles into no template and stores no `project_templates` row
+  assert.equal(canvasOfPath(lockPath(ID)), null)
+  assert.equal(canvasOfTemplateKey(LOCK), null)
+  assert.ok(!Object.hasOwn(CANVASES, LOCK), '`lock` must never join CANVASES')
+  // (2) it collides with no canvas path
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.notEqual(canvasPath(ID, key), lockPath(ID), key)
+  // (3) and it is neither of its two static siblings — three words, never one twice
+  assert.notEqual(lockPath(ID), settingsPath(ID))
+  assert.notEqual(lockPath(ID), syncPath(ID))
+  assert.ok(isEditorPath(lockPath(ID)), 'it is under the project, so the Shell reads it as an editor path')
 })
 
 test('a conditional canvas is ABSENT until its condition holds, and the route 404s it meanwhile (FR-D6)', () => {
