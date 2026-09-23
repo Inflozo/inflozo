@@ -1402,23 +1402,39 @@ async function main() {
       if (!card) return null
       return {
         heading: card.querySelector('p')?.textContent.trim() ?? null,
-        rows: [...card.querySelectorAll('li')].map((li) => ({ code: li.querySelector('[data-code]')?.textContent.trim(), caption: li.querySelector('[data-caption]')?.textContent.trim(), actions: [...li.querySelectorAll('button')].map((b) => b.textContent.trim()) })),
+        // R-188: the actions are glyphs, so the NAME is `title` — and the description must not be cropped
+        rows: [...card.querySelectorAll('li')].map((li) => ({
+          code: li.querySelector('[data-code]')?.textContent.trim(),
+          caption: li.querySelector('[data-caption]')?.textContent.trim(),
+          actions: [...li.querySelectorAll('button')].map((b) => b.getAttribute('title')),
+          words: [...li.querySelectorAll('button')].map((b) => b.textContent.trim()).join(''),
+          clipped: (() => {
+            const c = li.querySelector('[data-caption]')
+            return c === null || c.scrollWidth > c.clientWidth || getComputedStyle(c).textOverflow === 'ellipsis'
+          })(),
+        })),
       }
     })
     await page.locator('[popover]:popover-open button[data-insert="members"]').click()
     await page.waitForTimeout(400)
-    await page.keyboard.press('Escape')
+    /* NO Escape here, and that is R-188 finding 3 rather than a tidy-up: Insert now closes the menu itself, so an
+       Escape would reach the PAGE and deselect the section — which takes the settings panel away and leaves the
+       next line reading a field that no longer exists. It did exactly that on the first run of this walk after the
+       fix (step 26, `locator.inputValue` 30s timeout), and step 93's own copy of the sequence had already been
+       corrected: two callers, one changed. */
+    const menuAfterInsert26 = await page.locator('[popover]:popover-open').count()
     await page.waitForTimeout(250)
     const proofNow = await proof.inputValue()
     const underNow26 = await controlsAside().evaluate((el) => ({ caption: (el.textContent.match(/TOKENS THIS FIELD ACCEPTS/g) ?? []).length, braces: (el.textContent.match(/else in braces/gi) ?? []).length }))
     // the expectation is the library's own, never written here (standing rule 4)
     const want26 = LIB.placeholdersOffered(pilot(TEMPLATES.home[TEMPLATES.home.length - 1][0]).contentSchema.proofLine, { page: 1 })
-      .map((t) => ({ code: `{${t}}`, caption: LIB.PLACEHOLDERS[t], actions: ['Copy', 'Insert'] }))
-    check('step 26 — R-185: the {} button beside the label opens "Placeholders", each row the code over one line with Copy and Insert, and Insert puts the code in at the cursor — with NOTHING under the field',
+      .map((t) => ({ code: `{${t}}`, caption: LIB.PLACEHOLDERS[t], actions: ['Copy', 'Insert'], words: '', clipped: false }))
+    check('step 26 — R-185 · R-188: the {} button beside the label opens "Placeholders", each row the code over its WHOLE description with Copy and Insert as named glyphs, Insert puts the code in at the cursor AND closes the list — with NOTHING under the field',
       rows26 !== null && rows26.heading === 'Placeholders' && JSON.stringify(rows26.rows) === JSON.stringify(want26) &&
+      menuAfterInsert26 === 0 &&
       proofNow === 'Join {members}readers' && (await wordsOf(NEWS, '.a22-1__proof')) === proofNow &&
       underNow26.caption === 0 && underNow26.braces === 0,
-      `${JSON.stringify(proofNow)} · ${JSON.stringify({ rows26, want26, underNow26 })}`)
+      `${JSON.stringify(proofNow)} · ${JSON.stringify({ rows26, want26, underNow26, menuAfterInsert26 })}`)
 
     // catalog words: an empty value keeps the catalog's words, and leaving without typing changes nothing
     await clickOn(HERO)
