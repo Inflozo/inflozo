@@ -3,7 +3,7 @@ title: 'Story 5.16a — The page number token'
 type: 'feature'
 created: '2026-09-23'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 baseline_commit: '350876bd3f6154d1c4d442adbf2235dbd0bbafd2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
