@@ -593,12 +593,25 @@ tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` an
   `a17/1`'s repeat root made it FAIL by name — *"a17/1: li[data-prop=\"readMore\"] inside data-repeat=\"posts\""* —
   and the design was restored and `cmp`'d byte-identical. A sweep that cannot fail is not a sweep (standing rule 2).
 - `python3 tools/doc-audit.py --check` — PASS, twice.
-- `node tools/probe/run-verify-editor.cjs` — against the deployed `app.inflozo.com`, recorded below once the Fix
-  push has deployed. Step 93 now also proves findings 2, 3 and 5 in a real browser (the tick and its two seconds,
-  the menu closing on Insert, the row's hover as a computed background before and during `:hover`), and reads
-  findings 1 and 4 out of the menu itself — the actions' `title`, that they carry no words, and that no
-  description is clipped. The walk's context is granted `clipboard-write`, because the component is deliberately
-  silent when a clipboard refuses and the check would otherwise fail on a browser default rather than on the product.
+- `node tools/probe/run-verify-editor.cjs` — against the deployed `app.inflozo.com` at `d75edfa5`:
+  **0 FAIL, 574 PASS**, the whole run, no harness death. All five findings proved in a real browser:
+  finding 5 as a computed background before and during `:hover`; finding 2 as the glyph swapping to one path
+  from copy's two, with its tooltip going to "Copied" and both returning after two seconds; finding 3 as
+  `[popover]:popover-open` counting **0** straight after Insert; findings 1 and 4 read out of both menus — the
+  actions' `title`, that they carry no words at all, and that no description is clipped (`scrollWidth`,
+  `clientWidth` and `text-overflow` together). The page-number rules are untouched and still pass beside them.
+  The walk's context is granted `clipboard-write`, because the component is deliberately silent when a clipboard
+  refuses and the check would otherwise fail on a browser default rather than on the product.
+- **Three runs, and only the third is the result — the first two are recorded because what they caught was mine.**
+  **Run 1** died at step 26 on a 30s `locator.inputValue` timeout, 134 PASS / 0 FAIL to that point, and it was
+  **not** DW-222's flake: finding 3 made Insert close the menu, and the harness closed it by hand in **two**
+  places — step 93, corrected when the finding was built, and step 26, missed. With the menu already gone that
+  `Escape` reached the page, deselected the section and unmounted the settings panel, so the next line waited for
+  a field that no longer existed. Step 26 also still read the two actions by their TEXT, now empty, and would
+  have failed a line later. **Run 2** never started: the harness refuses to run when `packages/`, `apps/` or
+  `tools/probe/` has uncommitted changes, because then the checkout is not what `app.inflozo.com` serves — the
+  guard working exactly as intended. **Run 3**, after the step-26 fix deployed, is the run above. Step 26 now
+  asserts `menuAfterInsert26 === 0`, so the rule is stated rather than inferred from an absent keypress.
 
 **Manual checks (if no CLI):**
 
