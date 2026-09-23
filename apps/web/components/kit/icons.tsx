@@ -34,6 +34,11 @@
  * for any custom template a user creates — D5b draws none, and the owner asked for "relevant icons from Tabler
  * icons". The third stated exception, and the same shape: emitted from `tabler.json`, never retyped.
  *
+ * AND ONE ON 2026-09-23 (ruling R-185, Story 5.16a): `braces`, the `{}` button beside a field's label that opens
+ * the placeholder menu — the owner named the shape himself ("a small '{}' icon near the label of the field") and
+ * P0-1 draws a chip row instead, which R-185 withdraws, so again there is no export glyph to read. Fourth stated
+ * exception, same shape: `tabler.json`'s own `braces`, emitted from it and verified path for path.
+ *
  * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
  * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
@@ -105,6 +110,14 @@ export const CircleOff = (p: IconProps) => (
   <Icon {...p}>
     <path d="M20.042 16.045a9 9 0 0 0 -12.087 -12.087m-2.318 1.677a9 9 0 1 0 12.725 12.73" />
     <path d="M3 3l18 18" />
+  </Icon>
+)
+/** Tabler `braces` — R-185's `{}` button beside a field's label, which opens that field's placeholder menu.
+ *  Tabler's own `outline`, emitted from `packages/library/icons/tabler.json`. */
+export const Braces = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 4a2 2 0 0 0 -2 2v3a2 3 0 0 1 -2 3a2 3 0 0 1 2 3v3a2 2 0 0 0 2 2" />
+    <path d="M17 4a2 2 0 0 1 2 2v3a2 3 0 0 0 2 3a2 3 0 0 0 -2 3v3a2 2 0 0 1 -2 2" />
   </Icon>
 )
 /* ── R-142's five, the persistence indicator's states (Story 5.8) ────────────────────────────────────────

@@ -484,6 +484,30 @@ closes it rather than filtering it. A `richtext` prop also carries a per-prop **
 over the four permitted marks — `strong · em · u · a` (AD-4) — and a `url` prop's authored default
 must pass the scheme rule as written, since a default is the author's text and not a visitor's.
 
+**There is exactly one token that is not per-prop, and a design never declares it** (R-182, Story
+5.16a). `{page_number}` is accepted by **every** `text` and `richtext` prop, because it is about the
+page rather than about the section: a design that lists it in `tokens` is refused by name
+(`bad-inline-token`), since it has it already. Where the *editor offers* it is narrower than where it
+is accepted — only while the canvas shows page 2, and never in a site-wide section (R-186, R-187) —
+but a customer may type it anywhere, and it substitutes by one rule everywhere. Nothing an author
+does turns it on or off; nothing a design ships contains it.
+
+**Every token a prop declares must carry a one-line description** (R-185). The panel reaches every
+placeholder from one `{}` button beside the field's label, whose menu prints that line under the code,
+so a token with no line is a row that explains nothing. The lines live in one map — `PLACEHOLDERS` in
+`packages/library/src/vocabulary.ts` — and a declared token missing from it is refused
+(`no-placeholder-description`). Add the line in the same change as the token.
+
+**Where `{page_number}` does not reach, and it is the one place:** the text of a prop that sits
+**inside a `data-repeat`**. On the theme a repeat becomes `{{#foreach}}`, which changes the Handlebars
+context, and the emitted constant reads `pagination` off the page rather than off the row — so it
+prints empty there while the canvas would print the number, and the two emitters would disagree. No
+design does this today (an authored array's props are expanded by `expandItems` on **both** emitters
+and never become `{{#foreach}}`; a `data-repeat` is for Ghost's own rows, whose text is `data-bind`).
+The `@root`-qualified form would survive the block, and gscan refuses it as an **error** on both
+majors — `GS120-NO-UNKNOWN-GLOBALS`, measured in `MEASUREMENTS.md` §49 — so the constant cannot spell
+it. **If you need editable text inside a Ghost repeat, do not put a page number in it.**
+
 **Two brace grammars, deliberately.** R-27's tokens are for the **customer's** text in a content
 prop, closed to three names. A `{…}` in a **design-authored** directive value — `data-text`,
 `data-bind-attr` — is a **binding path** under AD-36's path grammar, because the author is naming a

@@ -81,3 +81,33 @@ export function BarMenuRow({
     </button>
   )
 }
+
+/** R-185's ROW (the owner, 2026-09-23) — the placeholder menu's, and a SIBLING of `BarMenuRow` rather than a
+ *  second look: the same 10px gutters, the same name-over-one-muted-line, the same trailing slot. ONE
+ *  adaptation, and it is why this is its own component: `BarMenuRow` IS a `<button>`, and R-185 puts two
+ *  buttons on the right ("On right side we will have option to copy that code and insert that code"), so this
+ *  is an `<li>` carrying two buttons instead of a button carrying buttons. The name is the placeholder's CODE,
+ *  so it is drawn in the mono face — a `{}` code is read character by character, not as a word.
+ *
+ *  `relative` for `BarMenuRow`'s own reason: an `sr-only` word inside an unpositioned row escapes the list and
+ *  gives the popover a second scrollbar (R-172). There is no glyph and no `aria-current`: every row is offered,
+ *  none is "in force", and a leading glyph would repeat what the code already says.
+ *
+ *  The card holds these rows and nothing else — no footer and no explanatory sentence (R-185 as amended the
+ *  same day, and the braces sentence is withdrawn from the product entirely). */
+export function PlaceholderRow({ code, description, actions }: { code: string; description: string; actions: ReactNode }) {
+  return (
+    <li className="relative flex items-center gap-[10px] rounded-sm py-[9px] pl-[10px] pr-[10px] text-left">
+      <span className="flex min-w-0 flex-1 flex-col gap-px">
+        <span data-code className="truncate font-mono text-ui-dense font-medium">{code}</span>
+        <span data-caption className="truncate text-helper-caption text-ink-soft">{description}</span>
+      </span>
+      <span className="flex shrink-0 items-center gap-1">{actions}</span>
+    </li>
+  )
+}
+
+/** One of R-185's two trailing buttons. Small, quiet and the same size as its pair, so neither reads as the
+ *  primary of the row — pressing either is a choice, not a commitment. */
+export const PLACEHOLDER_ACTION =
+  `inline-flex h-6 items-center rounded-[6px] border border-line px-2 text-helper-caption font-medium text-ink-soft transition-colors hover:border-line-strong hover:text-ink ${ring}`

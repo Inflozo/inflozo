@@ -99,7 +99,7 @@ downward correction; the owner took the upward decision the same day — **no ca
 | **R-24** native search only | ✅ **A23 deleted**; FR-G7(1) restored whole, NFR-2's re-measurement cancelled, FR-I5 (no `/search/`, the two routes that *are* emitted), FR-F6 (**Link Picker gains \u201cGhost search\u201d** — the architect's reading, confirmed), NFR-5, `CATEGORY-PROMPTS.html` marks A23 deleted with no copy button. **Two merge decisions taken and recorded below** | ⬜ A1, A4, A31 |
 | **R-25** all-tags / all-authors routes | ✅ FR-I5 | ⬜ |
 | **R-26** inline icons, Tabler | ✅ FR-F1, `Appendix C`, FR-Q7 · scope clarified by **R-92** (§A17): Tabler is the sections', the app chrome draws the frames' own paths | ⬜ |
-| **R-27** inline-token allow-list | ✅ FR-G3, FR-D4, FR-F6 | ⬜ |
+| **R-27** inline-token allow-list | ✅ FR-G3, FR-D4, FR-F6 · **amended for one token by R-182** (§A37): `{page_number}` is accepted by every text and richtext prop and declared by none, and every declared token now carries a one-line description (R-185) | ⬜ |
 | **R-28** member PII never rendered | ✅ FR-H6 | ⬜ A30, A16 |
 | **R-29** share destinations | ⬜ `Appendix B`, and **R11's FR still needs drafting** | ⬜ |
 
@@ -3935,8 +3935,10 @@ anywhere where I can edit text inline. So users can add a header, hero and show 
   left as it was written rather than corrected, because it is the record of what was ruled on 2026-09-22; R-186 is what
   binds. Everything else here stands.
 - Targets: ✅ this entry · ✅ Story 5.16's spec (Question 5) · ✅ `epics.md` Story 5.16a — Story 5.16, 2026-09-22.
-  ⬜ Story 5.16a's spec · ⬜ `prd.md` FR-D4 and FR-G3 (the one token every field accepts) · ⬜ `ARCHITECTURE-SPINE.md`
-  AD-4 (R-27's amendment) · ⬜ `vocabulary.ts`'s `INLINE_TOKENS` and the panel's placeholder menu — at Story 5.16a.
+  ✅ Story 5.16a's spec · ✅ `prd.md` FR-D4 and FR-G3 (the one token every field accepts) · ✅ `ARCHITECTURE-SPINE.md`
+  AD-4 (R-27's amendment) and AD-5 (the one unescaped constant) · ✅ `vocabulary.ts`'s `PAGE_NUMBER` beside
+  `INLINE_TOKENS`, which stays at three · ✅ the panel's placeholder menu · ✅ `docs/section-authoring.md`
+  — Story 5.16a, 2026-09-23.
 
 **R-183 — where a page has no page number, `{page_number}` prints nothing.** Story 5.16's Question 6, ruled **option
 2** (owner, 2026-09-22): *"If there are no page number - show nothing."*
@@ -3944,7 +3946,8 @@ anywhere where I can edit text inline. So users can add a header, hero and show 
 - **What it binds.** On a post, a page and the 404 page, the token prints nothing. A header reading "Orbit Weekly ·
   page {page_number}" reads "Orbit Weekly · page" there.
 - Targets: ✅ this entry · ✅ Story 5.16's spec (Question 6) · ✅ `epics.md` Story 5.16a — Story 5.16, 2026-09-22.
-  ⬜ Story 5.16a's spec.
+  ✅ Story 5.16a's spec · ✅ executed on T1 and T3 (`MEASUREMENTS.md` §49: a post, a standalone page and the 404 print
+  nothing on both majors, because Ghost leaves `pagination` off those templates entirely) — Story 5.16a, 2026-09-23.
 
 **R-184 — the page number token is its own story, straight after Story 5.16.** Story 5.16's Question 7, ruled
 **option 1** (owner, 2026-09-22): *"Its own story, straight after this one"*.
@@ -3982,8 +3985,10 @@ ones. Add a note about this design so it is not missed when we work on them in f
   none is **refused at authoring time** — so "all future placeholders" is a gate, not a habit.
 - Targets: ✅ this entry · ✅ Story 5.16a's spec (Question 1, and the surface it builds) · ✅ `DESIGN.md` § Components
   (the note the owner asked for, written at Create so a later story cannot miss it) · ✅ `epics.md` Story 5.16a's card
-  — Story 5.16a, 2026-09-23. ⬜ `docs/section-authoring.md` (what an author declares, and the description they must
-  write) · ⬜ `EXPERIENCE.md` (the field's affordance) · ⬜ `epic-5-context.md` — at Story 5.16a's Dev.
+  — Story 5.16a, 2026-09-23. ✅ `docs/section-authoring.md` (what an author declares, and the description they must
+  write) · ✅ `EXPERIENCE.md` (the field's affordance) · ✅ `epic-5-context.md` · ✅ built:
+  `components/controls/placeholder-menu.tsx` over `bar-menu.tsx`'s `PlaceholderRow`, with `vocabulary.ts`'s
+  `PLACEHOLDERS` and `validate.ts`'s `no-placeholder-description` refusal — Story 5.16a's Dev, 2026-09-23.
 
 **R-186 — `{page_number}` is offered on page 2 alone and never prints on page 1; R-182's "page 1 shows 1" is
 reversed.** Story 5.16a's Question 2, answered outside its three options (owner, 2026-09-23): *"{page_number} should be
@@ -4010,9 +4015,20 @@ each page hold it, no problem, but do not give options to the users to add {page
   `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`, whose guard is falsy exactly on page 1 and where
   `pagination` is absent. **Standing rule 1 binds:** it is read in Ghost's source on both majors and executed on T1 and
   T3 into `MEASUREMENTS.md` §49 before anything is emitted for it.
+- **⚠ THE GUARD SHIPS IN A DIFFERENT SPELLING, and the difference was measured, not chosen** (Story 5.16a's Dev,
+  2026-09-23). The candidate above spells `@root`, and **gscan refuses every `@root.…` path as an ERROR on BOTH
+  bundled versions** — `GS120-NO-UNKNOWN-GLOBALS`, whose allow-list (`@site`, `@member`, `@setting`, `@config`,
+  `@labs`, `@custom`, `@page` and `{{#foreach}}`'s data variables) is byte-identical in gscan 4.49.7 and 6.4.2 — so a
+  theme carrying it cannot pass the 0-errors gate every emitted theme must pass. **What ships is
+  `{{#if pagination.prev}}{{pagination.page}}{{/if}}`**: the same guard, one qualifier shorter, executed on T1 and T3
+  and printing exactly what this ruling requires. The `@root` form was preferred because only it survives a
+  context-changing block; §49 (d) measures that difference and prices it at zero — it appears only inside
+  `{{#foreach}}`, and no design puts an editable prop inside a Ghost repeat. **Nothing about what the customer sees
+  changes**, which is why this is recorded rather than asked.
 - Targets: ✅ this entry · ✅ Story 5.16a's spec · ✅ R-182's entry (the reversed bullet, marked not rewritten)
-  — Story 5.16a, 2026-09-23. ⬜ `epics.md` Story 5.16a's card · ⬜ `DESIGN.md` § Components (a placeholder may be
-  offered on some pages only) · ⬜ `EXPERIENCE.md` · ⬜ `epic-5-context.md` — at Story 5.16a.
+  — Story 5.16a, 2026-09-23. ✅ `epics.md` Story 5.16a's card · ✅ `DESIGN.md` § Components (a placeholder may be
+  offered on some pages only) · ✅ `EXPERIENCE.md` · ✅ `epic-5-context.md` · ✅ `MEASUREMENTS.md` §49 (executed on
+  T1 and T3) · ✅ built: `PAGE_NUMBER_HBS` in `marks.ts` — Story 5.16a's Dev, 2026-09-23.
 
 **R-187 — the header and footer never offer `{page_number}`; only page 2's own sections do.** Story 5.16a's Question 3,
 ruled **option 2** (owner, 2026-09-23): *"Do not offer it in the header or the footer — only in page 2's own
@@ -4032,8 +4048,9 @@ sections."*
   honoured — it prints on page 2 and nothing elsewhere. One substitution rule everywhere is kept deliberately: a token
   that printed in one section and shipped as literal `{page_number}` to a visitor in another would be worse than the
   hole it avoided, and R-186 already drew the line at the offer.
-- Targets: ✅ this entry · ✅ Story 5.16a's spec — Story 5.16a, 2026-09-23. ⬜ `epics.md` Story 5.16a's card
-  · ⬜ `DESIGN.md` § Components · ⬜ `EXPERIENCE.md` · ⬜ `epic-5-context.md` — at Story 5.16a.
+- Targets: ✅ this entry · ✅ Story 5.16a's spec — Story 5.16a, 2026-09-23. ✅ `epics.md` Story 5.16a's card
+  · ✅ `DESIGN.md` § Components · ✅ `EXPERIENCE.md` · ✅ `epic-5-context.md` · ✅ built: `placeholdersOffered` in
+  `vocabulary.ts`, the one function every caller asks — Story 5.16a's Dev, 2026-09-23.
 
 
 ## B · Approved decisions superseded by this session

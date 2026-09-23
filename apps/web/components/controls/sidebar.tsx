@@ -6,6 +6,7 @@ import {
   setData, sidebar,
 } from '@inflozo/section-runtime'
 import type { ControlEntry, ControlRow, ControlState, DataRow, MemberState, Mode, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
+import { placeholdersOffered } from '@inflozo/library'
 import { Accordion } from '@/components/kit/accordion'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
@@ -23,7 +24,8 @@ import { IconPicker } from './icon-picker'
 import { ImagePicker, type Asset } from './image-picker'
 import { GhostList, ItemList } from './item-list'
 import { LinkPicker, type LinkResources } from './link-picker'
-import { RichField, TokenRow } from './rich-field'
+import { PlaceholderMenu } from './placeholder-menu'
+import { RichField } from './rich-field'
 import { limitSentence } from '@/lib/inline'
 import { LATER_PAGES, PREVIEW_PAGE, type Page } from '@/lib/page-two'
 import { PREVIEWING, type Visitor } from '@/lib/view-as'
@@ -106,6 +108,13 @@ export type SidebarProps = {
   onClearDark?: () => void
   /** Story 5.16 — D5d's "Preview page" row, on the main feed of a page that has a page 2. Absent, no row. */
   page?: PageRow
+  /** Story 5.16a — WHERE THE PANEL IS, which is the whole of what R-186 and R-187 need to know before a field
+   *  offers `{page_number}`: the page the canvas is showing, and whether this section is the site's (a header or
+   *  footer, compiled into `default.hbs`). The page is threaded from `paint()`'s own `now.page` rather than
+   *  derived a second way — the panel is keyed ACROSS the switch (`acrossPages`), so it must be told. Left out
+   *  — `/pilots` and `/controls`, which have no pages — nothing offers a page number, which is page 1's answer. */
+  shownPage?: Page
+  siteWide?: boolean
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -227,7 +236,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
 // What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
 // live region that announces a View-as choice read ONE list.
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page }: SidebarProps) {
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page, shownPage, siteWide }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -269,12 +278,19 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
     />
   )
 
-  /** One content editor, by the prop's type. Items reuse it, so an item edits the way the section does. */
+  /** One content editor, by the prop's type. Items reuse it, so an item edits the way the section does.
+   *
+   *  R-185 — ONE PLACE DECIDES THE `{}` BUTTON, for both kinds of text field: `placeholdersOffered` is the
+   *  library's single answer to "which placeholders does this field offer, HERE", so R-186's page-2 rule and
+   *  R-187's site-wide rule have one implementation rather than one per field kind. A field with nothing to
+   *  offer gets no button at all, which is every field on page 1 but the Newsletter's, every field of the
+   *  header and footer on every page, and every field that is not typed into. */
   const field = (prop: PropRow, value: unknown, onValue: (value: unknown) => void, id: string): ReactNode => {
+    const placeholders = placeholdersOffered(prop.def, { page: shownPage, siteWide })
     switch (prop.type) {
       case 'richtext':
         // Story 5.3: the same value the canvas edits, with the same marks and the same toolbar
-        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} />
+        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} placeholders={placeholders} />
       case 'date':
         return (
           <div key={id} className="flex flex-col gap-[5px]">
@@ -293,34 +309,32 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
         // never silent (Story 5.3)
         const text = textOf(value)
         const max = prop.def.maxChars
+        // R-185's Insert keeps the insert-at-selection P0-1's withdrawn chip row carried: an <input> REMEMBERS its selection
+        // across the focus the menu takes, so the token still lands where the cursor was rather than at the end
+        const insert = (token: string) => {
+          const input = document.getElementById(id) as HTMLInputElement | null
+          const [start, end] = [input?.selectionStart ?? text.length, input?.selectionEnd ?? text.length]
+          const next = text.slice(0, start) + token + text.slice(end)
+          // whole or nothing, and never silent: a cut token prints literally (R-27)
+          if (max !== undefined && next.length > max) return setRefusedToken(id)
+          setRefusedToken(null)
+          onValue(editText(value as PropValue, next))
+          requestAnimationFrame(() => input?.setSelectionRange(start + token.length, start + token.length))
+        }
         return (
-          <div key={id} className="flex flex-col gap-[5px]">
-            <TextInput
-              id={id}
-              label={prop.label}
-              value={text}
-              maxLength={max}
-              hint={max !== undefined && (text.length >= max || refusedToken === id) ? limitSentence(prop.label, max) : null}
-              onChange={(e) => {
-                setRefusedToken(null)
-                onValue(editText(value as PropValue, e.target.value))
-              }}
-            />
-            <TokenRow
-              tokens={prop.def.tokens}
-              text={text}
-              onInsert={(token) => {
-                const input = document.getElementById(id) as HTMLInputElement | null
-                const [start, end] = [input?.selectionStart ?? text.length, input?.selectionEnd ?? text.length]
-                const next = text.slice(0, start) + token + text.slice(end)
-                // whole or nothing, and never silent: a cut token prints literally (R-27)
-                if (max !== undefined && next.length > max) return setRefusedToken(id)
-                setRefusedToken(null)
-                onValue(editText(value as PropValue, next))
-                requestAnimationFrame(() => input?.setSelectionRange(start + token.length, start + token.length))
-              }}
-            />
-          </div>
+          <TextInput
+            key={id}
+            id={id}
+            label={prop.label}
+            value={text}
+            maxLength={max}
+            aside={<PlaceholderMenu id={id} label={prop.label} offered={placeholders} onInsert={insert} />}
+            hint={max !== undefined && (text.length >= max || refusedToken === id) ? limitSentence(prop.label, max) : null}
+            onChange={(e) => {
+              setRefusedToken(null)
+              onValue(editText(value as PropValue, e.target.value))
+            }}
+          />
         )
       }
     }

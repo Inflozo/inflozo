@@ -13,8 +13,9 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, CONTROL_CAP, DIRECTIVES, PILL_CHARS, UNIVERSALS, guardField, isIsoDate, parseBindSpec,
-  parseTokenTemplate, pillRefusal, pillWidth, safeUrl, assertBindableAttr, valueWords,
+  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, CONTROL_CAP, DIRECTIVES, INLINE_TOKENS, PAGE_NUMBER, PILL_CHARS,
+  PLACEHOLDERS, UNIVERSALS, guardField, isIsoDate, parseBindSpec,
+  parseTokenTemplate, pillRefusal, pillWidth, placeholdersOffered, safeUrl, assertBindableAttr, valueWords,
 } from './vocabulary.ts'
 import { assembleEntry, categoryControlUnion, parseDesignDir } from './registry.ts'
 import type { CategoryContent, ControlDef, DesignJson } from './registry.ts'
@@ -323,6 +324,57 @@ test('an inline token a prop does not declare cannot be declared at all outside 
   assert.deepEqual(codes(validateCategoryContent(bad)), ['bad-inline-token'])
   const good: CategoryContent = { category: 'a22', title: 'A22 designs', props: { h: { type: 'text', label: 'Heading', tokens: ['members'] } } }
   clean(validateCategoryContent(good), 'a prop declaring {members}')
+})
+
+test('R-182 — {page_number} is never DECLARED: every text prop accepts it already (Story 5.16a)', () => {
+  const declared: CategoryContent = { category: 'a22', title: 'A22 designs', props: { h: { type: 'text', label: 'Heading', tokens: [PAGE_NUMBER] } } }
+  const out = validateCategoryContent(declared)
+  assert.deepEqual(codes(out), ['bad-inline-token'])
+  assert.ok(out[0]?.message.includes('R-182'), `the refusal must name the ruling that explains it: ${out[0]?.message}`)
+  // …and it is not silently promoted into the per-prop universe either: R-27's closed set is still the three
+  assert.ok(!(INLINE_TOKENS as readonly string[]).includes(PAGE_NUMBER), 'INLINE_TOKENS is R-27\'s PER-FIELD set and stays at three')
+})
+
+test('R-185 — a placeholder with no one-line description cannot ship (Story 5.16a)', () => {
+  // The refusal that keeps R-185's "for all future placeholders" from decaying into a note: the {} menu
+  // prints PLACEHOLDERS[token], so a token without a line is a row that explains nothing. Fired here over a
+  // token that IS in the closed set but whose description has been taken away, which is exactly the shape a
+  // later story adding a fourth token would arrive in.
+  const kept = { ...PLACEHOLDERS }
+  const tokens = INLINE_TOKENS.filter((t) => PLACEHOLDERS[t] === undefined)
+  assert.deepEqual(tokens, [], 'every token in the closed set carries its own line today')
+  assert.ok(typeof PLACEHOLDERS[PAGE_NUMBER] === 'string' && PLACEHOLDERS[PAGE_NUMBER] !== '', '{page_number} carries one too')
+  // the refusal itself, over a described token whose line is removed for the length of this assertion
+  const mutable = PLACEHOLDERS as Record<string, string | undefined>
+  delete mutable['term']
+  try {
+    const out = validateCategoryContent({ category: 'a22', title: 'A22 designs', props: { h: { type: 'text', label: 'Heading', tokens: ['term'] } } })
+    assert.deepEqual(codes(out), ['no-placeholder-description'])
+    assert.ok(out[0]?.message.includes('R-185'), out[0]?.message)
+  } finally {
+    mutable['term'] = kept['term']
+  }
+  clean(validateCategoryContent({ category: 'a22', title: 'A22 designs', props: { h: { type: 'text', label: 'Heading', tokens: ['term'] } } }), 'the line put back')
+})
+
+test('R-186 · R-187 — which placeholders a field offers, HERE, is one function (Story 5.16a)', () => {
+  const plain = { type: 'text' } as const
+  const withOwn = { type: 'richtext', tokens: ['members'] } as const
+  // page 1: nothing is offered that the prop did not declare — R-186's whole point
+  assert.deepEqual(placeholdersOffered(plain, { page: 1 }), [])
+  assert.deepEqual(placeholdersOffered(withOwn, { page: 1 }), ['members'])
+  // page 2: the page number joins, in PLACEHOLDERS' order
+  assert.deepEqual(placeholdersOffered(plain, { page: 2 }), [PAGE_NUMBER])
+  assert.deepEqual(placeholdersOffered(withOwn, { page: 2 }), ['members', PAGE_NUMBER])
+  // R-187: a site-wide section never offers it, on page 2 or anywhere — but keeps its own
+  assert.deepEqual(placeholdersOffered(plain, { page: 2, siteWide: true }), [])
+  assert.deepEqual(placeholdersOffered(withOwn, { page: 2, siteWide: true }), ['members'])
+  // no page at all (/pilots, /controls) is page 1's answer, and a field that is not typed into offers nothing
+  assert.deepEqual(placeholdersOffered(plain, {}), [])
+  for (const type of ['image', 'url', 'icon', 'date'] as const) {
+    assert.deepEqual(placeholdersOffered({ type }, { page: 2 }), [], `${type} takes no placeholder`)
+  }
+  assert.deepEqual(placeholdersOffered(undefined, { page: 2 }), [])
 })
 
 test('an un-allow-listed token inside a prop VALUE stays literal text — it is not refused (R-27)', () => {

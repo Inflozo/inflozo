@@ -86,6 +86,13 @@ export function renderSection(
      *  would always answer `/`. Omitting it is exactly today's render: `/pilots`, the picker's cards and the ring's
      *  tiles pass none. */
     url?: string
+    /** Story 5.16a — THE PAGE'S OWN NUMBER, for `{page_number}` (R-182). Handed in for the same reason `url`
+     *  is: the header renders at `default.hbs`, which answers no pagination of its own, so the editor tells
+     *  every section of a page the one number the visitor sees. Omitting it is exactly today's render —
+     *  `/pilots`, the picker's cards and the ring's tiles pass none, and the token then resolves to NOTHING
+     *  rather than to a page-1 number (R-186: never a number on page 1, on a post, a standalone page or the
+     *  404). Only page 2 is ever given one. */
+    page?: number
   },
 ): string {
   const ctx = orbitWeekly.templateContext(o.target, o.feed, o.subject)
@@ -107,6 +114,7 @@ export function renderSection(
     assets: o.assets,
     icons: o.icons,
     editing: o.editing,
+    ...(o.page === undefined ? {} : { tokens: { page_number: String(o.page) } }),
   }))
 }
 

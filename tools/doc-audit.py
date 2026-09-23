@@ -291,6 +291,20 @@ DOCS = [
   'generated index.ts a core test imports them through (--index rebuilds it from disk alone). '
   'Also covers packages/library/src/contexts.ts and contexts.test.ts and '
   'packages/section-runtime/src/contexts.test.ts, which the catalogue cannot index under packages/.'),
+ ('tools/probe/record-page-number.py', 'tool', 'Page-number guard recorder',
+  "Story 5.16a's recorder (standing rule 1, R-82): R-186's page-1 guard, executed on T1 and T3 before "
+  'anything is emitted for it. Generates a probe theme whose default.hbs — the layout, where a site-wide '
+  'section compiles — prints {{pagination.page}}, {{pagination.prev}}, the same two under @root, and both '
+  'spellings of the guard {{#if …pagination.prev}}{{…pagination.page}}{{/if}}, plus a second pair inside '
+  '{{#foreach posts}}. Gates it through tools/stress/gate.js, RECORDING the expected '
+  'GS120-NO-UNKNOWN-GLOBALS on the @root markers (the finding: gscan refuses @root on both majors, so the '
+  'emitted constant cannot spell it) and refusing any other error; gates the same theme without them at 0 '
+  'errors. Uploads and activates on T1 and T3, falling back to the @root-free theme if Ghost refuses or '
+  'never serves the first, fetches /, /page/2/, /page/3/, a post, a public page and a 404, and restores the '
+  'previous theme in a finally, re-reading it to prove it came back. Controls (the guard empty at / and the '
+  "page's own number from /page/2/ on, pagination.page printing 1·2·3 beside it, the probe's own layout "
+  'actually served, the {{#foreach}} block printing a title) void the run and write nothing. Writes '
+  "MEASUREMENTS.md §49 alone, replacing an earlier §49 of its own so a re-run re-records."),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '

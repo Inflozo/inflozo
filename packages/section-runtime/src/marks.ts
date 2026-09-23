@@ -13,7 +13,7 @@
 // mark list narrows them further, the rel values are closed, the inline tokens are declared per prop
 // and anything else in braces stays literal text (R-27).
 
-import { INLINE_TOKENS, LINK_RELS, MARKS, PORTAL_ACTIONS, safeUrl } from '@inflozo/library'
+import { INLINE_TOKENS, LINK_RELS, MARKS, PAGE_NUMBER, PORTAL_ACTIONS, safeUrl } from '@inflozo/library'
 import type { Link, PropDef } from '@inflozo/library'
 
 /** One mark range over the prop's text. An `a` mark carries the same link record a `url` prop holds
@@ -43,7 +43,12 @@ export const isRich = (v: unknown): v is RichText =>
  *  C0 control characters are DROPPED rather than encoded. R1 decision 6 says the compiler's marker
  *  shape is one "escaped user text can never contain", and that is only true if the escaper actually
  *  removes it — a control character is not escapable HTML, so a paste carrying one would otherwise
- *  land in the emitted file looking like a marker. */
+ *  land in the emitted file looking like a marker.
+ *
+ *  STORY 5.16a — AD-5 NOW HAS EXACTLY ONE EXCEPTION, and it is not here. `PAGE_NUMBER_HBS` below is
+ *  a MODULE CONSTANT spliced in raw on the theme path, BETWEEN pieces this function escaped. Not one
+ *  character the user typed skips this door: a typed `{{page_number}}` still emits `&#123;` and
+ *  `&#125;` around the constant and can never become a triple-stache. */
 export function escapeUserText(s: string): string {
   return s
     .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
@@ -56,7 +61,31 @@ export function escapeUserText(s: string): string {
 }
 
 const REL_SET: ReadonlySet<string> = new Set(LINK_RELS)
-const TOKEN_SET: ReadonlySet<string> = new Set(INLINE_TOKENS)
+/** R-27's closed per-field set, plus R-182's one token no prop declares. */
+const TOKEN_SET: ReadonlySet<string> = new Set([...INLINE_TOKENS, PAGE_NUMBER])
+
+/** R-182 · R-186 — THE ONE STRING THIS CODEBASE EMITS RAW INTO USER TEXT, and AD-5's only exception.
+ *
+ *  It is a constant because that is what makes the exception narrow: it can never carry a character
+ *  a customer typed, it is reached ONLY through `UserText` (the theme path's own door, `core.ts`),
+ *  and the canvas emitter cannot produce a mustache at all by construction.
+ *
+ *  THE GUARD is R-186: page 1 prints nothing. `pagination.prev` is initialised `null` and the
+ *  `page === 1` branch assigns only `next` (bookshelf-pagination, both majors), so it is falsy
+ *  exactly on page 1 and absent — therefore falsy — on a post, a standalone page and the 404, which
+ *  is R-183 for free. Executed on T1 and T3 before a line of this was written: nothing at `/`, `2` at
+ *  `/page/2/`, `3` at `/page/3/`, nothing on the other three, both majors (MEASUREMENTS §49).
+ *
+ *  AND IT SPELLS `pagination`, NOT `@root.pagination`. The spec preferred `@root` because only it
+ *  survives a context-changing block, and §49 (d) measures that difference — but gscan refuses every
+ *  `@root.…` path as GS120-NO-UNKNOWN-GLOBALS, an ERROR on BOTH bundled versions (its allow-list is
+ *  `@site`/`@member`/`@setting`/`@config`/`@labs`/`@custom`/`@page` and `foreach`'s data variables,
+ *  read in `lib/ast-linter/rules/internal/scope.js`), so a theme carrying it cannot pass the 0-errors
+ *  gate every theme we emit must pass. The cost is priced at zero: the difference shows only inside
+ *  `{{#foreach}}`, and no design puts a `data-prop` inside a `data-repeat` — an authored array is
+ *  expanded by `expandItems` on BOTH emitters, never as a `{{#foreach}}`. `docs/section-authoring.md`
+ *  says so where an author would meet it. */
+export const PAGE_NUMBER_HBS = '{{#if pagination.prev}}{{pagination.page}}{{/if}}'
 
 /** THE one function that turns a link record into attributes (AD-4, FR-F6) — the `a` mark and a
  *  `url` prop's `data-prop-attr="href:…"` both come here, so the two sinks cannot drift. Every
@@ -112,34 +141,66 @@ export function allowedMarks(def: PropDef | undefined, value?: PropValue): strin
   return MARKS.filter((m) => declared.includes(m))
 }
 
+const TOKEN_RE = /\{([A-Za-z_][A-Za-z0-9_]*)\}/g
+
+/** WHICH OF THE THEME'S TWO SINKS a value is going into, and it is a distinction the page number made
+ *  load-bearing. `UserText` parks a customer's words for BOTH — the text of an element and the value of an
+ *  attribute — and only the text one may carry a live Handlebars expression: `title="{{#if …}}…{{/if}}"` is
+ *  our own constant in an attribute, which is not an AD-36 breakout but is still an expression in a sink that
+ *  was promised only escaped characters. In an attribute the token therefore stays exactly as the customer
+ *  typed it, which is also the only honest answer for an href — substituting an empty string there would
+ *  delete a piece of their URL behind their back. (`ad36.test.ts` holds both halves.) */
+export type ThemeSink = 'text' | 'attribute'
+
 /** R-27: a prop declares the inline tokens it accepts, and **anything else in braces stays literal
  *  text**. Free-form substitution is refused — an allow-list by construction is the only shape that
- *  closes AD-36 rather than filtering it. Substitution runs on the RAW run, before escaping, so a
- *  substituted value is escaped like any other user text and an unsubstituted `{n}` ships as
- *  `&#123;n&#125;` and decodes back to literal `{n}` on the canvas.
+ *  closes AD-36 rather than filtering it. A token split across a mark boundary is not substituted,
+ *  and that is deliberate: a token is an atom, and half of one is text the user typed.
  *
- *  A token split across a mark boundary is not substituted, and that is deliberate: a token is an
- *  atom, and half of one is text the user typed. */
-function substituteTokens(
-  run: string,
-  declared: readonly string[],
-  values: Readonly<Record<string, string>>,
-): string {
-  if (declared.length === 0) return run
-  return run.replace(/\{([A-Za-z_][A-Za-z0-9_]*)\}/g, (whole, key: string) => {
-    if (!TOKEN_SET.has(key) || !declared.includes(key)) return whole
-    const v = values[key]
-    return v === undefined ? whole : v
-  })
+ *  WHAT ONE `{token}` BECOMES, and it is the whole of R-182's mechanism:
+ *
+ *    not declared, or not in the closed set   left alone — it is literal text and is escaped as such
+ *    `{page_number}`, the theme's TEXT sink    `{ raw: PAGE_NUMBER_HBS }`, spliced in UNESCAPED
+ *    `{page_number}`, the theme's ATTRIBUTE    left alone — an attribute takes escaped characters only
+ *    `{page_number}`, a renderer handed it    the number it was handed, ESCAPED like any other value
+ *    `{page_number}`, a renderer handed none  the EMPTY STRING — page 1, and a target with no pages
+ *    `{page_number}`, NO values object at all left alone: the field is being EDITED (see below)
+ *    any other token with a value             that value, escaped — exactly as before this story
+ *    any other token with none                left alone — exactly as before this story
+ *
+ *  THE LAST LINE IS LOAD-BEARING (R-182's second sentence). `lib/inline.ts` and the panel's own
+ *  redraw call `serializeMarks(value, def)` with no third argument at all, and that is how clicking
+ *  into the words shows `{page_number}` again to be edited. A RENDERER always hands an object — the
+ *  canvas `input.tokens ?? {}`, the theme `UserText`'s own — so "handed an object without this key"
+ *  is unambiguously "this page has no number", which is exactly R-186's page 1 and R-183's post. */
+function replacementFor(
+  key: string,
+  declared: ReadonlySet<string>,
+  values: Readonly<Record<string, string>> | undefined,
+  theme: ThemeSink | undefined,
+): { raw: string } | string | null {
+  if (!declared.has(key)) return null
+  if (key === PAGE_NUMBER) {
+    if (theme === 'attribute') return null
+    if (theme === 'text') return { raw: PAGE_NUMBER_HBS }
+    return values === undefined ? null : (values[key] ?? '')
+  }
+  return values?.[key] ?? null
 }
 
 /** The single serialization point. Returns an ESCAPED HTML fragment — the canvas assigns it to
  *  `innerHTML` (and the parser decodes the braces back for the user to see); the theme splices it
- *  into the emitted string after `outerHTML`, where nothing decodes anything. */
+ *  into the emitted string after `outerHTML`, where nothing decodes anything.
+ *
+ *  `tokenValues` LEFT OUT means "show every token as the customer typed it" — the two editing sinks.
+ *  `theme` is the theme emitter saying which of its two sinks this is, and `'text'` is the only way to
+ *  reach `PAGE_NUMBER_HBS`; `UserText` is its one caller and exists only on the theme path, so the canvas
+ *  cannot emit a mustache even by mistake. */
 export function serializeMarks(
   value: PropValue,
   def?: PropDef,
-  tokenValues: Readonly<Record<string, string>> = {},
+  tokenValues?: Readonly<Record<string, string>>,
+  theme?: ThemeSink,
 ): string {
   const rich = isRich(value)
   const text = rich ? value.text : value == null ? '' : String(value)
@@ -167,10 +228,36 @@ export function serializeMarks(
     .slice()
     .sort((a, b) => a.start - b.start || b.end - a.end || (a.mark < b.mark ? -1 : a.mark > b.mark ? 1 : 0))
 
-  const declared = (def?.tokens ?? []).filter((t) => TOKEN_SET.has(t))
+  // R-182: the declared set, plus the one token NOBODY declares. It is added unconditionally rather than
+  // for `text` and `richtext` alone, because this function IS the text sink — a `url` or an `image` value
+  // never reaches it, an `icon` is drawn before it, and a `date` has already been held to `YYYY-MM-DD`, so
+  // "every prop whose words are printed" and "every text prop" are the same set by construction. Gating on
+  // `def?.type` would instead make the token depend on whether a SCHEMA was handed in, which is a different
+  // question and not one R-182 asks. Where it is OFFERED is `placeholdersOffered`'s, and that is narrower.
+  const declared = new Set((def?.tokens ?? []).filter((t) => TOKEN_SET.has(t)))
+  declared.add(PAGE_NUMBER)
+
   // Story 5.3: a Text Area's line break is `\n` in the value and `<br>` in both emitters' markup — escaped first, so the
   // only tag a run can carry is this one
-  const esc = (run: string) => escapeUserText(substituteTokens(run, declared, tokenValues)).replace(/\n/g, '<br>')
+  const plain = (run: string) => escapeUserText(run).replace(/\n/g, '<br>')
+
+  // ESCAPING AND SUBSTITUTION ARE INTERLEAVED, and the order is the crux (Story 5.16a). Substituting
+  // first and escaping after would turn the page number's constant into `&#123;&#123;…` and lose it;
+  // escaping first and substituting after would emit `{{{…}}}`, a triple-stache. So every literal
+  // piece is escaped on its own and each replacement is inserted BETWEEN the escaped pieces — raw
+  // only for our own constant, escaped for every value a renderer handed.
+  const esc = (run: string): string => {
+    if (declared.size === 0) return plain(run)
+    let out = ''
+    let at = 0
+    for (const m of run.matchAll(TOKEN_RE)) {
+      const put = replacementFor(m[1] as string, declared, tokenValues, theme)
+      if (put === null) continue // literal: it stays inside the next escaped slice
+      out += plain(run.slice(at, m.index)) + (typeof put === 'string' ? plain(put) : put.raw)
+      at = (m.index as number) + m[0].length
+    }
+    return out + plain(run.slice(at))
+  }
 
   if (marks.length === 0) return esc(text)
 

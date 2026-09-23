@@ -2,7 +2,7 @@
 title: 'Story 5.16a — The page number token'
 type: 'feature'
 created: '2026-09-23'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '350876bd3f6154d1c4d442adbf2235dbd0bbafd2'
@@ -67,9 +67,15 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
   constant inserted raw on the theme emitter **only**; every other character of user text still goes through
   `escapeUserText`, so a typed `{{page_number}}` emits the constant between `&#123;` and `&#125;` and can never become
   a triple-stache. The canvas emitter can never emit a mustache at all, by construction. **The constant is now a
-  GUARDED expression** (R-186) — the candidate is `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`,
-  whose guard is falsy exactly on page 1 and wherever `pagination` is absent — and it is still one string produced by
-  our code, never by the user's.
+  GUARDED expression** (R-186). The candidate was `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`;
+  **what ships is `{{#if pagination.prev}}{{pagination.page}}{{/if}}`** — the same guard, one qualifier shorter,
+  because gscan refuses every `@root.…` path as an ERROR on both majors (Dev's finding, MEASUREMENTS §49 (a); see
+  *What the recorder changed* in Design Notes). Its guard is falsy exactly on page 1 and wherever `pagination` is
+  absent, and it is still one string produced by our code, never by the user's.
+- **Only the theme's TEXT sink substitutes it.** `UserText` parks a customer's words for an attribute value too, and
+  there the token stays exactly as typed — found by the AD-36 vector during Dev, where the live expression reached an
+  `href`. An expression in an attribute was promised only escaped characters, and substituting an empty string there
+  would silently edit a customer's URL.
 - **Every other word in braces still prints exactly as typed** (R-27, unchanged), and a token split across a mark
   boundary is still not substituted (`marks.ts:121-122`).
 - **Whole or nothing** (R-27): Insert refuses a token that would not fit the field's `maxChars`, and says why in the
@@ -128,9 +134,10 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
 | Canvas, Home page 1, same words | the header or a following page 2 carried them back (R-179, R-180) | `The archive — page` — **nothing in the token's place** (R-186) | N/A |
 | Canvas, Post / Page / 404 | the site-wide header holding `Orbit Weekly · page {page_number}` | `Orbit Weekly · page` (R-183) | N/A |
 | Canvas, click into the words on page 2 | `startInline` re-serializes with no token values | `The archive — page {page_number}` shows again, and the caret can sit inside it | N/A |
-| Theme emitter, any target | the same heading | `The archive — page {{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}` — one guarded constant, unescaped, spliced by `UserText.substitute` | N/A |
+| Theme emitter, any target | the same heading | `The archive — page {{#if pagination.prev}}{{pagination.page}}{{/if}}` — one guarded constant, unescaped, spliced by `UserText.substitute` | N/A |
 | The emitted theme on a real Ghost | `/`, `/page/2/`, `/page/3/`, a post | nothing · 2 · 3 · nothing | executed on T1 and T3 before it is emitted |
 | Theme emitter, a typed `{{page_number}}` | the user typed double braces | `&#123;` + the guarded constant + `&#125;` — prints `{3}` on page 3, never a triple-stache | AD-36 vector |
+| Theme emitter, `{page_number}` in a link's `href` or `title` | an attribute sink, not text | **left exactly as typed** — an attribute never substitutes it (Dev's finding) | AD-36 vector |
 | Either emitter, `{pagenumber}` · `{Page_Number}` · `{page_number }` | not the token | literal, escaped exactly as today | N/A |
 | **Insert** pressed, field at its limit | `maxChars` leaves fewer than 13 characters | nothing is inserted; the limit sentence appears under the field | whole-or-nothing (R-27) |
 | **Copy** pressed | any row | the code on the clipboard, the button says so briefly, the menu stays open | a clipboard the browser refuses leaves the menu usable and says nothing false |
@@ -268,7 +275,7 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
 
 **Execution:**
 
-- [ ] `tools/probe/record-page-number.py` -- new recorder in `record-contexts.py`'s pattern (read its docstring, not
+- [x] `tools/probe/record-page-number.py` -- new recorder in `record-contexts.py`'s pattern (read its docstring, not
       `--help`): generate a probe theme whose `default.hbs` prints `[{{@root.pagination.page}}]`, `[{{pagination.page}}]`,
       `[{{@root.pagination.prev}}]` and **the guard itself**
       `[{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}]`; gate it through `tools/stress/gate.js`, upload
@@ -277,43 +284,43 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
       fails. **The guard must print nothing at `/`, `2` at `/page/2/`, `3` at `/page/3/` and nothing on the other
       three — on both majors. If it does not, STOP and ask; do not reach for a Ghost helper.** -- standing rule 1 and
       R-82: R-186's guard is this story's one unproven claim, and it is executed before anything is emitted for it.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` -- add **§49**:
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` -- add **§49**:
       what `default.hbs` was served on both majors, page by page, with the command and the date. -- the record standing
       rule 1 requires; §48's neighbour.
-- [ ] `packages/library/src/vocabulary.ts` -- export `PAGE_NUMBER = 'page_number'` beside `INLINE_TOKENS`, with the
+- [x] `packages/library/src/vocabulary.ts` -- export `PAGE_NUMBER = 'page_number'` beside `INLINE_TOKENS`, with the
       comment saying it is the one token no prop declares because every `text` and `richtext` prop accepts it (R-182);
       and export `PLACEHOLDERS`, one **one-line description per placeholder**, covering every `INLINE_TOKENS` entry and
       `PAGE_NUMBER`. Leave `INLINE_TOKENS` at its three. -- keeps the closed per-field universe and the universal token
       distinct; the descriptions are what R-185's menu is for, and one map is the only place they can be.
-- [ ] `packages/library/src/validate.ts` -- in `bad-inline-token` (`:676-677`), branch on `PAGE_NUMBER` and say that
+- [x] `packages/library/src/validate.ts` -- in `bad-inline-token` (`:676-677`), branch on `PAGE_NUMBER` and say that
       every text prop accepts `{page_number}` already, so it is never declared; and refuse a declared token that has no
       `PLACEHOLDERS` entry, naming R-185. Add the unit assertion that every token in the closed set plus `PAGE_NUMBER`
       has a description. -- **this is how R-185 reaches placeholders nobody has thought of yet**: a new one cannot ship
       without the line the menu shows.
-- [ ] `packages/section-runtime/src/marks.ts` -- put `page_number` in `TOKEN_SET` and in every prop's `declared` list;
+- [x] `packages/section-runtime/src/marks.ts` -- put `page_number` in `TOKEN_SET` and in every prop's `declared` list;
       export `PAGE_NUMBER_HBS`, the **guarded** constant the recorder proved (R-186); give `serializeMarks` a fourth argument saying it is
       emitting for the theme; interleave escaping and substitution in `esc` so the page number's replacement is inserted
       between escaped literal pieces — raw on the theme, the handed number (or the empty string) on the canvas. Every
       other token keeps today's behaviour exactly, literal included. Update the header comments at `:115-122` and
       `:40-46`. -- the whole mechanism; AD-5 still holds for every character the user typed.
-- [ ] `packages/section-runtime/src/core.ts` -- `UserText.substitute` passes the theme flag. Nothing else changes: it is
+- [x] `packages/section-runtime/src/core.ts` -- `UserText.substitute` passes the theme flag. Nothing else changes: it is
       the only construction site of `UserText` and it exists only on the theme path, so the canvas cannot emit a mustache
       by construction. -- one boolean, one door.
-- [ ] `apps/web/lib/canvas.ts` -- `renderSection` takes `page?: number` beside `url`, and passes
+- [x] `apps/web/lib/canvas.ts` -- `renderSection` takes `page?: number` beside `url`, and passes
       `tokens: { page_number: String(page) }` when it is given one and no `tokens` at all when it is not. Comment it the
       way `url` is commented: the header renders at `default.hbs` and would otherwise be told nothing. -- R-182 on the
       canvas; **page 1 is simply never given one** (R-186), and Post/Page/404 give none either (R-183).
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- in `paint()`, keep the whole `site` from the
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- in `paint()`, keep the whole `site` from the
       `templateContext` call already made at `:1076` and hand `site.pagination?.page` to every section beside `url`
       **only when `now.page === 2`**. `Page` is the `1 | 2` union (`page-two.ts:27`), so that is the whole condition,
       and it is the same `now.page` the pill and the address already read. -- one more field of a call already made;
       page 1 hands none (R-186), and Post, Page and 404 return no pagination so they hand none either (R-183).
-- [ ] `apps/web/components/kit/icons.tsx` -- add the Tabler `Braces` glyph. -- one glyph, in the one place glyphs live.
-- [ ] `apps/web/components/editor/bar-menu.tsx` -- add the placeholder row beside `BarMenuRow`: the same 10px gutters,
+- [x] `apps/web/components/kit/icons.tsx` -- add the Tabler `Braces` glyph. -- one glyph, in the one place glyphs live.
+- [x] `apps/web/components/editor/bar-menu.tsx` -- add the placeholder row beside `BarMenuRow`: the same 10px gutters,
       the code at 13/500 in the mono face over **one line at 11px muted**, and a trailing slot holding **Copy** and
       **Insert** as two small buttons. It is a `<li>` with two buttons, not a button with buttons inside. -- R-185's
       row, in the file whose whole purpose is that the menus cannot drift apart.
-- [ ] `apps/web/components/controls/placeholder-menu.tsx` -- new: the `{}` trigger and its menu. The trigger is a small
+- [x] `apps/web/components/controls/placeholder-menu.tsx` -- new: the `{}` trigger and its menu. The trigger is a small
       `Braces` button beside the field's label — **absent entirely when the field has no placeholder to offer here**:
       on page 1 that is every field but the Newsletter's `proofLine`, and in the header and footer it is every field on
       every page (R-186, R-187) — labelled for a screen reader with the field's name; the card is
@@ -324,42 +331,43 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
       Placement, clamping, light dismiss, Escape and focus return come from `openMenu`; rows are `relative` so no
       sr-only word gives the card a second scrollbar. -- one surface, used by both field kinds and by every placeholder
       there will ever be (R-185).
-- [ ] `apps/web/components/controls/rich-field.tsx` -- delete `TokenRow` and its call site; put the `{}` trigger beside
+- [x] `apps/web/components/controls/rich-field.tsx` -- delete `TokenRow` and its call site; put the `{}` trigger beside
       the field's label, handing it **the offered set** and the existing insert handler (`session.insert`, else
       `replaceRange` at the end, whole or nothing). -- the row goes, the behaviour stays.
-- [ ] `apps/web/components/controls/sidebar.tsx` -- the same at the one-line `text` field, keeping its
+- [x] `apps/web/components/controls/sidebar.tsx` -- the same at the one-line `text` field, keeping its
       insert-at-selection and its refusal caption; the `{}` trigger is attached where `field()` (`:274-326`) draws each
       label, so both kinds get it from one place. **The panel must be told which page is on screen** — `paint()` already
       reads `now.page`, and the panel is keyed across pages (`acrossPages`), so thread the same `Page` down rather than
       deriving it a second way; the selected instance already carries its `target`, which is what says site-wide.
       -- the two field kinds stay one behaviour, and the offer follows the canvas.
-- [ ] `packages/library/src/vocabulary.ts` (with the map above) -- **one exported function that answers "which
+- [x] `packages/library/src/vocabulary.ts` (with the map above) -- **one exported function that answers "which
       placeholders does this field offer, here"**: the prop's own `tokens`, plus `page_number` **only when the page is 2
       and the section is not site-wide** (R-186, R-187). Site-wide is the instance's own stamp — `target ===
       'default.hbs'` / `doc === 'site'`, which `stackOf` already sets (`page-two.ts:134`). Every caller — both field
       kinds, the tests, and whatever offers a placeholder in a later epic — asks this one function. -- offering is the
       whole of R-186 and R-187, and a rule with two implementations is a rule with one bug; this is also where a future
       placeholder declares where it may be offered.
-- [ ] `packages/section-runtime/src/agreement.test.ts` -- extend R-27's case (`:290-300`) and add the page number's: the
+- [x] `packages/section-runtime/src/agreement.test.ts` -- extend R-27's case (`:290-300`) and add the page number's: the
       canvas prints the handed number, prints nothing when handed none (page 1), and the theme prints the guarded constant;
       a prop declaring no tokens gets it too; `{members}` undeclared still stays literal on both sides. -- §7.3's exit
       criterion, and the one test that holds the two emitters together.
-- [ ] `packages/section-runtime/src/ad36.test.ts` -- vectors, each asserting the attack is inert **and** the legitimate
-      case still works: a typed `{{page_number}}` emits `&#123;{{@root.pagination.page}}&#125;` and never `{{{…}}}`; a
-      typed `{{@root.pagination.page}}` ships fully escaped; `{page_number}` inside a link's `title` or `href` is not
-      substituted; a C0 character beside the token is still dropped. -- AD-5's first deliberate exception, proved narrow.
-- [ ] `apps/web/lib/inline.test.ts` (or the nearest existing home) -- assert that a field being edited re-serializes with
+- [x] `packages/section-runtime/src/ad36.test.ts` -- vectors, each asserting the attack is inert **and** the legitimate
+      case still works: a typed `{{page_number}}` emits `&#123;` + the guarded constant + `&#125;` and never `{{{…}}}`;
+      a typed `{{@root.pagination.page}}` ships fully escaped; `{page_number}` inside a link's `title` or `href` is not
+      substituted **on either emitter** (the sink, not the prop type, is what decides it — Dev's finding); a C0
+      character beside the token is still dropped. -- AD-5's first deliberate exception, proved narrow.
+- [x] `apps/web/lib/inline.test.ts` (or the nearest existing home) -- assert that a field being edited re-serializes with
       no token values, so the token shows again on click-in and the caret can sit inside it. -- R-182's second sentence;
       today it is a comment and nothing fails if it is lost.
-- [ ] `tools/probe/run-verify-editor.cjs` -- a journey: type `{page_number}` into a heading on page 1, see the number,
+- [x] `tools/probe/run-verify-editor.cjs` -- a journey: type `{page_number}` into a heading on page 1, see the number,
       press **2** and see 2, click back into the words and see the token, open a field's `{}` menu and press **Insert**,
       open the Newsletter's `{members}` box and see **two** rows, switch to the Post canvas and see nothing. Record two
       runs if the first dies on a Playwright timeout (DW-222). -- the deployed walk is where R-80's test is rehearsed.
-- [ ] `apps/web/a11y` (the nearest existing home, beside `busy.test.ts`) -- the menu: the trigger names the field it
+- [x] `apps/web/a11y` (the nearest existing home, beside `busy.test.ts`) -- the menu: the trigger names the field it
       belongs to, the card is reachable and dismissable by keyboard, arrow keys walk the rows, Escape returns focus to
       the `{}` button, and **Copy**'s confirmation is announced rather than only coloured. -- R-98's neighbourhood: a
       control that does something says so.
-- [ ] `docs/section-authoring.md` -- amend `:478-491`: the per-prop list, the one token that is not in it, and **the
+- [x] `docs/section-authoring.md` -- amend `:478-491`: the per-prop list, the one token that is not in it, and **the
       description every declared token must carry**, with the refusal that enforces it. -- authoring is a documented
       deliverable (FR-G3), and this is the page an author reads before declaring a placeholder.
 - [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/DESIGN.md` § Components -- **the note the owner
@@ -367,21 +375,21 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
       the component entry "The placeholder menu" — every dynamic placeholder, existing and future, reached from a `{}`
       button beside the field's label and never from a row under the field; what the menu holds; P0-1:174-204
       withdrawn; and the refusal that keeps it true (R-185). **Build to it; do not restate it.**
-- [ ] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- the field's affordance in one
+- [x] `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md` -- the field's affordance in one
       line, pointing at DESIGN.md's entry. -- the two spines say the same thing about a surface or neither is trusted.
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- FR-D4 (`:221`) and FR-G3 (`:282`): the
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- FR-D4 (`:221`) and FR-G3 (`:282`): the
       per-field sentence gains R-182's one exception. -- R-182's own propagation targets.
-- [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` -- AD-4
+- [x] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` -- AD-4
       (`:112`) and AD-5's neighbourhood (`:391`): one constant expression is emitted raw, and why that is not a hole.
       -- standing rule 3; the invariant is where the rule must live.
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- tick R-182's,
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/reconcile-designs-decisions.md` -- tick R-182's,
       R-183's and **R-185's** remaining ⬜ target rows as this story lands them. -- the ledger is the record of what has
       reached where.
-- [ ] `_bmad-output/implementation-artifacts/epic-5-context.md` -- an indented sub-bullet under Story 5.16's entry:
+- [x] `_bmad-output/implementation-artifacts/epic-5-context.md` -- an indented sub-bullet under Story 5.16's entry:
       what 5.16a built, in DW-73's shape. Append; never rewrite the file. -- the next story reads this, not the specs.
 - [x] `_bmad-output/planning-artifacts/epics.md` -- Story 5.16a's card carries R-185's criterion, its **Rulings** line
       gains R-171 and R-185, and its **Frame** line says the surface is extrapolated rather than drawn. Done at Create.
-- [ ] grep the repository for `INLINE_TOKENS`, `substituteTokens`, `TokenRow`, "per-field" and **"else in braces"**
+- [x] grep the repository for `INLINE_TOKENS`, `substituteTokens`, `TokenRow`, "per-field" and **"else in braces"**
       before the Dev commit; the last must return nothing outside the historical record in this spec and the ruling
       register. -- standing rule 7: a propagation list cannot audit itself.
 
@@ -437,23 +445,49 @@ than a general "raw token value" channel, and it is why this story does not pay 
 ```
 user types:   Page {{page_number}}
 literal parts: "Page {" and "}"          → escaped → "Page &#123;" and "&#125;"
-the token:     {page_number}             → raw     → "{{@root.pagination.page}}"
-emitted:      Page &#123;{{@root.pagination.page}}&#125;     → the visitor reads: Page {3}
+the token:     {page_number}             → raw     → the guarded constant
+emitted:      Page &#123;{{#if pagination.prev}}…{{/if}}&#125;  → the visitor reads: Page {3}
 ```
 
 Substituting first and escaping afterwards would emit `&#123;&#123;…` and lose the expression; escaping first and
-substituting afterwards would emit `{{{@root.pagination.page}}}`, a triple-stache. Neither is acceptable and the
+substituting afterwards would emit `{{{…}}}`, a triple-stache. Neither is acceptable and the
 `ad36.test.ts` vector is exactly this string.
 
 **Why the guard is a truthiness test and not a comparison.** R-186 needs "not page 1" inside `default.hbs`. Handlebars
 has no `>` and Ghost's `{{#has}}` would be a second moving part inside an AD-5 exception. `pagination.prev` is the field
-that is falsy exactly on page 1 and wherever `pagination` is absent, so `{{#if @root.pagination.prev}}` is the whole
+that is falsy exactly on page 1 and wherever `pagination` is absent, so `{{#if pagination.prev}}` is the whole
 guard — one string, no helper, and R-183 preserved for free. **It is the story's one unproven claim**: the recorder
 proves it on both majors before a line is emitted, and if it disappoints, this is an Ask First, not an improvisation.
 
-**Why `@root` and not `pagination`.** Both resolve in `default.hbs` and in partials, but only `@root` survives a
-context-changing block — `{{#foreach}}`, `{{#get}}`, `{{#post}}` — and a section's text can sit inside any of them. One
-form everywhere is also one thing to explain (R-170).
+**Why `@root` and not `pagination`** *(the reasoning as written at Create — see the correction below)*. Both resolve in
+`default.hbs` and in partials, but only `@root` survives a context-changing block — `{{#foreach}}`, `{{#get}}`,
+`{{#post}}` — and a section's text can sit inside any of them. One form everywhere is also one thing to explain (R-170).
+
+**What the recorder changed, and why it is a finding rather than a question** *(Dev, 2026-09-23)*. The task above says
+the emitted constant is *"the **guarded** constant the recorder proved"*, and the recorder proved it cannot spell
+`@root`. **gscan refuses every `@root.…` path as `GS120-NO-UNKNOWN-GLOBALS` — an ERROR on BOTH bundled versions**
+(4.49.7 for Ghost 5, 6.4.2 for Ghost 6), whose allow-list is `@site`, `@member`, `@setting`, `@config`, `@labs`,
+`@custom`, `@page` and `{{#foreach}}`'s own data variables, read in `lib/ast-linter/rules/internal/scope.js` and
+byte-identical across the two; its block-helper rule checks a `{{#if}}`'s params, so the guard is refused as well as
+the value. A theme carrying it therefore cannot pass the 0-errors gate this spec's own Verification requires. **So the
+emitted constant is `{{#if pagination.prev}}{{pagination.page}}{{/if}}`** — the same guard, one qualifier shorter, and
+the only spelling that is both correct in `default.hbs` and gscan-clean.
+
+Three things make this a finding and not an Ask First. **There was no choice to present:** the other spelling does not
+ship, so there are not two options for the owner to rule between. **Nothing the customer sees changes:** the recorder
+printed nothing at `/`, `2` at `/page/2/`, `3` at `/page/3/` and nothing on a post, a standalone page and the 404, for
+both spellings alike, on both majors. **The cost the `@root` form was bought for is measured and is zero today:** §49
+(d) shows the two differ only inside `{{#foreach}}`, and **no design in the library puts a `data-prop` inside a
+`data-repeat`** — an authored array's props are expanded by `expandItems` on BOTH emitters and never become a
+`{{#foreach}}`, and a `data-repeat` carries Ghost's own rows, whose text is `data-bind`. `docs/section-authoring.md`
+says so where an author would meet it, and `ARCHITECTURE-SPINE.md`'s AD-5 carries the bound. *(Ghost itself accepted
+and served the `@root` theme on both boxes; the refusal is gscan's, and gscan is the gate.)*
+
+**And the attribute sink was a real hole, found by its own vector.** `UserText` parks a customer's words for an
+attribute value through the same door as element text, so the first draft put the live expression into an `href`.
+`put(path, value, 'attribute')` now says which sink it is, and only the text one substitutes — in an attribute the
+token stays exactly as typed, which is also the only honest answer there, since substituting an empty string would
+delete a piece of a customer's URL behind their back.
 
 **Why the canvas needs the number handed to it.** `templateContext` answers pagination for the section's *own* target,
 and the header's target is `default.hbs`, which has none. Story 5.16 hit the identical wall with the page's address and
@@ -489,8 +523,8 @@ sure it cannot be half-built.
 
 **Commands:**
 
-- `python3 tools/probe/record-page-number.py` -- expected, on T1 and T3 alike, for **the guard**
-  `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}` in `default.hbs`: `[]` at `/`, `[2]` at `/page/2/`,
+- `python3 tools/probe/record-page-number.py` -- expected, on T1 and T3 alike, for **the guard in BOTH spellings**
+  (`@root`-qualified and plain) in `default.hbs`: `[]` at `/`, `[2]` at `/page/2/`,
   `[3]` at `/page/3/`, and `[]` on a post, a public page and the 404 — with the raw `pagination.page` and
   `pagination.prev` recorded beside it at every one of those addresses; both servers' previous themes restored and
   re-read; `MEASUREMENTS.md` §49 written. **Run before any emission task, and stop if the guard prints anything at

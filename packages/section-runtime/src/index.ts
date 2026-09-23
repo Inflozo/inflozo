@@ -41,6 +41,8 @@ export type { Mark, MarkNode, PropValue, RichText } from './marks.ts'
 // the reference token values — the controls panel paints its Swatch Row's roles with them (Story 4.5)
 export { REFERENCE_TOKENS } from './tokens.ts'
 export { editText, linkAttributes } from './marks.ts'
+// Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits
+export { PAGE_NUMBER_HBS } from './marks.ts'
 // Story 5.3 — the value's edits: typing, a paste, the toolbar's marks and links, and the DOM points between them
 export {
   activeMarks,

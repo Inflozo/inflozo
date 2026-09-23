@@ -5,10 +5,10 @@ import type { PropDef } from '@inflozo/library'
 import { replaceRange, serializeMarks } from '@inflozo/section-runtime'
 import type { PropValue } from '@inflozo/section-runtime'
 import { fieldTone, ring } from '@/components/kit/greyed'
-import { InfoCircle } from '@/components/kit/icons'
 import { limitSentence, startInline, type Inline } from '@/lib/inline'
 import type { LinkResources } from './link-picker'
 import { InlineTools, type InlineToolsHandle, type ScreenSelection } from './mark-toolbar'
+import { PlaceholderMenu } from './placeholder-menu'
 
 /* THE PANEL'S TEXT AREA, RICH (Story 5.3). The canvas and the panel edit the same value: a `richtext` prop's field is a
    `contenteditable` holding `serializeMarks`' markup, run by the same controller as the canvas (`lib/inline.ts`) with its
@@ -28,39 +28,6 @@ export const LimitCaption = ({ id, label, max, text, refused = false }: { id: st
     </p>
   ) : null
 
-/** P0-1's typed tokens (:174-204): the field's own list, each chip inserting `{token}` at the cursor. A token the field
- *  already holds is drawn pressed, as the frame draws it. No row for a prop without tokens; no "On the site" line until the
- *  connected site's values arrive (Story 5.18). */
-export function TokenRow({ tokens, text, onInsert }: { tokens: readonly string[] | undefined; text: string; onInsert: (token: string) => void }) {
-  if (!tokens || tokens.length === 0) return null
-  return (
-    <div className="flex flex-col gap-[6px]">
-      <span className="font-mono text-[10px] text-ink-soft">TOKENS THIS FIELD ACCEPTS</span>
-      <div className="flex flex-wrap gap-[5px]">
-        {tokens.map((t) => {
-          const used = text.includes(`{${t}}`)
-          return (
-            <button
-              key={t}
-              type="button"
-              // the field keeps focus and its cursor
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => onInsert(`{${t}}`)}
-              className={`inline-flex h-6 items-center rounded-[6px] px-2 font-mono text-[11px] ${ring} ${used ? 'bg-coral-tint text-coral-text' : 'border border-line text-ink-soft hover:border-line-strong'}`}
-            >
-              {`{${t}}`}
-            </button>
-          )
-        })}
-      </div>
-      <div className="flex items-start gap-2 rounded-sm bg-paper-sunk p-[9px_10px]">
-        <InfoCircle size={13} className="mt-px shrink-0 text-ink-soft" />
-        <span className="text-[11.5px] leading-[1.5] text-ink-soft">Anything else in braces prints exactly as you typed it — {'{this}'} stays {'{this}'} on the page.</span>
-      </div>
-    </div>
-  )
-}
-
 export function RichField({
   id,
   label,
@@ -68,6 +35,7 @@ export function RichField({
   value,
   onValue,
   links,
+  placeholders = [],
 }: {
   id: string
   label: string
@@ -75,6 +43,9 @@ export function RichField({
   value: unknown
   onValue: (value: unknown) => void
   links: LinkResources
+  /** R-185 — the placeholders this field offers HERE, from `placeholdersOffered`. Empty, and no `{}` button
+   *  is drawn at all: the panel never greys one (UX-DR3). */
+  placeholders?: readonly string[]
 }) {
   const box = useRef<HTMLDivElement>(null)
   const tools = useRef<InlineToolsHandle>(null)
@@ -124,10 +95,22 @@ export function RichField({
   }
 
   const text = textOf(value)
+  /** R-185's Insert — the behaviour P0-1's withdrawn chip row carried, unchanged: whole or nothing against `maxChars`, at the
+   *  caret while the field is still being typed in and at the end when it is not (opening the menu moves focus,
+   *  which ends the session, so the second arm is the ordinary one here). Never silent: a cut token would print
+   *  literally, so it is refused and the limit sentence says why (R-27). */
+  const insert = (token: string) => {
+    if (session && !session.ended) return session.insert(token)
+    const r = replaceRange(latest.current as PropValue, text.length, text.length, token, { max: def.maxChars })
+    if (r.refused > 0) return setRefused(true)
+    change.current(r.value)
+  }
   return (
     <div className="flex flex-col gap-[5px]">
-      <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">
-        {label}
+      <span className="flex items-center gap-[6px] text-control-label font-medium text-ink-soft">
+        <span id={`${id}-label`}>{label}</span>
+        {/* R-185: BESIDE THE LABEL, and nowhere else. P0-1's chip row under the field is withdrawn. */}
+        <PlaceholderMenu id={id} label={label} offered={placeholders} onInsert={insert} />
       </span>
       <div
         ref={box}
@@ -145,17 +128,6 @@ export function RichField({
         className={`min-h-16 whitespace-pre-wrap break-words rounded-sm border px-[11px] py-[9px] text-[12.5px] leading-[1.5] text-ink caret-coral ${fieldTone(undefined)} ${ring} focus-visible:border-coral-text`}
       />
       <LimitCaption id={id} label={label} max={def.maxChars} text={text} refused={refused} />
-      <TokenRow
-        tokens={def.tokens}
-        text={text}
-        onInsert={(token) => {
-          if (session && !session.ended) return session.insert(token)
-          const r = replaceRange(latest.current as PropValue, text.length, text.length, token, { max: def.maxChars })
-          // whole or nothing, and never silent: a cut token prints literally (R-27)
-          if (r.refused > 0) return setRefused(true)
-          change.current(r.value)
-        }}
-      />
       <InlineTools id={`${id}-inline`} session={session} selection={selection} resources={links} handle={tools} />
     </div>
   )

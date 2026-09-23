@@ -323,6 +323,47 @@ export const ASSET_ID_RE = /^[a-z0-9][a-z0-9_-]*$/
  *  allow-list by construction is the only shape that closes AD-36 rather than filtering it. */
 export const INLINE_TOKENS = ['members', 'term', 'n'] as const
 
+/** R-182 (Story 5.16a) — THE ONE TOKEN NO PROP DECLARES, because every `text` and `richtext` prop
+ *  accepts it. It is deliberately NOT a fourth `INLINE_TOKENS` member: that list is the closed
+ *  PER-FIELD universe `validate.ts` holds a design's `tokens` to, so a design declaring
+ *  `{page_number}` is still refused — it has it already. R-27 is otherwise unchanged. */
+export const PAGE_NUMBER = 'page_number'
+
+/** R-185 (the owner, 2026-09-23) — EVERY PLACEHOLDER'S ONE LINE, and the only place one lives.
+ *  The `{}` menu beside a field's label prints these verbatim, so a placeholder without a line is a
+ *  row that explains nothing; `validate.ts` refuses a declared token absent from this map, which is
+ *  what makes the promise hold for placeholders nobody has thought of yet rather than decaying into
+ *  a note. Its key ORDER is the menu's row order. Written for a customer, not an author. */
+export const PLACEHOLDERS: Readonly<Record<string, string>> = {
+  members: 'How many members your site has.',
+  term: 'What the visitor typed into search.',
+  n: 'How many there are — the count this line is about.',
+  [PAGE_NUMBER]: 'The number of the page a visitor is on — 2 on page 2, 3 on page 3.',
+}
+
+/** R-186 · R-187 — WHICH PLACEHOLDERS THIS FIELD OFFERS, HERE, and the one answer both field kinds,
+ *  the tests and any later placeholder ask. Offering is not accepting: a field ACCEPTS
+ *  `{page_number}` everywhere and it substitutes by one rule everywhere (R-182), and this says only
+ *  where the editor OFFERS to put one in.
+ *
+ *    the prop's own declared tokens, always
+ *    + `page_number` when the canvas shows PAGE 2 and the section is NOT site-wide
+ *
+ *  Page 2 is R-186: never offered on page 1, and R-176 already withholds page 2 where none exists,
+ *  so "paginated content" needs no second test. Site-wide is R-187: a header or footer is one object
+ *  on every page (R-180), so offering it there would invite a hole in the same sentence on the front
+ *  page. A field with nothing to offer shows no `{}` button at all, and a prop that is not typed into
+ *  offers nothing whatever the page. */
+export function placeholdersOffered(
+  def: { type?: string; tokens?: readonly string[] } | undefined,
+  where: { page?: number; siteWide?: boolean } = {},
+): string[] {
+  if (def?.type !== 'text' && def?.type !== 'richtext') return []
+  const own = new Set((def.tokens ?? []).filter((t) => (INLINE_TOKENS as readonly string[]).includes(t)))
+  if (where.page === 2 && where.siteWide !== true) own.add(PAGE_NUMBER)
+  return Object.keys(PLACEHOLDERS).filter((t) => own.has(t))
+}
+
 /** §7.3 gap row 9 — a helper with no bound path, which `data-bind` cannot express. */
 export const BARE_HELPERS = [
   'content', 'comments', 'navigation', 'total_members', 'statusCode', 'message', 'content_api_key',

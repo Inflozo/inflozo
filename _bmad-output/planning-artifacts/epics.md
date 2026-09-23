@@ -2134,19 +2134,25 @@ edit text inline. So users can add a header, hero and show the Page number there
 **Acceptance Criteria:**
 
 **Given** any text I can edit, inline on the canvas or in the panel, in any section
-**When** I type `{page_number}`, or press its chip under the field
-**Then** the canvas shows the number of the page on screen: 1 on page 1 and 2 on page 2 — **R-182** (owner,
-2026-09-22)
+**When** I type `{page_number}`, or press **Insert** in its `{}` menu
+**Then** the canvas shows the number of the page on screen — **2 on page 2, and NOTHING on page 1** (**R-186**,
+owner, 2026-09-23, reversing R-182's "page 1 shows 1")
 **And** clicking into the words to change them shows the token again, so it can be seen and edited
 **And** it is **the one token every text field accepts**: R-182 amends R-27's per-field lists for it alone, and every
 other word in braces still prints exactly as typed
-**And** **nothing adds a page number by itself** — it appears only where it was typed, on page 1 as on page 2 (R-182)
+**And** **nothing adds a page number by itself** — it appears only where it was typed (R-182)
+**And** it is **offered only while the canvas shows page 2, and never in a site-wide section** — the header and
+footer are one object on every page, so they never offer it, on page 2 or anywhere (**R-186**, **R-187**, owner,
+2026-09-23); a field with nothing to offer carries **no `{}` button at all**
+**And** **the offer is restricted and the value is not**: typed by hand anywhere — the header included — it is kept
+verbatim and substituted by the same one rule everywhere (R-187)
 **And** on the live site each page prints its own number, so page 3, which shows page 2's design (R-177), prints 3;
 and **a post, a page and the 404 page print nothing** — **R-183** (owner, 2026-09-22)
 **And** the name is `{page_number}`, in `{members}`'s form: Ghost has no `{{page}}` helper, and the token never passes
 through Ghost's `{{t}}` (read in source on both majors, R-182)
-**And** where Ghost serves `pagination.page` to the header in `default.hbs` is read in source and recorded on T1 and
-T3 before anything is emitted for it (standing rule 1)
+**And** where Ghost serves `pagination.page` to the header in `default.hbs`, **and what makes page 1 print nothing**,
+are read in source and recorded on T1 and T3 before anything is emitted for them (standing rule 1, `MEASUREMENTS.md`
+§49)
 **And** **every placeholder is reached from one `{}` button beside the field's label** — **R-185** (owner,
 2026-09-23), which **withdraws P0-1's chip row under the field** for `{page_number}`, for `{members}` and for every
 placeholder added later: the button opens S4d's and D5b's own menu (R-171, `bar-menu.tsx`), each row the code over one
@@ -2157,7 +2163,7 @@ at all — the "anything else in braces" line drawn at `P0-1:193` is withdrawn a
 **FRs:** FR-D4 and FR-G3 (amended by R-182), FR-D21. · **Frame:** none of its own — the placeholder menu is
 extrapolated from S4d · D5b's menu anatomy as `bar-menu.tsx` builds it (R-74's rule for a surface the export does not
 draw); `P0-1 Inline Text Toolbar.dc.html:174-204` is withdrawn by R-185. · **Rulings:** R-27, R-171, R-177, R-182,
-R-183, R-184, R-185. · **Owner test:** yes.
+R-183, R-184, R-185, R-186, R-187. · **Owner test:** yes.
 
 ### Story 5.17: The edit lock and the take-over choreography
 

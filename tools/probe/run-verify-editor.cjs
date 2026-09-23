@@ -163,6 +163,12 @@
 // stored row; R-180's ask on the header, Cancel changing nothing and Change it everywhere changing the `site` row; the Tag
 // canvas's page 2 being its tag's own last page and a change there writing `tag-paged`; and the Author canvas offering
 // no row (R-176). Step 8 scans axe once more on page 2, with the pill showing.
+// Story 5.16a weaves step 93 through step 92, because the offer IS a fact about the page on screen and the section's
+// own stamp: on page 1 no field carries a `{}` button and the one that declares a token lists it alone; on page 2 that
+// field lists BOTH and a field with none lists `{page_number}`; the site-wide header carries no button even there
+// (R-187); Insert puts the code in and the canvas prints the page being painted; clicking into the words shows the
+// token again and leaving shows the number; and page 1's words are untouched. Step 26's token row became the same
+// menu — P0-1's chip row is withdrawn (R-185) and nothing is drawn under a field anywhere.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -266,7 +272,7 @@ async function main() {
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, { UNIVERSALS }, DEVICE, PV] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, LIB, DEVICE, PV] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
@@ -557,7 +563,7 @@ async function main() {
     const autoStack = (key) => synthesize(CANVASES[key].file, heldBy).instances
     // Story 5.6 — the LIBRARY's mode-scoped control names, derived from the vocabulary rather than written here: the
     // engine keys on each control's own `darkOverride` declaration and never on the name `bg` (standing rule 4)
-    const MODE_SCOPED = UNIVERSALS.filter((u) => u.darkOverride === true).map((u) => u.name)
+    const MODE_SCOPED = LIB.UNIVERSALS.filter((u) => u.darkOverride === true).map((u) => u.name)
     const homeStack = stackOf('home')
     const nth = (id) => homeStack.findIndex(([d]) => d === id)
     const [HEADER, HERO, GRID] = [nth(TEMPLATES.site[0][0]), nth('a4/13'), nth('a17/1')]
@@ -1365,7 +1371,11 @@ async function main() {
     await page.waitForTimeout(300)
     const noteNow = await markupOf(GRID, '.a17-1__note')
     check('step 26 — the panel\'s Text Area raises the same toolbar over the field, and Italic pressed there shows on the canvas', !!panelBar && !/<em>/.test(noteWas) && /<em>/.test(noteNow), `${JSON.stringify(panelBar && panelBar.buttons.map((b) => b.name))} · ${noteNow}`)
-    check('step 26 — a field that declares no token has no token row', (await controlsAside().getByText('TOKENS THIS FIELD ACCEPTS').count()) === 0)
+    // R-185 (Story 5.16a) withdrew P0-1's chip row: a field that offers nothing carries no {} button, and nothing
+    // at all is drawn under a field any more. On the Post canvas there is no page 2, so nothing offers a page number.
+    check('step 26 — R-185: a field that offers no placeholder has no {} button, and nothing is drawn under it',
+      (await controlsAside().getByRole('button', { name: /^Placeholders for / }).count()) === 0 &&
+      (await controlsAside().getByText('TOKENS THIS FIELD ACCEPTS').count()) === 0)
     await page.keyboard.press('Escape')
     await page.waitForTimeout(250)
     // Esc in the panel's field ends its session and hands focus back to the panel, and the section stays selected — the
@@ -1373,17 +1383,37 @@ async function main() {
     const panelEsc = await page.evaluate(() => ({ inField: document.activeElement?.getAttribute('role') === 'textbox', toolbar: document.querySelector('[role="toolbar"][aria-label="Text formatting"]') !== null }))
     check('step 26 — Escape in the panel\'s Text Area ends editing, leaves the field and keeps the section selected', !panelEsc.inField && !panelEsc.toolbar && (await onScreen(GRID)).selected, JSON.stringify(panelEsc))
 
-    // the token row: P0-1's chips under the one pilot field that declares a token
+    // R-185's MENU, on the one pilot field that declares a token of its own: the {} button beside its label, its
+    // rows, and Insert putting the code in at the cursor — the behaviour P0-1's withdrawn chip row carried
     await clickOn(NEWS)
     await openGroup('Content')
     const proof = controlsAside().getByLabel('Social proof line', { exact: true })
     await proof.fill('Join readers')
     await proof.evaluate((el) => el.setSelectionRange(5, 5))
-    const chips = await controlsAside().locator('button', { hasText: '{members}' }).allInnerTexts()
-    await controlsAside().locator('button', { hasText: '{members}' }).first().click()
+    await controlsAside().getByRole('button', { name: 'Placeholders for Social proof line', exact: true }).click()
     await page.waitForTimeout(300)
+    const rows26 = await page.evaluate(() => {
+      const card = [...document.querySelectorAll('[popover]')].find((el) => el.matches(':popover-open'))
+      if (!card) return null
+      return {
+        heading: card.querySelector('p')?.textContent.trim() ?? null,
+        rows: [...card.querySelectorAll('li')].map((li) => ({ code: li.querySelector('[data-code]')?.textContent.trim(), caption: li.querySelector('[data-caption]')?.textContent.trim(), actions: [...li.querySelectorAll('button')].map((b) => b.textContent.trim()) })),
+      }
+    })
+    await page.locator('[popover]:popover-open button[data-insert="members"]').click()
+    await page.waitForTimeout(400)
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(250)
     const proofNow = await proof.inputValue()
-    check('step 26 — P0-1\'s token row names the field\'s tokens, and a chip inserts its token at the cursor', (await controlsAside().getByText('TOKENS THIS FIELD ACCEPTS').count()) === 1 && chips.join(' · ') === '{members}' && proofNow === 'Join {members}readers' && (await wordsOf(NEWS, '.a22-1__proof')) === proofNow, `${JSON.stringify(proofNow)} · chips ${JSON.stringify(chips)}`)
+    const underNow26 = await controlsAside().evaluate((el) => ({ caption: (el.textContent.match(/TOKENS THIS FIELD ACCEPTS/g) ?? []).length, braces: (el.textContent.match(/else in braces/gi) ?? []).length }))
+    // the expectation is the library's own, never written here (standing rule 4)
+    const want26 = LIB.placeholdersOffered(pilot(TEMPLATES.home[TEMPLATES.home.length - 1][0]).contentSchema.proofLine, { page: 1 })
+      .map((t) => ({ code: `{${t}}`, caption: LIB.PLACEHOLDERS[t], actions: ['Copy', 'Insert'] }))
+    check('step 26 — R-185: the {} button beside the label opens "Placeholders", each row the code over one line with Copy and Insert, and Insert puts the code in at the cursor — with NOTHING under the field',
+      rows26 !== null && rows26.heading === 'Placeholders' && JSON.stringify(rows26.rows) === JSON.stringify(want26) &&
+      proofNow === 'Join {members}readers' && (await wordsOf(NEWS, '.a22-1__proof')) === proofNow &&
+      underNow26.caption === 0 && underNow26.braces === 0,
+      `${JSON.stringify(proofNow)} · ${JSON.stringify({ rows26, want26, underNow26 })}`)
 
     // catalog words: an empty value keeps the catalog's words, and leaving without typing changes nothing
     await clickOn(HERO)
@@ -4666,10 +4696,8 @@ async function main() {
        is PLANTED on its post grid through the service key, after the editor has gone (step 52's pattern), and the seed
        and every row page 2 wrote are taken back at the end. Every value below is derived from the app's own modules and
        the library's `templateContext`, never written here: the rows page 2 lists, its pager, its address, its words. */
-    const [PT, LIBW] = await Promise.all([
-      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/page-two.ts')).href),
-      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/library/src/index.ts')).href),
-    ])
+    const PT = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/page-two.ts')).href)
+    const LIBW = LIB // one binding for the library, read at the top with the rest
     const OW = LIBW.orbitWeekly
     const rowOf92 = async (key) => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.${encodeURIComponent(key)}&select=doc`)).body?.[0]?.doc ?? null
     const pageNow92 = () => page.locator('section[aria-label="Canvas"] iframe').getAttribute('data-page')
@@ -4732,6 +4760,66 @@ async function main() {
     check('step 92 — R-176: no other section\'s panel carries the row', others92 === 0, `${others92} rows`)
     await rowAt(gridAt92).locator('button').first().click()
     await page.waitForTimeout(300)
+
+    /* ── step 93 — Story 5.16a: `{page_number}` AND R-185's PLACEHOLDER MENU, woven through step 92's page 2 ──────
+       It rides here rather than standing alone because the offer IS a fact about the page on screen (R-186) and the
+       section's own stamp (R-187), and step 92 is the only place that has both. Every expectation is derived from the
+       library — `placeholdersOffered` and `PLACEHOLDERS` — never written here. Read-only in the two places that run
+       before page 2 forks; the one insert waits until page 2 is already its own design. */
+    const menu93 = async (label) => {
+      const aside = controlsAside()
+      const trigger = aside.getByRole('button', { name: `Placeholders for ${label}`, exact: true })
+      if ((await trigger.count()) === 0) return null
+      await trigger.first().click()
+      await page.waitForTimeout(300)
+      const read = await page.evaluate(() => {
+        const card = [...document.querySelectorAll('[popover]')].find((el) => el.matches(':popover-open'))
+        if (!card) return null
+        const heading = card.querySelector('p')
+        return {
+          heading: heading?.textContent.trim() ?? null,
+          rows: [...card.querySelectorAll('li')].map((li) => ({
+            code: li.querySelector('[data-code]')?.textContent.trim() ?? null,
+            caption: li.querySelector('[data-caption]')?.textContent.trim() ?? null,
+            actions: [...li.querySelectorAll('button')].map((b) => b.textContent.trim()),
+          })),
+          // R-185 as amended: the card holds its rows and NOTHING else — no footer, no explanatory sentence
+          extras: [...card.querySelector('ul').parentElement.children].filter((el) => el.tagName !== 'P' && el.tagName !== 'UL').length,
+        }
+      })
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(200)
+      return read
+    }
+    /* R-185 withdrew everything under the field. The sentence about other words in braces is withdrawn from the
+       PRODUCT, so it is asserted absent from the whole panel rather than from one field. */
+    const underField93 = () => controlsAside().evaluate((el) => ({
+      caption: (el.textContent.match(/TOKENS THIS FIELD ACCEPTS/g) ?? []).length,
+      braces: (el.textContent.match(/else in braces/gi) ?? []).length,
+    }))
+    const want93 = (def, where) => LIBW.placeholdersOffered(def, where).map((t) => ({ code: `{${t}}`, caption: LIBW.PLACEHOLDERS[t], actions: ['Copy', 'Insert'] }))
+    // the Newsletter is the one seeded section with a token of its own, and the one step 92 deletes from page 2 below
+    const newsAt92 = homeStack.findIndex(([d]) => d === TEMPLATES.home[TEMPLATES.home.length - 1][0])
+    const gridSchema93 = pilot('a17/1').contentSchema
+    const newsSchema93 = pilot(TEMPLATES.home[TEMPLATES.home.length - 1][0]).contentSchema
+    // PAGE 1 — R-186: nothing offers a page number, and the one field with a token of its own lists that token ALONE
+    await openGroup('Content')
+    await page.waitForTimeout(250)
+    const gridOne93 = await menu93('Eyebrow')
+    const under93 = await underField93()
+    await rowAt(newsAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await openGroup('Content')
+    await page.waitForTimeout(250)
+    const newsOne93 = await menu93('Social proof line')
+    check('step 93 — R-186: on page 1 a field with no token of its own carries NO {} button at all, and nothing is drawn under any field (R-185)',
+      gridOne93 === null && under93.caption === 0 && under93.braces === 0, JSON.stringify({ gridOne93, under93 }))
+    check('step 93 — R-186: on page 1 the one field that declares a token lists that token ALONE — no page-number row',
+      newsOne93 !== null && newsOne93.heading === 'Placeholders' && JSON.stringify(newsOne93.rows) === JSON.stringify(want93(newsSchema93.proofLine, { page: 1 })) && newsOne93.extras === 0,
+      JSON.stringify(newsOne93))
+    await rowAt(gridAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+
     const homeBefore92 = JSON.stringify(await rowOf92('home'))
     await page.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
     await waitPage92(2)
@@ -4807,9 +4895,30 @@ async function main() {
     await page.waitForTimeout(400)
     check('step 92 — "Older posts →" on page 2 navigates nowhere: no page 3, and the canvas is still page 2',
       (await canvasFrame().evaluate(() => location.href)) === olderUrl92 && (await pageNow92()) === '2', await pageNow92())
+    // ── step 93 — PAGE 2 OFFERS IT, and a field with a token of its own lists BOTH. Read-only: page 2 has not
+    //    forked yet, and opening a menu writes nothing.
+    await rowAt(newsAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await openGroup('Content')
+    await page.waitForTimeout(250)
+    const newsTwo93 = await menu93('Social proof line')
+    check('step 93 — R-186: on page 2 a field that declares a token lists BOTH — its own and {page_number} — each with its own line and Copy + Insert, and the card holds nothing else',
+      newsTwo93 !== null && newsTwo93.heading === 'Placeholders' && JSON.stringify(newsTwo93.rows) === JSON.stringify(want93(newsSchema93.proofLine, { page: 2 })) && newsTwo93.extras === 0,
+      JSON.stringify({ got: newsTwo93, want: want93(newsSchema93.proofLine, { page: 2 }) }))
+    // R-187 — THE HEADER NEVER OFFERS IT, on page 2 or anywhere: it is one object on every page (R-180)
+    await rowAt(HEADER).locator('button').first().click()
+    await page.waitForTimeout(300)
+    await openGroup('Content')
+    await page.waitForTimeout(250)
+    const headerButtons93 = await controlsAside().getByRole('button', { name: /^Placeholders for / }).count()
+    check('step 93 — R-187: no field of the site-wide header carries a {} button, even on page 2 — it is on every page of the site',
+      headerButtons93 === 0, `${headerButtons93} buttons`)
+    await rowAt(gridAt92).locator('button').first().click()
+    await page.waitForTimeout(300)
+
     // THE FIRST CHANGE ON PAGE 2 — the newsletter section deleted from Layers — STORES page 2 under `index`, and the home
     // row is BYTE-IDENTICAL before and after (R-178's proof, read back from Supabase)
-    const bandAt92 = homeStack.findIndex(([d]) => d === TEMPLATES.home[TEMPLATES.home.length - 1][0])
+    const bandAt92 = newsAt92
     await rowAt(bandAt92).getByRole('button', { name: /^More for / }).click()
     await page.waitForTimeout(250)
     await page.getByRole('button', { name: 'Delete', exact: true }).click()
@@ -4839,6 +4948,52 @@ async function main() {
     }))
     check('step 92 — a reload opens on page 1, and page 2 is its OWN design, read back from the stored `index` row (no marker, the section still gone)',
       opensOn92 === '1' && reloaded92.marker === 0 && reloaded92.rows.filter((k) => k === 'index').length === wantIndex92.length, JSON.stringify({ opensOn92, reloaded92 }))
+
+    /* ── step 93 — THE INSERT, AND THE NUMBER ON THE CANVAS. It waits until here because page 2 is now its own
+       design, so a content change writes the `index` row step 92 has already proved and disturbs nothing. */
+    await openGroup('Content')
+    await page.waitForTimeout(250)
+    const eyebrowWas93 = await wordsOf(GRID, '.a17-1__eyebrow')
+    const gridTwo93 = await menu93('Eyebrow')
+    check('step 93 — R-186 · R-185: on page 2 a field with no token of its own offers {page_number} alone, as its code over one line with Copy and Insert',
+      gridTwo93 !== null && gridTwo93.heading === 'Placeholders' && JSON.stringify(gridTwo93.rows) === JSON.stringify(want93(gridSchema93.eyebrow, { page: 2 })) && gridTwo93.extras === 0,
+      JSON.stringify({ got: gridTwo93, want: want93(gridSchema93.eyebrow, { page: 2 }) }))
+    const eyebrow93 = controlsAside().getByLabel('Eyebrow', { exact: true })
+    await eyebrow93.fill('The archive — page ')
+    await page.waitForTimeout(300)
+    await controlsAside().getByRole('button', { name: 'Placeholders for Eyebrow', exact: true }).click()
+    await page.waitForTimeout(300)
+    await page.locator('[popover]:popover-open button[data-insert="page_number"]').click()
+    await page.waitForTimeout(400)
+    const inserted93 = await eyebrow93.inputValue()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    // R-182 on the canvas: the number the editor handed this paint — page 2's own, from `templateContext`
+    const painted93 = await wordsOf(GRID, '.a17-1__eyebrow')
+    check('step 93 — Insert puts {page_number} in the field, and the CANVAS prints the page being painted — 2 on page 2 (R-182)',
+      inserted93 === 'The archive — page {page_number}' && painted93 === `The archive — page ${ctx92.ghost.pagination.page}`,
+      JSON.stringify({ inserted93, painted93 }))
+    // …and clicking into the words shows the TOKEN again, so it can be seen and edited (R-182's second sentence)
+    await caretInto(GRID, '.a17-1__eyebrow')
+    await page.waitForTimeout(300)
+    const editing93 = await wordsOf(GRID, '.a17-1__eyebrow')
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(400)
+    const rested93 = await wordsOf(GRID, '.a17-1__eyebrow')
+    check('step 93 — R-182: clicking into the words shows the token as typed, and the number is back when the edit ends',
+      editing93 === inserted93 && rested93 === painted93, JSON.stringify({ editing93, rested93 }))
+    // …and page 1 was never touched: it is a different doc, and it still says what the seed says
+    await page.getByRole('button', { name: PT.BACK_TO_PAGE_ONE, exact: true }).click()
+    await waitPage92(1)
+    await page.waitForTimeout(400)
+    const pageOne93 = await wordsOf(GRID, '.a17-1__eyebrow')
+    const backButtons93 = await controlsAside().getByRole('button', { name: /^Placeholders for / }).count()
+    check('step 93 — R-186 · R-179: page 1\'s words are untouched — no number and no gap — and its fields offer nothing again',
+      pageOne93 === eyebrowWas93 && backButtons93 === 0, JSON.stringify({ pageOne93, eyebrowWas93, backButtons93 }))
+    // back to page 2, where step 92's R-180 test expects to be
+    await page.locator('#editor-controls [data-page-row] [role="radio"]', { hasText: '2' }).click()
+    await waitPage92(2)
+    await page.waitForTimeout(400)
     // R-180 — THE HEADER CHANGED ON PAGE 2 ASKS FIRST, in FR-D5's dialog adapted; Cancel changes nothing, Change it
     // everywhere changes the `site` row — every page, page 1 included
     const siteBefore92 = JSON.stringify(await rowOf92('site'))

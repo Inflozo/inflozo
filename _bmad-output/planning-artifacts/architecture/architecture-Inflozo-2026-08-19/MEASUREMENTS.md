@@ -3509,3 +3509,53 @@ owed, and it landed at Review:
   on T3's `/` the Portal item (`href="#/portal/"`) also carries `nav-current`, because a fragment link matches the page
   it is on. Neither is this story's, and neither moves (c): the `/` item alone is what the shim's `nav-current` is
   about.
+
+## 49. `{page_number}` — the page-1 guard executed on both majors, and why the emitted constant spells `pagination` and not `@root` · 2026-09-23
+
+**Command.** `python3 tools/probe/record-page-number.py` — one theme upload per server (a second only where the first is refused or never served) and two activations, the previous theme restored in a `finally` and re-read to prove it; no content, no setting and no key written.
+
+**Why.** Story 5.16a emits ONE constant Handlebars expression into user text (AD-5's first deliberate exception), guarded so page 1 prints nothing (R-186). The guard — `#if` on `pagination.prev` — was read in Ghost's source on both majors (bookshelf-pagination assigns only `next` on page 1, so `prev` is literally `null` there) and controlled locally under express-hbs 2.5.0. Standing rule 1 says that is a hypothesis until it is executed against a real Ghost. This is that execution, and every marker is in `default.hbs` — the layout, where a site-wide section compiles (R-180) and the hardest place for `pagination` to reach.
+
+### (a) gscan refuses `@root` as an ERROR on both majors — so the emitted constant cannot spell it
+
+- with the `@root` markers: Ghost 5.x via gscan 4.49.7 — GS120-NO-UNKNOWN-GLOBALS / 1 warnings · Ghost 6.x via gscan 6.4.2 — GS120-NO-UNKNOWN-GLOBALS / 1 warnings
+- with them removed: Ghost 5.x via gscan 4.49.7 — 0 errors / 1 warnings · Ghost 6.x via gscan 6.4.2 — 0 errors / 1 warnings
+
+`GS120-NO-UNKNOWN-GLOBALS` fires four times, once per `@root` path: *"`{{@root.pagination.page}}` is not a known global"*. Read in gscan's own source at both bundled versions — `lib/ast-linter/rules/internal/scope.js:5-13`, byte-identical in gscan 4.49.7 (Ghost 5) and 6.4.2 (Ghost 6) — the allow-list is `@site`, `@member`, `@setting`, `@config`, `@labs`, `@custom`, `@page` and `{{#foreach}}`'s own data variables, and `isOnAllowlist` tests `parts[0]` alone, so no `@root.…` path can pass. `lint-no-unknown-globals.js` checks a block helper's PARAMS, so `{{#if @root.pagination.prev}}` is refused as well as the value.
+
+**And the refusal is gscan's alone — Ghost itself served the `@root` theme on both boxes**, as the verdict lines below record, so the expression is CORRECT at runtime and unshippable by the product's own standard: `tools/stress/gate.js` must report 0 errors on both majors for every theme we emit (AD-34), and a Ghost admin marks a theme carrying a fatal gscan error invalid. **Finding: the emitted constant is `{{#if pagination.prev}}{{pagination.page}}{{/if}}`** — the same guard, one qualifier shorter, and the only spelling that is both correct in `default.hbs` and gscan-clean. The spec's Design Note preferred `@root` for a reason (d) measures and prices at zero.
+
+### (b) T3 `ghost5.inflozo.com` (5.130.6)
+
+**Ghost's own verdict on the upload.** `root` theme → upload HTTP 200, activated and SERVED
+
+| Address | HTTP | `{{pagination.page}}` | `{{pagination.prev}}` | **plain guard** | `{{@root.…page}}` | `{{@root.…prev}}` | **@root guard** | in-loop `{{title}}` | in-loop `{{pagination.page}}` | in-loop `{{@root.…page}}` |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `/` — list page 1 | 200 | `1` | *(empty)* | *(empty)* | `1` | *(empty)* | *(empty)* | `PROBE Gated Post` | *(empty)* | `1` |
+| `/page/2/` — list page 2 | 200 | `2` | `1` | `2` | `2` | `1` | `2` | `Ten years of one layout` | *(empty)* | `2` |
+| `/page/3/` — list page 3 | 200 | `3` | `2` | `3` | `3` | `2` | `3` | `On dependable dullness` | *(empty)* | `3` |
+| `/a-brief-history-of-the-sidebar/` — a post | 200 | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | — | — | — |
+| `/member-home-preview/` — a public page | 200 | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | — | — | — |
+| `/inflozo-probe-no-such-page/` — the 404 | 404 | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | — | — | — |
+
+### (c) T1 `ghost6.inflozo.com` (6.58.0)
+
+**Ghost's own verdict on the upload.** `root` theme → upload HTTP 200, activated and SERVED
+
+| Address | HTTP | `{{pagination.page}}` | `{{pagination.prev}}` | **plain guard** | `{{@root.…page}}` | `{{@root.…prev}}` | **@root guard** | in-loop `{{title}}` | in-loop `{{pagination.page}}` | in-loop `{{@root.…page}}` |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `/` — list page 1 | 200 | `1` | *(empty)* | *(empty)* | `1` | *(empty)* | *(empty)* | `PROBE Gated Post` | *(empty)* | `1` |
+| `/page/2/` — list page 2 | 200 | `2` | `1` | `2` | `2` | `1` | `2` | `Ten years of one layout` | *(empty)* | `2` |
+| `/page/3/` — list page 3 | 200 | `3` | `2` | `3` | `3` | `2` | `3` | `On dependable dullness` | *(empty)* | `3` |
+| `/a-brief-history-of-the-sidebar/` — a post | 200 | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | — | — | — |
+| `/member-home-preview/` — a public page | 200 | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | — | — | — |
+| `/inflozo-probe-no-such-page/` — the 404 | 404 | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | *(empty)* | — | — | — |
+
+### (d) What it means
+
+- **R-186 holds.** The guard prints nothing at `/`, the page's own number from `/page/2/` on, and nothing on a post, a standalone page and the 404 — identically on both majors.
+- **R-183 comes free.** Ghost leaves `pagination` off post, page and the 404 entirely, and Handlebars renders a missing path as the empty string rather than throwing (it compiles with `{preventIndent: true}` alone — no `strict`, no `assumeObjects`).
+- **`{{pagination.page}}` resolves in `default.hbs`.** express-hbs renders the page template and then the layout with the SAME locals object, so the layout sees the response root.
+- **The one place the two spellings differ is inside `{{#foreach}}`**, and the table measures it: the in-loop `{{title}}` control prints, so the block ran, and `{{pagination.page}}` is empty inside it while `{{@root.pagination.page}}` is not. That is Handlebars, not Ghost — a path lookup does not walk out to the parent context. **It costs nothing today: no design in the library puts a `data-prop` inside a `data-repeat`** (the authored-array props a design does repeat are expanded by `expandItems` on BOTH emitters, never as `{{#foreach}}`), so the emitted constant never lands inside one. `docs/section-authoring.md` says so where an author would need to know it.
+
+**What this does NOT say.** Nothing here was rendered through Inflozo's own emitter: the markers are the raw expressions, written by hand into a probe theme. That the emitter produces exactly this string, once per occurrence and with every other character of user text escaped, is `agreement.test.ts`'s and `ad36.test.ts`'s, per commit.

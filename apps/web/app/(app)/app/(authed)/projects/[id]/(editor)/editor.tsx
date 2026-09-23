@@ -1072,8 +1072,14 @@ export function Editor({
       // included, which renders at `default.hbs` and would otherwise always be told `/`. So `{{navigation}}` marks what
       // Ghost marks on that address (DW-218). The address comes from `templateContext` itself, the one place it is
       // computed. Post, Page and 404 keep `/` (a DW).
+      // STORY 5.16a — AND THE PAGE'S OWN NUMBER, for `{page_number}` (R-182), from the SAME call: one more
+      // field of a result already taken. It is handed to every section ONLY on page 2 (R-186) — page 1 hands
+      // none and prints nothing in the token's place, and Post, Page and 404 return no pagination at all, so
+      // they hand none either (R-183). `Page` is the `1 | 2` union, so `now.page === 2` is the whole test.
       const feed = now.page === 2 ? 'second' : 'first'
-      const url = orbitWeekly.templateContext(pageFileOf(now.key, now.page), feed, now.subject).site.currentUrl
+      const { site } = orbitWeekly.templateContext(pageFileOf(now.key, now.page), feed, now.subject)
+      const url = site.currentUrl
+      const pageNumber = now.page === 2 ? (site.pagination as { page?: number } | undefined)?.page : undefined
       const parts = now.stack.map((i) => {
         const entry: SectionRegistryEntry | undefined = entries[i.designId]
         if (!entry) throw new Error(`${i.designId} was not read for this project`)
@@ -1086,7 +1092,7 @@ export function Editor({
         // Story 5.13: the canvas's resolved subject reaches every section through the ONE door. A site-wide section
         // compiles to `default.hbs`, which carries no resource of its own, so the argument is simply unused there.
         // Story 5.14: and so does the visitor View as is previewing — Story 4.10's `gateMembers` decides the rest.
-        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed, url, member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
+        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
       })
       // Story 5.15: the behaviours running on the markup about to be replaced stop first, putting every mount back
       // at rest — and the new markup is written PLAIN. Whether a mount runs is `core`'s to say, mount by mount, below;
@@ -2666,6 +2672,12 @@ export function Editor({
               onClearDark={darkEnabled ? () => askClearDark(chosen) : undefined}
               // Story 5.16 — D5d's row, on the main feed of a page that has a page 2 (R-176): a plain callback, never an edit
               page={feedHere !== null && same(chosen, feedHere) ? { value: page, onChange: choosePage } : undefined}
+              // Story 5.16a — WHERE THE PANEL IS, which is all R-186 and R-187 need before a field offers
+              // `{page_number}`: the page on screen (the same `page` the pill and the address read, threaded rather
+              // than derived a second way, because the panel is keyed ACROSS the switch) and whether this section is
+              // the site's own — the instance's own stamp, which `stackOf` sets (R-187: a header is on every page).
+              shownPage={page}
+              siteWide={chosen.doc === SITE.key}
               timezone={timezone}
               links={links}
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}

@@ -32,7 +32,7 @@ import {
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
-import { REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
@@ -298,6 +298,74 @@ test('R-27 — a declared inline token substitutes and an undeclared one stays l
   assert.ok(canvas.includes('{n} left'), `an undeclared token must stay literal text: ${canvas}`)
   assert.ok(theme.includes('12,000 readers'), `the declared token did not substitute: ${theme}`)
   assert.ok(theme.includes('&#123;n&#125; left'), `an undeclared token must ship inert: ${theme}`)
+  // …and the page number rides beside it on a prop that declares one token, without being declared (R-182)
+  const withPage = bothWays(`<p data-prop="sub">s</p>`, {
+    schema,
+    content: { sub: { text: '{members} readers on page {page_number}' } },
+    tokens: { members: '12,000', page_number: '2' },
+  })
+  assert.ok(withPage.canvas.includes('12,000 readers on page 2'), withPage.canvas)
+  assert.ok(withPage.theme.includes(`12,000 readers on page ${PAGE_NUMBER_HBS}`), withPage.theme)
+})
+
+// ── Story 5.16a — R-182's one token, on BOTH emitters. The canvas prints the number the editor handed it
+//    and NOTHING where it handed none (page 1, a post, a standalone page, the 404 — R-186, R-183); the theme
+//    prints one guarded constant per occurrence, which Ghost answers the same way (MEASUREMENTS §49).
+const pageSrc = `<h2 data-prop="h">t</h2>`
+const pageSchema: Record<string, PropDef> = { h: { type: 'richtext', label: 'Heading' } }
+const pageWords = { h: { text: 'The archive — page {page_number}' } }
+
+test('R-182 — {page_number} needs no declaration: every text and richtext prop accepts it', () => {
+  for (const type of ['text', 'richtext'] as const) {
+    const { canvas, theme } = bothWays(pageSrc, { schema: { h: { type, label: 'Heading' } }, content: pageWords, tokens: { page_number: '2' } })
+    assert.ok(canvas.includes('The archive — page 2'), `${type} on the canvas: ${canvas}`)
+    assert.ok(theme.includes(`The archive — page ${PAGE_NUMBER_HBS}`), `${type} on the theme: ${theme}`)
+  }
+})
+
+test('R-186 — the canvas prints the handed number, and NOTHING when it was handed none', () => {
+  const two = renderCanvas(doc(), pageSrc, { schema: pageSchema, content: pageWords, tokens: { page_number: '2' } })
+  assert.ok(two.includes('The archive — page 2'), two)
+  // page 1, and Post / Page / 404: the editor hands no number at all, and the token resolves to the EMPTY
+  // string rather than to "1" or to a literal — "nothing shows a page number the user did not type", and
+  // page 1 shows no number at all (R-186 reversing R-182's page-1 bullet)
+  const none = renderCanvas(doc(), pageSrc, { schema: pageSchema, content: pageWords, tokens: {} })
+  assert.ok(/The archive — page ?<\/h2>/.test(none), `page 1 must print nothing in the token's place: ${none}`)
+  assert.ok(!/page_number|page 1/.test(none), `page 1 printed a number or the token itself: ${none}`)
+  // the whole value being the token is an EMPTY field, which is the design's own data-empty question
+  const whole = renderCanvas(doc(), pageSrc, { schema: pageSchema, content: { h: '{page_number}' }, tokens: {} })
+  assert.ok(/<h2[^>]*><\/h2>/.test(whole), `a field that is only the token resolves empty on page 1: ${whole}`)
+})
+
+test('R-182 — the theme emits ONE guarded constant per occurrence, and the guard is the recorded one', () => {
+  const theme = renderTheme(doc(), `<h2 data-prop="h">t</h2><p data-prop="p">t</p>`, {
+    schema: { h: { type: 'richtext', label: 'H' }, p: { type: 'text', label: 'P' } },
+    content: { h: { text: 'page {page_number} of many' }, p: 'and again {page_number}' },
+  }).template
+  assert.equal(theme.split(PAGE_NUMBER_HBS).length - 1, 2, `one constant per occurrence: ${theme}`)
+  // it is the string the recorder proved on T1 and T3, and it is gscan-clean — never an `@root` path
+  assert.equal(PAGE_NUMBER_HBS, '{{#if pagination.prev}}{{pagination.page}}{{/if}}')
+  assert.ok(!/@root/.test(theme), `gscan refuses @root as an ERROR on both majors (MEASUREMENTS §49): ${theme}`)
+})
+
+test('a prop declaring NO tokens still gets the page number, and {members} in it stays literal', () => {
+  const { canvas, theme } = bothWays(pageSrc, {
+    schema: pageSchema,
+    content: { h: { text: '{members} on page {page_number}' } },
+    tokens: { members: '12,000', page_number: '3' },
+  })
+  assert.ok(canvas.includes('{members} on page 3'), `an undeclared {members} stays literal beside it: ${canvas}`)
+  assert.ok(theme.includes(`&#123;members&#125; on page ${PAGE_NUMBER_HBS}`), theme)
+})
+
+test('a field being EDITED re-serializes with the token as typed — no values handed, nothing substituted', () => {
+  // R-182's second sentence, and `lib/inline.ts`'s one mechanism for it: the editing sinks call
+  // serializeMarks with NO third argument, which is what makes clicking into the words show {page_number}
+  // again. A renderer always hands an object, so "an object without the key" stays "this page has no number".
+  const def: PropDef = { type: 'richtext', label: 'Heading' }
+  assert.equal(serializeMarks({ text: 'page {page_number}' }, def), 'page &#123;page_number&#125;')
+  assert.equal(serializeMarks({ text: 'page {page_number}' }, def, {}), 'page ')
+  assert.equal(serializeMarks({ text: 'page {page_number}' }, def, { page_number: '4' }), 'page 4')
 })
 
 // ── FR-H8 is UNCONDITIONAL. The stress harness guarded only when a design wrote `data-empty`, so

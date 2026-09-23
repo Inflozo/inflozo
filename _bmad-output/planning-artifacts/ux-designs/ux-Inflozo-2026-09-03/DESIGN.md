@@ -532,6 +532,18 @@ and it holds for placeholders nobody has thought of yet** (ruling **R-185**, own
 - **A placeholder with no description cannot ship.** Its one-liner lives beside its declaration in
   `vocabulary.ts`'s `PLACEHOLDERS`, and `validate.ts` refuses a declared placeholder that has none —
   the mechanism that keeps this rule true rather than remembered. Built at Story 5.16a.
+- **A placeholder may be offered in some places and not others, and the menu is where that shows.**
+  `{page_number}` is offered only while the canvas shows **page 2**, and never in a **site-wide**
+  section — a header or footer, which is one object on every page (rulings **R-186**, **R-187**). So
+  the `{}` button is **absent** from every field on page 1 but the one that has a token of its own,
+  and absent from every field of the header and footer on every page. **Absent, never greyed**
+  (UX-DR3). One exported function answers "which placeholders does this field offer, here", and every
+  field kind asks it — a rule with two implementations is a rule with one bug.
+- **Offering is not accepting.** A customer may type any placeholder into any text field by hand, and
+  it is kept and substituted by the same one rule everywhere. The menu restricts what the product
+  *proposes*, never what a field may hold; the alternative — a token that printed a number in one
+  section and shipped as literal `{page_number}` to a visitor in another — is worse than the hole it
+  would avoid.
 
 ---
 

@@ -11,7 +11,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { JSDOM } from 'jsdom'
 import { IMAGE_SIZES, PORTAL_ACTIONS, safeCssColor, safeUrl } from '@inflozo/library'
-import { allowedMarks, assertBindableAttr, bindExpr, linkAttributes, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
+import { PAGE_NUMBER_HBS, allowedMarks, assertBindableAttr, bindExpr, linkAttributes, readMarks, renderCanvas, renderTheme as renderThemeRaw } from './index.ts'
 import type { MarkNode } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { IconLookup } from '@inflozo/library'
@@ -275,6 +275,54 @@ test('AD-5 still holds — user braces ship as entities, never as a mustache', (
     title: 'Notes on {{@site.title}} and {{#if @member}}x{{/if}}',
   })
   assert.ok(!/\{\{[^&]/.test(out), `AD-5 regression: a live mustache reached the output: ${out}`)
+})
+
+// ── AD-5's ONE deliberate exception, proved narrow (Story 5.16a). `PAGE_NUMBER_HBS` is the only string this
+//    codebase splices into user text unescaped. Each vector asserts the attack is inert AND that the
+//    legitimate case still works, which is what stops a "fix" from closing the feature instead of the hole. ──
+const pageSchema = { h: { type: 'richtext', label: 'H' } } as unknown as RenderInput['schema']
+const pageTheme = (text: string) => renderTheme(doc(), '<p data-prop="h">x</p>', { schema: pageSchema, content: { h: text } }).template
+
+test('AD-5 exception — a typed {{page_number}} emits the constant BETWEEN entities, never a triple-stache', () => {
+  // The interleaving is the whole mechanism: substituting first would emit `&#123;&#123;…` and lose the
+  // expression; escaping first would emit `{{{…}}}`, a triple-stache that ships unescaped HTML on the site.
+  const out = pageTheme('Page {{page_number}}')
+  assert.ok(out.includes(`Page &#123;${PAGE_NUMBER_HBS}&#125;`), `the braces the user typed must stay entities: ${out}`)
+  assert.ok(!/\{\{\{/.test(out), `a triple-stache reached the output: ${out}`)
+  // and the legitimate case still works beside it
+  assert.ok(pageTheme('Page {page_number}').includes(`Page ${PAGE_NUMBER_HBS}`), pageTheme('Page {page_number}'))
+})
+
+test('AD-5 exception — a typed Handlebars path ships fully escaped; only OUR constant is ever raw', () => {
+  const out = pageTheme('{{@root.pagination.page}} and {{pagination.page}}')
+  assert.ok(!/\{\{[^&]/.test(out), `user-typed Handlebars reached the output live: ${out}`)
+  assert.ok(out.includes('&#123;&#123;@root.pagination.page&#125;&#125;'), out)
+  // the constant is a MODULE constant and cannot carry a character the user typed: prove the one raw
+  // string in the output is exactly it, and nothing else
+  const live = pageTheme('{{@root.pagination.page}} {page_number}').split('{{').length - 1
+  // derived from the constant, never written down: it is one string and its own mustache count
+  assert.equal(live, PAGE_NUMBER_HBS.split('{{').length - 1, 'the only live mustaches are the one constant\'s')
+})
+
+test('AD-5 exception — {page_number} in a link\'s attributes is NOT substituted, on either emitter', () => {
+  // `escapeUserText` is called in exactly two places and only the text one substitutes. A link record is
+  // never token-substituted, so a page number in an href or a title is the characters the user typed.
+  const src = '<a data-prop="h" data-prop-attr="href:link">x</a>'
+  const content = { h: 'words', link: { href: 'https://ok.example/{page_number}', newTab: true } }
+  const theme = renderTheme(doc(), src, { schema: pageSchema, content, tokens: { page_number: '2' } }).template
+  const canvas = renderCanvas(doc(), src, { schema: pageSchema, content, tokens: { page_number: '2' } })
+  for (const [name, out] of [['theme', theme], ['canvas', canvas]] as const) {
+    assert.ok(out.includes('https://ok.example/&#123;page_number&#125;') || out.includes('https://ok.example/{page_number}'),
+      `${name} must keep the href's braces as typed, never substituted: ${out}`)
+    assert.ok(!out.includes('https://ok.example/2'), `${name} substituted into an attribute sink: ${out}`)
+    assert.ok(!/href="[^"]*\{\{/.test(out), `${name} put a live mustache in an href: ${out}`)
+  }
+})
+
+test('AD-5 exception — a C0 character beside the token is still dropped, and the token still substitutes', () => {
+  const out = pageTheme('Page\u0000 {page_number}\u0007!')
+  assert.ok(out.includes(`Page ${PAGE_NUMBER_HBS}!`), `the C0 characters must be dropped, the token kept: ${JSON.stringify(out)}`)
+  assert.ok(!/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(out), `a control character survived: ${JSON.stringify(out)}`)
 })
 
 test('AD-4 still holds — a quote in a user value cannot break the attribute', () => {

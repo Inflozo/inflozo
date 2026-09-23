@@ -29,8 +29,17 @@ const HOSTILE = [
   'Hi {{#if @member}}member{{/if}}, welcome',
   `a user typing the marker: ${U0}0${U1}`,
   'quotes " and & and <b>bold</b>',
+  // Story 5.16a — AD-5's one exception, in the gate's own fixture: the emitted theme must carry the page
+  // number's guarded constant AND must still pass gscan 0/0 on both majors, which is exactly what rules out
+  // the `@root` spelling (GS120-NO-UNKNOWN-GLOBALS, MEASUREMENTS §49). The second line is the interleaving:
+  // the braces the user typed stay entities around the live expression, never a triple-stache.
+  'The archive — page {page_number}',
+  'A typed one: {{page_number}} and a stray {pagenumber}',
 ];
-const text = (i, base) => (i % 7 === 0 ? HOSTILE[i % HOSTILE.length] : base);
+// every seventh section gets a hostile string, and it CYCLES: `i % HOSTILE.length` over multiples of
+// seven collapsed to HOSTILE[0] the moment the list grew to seven entries, so nine of the ten hostile
+// sections carried the same string and Story 5.16a's two vectors reached the theme not at all.
+const text = (i, base) => (i % 7 === 0 ? HOSTILE[(i / 7) % HOSTILE.length] : base);
 
 function contentFor(kind, i) {
   const c = {

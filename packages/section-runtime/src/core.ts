@@ -74,7 +74,7 @@ import {
   t,
 } from '@inflozo/ghost-shim'
 import { escapeUserText, isRich, linkAttributes, serializeMarks } from './marks.ts'
-import type { PropValue } from './marks.ts'
+import type { PropValue, ThemeSink } from './marks.ts'
 import { resolveControls, withData } from './controls.ts'
 
 export { formatDate }
@@ -263,6 +263,9 @@ export class Tokens {
 export class UserText {
   map: PropValue[] = []
   paths: string[] = []
+  /** Story 5.16a — WHICH SINK each parked value is going into. Only the text one may carry the page
+   *  number's live expression; an attribute takes escaped characters and nothing else. */
+  sinks: ThemeSink[] = []
   schema: Readonly<Record<string, PropDef>>
   tokens: Readonly<Record<string, string>>
 
@@ -274,10 +277,11 @@ export class UserText {
     this.tokens = tokens
   }
 
-  put(path: string, value: PropValue): string {
+  put(path: string, value: PropValue, sink: ThemeSink = 'text'): string {
     const m = `${U0}${this.map.length}${U1}`
     this.map.push(value)
     this.paths.push(path)
+    this.sinks.push(sink)
     return m
   }
 
@@ -289,7 +293,12 @@ export class UserText {
     return text.replace(new RegExp(`${U0}(\\d+)${U1}`, 'g'), (whole, i: string) => {
       const n = Number(i)
       if (n >= this.map.length) return whole
-      return serializeMarks(this.map[n], this.schema[this.paths[n] as string], this.tokens)
+      // Story 5.16a — the SINK is the theme saying which of its two this is, and `'text'` is the only
+      // way `PAGE_NUMBER_HBS` is ever reached. `UserText` is constructed nowhere but the theme path
+      // (`renderTheme`, and `users !== null` at the binding sites), so the canvas cannot emit a mustache
+      // by construction; and an attribute never substitutes it, so a customer's `{page_number}` in an
+      // href or a title ships as the characters they typed rather than as an expression or a hole.
+      return serializeMarks(this.map[n], this.schema[this.paths[n] as string], this.tokens, this.sinks[n] ?? 'text')
     })
   }
 }
@@ -1175,7 +1184,7 @@ function applyProps(
         }
         for (const [k, val] of Object.entries(attrs)) {
           // the href is user text and is parked on the theme like any other; the rest are closed values
-          el.setAttribute(k, k === 'href' && users !== null ? users.put(path, val) : val)
+          el.setAttribute(k, k === 'href' && users !== null ? users.put(path, val, 'attribute') : val)
         }
         continue
       }
@@ -1195,7 +1204,7 @@ function applyProps(
       // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Here rather
       // than in the escaper, because a scheme is only meaningful where the context is known.
       const safe = URL_ATTRS.has(attr) ? safeUrl(v) : String(v)
-      el.setAttribute(attr, users !== null ? users.put(path, safe) : safe)
+      el.setAttribute(attr, users !== null ? users.put(path, safe, 'attribute') : safe)
     }
     // DW-93: the harness removed only its own attribute here and implemented no `hide`, so an
     // element whose only content is a user-picked image kept a dead `data-empty` and never hid.

@@ -330,6 +330,35 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       **R-182** (the canvas shows the page's own number; the name stays `{page_number}`, since Ghost has no `{{page}}`
       helper and the token never passes through `{{t}}`; nothing shows a number the user did not type), **R-183**
       (nothing where a page has no number) and **R-184** (its own story: **Story 5.16a**, straight after this one).
+    - ***Story 5.16a built it (2026-09-23).*** **The offer and the value are two rules, and that is the whole shape.**
+      `placeholdersOffered(def, { page, siteWide })` in `vocabulary.ts` is the ONE answer to "which placeholders does
+      this field offer here" — the prop's own, plus `page_number` only when the canvas shows page 2 and the section is
+      not site-wide (**R-186**, **R-187**) — and both field kinds, the tests and every later placeholder ask it, because
+      a rule with two implementations is a rule with one bug. The VALUE is unrestricted: `page_number` joins
+      `TOKEN_SET` and every prop's `declared` list, so a token typed into a header by hand still prints 2 on page 2 and
+      nothing elsewhere. **`{page_number}` is a SIBLING CONSTANT of `INLINE_TOKENS`, never a fourth member**, so
+      `validate.ts` still refuses a design that declares it (naming R-182), and a second refusal,
+      `no-placeholder-description`, is what makes R-185's "all future placeholders" a gate rather than a habit: every
+      declared token needs a line in `PLACEHOLDERS`, which is what the menu prints. **THE THEME'S CONSTANT COULD NOT
+      SPELL `@root`** — the recorder (`tools/probe/record-page-number.py`, MEASUREMENTS §49) found gscan refuses every
+      `@root.…` path as GS120-NO-UNKNOWN-GLOBALS, an ERROR on BOTH majors, so `PAGE_NUMBER_HBS` is
+      `{{#if pagination.prev}}{{pagination.page}}{{/if}}`; the guard printed nothing at `/`, 2 and 3 on pages 2 and 3
+      and nothing on a post, a page and the 404, on T1 and T3 alike, and the 70-section theme gates 0/0 with the
+      expression in it. The one place the spellings differ is inside `{{#foreach}}`, measured and priced at zero: no
+      design puts a `data-prop` inside a `data-repeat` (`docs/section-authoring.md` says so). **ESCAPING AND
+      SUBSTITUTION ARE NOW INTERLEAVED** in `serializeMarks` — each literal piece escaped on its own, the replacement
+      inserted between them — so a typed `{{page_number}}` emits the constant between `&#123;` and `&#125;` and never a
+      triple-stache (AD-5's one stated exception, bounded in the SPINE). **`UserText` learned its two sinks**, and that
+      was a real hole the AD-36 vector caught: parking an attribute value through the same door put the live expression
+      into an `href`, so `put(path, value, 'attribute')` leaves the token exactly as typed there. The canvas side is one
+      more field of a call `paint()` already made — `site.pagination?.page`, handed to every section beside `url`, ONLY
+      on page 2; page 1 and Post/Page/404 hand none and the token resolves to the EMPTY string, while the two EDITING
+      sinks (`lib/inline.ts`, the panel's redraw) pass no token values at all and so show it as typed, which is what
+      makes clicking into the words work. **P0-1's chip row is gone** (R-185): `TokenRow` deleted with both call sites,
+      the braces sentence withdrawn from the product, and `components/controls/placeholder-menu.tsx` is the one `{}`
+      trigger and menu, built from `bar-menu.tsx`'s new `PlaceholderRow` (a `<li>` with two buttons, because
+      `BarMenuRow` IS a button) and placed by `openMenu`. `TextInput` gained the `aside` slot every control row already
+      had. Nothing stored changed, so there was **no Schema phase**.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

@@ -1,4 +1,4 @@
-import type { ChangeEventHandler, KeyboardEventHandler } from 'react'
+import type { ChangeEventHandler, KeyboardEventHandler, ReactNode } from 'react'
 import { fieldTone, greyedProps, labelTone, reason, ring, type Greyed } from './greyed'
 import { Search } from './icons'
 
@@ -36,8 +36,12 @@ export function TextInput({
   type = 'text',
   autoComplete,
   required,
+  aside,
   onChange,
 }: Base & {
+  /** Beside the label, in the slot every control row already gives one (`Stepper`, `Toggle`, `Select`):
+   *  R-185's `{}` button is the first thing to sit here on a content field. */
+  aside?: ReactNode
   /** Present when the field is inside a form that submits it. */
   name?: string
   defaultValue?: string
@@ -77,9 +81,10 @@ export function TextInput({
   const m = metrics[size]
   return (
     <div className="flex flex-col gap-[5px]">
-      <label htmlFor={id} className={`${m.label} font-medium ${labelTone(greyed)}`}>
-        {label}
-      </label>
+      <span className={`flex items-center gap-[6px] ${m.label} font-medium ${labelTone(greyed)}`}>
+        <label htmlFor={id}>{label}</label>
+        {aside}
+      </span>
       <input
         id={id}
         name={name}

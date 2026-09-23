@@ -16,7 +16,8 @@
 import {
   BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, FOREIGN_ATTR_RE, GET_FORBIDDEN_TARGETS, GET_SOURCES,
-  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGINATED_TARGETS, PROP_TYPES, RETIRED_DIRECTIVES,
+  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGE_NUMBER, PAGINATED_TARGETS, PLACEHOLDERS,
+  PROP_TYPES, RETIRED_DIRECTIVES,
   SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
   PILL_CHARS, pillRefusal, safeUrl, splitFirst, tCallRefusals, valueWords,
 } from './vocabulary.ts'
@@ -673,8 +674,17 @@ export function validateCategoryContent(content: CategoryContent, icons?: IconLo
   const props = content.props ?? {}
   for (const [path, prop] of Object.entries(props)) {
     for (const t of prop.tokens ?? []) {
-      if (!(INLINE_TOKENS as readonly string[]).includes(t)) {
+      if (t === PAGE_NUMBER) {
+        // R-182 (Story 5.16a): the one token that is not per-prop. Declaring it is not wrong so much as
+        // redundant, and a redundant declaration is how a second, drifting list starts.
+        push(out, 'bad-inline-token', `prop "${path}" declares the inline token {${PAGE_NUMBER}}. It is never declared: EVERY text and richtext prop accepts it already, because it is the one token that is not per-prop (R-182 amending R-27). Remove it from "tokens" — the field offers it wherever R-186 allows, with no declaration at all.`)
+      } else if (!(INLINE_TOKENS as readonly string[]).includes(t)) {
         push(out, 'bad-inline-token', `prop "${path}" declares the inline token {${t}}, which is not in the closed set (${INLINE_TOKENS.join(', ')}). A prop declares exactly which tokens it accepts and anything else in braces stays LITERAL TEXT — an allow-list by construction, never a general substitution pass (R-27).`)
+      } else if (PLACEHOLDERS[t] === undefined) {
+        // R-185 (the owner, 2026-09-23): the `{}` menu shows each placeholder's one line, so a placeholder
+        // with no line is a row that explains nothing. This refusal is what keeps "for all future
+        // placeholders" true — a later story cannot add one the menu cannot explain.
+        push(out, 'no-placeholder-description', `prop "${path}" declares the inline token {${t}}, which has no one-line description in PLACEHOLDERS (vocabulary.ts). Every placeholder the {} menu lists carries a line saying what it does, so a token without one cannot ship (R-185).`)
       }
     }
     if (prop.tokens !== undefined && prop.type !== 'text' && prop.type !== 'richtext') {
