@@ -1,7 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
-import { PLACEHOLDERS, placeholdersOffered } from '@inflozo/library'
+import { PLACEHOLDERS, PAGE_NUMBER, placeholdersOffered } from '@inflozo/library'
+import { replaceRange } from '@inflozo/section-runtime'
 
 /* R-185's SURFACE, AND THE ONE BEHAVIOUR UNDER IT THAT NOTHING ELSE CATCHES (Story 5.16a).
 
@@ -99,4 +100,27 @@ test('R-185 — every placeholder the menu can list carries its one line', () =>
       assert.ok(typeof line === 'string' && line.trim() !== '', `{${token}} reached a row with no description`)
     }
   }
+})
+
+test('R-27 — Insert is WHOLE OR NOTHING: all three arms refuse a token that will not fit, and say why', () => {
+  /* The matrix row nothing else covers. `replaceRange` CUTS an insert to fit — that is its job for typing —
+     so whole-or-nothing lives at the three call sites, each of which must refuse rather than commit. A cut
+     `{page` would print literally on the customer's site, which is the failure R-27 named. */
+  const token = `{${PAGE_NUMBER}}`
+  // the premise the call sites rest on: too little room comes back REFUSED, not silently shortened
+  const tight = replaceRange('The archive', 11, 11, token, { max: 16 })
+  assert.ok(tight.refused > 0, 'a field with less room than the token must report a refusal')
+  assert.notEqual(tight.value, 'The archive' + token, 'replaceRange cuts — which is exactly why the call site must refuse')
+  const roomy = replaceRange('The archive', 11, 11, token, { max: 40 })
+  assert.equal(roomy.refused, 0)
+  assert.equal(roomy.value, 'The archive' + token, 'and the legitimate case still lands whole')
+
+  // …and each arm returns on that refusal instead of committing, with the limit sentence to say so
+  const rich = read('components/controls/rich-field.tsx')
+  assert.match(rich, /if \(r\.refused > 0\) return setRefused\(true\)/, 'the richtext arm refuses whole and shows the limit sentence')
+  assert.match(rich, /<LimitCaption[^>]*refused=\{refused\}/, 'and the sentence is the field\'s own caption, not a new one')
+  const inline = read('lib/inline.ts')
+  assert.match(inline, /if \(r\.refused > 0\) return refuse\(\)/, 'the live-editing arm refuses whole')
+  const side = read('components/controls/sidebar.tsx')
+  assert.match(side, /if \(max !== undefined && next\.length > max\) return setRefusedToken\(id\)/, 'the one-line text arm refuses whole')
 })

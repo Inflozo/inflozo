@@ -368,6 +368,25 @@ test('a field being EDITED re-serializes with the token as typed — no values h
   assert.equal(serializeMarks({ text: 'page {page_number}' }, def, { page_number: '4' }), 'page 4')
 })
 
+test('a NEAR MISS is not the token: only {page_number} exactly, on both emitters', () => {
+  // The regex is `/\{([A-Za-z_][A-Za-z0-9_]*)\}/g` and the name must match exactly, so the three shapes a
+  // customer actually types by mistake stay the literal text they are — escaped on the theme, as today.
+  // Nothing else in the suite fails if the token name becomes a loose match, which is the shape AD-36 warns
+  // about: an allow-list that stops being exact stops being an allow-list.
+  for (const near of ['{pagenumber}', '{Page_Number}', '{page_number }', '{page-number}', '{ page_number}']) {
+    const { canvas, theme } = bothWays(pageSrc, {
+      schema: pageSchema,
+      content: { h: { text: `say ${near} here` } },
+      tokens: { page_number: '2' },
+    })
+    assert.ok(canvas.includes(`say ${near} here`), `${near} must stay literal on the canvas: ${canvas}`)
+    assert.ok(!canvas.includes('say 2 here'), `${near} substituted on the canvas: ${canvas}`)
+    const escaped = near.replace(/\{/g, '&#123;').replace(/\}/g, '&#125;')
+    assert.ok(theme.includes(`say ${escaped} here`), `${near} must ship inert on the theme: ${theme}`)
+    assert.ok(!theme.includes(PAGE_NUMBER_HBS), `${near} reached the constant: ${theme}`)
+  }
+})
+
 // ── FR-H8 is UNCONDITIONAL. The stress harness guarded only when a design wrote `data-empty`, so
 //    the unguarded state — which FR-H8 says is unreachable — was reachable in every design. ──
 test("FR-H8 — the guard is always present, and defaults by kind", () => {

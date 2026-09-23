@@ -521,30 +521,66 @@ sure it cannot be half-built.
 
 ## Verification
 
-**Commands:**
+**Every command below was RUN at Dev on 2026-09-23 and what it returned is recorded beside it (R-82). The real
+services this story hit are the two Ghost test servers and the deployed app; every key is named by its variable and
+no value was printed, echoed or staged.** Resend and Dodo were not touched — the story sends no email and bills
+nothing.
 
-- `python3 tools/probe/record-page-number.py` -- expected, on T1 and T3 alike, for **the guard in BOTH spellings**
-  (`@root`-qualified and plain) in `default.hbs`: `[]` at `/`, `[2]` at `/page/2/`,
-  `[3]` at `/page/3/`, and `[]` on a post, a public page and the 404 — with the raw `pagination.page` and
-  `pagination.prev` recorded beside it at every one of those addresses; both servers' previous themes restored and
-  re-read; `MEASUREMENTS.md` §49 written. **Run before any emission task, and stop if the guard prints anything at
-  `/`.** (R-82, standing rule 1, R-186.)
-- `pnpm check` -- expected: green, including `agreement.test.ts`'s page-number cases, `ad36.test.ts`'s brace vectors,
-  `check-snapshots.mjs` byte-unchanged and `matrix/cases.test.mjs`.
-- `cd tools/stress && npm install && node build.js && node gate.js theme` -- expected: 0 errors / 0 warnings on both
-  majors, with the emitted expression in the 70-section theme. Node 24; a root `pnpm install` first.
-- `pnpm matrix` -- expected: green, no re-baseline. The token appears in no design's authored default, so no case moves.
-- `bash supabase/tests/run-rls-gate.sh` -- expected: green (unchanged; no migration in this story).
-- `node tools/probe/run-verify-editor.cjs` -- expected: every journey passes, including the new page-number one, against
-  the deployed `app.inflozo.com`. Record both runs if the first dies on a timeout (DW-222).
-  **Run at Dev (2026-09-23), against `app.inflozo.com` at `df41e7d5`: 0 FAIL, 571 PASS.** Step 93's ten checks all
-  held — no `{}` button anywhere on page 1, the Newsletter listing `{members}` alone there and BOTH tokens on page 2,
-  no button on any field of the site-wide header even on page 2, Insert putting the code in and the canvas printing
-  `2`, the token showing again on click-in and the number returning, and page 1's words untouched — and step 26's
-  rewritten check held with nothing under the field. **Two runs, as DW-222 asks:** the first died mid-run at step 15
-  with `EncodingError: The source image cannot be decoded` from the screencast decoder — 172 PASS, 0 FAIL to that
-  point, in the sticky-header filming this story does not touch — and the re-run above passed whole.
-- `python3 tools/doc-audit.py --check` -- expected: green, twice.
+- `python3 tools/probe/record-page-number.py` — **T3 `ghost5.inflozo.com` (5.130.6)** via `GHOST5_URL`,
+  `GHOST5_STAFF_ACCESS_TOKEN`, `GHOST5_CONTENT_API_KEY` and **T1 `ghost6.inflozo.com` (6.58.0)** via `GHOST6_URL`,
+  `GHOST6_STAFF_ACCESS_TOKEN`, `GHOST6_CONTENT_API_KEY`. **Returned:** probe theme upload HTTP **200** and activated
+  and SERVED on both; **the guard printed nothing at `/`, `2` at `/page/2/`, `3` at `/page/3/`, and nothing on a post,
+  a public page and the 404 — identically on both majors**, with the raw `pagination.page` and `pagination.prev`
+  recorded beside it at every address; each server's previous theme restored in a `finally` and **re-read to prove
+  it**. Written up as **`MEASUREMENTS.md` §49**. R-186 and R-183 hold, executed rather than asserted (standing rule 1).
+- **The recorder's finding, and the one place the build departs from the spec's Design Note.** `gscan` refuses every
+  `@root.…` path as an **ERROR** on both majors (`GS120-NO-UNKNOWN-GLOBALS`; its allow-list is `@site`, `@member`,
+  `@setting`, `@config`, `@labs`, `@custom`, `@page` plus `{{#foreach}}`'s data variables, read in
+  `lib/ast-linter/rules/internal/scope.js` and byte-identical in gscan **4.49.7** and **6.4.2**), and its block-helper
+  rule checks a `{{#if}}`'s params, so the guard is refused as well as the value. **Ghost itself served the `@root`
+  theme on both boxes** — the refusal is gscan's, and gscan is the product's own gate (AD-34). So the emitted constant
+  is **`{{#if pagination.prev}}{{pagination.page}}{{/if}}`**: the same guard, one qualifier shorter, and the only
+  spelling that is both correct in `default.hbs` and gscan-clean. §49 (a) and (d) carry the measurement and its price.
+- `pnpm check` (Node 24) — **exit 0.** `packages/library` 179 pass / 0 fail · `theme-compiler` 1 / 0 · `ghost-shim`
+  34 / 0 · `section-runtime` **234** / 0 · `apps/web` **486** / 0, including `agreement.test.ts`'s page-number cases,
+  `ad36.test.ts`'s brace vectors and `placeholder-menu.test.ts`. `check-snapshots: PASS — 5 designs at 10 targets
+  match 6 committed snapshot files`, so **the story's control held byte for byte**, and `matrix/cases.test.mjs` ran
+  inside it.
+- `cd tools/stress && node build.js && node gate.js theme` — **Ghost 5.x via gscan 4.49.7 → ERRORS 0 / WARNINGS 0** ·
+  **Ghost 6.x via gscan 6.4.2 → ERRORS 0 / WARNINGS 0**, with the emitted constant present **three times** in the
+  70-section theme: once plain, and twice as AD-36's vector (`&#123;` + the constant + `&#125;`) beside a near miss
+  (`&#123;pagenumber&#125;`) that stayed literal.
+  **Its control (standing rule 2):** the same theme with those three occurrences rewritten to the `@root` spelling and
+  nothing else changed → **ERRORS 1, `GS120-NO-UNKNOWN-GLOBALS`, on BOTH majors.** The 0/0 above is therefore a result
+  about the spelling, not about gscan being lenient.
+- `pnpm matrix` (NFR-6(a), its own workflow, R-116) — GitHub Actions **Render matrix**, job `matrix`: **success** on
+  every commit of this story, HEAD `7746ae97` included. No re-baseline; the token appears in no design's authored
+  default, so no case moved.
+- `bash supabase/tests/run-rls-gate.sh` — CI job `rls`: **success** at HEAD. Unchanged, as expected: **no migration in
+  this story and therefore no Schema phase** (R-99), because nothing is stored that was not stored before.
+- `node tools/probe/run-verify-editor.cjs` — against the **deployed `app.inflozo.com`** (Vercel project
+  `VERCEL_PROJECT`, Supabase via `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY`) at `df41e7d5`: **0 FAIL, 571 PASS.**
+  Step 93's ten checks all held — no `{}` button anywhere on page 1, the Newsletter listing `{members}` alone there
+  and BOTH tokens on page 2, no button on any field of the site-wide header even on page 2, Insert putting the code in
+  and the canvas printing `2`, the token showing again on click-in and the number returning, and page 1's words
+  untouched — and step 26's rewritten check held with nothing under the field. **Two runs, as DW-222 asks:** the first
+  died mid-run at step 15 with `EncodingError: The source image cannot be decoded` from the screencast decoder — 172
+  PASS, 0 FAIL to that point, in the sticky-header filming this story does not touch, recorded as **DW-236** — and the
+  re-run above passed whole.
+- `python3 tools/doc-audit.py --check` — **`documentation gate: PASS (0 warning(s))`, twice.**
+- **CI and the deploy, read with `GITHUB_TOKEN`.** At HEAD `7746ae97`: CI jobs `check` **success**, `rls` **success**,
+  `deploy` **success**; Render matrix job `matrix` **success**. `deploy` needs `[check, rls]` (DW-7), so the code the
+  owner tests is live on the production domains.
+
+**The I/O matrix, row by row, and what covers each.** Every row has a check that ran and passed: the canvas and theme
+rows and the near-miss row in `agreement.test.ts`; the typed-`{{page_number}}`, typed-Handlebars, attribute-sink and
+C0 rows in `ad36.test.ts`; the real-Ghost row in `MEASUREMENTS.md` §49; the offering rows (page 1, page 2, site-wide,
+a field with its own token, a non-text field) in `validate.test.ts`'s `placeholdersOffered` cases and again in the
+deployed walk's step 93; the two authoring refusals in `validate.test.ts`; **Insert at the limit** in
+`placeholder-menu.test.ts`'s whole-or-nothing case, which proves `replaceRange` reports the refusal and asserts all
+three call sites return on it rather than committing a cut `{page`; **Copy** in the deployed walk and in
+`placeholder-menu.test.ts`'s `role="status"` assertion; and the control row — `/pilots`, the picker's cards, the ring's
+tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` and the green matrix.
 
 **Manual checks (if no CLI):**
 
@@ -678,6 +714,11 @@ not give options to the users to add {page_number} on 1st page."* Recorded as **
 - The theme's one constant becomes a guarded one, `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`,
   which is read in Ghost's source on both majors and executed locally — and recorded on T1 and T3 as this story's first
   task, before anything is emitted.
+  - **Corrected at Dev by that recording, and nothing the owner ruled changes.** The recorder proved both spellings
+    behave identically on T1 and T3 — nothing at `/`, the page's own number from `/page/2/` on, nothing on a post, a
+    standalone page or the 404 — but `gscan` refuses every `@root.…` path as an ERROR on both majors, so a theme
+    carrying it could not pass the product's own gate. **What ships is `{{#if pagination.prev}}{{pagination.page}}{{/if}}`.**
+    The customer sees exactly what this bullet promised; only the spelling is one qualifier shorter (MEASUREMENTS §49).
 
 ### Question 3 — Should the page number be offerable in the header and footer at all?
 
@@ -714,3 +755,39 @@ sections."* Recorded as **R-187**.
 - It restricts the offer, not the substitution: typed into a header by hand it still prints 2 on page 2 and nothing
   elsewhere, because one substitution rule everywhere beats a token that ships as literal `{page_number}` to a visitor
   in one section while printing a number in another.
+
+### Question 4 — A repeating list is the one place the page number could show in your editor and not on your site. Guard it, or leave the note?
+
+**In plain English.** Everything in this story now agrees: what you see on the canvas is what a visitor sees. There
+is **one** shape where it would not, and no section you have today is that shape.
+
+Some sections repeat a row for each of your posts — a list where Ghost fills in every card. Inside a repeating row
+like that, Ghost gives the row's own information (this post's title, this post's date) and **not** the page's
+information. So a page number typed into a text box **inside a repeating row** would show the number in your editor
+and print **nothing** on the live site. Everywhere else — headings, heroes, small lines, buttons — the two agree
+exactly, which is what your test on the deployed site proved today.
+
+**This cannot happen right now.** I checked every section that exists: five designs, two repeating lists, and **no
+editable text box inside either of them**. It becomes possible only when we build the big section library later, if
+a new section puts an editable text box inside a repeating row.
+
+**An example.** Later we build a "Latest posts" section where each card has an editable "Read more" line you can
+reword. Someone types `Read more — page {page_number}` into it. In the editor every card reads "Read more — page 2".
+On the live site every card reads "Read more — page", with a gap. Nothing warns anybody.
+
+1. **Leave the written note, and add a check that shouts the day it stops being true (RECOMMENDED).**
+   - Nothing changes now, and nothing is forbidden.
+   - The moment somebody builds a section with an editable text box inside a repeating row, our automatic checks
+     fail and put the note in front of them, so they decide on purpose instead of finding out from a customer.
+   - Cost: about fifteen lines, once.
+2. **Refuse it outright** — a text box inside a repeating row is simply not allowed to take a page number.
+   - It can never go wrong, ever.
+   - It also blocks the perfectly good case where somebody wants editable words in a repeating row and never
+     intended a page number. We would be forbidding a whole shape to prevent one mistake inside it.
+3. **Leave the written note alone, as it is today.**
+   - Nothing more to build; the note is in the authoring guide where somebody building a section would read it.
+   - It relies on that person reading it. Every other rule in this project that relied on being read has been
+     written down a second time as a check, because being missed is the thing that keeps happening.
+
+**Ruled:** _(awaiting the owner)_
+
