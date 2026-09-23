@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { PLACEHOLDERS } from '@inflozo/library'
 import { BAR_POPOVER, BarMenuCard, PLACEHOLDER_ACTION, PlaceholderRow } from '@/components/editor/bar-menu'
 import { ring } from '@/components/kit/greyed'
-import { Braces } from '@/components/kit/icons'
+import { Braces, PlaceholderCopied, PlaceholderCopy, PlaceholderInsert } from '@/components/kit/icons'
 import { arrowKeys, openMenu } from '@/lib/menu'
 
 /* R-185 (the owner, 2026-09-23) — THE ONE WAY EVERY DYNAMIC PLACEHOLDER IS REACHED, existing and future.
@@ -30,6 +30,12 @@ import { arrowKeys, openMenu } from '@/lib/menu'
    THE CARD HOLDS THE ROWS AND NOTHING ELSE — no footer, no explanatory sentence (R-185 as amended the same day:
    the menu card holds its rows and nothing else).
 
+   WHAT HIS TEST OF IT CHANGED (R-188, 2026-09-23). Copy and Insert are Tabler GLYPHS with no words, each naming
+   itself on hover and to a screen reader; Copy answers with a tick for two seconds and then is Copy again;
+   INSERT CLOSES THE MENU, reversing R-185's "a thing you may do more than once"; the description is never
+   cropped; and every row answers the pointer. The last two live in `bar-menu.tsx`'s `PlaceholderRow`, so the
+   menus still cannot drift apart.
+
    THE BUTTON IS ABSENT WHERE THERE IS NOTHING TO OFFER, never greyed (UX-DR3): on page 1 that is every field but
    the Newsletter's `proofLine`, in the header and footer it is every field on every page (R-186, R-187), and on a
    field that is not typed into it is always. `placeholdersOffered` in the library is the ONE answer to "which,
@@ -48,7 +54,8 @@ export function PlaceholderMenu({
   /** `placeholdersOffered(def, { page, siteWide })`, in `PLACEHOLDERS`' order */
   offered: readonly string[]
   /** the field's own whole-or-nothing insert — `session.insert` while it is live, `replaceRange` at the end
-   *  when it is not. Insert LEAVES THE MENU OPEN: it is a thing you may do more than once. */
+   *  when it is not. Insert CLOSES THE MENU (R-188, finding 3, reversing R-185's first reading): you press it to
+   *  get back to the words, and a menu still covering them is in the way. */
   onInsert: (code: string) => void
 }) {
   const menu = useRef<HTMLDivElement>(null)
@@ -70,7 +77,8 @@ export function PlaceholderMenu({
         () => {
           setCopied(code)
           if (timer.current !== null) clearTimeout(timer.current)
-          timer.current = setTimeout(() => setCopied(null), 1600)
+          // two seconds, the owner's own number (R-188, finding 2)
+          timer.current = setTimeout(() => setCopied(null), 2000)
         },
         () => {},
       )
@@ -113,11 +121,31 @@ export function PlaceholderMenu({
                 description={PLACEHOLDERS[token] ?? ''}
                 actions={
                   <>
-                    <button type="button" data-copy={token} onClick={() => copy(code)} className={PLACEHOLDER_ACTION}>
-                      {copied === code ? 'Copied' : 'Copy'}
+                    {/* no words, so the name is the tooltip AND the accessible name — one name for one thing
+                        (R-170), and the tick IS the answer rather than a second word beside it (R-188) */}
+                    <button
+                      type="button"
+                      data-copy={token}
+                      aria-label={copied === code ? `${code} copied` : `Copy ${code}`}
+                      title={copied === code ? 'Copied' : 'Copy'}
+                      onClick={() => copy(code)}
+                      className={`${PLACEHOLDER_ACTION} ${copied === code ? 'border-coral-text text-coral-deep' : ''}`}
+                    >
+                      {copied === code ? <PlaceholderCopied size={13} /> : <PlaceholderCopy size={13} />}
                     </button>
-                    <button type="button" data-insert={token} onClick={() => onInsert(code)} className={PLACEHOLDER_ACTION}>
-                      Insert
+                    <button
+                      type="button"
+                      data-insert={token}
+                      aria-label={`Insert ${code} into ${label}`}
+                      title="Insert"
+                      onClick={() => {
+                        onInsert(code)
+                        // R-188, finding 3: the list closes, so the words you just changed are visible again
+                        menu.current?.hidePopover()
+                      }}
+                      className={PLACEHOLDER_ACTION}
+                    >
+                      <PlaceholderInsert size={13} />
                     </button>
                   </>
                 }

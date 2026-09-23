@@ -508,6 +508,8 @@ The `@root`-qualified form would survive the block, and gscan refuses it as an *
 majors — `GS120-NO-UNKNOWN-GLOBALS`, measured in `MEASUREMENTS.md` §49 — so the constant cannot spell
 it. **If you need editable text inside a Ghost repeat, do not put a page number in it.**
 
+**And this note has a check behind it** (ruling **R-188**, the owner, 2026-09-23): `tools/stress/test-vocabulary.mjs` sweeps every design on disk and fails the day an editable prop appears inside a `data-repeat`, naming the design and pointing back here. It forbids nothing — it makes sure the decision is made on purpose rather than discovered by a customer. If the shape you need is legitimate and never wanted a page number, change the check with the design and say so here.
+
 **Two brace grammars, deliberately.** R-27's tokens are for the **customer's** text in a content
 prop, closed to three names. A `{…}` in a **design-authored** directive value — `data-text`,
 `data-bind-attr` — is a **binding path** under AD-36's path grammar, because the author is naming a

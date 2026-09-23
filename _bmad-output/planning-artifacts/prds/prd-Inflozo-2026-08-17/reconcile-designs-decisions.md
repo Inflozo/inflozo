@@ -4052,6 +4052,38 @@ sections."*
   · ✅ `DESIGN.md` § Components · ✅ `EXPERIENCE.md` · ✅ `epic-5-context.md` · ✅ built: `placeholdersOffered` in
   `vocabulary.ts`, the one function every caller asks — Story 5.16a's Dev, 2026-09-23.
 
+**R-188 — what the owner's own test of R-185's menu changed, and the note that now has a check behind it.** Story
+5.16a's owner test and its Question 4 (owner, 2026-09-23). Five findings on the surface, and one ruling on the
+`{{#foreach}}` limitation: *"Leave the written note, and add a check that shouts the day it stops being true."*
+
+- **The five findings, in his words.** (1) *"Copy and Instert should be minimal icons from tabler icons. Show
+  title/label on hover."* (2) *"Once copied, show a tick icon instead of copy and show back the copy icons after 2
+  seconds."* (3) *"Once inserted, close the list."* (4) *"Do not crop the description. Right now it is cropped 'The
+  number of the page a vi...'."* (5) *"For multiple placeholders in the list, show hover effects on each item."*
+- **What each binds.** The two row actions are Tabler `copy` and `text-plus`, glyphs with **no words**, each naming
+  itself through `title` (the hover label he asked for) and `aria-label`; Copy answers with Tabler `check` for **two
+  seconds** and is Copy again; **Insert closes the menu**, reversing R-185's first reading that it is "a thing you may
+  do more than once"; the description **wraps to as many lines as it needs** and is never truncated; and every row
+  carries `BarMenuRow`'s own hover. Findings 4 and 5 land in `PlaceholderRow` itself, so the placeholder menu and the
+  Template switcher still cannot drift apart (R-171, R-74).
+- **Tabler enters the Kit only where he names it**, and he named three. Not a fifth stated exception to R-92 but R-185
+  reaching the rows it opened: `copy`, `text-plus` and `check`, each `tabler.json`'s own `outline`, emitted from it
+  and verified path for path. They are named for the menu — `PlaceholderCopy`, `PlaceholderInsert`,
+  `PlaceholderCopied` — because `icons.tsx` already carries an export-drawn `Copy` and `Check` that other surfaces
+  read, and one name means one thing (R-170). The precedent is `SyncCheck`.
+- **Question 4, ruled option 1.** `{page_number}` emits one constant that Handlebars resolves against the CURRENT
+  context, so inside a `{{#foreach}}` it would read the row rather than the page and print empty on the site while the
+  canvas printed the number — the two emitters disagreeing, which is the one thing §7.3 exists to prevent. The
+  `@root` spelling survives the block and gscan refuses it as an ERROR on both majors (MEASUREMENTS §49), so the
+  constant cannot reach for it. **No design does this today** — swept, not asserted — and the remedy he chose forbids
+  nothing: the note stays in `docs/section-authoring.md`, and a sweep in `tools/stress/test-vocabulary.mjs` fails the
+  day an editable prop appears inside a `data-repeat`, naming the design and handing the reader the note. He declined
+  the outright refusal because it would also block editable words in a repeating row that never wanted a page number.
+- Targets: ✅ this entry · ✅ Story 5.16a's spec, `## Owner's test findings` and Question 4 — Story 5.16a, 2026-09-23.
+  ✅ `DESIGN.md` § Components · ✅ built: `icons.tsx`'s three glyphs, `bar-menu.tsx`'s `PlaceholderRow` and
+  `PLACEHOLDER_ACTION`, `placeholder-menu.tsx`, the sweep in `tools/stress/test-vocabulary.mjs` and step 93 of the
+  deployed walk — Story 5.16a's Fix, 2026-09-23.
+
 
 ## B · Approved decisions superseded by this session
 

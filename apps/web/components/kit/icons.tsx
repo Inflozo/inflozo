@@ -39,6 +39,14 @@
  * P0-1 draws a chip row instead, which R-185 withdraws, so again there is no export glyph to read. Fourth stated
  * exception, same shape: `tabler.json`'s own `braces`, emitted from it and verified path for path.
  *
+ * AND THREE MORE THE SAME DAY, when the owner tested that menu (R-188, finding 1 and 2): *"Copy and Instert should
+ * be minimal icons from tabler icons"* and *"once copied, show a tick icon instead of copy"*. Not a fifth
+ * exception — the same ruling reaching the rows it opened, and the same shape again: `copy`, `text-plus` and
+ * `check`, each `tabler.json`'s own `outline`, emitted from it and verified path for path. They are NAMED for the
+ * menu rather than for the glyph because this file already carries an export-drawn `Copy` and `Check` that other
+ * surfaces read, and one name means one thing (R-170) — the precedent is `SyncCheck`, which is this same Tabler
+ * `check` at a heavier stroke.
+ *
  * Tabler Icons — MIT Licence, Copyright (c) 2020-2024 Paweł Kuna. The full text ships with every
  * theme that draws one of these (`TABLER_LICENSE` in `@inflozo/library/icons`, R-26).
  *
@@ -118,6 +126,33 @@ export const Braces = (p: IconProps) => (
   <Icon {...p}>
     <path d="M7 4a2 2 0 0 0 -2 2v3a2 3 0 0 1 -2 3a2 3 0 0 1 2 3v3a2 2 0 0 0 2 2" />
     <path d="M17 4a2 2 0 0 1 2 2v3a2 3 0 0 0 2 3a2 3 0 0 0 -2 3v3a2 2 0 0 1 -2 2" />
+  </Icon>
+)
+/* ── R-185's two row actions and the tick that answers one of them (R-188, the owner's test of Story 5.16a) ──
+   Tabler's own `outline`, emitted from `packages/library/icons/tabler.json`. The buttons carry no words, so each
+   says its name on hover and to a screen reader — the glyph is the whole control. */
+/** Tabler `copy` — put this placeholder's code on the clipboard. */
+export const PlaceholderCopy = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M7 9.667a2.667 2.667 0 0 1 2.667 -2.667h8.666a2.667 2.667 0 0 1 2.667 2.667v8.666a2.667 2.667 0 0 1 -2.667 2.667h-8.666a2.667 2.667 0 0 1 -2.667 -2.667l0 -8.666" />
+    <path d="M4.012 16.737a2.005 2.005 0 0 1 -1.012 -1.737v-10c0 -1.1 .9 -2 2 -2h10c.75 0 1.158 .385 1.5 1" />
+  </Icon>
+)
+/** Tabler `check` — Copy's answer for two seconds, then it is Copy again (R-188, finding 2). */
+export const PlaceholderCopied = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M5 12l5 5l10 -10" />
+  </Icon>
+)
+/** Tabler `text-plus` — put this placeholder's code into the field, where the cursor is. */
+export const PlaceholderInsert = (p: IconProps) => (
+  <Icon {...p}>
+    <path d="M19 10h-14" />
+    <path d="M5 6h14" />
+    <path d="M14 14h-9" />
+    <path d="M5 18h6" />
+    <path d="M18 15v6" />
+    <path d="M15 18h6" />
   </Icon>
 )
 /* ── R-142's five, the persistence indicator's states (Story 5.8) ────────────────────────────────────────

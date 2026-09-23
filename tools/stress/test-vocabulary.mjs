@@ -16,7 +16,7 @@
 //     node test-vocabulary.mjs
 
 import { createRequire } from 'node:module'
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
@@ -216,6 +216,58 @@ check('the token contract is reachable in both modes and declares no empty value
     if (values.length !== TOKEN_NAMES.length) throw new Error(`${mode} declares ${values.length} of ${TOKEN_NAMES.length}`)
     for (const [k, v] of values) if (String(v).trim() === '') throw new Error(`${mode} ${k} is empty`)
   }
+})
+
+/* ── Story 5.16a, R-188: THE CHECK THAT SHOUTS THE DAY THE NOTE STOPS BEING TRUE ────────────────────────────
+   `{page_number}` emits ONE constant on the theme, `{{#if pagination.prev}}{{pagination.page}}{{/if}}`, and
+   Handlebars resolves it against the CURRENT context. Inside a `{{#foreach}}` that context is the row, not the
+   page, so the constant would print empty on the site while the canvas printed the number — the two emitters
+   disagreeing, which is the one thing §7.3 exists to prevent. The `@root`-qualified spelling survives the block
+   and gscan refuses it as an ERROR on both majors (MEASUREMENTS §49), so the constant cannot reach for it.
+
+   No design does this today, and `docs/section-authoring.md` says so — which is a claim about the whole library
+   with nothing behind it, and this project has been bitten by exactly that shape before. The owner ruled the
+   remedy himself (2026-09-23, R-188, Question 4's option 1): *"Leave the written note, and add a check that
+   shouts the day it stops being true."* It forbids nothing. It fails the day somebody puts an editable prop
+   inside a repeat, and hands them the note so they decide on purpose.
+
+   COUNTS ARE DERIVED, NEVER WRITTEN DOWN (standing rule 4): the sweep reports what it walked, and refuses to
+   pass if it walked nothing — a sweep over an empty set is not a result. */
+check('no editable prop sits inside a data-repeat, so {page_number} can never reach a {{#foreach}} (R-188)', () => {
+  const DESIGNS = join(REPO, 'packages/library/designs')
+  const isDir = (p) => { try { return statSync(p).isDirectory() } catch { return false } }
+  const files = readdirSync(DESIGNS).sort().flatMap((category) =>
+    isDir(join(DESIGNS, category))
+      ? readdirSync(join(DESIGNS, category))
+          .filter((d) => /^\d+$/.test(d) && isDir(join(DESIGNS, category, d)))
+          .sort((a, b) => Number(a) - Number(b))
+          .map((d) => ({ id: `${category}/${d}`, path: join(DESIGNS, category, d, 'index.html') }))
+      : [])
+  if (files.length === 0) throw new Error('the sweep found no design at all, so it proves nothing')
+  let repeats = 0
+  const caught = []
+  for (const { id, path } of files) {
+    const doc = new JSDOM(readFileSync(path, 'utf8')).window.document
+    repeats += doc.querySelectorAll('[data-repeat]').length
+    // `closest` answers the subtree question AND the element's own case — a repeat root that carries a prop
+    // is the same hazard, and `agreement.test.ts` proves the runtime accepts that shape
+    for (const el of doc.querySelectorAll('[data-prop], [data-prop-attr]')) {
+      const rep = el.closest('[data-repeat]')
+      if (rep) caught.push(`${id}: ${el.tagName.toLowerCase()}[data-prop="${el.getAttribute('data-prop') ?? el.getAttribute('data-prop-attr')}"] inside data-repeat="${rep.getAttribute('data-repeat')}"`)
+    }
+  }
+  if (repeats === 0) throw new Error('the sweep found no data-repeat at all, so it would pass whatever the designs did — it is not a control')
+  if (caught.length) {
+    throw new Error(
+      `an editable prop now sits inside a data-repeat, which is the one place {page_number} cannot work:\n       ` +
+      caught.join('\n       ') +
+      `\n       On the theme a repeat becomes {{#foreach}}, whose context is the ROW, so the page-number constant ` +
+      `prints empty there while the canvas prints the number. Read "Where {page_number} does not reach" in ` +
+      `docs/section-authoring.md and decide on purpose: either this prop does not take a page number, or the ` +
+      `rule changes and this check changes with it. It is a note with a check behind it (R-188), not a ban.`,
+    )
+  }
+  console.log(`      swept ${files.length} designs, ${repeats} data-repeat elements, 0 editable props inside one`)
 })
 
 console.log(`\n${failed ? `${failed} of ${n} checks FAILED` : `${n} checks passed — the grammar describes what was executed.`}\n`)

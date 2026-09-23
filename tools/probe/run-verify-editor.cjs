@@ -302,6 +302,11 @@ async function main() {
     // by accident and its withdrawal did not restore it, so step 5's zero was vacuous and its control failed for two
     // runs while the retry took the blame (review, 2026-09-18). Without it `violations` has no writer.
     await recorder(context, violations)
+    // R-188 (Story 5.16a): step 93 presses the placeholder menu's Copy and reads the tick it answers with.
+    // Headless Chromium refuses `clipboard.writeText` without this, and the component is deliberately silent
+    // when the clipboard refuses — so WITHOUT the grant the check would fail on a browser default rather than
+    // on the product. Granting only adds a capability; nothing else in the walk reads the clipboard.
+    await context.grantPermissions(['clipboard-write'], { origin: APP })
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
@@ -4781,7 +4786,15 @@ async function main() {
           rows: [...card.querySelectorAll('li')].map((li) => ({
             code: li.querySelector('[data-code]')?.textContent.trim() ?? null,
             caption: li.querySelector('[data-caption]')?.textContent.trim() ?? null,
-            actions: [...li.querySelectorAll('button')].map((b) => b.textContent.trim()),
+            // R-188 finding 1: the buttons are glyphs, so their name arrives as `title` (the hover label the
+            // owner asked for) — reading it here asserts the tooltip exists as well as naming the action
+            actions: [...li.querySelectorAll('button')].map((b) => b.getAttribute('title')),
+            words: [...li.querySelectorAll('button')].map((b) => b.textContent.trim()).join(''),
+            // R-188 finding 4: the description is NOT cropped — no overflow, and no ellipsis rule on it
+            clipped: (() => {
+              const c = li.querySelector('[data-caption]')
+              return c === null || c.scrollWidth > c.clientWidth || getComputedStyle(c).textOverflow === 'ellipsis'
+            })(),
           })),
           // R-185 as amended: the card holds its rows and NOTHING else — no footer, no explanatory sentence
           extras: [...card.querySelector('ul').parentElement.children].filter((el) => el.tagName !== 'P' && el.tagName !== 'UL').length,
@@ -4797,7 +4810,8 @@ async function main() {
       caption: (el.textContent.match(/TOKENS THIS FIELD ACCEPTS/g) ?? []).length,
       braces: (el.textContent.match(/else in braces/gi) ?? []).length,
     }))
-    const want93 = (def, where) => LIBW.placeholdersOffered(def, where).map((t) => ({ code: `{${t}}`, caption: LIBW.PLACEHOLDERS[t], actions: ['Copy', 'Insert'] }))
+    const want93 = (def, where) => LIBW.placeholdersOffered(def, where)
+      .map((t) => ({ code: `{${t}}`, caption: LIBW.PLACEHOLDERS[t], actions: ['Copy', 'Insert'], words: '', clipped: false }))
     // the Newsletter is the one seeded section with a token of its own, and the one step 92 deletes from page 2 below
     const newsAt92 = homeStack.findIndex(([d]) => d === TEMPLATES.home[TEMPLATES.home.length - 1][0])
     const gridSchema93 = pilot('a17/1').contentSchema
@@ -4963,10 +4977,36 @@ async function main() {
     await page.waitForTimeout(300)
     await controlsAside().getByRole('button', { name: 'Placeholders for Eyebrow', exact: true }).click()
     await page.waitForTimeout(300)
+    /* ── R-188, the owner's test of this menu (2026-09-23). Findings 2 and 5 are read while it is open, before
+       the Insert that now closes it (finding 3). Copy's tick is a GLYPH swap and its tooltip changes with it,
+       so both are read; the hover is read as a real computed background before and during :hover, never as a
+       class name — Chrome answers these in `color(srgb …)`, so the assertion is inequality, never a parse. */
+    const copyBtn93 = page.locator('[popover]:popover-open button[data-copy="page_number"]')
+    const rowOfMenu93 = page.locator('[popover]:popover-open li').first()
+    const bgRested93 = await rowOfMenu93.evaluate((el) => getComputedStyle(el).backgroundColor)
+    await rowOfMenu93.hover()
+    await page.waitForTimeout(250)
+    const bgHovered93 = await rowOfMenu93.evaluate((el) => getComputedStyle(el).backgroundColor)
+    check('step 93 — R-188 finding 5: a placeholder row answers the pointer, the way every other menu row does',
+      bgRested93 !== bgHovered93, JSON.stringify({ bgRested93, bgHovered93 }))
+    const copyBefore93 = await copyBtn93.evaluate((b) => ({ title: b.getAttribute('title'), paths: b.querySelectorAll('path').length }))
+    await copyBtn93.click()
+    await page.waitForTimeout(300)
+    const copyAfter93 = await copyBtn93.evaluate((b) => ({ title: b.getAttribute('title'), paths: b.querySelectorAll('path').length }))
+    await page.waitForTimeout(2200)
+    const copyBack93 = await copyBtn93.evaluate((b) => ({ title: b.getAttribute('title'), paths: b.querySelectorAll('path').length }))
+    check('step 93 — R-188 finding 2: Copy answers with a TICK — one path where copy has two — and is Copy again after two seconds',
+      copyBefore93.title === 'Copy' && copyBefore93.paths === 2
+      && copyAfter93.title === 'Copied' && copyAfter93.paths === 1
+      && copyBack93.title === 'Copy' && copyBack93.paths === 2,
+      JSON.stringify({ copyBefore93, copyAfter93, copyBack93 }))
     await page.locator('[popover]:popover-open button[data-insert="page_number"]').click()
     await page.waitForTimeout(400)
     const inserted93 = await eyebrow93.inputValue()
-    await page.keyboard.press('Escape')
+    // R-188 finding 3: Insert CLOSES the list — no Escape is pressed here, and none is needed
+    const menuAfterInsert93 = await page.locator('[popover]:popover-open').count()
+    check('step 93 — R-188 finding 3: Insert closes the list, so the words it just changed are visible again',
+      menuAfterInsert93 === 0, JSON.stringify({ menuAfterInsert93 }))
     await page.waitForTimeout(400)
     // R-182 on the canvas: the number the editor handed this paint — page 2's own, from `templateContext`
     const painted93 = await wordsOf(GRID, '.a17-1__eyebrow')

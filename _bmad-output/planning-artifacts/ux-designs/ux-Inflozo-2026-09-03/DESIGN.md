@@ -529,6 +529,14 @@ and it holds for placeholders nobody has thought of yet** (ruling **R-185**, own
   right — and the card holds nothing else.** No footer and no explanatory sentence: the line about
   other words in braces, drawn at `P0-1:193`, is withdrawn with the chip row and **appears nowhere in
   the product** (owner, 2026-09-23 — *"It is understood"*).
+- **The row's own behaviour, from the owner's test of it** (ruling **R-188**, 2026-09-23). **Copy and
+  Insert are minimal Tabler glyphs with no words** — `copy` and `text-plus` — each saying its name on
+  hover and to a screen reader, which is what leaves the description room. **Copy answers with a tick**
+  (Tabler `check`) **for two seconds and is Copy again.** **Insert closes the menu**, because you press
+  it to get back to the words. **The description is never cropped** — it wraps to as many lines as it
+  needs, since half a sentence explains nothing and these lines are the whole reason the menu exists.
+  **Every row answers the pointer** with `BarMenuRow`'s own hover. The last two live in `PlaceholderRow`
+  itself, so the two menus still cannot drift apart.
 - **A placeholder with no description cannot ship.** Its one-liner lives beside its declaration in
   `vocabulary.ts`'s `PLACEHOLDERS`, and `validate.ts` refuses a declared placeholder that has none —
   the mechanism that keeps this rule true rather than remembered. Built at Story 5.16a.

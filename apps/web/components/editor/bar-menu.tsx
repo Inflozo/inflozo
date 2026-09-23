@@ -97,10 +97,14 @@ export function BarMenuRow({
  *  same day, and the braces sentence is withdrawn from the product entirely). */
 export function PlaceholderRow({ code, description, actions }: { code: string; description: string; actions: ReactNode }) {
   return (
-    <li className="relative flex items-center gap-[10px] rounded-sm py-[9px] pl-[10px] pr-[10px] text-left">
+    // R-188 (the owner's test, 2026-09-23), findings 4 and 5: the description is NOT cropped — it wraps to as many
+    // lines as it needs, because half a sentence explains nothing and these lines are the whole reason the menu
+    // exists — and the row answers the pointer the way every other menu row does. `items-start` rather than
+    // `items-center` so the two buttons stay level with the code once the description runs to a second line.
+    <li className="group/row relative flex items-start gap-[10px] rounded-sm py-[9px] pl-[10px] pr-[10px] text-left transition-colors hover:bg-paper">
       <span className="flex min-w-0 flex-1 flex-col gap-px">
         <span data-code className="truncate font-mono text-ui-dense font-medium">{code}</span>
-        <span data-caption className="truncate text-helper-caption text-ink-soft">{description}</span>
+        <span data-caption className="text-helper-caption text-ink-soft">{description}</span>
       </span>
       <span className="flex shrink-0 items-center gap-1">{actions}</span>
     </li>
@@ -108,6 +112,8 @@ export function PlaceholderRow({ code, description, actions }: { code: string; d
 }
 
 /** One of R-185's two trailing buttons. Small, quiet and the same size as its pair, so neither reads as the
- *  primary of the row — pressing either is a choice, not a commitment. */
+ *  primary of the row — pressing either is a choice, not a commitment. R-188 (the owner's test, 2026-09-23)
+ *  made it a GLYPH with no words: square, so the pair is a matched pair, and its name arrives on hover and
+ *  through `aria-label` rather than in the row, which is what kept the description from having to be cropped. */
 export const PLACEHOLDER_ACTION =
-  `inline-flex h-6 items-center rounded-[6px] border border-line px-2 text-helper-caption font-medium text-ink-soft transition-colors hover:border-line-strong hover:text-ink ${ring}`
+  `inline-flex size-6 shrink-0 items-center justify-center rounded-[6px] border border-line text-ink-soft transition-colors hover:border-line-strong hover:bg-paper-sunk hover:text-ink ${ring}`

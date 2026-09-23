@@ -3,7 +3,7 @@ title: 'Story 5.16a — The page number token'
 type: 'feature'
 created: '2026-09-23'
 status: 'in-progress'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 baseline_commit: '350876bd3f6154d1c4d442adbf2235dbd0bbafd2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -582,6 +582,24 @@ three call sites return on it rather than committing a cut `{page`; **Copy** in 
 `placeholder-menu.test.ts`'s `role="status"` assertion; and the control row — `/pilots`, the picker's cards, the ring's
 tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` and the green matrix.
 
+**The Fix phase (R-188), run 2026-09-23.**
+
+- `pnpm check` (Node 24) — **exit 0**, 935 tests, 0 fail: `library` 179 · `theme-compiler` 1 · `ghost-shim` 34 ·
+  `section-runtime` 234 · `apps/web` 487, the last including `placeholder-menu.test.ts`'s new R-188 case.
+  `check-snapshots: PASS` and `agreement.test.ts` / `ad36.test.ts` unchanged and green — **the five findings were
+  all on the surface, and nothing about what is offered, accepted or printed moved.**
+- `node tools/stress/test-vocabulary.mjs` (inside `pnpm check`) — the R-188 sweep: `swept 5 designs, 2 data-repeat
+  elements, 0 editable props inside one`. **Its own control was run and passed:** an editable prop added to
+  `a17/1`'s repeat root made it FAIL by name — *"a17/1: li[data-prop=\"readMore\"] inside data-repeat=\"posts\""* —
+  and the design was restored and `cmp`'d byte-identical. A sweep that cannot fail is not a sweep (standing rule 2).
+- `python3 tools/doc-audit.py --check` — PASS, twice.
+- `node tools/probe/run-verify-editor.cjs` — against the deployed `app.inflozo.com`, recorded below once the Fix
+  push has deployed. Step 93 now also proves findings 2, 3 and 5 in a real browser (the tick and its two seconds,
+  the menu closing on Insert, the row's hover as a computed background before and during `:hover`), and reads
+  findings 1 and 4 out of the menu itself — the actions' `title`, that they carry no words, and that no
+  description is clipped. The walk's context is granted `clipboard-write`, because the component is deliberately
+  silent when a clipboard refuses and the check would otherwise fail on a browser default rather than on the product.
+
 **Manual checks (if no CLI):**
 
 - The placeholder menu beside the Template switcher's, at 1440 wide: the same card radius, padding, shadow, heading
@@ -596,10 +614,11 @@ your projects, and every change is taken back before the end, so they finish as 
 - **Ghost 5 Project** — its Home has a post grid that is the page's main list, so it has a page 2.
 - **Pilot sections** — for a post and a hero.
 
-Steps 1 to 3 are your **R-186**: nothing offered on page 1, offered on page 2. Steps 4 and 5 are your **R-185**: the
-`{}` button beside a field's label, its menu, and Insert. Steps 6 and 7 are the number on the canvas and the token back
-when you click in (R-182). Step 8 is page 1 left alone. Step 9 is your **R-187**: the header never offers it. Step 11 is
-the one thing that must *not* change.
+Steps 1 to 3 are your **R-186**: nothing offered on page 1, offered on page 2. Steps 4 to 7 are your **R-185** and the
+five things you asked for on 2026-09-23 (**R-188**): the `{}` button beside a field's label, the two icons, the tick,
+the full description, the hover, and Insert closing the list. Steps 8 and 9 are the number on the canvas and the token
+back when you click in (R-182). Step 10 is page 1 left alone. Step 11 is your **R-187**: the header never offers it.
+Step 13 is the one thing that must *not* change.
 
 Both projects are left exactly as they started.
 
@@ -608,14 +627,39 @@ Both projects are left exactly as they started.
 | 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid ("Everything Orbit Weekly published this spring"). In its settings on the right, look beside the label of the small **Eyebrow** box. | — | **No `{}` button.** On page 1 nothing offers a page number, which is your rule. |
 | 2 | same | Editor, Home | Still in the post grid's settings, press **2** in the **Preview page** row. | — | Page 2 opens, with the dark **Page 2 · ‹ Back to page 1** pill at the top. |
 | 3 | same | Page 2 | Look beside the same **Eyebrow** box's label again. | — | A small **`{}`** button is there now. |
-| 4 | same | Page 2 | Press it. | — | A small menu headed **Placeholders**, with one row: **`{page_number}`** and one line under it saying what it does. On its right, **Copy** and **Insert**. Nothing appears under the box itself. |
-| 5 | same | Page 2 | Click at the end of the words in the Eyebrow box, then press **Insert**. | — | `{page_number}` is put in where your cursor was. |
-| 6 | same | Page 2 | Press **Esc** to close the menu and click the grey ground beside the page. | — | The eyebrow on the canvas ends in **2**. |
-| 7 | same | Page 2 | Click into those words on the canvas. | — | They change back to show `{page_number}` so you can edit them. Click the ground again and the **2** comes back. |
-| 8 | same | Page 2 | Press **Back to page 1** and look at the eyebrow. | — | Page 1's eyebrow is unchanged — no number and no gap. Changing page 2 never touched page 1. |
-| 9 | same | Page 2 | Press **2** again. Click the **header** at the top of the page and find its button's **Label** box in the settings. Look beside its label. | — | **No `{}` button** — not even on page 2. Your header is on every page of your site, so it never offers a page number. |
-| 10 | same | Page 2 | Press **⌘Z** until the eyebrow is back to "The archive". | — | Everything you typed is taken back, and page 1 was never touched. |
-| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all. Press **⌘Z**. |
+| 4 | same | Page 2 | Press it, and read the row without pressing anything. | — | A small menu headed **Placeholders**, with one row: **`{page_number}`** and, under it, **the whole sentence** saying what it does — *"The number of the page a visitor is on — 2 on page 2, 3 on page 3."* — with no `…` and nothing cut off. On its right, **two small icons** and no words. Nothing appears under the box itself. |
+| 5 | same | Page 2 | Rest your pointer on the row, then on each icon in turn. | — | The row lightens while your pointer is on it. The first icon says **Copy** and the second says **Insert**. |
+| 6 | same | Page 2 | Press the **Copy** icon and watch it. | — | It turns into a **tick** for about two seconds, then goes back to the copy icon. The menu stays open. |
+| 7 | same | Page 2 | Click at the end of the words in the Eyebrow box, press the `{}` button again, then press **Insert**. | — | `{page_number}` is put in where your cursor was, and **the menu closes by itself** — you can see the box again straight away. |
+| 8 | same | Page 2 | Click the grey ground beside the page. | — | The eyebrow on the canvas ends in **2**. |
+| 9 | same | Page 2 | Click into those words on the canvas. | — | They change back to show `{page_number}` so you can edit them. Click the ground again and the **2** comes back. |
+| 10 | same | Page 2 | Press **Back to page 1** and look at the eyebrow. | — | Page 1's eyebrow is unchanged — no number and no gap. Changing page 2 never touched page 1. |
+| 11 | same | Page 2 | Press **2** again. Click the **header** at the top of the page and find its button's **Label** box in the settings. Look beside its label. | — | **No `{}` button** — not even on page 2. Your header is on every page of your site, so it never offers a page number. |
+| 12 | same | Page 2 | Press **⌘Z** until the eyebrow is back to "The archive". | — | Everything you typed is taken back, and page 1 was never touched. |
+| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all. Press **⌘Z**. |
+
+## Owner's test findings
+
+The owner tested the deployed menu on 2026-09-23 and returned five findings on the surface, all on R-185's
+placeholder menu and none on the token itself — `{page_number}` offered, inserted, painted and withheld exactly as
+R-186 and R-187 say. Recorded as **R-188** and fixed inside this story (R-80), not by a design pass.
+
+| # | His words | What was changed | Where |
+|---|---|---|---|
+| 1 | *"Copy and Instert should be minimal icons from tabler icons. Show title/label on hover."* | Both actions are Tabler glyphs with **no words** — `copy` and `text-plus` — in a square button. Each says its name through `title` (the hover label) and `aria-label` (what a screen reader hears). | `icons.tsx`, `bar-menu.tsx`'s `PLACEHOLDER_ACTION`, `placeholder-menu.tsx` |
+| 2 | *"Once copied, show a tick icon instead of copy and show back the copy icons after 2 seconds."* | Copy swaps to Tabler `check` and its tooltip to "Copied" for **2000ms**, then both return. The `role="status"` line still announces it. | `placeholder-menu.tsx`, `icons.tsx` |
+| 3 | *"Once inserted, close the list."* | Insert calls `hidePopover()` straight after inserting. **This reverses R-185's first reading** — the comment that called Insert "a thing you may do more than once" is withdrawn. | `placeholder-menu.tsx` |
+| 4 | *"Do not crop the description. Right now it is cropped 'The number of the page a vi...'."* | `truncate` is off the description, which now wraps to as many lines as it needs; the row is `items-start` so the two buttons stay level with the code. The code beside it stays on one line. | `bar-menu.tsx`'s `PlaceholderRow` |
+| 5 | *"For multiple placehoders in the list, show hover effects on each item."* | The row carries `BarMenuRow`'s own `hover:bg-paper`, so it answers the pointer the way every other menu row does. | `bar-menu.tsx`'s `PlaceholderRow` |
+
+Findings 4 and 5 are in `PlaceholderRow` rather than in the menu, so the placeholder menu and the Template
+switcher still cannot drift apart (R-171, R-74). **Nothing here changes what is offered, what is accepted or what
+is printed** — R-182, R-186 and R-187 are untouched, and `agreement.test.ts`, `ad36.test.ts` and
+`check-snapshots` are unchanged and still green.
+
+Each finding is held by a check that runs: `apps/web/placeholder-menu.test.ts`'s R-188 case asserts all five in
+the source, and step 93 of the deployed walk proves 2, 3 and 5 in a real browser and 1 and 4 in the menu it reads
+back. `owner_test: issues` stands until he tests the fixed build.
 
 ## Questions for the owner
 
@@ -789,5 +833,16 @@ On the live site every card reads "Read more — page", with a gap. Nothing warn
    - It relies on that person reading it. Every other rule in this project that relied on being read has been
      written down a second time as a check, because being missed is the thing that keeps happening.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-23).** *"Leave the written note, and add a check that shouts the day it stops
+being true."* Recorded as **R-188**.
+
+- The note stays in `docs/section-authoring.md` and now names its own check. The sweep is in
+  `tools/stress/test-vocabulary.mjs` — the only place in the repo allowed to read the designs off disk, because
+  AD-1 bans `node:fs` in a core package — and it runs inside `pnpm check`, so it runs in CI.
+- It **forbids nothing**: the shape stays legal, and the check fails only when an editable prop actually appears
+  inside a `data-repeat`, naming the design and handing the reader the note. He declined the outright refusal
+  because it would also block editable words in a repeating row that never wanted a page number.
+- Its counts are derived and it refuses to pass on an empty sweep: today it reports **5 designs, 2 `data-repeat`
+  elements, 0 editable props inside one**. Its own control was run — a prop added to `a17/1`'s repeat root made it
+  fail by name, and the design was restored byte-identical.
 

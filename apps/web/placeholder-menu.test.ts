@@ -124,3 +124,42 @@ test('R-27 — Insert is WHOLE OR NOTHING: all three arms refuse a token that wi
   const side = read('components/controls/sidebar.tsx')
   assert.match(side, /if \(max !== undefined && next\.length > max\) return setRefusedToken\(id\)/, 'the one-line text arm refuses whole')
 })
+
+test('R-188 — the owner\'s five findings on this menu, each where it lives', () => {
+  /* His test of the deployed story, 2026-09-23. Five sentences, and each one is a thing that can quietly come
+     back: an icon that grows a word again, a tick that never returns to Copy, a menu left covering the words it
+     just changed, a `truncate` copied in from the sibling row, a row that stops answering the pointer. The
+     deployed walk (step 93) proves the behaviour in a real browser; these hold the source to it. */
+  const menu = read('components/controls/placeholder-menu.tsx')
+  const bar = read('components/editor/bar-menu.tsx')
+
+  // 1 — minimal Tabler glyphs, each naming itself on hover AND to a screen reader, with no words in the button
+  assert.match(menu, /<PlaceholderCopy size=\{13\} \/>/)
+  assert.match(menu, /<PlaceholderInsert size=\{13\} \/>/)
+  assert.match(menu, /title=\{copied === code \? 'Copied' : 'Copy'\}/, "Copy says its name on hover")
+  assert.match(menu, /title="Insert"/, 'Insert says its name on hover')
+  assert.match(menu, /aria-label=\{copied === code \? `\$\{code\} copied` : `Copy \$\{code\}`\}/)
+  assert.match(menu, /aria-label=\{`Insert \$\{code\} into \$\{label\}`\}/)
+  assert.ok(!/>\s*(Copy|Copied|Insert)\s*</.test(menu), 'the buttons carry a glyph and no words (R-188 finding 1)')
+
+  // 2 — the tick REPLACES copy, and copy comes back after two seconds
+  assert.match(menu, /copied === code \? <PlaceholderCopied size=\{13\} \/> : <PlaceholderCopy size=\{13\} \/>/)
+  assert.match(menu, /setTimeout\(\(\) => setCopied\(null\), 2000\)/, "two seconds is the owner's own number")
+
+  // 3 — Insert closes the list
+  assert.match(menu, /onInsert\(code\)\n\s*\/\/[^\n]*\n\s*menu\.current\?\.hidePopover\(\)/,
+    'Insert closes the menu immediately after inserting (R-188 finding 3)')
+
+  // 4 — the description is never cropped, while the code beside it still is
+  const row = bar.slice(bar.indexOf('export function PlaceholderRow'), bar.indexOf('PLACEHOLDER_ACTION ='))
+  const caption = row.slice(row.indexOf('data-caption'), row.indexOf('data-caption') + 120)
+  assert.ok(!caption.includes('truncate'), `the description must wrap, never crop: ${caption}`)
+  assert.ok(row.slice(row.indexOf('data-code'), row.indexOf('data-code') + 120).includes('truncate'),
+    'the code is one short string and stays on its line')
+
+  // 5 — every row answers the pointer, with BarMenuRow's own hover
+  assert.ok(/<li className="[^"]*hover:bg-paper\b/.test(row), `a row must answer the pointer: ${row.slice(0, 400)}`)
+  assert.ok(bar.slice(bar.indexOf('export function BarMenuRow')).includes('hover:bg-paper'),
+    'and it is the same hover its sibling row uses, not a second look')
+})
+
