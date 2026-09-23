@@ -537,6 +537,13 @@ sure it cannot be half-built.
 - `bash supabase/tests/run-rls-gate.sh` -- expected: green (unchanged; no migration in this story).
 - `node tools/probe/run-verify-editor.cjs` -- expected: every journey passes, including the new page-number one, against
   the deployed `app.inflozo.com`. Record both runs if the first dies on a timeout (DW-222).
+  **Run at Dev (2026-09-23), against `app.inflozo.com` at `df41e7d5`: 0 FAIL, 571 PASS.** Step 93's ten checks all
+  held — no `{}` button anywhere on page 1, the Newsletter listing `{members}` alone there and BOTH tokens on page 2,
+  no button on any field of the site-wide header even on page 2, Insert putting the code in and the canvas printing
+  `2`, the token showing again on click-in and the number returning, and page 1's words untouched — and step 26's
+  rewritten check held with nothing under the field. **Two runs, as DW-222 asks:** the first died mid-run at step 15
+  with `EncodingError: The source image cannot be decoded` from the screencast decoder — 172 PASS, 0 FAIL to that
+  point, in the sticky-header filming this story does not touch — and the re-run above passed whole.
 - `python3 tools/doc-audit.py --check` -- expected: green, twice.
 
 **Manual checks (if no CLI):**
