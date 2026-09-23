@@ -359,6 +359,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       trigger and menu, built from `bar-menu.tsx`'s new `PlaceholderRow` (a `<li>` with two buttons, because
       `BarMenuRow` IS a button) and placed by `openMenu`. `TextInput` gained the `aside` slot every control row already
       had. Nothing stored changed, so there was **no Schema phase**.
+    - ***The owner's test of it, the same day (2026-09-23).*** **R-188** — five findings on R-185's menu and one
+      ruling on the `{{#foreach}}` limitation. The two row actions are Tabler `copy` and `text-plus`, **glyphs with no
+      words**, each naming itself through `title` and `aria-label`; **Copy answers with a tick** (Tabler `check`) **for
+      two seconds**; **Insert CLOSES the menu**, reversing R-185's first reading; **the description is never cropped**
+      and wraps to as many lines as it needs; and every row carries `BarMenuRow`'s own hover. The last two live in
+      `PlaceholderRow` itself, so the placeholder menu and the Template switcher cannot drift apart (R-171, R-74).
+      Question 4, ruled option 1: the `{{#foreach}}` note **stays a written note**, and `tools/stress/test-vocabulary.mjs`'s
+      R-188 sweep — inside `pnpm check` — fails by name the day an editable prop appears inside a `data-repeat`, rather
+      than forbidding it outright.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

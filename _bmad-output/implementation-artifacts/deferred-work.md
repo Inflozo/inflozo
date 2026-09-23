@@ -5440,3 +5440,24 @@ reason: Deleting is one more Admin API call in the `finally`, after the restore 
   pattern for every recorder, not in one story's probe, and the reset protocol should say so.
 owner: whoever next touches a `record-*.py` probe or `tools/probe/RESET-PROTOCOL.md`.
 location: `tools/probe/record-page-number.py` `record()`'s `finally` · `tools/probe/record-contexts.py:342`
+
+### DW-238: the deploy-and-export take-over (D8g) has no entry point to hang off yet
+
+plain: The plan says that if you press Ship it or Export while another window is the one editing, we should ask you
+  first whether to take over — because otherwise you would publish an older copy of your site. There is no Ship it
+  button and no Export button yet, so there is nothing to press and nothing to build. When those two arrive, the box
+  that asks is already written and waiting for them.
+status: open
+severity: medium
+origin: Story 5.17's Create (2026-09-23). FR-D18's last sentence and the story's own acceptance criterion name it, and
+  `EXPERIENCE.md:1053-1056` gives its frame — `D8 Editor Below 1440.dc.html` D8g, "Take over to ship?", focus opening
+  on Wait. `apps/web/lib/keymap.ts:113` reserves Ship it's row with no keys (Story 7.18) and ZIP export is Story 7.26;
+  `apps/web/probe-rule.test.ts:183-185` asserts the product's copy names neither until they land (UX-DR3).
+reason: a take-over prompt for a control that does not exist is unreachable, and naming the control would break the
+  rule that an unbuilt feature is absent rather than greyed. Story 5.17 builds the component D8g is made of —
+  `apps/web/components/editor/lock-takeover.tsx`, whose heading, body and confirm label are props for exactly this —
+  so the remaining work is the gate itself, which belongs where deploy and export are written.
+owner: Story 7.18 (the deploy wizard) for Ship it, Story 7.26 (theme zip export) for Export. Each renders
+  `lock-takeover.tsx` with D8g's strings and refuses to start without the lock (AD-15's flush contract).
+location: `apps/web/components/editor/lock-takeover.tsx` · `apps/web/lib/keymap.ts:113` ·
+  `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:1053-1056`
