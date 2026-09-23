@@ -5423,3 +5423,20 @@ reason: The cause is a HYPOTHESIS and was not executed (standing rule 1): a scre
   would be guessing.
 owner: whoever next touches `film()` or the scroll-filming checks (Story 5.22's responsive pass reaches them).
 location: `tools/probe/run-verify-editor.cjs` step 15's `decoder.evaluate` (`:949`) and `film()`
+
+
+## Deferred from: code review of spec-5-16a-the-page-number-token.md (2026-09-23)
+
+### DW-237: the probe recorders leave every uploaded probe theme on T1 and T3
+
+plain: Each time one of the recording probes runs, it uploads a small throwaway theme to the two test Ghost sites, uses
+  it, and puts the site's real theme back — but never deletes the throwaway one. Nothing a customer sees is affected;
+  the test sites just collect old probe themes in their theme list, one or two per run.
+status: open
+severity: low
+origin: Story 5.16a's review (2026-09-23), reading `tools/probe/record-page-number.py`. Pre-existing: it follows
+  `record-contexts.py`'s pattern exactly, and that recorder never deleted its upload either.
+reason: Deleting is one more Admin API call in the `finally`, after the restore is proved — but it belongs in the shared
+  pattern for every recorder, not in one story's probe, and the reset protocol should say so.
+owner: whoever next touches a `record-*.py` probe or `tools/probe/RESET-PROTOCOL.md`.
+location: `tools/probe/record-page-number.py` `record()`'s `finally` · `tools/probe/record-contexts.py:342`

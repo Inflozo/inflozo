@@ -96,21 +96,37 @@ export function RichField({
 
   const text = textOf(value)
   /** R-185's Insert — the behaviour P0-1's withdrawn chip row carried, unchanged: whole or nothing against `maxChars`, at the
-   *  caret while the field is still being typed in and at the end when it is not (opening the menu moves focus,
-   *  which ends the session, so the second arm is the ordinary one here). Never silent: a cut token would print
-   *  literally, so it is refused and the limit sentence says why (R-27). */
+   *  caret while the field is being typed in and at the end when it is not. Never silent: a cut token would print
+   *  literally, so it is refused and the limit sentence says why (R-27).
+   *
+   *  THE CARET ARM IS REACHED THE WAY THE LINK PANEL REACHES IT (review, 2026-09-23): pressing the `{}` button
+   *  moves focus into the menu, which would end the session, so the trigger's mousedown holds it `alive` first —
+   *  the toolbar's own pattern — and the menu's close puts focus back in the words (Insert, Escape) or, when the
+   *  pointer went somewhere else, ends the edit as a click elsewhere always did. A keyboard user who TABS to the
+   *  button has already left the field, so their Insert lands at the end: the ordinary arm, stated rather than
+   *  hidden. */
   const insert = (token: string) => {
     if (session && !session.ended) return session.insert(token)
     const r = replaceRange(latest.current as PropValue, text.length, text.length, token, { max: def.maxChars })
     if (r.refused > 0) return setRefused(true)
     change.current(r.value)
   }
+  const hold = () => session?.alive(true)
+  const release = () => {
+    // after the platform has returned focus to the invoker — the same tick the link panel uses
+    setTimeout(() => {
+      if (!session || session.ended) return
+      if (document.activeElement?.id === `${id}-placeholders`) session.refocus()
+      else session.end()
+      session.alive(false)
+    }, 0)
+  }
   return (
     <div className="flex flex-col gap-[5px]">
       <span className="flex items-center gap-[6px] text-control-label font-medium text-ink-soft">
         <span id={`${id}-label`}>{label}</span>
         {/* R-185: BESIDE THE LABEL, and nowhere else. P0-1's chip row under the field is withdrawn. */}
-        <PlaceholderMenu id={id} label={label} offered={placeholders} onInsert={insert} />
+        <PlaceholderMenu id={id} label={label} offered={placeholders} onInsert={insert} onOpen={hold} onClose={release} />
       </span>
       <div
         ref={box}

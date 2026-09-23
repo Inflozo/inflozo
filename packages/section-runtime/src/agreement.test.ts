@@ -330,6 +330,9 @@ test('R-186 — the canvas prints the handed number, and NOTHING when it was han
   // string rather than to "1" or to a literal — "nothing shows a page number the user did not type", and
   // page 1 shows no number at all (R-186 reversing R-182's page-1 bullet)
   const none = renderCanvas(doc(), pageSrc, { schema: pageSchema, content: pageWords, tokens: {} })
+  // …and the editor's ACTUAL page-1 call shape — `renderSection` passes no `tokens` key at all on page 1
+  // (`canvas.ts`), so this rests on `core`'s `input.tokens ?? {}` and must not decay to the literal token
+  assert.equal(renderCanvas(doc(), pageSrc, { schema: pageSchema, content: pageWords }), none, 'no tokens key must render exactly as an empty one')
   assert.ok(/The archive — page ?<\/h2>/.test(none), `page 1 must print nothing in the token's place: ${none}`)
   assert.ok(!/page_number|page 1/.test(none), `page 1 printed a number or the token itself: ${none}`)
   // the whole value being the token is an EMPTY field, which is the design's own data-empty question

@@ -46,6 +46,8 @@ export function PlaceholderMenu({
   label,
   offered,
   onInsert,
+  onOpen,
+  onClose,
 }: {
   /** the field's own id — the trigger, the menu and its heading are all named from it */
   id: string
@@ -57,6 +59,10 @@ export function PlaceholderMenu({
    *  when it is not. Insert CLOSES THE MENU (R-188, finding 3, reversing R-185's first reading): you press it to
    *  get back to the words, and a menu still covering them is in the way. */
   onInsert: (code: string) => void
+  /** the field saying the menu is about to take focus (the trigger's mousedown, before focus moves) and that it
+   *  has closed — a rich field holds its editing session alive across the two, so Insert lands at the caret */
+  onOpen?: () => void
+  onClose?: () => void
 }) {
   const menu = useRef<HTMLDivElement>(null)
   const [copied, setCopied] = useState<string | null>(null)
@@ -97,6 +103,7 @@ export function PlaceholderMenu({
         aria-label={`Placeholders for ${label}`}
         title={`Placeholders for ${label}`}
         popoverTarget={`${id}-placeholders-menu`}
+        onMouseDown={onOpen}
         onClick={(event) => {
           if (menu.current) openMenu(menu.current, event.currentTarget, { side: 'down', align: 'left' })
         }}
@@ -108,6 +115,9 @@ export function PlaceholderMenu({
         ref={menu}
         id={`${id}-placeholders-menu`}
         popover="auto"
+        onToggle={(event) => {
+          if (event.newState === 'closed') onClose?.()
+        }}
         onKeyDown={arrowKeys}
         className={BAR_POPOVER}
       >
@@ -118,6 +128,8 @@ export function PlaceholderMenu({
               <PlaceholderRow
                 key={token}
                 code={code}
+                // never empty: `placeholdersOffered` returns keys of `PLACEHOLDERS` and nothing else, so the
+                // fallback exists for the index type alone, not for a row without its line (R-185)
                 description={PLACEHOLDERS[token] ?? ''}
                 actions={
                   <>

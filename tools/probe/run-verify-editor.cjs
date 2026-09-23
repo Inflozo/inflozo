@@ -5038,6 +5038,25 @@ async function main() {
     const rested93 = await wordsOf(GRID, '.a17-1__eyebrow')
     check('step 93 — R-182: clicking into the words shows the token as typed, and the number is back when the edit ends',
       editing93 === inserted93 && rested93 === painted93, JSON.stringify({ editing93, rested93 }))
+    // review, 2026-09-23 — THE RICH FIELD'S INSERT LANDS AT THE CARET, not at the end. A `richtext` field's editing
+    // session ends when focus leaves it and the `{}` button takes focus, so the field holds the session alive across
+    // the menu (the link panel's pattern) and Insert goes where the caret was. Proved from the START of the Title,
+    // where "at the caret" and "at the end" cannot be confused; the row is page 2's own and step 92 discards it.
+    const title93 = controlsAside().getByRole('textbox', { name: 'Title', exact: true })
+    const titleWas93 = (await title93.textContent()) ?? ''
+    await title93.click()
+    await page.keyboard.press('Control+Home')
+    await page.waitForTimeout(200)
+    await controlsAside().getByRole('button', { name: 'Placeholders for Title', exact: true }).click()
+    await page.waitForTimeout(300)
+    await page.locator('[popover]:popover-open button[data-insert="page_number"]').click()
+    await page.waitForTimeout(400)
+    const titleNow93 = (await title93.textContent()) ?? ''
+    const focusAfterInsert93 = await page.evaluate(() => document.activeElement?.getAttribute('role') ?? null)
+    check('step 93 — review: Insert on a RICH field lands at the caret — the token at the START of the Title, not its end — and the words have focus again',
+      titleNow93 === `{page_number}${titleWas93}` && focusAfterInsert93 === 'textbox', JSON.stringify({ titleWas93, titleNow93, focusAfterInsert93 }))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
     // …and page 1 was never touched: it is a different doc, and it still says what the seed says
     await page.getByRole('button', { name: PT.BACK_TO_PAGE_ONE, exact: true }).click()
     await waitPage92(1)

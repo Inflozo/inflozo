@@ -302,6 +302,13 @@ def parse_test(text):
     return {'kind': 'text', 'text': text}
 
 
+def _check_mdblock():
+    """The nested-option fix, held by a check: the bug the owner saw (every option rendered as "1.") came back
+    silently without one (review, 2026-09-23). Runs on every invocation; it is a few microseconds."""
+    html = mdblock('1. one\n   - a child\n   - another\n2. two\n\nA paragraph.')
+    assert html.count('<ol>') == 1 and html.count('<li>') == 4 and '<li>one<ul>' in html and '</ol><p>' in html, html
+
+
 def test_steps(t):
     """A table or a numbered list → [{do, see, dummy, where}], the two-line form the owner reads.
     Table columns are found by their heading words, never by position."""
@@ -2363,6 +2370,7 @@ def demo():
 
 
 def main():
+    _check_mdblock()
     if '--demo' in sys.argv:
         path = sys.argv[sys.argv.index('--demo') + 1]
         open(path, 'w', encoding='utf8').write(demo())

@@ -45,7 +45,7 @@ test('R-185 — the {} button names its field, and the menu is a popover the key
   assert.match(src, /aria-label=\{`Placeholders for \$\{label\}`\}/, 'the trigger says WHICH field it belongs to')
   assert.match(src, /popover="auto"/, 'light dismiss, Escape and focus return are the platform\'s')
   assert.match(src, /popoverTarget=/, 'the trigger opens it as a popover target')
-  assert.match(src, /onKeyDown=\{arrowKeys\}/, 'arrow keys walk the rows')
+  assert.match(src, /onKeyDown=\{arrowKeys\}/, 'arrow keys walk the menu — its buttons: Copy, Insert, the next row\'s Copy')
   assert.match(src, /openMenu\(/, 'placement, both-edge clamping and the flip are lib/menu.ts\'s')
   assert.match(src, /role="status"/, "Copy's confirmation is ANNOUNCED, not only coloured (R-98)")
   assert.ok(src.includes('offered.length === 0') && src.includes('return null'),

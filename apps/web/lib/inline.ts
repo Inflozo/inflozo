@@ -107,6 +107,9 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
   let ended = false
   /** the last non-empty selection, which the toolbar acts on after focus has left the text */
   let last: [number, number] | null = null
+  /** the last caret, collapsed or not — where the `{}` menu's Insert lands after focus has left for the menu
+   *  (Story 5.16a's review: `last` forgets a collapsed caret, so Insert from the menu always went to the end) */
+  let caret: [number, number] | null = null
 
   if (textOf(o.value) !== '' && !holds(el, markup(o.value, o.def))) el.innerHTML = markup(o.value, o.def)
   if (!el.isContentEditable) el.contentEditable = 'true'
@@ -133,6 +136,7 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
     if (ended) return
     const at = offsets()
     const sel = doc.getSelection()
+    if (at) caret = at
     if (!at || at[0] === at[1] || !sel || sel.rangeCount === 0) {
       // focus in the toolbar or the link panel moves the document's selection; the one they act on is kept
       if (alive) return
@@ -322,7 +326,7 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
     link: (record) => onLast((s, e) => (record === null ? unlink(base, s, e) : setLink(base, s, e, record))),
     insert: (text) => {
       if (ended) return
-      const [start, end] = offsets() ?? last ?? [words.length, words.length]
+      const [start, end] = offsets() ?? caret ?? last ?? [words.length, words.length]
       const r = replaceRange(base, start, end, text, { typed: false, max })
       // a token chip is whole or nothing: `{mem` would print literally on the page (R-27) — refused, and said
       if (r.refused > 0) return refuse()
@@ -331,7 +335,9 @@ export function startInline(el: HTMLElement, o: InlineOptions): Inline {
     refocus: () => {
       if (ended) return
       el.focus({ preventScroll: true })
-      if (last) select(last[0], last[1])
+      // the caret is at least as fresh as `last` — after the menu's Insert it is the point past the token
+      const at = caret ?? last
+      if (at) select(at[0], at[1])
     },
     alive: (on) => {
       alive = on

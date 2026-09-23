@@ -2133,8 +2133,8 @@ edit text inline. So users can add a header, hero and show the Page number there
 
 **Acceptance Criteria:**
 
-**Given** any text I can edit, inline on the canvas or in the panel, in any section
-**When** I type `{page_number}`, or press **Insert** in its `{}` menu
+**Given** any text I can edit, inline on the canvas or in the panel
+**When** I type `{page_number}` into it in any section, or press **Insert** in the `{}` menu a field of page 2's own sections carries
 **Then** the canvas shows the number of the page on screen — **2 on page 2, and NOTHING on page 1** (**R-186**,
 owner, 2026-09-23, reversing R-182's "page 1 shows 1")
 **And** clicking into the words to change them shows the token again, so it can be seen and edited

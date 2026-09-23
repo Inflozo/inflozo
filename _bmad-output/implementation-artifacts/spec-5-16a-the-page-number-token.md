@@ -2,7 +2,7 @@
 title: 'Story 5.16a — The page number token'
 type: 'feature'
 created: '2026-09-23'
-status: 'in-progress'
+status: 'in-review'
 owner_test: issues
 review_loop_iteration: 0
 baseline_commit: '350876bd3f6154d1c4d442adbf2235dbd0bbafd2'
@@ -359,13 +359,14 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
 - [x] `apps/web/lib/inline.test.ts` (or the nearest existing home) -- assert that a field being edited re-serializes with
       no token values, so the token shows again on click-in and the caret can sit inside it. -- R-182's second sentence;
       today it is a comment and nothing fails if it is lost.
-- [x] `tools/probe/run-verify-editor.cjs` -- a journey: type `{page_number}` into a heading on page 1, see the number,
-      press **2** and see 2, click back into the words and see the token, open a field's `{}` menu and press **Insert**,
+- [x] `tools/probe/run-verify-editor.cjs` -- a journey: on page 1 see no `{}` button and the words untouched, press **2**,
+      put `{page_number}` in a field and see 2 on the canvas, click back into the words and see the token, open a field's `{}` menu and press **Insert**,
       open the Newsletter's `{members}` box and see **two** rows, switch to the Post canvas and see nothing. Record two
       runs if the first dies on a Playwright timeout (DW-222). -- the deployed walk is where R-80's test is rehearsed.
-- [x] `apps/web/a11y` (the nearest existing home, beside `busy.test.ts`) -- the menu: the trigger names the field it
-      belongs to, the card is reachable and dismissable by keyboard, arrow keys walk the rows, Escape returns focus to
-      the `{}` button, and **Copy**'s confirmation is announced rather than only coloured. -- R-98's neighbourhood: a
+- [x] `apps/web/placeholder-menu.test.ts` (the nearest existing home was `busy.test.ts`'s pattern, and `apps/web/a11y`
+      does not exist; the R-182 editing-sink assertion lives there too, not in `inline.test.ts`) -- the menu: the trigger
+      names the field it belongs to, the card is reachable and dismissable by keyboard, arrow keys walk its buttons —
+      Copy, Insert, the next row's Copy — Escape returns focus to the `{}` button, and **Copy**'s confirmation is announced rather than only coloured. -- R-98's neighbourhood: a
       control that does something says so.
 - [x] `docs/section-authoring.md` -- amend `:478-491`: the per-prop list, the one token that is not in it, and **the
       description every declared token must carry**, with the refusal that enforces it. -- authoring is a documented
@@ -430,6 +431,28 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
   description or validation fails naming R-185 — so no future placeholder can reach the menu without one.
 - Given `/pilots`, the Section Picker's cards, the design ring's tiles, `tools/check-snapshots.mjs` and the render
   matrix, when they render, then their output is byte-identical to the baseline commit — the story's control.
+
+### Review Findings
+
+Review run 2026-09-23 at `854a06df` — five layers (blind, edge-case, verification-gap, acceptance, real-infra), every
+finding read against the source before it was rated; the real-infra layer re-ran the recorder on T1 and T3 (§49
+re-recorded byte-identical), `gate.js` with its `@root` control, CI, Vercel and `pnpm check`, and every claim held.
+
+- [x] [Review][Patch] A THIRD attribute sink substituted the constant: a module string override carrying `{page_number}` emitted the raw guarded expression inside `data-i18n-*` on the theme while the canvas showed the literal — executed before the fix [packages/section-runtime/src/core.ts:1445] — now `'attribute'`, with the vector in `ad36.test.ts` (fails on the unfixed code, passes on the fix)
+- [x] [Review][Patch] Insert on a `richtext` field always landed at the END: the `{}` button takes focus, which ended the session, and `last` forgets a collapsed caret [apps/web/components/controls/rich-field.tsx:98] — the trigger's mousedown holds the session alive (the link panel's pattern), the session keeps its caret, the menu's close refocuses the words or ends the edit, and step 93 of the deployed walk now proves it from the start of the Title
+- [x] [Review][Patch] Page 1's empty canvas rested on `core`'s `?? {}` with no test handing NO `tokens` key, which is the editor's real call shape [packages/section-runtime/src/agreement.test.ts:332] — one assertion added
+- [x] [Review][Patch] `if (declared.size === 0)` was unreachable after `declared.add(PAGE_NUMBER)` [packages/section-runtime/src/marks.ts:245] — removed
+- [x] [Review][Patch] `PLACEHOLDERS[token] ?? ''` looked like a row without its line could render [apps/web/components/controls/placeholder-menu.tsx] — it cannot (`placeholdersOffered` returns the map's own keys); said so beside it
+- [x] [Review][Patch] The board's nested-option fix had no check [tools/story-board.py:mdblock] — `_check_mdblock()` runs on every invocation
+- [x] [Review][Patch] "closed to three names" one paragraph under the new rule [docs/section-authoring.md:514]; AD-5 item 5 did not name its own sweep [ARCHITECTURE-SPINE.md:136]; the epics card's Given said "in any section" for Insert [epics.md:2136]; §49 (a)'s "fires four times" was inferred, not counted [MEASUREMENTS.md:3524] — all reworded to what is measured
+- [x] [Review][Patch] Spec drift: the walk task still said "on page 1, see the number"; the a11y task named `apps/web/a11y`, which does not exist, and "arrow keys walk the rows" where they walk the buttons; the manual test promised "exactly as they started" while step 7 forks page 2's row (R-178); frontmatter said `in-progress` — all corrected, status `in-review`
+- [x] [Review][Defer] The recorder never deletes the probe themes it uploads [tools/probe/record-page-number.py] — deferred, pre-existing (`record-contexts.py`'s own pattern), DW-237
+
+Dismissed as noise or by design: R-188 filing five findings and Question 4 under one number (one day, one ruling
+entry, deliberately); serving the emitter's own theme on Ghost (the constant is byte-identical to the probe's, and the
+recorder proved the constant); the owner never seeing the number on a live site (theme deploy is a later epic's);
+Copy's name change beside its live region; `Page` widening past `1 | 2`; a third-level nested list on the board; the
+recorder's exception shape; `tools/stress` outside CI (recorded in CLAUDE.md); counts in Verification (run records).
 
 ## Design Notes
 
@@ -613,6 +636,21 @@ tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` an
   guard working exactly as intended. **Run 3**, after the step-26 fix deployed, is the run above. Step 26 now
   asserts `menuAfterInsert26 === 0`, so the rule is stated rather than inferred from an absent keypress.
 
+**The Review phase (2026-09-23), run against the real infrastructure by its own layer.**
+
+- `python3 tools/probe/record-page-number.py` re-run by the review's real-infra verifier with `GHOST5_*` and `GHOST6_*`:
+  **T3 and T1 answered row for row what §49 records** — nothing at `/`, `2` at `/page/2/`, `3` at `/page/3/`, nothing on
+  a post, a page and the 404 — and the rewritten §49 was `cmp`'d byte-identical to the committed one before being
+  restored. Both themes `RESTORED -> 'casper'`.
+- `node gate.js theme` — ERRORS 0 / WARNINGS 0 on both majors with the constant present three times; the verifier's own
+  `@root` control → ERRORS 1 `GS120-NO-UNKNOWN-GLOBALS` on both.
+- CI at `854a06df` read with `GITHUB_TOKEN`: `check`, `rls`, `deploy` and the Render matrix all **success**; Vercel
+  (`VERCEL_PROJECT`) newest production deployment **READY** at that sha; `app.inflozo.com` serving.
+- No migration in the diff (R-99 holds; no pooler read needed).
+- The two code findings were **executed before they were fixed** — the `data-i18n-*` vector emitted the raw constant
+  on the unfixed `core.ts` and passes on the fix — and `pnpm check` (Node 24) is green with them in.
+- The deployed walk with step 93's new rich-field check is recorded below once this commit has deployed.
+
 **Manual checks (if no CLI):**
 
 - The placeholder menu beside the Template switcher's, at 1440 wide: the same card radius, padding, shadow, heading
@@ -622,7 +660,9 @@ tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` an
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, in a desktop browser window about 1440 wide. It uses two of
-your projects, and every change is taken back before the end, so they finish as they started.
+your projects, and every word you type is taken back before the end. One thing stays: the first change on page 2
+keeps page 2 as its own copy of the design (R-178), which is what any first change to page 2 does, and it is
+harmless — page 1 is never touched.
 
 - **Ghost 5 Project** — its Home has a post grid that is the page's main list, so it has a page 2.
 - **Pilot sections** — for a post and a hero.
@@ -633,7 +673,7 @@ the full description, the hover, and Insert closing the list. Steps 8 and 9 are 
 back when you click in (R-182). Step 10 is page 1 left alone. Step 11 is your **R-187**: the header never offers it.
 Step 13 is the one thing that must *not* change.
 
-Both projects are left exactly as they started.
+Both projects read exactly as they started.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|

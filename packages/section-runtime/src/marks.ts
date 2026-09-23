@@ -247,7 +247,6 @@ export function serializeMarks(
   // piece is escaped on its own and each replacement is inserted BETWEEN the escaped pieces — raw
   // only for our own constant, escaped for every value a renderer handed.
   const esc = (run: string): string => {
-    if (declared.size === 0) return plain(run)
     let out = ''
     let at = 0
     for (const m of run.matchAll(TOKEN_RE)) {

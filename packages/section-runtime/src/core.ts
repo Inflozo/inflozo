@@ -1442,7 +1442,11 @@ function stampStrings(root: RuntimeElement, input: RenderInput, users: UserText 
     if (bad.length > 0) throw new Error(`S5: ${bad.join(' · ')}`)
     for (const key of row[0]?.strings ?? []) {
       const value = input.strings?.[key] ?? ''
-      el.setAttribute(i18nAttr(key), users !== null ? users.put('', value) : value)
+      // Story 5.16a's review: an ATTRIBUTE sink, like the two in `applyProps` — the default `'text'` sink would
+      // splice `PAGE_NUMBER_HBS` raw into this attribute for an override carrying `{page_number}` (executed:
+      // `data-i18n-ended="… {{#if pagination.prev}}…"`), and the canvas would show the literal. The vector is in
+      // `ad36.test.ts` beside the `{{#each}}` one.
+      el.setAttribute(i18nAttr(key), users !== null ? users.put('', value, 'attribute') : value)
     }
   }
 }

@@ -319,6 +319,18 @@ test('AD-5 exception — {page_number} in a link\'s attributes is NOT substitute
   }
 })
 
+test('AD-5 exception — {page_number} in a module string override is NOT substituted into its data-i18n-* attribute, on either emitter', () => {
+  // The THIRD attribute sink, found at review: `stampStrings` parks a customer's S5 override through `UserText`
+  // for a `data-i18n-*` attribute. Executed before the fix, the theme emitted the guarded constant raw inside it.
+  const src = '<section class="s"><div class="cd" data-module="countdown">·</div></section>'
+  const input = { strings: { 'countdown.ended': 'ended on page {page_number}' }, tokens: { page_number: '2' } }
+  const theme = renderTheme(doc(), src, input).template
+  const canvas = renderCanvas(doc(), src, input)
+  assert.ok(theme.includes('data-i18n-ended="ended on page &#123;page_number&#125;"'), theme)
+  assert.ok(!/data-i18n-[a-z]+="[^"]*\{\{/.test(theme), `a live mustache reached a data-i18n-* attribute: ${theme}`)
+  assert.ok(canvas.includes('data-i18n-ended="ended on page {page_number}"'), canvas)
+})
+
 test('AD-5 exception — a C0 character beside the token is still dropped, and the token still substitutes', () => {
   const out = pageTheme('Page\u0000 {page_number}\u0007!')
   assert.ok(out.includes(`Page ${PAGE_NUMBER_HBS}!`), `the C0 characters must be dropped, the token kept: ${JSON.stringify(out)}`)
