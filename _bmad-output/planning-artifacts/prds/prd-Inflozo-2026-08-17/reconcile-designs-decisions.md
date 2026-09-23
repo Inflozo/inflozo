@@ -4010,9 +4010,30 @@ each page hold it, no problem, but do not give options to the users to add {page
   `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`, whose guard is falsy exactly on page 1 and where
   `pagination` is absent. **Standing rule 1 binds:** it is read in Ghost's source on both majors and executed on T1 and
   T3 into `MEASUREMENTS.md` §49 before anything is emitted for it.
-- Targets: ✅ this entry · ⬜ Story 5.16a's spec · ⬜ `epics.md` Story 5.16a's card · ⬜ R-182's entry (the reversed
-  bullet, marked not rewritten) · ⬜ `DESIGN.md` § Components (a placeholder may be offered on some pages only)
-  · ⬜ `EXPERIENCE.md` · ⬜ `epic-5-context.md` — at Story 5.16a.
+- Targets: ✅ this entry · ✅ Story 5.16a's spec · ✅ R-182's entry (the reversed bullet, marked not rewritten)
+  — Story 5.16a, 2026-09-23. ⬜ `epics.md` Story 5.16a's card · ⬜ `DESIGN.md` § Components (a placeholder may be
+  offered on some pages only) · ⬜ `EXPERIENCE.md` · ⬜ `epic-5-context.md` — at Story 5.16a.
+
+**R-187 — the header and footer never offer `{page_number}`; only page 2's own sections do.** Story 5.16a's Question 3,
+ruled **option 2** (owner, 2026-09-23): *"Do not offer it in the header or the footer — only in page 2's own
+sections."*
+
+- **What it binds.** A site-wide section — one stored in the `site` doc and compiled into `default.hbs` — **never**
+  lists `{page_number}` in its `{}` menu, on page 2 or anywhere else. The offer survives only on the page's own
+  sections while the canvas shows page 2. Together with R-186 the rule is one line: **offered when the canvas shows
+  page 2 AND the section is not site-wide.**
+- **Why he ruled it.** The header and footer are one object across every page (R-180), so a page number added there
+  would print on page 2 and leave a hole in the same sentence on the front page and on every post. Option 2 makes
+  "never a page number on page 1" absolute for everything site-wide. **The cost he accepted:** his own first example
+  for this feature was the header — *"users can add a header, hero and show the Page number there"* — and the header is
+  now the one place it cannot be added from. A page number goes in a section that belongs to page 2: a hero, a heading,
+  a grid's small line.
+- **It restricts the OFFER, not the substitution.** A user who types `{page_number}` into a header by hand is still
+  honoured — it prints on page 2 and nothing elsewhere. One substitution rule everywhere is kept deliberately: a token
+  that printed in one section and shipped as literal `{page_number}` to a visitor in another would be worse than the
+  hole it avoided, and R-186 already drew the line at the offer.
+- Targets: ✅ this entry · ✅ Story 5.16a's spec — Story 5.16a, 2026-09-23. ⬜ `epics.md` Story 5.16a's card
+  · ⬜ `DESIGN.md` § Components · ⬜ `EXPERIENCE.md` · ⬜ `epic-5-context.md` — at Story 5.16a.
 
 
 ## B · Approved decisions superseded by this session

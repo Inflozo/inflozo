@@ -11,9 +11,9 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 
 ## In plain English
 
-While you are designing **page 2**, every text box you can edit — a header, a hero, a heading, a button's words —
-offers **`{page_number}`**, and it prints the number of the page a visitor is on: **2** at `/page/2/`, **3** on page 3,
-and so on. **It is never offered on page 1, and it never prints a number there** — nor on a post, a standalone page or
+While you are designing **page 2**, every text box in one of that page's own sections — a hero, a heading, a grid's
+small line — offers **`{page_number}`**, and it prints the number of the page a visitor is on: **2** at `/page/2/`,
+**3** on page 3, and so on. Your header and footer never offer it, because they are on every page of your site. **It is never offered on page 1, and it never prints a number there** — nor on a post, a standalone page or
 the 404. While you design page 2 the canvas shows the number the same way a visitor sees it, and the moment you click
 into the words to change them the token shows again, so you can see it and edit it. Beside the label of a text box that
 has a placeholder there is now a small **`{}`** button: press it and a short menu lists that box's placeholders, each
@@ -43,17 +43,21 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
 - **The token is `{page_number}`, single braces, `{members}`'s form** (R-182). It is not declared by a design: every
   `text` and `richtext` prop accepts it, and a design that declares it is refused at authoring time.
 - **Nothing shows a page number that the user did not type** (R-182). No section, no header, no default text gains one.
-- **`{page_number}` is offered on page 2 and nowhere else** (R-186). The `{}` menu lists it only while the canvas shows
-  page 2 of a paginated template — which R-176 already offers only where a page 2 exists, so "paginated content" needs
-  no second rule. On page 1, and on Post, Page, 404, Private and a custom template, a field whose only placeholder is
-  this one carries **no `{}` button at all**.
+- **`{page_number}` is offered when the canvas shows page 2 AND the section is not site-wide** (R-186 with R-187).
+  That is the whole rule. Page 2 of a paginated template is what R-176 already offers only where a page 2 exists, so
+  "paginated content" needs no second test; and a site-wide section — one in the `site` doc, compiled into
+  `default.hbs` — never offers it, on page 2 or anywhere, because it is on every page (R-180) and would leave a hole in
+  the same sentence on the front page. Everywhere else — page 1, Post, Page, 404, Private, a custom template — a field
+  whose only placeholder is this one carries **no `{}` button at all**.
 - **It never prints on page 1** (R-186, reversing R-182's one bullet), and never on a post, a standalone page or the
   404 (R-183). It prints the page's own number from page 2 on — 3 on page 3, because page 3 renders page 2's design
   (R-177).
 - **A field that page 1 also shows MAY hold it, and that is accepted, not prevented** (R-186, the owner's own words:
-  *"If we want to have each page hold it, no problem"*). The header and footer are one object across every page
-  (R-180) and a following page 2 is page 1's rows (R-179), so the token can reach page 1's content; page 1 simply
-  prints nothing in its place. **Never** try to strip it from page 1's stored text — the value is the user's.
+  *"If we want to have each page hold it, no problem"*). A following page 2 is page 1's rows (R-179), and a user may
+  type the token by hand into anything, the header included; page 1 simply prints nothing in its place. **Never** try
+  to strip it from page 1's stored text, and **never** refuse to substitute it in a site-wide section — R-187 restricts
+  the OFFER, not the substitution, and a token that shipped as literal `{page_number}` to a visitor in one section
+  while printing a number in another would be worse than the hole it avoided.
 - **On the canvas the number is the page being painted, and only on page 2** — nothing on page 1, nothing where the
   painted target has no pagination.
 - **Clicking into the words shows the token again.** The inline controller already re-serializes without token values
@@ -132,6 +136,8 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
 | **Copy** pressed | any row | the code on the clipboard, the button says so briefly, the menu stays open | a clipboard the browser refuses leaves the menu usable and says nothing false |
 | The `{}` button on the Newsletter's "Join {members} readers" box, **on page 2** | that prop declares `members` | the menu lists **two** rows — `{members}` and `{page_number}` — each with its own line | N/A |
 | The same box **on page 1** | that prop declares `members` | the menu lists `{members}` **alone** — no page-number row (R-186) | N/A |
+| Any field of the **header or footer**, on page 2 | a site-wide section (`target === 'default.hbs'`) | **no page-number row, ever** — and no `{}` button at all unless the prop declares a token of its own (R-187) | N/A |
+| `{page_number}` typed by hand into a header | the offer was never made; the value is the user's | it still substitutes — 2 on page 2, nothing on page 1 and on posts | R-187 restricts the offer, not the substitution |
 | Any other text box **on page 1**, or on Post / Page / 404 | no prop-declared tokens, and no page number offered | **no `{}` button at all** | N/A |
 | Any other text box **on page 2** | no prop-declared tokens | the menu lists `{page_number}` alone | N/A |
 | A field whose **whole** value is `{page_number}`, on page 1 | e.g. a button label typed as just the token | the field resolves to an EMPTY string — what the element then does is the design's own `data-empty` guard, which Dev must read and record rather than assume | if a design hides on empty, the element vanishes on page 1; if it does not, an empty button ships |
@@ -308,9 +314,9 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
       **Insert** as two small buttons. It is a `<li>` with two buttons, not a button with buttons inside. -- R-185's
       row, in the file whose whole purpose is that the menus cannot drift apart.
 - [ ] `apps/web/components/controls/placeholder-menu.tsx` -- new: the `{}` trigger and its menu. The trigger is a small
-      `Braces` button beside the field's label — **absent entirely when the field has no placeholder to offer here**,
-      which on page 1 is every field but the Newsletter's `proofLine` (R-186) — labelled for a screen reader with the
-      field's name; the card is
+      `Braces` button beside the field's label — **absent entirely when the field has no placeholder to offer here**:
+      on page 1 that is every field but the Newsletter's `proofLine`, and in the header and footer it is every field on
+      every page (R-186, R-187) — labelled for a screen reader with the field's name; the card is
       `BarMenuCard` headed "Placeholders", and the rows are that field's tokens in `PLACEHOLDERS`' order with their
       descriptions. **The card holds the rows and nothing else — no footer, no explanatory sentence.**
       **Insert** calls the handler the caller passes (the field's existing
@@ -325,12 +331,15 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
       insert-at-selection and its refusal caption; the `{}` trigger is attached where `field()` (`:274-326`) draws each
       label, so both kinds get it from one place. **The panel must be told which page is on screen** — `paint()` already
       reads `now.page`, and the panel is keyed across pages (`acrossPages`), so thread the same `Page` down rather than
-      deriving it a second way. -- the two field kinds stay one behaviour, and the offer follows the canvas.
+      deriving it a second way; the selected instance already carries its `target`, which is what says site-wide.
+      -- the two field kinds stay one behaviour, and the offer follows the canvas.
 - [ ] `packages/library/src/vocabulary.ts` (with the map above) -- **one exported function that answers "which
-      placeholders does this field offer, on this page"**: the prop's own `tokens`, plus `page_number` **only when the
-      page is 2**. Every caller — both field kinds, the tests, and whatever offers a placeholder in a later epic — asks
-      this one function. -- R-186 is a rule about *offering*, and a rule with two implementations is a rule with one
-      bug; this is also where a future placeholder declares where it may be offered.
+      placeholders does this field offer, here"**: the prop's own `tokens`, plus `page_number` **only when the page is 2
+      and the section is not site-wide** (R-186, R-187). Site-wide is the instance's own stamp — `target ===
+      'default.hbs'` / `doc === 'site'`, which `stackOf` already sets (`page-two.ts:134`). Every caller — both field
+      kinds, the tests, and whatever offers a placeholder in a later epic — asks this one function. -- offering is the
+      whole of R-186 and R-187, and a rule with two implementations is a rule with one bug; this is also where a future
+      placeholder declares where it may be offered.
 - [ ] `packages/section-runtime/src/agreement.test.ts` -- extend R-27's case (`:290-300`) and add the page number's: the
       canvas prints the handed number, prints nothing when handed none (page 1), and the theme prints the guarded constant;
       a prop declaring no tokens gets it too; `{members}` undeclared still stays literal on both sides. -- §7.3's exit
@@ -378,11 +387,13 @@ reaches it from the `{}` button beside its label (R-185), the one way every plac
 
 **Acceptance Criteria:**
 
-- Given the canvas showing **page 2**, when any `text` or `richtext` field is shown, then its `{}` menu offers
-  `{page_number}`; and given the canvas showing page 1 — or Post, Page, 404, Private or a custom template — then it does
-  not, and a field with no placeholder of its own carries no `{}` button at all (R-186).
-- Given a user who types `{page_number}` by hand anywhere, when it is stored, then it is accepted and kept verbatim: the
-  offer is restricted, the acceptance is not (R-182, amending R-27; R-186).
+- Given the canvas showing **page 2**, when a `text` or `richtext` field of one of **that page's own sections** is
+  shown, then its `{}` menu offers `{page_number}`; and given page 1 — or Post, Page, 404, Private or a custom
+  template — then it does not (R-186); and given **any field of the header or footer**, then it does not, on any page
+  (R-187). A field left with no placeholder to offer carries no `{}` button at all.
+- Given a user who types `{page_number}` by hand anywhere — the header included — when it is stored, then it is
+  accepted, kept verbatim and substituted by the same one rule everywhere: the offer is restricted, the acceptance and
+  the substitution are not (R-182 amending R-27; R-186; R-187).
 - Given the canvas painting page 2, when a section's text holds the token, then `2` is printed; and given the canvas
   painting page 1 — including a header carried there from page 2, or a page 2 that still follows page 1 — then
   **nothing** is printed in its place (R-186, reversing R-182's page-1 bullet).
@@ -510,8 +521,8 @@ your projects, and every change is taken back before the end, so they finish as 
 
 Steps 1 to 3 are your **R-186**: nothing offered on page 1, offered on page 2. Steps 4 and 5 are your **R-185**: the
 `{}` button beside a field's label, its menu, and Insert. Steps 6 and 7 are the number on the canvas and the token back
-when you click in (R-182). Steps 8 to 10 are the header — including **the gap on page 1 that R-186 accepts**, so you can
-see it rather than be told about it. Step 11 is the one thing that must *not* change.
+when you click in (R-182). Step 8 is page 1 left alone. Step 9 is your **R-187**: the header never offers it. Step 11 is
+the one thing that must *not* change.
 
 Both projects are left exactly as they started.
 
@@ -525,8 +536,8 @@ Both projects are left exactly as they started.
 | 6 | same | Page 2 | Press **Esc** to close the menu and click the grey ground beside the page. | — | The eyebrow on the canvas ends in **2**. |
 | 7 | same | Page 2 | Click into those words on the canvas. | — | They change back to show `{page_number}` so you can edit them. Click the ground again and the **2** comes back. |
 | 8 | same | Page 2 | Press **Back to page 1** and look at the eyebrow. | — | Page 1's eyebrow is unchanged — no number and no gap. Changing page 2 never touched page 1. |
-| 9 | same | Page 2 | Press **2** again. Click the **header** at the top of the page, find its button's **Label** box, press its **`{}`** and then **Insert**. Answer the site-wide prompt with **Change it everywhere**. | — | The header's button on page 2 ends in **2**. The prompt appears because the header is on every page of your site. |
-| 10 | same | Page 2 → page 1 → Post | Press **Back to page 1** and look at the header. Then open the **Template** menu in the top bar and choose **Post**. | — | **This is the cost of the rule, and it is expected:** on page 1 and on the post the header's button shows **no number** — where "2" was, there is nothing. Choose **Home**, press **2**, and press **⌘Z** until the header and the eyebrow are back as they were. |
+| 9 | same | Page 2 | Press **2** again. Click the **header** at the top of the page and find its button's **Label** box in the settings. Look beside its label. | — | **No `{}` button** — not even on page 2. Your header is on every page of your site, so it never offers a page number. |
+| 10 | same | Page 2 | Press **⌘Z** until the eyebrow is back to "The archive". | — | Everything you typed is taken back, and page 1 was never touched. |
 | 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all. Press **⌘Z**. |
 
 ## Questions for the owner
@@ -651,4 +662,14 @@ button would be blank there.
    - You lose the header, which was your first example of where you wanted it. A page number could then only go in a
      section that belongs to page 2 — a hero, a heading, a grid's small line.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-23).** *"Do not offer it in the header or the footer — only in page 2's own
+sections."* Recorded as **R-187**.
+
+- A site-wide section — one stored in the `site` doc and compiled into `default.hbs` — never lists `{page_number}`,
+  on page 2 or anywhere. With R-186 the rule is one line: **offered when the canvas shows page 2 and the section is not
+  site-wide.**
+- The header, his first example for this feature, is the one place it can no longer be added from. That cost was named
+  in the question and accepted.
+- It restricts the offer, not the substitution: typed into a header by hand it still prints 2 on page 2 and nothing
+  elsewhere, because one substitution rule everywhere beats a token that ships as literal `{page_number}` to a visitor
+  in one section while printing a number in another.

@@ -758,17 +758,26 @@ def md(s):
 
 
 def mdblock(text):
-    """Paragraphs, bullet and numbered lists, and ### sub-headings — enough for a spec section."""
-    out, buf, kind = [], [], None
+    """Paragraphs, bullet and numbered lists, and ### sub-headings — enough for a spec section.
+
+    AN INDENTED LIST LINE IS A CHILD OF THE ITEM ABOVE IT, never a list of its own. R-83 gives every
+    question numbered options and the specs hang indented sub-bullets under each one; treating those
+    as a sibling list closed the `<ol>` after one item and opened a new one for the next option, so
+    EVERY OPTION RENDERED AS "1." (the owner, 2026-09-23, reading the board). A buffered item is
+    therefore `(text, [children])`, and the children come out as a nested `<ul>` inside its `<li>`.
+    """
+    out, buf, kind = [], [], None        # buf items are (text, [child, …])
 
     def flush():
         nonlocal buf, kind
         if not buf:
             return
         if kind == 'p':
-            out.append(f'<p>{md(" ".join(buf))}</p>')
+            out.append(f'<p>{md(" ".join(t for t, _ in buf))}</p>')
         else:
-            out.append(f'<{kind}>' + ''.join(f'<li>{md(i)}</li>' for i in buf) + f'</{kind}>')
+            out.append(f'<{kind}>' + ''.join(
+                f'<li>{md(t)}' + (f'<ul>{"".join(f"<li>{md(c)}</li>" for c in kids)}</ul>' if kids else '') + '</li>'
+                for t, kids in buf) + f'</{kind}>')
         buf, kind = [], None
 
     for line in text.splitlines():
@@ -777,22 +786,29 @@ def mdblock(text):
             flush(); continue
         if re.match(r'^#{1,6}\s', s):
             flush(); out.append(f'<h4>{md(s.lstrip("# "))}</h4>'); continue
+        indented = line[:1].isspace()
         m = re.match(r'^[-*]\s+(.*)', s)
         k = 'ul' if m else None
         if not m:
             m = re.match(r'^\d+[.)]\s+(.*)', s)
             k = 'ol' if m else 'p'
         if k == 'p':
-            if kind in ('ul', 'ol') and line[:1].isspace():
-                buf[-1] += ' ' + s               # an indented continuation of the last item
+            if kind in ('ul', 'ol') and indented:
+                text_, kids = buf[-1]        # a wrapped line continues the deepest thing above it
+                if kids:
+                    kids[-1] += ' ' + s
+                else:
+                    buf[-1] = (text_ + ' ' + s, kids)
             else:
                 if kind != 'p':
                     flush()
-                kind = 'p'; buf.append(s)
+                kind = 'p'; buf.append((s, []))
+        elif indented and kind in ('ul', 'ol') and buf:
+            buf[-1][1].append(m.group(1))    # nested under the item above — the list stays open
         else:
             if kind != k:
                 flush()
-            kind = k; buf.append(m.group(1))
+            kind = k; buf.append((m.group(1), []))
     flush()
     return f'<div class="md">{"".join(out)}</div>'
 
