@@ -62,15 +62,21 @@ export function PlaceholderMenu({
   if (offered.length === 0) return null
 
   const copy = (code: string) => {
-    // a clipboard the browser refuses leaves the menu usable and says nothing false (no "Copied" that was not)
-    navigator.clipboard?.writeText(code).then(
-      () => {
-        setCopied(code)
-        if (timer.current !== null) clearTimeout(timer.current)
-        timer.current = setTimeout(() => setCopied(null), 1600)
-      },
-      () => {},
-    )
+    // A CLIPBOARD THE BROWSER REFUSES LEAVES THE MENU USABLE AND SAYS NOTHING FALSE — no "Copied" that was not.
+    // Three ways it can refuse and all three are the same answer: absent (`clipboard` is undefined outside a secure
+    // context, and `?.` short-circuits the whole chain), rejected (permissions), or thrown synchronously.
+    try {
+      navigator.clipboard?.writeText(code).then(
+        () => {
+          setCopied(code)
+          if (timer.current !== null) clearTimeout(timer.current)
+          timer.current = setTimeout(() => setCopied(null), 1600)
+        },
+        () => {},
+      )
+    } catch {
+      /* said nothing, and the row is still there to press again */
+    }
   }
 
   return (
