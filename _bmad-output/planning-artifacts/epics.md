@@ -2150,8 +2150,8 @@ T3 before anything is emitted for it (standing rule 1)
 **And** **every placeholder is reached from one `{}` button beside the field's label** — **R-185** (owner,
 2026-09-23), which **withdraws P0-1's chip row under the field** for `{page_number}`, for `{members}` and for every
 placeholder added later: the button opens S4d's and D5b's own menu (R-171, `bar-menu.tsx`), each row the code over one
-line of description with **Copy** and **Insert** on the right, the "anything else in braces" sentence once at its foot,
-and nothing under the field at all; a placeholder declared without its description is refused by `validate.ts`, and
+line of description with **Copy** and **Insert** on the right and nothing else in the card, and nothing under the field
+at all — the "anything else in braces" line drawn at `P0-1:193` is withdrawn and appears nowhere (owner, 2026-09-23); a placeholder declared without its description is refused by `validate.ts`, and
 `DESIGN.md` § Components carries the note he asked for.
 
 **FRs:** FR-D4 and FR-G3 (amended by R-182), FR-D21. · **Frame:** none of its own — the placeholder menu is

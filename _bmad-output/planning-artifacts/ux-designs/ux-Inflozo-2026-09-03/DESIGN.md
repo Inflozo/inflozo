@@ -526,8 +526,9 @@ and it holds for placeholders nobody has thought of yet** (ruling **R-185**, own
   rows that are a name at 13/500 over **one line at 11px muted**. It is built from
   `components/editor/bar-menu.tsx`, so Template, View as and this can never drift apart.
 - **A row is the placeholder's code, its one-line description under it, and Copy + Insert on the
-  right.** The sentence "Anything else in braces prints exactly as you typed it" is said **once**, at
-  the foot of the menu.
+  right — and the card holds nothing else.** No footer and no explanatory sentence: the line about
+  other words in braces, drawn at `P0-1:193`, is withdrawn with the chip row and **appears nowhere in
+  the product** (owner, 2026-09-23 — *"It is understood"*).
 - **A placeholder with no description cannot ship.** Its one-liner lives beside its declaration in
   `vocabulary.ts`'s `PLACEHOLDERS`, and `validate.ts` refuses a declared placeholder that has none —
   the mechanism that keeps this rule true rather than remembered. Built at Story 5.16a.

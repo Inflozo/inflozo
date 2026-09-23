@@ -3961,8 +3961,10 @@ ones. Add a note about this design so it is not missed when we work on them in f
 - **What it binds, for every placeholder there will ever be.** A field that accepts any placeholder carries **a small
   `{}` icon beside its label** and nothing else — no caption, no chip row, no sentence under the field. The icon opens
   a menu listing the placeholders **that field** accepts: per row, the placeholder's code, **a one-line description
-  under it**, and on the right **Copy** and **Insert**. The sentence "Anything else in braces prints exactly as you
-  typed it" is said **once**, at the foot of that menu.
+  under it**, and on the right **Copy** and **Insert**. **The card holds the rows and nothing else.**
+  *Amended the same day, before anything was built* (owner, 2026-09-23): *"Do not mention 'anything else in braces
+  prints exactly as you typed it' anywhere. It is understood."* — so `P0-1:193`'s info box is withdrawn along with the
+  chip row, and that sentence appears **nowhere in the product**.
 - **It replaces a drawn frame, deliberately.** `P0-1 Inline Text Toolbar.dc.html:174-204` drew the caption
   `TOKENS THIS FIELD ACCEPTS`, a chip row and a grey info box **under** the field, and `:197` ruled "a field with no
   tokens shows no row at all". R-182 made `{page_number}` a token every text field accepts, which would have put that

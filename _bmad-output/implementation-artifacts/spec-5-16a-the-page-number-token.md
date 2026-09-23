@@ -17,7 +17,7 @@ all** on a post, a standalone page or the 404. While you design, the canvas show
 sees it, and the moment you click into the words to change them the token shows again, so you can see it and edit it.
 Beside the label of every text box in the settings panel there is now a small **`{}`** button: press it and a short menu
 lists the placeholders that box accepts, each with one line saying what it does and, on the right, **Copy** and
-**Insert** — and every other word you write in braces still prints exactly as you typed it.
+**Insert**. Any other word you write in braces is left exactly as you typed it, as it always was.
 
 ## Intent
 
@@ -60,7 +60,7 @@ every placeholder is offered from here on.
 - **Every dynamic placeholder is reached one way: a `{}` button beside the field's label** (R-185, owner, 2026-09-23).
   P0-1's caption, chip row and info box **under** the field are withdrawn for every placeholder, existing and future.
   The menu lists the placeholders **that field** accepts, each as its code over one line of description, with **Copy**
-  and **Insert** on the right, and says the "anything else in braces" sentence **once**, at its foot.
+  and **Insert** on the right, and nothing else at all (owner, 2026-09-23, amending R-185 the same day).
 - **The menu is S4d's and D5b's menu, not a new one.** It is built from `components/editor/bar-menu.tsx` — R-171's own
   anatomy, whose row is already a name over one line at 11px muted with a trailing slot — and placed by `lib/menu.ts`'s
   `openMenu`, which gives light dismiss, Escape and focus return. Same components, same tokens (R-74's extrapolation
@@ -77,8 +77,9 @@ every placeholder is offered from here on.
 
 - Emitting anything other than the single constant expression — a guard, a helper, a partial — changes what AD-5
   promises. Halt and ask.
-- Adding anything to the placeholder menu beyond a row's code, its one line, Copy and Insert, plus the one closing
-  sentence. R-185's words are "clean and minimal" and it governs every placeholder from here on.
+- Adding anything to the placeholder menu beyond the rows themselves — a row is its code, its one line, Copy and
+  Insert, and the card holds nothing else. R-185's words are "clean and minimal" and it governs every placeholder from
+  here on.
 - Giving any *other* token a live Handlebars form. That is the theme-side token debt (`deferred-work.md:3762`,
   `:3776-3778`) and it is not this story.
 
@@ -92,6 +93,10 @@ every placeholder is offered from here on.
   there; the placeholders are reached from the panel field's `{}` button (R-185).
 - Never keep `TokenRow` beside the new menu, and never leave the old row on the one field that has a token of its own.
   R-185 is one way for every placeholder, existing and future — two ways is the thing it was ruled to stop.
+- **Never write the sentence "Anything else in braces prints exactly as you typed it" anywhere in the product** — not
+  in the menu, not under a field, not in a tooltip, not in a help string (owner, 2026-09-23: *"It is understood."*). It
+  exists today at `apps/web/components/controls/rich-field.tsx:56-59` and goes with `TokenRow`; the closing grep must
+  find it nowhere.
 - Never change what `/pilots`, the Section Picker's cards, the design ring's tiles, `tools/check-snapshots.mjs` or the
   render matrix emit. They pass no token values and must stay byte-identical — that is this story's control.
 - No migration, no new stored field, no change to `commit()`, the flush, the local store or the hydrate.
@@ -264,9 +269,9 @@ every placeholder is offered from here on.
       row, in the file whose whole purpose is that the menus cannot drift apart.
 - [ ] `apps/web/components/controls/placeholder-menu.tsx` -- new: the `{}` trigger and its menu. The trigger is a small
       `Braces` button beside the field's label, labelled for a screen reader with the field's name; the card is
-      `BarMenuCard` headed "Placeholders", the rows are that field's tokens in `PLACEHOLDERS`' order with their
-      descriptions, and the foot carries the one sentence "Anything else in braces prints exactly as you typed it —
-      {this} stays {this} on the page." **Insert** calls the handler the caller passes (the field's existing
+      `BarMenuCard` headed "Placeholders", and the rows are that field's tokens in `PLACEHOLDERS`' order with their
+      descriptions. **The card holds the rows and nothing else — no footer, no explanatory sentence.**
+      **Insert** calls the handler the caller passes (the field's existing
       whole-or-nothing insert), **Copy** writes the code to the clipboard and says so on the button for a moment.
       Placement, clamping, light dismiss, Escape and focus return come from `openMenu`; rows are `relative` so no
       sr-only word gives the card a second scrollbar. -- one surface, used by both field kinds and by every placeholder
@@ -318,8 +323,9 @@ every placeholder is offered from here on.
       what 5.16a built, in DW-73's shape. Append; never rewrite the file. -- the next story reads this, not the specs.
 - [x] `_bmad-output/planning-artifacts/epics.md` -- Story 5.16a's card carries R-185's criterion, its **Rulings** line
       gains R-171 and R-185, and its **Frame** line says the surface is extrapolated rather than drawn. Done at Create.
-- [ ] grep the repository for `INLINE_TOKENS`, `substituteTokens`, `TokenRow` and "per-field" before the Dev commit.
-      -- standing rule 7: a propagation list cannot audit itself.
+- [ ] grep the repository for `INLINE_TOKENS`, `substituteTokens`, `TokenRow`, "per-field" and **"else in braces"**
+      before the Dev commit; the last must return nothing outside the historical record in this spec and the ruling
+      register. -- standing rule 7: a propagation list cannot audit itself.
 
 **Acceptance Criteria:**
 
@@ -342,8 +348,8 @@ every placeholder is offered from here on.
 - Given that button, when it is pressed, then a menu opens **matching `bar-menu.tsx`'s anatomy part for part** — S4d's
   and D5b's card, heading, scrolling list and rows as R-171 set them, at radius 12 with 6px padding and `shadow-lg`,
   each row the placeholder's code at 13/500 over one line at 11px muted — listing exactly the placeholders that field
-  accepts, with **Copy** and **Insert** on the right of each and the "anything else in braces" sentence once at the
-  foot (R-185, and R-74's extrapolation rule: same components, same tokens).
+  accepts, with **Copy** and **Insert** on the right of each and **nothing below the last row** (R-185, and R-74's
+  extrapolation rule: same components, same tokens).
 - Given a field whose prop declares a token of its own, when the menu opens, then that token and `{page_number}` are
   both listed, each with its own description; and given a field that is not `text` or `richtext`, then there is no `{}`
   button at all.
@@ -494,9 +500,43 @@ design so it is not missed when we work on them in future."* Recorded as **R-185
 - **A small `{}` button sits beside the field's label**, on every field that accepts a placeholder — which, since
   R-182, is every text box.
 - **Its menu** lists the placeholders *that field* accepts: the code, one line under it saying what it does, and
-  **Copy** and **Insert** on the right. The "anything else in braces prints exactly as you typed it" sentence is said
-  **once**, at the foot of the menu.
+  **Copy** and **Insert** on the right. **Nothing else** — the sentence about other words in braces is withdrawn with
+  the chip row it sat in (owner, 2026-09-23: *"Do not mention 'anything else in braces prints exactly as you typed
+  it' anywhere. It is understood."*), so it appears nowhere in the product.
 - **It is not a new look.** The menu is the one already agreed for Template and View as (R-171) — the same card, the
   same heading, the same rows of a name over one muted line with a slot on the right. Only the rows' contents differ.
 - **The note asked for** is a component entry in `DESIGN.md`, and it is backed by a refusal: a placeholder declared
   without its one-line description fails validation, so a later story cannot add one that the menu cannot explain.
+
+### Question 2 — Is `{page_number}` for page 2 only, or for every page?
+
+**In plain English.** You asked: *"{page_number} should be accepted by every editable text fields on Page 2 only. — is
+this correct?"* **No — as the story stands it is every page, not page 2 only**, and that is what you ruled yesterday.
+R-182's words were *"Page 1 should respect the design user created. If user does not uses {page_number} then we should
+not show it"*, and the option you picked showed **page 1 printing "1"**. So today the spec says: you can type it in any
+text box on any page, and it prints the number of the page a visitor is on — 1 on your front page, 2 at `/page/2/`,
+3 on page 3 — and nothing on a post, a standalone page or the 404.
+
+There is also something that makes "page 2 only" hard to mean literally. Your header and footer are **one thing shared
+by every page** (R-180), and page 2 **starts as an exact copy of page 1** (R-179). So a `{page_number}` you type on
+page 1 is already on page 2 by itself, and one typed into the header is on every page of your site. A field cannot
+really accept it "on page 2 only" when the field is the same field everywhere.
+
+**An example.** You type "The archive — page {page_number}" into your post grid's small line, on page 1.
+
+- Today's story: page 1 reads "The archive — page 1", `/page/2/` reads "page 2", `/page/3/` reads "page 3".
+- Page-2-only: page 1 would read "The archive — page" with a gap, and only `/page/2/` onwards would show a number.
+
+1. **Every page, as you ruled yesterday (RECOMMENDED).**
+   - Page 1 shows **1**, page 2 shows **2**, page 3 shows **3**. A post, a standalone page and the 404 show nothing.
+   - The sentence always reads properly, because a number is always there where there is a page.
+   - Nothing changes in the story; it is ready to build.
+2. **Every page can hold it, but page 1 prints nothing** — only page 2 and later show a number.
+   - Your front page stays completely clean even if the token is in the header.
+   - "The archive — page" on page 1 reads as a mistake, and R-182 is reversed.
+3. **Only offered while you are looking at page 2** — the `{}` menu shows the page number row on page 2 only.
+   - It is impossible to add it anywhere but page 2 deliberately.
+   - It does not actually confine it: a copy or a header still carries it to page 1, so page 1 would print a number you
+     could not have added there. This is the one option that does not do what it sounds like.
+
+**Ruled:** _(awaiting the owner)_
