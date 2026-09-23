@@ -11,13 +11,13 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 
 ## In plain English
 
-Type `{page_number}` into any text you can edit — a header, a hero, a heading, a button's words — and it prints the
-number of the page the visitor is on: **1** on your front page, **2** at `/page/2/`, **3** on page 3, and **nothing at
-all** on a post, a standalone page or the 404. While you design, the canvas shows the number the same way a visitor
-sees it, and the moment you click into the words to change them the token shows again, so you can see it and edit it.
-Beside the label of every text box in the settings panel there is now a small **`{}`** button: press it and a short menu
-lists the placeholders that box accepts, each with one line saying what it does and, on the right, **Copy** and
-**Insert**. Any other word you write in braces is left exactly as you typed it, as it always was.
+While you are designing **page 2**, every text box you can edit — a header, a hero, a heading, a button's words —
+offers **`{page_number}`**, and it prints the number of the page a visitor is on: **2** at `/page/2/`, **3** on page 3,
+and so on. **It is never offered on page 1, and it never prints a number there** — nor on a post, a standalone page or
+the 404. While you design page 2 the canvas shows the number the same way a visitor sees it, and the moment you click
+into the words to change them the token shows again, so you can see it and edit it. Beside the label of a text box that
+has a placeholder there is now a small **`{}`** button: press it and a short menu lists that box's placeholders, each
+with one line saying what it does and, on the right, **Copy** and **Insert**.
 
 ## Intent
 
@@ -27,12 +27,11 @@ for it in his own words: *"I want to have a {page_number} dynamic data that I ca
 inline. So users can add a header, hero and show the Page number there."*
 
 **Approach:** `{page_number}` becomes **the one token every `text` and `richtext` prop accepts** — R-182 amends R-27 for
-it alone. The canvas substitutes the number it is painting (`templateContext`'s own `site.pagination.page`, the value
-Story 5.16 already computes for the page's address) and nothing where the page has none. The theme emitter substitutes a
-single constant Handlebars expression, `{{@root.pagination.page}}`, which Ghost answers on every paginated page, in
-`default.hbs` and in partials, and answers empty where there is no pagination — so R-183 is Ghost's own behaviour rather
-than a rule we enforce. Every text field reaches it from the `{}` button beside its label (R-185), the one way
-every placeholder is offered from here on.
+it alone — but it is **offered only while the canvas shows page 2**, and **prints only from page 2 on** (R-186). The
+canvas hands it the painted page's number and hands nothing on page 1. The theme emitter substitutes a single constant
+Handlebars expression, **guarded so page 1 prints nothing**, which Ghost answers on every later page and answers empty
+where there is no pagination at all — so R-183 stays Ghost's own behaviour rather than a rule we enforce. The field
+reaches it from the `{}` button beside its label (R-185), the one way every placeholder is offered from here on.
 
 **No Schema phase.** Nothing is stored that was not stored before: the token is characters in a prop's text, and
 `content` is already `z.record(z.string(), z.unknown())` (`doc-schema.ts:22`).
@@ -44,15 +43,29 @@ every placeholder is offered from here on.
 - **The token is `{page_number}`, single braces, `{members}`'s form** (R-182). It is not declared by a design: every
   `text` and `richtext` prop accepts it, and a design that declares it is refused at authoring time.
 - **Nothing shows a page number that the user did not type** (R-182). No section, no header, no default text gains one.
-- **On the canvas the number is the page being painted** — 1 on page 1, 2 on page 2 — and **nothing** where the painted
-  target has no pagination (R-183): Post, Page, 404, Private, a custom template.
+- **`{page_number}` is offered on page 2 and nowhere else** (R-186). The `{}` menu lists it only while the canvas shows
+  page 2 of a paginated template — which R-176 already offers only where a page 2 exists, so "paginated content" needs
+  no second rule. On page 1, and on Post, Page, 404, Private and a custom template, a field whose only placeholder is
+  this one carries **no `{}` button at all**.
+- **It never prints on page 1** (R-186, reversing R-182's one bullet), and never on a post, a standalone page or the
+  404 (R-183). It prints the page's own number from page 2 on — 3 on page 3, because page 3 renders page 2's design
+  (R-177).
+- **A field that page 1 also shows MAY hold it, and that is accepted, not prevented** (R-186, the owner's own words:
+  *"If we want to have each page hold it, no problem"*). The header and footer are one object across every page
+  (R-180) and a following page 2 is page 1's rows (R-179), so the token can reach page 1's content; page 1 simply
+  prints nothing in its place. **Never** try to strip it from page 1's stored text — the value is the user's.
+- **On the canvas the number is the page being painted, and only on page 2** — nothing on page 1, nothing where the
+  painted target has no pagination.
 - **Clicking into the words shows the token again.** The inline controller already re-serializes without token values
   (`inline.ts:71-73` and `:304`, "No token values, so `{members}` reads as typed"), and that behaviour is now
   load-bearing — it must be kept and asserted, not rediscovered.
 - **AD-5 holds for every character except the one constant.** The page number's Handlebars expression is a module
   constant inserted raw on the theme emitter **only**; every other character of user text still goes through
-  `escapeUserText`, so a typed `{{page_number}}` emits `&#123;{{@root.pagination.page}}&#125;` and can never become a
-  triple-stache. The canvas emitter can never emit a mustache at all, by construction.
+  `escapeUserText`, so a typed `{{page_number}}` emits the constant between `&#123;` and `&#125;` and can never become
+  a triple-stache. The canvas emitter can never emit a mustache at all, by construction. **The constant is now a
+  GUARDED expression** (R-186) — the candidate is `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`,
+  whose guard is falsy exactly on page 1 and wherever `pagination` is absent — and it is still one string produced by
+  our code, never by the user's.
 - **Every other word in braces still prints exactly as typed** (R-27, unchanged), and a token split across a mark
   boundary is still not substituted (`marks.ts:121-122`).
 - **Whole or nothing** (R-27): Insert refuses a token that would not fit the field's `maxChars`, and says why in the
@@ -68,8 +81,10 @@ every placeholder is offered from here on.
 - **No placeholder without a description.** Every placeholder's one-liner lives in one exported map, and a design that
   declares a placeholder absent from it is refused by `validate.ts`. That is what makes R-185 hold for placeholders
   nobody has thought of yet.
-- **Standing rule 1.** Where Ghost serves `pagination.page` to `default.hbs` is read in Ghost's own source on both
-  majors **and executed on T1 and T3, recorded in `MEASUREMENTS.md` §49, before anything is emitted for it.**
+- **Standing rule 1.** Where Ghost serves `pagination.page` to `default.hbs`, **and what `pagination.prev` is on page
+  1 of a multi-page archive**, are read in Ghost's own source on both majors **and executed on T1 and T3, recorded in
+  `MEASUREMENTS.md` §49, before anything is emitted for either.** The guard is the story's one unproven claim; if the
+  recorder contradicts it, **stop and ask** rather than reaching for a Ghost helper.
 - **R-82.** Review runs against the real infrastructure: T1 `ghost6.inflozo.com` (6.58.0), T3 `ghost5.inflozo.com`
   (5.130.6), and the deployed app on `app.inflozo.com`.
 
@@ -105,17 +120,21 @@ every placeholder is offered from here on.
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
-| Canvas, Home page 1 | a heading holding `The archive — page {page_number}` | `The archive — page 1` | N/A |
-| Canvas, Home page 2 | the same heading, `shownPage.page === 2` | `The archive — page 2` | N/A |
-| Canvas, Post / Page / 404 | the site-wide header holding `Orbit Weekly · page {page_number}` | `Orbit Weekly · page` — the token prints nothing (R-183) | N/A |
-| Canvas, click into the words | `startInline` re-serializes with no token values | `The archive — page {page_number}` shows again, and the caret can sit inside it | N/A |
-| Theme emitter, any target | the same heading | `The archive — page {{@root.pagination.page}}` — one expression, unescaped, spliced by `UserText.substitute` | N/A |
-| Theme emitter, a typed `{{page_number}}` | the user typed double braces | `&#123;{{@root.pagination.page}}&#125;` — prints `{3}` on page 3, never a triple-stache | AD-36 vector |
+| Canvas, Home page 2 | a heading holding `The archive — page {page_number}` | `The archive — page 2` | N/A |
+| Canvas, Home page 1, same words | the header or a following page 2 carried them back (R-179, R-180) | `The archive — page` — **nothing in the token's place** (R-186) | N/A |
+| Canvas, Post / Page / 404 | the site-wide header holding `Orbit Weekly · page {page_number}` | `Orbit Weekly · page` (R-183) | N/A |
+| Canvas, click into the words on page 2 | `startInline` re-serializes with no token values | `The archive — page {page_number}` shows again, and the caret can sit inside it | N/A |
+| Theme emitter, any target | the same heading | `The archive — page {{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}` — one guarded constant, unescaped, spliced by `UserText.substitute` | N/A |
+| The emitted theme on a real Ghost | `/`, `/page/2/`, `/page/3/`, a post | nothing · 2 · 3 · nothing | executed on T1 and T3 before it is emitted |
+| Theme emitter, a typed `{{page_number}}` | the user typed double braces | `&#123;` + the guarded constant + `&#125;` — prints `{3}` on page 3, never a triple-stache | AD-36 vector |
 | Either emitter, `{pagenumber}` · `{Page_Number}` · `{page_number }` | not the token | literal, escaped exactly as today | N/A |
 | **Insert** pressed, field at its limit | `maxChars` leaves fewer than 13 characters | nothing is inserted; the limit sentence appears under the field | whole-or-nothing (R-27) |
-| **Copy** pressed | any row | `{page_number}` on the clipboard, the button says so briefly, the menu stays open | a clipboard the browser refuses leaves the menu usable and says nothing false |
-| The `{}` button on the Newsletter's "Join {members} readers" box | that prop declares `members` | the menu lists **two** rows — `{members}` and `{page_number}` — each with its own line | N/A |
-| The `{}` button on any other text box | no prop-declared tokens | the menu lists `{page_number}` alone | N/A |
+| **Copy** pressed | any row | the code on the clipboard, the button says so briefly, the menu stays open | a clipboard the browser refuses leaves the menu usable and says nothing false |
+| The `{}` button on the Newsletter's "Join {members} readers" box, **on page 2** | that prop declares `members` | the menu lists **two** rows — `{members}` and `{page_number}` — each with its own line | N/A |
+| The same box **on page 1** | that prop declares `members` | the menu lists `{members}` **alone** — no page-number row (R-186) | N/A |
+| Any other text box **on page 1**, or on Post / Page / 404 | no prop-declared tokens, and no page number offered | **no `{}` button at all** | N/A |
+| Any other text box **on page 2** | no prop-declared tokens | the menu lists `{page_number}` alone | N/A |
+| A field whose **whole** value is `{page_number}`, on page 1 | e.g. a button label typed as just the token | the field resolves to an EMPTY string — what the element then does is the design's own `data-empty` guard, which Dev must read and record rather than assume | if a design hides on empty, the element vanishes on page 1; if it does not, an empty button ships |
 | An `image`, `url`, `icon` or `date` field | not a text field | no `{}` button — the field accepts no placeholder | N/A |
 | A design declares `tokens: ["page_number"]` | `validate.ts` | `bad-inline-token`, with a sentence naming R-182: every text prop accepts it already, so it is never declared | authoring refusal |
 | `/pilots`, picker cards, ring tiles, `check-snapshots`, the render matrix | no token values passed | unchanged, byte for byte | the story's control |
@@ -217,6 +236,22 @@ every placeholder is offered from here on.
   `page: 1` (`controllers/channel.js:27`), so `pagination.page` is present and `=== 1`.
 - **There is no `{{page}}` helper on either major** — `core/frontend/helpers/` holds `page_url.js` and `pagination.js`
   and no `page.js`; `@page` is `{show_title_and_feature_image}`, not a number (`format-response.js:26-42`).
+- **The page-1 guard, read in source on both majors and controlled locally (2026-09-23).** `pagination.prev` is
+  initialised `null` (bookshelf-pagination `lib/bookshelf-pagination.js:82` at 0.1.51 / `:117` at 2.4.1) and the
+  `page === 1` branch assigns **only `next`** (`:85-87` / `:120-122`), so **`prev` is literally `null` on page 1 of a
+  multi-page archive** — never `0`, never absent. Page 2 takes the else branch and gets `prev = 1` (`:90-93` / `:125-128`),
+  truthy. Nothing between there and the template rewrites it: `crud.js:157` / `:201` wraps it by reference, the output
+  serializers never touch `pagination` (zero hits under `serializers/` on both majors), `fetch-data.js:103`'s
+  `_.cloneDeep` preserves `null`, and `format-response.js:19-21` is a plain assignment. `#if` on a missing path is safe
+  because Ghost compiles with `{preventIndent: true}` only — no `strict`, no `assumeObjects`
+  (`theme-engine/engine.js:16`) — so the lookup short-circuits to `undefined` and `#if` calls its inverse
+  (`handlebars/lib/handlebars/helpers/if.js:16-17`, byte-identical in the 4.7.8 and 4.7.9 pins).
+  **Executed control**, express-hbs 2.5.0 on both Handlebars pins, the guard in a layout: page 1 of 5 → `[]`, page 2 of
+  5 → `[2]`, page 5 of 5 → `[5]`, no `pagination` key → `[]`, no error. Identical on both runs. **This is a source read
+  plus a local control, NOT the T1/T3 record standing rule 1 requires** — that is the story's first task.
+  *(The alternative, if the servers ever disagree: `{{#is "paged"}}`, which `rendering/context.js:35-36` / `:32-33`
+  pushes exactly when the URL page param > 1 and `helpers/is.js:15` reads off `@root`. Do not reach for
+  `{{#if @root.context}}` — `context` is an array on every request and is always truthy.)*
 - **`{{t}}` would destroy a literal `{page_number}`:** it is an ICU placeholder to intl-messageformat 5.4.3, and Ghost
   replaces the whole string with "An error occurred" when it is unbound (`theme-engine/i18n/I18n.js:225-231, 307-309`).
   Ghost 6 has an i18next branch behind the **private, default-off** labs flag `themeTranslation` where it would survive.
@@ -228,11 +263,14 @@ every placeholder is offered from here on.
 **Execution:**
 
 - [ ] `tools/probe/record-page-number.py` -- new recorder in `record-contexts.py`'s pattern (read its docstring, not
-      `--help`): generate a probe theme whose `default.hbs` prints `[{{@root.pagination.page}}]` and `[{{pagination.page}}]`,
-      gate it through `tools/stress/gate.js`, upload and activate on T1 and T3, fetch `/`, `/page/2/`, a post, a public
-      page and a 404 on each, restore the previous theme in a `finally` and re-read the active theme to prove it. Refuse
-      to write anything if a control fails. -- standing rule 1 and R-82: the claim is executed before anything is emitted
-      for it.
+      `--help`): generate a probe theme whose `default.hbs` prints `[{{@root.pagination.page}}]`, `[{{pagination.page}}]`,
+      `[{{@root.pagination.prev}}]` and **the guard itself**
+      `[{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}]`; gate it through `tools/stress/gate.js`, upload
+      and activate on T1 and T3, fetch `/`, `/page/2/`, **`/page/3/`**, a post, a public page and a 404 on each, restore
+      the previous theme in a `finally` and re-read the active theme to prove it. Refuse to write anything if a control
+      fails. **The guard must print nothing at `/`, `2` at `/page/2/`, `3` at `/page/3/` and nothing on the other
+      three — on both majors. If it does not, STOP and ask; do not reach for a Ghost helper.** -- standing rule 1 and
+      R-82: R-186's guard is this story's one unproven claim, and it is executed before anything is emitted for it.
 - [ ] `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` -- add **§49**:
       what `default.hbs` was served on both majors, page by page, with the command and the date. -- the record standing
       rule 1 requires; §48's neighbour.
@@ -247,7 +285,7 @@ every placeholder is offered from here on.
       has a description. -- **this is how R-185 reaches placeholders nobody has thought of yet**: a new one cannot ship
       without the line the menu shows.
 - [ ] `packages/section-runtime/src/marks.ts` -- put `page_number` in `TOKEN_SET` and in every prop's `declared` list;
-      export `PAGE_NUMBER_HBS = '{{@root.pagination.page}}'`; give `serializeMarks` a fourth argument saying it is
+      export `PAGE_NUMBER_HBS`, the **guarded** constant the recorder proved (R-186); give `serializeMarks` a fourth argument saying it is
       emitting for the theme; interleave escaping and substitution in `esc` so the page number's replacement is inserted
       between escaped literal pieces — raw on the theme, the handed number (or the empty string) on the canvas. Every
       other token keeps today's behaviour exactly, literal included. Update the header comments at `:115-122` and
@@ -258,17 +296,21 @@ every placeholder is offered from here on.
 - [ ] `apps/web/lib/canvas.ts` -- `renderSection` takes `page?: number` beside `url`, and passes
       `tokens: { page_number: String(page) }` when it is given one and no `tokens` at all when it is not. Comment it the
       way `url` is commented: the header renders at `default.hbs` and would otherwise be told nothing. -- R-182 on the
-      canvas, R-183 by omission.
+      canvas; **page 1 is simply never given one** (R-186), and Post/Page/404 give none either (R-183).
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- in `paint()`, keep the whole `site` from the
-      `templateContext` call already made at `:1076` and hand `site.pagination?.page` to every section beside `url`.
-      -- one more field of a call that is already made; Post, Page and 404 return no pagination, so they hand none.
+      `templateContext` call already made at `:1076` and hand `site.pagination?.page` to every section beside `url`
+      **only when `now.page === 2`**. `Page` is the `1 | 2` union (`page-two.ts:27`), so that is the whole condition,
+      and it is the same `now.page` the pill and the address already read. -- one more field of a call already made;
+      page 1 hands none (R-186), and Post, Page and 404 return no pagination so they hand none either (R-183).
 - [ ] `apps/web/components/kit/icons.tsx` -- add the Tabler `Braces` glyph. -- one glyph, in the one place glyphs live.
 - [ ] `apps/web/components/editor/bar-menu.tsx` -- add the placeholder row beside `BarMenuRow`: the same 10px gutters,
       the code at 13/500 in the mono face over **one line at 11px muted**, and a trailing slot holding **Copy** and
       **Insert** as two small buttons. It is a `<li>` with two buttons, not a button with buttons inside. -- R-185's
       row, in the file whose whole purpose is that the menus cannot drift apart.
 - [ ] `apps/web/components/controls/placeholder-menu.tsx` -- new: the `{}` trigger and its menu. The trigger is a small
-      `Braces` button beside the field's label, labelled for a screen reader with the field's name; the card is
+      `Braces` button beside the field's label — **absent entirely when the field has no placeholder to offer here**,
+      which on page 1 is every field but the Newsletter's `proofLine` (R-186) — labelled for a screen reader with the
+      field's name; the card is
       `BarMenuCard` headed "Placeholders", and the rows are that field's tokens in `PLACEHOLDERS`' order with their
       descriptions. **The card holds the rows and nothing else — no footer, no explanatory sentence.**
       **Insert** calls the handler the caller passes (the field's existing
@@ -277,13 +319,20 @@ every placeholder is offered from here on.
       sr-only word gives the card a second scrollbar. -- one surface, used by both field kinds and by every placeholder
       there will ever be (R-185).
 - [ ] `apps/web/components/controls/rich-field.tsx` -- delete `TokenRow` and its call site; put the `{}` trigger beside
-      the field's label, handing it the field's tokens plus `{page_number}` and the existing insert handler
-      (`session.insert`, else `replaceRange` at the end, whole or nothing). -- the row goes, the behaviour stays.
+      the field's label, handing it **the offered set** and the existing insert handler (`session.insert`, else
+      `replaceRange` at the end, whole or nothing). -- the row goes, the behaviour stays.
 - [ ] `apps/web/components/controls/sidebar.tsx` -- the same at the one-line `text` field, keeping its
       insert-at-selection and its refusal caption; the `{}` trigger is attached where `field()` (`:274-326`) draws each
-      label, so both kinds get it from one place. -- the two field kinds stay one behaviour.
+      label, so both kinds get it from one place. **The panel must be told which page is on screen** — `paint()` already
+      reads `now.page`, and the panel is keyed across pages (`acrossPages`), so thread the same `Page` down rather than
+      deriving it a second way. -- the two field kinds stay one behaviour, and the offer follows the canvas.
+- [ ] `packages/library/src/vocabulary.ts` (with the map above) -- **one exported function that answers "which
+      placeholders does this field offer, on this page"**: the prop's own `tokens`, plus `page_number` **only when the
+      page is 2**. Every caller — both field kinds, the tests, and whatever offers a placeholder in a later epic — asks
+      this one function. -- R-186 is a rule about *offering*, and a rule with two implementations is a rule with one
+      bug; this is also where a future placeholder declares where it may be offered.
 - [ ] `packages/section-runtime/src/agreement.test.ts` -- extend R-27's case (`:290-300`) and add the page number's: the
-      canvas prints the handed number, prints nothing when handed none, and the theme prints `{{@root.pagination.page}}`;
+      canvas prints the handed number, prints nothing when handed none (page 1), and the theme prints the guarded constant;
       a prop declaring no tokens gets it too; `{members}` undeclared still stays literal on both sides. -- §7.3's exit
       criterion, and the one test that holds the two emitters together.
 - [ ] `packages/section-runtime/src/ad36.test.ts` -- vectors, each asserting the attack is inert **and** the legitimate
@@ -329,30 +378,35 @@ every placeholder is offered from here on.
 
 **Acceptance Criteria:**
 
-- Given any `text` or `richtext` prop in any section, when the user types `{page_number}` or presses **Insert** in its
-  `{}` menu, then the token is accepted — no prop declares it and none has to (R-182, amending R-27).
-- Given the canvas painting Home page 1, when a section's text holds the token, then the canvas prints `1`; and on
-  page 2, `2` (R-182).
+- Given the canvas showing **page 2**, when any `text` or `richtext` field is shown, then its `{}` menu offers
+  `{page_number}`; and given the canvas showing page 1 — or Post, Page, 404, Private or a custom template — then it does
+  not, and a field with no placeholder of its own carries no `{}` button at all (R-186).
+- Given a user who types `{page_number}` by hand anywhere, when it is stored, then it is accepted and kept verbatim: the
+  offer is restricted, the acceptance is not (R-182, amending R-27; R-186).
+- Given the canvas painting page 2, when a section's text holds the token, then `2` is printed; and given the canvas
+  painting page 1 — including a header carried there from page 2, or a page 2 that still follows page 1 — then
+  **nothing** is printed in its place (R-186, reversing R-182's page-1 bullet).
 - Given the canvas painting Post, Page or 404 — including the site-wide header, which is on every one of them — when the
   text holds the token, then nothing is printed in its place (R-183).
-- Given a field being edited, when the user clicks into the words, then the token shows as typed and can be edited, and
-  when the edit ends the number shows again (R-182).
-- Given the theme emitter, when the text holds the token, then exactly `{{@root.pagination.page}}` is emitted, once per
-  occurrence, and every other character the user typed is escaped as it is today (AD-5).
-- Given the emitted theme on a real Ghost, when a visitor opens `/page/3/`, then `3` is printed, and on a post, a
-  standalone page and the 404, nothing — executed on T1 and T3 and recorded in MEASUREMENTS §49 (standing rule 1).
+- Given a field being edited on page 2, when the user clicks into the words, then the token shows as typed and can be
+  edited, and when the edit ends the number shows again (R-182).
+- Given the theme emitter, when the text holds the token, then the **guarded constant proved by the recorder** is
+  emitted once per occurrence, and every other character the user typed is escaped as it is today (AD-5).
+- Given the emitted theme on a real Ghost, when a visitor opens the front page, then nothing is printed in the token's
+  place; `/page/2/` prints 2 and `/page/3/` prints 3; a post, a standalone page and the 404 print nothing — executed on
+  T1 and T3 and recorded in MEASUREMENTS §49 (standing rule 1).
 - Given any other word in braces, when it is typed into any field, then it prints exactly as typed on both emitters
   (R-27, unchanged).
-- Given the panel, when a text field is shown, then beside its label — and nowhere else — there is a small `{}` button,
-  and under the field there is no caption, no chip and no sentence (R-185).
+- Given the panel, when a text field with a placeholder is shown, then beside its label — and nowhere else — there is a
+  small `{}` button, and under the field there is no caption, no chip and no sentence (R-185).
 - Given that button, when it is pressed, then a menu opens **matching `bar-menu.tsx`'s anatomy part for part** — S4d's
   and D5b's card, heading, scrolling list and rows as R-171 set them, at radius 12 with 6px padding and `shadow-lg`,
   each row the placeholder's code at 13/500 over one line at 11px muted — listing exactly the placeholders that field
   accepts, with **Copy** and **Insert** on the right of each and **nothing below the last row** (R-185, and R-74's
   extrapolation rule: same components, same tokens).
-- Given a field whose prop declares a token of its own, when the menu opens, then that token and `{page_number}` are
-  both listed, each with its own description; and given a field that is not `text` or `richtext`, then there is no `{}`
-  button at all.
+- Given a field whose prop declares a token of its own, when the menu opens **on page 2**, then that token and
+  `{page_number}` are both listed, each with its own description; **on page 1 that field lists its own token alone**;
+  and given a field that is not `text` or `richtext`, then there is no `{}` button at all.
 - Given any placeholder declared anywhere in the library, when the library is validated, then it has a one-line
   description or validation fails naming R-185 — so no future placeholder can reach the menu without one.
 - Given `/pilots`, the Section Picker's cards, the design ring's tiles, `tools/check-snapshots.mjs` and the render
@@ -380,6 +434,12 @@ Substituting first and escaping afterwards would emit `&#123;&#123;…` and lose
 substituting afterwards would emit `{{{@root.pagination.page}}}`, a triple-stache. Neither is acceptable and the
 `ad36.test.ts` vector is exactly this string.
 
+**Why the guard is a truthiness test and not a comparison.** R-186 needs "not page 1" inside `default.hbs`. Handlebars
+has no `>` and Ghost's `{{#has}}` would be a second moving part inside an AD-5 exception. `pagination.prev` is the field
+that is falsy exactly on page 1 and wherever `pagination` is absent, so `{{#if @root.pagination.prev}}` is the whole
+guard — one string, no helper, and R-183 preserved for free. **It is the story's one unproven claim**: the recorder
+proves it on both majors before a line is emitted, and if it disappoints, this is an Ask First, not an improvisation.
+
 **Why `@root` and not `pagination`.** Both resolve in `default.hbs` and in partials, but only `@root` survives a
 context-changing block — `{{#foreach}}`, `{{#get}}`, `{{#post}}` — and a section's text can sit inside any of them. One
 form everywhere is also one thing to explain (R-170).
@@ -392,6 +452,13 @@ channel, from the same call, for the same reason.
 **What R-183 costs: nothing.** Ghost leaves `pagination` off a post, a page and the 404, and Handlebars renders a
 missing path as the empty string. On the canvas, `templateContext` returns no pagination for those targets. Both sides
 answer R-183 without a rule.
+
+**Restricting the OFFER is not restricting the VALUE, and the spec is deliberate about the difference.** R-186 governs
+where `{page_number}` is *offered* and where it *prints*. It does not police what a field may hold: the header is one
+object across every page (R-180) and a following page 2 is page 1's own rows (R-179), so a field page 1 shows can carry
+the token, and the owner ruled that acceptable in the same breath. Trying to strip it from page 1's stored text would
+mean rewriting the user's words behind their back, and it would fight R-179's copy on every keystroke. Page 1 prints
+nothing and stores whatever it was given.
 
 **Why the placeholder menu is not a new design.** R-185 asks for a list of choices, each a code with a short
 description under it and actions on the right. That is R-171's menu row, already built: `BarMenuRow` is a name at
@@ -411,9 +478,12 @@ sure it cannot be half-built.
 
 **Commands:**
 
-- `python3 tools/probe/record-page-number.py` -- expected: T1 and T3 each serve the probe `default.hbs` with
-  `[1]` at `/`, `[2]` at `/page/2/` and `[]` on a post, a public page and the 404; both servers' previous themes
-  restored and re-read; `MEASUREMENTS.md` §49 written. **Run before any emission task.** (R-82, standing rule 1.)
+- `python3 tools/probe/record-page-number.py` -- expected, on T1 and T3 alike, for **the guard**
+  `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}` in `default.hbs`: `[]` at `/`, `[2]` at `/page/2/`,
+  `[3]` at `/page/3/`, and `[]` on a post, a public page and the 404 — with the raw `pagination.page` and
+  `pagination.prev` recorded beside it at every one of those addresses; both servers' previous themes restored and
+  re-read; `MEASUREMENTS.md` §49 written. **Run before any emission task, and stop if the guard prints anything at
+  `/`.** (R-82, standing rule 1, R-186.)
 - `pnpm check` -- expected: green, including `agreement.test.ts`'s page-number cases, `ad36.test.ts`'s brace vectors,
   `check-snapshots.mjs` byte-unchanged and `matrix/cases.test.mjs`.
 - `cd tools/stress && npm install && node build.js && node gate.js theme` -- expected: 0 errors / 0 warnings on both
@@ -438,21 +508,26 @@ your projects, and every change is taken back before the end, so they finish as 
 - **Ghost 5 Project** — its Home has a post grid that is the page's main list, so it has a page 2.
 - **Pilot sections** — for a post and a hero.
 
-Steps 1 to 4 are **R-182**: the number on the canvas, and the token back when you click in. Steps 5 and 6 are your
-**R-185**: the `{}` button beside a field's label, its menu, Copy and Insert. Steps 7 and 8 are **R-183**: nothing where
-a page has no number. Step 9 is the one thing that must *not* change.
+Steps 1 to 3 are your **R-186**: nothing offered on page 1, offered on page 2. Steps 4 and 5 are your **R-185**: the
+`{}` button beside a field's label, its menu, and Insert. Steps 6 and 7 are the number on the canvas and the token back
+when you click in (R-182). Steps 8 to 10 are the header — including **the gap on page 1 that R-186 accepts**, so you can
+see it rather than be told about it. Step 11 is the one thing that must *not* change.
+
+Both projects are left exactly as they started.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid's small eyebrow line ("The archive") and type over it. | `The archive — page {page_number}` | While you type, the words stay exactly as you type them, braces and all. |
-| 2 | same | Editor, Home | Click the grey ground beside the page, so nothing is selected. | — | The eyebrow now reads **The archive — page 1**. |
-| 3 | same | Editor, Home | Click the post grid, and in its settings on the right press **2** in the **Preview page** row. | — | Page 2 opens, and its eyebrow reads **The archive — page 2**. |
-| 4 | same | Page 2 | Click into the eyebrow words. | — | The words change back to **The archive — page {page_number}** so you can edit them. Click the ground again and the **2** comes back. |
-| 5 | same | Page 2 | Press **Back to page 1**. Click the post grid and find its **Heading** box in the settings on the right. Click at the end of the heading, then press the small **`{}`** button beside the word "Heading". | — | A small menu opens, headed **Placeholders**, with one row: **`{page_number}`** and under it a line saying what it does. On its right, **Copy** and **Insert**. Nothing appears under the box itself. |
-| 6 | same | Page 2 | Press **Insert**. | — | `{page_number}` is added where your cursor was and the canvas heading ends in **1**. Press **Esc** if the menu is still open, then **⌘Z** twice to take step 5 and step 1 back. |
-| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the header's button words at the top right and type over them. | `Page {page_number}` | The button reads **Page 1**. |
-| 8 | same | Editor, Post | Open the **Template** menu in the top bar and choose **Post**. | — | The same header button now reads **Page** with no number, because a post has no page number. Choose **Home** again, click the button words and press **⌘Z** to put them back. |
-| 9 | same | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all — on the canvas and on your site. Press **⌘Z**. |
+| 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid ("Everything Orbit Weekly published this spring"). In its settings on the right, look beside the label of the small **Eyebrow** box. | — | **No `{}` button.** On page 1 nothing offers a page number, which is your rule. |
+| 2 | same | Editor, Home | Still in the post grid's settings, press **2** in the **Preview page** row. | — | Page 2 opens, with the dark **Page 2 · ‹ Back to page 1** pill at the top. |
+| 3 | same | Page 2 | Look beside the same **Eyebrow** box's label again. | — | A small **`{}`** button is there now. |
+| 4 | same | Page 2 | Press it. | — | A small menu headed **Placeholders**, with one row: **`{page_number}`** and one line under it saying what it does. On its right, **Copy** and **Insert**. Nothing appears under the box itself. |
+| 5 | same | Page 2 | Click at the end of the words in the Eyebrow box, then press **Insert**. | — | `{page_number}` is put in where your cursor was. |
+| 6 | same | Page 2 | Press **Esc** to close the menu and click the grey ground beside the page. | — | The eyebrow on the canvas ends in **2**. |
+| 7 | same | Page 2 | Click into those words on the canvas. | — | They change back to show `{page_number}` so you can edit them. Click the ground again and the **2** comes back. |
+| 8 | same | Page 2 | Press **Back to page 1** and look at the eyebrow. | — | Page 1's eyebrow is unchanged — no number and no gap. Changing page 2 never touched page 1. |
+| 9 | same | Page 2 | Press **2** again. Click the **header** at the top of the page, find its button's **Label** box, press its **`{}`** and then **Insert**. Answer the site-wide prompt with **Change it everywhere**. | — | The header's button on page 2 ends in **2**. The prompt appears because the header is on every page of your site. |
+| 10 | same | Page 2 → page 1 → Post | Press **Back to page 1** and look at the header. Then open the **Template** menu in the top bar and choose **Post**. | — | **This is the cost of the rule, and it is expected:** on page 1 and on the post the header's button shows **no number** — where "2" was, there is nothing. Choose **Home**, press **2**, and press **⌘Z** until the header and the eyebrow are back as they were. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Click the hero's big headline and type over it. | `Nothing to see {here}` | It reads **Nothing to see {here}** — braces and all. Press **⌘Z**. |
 
 ## Questions for the owner
 
@@ -538,5 +613,42 @@ really accept it "on page 2 only" when the field is the same field everywhere.
    - It is impossible to add it anywhere but page 2 deliberately.
    - It does not actually confine it: a copy or a header still carries it to page 1, so page 1 would print a number you
      could not have added there. This is the one option that does not do what it sounds like.
+
+**Ruled: option 3, and option 2 with it (owner, 2026-09-23).** *"{page_number} should be only offered on 2nd page design
+of paginated content. We want to show pages only on 2nd, 3, 4, 5… etc pages and never on the first page. We should not
+give the placeholder option for any text field on the 1st page. If we want to have each page hold it, no problem, but do
+not give options to the users to add {page_number} on 1st page."* Recorded as **R-186**.
+
+- His last sentence answers the objection option 3 carried on its own: **the offer is confined, the value is not, and
+  that is accepted.** So both halves bind — offered on page 2 alone (option 3), and printing nothing on page 1
+  (option 2).
+- **R-182's page-1 bullet is reversed** by this. Everything else in R-182 stands.
+- The theme's one constant becomes a guarded one, `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`,
+  which is read in Ghost's source on both majors and executed locally — and recorded on T1 and T3 as this story's first
+  task, before anything is emitted.
+
+### Question 3 — Should the page number be offerable in the header and footer at all?
+
+**In plain English.** Your rule is now clear: offered on page 2 only, and never a number on page 1. There is one place
+where "never on page 1" cannot be made tidy, and it is the place your very first request named — **the header**.
+
+Your header and footer are **one thing across your whole site** (your R-180). There is no separate page-2 header. So if
+you add `{page_number}` to the header while designing page 2, that same header is on your front page and on every post,
+and there it prints nothing — leaving a hole in the middle of your own sentence. The rule is still obeyed; it just does
+not read well.
+
+**An example.** On page 2 you set your header's button to "Page {page_number}". On `/page/2/` it reads **Page 2**. On
+your front page and on every post it reads **Page** — and if you had typed only `{page_number}` with no other words, the
+button would be blank there.
+
+1. **Leave it offerable in the header and footer, as your ruling allows (RECOMMENDED).**
+   - It is what you asked for originally — *"users can add a header, hero and show the Page number there"*.
+   - Your rule holds: page 1 shows no number.
+   - You have to write the words so they still read without the number, and a header that is only the token goes blank
+     on page 1. Step 10 of your test shows you exactly this, so you can judge it for yourself.
+2. **Do not offer it in the header or the footer — only in page 2's own sections.**
+   - "Never on page 1" becomes absolute: nothing site-wide can ever carry a page number anywhere.
+   - You lose the header, which was your first example of where you wanted it. A page number could then only go in a
+     section that belongs to page 2 — a hero, a heading, a grid's small line.
 
 **Ruled:** _(awaiting the owner)_

@@ -3930,9 +3930,13 @@ anywhere where I can edit text inline. So users can add a header, hero and show 
   name stands.
 - **What it does NOT decide.** How the theme emits it, and where Ghost serves `pagination.page` to the header in
   `default.hbs`: both are Story 5.16a's to read in source and record on T1 and T3 (standing rule 1).
+- **⚠ ONE BULLET OF THIS RULING IS REVERSED — see R-186 (owner, 2026-09-23).** Where this entry says page 1 prints "1"
+  where the user typed the token, **page 1 now prints nothing and the token is not offered there at all.** The entry is
+  left as it was written rather than corrected, because it is the record of what was ruled on 2026-09-22; R-186 is what
+  binds. Everything else here stands.
 - Targets: ✅ this entry · ✅ Story 5.16's spec (Question 5) · ✅ `epics.md` Story 5.16a — Story 5.16, 2026-09-22.
   ⬜ Story 5.16a's spec · ⬜ `prd.md` FR-D4 and FR-G3 (the one token every field accepts) · ⬜ `ARCHITECTURE-SPINE.md`
-  AD-4 (R-27's amendment) · ⬜ `vocabulary.ts`'s `INLINE_TOKENS` and the panel's token chips — at Story 5.16a.
+  AD-4 (R-27's amendment) · ⬜ `vocabulary.ts`'s `INLINE_TOKENS` and the panel's placeholder menu — at Story 5.16a.
 
 **R-183 — where a page has no page number, `{page_number}` prints nothing.** Story 5.16's Question 6, ruled **option
 2** (owner, 2026-09-22): *"If there are no page number - show nothing."*
@@ -3980,6 +3984,35 @@ ones. Add a note about this design so it is not missed when we work on them in f
   (the note the owner asked for, written at Create so a later story cannot miss it) · ✅ `epics.md` Story 5.16a's card
   — Story 5.16a, 2026-09-23. ⬜ `docs/section-authoring.md` (what an author declares, and the description they must
   write) · ⬜ `EXPERIENCE.md` (the field's affordance) · ⬜ `epic-5-context.md` — at Story 5.16a's Dev.
+
+**R-186 — `{page_number}` is offered on page 2 alone and never prints on page 1; R-182's "page 1 shows 1" is
+reversed.** Story 5.16a's Question 2, answered outside its three options (owner, 2026-09-23): *"{page_number} should be
+only offered on 2nd page design of paginated content. We want to show pages only on 2nd, 3, 4, 5… etc pages and never
+on the first page. We should not give the placeholder option for any text field on the 1st page. If we want to have
+each page hold it, no problem, but do not give options to the users to add {page_number} on 1st page."*
+
+- **The offer.** The `{}` menu lists `{page_number}` **only while the canvas is showing page 2** of a paginated
+  template. On page 1 — and on Post, Page, 404, Private and a custom template — no text field offers it, so a field
+  whose only placeholder is this one carries no `{}` button there at all. It follows the page-2 control exactly, which
+  R-176 already offers only where a page 2 exists, so "paginated content" needs no second rule.
+- **The print.** Nothing on page 1. The number on pages 2, 3, 4, 5… — page 3 prints 3 because it renders page 2's
+  design (R-177). Nothing on a post, a standalone page or the 404 (R-183, unchanged).
+- **Holding it on page 1 is accepted, and cannot be prevented.** The header and footer are one object shared by every
+  page (R-180), and a page 2 that still follows page 1 is page 1's own rows (R-179), so a field that page 1 shows can
+  carry the token. The owner ruled this explicitly — *"If we want to have each page hold it, no problem"* — and page 1
+  simply prints nothing in its place. **The visible cost:** a header reading "Orbit Weekly · page {page_number}" reads
+  "Orbit Weekly · page" on the front page and on every post.
+- **It reverses R-182 on one point only.** R-182's third bullet had page 1 printing "1" where the user typed the token;
+  it now prints nothing. Everything else in R-182 stands: the name, the form, the canvas showing the number as a
+  visitor sees it, the token showing again on click-in, and nothing appearing that the user did not type.
+- **The theme guard changes shape, and must be executed before it is trusted.** One constant is no longer enough:
+  Ghost prints `pagination.page` as 1 on page 1. The emission becomes a guarded constant — the candidate is
+  `{{#if @root.pagination.prev}}{{@root.pagination.page}}{{/if}}`, whose guard is falsy exactly on page 1 and where
+  `pagination` is absent. **Standing rule 1 binds:** it is read in Ghost's source on both majors and executed on T1 and
+  T3 into `MEASUREMENTS.md` §49 before anything is emitted for it.
+- Targets: ✅ this entry · ⬜ Story 5.16a's spec · ⬜ `epics.md` Story 5.16a's card · ⬜ R-182's entry (the reversed
+  bullet, marked not rewritten) · ⬜ `DESIGN.md` § Components (a placeholder may be offered on some pages only)
+  · ⬜ `EXPERIENCE.md` · ⬜ `epic-5-context.md` — at Story 5.16a.
 
 
 ## B · Approved decisions superseded by this session
