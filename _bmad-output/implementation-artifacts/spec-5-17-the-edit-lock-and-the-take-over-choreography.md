@@ -458,27 +458,83 @@ deploy and export are written.
 
 ## Verification
 
-**Commands:**
+**R-82 — the real services this story hit, and what each returned.** Keys were read from
+`tools/probe/.env` into a command's environment and never printed; each is named below by its
+variable name alone.
 
-- `pnpm check` -- expected: lint, typecheck and every package test green, including the new `apps/web/lock.test.ts`
-  and the extended `journal.test.ts` and `busy.test.ts`.
-- `bash supabase/tests/run-rls-gate.sh` -- expected: exit 0, the drift guard passing (so the architecture copy was
-  edited and copied, not the other way round) and the new CAS assertions among the passes.
-- `python3 tools/doc-audit.py --check` -- expected: green on the second run; `deferred-work.md` and `epics.md` both
-  change in this story.
-- `env $(grep -E '^(SUPABASE|NEXT_PUBLIC_SUPABASE)' tools/probe/.env | xargs) python3 tools/probe/record-edit-lock.py`
-  -- expected: all four facts executed against the real Supabase project, with a **control that passes** in each
-  (standing rule 2) — notably a CAS on the correct generation succeeding beside the one that misses.
-- `node tools/probe/run-verify-lock.cjs` -- expected: 0 FAIL on `app.inflozo.com`, two real browser contexts,
-  covering every screened row of the I/O matrix.
-- `node tools/probe/run-verify-editor.cjs` -- expected: no NEW failures. Steps 36 and 66b-c fail intermittently on
-  untouched code (DW-222, DW-220): re-run and record both runs.
+**Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`) — the production
+project, 2026-09-23:
 
-**Manual checks (if no CLI):**
+- `env $(grep -E '^SUPABASE_(URL|SECRET_KEY|PUBLISHABLE_KEY)=' tools/probe/.env | xargs) python3 tools/probe/record-edit-lock.py`
+  — **all four facts executed, each with a control that passed**, recorded as `MEASUREMENTS.md` §50.
+  The filtered UPDATE returned its changed row (HTTP 200, 1 row) and `[]` at HTTP 200 when the filter
+  missed, with the row unmoved; two sessions racing one CAS produced **exactly one winner** (1 row vs
+  0 rows) beside an uncontended control that changed 1 row; a holder change at an unchanged generation
+  returned **HTTP 403, SQLSTATE `42501`** from `guard_lock_takeover`, beside a control at `N → N+1`
+  that was accepted; an INSERT naming `lock_generation` was `42501`, a plain INSERT defaulted it to 1,
+  and a second INSERT was **HTTP 409, `23505`**. Realtime: a **public** broadcast channel
+  `lock:<project id>` subscribed and delivered in **23–38 ms** with another project's channel staying
+  out (the isolation control), and a **private** channel was refused —
+  `CHANNEL_ERROR: Unauthorized: You do not have permissions to read from this Channel topic`.
+  The fixture account and its two projects were deleted in a `finally` and the Admin-API user count
+  came back to its starting value.
+- It also executed a fact nothing had asserted: **the service role cannot read `edit_locks` at all**
+  (absent from the `service_role` grant loop), returning nothing with no error. Every read and write
+  of that table — app, harness and probe — goes through a user session.
 
-- `MEASUREMENTS.md` carries a new section recording the Realtime broadcast round trip and whether it needed a
-  publication or a policy — the first execution of `addendum.md:45`'s claim.
-- The assertive region is a **second** element; `#editor-said` still reads `aria-live="polite"`.
+**The local gates**, on Node 24 (the repo's `engines.node`; the shell's default is 22):
+
+- `pnpm check` — **exit 0**. `apps/web` printed 506 tests / 506 pass / 0 fail, including the new
+  `lock.test.ts` and the extended `journal.test.ts`, `editor.test.ts` and R-98's `busy.test.ts`
+  auditor; `packages/*` and the render-matrix suite all green.
+- `bash supabase/tests/run-rls-gate.sh` — **exit 0**, the `pg_dump` drift guard passing (so
+  `RLS-TEST.sql` was edited and copied, not the other way round), with the new F4 assertions among
+  the passes: *the CAS at generation N → N+1 filtered on N changes exactly one row*, *the losing CAS
+  changes no row and the winner still holds the lock*, and *a displaced heartbeat changes nothing and
+  `unsynced_edits` survives the take-over*.
+- `python3 tools/doc-audit.py --check` — **PASS (0 warnings)**, with both new probes catalogued.
+
+**Vercel and the deployed site** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`). CI went **green on the Dev
+commit `d895c183`** — `check` and `rls` both passed, so `deploy` ran (DW-7) — and Vercel serves
+`dpl_A72fzfnh2iwbrHJoMAc72TP1WbmW` **READY, built from `d895c183`**, this checkout's HEAD. The
+deployed walks were therefore run at Dev rather than deferred:
+
+- `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-lock.cjs`
+  — **0 FAIL, 45 PASS on `app.inflozo.com`**, two real browser contexts of one account, covering every
+  row of the I/O matrix that has a screen. Among them, on the real site: B5a's bar in the ruled words
+  with nobody named and the sidebar at `0.55` described by the bar's own sentence; `commit()` refusing
+  with the Layers list unmoved and the revision unchanged; B5b a **popover** at 440 announced
+  assertively; the countdown really counting (20s → 16s) and **focus restarting it** (16s → 30s,
+  F-079); Hand over's flush landing **before** the row is deleted; B5c opening with focus on **Wait**,
+  at 440/radius 16, never itemising the loss; the take-over advancing the generation **by exactly
+  one** in the same statement as the holder change, with A then editing the last synced snapshot; and
+  the displaced session told assertively *"This session had 1 unsynced edit; they were not
+  included."* with its journal cleared unconditionally. The fixture account was deleted and the user
+  count came back (13 before · 13 after). It refuses a dirty tree or a deployment that is not HEAD.
+- **The Matrix Test Audit found one row with no covering test, and the test found a real defect.**
+  *"Same session reloads → row exists, `holder_session_id` is mine → lock kept, no generation
+  change"* was the one row nothing exercised. Measured on `app.inflozo.com` at `d895c183`: after a
+  reload the row was **gone** — the outgoing page's `pagehide` release lands after the new page's
+  server render — so the first beat matched nothing, and the session then sat reading B5a's bar,
+  *"You are editing this site somewhere else"*, **about its own tab, for a full ~14 s heartbeat**,
+  with every edit silently refused. A customer's own F5 cost them the editor. **Fixed** in
+  `editor.tsx`'s poll: a beat that finds **no row at all** means the lock is free, so it acquires at
+  once instead of waiting for the next beat — bounded to exactly one extra call by `wasHolder`, which
+  is read from `heldGeneration` rather than `holding` because `holding` stays true for a nudge's
+  worth of time after Hand over and that pair would spin. `run-verify-lock.cjs` gains the row.
+- `node tools/probe/run-verify-editor.cjs` — expected: no NEW failures. At Dev, against the same local
+  build: **573 PASS, 1 FAIL — step 83 alone**, which asserts a real deployment's build id (`?v=<hex>`)
+  and reads `v=dev` on a local run, so it can only pass deployed. Steps 36 and 66b-c fail
+  intermittently on untouched code (DW-222, DW-220): re-run and record both runs.
+
+**Manual checks:**
+
+- `MEASUREMENTS.md` §50 is the first section in the project to carry "realtime" or "broadcast" — the
+  first execution of `addendum.md:45`'s transport claim.
+- The assertive region is a **second** element: `#editor-said` still reads `aria-live="polite"`
+  (`editor.tsx:3102`) and `#editor-announced` reads `aria-live="assertive"` (`:3110`).
+- The word *unsaved* appears in no user-visible string; `lock.test.ts` asserts it over the whole
+  `LOCK_COPY` list.
 
 ## Owner's manual test
 

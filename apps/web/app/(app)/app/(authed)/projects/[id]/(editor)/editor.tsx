@@ -1116,9 +1116,24 @@ export function Editor({
       // very first call as a `beat`, which matches no row, so the first opener became a reader of a lock that did
       // not exist and only acquired ~15 s later (executed against a local build, 2026-09-23). `heldGeneration` is
       // set ONLY when the server confirmed the lock is ours, which is exactly the question this asks.
-      const holding = heldGeneration.current !== null || Date.now() - gaveAt.current < NUDGE_MS
+      const wasHolder = heldGeneration.current !== null
+      const holding = wasHolder || Date.now() - gaveAt.current < NUDGE_MS
       const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: owedNow() })
-      if (alive) land(answer)
+      if (!alive) return
+      land(answer)
+      // A BEAT THAT FOUND NO ROW AT ALL MEANS THE LOCK IS FREE — take it NOW, not in fifteen seconds.
+      //
+      // This is the matrix's "Same session reloads" row, and without it a customer's own F5 cost them the editor for
+      // a whole heartbeat: the outgoing page releases on `pagehide`, that DELETE lands AFTER the new page's server
+      // render, so the first beat matches nothing, `land` correctly stops claiming the lock — and then the session
+      // sat reading its own bar, "You are editing this site somewhere else", about its own tab. Measured on
+      // `app.inflozo.com` at d895c183: the row was gone from the first frame and the bar stayed up for ~14 s.
+      //
+      // BOUNDED TO EXACTLY ONE EXTRA CALL, and `wasHolder` is what bounds it: `land` has just cleared
+      // `heldGeneration`, so the re-poll sends `acquire` and its own `wasHolder` is false. It reads `heldGeneration`
+      // rather than `holding` deliberately — `holding` stays true for a nudge's worth of time after Hand over
+      // (`gaveAt`), whose release deletes the row too, and that pair would spin.
+      if (wasHolder && answer !== null && !answer.held && answer.row === null) void poll()
     }
 
     // LAYER 1 — the same browser, free and instant, and it is the case DW-203 is written about. NOTHING IS TRUSTED

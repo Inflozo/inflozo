@@ -203,6 +203,25 @@ async function main() {
     const beaten = await lockRow(A, P)
     check('matrix "Heartbeat": the beat carries AD-16\'s count — ONE edit for a gesture of many operations', beaten !== null && beaten.unsyncedEdits === 1, JSON.stringify(held(beaten)))
 
+    /* ── matrix "Same session reloads" — the row the walk did not have, and the defect it caught ─────────────
+     *
+     * A CUSTOMER'S OWN F5 MUST NOT COST THEM THE EDITOR. `pagehide` releases on the way out and that DELETE lands
+     * AFTER the new page's server render, so the first beat matches no row; before the fix the session then sat
+     * reading B5a's bar — "You are editing this site somewhere else" — about its OWN tab for a whole ~15 s
+     * heartbeat, with every edit silently refused (measured on app.inflozo.com at d895c183; it is what made step 93
+     * of run-verify-editor.cjs fail). Two seconds is the assertion: a round trip, not a heartbeat. */
+    await A.reload({ waitUntil: 'load' })
+    await A.waitForTimeout(2500)
+    const aBack = await surface(A)
+    const backRow = await lockRow(A, P)
+    check('matrix "Same session reloads": the lock is KEPT — no bar at its own reflection, the sidebar undimmed, and it is editing within a round trip rather than a heartbeat',
+      aBack.bar === null && aBack.sidebarOpacity === '1' && backRow !== null && backRow.holderSessionId === beaten.holderSessionId,
+      JSON.stringify({ bar: aBack.bar, opacity: aBack.sidebarOpacity, row: held(backRow) }))
+    check('…and the reload took NOTHING from anybody: the generation did not move (it is the same session, not a take-over)',
+      backRow !== null && backRow.generation === beaten.generation, JSON.stringify({ was: beaten.generation, now: backRow?.generation }))
+    check('…and the reload kept A\'s UNSYNCED work: the generation never moved, so nothing cleared the journal',
+      !(await layerNames(A)).includes(A_EDIT) && (await lockRow(A, P))?.unsyncedEdits === 1, (await layerNames(A)).join(' | '))
+
     // ── B opens second and is a reader ───────────────────────────────────────────────────────────────────────
     await B.goto(await magic(), { waitUntil: 'load' })
     await B.goto(editor, { waitUntil: 'load' })
