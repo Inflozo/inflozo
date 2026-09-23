@@ -3,7 +3,7 @@ title: 'Story 5.16a — The page number token'
 type: 'feature'
 created: '2026-09-23'
 status: 'in-review'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '350876bd3f6154d1c4d442adbf2235dbd0bbafd2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -659,6 +659,16 @@ tiles, `check-snapshots` and the render matrix — in `check-snapshots: PASS` an
 - The placeholder menu beside the Template switcher's, at 1440 wide: the same card radius, padding, shadow, heading
   size and row rhythm, differing only in its rows' contents and their two trailing buttons (R-185, R-171).
 - The panel with the menu closed: nothing at all under a text field that was not there before this story.
+
+**The Deploy phase (2026-09-23).**
+
+- CI at HEAD `6b4bd133`, read with `GITHUB_TOKEN`: jobs `check`, `rls`, `deploy` and the Render matrix `matrix` all
+  **success**.
+- Vercel (`VERCEL_PROJECT`, `VERCEL_TEAM_ID`), read with `VERCEL_TOKEN`: the newest production deployment,
+  `dpl_GdwxsD5vgMcYrQh6YHPZE3mrbmfd`, is **READY** at commit `6b4bd133` and its alias list carries `app.inflozo.com`,
+  `inflozo.com` and `www.inflozo.com` — the domains the owner's test below uses, not a `vercel.app` preview.
+- **Deployment: https://app.inflozo.com (dpl_GdwxsD5vgMcYrQh6YHPZE3mrbmfd, commit `6b4bd133`)**
+- No migration in this story (R-99 does not apply, per the Review phase note above); nothing else needed deploying.
 
 ## Owner's manual test
 
