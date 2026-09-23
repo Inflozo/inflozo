@@ -5400,3 +5400,26 @@ owner: Epic 7's compile path, or the first story that makes the route validate p
   `fileOf(key)` at the write).
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` `TEMPLATE_KEY` · `read.ts` `editorData`
 
+
+## Deferred from: spec-5-16a-the-page-number-token.md (2026-09-23)
+
+### DW-236: the deployed editor walk can die mid-run in the screencast decoder, on a frame it cannot decode
+
+plain: The long automated walk of the editor on the live site sometimes stops halfway with "the source image cannot be
+  decoded", part-way through the checks that film the canvas scrolling. Nothing a customer would see is known to be
+  wrong — the same walk, re-run on the same build, passed every check — but the run is lost and has to be started again
+  from the beginning, which takes about ten minutes.
+status: open
+severity: low
+origin: Story 5.16a's Dev run (2026-09-23) against `app.inflozo.com`. The first walk threw
+  `page.evaluate: EncodingError: The source image cannot be decoded` out of step 15's decoder page after 172 PASS and
+  0 FAIL; the re-run, same deployment, finished 0 FAIL / 571 PASS. It is NOT DW-222 (a hover that follows a scrolled
+  section) and NOT the Playwright timeout DW-220 names: this is `img.decode()` rejecting on a base64 frame handed back
+  by `Page.startScreencast`.
+reason: The cause is a HYPOTHESIS and was not executed (standing rule 1): a screencast frame delivered truncated, or
+  delivered after the decoder page's context went away. Whichever it is, the fix belongs in the harness and not in the
+  product — one bad frame should be skipped, or retried, rather than ending a ten-minute walk, and the check should
+  refuse only if too few frames survive to measure. Diagnosing it inside a story that does not touch the screencast
+  would be guessing.
+owner: whoever next touches `film()` or the scroll-filming checks (Story 5.22's responsive pass reaches them).
+location: `tools/probe/run-verify-editor.cjs` step 15's `decoder.evaluate` (`:949`) and `film()`
