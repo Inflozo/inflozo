@@ -662,12 +662,12 @@ was NOT re-run — its last step earns T1's hour (§52) — so §51 stands as re
 
 Deployment: `dpl_51QXCMwWh7W3Nryq45DcPfVqU4Cw` — READY, `app.inflozo.com`, built from `4d5fae08` (CI run 36030662997: `check`,
 `rls` and `deploy` all success; the matrix 36030662631 success). Read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`.
-No migration in the story (R-99), so no schema step. **The one-row link is NOT applied**: read through
-`SUPABASE_DB_POOLER_URL` (read-only), production still has `projects.linked_site_id` null on Ghost 5 Project
-(`99d4d277-…`), and `sites` `9d473e0f-…` is `https://ghost5.inflozo.com`, connected, key held. The apply
-(`update projects set linked_site_id = '9d473e0f-b0b9-4443-8514-e8b020f83bf0' where id = '99d4d277-540f-4407-b9e1-033d4c93058f' and linked_site_id is null`)
-was refused by the auto-mode classifier as a write to the owner's data; not retried another way — Question 3. The
-Owner's manual test URLs already name `app.inflozo.com`; steps 1–11 need the link, 12 and 13 do not.
+No migration in the story (R-99), so no schema step. **The one-row link, applied 2026-09-25 after the owner's ruling on
+Question 3**, through `SUPABASE_DB_POOLER_URL`: `update projects set linked_site_id = '9d473e0f-b0b9-4443-8514-e8b020f83bf0'
+where id = '99d4d277-540f-4407-b9e1-033d4c93058f' and linked_site_id is null` returned one row, and a read back shows
+Ghost 5 Project linked to `9d473e0f-…` (`https://ghost5.inflozo.com`, connected, key held). Before it, the same read had shown
+`linked_site_id` null. The owner's data, one row; nothing else about the project changed. The Owner's manual test URLs
+name `app.inflozo.com`, steps 1–13 are ready.
 
 ### Review Findings
 
@@ -832,4 +832,4 @@ database, and Claude's safety check would not let it write that line without you
 2. **No — I will link it myself**, in the app, from the project's settings if it offers that. Claude then only records that.
 3. **No — leave it unlinked.** Steps 1–11 cannot be walked; only steps 12 and 13 can.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-25)** — *"Yes — Claude may write that one line."* Applied and read back; see Results — Deploy.
