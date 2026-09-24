@@ -274,8 +274,11 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     setting on either major, so DW-192 moved to Epic 3's snapshot; DW-230 and DW-98 close here; DW-247 to DW-249 are
     new. **R-193 (owner, 2026-09-24, Question 1):** an untouched live archive starts on the site's tag and author
     with the most posts, a tie going to the name first in the alphabet — FR-D22's fixed Orbit Weekly pair is not on a
-    real site. **Question 2 is open:** a brand-new Ghost site holds one post, one tag and one author (Ghost's own
-    `fixtures.json`, read in source), so every live list is a single card; what the editor does about it is his.
+    real site. **R-194 (owner, 2026-09-24, Question 2):** a brand-new Ghost site holds one post, one tag and one
+    author (Ghost's own `fixtures.json`, read in source), so every live list is a single card — the canvas still
+    shows it as it is, and the panel note that says a list is not full carries **Preview with sample content**, the
+    pill's own Sample content row with a second door, present only while the site's content shows. No threshold and
+    no automatic switch.
   - **Story 5.13's planning (2026-09-20, read in the schema, the runtime and the frames):** the pill and the
     subject need NO new mechanism and NO migration — `project_template_prefs.preview_subject` (`{kind, id, slug}`)
     has been in the complete-schema migration since day one with **no reader anywhere in `apps/web`**, its grants

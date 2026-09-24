@@ -2227,7 +2227,9 @@ Ghost rate-limits Content API keys and Ghost(Pro) sits behind an edge Inflozo do
 resolves to the style-guide fixture on `post.hbs` and `page.hbs` alike
 **And** where the site has fewer or zero items than a section requests, the canvas renders what exists plus an
 **editor-only indicator** — "this site has 2 posts; section shows up to 6" — while compiled sections render
-gracefully with fewer
+gracefully with fewer; and while the canvas shows the site's own content, that indicator carries a **Preview with
+sample content** button — **R-194** (owner, 2026-09-24): a brand-new site's one post stays what the canvas shows, and
+the full page is one press away
 **And** **zero items has three distinct behaviours**: the designated main feed renders its **own declared empty
 state and is never back-filled**; a secondary `{{#get}}` feed renders **nothing at all, heading and container
 together**; a bound prop that is not a feed follows the media/text guards
@@ -2235,7 +2237,7 @@ together**; a bound prop that is not a feed follows the media/text guards
 the user **authored** render **nothing at zero**, because an editor who has typed no steps is mid-build, not
 looking at an error.
 
-**FRs:** FR-H4. · **Frame:** `B Missing Surfaces.dc.html` B9 (the content-source pill and its fallback indicator) · `S4 Editor.dc.html` S4a. · **Rulings:** R-193. · **Owner test:** yes. · **Verification:** T1 with a real Content API key, and a forced 429
+**FRs:** FR-H4. · **Frame:** `B Missing Surfaces.dc.html` B9 (the content-source pill and its fallback indicator) · `S4 Editor.dc.html` S4a. · **Rulings:** R-193, R-194. · **Owner test:** yes. · **Verification:** T1 with a real Content API key, and a forced 429
 (R-82).
 
 ### Story 5.19: The Data group and the main-feed designation

@@ -4194,11 +4194,32 @@ the rule could not be followed on live content without inventing one.
 - **What the ruling raised.** A brand-new Ghost site holds one post, one tag and one author — `fixtures.json` and
   `fixture-manager.js`, read in source on 5.130.6 and 6.58.0: the post *Coming soon*, tagged *News* and written by the
   site's owner (the fixture user is the owner placeholder), plus the page *About this site* — so the fullest archive
-  is a one-post archive. The owner asked what can be done there, which is Story 5.18's Question 2.
+  is a one-post archive. The owner asked what can be done there, which is Story 5.18's Question 2 — ruled as R-194.
 - Targets: ✅ this entry · ✅ Story 5.18's spec (Question 1, its tasks and its owner test) — Story 5.18's Create,
   2026-09-24. ✅ `prd.md` FR-D22 and the glossary's *Preview subject* row · ✅ `epics.md` (Story 5.13's
   untouched-subject criterion, Story 5.18's criteria) · ✅ `epic-5-context.md` · ⬜ built: `apps/web/lib/live-content.ts`
   — Story 5.18's Dev.
+
+**R-194 — on a site too thin to fill a page, the canvas shows the site as it is, and the note that says so offers
+the full page one press away.** Story 5.18's Create, Question 2, ruled **option 1** (owner, 2026-09-24): *"Show your
+one post, and put a 'Preview with sample content' button in that note."* A brand-new Ghost site holds one post, one
+tag and one author (R-193's third bullet), so on live content every list is one card in a grid built for twelve.
+
+- **The rule.** The canvas keeps showing the site's own content — connecting a site shows its content (FR-C4) and a
+  list is never padded with posts nobody chose (R-36). The editor-only note FR-H4 gives a section whose list does not
+  fill it — *"This site has 1 post; this section shows up to 12 per page."* — carries one button, **Preview with
+  sample content**, which switches the whole editor to Sample content: the pill's own SOURCE row, one action with two
+  doors. Focus then lands on the pill, which now reads "Sample content" and is where the site comes back.
+- **Where it appears.** Only while the canvas is showing the site's content. On Sample content, or on a project with
+  no linked site, there is nothing to switch to, and the button is absent (UX-DR3) whatever the note says. It changes
+  the view and not the site, so a session reading along keeps it live (R-192): it is drawn outside the panel's
+  `ReadOnly` rows.
+- **What it does NOT do.** No threshold and no automatic switch — option 2 was declined, because it broke FR-C4, drew
+  an arbitrary line at one page, and would change the editor under the customer on the twelfth post. Nothing is
+  stored: the source stays session state.
+- Targets: ✅ this entry · ✅ Story 5.18's spec (Question 2, its matrix, its strings, its tasks and its owner test) —
+  Story 5.18's Create, 2026-09-24. ✅ `prd.md` FR-H4's indicator sentence · ✅ `epics.md` Story 5.18 ·
+  ✅ `epic-5-context.md` · ⬜ built: `components/controls/sidebar.tsx`, `editor.tsx` — Story 5.18's Dev.
 
 
 ## B · Approved decisions superseded by this session

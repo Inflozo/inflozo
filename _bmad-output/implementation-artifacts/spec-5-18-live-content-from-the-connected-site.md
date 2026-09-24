@@ -18,7 +18,8 @@ can switch that pill to **Sample content** and back at any time, pick one of you
 for each page to show, link words to your own posts from the link box, and see your newest post inside the Section
 Picker's previews. If your site cannot be reached or turns Inflozo away, the canvas quietly shows the sample content
 instead and the pill says why; and when a section has fewer posts than it can hold, its panel tells you — *"This tag
-has 5 posts; this section shows up to 12 per page."*
+has 5 posts; this section shows up to 12 per page."* — with a **Preview with sample content** button beside the words,
+so a brand-new site's single post never stops you seeing the page full.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -102,9 +103,9 @@ and `project_template_prefs.preview_subject` (`jsonb`) exist, and the source cho
 
 - **Question 1 is RULED — R-193** (owner, 2026-09-24): an untouched Tag and Author page on the site's own content
   start on the tag and the author with the most posts, a tie going to the name first in the alphabet.
-- **Question 2 is the owner's and is OPEN** — what the editor does for a brand-new site, whose one post, one tag and
-  one author make every list a single card (raised by his ruling on Question 1). **Dev waits for it**; the
-  recommended option is in *Questions for the owner*.
+- **Question 2 is RULED — R-194** (owner, 2026-09-24): a brand-new site's one post stays what the canvas shows, and
+  the note that says a section's list is not full carries a **Preview with sample content** button while the site's
+  content is showing. Nothing waits on the owner.
 - If the recorder finds `formats=mobiledoc` returning a body on either major — the premise of "never the body" — stop
   and say so.
 - If Ghost's 429 arrives **without** `access-control-allow-origin`, the browser cannot read its status and the 429 row
@@ -147,6 +148,7 @@ and `project_template_prefs.preview_subject` (`jsonb`) exist, and the source cho
 | Ceiling | the session's reads reach `REQUEST_CEILING` | stops; the next paint is sample; names it | a reload starts a new session |
 | Zero items | a list answers `[]` | main feed: its own declared empty state (A17 #1's `data-else`); `{{#get}}`: `[]`; panel caption; **never back-filled** | not a failure |
 | Fewer than asked | total < the section's limit | what exists, and the panel caption | N/A |
+| The note's button (R-194) | a list not full while the site's content shows — a brand-new site's one post | the note carries **Preview with sample content**; one press is the pill's Sample content row: the whole editor repaints from the sample, focus lands on the pill, announced politely | absent while sample is showing or no site is linked; live in a session reading along (R-192) |
 | Subject gone | a `source: 'site'` subject whose `filter=slug:` read answers `[]` | the starting subject, and 5.13's `GONE` sentence; the stored value is kept | never a read by slug, whose 404 Ghost would count against the network; a slug not in Ghost's shape is never sent |
 | Subject from the other source | an unmarked (sample) subject while the site shows, or a site subject while sample shows — by choice or after a failure | that source's own starting subject, **silently**; the choice is kept and comes back with its source | N/A |
 | Site has no tags (authors) | the list is empty | that page previews the sample's tag (author) with sample content and its menu says why | N/A |
@@ -355,12 +357,17 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
 - [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the source in session state beside
   `viewAs`, mirrored in `latest`; one live store per session; the first-paint gate beside the hydrate's; the reads
   each trigger asks for; `paint()` and the page address through the live content; the live rows, subject rows, link
-  resources and time zone handed to the pill, the pickers and the panel; the source announced through `#editor-said`
-  (polite). -- every surface paints through the one door, so the source changes in one place.
+  resources and time zone handed to the pill, the pickers and the panel, and the ONE source switch handed to both the
+  pill and the panel's note (R-194); the source announced through `#editor-said` (polite). -- every surface paints
+  through the one door, so the source changes in one place.
 - [ ] `apps/web/components/editor/section-preview.tsx` + `design-picker.tsx` -- paint with the canvas's live content and
   the live rows, repainting when those rows arrive. -- FR-H4 names the picker's previews as a consumer of the same reads.
-- [ ] `apps/web/components/controls/sidebar.tsx` -- the shortfall caption at the head of Section Settings beside R-124's;
-  the time zone shown is the source's. -- P0:488-490 puts the zero note in the panel, not on the canvas.
+- [ ] `apps/web/components/controls/sidebar.tsx` -- the shortfall caption at the head of Section Settings beside R-124's,
+  and — while the site's content is showing — its **Preview with sample content** button (R-194), which calls the
+  handler the pill's Sample content row calls (one action, two doors, handed in by `editor.tsx`) and moves focus to
+  the pill; drawn OUTSIDE the `ReadOnly` rows (`:436` wraps R-124's), because switching the source changes the view,
+  not the site (R-192). The time zone shown is the source's. -- P0:488-490 puts the zero note in the panel, not on
+  the canvas, and R-194 puts the full page one press from it.
 - [ ] `apps/web/components/controls/link-picker.tsx` -- the capped-list line under the search when the site holds more
   posts than the rows in hand; nothing else changes — its resources come from the source. -- the one honest limit of
   a client-side search (DW-248).
@@ -417,6 +424,10 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
   (DW-230).
 - Given a subject chosen over one source, when the other source is showing, then that source's starting subject
   renders without the "no longer there" sentence, and the choice returns with its source.
+- Given a section whose list is not full while the site's content shows, when I press **Preview with sample content**
+  in its note, then the whole editor shows the sample publication, the pill reads "Sample content" and holds the
+  focus, and choosing the site in the pill brings mine back; and while sample content shows, the note carries no such
+  button (R-194).
 - Given I choose the site in the SOURCE group, or a subject whose content must be read, when the read is in flight,
   then the row says it is loading and is `aria-busy` and `aria-disabled` — never `disabled` — until the paint lands
   (R-98).
@@ -481,6 +492,7 @@ AD-1 allows outside the core packages — so the shim and every design need no c
 | Panel — a `{{#get}}` list empty | *"This site has no {posts} for this section yet."* |
 | Panel — the main feed short (one page, not full) | *"This {site/tag/author} has {n} posts; this section shows up to {m} per page."* |
 | Panel — the main feed empty | *"This {site/tag/author} has no posts yet, so this section shows its empty state."* |
+| Panel — the note's button (R-194) | **Preview with sample content** — under any of the four notes above, only while the site's content is showing |
 
 `{posts}` is the binding's own resource (`posts`, `tags`, `authors`), singular at 1; `{m}` is the limit the section
 asked for. The main-feed caption appears only when the whole list fits one page and does not fill it — a page 2
@@ -533,8 +545,8 @@ Gated Post", is for paid members; how a members-only post is marked on the canva
 
 On the real site after Deploy, in a desktop browser about 1440 wide. **Deploy has linked your Ghost 5 Project to your
 Ghost 5 site** (ghost5.inflozo.com) for this — one line of your data; nothing else about the project changed. Steps
-5 and 6 follow your ruling on Question 1 (**R-193**). Your Ghost 5 site is a full one, so what Question 2 decides for a
-brand-new site gets its own step once you have ruled it.
+5 and 7 follow your ruling on Question 1 (**R-193**) and step 6 your ruling on Question 2 (**R-194**). Your Ghost 5
+site is a full one, so its **Archive** tag — 5 posts, fewer than a page holds — stands in for a brand-new site's one post.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -543,13 +555,14 @@ brand-new site gets its own step once you have ruled it.
 | 3 | `…/projects/99d4d277-540f-4407-b9e1-033d4c93058f/post` | Editor, Post | Press the pill. Type in the search box, then choose the post it finds. | `margin` | The pill reads "Previewing with: Ghost5 · Style-guide article". The menu shows SOURCE, then **SUBJECT**: "Style-guide article" first, then **your** posts with their dates and "has image" on the ones with a picture. The search leaves **"Reading the margins"**; after choosing it, the post header shows that title, **Priya Raman**, **Archive** and its picture. The article under it is still the style-guide article — that is by design. |
 | 4 | `…/page` | Editor, Page | Press the pill. | — | SUBJECT lists "Style-guide page", then your two pages: **Member Home Preview** and **PROBE Boom**. |
 | 5 | `…/tag` | Editor, Tag | Look at the page. Press the pill and choose **Archive**. Then click the post grid. | — | Untouched, the page shows **Craft** — your tag with the most posts — and its 9 posts. After Archive it shows 5. The panel on the right starts with **"This tag has 5 posts; this section shows up to 12 per page."** |
-| 6 | `…/author` | Editor, Author | Look at the page, then press the pill and choose **Priya Raman**. | — | Untouched, it shows **Umang** and 12 posts; after the choice, Priya Raman's 11. |
-| 7 | `…/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid, and in its panel choose **Page 2** under Preview page. | — | Page 2 shows your posts from **"Ten years of one layout"** onwards. |
-| 8 | same | Editor, Home, page 1 | Back on page 1, click the post grid; in its panel open the **link** of "Browse the archive", type, choose the result, then press **Undo** (the curved arrow at the top). | `grid` | Under **POSTS**: **"What the grid gets wrong"** — your post. Choosing it links the words to your site; Undo puts the old link back. |
-| 9 | same | Section Picker | Press **⌘K**, open **Heroes**, look at **Latest Post**, then press **Esc**. | — | The Latest Post card shows **your** newest post, "PROBE Gated Post", in its card. |
-| 10 | `…/author` | Editor, Author | **Turn your Wi-Fi off.** Press the pill and choose **Tom Whitlock**. Then turn Wi-Fi back on, press the pill and choose **Ghost5**. | — | With Wi-Fi off the canvas shows the sample magazine's writer page, and the pill turns **dashed**: "Sample content · Ghost5 not answering". The menu may also say the choice will not survive a reload — the save could not reach Inflozo either. With Wi-Fi back and Ghost5 chosen: Tom Whitlock's 10 posts. |
-| 11 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04` | Editor, Home (Ghost 6 Project) | Press the pill. | — | This project is linked to your **disconnected** Ghost6 site: the pill reads "Sample content" (dashed), and in SOURCE the **Ghost6** row is **greyed** with *"Inflozo is no longer connected to Ghost6. Reconnect it from Sites to preview with its content."* **Sample content** is the row in force. |
-| 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at the pill and try to press it. | — | Exactly as before this story: "Sample content", dashed, and nothing to open — this project links no site. |
+| 6 | same | Editor, Tag | With Archive still chosen and the post grid still clicked, press **Preview with sample content** under that note. Then press the pill and choose **Ghost5**. | — | The whole editor switches to the sample magazine — the canvas shows its Field Notes page — and the pill turns **dashed**, "Sample content", with the keyboard's focus ring on it. The note and its button are gone: the sample's tag fills the page. After Ghost5, Archive's 5 posts are back, and so are the note and its button. |
+| 7 | `…/author` | Editor, Author | Look at the page, then press the pill and choose **Priya Raman**. | — | Untouched, it shows **Umang** and 12 posts; after the choice, Priya Raman's 11. |
+| 8 | `…/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click the post grid, and in its panel choose **Page 2** under Preview page. | — | Page 2 shows your posts from **"Ten years of one layout"** onwards. |
+| 9 | same | Editor, Home, page 1 | Back on page 1, click the post grid; in its panel open the **link** of "Browse the archive", type, choose the result, then press **Undo** (the curved arrow at the top). | `grid` | Under **POSTS**: **"What the grid gets wrong"** — your post. Choosing it links the words to your site; Undo puts the old link back. |
+| 10 | same | Section Picker | Press **⌘K**, open **Heroes**, look at **Latest Post**, then press **Esc**. | — | The Latest Post card shows **your** newest post, "PROBE Gated Post", in its card. |
+| 11 | `…/author` | Editor, Author | **Turn your Wi-Fi off.** Press the pill and choose **Tom Whitlock**. Then turn Wi-Fi back on, press the pill and choose **Ghost5**. | — | With Wi-Fi off the canvas shows the sample magazine's writer page, and the pill turns **dashed**: "Sample content · Ghost5 not answering". The menu may also say the choice will not survive a reload — the save could not reach Inflozo either. With Wi-Fi back and Ghost5 chosen: Tom Whitlock's 10 posts. |
+| 12 | `https://app.inflozo.com/projects/21d868cf-1262-4ad2-9a44-091fbf653a04` | Editor, Home (Ghost 6 Project) | Press the pill. | — | This project is linked to your **disconnected** Ghost6 site: the pill reads "Sample content" (dashed), and in SOURCE the **Ghost6** row is **greyed** with *"Inflozo is no longer connected to Ghost6. Reconnect it from Sites to preview with its content."* **Sample content** is the row in force. |
+| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at the pill and try to press it. | — | Exactly as before this story: "Sample content", dashed, and nothing to open — this project links no site. |
 
 ## Questions for the owner
 
@@ -612,4 +625,7 @@ twelve holding one "Coming soon" card, then your footer.
 **Not offered:** filling the empty places with sample posts. Your ruling R-36 is that a list is never padded with
 posts nobody chose for it, and the canvas would then show a page your site will never show.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-24)** — *"Show your one post, and put a 'Preview with sample content' button in
+that note."* Recorded as **R-194**. The button is the pill's own Sample content row with a second door: it appears
+only while the canvas shows the site's content, moves focus to the pill, and stays live in a session reading along;
+the matrix, the strings, the tasks and step 6 of the owner's test carry it.
