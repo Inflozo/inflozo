@@ -333,8 +333,10 @@ async function main() {
       const live = await paintedFrom('home', 'site')
       check(`${tag} — opening a linked, readable project paints the SITE's content`, live, JSON.stringify(await page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset ?? null)))
       const words0 = await canvasText()
-      check(`${tag} — the canvas shows the site's own newest post and its own menu`, words0.includes(newest.title) && (settings.navigation ?? []).every((i) => words0.includes(i.label)),
-        JSON.stringify({ newest: newest.title, menu: (settings.navigation ?? []).map((i) => i.label) }))
+      // …and NOT the sample's newest post: the control that tells the site's rows from the site's header over sample rows (review, 2026-09-24)
+      check(`${tag} — the canvas shows the site's own newest post and its own menu, and not the sample's newest post`,
+        words0.includes(newest.title) && (settings.navigation ?? []).every((i) => words0.includes(i.label)) && !words0.includes(OW.posts()[0].title),
+        JSON.stringify({ newest: newest.title, menu: (settings.navigation ?? []).map((i) => i.label), sample: OW.posts()[0].title }))
       const p0 = await pill()
       check(`${tag} — B9 connected: "Previewing with: ${NAME}", a SOLID hairline and the mint dot, at R-166's 24px`,
         p0 !== null && p0.source === NAME && p0.border === 'solid' && p0.dotName === 'site' && p0.dot === 'rgb(31, 169, 122)' && p0.height === 24 && p0.tag === 'BUTTON' && p0.cause === null,
@@ -438,6 +440,15 @@ async function main() {
       const prefs = await rest(`/project_template_prefs?project_id=eq.${P[m]}&template_key=eq.post&select=preview_subject`)
       check(`${tag} — the choice is stored per canvas with the site's mark — a subject is only ever "gone" from its own source`,
         prefs.body?.[0]?.preview_subject?.source === 'site' && prefs.body?.[0]?.preview_subject?.slug === pictured.slug, JSON.stringify(prefs.body?.[0]?.preview_subject))
+      // review (2026-09-24): the mark survives `read.ts`'s round trip — a RELOAD of the Post canvas still previews the
+      // chosen post, and says nothing about it being gone (an unmarked subject over the site would fall back silently)
+      await open(editor(P[m], 'post'))
+      const backOnPost = await paintedFrom('post', 'site')
+      await openPill()
+      const mr = await menu()
+      await closeMenus()
+      check(`${tag} — after a reload the Post canvas still previews "${pictured.title}", the mark read back with the row, and no "no longer there"`,
+        backOnPost && (await pill()).subject === pictured.title && mr !== null && mr.gone === null, JSON.stringify({ backOnPost, subject: (await pill()).subject, gone: mr?.gone }))
 
       // ── Page: the site's own pages ──
       await switchTo('page')

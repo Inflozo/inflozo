@@ -6,12 +6,12 @@ import {
   addressOf, after, API_VERSION, ask, AUTHOR_FIELDS, bindingReads, FAILURES_TO_STOP, feedRead, feedShortfall, FRESH_MS,
   getShortfall, isFresh, keyOf, LIST_LIMIT, LISTS, LIVE_WORDS, named, NEVER, outcomeOf, PAGE_FIELDS, pick, POST_FIELDS,
   READ_TIMEOUT_MS, reader, REQUEST_CEILING, retriable, retried, SETTINGS, SHORTFALL, SITE_FIELDS, siteFrom, siteLinks,
-  siteRows, slugShaped, START, startingArchive, subjectRead, TAG_FIELDS, TIER_FIELDS, wallClock,
+  siteRows, siteTotal, slugShaped, START, startingArchive, subjectRead, TAG_FIELDS, TIER_FIELDS, wallClock, zoneOf,
   type Answer, type LiveQuery, type Reading, type Row,
 } from './lib/live-content.ts'
-import { liveStore } from './lib/live-client.ts'
+import { liveStore, WIDTH } from './lib/live-client.ts'
 import { sitePage } from './lib/canvas.ts'
-import { SOURCE_WORDS, siteSubjects, subjectOptions } from './lib/preview-subject.ts'
+import { cappedPosts, SOURCE_WORDS, siteSubjects, subjectOptions } from './lib/preview-subject.ts'
 
 /* STORY 5.18 — the I/O matrix over the pure read layer (`lib/live-content.ts`), the one store (`lib/live-client.ts`,
    driven here by a fetch that answers what a test tells it — the network is the deployed walk's, R-82) and the page
@@ -132,14 +132,19 @@ test('the ceiling counts reads and stops at it; choosing the site tries again �
 
 // ─── the store, over a fetch this test answers ───────────────────────────────────────────────────────────────────
 
-type Reply = { status: number; body?: unknown } | 'network'
+type Reply = { status: number; body?: unknown } | 'network' | 'hang' | Promise<{ status: number; body?: unknown } | 'network'>
+/** `'hang'` never answers and honours the request's `signal`, as a socket that accepted and went quiet would;
+ *  a promise answers when the test resolves it, so the test can hold reads in flight and count them */
 function fakeFetch(reply: (url: URL) => Reply) {
   const calls: URL[] = []
   const was = globalThis.fetch
-  globalThis.fetch = (async (input: RequestInfo | URL) => {
+  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(String(input))
     calls.push(url)
-    const r = reply(url)
+    const asked = reply(url)
+    const r = await (asked === 'hang'
+      ? new Promise<never>((_, reject) => init?.signal?.addEventListener('abort', () => reject(init.signal?.reason ?? new Error('aborted'))))
+      : asked)
     if (r === 'network') throw new TypeError('Failed to fetch')
     return new Response(JSON.stringify(r.body ?? {}), { status: r.status, headers: { 'content-type': 'application/json' } })
   }) as typeof fetch
@@ -244,6 +249,65 @@ test('the ceiling stops reading, and a 200 that is not the shape asked for is a 
     net.restore()
   }
   assert.equal(READ_TIMEOUT_MS, 5_000, "Ghost's own per-{{#get}} budget (appendix-b1 §5) — a tuning, stated in the spec")
+})
+
+test('a site that accepts the connection and never answers is ONE failed read after READ_TIMEOUT_MS — `ensure` resolves, so the canvas can paint sample content', async () => {
+  // review (2026-09-24): without the request's `signal`, a quiet socket would hold `ensure` — and every later paint —
+  // for the whole session. This test waits the real timeout once; it is the one that fails if the signal goes.
+  const net = fakeFetch(() => 'hang')
+  try {
+    const s = liveStore('https://ghost5.example', 'k', Date.now, words)
+    const t0 = Date.now()
+    await s.ensure([SETTINGS])
+    assert.ok(Date.now() - t0 >= READ_TIMEOUT_MS - 50, 'it waited the timeout')
+    assert.equal(net.calls.length, 1)
+    assert.deepEqual({ last: s.reading().last, stopped: s.reading().stopped }, { last: 'unanswered', stopped: null })
+    assert.equal(s.peek(SETTINGS), undefined)
+  } finally {
+    net.restore()
+  }
+})
+
+test('reads go one at a time until the site has answered, then up to WIDTH at once, and one at a time again after a failure', async () => {
+  const held: { url: URL; resolve: (r: { status: number; body?: unknown } | 'network') => void }[] = []
+  const net = fakeFetch((url) => new Promise((resolve) => held.push({ url, resolve })))
+  const tick = () => new Promise((r) => setTimeout(r, 5))
+  /** an answer in the shape the read asked for — `pick` refuses any other as a failed read */
+  const answer = (h: { url: URL; resolve: (r: { status: number; body?: unknown } | 'network') => void } | undefined) => {
+    const resource = h?.url.pathname.split('/').filter(Boolean).at(-1) ?? ''
+    h?.resolve({ status: 200, body: resource === 'settings' ? settingsBody : { [resource]: [{ id: 'x', slug: 'x', title: 'X', name: 'X' }], meta: { pagination: { page: 1, pages: 1, limit: 12, total: 1 } } } })
+  }
+  try {
+    const s = liveStore('https://ghost5.example', 'k', Date.now, words)
+    const all = [SETTINGS, ...Object.values(LISTS), feedRead(null, 1, 12) as LiveQuery, feedRead(null, 2, 12) as LiveQuery, subjectRead({ kind: 'post', slug: 'a' }) as LiveQuery]
+    assert.ok(all.length > WIDTH + 1, 'enough reads to see the bound')
+    const done = s.ensure(all)
+    await tick()
+    assert.equal(net.calls.length, 1, 'an unproven key: one read in flight')
+    answer(held.shift())
+    await tick()
+    assert.equal(net.calls.length, 1 + WIDTH, 'answered once: up to WIDTH in flight — the bound a mid-session failure can cost')
+    // two of them fail: what was in flight stays in flight (never retried), and NOTHING new goes out beside it while
+    // the run of failures stands — a site gone down mid-session costs what was already out, never more
+    held.shift()?.resolve('network')
+    held.shift()?.resolve('network')
+    await tick()
+    assert.equal(net.calls.length, 1 + WIDTH, 'after a failure no new read joins the ones in flight')
+    assert.equal(s.reading().failures, 2)
+    // an answer clears the run, and the rest go out again
+    answer(held.shift())
+    await tick()
+    assert.equal(s.reading().failures, 0, 'an answer cleared the run')
+    assert.ok(net.calls.length > 1 + WIDTH, 'and reading widened again')
+    while (held.length > 0 || net.calls.length < all.length) {
+      answer(held.shift())
+      await tick()
+    }
+    await done
+    assert.equal(net.calls.length, all.length)
+  } finally {
+    net.restore()
+  }
 })
 
 // ─── the whitelist ───────────────────────────────────────────────────────────────────────────────────────────────
@@ -418,6 +482,23 @@ test('the site\'s lists in D5e\'s shape: the style-guide entry first, then the s
   assert.equal(links.capped, undefined)
   const many = (q: LiveQuery): Answer | undefined => (keyOf(q) === keyOf(LISTS.post) ? { rows: [{ id: 'x', title: 'X', slug: 'x' }], total: 250, pages: 3 } : look(q))
   assert.equal(siteLinks(reader(many), 'Etc/UTC').capped, "Showing your newest 100 posts. Paste an older post's address to link it.")
+  // D5e's own line, from the same count (review, 2026-09-24)
+  assert.equal(cappedPosts(many), LIVE_WORDS.capped)
+  assert.equal(cappedPosts(look), null)
+  assert.equal(cappedPosts(() => undefined), null, 'a list not in hand is not capped')
+})
+
+test('a binding\'s size on the site is the list\'s own total, or for a pick the ids Ghost holds — the number the panel\'s note prints', () => {
+  const a = '5ab100000000000000000001'
+  const b = '5ab100000000000000000002'
+  const look = (q: LiveQuery): Answer | undefined =>
+    q.params['filter']?.startsWith('id:') ? { rows: [{ id: a }], total: 1, pages: 1 } : q.resource === 'posts' ? { rows: [{ id: 'x' }], total: 7, pages: 1 } : undefined
+  assert.equal(siteTotal({ source: 'posts', limit: 3 }, reader(look)), 7, 'the total, not the rows in hand')
+  assert.equal(siteTotal({ source: 'posts', ids: [a, b] }, reader(look)), 1, 'a pick counts the ids Ghost answered')
+  assert.equal(siteTotal({ source: 'tags', limit: 3 }, reader(look)), 0, 'a list not in hand counts nothing')
+  assert.equal(siteTotal({ source: 'nothing', limit: 3 }, reader(look)), 0, 'a resource Ghost has not got is no read')
+  assert.equal(zoneOf({ timezone: 'Asia/Kolkata' }), 'Asia/Kolkata')
+  assert.equal(zoneOf(undefined), 'Etc/UTC')
 })
 
 // ─── the server truth, and the words ─────────────────────────────────────────────────────────────────────────────
@@ -433,6 +514,8 @@ test('the linked site as server truth: disconnected, no key, plain http — each
   assert.deepEqual(siteFrom({ ...row, url: 'http://ghost5.example' }, origin, host), { title: 'Ghost5', unreadable: 'http' })
   // R-170's fallback: the host where the site has no title
   assert.deepEqual(siteFrom({ ...row, title: '  ' }, origin, host), { title: 'ghost5.example', origin: 'https://ghost5.example', key: 'k' })
+  // an address that does not normalise is no site at all — connect wrote it normalised, so this is a data defect
+  assert.equal(siteFrom({ ...row, url: 'not an address' }, origin, host), null)
 })
 
 test('the panel\'s note: a list that cannot fill the section says so — zero included — and a short page 2 is ordinary pagination', () => {

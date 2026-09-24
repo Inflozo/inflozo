@@ -322,6 +322,9 @@ export function wallClock(iso: unknown, zone: string): unknown {
   return `${part('year').padStart(4, '0')}-${part('month')}-${part('day')}T${part('hour')}:${part('minute')}:${part('second')}.${String(at.getUTCMilliseconds()).padStart(3, '0')}Z`
 }
 
+/** The site's zone as `/settings/` reports it — the ONE place the sample's `Etc/UTC` stands in for a missing one. */
+export const zoneOf = (settings: Row | undefined): string => (typeof settings?.['timezone'] === 'string' ? settings['timezone'] : 'Etc/UTC')
+
 const DATED = ['published_at', 'updated_at', 'created_at'] as const
 /** A post or a page on the site's clock. */
 export const onClock = (row: Row, zone: string): Row => {
@@ -423,7 +426,7 @@ export function siteSource(w: Want, r: Reader): ContentSource {
  *  on the site's clock (DW-98). */
 export function sitePieces(w: Want, subject: Subject | null, target: string, page: 1 | 2, r: Reader): Pieces {
   const settings = r.got(SETTINGS)?.rows[0] ?? {}
-  const zone = typeof settings['timezone'] === 'string' ? settings['timezone'] : 'Etc/UTC'
+  const zone = zoneOf(settings)
   const base: Pieces = { site: settings, postsPerPage: w.perPage }
   if ((target === 'post.hbs' || target === 'page.hbs') && subject !== null && (subject.kind === 'post' || subject.kind === 'page')) {
     const fixture = w.styleGuide[subject.kind]

@@ -493,10 +493,14 @@ export function Editor({
   /** `painted.shown` as the handlers see it, in the same task the paint set it — before React has re-rendered */
   const paintedRef = useRef<Shown>(painted.shown)
 
+  /** the site's page AS PAINTED FOR THIS CANVAS — null while another canvas's reads are in flight (review, 2026-09-24:
+   *  the last paint's page belongs to the canvas it drew, and the pill, D5e's rows, page 2's offer and a pick made in
+   *  that window must describe the canvas in force, in its own kind, never the one taken off) */
+  const livePage = painted.key === key ? painted.site : null
   /** the subject the canvas renders: the site's where the last paint was the site's, else the sample's own resolution */
-  const previewing = painted.site ?? orbitWeekly.resolveSubject(canvas.file, storedSubject)
+  const previewing = livePage ?? orbitWeekly.resolveSubject(canvas.file, storedSubject)
   /** the source the list's pages are counted in — the site's page 1 where it shows, else the bundled publication */
-  const contentSource = painted.site?.source
+  const contentSource = livePage?.source
   /** Story 5.16 — does this canvas have a page 2 at all (R-176): a main feed on page 1 whose list runs past one page */
   const offered = offersPageTwo(key, docs, previewing.subject, contentSource)
   /** …and the section whose panel carries D5d's row: page 1's main feed, or on page 2 its copy */
@@ -504,16 +508,16 @@ export function Editor({
   const subjectRows = useMemo(
     () =>
       previewing.subject === null ? []
-      : subjectOptions(painted.site !== null && reads.current !== null ? siteSubjects(reads.current.peek, painted.site.zone) : bundled, previewing.subject.kind),
-    [bundled, painted, previewing.subject?.kind],
+      : subjectOptions(livePage !== null && reads.current !== null ? siteSubjects(reads.current.peek, livePage.zone) : bundled, previewing.subject.kind),
+    [bundled, livePage, previewing.subject?.kind],
   )
   /** the Link Picker's rows in hand — the site's own pages, posts, tags and writers where they show (DW-248's cap) */
   const linksNow = useMemo(
-    () => (painted.site !== null && reads.current !== null ? siteLinks(reader(reads.current.peek), painted.site.zone) : links),
-    [painted, links, liveTick],
+    () => (livePage !== null && reads.current !== null ? siteLinks(reader(reads.current.peek), livePage.zone) : links),
+    [livePage, links, liveTick],
   )
   /** the time zone the panel names under a date: the source's own */
-  const zoneNow = painted.site?.zone ?? timezone
+  const zoneNow = livePage?.zone ?? timezone
   /* ─── Story 5.14 — FR-D16's "LOOKED AT" RECORD, and the nudge that names what I have not looked at ──────────────
    *
    * PER CANVAS, keyed by `template_key` as `subjects` is, and stored in `project_template_prefs.member_states_viewed` —
@@ -1512,31 +1516,40 @@ export function Editor({
     }
     let waited = false
     void (async () => {
-      const tried = new Set<string>()
-      for (let first = true; ; first = false) {
-        const view = siteOf(latest.current)
-        const need = view !== null && 'need' in view ? view.need : []
-        // a read this press already asked for did not answer: this page is sample content throughout
-        if (need.some((q) => tried.has(liveKey(q)))) break
-        const wanted = first ? [...need, ...SURFACES] : need
-        const missing = s.missing(wanted)
-        if (missing.length === 0) {
-          // every read in memory: a stale one is shown at once and revalidated once in the background, never painted
-          void s.ensure(wanted)
-          break
+      try {
+        const tried = new Set<string>()
+        for (let first = true; ; first = false) {
+          const view = siteOf(latest.current)
+          const need = view !== null && 'need' in view ? view.need : []
+          // a read this press already asked for did not answer: this page is sample content throughout
+          if (need.some((q) => tried.has(liveKey(q)))) break
+          const wanted = first ? [...need, ...SURFACES] : need
+          const missing = s.missing(wanted)
+          if (missing.length === 0) {
+            // every read in memory: a stale one is shown at once and revalidated once in the background, never painted
+            void s.ensure(wanted)
+            break
+          }
+          for (const q of missing) tried.add(liveKey(q))
+          waited = true
+          pending.current = true
+          if (row !== null) setBusy(row)
+          // a NEW PAGE — another canvas, or page 2 — is not drawn until its reads land: the old one's sections are taken
+          // off rather than left under a stack that no longer matches them, and the card shows the skeleton meanwhile
+          if (paintedAt.current !== null && (paintedAt.current.key !== latest.current.key || paintedAt.current.page !== latest.current.page)) blank()
+          await s.ensure(wanted)
+          if (turn !== readTurn.current) return
+          if (s.reading().stopped !== null) break
         }
-        for (const q of missing) tried.add(liveKey(q))
-        waited = true
-        pending.current = true
-        if (row !== null) setBusy(row)
-        // a NEW PAGE — another canvas, or page 2 — is not drawn until its reads land: the old one's sections are taken
-        // off rather than left under a stack that no longer matches them, and the card shows the skeleton meanwhile
-        if (paintedAt.current !== null && (paintedAt.current.key !== latest.current.key || paintedAt.current.page !== latest.current.page)) blank()
-        await s.ensure(wanted)
+        land()
+      } catch (error) {
+        // review (2026-09-24): a walk that throws over an answer's shape must not leave `pending` set, which would drop
+        // every later paint of the session in silence — it lands as the error boundary, as a paint that throws does
         if (turn !== readTurn.current) return
-        if (s.reading().stopped !== null) break
+        pending.current = false
+        setBusy(null)
+        setFailure(error instanceof Error ? error : new Error(String(error)))
       }
-      land()
     })()
     return !waited
   }
@@ -1563,7 +1576,7 @@ export function Editor({
    *  shows the site, else nothing — and the card draws the sample, whole. */
   // keyed on WHETHER the site shows, never on the paint itself: every edit paints, and a card that repainted with it
   // would redraw the whole picker on every keystroke
-  const siteShown = painted.site !== null
+  const siteShown = livePage !== null
   const cardLive = useMemo(() => {
     const s = reads.current
     if (!siteShown || s === null) return undefined
@@ -1618,7 +1631,7 @@ export function Editor({
    */
   const chooseSubject = (picked: orbitWeekly.Subject): boolean => {
     const stored = templateKeyOf(latest.current.key)
-    const next: orbitWeekly.Subject = painted.site !== null ? { kind: picked.kind, slug: picked.slug, source: 'site' } : { kind: picked.kind, slug: picked.slug }
+    const next: orbitWeekly.Subject = livePage !== null ? { kind: picked.kind, slug: picked.slug, source: 'site' } : { kind: picked.kind, slug: picked.slug }
     setSubjects((was) => ({ ...was, [stored]: next }))
     setSubjectRefusal(null)
     // `latest`, not the state: `paint()` reads through it in this same task, before React has re-rendered
@@ -1629,8 +1642,10 @@ export function Editor({
       closeSourceMenu()
       // Story 5.18: a subject chosen over the site whose read did not answer is NOT what the canvas shows — the sample's
       // own starting subject is, silently (FR-H4's one-failure tier; a named cause the paint has said already) — so it
-      // is never announced as if it were
-      if (next.source === 'site' && paintedRef.current.source !== 'site') return
+      // is never announced as if it were. Review (2026-09-24): and the same the other way — a sample subject picked
+      // while the site was chosen but not showing, whose press then brought the site back, shows the site's own
+      // starting subject (`resolveSubject`'s source rule), so only a choice the paint used is said
+      if (paintedRef.current.source !== (next.source ?? 'sample')) return
       setSaid(reason === null ? SUBJECT_SAID(next, subjectRows) : `${SUBJECT_SAID(next, subjectRows)} ${leftBecause(reason)}`)
     })
     const turn = ++subjectTurn.current
@@ -1840,8 +1855,11 @@ export function Editor({
       frame.current.dataset.page = String(now.page)
       // STORY 5.18 — WHAT THIS PAINT USED, which is all the pill ever says (R-165): the site's content, or the sample and
       // why, where the site was chosen — a cause in WORDS, and the named tier said aloud once (FR-H4)
+      // review (2026-09-24): `last` is cleared by ANY later answer — a card's rows, a background revalidation — while
+      // the read this page needed was not asked again (an edit reads nothing), so the cause the last paint gave stands
+      // until a read the customer asks for replaces it
       const cause: Cause | null =
-        now.source === 'site' && live === null && view !== null && !('nothing' in view) ? (reading?.stopped ?? reading?.last ?? null) : null
+        now.source === 'site' && live === null && view !== null && !('nothing' in view) ? (reading?.stopped ?? reading?.last ?? paintedRef.current.cause) : null
       const shown: Shown = { source: live !== null ? 'site' : 'sample', cause, nothing: view !== null && 'nothing' in view ? view.nothing : null }
       paintedRef.current = shown
       paintedAt.current = { key: now.key, page: now.page }
@@ -2572,10 +2590,10 @@ export function Editor({
      fill to the limit the section asked for — zero included, which is never back-filled (R-36). R-194 puts the sample
      one press away beside it. */
   const shortfall = (() => {
-    if (painted.site === null || chosen === undefined || entry === undefined || reads.current === null) return null
+    if (livePage === null || chosen === undefined || entry === undefined || reads.current === null) return null
     const r = reader(reads.current.peek)
     const notes: string[] = []
-    const pagination = painted.site.contexts[chosen.target]?.ghost['pagination'] as { total?: number; pages?: number } | undefined
+    const pagination = livePage.contexts[chosen.target]?.ghost['pagination'] as { total?: number; pages?: number } | undefined
     if (entry.bindingContext.includes('posts') && pagination !== undefined) {
       const whose = canvas.file === 'tag.hbs' ? 'tag' : canvas.file === 'author.hbs' ? 'author' : 'site'
       const note = feedShortfall(whose, pagination.total ?? 0, pagination.pages ?? 1, orbitWeekly.postsPerPage())
@@ -2585,7 +2603,8 @@ export function Editor({
       const declared = entry.dataBindings?.[name]
       const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
       const limit = binding.limit ?? (typeof fallback === 'number' ? fallback : null)
-      if (declared === undefined || limit === null) continue
+      // a hand-picked list asks for no limit (R-20: the pick IS the list), so it has nothing to fall short of
+      if (declared === undefined || limit === null || binding.ids !== undefined) continue
       const note = getShortfall(binding.source, siteTotal(declared, r), limit)
       if (note !== null) notes.push(note)
     }
@@ -3429,7 +3448,7 @@ export function Editor({
                       cause: painted.shown.cause === null ? null : LIVE_WORDS.cause(painted.shown.cause, siteName),
                       row: siteRow,
                       nothing: painted.shown.nothing === null ? null : LIVE_WORDS.nothing(painted.shown.nothing, siteName),
-                      capped: painted.site !== null && previewing.subject?.kind === 'post' && reads.current !== null ? cappedPosts(reads.current.peek) : null,
+                      capped: livePage !== null && previewing.subject?.kind === 'post' && reads.current !== null ? cappedPosts(reads.current.peek) : null,
                       onChoose: chooseSource,
                     }
               }

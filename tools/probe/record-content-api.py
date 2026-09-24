@@ -184,7 +184,8 @@ def server(name, base, key, steps):
             and r.get('excerpt') == by_id[r['id']].get('excerpt')
             for r in b)
         present = all('reading_time' in r and 'excerpt' in r for r in b)
-        step(f'no-body/{resource}', control and bodyless and same and present,
+        # a fixture with none of this resource is a property of the site, not a Ghost fact: recorded, never a failure
+        step(f'no-body/{resource}', None if not a else (control and bodyless and same and present),
              f'{len(b)} {resource}: the plain read carries `html` on every row ({control}) · with `formats=mobiledoc` '
              f'none carries {", ".join(BODY_FORMATS)} ({bodyless}) · `reading_time` and `excerpt` present on every row '
              f'({present}) and identical to the plain read\'s ({same}) · **{len(lean["raw"]):,} bytes against '

@@ -14,6 +14,9 @@
  * one has answered in this session and again after any failure — a refused key costs exactly one request, and a site
  * that has stopped answering costs three, never a burst — and a job that reaches the front of the queue after reading
  * has stopped sends nothing. A CORS preflight (`Accept-Version` asks for one) is the browser's and is not counted.
+ * THE ONE BOUND THAT IS WIDER (review, 2026-09-24): once the site has answered, up to `WIDTH` reads are in flight at
+ * once, and a key rotated or a site gone down MID-SESSION can fail every one of them before the first failure is
+ * counted — so that case costs up to `WIDTH` requests, against Ghost's budget of 99. Nothing in flight is ever retried.
  */
 
 import {
@@ -41,7 +44,7 @@ export type LiveStore = {
 const wordsOf = (html: string): string => new DOMParser().parseFromString(html, 'text/html').body.textContent ?? ''
 
 /** How many reads may be in flight once the site has answered and nothing has failed since. */
-const WIDTH = 6
+export const WIDTH = 6
 
 export function liveStore(origin: string, key: string, now: () => number = Date.now, words: (html: string) => string = wordsOf): LiveStore {
   const cache = new Map<string, { at: number; answer: Answer }>()
@@ -68,37 +71,42 @@ export function liveStore(origin: string, key: string, now: () => number = Date.
     const done = new Promise<void>((resolve) => (settle = resolve))
     flying.set(k, done)
     queue.push(async () => {
-      // THE STOP RULE AT THE FRONT OF THE QUEUE, not at the back: reading that stopped while this waited sends nothing
-      const turn = ask(reading)
-      reading = turn.reading
-      if (turn.go) {
-        let status = 0
-        let body: unknown = null
-        try {
-          const res = await fetch(addressOf(origin, q, key), {
-            headers: { 'Accept-Version': API_VERSION },
-            signal: AbortSignal.timeout(READ_TIMEOUT_MS),
-            credentials: 'omit',
-            // the editor's address names the project; the customer's Ghost has no need of it
-            referrerPolicy: 'no-referrer',
-          })
-          status = res.status
-          if (res.ok) body = await res.json()
-        } catch {
-          // a network error, a read with no answer in time, or a body that is not JSON: one failed read
-          status = 0
+      try {
+        // THE STOP RULE AT THE FRONT OF THE QUEUE, not at the back: reading that stopped while this waited sends nothing
+        const turn = ask(reading)
+        reading = turn.reading
+        if (turn.go) {
+          let status = 0
+          let body: unknown = null
+          try {
+            const res = await fetch(addressOf(origin, q, key), {
+              headers: { 'Accept-Version': API_VERSION },
+              signal: AbortSignal.timeout(READ_TIMEOUT_MS),
+              credentials: 'omit',
+              // the editor's address names the project; the customer's Ghost has no need of it
+              referrerPolicy: 'no-referrer',
+            })
+            status = res.status
+            if (res.ok) body = await res.json()
+          } catch {
+            // a network error, a read with no answer in time, or a body that is not JSON: one failed read
+            status = 0
+          }
+          const answer = outcomeOf(status) === 'ok' ? pick(q.resource, body, words) : null
+          reading = after(reading, answer !== null ? 'ok' : outcomeOf(status) === 'ok' ? 'failed' : outcomeOf(status))
+          if (answer !== null) {
+            answered = true
+            cache.set(k, { at: now(), answer })
+          }
         }
-        const answer = outcomeOf(status) === 'ok' ? pick(q.resource, body, words) : null
-        reading = after(reading, answer !== null ? 'ok' : outcomeOf(status) === 'ok' ? 'failed' : outcomeOf(status))
-        if (answer !== null) {
-          answered = true
-          cache.set(k, { at: now(), answer })
-        }
+      } finally {
+        // review (2026-09-24): whatever happened above, this job settles and the queue moves — a promise `ensure`
+        // is waiting on that never resolved would hold every later paint of the editor for the session
+        active--
+        flying.delete(k)
+        settle()
+        pump()
       }
-      active--
-      flying.delete(k)
-      settle()
-      pump()
     })
     pump()
     return done

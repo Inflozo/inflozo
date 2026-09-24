@@ -8,7 +8,7 @@ import { orbitWeekly } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { renderCanvas, withData } from '@inflozo/section-runtime'
 import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/section-runtime'
-import { reader, SETTINGS, siteRows, siteSource, sitePieces, type LiveQuery, type Look, type Row } from './live-content.ts'
+import { reader, SETTINGS, siteRows, siteSource, sitePieces, zoneOf, type LiveQuery, type Look, type Row } from './live-content.ts'
 
 /** One design's declared queries, each in both orders at the Count's ceiling (`pilotRows()`). */
 export type DesignRows = Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>
@@ -70,7 +70,7 @@ export function sitePage(
   // and everything that does not — `@site`, every `{{#get}}` — is asked for in the same round
   const unresolved = r.need.length > 0
   const site = r.got(SETTINGS)?.rows[0]
-  const zone = typeof site?.['timezone'] === 'string' ? site['timezone'] : 'Etc/UTC'
+  const zone = zoneOf(site)
   const rows = Object.fromEntries(o.designs.map((e) => [e.id, siteRows(e.dataBindings, r, zone)]))
   if (unresolved) return { need: r.need }
   if ((kind === 'tag' || kind === 'author') && subject === null) return { nothing: kind }

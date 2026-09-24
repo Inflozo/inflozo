@@ -3,11 +3,11 @@
 import type { CSSProperties, KeyboardEvent } from 'react'
 import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import type { Mode } from '@inflozo/section-runtime'
-import { SectionPreview } from '@/components/editor/section-preview'
+import { SectionPreview, type Live } from '@/components/editor/section-preview'
 import { gridKeys } from '@/components/controls/icon-picker'
 import { ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight } from '@/components/kit/icons'
-import type { DesignRows, RenderContext } from '@/lib/canvas'
+import type { DesignRows } from '@/lib/canvas'
 import { NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, position, strip } from '@/lib/ring'
 import type { Visitor } from '@/lib/view-as'
 
@@ -57,7 +57,6 @@ const TILE_WIDTH = 64
 const TILE_HEIGHT = 44
 
 /** Story 5.18 — the canvas's own content for a tile, one source per tile (`SectionPreview`'s `live`). */
-type Live = (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
 
 /** One tile's picture: the design's own render, under a transparent press. */
 function Tile({

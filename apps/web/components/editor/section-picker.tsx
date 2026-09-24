@@ -5,7 +5,7 @@ import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/lib
 import type { Mode } from '@inflozo/section-runtime'
 import { gridKeys } from '@/components/controls/icon-picker'
 import { ModeToggle } from '@/components/editor/mode-toggle'
-import { SectionPreview } from '@/components/editor/section-preview'
+import { SectionPreview, type Live } from '@/components/editor/section-preview'
 import { FreeBadge, ProBadge } from '@/components/kit/badge'
 import { closeOnBackdrop } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
@@ -13,12 +13,11 @@ import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Globe, Plus, X } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { radioKeys, tabStop } from '@/components/kit/segmented'
-import type { DesignRows, RenderContext } from '@/lib/canvas'
+import type { DesignRows } from '@/lib/canvas'
 import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor } from '@/lib/picker'
 import type { Visitor } from '@/lib/view-as'
 
 /** Story 5.18 — the canvas's own content for a card, one source per card (`SectionPreview`'s `live`). */
-type Live = (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
 
 /* ─────────────────────────────────────────── Story 5.10 — THE SECTION PICKER (`S5 Section Picker.dc.html`, S5a/S5c).
  *

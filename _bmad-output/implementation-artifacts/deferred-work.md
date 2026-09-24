@@ -5708,3 +5708,42 @@ owner: the Ghost(Pro) Starter trial (VERIFY-AT-BUILD's dated action); Story 5.18
   checklist.
 location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` ·
   `apps/web/lib/live-content.ts`
+
+## Deferred from: code review of spec-5-18-live-content-from-the-connected-site.md (2026-09-24)
+
+### DW-250: the first paint of a canvas on the site's content costs two round trips where one would do
+
+plain: When the editor opens a page of your own site, it asks your site for what the page needs in two goes rather than
+  one: first the settings and the lists, then the page of posts itself. It shows nothing wrong, and a page opens in
+  well under a second on the test sites; it is simply one round trip more than it needs.
+status: open
+severity: low
+origin: Story 5.18's code review (2026-09-24, Blind Hunter). `apps/web/lib/canvas.ts`'s `sitePage` returns `{ need }` the
+  moment the subject is unresolved, before `sitePieces` has recorded the feed page's read, so Home discovers its
+  page-1 read on the second walk; Tag and Author, whose subject waits on R-193's list, take three.
+reason: `sitePieces` cannot be asked for the feed before the subject is known on an archive (the read is `filter=tag:`
+  the subject), and asking for Home's feed early means special-casing the files whose feed depends on no subject.
+  The walk records 7 requests to open the editor and 53 for a whole walk against a ceiling of 500, so the cost is
+  latency, not budget. A fix records the subject-free reads in the first round.
+owner: unowned — Story 5.19 (the main feed's lifecycle) touches the same walk.
+location: `apps/web/lib/canvas.ts` (`sitePage`) · `apps/web/lib/live-content.ts` (`sitePieces`)
+
+### DW-251: two rows of Story 5.18 are proven at the unit level only — the ring's tiles on the site's content, and the "newest 100 posts" line on a site with more than 100
+
+plain: Two things the code does are checked by the small tests but have not been watched on the live site: the little
+  design tiles under a selected section drawing your own posts, and the line that says "Showing your newest 100
+  posts" — which neither test site can show, because each holds 33 posts.
+status: open
+severity: low
+origin: Story 5.18's code review (2026-09-24, Verification Gap). `run-verify-live-content.cjs` asserts the Section
+  Picker's card shows the site's newest post but reads no ring tile; its capped-line check reduces to "absent" on
+  both test sites (33 posts, MEASUREMENTS §51), and `[data-link-capped]` is never read by any harness. `cappedPosts`
+  and `siteLinks(...).capped` are unit-tested (`live-content.test.ts`, this review).
+reason: a tile is the same `SectionPreview` the card is, handed the same `live`; a positive capped line needs a site
+  with more than 100 posts, or a `page.route` rewrite of `meta.pagination.total` named as a simulated condition, as
+  the network cut is.
+owner: unowned — the first customer site with more than 100 posts (DW-248's trigger), or the next story that
+  extends the live-content walk.
+location: `tools/probe/run-verify-live-content.cjs` · `apps/web/components/editor/design-picker.tsx` ·
+  `apps/web/components/controls/link-picker.tsx`
+

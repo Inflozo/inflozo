@@ -2,9 +2,9 @@
 title: 'Story 5.18 — Live content from the connected site'
 type: 'feature'
 created: '2026-09-24'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 'ebce8976242b11f4a7fbc7560baf6b9cac0cd0d3'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -453,6 +453,14 @@ ceiling. `REQUEST_CEILING` is **500** per editor session and `READ_TIMEOUT_MS` i
 budget (`appendix-b1-template-contexts.md` §5). Both tune, like §AD4's lock timings; the comparisons do not. The
 deployed walk records how many reads a full walk costs, which is the evidence the ceiling is generous.
 
+**The one bound wider than "three" (review, 2026-09-24).** Until the site has answered once in a session, reads go one
+at a time — which is how a refused key costs exactly one request and a site that never answers costs three. Once it has
+answered, up to `WIDTH` (6) reads are in flight together, so a key rotated or a site gone down *mid-session* can fail
+every one of them before the first failure is counted: that case costs up to `WIDTH` requests against Ghost's budget of
+99, and nothing in flight is ever retried; while the run of failures stands, no new read joins them. `live-content.test.ts`
+pins the bound. The alternative — one read at a time for the whole session — would make every first paint a chain of
+round trips, and the walk's 53 requests for a whole walk shows the budget is not the pressure.
+
 **Tiers.** FR-H4 splits a *network failure* (silent, a subtle indicator) from *429 or repeated failure* (named). The
 subtle indicator is the pill's own truth — "Sample content" in B9's dashed look — plus a short cause in words; the
 named tier adds the full sentence, announced once. A 401/403 and the ceiling are named at once: waiting for three
@@ -636,6 +644,66 @@ fetches nothing), and step 4's DW-230 row (the editor's Post header marks no ite
 - *Page 2* — W (each major's own page 2); U (R-176 from the site's own count, with the sample's as the control); the
   recorder's `past-last` rows.
 - *A body arrives anyway* — U (a hostile row keeps no body, injection or key); W (no answer carried one).
+
+### Review Findings
+
+Review of 2026-09-24 on `f971992b` (five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). The real-infra layer ran before a patch was written: T3 `ghost5.inflozo.com` answered
+`formats=mobiledoc` reads with no body and `access-control-allow-origin: *`, a wrong key **one** 401 (the negative
+control), the preflight 204 allowing `accept-version`; T1 `ghost6.inflozo.com` answered its one valid-key read 200 — its
+§52 hold has lapsed; production's `projects.linked_site_id`, `sites.content_key`, `sites.disconnected_at`,
+`project_template_prefs.preview_subject jsonb` and the partial unique index on `linked_site_id` read back through
+`SUPABASE_DB_POOLER_URL` (no migration in the diff — R-99 holds); `app.inflozo.com` served `dpl_475YFtreA5sNTdc5xXDh7h317DWQ`
+READY at `f971992b`, CI 36020037618 and the matrix 36020037468 green. The Acceptance Auditor found every string equal
+to the Design Notes table and B9's pill equal to the frame. **Every patch below is applied; the story stays in review and
+Deploy, then the owner's test, follow.**
+
+- [x] [Review][Patch] A read that hung — a site that accepts the connection and never answers — was asserted as a
+      constant and never exercised; without the request's `signal`, `ensure` would hold every later paint of the session.
+      A test now waits the real timeout once and fails if the signal goes. And a job that threw outside the fetch (a
+      body of an unexpected shape) would never have settled: the job's tail runs in a `finally`. [`live-client.ts`,
+      `live-content.test.ts`]
+- [x] [Review][Patch] `request()`'s walk had no catch: a throw over an answer's shape left `pending` set and every later
+      paint of the session was dropped in silence. It lands as the error boundary, as a paint that throws does.
+      [`editor.tsx` `request`]
+- [x] [Review][Patch] The pill, D5e's rows, page 2's offer, the Link Picker's rows and the panel's note read the LAST
+      paint's page even while another canvas's reads were in flight — so a pick made under the skeleton stored the old
+      canvas's kind. They read the page painted for the canvas in force (`painted.key`), else the sample's own
+      resolution. [`editor.tsx` `livePage`]
+- [x] [Review][Patch] A sample subject picked while the site was chosen but not showing, whose press then brought the
+      site back, was announced as chosen while the canvas showed the site's own starting subject; only a choice the paint
+      used is said, in either direction. [`editor.tsx` `chooseSubject`]
+- [x] [Review][Patch] The pill's cause was read back from the store's `last`, which ANY later answer clears — a card's
+      rows, a background revalidation — so an edit's repaint after one silent failure said "Sample content" with no
+      reason. The cause the last paint gave stands until a read the customer asks for replaces it. [`editor.tsx` `paint`]
+- [x] [Review][Patch] A hand-picked `{{#get}}` list was measured against a Count it never uses ("This site has 3 posts
+      for this section; it shows up to 12"); a pick has no limit to fall short of (R-20), so it carries no note.
+      [`editor.tsx` `shortfall`]
+- [x] [Review][Patch] The "never a burst" claim in `live-client.ts`'s header did not hold mid-session: once the site has
+      answered, up to `WIDTH` reads are in flight, and a key rotated then can fail all of them before the first is
+      counted. The bound is now stated in the header and the Design Notes, and pinned by a test that holds reads in
+      flight: one at a time before the first answer, `WIDTH` after it, none new while a failure stands. [`live-client.ts`,
+      this spec, `live-content.test.ts`]
+- [x] [Review][Patch] `siteTotal` (the panel's number), `cappedPosts` (D5e's line), `zoneOf` and `siteFrom`'s "no site"
+      answer had no test; each has one. The `'Etc/UTC'` fallback was restated in `sitePage` and `sitePieces`; one
+      `zoneOf`. The `Live` type was declared three times; `section-preview.tsx` exports it. [`live-content.ts`,
+      `canvas.ts`, `section-preview.tsx`, `design-picker.tsx`, `section-picker.tsx`, `live-content.test.ts`]
+- [x] [Review][Patch] Two rows the walk never covered are walked: the Home check now also asserts the SAMPLE's newest
+      post is absent (the control that tells the site's rows from the site's header over sample rows), and a reload of
+      the Post canvas still previews the post chosen over the site with no "no longer there" — `read.ts`'s `source` mark
+      read back with the row, which nothing observed before. [`run-verify-live-content.cjs`]
+- [x] [Review][Patch] `record-content-api.py`'s no-body step FAILED the run on a fixture with zero pages; an empty resource
+      is a property of the site, so it is a RECORD row. Not re-run: its last step earns T1's hour-long 429 (§52). [`record-content-api.py`]
+- [x] [Review][Defer] The first paint of a canvas costs two round trips (three on Tag/Author) where one would do —
+      deferred, DW-250
+- [x] [Review][Defer] The ring's tiles on the site's content and a positive "newest 100 posts" line are proven at the
+      unit level only — deferred, DW-251
+- [x] [Review][Dismiss] Raised and set aside, each by the spec's own words: background revalidation failures counting
+      toward the stop rule ("a failure is counted"); a `sites` row that fails to read answering `null` ("the safe side");
+      the "no tags yet" page ticking Sample content in SOURCE (the pill describes the last paint, R-165, and the menu
+      says why); edits waiting behind a read the customer asked for ("every other paint waits for it"); the main-feed
+      note keyed on the `posts` context rather than `isMainFeed` (5.19's lifecycle; the sentence is true of any section
+      that renders the feed); `isPlainHttp` restated as the same regex (identical, and `siteFrom` takes no imports).
 
 ## Owner's manual test
 

@@ -39,6 +39,9 @@ import type { Visitor } from '@/lib/view-as'
  *  quarter). Lower it if a real design ever makes the grid slow. */
 const CEILING = DESKTOP.height * 2
 
+/** Story 5.18 — a card's or a tile's content from the connected site, or null where a read it needs is not in hand. */
+export type Live = (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
+
 export function SectionPreview({
   entry,
   target,
@@ -78,7 +81,7 @@ export function SectionPreview({
   /** Story 5.18 — THE CANVAS'S CONTENT, where it is the connected site's (FR-H4 names the picker's previews as a
    *  consumer of the same reads): this card's context and rows, or null where a read it needs is not in hand — and
    *  then the card draws the sample, WHOLE, one source per card. Omitted where the canvas shows sample content. */
-  live?: (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
+  live?: Live
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
