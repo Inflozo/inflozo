@@ -530,6 +530,15 @@ HEAD when its walk ran. The deployed walks were therefore run at Dev rather than
   exists exactly when `lock.holder` is false, and at `d895c183` it was on screen at every sample from
   0.5 s to 10 s after a reload, on every observation made (two probe runs, and step 93 below), so the
   2.5 s assertion would have failed there.
+- **That fix was itself incomplete, and the editor walk said so twice at the same line.** Step 69 died
+  at its wait for "Retrying" in two of four runs — never on the memory's list of flaky steps, and always
+  right after step 68's same-tab navigation. A sampler on `app.inflozo.com` at `2052bf5d` showed why:
+  after **every** navigation the session was the holder at 0.5 s, a **reader at 1 s** and the holder
+  again by 2 s — five of five. The re-poll acquired at once, but only *after* `land` had flipped the
+  state, so B5a's bar **flashed** over the customer's own tab on every reload and a Hide pressed in that
+  second was silently refused. Now a beat that finds no row at all never lands: it goes straight to
+  `acquire`, and only the acquire's answer sets the state. The walk's reload row no longer glances at
+  2.5 s — it **samples every ~100 ms for 3 s** and fails on a single sighting.
 - **The same audit found a second defect, under "Keep editing", and it was executed before it was
   fixed.** The holder dismissed a request by the asking **tab's id**, so one Keep editing silenced that
   tab for good. On `app.inflozo.com` at `d9e5f090`, two contexts of one account: the first request

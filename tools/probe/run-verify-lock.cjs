@@ -184,7 +184,7 @@ async function main() {
     // the edit, and a tick landing between B's edit and the take-over sends the very work the take-over is about
     // (executed 2026-09-24: this walk's own timeline drifted onto one). Every send below is then one the walk makes on
     // purpose — the hand-over's flush and B's ⌘S. The switch is FR-D10's own, `profiles.autosave_enabled`.
-    const quiet = await call('/rest/v1', `/profiles?id=eq.${uid}`, { method: 'PATCH', body: JSON.stringify({ autosave_enabled: false }) })
+    const quiet = await call('/rest/v1', `/profiles?user_id=eq.${uid}`, { method: 'PATCH', body: JSON.stringify({ autosave_enabled: false }) })
     check('fixture — autosave is off for this account, so no timer races the walk', quiet.status === 200 && quiet.body?.[0]?.autosave_enabled === false, `HTTP ${quiet.status}`)
     const seeded = await seed({ email })
     check('fixture — "Pilot sections" seeded', seeded.created === true, seeded.id)
@@ -231,12 +231,18 @@ async function main() {
      * heartbeat, with every edit silently refused (measured on app.inflozo.com at d895c183; it is what made step 93
      * of run-verify-editor.cjs fail). Two seconds is the assertion: a round trip, not a heartbeat. */
     await A.reload({ waitUntil: 'load' })
-    await A.waitForTimeout(2500)
+    // SAMPLED, NOT GLANCED AT: the bar must never appear, not for a frame. One look at 2.5 s passed while the bar
+    // flashed at ~1 s on every navigation (executed 2026-09-24 — reader at 1 s, holder by 2 s, five of five).
+    let flashed = 0
+    for (const t0 = Date.now(); Date.now() - t0 < 3000; ) {
+      if (await A.evaluate(() => !!document.getElementById('editor-lock-bar'))) flashed++
+      await A.waitForTimeout(100)
+    }
     const aBack = await surface(A)
     const backRow = await lockRow(A, P)
     check('matrix "Same session reloads": the lock is KEPT — no bar at its own reflection, the sidebar undimmed, and it is editing within a round trip rather than a heartbeat',
-      aBack.bar === null && aBack.sidebarOpacity === '1' && backRow !== null && backRow.holderSessionId === beaten.holderSessionId,
-      JSON.stringify({ bar: aBack.bar, opacity: aBack.sidebarOpacity, row: held(backRow) }))
+      flashed === 0 && aBack.bar === null && aBack.sidebarOpacity === '1' && backRow !== null && backRow.holderSessionId === beaten.holderSessionId,
+      JSON.stringify({ flashedInSamples: flashed, bar: aBack.bar, opacity: aBack.sidebarOpacity, row: held(backRow) }))
     check('…and the reload took NOTHING from anybody: the generation did not move (it is the same session, not a take-over)',
       backRow !== null && backRow.generation === beaten.generation, JSON.stringify({ was: beaten.generation, now: backRow?.generation }))
     check('…and the reload kept A\'s UNSYNCED work: the generation never moved, so nothing cleared the journal',

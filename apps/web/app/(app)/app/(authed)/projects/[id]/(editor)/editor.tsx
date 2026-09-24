@@ -1147,20 +1147,27 @@ export function Editor({
       const holding = wasHolder || Date.now() - gaveAt.current < NUDGE_MS
       const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: owedNow() })
       if (!alive) return
+      // A BEAT THAT FOUND NO ROW AT ALL MEANS THE LOCK IS FREE — take it NOW, and let the ACQUIRE'S answer be the one
+      // that lands, so the state never passes through "reader" on the way.
+      //
+      // This is the matrix's "Same session reloads" row. The outgoing page releases on `pagehide`, and that DELETE
+      // usually lands after the new page's server render but before its first beat, so the first beat matches
+      // nothing. Measured on `app.inflozo.com`: at d895c183 the session then read its own B5a bar — "You are editing
+      // this site somewhere else", about its own tab — for a whole ~14 s heartbeat; at 2052bf5d, re-polling at once
+      // but after `land` had flipped it, the bar still FLASHED on every navigation (reader at 1 s, holder by 2 s, five
+      // of five) and a Hide pressed in that second was silently refused — step 69 of the editor walk, twice.
+      //
+      // BOUNDED TO EXACTLY ONE EXTRA CALL, and `wasHolder` is what bounds it: `heldGeneration` is cleared here, so the
+      // re-poll sends `acquire` and its own `wasHolder` is false. It reads `heldGeneration` rather than `holding`
+      // deliberately — `holding` stays true for a nudge's worth of time after Hand over (`gaveAt`), whose release
+      // deletes the row too, and that pair would spin. Nothing `land` would have done for a missing row is lost:
+      // the displacement test and the "kept" notice both need a row, and the acquire's own answer sets the rest.
+      if (wasHolder && answer !== null && !answer.held && answer.row === null) {
+        heldGeneration.current = null
+        void poll()
+        return
+      }
       land(answer)
-      // A BEAT THAT FOUND NO ROW AT ALL MEANS THE LOCK IS FREE — take it NOW, not in fifteen seconds.
-      //
-      // This is the matrix's "Same session reloads" row, and without it a customer's own F5 cost them the editor for
-      // a whole heartbeat: the outgoing page releases on `pagehide`, that DELETE lands AFTER the new page's server
-      // render, so the first beat matches nothing, `land` correctly stops claiming the lock — and then the session
-      // sat reading its own bar, "You are editing this site somewhere else", about its own tab. Measured on
-      // `app.inflozo.com` at d895c183: the row was gone from the first frame and the bar stayed up for ~14 s.
-      //
-      // BOUNDED TO EXACTLY ONE EXTRA CALL, and `wasHolder` is what bounds it: `land` has just cleared
-      // `heldGeneration`, so the re-poll sends `acquire` and its own `wasHolder` is false. It reads `heldGeneration`
-      // rather than `holding` deliberately — `holding` stays true for a nudge's worth of time after Hand over
-      // (`gaveAt`), whose release deletes the row too, and that pair would spin.
-      if (wasHolder && answer !== null && !answer.held && answer.row === null) void poll()
     }
 
     // LAYER 1 — the same browser, free and instant, and it is the case DW-203 is written about. NOTHING IS TRUSTED
