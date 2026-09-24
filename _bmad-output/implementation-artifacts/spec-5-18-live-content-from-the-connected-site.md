@@ -100,9 +100,11 @@ and `project_template_prefs.preview_subject` (`jsonb`) exist, and the source cho
 
 **Ask First:**
 
-- **Question 1 is the owner's and is OPEN** — which tag and which writer an untouched Tag and Author page start on
-  once they show the customer's own site (FR-D22 names a fixed Orbit Weekly tag and author, which a real site does
-  not have). Dev builds the rule he rules; the recommended option is in *Questions for the owner*.
+- **Question 1 is RULED — R-193** (owner, 2026-09-24): an untouched Tag and Author page on the site's own content
+  start on the tag and the author with the most posts, a tie going to the name first in the alphabet.
+- **Question 2 is the owner's and is OPEN** — what the editor does for a brand-new site, whose one post, one tag and
+  one author make every list a single card (raised by his ruling on Question 1). **Dev waits for it**; the
+  recommended option is in *Questions for the owner*.
 - If the recorder finds `formats=mobiledoc` returning a body on either major — the premise of "never the body" — stop
   and say so.
 - If Ghost's 429 arrives **without** `access-control-allow-origin`, the browser cannot read its status and the 429 row
@@ -228,7 +230,8 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
   address (`addressOf` :219, `paginationOver` :90-95). **Extract the assembly** so the live path hands it the same
   pieces and cannot drift. `:226-246` `listOf`; `:251-254` `feedPages`; `:198-205` `resolveSubject`, `:162-168`
   `subjectExists` and `:173-184` `postOf`/`subjectRow` read `dataset` directly; `:154-158` `fixtureSubject` (the
-  archive fixtures are Orbit Weekly's slugs — Question 1); `:444-454` `resolveSource`; `:323` `DEFAULT_LIMIT`.
+  archive fixtures are Orbit Weekly's slugs — R-193 decides a live archive's); `:444-454` `resolveSource`; `:323`
+  `DEFAULT_LIMIT`.
 - `packages/library/orbit-weekly/dataset.json` — `site`'s keys are exactly what the canvas reads of `@site`:
   `accent_color allow_self_signup comments_enabled cover_image description icon locale logo members_enabled navigation
   paid_members_enabled secondary_navigation timezone title url` — the live whitelist. Its fixture post's `url` path is
@@ -321,7 +324,8 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
   freshness (`FRESH_MS`), the outcome of a status, the stop rule
   (`FAILURES_TO_STOP`, `REQUEST_CEILING`), the whitelist mapping to the dataset's row shapes (taking the
   HTML-to-words function as an argument), the site's wall-clock date for a timestamp (`Intl`, **DW-98**), the
-  shortfall caption, Question 1's default archive subject, and every string in *Design Notes*. -- the matrix is the
+  shortfall caption, R-193's starting archive subject (the most `count.posts`, a tie to the name first in the
+  alphabet), and every string in *Design Notes*. -- the matrix is the
   contract, and a pure module makes it a unit test rather than a browser observation.
 - [ ] `apps/web/lib/live-client.ts` -- new: the I/O — one store per editor session over `{ origin, key }`: `fetch` with
   `Accept-Version: v5.0` and `AbortSignal.timeout(READ_TIMEOUT_MS)`, the `Map` cache, one in-flight promise per key,
@@ -363,8 +367,8 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
 - [ ] `apps/web/live-content.test.ts` -- new: every matrix row over `lib/live-content.ts` — the key, freshness, the
   outcomes and the stop rule (a 401 is one request; three failures stop; a 429 stops), the ceiling, the whitelist (no
   `html`, `plaintext`, `codeinjection_*` or key ever in a row), the caption reduced to words, a date across a DST
-  boundary, every shortfall sentence, Question 1's default, the subject-source rule, and every string equal to the
-  *Design Notes* table. -- the matrix is the contract.
+  boundary, every shortfall sentence, R-193's starting subject and its tie, the subject-source rule, and every
+  string equal to the *Design Notes* table. -- the matrix is the contract.
 - [ ] `tools/probe/run-verify-live-content.cjs` -- new: the deployed walk on `app.inflozo.com`, its own throwaway account
   with site rows for T1 and T3 (keys from the environment, never printed) and projects linked to them. Walks every
   matrix row with a screen, on **both majors**; counts requests to the Ghost origins (one per key, none inside 60 s);
@@ -529,7 +533,8 @@ Gated Post", is for paid members; how a members-only post is marked on the canva
 
 On the real site after Deploy, in a desktop browser about 1440 wide. **Deploy has linked your Ghost 5 Project to your
 Ghost 5 site** (ghost5.inflozo.com) for this — one line of your data; nothing else about the project changed. Steps
-5 and 6 are written for **option 1 of Question 1**; if you rule another option, they change with it.
+5 and 6 follow your ruling on Question 1 (**R-193**). Your Ghost 5 site is a full one, so what Question 2 decides for a
+brand-new site gets its own step once you have ruled it.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -571,5 +576,40 @@ starting choice — you can always change it, and your choice is kept.
    - Nothing of yours is guessed.
    - But those two pages show sample posts while every other page shows yours, and their pill has to say "Sample
      content".
+
+**Ruled: option 1 (owner, 2026-09-24)** — *"The tag and writer with the most posts."* Recorded as **R-193**. He asked
+in the same breath what happens on a brand-new site, where every tag and writer has one post — that is Question 2.
+
+### Question 2 — A brand-new Ghost site has one post, one tag and one writer. What should the editor show you then? (raised 2026-09-24, from your ruling on Question 1)
+
+**In plain English.** You are right: a new Ghost site comes with one post, **"Coming soon"**, one tag, **News**, and
+one writer — **you** — plus an **"About this site"** page (read in Ghost's own code, on both versions). So with your
+ruling the Tag page opens on News and the Author page on you, and every list of posts on your pages shows **one card
+where the design has room for twelve**. That is the truth about the site, but it is a poor way to judge a grid. Two
+things already planned help: a note in the panel of any section that is not full — *"This site has 1 post; this
+section shows up to 12 per page."* — and the pill's switch to **Sample content**, which fills every page with the
+sample magazine. The question is whether to do more.
+
+**An example.** You connect a brand-new site and open the editor. Home shows your header, then a grid built for
+twelve holding one "Coming soon" card, then your footer.
+
+1. **Show your one post, and put a "Preview with sample content" button in that note. (RECOMMENDED)**
+   - Whenever a section's list is not full, its note says so and carries the button; one press switches the whole
+     editor to the sample magazine — the same thing the pill does — and the pill switches you back.
+   - Your own site stays what you see first, which is what connecting a site promises, and the full page is one press
+     away exactly where you notice the gap.
+   - Nothing is guessed and no line has to be drawn.
+2. **Start a thin site on sample content automatically.**
+   - While your site has fewer posts than fill one page (fewer than 12 today), the editor opens on Sample content and
+     the pill says why: *"Ghost5 has 1 post, so pages start with sample content. Choose Ghost5 to see yours."*
+   - The first look at a new site is full and finished.
+   - But it breaks "connecting your site shows your content", the line at 12 is arbitrary, and the day you publish your
+     twelfth post the editor changes under you.
+3. **Leave it as planned.**
+   - Your one post, the note, and the switch in the pill.
+   - Nothing new to build, but the note does not say how to see the page full.
+
+**Not offered:** filling the empty places with sample posts. Your ruling R-36 is that a list is never padded with
+posts nobody chose for it, and the canvas would then show a page your site will never show.
 
 **Ruled:** _(awaiting the owner)_

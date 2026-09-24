@@ -272,7 +272,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     is ONE assembly shared by `templateContext` and the live path, a render that is one source throughout, and a
     subject stored with the source it was chosen from (`jsonb`, **no Schema phase**). `is_private` is not a public
     setting on either major, so DW-192 moved to Epic 3's snapshot; DW-230 and DW-98 close here; DW-247 to DW-249 are
-    new. **Question 1 is open:** which tag and author an untouched archive shows on a live site.
+    new. **R-193 (owner, 2026-09-24, Question 1):** an untouched live archive starts on the site's tag and author
+    with the most posts, a tie going to the name first in the alphabet — FR-D22's fixed Orbit Weekly pair is not on a
+    real site. **Question 2 is open:** a brand-new Ghost site holds one post, one tag and one author (Ghost's own
+    `fixtures.json`, read in source), so every live list is a single card; what the editor does about it is his.
   - **Story 5.13's planning (2026-09-20, read in the schema, the runtime and the frames):** the pill and the
     subject need NO new mechanism and NO migration — `project_template_prefs.preview_subject` (`{kind, id, slug}`)
     has been in the complete-schema migration since day one with **no reader anywhere in `apps/web`**, its grants

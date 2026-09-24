@@ -1984,7 +1984,9 @@ So that the canvas is reproducible rather than an accident of query order.
 **And** it **also names the preview subject** — which post, page, tag or author the single-resource canvases
 are rendering — with or without a linked site
 **And** untouched, **the subject is the fixture**: the style-guide post on Post, the style-guide page on Page, and
-a fixed Orbit Weekly tag and author on the archives
+a fixed Orbit Weekly tag and author on the archives — and, once Story 5.18 shows the connected site's own content, the
+archives start on that site's tag and author with the most posts, a tie going to the name first in the alphabet
+(**R-193**, owner, 2026-09-24)
 **And** I may **override the subject** from the same picker the Data group uses, per canvas, persisted with the
 project — **R-165** (owner, 2026-09-20): the picker is built now, over the bundled sample publication, and Story
 5.18 swaps in the connected site's own content and rebuilds nothing
@@ -2216,6 +2218,9 @@ fallback to Orbit Weekly on network failure with a subtle indicator
 Picker search, under a per-session request ceiling
 **And** the Link Picker's search reads **the linked site's own posts and pages** through those reads — Story 5.3's
 picker searches the sample content until this story lands
+**And** untouched, the Tag and Author canvases start on **the site's tag and author with the most posts**, a tie going
+to the name first in the alphabet — **R-193** (owner, 2026-09-24), because FR-D22's fixed Orbit Weekly tag and author
+are not on a real site; Post and Page still start on the style-guide article and page
 **And** on HTTP 429 or repeated failure the editor falls back to Orbit Weekly **and names the cause** — because
 Ghost rate-limits Content API keys and Ghost(Pro) sits behind an edge Inflozo does not model (UX-DR6)
 **And** the canvas reads **list and metadata fields only and never post or page body HTML**: `{{content}}`
@@ -2230,7 +2235,7 @@ together**; a bound prop that is not a feed follows the media/text guards
 the user **authored** render **nothing at zero**, because an editor who has typed no steps is mid-build, not
 looking at an error.
 
-**FRs:** FR-H4. · **Frame:** `B Missing Surfaces.dc.html` B9 (the content-source pill and its fallback indicator) · `S4 Editor.dc.html` S4a. · **Owner test:** yes. · **Verification:** T1 with a real Content API key, and a forced 429
+**FRs:** FR-H4. · **Frame:** `B Missing Surfaces.dc.html` B9 (the content-source pill and its fallback indicator) · `S4 Editor.dc.html` S4a. · **Rulings:** R-193. · **Owner test:** yes. · **Verification:** T1 with a real Content API key, and a forced 429
 (R-82).
 
 ### Story 5.19: The Data group and the main-feed designation

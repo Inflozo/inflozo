@@ -4179,6 +4179,27 @@ Layers' ⋯ menus, **+ Add section** and **Site Remix** still opened over nothin
   ✅ `EXPERIENCE.md` F2, the reader's row · ✅ built: `kit/greyed.ts`, `sidebar.tsx`, `item-list.tsx`, `rich-field.tsx`,
   `layers.tsx`, `section-pill.tsx`, `lib/keymap.ts`, `editor.tsx` — Story 5.17's Dev, walked by `run-verify-lock.cjs`.
 
+**R-193 — once the canvas shows the customer's own site, an untouched Tag page and Author page start on the site's
+tag and writer with the most posts.** Story 5.18's Create, Question 1, ruled **option 1** (owner, 2026-09-24): *"The
+tag and writer with the most posts."* FR-D22 made the untouched subject *"a fixed Orbit Weekly tag and author on the
+archives"* — the sample magazine's own **Field Notes** and **Rosa Menendez** — which a real site does not have, so
+the rule could not be followed on live content without inventing one.
+
+- **The rule.** The tag, and the author, whose `count.posts` is highest in the site's own list; **a tie goes to the
+  name that comes first in the alphabet** (Ghost's own order for tags and authors). It is only the starting choice:
+  the customer's own pick from the pill still wins and is kept, as R-165 built it.
+- **What it does NOT change.** Post and Page still start on the style-guide article and page, which exist whatever
+  the source; the sample's own archives keep Field Notes and Rosa Menendez, so the snapshots and the render matrix do
+  not move; and a site with no tag (or no author) at all still previews the sample's, saying why.
+- **What the ruling raised.** A brand-new Ghost site holds one post, one tag and one author — `fixtures.json` and
+  `fixture-manager.js`, read in source on 5.130.6 and 6.58.0: the post *Coming soon*, tagged *News* and written by the
+  site's owner (the fixture user is the owner placeholder), plus the page *About this site* — so the fullest archive
+  is a one-post archive. The owner asked what can be done there, which is Story 5.18's Question 2.
+- Targets: ✅ this entry · ✅ Story 5.18's spec (Question 1, its tasks and its owner test) — Story 5.18's Create,
+  2026-09-24. ✅ `prd.md` FR-D22 and the glossary's *Preview subject* row · ✅ `epics.md` (Story 5.13's
+  untouched-subject criterion, Story 5.18's criteria) · ✅ `epic-5-context.md` · ⬜ built: `apps/web/lib/live-content.ts`
+  — Story 5.18's Dev.
+
 
 ## B · Approved decisions superseded by this session
 
