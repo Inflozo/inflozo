@@ -3,7 +3,7 @@ title: 'Story 5.17 — The edit lock and the take-over choreography'
 type: 'feature'
 created: '2026-09-23'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: 'f92409a17bfa06a29e4471d858ca5a527859206e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -792,6 +792,12 @@ which had not been built.
 - **Keyboard shortcuts** that would edit (add a section, duplicate, delete, change design, undo, redo, remix) now do
   nothing at all in a window that is reading along, rather than opening a picker or a box over nothing.
 - Typing into the canvas was already refused before this finding; it stays refused.
+
+**3. The full 13-step walk (2026-09-24, on the Deploy build `4aa48f5e`).** **Passed** — no new findings. Every
+step read exactly as the table describes: the reader's bar with nobody named, the settings panel dimmed and inert
+while still readable, the popover's countdown restarting on a minute of attention, Hand over sending first and
+handing over cleanly, the no-response take-over's confirm opening focus on **Wait**, and the displaced window's
+"This session had 1 unsynced edit; they were not included." with ⌘Z bringing nothing back.
 
 **Found while fixing them:** reloading the window that is editing could still show the grey "reading along" bar
 for a split second — about a tenth of a second — before the page recognised itself. The server draws the first
