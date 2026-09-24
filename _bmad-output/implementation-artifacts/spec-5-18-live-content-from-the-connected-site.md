@@ -555,6 +555,80 @@ Gated Post", is for paid members; how a members-only post is marked on the canva
   the owner's data, one row, said in the Deploy commit; the partial unique index guarantees no other project holds the
   site. Nothing else about the project changes.
 
+### Results — Dev, 2026-09-24, on the real infrastructure (R-82)
+
+**The Ghost test servers — T3 `ghost5.inflozo.com` (5.130.6) and T1 `ghost6.inflozo.com` (6.58.0)**, keys by name
+`GHOST5_URL` · `GHOST5_CONTENT_API_KEY` · `GHOST6_URL` · `GHOST6_CONTENT_API_KEY`:
+
+- **The recorder ran first**, before any code: every step PASS on both majors with its control (MEASUREMENTS §51).
+  CORS `*` on the 200 and the 401 of all five routes and a 204 preflight allowing `accept-version`;
+  `Cache-Control: public, max-age=0`; `formats=mobiledoc` carried no body on any of the 33 posts and 2 pages of either
+  major, with `reading_time` and `excerpt` identical to a plain read (T3's posts 99,402 bytes against 110,057, T1's
+  99,954 against 110,609); `fields=` dropped `reading_time`; a missing slug and a page past the last answered `200 []`;
+  `order=count.posts desc` held; `filter=id:[…]` answered in Ghost's order. On T1, 100 reads with a key Ghost never
+  issued, then the real key: **429 "Too many attempts." at 12:49:40 UTC, carrying `access-control-allow-origin: *`** —
+  so neither Ask First stop fired: no body arrives, and the 429 is readable, not "not answering". New: a post and a
+  page carry a `codeinjection_head`/`_foot` of their own, which the allowlist drops without naming them.
+- **The deployed walk**, `MAJORS=5,6 NO_429=1`, at `ee146bbf` on `app.inflozo.com`: **0 FAIL, 84 PASS** on its first run.
+  Per major: 7 requests to open the editor, 26 over 15 keys for the whole major, no key Ghost answered asked for again
+  inside 60 s, no answer carrying `html` or `plaintext`, every answer carrying `access-control-allow-origin`, neither
+  the key nor `codeinjection` in the canvas markup. **A full walk cost 53 Content API requests** against a ceiling of
+  500 per session. A real 401 cost exactly one request and greyed the row, and pressing it anyway sent nothing. Zero
+  `securitypolicyviolation`s — the CSP needed no change.
+- **The same walk, `MAJORS=6`** — T1's major again, then the real 429 last: **0 FAIL, 51 PASS**. After 100 × 401 from
+  this machine the editor opened in a fresh session on sample content, *"Ghost6 (row) asked us to wait"*, the sentence
+  announced, **one** request. Earned at 14:22:54 UTC.
+
+**Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): each walk made its own throwaway account through the Auth admin
+API (200) and signed in by `generate_link`, wrote its site rows (201) and linked its projects (200) over PostgREST. The
+editor's server read of `projects.linked_site_id` and the `sites` row, through the user's own session, is what painted
+the site's content for the readable rows and greyed the disconnected, keyless and `http:` ones;
+`project_template_prefs.preview_subject` read back `{"kind":"post","slug":"on-typography-and-restraint","source":"site"}`.
+Accounts deleted (200), users 13 before · 13 after in both runs. `bash supabase/tests/run-rls-gate.sh`: exit 0 — no SQL
+changed, so no Schema phase.
+
+**Vercel and GitHub** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `GITHUB_TOKEN`): CI run 36011034562 for `ee146bbf` — `check`,
+`rls` and `deploy` all success; `app.inflozo.com` served `dpl_9MQPc31aVVcmD479m5kKMhk4onQ4`, READY, built from `ee146bbf`
+(the walks refuse to run otherwise). **Resend and Dodo:** not touched — this story sends no email and bills nothing.
+
+**The editor walk** (`run-verify-editor.cjs`, Pilot sections, unlinked — the control), same deployment: **0 FAIL,
+576 PASS** on its first run; every step-89 row passed (the pill "Sample content", dashed, no SOURCE group, searching
+fetches nothing), and step 4's DW-230 row (the editor's Post header marks no item; /pilots', drawn at `/`, marks Home).
+
+**Locally, Node 24:** `pnpm check` exit 0 — `apps/web` with `live-content.test.ts` and page-two's source row,
+`packages/library` with its control unedited, `section-runtime`, and `check-snapshots` PASS unchanged; `pnpm keyboard`
+51 passed; the render matrix 180 cases · 5 designs · 0 violations with no baseline moved; `doc-audit --check` PASS twice.
+
+**The Matrix Test Audit** — each row and a test that ran and passed for it (W the deployed walk, U the unit tests:
+`live-content.test.ts`, `page-two.test.ts`, `orbit-weekly.test.ts`):
+
+- *Unlinked* — W's control (zero requests, no SOURCE group), the editor walk's step 89, `pnpm keyboard` (`site: null`).
+- *Linked and readable* — W on both majors (the site's paint, B9 connected, D5e's SOURCE group); U `sitePage`.
+- *Disconnected · no key · `http:`* — W (each greyed with its own reason, nothing read); U `siteFrom`.
+- *Choose Sample content · Choose the site* — W (the repaint, the pill, the polite sentence; the SOURCE row's R-98 busy
+  state WATCHED from before the press, "Loading Ghost5…", `aria-busy` and `aria-disabled`, never `disabled`).
+- *Fresh · Stale · Two consumers* — U (the store over a fetch the test answers: no request inside `FRESH_MS`, one
+  revalidation however many ask, a failed revalidation counted with the stale answer kept, one request for two
+  callers); W (no key asked twice inside 60 s across the canvas, the cards, D5e and the Link Picker).
+- *One failed read* — W (simulated cut: sample throughout, "Ghost5 not answering", SILENT — nothing new said, no "no
+  longer there"); U.
+- *Repeated failure* — W (simulated cut on a new session: exactly `FAILURES_TO_STOP` requests, one at a time, named
+  and said, the row not greyed, and it heals); U.
+- *Key refused* — W (a real 401: one request, greyed, pressing it sends nothing); U.
+- *Too many requests* — W (a real 429 from T1: one request, named); U.
+- *Ceiling* — U (`ask` stops at `REQUEST_CEILING` and choosing the site cannot reopen it); W records a full walk's 53.
+- *Zero items · Fewer than asked* — U (an empty list is `[]`, never back-filled; every note's sentence); W (Archive's
+  five-post note); `check-snapshots` keeps A17's declared empty arm.
+- *The note's button (R-194)* — W (the switch, focus on the pill, the note gone and back — and live in a second
+  session reading along, B5a's bar up, whose SOURCE group is live too).
+- *Subject gone · Subject from the other source* — U (`fellBack` only where the subject's own source answered `[]`; the
+  other source's starting subject silently); W (after a failure, no "no longer there").
+- *Site has no tags (authors)* — U (`sitePage` answers `nothing`, and its sentence). Not walked: neither test site has
+  none.
+- *Page 2* — W (each major's own page 2); U (R-176 from the site's own count, with the sample's as the control); the
+  recorder's `past-last` rows.
+- *A body arrives anyway* — U (a hostile row keeps no body, injection or key); W (no answer carried one).
+
 ## Owner's manual test
 
 On the real site after Deploy, in a desktop browser about 1440 wide. **Deploy has linked your Ghost 5 Project to your

@@ -11,6 +11,7 @@ import {
   offersPageTwo, ownKeyOf, PAGE_TWO_WORDS, pageFileOf, pageInForce, pageTwoOf, PREVIEW_PAGE, SITE_WIDE_ASK, stackOf,
   type Page,
 } from './lib/page-two.ts'
+import { reader, siteSource } from './lib/live-content.ts'
 import { pilot, pilotIds } from './lib/pilots.ts'
 import { committed, EMPTY_DOC } from './lib/round-trip.ts'
 import { afterChange } from './lib/view-as.ts'
@@ -120,6 +121,26 @@ test('the page in force: page 2 where it was asked for and exists, else page 1 w
   const lost = pageInForce(2, 'home', { ...docs, home: EMPTY_DOC }, null)
   assert.deepEqual(lost, { page: 1, reason: noPageTwo('home', { ...docs, home: EMPTY_DOC }, null) })
   assert.match(leftBecause(lost.reason as string), /^Back to page 1: this page no longer has a main list of posts/)
+})
+
+test('Story 5.18 — R-176 answers from the SOURCE IN FORCE: the connected site\'s own page count, never the sample\'s', () => {
+  const docs = opened()
+  // a site whose every list answers `pages` pages — the count page 1's own read carries (`meta.pagination`, §51)
+  const site = (pages: number) =>
+    siteSource(
+      { kind: null, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: orbitWeekly.postsPerPage() },
+      reader((q) => (q.resource === 'posts' ? { rows: [], total: pages * orbitWeekly.postsPerPage(), pages } : undefined)),
+    )
+  const archive = { kind: 'tag' as const, slug: 'archive', source: 'site' as const }
+  assert.equal(offersPageTwo('tag', docs, archive, site(1)), false, 'an archive of the site that fits one page')
+  assert.equal(offersPageTwo('tag', docs, archive, site(2)), true)
+  assert.equal(offersPageTwo('home', docs, null, site(1)), false, 'a site whose whole feed fits one page has no page 2')
+  assert.equal(offersPageTwo('home', docs, null, site(3)), true)
+  // the control: the SAMPLE's Home offers page 2, so "the site's fits one page" is a real difference
+  assert.equal(offersPageTwo('home', docs, null), true)
+  const gone = pageInForce(2, 'tag', docs, archive, site(1))
+  assert.equal(gone.page, 1)
+  assert.equal(leftBecause(gone.reason as string), "Back to page 1: this tag's posts all fit on one page, so it has no page 2.")
 })
 
 test("R-179 · R-178: page 2 follows page 1 until its first change, which stores the copy; then page 1 never reaches it", () => {

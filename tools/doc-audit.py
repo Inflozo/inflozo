@@ -582,7 +582,8 @@ DOCS = [
   'never issued, three unreadable rows (disconnected, no key, plain http) and an unlinked control, each with its own '
   'seeded "Pilot sections"-shaped project, all deleted in a finally with the user count read before and after. Per '
   "major: the editor opening on the site's newest post and its menu under B9's connected pill (solid, mint, 24px); "
-  "D5e's SOURCE group; Sample content and back, announced and costing no request inside 60 s; the Section Picker's "
+  "D5e's SOURCE group; Sample content and back, announced and costing no request inside 60 s, journalling nothing "
+  '(Undo still asleep) and storing nothing (a reload reopens on the site); the Section Picker\'s '
   "Latest Post card showing the site's newest post; the Link Picker finding the site's own post; the Post canvas's "
   "SUBJECT rows led by the style-guide entry and a chosen post rendering with no Home marked (DW-230), stored with the "
   "site's mark; the Page canvas's own pages; R-193's starting tag and writer; the panel's shortfall note and R-194's "

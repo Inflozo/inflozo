@@ -344,6 +344,8 @@ async function main() {
       check(`${tag} — neither the Content API key nor codeinjection is in the canvas's markup`, !html0.includes(g.key) && !/codeinjection/i.test(html0))
 
       // ── D5e's SOURCE group, and Sample content and back ──
+      // nothing has been edited in this session, so the journal is empty — the control for "a source is not an edit"
+      const undoBefore = await page.locator('#editor-undo').getAttribute('aria-disabled')
       await openPill()
       const m0 = await menu()
       check(`${tag} — D5e's SOURCE group on Home: the site row in force, then Sample content (Home is pressable now a site is linked)`,
@@ -361,6 +363,16 @@ async function main() {
       const back = await paintedFrom('home', 'site')
       check(`${tag} — choosing ${NAME} brings the site back, announced — and inside 60 s it costs NO request (every key fresh)`,
         back && (await said()) === W.showing(NAME) && ghostCount() === t1, JSON.stringify({ said: await said(), requests: ghostCount() - t1 }))
+      // THE SOURCE IS A VIEW (EXPERIENCE.md:230): the round trip journalled nothing — Undo still has nothing to undo —
+      // and nothing was stored: Sample content chosen, then a reload, opens on the site again (FR-C4's default)
+      const undoAfter = await page.locator('#editor-undo').getAttribute('aria-disabled')
+      await openPill()
+      await page.locator('[data-source-row="sample"]').click()
+      await paintedFrom('home', 'sample')
+      await open(editor(P[m]))
+      const reopened = await paintedFrom('home', 'site')
+      check(`${tag} — the source is a VIEW: the round trip left nothing to undo, and Sample content chosen before a reload was never stored — the editor reopens on ${NAME}`,
+        undoBefore === 'true' && undoAfter === 'true' && reopened, JSON.stringify({ undoBefore, undoAfter, reopened }))
 
       // ── the Section Picker's cards read the same store ──
       await page.keyboard.press(`${MOD}+k`)
