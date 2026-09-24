@@ -354,7 +354,10 @@ Grepped; the only hits are the two comments above and a docstring aside in
   `sessionStorage` — so the release deleted the row the re-acquire had just inserted. The same id is what makes not
   releasing free: the tab comes back, re-reads its own row and beats. And the take-over's own reload suppresses the
   release outright (`keeping`), or the `pagehide` deleted the row the take-over had just won and the displaced
-  session — testing `displacedBy(1, 1)` — was never told.
+  session — testing `displacedBy(1, 1)` — was never told. **It is also `pagehide` and not the matrix's
+  `visibilitychange`**, deliberately: *hidden* is an ordinary tab switch too, and releasing there would hand the lock
+  to the other tab the moment you looked away (and would break the owner's own steps 10–11, where the holder keeps
+  the lock while unwatched). A release that never lands is the matrix's own error column: stale in ~60 s.
 - **`run-verify-editor.cjs` runs five browser contexts on one project**, which since FR-D18 is five editing sessions
   of one person. `context.close()` does not wait for the `pagehide` release and a closed tab's lock is live for
   §AD4's ~60 s, so every context after the first opened as a reader — the lock working exactly as it should. It now
@@ -484,34 +487,41 @@ project, 2026-09-23:
 
 **The local gates**, on Node 24 (the repo's `engines.node`; the shell's default is 22):
 
-- `pnpm check` — **exit 0**. `apps/web` printed 506 tests / 506 pass / 0 fail, including the new
-  `lock.test.ts` and the extended `journal.test.ts`, `editor.test.ts` and R-98's `busy.test.ts`
-  auditor; `packages/*` and the render-matrix suite all green.
+- `pnpm check` — **exit 0** on the code at `d66fa06f`. `apps/web` printed 508 tests / 508 pass / 0 fail,
+  including the new `lock.test.ts` (with this phase's request-identity and `heldElsewhere` rules), the
+  extended `journal.test.ts` and `editor.test.ts`, and R-98's `busy.test.ts` auditor, which walks
+  `components/` and so reaches the three new surfaces; `packages/*` and the render-matrix suite green.
 - `bash supabase/tests/run-rls-gate.sh` — **exit 0**, the `pg_dump` drift guard passing (so
   `RLS-TEST.sql` was edited and copied, not the other way round), with the new F4 assertions among
   the passes: *the CAS at generation N → N+1 filtered on N changes exactly one row*, *the losing CAS
   changes no row and the winner still holds the lock*, and *a displaced heartbeat changes nothing and
-  `unsynced_edits` survives the take-over*.
+  `unsynced_edits` survives the take-over*. No SQL changed after it; CI's `rls` job ran the same gate green
+  on every push since.
 - `python3 tools/doc-audit.py --check` — **PASS (0 warnings)**, with both new probes catalogued.
 
 **Vercel and the deployed site** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, and `GITHUB_TOKEN` to read the
-runs). CI went **green on both Dev commits** — `check` and `rls` passed, so `deploy` ran (DW-7) —
-and Vercel served `dpl_A72fzfnh2iwbrHJoMAc72TP1WbmW` **READY at `d895c183`**, then
-`dpl_46k51uFyFNbfyVrPTgfjsrEtYYCX` **READY at `d9e5f090`** (the fix below), each this checkout's
-HEAD when its walk ran. The deployed walks were therefore run at Dev rather than deferred:
+runs). CI went **green on every Dev push** — `check` and `rls` passed, so `deploy` ran (DW-7); the first
+push of 2026-09-24 carried its own date-stamp commit (`d3f6a427`, DW-132) so CI's gate stayed green —
+and the walks below each ran against the deployment Vercel served **READY, built from this
+checkout's HEAD**, which each walk verifies before it starts. The final state is
+`dpl_G6VDH13jjZsfdkLe5eU1mdzMmani` **READY at `d66fa06f`**. The deployed walks were therefore run at
+Dev rather than deferred, and the Matrix Test Audit's rows, the defects they exposed and each fix follow:
 
 - `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-lock.cjs`
-  — **0 FAIL, 48 PASS on `app.inflozo.com` at `d9e5f090`** (45 PASS at `d895c183`, before the matrix
-  row below existed), two real browser contexts of one account, covering every row of the I/O matrix
-  that has a screen. Among them, on the real site: B5a's bar in the ruled words
+  — **0 FAIL, 65 PASS on `app.inflozo.com` at `d66fa06f`**, two real browser contexts of one account
+  on their own fixture (autosave switched off through `profiles.user_id`, so no timer races the walk),
+  covering every row of the I/O matrix that has a screen — including each row the audit below added.
+  (Earlier runs, in order: 45 PASS at `d895c183`; 48 PASS at `d9e5f090`; 61 PASS + 2 FAIL of the walk's
+  own pointer at `d3f6a427`; 56 PASS + 7 FAIL at `91c6fc58`; 64 PASS + 1 FAIL of the fixture's column at
+  `2052bf5d` — every failure is accounted for below.) Among the passes, on the real site: B5a's bar in the ruled words
   with nobody named and the sidebar at `0.55` described by the bar's own sentence; `commit()` refusing
   with the Layers list unmoved and the revision unchanged; B5b a **popover** at 440 announced
-  assertively; the countdown really counting (20s → 16s) and **focus restarting it** (16s → 30s,
+  assertively; the countdown really counting (30s → 26s) and **focus restarting it** (26s → 29s,
   F-079); Hand over's flush landing **before** the row is deleted; B5c opening with focus on **Wait**,
   at 440/radius 16, never itemising the loss; the take-over advancing the generation **by exactly
   one** in the same statement as the holder change, with A then editing the last synced snapshot; and
-  the displaced session told assertively *"This session had 1 unsynced edit; they were not
-  included."* with its journal cleared unconditionally. The fixture account was deleted and the user
+  the displaced session told assertively *and shown in its bar* — *"This session had 1 unsynced edit;
+  they were not included."* — with its journal cleared unconditionally. The fixture account was deleted and the user
   count came back (13 before · 13 after). It refuses a dirty tree or a deployment that is not HEAD.
 - **The Matrix Test Audit found one row with no covering test, and the test found a real defect.**
   *"Same session reloads → row exists, `holder_session_id` is mine → lock kept, no generation
@@ -600,21 +610,27 @@ HEAD when its walk ran. The deployed walks were therefore run at Dev rather than
   take the lock (about one reload in ten when a second session is open). Nothing is lost silently when
   it does — the reloaded tab reads along and its flushes answer 423 — and each obvious fix costs
   something worse; the ledger row lists them.
-- `node tools/probe/run-verify-editor.cjs` — **0 FAIL, 575 PASS on `app.inflozo.com` at `d9e5f090`**
-  (run 3, exit 0), a complete walk. **Step 93 now passes** — the field reads *"The archive — page
+- **The reload row's control, by the same instrument before and after:** a sampler that navigates the
+  editor to itself eight times and reads the bar at 0.5 s to 8 s saw it **flash in 5 of 5** navigations
+  at `2052bf5d` and **in 0 of 8** at `d66fa06f`.
+- `node tools/probe/run-verify-editor.cjs` — **0 FAIL, 575 PASS on `app.inflozo.com` at `d66fa06f`**,
+  first attempt, exit 0 — step 69 included. Before that, at `d9e5f090`: run 3 clean at 0 FAIL, 575 PASS,
+  a complete walk. **Step 93 now passes** — the field reads *"The archive — page
   {page_number}"* where it read *"The archive"* at `d895c183`, the reload fix proven by an independent
   instrument — and so does **step 83**, which asserts a real deployment's build id and so could never
-  pass on the local build the agent first ran (573 PASS, 1 FAIL there). Recorded plainly, as the
-  memory of DW-222 asks: run 2 on the same deployment died with a `HARNESS ERROR` (a 15 s
-  `waitForFunction` at step 69) and no `FAIL` line, which is not a result; run 3 passed step 69 in
-  full. Neither the walk's intermittent step 36 nor 66b-c failed in run 3.
+  pass on the local build the agent first ran (573 PASS, 1 FAIL there). **Every run is recorded,
+  because two of them were not the flake they looked like:** at `d9e5f090` run 2 died with a `HARNESS
+  ERROR` at step 69's 15 s wait and run 3 passed; at `2052bf5d` run 6 died at the same line and run 7
+  passed. A `HARNESS ERROR` with no `FAIL` line is not a result (DW-222's rule), but the same line twice
+  is not DW-222's random timeout either — it was the reload flash above, and at `d66fa06f` the walk
+  passed step 69 on its first attempt. Neither the intermittent step 36 nor 66b-c failed in any run.
 
 **Manual checks:**
 
 - `MEASUREMENTS.md` §50 is the first section in the project to carry "realtime" or "broadcast" — the
   first execution of `addendum.md:45`'s transport claim.
 - The assertive region is a **second** element: `#editor-said` still reads `aria-live="polite"`
-  (`editor.tsx:3102`) and `#editor-announced` reads `aria-live="assertive"` (`:3110`).
+  (`editor.tsx:3152`) and `#editor-announced` reads `aria-live="assertive"` (`:3160`).
 - The word *unsaved* appears in no user-visible string; `lock.test.ts` asserts it over the whole
   `LOCK_COPY` list.
 
