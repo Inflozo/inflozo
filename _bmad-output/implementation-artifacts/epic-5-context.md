@@ -282,7 +282,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **As built (Story 5.18's Dev, 2026-09-24):** §51 was recorded FIRST (`tools/probe/record-content-api.py`) and every
     fact held on both majors — including that **Ghost's own 429 carries `access-control-allow-origin: *`**, so the editor
     can name it, and that a post and a page carry a code-injection pair of their OWN (the allowlist, not the request,
-    drops them). The read layer is `lib/live-content.ts` (pure: the reads and their keys, the stop rule, the whitelist to
+    drops them); §52 then timed the hold a 429 earns at an hour, as Ghost's config says on both majors. The read layer is `lib/live-content.ts` (pure: the reads and their keys, the stop rule, the whitelist to
     the dataset's own row shapes, the site's wall clock for DW-98, R-193's `startingArchive`, every sentence) and
     `lib/live-client.ts` (the one `fetch`: a `Map`, one in-flight promise per key, reads ONE AT A TIME until one answers
     and again after any failure, so a refused key costs exactly one request and a dead site three). **ONE ASSEMBLY**:

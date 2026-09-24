@@ -112,7 +112,7 @@ and verify FR-C2's Preview-only detection against that recording.
 **And on the same trial, the Content API from a browser (Story 5.18, DW-249).** The editor reads a linked site's posts
 straight from the browser, and every fact that read rests on was executed on self-hosted T1 and T3 only
 (`MEASUREMENTS.md` §51): `access-control-allow-origin: *` on every route, on a 401 **and on Ghost's own 429**, and a
-limiter that counts FAILED requests per network — 99, then at least an hour of 429 for every key. Ghost(Pro) puts an
+limiter that counts FAILED requests per network — 99, then an hour of 429 for every key (timed on T1, §52). Ghost(Pro) puts an
 edge in front of Ghost that Inflozo does not model, so the trial must answer three more questions, each recorded
 beside the `hostSettings` capture with its command (AD-23):
 

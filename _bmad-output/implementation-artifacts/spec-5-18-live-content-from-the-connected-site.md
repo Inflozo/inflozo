@@ -578,6 +578,13 @@ Gated Post", is for paid members; how a members-only post is marked on the canva
 - **The same walk, `MAJORS=6`** — T1's major again, then the real 429 last: **0 FAIL, 51 PASS**. After 100 × 401 from
   this machine the editor opened in a fresh session on sample content, *"Ghost6 (row) asked us to wait"*, the sentence
   announced, **one** request. Earned at 14:22:54 UTC.
+- **That hold, timed** (MEASUREMENTS §52): T1 refused the real key at every five-minute read from 14:23:10 to 15:18:17
+  and answered at 15:23:18 — **an hour**, as Ghost's own config says on both majors, so FR-H4's *"for at least an hour"*
+  holds. It was deliberate and it touched nothing but this machine's network's Content API reads of T1.
+- **The walk once more, `MAJORS=5 NO_429=1`, at `561c44f1`** (CI run 36013973388 green,
+  `dpl_9Y912RyChB1rQaSroVwQDJtj9gCj` READY) — T3 alone, T1 being held: **0 FAIL, 50 PASS**, the view row among them:
+  Undo was asleep before and after the Sample-and-back round trip, and a reload after choosing Sample content reopened
+  on Ghost5 — nothing journalled, nothing stored.
 
 **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): each walk made its own throwaway account through the Auth admin
 API (200) and signed in by `generate_link`, wrote its site rows (201) and linked its projects (200) over PostgREST. The
@@ -606,7 +613,8 @@ fetches nothing), and step 4's DW-230 row (the editor's Post header marks no ite
 - *Linked and readable* — W on both majors (the site's paint, B9 connected, D5e's SOURCE group); U `sitePage`.
 - *Disconnected · no key · `http:`* — W (each greyed with its own reason, nothing read); U `siteFrom`.
 - *Choose Sample content · Choose the site* — W (the repaint, the pill, the polite sentence; the SOURCE row's R-98 busy
-  state WATCHED from before the press, "Loading Ghost5…", `aria-busy` and `aria-disabled`, never `disabled`).
+  state WATCHED from before the press, "Loading Ghost5…", `aria-busy` and `aria-disabled`, never `disabled`; nothing
+  journalled — Undo asleep — and nothing stored — a reload reopens on the site).
 - *Fresh · Stale · Two consumers* — U (the store over a fetch the test answers: no request inside `FRESH_MS`, one
   revalidation however many ask, a failed revalidation counted with the stale answer kept, one request for two
   callers); W (no key asked twice inside 60 s across the canvas, the cards, D5e and the Link Picker).

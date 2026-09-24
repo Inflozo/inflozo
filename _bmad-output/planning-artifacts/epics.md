@@ -2223,7 +2223,7 @@ to the name first in the alphabet — **R-193** (owner, 2026-09-24), because FR-
 are not on a real site; Post and Page still start on the style-guide article and page
 **And** on HTTP 429 or repeated failure the editor falls back to Orbit Weekly **and names the cause** — because
 Ghost counts every failed Content API request against the caller's network and, after 99, refuses every key from it
-for at least an hour, so a refusal is never retried (MEASUREMENTS §51, both majors), and Ghost(Pro) sits behind an
+for at least an hour, so a refusal is never retried (MEASUREMENTS §51, both majors; the hour timed in §52), and Ghost(Pro) sits behind an
 edge Inflozo does not model (UX-DR6, DW-249)
 **And** the canvas reads **list and metadata fields only and never post or page body HTML**: `{{content}}`
 resolves to the style-guide fixture on `post.hbs` and `page.hbs` alike

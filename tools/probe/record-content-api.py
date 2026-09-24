@@ -44,7 +44,7 @@ count, so the run starts from zero), 100 reads with a key Ghost never issued, th
 real key: its status, its body's message, whether it carries `access-control-allow-origin`, and the
 time. **T1's Content API then refuses this machine's network — every key, the site's own search
 included — for about an hour by Ghost's own config** (`minWait` 3,600,000 ms), which this run does
-not measure; the script prints when the refusal began.
+not measure (MEASUREMENTS §52 timed it: an hour); the script prints when the refusal began.
 
 NO KEY IS EVER PRINTED. Every URL that carries one is built inside `get()` and never leaves it, and an
 exception is reported by its class name alone. Nothing is written to either server.
@@ -338,13 +338,17 @@ def section(steps, at):
 
 
 def write_section(text):
+    """§51 IN PLACE: a re-run replaces its own section where it stands — §52, which times the hold this run earns,
+    follows it — and a first run appends it."""
     body = open(MEASUREMENTS).read().rstrip('\n')
     at = body.find('\n## 51. ')
-    if at != -1:
+    if at == -1:
+        body = body + '\n\n' + text.rstrip('\n')
+    else:
         end = body.find('\n## ', at + 1)
-        body = (body[:at] + ('' if end == -1 else body[end:])).rstrip('\n')
+        body = body[:at].rstrip('\n') + '\n\n' + text.rstrip('\n') + ('' if end == -1 else '\n' + body[end:])
     with open(MEASUREMENTS, 'w') as f:
-        f.write(body + '\n\n' + text.rstrip('\n') + '\n')
+        f.write(body.rstrip('\n') + '\n')
 
 
 if __name__ == '__main__':

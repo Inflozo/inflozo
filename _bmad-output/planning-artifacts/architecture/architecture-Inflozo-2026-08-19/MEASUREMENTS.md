@@ -3663,3 +3663,18 @@ The CAS is unaffected: it runs from a **route handler under the user's own sessi
 **T1's Content API refused this machine's network from 12:49 UTC** — every key, the site's own search included. How long is Ghost's config, read in source on both majors and NOT measured by this run: `spam.content_api_key` holds a network for `minWait` 3,600,000 ms within a `lifetime` of 3,600 s (`core/shared/config/defaults.json`). That is the cost the editor's failure policy exists to never impose on a customer: a refusal is never retried, three failures stop reading, and every session has a ceiling.
 
 **What this does NOT say.** Nothing here ran through a Ghost(Pro) edge (DW-249): whether an edge's own 429 carries `access-control-allow-origin`, the edge's limits, and whether the `*.ghost.io` admin origin serves the Content API with these headers are the Ghost(Pro) trial's, on VERIFY-AT-BUILD's checklist.
+
+## 52. How long Ghost's Content API limiter holds a network — timed on T1 after a real 429 · 2026-09-24
+
+`env $(grep -E '^GHOST6_(URL|CONTENT_API_KEY)=' tools/probe/.env | xargs) python3 -` over a loop of a few lines: one `GET settings/` on T1 with the **real** key every 300 s, carrying `Accept-Version: v5.0` and `Origin: https://app.inflozo.com`, printing the UTC time and the status, and stopping at the first 200. Story 5.18. §51 left the length of the hold to Ghost's config; this times it. The hold was earned by `tools/probe/run-verify-live-content.cjs`'s last step (`MAJORS=6`, at `ee146bbf`) — a real-key read first as its control (200), then 100 reads with a key Ghost never issued (401 × 100), then the editor's one read (429) — at **14:22:54 UTC**.
+
+| UTC | T1 `settings/` with the real key |
+|---|---|
+| 14:23:10 · 14:28:11 · 14:33:12 · 14:38:12 · 14:43:13 · 14:48:14 · 14:53:14 · 14:58:15 · 15:03:16 · 15:08:16 · 15:13:17 · 15:18:17 | 429 every time |
+| 15:23:18 | **200** |
+
+**What it means.**
+
+- **The hold is an hour, measured**: still refused 55 min 23 s after the 429, answered 60 min 24 s after it. That is Ghost's own config, read in both majors' npm tarballs (6.58.0 and 5.130.6, `core/shared/config/defaults.json`): `spam.content_api_key` = `minWait` 3,600,000 · `maxWait` 86,400,000 · `lifetime` 3,600 · `freeRetries` 99 — `maxWait` is on both majors too, which §51 did not print. The limiter is `express-brute` 1.0.1 (the `dependencies` of both `ghost` packages) over its `MemoryStore` (`spam-prevention.js`'s `contentApiKey`), whose first held delay is `minWait` (`index.js:17-23`) and whose entry is deleted `lifetime` seconds after its last write (`lib/MemoryStore.js`) — both an hour after the 100th failure, which is what the table shows. FR-H4's *"for at least an hour"* holds.
+- **The probe did not lengthen what it measured**: a held request is answered by the fail callback without writing the store (`index.js:126-146`), and the first answered request resets the count.
+- The store is in memory, so a restart of that Ghost ends a hold early; nothing here depended on one.
