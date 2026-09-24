@@ -5518,6 +5518,11 @@ owner: unowned; the review of Story 5.17 may take it, and (c) would be a Schema 
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — the `pagehide` release (`leaving`) and
   the poll's one-extra-call acquire · `tools/probe/run-verify-lock.cjs`'s "Same session reloads" row, which reloads
   with no second session open and so does not exercise this race
+seen again: the review's first deployed walk at `8ac31e6d` (2026-09-24) — with NO second session open, the reloaded
+  page's re-acquire INSERTed and the outgoing page's release, filtered on the SAME session id, then deleted that row:
+  `row: null` 2.5 s after the reload, the tab still editing with no bar, and the lock free until its next beat. The
+  second run passed the row. So the gap is not only "another session's poll" — a late release alone can empty it,
+  and fix (a) or (b) above would close both.
 
 ## Deferred from: code review of spec-5-17-the-edit-lock-and-the-take-over-choreography.md (2026-09-24)
 

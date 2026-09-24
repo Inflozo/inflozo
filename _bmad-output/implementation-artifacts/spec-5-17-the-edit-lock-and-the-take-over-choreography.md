@@ -552,6 +552,17 @@ project, 2026-09-23:
   keyboard gate **51 passed**. CI's first run of that commit went red at `pnpm keyboard` on a Google Fonts hiccup
   inside `next/font/google` — no font file changed — and the same commit then passed the gate three times over
   locally, beside a fresh worktree at `23316f6d` as the control; recorded as **DW-246** and re-pushed.
+- **The patched walk on the real site (2026-09-24, `dpl_AFiwiFqkZUALzM2t2X5BiKFmem1V` READY at `8ac31e6d`):**
+  `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-lock.cjs`
+  — **0 FAIL, 77 PASS, exit 0** on its second run: the 74 rows before plus the review's three — the reader's bar on
+  screen in **every** ~100 ms sample from load, before its own acquire answered; a Hand over whose `/sync` is refused
+  leaving the row held with the edit still owed; and the card staying with the refusal sentence and no bar, beside
+  the passing hand-over that follows as its control. **Its first run failed at the "Same session reloads" row and
+  every row after it inherited that** (row `null` 2.5 s after A's reload, so B opened as the holder): the outgoing
+  page's `pagehide` release landed AFTER the reloaded page's re-acquire and, filtered on the same session id, deleted
+  the row it had just inserted — DW-240's gap seen with no second session open, and not a line the review touched.
+  Recorded under DW-240 as its second observation; both runs recorded here (the memory's rule: the same line twice
+  would be a signal, and the second run passed it). Fixture cleaned both times (13 before · 13 after).
 
 **Vercel and the deployed site** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, and `GITHUB_TOKEN` to read the
 runs). CI went **green on every Dev push** — `check` and `rls` passed, so `deploy` ran (DW-7); the first
