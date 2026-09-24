@@ -36,6 +36,7 @@ export function RichField({
   onValue,
   links,
   placeholders = [],
+  readOnly = false,
 }: {
   id: string
   label: string
@@ -46,6 +47,8 @@ export function RichField({
   /** R-185 — the placeholders this field offers HERE, from `placeholdersOffered`. Empty, and no `{}` button
    *  is drawn at all: the panel never greys one (UX-DR3). */
   placeholders?: readonly string[]
+  /** R-192 — a session reading along: the words are shown and read aloud, and cannot be edited or formatted */
+  readOnly?: boolean
 }) {
   const box = useRef<HTMLDivElement>(null)
   const tools = useRef<InlineToolsHandle>(null)
@@ -135,7 +138,8 @@ export function RichField({
         aria-multiline="true"
         aria-labelledby={`${id}-label`}
         aria-describedby={def.maxChars !== undefined && (refused || text.length >= def.maxChars) ? `${id}-limit` : undefined}
-        contentEditable
+        contentEditable={!readOnly}
+        aria-readonly={readOnly || undefined}
         suppressContentEditableWarning
         onFocus={start}
         // a link inside the field is words to edit, never somewhere to go — by any button, with any modifier

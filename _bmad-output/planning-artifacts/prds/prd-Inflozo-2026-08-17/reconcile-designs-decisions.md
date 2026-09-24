@@ -4154,6 +4154,31 @@ migration. **The lock's signals are `BroadcastChannel` (same browser: instant an
   ✅ `epic-5-context.md` · ✅ the code comments that called it open (`lib/lock.ts`, `lib/lock-client.ts`,
   `editor.tsx`).
 
+**R-192 — a session reading along has every control that would edit DISABLED, and keeps every control that only
+changes the view.** Story 5.17, the owner's test of the Dev build `e6341b38` (owner, 2026-09-24): *"In read only,
+make all controls disabled/non-editable. Also disable inline text editing/adding links/etc."* F2 said the reader's
+controls stay *visible* and "nothing responds", and the build met that only in its effect: `commit()` refused every
+change, but 53 of the settings panel's 55 controls still looked live, took focus and opened their pickers, and
+Layers' ⋯ menus, **+ Add section** and **Site Remix** still opened over nothing — executed from a reader's side on
+`app.inflozo.com` before the fix.
+
+- **Disabled, natively.** A `<fieldset disabled>` (`kit/greyed.ts`'s `ReadOnly`, drawn only while reading along, so
+  the holder's DOM is untouched) makes every control inside it greyed, unresponsive and out of the Tab order, while a
+  screen reader still reads each one with its value as unavailable. **Not** P0-0's `aria-disabled` plus a reason per
+  control — that is one control among live ones; here the whole editor is read-only and the reason is said once, by
+  B5a's bar, which the panel is `aria-describedby`.
+- **Reading is not editing.** Picking a section, opening a group or a list item, Template, View as, dark mode, the
+  device sizes and Preview stay live, because F2's own rule is that the reader can *see what is set*.
+- **Where it reaches:** the settings panel (every field, switch, picker, the `{}` and link buttons, the rich text
+  field, Reset this design and Clear dark overrides); Layers (⋯, drag, + Add section); the section pill (the ring,
+  Shuffle, Duplicate, Delete; the grip absent); the top bar (Site Remix, Undo, Redo); and the editing shortcuts,
+  classified once in `lib/keymap.ts` as a `Record` over every gesture so a new one cannot compile unclassified.
+- **What it does NOT reach:** FR-L3's read-only (a Free project over its cap, D4e) is a different state with a
+  different remedy and its own story; the same `ReadOnly` is there for it, unruled.
+- Targets: ✅ this entry · ✅ Story 5.17's spec (`## Owner's test findings` 2, and its manual test step 3) ·
+  ✅ `EXPERIENCE.md` F2, the reader's row · ✅ built: `kit/greyed.ts`, `sidebar.tsx`, `item-list.tsx`, `rich-field.tsx`,
+  `layers.tsx`, `section-pill.tsx`, `lib/keymap.ts`, `editor.tsx` — Story 5.17's Dev, walked by `run-verify-lock.cjs`.
+
 
 ## B · Approved decisions superseded by this session
 

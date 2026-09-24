@@ -2,7 +2,7 @@
 
 import { useLayoutEffect, useRef, type HTMLAttributes, type Ref, type WheelEvent } from 'react'
 import { createPortal } from 'react-dom'
-import { ring } from '@/components/kit/greyed'
+import { ReadOnly, ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight, Copy, Grip, Refresh, Trash } from '@/components/kit/icons'
 import { NEXT_WORDS, PREVIOUS_WORDS, SHUFFLE_WORDS } from '@/lib/ring'
 
@@ -86,6 +86,7 @@ export function SectionPill({
    *  nothing to delete it from and no order to drag it in, so they are ABSENT there rather than dead (UX-DR3).
    *  True everywhere the editor draws the pill. */
   sectionControls = true,
+  readOnly = false,
   name,
   pillRef,
   onDuplicate,
@@ -111,6 +112,8 @@ export function SectionPill({
   onNextDesign: () => void
   onShuffle: () => void
   sectionControls?: boolean
+  /** Story 5.17 — a session reading along: every action disabled, the grip absent (R-192) */
+  readOnly?: boolean
   /** DW-209 — send this wheel to the canvas document, which is where the pointer looks like it is. `deltaMode` is
    *  carried because a wheel may report lines or pages rather than pixels. */
   onWheel?: (deltaX: number, deltaY: number, deltaMode: number) => void
@@ -161,7 +164,7 @@ export function SectionPill({
 
   if (!shown) return null
   return createPortal(
-    <>
+    <ReadOnly on={readOnly}>
     <div
       ref={(el) => {
         pill.current = el
@@ -207,7 +210,7 @@ export function SectionPill({
       </button>
       ) : null}
       {/* aria-hidden and pointer-only, as the Layers grip is: the keyboard move is the Layers row's ⌥-arrows (UX-DR10) */}
-      {sectionControls ? (
+      {sectionControls && !readOnly ? (
       <span aria-hidden title="Drag to reorder" {...gripProps} className={`${target} cursor-grab touch-none text-ink-soft`}>
         <Grip />
       </span>
@@ -231,7 +234,7 @@ export function SectionPill({
       + Add section
     </button>
     ) : null}
-    </>,
+    </ReadOnly>,
     document.body,
   )
 }

@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { addItem, duplicateItem, getPath, moveItem, removeItem, setContent } from '@inflozo/section-runtime'
 import type { ControlEntry, ControlState, DataRow, PropRow } from '@inflozo/section-runtime'
 import { AddButton } from '@/components/kit/button'
-import { ring } from '@/components/kit/greyed'
+import { ReadOnly, ring } from '@/components/kit/greyed'
 import { DragGrip } from '@/components/kit/grip'
 import { AlertCircle, Copy, FromGhost, InfoCircle } from '@/components/kit/icons'
 import { Segmented } from '@/components/kit/segmented'
@@ -45,6 +45,7 @@ export function ItemList({
   floor,
   onFloor,
   field,
+  readOnly = false,
 }: {
   id: string
   row: PropRow
@@ -57,6 +58,9 @@ export function ItemList({
   onFloor: (sentence: string) => void
   /** draws one item prop's editor — the panel's own field, so an item edits the way a section does */
   field: (prop: PropRow, value: unknown, onValue: (value: unknown) => void, id: string) => ReactNode
+  /** Story 5.17 — a session reading along: an item still OPENS so its fields can be read; nothing moves, adds,
+   *  duplicates or removes, and the fields do not edit (R-192) */
+  readOnly?: boolean
 }) {
   const list = row.list
   const items = Array.isArray(row.value) ? (row.value as unknown[]) : []
@@ -135,6 +139,7 @@ export function ItemList({
                 open === i ? 'border-coral shadow-[0_0_0_2px_var(--color-coral-wash)]' : 'border-line'
               } ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : drag !== null ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
             >
+              <ReadOnly on={readOnly}>
               <button
                 type="button"
                 data-handle={i}
@@ -172,6 +177,7 @@ export function ItemList({
               >
                 <DragGrip />
               </button>
+              </ReadOnly>
               <button
                 type="button"
                 aria-expanded={open === i}
@@ -181,6 +187,7 @@ export function ItemList({
               >
                 {name}
               </button>
+              <ReadOnly on={readOnly}>
               <button
                 type="button"
                 aria-label={`More for ${name}`}
@@ -218,6 +225,7 @@ export function ItemList({
                   ]}
                 />
               </div>
+              </ReadOnly>
             </li>
           )
         })}
@@ -239,6 +247,7 @@ export function ItemList({
       </div>
 
       <div className="mt-[2px]">
+        <ReadOnly on={readOnly}>
         <AddButton
           id={`${id}-add`}
           greyed={list.atMax !== undefined ? { reason: list.atMax } : undefined}
@@ -249,6 +258,7 @@ export function ItemList({
         >
           + Add {noun}
         </AddButton>
+        </ReadOnly>
       </div>
 
       {open !== null && open < items.length ? (
@@ -258,6 +268,7 @@ export function ItemList({
           aria-label={nameOf(open)}
           className="mt-1 flex flex-col gap-3 rounded-sm border border-line bg-surface p-[10px]"
         >
+          <ReadOnly on={readOnly}>
           {list.props.map((prop) =>
             field(
               prop,
@@ -266,6 +277,7 @@ export function ItemList({
               `${id}-${open}-${prop.path.replace(/[^a-zA-Z0-9]+/g, '-')}`,
             ),
           )}
+          </ReadOnly>
         </div>
       ) : null}
     </div>

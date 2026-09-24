@@ -38,6 +38,19 @@ export type Gesture =
   | 'remix' | 'preview'
   | 'desktop' | 'tablet' | 'mobile'
 
+/** R-192 — which gestures CHANGE the document. A session reading along ignores these, whatever key asks: `commit()`
+ *  would refuse the change anyway, but the picker, the confirm and the dice would still open over nothing. A `Record`
+ *  over the union, so a gesture added tomorrow does not compile until someone says which it is. */
+const EDITS: Readonly<Record<Gesture, boolean>> = {
+  undo: true, redo: true, save: false,
+  add: true, duplicate: true, remove: true,
+  prev: true, next: true,
+  layers: false, dark: false, shortcuts: false, deselect: false,
+  remix: true, preview: false,
+  desktop: false, tablet: false, mobile: false,
+}
+export const edits = (gesture: Gesture): boolean => EDITS[gesture]
+
 export type Binding = {
   /** absent on a row whose action is not built — there is nothing for a press to ask for */
   gesture?: Gesture

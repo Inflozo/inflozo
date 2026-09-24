@@ -35,7 +35,7 @@ import { ProBadge } from '@/components/kit/badge'
 import { AddButton, Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
-import { ring, slimScrollbar } from '@/components/kit/greyed'
+import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronLeft, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
@@ -52,7 +52,7 @@ import {
   displacedBy, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, stillAsking, type LockRow,
 } from '@/lib/lock'
 import { askLock, lockSignals, lockUrl, tabSession, type LockAnswer, type LockSignal } from '@/lib/lock-client'
-import { holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { edits, holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
 import { BACK_SAID, PAUSED, PREVIEW_SAID } from '@/lib/preview'
 import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
@@ -553,6 +553,13 @@ export function Editor({
    *  session's poll could acquire first. A reload-aware release would need `navigation.type`, which is only readable
    *  on the way back IN. */
   const keeping = useRef(false)
+  /** A RELOAD IS A HYDRATE (§AD1.1 runs exactly, and the cloud doc is what comes back), and `keeping` stops the
+   *  release on the way out from deleting the lock this session has just gained. The take-over and a reader that
+   *  gains the lock both come through here. */
+  const hydrate = () => {
+    keeping.current = true
+    window.location.reload()
+  }
   /** the `BroadcastChannel`'s send, mounted with the lock effect below */
   const tell = useRef<(signal: LockSignal) => void>(() => {})
   const takeover = useRef<HTMLDialogElement>(null)
@@ -1020,6 +1027,16 @@ export function Editor({
     // so clearing it is the whole recovery: the next poll acquires, which against a live lock is simply a read.
     heldGeneration.current = mine && row !== null ? row.generation : null
 
+    // THE OWNER'S FINDING (2026-09-24): a session that GAINS the lock after reading along must show what the last
+    // holder left — the addendum's own nudge flow, "requester flips to editable and hydrates from the fresh server
+    // snapshot". A reader's docs are whatever it loaded, so without this it showed the old design after a hand-over,
+    // and its first save met a 409. Only a GAIN: a session already holding (the first opener, a reload keeping its own
+    // row) has nothing newer to fetch, so this cannot loop.
+    if (mine && !was.holder) {
+      hydrate()
+      return
+    }
+
     // my own request, as the row now answers it: still mine → waiting; cleared → the holder pressed Keep editing;
     // the row gone → the lock is free and the next poll simply acquires it.
     const waiting = was.askedAt !== null && stillAsking(row, tabId.current)
@@ -1112,8 +1129,7 @@ export function Editor({
     // in as many words — so §AD1.1 runs exactly and the cloud doc is what comes back. This tab's session id survives
     // it in `sessionStorage`, so the lock just taken is still ours on the way back in — and `keeping` is what stops
     // the release on the way out from deleting the row this take-over has just won.
-    keeping.current = true
-    window.location.reload()
+    hydrate()
   }
 
   /** A RELOAD THAT KEPT ITS TAB ID IS THE SAME SESSION, so it keeps the lock rather than flashing B5a's bar at its
@@ -1702,6 +1718,8 @@ export function Editor({
   const toChrome = () => (controls.show.current ?? controls.hide.current)?.focus()
 
   const run = (gesture: Gesture) => {
+    // R-192 — a session reading along edits nothing, whatever key asks (`lib/keymap.ts`'s `edits`)
+    if (!latest.current.lock.holder && edits(gesture)) return
     const pick = latest.current.selected
     switch (gesture) {
       // STORY 5.10 — `⌘K`. With a section selected the picker opens at the gap AFTER it (`duplicateSection`'s own
@@ -2717,9 +2735,9 @@ export function Editor({
             id="editor-undo"
             label="Undo"
             title="Undo"
-            aria-disabled={!canUndo(journal) || undefined}
-            onClick={canUndo(journal) ? onUndo : undefined}
-            className={canUndo(journal) ? undefined : 'opacity-[.35]'}
+            aria-disabled={!(lock.holder && canUndo(journal)) || undefined}
+            onClick={lock.holder && canUndo(journal) ? onUndo : undefined}
+            className={lock.holder && canUndo(journal) ? undefined : 'opacity-[.35]'}
           >
             <UndoIcon size={14} />
           </IconButton>
@@ -2727,9 +2745,9 @@ export function Editor({
             id="editor-redo"
             label="Redo"
             title="Redo"
-            aria-disabled={!canRedo(journal) || undefined}
-            onClick={canRedo(journal) ? onRedo : undefined}
-            className={canRedo(journal) ? undefined : 'opacity-[.35]'}
+            aria-disabled={!(lock.holder && canRedo(journal)) || undefined}
+            onClick={lock.holder && canRedo(journal) ? onRedo : undefined}
+            className={lock.holder && canRedo(journal) ? undefined : 'opacity-[.35]'}
           >
             <RedoIcon size={14} />
           </IconButton>
@@ -2763,6 +2781,7 @@ export function Editor({
               THE COUNT IS THIS CANVAS'S OWN DOC (R-161): `stack` carries the site-wide header and footer too, and
               Remix leaves them alone. Derived from the rings, never written down (standing rule 4) — in the shipped
               library every ring is length 1, so it is 0 and the confirm says so honestly. */}
+          <ReadOnly on={!lock.holder}>
           <RemixDice
             canvas={canvas.label}
             count={remixable(editedDoc(docs, own, library)?.instances ?? [], ringOf)}
@@ -2770,6 +2789,7 @@ export function Editor({
             onRemix={onRemix}
             handle={remixDice}
           />
+          </ReadOnly>
           {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
           <DeviceSwitch device={device} onDevice={pickDevice} />
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
@@ -2818,6 +2838,7 @@ export function Editor({
           </div>
           {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`) */}
           <Layers
+            readOnly={!lock.holder}
             site={rowsOf(SITE.key)}
             page={rowsOf(own)}
             // Story 5.16: on page 2 the group heads "This page · Home · Page 2", over page 2's own rows
@@ -2849,9 +2870,11 @@ export function Editor({
               ABSENT where nothing can be placed on this canvas (UX-DR3), never a button that opens an empty picker. */}
           {canAdd ? (
             <div className="border-t border-line p-[10px]">
-              <AddButton id="editor-add-section" onClick={() => openPicker(null)}>
-                + Add section
-              </AddButton>
+              <ReadOnly on={!lock.holder}>
+                <AddButton id="editor-add-section" onClick={() => openPicker(null)}>
+                  + Add section
+                </AddButton>
+              </ReadOnly>
             </div>
           ) : null}
         </aside>
@@ -3009,6 +3032,7 @@ export function Editor({
               (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last, and in Preview */}
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling || preview} resources={links} handle={tools} />
           <SectionPill
+            readOnly={!lock.holder}
             shown={!!pointed}
             canAdd={canAdd}
             hidden={scrolling || preview}
@@ -3097,6 +3121,7 @@ export function Editor({
             />
             {/* R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it */}
             <Sidebar
+              readOnly={!lock.holder}
               // Story 5.16: keyed ACROSS THE PAGE SWITCH — page 2's copy of a section is that section — so the panel stays
               // mounted, its open groups stay open, and focus stays on D5d's row when the row was pressed
               key={acrossPages(chosen)}

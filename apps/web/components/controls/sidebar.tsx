@@ -10,7 +10,7 @@ import { placeholdersOffered } from '@inflozo/library'
 import { Accordion } from '@/components/kit/accordion'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
-import { ring, type Greyed } from '@/components/kit/greyed'
+import { ReadOnly, ring, type Greyed } from '@/components/kit/greyed'
 import { Image, InfoCircle, Undo } from '@/components/kit/icons'
 import { TextInput } from '@/components/kit/input'
 import { HelperCaption } from '@/components/kit/labels'
@@ -115,6 +115,9 @@ export type SidebarProps = {
    *  — `/pilots` and `/controls`, which have no pages — nothing offers a page number, which is page 1's answer. */
   shownPage?: Page
   siteWide?: boolean
+  /** Story 5.17 — a session reading along (FR-D18): every control is disabled, and the group headers still open so
+   *  what is set can be read (R-192). */
+  readOnly?: boolean
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -236,7 +239,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
 // What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
 // live region that announces a View-as choice read ONE list.
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page, shownPage, siteWide }: SidebarProps) {
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -290,7 +293,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
     switch (prop.type) {
       case 'richtext':
         // Story 5.3: the same value the canvas edits, with the same marks and the same toolbar
-        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} placeholders={placeholders} />
+        return <RichField key={id} id={id} label={prop.label} def={prop.def} value={value} onValue={onValue} links={links} placeholders={placeholders} readOnly={readOnly} />
       case 'date':
         return (
           <div key={id} className="flex flex-col gap-[5px]">
@@ -354,6 +357,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           floor={floor?.path === row.path ? floor.sentence : null}
           onFloor={(sentence) => setFloor({ path: row.path, sentence })}
           field={field}
+          readOnly={readOnly}
         />
       )
     }
@@ -415,7 +419,11 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           // in the engine's order (R-113), which ends with the universal controls: the absent notes go just above them
           const at = group.rows.findIndex((r) => r.kind === 'control' && r.universal)
           const [rows, foot] = at === -1 ? [group.rows, []] : [group.rows.slice(0, at), group.rows.slice(at)]
-          const draw = (r: (typeof rows)[number]) => (r.kind === 'prop' ? content(r) : r.kind === 'control' ? control(r) : null)
+          // R-192: each row guards itself, so an item list can keep its items OPENABLE — reading is not editing
+          const draw = (r: (typeof rows)[number]) =>
+            r.kind === 'prop' ? (r.list !== undefined ? content(r) : <ReadOnly key={`read-${r.path}`} on={readOnly}>{content(r)}</ReadOnly>)
+            : r.kind === 'control' ? <ReadOnly key={`read-${r.name}`} on={readOnly}>{control(r)}</ReadOnly>
+            : null
           return (
             <Accordion
               key={group.id}
@@ -425,10 +433,10 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
               onToggle={() => setOpen({ ...open, [group.id]: open[group.id] !== true })}
             >
               <div className="flex flex-col gap-3 pb-3 pt-1">
-                {group.id === 'settings' ? audience : null}
+                {group.id === 'settings' ? <ReadOnly on={readOnly}>{audience}</ReadOnly> : null}
                 {rows.map(draw)}
                 {/* a query's rows are only ever Data's, drawn as one list per query */}
-                {data(rows.filter((r): r is DataRow => r.kind === 'data'))}
+                <ReadOnly on={readOnly}>{data(rows.filter((r): r is DataRow => r.kind === 'data'))}</ReadOnly>
                 {group.absent.map((note) => <Absent key={note} note={note} />)}
                 {foot.map(draw)}
               </div>
@@ -453,6 +461,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
         </div>
       )}
 
+      <ReadOnly on={readOnly}>
       <div className="flex flex-col items-start gap-2 border-t border-line pt-3">
         <button
           type="button"
@@ -503,6 +512,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           </>
         )}
       </div>
+      </ReadOnly>
 
       <dialog
         ref={confirm}

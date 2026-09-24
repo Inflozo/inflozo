@@ -122,6 +122,38 @@ const lockRow = (page, P) =>
     `${PREFIX}/projects/${P}/lock`,
   )
 
+/** R-192 — the settings panel's EDITING controls, and how many still act. What only changes the VIEW is left out by
+ *  design: the two things that carry `aria-expanded` — a group's header and a list item's opener, both of which open
+ *  so what is set can be READ — the panel's own fold, and D5d's Preview-page row. A
+ *  `contenteditable` field is live only while it says "true"; a form control while it is neither disabled, nor
+ *  `aria-disabled`, nor read-only. */
+const livePanel = (page) =>
+  page.evaluate(() => {
+    const aside = document.getElementById('editor-controls')
+    if (!aside) return null
+    const all = [...aside.querySelectorAll('input, select, textarea, button, [contenteditable]')]
+    const editing = all.filter((e) => !e.hasAttribute('aria-expanded') && !e.closest('[data-page-row]') && !/(Collapse|Expand|Show|Hide) (controls|settings)/i.test(e.getAttribute('aria-label') || ''))
+    const live = (e) => (e.hasAttribute('contenteditable') ? e.getAttribute('contenteditable') === 'true' : !e.matches(':disabled') && e.getAttribute('aria-disabled') !== 'true' && !e.readOnly)
+    return { editing: editing.length, live: editing.filter(live).length, sample: editing.filter(live).slice(0, 5).map((e) => (e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 30)) }
+  })
+
+/** a Layers row, pressed by its name — a VIEW action a reader keeps */
+const pickLayer = async (page, name) => {
+  await page.locator('#editor-layers [data-layer-row]').filter({ hasText: name }).first().locator('button').first().click()
+  await page.waitForTimeout(700)
+}
+
+/** the first group in the panel that is shut, opened — a VIEW action a reader keeps. Returns its header's words. */
+const openAGroup = (page) =>
+  page.evaluate(async () => {
+    // a GROUP header (`kit/accordion.tsx` controls its `…-body`), never an item's opener
+    const shut = document.querySelector('#editor-controls button[aria-expanded="false"][aria-controls$="-body"]')
+    if (!shut) return { opened: null }
+    shut.click()
+    await new Promise((r) => setTimeout(r, 300))
+    return { opened: shut.textContent.trim().slice(0, 30), expanded: shut.getAttribute('aria-expanded') }
+  })
+
 /** B5b ARRIVING, WAITED FOR AND NEVER SLEPT. The holder hears a request at its next beat, and a cold function on the
  *  nudge's write can push that past a fixed sleep (executed 2026-09-24: the card came ~3 s after an 18 s sleep, and
  *  every check on it failed on its absence). Two beats is the deadline; a card that never comes is still a FAIL,
@@ -267,6 +299,51 @@ async function main() {
     check('matrix "Second opener": commit() REFUSES — the row does not move, not even for a frame', JSON.stringify(await layerNames(B)) === JSON.stringify(rowsBefore), (await layerNames(B)).join(' | '))
     check('…and nothing B did moved the revision', (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision === revisionBefore)
 
+    /* ── R-192 (the owner's finding, 2026-09-24): in read-only EVERY EDITING CONTROL IS DISABLED, and reading still
+     * works. Each negative has its positive: "0 live in B" is read beside A's panel for the same section, which must
+     * find live controls, and "⌘K opens nothing in B" beside ⌘K opening the picker in A. */
+    const MOD = process.platform === 'darwin' ? 'Meta' : 'Control'
+    await pickLayer(B, B_EDIT)
+    const bGroup = await openAGroup(B)
+    await pickLayer(A, B_EDIT)
+    await openAGroup(A)
+    const [bPanel, aPanel] = [await livePanel(B), await livePanel(A)]
+    check('R-192 control: the HOLDER\'s panel for the same section has live editing controls — so a zero below is a finding, not an empty query',
+      aPanel !== null && aPanel.live > 0, JSON.stringify(aPanel))
+    check('R-192: the READER can still select a section and open a group to read what is set — reading is not editing',
+      bPanel !== null && bPanel.editing > 0 && (bGroup.opened === null || bGroup.expanded === 'true'), JSON.stringify({ group: bGroup, editing: bPanel?.editing }))
+    check('R-192: in the reader\'s panel NOTHING that edits is live — fields, switches, pickers, the {} and link buttons, the rich field, Reset',
+      bPanel !== null && bPanel.live === 0, JSON.stringify(bPanel))
+    const bChrome = await B.evaluate(() => {
+      const more = [...document.querySelectorAll('#editor-layers button[aria-label^="More for"]')]
+      const off = (id) => { const el = document.getElementById(id); return el === null ? 'absent' : el.matches(':disabled') || el.getAttribute('aria-disabled') === 'true' }
+      return { more: more.length, moreOff: more.every((b) => b.matches(':disabled')), add: off('editor-add-section'), remix: off('editor-remix'), undo: off('editor-undo'), redo: off('editor-redo') }
+    })
+    check('R-192: Layers\' ⋯ menus, + Add section, Site Remix, Undo and Redo are all unavailable to the reader',
+      bChrome.more > 0 && bChrome.moreOff && bChrome.add !== false && bChrome.remix !== false && bChrome.undo === true && bChrome.redo === true, JSON.stringify(bChrome))
+    await B.frameLocator('section[aria-label="Canvas"] iframe').locator('#canvas > *').nth(1).hover({ position: { x: 60, y: 40 } }).catch(() => {})
+    await B.waitForTimeout(600)
+    const bPill = await B.evaluate(() => {
+      const pill = document.querySelector('[data-section-pill]')
+      if (!pill) return null
+      const buttons = [...pill.querySelectorAll('button')]
+      return { buttons: buttons.length, allOff: buttons.every((b) => b.matches(':disabled')), grip: !!pill.querySelector('[title="Drag to reorder"]') }
+    })
+    check('R-192: the section pill\'s actions are disabled for the reader and its drag grip is absent — the pill still names the section',
+      bPill !== null && bPill.buttons > 0 && bPill.allOff && !bPill.grip, JSON.stringify(bPill))
+    const pickerOpen = (page) => page.evaluate(() => document.querySelector('dialog[aria-label="Add a section"]')?.open === true)
+    await A.keyboard.press(`${MOD}+k`)
+    await A.waitForTimeout(700)
+    const aPicker = await pickerOpen(A)
+    await A.keyboard.press('Escape')
+    await A.waitForTimeout(400)
+    await B.keyboard.press(`${MOD}+k`)
+    await B.waitForTimeout(700)
+    const bPicker = await pickerOpen(B)
+    check('R-192: an editing SHORTCUT does nothing for the reader — ⌘K opens the section picker in A and nothing in B',
+      aPicker === true && bPicker === false, JSON.stringify({ holder: aPicker, reader: bPicker }))
+    if (bPicker) await B.keyboard.press('Escape')
+
     /* ── matrix "Keep editing" — and the defect the audit found under it ─────────────────────────────────────
      *
      * B asks and A keeps editing. Then B asks AGAIN, below, and that second request must reach A. Before the fix it
@@ -319,6 +396,8 @@ async function main() {
     check('F-079: FOCUSING the popover RESTARTS the countdown — it does not stop', afterFocus > mid, `${mid}s → ${afterFocus}s`)
 
     // ── A hands over: the flush goes FIRST ───────────────────────────────────────────────────────────────────
+    // listened for BEFORE the press: B's gain can land inside the checks below, and its reload is the thing to see
+    const bHydrates = B.waitForEvent('load', { timeout: LOCK.HEARTBEAT_MS * 2 + 15000 }).then(() => true, () => false)
     await A.locator('#editor-lock-hand-over').click()
     await A.waitForTimeout(4000)
     const afterFlush = (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc
@@ -327,8 +406,11 @@ async function main() {
     const aAfter = await surface(A)
     check('A flips to read-only and gets B5a\'s own bar', (aAfter.bar ?? '').includes(LOCK.LOCK_COPY.reading) && aAfter.sidebarOpacity === '0.55', JSON.stringify({ bar: aAfter.bar, opacity: aAfter.sidebarOpacity }))
 
-    await B.waitForTimeout(LOCK.HEARTBEAT_MS + 4000)
+    const bReloaded = await bHydrates
+    await B.waitForTimeout(2500)
     const bHolds = await lockRow(B, P)
+    check('the owner\'s finding: B HYDRATES the moment it gains the lock — it reloads and shows what A handed over, never the page it loaded as a reader',
+      bReloaded && !(await layerNames(B)).includes(A_EDIT), JSON.stringify({ reloaded: bReloaded, layers: await layerNames(B) }))
     check('B gains the lock, and its bar is gone', bHolds !== null && (await surface(B)).bar === null, JSON.stringify(held(bHolds)))
 
     // B makes an edit of its own and keeps it local
@@ -415,8 +497,11 @@ async function main() {
      * From here A's lock route FAILS — a crashed tab, a dead network: it can neither beat nor release. Its row goes
      * stale after §AD4's window and B's own ~15 s poll then takes it with the CAS, filtered on the generation AND the
      * age in one statement (`lock/route.ts`), SILENTLY: nothing is being ended, so there is no confirm. */
+    const bHydratesAgain = B.waitForEvent('load', { timeout: LOCK.STALE_MS + LOCK.HEARTBEAT_MS * 2 + 15000 }).then(() => true, () => false)
     await A.route('**/projects/*/lock', (r) => r.abort('failed'))
-    await B.waitForTimeout(LOCK.STALE_MS + LOCK.HEARTBEAT_MS + 5000)
+    const bReloadedAgain = await bHydratesAgain
+    await B.waitForTimeout(2500)
+    check('…and a stale lock taken is a GAIN like any other: B reloads onto the cloud copy', bReloadedAgain)
     const staleTaken = await lockRow(B, P)
     const bStale = await surface(B)
     check('matrix "Stale lock": B takes it SILENTLY at generation N+1 — no bar, no dialog, nothing asked',

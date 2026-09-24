@@ -3,7 +3,7 @@ title: 'Story 5.17 — The edit lock and the take-over choreography'
 type: 'feature'
 created: '2026-09-23'
 status: 'in-progress'
-owner_test: pending
+owner_test: issues
 review_loop_iteration: 0
 baseline_commit: 'f92409a17bfa06a29e4471d858ca5a527859206e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -656,12 +656,12 @@ wording you ruled on 2026-09-23 — **R-189** (it says where, never who, and nob
 | 0 | `https://app.inflozo.com/account` | Account, **Saving** | Switch off **Send my work to the cloud automatically**, then press **Turn it off**. | — | The switch shows off. |
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open it in **window A**, on the left. **Write down the hero's big headline as it reads now**, then click it and type over it. | `Window A was here` | The words change, and the save indicator beside the project's name turns to a grey clock — one edit is not on the server yet. |
 | 2 | same | Editor, Home | Press **⌘N** for **window B**, open the same address there, and put it on the right so you can see both. | — | A bar across the top of window B reads **"You are editing this site somewhere else — you are reading along here"**, with a **Request editing** button on the right. The page itself is perfectly readable. **No name anywhere** — it never pretends someone else is in your account. |
-| 3 | window B | Editor, Home | Try to click the hero's headline and type. Then look at the settings panel on the right. | `nope` | **Nothing happens** — no letters appear, and nothing jumps or flickers. The settings panel is dimmed, but you can still read every setting. |
+| 3 | window B | Editor, Home | Try to click the hero's headline and type. Then click the hero in the **Layers** list on the left, open a group in the settings panel on the right, and try to change any setting. | `nope` | **Nothing happens** to the page — no letters appear, and nothing jumps or flickers. The settings panel is dimmed and **every field, switch and button in it is greyed out and does nothing**, but you can still open a group and read every setting. In Layers the **…** buttons and **+ Add section** are greyed out too, and so are **Site Remix**, **Undo** and **Redo** at the top. |
 | 4 | window B | Editor, Home | Press **Request editing**. | — | The button changes to **Asking…** and stays that way while it waits. |
 | 5 | window A | Editor, Home | Look at window A. | — | A small card — **not** a full-screen box — headed **"Your other session wants to edit"**, with a padlock in the circle where a photo would go. Under it: *"If you hand over, your unsynced edits are sent first. You keep reading along."* and a strip reading **"1 unsynced edit will be sent first · 1 pending"**. Then **Hand over**, **Keep editing**, and *"Expires in 30s"*. |
 | 6 | window A | Editor, Home | Rest the mouse on the card, without pressing anything, for a full minute. | — | The card's countdown keeps **starting again** rather than running out — a card you are looking at never hurries you. Window B, meanwhile, offers **Take over anyway** after about thirty seconds: that is its own clock, and **you leave it alone**. |
 | 7 | window A | Editor, Home | Press **Hand over**. | — | Your edit is sent first (the indicator goes green), then window A gets the same reading-along bar window B had. |
-| 8 | window B | Editor, Home | Look at window B, then click the headline and type. | — | The bar is gone and typing works — and the headline already says **Window A was here**, so nothing was lost. |
+| 8 | window B | Editor, Home | Look at window B, then click the headline and type. | — | Window B **refreshes itself once** as it takes over, the bar is gone and typing works — and the headline already says **Window A was here**, so nothing was lost. |
 | 9 | window B | Editor, Home | Type over the headline again. | `Window B was here` | The words change and the indicator shows a grey clock. |
 | 10 | window A | Editor, Home | Press **Request editing** in window A, then take your hands off and **do not touch window B**. Wait about forty seconds. | — | Window B shows the card, with **"1 unsynced edit will be sent first · 1 pending"**. Leave it. |
 | 11 | window A | Editor, Home | Look at window A. | — | Its bar reads **"No response; that session has 1 unsynced edit"** and offers **Take over anyway**. |
@@ -671,6 +671,39 @@ wording you ruled on 2026-09-23 — **R-189** (it says where, never who, and nob
 Afterwards: in window A, type the headline you wrote down at step 1 back in, press **⌘S**, and check the indicator
 turns green — a take-over starts from the cloud copy with no history, so ⌘Z has nothing to undo there. Then open
 `https://app.inflozo.com/account` and switch **Send my work to the cloud automatically** back on.
+
+## Owner's test findings
+
+**1. "When we handover - refresh the new tab/window so that the changes are reflected. Right now, it continues to
+show the old design/content."** (the owner, 2026-09-24, on the deployed build `e6341b38`). **Fixed in this story** —
+it is the addendum's own nudge flow, *"requester flips to editable and hydrates from the fresh server snapshot"*,
+which had not been built.
+
+- The window that takes over editing now **refreshes itself** the moment it gains the right to edit, and shows
+  exactly what the other window handed over.
+- It happens however the right to edit arrives: after **Hand over**, after **Take over anyway**, and when the other
+  window simply went away.
+- It never happens to the window that was already editing, so there is no refresh loop, and a window reading along
+  keeps its place until it gains.
+- Without it, the new editor was working on an old copy, and its first save would have been refused as "changed
+  somewhere else".
+
+**2. "In read only, make all controls disabled/non-editable. Also disable inline text editing/adding links/etc."**
+(the same day, on the same build). **Fixed in this story; ruled as R-192.**
+
+- **The settings panel:** every field, switch, list, picker, link button, `{}` button, the rich text field and
+  **Reset this design** are now disabled — greyed and unresponsive, and skipped by the Tab key — not merely ignored
+  when pressed.
+- **Reading still works, on purpose:** you can still pick a section (in Layers or on the canvas), open any group,
+  and open any list item, so you can see what is set. Those change what you *see*, not the site.
+- **Layers:** the **…** menus, dragging to reorder and **+ Add section** are disabled. Picking a row still works.
+- **The section pill over a section:** the design arrows, Shuffle, Duplicate and Delete are disabled, and the drag
+  handle is gone.
+- **The top bar:** **Site Remix**, **Undo** and **Redo** are disabled. Template, View as, dark mode, the device sizes
+  and Preview still work, because they only change the view.
+- **Keyboard shortcuts** that would edit (add a section, duplicate, delete, change design, undo, redo, remix) now do
+  nothing at all in a window that is reading along, rather than opening a picker or a box over nothing.
+- Typing into the canvas was already refused before this finding; it stays refused.
 
 ## Questions for the owner
 

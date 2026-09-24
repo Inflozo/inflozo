@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { DEVICES } from './lib/device.ts'
-import { holdsCaret, IN_PREVIEW, KEYMAP, SINGLE_KEY, sheetRows, shortcutFor } from './lib/keymap.ts'
+import { edits, holdsCaret, IN_PREVIEW, KEYMAP, SINGLE_KEY, sheetRows, shortcutFor } from './lib/keymap.ts'
 import { PREVIEW } from './lib/preview.ts'
 
 /* STORY 5.9 — FR-D11's map, asserted where `node --test` can reach it. The I/O matrix's KEY rows are here; the
@@ -230,4 +230,14 @@ test('R-145: `P` is Preview, `⇧P` is nothing, in a field it types its letter, 
 test('in Preview only P, ⌘S and the three devices act — every other binding does nothing', () => {
   // the devices walked off S4a's own track, never written down
   assert.deepEqual([...IN_PREVIEW].sort(), ['preview', 'save', ...DEVICES.map((d) => d.name)].sort())
+})
+
+test('R-192: a session reading along ignores every gesture that CHANGES the document, and only those', () => {
+  // the Record in lib/keymap.ts already refuses to compile with a gesture unclassified; this pins WHICH way each goes
+  for (const g of ['undo', 'redo', 'add', 'duplicate', 'remove', 'prev', 'next', 'remix'] as const) assert.equal(edits(g), true, g)
+  // what only changes the VIEW stays live for a reader: Layers, dark, the shortcuts card, Preview, the devices —
+  // and ⌘S, which has nothing to send from a session that cannot edit
+  for (const g of ['save', 'layers', 'dark', 'shortcuts', 'deselect', 'preview', 'desktop', 'tablet', 'mobile'] as const) {
+    assert.equal(edits(g), false, g)
+  }
 })

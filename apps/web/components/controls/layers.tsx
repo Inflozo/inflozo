@@ -100,6 +100,8 @@ export type LayersProps = {
   hoveredKey: string | null
   drag: SectionDrag | null
   onDrag: (next: SectionDrag | null) => void
+  /** Story 5.17 — a session reading along: rows select, nothing reorders and the ⋯ menu stays shut (R-192) */
+  readOnly?: boolean
   /** the press that selects; a press on a ROW never deselects (R-123) */
   onSelect: (row: LayerRow) => void
   /** R-123's third ground: the empty space below the rows */
@@ -135,6 +137,7 @@ export function Layers({
   hoveredKey,
   drag,
   onDrag,
+  readOnly = false,
   onSelect,
   onGround,
   onToggleHidden,
@@ -246,7 +249,8 @@ export function Layers({
         onSelect={() => onSelect(row)}
         style={lifted ? { translate: `0 ${drag.dy}px` } : sliding ? { translate: `0 ${shift(drag, row.at, layout.current)}px` } : undefined}
         className={`relative ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : sliding ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
-        gripProps={{
+        // R-192: absent, not dead — the Kit's row draws no grab cursor when it is given no grip
+        gripProps={readOnly ? undefined : {
           onPointerDown: (event) => {
             if (event.button !== 0 || drag !== null) return // a second pointer never takes over a live drag
             event.currentTarget.setPointerCapture(event.pointerId)
@@ -269,6 +273,7 @@ export function Layers({
           <>
             <button
               type="button"
+              disabled={readOnly}
               aria-label={`More for ${row.layerName}`}
               popoverTarget={menu}
               onClick={(event) => {

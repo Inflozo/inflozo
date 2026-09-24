@@ -1,4 +1,4 @@
-import { createElement, type ReactNode } from 'react'
+import { createElement, Fragment, type ReactNode } from 'react'
 
 /**
  * A control that exists here but cannot act right now is GREYED, WITH THE REASON — one
@@ -48,6 +48,24 @@ export function reason(id: string, greyed?: Greyed): ReactNode {
     { id: `${id}-reason`, className: 'text-[11.5px] leading-[1.5] text-ink-soft' },
     greyed.reason,
   )
+}
+
+/**
+ * R-192 (the owner, 2026-09-24) — A SESSION READING ALONG EDITS NOTHING, AND EVERY CONTROL THAT WOULD SAYS SO BY
+ * BEING DISABLED. One `<fieldset disabled>` around a region makes every native control inside it non-editable,
+ * dimmed and out of the Tab order — present ones and ones added later alike — while a screen reader still reads each
+ * one, with its value, as unavailable.
+ *
+ * NOT P0-0's `aria-disabled` plus a reason per control, deliberately. That pattern is ONE control among live ones,
+ * kept in the Tab order so its own sentence is heard. Here the whole editor is read-only and the reason is said ONCE,
+ * by B5a's bar above the canvas (the settings panel is `aria-describedby` it); fifty dead Tab stops each repeating it
+ * would bury it. `display: contents`, so the wrapper draws no box and nothing moves — and it is drawn ONLY when on,
+ * so a session that holds the lock has exactly the DOM it always had. A fieldset reaches only its DOM descendants: a
+ * portal (the section pill) wraps its own content, a `contenteditable` field is told directly, and a list whose items
+ * OPEN wraps its own editing parts so a reader can still open an item to read it.
+ */
+export function ReadOnly({ on, children }: { on: boolean; children?: ReactNode }) {
+  return on ? createElement('fieldset', { disabled: true, className: 'contents' }, children) : createElement(Fragment, null, children)
 }
 
 /** The P0-0 treatment, in one place so no control invents its own grey. */
