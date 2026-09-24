@@ -3,7 +3,7 @@ title: 'Story 5.17 — The edit lock and the take-over choreography'
 type: 'feature'
 created: '2026-09-23'
 status: 'in-progress'
-owner_test: issues
+owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'f92409a17bfa06a29e4471d858ca5a527859206e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -487,8 +487,9 @@ project, 2026-09-23:
 
 **The local gates**, on Node 24 (the repo's `engines.node`; the shell's default is 22):
 
-- `pnpm check` — **exit 0** on the code at `d66fa06f`. `apps/web` printed 508 tests / 508 pass / 0 fail,
-  including the new `lock.test.ts` (with this phase's request-identity and `heldElsewhere` rules), the
+- `pnpm check` — **exit 0** on the code at `935deb79`. `apps/web` printed 510 tests / 510 pass / 0 fail,
+  including the new `lock.test.ts` (with this phase's request-identity, `heldElsewhere` and executed pre-paint
+  script rules), `keymap.test.ts`'s gesture classification, the
   extended `journal.test.ts` and `editor.test.ts`, and R-98's `busy.test.ts` auditor, which walks
   `components/` and so reaches the three new surfaces; `packages/*` and the render-matrix suite green.
 - `bash supabase/tests/run-rls-gate.sh` — **exit 0**, the `pg_dump` drift guard passing (so
@@ -504,11 +505,12 @@ runs). CI went **green on every Dev push** — `check` and `rls` passed, so `dep
 push of 2026-09-24 carried its own date-stamp commit (`d3f6a427`, DW-132) so CI's gate stayed green —
 and the walks below each ran against the deployment Vercel served **READY, built from this
 checkout's HEAD**, which each walk verifies before it starts. The final state is
-`dpl_G6VDH13jjZsfdkLe5eU1mdzMmani` **READY at `d66fa06f`**. The deployed walks were therefore run at
+`dpl_2MRamVgaPKgsNofvh5gFVoRyKpqw` **READY at `935deb79`**, after the owner's two findings below. The deployed walks were therefore run at
 Dev rather than deferred, and the Matrix Test Audit's rows, the defects they exposed and each fix follow:
 
 - `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-lock.cjs`
-  — **0 FAIL, 65 PASS on `app.inflozo.com` at `d66fa06f`**, two real browser contexts of one account
+  — **0 FAIL, 74 PASS on `app.inflozo.com` at `935deb79`** (65 PASS at `d66fa06f`, before the owner's findings
+  added their rows), two real browser contexts of one account
   on their own fixture (autosave switched off through `profiles.user_id`, so no timer races the walk),
   covering every row of the I/O matrix that has a screen — including each row the audit below added.
   (Earlier runs, in order: 45 PASS at `d895c183`; 48 PASS at `d9e5f090`; 61 PASS + 2 FAIL of the walk's
@@ -613,8 +615,23 @@ Dev rather than deferred, and the Matrix Test Audit's rows, the defects they exp
 - **The reload row's control, by the same instrument before and after:** a sampler that navigates the
   editor to itself eight times and reads the bar at 0.5 s to 8 s saw it **flash in 5 of 5** navigations
   at `2052bf5d` and **in 0 of 8** at `d66fa06f`.
-- `node tools/probe/run-verify-editor.cjs` — **0 FAIL, 575 PASS on `app.inflozo.com` at `d66fa06f`**,
-  first attempt, exit 0 — step 69 included. Before that, at `d9e5f090`: run 3 clean at 0 FAIL, 575 PASS,
+- **The owner's two findings (2026-09-24, on `e6341b38`), each executed before and after.**
+  *Read-only controls (R-192):* a reader-side audit on the live site found **53 of the settings panel's 55
+  controls live** at `e6341b38` — fields, switches, the rich field, link and `{}` buttons — and Layers' ⋯ menus,
+  **+ Add section** and **Site Remix** opening over nothing. At `935deb79` the same audit reads **6 of 55**, exactly
+  the view controls kept on purpose (the panel's fold, the four group headers, a box's Cancel), and everything
+  outside the panel off. (Its first "after", at `4ba9687c`, still read 53: that instrument tested `.disabled`, the
+  element's OWN attribute, which stays false inside a disabled fieldset — only `:disabled` sees it. Fixed and
+  re-measured, standing rule 2.) The walk proves it beside controls: the holder's panel for the same section has
+  **49 live**, the reader's **0**; the reader still picks a section and opens a group; the pill's actions are off
+  and its grip absent; and ⌘K opens the picker for the holder and **nothing** for the reader. *Hydrate on gain:*
+  after Hand over, B **reloads** and shows A's handed-over deletion; a stale take-over reloads too. *Found while
+  fixing them:* the server drew the reader's bar for a holder's own reload until hydration (1 visible sample at
+  `4ba9687c`); at `935deb79` one sample held it in the DOM **masked** by the pre-paint script and **none showed
+  it**, with the page's own policy refusing nothing across the reload (0 violations).
+- `node tools/probe/run-verify-editor.cjs` — **0 FAIL, 575 PASS on `app.inflozo.com` at `935deb79`**, first
+  attempt, exit 0 — the holder's DOM is untouched by R-192 by construction (`ReadOnly` draws nothing for a holder).
+  At `d66fa06f` it was likewise 0 FAIL, 575 PASS on its first attempt — step 69 included. Before that, at `d9e5f090`: run 3 clean at 0 FAIL, 575 PASS,
   a complete walk. **Step 93 now passes** — the field reads *"The archive — page
   {page_number}"* where it read *"The archive"* at `d895c183`, the reload fix proven by an independent
   instrument — and so does **step 83**, which asserts a real deployment's build id and so could never
