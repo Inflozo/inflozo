@@ -4600,8 +4600,9 @@ origin: Story 5.5's Create run (2026-09-18). `D5 Canvas Markers and Template Swi
   is a launch deliverable with no surface that can create it". Behaviour is the PRD's to decide and the export's to
   draw (build-sequence standing rule 6), so Story 5.5 builds FR-D6's wording: the row appears when the project's
   linked site reports itself private.
-owner: the first story with a linked private site to try it on — Story 5.18 (live content from the connected site)
-  is the nearest, and Story 7.3 owns the matching `private.hbs` emission rule.
+owner: the story that first puts Ghost's private flag into the `site_settings` snapshot — an Admin read, so Epic 3's
+  snapshot writer — with Story 7.3 owning the matching `private.hbs` emission rule. (It named Story 5.18 until the
+  second amendment below.)
 location: `apps/web/lib/editor.ts` (the conditional canvas) · `prd.md:223` · D5b's caption ·
   `sections-inventory.md:787`
 reason: unobservable on "Pilot sections", which links no site (`projects.linked_site_id` is null), so Private is
@@ -4617,7 +4618,12 @@ amended: Story 5.5's Dev (2026-09-18) executed two things the owning story inher
   await lets Next flush the shell first, which is `[id]/layout.tsx:12-17`'s rule met from the other side. So
   `canvasFromSegment` refuses a `CONDITIONAL` segment from the scheme, and the story that gives the condition
   something to read must solve the body problem — a decision above the layout, or a refusal that needs no I/O — in
-  the same change.
+  the same change. **Second amendment — Story 5.18's Create (2026-09-24): the Content API cannot answer it either.**
+  The keys `GET /ghost/api/content/settings/` may return are `core/shared/settings-cache/public.js`'s — 48 on 5.130.6,
+  60 on 6.58.0, read in source from the npm tarballs — and neither holds `is_private`: private mode is an Admin
+  setting. So the browser-side reads 5.18 builds give the condition nothing to read, and 5.18 leaves this open. The
+  flag has to come from the Admin `settings/` read Epic 3 already makes at connect and daily (`lib/probe-rule.ts`'s
+  snapshot), which is why the owner line moved.
 
 ### DW-193: production's `template_key_shape` refuses every `custom:` key — the regex carries two backslashes
 
@@ -5629,3 +5635,58 @@ reason: `next/font/google` fetches the font CSS at compile time and Turbopack's 
   `run-keyboard-gate.sh`. Either is a story of its own; a re-push is the workaround.
 owner: unowned
 location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh`
+
+### DW-247: a section that prints your member count would stop drawing while the editor shows your own site
+
+plain: When the editor shows your own site, a section that prints how many members you have — none does yet — would
+  fail to draw, because Ghost does not give that number out to the public reader Inflozo uses for your posts. It has
+  to be read with your admin key and kept with the site's other stored settings first.
+status: open
+severity: low
+origin: Story 5.18's Create (2026-09-24). `packages/ghost-shim/src/index.ts:596-604` refuses `{{total_members}}` and
+  `{{total_paid_members}}` on a site whose counts were not handed in ("a linked site whose count did not arrive must
+  not show the sample as if it were real"); FR-H5 wants "the real rounded string on a linked one"; the Content API
+  carries no member counts, and AD-10 keeps 5.18's reads on the Content API.
+reason: no design in `packages/library/designs/` binds either helper, so the refusal is dormant. The count is an Admin
+  read, which belongs in the `site_settings` snapshot Epic 3 refreshes daily (FR-C5), not in a browser read.
+owner: the first design that binds either helper (A4 #2's proof value source, `A4 Heroes - Spec.md:81`, or an A22
+  design), together with Epic 3's snapshot writer.
+location: `packages/ghost-shim/src/index.ts:596-604` · `apps/web/lib/probe-rule.ts` (the snapshot's shape) ·
+  `apps/web/lib/live-content.ts` (the live context, Story 5.18)
+
+### DW-248: on a site with more than 100 posts, the link box and the post list cannot find an older post by typing
+
+plain: When the editor shows your own site, the link box and the post list in the pill search your newest 100 posts,
+  and up to 100 pages, tags and writers. On a site with more posts than that, typing will not find an older one —
+  you can still paste its address into the link box.
+status: open
+severity: low
+origin: Story 5.18's Create (2026-09-24), a deliberate limit of the client-side search Stories 5.3 and 5.13 built.
+reason: asking Ghost to search (`filter=title:~'…'`) would find any post, but every answer Ghost gives with a status
+  of 400 or more — a search term Ghost cannot parse — counts against the customer's own network in Ghost's brute
+  limiter: 99 failures, then at least an hour of 429 for every key from that network, the customer's own site search
+  included (read in source on both majors, Story 5.18's Code Map). A server search needs a term grammar that cannot
+  fail and its own share of the session's request ceiling; Ghost 6 also caps a page at 100 (MEASUREMENTS §15d).
+owner: unowned — the first customer site with more than 100 posts, or the story that re-validates internal links
+  against the connected site at compile (FR-F6).
+location: `apps/web/lib/live-content.ts` (the list reads) · `apps/web/components/controls/link-picker.tsx` ·
+  `apps/web/lib/preview-subject.ts`
+
+### DW-249: nobody has watched the editor read posts from a Ghost(Pro) site
+
+plain: The editor reads your posts straight from your Ghost site. On a site hosted by Ghost(Pro) there is a delivery
+  network in front of Ghost that may limit or cache those reads differently from the self-hosted test servers. Nobody
+  has seen it, because there is no Ghost(Pro) site to try until the trial planned near the end of the build.
+status: open
+severity: medium
+origin: Story 5.18's Create (2026-09-24). FR-H4 says "Ghost(Pro) sits behind an edge Inflozo does not model"; every
+  Content API fact 5.18 rests on is executed on self-hosted T1 and T3 only; `GHOSTPRO_*` in `tools/probe/.env` is
+  empty and VERIFY-AT-BUILD's Ghost(Pro) trial waits for "E13 closes and E14 opens".
+reason: three answers only a Ghost(Pro) site can give — whether an edge's 429 carries `access-control-allow-origin`
+  (without it the browser sees "not answering", never a 429), the edge's own limits against 5.18's session ceiling,
+  and whether the `*.ghost.io` admin origin Inflozo stores (`sites.url`) serves the Content API with the headers the
+  public domain does.
+owner: the Ghost(Pro) Starter trial (VERIFY-AT-BUILD's dated action); Story 5.18's Dev adds these three to its
+  checklist.
+location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` ·
+  `apps/web/lib/live-content.ts`

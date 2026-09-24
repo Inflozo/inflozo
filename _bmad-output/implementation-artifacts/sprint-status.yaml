@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-09-23
+last_updated: 2026-09-24
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -104,7 +104,7 @@ development_status:
   5-16-previewing-page-2: done
   5-16a-the-page-number-token: done
   5-17-the-edit-lock-and-the-take-over-choreography: done
-  5-18-live-content-from-the-connected-site: backlog
+  5-18-live-content-from-the-connected-site: ready-for-dev
   5-19-the-data-group-and-the-main-feed-designation: backlog
   5-20-tier-bound-surfaces-and-the-paywall-editor: backlog
   5-21-the-two-ghost-surface-shims-on-the-canvas: backlog

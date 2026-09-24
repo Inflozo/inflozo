@@ -216,6 +216,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     sentence is SHOWN in B5a's slot when something was lost. A residual reload race remains as DW-240. An owner
     test that needs work to stay unsent uses two side-by-side WINDOWS with automatic sending off — leaving a tab sends
     its work.
+  - ***R-192 (owner, 2026-09-24, his test of 5.17's Dev build), and 5.17 done the same day.*** A session reading along
+    has every control that would EDIT disabled — one native `<fieldset disabled>` (`kit/greyed.ts`'s `ReadOnly`, drawn
+    only while reading along, so a holder's DOM is untouched) over the settings panel, Layers' ⋯ / drag / **+ Add
+    section**, the section pill's actions, **Site Remix**, **Undo**, **Redo**, and the editing shortcuts, which
+    `lib/keymap.ts` classifies as a `Record` over every gesture so a new one cannot compile unclassified — while what
+    only changes the VIEW (picking a section, opening a group or an item, Template, View as, dark mode, the devices,
+    Preview) stays live. A control a later story adds inside those containers inherits it; one it adds OUTSIDE them
+    must join `ReadOnly` or the keymap's classification. The window that GAINS the lock reloads onto the cloud copy.
+    FR-L3's read-only (D4e) is a different state and is unruled. The owner passed his 13-step walk on `4aa48f5e`.
 - **The canvas is a viewport.** The iframe is viewport-sized and scrolls internally, device preview resizes both axes (834; 390 × 844), the only scale is the automatic fit shown in a chip, and there is no zoom control, per-breakpoint editing or section cap.
   - **R-137 (owner, 2026-09-19, Story 5.7's Q1) — Desktop is a viewport too, and there is ONE rule for three
     devices:** **1440 × 900** · **834 × 1112** (`D8a`, `EXPERIENCE.md:62`) · **390 × 844** (UX-DR17), fitted by
@@ -249,6 +258,21 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     letterbox beside a phone-shaped card. The chip renders AFTER the card so the card stays the ground's
     `firstElementChild`, which is how the harness and step 27's gutter find it.
 - **Live content is read in the browser and degrades honestly.** Reads are cached 60 s, batched and de-duplicated across canvas, picker and link search under a per-session ceiling, and fall back to Orbit Weekly naming the cause on 429 (that Ghost rate-limits Content API keys is the PRD's statement, not a measurement); body HTML is never read — `{{content}}` is the style-guide fixture.
+  - **Story 5.18's planning (2026-09-24, read in Ghost's source on both majors and executed read-only on T1 and
+    T3):** the Content API is CORS-open on every route (`routes.js:14`) and on a 401, and sends
+    `Cache-Control: public, max-age=0`, so the 60 s cache is the editor's own. **GHOST LIMITS FAILED REQUESTS, NOT
+    KEYS:** the only limiter is `express-brute` per IP ahead of authentication — 99 failures, then at least an hour of
+    429 for EVERY key from that network, the customer's own site search included — so a refusal is never retried,
+    three failures stop reading, and there is no server-side title search (a bad term is a 4xx). **`formats=mobiledoc`
+    IS "NO BODY":** the Content API strips source formats to `[]`, computes `reading_time` and `excerpt` from `html`
+    BEFORE it strips every format not asked for, and `[]` is truthy — no `html`, no `plaintext`, 38,688 bytes
+    against 49,343 for 33 posts — while `fields=` loses `reading_time`, which a17/1 and a24/1 print. The editor knows
+    nothing of the linked site today (`EditorData` gains it; `sites.content_key` is a plain, browser-safe column) and
+    four paths read the bundled dataset directly, so "5.18 rebuilds nothing" held for the pill's list alone: the plan
+    is ONE assembly shared by `templateContext` and the live path, a render that is one source throughout, and a
+    subject stored with the source it was chosen from (`jsonb`, **no Schema phase**). `is_private` is not a public
+    setting on either major, so DW-192 moved to Epic 3's snapshot; DW-230 and DW-98 close here; DW-247 to DW-249 are
+    new. **Question 1 is open:** which tag and author an untouched archive shows on a live site.
   - **Story 5.13's planning (2026-09-20, read in the schema, the runtime and the frames):** the pill and the
     subject need NO new mechanism and NO migration — `project_template_prefs.preview_subject` (`{kind, id, slug}`)
     has been in the complete-schema migration since day one with **no reader anywhere in `apps/web`**, its grants
