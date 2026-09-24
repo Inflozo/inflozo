@@ -354,3 +354,9 @@
     }
   }
 }
+
+/* Story 5.17 — a tab reloading while it HOLDS the lock paints as the holder from its very first frame. The server
+   drew the reader's screen because it cannot tell tabs apart; `selfMarkScript` (lib/lock.ts) marked <html> before the
+   paint, and the editor's layout effect clears the mark as soon as React knows the truth. */
+html[data-lock-self] #editor-lock-bar { display: none; }
+html[data-lock-self] #editor-controls { opacity: 1; }

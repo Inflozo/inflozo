@@ -39,6 +39,29 @@ export const NUDGE_MS = 30_000
  *  comparison and nothing else (`…complete_schema.sql:500-511`). */
 export const STALE_MS = 60_000
 
+/** Where a tab keeps its lock session id. `sessionStorage` is per TAB and survives a reload — which is exactly
+ *  "the same session" — and the server can never read it. Here, so `lock-client.ts` and the editor's server layout
+ *  share one spelling. */
+export const TAB_SESSION_KEY = 'inflozo-lock-session'
+
+/** The mark a reloading holder wears for its first paint (see `selfMarkScript`). */
+export const SELF_MARK = 'data-lock-self'
+
+/**
+ * A HOLDER'S OWN RELOAD MUST NOT PAINT THE READER'S BAR, NOT FOR ONE FRAME. The server renders the lock from the row,
+ * and it cannot know which TAB is asking — so when the row still names this tab (the outgoing page's release has not
+ * landed yet), its HTML is the reader's screen, painted until the page hydrates and recognises itself. Measured on
+ * `app.inflozo.com` at 4ba9687c: the bar in one 100 ms sample after a reload. This is a script the page runs as its
+ * HTML arrives, BEFORE that paint: if this tab is the row's holder it marks `<html>`, and `globals.css` keeps the bar
+ * and the dim off under the mark until the editor's layout effect clears it. A different tab — a genuine reader —
+ * never matches, so it still sees the bar from its very first paint.
+ *
+ * The holder id is only ever COMPARED; it is JSON-encoded with `<` escaped, so a stored value can never close the tag.
+ */
+export const selfMarkScript = (holder: string): string =>
+  `try{if(sessionStorage.getItem(${JSON.stringify(TAB_SESSION_KEY)})===${JSON.stringify(holder).replace(/</g, '\\u003c')})` +
+  `document.documentElement.setAttribute(${JSON.stringify(SELF_MARK)},'')}catch(e){}`
+
 /* ───────────────────────────── the row, as everything downstream reads it ───────────────────────────── */
 
 /** `edit_locks`, in the app's own words. The two ages are measured on the SERVER and handed over as durations, so

@@ -49,7 +49,7 @@ import {
   unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import {
-  displacedBy, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, stillAsking, type LockRow,
+  displacedBy, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, SELF_MARK, stillAsking, type LockRow,
 } from '@/lib/lock'
 import { askLock, lockSignals, lockUrl, tabSession, type LockAnswer, type LockSignal } from '@/lib/lock-client'
 import { edits, holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
@@ -1139,6 +1139,9 @@ export function Editor({
    *  asking it a frame later would be a frame of the wrong screen. */
   useLayoutEffect(() => {
     tabId.current = tabSession()
+    // the first paint's mark has done its job (`selfMarkScript`): from here React's own state decides, so a session
+    // displaced LATER still shows its bar
+    document.documentElement.removeAttribute(SELF_MARK)
     if (heldOnServer !== null && heldOnServer.holderSessionId === tabId.current) {
       heldGeneration.current = heldOnServer.generation
       putLock({ ...latest.current.lock, holder: true, row: heldOnServer })

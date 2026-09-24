@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   displacedBy, duration, edits, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, nextGeneration, partyOf, RESTART_EVENTS,
-  heldElsewhere, restartsNudge, rowFrom, secondsLeft, STALE_MS, stillAsking, type LockRow,
+  heldElsewhere, restartsNudge, rowFrom, secondsLeft, SELF_MARK, selfMarkScript, STALE_MS, stillAsking, TAB_SESSION_KEY,
+  type LockRow,
 } from './lib/lock.ts'
 import { append, EMPTY_JOURNAL, hydrationFor, journalCleared, unsyncedEdits, type Journal } from './lib/journal.ts'
 
@@ -248,3 +249,21 @@ test('a row with no nudge, and a clock that ran backwards, both map without lyin
 
 // AD-15's flush contract — `'release'` flushing before it releases — is asserted in `journal.test.ts`, beside
 // the three matrix rows `flushDecision` already answers.
+
+test('a holder\'s own reload paints as the holder: the pre-paint script marks <html> for THIS tab and no other', () => {
+  // EXECUTED, not read: the script runs against a stub `sessionStorage` and `document`, exactly as the page runs it
+  const run = (tab: string | null, holder: string) => {
+    const marks: string[] = []
+    const store = { getItem: (k: string) => (k === TAB_SESSION_KEY ? tab : null) }
+    const doc = { documentElement: { setAttribute: (name: string) => marks.push(name) } }
+    new Function('sessionStorage', 'document', selfMarkScript(holder))(store, doc)
+    return marks
+  }
+  assert.deepEqual(run(MINE, MINE), [SELF_MARK], 'the tab the row names is the holder reloading')
+  assert.deepEqual(run(THEIRS, MINE), [], 'a genuine second tab keeps the reader\'s bar from its first paint')
+  assert.deepEqual(run(null, MINE), [], 'a tab with no id yet is nobody\'s reload')
+  // a stored value can never close the tag it is written into, and still compares as itself
+  const hostile = '</script><script>alert(1)</script>'
+  assert.ok(!selfMarkScript(hostile).includes('</script>'), 'the < is escaped')
+  assert.deepEqual(run(hostile, hostile), [SELF_MARK], 'escaping changes the text, not the comparison')
+})

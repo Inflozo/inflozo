@@ -291,10 +291,13 @@ async function main() {
     check('nobody is named anywhere on the reader\'s screen', !/Rosa|Dai|message /i.test(bRead.bar ?? ''), bRead.bar)
     check('the second opener wrote NOTHING: A still holds it at generation 1', JSON.stringify(held(await lockRow(B, P))) === JSON.stringify(held(beaten)), JSON.stringify(held(await lockRow(B, P))))
 
-    // the read-only guard, proved on the DOCUMENT and not on the screen: nothing B types reaches the server
+    // the read-only guard, proved on the DOCUMENT and not on the screen: nothing B does reaches the server. Since
+    // R-192 the ⋯ menu that used to carry this attempt is disabled — the stronger guarantee — so the attempt goes the
+    // one way a reader still has: pick the section (a view action) and press Delete, the `remove` shortcut.
     const revisionBefore = (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision
     const rowsBefore = await layerNames(B)
-    await deleteLayer(B, B_EDIT)
+    await pickLayer(B, B_EDIT)
+    await B.keyboard.press('Delete')
     await B.waitForTimeout(2000)
     check('matrix "Second opener": commit() REFUSES — the row does not move, not even for a frame', JSON.stringify(await layerNames(B)) === JSON.stringify(rowsBefore), (await layerNames(B)).join(' | '))
     check('…and nothing B did moved the revision', (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision === revisionBefore)

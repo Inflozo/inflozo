@@ -705,6 +705,12 @@ which had not been built.
   nothing at all in a window that is reading along, rather than opening a picker or a box over nothing.
 - Typing into the canvas was already refused before this finding; it stays refused.
 
+**Found while fixing them:** reloading the window that is editing could still show the grey "reading along" bar
+for a split second — about a tenth of a second — before the page recognised itself. The server draws the first
+screen and cannot tell your two windows apart, so for that instant it drew the reader's screen. The page now checks
+which window it is before anything is drawn, so a reload of the editing window never shows the bar at all, while a
+genuine second window still sees it immediately.
+
 ## Questions for the owner
 
 ### Question 1 — The drawings say "Rosa is editing this site". There is no Rosa. What should it say instead?

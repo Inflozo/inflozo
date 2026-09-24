@@ -32,6 +32,8 @@ const jetbrainsMono = JetBrains_Mono({
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
+      // Story 5.17's `selfMarkScript` may set `data-lock-self` here before hydration — this element only, never below
+      suppressHydrationWarning
       lang="en"
       className={`${bricolage.variable} ${inter.variable} ${jetbrainsMono.variable}`}
     >

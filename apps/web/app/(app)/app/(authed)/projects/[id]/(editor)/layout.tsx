@@ -1,4 +1,6 @@
+import { headers } from 'next/headers'
 import { notFound } from 'next/navigation'
+import { isStale, selfMarkScript } from '@/lib/lock'
 import { Suspense, type ReactNode } from 'react'
 import { Editor } from './editor'
 import { EditorSkeleton } from './editor-skeleton'
@@ -34,5 +36,14 @@ export default async function EditorLayout({ children, params }: { children: Rea
 
 async function Loaded({ project }: { project: { id: string; name: string } }) {
   const data = await editorData(project.id)
-  return <Editor project={project} {...data} />
+  // Story 5.17 — a live row might be THIS tab's own, reloading: mark it before the first paint (`selfMarkScript`).
+  // CSP: the page's own nonce from `proxy.ts`, or the browser refuses it.
+  const nonce = (await headers()).get('x-nonce') ?? undefined
+  const mine = data.lock !== null && !isStale(data.lock) ? selfMarkScript(data.lock.holderSessionId) : null
+  return (
+    <>
+      {mine === null ? null : <script nonce={nonce} dangerouslySetInnerHTML={{ __html: mine }} />}
+      <Editor project={project} {...data} />
+    </>
+  )
 }

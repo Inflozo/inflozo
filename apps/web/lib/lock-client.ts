@@ -1,5 +1,5 @@
 import { lockPath } from './editor.ts'
-import type { LockAnswer } from './lock.ts'
+import { TAB_SESSION_KEY, type LockAnswer } from './lock.ts'
 
 /* THE LOCK'S I/O, IN ONE FILE (Story 5.17) — so the protocol cannot drift across call sites.
  *
@@ -106,7 +106,7 @@ export function lockSignals(projectId: string, heard: (signal: LockSignal) => vo
  * It can throw or come back empty in a private window or with site data blocked, so both ends are wrapped and a
  * failure simply means a fresh id per load: the protocol still works, a reload just re-acquires.
  */
-const SESSION_KEY = 'inflozo-lock-session'
+const SESSION_KEY = TAB_SESSION_KEY
 
 export function tabSession(): string {
   try {
