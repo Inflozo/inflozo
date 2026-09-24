@@ -548,6 +548,10 @@ project, 2026-09-23:
   `unsynced_edits` survives the take-over*. No SQL changed after it; CI's `rls` job ran the same gate green
   on every push since.
 - `python3 tools/doc-audit.py --check` — **PASS (0 warnings)**, with both new probes catalogued.
+- **The review's gates (2026-09-24, on `17490278`):** `pnpm check` **exit 0** — 510 tests / 510 pass in `apps/web`; the
+  keyboard gate **51 passed**. CI's first run of that commit went red at `pnpm keyboard` on a Google Fonts hiccup
+  inside `next/font/google` — no font file changed — and the same commit then passed the gate three times over
+  locally, beside a fresh worktree at `23316f6d` as the control; recorded as **DW-246** and re-pushed.
 
 **Vercel and the deployed site** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, and `GITHUB_TOKEN` to read the
 runs). CI went **green on every Dev push** — `check` and `rls` passed, so `deploy` ran (DW-7); the first

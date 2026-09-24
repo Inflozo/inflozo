@@ -5603,3 +5603,24 @@ reason: tooling, not product; the fix is two `except` clauses and `sb = None` ab
 owner: unowned
 location: `tools/probe/record-edit-lock.py` (the top-level `except` and `finally`) ·
   `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` (F4's seed), then `cp`
+
+### DW-246: the keyboard gate goes red when Google Fonts hiccups at compile time, and a red `check` publishes nothing
+
+plain: The automatic checks that run on every push include a keyboard walk that starts the app the way a developer
+  does. Starting it fetches the site's three typefaces from Google's font service, and when that service answers
+  oddly for a minute the walk cannot start and the whole push is marked red — nothing is published — although the code
+  is fine. Pushing again fixes it. It happened once on 2026-09-24 and cost one deploy.
+status: open
+severity: low
+origin: Story 5.17's review commit `17490278` (2026-09-24, 06:03Z): CI's `check` job failed at `pnpm keyboard` with
+  Turbopack's `next/font/google queries have exactly one entry` while compiling `app/layout.tsx`'s JetBrains Mono. The
+  same failure reproduced on this machine minutes later on the same checkout, and then the SAME commit passed the gate
+  three times (a fresh worktree at the last green commit `23316f6d`, the same worktree at `17490278`, and the main
+  checkout again — 51 passed each time). No file that reaches `next/font` changed in the commit. The build at
+  `23316f6d` had passed the same step at 05:14Z.
+reason: `next/font/google` fetches the font CSS at compile time and Turbopack's replacer refuses a response it did not
+  expect; `next dev` has no retry. The cure is one of: self-hosting the three typefaces under `next/font/local` (no
+  network at build, and Vercel's build fetches them today too), or a single retry of the dev boot in
+  `run-keyboard-gate.sh`. Either is a story of its own; a re-push is the workaround.
+owner: unowned
+location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh`
