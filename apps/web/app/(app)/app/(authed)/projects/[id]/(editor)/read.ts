@@ -4,6 +4,8 @@ import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, typ
 import type { DesignRows } from '@/lib/canvas'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
+import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
+import { siteFrom, type EditorSite } from '@/lib/live-content'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, isUuid, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
@@ -53,14 +55,16 @@ import { readViewed, type Visitor } from '@/lib/view-as'
  *  true). It is SERVER TRUTH, exactly as 5.5 made synthesis server truth: the editor must not guess whether it may
  *  offer the sun, and `/projects/<id>/settings` reads the same cached row. No migration — the column pre-exists
  *  (`20260904120000_complete_schema.sql:224`), so this story has no Schema phase (R-99). */
+/** Story 5.18 — `linked_site_id` joins it, and for `dark_enabled`'s reason: whether the canvas may read a site is SERVER
+ *  TRUTH, never a guess the editor makes (FR-B5; the column pre-exists, `…complete_schema.sql:229`, so no Schema phase). */
 export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, linked_site_id').eq('id', id).maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
 
-export type Project = { id: string; name: string; dark_enabled: boolean; revision: number }
+export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; linked_site_id: string | null }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -101,8 +105,13 @@ export type EditorData = {
    *  False stops THE TIMER ALONE: the local journal, tab close and ⌘S are unchanged (AD-15). */
   autosave: boolean
   links: LinkResources
-  /** the site's time zone name, printed under a date control */
+  /** the site's time zone name, printed under a date control — the SAMPLE's; the editor names the connected site's own
+   *  once its `/settings/` has answered (Story 5.18) */
   timezone: string
+  /** STORY 5.18 — THE LINKED SITE, AS SERVER TRUTH: readable (`{ title, origin, key }` — the key delivered on purpose,
+   *  FR-C3, and read by the BROWSER straight from the site, AD-10), unreadable with its reason, or null where no site is
+   *  linked. Read through the user's own session, so RLS decides; a failed read is logged by code and answered null. */
+  site: EditorSite
   plan: PlanId
   /** Story 5.5 — the canvases this project offers, in D5b's row order; a conditional canvas is absent, not greyed */
   canvases: CanvasKey[]
@@ -141,7 +150,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // Story 5.8: the user is needed for its own sake now — the local store is named after them — so `signedIn()` is
   // awaited once and its id used twice rather than read a second time.
   const user = await signedIn()
-  const [{ data, error }, { plan }, project, profile, prefs, lock] = await Promise.all([
+  // `cache`d, and the 404 guard above this boundary already read it — so this is the linked site's id at no cost, and
+  // the site's own row can join the reads below rather than follow them
+  const linked = (await projectOf(projectId))?.linked_site_id ?? null
+  const [{ data, error }, { plan }, project, profile, prefs, lock, siteRow] = await Promise.all([
     sb.from('project_templates').select('template_key, doc').eq('project_id', projectId),
     resolveEntitlement(user.id),
     // `cache`d and already read by the 404 guard above this boundary, so this costs no second query
@@ -161,6 +173,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
       .select('holder_session_id, lock_generation, unsynced_edits, heartbeat_at, nudge_requested_by, nudge_requested_at')
       .eq('project_id', projectId)
       .maybeSingle(),
+    // Story 5.18 — THE LINKED SITE'S OWN ROW, through the user's session (the owner policy and `grant select` on
+    // `sites`, `…complete_schema.sql:814-828, :1041-1042`). Nothing here reads the SITE: the Content API is the
+    // browser's path, never the server's (AD-10, `admin-rule.ts:164`).
+    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at').eq('id', linked).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -271,12 +287,19 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // key is a page of its own with a record of its own (R-167), so it is read like a canvas's.
     const known = canvasOfTemplateKey(row.template_key as string) !== null || canvasOfPageTwoKey(row.template_key as string) !== null
     if (known) viewed[row.template_key as string] = readViewed(row.member_states_viewed)
-    const value = row.preview_subject as { kind?: unknown; slug?: unknown } | null
+    const value = row.preview_subject as { kind?: unknown; slug?: unknown; source?: unknown } | null
     if (value === null || typeof value !== 'object') continue
-    const { kind, slug } = value
+    const { kind, slug, source } = value
     if (typeof slug !== 'string' || (kind !== 'post' && kind !== 'page' && kind !== 'tag' && kind !== 'author')) continue
-    subjects[row.template_key as string] = { kind, slug }
+    // Story 5.18 — A SUBJECT BELONGS TO THE SOURCE IT WAS CHOSEN FROM: one chosen over the site keeps its mark, and an
+    // unmarked one is the sample's, as every row written before that story is
+    subjects[row.template_key as string] = source === 'site' ? { kind, slug, source } : { kind, slug }
   }
+
+  /* STORY 5.18 — THE LINKED SITE, and a failed read is SAMPLE CONTENT, not a black editor: the safe side the prefs read
+     takes above. `siteFrom` decides readable or unreadable-with-its-reason (`lib/live-content.ts`, unit-tested). */
+  if (siteRow?.error) console.error('editorData: the linked site could not be read', { code: siteRow.error.code })
+  const site = siteRow && !siteRow.error && siteRow.data ? siteFrom(siteRow.data, normaliseSiteUrl, hostOf) : null
 
   return {
     docs,
@@ -290,8 +313,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
     userId: user.id,
     autosave: profile.data?.autosave_enabled !== false,
     links: linkResources(),
-    // the dataset's own zone, as `/controls` and `/pilots` read it, until 5.18 reads the connected site's
+    // the SAMPLE's own zone, as `/controls` and `/pilots` read it; the editor names the site's once it has answered
     timezone: orbitWeekly.site().timezone,
+    site,
     plan,
     canvases,
     synthesized,

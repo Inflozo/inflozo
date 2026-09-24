@@ -109,6 +109,22 @@ engineering one, so it is written here as an action item with a trigger rather t
 **Action:** open a **Ghost(Pro) Starter trial**, capture what `GET /admin/config/` actually returns,
 and verify FR-C2's Preview-only detection against that recording.
 
+**And on the same trial, the Content API from a browser (Story 5.18, DW-249).** The editor reads a linked site's posts
+straight from the browser, and every fact that read rests on was executed on self-hosted T1 and T3 only
+(`MEASUREMENTS.md` §51): `access-control-allow-origin: *` on every route, on a 401 **and on Ghost's own 429**, and a
+limiter that counts FAILED requests per network — 99, then at least an hour of 429 for every key. Ghost(Pro) puts an
+edge in front of Ghost that Inflozo does not model, so the trial must answer three more questions, each recorded
+beside the `hostSettings` capture with its command (AD-23):
+
+- **CORS on an edge 429.** Does a 429 the EDGE sends carry `access-control-allow-origin`? Without it the browser cannot
+  read the status, and the editor's *"{site} asked us to wait"* collapses into *"{site} not answering"* — which
+  `lib/live-content.ts` already handles, but the pill would name the wrong cause.
+- **The edge's own limits** against the editor's session ceiling (`REQUEST_CEILING`, `lib/live-content.ts`) and its
+  60 s cache: a full editor walk's request count is what `tools/probe/run-verify-live-content.cjs` records.
+- **Admin domain versus public domain.** Inflozo stores the ADMIN origin (`sites.url`, the `*.ghost.io` domain on
+  Ghost(Pro), `EXPERIENCE.md:113`) and reads the Content API there: does it serve the Content API with the headers the
+  public domain serves, and with the same limiter?
+
 **Trigger — do it when E13 closes and E14 opens, not before.** The timing is a real constraint in
 both directions:
 

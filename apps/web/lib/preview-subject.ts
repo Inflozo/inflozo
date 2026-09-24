@@ -4,14 +4,14 @@
  * STATED choice and not an accident. Everything both of them decide that is not a pixel lives here: the words B9's
  * pill prints, the rows D5e's menu lists, the filter its search runs, and the two sentences a fallback owes.
  *
- * PURE AND IMPORTLESS BUT FOR THE LIBRARY, because `node --test` strips types and cannot load a `.tsx`
- * (`lib/picker.ts` is the standing precedent and `kit-button.test.ts:6-7` the reason). `preview-subject.test.ts`
- * asserts the I/O matrix's rows over it.
+ * PURE AND IMPORTLESS BUT FOR THE LIBRARY AND `lib/live-content.ts` (itself importless), because `node --test` strips
+ * types and cannot load a `.tsx` (`lib/picker.ts` is the standing precedent and `kit-button.test.ts:6-7` the reason).
+ * `preview-subject.test.ts` and `live-content.test.ts` assert the I/O matrices' rows over it.
  *
- * THE SOURCE IS AN ARGUMENT, WHICH IS THE WHOLE OF R-165. Today every canvas in the product previews with the
- * bundled publication, so the pill reads "Sample content" on every project — INCLUDING one whose `linked_site_id`
- * Story 3.4 already set, because the pill describes the canvas and never the paperwork. Story 5.18 hands
- * `subjectOptions` the connected site's rows in the same shape and rebuilds nothing.
+ * THE SOURCE IS AN ARGUMENT, WHICH IS THE WHOLE OF R-165 — and Story 5.18 moved it. The pill describes the canvas and
+ * never the paperwork: "Sample content" wherever the canvas shows the bundled publication, the site's own name wherever
+ * it shows the site's content. `subjectOptions` is handed the connected site's rows in the same shape (`siteSubjects`)
+ * and rebuilds nothing; `SubjectSource` gained the site's `pages`, which the bundled publication has none of.
  *
  * WHICH CANVASES HAVE A SUBJECT IS DERIVED (standing rule 3): `nativeResourceOf` is the library's one query over
  * `placement.ts`'s `NATIVE` table, so the Picker's filter and the subject's existence can never disagree about a
@@ -19,13 +19,15 @@
  */
 
 import { nativeResourceOf, orbitWeekly } from '@inflozo/library'
+import { LISTS, LIVE_WORDS, onClock, type Look } from './live-content.ts'
 
 export type SubjectKind = orbitWeekly.SubjectKind
 export type Subject = orbitWeekly.Subject
 
-/** B9's words, both halves of the first one. The SOURCE half is the same on every project today (R-118: B9's
- *  connected state and its SOURCE group arrive with Story 5.18, absent until then and never greyed). */
-export const SOURCE_WORDS = { lead: 'Previewing with:', sample: 'Sample content' } as const
+/** B9's words, both halves of the first one — and since Story 5.18 the SOURCE group's, the causes after a failure and
+ *  every sentence the site row says, which are `lib/live-content.ts`'s (`LIVE_WORDS`) so the pill, D5e, `#editor-said`
+ *  and the deployed walk read one list (R-170). The site's own half is its name, which is the site's and not a word. */
+export const SOURCE_WORDS = { lead: 'Previewing with:', ...LIVE_WORDS } as const
 
 /** Does this canvas render ONE resource, and so have a subject to name and a menu to open? */
 export const hasSubject = (file: string): boolean => nativeResourceOf(file) !== null
@@ -52,9 +54,11 @@ export type SubjectRow = {
 type PostLike = { slug: string; title: string; published_at: string; feature_image?: string | null }
 type TaxonomyLike = { slug: string; name: string; count: { posts: number } }
 
-/** WHERE THE ROWS COME FROM — the seam Story 5.18 moves and nothing else. */
+/** WHERE THE ROWS COME FROM — the seam Story 5.18 moves. It gained `pages`, which the bundled publication has none of
+ *  beyond its style-guide fixture and the connected site does. */
 export type SubjectSource = {
   posts: readonly PostLike[]
+  pages: readonly PostLike[]
   tags: readonly TaxonomyLike[]
   authors: readonly TaxonomyLike[]
   /** the two style-guide fixtures. They are in NO feed by construction (`dataset.json`'s note), which is why they
@@ -62,13 +66,36 @@ export type SubjectSource = {
   styleGuide: Readonly<Record<'post' | 'page', PostLike>>
 }
 
+const styleGuide = () => ({ post: orbitWeekly.subject('post') as unknown as PostLike, page: orbitWeekly.subject('page') as unknown as PostLike })
+
 /** The bundled publication in that shape (R-165). */
 export const bundledSource = (): SubjectSource => ({
   posts: orbitWeekly.posts() as unknown as PostLike[],
+  pages: [],
   tags: orbitWeekly.tags(),
   authors: orbitWeekly.authors(),
-  styleGuide: { post: orbitWeekly.subject('post') as unknown as PostLike, page: orbitWeekly.subject('page') as unknown as PostLike },
+  styleGuide: styleGuide(),
 })
+
+/** STORY 5.18 — THE CONNECTED SITE IN THAT SAME SHAPE, from the lists in hand (`LISTS`: the newest 100 posts, and pages,
+ *  tags and writers to 100 each), dates on the site's own clock (DW-98). The style-guide entry still leads Post and
+ *  Page: it is the one every design is designed against, whatever the source. A list not in hand is empty. */
+export const siteSubjects = (look: Look, zone: string): SubjectSource => {
+  const rows = (kind: SubjectKind) => (look(LISTS[kind])?.rows ?? []) as readonly Record<string, unknown>[]
+  return {
+    posts: rows('post').map((p) => onClock(p, zone)) as unknown as PostLike[],
+    pages: rows('page').map((p) => onClock(p, zone)) as unknown as PostLike[],
+    tags: rows('tag') as unknown as TaxonomyLike[],
+    authors: rows('author') as unknown as TaxonomyLike[],
+    styleGuide: styleGuide(),
+  }
+}
+
+/** D5e's line under the search where the site holds more posts than the rows in hand (DW-248) — null where it does not. */
+export const cappedPosts = (look: Look): string | null => {
+  const posts = look(LISTS.post)
+  return posts !== undefined && posts.total > posts.rows.length ? LIVE_WORDS.capped : null
+}
 
 /** D5e's style-guide entry, the row it draws first and ticks. */
 const STYLE_GUIDE: Readonly<Record<'post' | 'page', { title: string; caption: string }>> = {
@@ -99,14 +126,14 @@ const postRow = (p: PostLike): SubjectRow => ({
  * THE ROWS D5e LISTS for this canvas, the style-guide entry first.
  *
  * A PAGE HAS NO FEED. The bundled publication holds one page — the style-guide fixture — so the Page canvas lists
- * exactly it, honestly, and fills the day Story 5.18 reads the customer's own pages. An archive lists the taxonomy
+ * exactly it, honestly; since Story 5.18 the connected site's own pages follow it. An archive lists the taxonomy
  * rows themselves, each with the count its own posts derive.
  */
 export function subjectOptions(source: SubjectSource, kind: SubjectKind): SubjectRow[] {
   if (kind === 'post' || kind === 'page') {
     const fixture = source.styleGuide[kind]
     const head: SubjectRow = { slug: fixture.slug, title: STYLE_GUIDE[kind].title, meta: null, caption: STYLE_GUIDE[kind].caption, hasImage: typeof fixture.feature_image === 'string' && fixture.feature_image !== '' }
-    return kind === 'page' ? [head] : [head, ...source.posts.map(postRow)]
+    return [head, ...(kind === 'page' ? source.pages : source.posts).map(postRow)]
   }
   return (kind === 'tag' ? source.tags : source.authors).map((r) => ({
     slug: r.slug,

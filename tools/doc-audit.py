@@ -304,6 +304,20 @@ DOCS = [
   "project's channel as the isolation control. One throwaway account and its own projects, deleted in a finally with "
   'the Admin-API user count read before and after. Writes MEASUREMENTS.md §50 and nothing else. Its verdict decided '
   'that the story has NO Schema phase.'),
+ ('tools/probe/record-content-api.py', 'tool', 'Content API recorder',
+  "Story 5.18's recorder (standing rule 1, R-82): the Content API facts the editor's live reads rest on, executed "
+  'read-only on T3 and then T1 before a line of the read layer was written, every request carrying the editor\'s own '
+  'Origin and Accept-Version. (a) a real-key read of settings/ as the control; (b) access-control-allow-origin on the 200 '
+  'AND a 401 of posts/ pages/ tags/ authors/ settings/, and the preflight allowing accept-version; (c) Cache-Control; '
+  '(d) formats=mobiledoc against a plain read on every post and page — no html, plaintext, lexical or mobiledoc, '
+  'reading_time and excerpt identical, the bytes of both, with the plain read carrying html as its control — then a '
+  "quoted filter=slug:'…' read, and a slug no post holds answering 200 [] rather than a 404; (e) fields= dropping "
+  'reading_time; (f) past an archive\'s last page answering 200 [] for a tag and a writer, page 1\'s total as the '
+  'control; (g) order=count.posts desc on tags/ and authors/; (h) filter=id:[…] answering in Ghost\'s order; (i) the '
+  'NAMES /settings/ carries, never a value. LAST, on T1 only: 100 reads with a key Ghost never issued, then one with the '
+  'real key — the 429, its message, whether it carries access-control-allow-origin, and the time; T1 then refuses this '
+  'machine for about an hour by Ghost\'s own config, which the run does not measure, and the script says when it began. Keys by variable name only; no URL that carries one is '
+  'ever printed; writes nothing to either server and MEASUREMENTS.md §51 alone, replacing an earlier §51 of its own.'),
  ('tools/probe/record-page-number.py', 'tool', 'Page-number guard recorder',
   "Story 5.16a's recorder (standing rule 1, R-82): R-186's page-1 guard, executed on T1 and T3 before "
   'anything is emitted for it. Generates a probe theme whose default.hbs — the layout, where a site-wide '
@@ -535,7 +549,10 @@ DOCS = [
   'deleted with the user count read before and after. Refuses a dirty tree or a deployment that is not HEAD. Story 5.15 '
   "adds step 91 inside the CSP session — core run from the editor against the canvas window while designing and in "
   "Preview, B3a's pill and B3b's bar measured, a link and a submit in Preview, the header's menu only in Preview at "
-  "Mobile — and step 5's second control, eval called from the editor on the canvas window throwing EvalError."),
+  "Mobile — and step 5's second control, eval called from the editor on the canvas window throwing EvalError. Story "
+  "5.18 (DW-230) amends step 4: on the Post canvas the header is told the post's own address, so its root equals "
+  "/pilots' with the nav-current class aside, and that class is asserted on its own — none in the editor, Home in "
+  "/pilots, which draws a site-wide design at `/`."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
@@ -559,6 +576,30 @@ DOCS = [
   "the displaced session flipping to read-only, told assertively, with its journal cleared unconditionally. Every "
   "expectation is imported from apps/web/lib/lock.ts's LOCK_COPY and constants rather than restated (R-170, standing "
   'rule 4). Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/APP_PREFIX for a local build.'),
+ ('tools/probe/run-verify-live-content.cjs', 'tool', 'Live content harness',
+  "Story 5.18: the connected site's own content on the deployed editor, against real Ghosts on BOTH majors (R-82). Its "
+  'own throwaway account with site rows for T3 and T1 (keys from the environment, never printed), a row with a key Ghost '
+  'never issued, three unreadable rows (disconnected, no key, plain http) and an unlinked control, each with its own '
+  'seeded "Pilot sections"-shaped project, all deleted in a finally with the user count read before and after. Per '
+  "major: the editor opening on the site's newest post and its menu under B9's connected pill (solid, mint, 24px); "
+  "D5e's SOURCE group; Sample content and back, announced and costing no request inside 60 s; the Section Picker's "
+  "Latest Post card showing the site's newest post; the Link Picker finding the site's own post; the Post canvas's "
+  "SUBJECT rows led by the style-guide entry and a chosen post rendering with no Home marked (DW-230), stored with the "
+  "site's mark; the Page canvas's own pages; R-193's starting tag and writer; the panel's shortfall note and R-194's "
+  'Preview with sample content, which lands focus on the pill — and, in a second context of the same account '
+  "READING ALONG (B5a's bar up), that button and the SOURCE group still live (R-192); Home's page 2; R-98's busy "
+  'row on a subject and on the SOURCE row, WATCHED with a MutationObserver from before the press rather than '
+  'sampled; and the network cut with page.route — the one simulated condition, named as such — twice: one failed '
+  'read, SILENT (nothing new in #editor-said, no "no longer there"), and a new session opened with the network '
+  'cut, which must send exactly FAILURES_TO_STOP reads one at a time, stop, and name it. Then a real 401 costing '
+  'exactly ONE request and greying the row, the '
+  'unreadable rows greyed with their reasons and reading nothing, and the unlinked control reading nothing. LAST, on '
+  'T1: a real 429 earned from this machine the way the recorder earns it, and the editor naming it. Across the walk: '
+  'no key Ghost answered is asked for again inside 60 s, no answer carries html or plaintext, neither the Content API '
+  'key nor codeinjection is in the canvas markup, the page\'s policy refuses nothing, and the full walk\'s request '
+  "count is recorded. Every expectation is read from apps/web/lib/live-content.ts and lib/preview-subject.ts or from "
+  'the site itself (standing rule 4). Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/'
+  'APP_PREFIX for a local build, MAJORS=5|6 for one major and NO_429=1 to leave out the step that costs T1 an hour.'),
  ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
   'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '
   "way createProject makes them, and site, home and post project_templates rows holding the pilots at their default "

@@ -41,6 +41,8 @@ export async function setPreviewSubject(projectId: string, templateKey: string, 
   const canvas = canvasOfTemplateKey(templateKey)
   if (canvas === null || typeof subject?.slug !== 'string' || subject.slug === '' || subject.slug.length > SLUG_MAX) return { error: SAVE_REFUSED }
   if (orbitWeekly.subjectKindOf(CANVASES[canvas].file) !== subject.kind) return { error: SAVE_REFUSED }
+  // Story 5.18 — the one mark a subject may carry: chosen over the connected site. Anything else is refused, never kept
+  if (subject.source !== undefined && subject.source !== 'site') return { error: SAVE_REFUSED }
 
   const user = await signedIn()
   const supabase = await supabaseServer()
@@ -49,7 +51,9 @@ export async function setPreviewSubject(projectId: string, templateKey: string, 
       project_id: projectId,
       user_id: user.id,
       template_key: templateKey,
-      preview_subject: { kind: subject.kind, slug: subject.slug },
+      // STORY 5.18 — A SUBJECT IS ONLY "GONE" FROM THE SOURCE IT WAS CHOSEN FROM, so one chosen over the site is stored
+      // with that mark (`jsonb`, no migration) and a sample one exactly as before — nothing extra
+      preview_subject: subject.source === 'site' ? { kind: subject.kind, slug: subject.slug, source: 'site' } : { kind: subject.kind, slug: subject.slug },
       // the column defaults to `now()` on INSERT only, so the UPDATE half of the upsert sets it or a row keeps the
       // timestamp of the first choice ever made on that canvas
       updated_at: new Date().toISOString(),

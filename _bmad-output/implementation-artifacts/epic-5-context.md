@@ -257,7 +257,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     on that same `<section>`, never a wrapper, or R-123's `e.target === e.currentTarget` would stop covering the
     letterbox beside a phone-shaped card. The chip renders AFTER the card so the card stays the ground's
     `firstElementChild`, which is how the harness and step 27's gutter find it.
-- **Live content is read in the browser and degrades honestly.** Reads are cached 60 s, batched and de-duplicated across canvas, picker and link search under a per-session ceiling, and fall back to Orbit Weekly naming the cause on 429 (that Ghost rate-limits Content API keys is the PRD's statement, not a measurement); body HTML is never read — `{{content}}` is the style-guide fixture.
+- **Live content is read in the browser and degrades honestly.** Reads are cached 60 s, batched and de-duplicated across canvas, picker and link search under a per-session ceiling, and fall back to Orbit Weekly naming the cause on 429 (Ghost limits FAILED requests per network, not keys — MEASUREMENTS §51); body HTML is never read — `{{content}}` is the style-guide fixture.
   - **Story 5.18's planning (2026-09-24, read in Ghost's source on both majors and executed read-only on T1 and
     T3):** the Content API is CORS-open on every route (`routes.js:14`) and on a 401, and sends
     `Cache-Control: public, max-age=0`, so the 60 s cache is the editor's own. **GHOST LIMITS FAILED REQUESTS, NOT
@@ -279,6 +279,20 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     shows it as it is, and the panel note that says a list is not full carries **Preview with sample content**, the
     pill's own Sample content row with a second door, present only while the site's content shows. No threshold and
     no automatic switch.
+  - **As built (Story 5.18's Dev, 2026-09-24):** §51 was recorded FIRST (`tools/probe/record-content-api.py`) and every
+    fact held on both majors — including that **Ghost's own 429 carries `access-control-allow-origin: *`**, so the editor
+    can name it, and that a post and a page carry a code-injection pair of their OWN (the allowlist, not the request,
+    drops them). The read layer is `lib/live-content.ts` (pure: the reads and their keys, the stop rule, the whitelist to
+    the dataset's own row shapes, the site's wall clock for DW-98, R-193's `startingArchive`, every sentence) and
+    `lib/live-client.ts` (the one `fetch`: a `Map`, one in-flight promise per key, reads ONE AT A TIME until one answers
+    and again after any failure, so a refused key costs exactly one request and a dead site three). **ONE ASSEMBLY**:
+    `orbitWeekly.assemble(target, pieces)` is what `templateContext` returns and what the site's rows go through
+    (`lib/canvas.ts`'s `sitePage`, which resolves the subject with the library's own `resolveSubject` asked of a
+    `ContentSource`), so a render handed no `live` is byte-identical — the snapshots, the matrix and the keyboard gate are
+    the control. It also closed **DW-230** (Post and Page carry their subject's own address, the 404 one no link matches)
+    and **DW-98**. The editor paints ONCE per read the customer asks for (`request()`: opening, a canvas, a subject, page
+    2, a source, a picker), a paint never reads, and the pill says what the LAST paint used; a subject is stored with
+    `source: 'site'` when chosen over the site (`jsonb`, **no Schema phase**).
   - **Story 5.13's planning (2026-09-20, read in the schema, the runtime and the frames):** the pill and the
     subject need NO new mechanism and NO migration — `project_template_prefs.preview_subject` (`{kind, id, slug}`)
     has been in the complete-schema migration since day one with **no reader anywhere in `apps/web`**, its grants

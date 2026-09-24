@@ -8,9 +8,79 @@ import { orbitWeekly } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { renderCanvas, withData } from '@inflozo/section-runtime'
 import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/section-runtime'
+import { reader, SETTINGS, siteRows, siteSource, sitePieces, type LiveQuery, type Look, type Row } from './live-content.ts'
 
 /** One design's declared queries, each in both orders at the Count's ceiling (`pilotRows()`). */
 export type DesignRows = Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>
+
+/** What a template hands a section — `orbitWeekly.templateContext`'s answer, or the same assembly over the site's rows. */
+export type RenderContext = ReturnType<typeof orbitWeekly.assemble>
+
+/** STORY 5.18 — ONE PAGE OF THE CONNECTED SITE, from the rows in hand. */
+export type SitePage = {
+  /** the subject this page renders, resolved by the library's own `resolveSubject` against the site */
+  subject: orbitWeekly.Subject | null
+  /** the stored subject's own source answered, and does not hold it (FR-D22's "no longer there") */
+  fellBack: boolean
+  /** the site as a `ContentSource` — what `feedPages` and `lib/page-two.ts` ask of the source in force */
+  source: orbitWeekly.ContentSource
+  /** how many pages the list this page renders runs to — page 1's own count */
+  pages: number
+  /** `@site`, whitelisted */
+  site: Row
+  /** the site's time zone, which the panel names under a date */
+  zone: string
+  /** the render context for a section at each target */
+  contexts: Readonly<Record<string, RenderContext>>
+  /** each design's `{{#get}}` rows, in `DesignRows`' shape */
+  rows: Readonly<Record<string, DesignRows>>
+}
+
+/**
+ * STORY 5.18 — THE SITE'S CONTENT FOR ONE PAGE, OR WHAT IT STILL NEEDS. ONE walk over the cache (`lib/live-content.ts`'s
+ * reader) says both, so a paint never starts a read and a read never paints half a page: `need` lists every read not
+ * in hand, and only a walk that misses nothing is `ready` — A RENDER IS ONE SOURCE THROUGHOUT. `nothing` is a Tag or
+ * Author page on a site with no tags or writers of its own, which previews the sample's and says why.
+ *
+ * The subject is the LIBRARY's `resolveSubject` asked of the site (`siteSource`), and each target's context is the
+ * library's `assemble` over the site's pieces — the very functions the bundled path runs — so the two cannot drift.
+ */
+export function sitePage(
+  look: Look,
+  o: {
+    /** the canvas's own file, which decides the subject's kind */
+    file: string
+    /** the subject stored for this canvas, whichever source it was chosen from */
+    stored: orbitWeekly.Subject | null | undefined
+    /** the page shown, and the file its own sections render at (`index.hbs` on Home's page 2) */
+    page: 1 | 2
+    pageFile: string
+    /** every target a section on this page renders at */
+    targets: readonly string[]
+    /** every design drawn, for its `{{#get}}` rows */
+    designs: readonly SectionRegistryEntry[]
+  },
+): { need: readonly LiveQuery[] } | { nothing: 'tag' | 'author' } | { ready: SitePage } {
+  const r = reader(look)
+  const kind = orbitWeekly.subjectKindOf(o.file)
+  const w = { kind, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: orbitWeekly.postsPerPage() }
+  const source = siteSource(w, r)
+  const { subject, fellBack } = orbitWeekly.resolveSubject(o.file, o.stored, source)
+  // the subject waits on a read (R-193's list, or the stored one's own `filter=slug:`): what depends on it waits too,
+  // and everything that does not — `@site`, every `{{#get}}` — is asked for in the same round
+  const unresolved = r.need.length > 0
+  const site = r.got(SETTINGS)?.rows[0]
+  const zone = typeof site?.['timezone'] === 'string' ? site['timezone'] : 'Etc/UTC'
+  const rows = Object.fromEntries(o.designs.map((e) => [e.id, siteRows(e.dataBindings, r, zone)]))
+  if (unresolved) return { need: r.need }
+  if ((kind === 'tag' || kind === 'author') && subject === null) return { nothing: kind }
+  // page 1's own count is always read: whether a page 2 exists is decided by it alone (§51 — past the last page Ghost
+  // answers `200 []`), and a subject whose archive fits one page takes page 2 away (R-176)
+  const pages = source.pages(o.pageFile, subject)
+  const contexts = Object.fromEntries(o.targets.map((t) => [t, orbitWeekly.assemble(t, sitePieces(w, subject, t, o.page, r))]))
+  if (r.need.length > 0 || site === undefined) return { need: r.need }
+  return { ready: { subject, fellBack, source, pages, site, zone, contexts, rows } }
+}
 
 /** The build this page was published from, in the canvas document's address (the owner's ruling of 2026-09-20,
  *  Question 5). It is what lets the document be cached `immutable`: a publish changes the address, so a new
@@ -93,9 +163,14 @@ export function renderSection(
      *  rather than to a page-1 number (R-186: never a number on page 1, on a post, a standalone page or the
      *  404). Only page 2 is ever given one. */
     page?: number
+    /** Story 5.18 — THE CONNECTED SITE'S CONTENT for this section: the assembled context at its target and its design's
+     *  `{{#get}}` rows (`sitePage`). Omitting it is exactly today's call — the bundled publication through
+     *  `templateContext` and `o.rows` — which is why `/pilots`, `tools/check-snapshots.mjs`, the render matrix and the
+     *  keyboard harness are untouched and are the story's control. */
+    live?: { context: RenderContext; rows: DesignRows | undefined }
   },
 ): string {
-  const ctx = orbitWeekly.templateContext(o.target, o.feed, o.subject)
+  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject)
   const site = o.url === undefined ? ctx.site : { ...ctx.site, currentUrl: o.url }
   return withImages(renderCanvas(doc as unknown as RuntimeDocument, entry.html, {
     target: o.target,
@@ -106,7 +181,7 @@ export function renderSection(
     controls: state.controls,
     data: state.data,
     dataBindings: entry.dataBindings,
-    getRows: shownRows(entry, state, o.rows),
+    getRows: shownRows(entry, state, o.live === undefined ? o.rows : o.live.rows),
     ghost: ctx.ghost,
     site,
     member: o.member,

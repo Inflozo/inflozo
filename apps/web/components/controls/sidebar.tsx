@@ -29,6 +29,7 @@ import { RichField } from './rich-field'
 import { limitSentence } from '@/lib/inline'
 import { LATER_PAGES, PREVIEW_PAGE, type Page } from '@/lib/page-two'
 import { PREVIEWING, type Visitor } from '@/lib/view-as'
+import { SOURCE_WORDS } from '@/lib/preview-subject'
 
 /* THE CONTROLS PANEL — what Epic 5 mounts beside its canvas (Story 4.5).
 
@@ -118,6 +119,10 @@ export type SidebarProps = {
   /** Story 5.17 — a session reading along (FR-D18): every control is disabled, and the group headers still open so
    *  what is set can be read (R-192). */
   readOnly?: boolean
+  /** Story 5.18 — THE NOTE, while the connected site's content shows: a list this section cannot fill says so (P0:488-490
+   *  puts the zero note in the panel, not on the canvas, and no frame draws the rest), and R-194's **Preview with sample
+   *  content** sits beside it — the pill's own Sample content row, a second door. Absent, no note. */
+  note?: { words: string; onSample: () => void }
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
@@ -239,7 +244,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
 // What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
 // live region that announces a View-as choice read ONE list.
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false }: SidebarProps) {
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -414,6 +419,20 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
 
   return (
     <div className="flex flex-col gap-3">
+      {/* STORY 5.18 — at the head of the panel, directly above Section Settings and R-124's row, where the groups'
+          closed accordions cannot hide it. Its button is OUTSIDE every `ReadOnly`: switching the source changes the
+          view, never the site, so a session reading along keeps it (R-192). */}
+      {note === undefined ? null : (
+        <div data-shortfall className="flex flex-col items-start gap-2 rounded-sm bg-paper-sunk p-[9px_10px]">
+          <span className="flex items-start gap-2">
+            <InfoCircle size={13} className="mt-px shrink-0 text-ink-soft" />
+            <span className="text-[11.5px] leading-[1.5] text-ink-soft">{note.words}</span>
+          </span>
+          <Button type="button" variant="secondary" size={32} data-shortfall-sample onClick={note.onSample}>
+            {SOURCE_WORDS.toSample}
+          </Button>
+        </div>
+      )}
       <div className="flex flex-col">
         {groups.map((group) => {
           // in the engine's order (R-113), which ends with the universal controls: the absent notes go just above them

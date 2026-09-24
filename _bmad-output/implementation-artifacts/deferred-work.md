@@ -2767,7 +2767,17 @@ reason: settling it here would be inventing a decision the owner never made (sta
 plain: A site set to, say, New York time shows a post dated "Jul 18" on the live site while the
   canvas — which only knows UTC — could show "Jul 19" for the same post if it was published late in
   the evening. Nobody sees this yet because no story hands the canvas real site data.
-status: open
+status: done 2026-09-24 (Story 5.18)
+resolution: Story 5.18 (2026-09-24) — the first story that hands the canvas a connected site's content moves every live
+  timestamp to the SITE's wall clock before the shim sees it: `apps/web/lib/live-content.ts`'s `wallClock` (`Intl`, which
+  AD-1 allows in `apps/web`) resolves the site's own `/settings/` `timezone` at EACH value's own instant, so a page of
+  posts that crosses a DST boundary is right on both sides of it, and `onClock` applies it to `published_at`,
+  `updated_at` and `created_at` on every live post and page — the canvas, the picker's cards, D5e's dates and the Link
+  Picker's. So the shim and every design are UNCHANGED and print what Ghost prints, `datetime` attributes included; AD-1
+  holds. `live-content.test.ts` asserts a New York post published at 02:00Z on the 19th prints "Jul 18, 2026" through the
+  shim's own `formatDate`, with the unmoved UTC value printing the 19th as its control, and the two sides of the
+  2026-03-08 DST change. The one token that cannot follow is `Z`, which keeps printing `+00:00`; no design uses it, and
+  the note sits beside `wallClock`. The sample's zone is `Etc/UTC`, so the sample moves by nothing.
 severity: medium
 origin: Story 4.3 review (2026-09-12) — Blind Hunter. The shim formats from UTC getters because AD-1
   bans `Intl` and every timezone read; both recording sites are `Etc/UTC` and `contract.test.ts`
@@ -5316,7 +5326,15 @@ reason: the chip is chrome in the canvas layer, drawn only while a section is po
 
 plain: On a Post, Page or 404 canvas your header still underlines "Home" as the page you are on, which the live site
   does not do. Home, its page 2 and the Tag and Author pages are right since Story 5.16.
-status: open
+status: done 2026-09-24 (Story 5.18)
+resolution: Story 5.18 (2026-09-24) — THE ONE ASSEMBLY decides every page's address: `orbitWeekly.assemble(target,
+  pieces)`, which `templateContext` returns and the connected site's rows go through, hands Post and Page their
+  subject's OWN address (the path of the row's `url` — the bundled fixture's `/the-four-hundred-domains-that-refuse-to-move/`,
+  a live post's `/post-slug/`) and the 404 `MISSED_ADDRESS`, a path no menu item names, where it used to hand all three
+  `/`. `paint()` already hands that address to every section, the header included, so `{{navigation}}` marks nothing on
+  those canvases, as Ghost marks nothing there (`utils.js:61`, an exact match only). `orbit-weekly.test.ts` gained
+  DW-230's rows — each canvas's address, and no menu item marked, with `/` marking the bundled Home item as the control
+  — and the fixture post's own path is in no navigation item, so no snapshot moved (`check-snapshots` PASS, unchanged).
 severity: low
 origin: Story 5.16's Create (2026-09-22), read in Ghost's source on both majors and in the recorded rows
   (MEASUREMENTS §48 (c)): Ghost sets `nav-current` on an exact `relativeUrl` match only, and T3's recording draws

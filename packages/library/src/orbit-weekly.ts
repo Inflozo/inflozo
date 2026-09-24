@@ -123,9 +123,32 @@ export const deepPagination = (): { page: number; pages: number; limit: number; 
 /** The four kinds `project_template_prefs.preview_subject` records. */
 export type SubjectKind = 'post' | 'page' | 'tag' | 'author'
 
+/** Story 5.18 — WHICH SOURCE a subject was chosen from: the bundled publication (`sample`) or the connected site
+ *  (`site`). A subject stored before that story carries no mark and is the sample's. */
+export type SourceName = 'sample' | 'site'
+
 /** The stored column's own shape (`{kind, id, slug}`) minus the `id` nothing needs offline: a slug identifies a row
- *  in the bundled publication and in Ghost's Content API alike, and an id would only be a second name to keep true. */
-export type Subject = { kind: SubjectKind; slug: string }
+ *  in the bundled publication and in Ghost's Content API alike, and an id would only be a second name to keep true.
+ *  Story 5.18: `source: 'site'` marks one chosen over the connected site (the column is `jsonb`, so no migration);
+ *  an unmarked subject is the sample's, as every row written before that story is. */
+export type Subject = { kind: SubjectKind; slug: string; source?: 'site' }
+
+/**
+ * STORY 5.18 — WHERE A SUBJECT, AND A LIST'S PAGES, ARE ANSWERED FROM. The bundled publication is `BUNDLED`, and it is
+ * the DEFAULT of every function that takes one, so a call that names none is exactly the call it was before that
+ * story (the control). The connected site's is built in `apps/web` from the rows the browser read (AD-10), because a
+ * core package fetches nothing (AD-1).
+ */
+export type ContentSource = {
+  /** the mark a subject chosen over this source carries */
+  name: SourceName
+  /** the subject a file starts on when nobody has chosen one, or null where the file renders no single resource */
+  starting: (file: string) => Subject | null
+  /** does a row this subject names exist in this source */
+  has: (subject: Subject) => boolean
+  /** how many pages the list `target` renders runs to — 1 where the target does not paginate */
+  pages: (target: string, of?: Subject | null) => number
+}
 
 /** The preview subjects (FR-D22). `post` and `page` are HIDDEN ROWS — never in `posts`, so no feed, Source or count
  *  can reach them — while `tag` and `author` are SLUGS of rows that already exist, because an archive's posts come
@@ -183,6 +206,17 @@ const subjectRow = (kind: 'tag' | 'author', slug: string): TagRow | AuthorRow =>
   return kind === 'tag' ? tagRow(use, dataset.posts) : authorRow(use, dataset.posts)
 }
 
+/** The bundled publication as a `ContentSource` — every function that takes one defaults to it. */
+export const BUNDLED: ContentSource = {
+  name: 'sample',
+  starting: (file) => fixtureSubject(file),
+  has: (subject) => subjectExists(subject),
+  pages: (target, of) => {
+    const list = listOf(target, of)
+    return list === null ? 1 : paginationOver(list.rows.length, 1, list.of).pages
+  },
+}
+
 /**
  * WHICH SUBJECT IS THIS CANVAS ACTUALLY RENDERING, AND DID THE STORED ONE SURVIVE (FR-D22).
  *
@@ -194,11 +228,17 @@ const subjectRow = (kind: 'tag' | 'author', slug: string): TagRow | AuthorRow =>
  * A stored subject of the wrong KIND for this file, or naming a slug no row holds, falls back to the fixture with
  * `fellBack: true`. It is never emptied and the stored value is never deleted by the fallback — a resource that
  * comes back brings the choice back with it.
+ *
+ * STORY 5.18 — `source` is where the rows are answered from, the bundled publication by default. A subject belongs to
+ * the source it was chosen from: one stored with the OTHER source's mark renders this source's own starting subject
+ * SILENTLY (`fellBack: false`) and is kept for when its source returns — "no longer there" is said only where the
+ * subject's own source answered and does not hold it (FR-D22).
  */
-export function resolveSubject(file: string, stored?: Subject | null): { subject: Subject | null; fellBack: boolean } {
-  const fixture = fixtureSubject(file)
+export function resolveSubject(file: string, stored?: Subject | null, source: ContentSource = BUNDLED): { subject: Subject | null; fellBack: boolean } {
+  const fixture = source.starting(file)
   if (fixture === null || stored === undefined || stored === null) return { subject: fixture, fellBack: false }
-  if (stored.kind !== fixture.kind || typeof stored.slug !== 'string' || !subjectExists(stored)) {
+  if ((stored.source ?? 'sample') !== source.name) return { subject: fixture, fellBack: false }
+  if (stored.kind !== fixture.kind || typeof stored.slug !== 'string' || !source.has(stored)) {
     return { subject: fixture, fellBack: true }
   }
   return { subject: stored, fellBack: false }
@@ -247,10 +287,56 @@ function listOf(target: string, of?: Subject | null): {
 
 /** HOW MANY PAGES the list `target` renders has — the one question the editor asks before it offers page 2 (R-176:
  *  where Ghost serves no page 2 there is no page 2 to offer). 1 on a target that does not paginate. Derived from the
- *  same rows `templateContext` renders, never a count kept beside them. */
-export function feedPages(target: string, of?: Subject | null): number {
-  const list = listOf(target, of)
-  return list === null ? 1 : paginationOver(list.rows.length, 1, list.of).pages
+ *  same rows `templateContext` renders, never a count kept beside them. Story 5.18: asked of the source in force —
+ *  the bundled publication by default, the connected site's own count when that is what the canvas renders. */
+export function feedPages(target: string, of?: Subject | null, source: ContentSource = BUNDLED): number {
+  return source.pages(target, of)
+}
+
+/** A list page's pagination, in the shape `paginationContext()` reads. */
+export type Pagination = { page: number; pages: number; limit: number; total: number }
+
+/** STORY 5.18 — THE PIECES A TEMPLATE HANDS A SECTION, from whichever source answered them: `@site` (the dataset's own
+ *  `site`, or the connected site's settings through the editor's whitelist, whose keys are the same), `@config`'s page
+ *  size, the post or page `post.hbs` and `page.hbs` open, and a list template's page. */
+export type Pieces = {
+  site: Json
+  postsPerPage: number
+  /** the post or page, spread FLAT — §3a's wrapper is the shim's, not this context's */
+  entry?: Json
+  /** a list page's own rows and pagination, the address it is based on, and an archive's taxonomy row */
+  list?: { rows: readonly Json[]; pagination: Pagination; base: string; taxonomy?: { kind: 'tag' | 'author'; row: Json } }
+}
+
+/** DW-230 — the 404's own address: Ghost renders `error.hbs` at the path that missed, which no menu item names, so the
+ *  canvas hands the header one that matches no link rather than `/` (which marked Home as the page you are on). */
+export const MISSED_ADDRESS = '/404/'
+
+/** An absolute URL's path — the relative address Ghost matches a menu item against (`utils.js:61`). */
+const addressFrom = (url: unknown): string =>
+  typeof url === 'string' ? url.replace(/^[a-z][a-z0-9+.-]*:\/\/[^/?#]*/i, '').replace(/[?#].*$/, '') || '/' : '/'
+
+/**
+ * STORY 5.18 — THE ONE ASSEMBLY. `templateContext` hands it the bundled publication and the editor hands it the
+ * connected site's rows, so the two can never drift: `@site` and `@config` everywhere; the post or page spread flat on
+ * `post.hbs` and `page.hbs`; a list's taxonomy, `posts` and `pagination` flat beside it (§3); and THE PAGE'S OWN
+ * ADDRESS — a list page's (`addressOf`, DW-218), a post's or page's own URL, and the 404's missed path (DW-230) —
+ * which is what `{{navigation}}` marks the current item against.
+ */
+export function assemble(target: string, p: Pieces): {
+  ghost: Record<string, unknown>
+  site: { url: string; navigation: Json[]; pagination?: Json; paginationBase?: string; currentUrl: string }
+} {
+  const ghost: Record<string, unknown> = { '@site': p.site, '@config': { posts_per_page: p.postsPerPage } }
+  const address = p.entry !== undefined ? addressFrom(p.entry['url']) : target === 'error.hbs' ? MISSED_ADDRESS : '/'
+  const base = { url: p.site['url'] as string, navigation: p.site['navigation'] as Json[], currentUrl: address }
+  if (p.entry !== undefined) return { ghost: { ...ghost, ...p.entry }, site: base }
+  if (p.list === undefined) return { ghost, site: base }
+  const { rows, pagination, base: at, taxonomy } = p.list
+  return {
+    ghost: { ...ghost, ...(taxonomy === undefined ? {} : { [taxonomy.kind]: taxonomy.row }), posts: rows, pagination },
+    site: { ...base, pagination, paginationBase: at, currentUrl: addressOf(pagination.page, at) },
+  }
 }
 
 /** Orbit Weekly as a template hands it to a section on `target`, in `RenderInput`'s shape: `ghost` is the render
@@ -272,38 +358,32 @@ export function feedPages(target: string, of?: Subject | null): number {
  *  one page, because past the last page Ghost answers 404 (`routing/controllers/channel.js:55-60`, R-176): the caller
  *  asks `feedPages` first. AND THE PAGE KNOWS ITS ADDRESS (DW-218): `currentUrl` is Ghost's own on every page of a
  *  list — `/`, `/page/2/`, `/tag/<slug>/`, `/tag/<slug>/page/2/` — and an archive's pager is based on the archive,
- *  never on `/`. Every other target keeps `/`: Post, Page and 404 are a later story's (a DW). */
-export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null): {
-  ghost: Record<string, unknown>
-  site: { url: string; navigation: Json[]; pagination?: Json; paginationBase?: string; currentUrl: string }
-} {
-  const at = dataset.site
-  const ghost: Record<string, unknown> = { '@site': at, '@config': { posts_per_page: postsPerPage() } }
-  const base = { url: at.url, navigation: at.navigation as Json[], currentUrl: '/' }
+ *  never on `/`. Since Story 5.18 (DW-230) Post and Page carry their subject's own address and the 404 one no link
+ *  matches; every other target keeps `/`.
+ *
+ *  STORY 5.18 — the pieces are assembled by `assemble`, the one function the connected site's rows go through too. */
+export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null): ReturnType<typeof assemble> {
+  const pieces: Pieces = { site: dataset.site, postsPerPage: postsPerPage() }
   if (target === 'post.hbs' || target === 'page.hbs') {
     const kind = target === 'post.hbs' ? 'post' : 'page'
     // THE DEFAULT IS TODAY'S RENDER, BYTE FOR BYTE (the story's control): no subject passed is the hard-coded
     // fixture `/pilots`, `check-snapshots` and the render matrix have always drawn.
     const row = of === undefined || of === null || of.kind !== kind ? subject(kind) : postOf(kind, of.slug)
-    return { ghost: { ...ghost, ...row }, site: base }
+    return assemble(target, { ...pieces, entry: row })
   }
   // AN ARCHIVE RENDERS ITS OWN POSTS (§3: the taxonomy object at the root, `posts` and `pagination` flat beside it).
   // Until Story 5.13 `tag.hbs` and `author.hbs` were handed the WHOLE bundled feed — the same rows `home.hbs` gets —
   // so the canvas drew a page Ghost would never serve. FR-D22's subject IS the filter, which is why the fix arrives
   // with it and not as an extra. `listOf` is that filter, and `feedPages` reads the same one.
   const list = listOf(target, of)
-  if (list === null) return { ghost, site: base }
+  if (list === null) return assemble(target, pieces)
   const pages = paginationOver(list.rows.length, 1, list.of).pages
   const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : feed === 'second' ? 2 : 1
   const pagination = feed === 'empty'
     ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 }
     : paginationOver(list.rows.length, n, list.of)
   const rows = feed === 'empty' ? [] : list.rows.slice((n - 1) * pagination.limit, n * pagination.limit)
-  const taxonomy = list.taxonomy === undefined ? {} : { [list.taxonomy.kind]: list.taxonomy.row }
-  return {
-    ghost: { ...ghost, ...taxonomy, posts: rows, pagination },
-    site: { ...base, pagination, paginationBase: list.base, currentUrl: addressOf(pagination.page, list.base) },
-  }
+  return assemble(target, { ...pieces, list: { rows, pagination, base: list.base, taxonomy: list.taxonomy } })
 }
 
 // ─── resolveSource ────────────────────────────────────────────────────────────

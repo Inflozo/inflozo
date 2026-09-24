@@ -7,7 +7,7 @@ import { SectionPreview } from '@/components/editor/section-preview'
 import { gridKeys } from '@/components/controls/icon-picker'
 import { ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight } from '@/components/kit/icons'
-import type { DesignRows } from '@/lib/canvas'
+import type { DesignRows, RenderContext } from '@/lib/canvas'
 import { NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, position, strip } from '@/lib/ring'
 import type { Visitor } from '@/lib/view-as'
 
@@ -56,12 +56,16 @@ import type { Visitor } from '@/lib/view-as'
 const TILE_WIDTH = 64
 const TILE_HEIGHT = 44
 
+/** Story 5.18 — the canvas's own content for a tile, one source per tile (`SectionPreview`'s `live`). */
+type Live = (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
+
 /** One tile's picture: the design's own render, under a transparent press. */
 function Tile({
-  entry, target, rows, pool, icons, mode, src, assets, subject, member, className = '', style,
+  entry, target, rows, pool, icons, mode, src, assets, subject, member, live, className = '', style,
 }: {
   subject?: orbitWeekly.Subject | null
   member?: Visitor
+  live?: Live
   entry: SectionRegistryEntry
   target: string
   rows: DesignRows | undefined
@@ -86,6 +90,7 @@ function Tile({
         assets={assets}
         subject={subject}
         member={member}
+        live={live}
         onAspect={() => {}}
       />
     </span>
@@ -104,6 +109,7 @@ export function DesignPicker({
   assets,
   subject,
   member,
+  live,
   onDesign,
   onStep,
 }: {
@@ -113,6 +119,8 @@ export function DesignPicker({
   /** Story 5.14 — the visitor View as is previewing, so a tile draws its design as that visitor sees it; omitted on
    *  `/controls`, which has no View as, and then the preview's own default (the logged out user) */
   member?: Visitor
+  /** Story 5.18 — the canvas's own content, where it is the site's; omitted on `/controls`, which has no site */
+  live?: Live
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
   /** where in the ring this section is */
@@ -146,7 +154,7 @@ export function DesignPicker({
     </button>
   )
 
-  const preview = { target, pool, icons, mode, src, assets, subject, member }
+  const preview = { target, pool, icons, mode, src, assets, subject, member, live }
 
   return (
     <section

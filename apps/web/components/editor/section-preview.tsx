@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import { defaultContent, type Mode } from '@inflozo/section-runtime'
 import { Skeleton } from '@/components/kit/loading'
-import { canvasAssets, mountSections, previewSrc, renderSection, type DesignRows } from '@/lib/canvas'
+import { canvasAssets, mountSections, previewSrc, renderSection, type DesignRows, type RenderContext } from '@/lib/canvas'
 import { DESKTOP } from '@/lib/device'
 import type { Visitor } from '@/lib/view-as'
 
@@ -50,6 +50,7 @@ export function SectionPreview({
   assets,
   subject,
   member = 'anonymous',
+  live,
   onAspect,
 }: {
   entry: SectionRegistryEntry
@@ -74,6 +75,10 @@ export function SectionPreview({
    *  does (FR-D16), through `renderSection`'s one `member` door. Omitted on `/controls`, which has no View as, and
    *  then Story 4.10's own default — the logged out user — exactly as before. */
   member?: Visitor
+  /** Story 5.18 — THE CANVAS'S CONTENT, where it is the connected site's (FR-H4 names the picker's previews as a
+   *  consumer of the same reads): this card's context and rows, or null where a read it needs is not in hand — and
+   *  then the card draws the sample, WHOLE, one source per card. Omitted where the canvas shows sample content. */
+  live?: (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
   /** the section's drawn aspect (its height at Desktop width), once it has been drawn — the card's span reads it */
   onAspect: (aspect: number) => void
 }) {
@@ -130,6 +135,7 @@ export function SectionPreview({
       // THE INSTANCE A PLACEMENT WOULD REALLY CREATE — the design's own words, no stored controls, `previewSeed`'s
       // dataset behind every binding (`rows`). Nothing about the preview is a second idea of what a new section is.
       const state = { content: defaultContent(entry.contentSchema), controls: {}, data: {}, darkOverrides: {} }
+      const own = live?.(entry, target) ?? undefined
       mountSections(mount, renderSection(doc, entry, state, {
         target,
         rows,
@@ -139,6 +145,7 @@ export function SectionPreview({
         assets: assets ?? canvasAssets(pool),
         icons,
         subject,
+        live: own,
       }))
       // A CLOSED PICKER MEASURES 0 (it is kept mounted, `display:none`): a mode flip from the top bar repaints here
       // with nothing laid out, and a 0 read as CEILING re-shaped every drawn card as a two-row tile (review,
@@ -158,7 +165,8 @@ export function SectionPreview({
   // — and so does a canvas change: the card is keyed by design and kept, so its target and rows can change under it
   // — and so does a new preview subject, by its VALUE: `resolveSubject` hands back a fresh object every render
   // — and so does a new visitor (Story 5.14): the paint reads it, so it is here, which is Story 5.13's review's rule
-  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug, member])
+  // — and so does the canvas's content (Story 5.18): a new `live` is a source switched or a card's rows arriving
+  useEffect(paint, [near, mode, icons, target, rows, entry, subject?.kind, subject?.slug, member, live])
 
   const fit = wide > 0 ? wide / DESKTOP.width : 0
   const drawn = tall > 0 && fit > 0

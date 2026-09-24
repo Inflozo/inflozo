@@ -8,7 +8,7 @@ import { categoryOf, orbitWeekly, ringFor, type IconLookup, type SectionRegistry
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, duplicateSection, getPath, insertSection, isDesigned,
   moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
-  stampControls, storedFor, switchDesign,
+  stampControls, storedFor, switchDesign, withData,
 } from '@inflozo/section-runtime'
 import type { ControlState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
@@ -35,11 +35,12 @@ import { ProBadge } from '@/components/kit/badge'
 import { AddButton, Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
+import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronLeft, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
-import { canvasAssets, canvasSrc, renderSection, shownRows, wheelToFrame } from '@/lib/canvas'
+import { canvasAssets, canvasSrc, renderSection, shownRows, sitePage, wheelToFrame, type DesignRows, type RenderContext, type SitePage } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPageTwoKey, canvasOfPath, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
@@ -67,7 +68,12 @@ import {
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
-import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, subjectOptions } from '@/lib/preview-subject'
+import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, siteSubjects, subjectOptions } from '@/lib/preview-subject'
+import {
+  bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, reader, retriable, SETTINGS, siteLinks, siteTotal,
+  type Cause, type LiveQuery,
+} from '@/lib/live-content'
+import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
 import { setPreviewSubject, setViewedStates } from './actions'
@@ -219,12 +225,25 @@ import type { EditorData } from './read'
    mount draws its JavaScript branch as `/pilots` does). A link still never navigates the canvas and a form never
    submits (AD-21's traps); every other press reaches the page, and only `P`, `Esc`, `1` `2` `3` and `⌘S` act.
 
+   LIVE CONTENT FROM THE CONNECTED SITE (Story 5.18 — B9's connected state, D5e's SOURCE group, FR-H4, AD-10). On a
+   project linked to a readable site THE BROWSER READS THE SITE'S CONTENT API ITSELF, through ONE store per session
+   (`lib/live-client.ts`: a 60 s cache, one request per key shared by the canvas, the picker's cards, the ring's tiles,
+   D5e and the Link Picker, a ceiling, and a failure policy that never retries a refusal, because Ghost counts every
+   failure against the customer's own network). Reads are triggered by what the customer does — opening the editor, a
+   canvas, a subject, page 2, a source, a picker — through `request()`, which paints ONCE when they land; a paint never
+   reads, and an edit's repaint reads nothing. What the site answers goes through the library's own `resolveSubject`
+   and `assemble` (`lib/canvas.ts`'s `sitePage`), so a render given no live content is today's render byte for byte,
+   and A RENDER IS ONE SOURCE THROUGHOUT: a page whose reads are not all in hand is sample content from end to end. The
+   source is a VIEW like View as and the device — session state, never stored, never an edit, live for a reader — and
+   the pill says what the LAST PAINT used (R-165), with the cause in words. The body is never read (`formats=mobiledoc`,
+   MEASUREMENTS §51), and the key never reaches the render context, the markup or a log.
+
    ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet) and
    the Style Pack card (6.3) (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
    VISITOR's `mode-toggle` and a different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before
    Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's
-   docked bar at 390 (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10), live link search over a
-   linked site (5.18) and P0-2's filled-slot popover. S4a's posts-per-page note, S4c's pinned Quick Controls card
+   docked bar at 390 (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10) and P0-2's filled-slot
+   popover. S4a's posts-per-page note, S4c's pinned Quick Controls card
    (FR-Q1, R-113) and a "preview in a new tab" (B3's notes: the deploy preview URL's job) are never built. */
 
 // `EMPTY_DOC`, the template count and AD-22's round trip are `lib/round-trip.ts`'s, where `node --test` reaches them.
@@ -339,6 +358,7 @@ export function Editor({
   userId,
   autosave,
   lock: heldOnServer,
+  site,
   canvasSrc: canvasPath,
 }: EditorData & {
   project: { id: string; name: string }
@@ -418,17 +438,82 @@ export function Editor({
   const [subjectRefusal, setSubjectRefusal] = useState<string | null>(null)
   const [, startSubject] = useTransition()
   const subjectTurn = useRef(0)
-  /** the bundled publication, the source until Story 5.18 reads the connected site (R-165) */
-  const source = useMemo(bundledSource, [])
-  const previewing = orbitWeekly.resolveSubject(canvas.file, subjects[templateKeyOf(key)])
+  /** the bundled publication — the sample content (R-165) */
+  const bundled = useMemo(bundledSource, [])
+  /** the subject stored for this canvas, whichever source it was chosen from (Story 5.18) */
+  const storedSubject = subjects[templateKeyOf(key)] ?? null
+
+  /* ─── Story 5.18 — LIVE CONTENT FROM THE CONNECTED SITE (FR-H4, AD-10, FR-D15, B9, D5e) ─────────────────────────
+   *
+   * `site` is SERVER TRUTH (`read.ts`): readable, unreadable with its reason, or null where no site is linked — and an
+   * unlinked project reads NOTHING, which is the story's control. ONE STORE PER SESSION holds every read (`liveStore`),
+   * made on the first read the customer asks for, in the browser.
+   *
+   * THE SOURCE IS A VIEW (`EXPERIENCE.md:230`), beside View as and the device: session state, never stored, never an
+   * edit — nothing reaches `commit()`, the journal or `⌘Z` — and live in a session reading along (R-192). It starts on
+   * the site wherever the site can be read (FR-C4: connecting "switches the canvas to live content").
+   *
+   * `painted` IS WHAT THE LAST PAINT USED, and the pill, D5e, the Link Picker, the panel's note and page 2's offer all
+   * read it — the pill describes the canvas and never the paperwork (R-165). `site` there is the site's page, or null
+   * where the canvas shows sample content; `cause` is why, where the site was chosen and did not answer. */
+  const readable = site !== null && 'key' in site
+  const reads = useRef<LiveStore | null>(null)
+  const readsOf = (): LiveStore | null => {
+    if (site === null || !('key' in site)) return null
+    reads.current ??= liveStore(site.origin, site.key)
+    return reads.current
+  }
+  const [source, setSource] = useState<'site' | 'sample'>(readable ? 'site' : 'sample')
+  type Shown = { source: 'site' | 'sample'; cause: Cause | null; nothing: 'tag' | 'author' | null }
+  const [painted, setPainted] = useState<{ shown: Shown; site: SitePage | null; key: CanvasKey | null }>({
+    shown: { source: readable ? 'site' : 'sample', cause: null, nothing: null },
+    site: null,
+    key: null,
+  })
+  /** a read the customer asked for has landed: every surface that reads the rows in hand derives again */
+  const [liveTick, setLiveTick] = useState(0)
+  /** R-98: the row a read is in flight for — `'site'` for the SOURCE row, or a subject's slug — until its paint lands */
+  const [busy, setBusy] = useState<string | null>(null)
+  /** the newest read the customer asked for: an older one landing late never paints over it */
+  const readTurn = useRef(0)
+  /** a read the customer asked for is in flight, and it paints when it lands — every other paint waits for it */
+  const pending = useRef(false)
+  /** the canvas and page the last paint drew, and whether the canvas is blank for another page's reads (`blank`) */
+  const paintedAt = useRef<{ key: CanvasKey; page: Page } | null>(null)
+  const [blanked, setBlanked] = useState(false)
+  /** the named causes already said aloud, once each (FR-H4's named tier); choosing the site again forgets them */
+  const announcedCauses = useRef(new Set<Cause>())
+  /** R-170: the site's ONE name — the title its `/settings/` reports once answered, `sites.title` until then (or its
+   *  host), and the same name in the pill, the SOURCE row and every sentence */
+  const siteNameOf = () => {
+    const title = reads.current?.peek(SETTINGS)?.rows[0]?.['title']
+    return typeof title === 'string' && title.trim() !== '' ? title.trim() : (site?.title ?? '')
+  }
+  const siteName = siteNameOf()
+  /** `painted.shown` as the handlers see it, in the same task the paint set it — before React has re-rendered */
+  const paintedRef = useRef<Shown>(painted.shown)
+
+  /** the subject the canvas renders: the site's where the last paint was the site's, else the sample's own resolution */
+  const previewing = painted.site ?? orbitWeekly.resolveSubject(canvas.file, storedSubject)
+  /** the source the list's pages are counted in — the site's page 1 where it shows, else the bundled publication */
+  const contentSource = painted.site?.source
   /** Story 5.16 — does this canvas have a page 2 at all (R-176): a main feed on page 1 whose list runs past one page */
-  const offered = offersPageTwo(key, docs, previewing.subject)
+  const offered = offersPageTwo(key, docs, previewing.subject, contentSource)
   /** …and the section whose panel carries D5d's row: page 1's main feed, or on page 2 its copy */
   const feedHere = offered ? mainFeedOn(docs, key, page, library) : null
   const subjectRows = useMemo(
-    () => (previewing.subject === null ? [] : subjectOptions(source, previewing.subject.kind)),
-    [source, previewing.subject?.kind],
+    () =>
+      previewing.subject === null ? []
+      : subjectOptions(painted.site !== null && reads.current !== null ? siteSubjects(reads.current.peek, painted.site.zone) : bundled, previewing.subject.kind),
+    [bundled, painted, previewing.subject?.kind],
   )
+  /** the Link Picker's rows in hand — the site's own pages, posts, tags and writers where they show (DW-248's cap) */
+  const linksNow = useMemo(
+    () => (painted.site !== null && reads.current !== null ? siteLinks(reader(reads.current.peek), painted.site.zone) : links),
+    [painted, links, liveTick],
+  )
+  /** the time zone the panel names under a date: the source's own */
+  const zoneNow = painted.site?.zone ?? timezone
   /* ─── Story 5.14 — FR-D16's "LOOKED AT" RECORD, and the nudge that names what I have not looked at ──────────────
    *
    * PER CANVAS, keyed by `template_key` as `subjects` is, and stored in `project_template_prefs.member_states_viewed` —
@@ -634,8 +719,10 @@ export function Editor({
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock }
+  // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
+  // with) and the source the last paint counted pages in
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource }
   /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
    *  every change of page, so a section asks again the next time page 2 is shown. */
   const asked = useRef(new Set<string>())
@@ -805,7 +892,7 @@ export function Editor({
     // STORY 5.16 — AN UNDO CAN TAKE PAGE 2 AWAY WHILE IT IS SHOWN: the journal is one list for the whole project, so ⌘Z
     // on page 2 can reach back into page 1 and remove its main feed. The canvas goes to page 1 BEFORE the paint and says
     // why — never a paint of a page that does not exist.
-    const force = pageInForce(now.page, now.key, next.docs, now.subject)
+    const force = pageInForce(now.page, now.key, next.docs, now.subject, now.contentSource)
     if (force.page !== now.page) {
       switchPage(force.page)
       setSaid(leftBecause(force.reason ?? ''))
@@ -1347,6 +1434,174 @@ export function Editor({
     setSaid(deviceShown(next))
   }
 
+  /* ─── Story 5.18 — THE READS THE CUSTOMER ASKS FOR, and the ONE paint each one lands in ────────────────────────── */
+
+  /** Every Content API read a surface beyond the canvas stands on — `@site`, and the lists in hand D5e, the Link
+   *  Picker and R-193's starting archive read — asked for at every press so a stale one revalidates in the background. */
+  const SURFACES: readonly LiveQuery[] = [SETTINGS, LISTS.post, LISTS.page, LISTS.tag, LISTS.author]
+
+  /** THE PAGE `now` DESCRIBES, AS THE SITE ANSWERS IT — `sitePage` over the rows in hand: every target a section of it
+   *  renders at and every design it draws, so one walk says what it still needs or, missing nothing, what it is. */
+  const siteOf = (now: typeof latest.current) => {
+    const s = readsOf()
+    if (s === null) return null
+    const pageFile = pageFileOf(now.key, now.page)
+    const designs = [...new Set(now.stack.map((i) => i.designId))].flatMap((id) => (entries[id] === undefined ? [] : [entries[id]]))
+    return sitePage(s.peek, {
+      file: CANVASES[now.key].file,
+      stored: now.stored,
+      page: now.page,
+      pageFile,
+      targets: [...new Set([pageFile, ...now.stack.map((i) => i.target)])],
+      designs,
+    })
+  }
+
+  /** the canvas taken off while another page's reads are in flight: its roots are index-aligned with the stack it was
+   *  painted from, which is no longer the stack in force, so nothing on it may be pointed at or pressed */
+  const blank = () => {
+    const mount = frame.current?.contentDocument?.getElementById('canvas')
+    behaviours.current?.stop()
+    behaviours.current = null
+    if (mount) mount.innerHTML = ''
+    roots.current = []
+    stamps.current = new Map()
+    paintedAt.current = null
+    latest.current.hovered = null
+    setHovered(null)
+    setBlanked(true)
+  }
+
+  /** the SOURCE menu, closed once the paint its choice was waiting for has landed (R-98) */
+  const closeSourceMenu = () => {
+    const menu = document.getElementById('editor-source-menu')
+    if (menu?.matches(':popover-open')) menu.hidePopover()
+  }
+
+  /**
+   * A READ THE CUSTOMER ASKED FOR — opening the editor, a canvas, a subject, page 2, a source (never a paint, and never
+   * an edit): the reads the page on screen needs, then ONE paint when they land. With the sample chosen, or every read
+   * already in memory, it paints at once — in this same task — and answers true; otherwise it answers false, `row`
+   * says it is loading (R-98) and every other paint waits for this one. A read that does not answer is not asked for
+   * again by the same press: the page is then sample content throughout, and the pill says why. `then` runs after the
+   * paint, with the reason the canvas had to go back to page 1 where a list turned out to fit one page (R-176).
+   */
+  const request = (row: string | null = null, then?: (reason: string | null) => void): boolean => {
+    const s = readsOf()
+    const turn = ++readTurn.current
+    const land = () => {
+      if (turn !== readTurn.current) return
+      pending.current = false
+      if (s !== null) {
+        setBusy(null)
+        setLiveTick((n) => n + 1)
+      }
+      // THE PAGE IN FORCE for what is about to paint: a source or a subject whose list fits one page has no page 2
+      const now = latest.current
+      const view = now.source === 'site' ? siteOf(now) : null
+      const ready = view !== null && 'ready' in view && reads.current?.reading().stopped === null ? view.ready : null
+      const subject = ready?.subject ?? orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
+      const force = pageInForce(now.page, now.key, now.docs, subject, ready?.source)
+      if (force.page !== now.page) switchPage(force.page)
+      paint()
+      then?.(force.page !== now.page ? force.reason : null)
+    }
+    if (s === null || latest.current.source !== 'site' || s.reading().stopped !== null) {
+      land()
+      return true
+    }
+    let waited = false
+    void (async () => {
+      const tried = new Set<string>()
+      for (let first = true; ; first = false) {
+        const view = siteOf(latest.current)
+        const need = view !== null && 'need' in view ? view.need : []
+        // a read this press already asked for did not answer: this page is sample content throughout
+        if (need.some((q) => tried.has(liveKey(q)))) break
+        const wanted = first ? [...need, ...SURFACES] : need
+        const missing = s.missing(wanted)
+        if (missing.length === 0) {
+          // every read in memory: a stale one is shown at once and revalidated once in the background, never painted
+          void s.ensure(wanted)
+          break
+        }
+        for (const q of missing) tried.add(liveKey(q))
+        waited = true
+        pending.current = true
+        if (row !== null) setBusy(row)
+        // a NEW PAGE — another canvas, or page 2 — is not drawn until its reads land: the old one's sections are taken
+        // off rather than left under a stack that no longer matches them, and the card shows the skeleton meanwhile
+        if (paintedAt.current !== null && (paintedAt.current.key !== latest.current.key || paintedAt.current.page !== latest.current.page)) blank()
+        await s.ensure(wanted)
+        if (turn !== readTurn.current) return
+        if (s.reading().stopped !== null) break
+      }
+      land()
+    })()
+    return !waited
+  }
+
+  /** THE PICKER'S CARDS AND THE RING'S TILES read their designs' `{{#get}}` rows as they open — the same store, so a key
+   *  the canvas already holds costs nothing — and repaint when those rows land (FR-H4 names the picker's previews). */
+  const requestDesigns = (designs: readonly SectionRegistryEntry[]) => {
+    const s = readsOf()
+    if (s === null || latest.current.source !== 'site' || s.reading().stopped !== null) return
+    const wanted = designs.flatMap((e) =>
+      Object.values(e.dataBindings ?? {}).flatMap((b) => {
+        const r = bindingReads(b)
+        return [r.newest, r.oldest].filter((q): q is LiveQuery => q !== null)
+      }),
+    )
+    if (s.missing(wanted).length === 0) {
+      void s.ensure(wanted)
+      return
+    }
+    void s.ensure(wanted).then(() => setLiveTick((n) => n + 1))
+  }
+
+  /** A CARD'S OR A TILE'S CONTENT, ONE SOURCE PER CARD: the site's where every read it needs is in hand and the canvas
+   *  shows the site, else nothing — and the card draws the sample, whole. */
+  // keyed on WHETHER the site shows, never on the paint itself: every edit paints, and a card that repainted with it
+  // would redraw the whole picker on every keystroke
+  const siteShown = painted.site !== null
+  const cardLive = useMemo(() => {
+    const s = reads.current
+    if (!siteShown || s === null) return undefined
+    return (entry: SectionRegistryEntry, target: string): { context: RenderContext; rows: DesignRows | undefined } | null => {
+      const view = sitePage(s.peek, { file: canvas.file, stored: storedSubject, page: 1, pageFile: canvas.file, targets: [target], designs: [entry] })
+      return 'ready' in view && s.reading().stopped === null ? { context: view.ready.contexts[target] as RenderContext, rows: view.ready.rows[entry.id] } : null
+    }
+  }, [siteShown, liveTick, canvas.file, storedSubject])
+
+  /** STORY 5.18's PRESS — A SOURCE, from the pill's SOURCE group or R-194's note in the panel: ONE action, two doors.
+   *  A VIEW, never an edit: nothing is stored, journalled or undoable, and a session reading along can still switch
+   *  it (R-192). Sample content repaints at once from the bundled data. Choosing the site is the ONE "try again" —
+   *  never after a refused key or the ceiling, where the row is greyed — and its row says it is loading until the
+   *  paint lands (R-98). Answers true where the paint has already landed. */
+  const chooseSource = (next: 'site' | 'sample'): boolean => {
+    if (next === 'sample') {
+      latest.current = { ...latest.current, source: 'sample' }
+      setSource('sample')
+      return request(null, (reason) => {
+        closeSourceMenu()
+        setSaid(reason === null ? LIVE_WORDS.showingSample : `${LIVE_WORDS.showingSample} ${leftBecause(reason)}`)
+      })
+    }
+    const s = readsOf()
+    if (s === null || !retriable(s.reading().stopped)) return true
+    s.retry()
+    announcedCauses.current.clear()
+    latest.current = { ...latest.current, source: 'site' }
+    setSource('site')
+    return request('site', (reason) => {
+      closeSourceMenu()
+      const shown = paintedRef.current
+      const name = siteNameOf()
+      // one failure is silent (FR-H4's split), and a named cause has already been said by the paint that showed it
+      if (shown.source === 'site') setSaid(reason === null ? LIVE_WORDS.showing(name) : `${LIVE_WORDS.showing(name)} ${leftBecause(reason)}`)
+    })
+  }
+
   /** STORY 5.13's PRESS — FR-D22's stated choice, and it is deliberately NOT an edit.
    *
    * THE CANVAS REPAINTS FIRST and the write follows in a transition, which is why this is not a form submit: the
@@ -1356,19 +1611,28 @@ export function Editor({
    *
    * It never reaches `commit()`, so the doc, 5.8's journal, `⌘Z` and D5a's untouched marker are all untouched
    * (FR-D11: "set-and-forget context, not a per-edit action"; AD-15). And no key presses it (R-145 gains no row).
+   *
+   * STORY 5.18 — A SUBJECT CHOSEN OVER THE SITE carries the site's mark, so it is only ever "gone" from its own source,
+   * and a subject whose content must be read says so on its row until its paint lands (R-98). Answers true where the
+   * paint has already landed, so the menu closes at once as it always did.
    */
-  const chooseSubject = (next: orbitWeekly.Subject) => {
+  const chooseSubject = (picked: orbitWeekly.Subject): boolean => {
     const stored = templateKeyOf(latest.current.key)
+    const next: orbitWeekly.Subject = painted.site !== null ? { kind: picked.kind, slug: picked.slug, source: 'site' } : { kind: picked.kind, slug: picked.slug }
     setSubjects((was) => ({ ...was, [stored]: next }))
     setSubjectRefusal(null)
     // `latest`, not the state: `paint()` reads through it in this same task, before React has re-rendered
-    latest.current = { ...latest.current, subject: next }
-    // STORY 5.16 — a subject whose archive fits one page has no page 2 (R-176): the canvas goes to page 1 BEFORE the
-    // paint, and the sentence says why
-    const force = pageInForce(latest.current.page, latest.current.key, latest.current.docs, next)
-    if (force.page !== latest.current.page) switchPage(force.page)
-    paint()
-    setSaid(force.reason === null ? SUBJECT_SAID(next, subjectRows) : `${SUBJECT_SAID(next, subjectRows)} ${leftBecause(force.reason)}`)
+    latest.current = { ...latest.current, subject: next, stored: next }
+    // STORY 5.16 — a subject whose archive fits one page has no page 2 (R-176): `request` puts the canvas on page 1
+    // BEFORE the paint, and the sentence says why
+    const done = request(next.slug, (reason) => {
+      closeSourceMenu()
+      // Story 5.18: a subject chosen over the site whose read did not answer is NOT what the canvas shows — the sample's
+      // own starting subject is, silently (FR-H4's one-failure tier; a named cause the paint has said already) — so it
+      // is never announced as if it were
+      if (next.source === 'site' && paintedRef.current.source !== 'site') return
+      setSaid(reason === null ? SUBJECT_SAID(next, subjectRows) : `${SUBJECT_SAID(next, subjectRows)} ${leftBecause(reason)}`)
+    })
     const turn = ++subjectTurn.current
     startSubject(async () => {
       // a thrown call (the network dropped) is the same refusal as a returned one, never the error boundary
@@ -1380,6 +1644,7 @@ export function Editor({
       setSubjectRefusal(answer.error)
       setSaid(answer.error)
     })
+    return done
   }
 
   /** STORY 5.14's PRESS — the visitor the canvas previews, and it is NOT an edit (FR-D16, AD-22).
@@ -1438,18 +1703,18 @@ export function Editor({
    *  page 2 exists (R-176); the row is not drawn anywhere else, so this is the guard and never a refusal. */
   const enterPageTwo = () => {
     const now = latest.current
-    if (now.page === 2 || !offersPageTwo(now.key, now.docs, now.subject)) return
+    if (now.page === 2 || !offersPageTwo(now.key, now.docs, now.subject, now.contentSource)) return
     switchPage(2)
-    paint()
-    setSaid(ENTERED_SAID)
+    // Story 5.18: page 2 is a read the customer asked for — on the site's content its rows are read, then painted
+    request(null, (reason) => setSaid(reason === null ? ENTERED_SAID : leftBecause(reason)))
   }
   /** Back to page 1 — the pill's button or the row's 1. Focus goes to the canvas from the pill, and stays on the row
    *  from the row: the panel is keyed across the switch (`acrossPages`), so the pressed radio is the same element. */
   const leavePageTwo = (from: 'pill' | 'row') => {
     if (latest.current.page === 1) return
     switchPage(1)
-    paint()
-    setSaid(LEFT_SAID)
+    // page 1's own rows are always in hand once page 2 has been (its count decides the offer), so this paints at once
+    request(null, () => setSaid(LEFT_SAID))
     if (from === 'pill') stage.current?.focus()
   }
   /** The row's choice, either way. A selection that could not be carried leaves no row to keep focus on, so it falls to
@@ -1489,6 +1754,10 @@ export function Editor({
     // one, so nothing is drawn until the hydrate below has decided which document this session is editing; it paints
     // when it lands, exactly as the two above do.
     if (!hydratedRef.current) return
+    // STORY 5.18: AND WHILE A READ THE CUSTOMER ASKED FOR IS IN FLIGHT. It paints when it lands, so no page is ever
+    // painted from half its reads — which is also how the first paint of the site's content waits for its reads, as it
+    // waits for the hydrate above.
+    if (pending.current) return
     const now = latest.current
     // Story 5.6: the mode is ONE attribute on the canvas root, and every paint re-asserts it — the token block
     // (`tokens.ts`'s `:root[data-mode="dark"]`) does all the colouring from there (AD-30)
@@ -1514,9 +1783,17 @@ export function Editor({
       // none and prints nothing in the token's place, and Post, Page and 404 return no pagination at all, so
       // they hand none either (R-183). `Page` is the `1 | 2` union, so `now.page === 2` is the whole test.
       const feed = now.page === 2 ? 'second' : 'first'
-      const { site } = orbitWeekly.templateContext(pageFileOf(now.key, now.page), feed, now.subject)
-      const url = site.currentUrl
-      const pageNumber = now.page === 2 ? (site.pagination as { page?: number } | undefined)?.page : undefined
+      const pageFile = pageFileOf(now.key, now.page)
+      // STORY 5.18 — ONE SOURCE THROUGHOUT. The site's content where it was chosen, reading has not stopped and every
+      // read this page needs is in hand; otherwise the sample, WHOLE — and a subject chosen over the site is then the
+      // sample's own starting subject, silently (`resolveSubject`'s source rule).
+      const view = now.source === 'site' ? siteOf(now) : null
+      const reading = reads.current?.reading()
+      const live = view !== null && 'ready' in view && reading?.stopped === null ? view.ready : null
+      const sampleSubject = orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
+      const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject)
+      const url = at.currentUrl
+      const pageNumber = now.page === 2 ? (at.pagination as { page?: number } | undefined)?.page : undefined
       const parts = now.stack.map((i) => {
         const entry: SectionRegistryEntry | undefined = entries[i.designId]
         if (!entry) throw new Error(`${i.designId} was not read for this project`)
@@ -1529,7 +1806,12 @@ export function Editor({
         // Story 5.13: the canvas's resolved subject reaches every section through the ONE door. A site-wide section
         // compiles to `default.hbs`, which carries no resource of its own, so the argument is simply unused there.
         // Story 5.14: and so does the visitor View as is previewing — Story 4.10's `gateMembers` decides the rest.
-        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, { target: i.target, rows: rows[i.designId], feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility, assets, icons: lookup, editing: true, subject: now.subject })
+        // Story 5.18: and the SOURCE — the site's assembled context and rows, or nothing, which is today's render
+        return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, {
+          target: i.target, rows: rows[i.designId], feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility,
+          assets, icons: lookup, editing: true, subject: sampleSubject,
+          live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: live.rows[i.designId] },
+        })
       })
       // Story 5.15: the behaviours running on the markup about to be replaced stop first, putting every mount back
       // at rest — and the new markup is written PLAIN. Whether a mount runs is `core`'s to say, mount by mount, below;
@@ -1556,6 +1838,20 @@ export function Editor({
       frame.current.dataset.painted = now.key
       // Story 5.16 — which page was painted, for the deployed walk to wait on: a change of page is a same-canvas repaint
       frame.current.dataset.page = String(now.page)
+      // STORY 5.18 — WHAT THIS PAINT USED, which is all the pill ever says (R-165): the site's content, or the sample and
+      // why, where the site was chosen — a cause in WORDS, and the named tier said aloud once (FR-H4)
+      const cause: Cause | null =
+        now.source === 'site' && live === null && view !== null && !('nothing' in view) ? (reading?.stopped ?? reading?.last ?? null) : null
+      const shown: Shown = { source: live !== null ? 'site' : 'sample', cause, nothing: view !== null && 'nothing' in view ? view.nothing : null }
+      paintedRef.current = shown
+      paintedAt.current = { key: now.key, page: now.page }
+      setBlanked(false)
+      setPainted({ shown, site: live, key: now.key })
+      frame.current.dataset.source = shown.source
+      if (named(cause) && cause !== null && !announcedCauses.current.has(cause)) {
+        announcedCauses.current.add(cause)
+        setSaid(LIVE_WORDS.sentence(cause, siteNameOf()))
+      }
     } catch (error) {
       setFailure(error instanceof Error ? error : new Error(String(error)))
     }
@@ -1996,7 +2292,9 @@ export function Editor({
     latest.current = { ...latest.current, page: 1, stack: stackOf(latest.current.docs, key, 1, library) }
     setShownPage({ key, page: 1 })
     asked.current.clear()
-    paint()
+    // Story 5.18: opening the editor and a canvas are reads the customer asked for — on the site's content they are
+    // read, then painted once; with the sample, or everything in hand, this paints at once exactly as before
+    request()
     // paint reads the latest values through `latest`
   }, [key])
 
@@ -2005,7 +2303,9 @@ export function Editor({
    *  editor's one live region as well as shown in the menu. Silence would be the same failure as an empty canvas. */
   useEffect(() => {
     if (previewing.fellBack && previewing.subject !== null) setSaid(GONE(previewing.subject))
-  }, [key, previewing.fellBack])
+    // Story 5.18: keyed on the canvas the LAST PAINT drew, because on the site's content the subject is the painted
+    // one — a canvas switch whose reads are in flight must not say "gone" about the canvas it is leaving
+  }, [painted.key, previewing.fellBack])
 
   /** Story 5.14 — A VISITOR COUNTS AS VIEWED THE MOMENT THE CANVAS IS SHOWN IN THAT STATE: on open, on a change of
    *  canvas and on every choice, and only once the hydrate has settled which docs this session shows. `seen` hands back
@@ -2071,7 +2371,9 @@ export function Editor({
       hydratedRef.current = true
       setHydrated(true)
       if (!ok) toFallback()
-      paint()
+      // Story 5.18: the hydrate is the editor OPENING — its docs decide which designs the page reads for, so the reads
+      // are asked for again over them (shared with any already in flight) and the first paint lands with them
+      request()
     }
     void (async () => {
       const opened = await openLocal(userId)
@@ -2110,7 +2412,7 @@ export function Editor({
           setJournal(kept)
           // review, 2026-09-22: the THIRD door page 2 can stop existing through — a local doc that outranks the server's
           // may have no main feed on page 1 — guarded as `restore()` and `chooseSubject` are: page 1 BEFORE the paint
-          const force = pageInForce(latest.current.page, latest.current.key, held.docs, latest.current.subject)
+          const force = pageInForce(latest.current.page, latest.current.key, held.docs, latest.current.subject, latest.current.contentSource)
           if (force.page !== latest.current.page) {
             switchPage(force.page)
             setSaid(leftBecause(force.reason ?? ''))
@@ -2247,6 +2549,48 @@ export function Editor({
      holds one design draws no arrow anywhere without a second rule saying so (UX-DR3). */
   const chosenRing = chosen ? ringOf(chosen.designId) : []
   const chosenAt = chosen ? chosenRing.findIndex((e) => e.id === chosen.designId) : -1
+  // Story 5.18: the ring's tiles are a picker too — where the strip is drawn (a ring of more than one), its designs'
+  // rows are read from the one store as it opens, and the tiles repaint when they land
+  const ringKey = chosenRing.length > 1 ? chosenRing.map((e) => e.id).join(' ') : ''
+  useEffect(() => {
+    if (ringKey !== '') requestDesigns(chosenRing)
+    // the ring's own ids are the question; `requestDesigns` reads the store and the source through refs
+  }, [ringKey])
+
+  /* STORY 5.18 — D5e's SITE ROW: greyed with its reason where choosing it could do nothing — a site that cannot be read,
+     a refused key (never retried) or the ceiling (a reload starts over) — and otherwise pressable, carrying the
+     sentence of the failure that put the sample on the canvas, which choosing it tries again. */
+  const readingNow = reads.current?.reading() ?? null
+  const siteRow: { greyed: string | null; sentence: string | null } =
+    site === null ? { greyed: null, sentence: null }
+    : 'unreadable' in site ? { greyed: LIVE_WORDS.unreadable(site.unreadable, siteName), sentence: null }
+    : readingNow !== null && readingNow.stopped !== null && !retriable(readingNow.stopped) ? { greyed: LIVE_WORDS.sentence(readingNow.stopped, siteName), sentence: null }
+    : { greyed: null, sentence: painted.shown.cause === null ? null : LIVE_WORDS.sentence(painted.shown.cause, siteName) }
+
+  /* STORY 5.18 — THE PANEL'S NOTE for the selected section, while the SITE's content shows: its main feed where the whole
+     list fits one page and does not fill it (a short page 2 is ordinary pagination), and each `{{#get}}` the site cannot
+     fill to the limit the section asked for — zero included, which is never back-filled (R-36). R-194 puts the sample
+     one press away beside it. */
+  const shortfall = (() => {
+    if (painted.site === null || chosen === undefined || entry === undefined || reads.current === null) return null
+    const r = reader(reads.current.peek)
+    const notes: string[] = []
+    const pagination = painted.site.contexts[chosen.target]?.ghost['pagination'] as { total?: number; pages?: number } | undefined
+    if (entry.bindingContext.includes('posts') && pagination !== undefined) {
+      const whose = canvas.file === 'tag.hbs' ? 'tag' : canvas.file === 'author.hbs' ? 'author' : 'site'
+      const note = feedShortfall(whose, pagination.total ?? 0, pagination.pages ?? 1, orbitWeekly.postsPerPage())
+      if (note !== null) notes.push(note)
+    }
+    for (const [name, binding] of Object.entries(withData(entry.dataBindings, chosen.data))) {
+      const declared = entry.dataBindings?.[name]
+      const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
+      const limit = binding.limit ?? (typeof fallback === 'number' ? fallback : null)
+      if (declared === undefined || limit === null) continue
+      const note = getShortfall(binding.source, siteTotal(declared, r), limit)
+      if (note !== null) notes.push(note)
+    }
+    return notes.length === 0 ? null : notes.join(' ')
+  })()
   const pointedRing = pointed ? ringOf(pointed.designId) : []
   // on a hovered selection the selected box's 1.5px is the only outline (S4c)
   const hoverOutline = pointed && !same(hovered, selected)
@@ -2544,6 +2888,8 @@ export function Editor({
     setPickerRefusal(null)
     setOpened(true)
     setPicking(true)
+    // Story 5.18: a picker is a read the customer asked for — its cards' `{{#get}}` rows, from the one store
+    requestDesigns(offeredHere(entries, CANVASES[latest.current.key].file, SITE.file))
     // opened on the frame after the one that mounted it, exactly as the site-wide confirm is. On every open AFTER
     // the first the dialog is already in the tree and this is simply the next frame (the owner's ruling of
     // 2026-09-20): nothing is re-created, and the previews are the ones already drawn.
@@ -2916,6 +3262,8 @@ export function Editor({
         <section
           ref={stage}
           aria-label="Canvas"
+          // Story 5.18: busy until the site's first paint lands, where one is being read
+          aria-busy={readable && (paints === 0 || blanked) ? true : undefined}
           // UX-DR9 / §7.3(1): THE CANVAS IS ONE STOP IN THE TAB ORDER, between Layers and the Controls sidebar, and
           // focus lands on this container rather than inside the rendered site — which is what the iframe's
           // `tabindex="-1"` below makes true. It is also where the `Esc` ladder's second rung puts focus.
@@ -2975,6 +3323,16 @@ export function Editor({
               className="block origin-top-left border-0"
               style={{ width: device.width, height: device.height, transform: `scale(${scale})` }}
             />
+            {/* STORY 5.18 — THE FIRST PAINT OF THE SITE'S CONTENT WAITS FOR ITS READS, as it waits for the hydrate, and the
+                card says so with the Kit's skeleton (R-98, DESIGN.md § Loading — never a spinner). Only where a site can
+                be read: an unlinked project's first frames are exactly what they were. */}
+            {readable && (paints === 0 || blanked) ? (
+              <div aria-hidden data-live-skeleton className="pointer-events-none absolute inset-0 flex flex-col gap-8 bg-paper-raised p-8">
+                <Skeleton />
+                <Skeleton />
+                <Skeleton />
+              </div>
+            ) : null}
             {/* The outlines (R-120): boxes over the root, whose line is an inset box-shadow spread, which paints its exact
                 width where a border or an outline is floored to whole pixels: S4b's 1px (:181) and S4c's 1.5px (:293),
                 `globals.css`. Inside the canvas document since the owner's finding, so they scroll with their section. */}
@@ -3059,11 +3417,27 @@ export function Editor({
               fellBack={previewing.fellBack}
               refusal={subjectRefusal}
               onChoose={chooseSubject}
+              busy={busy}
+              // STORY 5.18 — B9's connected look and D5e's SOURCE group, wherever a site is linked (Home becomes
+              // pressable then, and only then). Every word is `lib/live-content.ts`'s, and the site has one name.
+              site={
+                site === null
+                  ? null
+                  : {
+                      name: siteName,
+                      shown: painted.shown.source,
+                      cause: painted.shown.cause === null ? null : LIVE_WORDS.cause(painted.shown.cause, siteName),
+                      row: siteRow,
+                      nothing: painted.shown.nothing === null ? null : LIVE_WORDS.nothing(painted.shown.nothing, siteName),
+                      capped: painted.site !== null && previewing.subject?.kind === 'post' && reads.current !== null ? cappedPosts(reads.current.peek) : null,
+                      onChoose: chooseSource,
+                    }
+              }
             />
           </div>
           {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
               (AD-21) — and all hidden from the first canvas scroll, placed again 150ms after the last, and in Preview */}
-          <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling || preview} resources={links} handle={tools} />
+          <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling || preview} resources={linksNow} handle={tools} />
           <SectionPill
             readOnly={!lock.holder}
             shown={!!pointed}
@@ -3150,6 +3524,8 @@ export function Editor({
               subject={previewing.subject}
               // Story 5.14 — a tile previews the page as the visitor View as is previewing, through the same door
               member={viewAs}
+              // Story 5.18 — and with the canvas's own content, one source per tile
+              live={cardLive}
               onDesign={(to) => onDesign(chosen, to)}
               onStep={(by) => stepDesign(chosen, by)}
             />
@@ -3176,8 +3552,22 @@ export function Editor({
               // the site's own — the instance's own stamp, which `stackOf` sets (R-187: a header is on every page).
               shownPage={page}
               siteWide={chosen.doc === SITE.key}
-              timezone={timezone}
-              links={links}
+              timezone={zoneNow}
+              links={linksNow}
+              // STORY 5.18 — the panel's note where a list the section shows is not full on the site's content (P0:488-490
+              // puts the zero note here, not on the canvas), and R-194's door beside it: the pill's own Sample content
+              // row, which then takes the focus. OUTSIDE the panel's `ReadOnly`: a source is a view (R-192).
+              note={
+                shortfall === null
+                  ? undefined
+                  : {
+                      words: shortfall,
+                      onSample: () => {
+                        chooseSource('sample')
+                        document.getElementById('editor-source')?.focus()
+                      },
+                    }
+              }
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}
               sourceRows={shownRows(entry, chosen, rows[entry.id])}
               // R-124: the FIRST ROW of Section Settings, for a section whose category carries it — never in Layers.
@@ -3389,6 +3779,8 @@ export function Editor({
           subject={previewing.subject}
           // Story 5.14 — and as the visitor the canvas behind it is previewing (FR-D16)
           member={viewAs}
+          // Story 5.18 — and with the canvas's own content: the site's where it shows, one source per card
+          live={cardLive}
           refusal={pickerRefusal}
           onAdd={onPlace}
           onClose={() => {

@@ -526,12 +526,26 @@ async function main() {
       const f = pilotsPage.frames().find((x) => x !== pilotsPage.mainFrame())
       return f.evaluate(unclassed).then((all) => all[0])
     }
+    /* STORY 5.18 — DW-230: THE PAGE'S OWN ADDRESS IS HANDED TO EVERY SECTION, and on the Post canvas that is the post's
+       own path, where Ghost marks NO menu item current (`utils.js:61`, an exact match only). /pilots draws a site-wide
+       design at `default.hbs`, whose address is `/`, so its header marks Home. That ONE class is DW-230's whole
+       difference: it is taken off both sides for the comparison, and asserted on its own below — the editor's header
+       on Post marks nothing, /pilots' marks Home — so the equality still covers every other byte. */
+    const unmarked = (html) => html.replace(/ nav-current(?=["\s])/g, '')
+    const currentIn = (html) => [...html.matchAll(/class="nav-([a-z0-9-]+)[^"]*\bnav-current\b/g)].map((m) => m[1])
     for (const [key, designs] of ['home', 'post'].map((k) => [k, stackOf(k).map(([id]) => id)])) {
       check(`step 4 — ${key}: one root per section, in stack order`, editorRoots[key].length === designs.length, `${editorRoots[key].length} roots`)
       for (const [n, id] of designs.entries()) {
         // /pilots draws each design at its first compileTarget; a1/1 → default.hbs, the others' first is this canvas
         const want = await pilotsRoot(id)
-        check(`step 4 — ${key} · ${id} (${designName(id)}): outerHTML equals /pilots' at Desktop · Light · Signed out · Everyone · First, core's js-enabled taken off both`, !!want && editorRoots[key][n] === want, diff(editorRoots[key][n] ?? '', want ?? ''))
+        const got = editorRoots[key][n] ?? ''
+        const addressed = key !== 'home' && currentIn(want ?? '').length > 0
+        check(`step 4 — ${key} · ${id} (${designName(id)}): outerHTML equals /pilots' at Desktop · Light · Signed out · Everyone · First, core's js-enabled taken off both${addressed ? ', nav-current aside (DW-230, below)' : ''}`,
+          !!want && (addressed ? unmarked(got) === unmarked(want) : got === want), diff(addressed ? unmarked(got) : got, addressed ? unmarked(want ?? '') : want ?? ''))
+        if (addressed) {
+          check(`step 4 — DW-230: on the ${key} canvas the header marks NO menu item current, as Ghost marks none on a post's own address — where /pilots' header, drawn at \`/\`, marks ${currentIn(want).join(', ')}`,
+            currentIn(got).length === 0, JSON.stringify({ editor: currentIn(got), pilots: currentIn(want) }))
+        }
       }
     }
     await pilotsPage.close()

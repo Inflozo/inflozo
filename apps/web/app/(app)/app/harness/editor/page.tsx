@@ -120,6 +120,9 @@ export default function EditorHarness() {
     // own `acquire` on mount reaches no database and answers nothing, which the client reads as "the server was not
     // reached": the state it opened with stands, and nothing about the lock is on screen (`lib/lock-client.ts`).
     lock: null,
+    // Story 5.18 — NO LINKED SITE, so the harness is the unlinked path — the story's control: the pill says "Sample
+    // content" with no SOURCE group, and not one Content API request is made (`pnpm keyboard` walks exactly today's editor)
+    site: null,
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

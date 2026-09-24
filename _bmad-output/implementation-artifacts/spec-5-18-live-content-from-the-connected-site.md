@@ -2,7 +2,7 @@
 title: 'Story 5.18 — Live content from the connected site'
 type: 'feature'
 created: '2026-09-24'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'ebce8976242b11f4a7fbc7560baf6b9cac0cd0d3'
@@ -305,7 +305,7 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
 
 **Execution:**
 
-- [ ] `tools/probe/record-content-api.py` -- **FIRST, before any code.** Read-only on T1 and T3 (keys by variable name
+- [x] `tools/probe/record-content-api.py` -- **FIRST, before any code.** Read-only on T1 and T3 (keys by variable name
   only: `GHOST5_*`, `GHOST6_*`): CORS on `posts/` `pages/` `tags/` `authors/` `settings/` for 200 and 401, and the
   preflight with `accept-version`; `Cache-Control`; `formats=mobiledoc` against a plain read on every post (no
   body, identical `reading_time` and `excerpt`, bytes); `fields=` dropping `reading_time`; past-the-last-page `200 []`;
@@ -313,13 +313,13 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
   whether it carries `access-control-allow-origin`, and the time — T1's Content API then refuses this machine for
   about an hour, and the script says so. Record as `MEASUREMENTS.md` §51. -- the whole design rests on these facts and
   Ghost(Pro) aside, every one is executable today.
-- [ ] `packages/library/src/orbit-weekly.ts` -- export the ONE assembly `templateContext` uses (`@site`, `@config`, an
+- [x] `packages/library/src/orbit-weekly.ts` -- export the ONE assembly `templateContext` uses (`@site`, `@config`, an
   entry spread flat, a list's taxonomy + `posts` + `pagination`, the page's own address) and have `templateContext`
   call it, byte-identical; give `resolveSubject` and `feedPages` the source as an argument that defaults to the
   bundled one; hand Post and Page the subject's own address and 404 one that matches no link (**DW-230**). Extend
   `orbit-weekly.test.ts` with DW-230's rows; its existing control must stay green unedited. -- one assembly for two
   sources is what keeps the canvas and the bundled path from drifting.
-- [ ] `apps/web/lib/live-content.ts` -- new, pure and importless but for types (`node --test` reaches it, as
+- [x] `apps/web/lib/live-content.ts` -- new, pure and importless but for types (`node --test` reaches it, as
   `lib/lock.ts`): the query for every read a paint needs (a list page, a taxonomy, a subject by `filter=slug:` — a
   browse, so a missing one is `200 []` and never a 404 — `/settings/`, each `{{#get}}` binding at the Count's ceiling
   in the order asked, hand-picked `ids` as ONE `filter=id:[…]` read re-ordered by the pick, R-20), its cache key,
@@ -329,68 +329,68 @@ Tom Whitlock 10, title "Ghost5", time zone `Etc/UTC`.
   shortfall caption, R-193's starting archive subject (the most `count.posts`, a tie to the name first in the
   alphabet), and every string in *Design Notes*. -- the matrix is the
   contract, and a pure module makes it a unit test rather than a browser observation.
-- [ ] `apps/web/lib/live-client.ts` -- new: the I/O — one store per editor session over `{ origin, key }`: `fetch` with
+- [x] `apps/web/lib/live-client.ts` -- new: the I/O — one store per editor session over `{ origin, key }`: `fetch` with
   `Accept-Version: v5.0` and `AbortSignal.timeout(READ_TIMEOUT_MS)`, the `Map` cache, one in-flight promise per key,
   the request count, the stopped state and its cause; never throws, never logs a URL (the key rides in it), never logs
   a response body (`/settings/` carries `codeinjection_*`). -- one file owns every request, so the policy cannot drift
   across callers.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- `projectOf` selects `linked_site_id`;
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- `projectOf` selects `linked_site_id`;
   `EditorData.site` is the linked site as server truth — `{ title, origin, key }`, or `{ title, unreadable:
   'disconnected' | 'no_key' | 'http' }`, or `null` — read through the user's own session; a failed read is logged by
   code and answered `null` (sample), the safe side the prefs read takes. The stored subjects keep their `source`
   mark. Add `site: null` to the harness literal. -- the editor must not guess whether it may read, and a key the server
   holds is delivered, never asked for.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` -- `setPreviewSubject` stores `source: 'site'`
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts` -- `setPreviewSubject` stores `source: 'site'`
   with a subject chosen over the site and nothing extra for a sample one. -- a subject is only "gone" from the source it
   was chosen from.
-- [ ] `apps/web/lib/canvas.ts` -- `renderSection` takes an optional live content argument (the assembled context and
+- [x] `apps/web/lib/canvas.ts` -- `renderSection` takes an optional live content argument (the assembled context and
   the bindings' rows); absent, it is exactly today's call. -- the control stays a one-argument difference.
-- [ ] `apps/web/lib/preview-subject.ts` -- `SubjectSource` gains `pages`; a live source in the same shape; the D5e
+- [x] `apps/web/lib/preview-subject.ts` -- `SubjectSource` gains `pages`; a live source in the same shape; the D5e
   line for a list capped at 100; `SOURCE_WORDS` gains the site and the causes. -- 5.13's seam, widened by what it lacked.
-- [ ] `apps/web/lib/page-two.ts` -- `noPageTwo` / `pageInForce` read the page count of the list the canvas renders
+- [x] `apps/web/lib/page-two.ts` -- `noPageTwo` / `pageInForce` read the page count of the list the canvas renders
   from the source in force. -- R-176 must answer from the site's own posts.
-- [ ] `apps/web/components/editor/source-pill.tsx` -- B9's connected look; D5e's SOURCE group above SUBJECT whenever a
+- [x] `apps/web/components/editor/source-pill.tsx` -- B9's connected look; D5e's SOURCE group above SUBJECT whenever a
   site is linked (on Home too, which becomes pressable then and only then); the greyed row with its reason for an
   unreadable site through the Kit's `greyedProps` (`kit/greyed.ts:13-28`, which refuses a greyed control with no
   reason); the cause segment; R-98's busy row; the capped-list line. The button's name stays its own words (no
   `aria-label`, WCAG 2.5.3, as 5.13 built it). -- the pill is the story's one surface.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the source in session state beside
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the source in session state beside
   `viewAs`, mirrored in `latest`; one live store per session; the first-paint gate beside the hydrate's; the reads
   each trigger asks for; `paint()` and the page address through the live content; the live rows, subject rows, link
   resources and time zone handed to the pill, the pickers and the panel, and the ONE source switch handed to both the
   pill and the panel's note (R-194); the source announced through `#editor-said` (polite). -- every surface paints
   through the one door, so the source changes in one place.
-- [ ] `apps/web/components/editor/section-preview.tsx` + `design-picker.tsx` -- paint with the canvas's live content and
+- [x] `apps/web/components/editor/section-preview.tsx` + `design-picker.tsx` -- paint with the canvas's live content and
   the live rows, repainting when those rows arrive. -- FR-H4 names the picker's previews as a consumer of the same reads.
-- [ ] `apps/web/components/controls/sidebar.tsx` -- the shortfall caption at the head of Section Settings beside R-124's,
+- [x] `apps/web/components/controls/sidebar.tsx` -- the shortfall caption at the head of Section Settings beside R-124's,
   and — while the site's content is showing — its **Preview with sample content** button (R-194), which calls the
   handler the pill's Sample content row calls (one action, two doors, handed in by `editor.tsx`) and moves focus to
   the pill; drawn OUTSIDE the `ReadOnly` rows (`:436` wraps R-124's), because switching the source changes the view,
   not the site (R-192). The time zone shown is the source's. -- P0:488-490 puts the zero note in the panel, not on
   the canvas, and R-194 puts the full page one press from it.
-- [ ] `apps/web/components/controls/link-picker.tsx` -- the capped-list line under the search when the site holds more
+- [x] `apps/web/components/controls/link-picker.tsx` -- the capped-list line under the search when the site holds more
   posts than the rows in hand; nothing else changes — its resources come from the source. -- the one honest limit of
   a client-side search (DW-248).
-- [ ] `apps/web/live-content.test.ts` -- new: every matrix row over `lib/live-content.ts` — the key, freshness, the
+- [x] `apps/web/live-content.test.ts` -- new: every matrix row over `lib/live-content.ts` — the key, freshness, the
   outcomes and the stop rule (a 401 is one request; three failures stop; a 429 stops), the ceiling, the whitelist (no
   `html`, `plaintext`, `codeinjection_*` or key ever in a row), the caption reduced to words, a date across a DST
   boundary, every shortfall sentence, R-193's starting subject and its tie, the subject-source rule, and every
   string equal to the *Design Notes* table. -- the matrix is the contract.
-- [ ] `tools/probe/run-verify-live-content.cjs` -- new: the deployed walk on `app.inflozo.com`, its own throwaway account
+- [x] `tools/probe/run-verify-live-content.cjs` -- new: the deployed walk on `app.inflozo.com`, its own throwaway account
   with site rows for T1 and T3 (keys from the environment, never printed) and projects linked to them. Walks every
   matrix row with a screen, on **both majors**; counts requests to the Ghost origins (one per key, none inside 60 s);
   asserts no Ghost response it saw carried `html`, and that neither the key nor `codeinjection` appears in the canvas
   markup; a real 401 (a site row with a wrong key — one request); the network cut with `page.route` (the one simulated
   condition, named as such); and **a real 429 from T1, last**, earned the way the recorder earns it. Reads its
   expectations from `lib/live-content.ts`. -- R-82: the canvas is proven against real Ghosts, not a stub.
-- [ ] `tools/doc-audit.py` -- catalogue rows for the two new probe files, then `--generate`. -- the gate refuses an
+- [x] `tools/doc-audit.py` -- catalogue rows for the two new probe files, then `--generate`. -- the gate refuses an
   uncatalogued file under `tools/`.
-- [ ] `…/prds/prd-Inflozo-2026-08-17/prd.md` (FR-H4) + `…/planning-artifacts/epics.md` (5.18's criterion) +
+- [x] `…/prds/prd-Inflozo-2026-08-17/prd.md` (FR-H4) + `…/planning-artifacts/epics.md` (5.18's criterion) +
   `epic-5-context.md` (the live-content bullet) + `…/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` -- replace
   *"because Ghost rate-limits Content API keys"* with what §51 recorded (failed requests per network, and an edge in
   front of Ghost), and add the Content API from a browser to the Ghost(Pro) trial's checklist (CORS on a 429, the
   edge's limits, admin vs public domain). -- standing rule 3: a finding reaches the documents that state the old claim.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md` -- close **DW-230** and **DW-98** with their
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md` -- close **DW-230** and **DW-98** with their
   resolutions. **Already done at this Create:** DW-247, DW-248, DW-249 appended; DW-192 amended.
 
 **Acceptance Criteria:**
@@ -506,6 +506,20 @@ panel because P0:488-490 says so for zero and no frame draws the rest; it is edi
 look and the greyed row are R-74 extrapolations from B9, B6 and UX-DR3's *"could-but-not-now greyed with a caption"*.
 The spec runs well past the template's token target and is kept whole: one goal, one read layer shared by five
 consumers, which splitting would break.
+
+**Calls made at Dev (2026-09-24), each routine and stated here rather than asked.** A `{{#get}}` is read at the Count's
+ceiling in BOTH date orders, not only the order asked: that is `DesignRows`' own contract, so a Count or an Order
+changed later is a slice of rows in hand and an edit's repaint still reads nothing. The tag and writer lists are read
+`order=count.posts desc`, so D5e lists the fullest first and the same read answers R-193. After a failure the pill reads
+*"Sample content · {cause} · {subject}"* — the cause beside the source it explains. The panel's note appears only while
+the site's content shows: its sentences describe the site, and the unlinked editor stays today's. A refused key and the
+ceiling GREY the site row with their sentence, because choosing it could do nothing (a refusal is never retried; a
+reload starts over). A new page — another canvas, or page 2 — whose reads are in flight is taken off the canvas behind
+the Kit's skeleton rather than left under a stack it no longer matches. A subject chosen over the site whose read did
+not answer is never announced as chosen, since the sample's own subject is what shows (FR-H4's silent tier). **One
+known limit, by the rule that an edit reads nothing:** a design placed before its own rows have been read — an Add
+pressed faster than the picker's reads — paints that page as sample content until the next read the customer asks
+for (a canvas, a subject, page 2, a source, a picker).
 
 **What the owner's test will show that is not this story's.** Every card on his test site says *"0 min read"* —
 those posts are one line long and Ghost prints the same on the live site (DW-156, A17's). The newest post, "PROBE

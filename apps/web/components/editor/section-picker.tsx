@@ -13,9 +13,12 @@ import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Globe, Plus, X } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { radioKeys, tabStop } from '@/components/kit/segmented'
-import type { DesignRows } from '@/lib/canvas'
+import type { DesignRows, RenderContext } from '@/lib/canvas'
 import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor } from '@/lib/picker'
 import type { Visitor } from '@/lib/view-as'
+
+/** Story 5.18 — the canvas's own content for a card, one source per card (`SectionPreview`'s `live`). */
+type Live = (entry: SectionRegistryEntry, target: string) => { context: RenderContext; rows: DesignRows | undefined } | null
 
 /* ─────────────────────────────────────────── Story 5.10 — THE SECTION PICKER (`S5 Section Picker.dc.html`, S5a/S5c).
  *
@@ -90,6 +93,7 @@ export function SectionPicker({
   src,
   subject,
   member,
+  live,
   refusal,
   onAdd,
   onClose,
@@ -114,6 +118,8 @@ export function SectionPicker({
   subject?: orbitWeekly.Subject | null
   /** Story 5.14 — the visitor View as is previewing, which every card draws the section as (FR-D16) */
   member?: Visitor
+  /** Story 5.18 — the canvas's own content where it is the connected site's, one source per card */
+  live?: Live
   /** the sentence the last Add answered with, shown in the picker's own refusal line (DW-190) */
   refusal: string | null
   onAdd: (placement: Placement) => void
@@ -278,6 +284,7 @@ export function SectionPicker({
                 src={src}
                 subject={subject}
                 member={member}
+                live={live}
                 onAdd={onAdd}
               />
             ))}
@@ -305,6 +312,7 @@ function Card({
   src,
   subject,
   member,
+  live,
   onAdd,
 }: {
   entry: SectionRegistryEntry
@@ -320,6 +328,8 @@ function Card({
   subject?: orbitWeekly.Subject | null
   /** Story 5.14 — and as whom */
   member?: Visitor
+  /** Story 5.18 — and with the canvas's content */
+  live?: Live
   onAdd: (placement: Placement) => void
 }) {
   // measured once, when the preview has been drawn; until then the card is one tile like any other
@@ -344,6 +354,7 @@ function Card({
         src={src}
         subject={subject}
         member={member}
+        live={live}
         onAspect={(aspect) => setSpan(spanFor(aspect))}
       />
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three

@@ -30,7 +30,9 @@ import { openPopover } from '@/components/kit/select'
    with `null`; Escape and a click outside report nothing. */
 
 export type LinkResource = { id: string; title: string; url: string; meta: string }
-export type LinkResources = Readonly<Record<'pages' | 'posts' | 'tags' | 'authors', readonly LinkResource[]>>
+/** Story 5.18 — `capped` is the one honest limit of a client-side search (DW-248): where the connected site holds more
+ *  posts than the rows in hand, the line that says so and how to link an older one. Absent on the sample. */
+export type LinkResources = Readonly<Record<'pages' | 'posts' | 'tags' | 'authors', readonly LinkResource[]>> & { readonly capped?: string }
 
 const GROUPS = [
   { key: 'pages', kind: 'page', label: 'Pages', icon: <PageGlyph size={14} className="shrink-0 text-ink-soft" /> },
@@ -219,6 +221,11 @@ export function LinkPanel({
           }
         }}
       />
+      {resources.capped === undefined ? null : (
+        <p data-link-capped className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">
+          {resources.capped}
+        </p>
+      )}
 
       <div className={`-mx-[10px] flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-[10px] ${slimScrollbar}`}>
         {groups.map((g) => (

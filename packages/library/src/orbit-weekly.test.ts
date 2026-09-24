@@ -17,13 +17,13 @@ import assert from 'node:assert/strict'
 // the point. Move them if `library` ever grows a dev-dependency graph of its own.
 import { bareHelper, navigationItems, pageUrl, paginationContext } from '../../ghost-shim/src/index.ts'
 import {
-  DEFAULT_LIMIT, DEFAULT_ORDER, MAJORS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
-  articleOrder, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
+  BUNDLED, DEFAULT_LIMIT, DEFAULT_ORDER, MAJORS, MISSED_ADDRESS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
+  articleOrder, assemble, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
   deepPagination, feedPage, feedPagination, feedPages, newsletters, postsPerPage, posts, previewFixtures, recording,
   fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, site, sortRows, styleGuideBody,
   styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants,
 } from './orbit-weekly.ts'
-import type { Major, Subject } from './orbit-weekly.ts'
+import type { ContentSource, Major, Subject } from './orbit-weekly.ts'
 import { NATIVE_FILES, nativeResourceOf } from './placement.ts'
 import type { DataBinding } from './registry.ts'
 import referenceDesign from '../fixtures/reference-design/design.json' with { type: 'json' }
@@ -607,8 +607,74 @@ test('DW-218: every page of a list knows its OWN address, and the pager is based
   assert.equal(pageUrl(at2.prev, feed2.paginationBase), '/')
   assert.equal(pageUrl(at2.next, feed2.paginationBase), '/page/3/')
   assert.equal(pageUrl(paginationContext(two.pagination as Record<string, unknown>).prev, two.paginationBase), archive)
-  // every other target keeps `/` (Post, Page and 404 are a later story's — a DW)
-  for (const target of ['default.hbs', 'post.hbs', 'page.hbs', 'error.hbs']) assert.equal(templateContext(target, 'first').site.currentUrl, '/', target)
+  // the layout keeps `/` — the editor hands a header the page's own address (Post, Page and 404 are DW-230's, below)
+  assert.equal(templateContext('default.hbs', 'first').site.currentUrl, '/')
+})
+
+// ─── Story 5.18 — DW-230, the ONE assembly, and the source as an argument ─────────────────────────────────────────
+
+test('DW-230: Post and Page carry their subject\'s OWN address, and the 404 one no menu item matches', () => {
+  const path = (url: unknown) => new URL(String(url)).pathname
+  // untouched, each canvas's fixture — and a chosen post its own
+  assert.equal(templateContext('post.hbs', 'first').site.currentUrl, path(subject('post')['url']))
+  assert.equal(templateContext('page.hbs', 'first').site.currentUrl, path(subject('page')['url']))
+  const chosen = posts()[0]!
+  assert.equal(templateContext('post.hbs', 'first', { kind: 'post', slug: chosen.slug }).site.currentUrl, path(chosen['url']))
+  // Ghost sets `nav-current` on an exact match only (`utils.js:61`), so NONE of the three marks Home any more — and the
+  // fixture post's own address is in no menu item, which is why no snapshot moved
+  const marked = (url: string) =>
+    navigationItems(site().navigation as { label?: unknown; url?: unknown }[], { currentUrl: url, siteUrl: site().url }).filter((i) => i.current)
+  for (const target of ['post.hbs', 'page.hbs', 'error.hbs']) {
+    const url = templateContext(target, 'first').site.currentUrl
+    assert.notEqual(url, '/', target)
+    assert.deepEqual(marked(url), [], `${target} marks nothing`)
+  }
+  assert.ok(marked('/').length > 0, 'the control: `/` DOES mark the bundled Home item, so "marks nothing" is a real difference')
+})
+
+test('the ONE assembly: `templateContext` is `assemble` over the bundled pieces, target by target', () => {
+  for (const target of FILES) {
+    for (const feed of ['first', 'last', 'empty'] as const) {
+      const ctx = templateContext(target, feed)
+      assert.deepEqual(ctx.ghost['@site'], site(), `${target}: @site is the dataset's own`)
+      assert.deepEqual(ctx.ghost['@config'], { posts_per_page: postsPerPage() })
+      assert.equal(ctx.site.url, site().url)
+    }
+  }
+  // the pieces a live source hands in go through the SAME rules: an entry spread flat, a list flat beside its taxonomy
+  const live = { title: 'Live', url: 'https://live.example/', navigation: [{ label: 'Home', url: '/' }] }
+  const entry = { slug: 'x', title: 'X', url: 'https://live.example/x/' }
+  assert.deepEqual(assemble('post.hbs', { site: live, postsPerPage: 12, entry }), {
+    ghost: { '@site': live, '@config': { posts_per_page: 12 }, ...entry },
+    site: { url: live.url, navigation: live.navigation, currentUrl: '/x/' },
+  })
+  const pagination = { page: 2, pages: 3, limit: 12, total: 30 }
+  const tag = { slug: 'craft', name: 'Craft' }
+  const archive = assemble('tag.hbs', { site: live, postsPerPage: 12, list: { rows: [entry], pagination, base: '/tag/craft/', taxonomy: { kind: 'tag', row: tag } } })
+  assert.deepEqual(archive.ghost, { '@site': live, '@config': { posts_per_page: 12 }, tag, posts: [entry], pagination })
+  assert.deepEqual(archive.site, { url: live.url, navigation: live.navigation, currentUrl: '/tag/craft/page/2/', pagination, paginationBase: '/tag/craft/' })
+  assert.equal(assemble('error.hbs', { site: live, postsPerPage: 12 }).site.currentUrl, MISSED_ADDRESS)
+  assert.equal(assemble('default.hbs', { site: live, postsPerPage: 12 }).site.currentUrl, '/')
+})
+
+test('the source is an ARGUMENT that defaults to the bundled one — and a subject belongs to the source it was chosen from', () => {
+  // the default is BUNDLED, byte for byte
+  for (const file of FILES) {
+    assert.deepEqual(resolveSubject(file, null, BUNDLED), resolveSubject(file, null), file)
+    assert.equal(feedPages(file, fixtureSubject(file), BUNDLED), feedPages(file, fixtureSubject(file)), file)
+  }
+  // a subject chosen over the SITE, while the sample renders, is the sample's own starting subject — SILENTLY — and
+  // the choice is kept (nothing here deletes it): it comes back with its source
+  const siteTag: Subject = { kind: 'tag', slug: 'no-such-tag-on-the-sample', source: 'site' }
+  assert.deepEqual(resolveSubject('tag.hbs', siteTag), { subject: fixtureSubject('tag.hbs'), fellBack: false })
+  // …and an unmarked (sample) subject while the SITE renders is the site's own starting subject, silently too
+  const site_: ContentSource = { name: 'site', starting: () => ({ kind: 'tag', slug: 'craft' }), has: (s) => s.slug === 'craft', pages: () => 1 }
+  assert.deepEqual(resolveSubject('tag.hbs', { kind: 'tag', slug: subject('tag').slug }, site_), { subject: { kind: 'tag', slug: 'craft' }, fellBack: false })
+  // "no longer there" is said only where the subject's OWN source answered and does not hold it
+  assert.deepEqual(resolveSubject('tag.hbs', { kind: 'tag', slug: 'gone', source: 'site' }, site_), { subject: { kind: 'tag', slug: 'craft' }, fellBack: true })
+  assert.deepEqual(resolveSubject('tag.hbs', { kind: 'tag', slug: 'craft', source: 'site' }, site_), { subject: { kind: 'tag', slug: 'craft', source: 'site' }, fellBack: false })
+  // and `feedPages` asks the source it is handed
+  assert.equal(feedPages('tag.hbs', { kind: 'tag', slug: 'craft' }, { ...site_, pages: () => 7 }), 7)
 })
 
 test('`{{navigation}}` marks what Ghost marks on that address — `nav-current` on an exact match only (`utils.js:61`)', () => {

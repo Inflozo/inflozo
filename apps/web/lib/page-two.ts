@@ -31,6 +31,8 @@ export type Placed = DocInstance & { target: string; doc: string }
 
 type Docs = Readonly<Record<string, ProjectDoc>>
 type Subject = orbitWeekly.Subject | null | undefined
+/** Story 5.18 — where the list's pages are answered from: the bundled publication unless the site is what shows. */
+type Source = orbitWeekly.ContentSource
 
 /* ── THE WORDS (R-170: one name for one thing, wherever it is shown) ──────────────────────────────────────────── */
 
@@ -74,20 +76,23 @@ const ONE_PAGE = (kind: string) => `this ${kind}'s posts all fit on one page, so
  * where the canvas paginates, its page 1 has a main feed to carry the row, and the list that feed renders — the whole
  * feed on Home, the subject's own posts on an archive — runs to a second page. Nothing is invented (FR-H3).
  */
-export function noPageTwo(canvas: CanvasKey, docs: Docs, subject: Subject): string | null {
+export function noPageTwo(canvas: CanvasKey, docs: Docs, subject: Subject, source: Source = orbitWeekly.BUNDLED): string | null {
   if (PAGE_TWO[canvas] === undefined) return NO_PAGES
   if (mainFeedOf(docs[templateKeyOf(canvas)]) === undefined) return NO_FEED
-  if (orbitWeekly.feedPages(CANVASES[canvas].file, subject) < 2) return ONE_PAGE(subject?.kind ?? 'page')
+  // Story 5.18: the list the canvas renders is the SOURCE IN FORCE's — the site's own posts when that is what shows
+  if (orbitWeekly.feedPages(CANVASES[canvas].file, subject, source) < 2) return ONE_PAGE(subject?.kind ?? 'page')
   return null
 }
 
-export const offersPageTwo = (canvas: CanvasKey, docs: Docs, subject: Subject): boolean => noPageTwo(canvas, docs, subject) === null
+export const offersPageTwo = (canvas: CanvasKey, docs: Docs, subject: Subject, source?: Source): boolean =>
+  noPageTwo(canvas, docs, subject, source) === null
 
 /** THE PAGE IN FORCE: the one asked for, unless page 2 was asked for where it has stopped existing — a subject whose
- *  archive fits one page, a page 1 that lost its main feed to an undo — and then page 1, with the reason to say. */
-export function pageInForce(asked: Page, canvas: CanvasKey, docs: Docs, subject: Subject): { page: Page; reason: string | null } {
+ *  archive fits one page, a page 1 that lost its main feed to an undo, a source whose list fits one page — and then
+ *  page 1, with the reason to say. */
+export function pageInForce(asked: Page, canvas: CanvasKey, docs: Docs, subject: Subject, source?: Source): { page: Page; reason: string | null } {
   if (asked === 1) return { page: 1, reason: null }
-  const why = noPageTwo(canvas, docs, subject)
+  const why = noPageTwo(canvas, docs, subject, source)
   return why === null ? { page: 2, reason: null } : { page: 1, reason: why }
 }
 
