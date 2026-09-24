@@ -572,6 +572,13 @@ checkout's HEAD**, which each walk verifies before it starts. The final state is
 `dpl_2MRamVgaPKgsNofvh5gFVoRyKpqw` **READY at `935deb79`**, after the owner's two findings below. The deployed walks were therefore run at
 Dev rather than deferred, and the Matrix Test Audit's rows, the defects they exposed and each fix follow:
 
+**Deploy (2026-09-24).** No migration — Dev's own probe (§50) proved the CAS needs no schema change, so there is no
+Schema phase and nothing to apply by hand. `env $(grep -E '^(VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) curl … https://api.vercel.com/v6/deployments?target=production`
+confirms the production Vercel project is **Deployment: `dpl_9F7FLbUK7iyCMwH44WFhpm6L4ewb` READY, built from HEAD
+`4aa48f5e`** — the Review commit whose patched lock walk (0 FAIL, 77 PASS) is recorded above. `app.inflozo.com` and
+`inflozo.com` are served from this one deployment (`docs/project-context.md`'s "Where things are"). `owner_test`
+stays `pending` for his test from the table below.
+
 - `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-lock.cjs`
   — **0 FAIL, 74 PASS on `app.inflozo.com` at `935deb79`** (65 PASS at `d66fa06f`, before the owner's findings
   added their rows), two real browser contexts of one account
