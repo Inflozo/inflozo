@@ -50,6 +50,7 @@ let LOCK_BEATS_MS = 35_000
 let fails = 0
 const check = (name, ok, detail = '') => { results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`); if (!ok) fails++; return ok }
 const note = (name, detail) => results.push(`note  ${name} — ${detail}`)
+const record = note
 
 const call = async (base, p, init = {}) => {
   const r = await fetch(`${SB}${base}${p}`, { ...init, headers: { apikey: SECRET, Authorization: `Bearer ${SECRET}`, 'Content-Type': 'application/json', Prefer: 'return=representation', ...(init.headers || {}) } })
@@ -132,7 +133,8 @@ const livePanel = (page) =>
     const aside = document.getElementById('editor-controls')
     if (!aside) return null
     const all = [...aside.querySelectorAll('input, select, textarea, button, [contenteditable]')]
-    const editing = all.filter((e) => !e.hasAttribute('aria-expanded') && !e.closest('[data-page-row]') && !/(Collapse|Expand|Show|Hide) (controls|settings)/i.test(e.getAttribute('aria-label') || ''))
+    // …and a box's Cancel (`data-cancel`, the codebase's own mark): closing a box is not editing
+    const editing = all.filter((e) => !e.hasAttribute('aria-expanded') && !e.hasAttribute('data-cancel') && !e.closest('[data-page-row]') && !/(Collapse|Expand|Show|Hide) (controls|settings)/i.test(e.getAttribute('aria-label') || ''))
     const live = (e) => (e.hasAttribute('contenteditable') ? e.getAttribute('contenteditable') === 'true' : !e.matches(':disabled') && e.getAttribute('aria-disabled') !== 'true' && !e.readOnly)
     return { editing: editing.length, live: editing.filter(live).length, sample: editing.filter(live).slice(0, 5).map((e) => (e.getAttribute('aria-label') || e.textContent || e.tagName).trim().slice(0, 30)) }
   })
@@ -262,14 +264,32 @@ async function main() {
      * reading B5a's bar — "You are editing this site somewhere else" — about its OWN tab for a whole ~15 s
      * heartbeat, with every edit silently refused (measured on app.inflozo.com at d895c183; it is what made step 93
      * of run-verify-editor.cjs fail). Two seconds is the assertion: a round trip, not a heartbeat. */
+    // the page's own policy, watched across the reload: `selfMarkScript` is an inline script, and one the policy
+    // refused would leave the reader's bar to paint — so a refusal must be loud, never a quiet pass
+    await A.addInitScript(() => {
+      window.__violations = []
+      document.addEventListener('securitypolicyviolation', (e) => window.__violations.push(`${e.violatedDirective} ${e.blockedURI || 'inline'}`))
+    })
     await A.reload({ waitUntil: 'load' })
-    // SAMPLED, NOT GLANCED AT: the bar must never appear, not for a frame. One look at 2.5 s passed while the bar
-    // flashed at ~1 s on every navigation (executed 2026-09-24 — reader at 1 s, holder by 2 s, five of five).
+    // SAMPLED, NOT GLANCED AT: the bar must never be SEEN, not for a frame. One look at 2.5 s passed while the bar
+    // flashed at ~1 s on every navigation (executed 2026-09-24 — reader at 1 s, holder by 2 s, five of five), and a
+    // count of the bar's mere PRESENCE could not tell that from the server's first frame, which is drawn and masked
+    // (`selfMarkScript`) until the editor recognises itself. So: VISIBLE samples fail, masked ones are recorded.
     let flashed = 0
+    let masked = 0
     for (const t0 = Date.now(); Date.now() - t0 < 3000; ) {
-      if (await A.evaluate(() => !!document.getElementById('editor-lock-bar'))) flashed++
+      const bar = await A.evaluate(() => {
+        const el = document.getElementById('editor-lock-bar')
+        return el === null ? 'absent' : el.checkVisibility() ? 'visible' : 'masked'
+      })
+      if (bar === 'visible') flashed++
+      if (bar === 'masked') masked++
       await A.waitForTimeout(100)
     }
+    const aViolations = await A.evaluate(() => window.__violations ?? null)
+    record('the server\'s first frame after the reload', `${masked} sample(s) held the reader's bar in the DOM, masked; ${flashed} showed it`)
+    check('…and the page\'s own policy refused nothing across the reload — the pre-paint script ran under its nonce',
+      Array.isArray(aViolations) && aViolations.length === 0, JSON.stringify(aViolations))
     const aBack = await surface(A)
     const backRow = await lockRow(A, P)
     check('matrix "Same session reloads": the lock is KEPT — no bar at its own reflection, the sidebar undimmed, and it is editing within a round trip rather than a heartbeat',

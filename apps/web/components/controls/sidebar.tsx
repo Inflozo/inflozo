@@ -534,6 +534,9 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           <Button type="button" variant="secondary" size={36} data-cancel onClick={() => confirm.current?.close()}>
             Cancel
           </Button>
+          {/* R-192: the one button here that edits. A box left open by a session that has just stopped holding can
+              still be closed — Cancel is not an edit — but it cannot reset anything. */}
+          <ReadOnly on={readOnly}>
           <Button
             type="button"
             variant="coral"
@@ -545,6 +548,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           >
             Reset design
           </Button>
+          </ReadOnly>
         </div>
       </dialog>
     </div>
