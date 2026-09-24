@@ -527,9 +527,10 @@ export function Editor({
   /** the generation this session ACQUIRED at, or null when it has never held the lock — or gave it away, which is
    *  not being displaced. AD-15's take-over test compares the row's generation against this and nothing else. */
   const heldGeneration = useRef<number | null>(null)
-  /** the request this holder has already ANSWERED or let expire, by the asking session's id. Without it B5b would
-   *  come straight back on the next beat: Keep editing clears the columns, but the expiry deliberately does not —
-   *  the requester's own timer owns that half. */
+  /** the REQUEST this holder has already ANSWERED or let expire — `LockRow.request`, its session AND its moment,
+   *  never the session alone, or the same tab asking again would be swallowed for good. Without it B5b would come
+   *  straight back on the next beat: Keep editing clears the columns, but the expiry deliberately does not — the
+   *  requester's own timer owns that half. */
   const [dismissed, setDismissed] = useState<string | null>(null)
   /** UX-DR12's SECOND live region, and it is ASSERTIVE. `#editor-said` is the editor's polite one and stays polite:
    *  widening it would make every design-ring announcement shout. Only this story writes here. */
@@ -1053,7 +1054,7 @@ export function Editor({
 
   /** B5b's **Keep editing** — the nudge columns are cleared, and no take-over is offered from that request. */
   const keepEditing = async () => {
-    setDismissed(latest.current.lock.row?.nudgeRequestedBy ?? null)
+    setDismissed(latest.current.lock.row?.request ?? null)
     const answer = await askLock(lockAt(), { intent: 'keep', session: tabId.current })
     tell.current('answered')
     land(answer)
@@ -1181,10 +1182,10 @@ export function Editor({
    *  user answers by not answering. It is the title alone — the popover's own body, strip and buttons are read when
    *  focus reaches them, and a region that read the whole card would talk over whatever was being typed. */
   useEffect(() => {
-    if (lock.holder && (lock.row?.nudgeRequestedBy ?? null) !== null && (lock.row?.nudgeRequestedBy ?? null) !== dismissed) {
+    if (lock.holder && (lock.row?.request ?? null) !== null && (lock.row?.request ?? null) !== dismissed) {
       setAnnounced(LOCK_COPY.askTitle)
     }
-  }, [lock.holder, lock.row?.nudgeRequestedBy, dismissed])
+  }, [lock.holder, lock.row?.request, dismissed])
 
   /** THE REQUESTER'S OWN ~30 s (§AD4). It runs from the moment the request LANDED, and running out is the only
    *  thing that offers the take-over — B5c is never reachable from a request that was answered. */
@@ -2597,7 +2598,7 @@ export function Editor({
   /** STORY 5.17 — is a request waiting on THIS session? Derived, never stored twice: the row's own nudge columns,
    *  minus the one this holder has already answered or let expire. */
   const askedBy = lock.holder ? (lock.row?.nudgeRequestedBy ?? null) : null
-  const nudged = askedBy !== null && askedBy !== tabId.current && askedBy !== dismissed
+  const nudged = askedBy !== null && askedBy !== tabId.current && (lock.row?.request ?? null) !== dismissed
 
   const src = canvasPath ?? canvasSrc(isApp(pathname))
 
@@ -3249,7 +3250,7 @@ export function Editor({
           onKeep={() => void keepEditing()}
           // F-079: it runs out only when nobody is there — every interaction inside it, focus and a resting pointer
           // included, has already put the countdown back to the start.
-          onExpire={() => setDismissed(askedBy)}
+          onExpire={() => setDismissed(lock.row?.request ?? null)}
         />
       ) : null}
 

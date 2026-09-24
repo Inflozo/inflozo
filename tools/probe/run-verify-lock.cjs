@@ -17,6 +17,9 @@
  *   A presses Hand over · A's edits go up FIRST, then A becomes the reader and B gains the lock
  *   B keeps the lock unanswered · A takes over from B5c, which opens on Wait and never itemises the loss
  *   B is displaced: the bar, the assertive sentence, and its journal cleared unconditionally
+ *   A reloads and KEEPS the lock · B asks and A keeps editing, and B's SECOND ask still reaches A
+ *   a take-over with nothing owed asks without a danger panel · a silent holder goes stale and is taken silently,
+ *   and learns it when it can reach the server again
  *
  * EVERY EXPECTATION IS DERIVED FROM THE APP'S OWN MODULES (`apps/web/lib/lock.ts`'s `LOCK_COPY` and its constants),
  * never restated here — R-170's "one name for one thing" made checkable, and standing rule 4 applied to a string.
@@ -86,6 +89,7 @@ const surface = (page) =>
       dialogText: dialog && dialog.open ? dialog.innerText.replace(/\s+/g, ' ').trim() : null,
       dialogWidth: dialog ? getComputedStyle(dialog).width : null,
       dialogRadius: dialog ? getComputedStyle(dialog).borderTopLeftRadius : null,
+      confirmFill: dialog ? getComputedStyle(document.getElementById('editor-takeover-confirm')).backgroundColor : null,
       focus: document.activeElement?.textContent?.trim() ?? null,
       sidebarOpacity: aside ? getComputedStyle(aside).opacity : null,
       sidebarReadonly: aside ? aside.hasAttribute('data-readonly') : null,
@@ -241,6 +245,27 @@ async function main() {
     check('matrix "Second opener": commit() REFUSES — the row does not move, not even for a frame', JSON.stringify(await layerNames(B)) === JSON.stringify(rowsBefore), (await layerNames(B)).join(' | '))
     check('…and nothing B did moved the revision', (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision === revisionBefore)
 
+    /* ── matrix "Keep editing" — and the defect the audit found under it ─────────────────────────────────────
+     *
+     * B asks and A keeps editing. Then B asks AGAIN, below, and that second request must reach A. Before the fix it
+     * never did: the holder dismissed a request by the asking TAB's id, so one Keep editing silenced that tab for
+     * good, and B was then offered a take-over for a request A had never been shown. */
+    await B.getByRole('button', { name: LOCK.LOCK_COPY.request, exact: true }).click()
+    await B.waitForTimeout(2500)
+    const bAsking = await surface(B)
+    check('matrix "Request editing": the reader shows its waiting state — Asking…, aria-busy and still a button, never `disabled` (R-98)',
+      bAsking.barButton === LOCK.LOCK_COPY.requesting && bAsking.barBusy === 'true', JSON.stringify({ button: bAsking.barButton, busy: bAsking.barBusy }))
+    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
+    check('fixture — the first request reached A', (await surface(A)).card !== null)
+    await A.getByRole('button', { name: LOCK.LOCK_COPY.keep, exact: true }).click()
+    await A.waitForTimeout(1500)
+    const keptRow = await lockRow(A, P)
+    check('matrix "Keep editing": the nudge columns are cleared and A\'s card is gone', keptRow !== null && keptRow.nudgeRequestedBy === null && (await surface(A)).card === null, JSON.stringify(held(keptRow)))
+    await B.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
+    const bKept = await surface(B)
+    check('…and B is TOLD, assertively, in the one sentence built from the ruled words', bKept.announced === LOCK.LOCK_COPY.kept, bKept.announced)
+    check('…and no take-over is offered from that request: B\'s bar offers Request editing again', bKept.barButton === LOCK.LOCK_COPY.request, bKept.barButton)
+
     // ── B asks, A is told ────────────────────────────────────────────────────────────────────────────────────
     await B.getByRole('button', { name: LOCK.LOCK_COPY.request, exact: true }).click()
     await B.waitForTimeout(2500)
@@ -248,6 +273,7 @@ async function main() {
     check('matrix "Request editing": nudge_requested_by is written, and it is not the holder\'s own', asked !== null && !!asked.nudgeRequestedBy && asked.nudgeRequestedBy !== asked.holderSessionId, JSON.stringify(held(asked)))
     await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
     const aAsked = await surface(A)
+    check('the SAME tab asking AGAIN is a NEW request, and it reaches A — Keep editing answered one request, not every request that tab will ever make', aAsked.card !== null, aAsked.card)
     check('matrix "Holder receives it": B5b, in the ruled title (R-189)', (aAsked.card ?? '').includes(LOCK.LOCK_COPY.askTitle), aAsked.card)
     check('B5b is a POPOVER, not a modal, at the frame\'s 440', aAsked.cardIsDialog === false && aAsked.cardWidth === '440px', JSON.stringify({ dialog: aAsked.cardIsDialog, width: aAsked.cardWidth }))
     check('B5b states the sync position BEFORE asking — one edit, pluralised (R-190, AD-16)', (aAsked.card ?? '').includes(LOCK.LOCK_COPY.willSend(1)) && (aAsked.card ?? '').includes(LOCK.LOCK_COPY.pending(1)), aAsked.card)
@@ -296,6 +322,7 @@ async function main() {
     await A.locator('#editor-lock-take-over').click()
     await A.waitForTimeout(900)
     const confirm = await surface(A)
+    const dangerFill = confirm.confirmFill
     check('B5c opens: the ruled heading, 440 wide, radius 16', confirm.dialogOpen === true && (confirm.dialogText ?? '').includes(LOCK.LOCK_COPY.takeoverTitle) && confirm.dialogWidth === '440px' && confirm.dialogRadius === '16px', JSON.stringify({ w: confirm.dialogWidth, r: confirm.dialogRadius }))
     check('UX-DR14, R-115: it opens with focus on the CANCELLING action', confirm.focus === LOCK.LOCK_COPY.wait, confirm.focus)
     check('its danger panel names the count and admits the limit honestly', (confirm.dialogText ?? '').includes(LOCK.LOCK_COPY.willBeLost(1)) && (confirm.dialogText ?? '').includes(LOCK.LOCK_COPY.lossIsFinal), confirm.dialogText)
@@ -318,6 +345,50 @@ async function main() {
     check('R-190: the word is "unsynced" and "unsaved" appears nowhere on either screen', !/unsaved/i.test(`${bLost.bar} ${bLost.announced} ${confirm.dialogText}`))
     const undoable = await B.evaluate(() => document.getElementById('editor-undo')?.getAttribute('aria-disabled'))
     check('AD-15: B\'s journal is cleared UNCONDITIONALLY — there is nothing left to undo', undoable === 'true', String(undoable))
+
+    /* ── matrix "Take over with nothing owed" ────────────────────────────────────────────────────────────────
+     * A has just hydrated from the cloud, so it owes nothing. B asks and nobody answers: the confirm still ASKS — it
+     * still ends a session — but with NO danger panel and NO danger fill, because nothing is being lost (UX-DR3:
+     * absent, never "0 … will be lost" in red). Wait then takes nothing. */
+    const askedAgainAt = Date.now()
+    await B.getByRole('button', { name: LOCK.LOCK_COPY.request, exact: true }).click()
+    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
+    const aOwesNothing = await surface(A)
+    check('B5b with nothing owed: the strip says so — all synced, 0 pending', (aOwesNothing.card ?? '').includes(LOCK.LOCK_COPY.allSynced) && (aOwesNothing.card ?? '').includes(LOCK.LOCK_COPY.pending(0)), aOwesNothing.card)
+    await B.waitForTimeout(Math.max(0, askedAgainAt + LOCK.NUDGE_MS + 4000 - Date.now()))
+    const bNoAnswer = await surface(B)
+    check('…and B, unanswered, reads the ruled sentence with the ROW\'s count — none', (bNoAnswer.bar ?? '').includes(LOCK.LOCK_COPY.noResponse(0)), bNoAnswer.bar)
+    await B.locator('#editor-lock-take-over').click()
+    await B.waitForTimeout(900)
+    const nothing = await surface(B)
+    // the body's owed sentence, DERIVED: what `takeoverBody` adds when something is owed
+    const owedSentence = LOCK.LOCK_COPY.takeoverBody(1000, true).slice(LOCK.LOCK_COPY.takeoverBody(1000, false).length).trim()
+    check('matrix "Take over with nothing owed": the confirm still ASKS — it still ends a session', nothing.dialogOpen === true && (nothing.dialogText ?? '').includes(LOCK.LOCK_COPY.takeoverTitle), nothing.dialogText)
+    check('…but the danger panel is ABSENT, not empty, and so is the body\'s owed sentence (UX-DR3)',
+      !(nothing.dialogText ?? '').includes(LOCK.LOCK_COPY.lossIsFinal) && !(nothing.dialogText ?? '').includes(LOCK.LOCK_COPY.willBeLost(0)) && !(nothing.dialogText ?? '').includes(owedSentence), nothing.dialogText)
+    check('…and the confirm is not a danger FILL — compared against the owed confirm\'s own fill, never a literal colour', nothing.confirmFill !== null && dangerFill !== null && nothing.confirmFill !== dangerFill, JSON.stringify({ nothing: nothing.confirmFill, owed: dangerFill }))
+    await B.getByRole('button', { name: LOCK.LOCK_COPY.wait, exact: true }).click()
+    await B.waitForTimeout(800)
+    const staleFrom = await lockRow(B, P)
+    check('…and Wait takes nothing: the dialog closes and the generation has not moved', (await surface(B)).dialogOpen === false && staleFrom !== null && staleFrom.generation === taken.generation, JSON.stringify(held(staleFrom)))
+
+    /* ── matrix "Stale lock", and the heartbeat's "network error ⇒ no state change" ─────────────────────────
+     * From here A's lock route FAILS — a crashed tab, a dead network: it can neither beat nor release. Its row goes
+     * stale after §AD4's window and B's own ~15 s poll then takes it with the CAS, filtered on the generation AND the
+     * age in one statement (`lock/route.ts`), SILENTLY: nothing is being ended, so there is no confirm. */
+    await A.route('**/projects/*/lock', (r) => r.abort('failed'))
+    await B.waitForTimeout(LOCK.STALE_MS + LOCK.HEARTBEAT_MS + 5000)
+    const staleTaken = await lockRow(B, P)
+    const bStale = await surface(B)
+    check('matrix "Stale lock": B takes it SILENTLY at generation N+1 — no bar, no dialog, nothing asked',
+      staleTaken !== null && staleTaken.generation === staleFrom.generation + 1 && staleTaken.holderSessionId === bBeat.holderSessionId && bStale.bar === null && bStale.dialogOpen === false,
+      JSON.stringify({ from: held(staleFrom), to: held(staleTaken), bar: bStale.bar }))
+    check('matrix "Heartbeat": a beat that fails on the NETWORK changes nothing — cut off, A still shows no bar', (await surface(A)).bar === null)
+    await A.unroute('**/projects/*/lock')
+    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 5000)
+    const aRevived = await surface(A)
+    check('…and once A can reach the server again it learns it lost the lock: read-only, and told assertively (AD-15)',
+      (aRevived.bar ?? '').includes(LOCK.LOCK_COPY.reading) && aRevived.announced === LOCK.LOCK_COPY.displaced(0), JSON.stringify({ bar: aRevived.bar, announced: aRevived.announced }))
 
     await ctxA.close()
     await ctxB.close()

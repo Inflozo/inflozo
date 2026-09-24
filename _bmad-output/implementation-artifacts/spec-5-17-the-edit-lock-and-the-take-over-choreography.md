@@ -494,14 +494,16 @@ project, 2026-09-23:
   `unsynced_edits` survives the take-over*.
 - `python3 tools/doc-audit.py --check` — **PASS (0 warnings)**, with both new probes catalogued.
 
-**Vercel and the deployed site** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`). CI went **green on the Dev
-commit `d895c183`** — `check` and `rls` both passed, so `deploy` ran (DW-7) — and Vercel serves
-`dpl_A72fzfnh2iwbrHJoMAc72TP1WbmW` **READY, built from `d895c183`**, this checkout's HEAD. The
-deployed walks were therefore run at Dev rather than deferred:
+**Vercel and the deployed site** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, and `GITHUB_TOKEN` to read the
+runs). CI went **green on both Dev commits** — `check` and `rls` passed, so `deploy` ran (DW-7) —
+and Vercel served `dpl_A72fzfnh2iwbrHJoMAc72TP1WbmW` **READY at `d895c183`**, then
+`dpl_46k51uFyFNbfyVrPTgfjsrEtYYCX` **READY at `d9e5f090`** (the fix below), each this checkout's
+HEAD when its walk ran. The deployed walks were therefore run at Dev rather than deferred:
 
 - `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-lock.cjs`
-  — **0 FAIL, 45 PASS on `app.inflozo.com`**, two real browser contexts of one account, covering every
-  row of the I/O matrix that has a screen. Among them, on the real site: B5a's bar in the ruled words
+  — **0 FAIL, 48 PASS on `app.inflozo.com` at `d9e5f090`** (45 PASS at `d895c183`, before the matrix
+  row below existed), two real browser contexts of one account, covering every row of the I/O matrix
+  that has a screen. Among them, on the real site: B5a's bar in the ruled words
   with nobody named and the sidebar at `0.55` described by the bar's own sentence; `commit()` refusing
   with the Layers list unmoved and the revision unchanged; B5b a **popover** at 440 announced
   assertively; the countdown really counting (20s → 16s) and **focus restarting it** (16s → 30s,
@@ -521,11 +523,41 @@ deployed walks were therefore run at Dev rather than deferred:
   `editor.tsx`'s poll: a beat that finds **no row at all** means the lock is free, so it acquires at
   once instead of waiting for the next beat — bounded to exactly one extra call by `wasHolder`, which
   is read from `heldGeneration` rather than `holding` because `holding` stays true for a nudge's
-  worth of time after Hand over and that pair would spin. `run-verify-lock.cjs` gains the row.
-- `node tools/probe/run-verify-editor.cjs` — expected: no NEW failures. At Dev, against the same local
-  build: **573 PASS, 1 FAIL — step 83 alone**, which asserts a real deployment's build id (`?v=<hex>`)
-  and reads `v=dev` on a local run, so it can only pass deployed. Steps 36 and 66b-c fail
-  intermittently on untouched code (DW-222, DW-220): re-run and record both runs.
+  worth of time after Hand over and that pair would spin. `run-verify-lock.cjs` gains the row as
+  three assertions — 2.5 s after a reload there is **no bar**, the generation is **unmoved** (1 → 1:
+  the same session, not a take-over) and the **unsynced work is kept** — and all three PASS at
+  `d9e5f090`. **Their control is the same observation before the fix** (standing rule 2): the bar
+  exists exactly when `lock.holder` is false, and at `d895c183` it was on screen at every sample from
+  0.5 s to 10 s after a reload, on every observation made (two probe runs, and step 93 below), so the
+  2.5 s assertion would have failed there.
+- **The same audit found a second defect, under "Keep editing", and it was executed before it was
+  fixed.** The holder dismissed a request by the asking **tab's id**, so one Keep editing silenced that
+  tab for good. On `app.inflozo.com` at `d9e5f090`, two contexts of one account: the first request
+  reached the holder, Keep editing cleared it and the requester was told — and then **the requester's
+  SECOND request never reached the holder**, and after its 30 s the requester was offered **Take over
+  anyway** for a request the holder had never been shown: a take-over with no consent step, which is
+  the one thing the choreography exists to prevent. **Fixed** by giving a request an identity —
+  `LockRow.request`, its session **and** the moment it was made, computed once in `rowFrom` where the
+  route, `read.ts` and `node --test` all reach it — and dismissing *that*, at all three call sites.
+  `lock.test.ts` gains the rule, and `run-verify-lock.cjs` the row. That repro is the negative control
+  for the walk's new check.
+- **The audit's remaining rows are now walked too**, where before only their pure rules were unit-tested:
+  the reader's waiting state (**Asking…** + `aria-busy`, R-98); **Keep editing** (columns cleared, the
+  requester told, no take-over offered, and the same tab's second ask reaching the holder); **a
+  take-over with nothing owed** (B5b's "all synced · 0 pending", then B5c still asking but with no
+  danger panel, no owed sentence and a confirm whose fill differs from the owed confirm's — compared,
+  never a literal colour — and Wait taking nothing); and **a stale lock** (a holder whose lock route
+  fails goes stale and the reader's own poll takes it **silently** at N+1 through the route's
+  age-filtered CAS; the cut-off holder shows no bar — the heartbeat's "network error ⇒ no state
+  change" — and once it can reach the server again it is displaced and told).
+- `node tools/probe/run-verify-editor.cjs` — **0 FAIL, 575 PASS on `app.inflozo.com` at `d9e5f090`**
+  (run 3, exit 0), a complete walk. **Step 93 now passes** — the field reads *"The archive — page
+  {page_number}"* where it read *"The archive"* at `d895c183`, the reload fix proven by an independent
+  instrument — and so does **step 83**, which asserts a real deployment's build id and so could never
+  pass on the local build the agent first ran (573 PASS, 1 FAIL there). Recorded plainly, as the
+  memory of DW-222 asks: run 2 on the same deployment died with a `HARNESS ERROR` (a 15 s
+  `waitForFunction` at step 69) and no `FAIL` line, which is not a result; run 3 passed step 69 in
+  full. Neither the walk's intermittent step 36 nor 66b-c failed in run 3.
 
 **Manual checks:**
 
@@ -662,7 +694,11 @@ within about fifteen seconds. Two tabs of the same browser on the laptop show it
 1. **Leave it at about fifteen seconds. (RECOMMENDED)**
    - Two tabs of one browser — by far the commonest case, and the one that caused the original
      problem — are already instant, and cost nothing.
-   - Laptop-to-phone waits up to about fifteen seconds, once, at the moment you ask to take over.
+   - Laptop-to-phone waits up to about fifteen seconds, once, at the moment you ask to take over. The
+     same delay runs the other way too: the card on the device you are asking can appear up to fifteen
+     seconds late, so that device may have only about fifteen of its thirty seconds to answer before
+     **Take over anyway** appears on yours. Both are always you, and the red box still says exactly how
+     many edits a take-over would lose before anything is lost.
    - Nothing new is exposed, nothing is added to the database, and nothing costs more.
 2. **Make other devices instant too.**
    - We would put a Supabase connection in the browser page itself. That means publishing a key into

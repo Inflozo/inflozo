@@ -24,6 +24,7 @@ const row = (over: Partial<LockRow> = {}): LockRow => ({
   ageMs: 0,
   nudgeRequestedBy: null,
   nudgeAgeMs: null,
+  request: null,
   ...over,
 })
 
@@ -187,8 +188,32 @@ test('the row maps once, and the two ages are measured on the server rather than
     ageMs: 10_000,
     nudgeRequestedBy: MINE,
     nudgeAgeMs: 30_000,
+    request: `${MINE}@2026-09-23T11:59:30.000Z`,
   })
   assert.equal(isStale(mapped), false)
+})
+
+test('matrix "Keep editing" answers ONE request: the same tab asking again is a NEW request, and reaches the holder', () => {
+  const at = (nudged: string | null, by: string | null = MINE) =>
+    rowFrom(
+      {
+        holder_session_id: THEIRS,
+        lock_generation: 2,
+        unsynced_edits: 0,
+        heartbeat_at: '2026-09-24T07:00:00.000Z',
+        nudge_requested_by: by,
+        nudge_requested_at: nudged,
+      },
+      Date.parse('2026-09-24T07:00:05.000Z'),
+    ).request
+  const first = at('2026-09-24T07:00:01.000Z')
+  assert.notEqual(first, null)
+  assert.equal(at('2026-09-24T07:00:01.000Z'), first, 'the same request read twice is the same request')
+  // THE DEFECT THIS TEST EXISTS FOR: keyed by the session, this second ask equalled the first, so a holder that had
+  // pressed Keep editing once was never shown it — and the requester was offered a take-over for it
+  assert.notEqual(at('2026-09-24T07:00:40.000Z'), first, 'the same tab asking again is a different request')
+  assert.notEqual(at('2026-09-24T07:00:01.000Z', 'tab-c'), first, 'another tab asking at the same moment is too')
+  assert.equal(at(null, null), null, 'a cleared row has no request waiting')
 })
 
 test('a row with no nudge, and a clock that ran backwards, both map without lying', () => {
@@ -208,6 +233,7 @@ test('a row with no nudge, and a clock that ran backwards, both map without lyin
   assert.equal(mapped.ageMs, 0)
   assert.equal(mapped.nudgeRequestedBy, null)
   assert.equal(mapped.nudgeAgeMs, null)
+  assert.equal(mapped.request, null)
 })
 
 // AD-15's flush contract — `'release'` flushing before it releases — is asserted in `journal.test.ts`, beside

@@ -54,6 +54,12 @@ export type LockRow = {
   nudgeRequestedBy: string | null
   /** how long ago it asked, or null */
   nudgeAgeMs: number | null
+  /** WHICH REQUEST is waiting — its session AND the moment it was made — or null when none is. The same tab asking
+   *  twice is TWO requests, and Keep editing answers ONE: keyed by the session alone, a holder that pressed Keep
+   *  editing once never saw that tab ask again, and the requester was then offered a take-over for a request the
+   *  holder had never been shown (found by the Matrix Test Audit, 2026-09-24). Opaque — compared for equality and
+   *  never read as a time, so no surface has to trust a clock to use it. */
+  request: string | null
 }
 
 /** A PostgREST row into a `LockRow`. Here rather than in the route because `read.ts` maps the same columns, and two
@@ -75,6 +81,8 @@ export const rowFrom = (
   ageMs: since(row.heartbeat_at, now) ?? 0,
   nudgeRequestedBy: typeof row.nudge_requested_by === 'string' ? row.nudge_requested_by : null,
   nudgeAgeMs: since(row.nudge_requested_at, now),
+  // every `nudge` stamps `nudge_requested_at` afresh (`lock/route.ts`), so the pair names one request exactly
+  request: typeof row.nudge_requested_by === 'string' ? `${row.nudge_requested_by}@${String(row.nudge_requested_at)}` : null,
 })
 
 const since = (at: unknown, now: number): number | null => {
