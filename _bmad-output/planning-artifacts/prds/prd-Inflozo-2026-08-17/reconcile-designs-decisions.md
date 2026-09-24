@@ -4114,8 +4114,8 @@ nobody to message**.
   found the record, not a miss.
 - Targets: ✅ this entry · ✅ Story 5.17's spec, Question 1 and its string table — Story 5.17's Create, 2026-09-23.
   ✅ `EXPERIENCE.md` F2, § State Patterns, § Destructive confirms and the IA row · ✅ `prd.md` FR-D18 ·
-  ✅ `epics.md` Story 5.17 · ✅ `epic-5-context.md` · ⬜ built: `lock-bar.tsx`, `lock-request.tsx`,
-  `lock-takeover.tsx` — Story 5.17's Dev.
+  ✅ `epics.md` Story 5.17 · ✅ `epic-5-context.md` · ✅ built: `lock-bar.tsx`, `lock-request.tsx`,
+  `lock-takeover.tsx` — Story 5.17's Dev (2026-09-24; read on `app.inflozo.com` by `run-verify-lock.cjs`).
 
 **R-190 — an edit that is on your computer but not on the server is UNSYNCED, everywhere.** Story 5.17's Create,
 Question 2 (owner, 2026-09-23): *"'unsynced' everywhere."* The approved wording named one number with two words —
@@ -4130,8 +4130,29 @@ announcement.
   (§AD2 — *"Edits is canonical, everywhere"*), and the number still counts **user-perceived edits, never operations**
   (AD-16), so a Shuffle or a Site Remix is one edit however many ops it cost.
 - Targets: ✅ this entry · ✅ Story 5.17's spec — Story 5.17's Create, 2026-09-23. ✅ `EXPERIENCE.md` F2 ·
-  ✅ `prd.md` FR-D18 · ✅ `epics.md` Story 5.17 · ✅ `epic-5-context.md` · ⬜ built: every string in Story 5.17's
-  three surfaces — Story 5.17's Dev.
+  ✅ `prd.md` FR-D18 · ✅ `epics.md` Story 5.17 · ✅ `epic-5-context.md` · ✅ built: every string in Story 5.17's
+  three surfaces — Story 5.17's Dev (2026-09-24; `lock.test.ts` asserts `unsaved` appears in none of them).
+
+**R-191 — another device hears a lock request at its next check-in, up to ~15 s; Supabase Realtime is not used in
+v1.** Story 5.17's Dev, Question 3 (owner, 2026-09-24): *"Leave it at about fifteen seconds."* Executing §AD2's
+transport for the first time (`MEASUREMENTS.md` §50) found its middle layer has nowhere to live: the app has no
+browser-side Supabase client — no `NEXT_PUBLIC_*` key, and a session cookie that is `httpOnly` precisely because
+there is none — and a PRIVATE Realtime channel is refused without a policy on `realtime.messages`, which is a
+migration. **The lock's signals are `BroadcastChannel` (same browser: instant and free) and the ~15 s heartbeat
+(everything else)**, the row itself carrying the nudge, the release and the take-over.
+
+- **What it costs, and he was shown it before he ruled.** Another device hears a request at its next beat, up to
+  ~15 s late, so the holder there can have as little as ~15 of the requester's ~30 s to answer before *Take over
+  anyway* appears. Both sessions are always the same person (R-189), and B5c still says exactly how many edits a
+  take-over would lose before anything is lost.
+- **What it does NOT change.** §AD4's constants (heartbeat ~15 s, nudge ~30 s, stale ~60 s), the choreography, the
+  strings and the protocol; and nothing about the transport is ever shown.
+- **Reopening it is a story of its own, with a Schema phase (R-99):** a browser-side client, a published key, a
+  script-readable session and a `realtime.messages` policy — the things the security posture deliberately lacks.
+- Targets: ✅ this entry · ✅ Story 5.17's spec, Question 3 — Story 5.17's Dev, 2026-09-24 · ✅ `addendum.md` §AD2
+  (Signaling) · ✅ `ARCHITECTURE-SPINE.md`'s Supabase row · ✅ `deferred-work.md` DW-239, closed ·
+  ✅ `epic-5-context.md` · ✅ the code comments that called it open (`lib/lock.ts`, `lib/lock-client.ts`,
+  `editor.tsx`).
 
 
 ## B · Approved decisions superseded by this session

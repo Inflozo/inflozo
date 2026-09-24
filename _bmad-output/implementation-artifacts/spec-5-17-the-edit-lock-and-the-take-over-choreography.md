@@ -175,10 +175,10 @@ Ask First). §50: a **public** broadcast channel `lock:<project id>` works — s
 anyone holding the publishable key and a project id. A **private** channel is refused outright
 (`CHANNEL_ERROR: Unauthorized: You do not have permissions to read from this Channel topic`) and
 needs an RLS policy on `realtime.messages`, which is a migration. Either way the **browser** cannot
-open the socket without a browser-side client and a script-readable session. **Layer 2 is therefore
-deferred to the owner's ruling (Question 3); layers 1 and 3 — `BroadcastChannel` and the ~15 s
-heartbeat floor — are built, and the matrix's "Realtime unreachable" row is the shipped behaviour
-rather than a fallback.**
+open the socket without a browser-side client and a script-readable session. **Layer 2 was therefore
+put to the owner (Question 3) and ruled out of v1 — R-191, 2026-09-24; layers 1 and 3 — `BroadcastChannel`
+and the ~15 s heartbeat floor — are built, and the matrix's "Realtime unreachable" row is the shipped
+behaviour rather than a fallback.**
 
 **The database — everything exists, nothing is used.**
 
@@ -787,4 +787,7 @@ within about fifteen seconds. Two tabs of the same browser on the laptop show it
 Whatever you choose, the take-over itself, the warnings and the counts are unchanged — this is only
 about how long the other session waits before it hears.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-24)** — *"Leave it at about fifteen seconds."* Recorded as **R-191**. Supabase
+Realtime is not used in v1: the lock signals over `BroadcastChannel` (same browser, instant) and its own ~15 s
+heartbeat (everything else), which is what Dev built. DW-239 is closed with this ruling as its reason; reopening it is
+its own story with a Schema phase (a browser-side client, a published key and a `realtime.messages` policy).

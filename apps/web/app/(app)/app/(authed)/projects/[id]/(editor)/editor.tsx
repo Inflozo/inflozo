@@ -509,7 +509,7 @@ export function Editor({
    * THE WHOLE PROTOCOL IS AN OPTIMISTIC COMPARE-AND-SWAP ON `lock_generation` (AD-15), executed against the real
    * Supabase before any of this was written (`MEASUREMENTS.md` §50). NOTHING ABOUT THE TRANSPORT IS EVER SHOWN: two
    * tabs of one browser hear each other instantly through `BroadcastChannel`, everything else waits for the ~15 s
-   * heartbeat, and Realtime's middle layer is the owner's to rule (Question 3, DW-239).
+   * heartbeat, and Realtime is not used in v1 (R-191, owner, 2026-09-24).
    */
   const [lock, setLock] = useState<LockUi>(() => ({
     // A READER MUST NOT FLASH AN EDITABLE SHELL, so the first paint is decided by the row `read.ts` read above the
@@ -1179,7 +1179,7 @@ export function Editor({
     })
     tell.current = channel.send
     void poll()
-    // LAYER 3 — the floor, and with Realtime unbuilt (DW-239) it is what another device waits for. Nothing about
+    // LAYER 3 — the floor, and with Realtime not used in v1 (R-191) it is what another device waits for. Nothing about
     // the transport is ever shown to the user.
     const beating = setInterval(() => void poll(), HEARTBEAT_MS)
 

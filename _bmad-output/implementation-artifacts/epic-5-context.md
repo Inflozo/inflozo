@@ -205,6 +205,17 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     interaction including focus; `UX-DR13` and EXPERIENCE.md § Time limits still say "stops", and so did this story's
     own AC. Restart is the built behaviour and the three wordings are a task (standing rule 3). And §AD4's ~30 s is
     the countdown, not B5b's drawn "60s" — EXPERIENCE.md rules that difference explicitly not a finding.
+  - ***Story 5.17's Dev (2026-09-23/24), and R-191.*** §50 held: the CAS works through PostgREST, **no migration**.
+    But **the app has no browser-side Supabase client**, so every `edit_locks` write goes through
+    `projects/[id]/lock/route.ts` under the user's own session (and the service role cannot read the table at all).
+    **R-191 (owner, 2026-09-24): Realtime is not used in v1** — `BroadcastChannel` plus the ~15 s heartbeat is the
+    whole transport. Four defects the deployed walks found are fixed and walked: a reload no longer drops or flashes
+    the lock (a beat that finds no row acquires before it lands); a request's identity is its session AND its moment
+    (`LockRow.request`), so Keep editing answers one request, not a tab for good; **`/sync` refuses a session that
+    has lost the lock with 423** (`heldElsewhere`), so orphaned work never lands after a take-over; and the loss
+    sentence is SHOWN in B5a's slot when something was lost. A residual reload race remains as DW-240. An owner
+    test that needs work to stay unsent uses two side-by-side WINDOWS with automatic sending off — leaving a tab sends
+    its work.
 - **The canvas is a viewport.** The iframe is viewport-sized and scrolls internally, device preview resizes both axes (834; 390 × 844), the only scale is the automatic fit shown in a chip, and there is no zoom control, per-breakpoint editing or section cap.
   - **R-137 (owner, 2026-09-19, Story 5.7's Q1) — Desktop is a viewport too, and there is ONE rule for three
     devices:** **1440 × 900** · **834 × 1112** (`D8a`, `EXPERIENCE.md:62`) · **390 × 844** (UX-DR17), fitted by

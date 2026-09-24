@@ -5469,7 +5469,10 @@ plain: When you edit on your laptop and then open the same site on your phone, t
   seconds for the next check-in with the server. Making it instant everywhere means putting a Supabase connection in
   the page itself, which is a change to how the product is built rather than an engineering detail — so the owner is
   asked before anything is done, and nothing is broken meanwhile.
-status: open
+status: closed
+closed: 2026-09-24 — the owner ruled Question 3, option 1: *"Leave it at about fifteen seconds."* (**R-191**). Realtime
+  is not built in v1; `BroadcastChannel` and the ~15 s heartbeat ARE the transport, which is what shipped. Reopening
+  it is a story of its own with a Schema phase, as `owner:` below says.
 severity: low
 origin: Story 5.17's Dev (2026-09-23), Question 3. `addendum.md:45` names three transport layers and is the only
   statement of them in the project; `tools/probe/record-edit-lock.py` executed the middle one for the first time and

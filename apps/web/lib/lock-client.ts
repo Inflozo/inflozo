@@ -12,8 +12,9 @@ import type { LockAnswer } from './lock.ts'
  * the case DW-203 is written about — two tabs of one browser; the heartbeat's own ~15 s round trip is the floor
  * underneath it, and it is what another device waits for. Supabase Realtime's middle layer is NOT built: a browser
  * cannot open that socket without a browser-side client and a script-readable session, and a private channel needs a
- * policy on `realtime.messages` — both architectural changes the owner has not been asked for (Question 3, DW-239).
- * The matrix's "Realtime unreachable" row is therefore the SHIPPED behaviour rather than a fallback.
+ * policy on `realtime.messages` — both architectural changes, put to the owner and ruled out of v1: **R-191** (owner,
+ * 2026-09-24), "Leave it at about fifteen seconds." The matrix's "Realtime unreachable" row is therefore the SHIPPED
+ * behaviour rather than a fallback.
  */
 
 export type LockIntent = 'acquire' | 'beat' | 'nudge' | 'keep' | 'release' | 'takeover'

@@ -31,7 +31,7 @@
  * the sole surfaced count (`addendum.md:72`). */
 
 /** How often the holder tells the server it is still there, carrying `unsyncedEdits(journal)`. It is also the
- *  FLOOR under every other transport: with Realtime unbuilt (DW-239) this is how long the other session waits. */
+ *  FLOOR under every other transport: Realtime is not used in v1 (R-191), so this is how long another device waits. */
 export const HEARTBEAT_MS = 15_000
 /** How long a request waits before the take-over is offered. */
 export const NUDGE_MS = 30_000
