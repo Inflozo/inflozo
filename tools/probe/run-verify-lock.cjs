@@ -258,6 +258,11 @@ async function main() {
     await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
     check('fixture — the first request reached A', (await surface(A)).card !== null)
     await A.getByRole('button', { name: LOCK.LOCK_COPY.keep, exact: true }).click()
+    // THE POINTER MUST LEAVE THE CARD. The next card mounts in the same fixed corner, and a pointer resting on it is
+    // PRESENCE, which restarts the countdown on every tick (F-079 — the owner's step 6 relies on exactly that). The
+    // countdown checks below assume nobody is there; left where Keep editing was, the pointer held them at 30s → 30s
+    // (executed, 2026-09-24). Far left, over the Layers panel: outside the card at any width this walk uses.
+    await A.mouse.move(40, 450)
     await A.waitForTimeout(1500)
     const keptRow = await lockRow(A, P)
     check('matrix "Keep editing": the nudge columns are cleared and A\'s card is gone', keptRow !== null && keptRow.nudgeRequestedBy === null && (await surface(A)).card === null, JSON.stringify(held(keptRow)))
