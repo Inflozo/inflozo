@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { docSchema } from '@inflozo/section-runtime'
 import { isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
+import { heldElsewhere } from '@/lib/lock'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -55,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
 
-  const { base, docs } = body as { base?: unknown; docs?: unknown }
+  const { base, docs, session } = body as { base?: unknown; docs?: unknown; session?: unknown }
   // `Number.isSafeInteger` and not `typeof === 'number'`: `NaN`, `Infinity` and `1e300` are all numbers, and a base
   // the database cannot compare is a compare-and-set that silently never matches.
   if (!Number.isSafeInteger(base) || (base as number) < 0) return no(400, 'Bad base revision')
@@ -75,6 +76,22 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
 
   const supabase = await supabaseServer()
+
+  // STORY 5.17 — THE LOCK BOUNDARY, ENFORCED WHERE THE WORK IS WRITTEN (AD-15; `heldElsewhere` in `lib/lock.ts`).
+  // A session that has been taken over from believes it holds until its next beat, and its autosave, ⌘S or tab-hide
+  // flush would otherwise write the orphaned work the take-over warned "will be lost". 423 is its own answer, not the
+  // 409 conflict: there is nothing to reconcile, and the editor reads it as "you were taken over from".
+  //
+  // A LOCK THAT CANNOT BE READ REFUSES NOTHING — the revision compare-and-set below still guards every write, and a
+  // spurious refusal would drop real work through the displaced flow. ponytail: the read and the RPC are two
+  // statements, so a take-over landing in the milliseconds between them still lets one write through (the revision
+  // CAS then answers the new holder's next flush with a 409); closing that means checking the lock INSIDE
+  // `sync_project_doc`, which is a migration.
+  if (typeof session === 'string' && session.length > 0 && session.length <= 64) {
+    const { data: lock } = await supabase.from('edit_locks').select('holder_session_id').eq('project_id', projectId).maybeSingle()
+    if (heldElsewhere((lock?.holder_session_id as string | undefined) ?? null, session)) return no(423, 'Another session holds this project')
+  }
+
   const { data, error } = await supabase.rpc('sync_project_doc', {
     p_project: projectId,
     p_docs: parsed,

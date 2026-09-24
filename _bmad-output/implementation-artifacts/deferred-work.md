@@ -5488,3 +5488,30 @@ owner: the owner rules Question 3 in `spec-5-17-…md`; a "make other devices in
 location: `apps/web/lib/lock-client.ts`'s transport section ·
   `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/MEASUREMENTS.md` §50(c)(d) ·
   `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/addendum.md:45`
+
+### DW-240: reloading the tab that holds the lock can hand it to another open session, about one time in ten
+
+plain: If you have the same project open twice and press reload in the one that is editing, there is a short moment —
+  a second or two — in which neither holds the right to edit. If your other window or device happens to check in during
+  that moment, it takes over editing and the one you reloaded comes back reading along instead. Nothing is lost: you
+  press Request editing and get it back. It is rare (the other session checks in every fifteen seconds), and the obvious
+  fixes each cost something worse, so it is written down rather than guessed at.
+status: open
+severity: low
+origin: Story 5.17's Dev (2026-09-24), found while fixing the "Same session reloads" row. `editor.tsx` releases the
+  lock on `pagehide` so that a CLOSED tab frees it at once rather than after §AD4's ~60 s — and `pagehide` cannot tell
+  a reload from a close. Measured on `app.inflozo.com` at `d895c183`: after a reload the row was gone from the first
+  frame. The reload fix (`d9e5f090`) shrank the gap from a whole heartbeat to one round trip; it did not close it.
+reason: the gap is from the release landing to the reloaded page's own acquire, roughly one to three seconds of the
+  other session's fifteen-second cycle, so an open second session wins it around one reload in ten. The release is
+  not broadcast on `BroadcastChannel`, so a same-browser tab does NOT jump the gap early. When it happens nothing is
+  lost silently: the reloaded tab is a reader, its commits are refused, and its flushes answer 423 (`heldElsewhere`)
+  rather than writing. Candidate fixes, none executed (standing rule 1): (a) detect a reload on the way out with the
+  Navigation API's `navigate` event (`navigationType === 'reload'`) and skip the release — browser support for
+  browser-initiated reloads is a hypothesis; (b) never release on `pagehide` and rely on staleness — a closed tab then
+  holds the lock ~60 s and B5c quotes a count the unload flush may already have sent; (c) a short grace before a free
+  lock is taken, which needs somewhere to record "released at" — a column, so a migration.
+owner: unowned; the review of Story 5.17 may take it, and (c) would be a Schema phase of its own (R-99).
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — the `pagehide` release (`leaving`) and
+  the poll's one-extra-call acquire · `tools/probe/run-verify-lock.cjs`'s "Same session reloads" row, which reloads
+  with no second session open and so does not exercise this race

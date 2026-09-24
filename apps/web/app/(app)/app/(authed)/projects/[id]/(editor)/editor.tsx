@@ -535,6 +535,9 @@ export function Editor({
   /** UX-DR12's SECOND live region, and it is ASSERTIVE. `#editor-said` is the editor's polite one and stays polite:
    *  widening it would make every design-ring announcement shout. Only this story writes here. */
   const [announced, setAnnounced] = useState('')
+  /** what a session that was just taken over from LOST, shown in B5a's own sentence slot until it asks again or holds
+   *  again. The assertive region SAYS it; this SHOWS it — a sighted person was otherwise never told. */
+  const [lost, setLost] = useState<string | null>(null)
   /** when this session deliberately handed the lock over. It then stops trying to `acquire` for one nudge's worth
    *  of time, so it cannot take back the lock it just gave away before the requester's next poll reaches it.
    *  ponytail: one grace window; if hand-over ever needs to be instant across devices, the release becomes a CAS
@@ -880,7 +883,10 @@ export function Editor({
     const sentStamp = now.journal.stamp
     const upTo = maxSeq(now.journal)
     setSync((was) => (was.kind === 'fallback' ? was : { kind: 'syncing' }))
-    const body = JSON.stringify({ base: base.current, docs: payload })
+    // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
+    // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
+    // as a stranger's.
+    const body = JSON.stringify({ base: base.current, docs: payload, session: tabId.current || undefined })
     let landed = false
     try {
       const answer = await fetch(syncUrl(), {
@@ -904,6 +910,22 @@ export function Editor({
         rest(true)
         setConflicted(true)
         requestAnimationFrame(() => openOnCancel(conflict.current))
+        return
+      }
+      if (answer.status === 423) {
+        // STORY 5.17 — TAKEN OVER FROM. The route refused to let this session's orphaned work cross the lock boundary
+        // (AD-15). The lock's own read decides the rest, exactly as a beat that finds the generation moved would:
+        // read-only, told assertively with the count STILL in this journal, and the journal cleared. No retry and no
+        // conflict dialog — there is nothing to reconcile; the take-over said this work would be lost, and now it is.
+        //
+        // `rest` BEFORE `land`, deliberately: it leaves "Syncing" for the resting state the journal still describes,
+        // which is exactly what a session displaced by its BEAT keeps, because `dropJournal` never re-rests the
+        // indicator. Both paths therefore end on the same state. Whether a displaced session's indicator should
+        // re-derive from the dropped journal is not something the spec rules — flagged for the review, not decided.
+        stopRetrying()
+        attempt.current = 0
+        rest(true)
+        land(await askLock(lockAt(), { intent: 'beat', session: tabId.current, unsynced: owedNow() }))
         return
       }
       if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
@@ -987,7 +1009,10 @@ export function Editor({
       // UX-DR12: assertively, because it is work that is already gone. "**This** session", not "that": the sentence
       // is read BY the session it is about (R-189).
       setAnnounced(LOCK_COPY.displaced(owed))
+      // SHOWN only when something was lost: with nothing owed, the reading-along bar already says all there is
+      setLost(owed > 0 ? LOCK_COPY.displaced(owed) : null)
     }
+    if (mine) setLost(null)
     // AND A SESSION THAT IS NO LONGER THE HOLDER GOES BACK TO ACQUIRING. Without this a holder whose ROW VANISHED —
     // the displacement test cannot fire on a null row — kept beating a row that was not there, and every beat changed
     // zero rows, so it was a reader of a free lock FOR EVER (executed against a local build, 2026-09-23: a soft
@@ -1015,6 +1040,7 @@ export function Editor({
   const requestEditing = async () => {
     const was = latest.current.lock
     if (was.asking) return
+    setLost(null)
     putLock({ ...was, asking: true, unanswered: false })
     const answer = await askLock(lockAt(), { intent: 'nudge', session: tabId.current })
     if (answer === null || !answer.won) {
@@ -2760,6 +2786,7 @@ export function Editor({
       {lock.holder ? null : (
         <LockBar
           hidden={preview}
+          notice={lost}
           asking={lock.asking}
           onRequest={() => void requestEditing()}
           unanswered={

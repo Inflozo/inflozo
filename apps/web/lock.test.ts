@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   displacedBy, duration, edits, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, nextGeneration, partyOf, RESTART_EVENTS,
-  restartsNudge, rowFrom, secondsLeft, STALE_MS, stillAsking, type LockRow,
+  heldElsewhere, restartsNudge, rowFrom, secondsLeft, STALE_MS, stillAsking, type LockRow,
 } from './lib/lock.ts'
 import { append, EMPTY_JOURNAL, hydrationFor, journalCleared, unsyncedEdits, type Journal } from './lib/journal.ts'
 
@@ -76,6 +76,16 @@ test('matrix "Keep editing": the row answers my own request, and a cleared colum
 })
 
 // ── F-079: the countdown RESTARTS, it does not stop ────────────────────────────────────────────────────────────
+
+test('AD-15: work crosses no lock boundary — only ANOTHER holder refuses a save; a free lock and an unknown tab never do', () => {
+  assert.equal(heldElsewhere(THEIRS, MINE), true, 'taken over from: the orphaned work is refused')
+  assert.equal(heldElsewhere(MINE, MINE), false, 'the holder saves')
+  assert.equal(heldElsewhere(null, MINE), false, 'a free lock: a reload, a closing tab, a hand-over mid-flight')
+  // a tab that has not learned its id yet is not a stranger — refusing it would drop real work through the displaced flow
+  assert.equal(heldElsewhere(THEIRS, ''), false)
+  assert.equal(heldElsewhere(THEIRS, null), false)
+  assert.equal(heldElsewhere(THEIRS, undefined), false)
+})
 
 test('F-079: every interaction with the popover restarts the countdown — focus included', () => {
   for (const type of RESTART_EVENTS) assert.equal(restartsNudge(type), true, type)

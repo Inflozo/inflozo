@@ -132,6 +132,20 @@ export function partyOf(
   return requesting ? 'requesting' : 'reader'
 }
 
+/** MAY THIS SESSION'S WORK REACH THE CLOUD? Not while ANOTHER session holds the lock.
+ *
+ *  A session that has been taken over from still believes it holds until its next beat, and in that window its
+ *  autosave, its ⌘S or its tab-hide flush would write the very work the take-over was warned about — B5c said it
+ *  "will be lost", and the addendum says orphaned work is never merged, replayed or recovered. Executed on the
+ *  deployed walk (2026-09-24): the displaced session's 3-minute autosave landed after the take-over, the edit reached
+ *  the cloud, and the session was then told "0 unsynced edits; they were not included" — false twice over.
+ *
+ *  A FREE lock refuses nothing: a reload's own release, a closing tab and a hand-over's flush all pass through a
+ *  moment with no row. An EMPTY session is a tab that has not learned its id yet, never a stranger — refusing it
+ *  would drop real work through the displaced flow. `lock/route.ts` never calls this; `sync/route.ts` does. */
+export const heldElsewhere = (holder: string | null, session: string | null | undefined): boolean =>
+  !!session && holder !== null && holder !== session
+
 /** Is my request still outstanding? `null` from the row means it was answered — Keep editing cleared the columns —
  *  and another session's id there means mine was replaced. */
 export const stillAsking = (row: LockRow | null, session: string): boolean => row?.nudgeRequestedBy === session

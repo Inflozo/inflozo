@@ -550,6 +550,47 @@ HEAD when its walk ran. The deployed walks were therefore run at Dev rather than
   fails goes stale and the reader's own poll takes it **silently** at N+1 through the route's
   age-filtered CAS; the cut-off holder shows no bar — the heartbeat's "network error ⇒ no state
   change" — and once it can reach the server again it is displaced and told).
+- **The extended walk's run at `91c6fc58` found a third defect: work crossed the lock boundary AFTER a
+  take-over.** Run 4 (7 FAIL, 56 PASS) had two causes. Five failures were one fact: the second request's
+  card came ~3 s after an 18 s *sleep* (a cold function on the nudge's write), so every check on it read
+  nothing — the walk now **waits for** the card, two beats at most. The seventh was real: B was told
+  *"This session had 0 unsynced edits"* although the same run proved its deletion never reached the
+  cloud before the take-over. B's 3-minute autosave (it ticks from the page's load, not from the edit)
+  had fired **after** the take-over and before B's next beat noticed it, and `/sync` — which knew nothing
+  of the lock — **accepted the orphaned edit**: B5c's "will be lost" became false, the new holder was
+  left to meet a 409, and B was told the opposite of what happened. That breaks this story's own AC
+  ("when it next reaches the server … told how many of its edits were not included") and the
+  addendum's "orphaned work is never merged, replayed or recovered". **Fixed where the work is
+  written:** the flush carries its tab's lock session, `/sync` answers **423** when *another* session
+  holds the lock (`heldElsewhere` in `lib/lock.ts`, unit-tested; a free lock and a tab that has not
+  learned its id refuse nothing), and the editor reads a 423 as "taken over from" — no retry, no conflict
+  dialog, one lock read that drives the displaced flow while the journal still holds the true count. The
+  read and the RPC are two statements, so a take-over landing in the milliseconds between them still
+  lets one write through (the revision CAS then answers the new holder with a 409) — closing that is a
+  check inside `sync_project_doc`, a migration, noted beside the code. The walk now switches autosave
+  **off** on its own fixture account, so no timer races it, and **presses ⌘S on B right after the
+  take-over**, asserting the cloud still has the section B deleted.
+- **And a fourth, found while rewriting the owner's test: the loss sentence was never SHOWN.** *"This
+  session had 1 unsynced edit; they were not included."* went only to `#editor-announced`, which is
+  `sr-only`, so a sighted person whose session was taken over saw the ordinary reading-along bar and was
+  never told — against EXPERIENCE.md F2 (the revived holder is a *surface* carrying that sentence) and
+  this spec's own "told plainly, the next time anyone looks at it". It now also fills B5a's own sentence
+  slot until the session asks again or holds again, and — B5c's UX-DR3 ruling applied to the same loss —
+  only when something was lost; with nothing lost the ordinary bar says all there is to say. The
+  assertive announcement is unchanged.
+- **The owner's manual test is rewritten, because it could not be passed as written.** It used two
+  **tabs**, and Story 5.8 sends a tab's work the moment you leave it, so by step 11 window B's edit was
+  already in the cloud: it would have read "0 unsynced edits", shown no danger panel and kept "Tab B was
+  here". It now uses two **windows side by side** with automatic sending switched off first (and back on
+  at the end), step 6 says plainly that window B's own clock offers a take-over while you look at the
+  card, step 13 describes the sentence as now shown, and the clean-up types the original headline back —
+  a take-over starts from the cloud copy with no history, so the old "⌘Z until it reads what it did"
+  could not have worked either.
+- **A residual race is recorded rather than guessed at — DW-240.** `pagehide` cannot tell a reload from
+  a close, so a reload still leaves a gap of about a round trip in which another open session's poll can
+  take the lock (about one reload in ten when a second session is open). Nothing is lost silently when
+  it does — the reloaded tab reads along and its flushes answer 423 — and each obvious fix costs
+  something worse; the ledger row lists them.
 - `node tools/probe/run-verify-editor.cjs` — **0 FAIL, 575 PASS on `app.inflozo.com` at `d9e5f090`**
   (run 3, exit 0), a complete walk. **Step 93 now passes** — the field reads *"The archive — page
   {page_number}"* where it read *"The archive"* at `d895c183`, the reload fix proven by an independent
@@ -570,9 +611,13 @@ HEAD when its walk ran. The deployed walks were therefore run at Dev rather than
 
 ## Owner's manual test
 
-Do this on the real site after Deploy confirms the build, in a desktop browser about 1440 wide. You need **two tabs
-of the same browser**, both signed in as you — that is all "two sessions" means here, and your laptop and your phone
-behave the same way. Everything you type is taken back before the end.
+Do this on the real site after Deploy confirms the build, in a desktop browser about 1440 wide. You need **two
+windows of the same browser, side by side** (⌘N opens a second one), both signed in as you — that is all "two
+sessions" means here, and your laptop and your phone behave the same way. Everything you change is put back at the end.
+
+**Two things to set up first, and why.** *Windows, not tabs:* a tab you switch away from sends its work to the cloud
+the moment you leave it, so with two tabs there would be nothing left to lose at step 12. *Automatic sending off:* the
+editor otherwise sends your work every few minutes on its own, which would do the same. You switch it back on at the end.
 
 Use **Pilot sections** — `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`.
 
@@ -583,22 +628,24 @@ wording you ruled on 2026-09-23 — **R-189** (it says where, never who, and nob
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open it in **tab A** and click the hero's big headline. Type over it. | `Tab A was here` | The words change, and the save indicator beside the project's name turns to a grey clock — one edit is not on the server yet. |
-| 2 | same | Editor, Home | Open the **same address in a second tab (tab B)** and wait for it to finish loading. | — | A bar across the top of tab B reads **"You are editing this site somewhere else — you are reading along here"**, with a **Request editing** button on the right. The page itself is perfectly readable. **No name anywhere** — it never pretends someone else is in your account. |
-| 3 | tab B | Editor, Home | Try to click the hero's headline and type. Then look at the settings panel on the right. | `nope` | **Nothing happens** — no letters appear, and nothing jumps or flickers. The settings panel is dimmed but you can still read every setting. |
-| 4 | tab B | Editor, Home | Press **Request editing**. | — | The button changes to **Asking…** while it works. |
-| 5 | tab A | Editor, Home | Switch to tab A. | — | A small card has appeared — **not** a full-screen box — headed **"Your other session wants to edit"**, with a padlock in the circle where a photo would go. Under it: *"If you hand over, your unsynced edits are sent first. You keep reading along."* and a strip reading **"1 unsynced edit will be sent first · 1 pending"**. Then **Hand over**, **Keep editing**, and *"Expires in 30s"*. |
-| 6 | tab A | Editor, Home | Move your mouse over the card and leave it there, without pressing anything, for a full minute. | — | The countdown keeps **starting again** rather than running out — a card you are looking at never hurries you. |
-| 7 | tab A | Editor, Home | Press **Hand over**. | — | Your edit is sent first (the indicator goes green), then tab A gets the same reading-along bar tab B had. |
-| 8 | tab B | Editor, Home | Switch to tab B. | — | The bar is gone. Click the headline and type — it works, and it already says **Tab A was here**, so nothing was lost. |
-| 9 | tab B | Editor, Home | Type over the headline again. | `Tab B was here` | The words change and the indicator shows a grey clock. |
-| 10 | tab A | Editor, Home | Switch to tab A, press **Request editing**, and then **switch away to any other tab and leave it for a minute**. | — | Do not touch tab B. |
-| 11 | tab A | Editor, Home | Come back to tab A. | — | It reads **"No response; that session has 1 unsynced edit"** and offers **Take over anyway**. |
-| 12 | tab A | Editor, Home | Press it, read the box, then confirm. | — | A box headed **"Take over from your other session?"** with a pink panel reading **"1 unsynced edit will be lost"** and *"They exist only in that session. We cannot retrieve them from here."* **Your keyboard starts on Wait**, not on the red **Take over anyway** — press Space and it cancels rather than committing. There is **no "message someone" line**. Confirm, and tab A is editing with the headline reading **Tab A was here** — tab B's word is gone, as the box said. |
-| 13 | tab B | Editor, Home | Switch to tab B and look at it. | — | It now has the reading-along bar and the message **"This session had 1 unsynced edit; they were not included."** Press **⌘Z** — **nothing comes back**, which is what the message promised. |
+| 0 | `https://app.inflozo.com/account` | Account, **Saving** | Switch off **Send my work to the cloud automatically**, then press **Turn it off**. | — | The switch shows off. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home | Open it in **window A**, on the left. **Write down the hero's big headline as it reads now**, then click it and type over it. | `Window A was here` | The words change, and the save indicator beside the project's name turns to a grey clock — one edit is not on the server yet. |
+| 2 | same | Editor, Home | Press **⌘N** for **window B**, open the same address there, and put it on the right so you can see both. | — | A bar across the top of window B reads **"You are editing this site somewhere else — you are reading along here"**, with a **Request editing** button on the right. The page itself is perfectly readable. **No name anywhere** — it never pretends someone else is in your account. |
+| 3 | window B | Editor, Home | Try to click the hero's headline and type. Then look at the settings panel on the right. | `nope` | **Nothing happens** — no letters appear, and nothing jumps or flickers. The settings panel is dimmed, but you can still read every setting. |
+| 4 | window B | Editor, Home | Press **Request editing**. | — | The button changes to **Asking…** and stays that way while it waits. |
+| 5 | window A | Editor, Home | Look at window A. | — | A small card — **not** a full-screen box — headed **"Your other session wants to edit"**, with a padlock in the circle where a photo would go. Under it: *"If you hand over, your unsynced edits are sent first. You keep reading along."* and a strip reading **"1 unsynced edit will be sent first · 1 pending"**. Then **Hand over**, **Keep editing**, and *"Expires in 30s"*. |
+| 6 | window A | Editor, Home | Rest the mouse on the card, without pressing anything, for a full minute. | — | The card's countdown keeps **starting again** rather than running out — a card you are looking at never hurries you. Window B, meanwhile, offers **Take over anyway** after about thirty seconds: that is its own clock, and **you leave it alone**. |
+| 7 | window A | Editor, Home | Press **Hand over**. | — | Your edit is sent first (the indicator goes green), then window A gets the same reading-along bar window B had. |
+| 8 | window B | Editor, Home | Look at window B, then click the headline and type. | — | The bar is gone and typing works — and the headline already says **Window A was here**, so nothing was lost. |
+| 9 | window B | Editor, Home | Type over the headline again. | `Window B was here` | The words change and the indicator shows a grey clock. |
+| 10 | window A | Editor, Home | Press **Request editing** in window A, then take your hands off and **do not touch window B**. Wait about forty seconds. | — | Window B shows the card, with **"1 unsynced edit will be sent first · 1 pending"**. Leave it. |
+| 11 | window A | Editor, Home | Look at window A. | — | Its bar reads **"No response; that session has 1 unsynced edit"** and offers **Take over anyway**. |
+| 12 | window A | Editor, Home | Press **Take over anyway**, read the box, notice where the keyboard is, then press the red **Take over anyway** inside the box. | — | A box headed **"Take over from your other session?"**, then *"That session has not responded for …"*, and a pink panel reading **"1 unsynced edit will be lost"** with *"They exist only in that session. We cannot retrieve them from here."* **Your keyboard starts on Wait**, not on the red button. There is **no "message someone" line**. Once you confirm, window A is editing and the headline reads **Window A was here** — window B's words are gone, as the box said. |
+| 13 | window B | Editor, Home | Look at window B, then press **⌘Z**. | — | Its bar now reads **"This session had 1 unsynced edit; they were not included."**, with **Request editing** beside it. **⌘Z brings nothing back**, which is what the sentence promised. |
 
-Afterwards: in the editing tab, press **⌘Z** until the headline reads what it did at the start, and check the
-indicator turns green.
+Afterwards: in window A, type the headline you wrote down at step 1 back in, press **⌘S**, and check the indicator
+turns green — a take-over starts from the cloud copy with no history, so ⌘Z has nothing to undo there. Then open
+`https://app.inflozo.com/account` and switch **Send my work to the cloud automatically** back on.
 
 ## Questions for the owner
 

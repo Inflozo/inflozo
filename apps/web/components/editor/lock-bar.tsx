@@ -28,11 +28,16 @@ export function LockBar({
   /** the reader has asked and nobody answered: B5c's opener sits in the bar's place (R-98's own rule — there is no
    *  new surface for a waiting state, and none is drawn) */
   unanswered,
+  notice,
   hidden,
 }: {
   asking: boolean
   onRequest: () => void
   unanswered: { words: string; onTakeOver: () => void } | null
+  /** a session that has just been TAKEN OVER FROM reads what it lost here, in the ruled sentence — SHOWN, not only
+   *  announced (EXPERIENCE.md F2's "revived former holder" is a surface, and "told plainly, the next time anyone
+   *  looks at it"). Absent when nothing was lost, as B5c's danger panel is (UX-DR3). */
+  notice?: string | null
   hidden?: boolean
 }) {
   return (
@@ -48,7 +53,7 @@ export function LockBar({
           screen-reader user why nothing in the panel responds, and it is why the panel needs no `aria-disabled` of
           its own — which is not a global ARIA attribute and would be `aria-allowed-attr` on a landmark. */}
       <span id="editor-lock-reason" className="flex-1 truncate text-control-label text-ink-soft-aa">
-        {unanswered ? unanswered.words : LOCK_COPY.reading}
+        {unanswered ? unanswered.words : (notice ?? LOCK_COPY.reading)}
       </span>
       {unanswered ? (
         <Button id="editor-lock-take-over" variant="danger-outline" size={32} onClick={unanswered.onTakeOver}>

@@ -45,6 +45,8 @@ const REPO = path.join(__dirname, '..', '..')
 const at = (p) => `${APP}${PREFIX}${p}`
 
 const results = []
+/** `cardOn`'s deadline: two of the app's own heartbeats, set once `lib/lock.ts` is read (standing rule 4) */
+let LOCK_BEATS_MS = 35_000
 let fails = 0
 const check = (name, ok, detail = '') => { results.push(`${ok ? 'PASS' : 'FAIL'}  ${name}${detail ? ' — ' + detail : ''}`); if (!ok) fails++; return ok }
 const note = (name, detail) => results.push(`note  ${name} — ${detail}`)
@@ -120,6 +122,13 @@ const lockRow = (page, P) =>
     `${PREFIX}/projects/${P}/lock`,
   )
 
+/** B5b ARRIVING, WAITED FOR AND NEVER SLEPT. The holder hears a request at its next beat, and a cold function on the
+ *  nudge's write can push that past a fixed sleep (executed 2026-09-24: the card came ~3 s after an 18 s sleep, and
+ *  every check on it failed on its absence). Two beats is the deadline; a card that never comes is still a FAIL,
+ *  read by the checks that follow. */
+const cardOn = (page) =>
+  page.waitForSelector('#editor-lock-ask', { timeout: LOCK_BEATS_MS }).catch(() => null)
+
 /** the part of the row that is a FACT about the lock, without the two ages, which move between two reads */
 const held = (row) => (row === null ? null : { holder: row.holderSessionId, generation: row.generation, edits: row.unsyncedEdits, asked: row.nudgeRequestedBy })
 
@@ -156,6 +165,7 @@ async function main() {
 
   // THE APP'S OWN STRINGS AND CONSTANTS, so nothing below is a second copy of a sentence the owner ruled
   const LOCK = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/lock.ts')).href)
+  LOCK_BEATS_MS = LOCK.HEARTBEAT_MS * 2 + 5000
   const { seed } = await import(pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
 
   const all = await users()
@@ -170,6 +180,12 @@ async function main() {
     const made = await admin('/admin/users', { method: 'POST', body: JSON.stringify({ email, email_confirm: true }) })
     uid = made.body.id
     check('fixture — the account is created', made.status === 200 && !!uid, `HTTP ${made.status}`)
+    // AUTOSAVE OFF FOR THIS ACCOUNT, so nothing here races the 3-minute timer. It ticks from each page's LOAD, not from
+    // the edit, and a tick landing between B's edit and the take-over sends the very work the take-over is about
+    // (executed 2026-09-24: this walk's own timeline drifted onto one). Every send below is then one the walk makes on
+    // purpose — the hand-over's flush and B's ⌘S. The switch is FR-D10's own, `profiles.autosave_enabled`.
+    const quiet = await call('/rest/v1', `/profiles?id=eq.${uid}`, { method: 'PATCH', body: JSON.stringify({ autosave_enabled: false }) })
+    check('fixture — autosave is off for this account, so no timer races the walk', quiet.status === 200 && quiet.body?.[0]?.autosave_enabled === false, `HTTP ${quiet.status}`)
     const seeded = await seed({ email })
     check('fixture — "Pilot sections" seeded', seeded.created === true, seeded.id)
     const P = seeded.id
@@ -255,7 +271,7 @@ async function main() {
     const bAsking = await surface(B)
     check('matrix "Request editing": the reader shows its waiting state — Asking…, aria-busy and still a button, never `disabled` (R-98)',
       bAsking.barButton === LOCK.LOCK_COPY.requesting && bAsking.barBusy === 'true', JSON.stringify({ button: bAsking.barButton, busy: bAsking.barBusy }))
-    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
+    await cardOn(A)
     check('fixture — the first request reached A', (await surface(A)).card !== null)
     await A.getByRole('button', { name: LOCK.LOCK_COPY.keep, exact: true }).click()
     // THE POINTER MUST LEAVE THE CARD. The next card mounts in the same fixed corner, and a pointer resting on it is
@@ -276,7 +292,7 @@ async function main() {
     await B.waitForTimeout(2500)
     const asked = await lockRow(B, P)
     check('matrix "Request editing": nudge_requested_by is written, and it is not the holder\'s own', asked !== null && !!asked.nudgeRequestedBy && asked.nudgeRequestedBy !== asked.holderSessionId, JSON.stringify(held(asked)))
-    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
+    await cardOn(A)
     const aAsked = await surface(A)
     check('the SAME tab asking AGAIN is a NEW request, and it reaches A — Keep editing answered one request, not every request that tab will ever make', aAsked.card !== null, aAsked.card)
     check('matrix "Holder receives it": B5b, in the ruled title (R-189)', (aAsked.card ?? '').includes(LOCK.LOCK_COPY.askTitle), aAsked.card)
@@ -342,10 +358,22 @@ async function main() {
     check(`A is editing the LAST SYNCED SNAPSHOT — B's unsynced deletion never happened, so "${B_EDIT}" is back`, (await layerNames(A)).includes(B_EDIT), (await layerNames(A)).join(' | '))
     check('…and A has no bar', (await surface(A)).bar === null)
 
+    /* ── the lock boundary, enforced where the work is WRITTEN ─────────────────────────────────────────────────
+     * B has not noticed — its next beat is up to ~15 s away — and it saves NOW. Before `/sync` knew about the lock,
+     * this was the displaced session's orphaned edit reaching the cloud after the take-over (executed 2026-09-24,
+     * through B's autosave). Now the route answers 423 and B's own lock read displaces it at once, with the count
+     * still in its journal — which is what the "told ASSERTIVELY" check below reads. */
+    await B.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+s`)
+    await B.waitForTimeout(4000)
+    const cloudAfter = JSON.stringify((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? {})
+    check('AD-15: a session that was taken over from cannot save its orphaned work — B\'s ⌘S is refused and the cloud still has the section B deleted',
+      cloudAfter.includes(B_EDIT), `the stored home doc ${cloudAfter.includes(B_EDIT) ? 'still has' : 'LOST'} "${B_EDIT}"`)
+
     // ── B is displaced, and told ─────────────────────────────────────────────────────────────────────────────
     await B.waitForTimeout(LOCK.HEARTBEAT_MS + 5000)
     const bLost = await surface(B)
-    check('matrix "Displaced holder": B flips to read-only', (bLost.bar ?? '').includes(LOCK.LOCK_COPY.reading) && bLost.sidebarOpacity === '0.55', bLost.bar)
+    check('matrix "Displaced holder": B flips to read-only, and its bar SHOWS what it lost in the ruled sentence — told plainly, not only announced (EXPERIENCE.md F2)',
+      (bLost.bar ?? '').includes(LOCK.LOCK_COPY.displaced(1)) && bLost.sidebarOpacity === '0.55', bLost.bar)
     check('…and is told ASSERTIVELY, in the ruled sentence — "This session", read where it is read (R-189)', bLost.announced === LOCK.LOCK_COPY.displaced(1), bLost.announced)
     check('R-190: the word is "unsynced" and "unsaved" appears nowhere on either screen', !/unsaved/i.test(`${bLost.bar} ${bLost.announced} ${confirm.dialogText}`))
     const undoable = await B.evaluate(() => document.getElementById('editor-undo')?.getAttribute('aria-disabled'))
@@ -357,7 +385,7 @@ async function main() {
      * absent, never "0 … will be lost" in red). Wait then takes nothing. */
     const askedAgainAt = Date.now()
     await B.getByRole('button', { name: LOCK.LOCK_COPY.request, exact: true }).click()
-    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 3000)
+    await cardOn(A)
     const aOwesNothing = await surface(A)
     check('B5b with nothing owed: the strip says so — all synced, 0 pending', (aOwesNothing.card ?? '').includes(LOCK.LOCK_COPY.allSynced) && (aOwesNothing.card ?? '').includes(LOCK.LOCK_COPY.pending(0)), aOwesNothing.card)
     await B.waitForTimeout(Math.max(0, askedAgainAt + LOCK.NUDGE_MS + 4000 - Date.now()))
@@ -392,7 +420,7 @@ async function main() {
     await A.unroute('**/projects/*/lock')
     await A.waitForTimeout(LOCK.HEARTBEAT_MS + 5000)
     const aRevived = await surface(A)
-    check('…and once A can reach the server again it learns it lost the lock: read-only, and told assertively (AD-15)',
+    check('…and once A can reach the server again it learns it lost the lock: read-only and told assertively (AD-15) — and with NOTHING lost its bar is the ordinary reading-along one, never "0 … not included" (UX-DR3)',
       (aRevived.bar ?? '').includes(LOCK.LOCK_COPY.reading) && aRevived.announced === LOCK.LOCK_COPY.displaced(0), JSON.stringify({ bar: aRevived.bar, announced: aRevived.announced }))
 
     await ctxA.close()
