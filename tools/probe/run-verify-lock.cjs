@@ -303,7 +303,22 @@ async function main() {
     // ── B opens second and is a reader ───────────────────────────────────────────────────────────────────────
     await B.goto(await magic(), { waitUntil: 'load' })
     await B.goto(editor, { waitUntil: 'load' })
-    await B.waitForTimeout(2500)
+    // SERVER TRUTH AT FIRST PAINT, SAMPLED: a reader must never see an editable shell, not for a frame, before its own
+    // `acquire` answers — `read.ts` hands the row over above the boundary for exactly this. One look at 2.5 s could not
+    // tell that from "read-only after a round trip" (review, 2026-09-24), so the bar is read every ~100 ms from load.
+    let bAbsent = 0
+    let bSamples = 0
+    for (const t0 = Date.now(); Date.now() - t0 < 2000; ) {
+      const bar = await B.evaluate(() => {
+        const el = document.getElementById('editor-lock-bar')
+        return el !== null && el.checkVisibility() ? 'visible' : 'absent'
+      })
+      bSamples++
+      if (bar === 'absent') bAbsent++
+      await B.waitForTimeout(100)
+    }
+    check('the reader is a reader from its FIRST frame: the bar was on screen in every sample from load, before its own acquire answered', bSamples > 0 && bAbsent === 0, `${bAbsent} of ${bSamples} samples had no bar`)
+    await B.waitForTimeout(500)
     const bRead = await surface(B)
     check('matrix "Second opener": B5a\'s bar, in the ruled words (R-189 — it says WHERE, never WHO)', (bRead.bar ?? '').includes(LOCK.LOCK_COPY.reading), bRead.bar)
     check('B5a: Request editing is a real button on the right', bRead.barButton === LOCK.LOCK_COPY.request, bRead.barButton)
@@ -417,6 +432,21 @@ async function main() {
     await A.waitForTimeout(1500)
     const afterFocus = Number(/Expires in (\d+)s/.exec((await surface(A)).card ?? '')?.[1] ?? 0)
     check('F-079: FOCUSING the popover RESTARTS the countdown — it does not stop', afterFocus > mid, `${mid}s → ${afterFocus}s`)
+
+    // ── A hands over while its flush CANNOT land: the lock is KEPT ──────────────────────────────────────────
+    // AD-15's flush contract, on its refusal side: unsynced work never crosses a lock boundary, so a Hand over whose
+    // flush fails deletes nothing and says so. Nothing exercised this until the review (2026-09-24); the walk above is
+    // its control — the same press with the route open releases.
+    await A.route('**/projects/*/sync', (r) => r.abort('failed'))
+    await A.locator('#editor-lock-hand-over').click()
+    await A.waitForTimeout(3500)
+    const refusedRow = await lockRow(A, P)
+    const aRefused = await surface(A)
+    check('matrix "Hand over" (flush fails): the row is NOT deleted — A still holds it, and its unsynced edit is still owed',
+      refusedRow !== null && refusedRow.holderSessionId === beaten.holderSessionId && !(await layerNames(A)).includes(A_EDIT), JSON.stringify(held(refusedRow)))
+    check('…and the popover says so and stays, with A still editing (no bar)',
+      (aRefused.card ?? '').includes(LOCK.LOCK_COPY.handOverFailed) && aRefused.bar === null, JSON.stringify({ card: aRefused.card, bar: aRefused.bar }))
+    await A.unroute('**/projects/*/sync')
 
     // ── A hands over: the flush goes FIRST ───────────────────────────────────────────────────────────────────
     // listened for BEFORE the press: B's gain can land inside the checks below, and its reload is the thing to see

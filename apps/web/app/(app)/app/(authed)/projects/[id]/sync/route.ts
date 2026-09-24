@@ -87,7 +87,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // statements, so a take-over landing in the milliseconds between them still lets one write through (the revision
   // CAS then answers the new holder's next flush with a 409); closing that means checking the lock INSIDE
   // `sync_project_doc`, which is a migration.
-  if (typeof session === 'string' && session.length > 0 && session.length <= 64) {
+  // ABSENT is a tab that has not learned its id (refuses nothing); PRESENT AND MALFORMED is refused outright, so a
+  // body cannot skip the lock check by carrying an id the lock route would never have accepted (review, 2026-09-24)
+  if (session !== undefined && (typeof session !== 'string' || session.length === 0 || session.length > 64)) return no(400, 'Bad session')
+  if (typeof session === 'string') {
     const { data: lock } = await supabase.from('edit_locks').select('holder_session_id').eq('project_id', projectId).maybeSingle()
     if (heldElsewhere((lock?.holder_session_id as string | undefined) ?? null, session)) return no(423, 'Another session holds this project')
   }

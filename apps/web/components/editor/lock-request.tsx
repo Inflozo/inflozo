@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/kit/button'
 import { BusyLabel } from '@/components/kit/submit'
 import { Lock } from '@/components/kit/icons'
-import { LOCK_COPY, NUDGE_MS, restartsNudge, secondsLeft } from '@/lib/lock'
+import { LOCK_COPY, NUDGE_MS, RESTART_EVENTS, restartsNudge, secondsLeft } from '@/lib/lock'
 
 /* B5b · REQUEST ARRIVES FOR THE HOLDER (`B Missing Surfaces.dc.html:1491-1513`).
  *
@@ -76,7 +76,7 @@ export function LockRequest({
     const again = (event: Event) => {
       if (restartsNudge(event.type)) started.current = Date.now()
     }
-    for (const type of ['pointerover', 'pointermove', 'pointerdown', 'focusin', 'keydown']) el.addEventListener(type, again)
+    for (const type of RESTART_EVENTS) el.addEventListener(type, again)
     const enter = () => { inside.current = true }
     const leave = () => { inside.current = false }
     el.addEventListener('pointerenter', enter)
@@ -86,11 +86,15 @@ export function LockRequest({
       if (restartsNudge('tick', inside.current)) started.current = Date.now()
       const seconds = secondsLeft(started.current, Date.now())
       setLeft(seconds)
-      if (seconds === 0) expire.current()
+      // once: the card unmounts on the dismissal, but a tick before it does must not expire a second time
+      if (seconds === 0) {
+        clearInterval(tick)
+        expire.current()
+      }
     }, 1000)
     return () => {
       clearInterval(tick)
-      for (const type of ['pointerover', 'pointermove', 'pointerdown', 'focusin', 'keydown']) el.removeEventListener(type, again)
+      for (const type of RESTART_EVENTS) el.removeEventListener(type, again)
       el.removeEventListener('pointerenter', enter)
       el.removeEventListener('pointerleave', leave)
     }

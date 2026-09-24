@@ -49,7 +49,7 @@ import {
   unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import {
-  displacedBy, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, SELF_MARK, stillAsking, type LockRow,
+  HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, SELF_MARK, stillAsking, type LockRow,
 } from '@/lib/lock'
 import { askLock, lockSignals, lockUrl, tabSession, type LockAnswer, type LockSignal } from '@/lib/lock-client'
 import { edits, holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
@@ -932,7 +932,17 @@ export function Editor({
         stopRetrying()
         attempt.current = 0
         rest(true)
-        land(await askLock(lockAt(), { intent: 'beat', session: tabId.current, unsynced: owedNow() }))
+        // THE ROUTE'S ANSWER IS ITSELF THE DISPLACEMENT: a free lock and an unknown id refuse nothing, so 423 can only
+        // mean another session holds it. Decided HERE rather than left to `land`'s generation test, because a session
+        // that never had its generation confirmed (an optimistic first paint that typed before `acquire` answered) has
+        // nothing for that test to compare and would otherwise keep the orphaned journal and be told nothing (review,
+        // 2026-09-24). With the generation cleared first, `land` cannot announce it a second time.
+        const owed = owedNow()
+        heldGeneration.current = null
+        dropJournal()
+        setAnnounced(LOCK_COPY.displaced(owed))
+        setLost(owed > 0 ? LOCK_COPY.displaced(owed) : null)
+        land(await askLock(lockAt(), { intent: 'beat', session: tabId.current, unsynced: 0 }))
         return
       }
       if (!answer.ok) throw new Error(`HTTP ${answer.status}`)
@@ -990,14 +1000,21 @@ export function Editor({
   /** AD-15'S SECOND CLEARING RULE (`journalCleared`, beside `hydrationFor`): the journal of a displaced session
    *  goes UNCONDITIONALLY. There is no merge path and no recovery of orphaned edits, so an undo that could still
    *  reach them would be offering work the server will never accept. The DOCS are untouched — the canvas stays
-   *  legible, which is the whole of B5a — and a reload runs §AD1.1 and brings the cloud's back. */
+   *  legible, which is the whole of B5a — and a reload runs §AD1.1 and brings the cloud's back.
+   *
+   *  THE LOCAL RECORD IS PUT BACK TO THE SERVER'S SNAPSHOT (`stored` at `revision`), NOT TO THE DOCS ON SCREEN. The
+   *  docs on screen still carry the orphaned edits, and a record holding them at `base.current` read as "local, in
+   *  step with the cloud" whenever the new holder had written nothing — so the reload on gaining the lock brought the
+   *  very work B5c said "will be lost" back onto the canvas, and its next flush sent it (review, 2026-09-24: three
+   *  layers found it). `stored` at `revision` is a record that is true whatever happened since: unchanged cloud → the
+   *  same docs; moved cloud → `hydrationFor` answers 'cloud'. */
   const dropJournal = () => {
     latest.current = { ...latest.current, journal: EMPTY_JOURNAL }
     setJournal(EMPTY_JOURNAL)
     const store = local.current
     if (!store) return
     void store.clearJournal(project.id)
-    void store.save(project.id, { baseRevision: base.current, docs: { ...latest.current.docs }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL })
+    void store.save(project.id, { baseRevision: revision, docs: { ...stored }, auto: [...latest.current.auto], journal: EMPTY_JOURNAL })
   }
 
   const land = (answer: LockAnswer | null) => {
@@ -1009,7 +1026,7 @@ export function Editor({
 
     // THE TAKE-OVER TEST IS THE GENERATION AND NOTHING ELSE (AD-15), which is why a take-over whose new holder has
     // written nothing still clears this journal: the revisions would be equal and the revision half would not fire.
-    if (!mine && row !== null && heldGeneration.current !== null && displacedBy(heldGeneration.current, row.generation)) {
+    if (partyOf(row, tabId.current, heldGeneration.current, false) === 'displaced') {
       const owed = owedNow()
       heldGeneration.current = null
       dropJournal()
@@ -1038,7 +1055,8 @@ export function Editor({
     }
 
     // my own request, as the row now answers it: still mine → waiting; cleared → the holder pressed Keep editing;
-    // the row gone → the lock is free and the next poll simply acquires it.
+    // the row gone → the lock is free and the next poll simply acquires it. ponytail: a THIRD session's nudge
+    // replacing mine reads as "kept" too — one person's third device asking at the same moment; DW ledger.
     const waiting = was.askedAt !== null && stillAsking(row, tabId.current)
     if (was.askedAt !== null && !waiting && !mine && row !== null) setAnnounced(LOCK_COPY.kept)
 
@@ -1061,8 +1079,10 @@ export function Editor({
     putLock({ ...was, asking: true, unanswered: false })
     const answer = await askLock(lockAt(), { intent: 'nudge', session: tabId.current })
     if (answer === null || !answer.won) {
-      // the write did not land: the button reports it by coming back, and stays pressable (the matrix's own row)
+      // the write did not land: the button comes back, stays pressable, and the polite region SAYS so (the matrix's
+      // own row — "reports it" is a sentence, not a label reverting)
       putLock({ ...latest.current.lock, asking: false, askedAt: null })
+      setSaid(LOCK_COPY.unreachable)
       return
     }
     tell.current('nudge')
@@ -1074,6 +1094,9 @@ export function Editor({
     const was = latest.current.lock
     if (was.handingOver) return
     putLock({ ...was, handingOver: true, handOverFailed: false })
+    // ponytail: a flush already in flight (a timer's, a ⌘S) makes `flush` return without sending, which read as a
+    // refusal that never happened; polling the guard is the smallest wait that is correct.
+    while (inFlight.current) await new Promise((r) => setTimeout(r, 150))
     // THE FLUSH GOES FIRST. `'release'` falls through the autosave test exactly as `manual` and `unload` do — AD-15
     // stops the TIMER alone — so a session with autosave off still sends its work before it gives up the lock.
     await flush('release')
@@ -1097,8 +1120,12 @@ export function Editor({
 
   /** B5b's **Keep editing** — the nudge columns are cleared, and no take-over is offered from that request. */
   const keepEditing = async () => {
-    setDismissed(latest.current.lock.row?.request ?? null)
     const answer = await askLock(lockAt(), { intent: 'keep', session: tabId.current })
+    // DISMISSED ONLY ONCE THE WRITE LANDED. Dismissed first, a `null` answer took the card away while the row still
+    // carried the request, and the requester was then offered a take-over the holder had never turned down (review,
+    // 2026-09-24). Not landed → the card stays and Keep editing is pressable again.
+    if (answer === null) return
+    setDismissed(latest.current.lock.row?.request ?? null)
     tell.current('answered')
     land(answer)
   }
@@ -1117,8 +1144,11 @@ export function Editor({
     const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: owedNow() })
     takeover.current?.close()
     if (answer === null || !answer.won) {
-      // ZERO ROWS MEANS THE GENERATION MOVED UNDER US. Re-read and report the new state, never retry blindly.
+      // ZERO ROWS MEANS THE GENERATION MOVED UNDER US. Re-read and report the new state, never retry blindly. `null`
+      // is the server not reached at all (a 502 carries the route's logged code, `42501` included) — said politely,
+      // because a dialog that closes over nothing swallows what the matrix says is surfaced.
       putLock({ ...latest.current.lock, taking: false })
+      if (answer === null) setSaid(LOCK_COPY.unreachable)
       land(answer)
       return
     }
@@ -3068,11 +3098,12 @@ export function Editor({
 
         {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}
         {/* STORY 5.17 — B5a: THE SETTINGS SIDEBAR DIMS TO 55% and the canvas stays fully legible. The controls stay
-            VISIBLE so the reader can see what is set, stay in the tab order and stay announced — `aria-disabled` on
-            the panel, never `inert` and never `hidden`, either of which would take them out of the accessibility
-            tree and leave a screen-reader user unable to read their own site. NOTHING RESPONDS because `commit()`
-            is the one door and refuses: every control is CONTROLLED by the value in force, so a press never moves
-            it, not even for a frame. The panel still SCROLLS, which is what `pointer-events-none` would have cost.
+            VISIBLE and announced so the reader can see what is set — never `inert` and never `hidden`, either of
+            which would take them out of the accessibility tree and leave a screen-reader user unable to read their
+            own site. Since R-192 (the owner, 2026-09-24) every EDITING control inside is DISABLED through the Kit's
+            `ReadOnly` fieldset — greyed, unresponsive and out of the Tab order, read as unavailable — while the
+            view controls (the fold, a group's header, a list item's opener) stay live. `commit()`'s one early
+            return is still the guard underneath. The panel still SCROLLS, which is what `pointer-events-none` would have cost.
             Layers is untouched — the frame dims this one aside and no other.
             WHY IT IS DESCRIBED AND NOT `aria-disabled`: `aria-disabled` is not a global ARIA attribute, so on a
             `complementary` landmark it is `aria-allowed-attr` — a WCAG 4.1.2 violation axe reports. `describedby`
@@ -3305,6 +3336,8 @@ export function Editor({
           mid-sentence. It is mounted only while a request is outstanding, so its countdown starts with it. */}
       {nudged ? (
         <LockRequest
+          // a SECOND request from the same tab is a new card with a new countdown, not the old one's clock
+          key={lock.row?.request ?? ''}
           owed={unsyncedEdits(journal)}
           handingOver={lock.handingOver}
           failed={lock.handOverFailed}

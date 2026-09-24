@@ -32,6 +32,11 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * SIX INTENTS AND NOTHING ELSE. `acquire` (insert, or the CAS over a stale row) · `beat` (the ~15 s heartbeat,
  * carrying AD-16's edit count) · `nudge` · `keep` · `release` · `takeover` (the CAS). A non-holder's `beat` changes
  * no rows and falls through to the re-read, which is how a reader polls without a seventh intent.
+ *
+ * DELIBERATELY NO TIMING RULE ON `takeover` — no "a nudge was on the row", no "~30 s passed". Every session that can
+ * reach this row is the SAME account's (`projects.user_id` is one person and team seats are out of v1), so the ~30 s
+ * is the requester's own courtesy to itself, kept in the client where the countdown is; the row's CAS and RLS are
+ * the whole of what the server has to enforce (the spec's "Why a compare-and-swap and not an RPC").
  */
 
 export const dynamic = 'force-dynamic'

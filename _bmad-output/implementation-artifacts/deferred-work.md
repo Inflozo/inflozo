@@ -5518,3 +5518,88 @@ owner: unowned; the review of Story 5.17 may take it, and (c) would be a Schema 
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — the `pagehide` release (`leaving`) and
   the poll's one-extra-call acquire · `tools/probe/run-verify-lock.cjs`'s "Same session reloads" row, which reloads
   with no second session open and so does not exercise this race
+
+## Deferred from: code review of spec-5-17-the-edit-lock-and-the-take-over-choreography.md (2026-09-24)
+
+### DW-241: a menu or picker already open when a session loses the lock stays open with live items
+
+plain: If a small menu (the ⋯ beside a section, the section picker, the Site Remix box) is open at the exact moment
+  your other window takes over editing, that menu stays open and its buttons still look pressable. Pressing one does
+  nothing to the site — the editor refuses every edit in a window reading along — but the menu should have closed.
+status: open
+severity: low
+origin: Story 5.17's review (2026-09-24). R-192 disables the triggers (the ⋯ button, + Add section, Site Remix) for a
+  reader, and the Reset box is closed on the holder→reader flip; a menu or box that was ALREADY open is not.
+reason: the guard underneath is `commit()`'s one early return, so nothing is written; only the surface is stale. Closing
+  every open popover on the flip is one call to `closeMenus` plus the two dialogs, and it belongs beside the Reset
+  box's own close — a Fix-phase item if the owner meets it, never a data risk.
+owner: unowned
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — `land()`'s holder→reader flip;
+  `lib/menu.ts`'s `closeMenus`
+
+### DW-242: a holder's own reload paints its controls greyed for the server's first frame
+
+plain: Reloading the window that is editing no longer shows the grey "reading along" bar for an instant (Story 5.17
+  fixed that) — but for the same instant, about a tenth of a second, the settings panel's fields can look greyed out
+  before the page recognises itself. Nothing is disabled once it has; it is a flicker in the panel, not the bar.
+status: open
+severity: low
+origin: Story 5.17's review (2026-09-24). `selfMarkScript` marks `<html>` before the first paint and `globals.css`
+  hides the bar and restores the panel's opacity under the mark, but the server also renders R-192's
+  `<fieldset disabled>` for that frame, and a stylesheet cannot un-disable a fieldset. The walk's 100 ms sampler
+  watches the bar only.
+reason: closing it means the server not drawing `ReadOnly` at all for a tab it cannot identify — deciding the fieldset
+  client-side after hydration — which reintroduces the one-frame editable shell for a GENUINE reader that `read.ts`'s
+  first-paint read exists to prevent. The trade is the owner's to see first (R-80); none of his tests reported it.
+owner: unowned
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/layout.tsx` (the mark) · `apps/web/app/globals.css`
+  (the two rules under `html[data-lock-self]`) · `apps/web/components/kit/greyed.ts` (`ReadOnly`)
+
+### DW-243: three sessions of one account asking at once — the second request silently replaces the first
+
+plain: If you open the same project on three devices and two of them press Request editing within the same half
+  minute, the first one to ask is told "Your other session kept editing" although nobody answered it — its request
+  was simply overwritten by the second one. Two sessions, the case built and tested, are unaffected.
+status: open
+severity: low
+origin: Story 5.17's review (2026-09-24). `edit_locks` carries ONE `nudge_requested_by`; `stillAsking` answers false
+  both when the holder cleared it and when another session's nudge replaced it, and `land()` announces `kept` for
+  either.
+reason: telling the two apart needs either a second column (a migration, R-99) or the route refusing a nudge over a
+  live one, which would make the second device's button silently fail instead. The owner's ruling on transport (R-191)
+  already accepts that a third device is not v1's shape; recorded so the choice is made rather than met.
+owner: unowned
+location: `apps/web/lib/lock.ts` (`stillAsking`) · `editor.tsx` (`land()`'s `kept` announcement, commented) ·
+  `lock/route.ts` (`nudge`)
+
+### DW-244: the tab-close flush and the lock release leave on the same event, and a third session can slip between them
+
+plain: When you close a tab that is editing, it does two things on the way out: sends its last edits, and gives up
+  the right to edit. They are sent together and the browser does not promise which lands first. If your OTHER window
+  checks in during that instant and takes the right to edit, the closing tab's last edits are refused. It needs three
+  things to line up inside about a second, and your other window then holds exactly what the cloud held.
+status: open
+severity: low
+origin: Story 5.17's review (2026-09-24). `visibilitychange` (the unload flush, Story 5.8) fires before `pagehide` (the
+  release), both ride `keepalive`, and nothing orders their landing. A release that lands first frees the lock; the
+  flush then passes `heldElsewhere` only if nobody acquired in between.
+reason: the same shape as DW-240 (a reload's gap), with the same candidate fixes and the same costs; holding the release
+  until the flush answers is not possible on a page that is going. It joins DW-240 rather than a fix of its own.
+owner: unowned; whoever takes DW-240
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — the two `leaving` listeners
+
+### DW-245: `record-edit-lock.py` folds a probe bug into "RUN VOID" and its cleanup can reference an unbound name
+
+plain: The script that proved the lock's four database facts reports "the run was void" for two different reasons — a
+  real control failing, and the script itself hitting a shape it did not expect — and if it fails before it has
+  signed in, its cleanup line names a variable that was never set. It ran clean on 2026-09-23; this only matters on a
+  re-run that fails.
+status: open
+severity: low
+origin: Story 5.17's review (2026-09-24), in the Blind Hunter layer.
+reason: tooling, not product; the fix is two `except` clauses and `sb = None` above the `try`. Also the F4 block in
+  `RLS-TEST.sql` seeds `lock_generation = 10` as an absolute, which passes today because the block before leaves it at
+  6 — a future block that pushes past 10 would fail on the monotonic guard rather than on what it tests; seed relative.
+owner: unowned
+location: `tools/probe/record-edit-lock.py` (the top-level `except` and `finally`) ·
+  `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` (F4's seed), then `cp`

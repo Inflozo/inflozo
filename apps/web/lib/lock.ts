@@ -240,6 +240,9 @@ export const LOCK_COPY = {
   /** the holder answered Keep editing. Built from the two sentences the owner ruled — "your other session" and the
    *  button's own word — rather than invented beside them (R-170). */
   kept: 'Your other session kept editing.',
+  /** the lock route was not reached (offline, a 5xx): said POLITELY by the request and the take-over, so a failed
+   *  press is reported rather than a label quietly reverting or a dialog closing over nothing (the matrix's rows). */
+  unreachable: 'That could not be sent. Try again.',
   /** B5c. The second sentence is ABSENT when nothing is owed, and so is the whole danger panel (UX-DR3). */
   takeoverTitle: 'Take over from your other session?',
   takeoverBody: (ms: number, owed: boolean) =>

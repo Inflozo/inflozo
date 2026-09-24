@@ -547,7 +547,8 @@ def section(steps, rt, stamp):
         'The CAS is unaffected: it runs from a **route handler under the user\'s own session** '
         '(`projects/[id]/sync/route.ts`\'s shape), which is the same `authenticated` role, the same '
         'RLS and the same grants this section executed. Realtime\'s middle transport layer is the '
-        'part that has nowhere to live, and it is put to the owner rather than invented.',
+        'part that has nowhere to live; it was put to the owner and ruled OUT of v1 — **R-191** '
+        '(2026-09-24): `BroadcastChannel` plus the ~15 s heartbeat are the shipped transport.',
         '',
     ]
     return '\n'.join(out)

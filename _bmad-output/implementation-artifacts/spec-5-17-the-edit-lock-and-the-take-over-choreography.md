@@ -2,9 +2,9 @@
 title: 'Story 5.17 — The edit lock and the take-over choreography'
 type: 'feature'
 created: '2026-09-23'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 'f92409a17bfa06a29e4471d858ca5a527859206e'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -126,7 +126,7 @@ migration, which means a Schema phase pushed on its own before Dev (R-99)** — 
 | Second opener, lock live | row exists, `heartbeat_at` within ~60 s, another `holder_session_id` | **read-only**: B5a bar, sidebar at 55 %, `commit()` refuses | N/A |
 | Same session reloads | row exists, `holder_session_id` is mine | lock kept, no generation change; journal kept iff `revision == base_revision` (unchanged `hydrationFor`) | N/A |
 | Stale lock | `heartbeat_at` older than ~60 s | CAS `generation N → N+1` filtered on `N`; acquired silently, no confirm | 0 rows changed → someone beat us; re-read and become the reader |
-| Heartbeat | every ~15 s, filtered on `project_id` **and** my `holder_session_id` | `heartbeat_at = now()`, `unsynced_edits = unsyncedEdits(journal)` | 0 rows changed ⇒ **displaced** (see below). Network error ⇒ retry next beat, no state change |
+| Heartbeat | every ~15 s, filtered on `project_id` **and** my `holder_session_id` | `heartbeat_at = now()`, `unsynced_edits = unsyncedEdits(journal)` | 0 rows changed **and a row exists** ⇒ **displaced** (see below). 0 rows changed and **no row** ⇒ the lock is free: `acquire` at once, journal kept — a released row has nobody to be displaced by, and a flush that lands then is guarded by the revision CAS. Network error ⇒ retry next beat, no state change |
 | Request editing | reader presses it | `nudge_requested_by` / `nudge_requested_at` written; broadcast sent; reader shows a waiting state with its own ~30 s | write fails → the button reports it and stays pressable |
 | Holder receives it | nudge seen (broadcast, BroadcastChannel or its own next beat) | B5b popover, **announced assertively**, countdown ~30 s | N/A |
 | Holder interacts with the popover (focus included, no answer) | any `focus`/`pointerdown`/`keydown` inside it | countdown **restarts** from that moment (F-079) | N/A |
@@ -390,6 +390,55 @@ Grepped; the only hits are the two comments above and a docstring aside in
   still completes on the heartbeat alone within ~15 s and nothing about the transport is shown to the user.
 - Given two sessions race to acquire a free or stale lock, when both write, then exactly one holds it and the other
   becomes a reader without an error surface.
+
+### Review Findings
+
+Review of 2026-09-24 on `23316f6d` (five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). The real-infra layer ran the deployed lock walk (**0 FAIL, 74 PASS** on `app.inflozo.com` at
+`23316f6d`) and the RLS gate (**exit 0**, F4's refusal and control both PASS) and read production's `edit_locks` shape
+through `SUPABASE_DB_POOLER_URL` (every column and both triggers present; no migration in the diff — R-99 holds) before a
+patch was written. **Every patch below is applied; the story stays in review and Deploy, then the owner's test, follow.**
+
+- [x] [Review][Patch] Orphaned edits could come back after a take-over — `dropJournal` saved the docs ON SCREEN (still
+      carrying the orphaned edits) at `base.current`, so the reload on gaining the lock read "local, in step with the
+      cloud" whenever the new holder had written nothing and restored the very work B5c said "will be lost"; found by
+      three layers. It now saves the server's own snapshot at `revision`. [`editor.tsx` `dropJournal`]
+- [x] [Review][Patch] A `/sync` 423 reaching a session whose generation was never confirmed kept its journal and said
+      nothing; the 423 is now itself the displacement (a free lock and an unknown id refuse nothing). [`editor.tsx` flush]
+- [x] [Review][Patch] Keep editing dismissed the card BEFORE its write landed, so a lost write left the requester to be
+      offered a take-over the holder had never turned down; dismissed only once landed. [`editor.tsx` `keepEditing`]
+- [x] [Review][Patch] Hand over pressed during an in-flight flush reported a refusal that never happened; it waits for
+      the flush first. [`editor.tsx` `handOver`]
+- [x] [Review][Patch] A failed Request editing or an unreachable take-over reverted silently; the matrix says "reports
+      it" — one new polite sentence in `LOCK_COPY.unreachable`, said by both. [`lib/lock.ts`, `editor.tsx`]
+- [x] [Review][Patch] The same tab asking a second time while B5b was still mounted kept the first request's countdown;
+      the card is keyed by the request. And the countdown could fire `onExpire` every second after zero; once now.
+      [`editor.tsx`, `lock-request.tsx`]
+- [x] [Review][Patch] `lock-request.tsx` restated `RESTART_EVENTS` twice; it reads the exported list. [`lock-request.tsx`]
+- [x] [Review][Patch] `/sync` skipped the lock check for a malformed `session` string; present-and-malformed is 400,
+      absent still refuses nothing. [`sync/route.ts`]
+- [x] [Review][Patch] `partyOf` was tested and never run; `land()` reads its displaced test from it. [`editor.tsx`]
+- [x] [Review][Patch] The comment beside the dimmed sidebar still described the pre-R-192 "in the tab order" treatment;
+      corrected. The lock route states that the absence of a server-side timing rule on `takeover` is deliberate.
+      `record-edit-lock.py`'s §50 text cites R-191 rather than an open question. The matrix's Heartbeat row now says what
+      is built for a beat that finds no row. [`editor.tsx`, `lock/route.ts`, `record-edit-lock.py`, this spec]
+- [x] [Review][Patch] Two rows the walk never covered are walked: a reader's FIRST frame sampled from load (server truth
+      at first paint), and a Hand over whose flush is refused keeping the lock and saying so — with the passing hand-over
+      beside it as the control. [`tools/probe/run-verify-lock.cjs`]
+- [x] [Review][Defer] A menu already open when the lock is lost stays open — deferred, DW-241
+- [x] [Review][Defer] A holder's reload paints the panel's fieldset greyed for the server's first frame — deferred, DW-242
+- [x] [Review][Defer] A third session's request replaces the first and reads as "kept" — deferred, DW-243
+- [x] [Review][Defer] The unload flush and the release leave on the same event — deferred, DW-244 (joins DW-240)
+- [x] [Review][Defer] The probe's error folding and RLS-TEST's absolute seed — deferred, DW-245
+
+Dismissed as noise or by design (nine): a beat finding no row re-acquires with its journal (nobody to be displaced by,
+and the revision CAS guards the flush); B5c's duration text refreshing on the heartbeat; the stale-acquire CAS writing
+the incomer's count where the take-over keeps the old holder's (the incomer beats within ~15 s either way); a `release`
+answering `won: true` on zero rows (the client reads only `null`); a nudge on an already-stale row (the reader's own
+next poll takes it within a beat); `tabSession` minting a fresh id per call without `sessionStorage` (read once at
+mount); `edits` sharing a name with `keymap.ts`'s (not imported together); `nudgeAgeMs` unread; a route unit test with a
+stubbed Supabase client (no such test exists in the repo — the deployed walk is the R-82 proof and it now covers both
+directions of the 423).
 
 ## Design Notes
 
