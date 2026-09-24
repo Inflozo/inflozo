@@ -658,6 +658,17 @@ Locally on Node 24: `pnpm check` exit 0 with the seven tests this review added (
 the WIDTH bound, `siteTotal`, `cappedPosts`, `zoneOf`, `siteFrom`'s null) and `doc-audit --check` PASS twice. The recorder
 was NOT re-run — its last step earns T1's hour (§52) — so §51 stands as recorded at Dev.
 
+### Results — Deploy, 2026-09-24
+
+Deployment: `dpl_51QXCMwWh7W3Nryq45DcPfVqU4Cw` — READY, `app.inflozo.com`, built from `4d5fae08` (CI run 36030662997: `check`,
+`rls` and `deploy` all success; the matrix 36030662631 success). Read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`.
+No migration in the story (R-99), so no schema step. **The one-row link is NOT applied**: read through
+`SUPABASE_DB_POOLER_URL` (read-only), production still has `projects.linked_site_id` null on Ghost 5 Project
+(`99d4d277-…`), and `sites` `9d473e0f-…` is `https://ghost5.inflozo.com`, connected, key held. The apply
+(`update projects set linked_site_id = '9d473e0f-b0b9-4443-8514-e8b020f83bf0' where id = '99d4d277-540f-4407-b9e1-033d4c93058f' and linked_site_id is null`)
+was refused by the auto-mode classifier as a write to the owner's data; not retried another way — Question 3. The
+Owner's manual test URLs already name `app.inflozo.com`; steps 1–11 need the link, 12 and 13 do not.
+
 ### Review Findings
 
 Review of 2026-09-24 on `f971992b` (five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
@@ -806,3 +817,19 @@ posts nobody chose for it, and the canvas would then show a page your site will 
 that note."* Recorded as **R-194**. The button is the pill's own Sample content row with a second door: it appears
 only while the canvas shows the site's content, moves focus to the pill, and stays live in a session reading along;
 the matrix, the strings, the tasks and step 6 of the owner's test carry it.
+
+### Question 3 — Deploy needs to link your Ghost 5 Project to your Ghost 5 site. May it? (raised 2026-09-24, at Deploy)
+
+**In plain English.** The test steps open your **Ghost 5 Project**, and for it to show your Ghost 5 posts that project
+has to be linked to your Ghost 5 site. Today it is not linked. Linking is one line of your own data in the live
+database, and Claude's safety check would not let it write that line without you saying so.
+
+**An example.** Before: Ghost 5 Project's pill reads "Sample content". After the link: "Previewing with: Ghost5" and your posts.
+
+1. **Yes — Claude may write that one line. (RECOMMENDED)**
+   - It sets only that project's linked site to `ghost5.inflozo.com`, only if it is empty now, and reads it back.
+   - Nothing else about the project changes; you can unlink it from Sites afterwards.
+2. **No — I will link it myself**, in the app, from the project's settings if it offers that. Claude then only records that.
+3. **No — leave it unlinked.** Steps 1–11 cannot be walked; only steps 12 and 13 can.
+
+**Ruled:** _(awaiting the owner)_
