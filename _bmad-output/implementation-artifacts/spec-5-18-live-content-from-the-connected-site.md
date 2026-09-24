@@ -645,6 +645,19 @@ fetches nothing), and step 4's DW-230 row (the editor's Post header marks no ite
   recorder's `past-last` rows.
 - *A body arrives anyway* — U (a hostile row keeps no body, injection or key); W (no answer carried one).
 
+### Results — Review, 2026-09-24, on the real infrastructure (R-82)
+
+**After the patches**, the deployed walk once more, `MAJORS=5,6 NO_429=1`, at `461db215` on `app.inflozo.com`
+(`dpl_99L6REmM3xjL6hk9RxaaaoFDQWdL` READY, CI 36029637952 and the matrix 36029637751 green — the push before it,
+`19f15eba`, went red in `pnpm build` on DW-246's Google Fonts fetch, nothing in the diff touching fonts, and `pnpm build`
+exit 0 locally as the control): **0 FAIL, 88 PASS**, the two rows this review added among them on both majors — the
+Home canvas shows the site's newest post and its menu and NOT the sample's newest post, and a reload of the Post canvas
+still previews the post chosen over the site with no "no longer there". Per major 7 requests to open the editor and 41
+over 15 keys; the whole walk 83 against the ceiling of 500. The fixture account deleted, users 13 before · 13 after.
+Locally on Node 24: `pnpm check` exit 0 with the seven tests this review added (`live-content.test.ts`: the hung read,
+the WIDTH bound, `siteTotal`, `cappedPosts`, `zoneOf`, `siteFrom`'s null) and `doc-audit --check` PASS twice. The recorder
+was NOT re-run — its last step earns T1's hour (§52) — so §51 stands as recorded at Dev.
+
 ### Review Findings
 
 Review of 2026-09-24 on `f971992b` (five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
