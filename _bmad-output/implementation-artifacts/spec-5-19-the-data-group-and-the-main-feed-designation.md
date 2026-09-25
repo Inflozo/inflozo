@@ -942,6 +942,10 @@ Supabase's Auth admin API and deleted, users 13 before · 13 after: the controls
 equal to `ORDER`; the render matrix 36140412151 and `rls` were green, `deploy` skipped — nothing reached production, the
 control DW-7 promises). The local run had passed only because its exit code was not read. `pagedFeed` now lives beside
 `A`, `pnpm check` exit 0 with all 22 vocabulary checks, and the deployed walks below ran against the push after it.
+**The second push, `302b3dfc`, went RED too** (run 36141100550, `pnpm keyboard`: the 5.19 Hand-picked journey's `menuTo`
+pressed ↓ before the Source select's popover had opened and taken focus — "no menu row reads Hand-picked" — 56 of 57
+passed; green locally on every run). `menuTo` now waits for `:popover-open` first; the six 5.19 journeys ran four times
+each through the gate, 24 of 24. Again `deploy` was skipped and nothing reached production.
 
 ## Owner's manual test
 

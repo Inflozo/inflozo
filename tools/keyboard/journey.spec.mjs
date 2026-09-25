@@ -2058,6 +2058,8 @@ const nameOf = async (page, key) => (await page.locator(`[data-layer-row="${key}
 
 /** A popover menu row, reached from the keyboard: ↓ until the focused row reads `label` — never a pointer. */
 async function menuTo(page, label) {
+  // the popover opens and takes focus a frame after the key (review, 2026-09-25: CI pressed ↓ before it had)
+  await page.locator(':popover-open').first().waitFor()
   for (let guard = 0; guard < 12; guard++) {
     if ((await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')) === label) return
     await page.keyboard.press('ArrowDown')
