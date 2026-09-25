@@ -212,14 +212,18 @@ async function main() {
      *  asked within a session — which is why the walk moves between canvases with the Template switcher (a soft
      *  navigation, the session kept) and counts a session for every page it loads. */
     let session = 0
+    // CONTENT API READS ONLY (Story 5.19's Dev, 2026-09-25): T3 gained pictures stored on Ghost itself — a writer's photo
+    // and a post's feature image, which the canvas draws — and an <img> the browser loads is not a read the store makes,
+    // nor what "one request per key" or Ghost's per-network limiter (§51) is about
+    const contentRead = (url) => ghostOrigins().includes(new URL(url).origin) && new URL(url).pathname.startsWith('/ghost/api/content/')
     page.on('request', (r) => {
-      if (r.method() !== 'GET' || !ghostOrigins().includes(new URL(r.url()).origin)) return
+      if (r.method() !== 'GET' || !contentRead(r.url())) return
       const id = identity(r.url())
       seen.set(id, [...(seen.get(id) ?? []), { at: Date.now(), request: r, answered: false, session }])
       totalRequests++
     })
     page.on('response', async (r) => {
-      if (r.request().method() !== 'GET' || !ghostOrigins().includes(new URL(r.url()).origin)) return
+      if (r.request().method() !== 'GET' || !contentRead(r.url())) return
       const made = (seen.get(identity(r.url())) ?? []).find((x) => x.request === r.request())
       if (made && r.status() === 200) made.answered = true
       try { bodies.push({ id: identity(r.url()), status: r.status(), acao: r.headers()['access-control-allow-origin'] ?? null, body: await r.json() }) } catch {}

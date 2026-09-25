@@ -508,6 +508,9 @@ export function Editor({
   const readTurn = useRef(0)
   /** a read the customer asked for is in flight, and it paints when it lands — every other paint waits for it */
   const pending = useRef(false)
+  /** Story 5.19 — the site's reads an EDIT has asked for (by key), each once: one that did not answer is never asked
+   *  again by a paint, so the page falls to the sample as a press's does rather than retrying against Ghost's limiter */
+  const editReads = useRef(new Set<string>())
   /** the canvas and page the last paint drew, and whether the canvas is blank for another page's reads (`blank`) */
   const paintedAt = useRef<{ key: CanvasKey; page: Page } | null>(null)
   const [blanked, setBlanked] = useState(false)
@@ -1563,7 +1566,11 @@ export function Editor({
             void s.ensure(wanted)
             break
           }
-          for (const q of missing) tried.add(liveKey(q))
+          for (const q of missing) {
+            tried.add(liveKey(q))
+            // Story 5.19: and a paint never asks it again (`editReads`) — the press's own answer stands
+            editReads.current.add(liveKey(q))
+          }
           waited = true
           pending.current = true
           if (row !== null) setBusy(row)
@@ -1837,6 +1844,22 @@ export function Editor({
       // sample's own starting subject, silently (`resolveSubject`'s source rule).
       const view = now.source === 'site' ? siteOf(now) : null
       const reading = reads.current?.reading()
+      // STORY 5.19 — AN EDIT CAN NEED A READ NO PRESS HAS MADE: a Source, a tag, a writer or picks chosen, a feed placed
+      // or duplicated — a query that is the INSTANCE's, which nothing read in advance. Painted as it stood, that page
+      // would drop WHOLE to the sample (one source per render). So the paint hands it to the one door a read goes
+      // through, `request()`, which paints when the rows land — each such read asked once (`editReads`), so one that
+      // does not answer leaves the page on the sample, as a press's does. Meanwhile the old paint stays on screen but
+      // nothing on it may be pointed at or pressed: its roots are aligned with the stack it was painted from.
+      if (view !== null && 'need' in view && reading?.stopped === null && view.need.some((q) => !editReads.current.has(liveKey(q)))) {
+        for (const q of view.need) editReads.current.add(liveKey(q))
+        roots.current = []
+        stamps.current = new Map()
+        latest.current.hovered = null
+        setHovered(null)
+        mark()
+        request()
+        return
+      }
       const live = view !== null && 'ready' in view && reading?.stopped === null ? view.ready : null
       const sampleSubject = orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
       const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage)

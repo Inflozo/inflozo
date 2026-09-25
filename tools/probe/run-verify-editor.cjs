@@ -1667,7 +1667,14 @@ async function main() {
     await hoverOn(HERO)
     const washed = await rowState(HERO)
     check('step 29 — D8e: a hovered section washes its row; R-126: the row carries the ⋯ and nothing else', washed.bg === WASH && washed.controls.join(' · ') === `${layerOf(HERO)} · More for ${layerOf(HERO)}`, JSON.stringify(washed))
-    check('step 29 — R-126: the row\'s name is drawn at the smaller caption size, so it has the width to say itself', pressed29[2].size === '11px' && (await rowAt(GRID).locator('button').first().evaluate((b) => b.scrollWidth <= b.clientWidth)), `${pressed29[2].size} · ${JSON.stringify(washed.controls)}`)
+    // Story 5.19: the width is read on a row with nothing beside its name. The main feed's row gives D5c's MAIN FEED chip
+    // its place after the name, so a long name there ends in an ellipsis, as any long name does in this panel
+    check('step 29 — R-126: the row\'s name is drawn at the smaller caption size, so it has the width to say itself', pressed29[2].size === '11px' && (await rowAt(HERO).locator('button').first().evaluate((b) => b.scrollWidth <= b.clientWidth)), `${pressed29[2].size} · ${JSON.stringify(washed.controls)}`)
+    const chipRow29 = await rowAt(GRID).evaluate((r) => {
+      const [name, chip, more] = [r.querySelector(':scope > button'), r.querySelector('[data-main-feed-chip]'), r.querySelector(':scope > button[aria-label^="More for "]')].map((e) => e?.getBoundingClientRect())
+      return name && chip && more ? { name: Math.round(name.width), gap: Math.round(chip.left - name.right), after: Math.round(more.left - chip.right) } : null
+    })
+    check('step 29 — Story 5.19: on the main feed\'s row the chip sits between the name and the ⋯, overlapping neither, and the name keeps room to read', chipRow29 !== null && chipRow29.gap >= 0 && chipRow29.after >= 0 && chipRow29.name >= 40, JSON.stringify(chipRow29))
 
     // ── step 30 — Hide from the ⋯ menu (R-126): the section leaves the canvas and the row stays ──
     const menuOf = async (n) => {

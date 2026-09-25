@@ -741,12 +741,32 @@ and `{n}` is a number.
   writes `authors:` (Spec Change Log). Read in both bundled gscans' source too: `level: 'error'` at
   `lib/specs/v5.js:527`.
 
-**Supabase, Vercel, GitHub, Resend and Dodo:** not touched by this commit's checks. Production was read at Create
-(`SUPABASE_URL`, `SUPABASE_SECRET_KEY`: every `posts_per_page` 12, the two projects' Homes) and nothing was written —
-no migration, so no Schema phase. **Not yet run: the three deployed walks** (`run-verify-editor.cjs` step 94,
-`run-verify-live-content.cjs`, `run-verify-controls.cjs`). They refuse to start until `app.inflozo.com` serves this
-commit, so they run once CI publishes it, and their results are added here with the Supabase, Vercel and GitHub reads
-they make.
+**The deployed walks, first run, at `84a7b5cf`** (the first Dev commit: CI run 36127146566 — `check`, `rls` and
+`deploy` success, the render matrix 36127146743 success; `dpl_GteHBaLfzxSJJsRBzVJWTpqaa78i` READY on `app.inflozo.com`,
+read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`). Each made its own throwaway account through Supabase's Auth
+admin API (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) and deleted it, users 13 before · 13 after. **They found a real
+defect, fixed in the next Dev commit:**
+
+- **The editor walk: 1 FAIL, 619 PASS**, all 44 of step 94's checks among the passes (the Pilot-sections-shaped seed
+  repaired into a main feed and stored repaired by the next edit, D5c's chip, the lifecycle rows each one Undo, the
+  archive note, Latest Post's Source alone, a crafted stored value inert, a pick the sample lacks). The FAIL was step 29's
+  R-126 check that the post grid's name fits its row: the MAIN FEED chip now takes its place there, and "Post Grids —
+  Three Up" ends in "…", as "Newsletter — Inline Row" already did. The walk now reads R-126's width on a row with no
+  chip, and checks the main feed's row separately: the chip sits between the name and the ⋯ and overlaps neither.
+- **The live walk (`MAJORS=5,6 NO_429=1`): 24 FAIL, 90 PASS**, and 22 of the FAILs were ONE DEFECT. An edit that needs
+  a site read nothing had asked for — By tag, By author, Featured or picks chosen, a feed duplicated — was painted as
+  5.18's paint paints a page whose reads are not all in hand: the WHOLE page from the sample, and nothing ever read the
+  new query. So on the site, Latest Post By tag drew no card, the duplicated grid drew the sample's twelve, By tag
+  started on the sample's fullest tag, and the picks came from the sample's list. **Fixed at the one funnel, `paint()`:**
+  such a paint now hands the read to `request()` — the one door a read goes through — which paints the site when the
+  rows land; the old paint stays on screen meanwhile with nothing on it pointable, and each such read is asked once
+  (`editReads`), so one that does not answer leaves the page on the sample as a press's does and is never retried.
+  The other 2 FAILs were the walk's own: its request counter counted every GET to the Ghost origin, and T3 had gained
+  pictures stored on Ghost itself since 5.18's walk — the writer Umang's photo and "Reading the margins"'s feature image
+  (read on T3's Content API) — so an `<img>` the canvas drew counted as a read. It now counts Content API reads only.
+  The walk read 121 requests in all, against the ceiling of 500.
+
+**Resend and Dodo:** not touched — this story sends no email and bills nothing. No migration, so no Schema phase.
 
 **Locally, Node 24:**
 
@@ -823,7 +843,7 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 | 11 | same | Editor, Home | Click **Heroes — Latest Post**. In its **Data** group set **Source** to **Hand-picked** and choose a post. | `margins` | Only **Source** is offered (no Count, no Order). The hero's card shows "Reading the margins" instead of your newest post. After one pick the search greys: *"Latest Post shows 1 post, so it holds 1 pick."* |
 | 12 | same | Editor, Home | Press the pill at the foot of the canvas and choose **Sample content**. Then choose **Ghost5** again. | — | On sample content your hand-picked grid disappears from the page, and each of its picked rows says *"Not in the sample content."* Latest Post's card goes too, and its words stay. Back on Ghost5, both return exactly as you left them. |
 | 13 | same | Editor, Home | (Optional) Keep hand-picking posts in the new grid until you have 26. | any | At 26 the count **"26 picked"** turns coral-red and the sentence *"Past 25 picks this gets slow…"* appears. You can keep going. Nothing is blocked. |
-| 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at Layers, then click **Post Grids — Three Up**. | — | Its row now carries **MAIN FEED**. It had never been marked, and this story marks the first list on a page that has none. Its panel now offers **Preview page 1 · 2** below the settings. |
+| 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at Layers, then click **Post Grids — Three Up**. | — | Its row now carries **MAIN FEED** — beside a name this long, the name shortens with "…" to make room. It had never been marked, and this story marks the first list on a page that has none. Its panel now offers **Preview page 1 · 2** below the settings. |
 | 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag (Pilot sections) | Open **⋯** on **Post grid** and choose **Hide**. Then open it again and choose **Show**. Then press **Undo** twice. | — | Hidden, a note appears at the head of Layers: *"This Tag page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them."* Shown again, the note is gone. Two Undos leave the Tag page as it was. |
 | 16 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Put things back: open **⋯** on **Post Grids — Three Up** and choose **Delete**. Set Latest Post's **Source** back to **Latest**. | — | Home is as it was before step 2, and Latest Post shows your newest post again. |
 
