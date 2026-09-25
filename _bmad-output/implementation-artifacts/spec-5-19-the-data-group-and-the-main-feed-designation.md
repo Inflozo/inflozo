@@ -960,6 +960,17 @@ and no Order (R-108); the **controls walk 0 FAIL, 113 PASS**; the **editor walk 
 among them; the **live walk (`MAJORS=5,6 NO_429=1`) 0 FAIL, 116 PASS**, 107 Content API requests against the ceiling
 of 500. The recorder was NOT re-run — its §53 facts were re-executed by Content API above, and a run uploads a theme.
 
+### Results — Deploy, 2026-09-25
+
+Deployment: `dpl_Eo65rryxfzDWpYS5Wntd2EKYq1FM` — READY, target production, aliased to `app.inflozo.com` and `inflozo.com`, built
+from `2a605685` (CI run 36144492098: `check`, `rls` and `deploy` all success; the matrix run 36144491992 success). Read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`. `2a605685` changed only this spec over `7de502e8`, so
+the code live is the code the four walks above ran against. `https://app.inflozo.com/sign-in` answers 200. No file under
+`supabase/migrations/` in the story's diff (R-99), so no schema step and no `RLS-TEST.sql` run beyond CI's `rls` job. The
+owner's two test projects read back with `SUPABASE_URL` · `SUPABASE_SECRET_KEY`: Ghost 5 Project (`99d4d277-…`) linked to
+`9d473e0f-…` (ghost5.inflozo.com) — steps 1–13 and 16 need it; Pilot sections (`b6d4db35-…`) linked to no site, which is what
+steps 14 and 15 want. The Owner's manual test URLs already name `app.inflozo.com`; every step has its URL. `owner_test`
+stays `pending`.
+
 ## Owner's manual test
 
 On the real site after Deploy, in a desktop browser about 1440 wide. Deploy confirms the URLs.
