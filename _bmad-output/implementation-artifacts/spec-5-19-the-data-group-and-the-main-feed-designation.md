@@ -541,6 +541,34 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
   -- Standing rule 3.
 
+### Review Findings
+
+Review of 2026-09-25 on `34874458` (five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor,
+Real-infra verifier). The real-infra layer ran before a patch was written: every Ghost fact the fold rests on re-executed
+by Content API on T3 and T1 with a control, production's `projects.posts_per_page` read back (no migration in the diff —
+R-99 holds), `app.inflozo.com` at `34874458`, and the three deployed walks 0 FAIL on their first run (*Results —
+Review*). **Every patch below is applied; the story stays in review and Deploy, then the owner's test, follow.**
+
+- [x] [Review][Patch] The main feed's early return dropped its declared queries' Data rows [`packages/section-runtime/src/controls.ts` `dataRows`]
+- [x] [Review][Patch] Nothing kept picks unique — a repeated id emitted twice and collided React's keys [`controls.ts` `picksIn`, `setData`]
+- [x] [Review][Patch] The existence get carried `include="tags,authors"` for nothing rendered [`packages/ghost-shim/src/index.ts` `feedExprs`]
+- [x] [Review][Patch] A pick that is not a 24-hex id was inert but not refused by name at the emitter (AD-36) [`feedExprs`, `ad36.test.ts`]
+- [x] [Review][Patch] A `posts` repeat nested in another repeat would render a hand-picked feed differently on the two emitters — refused by name [`packages/section-runtime/src/core.ts`]
+- [x] [Review][Patch] `pagerOf`'s refusal of a flat pager had no test [`agreement.test.ts`]
+- [x] [Review][Patch] Every pick read "Not on {site}" for one round trip after a Data change, from the previous paint's rows [`editor.tsx` `chosenRows`, `sidebar.tsx`, `data-group.tsx` `Picks`]
+- [x] [Review][Patch] `editReads` was never cleared, so a read that failed once was never asked again for the session [`editor.tsx` `chooseSource`]
+- [x] [Review][Patch] Removing a pick dropped focus to the body and said nothing; adding one said nothing [`data-group.tsx` `Picks`, `lib/data-group.ts`]
+- [x] [Review][Patch] Neither search had an empty-result sentence [`data-group.tsx`, `lib/data-group.ts` `NO_MATCHES`]
+- [x] [Review][Patch] The tag and writer selects drew no capped line and called a value past the 100 fullest missing [`data-group.tsx` `Taxonomy`, `editor.tsx` `dataLists`, `CAPPED_LIST`]
+- [x] [Review][Patch] `mainFeedOf` existed twice, byte for byte [`apps/web/lib/page-two.ts`]
+- [x] [Review][Patch] The sample cache grew one entry per Count step or Order flip [`apps/web/lib/canvas.ts` `sampleRows`]
+- [x] [Review][Patch] The harness wrote `postsPerPage: 12` down [`apps/web/app/(app)/app/harness/editor/page.tsx`]
+- [x] [Review][Patch] The stress theme's feed had no `data-if="posts"` and no pager, so gscan never judged the secondary mode's two effects; `sections.js` was named in the task and untouched [`tools/stress/sections.js` `pagedFeed`, `build.js`, `compile.js`]
+- [x] [Review][Patch] The pilots walk's step 13 asserted Latest Post has no Data group — the opposite of an AC [`tools/probe/run-verify-pilots.cjs`]
+- [x] [Review][Defer] The two repair doors and `paint()`'s edit-read branch are proven only by the deployed walks — deferred, DW-257
+- [x] [Review][Defer] 5.18's `slugShaped` and 5.19's `GHOST_SLUG_RE` disagree on accented letters and doubled hyphens, neither executed on Ghost — deferred, DW-258
+- [x] [Review][Defer] Past 100 picks the site read returns fewer rows than the theme renders — deferred, DW-259
+
 **Acceptance Criteria:**
 
 - **The frames.**
@@ -908,6 +936,12 @@ Supabase's Auth admin API and deleted, users 13 before · 13 after: the controls
 `apps/web` 548 (the words). The stress theme (`node build.js && node gate.js theme`): 76 sections over 7 templates,
 `paged-main` with its pager and the five secondary copies without — **ERRORS 0 WARNINGS 0** on gscan 4.49.7 and 6.4.2.
 `pnpm keyboard`: 57 passed, the six "5.19 ·" journeys among them, on the harness with its derived page size.
+
+**The review's first push, `43916359`, went RED in CI** (run 36140412228, `check` — `tools/stress/test-vocabulary.mjs`:
+"ORDER and A have drifted apart", because `pagedFeed` had been added to the archetype table `A`, which that test holds
+equal to `ORDER`; the render matrix 36140412151 and `rls` were green, `deploy` skipped — nothing reached production, the
+control DW-7 promises). The local run had passed only because its exit code was not read. `pagedFeed` now lives beside
+`A`, `pnpm check` exit 0 with all 22 vocabulary checks, and the deployed walks below ran against the push after it.
 
 ## Owner's manual test
 
