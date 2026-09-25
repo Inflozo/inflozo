@@ -946,6 +946,19 @@ control DW-7 promises). The local run had passed only because its exit code was 
 pressed ↓ before the Source select's popover had opened and taken focus — "no menu row reads Hand-picked" — 56 of 57
 passed; green locally on every run). `menuTo` now waits for `:popover-open` first; the six 5.19 journeys ran four times
 each through the gate, 24 of 24. Again `deploy` was skipped and nothing reached production.
+**The third push, `972d90ea`, went red on the SAME journey** with the wait in place, and the fourth, `7de502e8` —
+which changed nothing but `menuTo`'s error message — went **green** (CI 36142173632, the matrix 36142173733,
+`deploy` success). So the red is intermittent on the runner and not in the app: three runs, two red at the same line
+with nothing between them touching the Source select, one green. `menuTo` now names what was focused and what the open
+popovers held, so the next red can be read from the runner rather than reproduced; the six 5.19 journeys are 24 of 24
+locally over four repeats. This is DW-222's shape (a walk step red on untouched code) and is recorded here, not fixed.
+
+**After the patches, the deployed walks at `7de502e8`** (`dpl_5n41unPgGffQwPQDkSvD564kcRif` READY on `app.inflozo.com`,
+`meta.githubCommitSha` = HEAD), each on its first run, in sequence, throwaway accounts made and deleted, users 13 before ·
+13 after: the **pilots walk 0 FAIL, 152 PASS** — its new step 13 reads Latest Post's Data group as Source alone, no Count
+and no Order (R-108); the **controls walk 0 FAIL, 113 PASS**; the **editor walk 0 FAIL, 621 PASS**, step 94's 44 checks
+among them; the **live walk (`MAJORS=5,6 NO_429=1`) 0 FAIL, 116 PASS**, 107 Content API requests against the ceiling
+of 500. The recorder was NOT re-run — its §53 facts were re-executed by Content API above, and a run uploads a theme.
 
 ## Owner's manual test
 
