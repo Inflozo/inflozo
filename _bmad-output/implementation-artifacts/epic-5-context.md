@@ -491,6 +491,18 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `--tw-border-style:solid` — Tailwind's `@property` initial values do not register from a shadow root's adopted
     sheet, so every chrome `border` had drawn none (5.15's PAUSED chip included). Chrome SHADOWS still draw none for
     the same reason — P0-1's pill among them — which is DW-256, outside this story's surfaces.
+  - **Story 5.19's review (2026-09-25, five layers on `34874458`, on real T1/T3/Supabase/Vercel):** every Ghost fact the
+    fold rests on re-executed by Content API with a control; patches: the main feed keeps its DECLARED queries' Data rows
+    beside D5c's Count; a post is picked once (the fold dedupes, `setData` refuses); the existence get asks for no
+    relations and refuses a pick that is not a 24-hex id by name; a `posts` repeat nested in another repeat is refused
+    as a hand-picked secondary feed; the site's rows not yet in hand mark no pick lacking; choosing the site again
+    clears an edit's asked reads (5.18's one "try again"); a pick added or removed is said and keeps focus; a search
+    with no match says so; the tag and writer selects carry D5e's capped line and call nothing missing past it; one
+    `mainFeedOf`; the sample cache keyed per query; the harness derives its page size; the stress theme gains the
+    paged feed shape (a `data-if="posts"` list and one pager) as the main feed and as each secondary feed, gscan 0/0;
+    the pilots walk's step 13 reads Latest Post's Source alone. Deferred: DW-257 (the two repair doors and the paint's
+    edit-read branch are proven only by the deployed walks), DW-258 (two slug grammars, unexecuted), DW-259 (past 100
+    picks the canvas reads fewer than the theme renders).
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

@@ -74,7 +74,7 @@ import {
   bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, reader, retriable, SETTINGS, siteLinks, siteTotal,
   type Cause, type LiveQuery,
 } from '@/lib/live-content'
-import { ADDED_AS_MAIN, FEEDLESS, NOW_MAIN, withTransfer } from '@/lib/data-group'
+import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, NOW_MAIN, withTransfer } from '@/lib/data-group'
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
@@ -1643,6 +1643,8 @@ export function Editor({
     const s = readsOf()
     if (s === null || !retriable(s.reading().stopped)) return true
     s.retry()
+    // review (2026-09-25): the one "try again" (5.18's `retried`) covers an edit's own reads too — a paint may ask again
+    editReads.current.clear()
     announcedCauses.current.clear()
     latest.current = { ...latest.current, source: 'site' }
     setSource('site')
@@ -2638,6 +2640,9 @@ export function Editor({
     if (chosen === undefined || entry === undefined) return {}
     const queries = queriesOf(chosen)
     const own = livePage !== null ? livePage.rows[queryKey(chosen)] : sampleRows(queries)
+    // review (2026-09-25): the site's rows for a query the last paint did not hold are NOT KNOWN yet — its read is in
+    // flight — so no row is handed and the panel marks nothing lacking, rather than every pick for one round trip
+    if (own === undefined) return {}
     const feed = queries[FEED_KEY]
     return { ...shownRows(entry, chosen, own), ...(feed === undefined ? {} : { [FEED_KEY]: rowsFor(feed, own?.[FEED_KEY]) }) }
   })()
@@ -2647,11 +2652,16 @@ export function Editor({
       // the sample's writers' pictures sit on its reserved origin, which the canvas route serves (`withImages`)
       const picture = (url: unknown) => (typeof url === 'string' ? url.replace(new RegExp(`^${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/images/([a-z0-9-]+)\\.svg$`), `${src.split('?')[0]}?image=$1`) : url)
       const authors = orbitWeekly.authors().map((a) => ({ ...a, profile_image: picture(a.profile_image) }))
-      return { held: 'sample' as const, tags: orbitWeekly.tags(), authors, posts: orbitWeekly.posts(), capped: null }
+      return { held: 'sample' as const, tags: orbitWeekly.tags(), authors, posts: orbitWeekly.posts(), capped: null, listCapped: { tag: null, author: null } }
     }
     const r = reader(s.peek)
     const rows = (q: LiveQuery) => (r.got(q)?.rows ?? []) as readonly Readonly<Record<string, unknown>>[]
-    return { held: { site: siteName }, tags: rows(LISTS.tag), authors: rows(LISTS.author), posts: rows(LISTS.post), capped: cappedPosts(s.peek) }
+    // review (2026-09-25): the tag and writer lists are read at the same limit as the posts — a site past it is told so
+    const listCapped = (which: 'tag' | 'author') => {
+      const got = r.got(which === 'tag' ? LISTS.tag : LISTS.author)
+      return got !== undefined && got.total > got.rows.length ? CAPPED_LIST(which, got.rows.length) : null
+    }
+    return { held: { site: siteName }, tags: rows(LISTS.tag), authors: rows(LISTS.author), posts: rows(LISTS.post), capped: cappedPosts(s.peek), listCapped: { tag: listCapped('tag'), author: listCapped('author') } }
   }, [livePage, liveTick, siteName])
   const pro = plan === 'free' && entry?.tier === 'pro'
   /* Story 5.11 — the SELECTED section's ring feeds the panel block, the HOVERED one's feeds the pill: the pill is

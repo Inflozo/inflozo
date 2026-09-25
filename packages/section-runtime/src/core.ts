@@ -1692,6 +1692,11 @@ function renderTree(
       // inside the one existence get `renderTheme` wraps the section in (the repeat's own limit, where it has one, cuts
       // the picks exactly as the canvas's slice does)
       const picked = query === undefined && source === 'posts' && !insideRepeat(el, root) ? feed?.each ?? null : null
+      // review (2026-09-25): a feed design whose `posts` repeat sits inside another repeat could walk only the existence
+      // get's one row here while the canvas expanded every pick — refused by name instead (the library holds no such design)
+      if (feed?.each != null && query === undefined && source === 'posts' && insideRepeat(el, root)) {
+        throw new Error('a feed design repeats `posts` at the top of its markup, never inside another repeat — a hand-picked secondary feed could not render it the same on both emitters (Story 5.19).')
+      }
       // ONE block per query: a filter binding is one, a hand-picked `ids` binding is N in the picked
       // order (R-20) — each its own {{#get}} around its own {{#foreach}}, because the order is the
       // point and one get with an `id:a,id:b` filter would answer in the API's order. Story 5.19: a hand-picked list

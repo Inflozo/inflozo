@@ -938,7 +938,7 @@ test('FEED · hand-picked: single-id gets print in the CHOSEN order, never by da
     // …and the shim builds exactly that shape from the same picks
     const built = feedExprs({ source: 'posts', ids: picks.map((p) => p.id) })
     assert.ok(built !== null)
-    assert.equal(built.outer, `{{#get "posts" filter="id:[${picks.map((p) => p.id).join(',')}]" limit="1" include="tags,authors"}}`)
+    assert.equal(built.outer, `{{#get "posts" filter="id:[${picks.map((p) => p.id).join(',')}]" limit="1"}}`)
     assert.deepEqual(built.each, picks.map((p) => `{{#get "posts" filter="id:${p.id}" limit="1" include="tags,authors"}}`))
   })
   assert.equal(feedExprs({ source: 'posts', ids: [] }), null, 'nothing picked emits nothing')

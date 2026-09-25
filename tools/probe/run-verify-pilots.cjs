@@ -182,9 +182,12 @@ async function main() {
       await at('Latest Post')
       const t = await canvasText()
       check('step 12 — Latest Post: the newest post in the card', /The night shift at the Port of Algeciras/.test(t), t.replace(/\s+/g, ' ').slice(0, 240))
-      const panel = await page.locator('aside#section-controls').innerText()
-      // a row labelled exactly "Show" is the Data group's Count; "Show tag" and "Show date" are the design's own controls
-      check('step 13 — Latest Post: the panel offers no number of posts (no Data group, no Show row)', !/(^|\n)\s*Show\s*(\n|$)/.test(panel) && !/(^|\n)\s*Data\s*(\n|$)/.test(panel), panel.replace(/\s+/g, ' ').slice(0, 300))
+      // Story 5.19 (review, 2026-09-25): a FIXED query's Data group is its Source alone (R-108) — never a Count (whose old
+      // word was "Show") or an Order; "Show tag" and "Show date" are the design's own controls
+      const dataHead = page.locator('aside#section-controls').getByRole('button', { name: 'Data', exact: true })
+      if ((await dataHead.getAttribute('aria-expanded')) !== 'true') await dataHead.click()
+      const dataText = await page.locator('aside#section-controls').getByRole('region', { name: 'Data' }).innerText()
+      check('step 13 — Latest Post: the Data group offers Source alone — no Count, no Order (R-108)', /(^|\n)\s*Source\s*(\n|$)/.test(dataText) && !/(^|\n)\s*(Show|Count|Order)\s*(\n|$)/.test(dataText), dataText.replace(/\s+/g, ' ').slice(0, 300))
       await radio('member', 'Signed out').click()
       await radio('show-to', 'Paid members').click(); await page.waitForTimeout(250)
       check('step 13 — Latest Post: Show to Paid, viewed signed out, removes the section', (await canvasHtml()).trim() === '')

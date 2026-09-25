@@ -32,7 +32,9 @@ const sampled = new Map<string, { newest: readonly unknown[]; oldest: readonly u
 export function sampleRows(queries: Queries | undefined): DesignRows {
   return Object.fromEntries(
     Object.entries(queries ?? {}).map(([key, b]) => {
-      const id = JSON.stringify(b)
+      // one entry per QUERY: the value holds the ceiling in both orders, so the Count and the Order decide nothing here
+      // and a stepper pressed nine times is one entry, not nine (review, 2026-09-25)
+      const id = JSON.stringify(b.fixed === true || b.ids !== undefined ? b : { ...b, limit: undefined, order: undefined })
       let both = sampled.get(id)
       if (both === undefined) {
         if (b.fixed === true || b.ids !== undefined) {

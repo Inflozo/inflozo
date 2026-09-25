@@ -5911,3 +5911,58 @@ location: `apps/web/lib/canvas-layer.ts` (`chromeLayers`, the host's style) · `
   (`CanvasNote`; `P0-1 Inline Text Toolbar.dc.html:142` draws the pill with `box-shadow:0 4px 16px rgba(28,27,26,.10)`)
 reason: outside Story 5.19's surfaces — its chip draws no shadow. The fix is the same kind of line (the shadow variables'
   `0 0 #0000` declared on the host), but it changes a surface Story 5.3 owns, which the owner should see in a test of it.
+
+### DW-257: the editor's two repair doors and the paint's edit-read branch are proven only by the deployed walks
+
+plain: Three small pieces of the main-feed story — the repair of an old page as it opens, the same repair when the
+  editor reloads from its own saved copy, and the way an edit that needs new posts from the site asks for them — are
+  checked by the walks run by hand against the real site, not by the tests that run on every commit. They passed there.
+  A future change could break one and every commit-time test would stay green.
+status: open
+severity: low
+origin: Story 5.19's review (2026-09-25), the Verification Gap layer: `read.ts`'s `docs[key] = designate(…)`, the
+  hydrate's `designated(k, d)` and `paint()`'s "an edit needs a read no press made" branch (`editReads`) are each held by
+  `run-verify-editor.cjs` step 94 or `run-verify-live-content.cjs` alone — the keyboard harness has no linked site and
+  its Home is flagged from `SYNTHESIS_DEFAULTS`, so `pnpm keyboard` reaches none of them. Deleting `read.ts`'s line
+  leaves `pnpm check` and `pnpm keyboard` green.
+owner: unowned — needs one. The next story that touches `read.ts`'s doc assembly or `paint()`'s site branch, or a Fix run.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (`editorData`'s designate loop) ·
+  `editor.tsx` (the hydrate; `paint()`'s `editReads` branch) · `apps/web/app/(app)/app/harness/editor/page.tsx`
+reason: the shape of the fix is a second harness canvas seeded UNFLAGGED plus a `5.19 ·` journey, and a pure
+  `unasked(need, asked)` in `lib/live-content.ts` with a `node --test` row — more than a review patch, and the deployed
+  walks do hold them today (R-82).
+
+### DW-258: two grammars for a Ghost slug — 5.18's `slugShaped` and 5.19's `GHOST_SLUG_RE` — and neither was executed
+
+plain: Two parts of the editor decide differently what a "valid tag name" looks like: the part that reads posts from your
+  site accepts accented letters, and the part that writes your theme accepts only plain ASCII. Real Ghost tag slugs are
+  plain ASCII as far as Ghost's own code says, so no real tag falls between them today. It is one rule written twice.
+status: open
+severity: low
+origin: Story 5.19's review (2026-09-25), the Blind Hunter and Edge Case layers. `apps/web/lib/live-content.ts`'s
+  `slugShaped` (Story 5.18: `^[\p{Ll}\p{Lo}\p{Nd}_]+(?:-[\p{Ll}\p{Lo}\p{Nd}_]+)*$`, single hyphens, any script)
+  and `packages/library/src/vocabulary.ts`'s `GHOST_SLUG_RE` (Story 5.19: `^[a-z0-9_-]+$`, read in `@tryghost/string`'s
+  `slugify.js` at both pins). `café` passes one and fails the other; `a--b` the reverse. `live-content.test.ts` asserts
+  `café` valid, so unifying them inside 5.19's review would overturn 5.18's tested claim on an unexecuted reading.
+owner: unowned — needs one. The next story that stores or reads a slug (Story 7.16's routes, or Epic 9's first
+  Ghost-sourced design), which EXECUTES it: create a tag whose name is non-ASCII on T1 under the reset protocol and read
+  the slug Ghost gives it, then keep one grammar in the vocabulary and point `slugShaped` at it.
+location: `apps/web/lib/live-content.ts` (`slugShaped`) · `packages/library/src/vocabulary.ts` (`GHOST_SLUG_RE`) ·
+  `apps/web/live-content.test.ts:49-55`
+reason: standing rule 1 — both are hypotheses about Ghost until executed, and the review may not pick one by reading.
+
+### DW-259: a hand-picked list past 100 picks reads fewer rows on the canvas than the theme will render
+
+plain: If you hand-pick more than 100 posts for one list, the editor asks your site for them in a single request that
+  can return at most 100, so the canvas shows the first 100 and marks the rest as missing, while the published theme
+  would show every one. The panel already warns past 25 picks that such a list is slow.
+status: open
+severity: low
+origin: Story 5.19's review (2026-09-25), the Blind Hunter layer: `bindingReads` reads the picks as ONE
+  `filter=id:[…]` at `LIST_LIMIT` (100), which is also Ghost 6's own `maxLimit` cap for a get, while `feedExprs` emits N
+  single-id gets. Past 100 picks the canvas and the theme disagree, and `siteRows` marks the overflow lacking.
+owner: unowned — needs one. The story that first caps a Ghost-sourced Count per design (R-195: 9.5, 9.11, 10.54…) is
+  the natural place, since it decides what a list's ceiling is.
+location: `apps/web/lib/live-content.ts` (`bindingReads`, the `ids` branch) · `packages/ghost-shim/src/index.ts` (`feedExprs`)
+reason: the fix is either a paged read (several requests, and 5.18's per-key cache keyed per page) or a stated cap on
+  picks, and a cap is the owner's — FR-H2 says no hard cap, the panel warns past 25.

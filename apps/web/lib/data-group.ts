@@ -46,6 +46,15 @@ export const PICK_LACKING = (held: Held): string =>
 export const PICKED = (n: number): string => `${n} picked`
 export const SEARCH_POSTS = 'Search posts to add'
 export const NO_PICKS = 'No posts picked yet.'
+/** review (2026-09-25) — a search (posts, tags or writers) that matches nothing says so rather than showing an empty list */
+export const NO_MATCHES = 'Nothing matches.'
+/** review (2026-09-25) — `aria-live`, the picked list: a pick added from the search and one removed with its × are said,
+ *  as `movedTo` says a move, because the list changes under the control that changed it */
+export const PICK_ADDED = (title: string): string => `${title} added.`
+export const PICK_REMOVED = (title: string): string => `${title} removed.`
+/** review (2026-09-25) — D5e's capped line for the tag and writer selects, read at the same limit as the posts: the
+ *  fullest `n` are offered, and a stored value past them is not called missing */
+export const CAPPED_LIST = (which: 'tag' | 'author', n: number): string => `Showing your ${n} fullest ${which === 'tag' ? 'tags' : 'writers'}.`
 
 /** P0·5: past 25 picks the count turns warning-toned and this sentence appears. Nothing is blocked. */
 export const SLOW_AFTER = 25

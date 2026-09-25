@@ -19,7 +19,7 @@
  */
 
 import { orbitWeekly } from '@inflozo/library'
-import { isDesigned, pageTwoStack, type DocInstance, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
+import { isDesigned, mainFeedOf, pageTwoStack, type DocInstance, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasStack, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './editor.ts'
 import { EMPTY_DOC } from './round-trip.ts'
 
@@ -62,9 +62,9 @@ export const SITE_WIDE_ASK = {
 
 /* ── WHETHER THERE IS A PAGE 2 (R-176) ────────────────────────────────────────────────────────────────────────── */
 
-/** A page's main feed: its first instance designated `isMainFeed`, shown or hidden — read here, never written (the
- *  designation and its lifecycle are Story 5.19's). */
-export const mainFeedOf = (doc: ProjectDoc | null | undefined): DocInstance | undefined => doc?.instances.find((i) => i.isMainFeed)
+/** A page's main feed — the runtime's own reading (`main-feed.ts`), re-exported so this module and the editor read ONE
+ *  rule (review, 2026-09-25: two byte-identical copies had grown; the designation and its lifecycle are Story 5.19's). */
+export { mainFeedOf }
 
 const NO_PAGES = 'this page has no page 2.'
 const NO_FEED = 'this page no longer has a main list of posts, so it has no page 2.'

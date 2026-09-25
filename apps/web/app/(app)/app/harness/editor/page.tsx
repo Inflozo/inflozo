@@ -92,9 +92,9 @@ export default function EditorHarness() {
   const data: EditorData = {
     docs,
     entries,
-    // Story 5.19 — the project's posts per page, as `read.ts` hands it: 12 is the column's own default
-    // (`…complete_schema.sql:226`), and every project on production stores it
-    postsPerPage: 12,
+    // Story 5.19 — the project's posts per page, as `read.ts` hands it: derived from the sample, which is also `read.ts`'s
+    // own fallback, never written down (review, 2026-09-25)
+    postsPerPage: orbitWeekly.postsPerPage(),
     memberVisibility: Object.fromEntries(placed.map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },

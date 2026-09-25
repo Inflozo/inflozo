@@ -641,6 +641,17 @@ test('Story 5.19 · the main feed\'s Data group is D5c\'s: Count greyed at the p
   assert.deepEqual(three.data, { posts: { count: 3 } })
 })
 
+test('review 2026-09-25 · a main feed that also DECLARES a posts query keeps that query\'s rows under D5c\'s Count', () => {
+  const main = { ...entry, feed: { kind: 'main' as const, postsPerPage: 12 } }
+  assert.deepEqual(rowsOf(main, start()).map((r) => [r.key, r.control]), [['posts', 'count'], ['latest', 'source'], ['latest', 'count'], ['latest', 'order']])
+  assert.equal(typeof setData(main, start(), 'latest', 'source', 'featured'), 'object', 'its declared query is still editable')
+})
+
+test('review 2026-09-25 · a post is picked once: the fold folds a repeated id once, and setData refuses the repeat', () => {
+  assert.equal(setData(entry, start({ data: { latest: { source: 'picked' } } }), 'latest', 'picks', [PICK(1), PICK(1)]), 'A post can be picked once.')
+  assert.deepEqual(withData(entry.dataBindings, { latest: { source: 'picked', picks: [PICK(2), PICK(1), PICK(2)] } })['latest']!.ids, [PICK(2).id, PICK(1).id])
+})
+
 test('Story 5.19 · Reset names and removes every changed Data row — the Source, the tag, the picks — and keeps what is not drawn', () => {
   let state = ok(setData(entry, start(), 'latest', 'source', 'tag'))
   state = ok(setData(entry, state, 'latest', 'tag', 'field-notes'))

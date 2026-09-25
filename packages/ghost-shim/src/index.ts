@@ -21,6 +21,7 @@
 // through `innerHTML` by accident. `eslint.config.js` is the gate; this paragraph is the reason.
 
 import {
+  GHOST_ID_RE,
   IMAGE_SIZES,
   safeCssColor,
   safeUrl,
@@ -589,9 +590,13 @@ export function feedExprs(b: DataBinding): { outer: string; each: string[] | nul
     throw new Error(`a secondary feed is a posts query over the native \`posts\` it shadows — got source ${JSON.stringify(b.source)}.`)
   }
   if (b.ids !== undefined && b.ids.length === 0) return null
+  // review (2026-09-25): a pick is a Ghost id — 24 hexadecimal digits — at the emitter as at the fold (AD-36), by name
+  const badId = b.ids?.find((id) => !GHOST_ID_RE.test(id))
+  if (badId !== undefined) throw new Error(`a hand-picked secondary feed names each post by its Ghost id — 24 hexadecimal digits — got ${JSON.stringify(badId)} (AD-36).`)
   const queries = queriesOf('posts', b, false)
   if (b.ids === undefined) return { outer: exprOf(queries[0] as ContentQuery), each: null }
-  const existence: ContentQuery = { resource: 'posts', params: { filter: `id:[${b.ids.join(',')}]`, limit: '1', include: POSTS_INCLUDE } }
+  // the existence get decides only whether anything is there: no relations are asked for (the single-id gets inside ask)
+  const existence: ContentQuery = { resource: 'posts', params: { filter: `id:[${b.ids.join(',')}]`, limit: '1' } }
   return { outer: exprOf(existence), each: queries.map(exprOf) }
 }
 

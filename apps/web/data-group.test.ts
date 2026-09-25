@@ -3,8 +3,9 @@ import assert from 'node:assert/strict'
 import { POST_SOURCES, POST_SOURCE_WORDS } from '@inflozo/library'
 import { DATA_WORDS } from '@inflozo/section-runtime'
 import {
-  ADDED_AS_MAIN, FEEDLESS, HOLDS, initialOf, MAIN_FEED, MAKE_MAIN_FEED, NO_PICKS, NOT_IN_SOURCE, NOW_MAIN, optionsOf,
-  PAST_SLOW, PAST_SLOW_BOLD, PICK_LACKING, PICKED, postsCount, SEARCH_POSTS, searchPosts, slow, SLOW_AFTER, withTransfer,
+  ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, HOLDS, initialOf, MAIN_FEED, MAKE_MAIN_FEED, NO_MATCHES, NO_PICKS, NOT_IN_SOURCE, NOW_MAIN,
+  optionsOf, PAST_SLOW, PAST_SLOW_BOLD, PICK_ADDED, PICK_LACKING, PICK_REMOVED, PICKED, postsCount, SEARCH_POSTS, searchPosts,
+  slow, SLOW_AFTER, withTransfer,
 } from './lib/data-group.ts'
 
 /* Story 5.19 — THE WORDS (R-170). Every string the spec's "The words" table gives, held here to the one module that
@@ -85,4 +86,12 @@ test('the feed-less archive note, for a Tag and an Author page', () => {
     FEEDLESS('Author'),
     'This Author page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them.',
   )
+})
+
+test('review 2026-09-25 · the words the review added — a search with no match, a pick added or removed, a capped tag or writer list', () => {
+  assert.equal(NO_MATCHES, 'Nothing matches.')
+  assert.equal(PICK_ADDED('Reading the margins'), 'Reading the margins added.')
+  assert.equal(PICK_REMOVED('Reading the margins'), 'Reading the margins removed.')
+  assert.equal(CAPPED_LIST('tag', 100), 'Showing your 100 fullest tags.')
+  assert.equal(CAPPED_LIST('author', 100), 'Showing your 100 fullest writers.')
 })

@@ -11,8 +11,8 @@ import { Segmented } from '@/components/kit/segmented'
 import { openPopover, Select } from '@/components/kit/select'
 import { Stepper } from '@/components/kit/stepper'
 import {
-  HOLDS, initialOf, NO_PICKS, NOT_IN_SOURCE, optionsOf, PAST_SLOW, PAST_SLOW_BOLD, PICK_LACKING, PICKED, postsCount,
-  SEARCH_POSTS, searchPosts, slow, type Held, type Option,
+  HOLDS, initialOf, NO_MATCHES, NO_PICKS, NOT_IN_SOURCE, optionsOf, PAST_SLOW, PAST_SLOW_BOLD, PICK_ADDED, PICK_LACKING,
+  PICK_REMOVED, PICKED, postsCount, SEARCH_POSTS, searchPosts, slow, type Held, type Option,
 } from '@/lib/data-group'
 import { captureLayout, landingAt, shift, slotTop, type Drag, type Layout } from '@/lib/reorder'
 
@@ -38,7 +38,13 @@ type Row = Readonly<Record<string, unknown>>
 
 /** What the pickers search: the SOURCE IN FORCE's own rows — the connected site's lists in hand, or the sample's — and
  *  whose content a note names. A value belongs to the source it was chosen from (5.18's rule for subjects). */
-export type DataLists = { held: Held; tags: readonly Row[]; authors: readonly Row[]; posts: readonly Row[]; capped: string | null }
+export type DataLists = {
+  held: Held; tags: readonly Row[]; authors: readonly Row[]; posts: readonly Row[]
+  /** D5e's capped line for the post search, or null when the list is whole */
+  capped: string | null
+  /** the same for the tag and writer selects (review, 2026-09-25): a site past the read's limit offers its fullest */
+  listCapped: Readonly<Record<'tag' | 'author', string | null>>
+}
 
 type Change = readonly [DataControl, unknown]
 
@@ -59,8 +65,9 @@ export function DataGroup({
   /** the query's stored record — so a Source switch brings back the tag, writer or picks chosen before */
   stored: Readonly<Record<string, unknown>>
   lists: DataLists
-  /** the rows the canvas shows for this query — a pick not among them is one the source in force does not hold */
-  shown: readonly unknown[]
+  /** the rows the canvas shows for this query — a pick not among them is one the source in force does not hold;
+   *  undefined while the site's rows are still being read, when nothing is known and nothing is marked lacking */
+  shown: readonly unknown[] | undefined
   /** the design's name, for a fixed query's cap sentence */
   design: string
   /** one gesture's values, applied in order and committed once; answers the engine's refusal, or null */
@@ -177,7 +184,8 @@ function Taxonomy({ id, row, which, lists, onChoose }: { id: string; row: DataRo
   const found = q === '' ? options : options.filter((o) => o.name.toLowerCase().includes(q))
   const menu = `${id}-menu`
   const search = `${id}-q`
-  const lacking = row.value !== '' && current === undefined
+  // a value past a capped list is not KNOWN to be missing — only a whole list can say so
+  const lacking = row.value !== '' && current === undefined && lists.listCapped[which] === null
   return (
     <div className="flex flex-col gap-[5px]">
       <span id={`${id}-label`} className="text-control-label font-medium text-ink-soft">{row.label}</span>
@@ -208,6 +216,8 @@ function Taxonomy({ id, row, which, lists, onChoose }: { id: string; row: DataRo
         className="w-[248px] flex-col gap-2 overflow-hidden rounded border border-line bg-surface p-[8px] shadow-lg open:flex"
       >
         <SearchInput id={search} label={`Search ${which === 'tag' ? 'tags' : 'writers'}`} labelHidden placeholder={`Search ${which === 'tag' ? 'tags' : 'writers'}`} value={query} onChange={(e) => setQuery(e.target.value)} />
+        {lists.listCapped[which] === null ? null : <p data-list-capped className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">{lists.listCapped[which]}</p>}
+        {found.length === 0 ? <p className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">{NO_MATCHES}</p> : null}
         <ul className={`flex max-h-[min(300px,55vh)] list-none flex-col gap-px overflow-y-auto ${slimScrollbar}`}>
           {found.map((o) => (
             <li key={o.slug} className="relative flex">
@@ -240,12 +250,12 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
   id: string
   row: DataRow
   lists: DataLists
-  shown: readonly unknown[]
+  shown: readonly unknown[] | undefined
   design: string
   onPicks: (picks: readonly PickedPost[]) => void
 }) {
   const picks = row.picks ?? []
-  const found = new Set(shown.map((r) => str((r as Row)['id'])))
+  const found = shown === undefined ? null : new Set(shown.map((r) => str((r as Row)['id'])))
   const [said, setSaid] = useState('')
   const [query, setQuery] = useState('')
   const [drag, setDrag] = useState<Drag | null>(null)
@@ -255,9 +265,11 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
   const [focusAt, setFocusAt] = useState<number | null>(null)
   useEffect(() => {
     if (focusAt === null) return
-    list.current?.querySelector<HTMLElement>(`[data-pick-handle="${focusAt}"]`)?.focus()
+    // a removed row's neighbour, else (the list emptied) the search that adds one — focus never drops to the body
+    const handle = list.current?.querySelector<HTMLElement>(`[data-pick-handle="${focusAt}"]`)
+    ;(handle ?? document.getElementById(`${id}-search`))?.focus()
     setFocusAt(null)
-  }, [focusAt])
+  }, [focusAt, id])
 
   const move = (from: number, to: number) => {
     const next = picks.filter((_, i) => i !== from)
@@ -295,7 +307,7 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
         ) : null}
         {picks.map((pick, i) => {
           const lifted = drag?.from === i
-          const lacking = !found.has(pick.id)
+          const lacking = found !== null && !found.has(pick.id)
           return (
             <li
               key={pick.id}
@@ -340,7 +352,11 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
                 type="button"
                 aria-label={`Remove ${pick.title}`}
                 title={`Remove ${pick.title}`}
-                onClick={() => onPicks(picks.filter((_, x) => x !== i))}
+                onClick={() => {
+                  setSaid(PICK_REMOVED(pick.title))
+                  setFocusAt(i < picks.length - 1 ? i : i - 1)
+                  onPicks(picks.filter((_, x) => x !== i))
+                }}
                 className={`inline-flex size-[18px] shrink-0 items-center justify-center rounded-[4px] text-ink-soft hover:bg-paper hover:text-ink ${ring}`}
               >
                 <X size={12} />
@@ -390,6 +406,7 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
         >
           <SearchInput id={search} label={SEARCH_POSTS} labelHidden placeholder={SEARCH_POSTS} value={query} onChange={(e) => setQuery(e.target.value)} />
           {lists.capped === null ? null : <p data-picks-capped className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">{lists.capped}</p>}
+          {results.length === 0 ? <p className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">{NO_MATCHES}</p> : null}
           <ul className={`flex min-h-0 flex-1 list-none flex-col gap-px overflow-y-auto ${slimScrollbar}`}>
             {results.map((p) => (
               <li key={p.id} className="relative flex">
@@ -398,6 +415,7 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
                   onClick={(event) => {
                     // a fixed query's last free place closes the search, whose trigger then greys with its reason
                     if (row.cap !== undefined && picks.length + 1 >= row.cap) event.currentTarget.closest<HTMLElement>('[popover]')?.hidePopover()
+                    setSaid(PICK_ADDED(p.title))
                     onPicks([...picks, { id: p.id, title: p.title }])
                   }}
                   className={`flex min-w-0 flex-1 items-center rounded-sm px-2 py-[7px] text-left hover:bg-paper ${ring}`}

@@ -237,6 +237,19 @@ function stressStack(n) {
   return out;
 }
 
+// Story 5.19 (review, 2026-09-25): the feed as the LIBRARY's own feed is shaped — its list inside `data-if="posts"` and one
+// element holding every `data-pagination` mark — so gscan judges the `{{#if posts}}` a secondary feed wraps around the
+// design's own, and the pager it leaves out. Only on paginated templates: `data-pagination` refuses any other (R-7).
+A.pagedFeed = (i) => A.feed(i)
+  .replace('<div class="feed__grid">', '<div class="feed__body" data-if="posts">\n  <div class="feed__grid">')
+  .replace('</section>', `  <nav class="feed__pager" data-t-attr="aria-label:pagination.label">
+    <a class="feed__newer" data-pagination="prev" href="#"><span data-t="pagination.newer">Newer posts</span></a>
+    <span class="feed__numbers" data-pagination="numbers">1 / 1</span>
+    <a class="feed__older" data-pagination="next" href="#"><span data-t="pagination.older">Older posts</span></a>
+  </nav>
+  </div>
+</section>`);
+
 const source = ({ kind, i }) => A[kind](i);
 
 module.exports = { A, ORDER, stressStack, source };

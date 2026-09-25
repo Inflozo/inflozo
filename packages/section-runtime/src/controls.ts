@@ -398,7 +398,10 @@ const isPick = (p: unknown): p is PickedPost =>
 /** The stored picks in the fold's grammar, in their dragged order — a junk entry is dropped, never folded (AD-36). */
 const picksIn = (stored: unknown): PickedPost[] => {
   const v = read(stored, 'picks')
-  return Array.isArray(v) ? v.filter(isPick) : []
+  if (!Array.isArray(v)) return []
+  // review (2026-09-25): one get per post — a doc carrying the same id twice (a merge, a crafted value) folds it once
+  const seen = new Set<string>()
+  return v.filter((p): p is PickedPost => isPick(p) && !seen.has(p.id) && (seen.add(p.id), true))
 }
 
 /** Every query this section's Data group draws: the design's declared ones, and a secondary feed's own under `FEED_KEY`. */
@@ -410,11 +413,13 @@ const queriesOf = (entry: Pick<ControlEntry, 'dataBindings' | 'feed'>): Record<s
 function dataRows(entry: ControlEntry, state: ControlState): DataRow[] {
   // D5c: the main feed's Data group is its Count alone, greyed at the page size in force — the native context owns its
   // Source and its Order (FR-H2), so neither is drawn
+  const rows: DataRow[] = []
   if (entry.feed?.kind === 'main') {
     const size = String(entry.feed.postsPerPage)
-    return [{ kind: 'data', key: FEED_KEY, source: 'posts', control: 'count', label: 'Count', value: size, default: size, min: 1, max: 100, changed: false, greyed: DATA_WORDS.mainCount }]
+    rows.push({ kind: 'data', key: FEED_KEY, source: 'posts', control: 'count', label: 'Count', value: size, default: size, min: 1, max: 100, changed: false, greyed: DATA_WORDS.mainCount })
+    // review (2026-09-25): and the design's DECLARED queries still draw their rows below — a feed design that also
+    // declares a `dataBindings` posts query (none in the library today) keeps its Source while it is the main feed
   }
-  const rows: DataRow[] = []
   for (const [key, b] of Object.entries(queriesOf(entry))) {
     // a declared hand-picked list IS its count and its order (R-20), and the design's own: it draws nothing
     if (b.ids !== undefined) continue
@@ -796,6 +801,7 @@ export function setData(entry: ControlEntry, state: ControlState, key: string, c
   }
   if (control === 'picks') {
     if (!Array.isArray(value) || !value.every(isPick)) return 'A picked post is a post from the site, by its id.'
+    if (new Set(value.map((p) => p.id)).size !== value.length) return 'A post can be picked once.'
     // R-108: a query the design fixes holds at most as many picks as it shows
     if (row.cap !== undefined && value.length > row.cap) return `This section holds ${row.cap} ${row.cap === 1 ? 'pick' : 'picks'}.`
   }

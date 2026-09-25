@@ -133,7 +133,7 @@ export type SidebarProps = {
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
 
 /** The bundled sample's lists, for a panel handed none (`/controls`, `/pilots`): the pickers search the sample. */
-const SAMPLE_LISTS: DataLists = { held: 'sample', tags: orbitWeekly.tags(), authors: orbitWeekly.authors(), posts: orbitWeekly.posts(), capped: null }
+const SAMPLE_LISTS: DataLists = { held: 'sample', tags: orbitWeekly.tags(), authors: orbitWeekly.authors(), posts: orbitWeekly.posts(), capped: null, listCapped: { tag: null, author: null } }
 
 const textOf = (v: unknown) =>
   typeof v === 'string' ? v : typeof v === 'object' && v !== null && typeof (v as { text?: unknown }).text === 'string' ? (v as { text: string }).text : ''
@@ -390,7 +390,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
           rows={rows.filter((r) => r.key === key)}
           stored={typeof stored === 'object' && stored !== null && !Array.isArray(stored) ? (stored as Readonly<Record<string, unknown>>) : {}}
           lists={lists}
-          shown={sourceRows[key] ?? []}
+          shown={sourceRows[key]}
           design={entry.name ?? 'This design'}
           onData={(changes: readonly (readonly [DataControl, unknown])[]) => {
             let next: ControlState | string = state

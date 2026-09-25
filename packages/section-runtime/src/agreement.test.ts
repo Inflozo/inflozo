@@ -1465,7 +1465,7 @@ test('Story 5.19 · hand-picked: the existence get around R-20\'s single-id gets
   const ids = ['905700000000000000000003', '905700000000000000000001', '905700000000000000000002']
   const rows = [{ title: 'Third', url: '/3/' }, { title: 'First', url: '/1/' }, { title: 'Second', url: '/2/' }]
   const { canvas, theme } = agree(FEED, feedInput({ query: { source: 'posts', ids }, rows }))
-  assert.ok(theme.startsWith(`{{#get "posts" filter="id:[${ids.join(',')}]" limit="1" include="tags,authors"}}{{#if posts}}`), theme)
+  assert.ok(theme.startsWith(`{{#get "posts" filter="id:[${ids.join(',')}]" limit="1"}}{{#if posts}}`), theme)
   assert.deepEqual(
     theme.match(/\{\{#get "posts" filter="id:[0-9a-f]{24}" limit="1" include="tags,authors"\}\}/g),
     ids.map((id) => `{{#get "posts" filter="id:${id}" limit="1" include="tags,authors"}}`),
@@ -1475,6 +1475,22 @@ test('Story 5.19 · hand-picked: the existence get around R-20\'s single-id gets
   // nothing picked: nothing at all, on both
   assert.equal(renderCanvas(doc(), FEED, feedInput({ query: { source: 'posts', ids: [] }, rows: [] })), '')
   assert.equal(renderTheme(doc(), FEED, feedInput({ query: { source: 'posts', ids: [] } })).template, '')
+})
+
+test('review 2026-09-25 · a feed whose pager parts meet only at the section is refused by name as a secondary feed, and renders as the main feed', () => {
+  const FLAT = `<section class="f">
+  <h2 class="f__title" data-prop="title">t</h2>
+  <div class="f__feed" data-if="posts">
+    <ul class="f__grid"><li class="f__cell" data-repeat="posts"><a class="f__card" data-bind-attr="href:url"><h3 class="f__h" data-bind="title">x</h3></a></li></ul>
+  </div>
+  <a class="f__newer" data-pagination="prev" href="#" data-t="pagination.newer">Newer posts</a>
+  <a class="f__older" data-pagination="next" href="#" data-t="pagination.older">Older posts</a>
+</section>`
+  const rows = [{ title: 'one', url: 'https://site.example/one/' }]
+  assert.throws(() => renderCanvas(doc(), FLAT, feedInput({ query: QUERY, rows })), /pager parts meet only at the section/)
+  assert.throws(() => renderTheme(doc(), FLAT, feedInput({ query: QUERY, rows })), /pager parts meet only at the section/)
+  const { canvas } = agree(FLAT, feedInput(undefined))
+  assert.ok(canvas.includes('f__newer'), 'the control: the same markup is the main feed, pager and all')
 })
 
 test('Story 5.19 · `{page_number}` inside a secondary feed prints nothing on the canvas, as the guard prints nothing inside a get', () => {

@@ -936,7 +936,10 @@ inexact with no arithmetic; that is the option R-109 declined.
 `data-repeat="posts"` over the render context, never a declared `dataBindings` key (a declared key named `posts` is
 refused, `bad-get-key`). It holds its pager in **one element** — the smallest element holding every `data-pagination`
 element, Row 6's `<nav class="pager">` — and its empty state is a `data-if="posts"` (with its `data-else`), which reads
-whichever `posts` is in scope. Nothing more is asked of it, and nothing about it is declared twice.
+whichever `posts` is in scope. Its `posts` repeat sits at the top of its markup, never inside another repeat — a
+hand-picked secondary feed is refused by name otherwise (review, 2026-09-25), because the theme could walk only the
+existence get's one row there while the canvas expanded every pick. Nothing more is asked of it, and nothing about it
+is declared twice.
 
 **On a paginated page exactly one feed is the MAIN FEED** — `home`, `index`, `tag` and `author`, both pages of each.
 `packages/section-runtime/src/main-feed.ts`'s `designate` is the one rule that keeps it so: the first feed placed is
@@ -950,8 +953,9 @@ the instance's Data values (`feedQuery`: posts, the page size, newest first, fol
 - **The theme** wraps the WHOLE section: `{{#get "posts" … include="tags,authors"}}{{#if posts}} … {{/if}}{{/get}}`.
   Ghost's get shadows `posts` inside its block (recorded, MEASUREMENTS §53), so the design's own repeat and its
   `data-if="posts"` read the query's rows without a word changed — and at zero NOTHING renders, heading and container
-  together (FR-H4). Hand-picked is one existence get over `filter="id:[…]" limit="1"` around the section, with R-20's
-  single-id gets inside it in the dragged order.
+  together (FR-H4). Hand-picked is one existence get over `filter="id:[…]" limit="1"` around the section — it decides
+  only whether anything is there, so it asks for no relations — with R-20's single-id gets inside it in the dragged
+  order, each with `include="tags,authors"`.
 - **The canvas** renders the same section against the page's context with `posts` replaced by the query's rows and no
   `pagination` — the mirror of the get's scope. At zero the section is left off the canvas and its Layers row stays.
 - **Both leave the pager out.** Inside a get `pagination` is the query's, and `{{page_url pagination.next}}` there links

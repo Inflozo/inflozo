@@ -98,9 +98,17 @@ for (const t of TEMPLATES) {
 // R-20's single-id gets. Each query is the runtime's own fold (`feedQuery`) over a stored Data value, so gscan judges
 // exactly what a customer's secondary feed ships, on both majors.
 const PICKS = ['6a86b5fb6444934864da3283', '6a86b5fb6444934864da328b', '6a86b5f96444934864da3278'].map((id, n) => ({ id, title: `Pick ${n + 1}` }));
+// review (2026-09-25): the paged feed shape (a data-if="posts" list and one pager) — first as the MAIN feed, the control,
+// then as each secondary feed, where the pager is left out and the section sits inside the query's {{#if posts}}
+{
+  const r = renderSection(source({ kind: 'pagedFeed', i: 100 + sectionCount }), contentFor('feed', sectionCount), users, 'index.hbs');
+  rendered.push({ tmpl: 'index', layer: 'paged-main', hbs: r.template });
+  for (const [name, body] of Object.entries(r.partials)) sharedPartials[name] = body;
+  sectionCount++;
+}
 for (const posts of [{}, { source: 'featured' }, { source: 'tag', tag: 'craft' }, { source: 'author', author: 'priya-raman' }, { source: 'picked', picks: PICKS }]) {
   const query = feedQuery({ bindingContext: ['posts'] }, { isMainFeed: false, data: { posts } }, 'index.hbs', 12);
-  const r = renderSecondary(source({ kind: 'feed', i: 100 + sectionCount }), contentFor('feed', sectionCount), users, query);
+  const r = renderSecondary(source({ kind: 'pagedFeed', i: 100 + sectionCount }), contentFor('feed', sectionCount), users, query, 'index.hbs');
   rendered.push({ tmpl: 'index', layer: `secondary-${posts.source ?? 'latest'}`, hbs: r.template });
   for (const [name, body] of Object.entries(r.partials)) sharedPartials[name] = body;
   sectionCount++;

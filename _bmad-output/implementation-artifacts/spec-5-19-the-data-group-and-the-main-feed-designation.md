@@ -2,9 +2,9 @@
 title: 'Story 5.19 — The Data group and the main-feed designation'
 type: 'feature'
 created: '2026-09-25'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 'ba3c821bd806f7a43f9a5deed582a1dbf71ee0fd'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -575,6 +575,46 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
 ## Spec Change Log
 
+- **2026-09-25, Review (five layers on `34874458`, the real infrastructure): nothing in the frozen block changed; the
+  review's own calls, each stated rather than asked.**
+  - **The main feed keeps its declared queries' rows.** `dataRows` drew D5c's greyed Count and RETURNED, so a feed design
+    that also declares a `dataBindings` posts query (none in the library today; Epic 9's and 10's will) lost that query's
+    Source while it was the main feed, and `setData` refused every value for it. It now draws the Count and then the
+    declared rows.
+  - **A post is picked once.** Nothing kept picks unique: a doc carrying an id twice (a merge, a crafted value) emitted the
+    post twice and collided React's keys. The fold folds a repeated id once and `setData` says *"A post can be picked
+    once."*
+  - **The existence get asks for no relations**, and **a pick that is not a 24-hex id is refused by name at the emitter**
+    — the frozen AD-36 bullet said so and only the fold enforced it; the shared grammar accepted any word. An id outside
+    it was inert already; now it is named.
+  - **A `posts` repeat nested inside another repeat is refused as a hand-picked secondary feed** — the theme would have
+    walked the existence get's one row while the canvas expanded every pick. The library holds no such design.
+  - **The site's rows not yet in hand mark no pick lacking**: for one round trip after a Data change every pick read
+    *"Not on {site} — unpublished or deleted."*, from the previous paint's rows. The panel now knows "not read yet" from
+    "absent" (`shown` undefined).
+  - **Choosing the site again clears an edit's asked reads** — 5.18's one "try again" (`retried`) now covers `editReads`
+    too, where a key whose read failed once was never asked again for the whole session.
+  - **A pick added or removed is said** (*"{title} added."* · *"{title} removed."*) and removing one keeps focus in the
+    list, or on the search when the list empties; **a search with no match says** *"Nothing matches."*; **the tag and
+    writer selects carry D5e's capped line** (*"Showing your {n} fullest tags."* / *"…writers."*) and call nothing missing
+    past it — the task bullet asked for the capped line and the build drew it on the post search alone. The words join
+    `lib/data-group.ts` and its test (R-170). Routine calls: the sentences follow D5e's shape; the owner's test judges them.
+  - **One `mainFeedOf`** (`page-two.ts` re-exports the runtime's); **the sample cache is keyed per query**, not per Count
+    or Order; **the harness derives its page size** from the sample rather than writing 12.
+  - **The stress theme gains the paged feed shape** — a `data-if="posts"` list and one pager, as A17 #1 is built — once
+    as the main feed (the control, pager kept) and once per Source as a secondary feed (pager left out), so gscan judges
+    the `{{#if posts}}` a secondary feed wraps around the design's own and the pager it drops: 0 / 0 on both majors. The
+    task named `sections.js`, which Dev had left untouched; it now carries `pagedFeed`.
+  - **The pilots walk's step 13** asserted Latest Post has no Data group — the opposite of this story's acceptance
+    criterion — and was outside the sweep; it now opens Data and reads Source alone (no Count, no Order).
+  - **Not patched, each with a ledger row:** DW-257 (the two repair doors and the paint's edit-read branch are proven by
+    the deployed walks alone), DW-258 (5.18's `slugShaped` and 5.19's `GHOST_SLUG_RE` disagree on accented letters and
+    doubled hyphens, neither executed on Ghost), DW-259 (past 100 picks the site read returns fewer than the theme
+    renders). **Dismissed**: "By tag with nothing chosen renders the latest posts" — the frozen AD-36 bullet says the
+    declaration stands (a patch was tried and the tests refused it); the chip on a selected main feed while another
+    section is hovered (read: it stays); `onPlace`'s literal `isMainFeed: false` (the schema's default, `apply`
+    designates); a hydrate over a design the library lost (FR-D9's vanished-design guard already refuses it).
+
 - **2026-09-25, Dev: the recording and gscan changed two things the frozen block names; no frozen text was edited.**
   - **A writer is emitted `authors:'…'`, not `author:'…'`** (Always, the AD-36 bullet). Both answer the same posts on
     both majors — MEASUREMENTS §53's `by_author` and `by_authors` rows, asserted in `contract.test.ts` — but gscan
@@ -841,6 +881,33 @@ before · 13 after:
   reassigns, a following copy follows and a page 2 of its own keeps its own, on Home, Tag and Author).
 - *Reading along · Sample content ↔ the site* — the deployed live walk (R-192's disabled rows and chip; the switch to
   Sample content and back, added at this verification), and the owner's test step 12.
+
+### Results — Review, 2026-09-25, on the real infrastructure (R-82)
+
+**Ground, read first.** `app.inflozo.com` served `34874458` — this checkout's HEAD before the patches —
+(`dpl_5TSkNSyRwMM7E36z8v6AUqhmyUxW` READY, `meta.githubCommitSha` read with `VERCEL_TOKEN` · `VERCEL_TEAM_ID`). No file
+under `supabase/migrations/` in the diff; `projects.posts_per_page` present on the hosted database (PostgREST
+`select=posts_per_page&limit=1` → `[{"posts_per_page":12}]` with `SUPABASE_URL` · `SUPABASE_SECRET_KEY`; the control
+`select=no_such_column_5_19` → 400 `42703`). Resend and Dodo: no code line in the diff names either.
+
+**The Ghost facts, re-executed by Content API on T3 `ghost5.inflozo.com` and T1 `ghost6.inflozo.com`** (`GHOST5_URL` ·
+`GHOST5_CONTENT_API_KEY`, the `GHOST6_` pair), identical on both majors: `filter=tag:craft` → 9 posts;
+`filter=authors:priya-raman` and `filter=author:priya-raman` → the same 11 posts in the same order; `filter=featured:true`
+→ 8; `limit=1` with no `include` → `primary_tag` and `primary_author` absent, with `include=tags,authors` → present;
+`filter=id:[b,a,c]` asked in non-date order → answered in Ghost's date order (so the sorted read key stands). The
+control: `filter=tag:no-such-tag-5-19-control` → 200, 0 posts.
+
+**The deployed walks at `34874458`, before the patches, each on its first run**, throwaway accounts made through
+Supabase's Auth admin API and deleted, users 13 before · 13 after: the controls walk **0 FAIL, 113 PASS**; the editor walk
+**0 FAIL, 621 PASS**; the live walk (`MAJORS=5,6 NO_429=1`) **0 FAIL, 116 PASS**. The pilots walk refuses a dirty
+`packages/` or `apps/`, so it runs after the push, against the deploy that carries its new step 13.
+
+**Locally, Node 24, after the patches:** `pnpm check` exit 0 — `packages/library` 185, `ghost-shim` 40,
+`section-runtime` 266 (the review's three rows: the main feed's declared rows and the repeated pick in
+`controls.test.ts`, the flat-pager refusal with its control in `agreement.test.ts`, the non-hex pick in `ad36.test.ts`),
+`apps/web` 548 (the words). The stress theme (`node build.js && node gate.js theme`): 76 sections over 7 templates,
+`paged-main` with its pager and the five secondary copies without — **ERRORS 0 WARNINGS 0** on gscan 4.49.7 and 6.4.2.
+`pnpm keyboard`: 57 passed, the six "5.19 ·" journeys among them, on the harness with its derived page size.
 
 ## Owner's manual test
 

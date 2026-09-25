@@ -582,6 +582,8 @@ test('AD-36 · a crafted Source value is inert through the fold, refused when ha
   }
   // a secondary feed is a posts query or nothing
   assert.throws(() => renderTheme(doc(), feedSrc, { feed: { query: { source: 'tiers' } } }), /posts query/)
+  // review (2026-09-25): a pick that is not a Ghost id — 24 hex digits — is refused BY NAME, though the letters are inert
+  assert.throws(() => renderTheme(doc(), feedSrc, { feed: { query: { source: 'posts', ids: ['not-24-hex'] } } }), /24 hexadecimal/)
   // …and the legitimate values emit, quoted, on both paths
   assert.ok(theme({ source: 'tag', tag: 'field-notes' }).includes(`filter="tag:'field-notes'"`))
   assert.ok(theme({ source: 'author', author: 'rosa-menendez' }).includes(`filter="authors:'rosa-menendez'"`))
