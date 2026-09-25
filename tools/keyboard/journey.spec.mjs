@@ -2060,11 +2060,19 @@ const nameOf = async (page, key) => (await page.locator(`[data-layer-row="${key}
 async function menuTo(page, label) {
   // the popover opens and takes focus a frame after the key (review, 2026-09-25: CI pressed ↓ before it had)
   await page.locator(':popover-open').first().waitFor()
+  const seen = []
   for (let guard = 0; guard < 12; guard++) {
-    if ((await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')) === label) return
+    const at = await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')
+    if (at === label) return
+    seen.push(at)
     await page.keyboard.press('ArrowDown')
   }
-  throw new Error(`no menu row reads "${label}"`)
+  // the error names what was focused and what the open popovers hold, so a red run on a runner can be read
+  const state = await page.evaluate(() => ({
+    active: `${document.activeElement?.tagName}#${document.activeElement?.id}`,
+    popovers: [...document.querySelectorAll(':popover-open')].map((p) => `${p.id}: ${[...p.querySelectorAll('li,button,[role=option],[role=menuitem]')].map((r) => r.textContent.trim()).filter(Boolean).slice(0, 12).join(' | ')}`),
+  }))
+  throw new Error(`no menu row reads "${label}" — focused ${JSON.stringify(seen)} — ${JSON.stringify(state)}`)
 }
 
 /** A Layers row's `⋯` item, by keyboard: the `⋯`, Enter, ↓ to the item, Enter. */
