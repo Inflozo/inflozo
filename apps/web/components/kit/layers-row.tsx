@@ -45,6 +45,8 @@ type RowProps = {
   gripProps?: HTMLAttributes<HTMLSpanElement>
   /** Story 5.4 — the `…` overflow and its menu: since R-126 the row's ONLY control. Absent on a row with no menu. */
   overflow?: ReactNode
+  /** Story 5.19 — D5c's chip, after the name and before the `…`: the MAIN FEED marker. Words, not a control. */
+  chip?: ReactNode
 }
 
 export function LayersRow({
@@ -58,6 +60,7 @@ export function LayersRow({
   onSelect,
   gripProps,
   overflow,
+  chip,
   ...rest
 }: RowProps & Omit<HTMLAttributes<HTMLDivElement>, keyof RowProps>) {
   if (!interactive) {
@@ -96,6 +99,7 @@ export function LayersRow({
       >
         {name}
       </button>
+      {chip}
       {overflow}
     </div>
   )

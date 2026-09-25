@@ -21,6 +21,8 @@
 // Story 4.10's Fix (2026-09-15) re-shaped the panel it walks: R-113 put every control in the accordion its role
 // names with nothing pinned above them, and R-115 made "Reset this design" ask first — so a step whose control now
 // sits in a closed accordion opens it, and step 16 answers the confirm.
+// Story 5.19 re-shaped step 15's Data group into P0·5's: "Show" is **Count** (FR-H2, R-170), the Ghost-sourced card's
+// grey list went, and a **Source** row heads the group — read here against the vocabulary's one list of its words.
 const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
 const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
 const APP = 'https://app.inflozo.com'
@@ -357,21 +359,25 @@ async function main() {
     const newest3 = (await canvas()).posts
     await openGroup('Data')
     const data = page.getByRole('region', { name: 'Data' })
-    await page.getByRole('button', { name: 'More Show' }).click(); await page.getByRole('button', { name: 'More Show' }).click()
+    // Story 5.19: P0·5's Data group opens on Source — Latest, offering the vocabulary's five sources in its order
+    const { POST_SOURCES, POST_SOURCE_WORDS } = await import(require('node:url').pathToFileURL(require('node:path').join(__dirname, '..', '..', 'packages', 'library', 'src', 'vocabulary.ts')).href)
+    const sourceBtn = data.locator('button[id$="-source"]')
+    await sourceBtn.click()
+    const offered = (await page.locator(':popover-open li').allInnerTexts()).map((t) => t.trim())
+    await page.keyboard.press('Escape')
+    check('step 15 — the Data group opens on Source: Latest, offering Latest · Featured · By tag · By author · Hand-picked (Story 5.19)', (await sourceBtn.innerText()).includes(POST_SOURCE_WORDS.latest) && JSON.stringify(offered) === JSON.stringify(POST_SOURCES.map((v) => POST_SOURCE_WORDS[v])), JSON.stringify(offered))
+    await page.getByRole('button', { name: 'More Count' }).click(); await page.getByRole('button', { name: 'More Count' }).click()
     const newest5 = (await canvas()).posts
     await page.getByRole('radiogroup', { name: 'Order' }).getByRole('radio', { name: 'Oldest' }).click()
     c = await canvas()
-    const panelTitles = await data.locator('ul[aria-label^="Posts from Ghost"] li').evaluateAll((els) => els.map((e) => e.textContent.replace('…', '').trim()))
-    const greyRows = await data.locator('ul[aria-label^="Posts from Ghost"] li').evaluateAll((els) => els.every((e) => getComputedStyle(e).cursor === 'not-allowed'))
-    const addPost = page.getByRole('button', { name: '+ Add post' })
     check('step 15 — five titles, oldest first (a different list from newest)', c.posts.length === 5 && newest5.length === 5 && JSON.stringify(c.posts) !== JSON.stringify(newest5) && JSON.stringify(newest5.slice(0, 3)) === JSON.stringify(newest3), JSON.stringify(c.posts))
-    check('step 15 — the panel lists the same five, grey, and "+ Add post" says they come from Ghost', JSON.stringify(panelTitles) === JSON.stringify(c.posts.map((p) => p.trim())) && greyRows && (await addPost.getAttribute('aria-disabled')) === 'true' && (await data.locator('p', { hasText: 'These come from Ghost, so there is nothing to add here.' }).count()) === 1)
+    check('step 15 — the Count reads 5 and the panel lists no posts of its own (P0·5 has no list at Latest)', (await data.locator('[role="group"][id$="-count"]').innerText()).includes('5') && (await data.locator('[data-picked-list]').count()) === 0)
     process.env.EXPECT_OLDEST && note('oldest titles', JSON.stringify(c.posts))
     // R-115 with no control changed since step 5's Contrast: the Data rows are changes, named in the panel's order
     const askEl = aside.locator('dialog')
     await page.getByRole('button', { name: 'Reset this design' }).click()
     const dataAsk = await askEl.evaluate((d) => ({ open: d.open, says: d.textContent.replace(/\s+/g, ' ').trim() }))
-    check('step 15 — Reset this design counts the Data group: "Background role, Show and Order"', dataAsk.open && dataAsk.says.includes('Removes your 3 changes — Background role, Show and Order — from this design.'), JSON.stringify(dataAsk))
+    check('step 15 — Reset this design counts the Data group: "Background role, Count and Order"', dataAsk.open && dataAsk.says.includes('Removes your 3 changes — Background role, Count and Order — from this design.'), JSON.stringify(dataAsk))
     await askEl.getByRole('button', { name: 'Cancel' }).click()
     check('step 15 — Cancel closes it and changes nothing', !(await askEl.evaluate((d) => d.open)) && JSON.stringify((await canvas()).posts) === JSON.stringify(c.posts))
 
@@ -381,7 +387,7 @@ async function main() {
     const feat16 = (await canvas()).features
     await page.getByRole('button', { name: 'Reset this design' }).click()
     const asked = await askEl.evaluate((d) => ({ open: d.open, focus: document.activeElement?.textContent.trim(), says: d.textContent.replace(/\s+/g, ' ').trim() }))
-    check('step 16 — Reset this design asks first, names every change in the panel\'s order, keeps the dark override, and opens on Cancel (R-115)', asked.open && asked.focus === 'Cancel' && asked.says.includes('Removes your 5 changes — Columns, Alignment, Background role, Show and Order — from this design. Your words, pictures and dark overrides stay.'), JSON.stringify(asked))
+    check('step 16 — Reset this design asks first, names every change in the panel\'s order, keeps the dark override, and opens on Cancel (R-115)', asked.open && asked.focus === 'Cancel' && asked.says.includes('Removes your 5 changes — Columns, Alignment, Background role, Count and Order — from this design. Your words, pictures and dark overrides stay.'), JSON.stringify(asked))
     await askEl.getByRole('button', { name: 'Reset design' }).click()
     c = await canvas()
     check('step 16 — Reset this design: three columns, Left, Base, three posts newest first', c.attrs['data-columns'] === '3' && c.attrs['data-align'] === 'start' && c.attrs['data-bg'] === 'base' && JSON.stringify(c.posts) === JSON.stringify(newest3), JSON.stringify(c.attrs))

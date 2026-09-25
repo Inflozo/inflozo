@@ -8,10 +8,10 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
+import { assembleEntry, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
-import { queryRows } from './controls-review.ts'
+import { sampleRows, type DesignRows } from './canvas.ts'
 
 /** Resolved from this module's own address, not the working directory, so the render matrix (Story 4.11) reads the
  *  same canvas document from the repo root that the app reads from `apps/web`. Never `new URL('…', import.meta.url)`:
@@ -75,18 +75,13 @@ export function carriesMemberVisibility(designId: string): boolean {
   return typeof own === 'object' && own !== null && Object.hasOwn(own, 'Member visibility')
 }
 
-/** Each declared query's rows in both orders at the Count's ceiling, as `/controls`' `queryRows`, so the client picks
- *  by the stored Order, slices to the limit and never runs a query. A fixed query and a hand-picked list are their own
- *  number and order, so both lists are their one resolution — A4 #13's card comes from here. */
-export function pilotRows(entry: SectionRegistryEntry): Record<string, { newest: unknown[]; oldest: unknown[] }> {
-  const rows = queryRows(entry)
-  for (const [key, binding] of Object.entries(entry.dataBindings ?? {})) {
-    if (binding.fixed === true || binding.ids !== undefined) {
-      const own = orbitWeekly.resolveSource(binding)
-      rows[key] = { newest: own, oldest: own }
-    }
-  }
-  return rows
+/** Each declared query's rows in both orders at the Count's ceiling, so the client picks by the stored Order, slices to
+ *  the limit and never runs a query; a fixed query and a hand-picked list are their own number and order, so both lists
+ *  are their one resolution — A4 #13's card comes from here. Since Story 5.19 it IS `lib/canvas.ts`'s `sampleRows` over
+ *  the design's declared queries: the editor resolves an instance's folded queries with the same function in the
+ *  browser, so `/pilots`, the render matrix and the canvas cannot resolve the sample two ways. */
+export function pilotRows(entry: SectionRegistryEntry): DesignRows {
+  return sampleRows(entry.dataBindings)
 }
 
 /** One Orbit Weekly picture's bytes, or null for any name that is not a picture in the directory — so nothing but

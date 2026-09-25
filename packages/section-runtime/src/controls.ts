@@ -11,9 +11,12 @@
 // type, so junk in it is ignored rather than thrown. No clock, no `Intl`, no locale method — the
 // sentences a panel prints at a floor or a ceiling come from `content.json`, never from this file.
 
-import { CONTROL_VALUE_RE, LIMIT_RE, SIDEBAR_GROUPS, UNIVERSALS, orbitWeekly, scanTags, valueWords } from '@inflozo/library'
+import {
+  CONTROL_VALUE_RE, DEFAULT_LIMIT, GHOST_ID_RE, GHOST_SLUG_RE, LIMIT_RE, POST_SOURCES, POST_SOURCE_WORDS, SIDEBAR_GROUPS,
+  UNIVERSALS, scanTags, valueWords,
+} from '@inflozo/library'
 import type {
-  AbsentNote, ControlDef, ControlGroup, ControlType, DataBinding, PropDef, PropType, SidebarGroup,
+  AbsentNote, ControlDef, ControlGroup, ControlType, DataBinding, PostSource, PropDef, PropType, SidebarGroup,
   UniversalNarrowing,
 } from '@inflozo/library'
 
@@ -25,10 +28,25 @@ export type ControlEntry = {
   universals?: Readonly<Record<string, UniversalNarrowing>>
   absent?: readonly AbsentNote[]
   dataBindings?: Readonly<Record<string, DataBinding>>
+  /** the design's display name — P0·5's cap sentence names it (a `SectionRegistryEntry` carries it) */
+  name?: string
+  /** STORY 5.19 — this section's part in its page's posts: the MAIN feed, whose Count is the page size in force and
+   *  greyed (D5c), or a SECONDARY one, whose own query is `base` folded with `data.posts` (`main-feed.ts`'s
+   *  `feedQuery`). Absent on a section that is no feed. The editor hands it; the design never declares it. */
+  feed?: FeedRole
 }
 
+/** STORY 5.19 — a feed section's part on its page. `main` renders the native `posts`, sized by `postsPerPage`; a
+ *  `secondary` feed renders its own query, whose Data rows are this engine's over `data[FEED_KEY]`. */
+export type FeedRole = { kind: 'main'; postsPerPage: number } | { kind: 'secondary'; base: DataBinding }
+
+/** Where a secondary feed's Data values are stored: `data.posts`. A source name, which no declared `dataBindings` key
+ *  may be (`validateDataBinding`'s `bad-get-key`), so it can never collide with a design's own query. */
+export const FEED_KEY = 'posts'
+
 /** An instance's slice, as the project doc stores it (`project_templates.doc`): plain values. `data`
- *  holds the Ghost-sourced repeat's Count and Order per `dataBindings` key. */
+ *  holds each Ghost-sourced query's stored values per `dataBindings` key — Count and Order since Story 4.5; Source, the
+ *  tag, the writer and the picks since Story 5.19. */
 export type ControlState = {
   content?: Readonly<Record<string, unknown>>
   controls?: Readonly<Record<string, unknown>>
@@ -205,18 +223,35 @@ export type PropRow = {
   list?: { item: string; min?: number; max?: number; count: number; shown: number; atMax?: string; props: PropRow[] }
 }
 
+/** STORY 5.19 — the Data group's controls, P0·5's order: Source, then the tag or writer or the picked list the Source
+ *  in force needs, then Count and Order. */
+export type DataControl = 'source' | 'tag' | 'author' | 'picks' | 'count' | 'order'
+
+/** A hand-picked post as stored: its id, and its title — which labels the panel row only and is never rendered, so a
+ *  pick the source in force lacks still reads as itself. */
+export type PickedPost = { id: string; title: string }
+
 export type DataRow = {
   kind: 'data'
   key: string
+  /** the query's RESOURCE — `posts`, `tags`… */
   source: string
-  control: 'count' | 'order'
+  control: DataControl
   label: string
+  /** the value in force: Count's number, Order's word, Source's value, the tag's or writer's slug. `''` marks none —
+   *  Order at Hand-picked (R-69), a tag not yet chosen */
   value: string
   default: string
   options?: ControlOption[]
   min?: number
   max?: number
   changed: boolean
+  /** the WHOLE row greyed, with its sentence (P0-0): Count and Order at Hand-picked, the main feed's Count */
+  greyed?: string
+  /** `picks` — the stored picks in their dragged order */
+  picks?: readonly PickedPost[]
+  /** `picks` on a FIXED query (R-108): it holds at most this many — the query's own limit */
+  cap?: number
 }
 
 export type SidebarRow = ControlRow | PropRow | DataRow
@@ -325,47 +360,131 @@ const itemsOf = (entry: ControlEntry, state: ControlState, path: string): unknow
   return Array.isArray(v) ? v : []
 }
 
+/** STORY 5.19 — P0·5's and D5c's sentences, the panel's words for this engine's greyed rows and its one refusal. The
+ *  rest of the Data group's words are the app's (`apps/web/lib/data-group.ts`); `data-group.test.ts` holds both to the
+ *  spec's table (R-170). */
+export const DATA_WORDS = {
+  /** Count greyed at Hand-picked (P0·5) */
+  pickedCount: 'The list you picked is the count.',
+  /** Order greyed at Hand-picked, marking no value (P0·5, R-69) */
+  pickedOrder: 'The list you picked is the order — these posts render in the order you dragged them.',
+  /** the main feed's Count, greyed at the page size in force (D5c's first sentence; its link is Story 7.9's, DW-254) */
+  mainCount: "This feed is sized by your theme's Posts per page.",
+  /** setData's refusal of a Count outside 1–100 (FR-H2) */
+  countRefused: 'Count is a number from 1 to 100.',
+} as const
+
+/** A query that offers SOURCE: a posts query the design leaves open — no declared `filter` and no declared `ids`, which
+ *  are the design's own (P0·5, FR-H2). A fixed one (R-108) offers Source alone. Tags, writers and tiers offer none. */
+const sourced = (b: DataBinding): boolean => b.source === 'posts' && b.filter === undefined && b.ids === undefined
+
+const isRecord = (o: unknown): o is Record<string, unknown> => typeof o === 'object' && o !== null && !Array.isArray(o)
+
+/** The Source in force for a stored record — `latest` for anything outside the vocabulary. */
+const sourceIn = (stored: unknown): PostSource => {
+  const v = read(stored, 'source')
+  return (POST_SOURCES as readonly unknown[]).includes(v) ? (v as PostSource) : 'latest'
+}
+
+/** A stored slug in the fold's grammar, or undefined — junk is ignored, never interpolated (AD-36). */
+const slugIn = (stored: unknown, which: 'tag' | 'author'): string | undefined => {
+  const v = read(stored, which)
+  return typeof v === 'string' && GHOST_SLUG_RE.test(v) ? v : undefined
+}
+
+const isPick = (p: unknown): p is PickedPost =>
+  isRecord(p) && typeof p['id'] === 'string' && GHOST_ID_RE.test(p['id']) && typeof p['title'] === 'string'
+
+/** The stored picks in the fold's grammar, in their dragged order — a junk entry is dropped, never folded (AD-36). */
+const picksIn = (stored: unknown): PickedPost[] => {
+  const v = read(stored, 'picks')
+  return Array.isArray(v) ? v.filter(isPick) : []
+}
+
+/** Every query this section's Data group draws: the design's declared ones, and a secondary feed's own under `FEED_KEY`. */
+const queriesOf = (entry: Pick<ControlEntry, 'dataBindings' | 'feed'>): Record<string, DataBinding> => ({
+  ...(entry.dataBindings ?? {}),
+  ...(entry.feed?.kind === 'secondary' ? { [FEED_KEY]: entry.feed.base } : {}),
+})
+
 function dataRows(entry: ControlEntry, state: ControlState): DataRow[] {
+  // D5c: the main feed's Data group is its Count alone, greyed at the page size in force — the native context owns its
+  // Source and its Order (FR-H2), so neither is drawn
+  if (entry.feed?.kind === 'main') {
+    const size = String(entry.feed.postsPerPage)
+    return [{ kind: 'data', key: FEED_KEY, source: 'posts', control: 'count', label: 'Count', value: size, default: size, min: 1, max: 100, changed: false, greyed: DATA_WORDS.mainCount }]
+  }
   const rows: DataRow[] = []
-  for (const [key, b] of Object.entries(entry.dataBindings ?? {})) {
-    // a hand-picked list IS its count and its order (R-20); its greyed rows are Story 5.19's Source panel. A query
-    // the design fixes (R-108) offers neither either: a hero that always shows one post has no "Show 5"
-    if (b.ids !== undefined || b.fixed === true) continue
+  for (const [key, b] of Object.entries(queriesOf(entry))) {
+    // a declared hand-picked list IS its count and its order (R-20), and the design's own: it draws nothing
+    if (b.ids !== undefined) continue
     const stored = read(state.data, key)
+    const row = (control: DataControl, rest: Omit<DataRow, 'kind' | 'key' | 'source' | 'control'>): DataRow =>
+      ({ kind: 'data', key, source: b.source, control, ...rest })
+    const source = sourced(b) ? sourceIn(stored) : 'latest'
+    if (sourced(b)) {
+      rows.push(row('source', {
+        label: 'Source', value: source, default: 'latest', changed: source !== 'latest',
+        options: POST_SOURCES.map((v) => ({ value: v, label: POST_SOURCE_WORDS[v] })),
+      }))
+      if (source === 'tag' || source === 'author') {
+        const slug = slugIn(stored, source) ?? ''
+        rows.push(row(source, { label: source === 'tag' ? 'Tag' : 'Author', value: slug, default: '', changed: slug !== '' }))
+      }
+      if (source === 'picked') {
+        const picks = picksIn(stored)
+        rows.push(row('picks', {
+          label: 'Picked posts', value: String(picks.length), default: '0', changed: picks.length > 0, picks,
+          ...(b.fixed === true && b.limit !== undefined ? { cap: b.limit } : {}),
+        }))
+      }
+    }
+    // R-108: a query the design fixes offers Source alone — a hero that always shows one post has no "Count 5"
+    if (b.fixed === true) continue
+    const picked = source === 'picked'
     const declaredCount = countOf(b)
     if (declaredCount !== undefined) {
       const count = validCount(read(stored, 'count'))
-      rows.push({
-        kind: 'data', key, source: b.source, control: 'count', label: 'Show', min: 1, max: 100,
-        value: String(count ?? declaredCount), default: String(declaredCount), changed: count !== undefined && count !== declaredCount,
-      })
+      rows.push(row('count', {
+        label: 'Count', min: 1, max: 100,
+        // P0·5: at Hand-picked the Count is the number of picks, greyed with its reason — its own stored value waits
+        value: picked ? String(picksIn(stored).length) : String(count ?? declaredCount),
+        default: String(declaredCount),
+        changed: count !== undefined && count !== declaredCount,
+        ...(picked ? { greyed: DATA_WORDS.pickedCount } : {}),
+      }))
     }
     const declaredOrder = orderWord(b)
     if (declaredOrder !== undefined) {
       const order = read(stored, 'order')
       const valid = order === 'newest' || order === 'oldest' ? order : undefined
-      rows.push({
-        kind: 'data', key, source: b.source, control: 'order', label: 'Order',
+      rows.push(row('order', {
+        label: 'Order',
         options: [{ value: 'newest', label: 'Newest' }, { value: 'oldest', label: 'Oldest' }],
-        value: valid ?? declaredOrder, default: declaredOrder, changed: valid !== undefined && valid !== declaredOrder,
-      })
+        // R-69: the order in force at Hand-picked is the dragged one, which is neither value, so none is marked
+        value: picked ? '' : (valid ?? declaredOrder),
+        default: declaredOrder,
+        changed: valid !== undefined && valid !== declaredOrder,
+        ...(picked ? { greyed: DATA_WORDS.pickedOrder } : {}),
+      }))
     }
   }
   return rows
 }
 
-/** A query's Count as the panel draws it: its declared limit, else its source's numeric default — `undefined` for a
- *  source Ghost returns whole (tiers), where the panel draws no Show row and so no stored Count reaches an emitter. */
+/** A query's Count as the panel draws it: its declared limit, else its resource's numeric default — `undefined` for a
+ *  resource Ghost returns whole (tiers), where the panel draws no Count row and so no stored Count reaches an emitter.
+ *  Story 5.19 (DW-112): the default is the vocabulary's, never the fixture module's. */
 function countOf(b: DataBinding): number | undefined {
-  const fallback = read(orbitWeekly.DEFAULT_LIMIT, b.source)
+  const fallback = read(DEFAULT_LIMIT, b.source)
   return b.limit ?? (typeof fallback === 'number' ? fallback : undefined)
 }
 
 const validCount = (v: unknown): number | undefined =>
   typeof v === 'number' && Number.isInteger(v) && v >= 1 && v <= 100 ? v : undefined
 
-/** Newest · Oldest is a date order over posts (P0-3). ponytail: any other declared order, or any other
- *  source, offers no Order row — the full source vocabulary is Story 5.19's. */
+/** Newest · Oldest is a date order over posts (P0·3, P0·5). Any other declared order, or any other resource, offers no
+ *  Order row: Newest and Oldest are the only two words P0·5 draws. */
 function orderWord(b: DataBinding): 'newest' | 'oldest' | undefined {
   if (b.source !== 'posts') return undefined
   if (b.order === undefined || b.order === 'published_at desc') return 'newest'
@@ -529,7 +648,6 @@ export function resetControl(entry: ControlEntry, state: ControlState, name: str
  *  and a query field it draws no row for — FR-D19 carries each under the name both designs share, and it returns with
  *  the design that uses it. Parked values live apart, in the doc's `parkedControls` (AD-27), beyond reset's reach. */
 export function resetSection(entry: ControlEntry, state: ControlState): ControlState {
-  const isRecord = (o: unknown): o is Record<string, unknown> => typeof o === 'object' && o !== null && !Array.isArray(o)
   const record = (o: unknown): Record<string, unknown> => (isRecord(o) ? { ...o } : {})
   const controls = record(state.controls)
   for (const r of resolveAll(entry, state.controls).values()) {
@@ -542,13 +660,24 @@ export function resetSection(entry: ControlEntry, state: ControlState): ControlS
     if (r.key in data && !isRecord(data[r.key])) { delete data[r.key]; continue }
     const stored = record(data[r.key])
     const v = stored[r.control]
-    const valid = r.control === 'count' ? validCount(v) !== undefined : r.control === 'order' ? v === 'newest' || v === 'oldest' : false
-    if (!r.changed && (v === undefined || valid)) continue
+    if (!r.changed && (v === undefined || validStored(r.control, v))) continue
     delete stored[r.control]
     if (Object.keys(stored).length > 0) data[r.key] = stored
     else delete data[r.key]
   }
   return { ...state, controls, data }
+}
+
+/** Is a stored Data value one its row would take? Junk under a drawn row goes with a reset (Story 4.5's rule). */
+function validStored(control: DataControl, v: unknown): boolean {
+  switch (control) {
+    case 'count': return validCount(v) !== undefined
+    case 'order': return v === 'newest' || v === 'oldest'
+    case 'source': return (POST_SOURCES as readonly unknown[]).includes(v)
+    case 'tag':
+    case 'author': return typeof v === 'string' && GHOST_SLUG_RE.test(v)
+    case 'picks': return Array.isArray(v) && v.every(isPick)
+  }
 }
 
 /** R-115: what `resetSection` would undo that the customer chose, as the panel titles it, in the panel's order —
@@ -648,21 +777,48 @@ export function moveItem(
 
 const inRange = (i: number, n: number) => Number.isInteger(i) && i >= 0 && i < n
 
-/** The Ghost-sourced repeat's Count (1–100, FR-H2) and Order (Newest · Oldest). A hand-picked list
- *  has neither; a value outside either set is refused. */
-export function setData(entry: ControlEntry, state: ControlState, key: string, control: 'count' | 'order', value: number | string): ControlState | string {
+/** One Data value, from the panel: Count (1–100, FR-H2), Order (Newest · Oldest), and since Story 5.19 P0·5's Source,
+ *  the tag, the writer and the picks. A row the section does not draw, a GREYED row (Count and Order at Hand-picked, the
+ *  main feed's Count) and junk are refused in a sentence and change nothing. Each Source keeps its own value — the tag,
+ *  the writer and the picks are stored apart and only the one in force is folded — so NOTHING CHOSEN IS LOST BY A
+ *  SOURCE SWITCH (FR-D19's spirit). */
+export function setData(entry: ControlEntry, state: ControlState, key: string, control: DataControl, value: unknown): ControlState | string {
   const row = dataRows(entry, state).find((r) => r.key === key && r.control === control)
-  if (row === undefined) return `This design shows no ${control === 'count' ? 'count' : 'order'} for "${key}".`
-  if (control === 'count' && validCount(value) === undefined) return 'Show a number from 1 to 100.'
+  if (row === undefined) return `This section shows no ${control === 'picks' ? 'picked posts' : control} for "${key}".`
+  if (row.greyed !== undefined) return row.greyed
+  if (control === 'count' && validCount(value) === undefined) return DATA_WORDS.countRefused
   if (control === 'order' && value !== 'newest' && value !== 'oldest') return 'The order is Newest or Oldest.'
+  if (control === 'source' && !(POST_SOURCES as readonly unknown[]).includes(value)) {
+    return `The source is one of ${POST_SOURCES.map((v) => POST_SOURCE_WORDS[v]).join(' · ')}.`
+  }
+  if ((control === 'tag' || control === 'author') && !(typeof value === 'string' && GHOST_SLUG_RE.test(value))) {
+    return `That is not a ${control === 'tag' ? 'tag' : 'writer'} Ghost could hold.`
+  }
+  if (control === 'picks') {
+    if (!Array.isArray(value) || !value.every(isPick)) return 'A picked post is a post from the site, by its id.'
+    // R-108: a query the design fixes holds at most as many picks as it shows
+    if (row.cap !== undefined && value.length > row.cap) return `This section holds ${row.cap} ${row.cap === 1 ? 'pick' : 'picks'}.`
+  }
   const stored = read(state.data, key)
-  const prev = typeof stored === 'object' && stored !== null ? stored : {}
+  const prev = isRecord(stored) ? stored : {}
   return { ...state, data: { ...(state.data ?? {}), [key]: { ...prev, [control]: value } } }
 }
 
-/** The stored Count and Order folded into the declared queries — what both emitters and the query the
- *  editor runs read. A stored 0, 101 or 3.5 is ignored and the declaration stands; so is an order
- *  word on a query that offers none, and anything stored for a hand-picked (R-20) or fixed (R-108) query. */
+/**
+ * THE ONE FOLD: the stored Data values folded into the declared queries — what both emitters and the query the editor
+ * runs read (`core.ts` calls it once per render; `main-feed.ts`'s `feedQuery` calls it for a secondary feed).
+ *
+ * Count and Order as since Story 4.5: a stored 0, 101 or 3.5 is ignored and the declaration stands; so is an order word
+ * on a query that offers none, and a Count or Order on a FIXED query (R-108) or a declared hand-picked one (R-20).
+ *
+ * STORY 5.19 — SOURCE, on a query that offers it (a posts query with no declared filter or ids): `featured:true`; a
+ * tag's or writer's slug, quoted, `tag:'…'` / `authors:'…'`; or the PICKS, as R-20's `ids` in their dragged order —
+ * dropping the filter, the limit, the order and `fixed`, because the picked list IS the count and the order (a fixed
+ * query keeps at most its own limit of them). AD-36: a value outside the grammar — a slug with a quote in it, an id
+ * that is not 24 hexadecimal digits, a source that is not in the vocabulary — is IGNORED here, so the declaration (or
+ * the default) stands, and never reaches a `{{#get}}` hash. Hand-picked with nothing picked is `ids: []`: zero items,
+ * which both emitters render as nothing.
+ */
 export function withData(
   bindings: Readonly<Record<string, DataBinding>> | undefined,
   data: unknown,
@@ -671,16 +827,30 @@ export function withData(
   for (const [key, b] of Object.entries(bindings ?? {})) {
     const stored = read(data, key)
     const next: DataBinding = { ...b }
-    // R-20 and R-108: a hand-picked or fixed query folds in no stored value — a Count or Order stored under the same
-    // key by another design (Story 5.11's shuffle back) cannot reach it
+    const source = sourced(b) ? sourceIn(stored) : 'latest'
+    if (source === 'picked') {
+      const ids = picksIn(stored).map((p) => p.id)
+      out[key] = { source: b.source, ids: b.fixed === true && b.limit !== undefined ? ids.slice(0, b.limit) : ids }
+      continue
+    }
+    // R-20 and R-108: a hand-picked or fixed query folds in no stored Count or Order — one stored under the same key by
+    // another design (Story 5.11's shuffle back) cannot reach it
     if (b.ids === undefined && b.fixed !== true) {
       const count = validCount(read(stored, 'count'))
-      // only where the panel draws a Show row: a Count stored for a source Ghost returns whole has no row to reset it
+      // only where the panel draws a Count row: a Count stored for a resource Ghost returns whole has no row to reset it
       if (count !== undefined && countOf(b) !== undefined) next.limit = count
       const order = read(stored, 'order')
       if (orderWord(b) !== undefined && (order === 'newest' || order === 'oldest')) {
         next.order = order === 'newest' ? 'published_at desc' : 'published_at asc'
       }
+    }
+    if (source === 'featured') next.filter = 'featured:true'
+    if (source === 'tag' || source === 'author') {
+      const slug = slugIn(stored, source)
+      // `authors:`, never `author:` — the singular is Ghost's deprecated spelling, which gscan refuses as an ERROR on both
+      // majors (GS001-DEPR-AUTH-FILT, gscan 4.49.7 and 6.4.2 — executed by tools/stress, MEASUREMENTS §53), though it
+      // still answers at render; the plural is its replacement and expands to the same `authors.slug`
+      if (slug !== undefined) next.filter = source === 'tag' ? `tag:'${slug}'` : `authors:'${slug}'`
     }
     out[key] = next
   }

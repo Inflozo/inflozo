@@ -2042,3 +2042,249 @@ test('page 2 stops being offered while it is shown — page 1 loses its main fee
     await expect(pageRow(page), `${key} offers no page 2`).toHaveCount(0)
   }
 })
+
+// ── Story 5.19 — THE MAIN FEED AND P0·5's DATA GROUP (FR-H2, D5c) ────────────────────────────────────────────────
+//
+// The harness Home's post grid is its main feed (derived from the Synthesis Defaults, above). Every word below is read
+// from the one list that prints it — `lib/data-group.ts` and the engine's `DATA_WORDS` — never written here (R-170).
+
+const WORDS = await import(new URL('../../apps/web/lib/data-group.ts', import.meta.url).href)
+const RUNTIME = await import(new URL('../../packages/section-runtime/src/index.ts', import.meta.url).href)
+
+/** The one Layers row carrying D5c's chip — the main feed — and how many carry one at all. */
+const chipRow = (page) => page.locator('[data-layer-row]:has([data-main-feed-chip])')
+const mainKey = (page) => chipRow(page).getAttribute('data-layer-row')
+const nameOf = async (page, key) => (await page.locator(`[data-layer-row="${key}"] button[aria-label^="More for "]`).getAttribute('aria-label')).slice('More for '.length)
+
+/** A popover menu row, reached from the keyboard: ↓ until the focused row reads `label` — never a pointer. */
+async function menuTo(page, label) {
+  for (let guard = 0; guard < 12; guard++) {
+    if ((await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')) === label) return
+    await page.keyboard.press('ArrowDown')
+  }
+  throw new Error(`no menu row reads "${label}"`)
+}
+
+/** A Layers row's `⋯` item, by keyboard: the `⋯`, Enter, ↓ to the item, Enter. */
+async function rowItem(page, key, label) {
+  await page.locator(`[data-layer-row="${key}"] button[aria-label^="More for "]`).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator(':popover-open')).toBeVisible()
+  await menuTo(page, label)
+  await page.keyboard.press('Enter')
+}
+
+/** The `⋯` menu's words for a row, read and closed again. */
+async function rowMenuWords(page, key) {
+  await page.locator(`[data-layer-row="${key}"] button[aria-label^="More for "]`).focus()
+  await page.keyboard.press('Enter')
+  const words = await page.locator(':popover-open li').allInnerTexts()
+  await page.keyboard.press('Escape')
+  return words.map((w) => w.trim())
+}
+
+/** ⌘K from the main feed, and Three Up placed under it: the key of the row it lands on. */
+async function placeSecondGrid(page) {
+  const own = (await rows(page)).page
+  await select(page, await mainKey(page))
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(picker(page)).toBeVisible()
+  await picker(page).locator('[data-cell][data-design="a17/1"]').first().focus()
+  await page.keyboard.press('Enter')
+  await expect(picker(page)).toHaveCount(0)
+  const added = (await rows(page)).page.filter((k) => !own.includes(k))
+  expect(added, 'one section placed').toHaveLength(1)
+  return added[0]
+}
+
+/** The Data accordion opened on the selected section, from the keyboard. */
+async function openData(page) {
+  const group = page.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/i })
+  await expect(group).toHaveCount(1)
+  if ((await group.getAttribute('aria-expanded')) === 'false') {
+    await group.focus()
+    await page.keyboard.press('Enter')
+  }
+  await expect(page.locator('#editor-controls [data-data-group]')).toBeVisible()
+  return page.locator('#editor-controls [data-data-group]')
+}
+
+const canvasFrame = (page) => page.frameLocator('iframe[title$="canvas"]')
+
+test('5.19 · ⌘K places a second Three Up, which lands SECONDARY — no chip, no pager — with a Data group of its own', async ({ page }) => {
+  await open(page)
+  const main = await mainKey(page)
+  expect(main, 'the control: the harness Home has its main feed').not.toBeNull()
+  await expect(chipRow(page)).toHaveCount(1)
+  const added = await placeSecondGrid(page)
+  expect(await said(page), 'a secondary feed is announced as an ordinary placement').toBe(`${await nameOf(page, added)} added`)
+  await expect(chipRow(page)).toHaveCount(1)
+  expect(await mainKey(page), 'the main feed stays where it was').toBe(main)
+  // the canvas: two grids, and ONE pager — the secondary feed draws none
+  await expect(canvasFrame(page).locator('#canvas section.a17-1')).toHaveCount(2)
+  await expect(canvasFrame(page).locator('#canvas .a17-1__pager')).toHaveCount(1)
+  // its Data group: Source Latest, Count at the page size, Order Newest — P0·5's rows over its own query
+  await select(page, added)
+  const data = await openData(page)
+  await expect(data.locator('button[id$="-source"]')).toContainText('Latest')
+  await expect(data.locator('[role="group"][id$="-count"]')).toContainText('12')
+  await expect(data.locator('[role="radio"][aria-checked="true"]')).toHaveText('Newest')
+  // the MAIN feed's Data group is D5c's: its Count alone, greyed at the page size, with the sentence
+  await select(page, main)
+  const mainData = await openData(page)
+  await expect(mainData).toContainText(RUNTIME.DATA_WORDS.mainCount)
+  await expect(mainData.locator('button[id$="-source"]')).toHaveCount(0)
+  await expect(mainData.locator('[role="radiogroup"]')).toHaveCount(0)
+  await expect(page.locator('#editor-panel-main-feed')).toHaveText(WORDS.MAIN_FEED)
+  // ONE ⌘Z takes the placement away
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator(`[data-layer-row="${added}"]`)).toHaveCount(0)
+})
+
+test('5.19 · Make this the main feed moves the chip in ONE edit, said aloud; Delete hands it on, and one ⌘Z brings both back', async ({ page }) => {
+  await open(page)
+  const main = await mainKey(page)
+  const added = await placeSecondGrid(page)
+  // offered on the secondary feed, second in its menu after Hide (R-126); absent on the main feed and a non-feed row
+  expect(await rowMenuWords(page, added)).toEqual(['Hide', WORDS.MAKE_MAIN_FEED, 'Rename', 'Duplicate', 'Delete'])
+  expect(await rowMenuWords(page, main)).not.toContain(WORDS.MAKE_MAIN_FEED)
+  const other = (await rows(page)).page.find((k) => k !== main && k !== added)
+  expect(await rowMenuWords(page, other)).not.toContain(WORDS.MAKE_MAIN_FEED)
+
+  await rowItem(page, added, WORDS.MAKE_MAIN_FEED)
+  await expect.poll(() => mainKey(page)).toBe(added)
+  expect(await said(page)).toBe(WORDS.NOW_MAIN(await nameOf(page, added)))
+  await expect(canvasFrame(page).locator('#canvas .a17-1__pager'), 'still one pager — now the new main feed\'s').toHaveCount(1)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => mainKey(page), { message: 'one ⌘Z undoes the reassignment' }).toBe(main)
+
+  // Delete the main feed: the next visible feed below takes the flag IN THE SAME EDIT, and the sentence says both
+  const mainName = await nameOf(page, main)
+  await select(page, main)
+  await page.keyboard.press('Delete')
+  await expect(page.locator(`[data-layer-row="${main}"]`)).toHaveCount(0)
+  await expect.poll(() => mainKey(page)).toBe(added)
+  expect(await said(page)).toBe(WORDS.withTransfer(`${mainName} removed`, await nameOf(page, added)))
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect.poll(() => mainKey(page), { message: 'one ⌘Z restores the feed AND its flag' }).toBe(main)
+  await expect(chipRow(page)).toHaveCount(1)
+})
+
+test('5.19 · ⌘D on the main feed gives a copy that is never the main feed', async ({ page }) => {
+  await open(page)
+  const main = await mainKey(page)
+  const before = (await rows(page)).page
+  await select(page, main)
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(before.length + 1)
+  await expect(chipRow(page)).toHaveCount(1)
+  expect(await mainKey(page)).toBe(main)
+  await expect(canvasFrame(page).locator('#canvas .a17-1__pager'), 'the copy draws no pager of its own').toHaveCount(1)
+})
+
+test('5.19 · Source and the picked list from the keyboard: Hand-picked, three picks, and ⌥↓ moves one — announced', async ({ page }) => {
+  await open(page)
+  const added = await placeSecondGrid(page)
+  await select(page, added)
+  const data = await openData(page)
+  // Source → Hand-picked: Enter opens P0·5's select on its value, ↓ to the choice, Enter
+  await data.locator('button[id$="-source"]').focus()
+  await page.keyboard.press('Enter')
+  await menuTo(page, LIB.POST_SOURCE_WORDS.picked)
+  await page.keyboard.press('Enter')
+  await expect(data.locator('button[id$="-source"]')).toContainText(LIB.POST_SOURCE_WORDS.picked)
+  await expect(data.locator('[data-picked-list]')).toContainText(WORDS.NO_PICKS)
+  // nothing picked is zero items: the secondary feed leaves the canvas, heading and all, and its row stays
+  await expect(canvasFrame(page).locator('#canvas section.a17-1')).toHaveCount(1)
+  await expect(page.locator(`[data-layer-row="${added}"]`)).toHaveCount(1)
+  // Count and Order grey with P0·5's sentences
+  await expect(data).toContainText(RUNTIME.DATA_WORDS.pickedCount)
+  await expect(data).toContainText(RUNTIME.DATA_WORDS.pickedOrder)
+  // three picks, each from the search: Enter opens it on its field, Tab reaches the first match, Enter picks
+  const search = data.locator('button[id$="-search"]')
+  for (let n = 0; n < 3; n++) {
+    await search.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator(':popover-open input[type="search"]')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Enter')
+    await page.keyboard.press('Escape')
+  }
+  await expect(data.locator('[data-picked-count]')).toHaveText(WORDS.PICKED(3))
+  const picks = () => data.locator('[data-pick] span.truncate').allInnerTexts()
+  const drawn = () => canvasFrame(page).locator('#canvas section.a17-1').nth(1).locator('.a17-1__post-title').allInnerTexts()
+  const first = await picks()
+  expect(await drawn(), 'the canvas draws the picks in the picked order').toEqual(first)
+  // ⌥↓ on the first handle: it moves one down, the move is said in P0·3's words, and the canvas follows
+  await data.locator('[data-pick-handle="0"]').focus()
+  await page.keyboard.press('Alt+ArrowDown')
+  await expect.poll(picks).toEqual([first[1], first[0], first[2]])
+  await expect(data.locator('[data-picked-list] [aria-live="polite"]')).toHaveText(RUNTIME.movedTo(1, 3))
+  await expect.poll(drawn).toEqual([first[1], first[0], first[2]])
+  await expect(data.locator('[data-pick-handle="1"]'), 'focus follows the moved pick').toBeFocused()
+  // a switch of Source loses nothing: Latest, then Hand-picked again, and the picks are as they were
+  await data.locator('button[id$="-source"]').focus()
+  await page.keyboard.press('Enter')
+  await menuTo(page, LIB.POST_SOURCE_WORDS.latest)
+  await page.keyboard.press('Enter')
+  await data.locator('button[id$="-source"]').focus()
+  await page.keyboard.press('Enter')
+  await menuTo(page, LIB.POST_SOURCE_WORDS.picked)
+  await page.keyboard.press('Enter')
+  await expect.poll(picks).toEqual([first[1], first[0], first[2]])
+})
+
+test('5.19 · AD-37: the canvas at rest carries no chrome — the MAIN FEED chip is drawn only on a selected or pointed main feed', async ({ page }) => {
+  await open(page)
+  expect(await marked(page), 'at rest the page is the site').toBe(0)
+  expect(await inChrome(page, '[data-chrome="main-feed"]')).toBe(0)
+  await select(page, await mainKey(page))
+  await expect.poll(() => inChrome(page, '[data-chrome="main-feed"]'), { message: 'selected: the chip on its outline' }).toBe(1)
+  await page.keyboard.press('Escape')
+  await expect.poll(() => inChrome(page, '[data-chrome="main-feed"]'), { message: 'deselected: gone' }).toBe(0)
+  // a section that is not the main feed never carries it
+  const main = await mainKey(page)
+  await select(page, (await rows(page)).page.find((k) => k !== main))
+  expect(await inChrome(page, '[data-chrome="main-feed"]')).toBe(0)
+  // pointed (synthesized, as R-175's stop does): drawn beside the name tag, never over it (R-125)
+  await pointAt(page, '.a17-1')
+  await expect.poll(() => inChrome(page, '[data-chrome="tag"]')).toBe(1)
+  await expect.poll(() => inChrome(page, '[data-chrome="main-feed"]')).toBe(1)
+  const overlap = await canvasFrame(page).locator('body').evaluate((body) => {
+    const host = [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].find((h) => h.shadowRoot?.querySelector('[data-chrome="main-feed"]'))
+    const chip = host.shadowRoot.querySelector('[data-chrome="main-feed"]').getBoundingClientRect()
+    const tag = host.shadowRoot.querySelector('[data-chrome="tag"]').getBoundingClientRect()
+    return chip.left < tag.right && tag.left < chip.right && chip.top < tag.bottom && tag.top < chip.bottom
+  })
+  expect(overlap, 'the chip never covers the name tag').toBe(false)
+})
+
+test('5.19 · the first feed placed on a page with none lands as the MAIN feed, and says so', async ({ page }) => {
+  await open(page)
+  const main = await mainKey(page)
+  // delete the harness Home's only feed: zero feeds, allowed — no chip anywhere
+  await select(page, main)
+  await page.keyboard.press('Delete')
+  await expect(page.locator(`[data-layer-row="${main}"]`)).toHaveCount(0)
+  await expect(chipRow(page)).toHaveCount(0)
+  // ⌘K from the first section left, and Three Up placed: it takes the flag in the placement's own edit
+  const own = (await rows(page)).page
+  await select(page, own[0])
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  await expect(picker(page)).toBeVisible()
+  await picker(page).locator('[data-cell][data-design="a17/1"]').first().focus()
+  await page.keyboard.press('Enter')
+  await expect(picker(page)).toHaveCount(0)
+  const added = (await rows(page)).page.find((k) => !own.includes(k))
+  await expect.poll(() => mainKey(page)).toBe(added)
+  expect(await said(page)).toBe(WORDS.ADDED_AS_MAIN(await nameOf(page, added)))
+  await expect(canvasFrame(page).locator('#canvas .a17-1__pager'), 'the new main feed draws the pager').toHaveCount(1)
+  // one ⌘Z takes the placement away, flag and all
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator(`[data-layer-row="${added}"]`)).toHaveCount(0)
+  await expect(chipRow(page)).toHaveCount(0)
+})

@@ -17,7 +17,7 @@ import assert from 'node:assert/strict'
 // the point. Move them if `library` ever grows a dev-dependency graph of its own.
 import { bareHelper, navigationItems, pageUrl, paginationContext } from '../../ghost-shim/src/index.ts'
 import {
-  BUNDLED, DEFAULT_LIMIT, DEFAULT_ORDER, MAJORS, MISSED_ADDRESS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
+  BUNDLED, DEFAULT_LIMIT, DEFAULT_ORDER, bundledAt, MAJORS, MISSED_ADDRESS, ORBIT_WEEKLY_ORIGIN, ORBIT_WEEKLY_SEED, RECORDING_COMMAND,
   articleOrder, assemble, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
   deepPagination, feedPage, feedPagination, feedPages, newsletters, postsPerPage, posts, previewFixtures, recording,
   fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, site, sortRows, styleGuideBody,
@@ -412,6 +412,26 @@ test('THE CONTROL — with no subject passed, templateContext answers exactly wh
       }
     }
   }
+})
+
+test('Story 5.19 — the page size is the PROJECT\'s: the dataset\'s by default (the control), and 6 pages the sample at 6', () => {
+  // the control: naming the dataset's own size is exactly the call that names none
+  for (const target of FILES) {
+    for (const feed of ['first', 'middle', 'last', 'empty'] as const) {
+      assert.deepEqual(templateContext(target, feed, undefined, postsPerPage()), templateContext(target, feed), `${target}/${feed}`)
+    }
+  }
+  assert.equal(bundledAt().pages('home.hbs'), BUNDLED.pages('home.hbs'))
+  // at 6 the feed is paginated at 6, @config says so, and the list runs to as many more pages as that makes
+  const six = templateContext('home.hbs', 'first', undefined, 6)
+  assert.equal((six.ghost['posts'] as unknown[]).length, 6)
+  assert.deepEqual(six.ghost['@config'], { posts_per_page: 6 })
+  const pagination = six.ghost['pagination'] as { pages: number; limit: number; total: number }
+  assert.deepEqual([pagination.limit, pagination.pages], [6, Math.ceil(posts().length / 6)])
+  assert.equal(bundledAt(6).pages('home.hbs'), pagination.pages)
+  assert.equal(feedPages('home.hbs', null, bundledAt(6)), pagination.pages)
+  // page 2 at 6 is the feed's 7th to 12th posts
+  assert.deepEqual((templateContext('home.hbs', 'second', undefined, 6).ghost['posts'] as { slug: string }[]).map((p) => p.slug), posts().slice(6, 12).map((p) => p.slug))
 })
 
 test('a canvas has a subject exactly where the NATIVE table gives it a singular resource — derived, never listed', () => {

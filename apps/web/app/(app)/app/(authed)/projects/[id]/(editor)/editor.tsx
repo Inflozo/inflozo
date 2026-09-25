@@ -4,13 +4,14 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, orbitWeekly, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, DEFAULT_LIMIT, orbitWeekly, PAGINATED_TARGETS, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
-  clearDarkOverrides, darkOverridesInForce, defaultContent, duplicateSection, getPath, insertSection, isDesigned,
-  moveSection, removeSection, renameSection, serializeMarks, setContent, setHidden, setMemberVisibility,
-  stampControls, storedFor, switchDesign, withData,
+  clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
+  feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
+  renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
+  withData,
 } from '@inflozo/section-runtime'
-import type { ControlState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, FeedRole, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
@@ -31,7 +32,7 @@ import { ViewAs } from '@/components/editor/view-as'
 import { CanvasNote, InlineTools, type InlineToolsHandle, type ScreenSelection } from '@/components/controls/mark-toolbar'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
-import { ProBadge } from '@/components/kit/badge'
+import { MainFeedChip, ProBadge } from '@/components/kit/badge'
 import { AddButton, Button, IconButton } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { EmptyPanel } from '@/components/kit/empty-panel'
@@ -40,10 +41,10 @@ import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronLeft, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
-import { canvasAssets, canvasSrc, renderSection, shownRows, sitePage, wheelToFrame, type DesignRows, type RenderContext, type SitePage } from '@/lib/canvas'
+import { canvasAssets, canvasSrc, renderSection, rowsFor, sampleRows, shownRows, sitePage, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
-import { CANVASES, canvasOfPageTwoKey, canvasOfPath, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfPath, fileOfKey, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
   flushDecision, hydrationFor, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn,
@@ -73,6 +74,7 @@ import {
   bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, reader, retriable, SETTINGS, siteLinks, siteTotal,
   type Cause, type LiveQuery,
 } from '@/lib/live-content'
+import { ADDED_AS_MAIN, FEEDLESS, NOW_MAIN, withTransfer } from '@/lib/data-group'
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
@@ -341,7 +343,7 @@ export function Editor({
   project,
   docs: stored,
   entries,
-  rows,
+  postsPerPage,
   pool,
   swatches,
   links,
@@ -368,6 +370,8 @@ export function Editor({
   canvasSrc?: string
 }) {
   const pathname = usePathname()
+  /** the canvas document's address — and, since Story 5.19, where the sample's pictures are served for the panel too */
+  const src = canvasPath ?? canvasSrc(isApp(pathname))
   // the layout 404s every segment that is not a canvas, so a null here is never drawn
   const key = canvasOfPath(stripApp(pathname)) ?? 'home'
   const canvas = CANVASES[key]
@@ -381,6 +385,32 @@ export function Editor({
   /** Story 5.16 — the library as page 2 asks it: R-127's fallback in `pageTwoStack` synthesizes, and that reads the
    *  designs this editor holds. `entries` never changes in a session, so every render's copy reads the same map. */
   const library: SynthesisLibrary = (designId) => entries[designId]
+  /* ─── Story 5.19 — THE MAIN FEED AND THE DATA GROUP (FR-H2, P0·5, D5c) ──────────────────────────────────────────
+   *
+   * ONE RULE KEEPS EXACTLY ONE MAIN FEED ON EVERY PAGINATED PAGE, and it is the runtime's (`designate`, AD-27(d)). Every
+   * door a doc enters this editor through passes it — `read.ts` on the server, the hydrate and an undo here, and `apply`
+   * for every edit, with the doc before the edit as `previous` so a transfer knows where the flag stood — so placing,
+   * deleting, hiding, duplicating and reassigning a feed are one rule, each part of the gesture that caused it: one
+   * `apply`, one journal entry, one `⌘Z`.
+   *
+   * A FEED THAT IS NOT THE MAIN FEED renders ITS OWN QUERY (`feedQuery`): the page's posts, sized by the project's
+   * `posts_per_page`, folded with the instance's `data.posts` — and every section's declared queries are FOLDED with its
+   * Data values too. So a query is the INSTANCE's now, and its rows are too: the sample's resolved here
+   * (`sampleRows`), the site's read per query through 5.18's one store (`sitePage`'s `queries`). */
+  const sampleSource = useMemo(() => orbitWeekly.bundledAt(postsPerPage), [postsPerPage])
+  /** the Section Picker's cards and the ring's tiles preview a DESIGN as it always did: its declared queries, resolved */
+  const designRows = useMemo(() => Object.fromEntries(Object.values(entries).map((e) => [e.id, sampleRows(e.dataBindings)])), [entries])
+  /** A section's queries: its design's declared ones folded with its stored Data values, and a secondary feed's own. */
+  const queriesOf = (i: DocInstance & { target: string }): Queries => {
+    const design = entries[i.designId]
+    if (design === undefined) return {}
+    const feed = feedQuery(design, i, i.target, postsPerPage)
+    return { ...withData(design.dataBindings, i.data), ...(feed === undefined ? {} : { [FEED_KEY]: feed }) }
+  }
+  /** A section's key among a page's queries — an `instanceId` is unique inside a doc, not across the two groups. */
+  const queryKey = (i: { doc: string; instanceId: string }) => `${i.doc}:${i.instanceId}`
+  /** The doc as the main-feed rule leaves it — the one door, asked with the doc's own file (`fileOfKey`). */
+  const designated = (docKey: string, doc: ProjectDoc, previous?: ProjectDoc) => designate(doc, fileOfKey(docKey), library, previous)
   /* ─── Story 5.16 — PAGE 2 (FR-D21, D5d, R-176 to R-180) ────────────────────────────────────────────────────────
    *
    * A CANVAS STATE beside the mode, the device, View as and Preview: session state, never in the URL, never stored,
@@ -499,8 +529,9 @@ export function Editor({
   const livePage = painted.key === key ? painted.site : null
   /** the subject the canvas renders: the site's where the last paint was the site's, else the sample's own resolution */
   const previewing = livePage ?? orbitWeekly.resolveSubject(canvas.file, storedSubject)
-  /** the source the list's pages are counted in — the site's page 1 where it shows, else the bundled publication */
-  const contentSource = livePage?.source
+  /** the source the list's pages are counted in — the site's page 1 where it shows, else the bundled publication at the
+   *  project's own page size (Story 5.19) */
+  const contentSource = livePage?.source ?? sampleSource
   /** Story 5.16 — does this canvas have a page 2 at all (R-176): a main feed on page 1 whose list runs past one page */
   const offered = offersPageTwo(key, docs, previewing.subject, contentSource)
   /** …and the section whose panel carries D5d's row: page 1's main feed, or on page 2 its copy */
@@ -888,7 +919,8 @@ export function Editor({
       return
     }
     const now = latest.current
-    const next = committed({ ...now.docs, [r.docKey]: r.doc }, r.docKey, stacks, now.auto)
+    // Story 5.19 — an undo is a door too: a journal written before the main-feed rule may hold a doc it would repair
+    const next = committed({ ...now.docs, [r.docKey]: designated(r.docKey, r.doc) }, r.docKey, stacks, now.auto)
     if (next.auto !== now.auto) setAuto(next.auto)
     latest.current = { ...now, docs: next.docs, auto: next.auto, stack: stackOf(next.docs, now.key, now.page, library), journal: r.journal }
     setDocs(next.docs)
@@ -1450,14 +1482,15 @@ export function Editor({
     const s = readsOf()
     if (s === null) return null
     const pageFile = pageFileOf(now.key, now.page)
-    const designs = [...new Set(now.stack.map((i) => i.designId))].flatMap((id) => (entries[id] === undefined ? [] : [entries[id]]))
     return sitePage(s.peek, {
       file: CANVASES[now.key].file,
       stored: now.stored,
       page: now.page,
       pageFile,
       targets: [...new Set([pageFile, ...now.stack.map((i) => i.target)])],
-      designs,
+      // Story 5.19 — every section's OWN queries, folded, and a secondary feed's: one read per distinct query
+      queries: Object.fromEntries(now.stack.map((i) => [queryKey(i), queriesOf(i)])),
+      perPage: postsPerPage,
     })
   }
 
@@ -1505,7 +1538,7 @@ export function Editor({
       const view = now.source === 'site' ? siteOf(now) : null
       const ready = view !== null && 'ready' in view && reads.current?.reading().stopped === null ? view.ready : null
       const subject = ready?.subject ?? orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
-      const force = pageInForce(now.page, now.key, now.docs, subject, ready?.source)
+      const force = pageInForce(now.page, now.key, now.docs, subject, ready?.source ?? sampleSource)
       if (force.page !== now.page) switchPage(force.page)
       paint()
       then?.(force.page !== now.page ? force.reason : null)
@@ -1581,7 +1614,7 @@ export function Editor({
     const s = reads.current
     if (!siteShown || s === null) return undefined
     return (entry: SectionRegistryEntry, target: string): { context: RenderContext; rows: DesignRows | undefined } | null => {
-      const view = sitePage(s.peek, { file: canvas.file, stored: storedSubject, page: 1, pageFile: canvas.file, targets: [target], designs: [entry] })
+      const view = sitePage(s.peek, { file: canvas.file, stored: storedSubject, page: 1, pageFile: canvas.file, targets: [target], queries: { [entry.id]: entry.dataBindings ?? {} }, perPage: postsPerPage })
       return 'ready' in view && s.reading().stopped === null ? { context: view.ready.contexts[target] as RenderContext, rows: view.ready.rows[entry.id] } : null
     }
   }, [siteShown, liveTick, canvas.file, storedSubject])
@@ -1806,7 +1839,7 @@ export function Editor({
       const reading = reads.current?.reading()
       const live = view !== null && 'ready' in view && reading?.stopped === null ? view.ready : null
       const sampleSubject = orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
-      const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject)
+      const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage)
       const url = at.currentUrl
       const pageNumber = now.page === 2 ? (at.pagination as { page?: number } | undefined)?.page : undefined
       const parts = now.stack.map((i) => {
@@ -1822,10 +1855,16 @@ export function Editor({
         // compiles to `default.hbs`, which carries no resource of its own, so the argument is simply unused there.
         // Story 5.14: and so does the visitor View as is previewing — Story 4.10's `gateMembers` decides the rest.
         // Story 5.18: and the SOURCE — the site's assembled context and rows, or nothing, which is today's render
+        // Story 5.19: THE INSTANCE'S OWN QUERIES — its folded declared ones and, for a secondary feed, its own — and their
+        // rows from the source in force; the main feed keeps the page's native posts, sized by the project's page size
+        const queries = queriesOf(i)
+        const secondary = queries[FEED_KEY]
+        const own: DesignRows | undefined = live === null ? sampleRows(queries) : live.rows[queryKey(i)]
         return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, {
-          target: i.target, rows: rows[i.designId], feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility,
-          assets, icons: lookup, editing: true, subject: sampleSubject,
-          live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: live.rows[i.designId] },
+          target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility,
+          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage,
+          live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
+          secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },
         })
       })
       // Story 5.15: the behaviours running on the markup about to be replaced stop first, putting every mount back
@@ -2424,18 +2463,21 @@ export function Editor({
           const back = autoFrom(held.auto, canvases) as CanvasKey[]
           const kept = landed ? flushed(held.journal, held.journal.stamp, maxSeq(held.journal)) : held.journal
           base.current = landed ? revision : held.baseRevision
-          latest.current = { ...latest.current, docs: held.docs, auto: new Set(back), journal: kept, stack: stackOf(held.docs, latest.current.key, latest.current.page, library) }
-          setDocs(held.docs)
+          // STORY 5.19 — the local hydrate is a door the main-feed rule stands at, as the server read is: a doc this
+          // device kept from before the rule is repaired here and stored repaired with the next edit of its canvas
+          const docs = Object.fromEntries(Object.entries(held.docs).map(([k, d]) => [k, designated(k, d)]))
+          latest.current = { ...latest.current, docs, auto: new Set(back), journal: kept, stack: stackOf(docs, latest.current.key, latest.current.page, library) }
+          setDocs(docs)
           setAuto(new Set(back))
           setJournal(kept)
           // review, 2026-09-22: the THIRD door page 2 can stop existing through — a local doc that outranks the server's
           // may have no main feed on page 1 — guarded as `restore()` and `chooseSubject` are: page 1 BEFORE the paint
-          const force = pageInForce(latest.current.page, latest.current.key, held.docs, latest.current.subject, latest.current.contentSource)
+          const force = pageInForce(latest.current.page, latest.current.key, docs, latest.current.subject, latest.current.contentSource)
           if (force.page !== latest.current.page) {
             switchPage(force.page)
             setSaid(leftBecause(force.reason ?? ''))
           }
-          if (landed) void opened.save(project.id, { baseRevision: revision, docs: held.docs, auto: back, journal: kept })
+          if (landed) void opened.save(project.id, { baseRevision: revision, docs, auto: back, journal: kept })
           if (unsynced(kept)) rest()
           settle(true)
           return
@@ -2561,6 +2603,33 @@ export function Editor({
   const chosen = selected ? stack.find((i) => same(i, selected)) : undefined
   const pointed = hovered ? stack.find((i) => same(i, hovered)) : undefined
   const entry = chosen ? entries[chosen.designId] : undefined
+  /* STORY 5.19 — THE PANEL'S DATA GROUP for the selected section: its part in the page's feeds (the MAIN feed's Count is
+     the page size in force, greyed — D5c; a SECONDARY feed's rows are the engine's over `data.posts` and its base
+     query), its queries' rows as the canvas shows them, and the lists its tag, writer and post pickers search — the
+     source in force's own, since a value belongs to the source it was chosen from. */
+  const role: FeedRole | undefined =
+    chosen === undefined || !isFeed(entry) || !PAGINATED_TARGETS.has(chosen.target) ? undefined
+    : chosen.isMainFeed ? { kind: 'main', postsPerPage }
+    : { kind: 'secondary', base: feedBase(postsPerPage) }
+  const chosenRows = ((): Readonly<Record<string, readonly unknown[]>> => {
+    if (chosen === undefined || entry === undefined) return {}
+    const queries = queriesOf(chosen)
+    const own = livePage !== null ? livePage.rows[queryKey(chosen)] : sampleRows(queries)
+    const feed = queries[FEED_KEY]
+    return { ...shownRows(entry, chosen, own), ...(feed === undefined ? {} : { [FEED_KEY]: rowsFor(feed, own?.[FEED_KEY]) }) }
+  })()
+  const dataLists = useMemo(() => {
+    const s = reads.current
+    if (livePage === null || s === null) {
+      // the sample's writers' pictures sit on its reserved origin, which the canvas route serves (`withImages`)
+      const picture = (url: unknown) => (typeof url === 'string' ? url.replace(new RegExp(`^${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/images/([a-z0-9-]+)\\.svg$`), `${src.split('?')[0]}?image=$1`) : url)
+      const authors = orbitWeekly.authors().map((a) => ({ ...a, profile_image: picture(a.profile_image) }))
+      return { held: 'sample' as const, tags: orbitWeekly.tags(), authors, posts: orbitWeekly.posts(), capped: null }
+    }
+    const r = reader(s.peek)
+    const rows = (q: LiveQuery) => (r.got(q)?.rows ?? []) as readonly Readonly<Record<string, unknown>>[]
+    return { held: { site: siteName }, tags: rows(LISTS.tag), authors: rows(LISTS.author), posts: rows(LISTS.post), capped: cappedPosts(s.peek) }
+  }, [livePage, liveTick, siteName])
   const pro = plan === 'free' && entry?.tier === 'pro'
   /* Story 5.11 — the SELECTED section's ring feeds the panel block, the HOVERED one's feeds the pill: the pill is
      drawn for what the pointer is over, which is not always what is chosen. Both are derived, so a category that
@@ -2594,22 +2663,34 @@ export function Editor({
     const r = reader(reads.current.peek)
     const notes: string[] = []
     const pagination = livePage.contexts[chosen.target]?.ghost['pagination'] as { total?: number; pages?: number } | undefined
-    if (entry.bindingContext.includes('posts') && pagination !== undefined) {
+    // Story 5.19: every query this section ASKS — its folded declared ones and a secondary feed's own — so the main feed's
+    // note is the main feed's alone, and a secondary feed's is its own query's ("This site has 9 posts…")
+    const queries = queriesOf(chosen)
+    if (entry.bindingContext.includes('posts') && queries[FEED_KEY] === undefined && pagination !== undefined) {
       const whose = canvas.file === 'tag.hbs' ? 'tag' : canvas.file === 'author.hbs' ? 'author' : 'site'
-      const note = feedShortfall(whose, pagination.total ?? 0, pagination.pages ?? 1, orbitWeekly.postsPerPage())
+      const note = feedShortfall(whose, pagination.total ?? 0, pagination.pages ?? 1, postsPerPage)
       if (note !== null) notes.push(note)
     }
-    for (const [name, binding] of Object.entries(withData(entry.dataBindings, chosen.data))) {
-      const declared = entry.dataBindings?.[name]
-      const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
+    for (const binding of Object.values(queries)) {
+      const fallback: unknown = DEFAULT_LIMIT[binding.source as keyof typeof DEFAULT_LIMIT]
       const limit = binding.limit ?? (typeof fallback === 'number' ? fallback : null)
-      // a hand-picked list asks for no limit (R-20: the pick IS the list), so it has nothing to fall short of
-      if (declared === undefined || limit === null || binding.ids !== undefined) continue
-      const note = getShortfall(binding.source, siteTotal(declared, r), limit)
+      // a hand-picked list asks for no limit (R-20: the pick IS the list), so it has nothing to fall short of — each pick
+      // the site lacks says so on its own row in the Data group instead
+      if (limit === null || binding.ids !== undefined) continue
+      const note = getShortfall(binding.source, siteTotal(binding, r), limit)
       if (note !== null) notes.push(note)
     }
     return notes.length === 0 ? null : notes.join(' ')
   })()
+  /** Story 5.19 — the Layers note's sentence while THIS page is a Tag or Author page with no visible feed, else null */
+  const feedless = feedlessArchive(editedDoc(docs, own, library) ?? EMPTY_DOC, pageFileOf(key, page), library)
+    ? FEEDLESS(canvas.file === 'author.hbs' ? 'Author' : 'Tag')
+    : null
+  /** Story 5.19 — the chip's section on the canvas: the main feed, while it is hovered or selected (AD-37: never at rest) */
+  const chipRoot = pointed?.isMainFeed === true ? rootOf(hovered) : chosen?.isMainFeed === true ? rootOf(selected) : null
+  /** …and whether the name tag is drawn beside it, which the chip then sits against rather than over (R-125) */
+  const chipBesideTag = pointed?.isMainFeed === true
+  const chip = useRef<HTMLSpanElement>(null)
   const pointedRing = pointed ? ringOf(pointed.designId) : []
   // on a hovered selection the selected box's 1.5px is the only outline (S4c)
   const hoverOutline = pointed && !same(hovered, selected)
@@ -2665,6 +2746,13 @@ export function Editor({
     ]
     const tick = () => {
       for (const [el, root, how] of all) if (el && root) place(el, root, scale, how)
+      // Story 5.19 — D5c's chip, in the tag's corner: against the tag's right edge while the tag shows, centred on its
+      // line, so it never covers the name (R-125); the offsets are only how that rule is delivered (R-138's precedent)
+      const c = chip.current
+      if (c && chipRoot) {
+        const t = chipBesideTag ? tag.current : null
+        place(c, chipRoot, scale, 'top-left', t ? { x: t.offsetWidth + 4, y: (t.offsetHeight - c.offsetHeight) / 2 } : { x: 6, y: 6 })
+      }
     }
     tick()
     let id = requestAnimationFrame(function loop() {
@@ -2682,15 +2770,22 @@ export function Editor({
   /** One doc's own instances as Layers rows, in DOC order — the card's are `site`'s, the page group's are this
    *  canvas's. Doc order, not `canvasStack`'s: the row's `at` is the position `moveSection` is given, and B7 draws
    *  the card's rows as the site doc stores them (DW-187: the `a3/` footers compile last whatever that order). */
-  const rowsOf = (docKey: string): LayerRow[] =>
+  const rowsOf = (docKey: string): LayerRow[] => {
+    // Story 5.19: only a natively paginated page has a main feed to mark or to hand on
+    const paginated = PAGINATED_TARGETS.has(fileOfKey(docKey))
     // the doc AS EDITED: on page 2 its own design, or while it follows, the copy of page 1 (Story 5.16)
-    (editedDoc(docs, docKey, library)?.instances ?? []).map((i, at) => ({
+    return (editedDoc(docs, docKey, library)?.instances ?? []).map((i, at) => ({
       doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at,
       // R-133: the `⋯` item is ABSENT where nothing could be cleared, and the engine's own definition decides.
       // R-135 (owner, 2026-09-19): and absent on a LIGHT-ONLY project, where Theme settings greys the same act with
       // its reason — the editor shows nothing about dark there, exactly as the sun is gone rather than disabled.
       darkOverride: darkEnabled && darkOverridesInForce(entries[i.designId] ?? { controlSchema: [] }, i).length > 0,
+      // Story 5.19 — D5c's chip, and "Make this the main feed": ABSENT on the main feed itself, a hidden row, a section
+      // that is no feed and a page that does not paginate (UX-DR3), never greyed
+      mainFeed: i.isMainFeed,
+      canLead: paginated && !i.isMainFeed && !i.hidden && isFeed(entries[i.designId]),
     }))
+  }
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null.
    *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default. */
@@ -2700,8 +2795,11 @@ export function Editor({
     // other caller addresses a doc it drew a row from, so the fallback only ever answers the picker. Story 5.16: the
     // doc AS EDITED, so an operation on a following page 2 is made to its copy of page 1.
     const doc = docOf(pick.doc) ?? EMPTY_DOC
-    const next = op(doc)
-    if (typeof next === 'string') return next
+    const done = op(doc)
+    if (typeof done === 'string') return done
+    // STORY 5.19 — THE MAIN-FEED RULE IS PART OF EVERY EDIT: a placement that designates, a delete or a hide that hands
+    // the flag on, a duplicate that must not carry it — decided in the same `commit`, so one `⌘Z` undoes both
+    const next = designated(pick.doc, done, doc)
     const now = latest.current
     const back = commit({ [pick.doc]: next }, pick.doc, about ?? { instanceId: pick.instanceId, name: layerNameOf(pick) })
     // R-180: held for its ask — nothing has changed yet, so there is nothing to repaint and nothing refused
@@ -2891,12 +2989,31 @@ export function Editor({
     requestAnimationFrame(() => openOnCancel(clearDark.current))
   }
 
+  /** Story 5.19 — the section the main-feed flag moved TO in the gesture just made, or null where it did not move. */
+  const handedTo = (docKey: string, before: DocInstance | undefined): string | null => {
+    const after = mainFeedOf(docOf(docKey))
+    return before !== undefined && after !== undefined && after.instanceId !== before.instanceId ? after.layerName : null
+  }
   const onRemove = (row: Pick & { layerName: string }) => {
     if (row.doc === SITE.key) return askFirst('remove', row)
-    if (edit(row, (doc) => removeSection(doc, row.instanceId))) setSaid(`${row.layerName} removed`)
+    const before = mainFeedOf(docOf(row.doc))
+    // "the gesture's own sentence, then {name} is now the main feed." where the delete handed the flag on
+    if (edit(row, (doc) => removeSection(doc, row.instanceId))) setSaid(withTransfer(`${row.layerName} removed`, handedTo(row.doc, before)) ?? '')
   }
-  const onToggleHidden = (row: LayerRow) =>
-    row.doc === SITE.key && !row.hidden ? askFirst('hide', row) : edit(row, (doc) => setHidden(doc, row.instanceId, !row.hidden))
+  const onToggleHidden = (row: LayerRow) => {
+    if (row.doc === SITE.key && !row.hidden) return askFirst('hide', row)
+    const before = mainFeedOf(docOf(row.doc))
+    if (!edit(row, (doc) => setHidden(doc, row.instanceId, !row.hidden))) return
+    // Hide says nothing of its own; where it handed the flag on, that is said
+    const said = withTransfer(null, handedTo(row.doc, before))
+    if (said !== null) setSaid(said)
+  }
+  /** D5c's **Make this the main feed**: ONE edit through `apply`, announced politely. The old main feed becomes a
+   *  secondary feed with its own stored Data values — Latest, the page size and Newest where it has none. */
+  const onMakeMainFeed = (row: LayerRow) => {
+    const file = fileOfKey(row.doc)
+    if (edit(row, (doc) => makeMainFeed(doc, file, row.instanceId, library))) setSaid(NOW_MAIN(row.layerName))
+  }
 
   /* ─── Story 5.10 — opening the picker, and the one placement it makes (FR-D12, AD-15, AD-16, R-152) ──────────── */
 
@@ -2943,6 +3060,8 @@ export function Editor({
       parkedControls: {},
       hidden: false,
       memberVisibility: 'everyone' as const,
+      // Story 5.19: never decided here — `apply` passes the doc through the main-feed rule, which makes the first feed
+      // placed on a paginated page with none its main feed
       isMainFeed: false,
     }
     let replaced: string | null = null
@@ -2972,10 +3091,12 @@ export function Editor({
       return
     }
     picker.current?.close()
+    // Story 5.19: a placement the main-feed rule designated says so
+    const main = docOf(docKey)?.instances.find((i) => i.instanceId === instance.instanceId)?.isMainFeed === true
     setSaid(
       siteWide
         ? `${layerName} added to the Site-wide group${replaced === null ? '' : `, replacing ${replaced as string}`}`
-        : `${layerName} added`,
+        : main ? ADDED_AS_MAIN(layerName) : `${layerName} added`,
     )
   }
 
@@ -3048,8 +3169,6 @@ export function Editor({
    *  minus the one this holder has already answered or let expire. */
   const askedBy = lock.holder ? (lock.row?.nudgeRequestedBy ?? null) : null
   const nudged = askedBy !== null && askedBy !== tabId.current && (lock.row?.request ?? null) !== dismissed
-
-  const src = canvasPath ?? canvasSrc(isApp(pathname))
 
   const onChange = (next: ControlState, kind: Edit) => {
     const now = latest.current
@@ -3247,6 +3366,9 @@ export function Editor({
             autoGenerated={page === 2 ? follows(docs, key) : auto.has(key)}
             // page 2's marker, while it follows page 1: D5a's row with its own sentence
             markerWords={page === 2 ? COPY_MARKER : undefined}
+            // Story 5.19 — FR-H2's archive case: a Tag or Author page with no visible feed says, in D5a's shape, that its
+            // later pages would repeat page 1 — gone the moment a feed shows again, and never on Home
+            feedless={feedless}
             selectedKey={selected ? keyOf(selected) : null}
             hoveredKey={hovered ? keyOf(hovered) : null}
             drag={drag}
@@ -3259,6 +3381,7 @@ export function Editor({
             onDuplicate={onDuplicate}
             onRemove={onRemove}
             onClearDark={askClearDark}
+            onMakeMainFeed={onMakeMainFeed}
             onMove={moveTo}
           />
           {/* S4 Editor.dc.html:172 — the Layers footer's full-width dashed button, redrawn identically at 834 and 720
@@ -3375,6 +3498,17 @@ export function Editor({
                     {pointed.layerName}
                   </div>,
                   layerFor(hoveredRoot) as ShadowRoot,
+                )
+              : null}
+            {/* STORY 5.19 — D5c's MAIN FEED chip (`D5 Canvas Markers and Template Switcher.dc.html:312`), on the main feed's
+                outline while it is hovered or selected and never at rest (AD-37). Chrome in the canvas layer, as the tag is,
+                the pointer passing through. */}
+            {chipRoot && layerFor(chipRoot)
+              ? createPortal(
+                  <span ref={chip} aria-hidden data-chrome="main-feed" className="pointer-events-none absolute flex" style={{ visibility: 'hidden' }}>
+                    <MainFeedChip on="canvas" />
+                  </span>,
+                  layerFor(chipRoot) as ShadowRoot,
                 )
               : null}
             {/* R-119, B10 (B Missing Surfaces.dc.html:1424-1451): a price tag, not a lock — the Kit's span, never a button */}
@@ -3517,7 +3651,11 @@ export function Editor({
                 the name is the customer's and the category is the library's, and the panel says both. S4c's
                 "4 / 18" is not here — it is the Design block's counter, three lines below. */}
             <span className="flex min-w-0 flex-col">
-              <PanelLabel id="editor-panel-name">{chosen ? chosen.layerName : 'Page'}</PanelLabel>
+              {/* Story 5.19 — D5c's panel head (:334-335): the main feed's name with its chip beside it */}
+              <span className="flex min-w-0 items-center gap-2">
+                <PanelLabel id="editor-panel-name">{chosen ? chosen.layerName : 'Page'}</PanelLabel>
+                {chosen?.isMainFeed === true ? <MainFeedChip id="editor-panel-main-feed" /> : null}
+              </span>
               {chosen && entry ? <span id="editor-panel-category" className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
             </span>
             <IconButton ref={controls.hide} label="Collapse controls" title="Collapse controls" aria-expanded aria-controls="editor-controls" onClick={() => controls.toggle(true)}>
@@ -3535,7 +3673,7 @@ export function Editor({
               ring={chosenRing}
               at={chosenAt}
               target={chosen.target}
-              rows={rows}
+              rows={designRows}
               pool={pool}
               icons={icons.current}
               mode={mode}
@@ -3554,7 +3692,7 @@ export function Editor({
               // Story 5.16: keyed ACROSS THE PAGE SWITCH — page 2's copy of a section is that section — so the panel stays
               // mounted, its open groups stay open, and focus stays on D5d's row when the row was pressed
               key={acrossPages(chosen)}
-              entry={entry}
+              entry={role === undefined ? entry : { ...entry, feed: role }}
               state={chosen}
               onChange={onChange}
               // Story 5.6 — the mode's own swatch values, so the Background-role dots are the colours the canvas
@@ -3588,7 +3726,9 @@ export function Editor({
                     }
               }
               assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}
-              sourceRows={shownRows(entry, chosen, rows[entry.id])}
+              sourceRows={chosenRows}
+              // Story 5.19 — what P0·5's tag, writer and post pickers offer: the source in force's own rows
+              lists={dataLists}
               // R-124: the FIRST ROW of Section Settings, for a section whose category carries it — never in Layers.
               // The value is the instance's own and reaches both emitters as `RenderInput.visibility`, so there is no
               // design control to declare (DW-186); `carriesMemberVisibility` reads R-113's register (DW-185).
@@ -3786,7 +3926,7 @@ export function Editor({
           entries={entries}
           file={canvas.file}
           siteFile={SITE.file}
-          rows={rows}
+          rows={designRows}
           pool={pool}
           icons={icons.current}
           mode={mode}

@@ -6,10 +6,10 @@ import { defaultContent, parseDoc, SYNTHESIS_DEFAULTS, type ProjectDoc } from '@
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { harnessCanvasSrc } from '@/lib/canvas'
-import { imagePool, linkResources, queryRows, referenceSwatches, samples } from '@/lib/controls-review'
+import { imagePool, linkResources, referenceSwatches, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
-import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
+import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
  *
@@ -92,7 +92,9 @@ export default function EditorHarness() {
   const data: EditorData = {
     docs,
     entries,
-    rows: Object.fromEntries(placed.map((e) => [e.id, ring.some((r) => r.id === e.id) ? queryRows(e) : pilotRows(e)])),
+    // Story 5.19 — the project's posts per page, as `read.ts` hands it: 12 is the column's own default
+    // (`…complete_schema.sql:226`), and every project on production stores it
+    postsPerPage: 12,
     memberVisibility: Object.fromEntries(placed.map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },

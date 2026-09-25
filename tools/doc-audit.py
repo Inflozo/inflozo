@@ -231,7 +231,7 @@ DOCS = [
   'here ran on a laptop and nowhere else. Both now run under `pnpm check`, and the package\'s test '
   'run prints its own count.'),
  ('tools/stress/build.js', 'tool', 'The stress fixture',
-  'Builds a deliberately heavy 70-section theme and prints the compile budget. The measurement '
+  'Builds a deliberately heavy stress theme, prints its own section count and the compile budget. The measurement '
   'behind AD-11.'),
  ('tools/stress/gate.js', 'tool', 'The gscan gate',
   'Runs the gscan version each Ghost major actually BUNDLES — 4.49.7 for Ghost 5, 6.4.2 for Ghost 6. '

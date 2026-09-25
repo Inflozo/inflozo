@@ -1,16 +1,15 @@
 import { cache } from 'react'
 import { compilesTo, isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
-import { isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc } from '@inflozo/section-runtime'
-import type { DesignRows } from '@/lib/canvas'
+import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, type EditorSite } from '@/lib/live-content'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, isUuid, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
-import { carriesMemberVisibility, pilot, pilotIds, pilotRows } from '@/lib/pilots'
+import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { readViewed, type Visitor } from '@/lib/view-as'
 
@@ -57,14 +56,17 @@ import { readViewed, type Visitor } from '@/lib/view-as'
  *  (`20260904120000_complete_schema.sql:224`), so this story has no Schema phase (R-99). */
 /** Story 5.18 — `linked_site_id` joins it, and for `dark_enabled`'s reason: whether the canvas may read a site is SERVER
  *  TRUTH, never a guess the editor makes (FR-B5; the column pre-exists, `…complete_schema.sql:229`, so no Schema phase). */
+/** Story 5.19 — `posts_per_page` joins it: FR-H2's main feed is sized by the THEME's setting, never the sample's, and a
+ *  secondary feed's Count starts there. SERVER TRUTH for the same reason; the column pre-exists with its `>= 1` check
+ *  (`…complete_schema.sql:226-227`), so no migration and no Schema phase (R-99). */
 export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, linked_site_id').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, linked_site_id, posts_per_page').eq('id', id).maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
 
-export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; linked_site_id: string | null }
+export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; linked_site_id: string | null; posts_per_page: number }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -72,11 +74,7 @@ export type Project = { id: string; name: string; dark_enabled: boolean; revisio
  *  (7.13) — throws for the whole editor the day its writer lands; the story that writes it extends this map in the
  *  same change (review, 2026-09-17). Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names —
  *  `index` to `index.hbs`, and an archive's `tag-paged` and `author-paged` to the archive's own file. */
-const fileOf = (key: string) => {
-  const paged = canvasOfPageTwoKey(key)
-  if (paged !== null) return PAGE_TWO[paged]?.file as string
-  return key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
-}
+const fileOf = fileOfKey
 
 export type EditorData = {
   /** every stored doc, by `template_key` — the site's, each canvas's, and since Story 5.16 each PAGE 2 that has a
@@ -84,8 +82,12 @@ export type EditorData = {
    *  an exact copy stored nowhere (R-179, AD-22), which `lib/page-two.ts` derives in the browser from these same docs. */
   docs: Readonly<Record<string, ProjectDoc>>
   entries: Readonly<Record<string, SectionRegistryEntry>>
-  rows: Readonly<Record<string, DesignRows>>
   pool: readonly { id: string; bytes: number }[]
+  /** STORY 5.19 — the project's `posts_per_page` (FR-H2): what the main feed's list is paginated at on the sample and
+   *  on the site alike, what its greyed Count shows (D5c), and a secondary feed's starting Count. Since this story the
+   *  sample's `{{#get}}` rows are no longer handed over per DESIGN: a query is the INSTANCE's — its Source, tag, writer
+   *  or picks — so the editor resolves them in the browser (`lib/canvas.ts`'s `sampleRows`). */
+  postsPerPage: number
   /** per design id: does its category carry R-124's Member visibility row (`carriesMemberVisibility`)? */
   memberVisibility: Readonly<Record<string, boolean>>
   /** Story 5.6 — Background role's colours per MODE, so the panel's dots are what the canvas is painting */
@@ -264,6 +266,13 @@ export async function editorData(projectId: string): Promise<EditorData> {
    */
   for (const id of pilotIds()) if (isPlaceable(id)) held(id)
 
+  /* STORY 5.19 — EVERY DOC LEAVES THROUGH THE MAIN-FEED RULE (AD-27(d)): on a paginated page exactly one visible feed
+   * carries the flag. A doc written before the rule — the owner's "Pilot sections" Home, whose grid was seeded with no
+   * flag, or a main feed duplicated before this story — is REPAIRED here, in what is handed to the editor, and stored
+   * repaired with the next edit of that canvas. Reading alone writes nothing (AD-22). A doc that already satisfies the
+   * rule comes back as the same object, so a valid designation is never moved. */
+  for (const [key, doc] of Object.entries(docs)) docs[key] = designate(doc, fileOf(key), held)
+
   /* STORY 5.13 — the stored preview subjects, by template key.
    *
    * A FAILED READ IS THE FIXTURE, NOT A BLACK CANVAS. Unlike a doc, a preview subject is set-and-forget context
@@ -304,7 +313,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
   return {
     docs,
     entries,
-    rows: Object.fromEntries(Object.values(entries).map((e) => [e.id, pilotRows(e)])),
+    postsPerPage: project?.posts_per_page ?? orbitWeekly.postsPerPage(),
     memberVisibility: Object.fromEntries(Object.values(entries).map((e) => [e.id, carriesMemberVisibility(e.id)])),
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },

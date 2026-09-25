@@ -5,8 +5,8 @@ import {
   darkOverridesInForce, editText, GROUP_LABELS, resetChanges, resetControl, resetSection, setContent, setControl,
   setData, sidebar,
 } from '@inflozo/section-runtime'
-import type { ControlEntry, ControlRow, ControlState, DataRow, MemberState, Mode, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
-import { placeholdersOffered } from '@inflozo/library'
+import type { ControlEntry, ControlRow, ControlState, DataControl, DataRow, MemberState, Mode, PropRow, PropValue, SidebarGroupModel } from '@inflozo/section-runtime'
+import { orbitWeekly, placeholdersOffered } from '@inflozo/library'
 import { Accordion } from '@/components/kit/accordion'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
@@ -22,7 +22,8 @@ import { SwatchRow } from '@/components/kit/swatch-row'
 import { Toggle } from '@/components/kit/toggle'
 import { IconPicker } from './icon-picker'
 import { ImagePicker, type Asset } from './image-picker'
-import { GhostList, ItemList } from './item-list'
+import { ItemList } from './item-list'
+import { DataGroup, type DataLists } from './data-group'
 import { LinkPicker, type LinkResources } from './link-picker'
 import { PlaceholderMenu } from './placeholder-menu'
 import { RichField } from './rich-field'
@@ -100,8 +101,12 @@ export type SidebarProps = {
   timezone: string
   links: LinkResources
   assets: readonly Asset[]
-  /** each Ghost-sourced query's rows as the canvas shows them, for the read-only preview */
+  /** each Ghost-sourced query's rows as the canvas shows them — Story 5.19: a hand-picked list's picks are read against
+   *  them, so a pick the source in force does not hold says so on its row */
   sourceRows: Readonly<Record<string, readonly unknown[]>>
+  /** Story 5.19 — what P0·5's tag, writer and post pickers search: the source in force's own rows. The sample's where no
+   *  site shows — `/controls` and `/pilots` hand none and get it. */
+  lists?: DataLists
   /** Story 5.6 — the mode the canvas is SHOWING. Every resolution, write and reset below is scoped to it. */
   mode?: Mode
   /** Story 5.6, R-133 — open the editor's ONE "Clear dark overrides" confirm for this section. The row is drawn only
@@ -126,6 +131,9 @@ export type SidebarProps = {
 }
 
 const slug = (s: string) => s.replace(/[^a-zA-Z0-9]+/g, '-')
+
+/** The bundled sample's lists, for a panel handed none (`/controls`, `/pilots`): the pickers search the sample. */
+const SAMPLE_LISTS: DataLists = { held: 'sample', tags: orbitWeekly.tags(), authors: orbitWeekly.authors(), posts: orbitWeekly.posts(), capped: null }
 
 const textOf = (v: unknown) =>
   typeof v === 'string' ? v : typeof v === 'object' && v !== null && typeof (v as { text?: unknown }).text === 'string' ? (v as { text: string }).text : ''
@@ -244,7 +252,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
 // What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
 // live region that announces a View-as choice read ONE list.
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
+export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -369,19 +377,26 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
     return field(row, row.value, (value) => commit(setContent(entry, state, row.path, value), 'content'), id)
   }
 
+  /* STORY 5.19 — P0·5's body, ONE group per query: Source, the tag or writer or picked list, Count and Order. A gesture
+     may set two values (By tag with its starting tag) and is still one change — applied in order, committed once. */
   const data = (rows: readonly DataRow[]) => {
     const keys = [...new Set(rows.map((r) => r.key))]
     return keys.map((key) => {
-      const own = rows.filter((r) => r.key === key)
-      const titles = (sourceRows[key] ?? []).map((r) => String((r as { title?: unknown }).title ?? ''))
+      const stored = state.data?.[key]
       return (
-        <GhostList
+        <DataGroup
           key={key}
           id={`${base}-data-${slug(key)}`}
-          source={own[0]?.source ?? key}
-          rows={own}
-          titles={titles}
-          onData={(which, value) => commit(setData(entry, state, key, which, value), 'content')}
+          rows={rows.filter((r) => r.key === key)}
+          stored={typeof stored === 'object' && stored !== null && !Array.isArray(stored) ? (stored as Readonly<Record<string, unknown>>) : {}}
+          lists={lists}
+          shown={sourceRows[key] ?? []}
+          design={entry.name ?? 'This design'}
+          onData={(changes: readonly (readonly [DataControl, unknown])[]) => {
+            let next: ControlState | string = state
+            for (const [control, value] of changes) if (typeof next !== 'string') next = setData(entry, next, key, control, value)
+            return commit(next, 'content')
+          }}
         />
       )
     })

@@ -545,5 +545,46 @@ test('AD-36 · a fixed flag that is not exactly true is refused at emission, and
   assert.throws(at({ source: 'posts', limit: 1, order: 'published_at desc', fixed: 'true' }), /bad-get-fixed/)
   assert.throws(at({ source: 'posts', ids: ['a1'], fixed: true }), /bad-get-fixed/)
   assert.throws(at({ source: 'posts', limit: 1, fixed: true }), /bad-get-fixed/)
-  assert.ok(at({ source: 'posts', limit: 1, order: 'published_at desc', fixed: true })().template.includes('{{#get "posts" limit="1" order="published_at desc"}}'))
+  assert.ok(at({ source: 'posts', limit: 1, order: 'published_at desc', fixed: true })().template.includes('{{#get "posts" limit="1" order="published_at desc" include="tags,authors"}}'))
+})
+
+// ── Story 5.19 — the Data group's Source: a stored value reaches a {{#get}} hash ONLY through the fold's grammar ──────
+// A crafted slug, id or source is IGNORED by the fold, so the declaration (or the default) is emitted; and the same value
+// handed to the emitter directly as a query is REFUSED by name, never interpolated. The legitimate value emits, quoted.
+test('AD-36 · a crafted Source value is inert through the fold, refused when handed as a query, and the legitimate one emits', () => {
+  const src = '<ul><li data-repeat="latest"><span data-bind="title">·</span></li></ul>'
+  const declared = { latest: { source: 'posts', limit: 3, order: 'published_at desc' } }
+  const theme = (data: Record<string, unknown>) => renderTheme(doc(), src, { dataBindings: declared, data: { latest: data } }).template
+  const plain = theme({})
+  assert.ok(plain.includes('{{#get "posts" limit="3" order="published_at desc" include="tags,authors"}}'), plain)
+  for (const crafted of [
+    { source: 'tag', tag: "x'}}{{#get \"posts\" limit=\"all\"}}" },
+    { source: 'author', author: 'x" }}<script>alert(1)</script>' },
+    { source: 'picked', picks: [{ id: '5f00"}}<script>', title: 't' }, { id: 'not-24-hex', title: 't' }] },
+    { source: 'featured}}{{#get "tiers"' },
+  ]) {
+    const out = theme(crafted)
+    assert.ok(!/script|limit="all"|tiers/.test(out), `a crafted value reached the theme: ${out}`)
+    if (crafted.source !== 'picked') assert.equal(out, plain, `the fold did not ignore ${JSON.stringify(crafted)}`)
+  }
+  // …handed to the emitter directly, as a declaration or as a secondary feed's query, it is refused BY NAME
+  const feedSrc = '<section class="s"><ul><li data-repeat="posts"><span data-bind="title">·</span></li></ul></section>'
+  for (const query of [
+    { source: 'posts', filter: "tag:'x'}}{{…'" },
+    { source: 'posts', ids: ['5f00"}}<script>'] },
+    { source: 'posts', filter: 'tag:x"' },
+    { source: 'posts', limit: 500 },
+  ]) {
+    assert.throws(() => renderTheme(doc(), src, { dataBindings: { latest: query } }), /AD-36|TEMPLATE-level|bad-get/, JSON.stringify(query))
+    for (const render of [renderCanvas, renderTheme]) {
+      assert.throws(() => render(doc(), feedSrc, { feed: { query, rows: [] } }), /AD-36|TEMPLATE-level|bad-get/, `feed ${JSON.stringify(query)}`)
+    }
+  }
+  // a secondary feed is a posts query or nothing
+  assert.throws(() => renderTheme(doc(), feedSrc, { feed: { query: { source: 'tiers' } } }), /posts query/)
+  // …and the legitimate values emit, quoted, on both paths
+  assert.ok(theme({ source: 'tag', tag: 'field-notes' }).includes(`filter="tag:'field-notes'"`))
+  assert.ok(theme({ source: 'author', author: 'rosa-menendez' }).includes(`filter="authors:'rosa-menendez'"`))
+  const good = renderTheme(doc(), feedSrc, { feed: { query: { source: 'posts', limit: 6, order: 'published_at asc', filter: "tag:'craft'" } } }).template
+  assert.ok(good.startsWith(`{{#get "posts" filter="tag:'craft'" limit="6" order="published_at asc" include="tags,authors"}}{{#if posts}}`), good)
 })

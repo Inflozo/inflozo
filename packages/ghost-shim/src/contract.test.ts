@@ -30,6 +30,7 @@ import type { DataBinding } from '@inflozo/library'
 import { CAPTURE_COMMAND, RECORDINGS } from '../fixtures/index.ts'
 import {
   CONTENT_API_KEY_PLACEHOLDER,
+  POSTS_INCLUDE,
   EXCERPT_DEFAULT_WORDS,
   SAMPLE_MEMBERS,
   TAXONOMY_SEPARATOR,
@@ -38,6 +39,7 @@ import {
   contentApiKey,
   contentApiUrl,
   excerpt,
+  feedExprs,
   formatDate,
   getExprs,
   getQuery,
@@ -600,20 +602,22 @@ test('{{#get}} builds the Content API query from the DECLARATION, and the record
       `Ghost returned ${slugs.length} rows for limit="${declared.limit}"`,
     )
     const [q] = getQuery('featured_craft', bindings)
+    // Story 5.19 — every posts query carries `include="tags,authors"`: recorded (§53, the FEED group below) as the
+    // difference between `primary_tag.name` printing and printing nothing
     assert.deepEqual(q, {
       resource: 'posts',
-      params: { filter: filter, limit: '3', order: 'published_at desc' },
+      params: { filter: filter, limit: '3', order: 'published_at desc', include: 'tags,authors' },
     })
     assert.deepEqual(
       getExprs('featured_craft', bindings),
-      [`{{#get "posts" filter="${filter}" limit="3" order="published_at desc"}}`],
+      [`{{#get "posts" filter="${filter}" limit="3" order="published_at desc" include="tags,authors"}}`],
     )
   })
   // R-20: a hand-picked order is N single-id gets, IN THAT ORDER — on BOTH halves
   assert.deepEqual(getQuery('picked', bindings).map((q) => q.params['filter']), ['id:aaa', 'id:bbb'])
   assert.deepEqual(getExprs('picked', bindings), [
-    '{{#get "posts" filter="id:aaa" limit="1"}}',
-    '{{#get "posts" filter="id:bbb" limit="1"}}',
+    '{{#get "posts" filter="id:aaa" limit="1" include="tags,authors"}}',
+    '{{#get "posts" filter="id:bbb" limit="1" include="tags,authors"}}',
   ])
   // the LIBRARY's declaration grammar runs at emission too — one copy, called twice
   assert.throws(() => getExprs('none', { none: { source: 'posts', ids: [] } }), /bad-get-ids/)
@@ -627,7 +631,9 @@ test('{{#get}} builds the Content API query from the DECLARATION, and the record
   assert.throws(() => getExprs('q', { q: { source: 'posts', filter: 'tag:x" }}<script>' } }), /quote, a backslash or a line break/)
   assert.throws(() => getExprs('q', { q: { source: 'posts', order: 'slug asc\n' } }), /quote, a backslash or a line break/)
   // a literal that merely CONTAINS "this" is a legitimate NQL value
-  assert.equal(getExprs('w', { w: { source: 'posts', filter: 'tag:this-week' } })[0], '{{#get "posts" filter="tag:this-week"}}')
+  assert.equal(getExprs('w', { w: { source: 'posts', filter: 'tag:this-week' } })[0], '{{#get "posts" filter="tag:this-week" include="tags,authors"}}')
+  // a query over another resource carries no include: only a post has a primary tag and a primary author
+  assert.equal(getExprs('t', { t: { source: 'tags', limit: 4 } })[0], '{{#get "tags" limit="4"}}')
   // an undeclared key, and a filter reaching for the current row
   assert.throws(() => getQuery('nope', bindings), /names no dataBindings key/)
   assert.throws(
@@ -860,5 +866,90 @@ test('a one-post {{#get}} ordered newest first returns the feed\'s newest post, 
   })
   // R-108: a FIXED query emits the same hash as any other — fixed is the editor's, never Ghost's
   assert.deepEqual(getExprs('latest', { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true } }),
-    ['{{#get "posts" limit="1" order="published_at desc"}}'])
+    ['{{#get "posts" limit="1" order="published_at desc" include="tags,authors"}}'])
+})
+
+// ─── Story 5.19 — the rows a SECONDARY FEED stands on (group FEED, MEASUREMENTS §53) ──────────────────────────────
+//
+// Each row was rendered under the full native feed of the same page, so every one of them is read against a `posts`
+// that is NOT empty — which is what makes the shadowing rows mean anything.
+
+type Picked = { id: string; slug: string; title: string; published_at: string }
+
+test('FEED · the control: the page\'s own native feed is full where every row below was rendered', () => {
+  assertBoth('the native feed', (major) => {
+    const [count] = recorded(major, 'index', 'FEED', 'native', '{{posts.length}}').split('|')
+    const size = recorded(major, 'index', 'SITE', 'posts_per_page', '@config.posts_per_page')
+    assert.equal(count, size, 'the native posts filled a page')
+    assert.ok(Number(count) > 0)
+  })
+})
+
+test('FEED · a {{#get "posts"}} with no include prints NO primary tag and NO primary author; with include="tags,authors" both print — so every posts query carries it', () => {
+  assertBoth('{{#get}} include', (major) => {
+    const rows = (key: string) => recorded(major, 'index', 'FEED', key, key).split(';').filter((r) => r !== '').map((r) => r.split('|'))
+    const plain = rows('get_plain')
+    const included = rows('get_include')
+    assert.equal(plain.length, 3)
+    assert.deepEqual(plain.map((r) => r[0]), included.map((r) => r[0]), 'the same three posts, newest first')
+    assert.ok(plain.every((r) => r[1] === '' && r[2] === ''), `a row printed a tag or author with no include: ${JSON.stringify(plain)}`)
+    // the control: with include every row names its writer, and a row with a tag names it
+    assert.ok(included.every((r) => r[2] !== ''), JSON.stringify(included))
+    assert.ok(included.some((r) => r[1] !== ''), JSON.stringify(included))
+  })
+  assert.equal(POSTS_INCLUDE, 'tags,authors')
+})
+
+test('FEED · the shadowing premise: inside a {{#get}} `posts` is the query\'s, empty at zero and its own length otherwise', () => {
+  assertBoth('{{#get}} shadows posts', (major) => {
+    // over a FULL native feed, `{{#if posts}}` inside a get that matched nothing took its else arm — and the get's
+    // own `{{else}}` (GET_ELSE) did not run: Ghost renders the main block with an empty list
+    assert.equal(recorded(major, 'index', 'FEED', 'shadow_zero', '{{#if posts}} in an empty get'), 'EMPTY')
+    assert.equal(recorded(major, 'index', 'FEED', 'shadow_rows', '{{#if posts}} in a get'), 'FULL:2', 'the get\'s own two rows, not the page\'s twelve')
+  })
+})
+
+test('FEED · Source filters: a quoted tag, a quoted writer and featured, oldest first, limited — as the fold writes them', () => {
+  assertBoth('Source filters', (major) => {
+    for (const key of ['by_tag', 'by_authors', 'featured']) {
+      const slugs = recorded(major, 'index', 'FEED', key, key).split(',').filter((x) => x !== '')
+      assert.equal(slugs.length, 3, `${key} honoured limit="3" and matched`)
+    }
+    // the singular `author:` answers the same posts at render — and gscan refuses it as deprecated on both majors
+    // (GS001-DEPR-AUTH-FILT), which is why the fold writes the plural (§53)
+    assert.equal(recorded(major, 'index', 'FEED', 'by_author', 'by_author'), recorded(major, 'index', 'FEED', 'by_authors', 'by_authors'))
+  })
+  // the two majors agree, post for post — the NQL builds differ (§15g) and answer these filters identically
+  for (const key of ['by_tag', 'by_authors', 'featured']) {
+    assert.equal(recorded('5', 'index', 'FEED', key, key), recorded('6', 'index', 'FEED', key, key), key)
+  }
+})
+
+test('FEED · hand-picked: single-id gets print in the CHOSEN order, never by date — alone and inside the existence get', () => {
+  assertBoth('hand-picked', (major) => {
+    const picks = input<Picked[]>(major, 'index', 'feed_picks', 'FEED picks')
+    const want = picks.map((p) => p.slug).join(',') + ','
+    // the control: the chosen order is neither date order
+    const dates = picks.map((p) => p.published_at)
+    assert.ok(dates.join() !== [...dates].sort().join() && dates.join() !== [...dates].sort().reverse().join(), 'the picks were chosen in date order — the row proves nothing')
+    assert.equal(recorded(major, 'index', 'FEED', 'picks_single', 'single-id gets'), want)
+    assert.equal(recorded(major, 'index', 'FEED', 'picks_existence', 'the existence get'), want)
+    assert.equal(recorded(major, 'index', 'FEED', 'picks_none', 'an existence get over ids that are nowhere'), 'EMPTY')
+    // …and the shim builds exactly that shape from the same picks
+    const built = feedExprs({ source: 'posts', ids: picks.map((p) => p.id) })
+    assert.ok(built !== null)
+    assert.equal(built.outer, `{{#get "posts" filter="id:[${picks.map((p) => p.id).join(',')}]" limit="1" include="tags,authors"}}`)
+    assert.deepEqual(built.each, picks.map((p) => `{{#get "posts" filter="id:${p.id}" limit="1" include="tags,authors"}}`))
+  })
+  assert.equal(feedExprs({ source: 'posts', ids: [] }), null, 'nothing picked emits nothing')
+})
+
+test('FEED · inside a {{#get}} `pagination` is the QUERY\'s, and page_url leads to the route\'s page 2 — why a secondary feed drops its pager', () => {
+  assertBoth('pagination inside a get', (major) => {
+    const [pages, next, url] = recorded(major, 'index', 'FEED', 'pagination_in_get', 'pagination in a get').split('|')
+    const native = recorded(major, 'index', 'FEED', 'native', 'native').split('|')[1]
+    assert.notEqual(pages, native, 'the get carries a pagination of its own, not the page\'s')
+    assert.equal(next, '2')
+    assert.equal(url, '/page/2/', 'a link to the ROUTE\'s page 2 — a wrong page, not a missing one')
+  })
 })

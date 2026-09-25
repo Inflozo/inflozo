@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { orbitWeekly } from '@inflozo/library'
-import { imagePool, linkResources, queryRows, referenceSwatches, samples } from '@/lib/controls-review'
+import { imagePool, linkResources, referenceSwatches, samples } from '@/lib/controls-review'
 import { Review } from './review'
 
 /* ────────────────────────────────────────────────────────────────── the review surface
@@ -36,8 +36,8 @@ export default function ControlsReview() {
     <Review
       designs={designs}
       swatches={referenceSwatches()}
-      // every design's queries, by design id — two of the three declare none, which is itself part of the proof
-      rows={Object.fromEntries(designs.map((e) => [e.id, queryRows(e)]))}
+      // Story 5.19 — no rows handed over: a query is the INSTANCE's now (its Source, tag, writer or picks), so the page
+      // resolves the sample's per state with the editor's own `sampleRows`
       links={linkResources()}
       pool={imagePool()}
       timezone={orbitWeekly.site().timezone}

@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-15",
+  "captured": "2026-09-25",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "5",
   "ghost_version": "5.130",
@@ -21,6 +21,26 @@
       "url": "https://ghost5.inflozo.com/author/priya-raman/",
       "website": null
     },
+    "feed_picks": [
+      {
+        "id": "6a86b5fb6444934864da3283",
+        "published_at": "2025-08-11T12:00:00.000+00:00",
+        "slug": "the-cost-of-clever",
+        "title": "The cost of clever"
+      },
+      {
+        "id": "6a86b5fb6444934864da328b",
+        "published_at": "2025-08-10T12:00:00.000+00:00",
+        "slug": "a-quiet-week-in-the-archive",
+        "title": "A quiet week in the archive"
+      },
+      {
+        "id": "6a86b5f96444934864da3278",
+        "published_at": "2025-08-12T12:00:00.000+00:00",
+        "slug": "on-typography-and-restraint",
+        "title": "On typography and restraint"
+      }
+    ],
     "locales_en": {
       "Plain key": "Plain value, read from locales/en.json",
       "probe": {
@@ -62,7 +82,7 @@
     "post_authors": [
       {
         "name": "Umang",
-        "profile_image": null,
+        "profile_image": "https://ghost5.inflozo.com/content/images/2026/09/luca-bravo-O453M2Liufs-unsplash.jpg",
         "slug": "umang",
         "url": "https://ghost5.inflozo.com/author/umang/"
       }
@@ -100,8 +120,8 @@
   "uploaded_image": "https://ghost5.inflozo.com/content/images/2026/09/inflozo-shim-probe-5.png",
   "values": {
     "ASSET": {
-      "no_such": "/assets/css/nope.css?v=5a62be20c2",
-      "screen_css": "/assets/css/screen.css?v=5a62be20c2"
+      "no_such": "/assets/css/nope.css?v=8e31f8c5fc",
+      "screen_css": "/assets/css/screen.css?v=8e31f8c5fc"
     },
     "CORE": {
       "content_api_key_shape": {
@@ -112,6 +132,21 @@
       "content_api_url": "https://ghost5.inflozo.com/ghost/api/content/",
       "total_members": "50+",
       "total_paid_members": "0"
+    },
+    "FEED": {
+      "by_author": "everything-is-a-list,on-dependable-dullness,the-last-mile-of-design,",
+      "by_authors": "everything-is-a-list,on-dependable-dullness,the-last-mile-of-design,",
+      "by_tag": "the-weight-of-a-headline,notes-on-naming-things,systems-that-outlive-teams,",
+      "featured": "notes-on-naming-things,systems-that-outlive-teams,what-survives-a-migration,",
+      "get_include": "PROBEs Gated Post||Umang;On typography and restraint|Craft|Tom Whitlock;The cost of clever|Systems|Umang;",
+      "get_plain": "PROBEs Gated Post||;On typography and restraint||;The cost of clever||;",
+      "native": "12|2/3|3",
+      "pagination_in_get": "1/5|2|/page/2/",
+      "picks_existence": "the-cost-of-clever,a-quiet-week-in-the-archive,on-typography-and-restraint,",
+      "picks_none": "EMPTY",
+      "picks_single": "the-cost-of-clever,a-quiet-week-in-the-archive,on-typography-and-restraint,",
+      "shadow_rows": "FULL:2",
+      "shadow_zero": "EMPTY"
     },
     "GET": {
       "authors": "priya-raman,tom-whitlock,umang,",
@@ -172,7 +207,7 @@
       "posts_on_page": "12"
     },
     "PILOT": {
-      "get_latest": "PROBE Gated Post",
+      "get_latest": "PROBEs Gated Post",
       "if_logo": "NO_LOGO",
       "if_member_paid": "NOT_PAID",
       "if_self_signup": "ASK",

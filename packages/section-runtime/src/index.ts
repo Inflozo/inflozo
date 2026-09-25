@@ -86,6 +86,9 @@ export {
   resetChanges,
   sidebar,
   withData,
+  // Story 5.19 — P0·5's and D5c's sentences for the greyed Data rows, and where a secondary feed's values are stored
+  DATA_WORDS,
+  FEED_KEY,
 } from './controls.ts'
 export type {
   ControlEntry,
@@ -94,7 +97,10 @@ export type {
   ControlState,
   Mode,
   ParkedControls,
+  DataControl,
   DataRow,
+  FeedRole,
+  PickedPost,
   PropRow,
   SidebarGroupModel,
   SidebarModel,
@@ -124,3 +130,7 @@ export {
 // made of (R-179), and it replaced R-127's `indexStack`: the editor's page-2 preview and the compiler call it alike.
 export { isSynthesizable, pageTwoStack, synthesize, SYNTHESIS_DEFAULTS } from './synthesize.ts'
 export type { DefaultRow, DroppedRow, Synthesis, SynthesisEntry, SynthesisLibrary } from './synthesize.ts'
+// Story 5.19 — FR-H2's main feed: ONE designation rule beside `synthesize` (AD-27(d)) that the editor's every door and
+// Story 7.3's compiler pass each paginated doc through, the reassignment, a secondary feed's own query, and the
+// feed-less archive the editor's Layers note, Story 7.18's Pre-flight and Story 7.3's guard all read.
+export { designate, feedBase, feedlessArchive, feedQuery, isFeed, mainFeedOf, makeMainFeed } from './main-feed.ts'

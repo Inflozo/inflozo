@@ -40,6 +40,14 @@ invoked inside `{{#foreach posts}}` (it prints each row's `title` and `@first`),
 `label`/`url`, the signed-out `{{#if @member.paid}}` arm, the `@site.logo` and `@site.allow_self_signup`
 conditions and a one-post `{{#get}}` — the rows the five pilots stand on. The signed-in member arms stay
 cited, not recorded: creating a member is outside the recorder's writes.
+
+Story 5.19 adds the FEED group to index.hbs (MEASUREMENTS §53): a `{{#get "posts"}}` with and without
+`include="tags,authors"`, `{{#if posts}}` inside a get that matches nothing over the page's full native feed (the
+secondary feed's shadowing premise), the three Source filters, three single-id gets in a chosen NON-date order, the
+existence get around them, and `pagination` inside a get. The picks are the site's own newest three public posts,
+read before the zip and substituted as __FEED_IDS__ / __FEED_PICKS__ in the order second · third · first, and
+recorded as `input.feed_picks` so the contract test asserts Ghost's order against the chosen one. Reading them is a
+Content API read; it writes nothing.
 """
 import os, re, sys, json, time, zlib, struct, hmac, hashlib, base64, zipfile, io, uuid, datetime
 import urllib.request, urllib.error
@@ -167,7 +175,22 @@ def img_url_block(sizes, label, path_expr):
     return '\n'.join(lines)
 
 
-def zip_theme(sizes, uploaded_url):
+def feed_picks(g):
+    """Story 5.19: three public posts in an order that is neither date order — second, third, first newest."""
+    _, d = g.content('posts/?limit=3&fields=id,slug,title,published_at&filter=visibility:public'
+                     '&order=published_at%20desc')
+    rows = d.get('posts') or []
+    if len(rows) < 3:
+        raise RuntimeError(f'FEED needs three public posts to pick; the site answered {len(rows)}')
+    return [{k: r[k] for k in ('id', 'slug', 'title', 'published_at')} for r in (rows[1], rows[2], rows[0])]
+
+
+def picks_block(picks):
+    return ''.join('{{#get "posts" filter="id:%s" limit="1"}}{{#foreach posts}}{{slug}},{{/foreach}}{{/get}}' % p['id']
+                   for p in picks)
+
+
+def zip_theme(sizes, uploaded_url, picks):
     pkg = {
         "name": "inflozo-probe-shim",
         "description": "AD-23 recording surface for Story 4.3's Ghost helper shim",
@@ -197,6 +220,8 @@ def zip_theme(sizes, uploaded_url):
                 data = open(full, 'rb').read()
                 if rel == 'index.hbs':
                     data = data.replace(b'__IMG_URL_BLOCK__', index_block.encode())
+                    data = data.replace(b'__FEED_PICKS__', picks_block(picks).encode())
+                    data = data.replace(b'__FEED_IDS__', ','.join(p['id'] for p in picks).encode())
                 if rel == 'post.hbs':
                     data = data.replace(b'__IMG_URL_BLOCK__', post_block.encode())
                 z.writestr(rel, data)
@@ -269,7 +294,9 @@ def record(g, label):
     previous = next((t['name'] for t in themes if t.get('active')), None)
     if previous is None:
         raise RuntimeError('no active theme reported — refusing to activate the probe with nothing to restore')
-    st, res = g.upload_theme(zip_theme(sizes, uploaded))
+    picks = feed_picks(g)
+    print(f'    FEED picks, in the chosen order: {[p["slug"] for p in picks]}')
+    st, res = g.upload_theme(zip_theme(sizes, uploaded, picks))
     name = res['themes'][0]['name']
     print(f'    theme uploaded HTTP {st} -> {name!r} (previous active: {previous!r})')
 
@@ -309,6 +336,8 @@ def record(g, label):
                                             'feature_image', 'visibility')},
             'author': {k: author.get(k) for k in ('name', 'slug', 'url', 'bio', 'profile_image',
                                                   'cover_image', 'website')},
+            # Story 5.19: the hand-picked ids in the order the theme asked for them
+            'feed_picks': picks,
         }
 
         targets = [

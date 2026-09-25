@@ -478,6 +478,19 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     **R-196 (owner, 2026-09-25, Q2)**: the Post Grids draw no page links of their own, so A34's first story (10.112)
     runs straight after A17's owner gate (10.58), before A18 — `sprint-status.yaml` lists it there and the story board's
     gate follows that order (DW-255, done).
+  - **Story 5.19 built it (2026-09-25):** §53 RECORDED on both majors what the plan read in source — a `{{#get}}` shadows
+    `posts` and runs its block even at zero (so the `{{#if posts}}` around the section is what renders nothing), carries
+    no tags or writers without `include` (so EVERY posts query now emits `include="tags,authors"`, and Latest Post's
+    snapshot moved by that one line), and inside it `{{page_url pagination.next}}` is the ROUTE's `/page/2/` (so a
+    secondary feed drops its pager on both emitters). **gscan refuses `filter="author:…"` as an ERROR on both majors
+    (GS001-DEPR-AUTH-FILT), though Ghost answers it — so the fold writes `authors:'…'`.** The rule is `designate` in
+    `packages/section-runtime/src/main-feed.ts` beside `feedQuery`, `makeMainFeed` and `feedlessArchive`; the editor
+    passes every doc through it at `read.ts`, the hydrate, `apply` and an undo. The Data group is `components/controls/
+    data-group.tsx` over the engine's rows, its words in `lib/data-group.ts`; D5c's chip sits on the Layers row, the
+    panel head and the canvas outline (chrome, hovered or selected only). The chrome layer's host now declares
+    `--tw-border-style:solid` — Tailwind's `@property` initial values do not register from a shadow root's adopted
+    sheet, so every chrome `border` had drawn none (5.15's PAUSED chip included). Chrome SHADOWS still draw none for
+    the same reason — P0-1's pill among them — which is DW-256, outside this story's surfaces.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

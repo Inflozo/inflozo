@@ -2,7 +2,7 @@
 title: 'Story 5.19 — The Data group and the main-feed designation'
 type: 'feature'
 created: '2026-09-25'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'ba3c821bd806f7a43f9a5deed582a1dbf71ee0fd'
@@ -390,7 +390,7 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
 **Execution:**
 
-- [ ] `tools/probe/theme-shim/index.hbs` + `tools/probe/record-shim.py` -- **FIRST, before any code.** Add a `FEED` group
+- [x] `tools/probe/theme-shim/index.hbs` + `tools/probe/record-shim.py` -- **FIRST, before any code.** Add a `FEED` group
   to the probe index. Its rows, each under the native feed of the same page:
   - a `{{#get "posts"}}` with and without `include="tags,authors"`, printing `title|primary_tag.name|primary_author.name`;
   - `{{#if posts}}` inside a get whose filter matches nothing, on a page whose native `posts` is full (the shadowing
@@ -402,12 +402,12 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
   Record both majors and extend `contract.test.ts` to assert every row. Write it up as `MEASUREMENTS.md` §53.
   -- The whole secondary-feed mode rests on these facts, and one of them may change Latest Post's emitted theme.
-- [ ] `packages/library/src/vocabulary.ts` + `orbit-weekly.ts` -- Move `DEFAULT_LIMIT` beside `GET_SOURCES`, with
+- [x] `packages/library/src/vocabulary.ts` + `orbit-weekly.ts` -- Move `DEFAULT_LIMIT` beside `GET_SOURCES`, with
   `orbitWeekly` re-exporting or its readers re-pointed (DW-112). Declare the Source vocabulary once — the five values
   and their words — plus the slug and id grammars the fold emits. Give `templateContext` / `assemble` / `listOf` /
   `feedPages` / `paginationOver` an optional page size that defaults to the dataset's, so every existing call answers
   unchanged. -- One vocabulary for the panel, the fold and the words; the page size is the project's.
-- [ ] `packages/section-runtime/src/main-feed.ts` (new, exported from the index) -- The rule, pure:
+- [x] `packages/section-runtime/src/main-feed.ts` (new, exported from the index) -- The rule, pure:
   - `isFeed(entry)` is `bindingContext` includes `posts`.
   - `designate(doc, file, isFeed, previous?)` returns the doc satisfying the invariant, the SAME object when nothing
     changes. A transfer's direction is read from `previous`.
@@ -420,9 +420,9 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
   `SynthesisEntry` gains `bindingContext`. -- AD-27(d): the designation rule in one place, for the editor now and the
   compiler at 7.3.
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- `duplicateSection`'s copy gets `isMainFeed: false`. The other
+- [x] `packages/section-runtime/src/doc-edit.ts` -- `duplicateSection`'s copy gets `isMainFeed: false`. The other
   operations stay flag-agnostic, and the rule runs after them. -- DW-194's duplicate half, where the copy is made.
-- [ ] `packages/section-runtime/src/controls.ts` -- The fold and the rows:
+- [x] `packages/section-runtime/src/controls.ts` -- The fold and the rows:
   - `withData` folds a stored Source into a posts query: `featured:true`; `tag:'…'` or `author:'…'` for a slug in the
     grammar; `ids` for picks in the grammar, dropping `filter`/`limit`/`order`; at most `limit` picks on a fixed query.
     Junk is ignored.
@@ -435,7 +435,7 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - The secondary feed's rows are the same functions over `data.posts` and `feedQuery`'s base.
 
   -- One fold, one set of rows, for both kinds of query and both emitters.
-- [ ] `packages/section-runtime/src/core.ts` + `packages/ghost-shim/src/index.ts` -- A `RenderInput` secondary-feed
+- [x] `packages/section-runtime/src/core.ts` + `packages/ghost-shim/src/index.ts` -- A `RenderInput` secondary-feed
   query:
   - **Theme.** The root sits inside the get and inside `{{#if posts}}`; hand-picked is the existence get with the N
     ordered single-id gets inside.
@@ -444,7 +444,7 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
   The feed query is validated by `validateDataBinding` with the declaration-only key rule skipped. `include` follows the
   recording. -- The two emitters' one new difference, proven to agree.
-- [ ] `apps/web/lib/live-content.ts` + `apps/web/lib/canvas.ts` -- Rows come per INSTANCE, over its folded queries:
+- [x] `apps/web/lib/live-content.ts` + `apps/web/lib/canvas.ts` -- Rows come per INSTANCE, over its folded queries:
   - The sample's are resolved client-side with `orbitWeekly.resolveSource` at the Count's ceiling in both orders, or the
     picks in pick order.
   - The site's come through `bindingReads` / `siteRows` over the folded binding, one cache key per query, so two
@@ -454,11 +454,11 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - `shownRows` reads the folded bindings.
 
   -- 5.18's reads and the render door, fed the instance's own query instead of the design's declaration.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- `projectOf` selects `posts_per_page` and
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` -- `projectOf` selects `posts_per_page` and
   `EditorData` gains `postsPerPage`. Every paginated canvas doc and page-2 doc is handed out through `designate`.
   `rows` stops being per design for posts queries: the editor resolves them. Add `postsPerPage: 12` to the harness
   literal. -- The server truth the editor paints from.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- The editor side:
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- The editor side:
   - `designate` at the hydrate and inside `apply` for a paginated doc, with the doc before the edit as `previous`.
   - `onPlace` no longer hard-codes the flag.
   - `onMakeMainFeed` is one `apply`, announced politely.
@@ -471,12 +471,12 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - The Layers rows carry `mainFeed` and `canLead`.
 
   -- One door for every lifecycle change, and the marker wherever the section is named.
-- [ ] `apps/web/components/controls/layers.tsx` + `apps/web/components/kit/layers-row.tsx` -- The chip on the main
+- [x] `apps/web/components/controls/layers.tsx` + `apps/web/components/kit/layers-row.tsx` -- The chip on the main
   feed's row, before the ⋯. **Make this the main feed** goes in the ⋯ menu straight after Hide/Show (R-126 keeps
   Hide/Show first), only where `canLead`. The chip's words are "Main feed", uppercased by CSS, so assistive technology
   reads words. The feed-less archive note sits at the head of Layers beside `AutoGeneratedRow`, in its shape, while
   `feedlessArchive` holds. -- D5c's two Layers pieces, and FR-H2's archive case in the editor.
-- [ ] `apps/web/components/controls/data-group.tsx` (new) + `sidebar.tsx` + `item-list.tsx` -- P0·5's body replaces
+- [x] `apps/web/components/controls/data-group.tsx` (new) + `sidebar.tsx` + `item-list.tsx` -- P0·5's body replaces
   `GhostList` as the Data group:
   - The Source `Select`.
   - The tag and writer selects, searching over the source in force's rows with their counts, and D5e's capped line.
@@ -488,13 +488,13 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - Everything inside `ReadOnly`.
 
   -- The frame's panel, drawn once for every posts query.
-- [ ] `apps/web/lib/data-group.ts` (new, pure and importless but for types) -- Every string in *Design Notes*; which
+- [x] `apps/web/lib/data-group.ts` (new, pure and importless but for types) -- Every string in *Design Notes*; which
   rows a query draws; the per-value notes (not in the source in force, unpublished); the 25 threshold; a fixed query's
   cap sentence. -- `node --test` reaches it, as `lib/view-as.ts`.
-- [ ] `apps/web/app/(app)/app/(authed)/controls/review.tsx` + `page.tsx` -- Fixture 1's `latest` gets Source, with rows
+- [x] `apps/web/app/(app)/app/(authed)/controls/review.tsx` + `page.tsx` -- Fixture 1's `latest` gets Source, with rows
   resolved per state through the same function the editor uses, never the duplicate `shown`. -- The deployed Controls
   review page shows the Data group on a query that is not fixed.
-- [ ] Tests:
+- [x] Tests:
   - `packages/section-runtime/src/main-feed.test.ts` (new) -- every matrix row of the lifecycle and the invariant,
     including the SAME-object answer.
   - `controls.test.ts` -- the fold per Source, junk ignored, the rows and their greying, the fixed cap, "Count".
@@ -508,7 +508,7 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
     no feed at all, since a feed with no flag is repaired before `page-two.ts` ever reads it.
 
   -- The matrix is the contract.
-- [ ] `tools/keyboard/journey.spec.mjs` -- On the harness:
+- [x] `tools/keyboard/journey.spec.mjs` -- On the harness:
   - `⌘K` places a second Three Up, which lands secondary: no chip, a Data group.
   - The ⋯ menu's **Make this the main feed** by keyboard moves the chip.
   - Delete moves it back.
@@ -517,11 +517,11 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - The canvas carries zero chrome at rest.
 
   -- R-146: the wiring on every commit.
-- [ ] `tools/stress/sections.js` + `tools/stress/build.js` -- The 70-section theme gains the `feed` archetype rendered as a
+- [x] `tools/stress/sections.js` + `tools/stress/build.js` -- The 70-section theme gains the `feed` archetype rendered as a
   secondary feed once per Source — Latest, Featured, By tag, By author, Hand-picked — beside the feeds it already
   has. -- gscan reads the new emission (the whole section inside a get, the existence get around the picks) on both
   majors, where a theme is judged.
-- [ ] `tools/probe/run-verify-editor.cjs` (step 94) + `run-verify-live-content.cjs` + `run-verify-controls.cjs` -- The
+- [x] `tools/probe/run-verify-editor.cjs` (step 94) + `run-verify-live-content.cjs` + `run-verify-controls.cjs` -- The
   deployed walks (R-82):
   - Step 94 walks every lifecycle row, the marker at rest and on hover, the Data group on the sample and a crafted value.
   - The live walk walks By tag / By author / Featured / Hand-picked over T1 and T3, with one request per key, the
@@ -529,7 +529,7 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - The controls walk takes the word "Count" and the Source row.
 
   -- The canvas is proven on production, not a harness.
-- [ ] `docs/section-authoring.md` + `…/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` (AD-27) +
+- [x] `docs/section-authoring.md` + `…/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md` (AD-27) +
   `…/prds/prd-Inflozo-2026-08-17/prd.md` (FR-H2) + `_bmad-output/implementation-artifacts/deferred-work.md` -- The docs:
   - **section-authoring.md** — what a feed design is (a `data-repeat="posts"` over the native context, one element
     holding its pager, a `data-if="posts"` that reads either scope) and what the secondary mode does to it.
@@ -574,6 +574,27 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   is added, so `busy.test.ts` stays green (R-98).
 
 ## Spec Change Log
+
+- **2026-09-25, Dev: the recording and gscan changed two things the frozen block names; no frozen text was edited.**
+  - **A writer is emitted `authors:'…'`, not `author:'…'`** (Always, the AD-36 bullet). Both answer the same posts on
+    both majors — MEASUREMENTS §53's `by_author` and `by_authors` rows, asserted in `contract.test.ts` — but gscan
+    refuses the singular as an ERROR on both bundled versions (GS001-DEPR-AUTH-FILT, executed by `tools/stress`'s gate
+    against a control copy), and every emitted theme must scan at 0 errors (AD-34). The grammar, the quoting and AD-36's
+    refusal are unchanged; `authors` expands to the same `authors.slug`.
+  - **Every posts query carries `include="tags,authors"`** — Ask First's case, as it directs: the recorder found
+    `primary_tag` and `primary_author` empty in a `{{#get}}` without it on both majors (§53). Latest Post's snapshot
+    moved by that one line (`packages/library/snapshots/a4/13/template.hbs`), and it is the fix.
+- **2026-09-25, Dev: routine calls, each stated rather than asked.**
+  - The rule's functions take the LIBRARY (`designate(doc, file, library, previous?)`, `makeMainFeed(…, library)`,
+    `feedlessArchive(…, library)`) where the task wrote `isFeed`: `synthesize`'s own shape, and `isFeed(entry)` is asked
+    inside. `EditorData.rows` is gone rather than narrowed: every query, not only a posts one, is now the instance's,
+    resolved in the browser by `lib/canvas.ts`'s `sampleRows` (the one resolver `/pilots` and the matrix use too).
+  - The chrome layer's host declares `--tw-border-style:solid` so the canvas chip's border draws; that also gives
+    5.15's PAUSED chip and P0-1's pill the hairlines their frames draw. Their SHADOWS still draw none, for the same
+    reason — DW-256, outside this story's surfaces.
+  - P0·5's past-25 box is drawn as the frame draws it (`:193-195`): its hairline (`coral-tint-strong`), its two bold
+    phrases, and the count toned but not bolded. The owner's test step 13 says "coral-red", not "amber": the frame's
+    warning tone is the coral family, and marigold is Pro-and-celebration only (DESIGN.md).
 
 ## Design Notes
 
@@ -698,6 +719,87 @@ and `{n}` is a number.
   -- expected: 0 FAIL.
 - `python3 tools/doc-audit.py --check`, twice -- expected: PASS.
 
+### Results — Dev, 2026-09-25, on the real infrastructure (R-82)
+
+**The Ghost test servers — T3 `ghost5.inflozo.com` (5.130.6) and T1 `ghost6.inflozo.com` (6.58.0)**, keys by name
+`GHOST5_URL` · `GHOST5_STAFF_ACCESS_TOKEN` · `GHOST5_CONTENT_API_KEY` and the same three `GHOST6_` names:
+
+- **The recorder ran first, before any code** — `python3 tools/probe/record-shim.py`, twice (the second added
+  `by_authors`). Every `FEED` row recorded on both majors, identical but for the newest post's own title (MEASUREMENTS
+  §53's table): the native feed `12|1/3|2`; a get with no `include` printed every `primary_tag` and `primary_author`
+  EMPTY, and with `include="tags,authors"` both (so every posts query now asks — Ask First's case); `shadow_zero`
+  printed `EMPTY` over a full native feed and the get's own `{{else}}` never ran (the premise holds, and `{{#if posts}}`
+  is what renders nothing at zero); `tag:'craft'`, `author:'priya-raman'`, `authors:'priya-raman'` and
+  `featured:true` each answered the same three slugs on both majors; three single-id gets printed in the chosen
+  non-date order (08-11 · 08-10 · 08-12), inside the existence get too, and an existence get over an id no post has
+  printed `EMPTY`; inside a get `{{page_url pagination.next}}` is the route's `/page/2/`.
+- **Read back afterwards** with `GET /ghost/api/admin/themes/`: `casper` active on both servers and
+  `inflozo-probe-shim` gone from both. The recorder writes one probe theme per run and restores the previous one; it
+  created no post and changed no setting.
+- **gscan, by execution** (`tools/stress/gate.js`, a control copy of the stress theme differing only in the writer
+  filter): `author:'…'` is ERROR GS001-DEPR-AUTH-FILT on gscan 4.49.7 and 6.4.2 alike, `authors:'…'` 0 / 0 — so the fold
+  writes `authors:` (Spec Change Log). Read in both bundled gscans' source too: `level: 'error'` at
+  `lib/specs/v5.js:527`.
+
+**Supabase, Vercel, GitHub, Resend and Dodo:** not touched by this commit's checks. Production was read at Create
+(`SUPABASE_URL`, `SUPABASE_SECRET_KEY`: every `posts_per_page` 12, the two projects' Homes) and nothing was written —
+no migration, so no Schema phase. **Not yet run: the three deployed walks** (`run-verify-editor.cjs` step 94,
+`run-verify-live-content.cjs`, `run-verify-controls.cjs`). They refuse to start until `app.inflozo.com` serves this
+commit, so they run once CI publishes it, and their results are added here with the Supabase, Vercel and GitHub reads
+they make.
+
+**Locally, Node 24:**
+
+- `pnpm check` exit 0: `packages/library` 185 (`orbit-weekly.test.ts`'s control unedited), `ghost-shim` 40
+  (`contract.test.ts` over the new `FEED` rows), `section-runtime` 263 (`main-feed.test.ts`, `agreement.test.ts`,
+  `ad36.test.ts`), `apps/web` 547 (`busy.test.ts`, `data-group.test.ts`, `page-two.test.ts`, `live-content.test.ts`),
+  and `check-snapshots` PASS — 5 designs at 10 targets — with one line moved, Latest Post's `include`, the recording's fix.
+- `pnpm keyboard`: 57 passed, the six "5.19 ·" journeys among them.
+- `bash tools/matrix/run-matrix-gate.sh`: 180 cases · 5 designs · 0 violations, no baseline moved.
+- The stress theme (`node build.js && node gate.js theme`; `npm install` skipped, its `node_modules` is root-owned):
+  75 sections over 7 templates, the five secondary feeds among them — ERRORS 0 WARNINGS 0 on gscan 4.49.7 and 6.4.2.
+- `bash supabase/tests/run-rls-gate.sh`: exit 0 (no SQL changed). `doc-audit --check`: PASS on its second run.
+- **A probe, executed on the harness editor** (the repo's Playwright): in the canvas's chrome layer `border` now draws
+  1px solid, and `shadow-md` / `shadow-lg` still compute `none` while the editor's own document draws them (the
+  control) — recorded as DW-256.
+
+**The Matrix Test Audit** — each row, and the tests that ran and passed for it (U: `main-feed.test.ts`,
+`controls.test.ts`, `agreement.test.ts`, `ad36.test.ts`, `doc-edit.test.ts`, `page-two.test.ts`,
+`live-content.test.ts`, `data-group.test.ts`, `orbit-weekly.test.ts`; K: the keyboard journeys):
+
+- *Untouched archive or Home* — K (the harness Home's chip in Layers and at the panel head; AD-37's chip on a pointed
+  or selected main feed only, never over the name tag); `check-snapshots` and `synthesize.test.ts` (the flag from the table).
+- *A feed, no flag · Two flags* — U (`main-feed.test.ts`'s two repair rows; `page-two.test.ts`: the repaired Pilot
+  sections shape offers a page 2).
+- *Place the first feed* — U; K (lands as the main feed, "{name} added as the main feed.", one ⌘Z takes it away).
+- *Place another feed* — K (lands secondary: Source Latest, Count 12, Order Newest, one pager, no chip).
+- *Place on page 2* — U (the rule on `index.hbs`'s own doc).
+- *Delete the main feed* — U (below, else the nearest above); K (the transfer in the same edit, both sentences, one ⌘Z).
+- *Delete the only feed* — U; `page-two.test.ts` (no page 2 on a Home with no feed); K (the Story 5.16 journey that
+  deletes the harness's only feed).
+- *Hide the main feed · Hide the only feed* — U.
+- *A Tag or Author page with no visible feed* — U (`feedlessArchive`, never Home); `data-group.test.ts` (the sentence).
+- *Duplicate the main feed* — U (`doc-edit.test.ts`, `main-feed.test.ts`); K (⌘D's copy unflagged, one pager).
+- *Reassign* — U (one edit; refused on a hidden row, a non-feed and a non-paginated file); K (the menu's words and
+  order, absent on the main feed and a non-feed row, the chip moved and said, one ⌘Z).
+- *Design switch* — U.
+- *Latest · Featured · By tag · By author* — U (`controls.test.ts`'s fold per Source; `agreement.test.ts` node for node;
+  `live-content.test.ts`: one read per distinct query, shared by two sections).
+- *Hand-picked · No picks · Secondary feed at zero* — U (`agreement.test.ts`: the existence get around the ordered
+  single-id gets, nothing at all at zero on both emitters); K (Hand-picked with nothing picked leaves the canvas, its
+  row stays; three picks drawn in order; ⌥↓ moves one, said).
+- *Past 25 picks* — U (`slow(26)`; thirty picks accepted and folded).
+- *A pick the source lacks* — `data-group.test.ts` (the sentences); the deployed editor walk's step 94 (a planted pick
+  the sample does not hold draws nothing, its row stays and says so).
+- *Fixed query, Hand-picked* — U (Source alone, the cap of one); `check-snapshots` (Latest Post's Data group is Source).
+- *Count · Main feed selected* — U (1–100 and its refusal; D5c's greyed Count); K (the main feed's Data group).
+- *A crafted stored value* — U (`ad36.test.ts`: inert through the fold, refused by name as a query, the legitimate
+  value emitted quoted).
+- *Page 2 following page 1 · Page 2 with its own design* — `page-two.test.ts` (added at this verification: page 1
+  reassigns, a following copy follows and a page 2 of its own keeps its own, on Home, Tag and Author).
+- *Reading along · Sample content ↔ the site* — the deployed live walk (R-192's disabled rows and chip; the switch to
+  Sample content and back, added at this verification), and the owner's test step 12.
+
 ## Owner's manual test
 
 On the real site after Deploy, in a desktop browser about 1440 wide. Deploy confirms the URLs.
@@ -720,7 +822,7 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 | 10 | same | Editor, Home | Open **⋯** on **Post grid** and choose **Hide**. Then open its **⋯** again and choose **Show**. Then press **Undo** twice. | — | Hidden, the other grid takes the label. Shown again, **Post grid** stays an ordinary fixed list without the label. Two Undos put the label back on **Post grid**. |
 | 11 | same | Editor, Home | Click **Heroes — Latest Post**. In its **Data** group set **Source** to **Hand-picked** and choose a post. | `margins` | Only **Source** is offered (no Count, no Order). The hero's card shows "Reading the margins" instead of your newest post. After one pick the search greys: *"Latest Post shows 1 post, so it holds 1 pick."* |
 | 12 | same | Editor, Home | Press the pill at the foot of the canvas and choose **Sample content**. Then choose **Ghost5** again. | — | On sample content your hand-picked grid disappears from the page, and each of its picked rows says *"Not in the sample content."* Latest Post's card goes too, and its words stay. Back on Ghost5, both return exactly as you left them. |
-| 13 | same | Editor, Home | (Optional) Keep hand-picking posts in the new grid until you have 26. | any | At 26 the count **"26 picked"** turns amber and the sentence *"Past 25 picks this gets slow…"* appears. You can keep going. Nothing is blocked. |
+| 13 | same | Editor, Home | (Optional) Keep hand-picking posts in the new grid until you have 26. | any | At 26 the count **"26 picked"** turns coral-red and the sentence *"Past 25 picks this gets slow…"* appears. You can keep going. Nothing is blocked. |
 | 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at Layers, then click **Post Grids — Three Up**. | — | Its row now carries **MAIN FEED**. It had never been marked, and this story marks the first list on a page that has none. Its panel now offers **Preview page 1 · 2** below the settings. |
 | 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag (Pilot sections) | Open **⋯** on **Post grid** and choose **Hide**. Then open it again and choose **Show**. Then press **Undo** twice. | — | Hidden, a note appears at the head of Layers: *"This Tag page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them."* Shown again, the note is gone. Two Undos leave the Tag page as it was. |
 | 16 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Put things back: open **⋯** on **Post Grids — Three Up** and choose **Delete**. Set Latest Post's **Source** back to **Latest**. | — | Home is as it was before step 2, and Latest Post shows your newest post again. |

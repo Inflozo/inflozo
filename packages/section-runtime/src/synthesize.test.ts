@@ -18,7 +18,7 @@ const NAMED = [...new Set(Object.values(SYNTHESIS_DEFAULTS).flatMap((rows) => ro
 const libraryOf = (ids: readonly string[], targets?: Readonly<Record<string, readonly string[]>>): SynthesisLibrary =>
   (designId) =>
     ids.includes(designId)
-      ? { compileTarget: targets?.[designId] ?? Object.keys(SYNTHESIS_DEFAULTS), contentSchema: {} }
+      ? { compileTarget: targets?.[designId] ?? Object.keys(SYNTHESIS_DEFAULTS), contentSchema: {}, bindingContext: [] }
       : undefined
 
 const FULL = libraryOf(NAMED)

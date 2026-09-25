@@ -504,17 +504,16 @@ const RENDER_CONTEXT = /[{}@]|(?<![\w-])this\.|\.\.\//
  *  hash or the mustache — or escape the closing quote — is refused HERE, at emission (AD-36 2). */
 const BREAKS_EXPR = /["\\\n\r]/
 
-export function getQuery(
-  key: string,
-  bindings: Readonly<Record<string, DataBinding>> = {},
-): ContentQuery[] {
-  const b = bindings[key]
-  if (b === undefined) {
-    throw new Error(
-      `data-repeat="${key}" names no dataBindings key. A {{#get}} is DECLARED in design.json and ` +
-        `referenced by key from the markup — declared: ${Object.keys(bindings).join(', ') || '(none)'}.`,
-    )
-  }
+/** STORY 5.19 — WHAT EVERY POSTS QUERY INCLUDES, recorded before it was written (MEASUREMENTS §53, both majors): a
+ *  `{{#get "posts"}}` sets no `include` of its own (`core/frontend/helpers/get.js`) and the Content API applies
+ *  `defaultRelations` to the ADMIN API alone (`api/endpoints/utils/serializers/input/posts.js:156-171`), so with no
+ *  `include` every row printed `primary_tag.name` and `primary_author.name` EMPTY, while the same get with
+ *  `include="tags,authors"` printed both. Latest Post's card and every secondary feed print them. */
+export const POSTS_INCLUDE = 'tags,authors'
+
+/** One binding's queries, validated. `declared` is false for a query that is not a design's declaration (Story 5.19's
+ *  secondary feed): the same grammar, with the declaration-only KEY rule not asked (`validateDataBinding`). */
+function queriesOf(key: string, b: DataBinding, declared: boolean): ContentQuery[] {
   for (const v of [b.filter, b.order, ...(b.ids ?? [])]) {
     if (v !== undefined && BREAKS_EXPR.test(String(v))) {
       throw new Error(`dataBindings.${key} carries a quote, a backslash or a line break, which would close the {{#get}} expression it is written into (AD-36 2).`)
@@ -531,19 +530,38 @@ export function getQuery(
   }
   // the LIBRARY's grammar for the declaration — key, source, ids, limit, filter, order — run again
   // here because the runtime never runs the design validator (one copy, called twice)
-  const failures = validateDataBinding(key, b)
+  const failures = validateDataBinding(key, b, { declared })
   if (failures.length > 0) throw new Error(failures.map((f) => `${f.code}: ${f.message}`).join(' '))
+  const include: Record<string, string> = b.source === 'posts' ? { include: POSTS_INCLUDE } : {}
   if (b.ids !== undefined) {
     // R-20's hand-picked order: N single-id gets, IN THIS ORDER. One query each, because the order
     // is the point and a filter would return them in the API's order instead.
-    return b.ids.map((id) => ({ resource: b.source, params: { filter: `id:${id}`, limit: '1' } }))
+    return b.ids.map((id) => ({ resource: b.source, params: { filter: `id:${id}`, limit: '1', ...include } }))
   }
   const params: Record<string, string> = {}
   if (b.filter !== undefined) params['filter'] = b.filter
   if (b.limit !== undefined) params['limit'] = String(b.limit)
   if (b.order !== undefined) params['order'] = b.order
-  return [{ resource: b.source, params }]
+  return [{ resource: b.source, params: { ...params, ...include } }]
 }
+
+export function getQuery(
+  key: string,
+  bindings: Readonly<Record<string, DataBinding>> = {},
+): ContentQuery[] {
+  const b = bindings[key]
+  if (b === undefined) {
+    throw new Error(
+      `data-repeat="${key}" names no dataBindings key. A {{#get}} is DECLARED in design.json and ` +
+        `referenced by key from the markup — declared: ${Object.keys(bindings).join(', ') || '(none)'}.`,
+    )
+  }
+  return queriesOf(key, b, true)
+}
+
+/** One query as the theme writes it, from its VALIDATED parts — never concatenated from markup (AD-36 2). */
+const exprOf = (q: ContentQuery): string =>
+  `{{#get "${q.resource}"${Object.entries(q.params).map(([k, v]) => ` ${k}="${v}"`).join('')}}}`
 
 /** The theme half of the same declaration — `{{#get "posts" filter="…" limit="…"}}`, ONE PER QUERY:
  *  a filter binding is one block, a hand-picked `ids` binding is N blocks in the picked order
@@ -551,12 +569,30 @@ export function getQuery(
  *  live site while the canvas showed every pick. Built from the VALIDATED parts, never concatenated
  *  from markup (AD-36 2). */
 export function getExprs(key: string, bindings: Readonly<Record<string, DataBinding>> = {}): string[] {
-  return getQuery(key, bindings).map((q) => {
-    const hash = Object.entries(q.params)
-      .map(([k, v]) => ` ${k}="${v}"`)
-      .join('')
-    return `{{#get "${q.resource}"${hash}}}`
-  })
+  return getQuery(key, bindings).map(exprOf)
+}
+
+/**
+ * STORY 5.19 — A SECONDARY FEED, as the theme writes it: the feed design's own markup inside a `{{#get "posts"}}` built
+ * from the instance's folded Data values, because a `{{#get}}` block SHADOWS the page's native `posts` inside it — and
+ * `pagination` with it (MEASUREMENTS §53: `{{#if posts}}` inside a get that matched nothing printed EMPTY over a full
+ * native feed, on both majors). `outer` wraps the whole section; `each` is null for a filtered query, whose rows the
+ * design's own `{{#foreach posts}}` walks, and for a HAND-PICKED list it is R-20's N single-id gets in the dragged order,
+ * with `outer` the one existence get over `filter="id:[…]"` around them (Ghost answers that filter in its own order,
+ * §51, so it decides only whether anything is there). Null where nothing was picked: nothing is emitted at all.
+ *
+ * AD-36: validated by `validateDataBinding` with the declaration-only key rule not asked — the same grammar — and a
+ * value outside it is refused by name here, never interpolated.
+ */
+export function feedExprs(b: DataBinding): { outer: string; each: string[] | null } | null {
+  if (b.source !== 'posts') {
+    throw new Error(`a secondary feed is a posts query over the native \`posts\` it shadows — got source ${JSON.stringify(b.source)}.`)
+  }
+  if (b.ids !== undefined && b.ids.length === 0) return null
+  const queries = queriesOf('posts', b, false)
+  if (b.ids === undefined) return { outer: exprOf(queries[0] as ContentQuery), each: null }
+  const existence: ContentQuery = { resource: 'posts', params: { filter: `id:[${b.ids.join(',')}]`, limit: '1', include: POSTS_INCLUDE } }
+  return { outer: exprOf(existence), each: queries.map(exprOf) }
 }
 
 // ─── the bare helpers (`data-helper`, §7.3 gap row 9) ─────────────────────────

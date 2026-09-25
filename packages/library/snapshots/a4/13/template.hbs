@@ -9,7 +9,7 @@
         <a class="a4-13__action a4-13__action--secondary" href="https://orbit-weekly.example/tag/archive/">Browse the archive</a>
       </div>
     </div>
-    {{#get "posts" limit="1" order="published_at desc"}}
+    {{#get "posts" limit="1" order="published_at desc" include="tags,authors"}}
 {{#foreach posts}}
 <div class="a4-13__card">
       {{#if url}}<a class="a4-13__link" href="{{url}}">

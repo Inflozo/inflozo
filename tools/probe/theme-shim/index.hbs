@@ -10,6 +10,10 @@
   Story 4.9 adds `locales/en.json` and the TR group: `{{t}}`'s lookup, params and escaping on both majors.
   Story 4.10 adds the PILOT group: a no-param partial in a loop (`partials/probe-card.hbs`), the navigation
   loop's fields, the signed-out `@member.paid` arm, the logo and self-signup conditions, and a one-post `{{#get}}`.
+  Story 5.19 adds the FEED group, each row under this page's full native feed: a `{{#get}}` with and without
+  `include`, the shadowing premise at zero and with rows, the three Source filters (the writer's in both spellings:
+  `author:` answers, and gscan refuses it — the fold writes `authors:`), hand-picked ids in a chosen
+  order (__FEED_IDS__ / __FEED_PICKS__, substituted at zip time from the site's own posts) and `pagination` inside a get.
 --}}
 <pre id="probe">
 SITE|title=[{{@site.title}}]
@@ -53,6 +57,20 @@ PILOT|if_member_paid=[{{#if @member.paid}}PAID{{else}}NOT_PAID{{/if}}]
 PILOT|if_logo=[{{#if @site.logo}}LOGO{{else}}NO_LOGO{{/if}}]
 PILOT|if_self_signup=[{{#if @site.allow_self_signup}}ASK{{/if}}]
 PILOT|get_latest=[{{#get "posts" limit="1" order="published_at desc"}}{{#foreach posts}}{{title}}{{/foreach}}{{/get}}]
+
+FEED|native=[{{posts.length}}|{{pagination.page}}/{{pagination.pages}}|{{pagination.next}}]
+FEED|get_plain=[{{#get "posts" limit="3" order="published_at desc"}}{{#foreach posts}}{{title}}|{{primary_tag.name}}|{{primary_author.name}};{{/foreach}}{{/get}}]
+FEED|get_include=[{{#get "posts" limit="3" order="published_at desc" include="tags,authors"}}{{#foreach posts}}{{title}}|{{primary_tag.name}}|{{primary_author.name}};{{/foreach}}{{/get}}]
+FEED|shadow_zero=[{{#get "posts" filter="tag:'inflozo-probe-no-such-tag'" limit="3"}}{{#if posts}}FULL:{{posts.length}}{{else}}EMPTY{{/if}}{{else}}GET_ELSE{{/get}}]
+FEED|shadow_rows=[{{#get "posts" filter="tag:'craft'" limit="2"}}{{#if posts}}FULL:{{posts.length}}{{else}}EMPTY{{/if}}{{/get}}]
+FEED|by_tag=[{{#get "posts" filter="tag:'craft'" order="published_at asc" limit="3"}}{{#foreach posts}}{{slug}},{{/foreach}}{{/get}}]
+FEED|by_author=[{{#get "posts" filter="author:'priya-raman'" order="published_at asc" limit="3"}}{{#foreach posts}}{{slug}},{{/foreach}}{{/get}}]
+FEED|by_authors=[{{#get "posts" filter="authors:'priya-raman'" order="published_at asc" limit="3"}}{{#foreach posts}}{{slug}},{{/foreach}}{{/get}}]
+FEED|featured=[{{#get "posts" filter="featured:true" order="published_at asc" limit="3"}}{{#foreach posts}}{{slug}},{{/foreach}}{{/get}}]
+FEED|picks_single=[__FEED_PICKS__]
+FEED|picks_existence=[{{#get "posts" filter="id:[__FEED_IDS__]" limit="1"}}{{#if posts}}__FEED_PICKS__{{else}}EMPTY{{/if}}{{/get}}]
+FEED|picks_none=[{{#get "posts" filter="id:[000000000000000000000000]" limit="1"}}{{#if posts}}FULL{{else}}EMPTY{{/if}}{{/get}}]
+FEED|pagination_in_get=[{{#get "posts" filter="tag:'craft'" limit="2"}}{{pagination.page}}/{{pagination.pages}}|{{pagination.next}}|{{#if pagination.next}}{{page_url pagination.next}}{{/if}}{{/get}}]
 
 MATCH|locale_true=[{{#match @site.locale @site.locale}}YES{{else}}NO{{/match}}]
 MATCH|locale_false=[{{#match @site.locale "zz-ZZ"}}YES{{else}}NO{{/match}}]

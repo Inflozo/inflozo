@@ -646,7 +646,7 @@ test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas exp
   // THE DIFFERENCE (1), positively: a {{#get}} plus the {{#foreach}} over ITS rows, and the filter
   // comes from the DECLARATION — there is no place in the markup where one could be composed.
   assert.ok(
-    theme.includes('{{#get "posts" filter="tag:craft+featured:true" limit="3" order="published_at desc"}}'),
+    theme.includes('{{#get "posts" filter="tag:craft+featured:true" limit="3" order="published_at desc" include="tags,authors"}}'),
     theme,
   )
   assert.ok(theme.includes('{{#foreach posts}}'), theme)
@@ -686,8 +686,8 @@ test('a data-repeat naming a dataBindings key emits {{#get}}, and the canvas exp
   const pickedSrc = `<ul class="p"><li class="c" data-repeat="picked"><h3 data-bind="title">t</h3></li></ul>`
   const pickedTheme = renderTheme(doc(), pickedSrc, picked).template
   assert.deepEqual(
-    pickedTheme.match(/\{\{#get "posts" filter="id:[a-z]+" limit="1"\}\}/g),
-    ['{{#get "posts" filter="id:aaa" limit="1"}}', '{{#get "posts" filter="id:bbb" limit="1"}}', '{{#get "posts" filter="id:ccc" limit="1"}}'],
+    pickedTheme.match(/\{\{#get "posts" filter="id:[a-z]+" limit="1" include="tags,authors"\}\}/g),
+    ['{{#get "posts" filter="id:aaa" limit="1" include="tags,authors"}}', '{{#get "posts" filter="id:bbb" limit="1" include="tags,authors"}}', '{{#get "posts" filter="id:ccc" limit="1" include="tags,authors"}}'],
     pickedTheme,
   )
   assert.equal((pickedTheme.match(/\{\{\/get\}\}/g) ?? []).length, 3)
@@ -1393,4 +1393,94 @@ test("row · Portal's form: data-members-email and data-members-error are kept o
     assert.throws(() => renderCanvas(doc(), hostile, {}), /takes no value/)
     assert.throws(() => renderTheme(doc(), hostile, {}), /takes no value/)
   }
+})
+
+// ─── Story 5.19 — the SECONDARY FEED: the emitters' one new difference, proven to agree ──────────────────────────
+//
+// A feed design repeats the page's native `posts`. As a secondary feed the theme puts the WHOLE section inside its
+// query's `{{#get "posts"}}` and `{{#if posts}}` (a get shadows `posts` and `pagination` in its block — MEASUREMENTS
+// §53), and the canvas renders the same markup against the page's context with `posts` replaced by the query's rows
+// and no `pagination`. Both leave the pager out. The comparison is the file's own: structure, node for node.
+
+const FEED = `<section class="f">
+  <h2 class="f__title" data-prop="title">t</h2>
+  <div class="f__feed" data-if="posts">
+    <ul class="f__grid"><li class="f__cell" data-repeat="posts"><a class="f__card" data-bind-attr="href:url"><h3 class="f__h" data-bind="title">x</h3></a></li></ul>
+    <nav class="f__pager" data-t-attr="aria-label:pagination.label">
+      <a class="f__newer" data-pagination="prev" href="#" data-t="pagination.newer">Newer posts</a>
+      <span class="f__n" data-pagination="numbers">1 / 1</span>
+      <a class="f__older" data-pagination="next" href="#" data-t="pagination.older">Older posts</a>
+    </nav>
+  </div>
+</section>`
+/** …and with its designed empty state, the data-else arm the main feed shows at zero (only one arm is ever drawn on the
+ *  canvas, so this one is compared by what it emits rather than node for node) */
+const FEED_EMPTY = FEED.replace('</section>', '<div class="f__empty" data-else><p class="f__e" data-prop="empty">e</p></div></section>')
+const PAGE = { posts: [{ title: 'Native one', url: 'https://site.example/native/' }], pagination: { page: 2, pages: 3, limit: 12, total: 33 } }
+const QUERY = { source: 'posts', limit: 12, order: 'published_at desc' }
+const feedInput = (feed: RenderInput['feed'], over: RenderInput = {}): RenderInput => ({
+  content: { title: 'More essays', empty: 'None' },
+  ghost: PAGE,
+  site: { ...SITE, pagination: PAGE.pagination },
+  target: 'home.hbs',
+  ...(feed === undefined ? {} : { feed }),
+  ...over,
+})
+
+test('Story 5.19 · the CONTROL: a feed design handed no secondary-feed query is the main feed — native posts, pager and all', () => {
+  const { canvas, theme } = agree(FEED, feedInput(undefined))
+  assert.ok(theme.includes('{{#foreach posts}}') && !theme.includes('{{#get'), theme)
+  assert.ok(theme.includes('{{page_url pagination.next}}'), 'the main feed keeps its pager')
+  assert.ok(canvas.includes('>Native one<') && canvas.includes('class="f__pager"'), canvas)
+})
+
+test('Story 5.19 · a secondary feed: the canvas shows the rows the theme\'s get returns, with no pager, node for node', () => {
+  const rows = [{ title: 'Picked one', url: 'https://site.example/one/' }]
+  const { canvas, theme } = agree(FEED, feedInput({ query: QUERY, rows }))
+  // THE THEME: the whole section inside the query's get and inside {{#if posts}}, the posts repeat left native
+  assert.ok(theme.startsWith('{{#get "posts" limit="12" order="published_at desc" include="tags,authors"}}{{#if posts}}'), theme)
+  assert.ok(theme.endsWith('{{/if}}{{/get}}'), theme)
+  assert.ok(theme.includes('{{#foreach posts}}'), theme)
+  // NO PAGER on either: inside a get `pagination` is the query's, and its links would lead to a wrong page
+  for (const html of [canvas, theme]) assert.ok(!html.includes('f__pager') && !html.includes('pagination'), html)
+  // THE CANVAS: the query's rows, never the page's native ones
+  assert.ok(canvas.includes('>Picked one<') && !canvas.includes('Native one'), canvas)
+  // the canvas shows exactly as many rows as the get returns: the query's limit
+  const many = Array.from({ length: 20 }, (_, i) => ({ title: `R${i}`, url: `https://site.example/${i}/` }))
+  assert.equal((renderCanvas(doc(), FEED, feedInput({ query: { ...QUERY, limit: 3 }, rows: many })).match(/class="f__cell"/g) ?? []).length, 3)
+  // rows must be supplied on the canvas: an absent list would look like an empty result
+  assert.throws(() => renderCanvas(doc(), FEED, feedInput({ query: QUERY })), /no rows were supplied/)
+})
+
+test('Story 5.19 · at zero neither draws the section at all — heading and container together (FR-H4)', () => {
+  assert.equal(renderCanvas(doc(), FEED_EMPTY, feedInput({ query: QUERY, rows: [] })), '', 'the canvas draws nothing')
+  assert.ok(renderCanvas(doc(), FEED_EMPTY, feedInput(undefined, { ghost: { posts: [] } })).includes('f__empty'), 'the control: the main feed at zero shows its empty state')
+  const theme = renderTheme(doc(), FEED_EMPTY, feedInput({ query: QUERY, rows: [] })).template
+  // the theme's answer at zero is Ghost's own: everything, heading and empty state included, is inside {{#if posts}}
+  const inner = theme.slice(theme.indexOf('{{#if posts}}') + '{{#if posts}}'.length, theme.lastIndexOf('{{/if}}{{/get}}'))
+  assert.ok(theme.indexOf('{{#if posts}}') < theme.indexOf('<section') && inner.includes('f__title') && inner.includes('f__empty'), theme)
+})
+
+test('Story 5.19 · hand-picked: the existence get around R-20\'s single-id gets, in the dragged order, on both emitters', () => {
+  const ids = ['905700000000000000000003', '905700000000000000000001', '905700000000000000000002']
+  const rows = [{ title: 'Third', url: '/3/' }, { title: 'First', url: '/1/' }, { title: 'Second', url: '/2/' }]
+  const { canvas, theme } = agree(FEED, feedInput({ query: { source: 'posts', ids }, rows }))
+  assert.ok(theme.startsWith(`{{#get "posts" filter="id:[${ids.join(',')}]" limit="1" include="tags,authors"}}{{#if posts}}`), theme)
+  assert.deepEqual(
+    theme.match(/\{\{#get "posts" filter="id:[0-9a-f]{24}" limit="1" include="tags,authors"\}\}/g),
+    ids.map((id) => `{{#get "posts" filter="id:${id}" limit="1" include="tags,authors"}}`),
+    'one single-id get per pick, never re-sorted',
+  )
+  assert.deepEqual([...canvas.matchAll(/class="f__h">([^<]*)</g)].map((m) => m[1]), ['Third', 'First', 'Second'])
+  // nothing picked: nothing at all, on both
+  assert.equal(renderCanvas(doc(), FEED, feedInput({ query: { source: 'posts', ids: [] }, rows: [] })), '')
+  assert.equal(renderTheme(doc(), FEED, feedInput({ query: { source: 'posts', ids: [] } })).template, '')
+})
+
+test('Story 5.19 · `{page_number}` inside a secondary feed prints nothing on the canvas, as the guard prints nothing inside a get', () => {
+  const src = '<section class="f"><h2 data-prop="title">t</h2><ul><li data-repeat="posts"><h3 data-bind="title">x</h3></li></ul></section>'
+  const schema = { title: { type: 'text', label: 'Title' } } as unknown as RenderInput['schema']
+  const given = { content: { title: 'Page {page_number}' }, schema, tokens: { page_number: '2' }, ghost: PAGE, target: 'index.hbs' }
+  assert.ok(renderCanvas(doc(), src, given).includes('Page 2'), 'the control: the main feed on page 2 prints its number')
+  assert.ok(renderCanvas(doc(), src, { ...given, feed: { query: QUERY, rows: PAGE.posts } }).includes('>Page <'))
 })

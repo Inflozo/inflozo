@@ -112,21 +112,6 @@ export function linkResources(): LinkResources {
   }
 }
 
-/** Each declared query's rows at the Count's ceiling, in both orders, so the client slices to the Count
- *  and never runs a query. ponytail: whole Content API rows (a few hundred KB for the sample); trim to the
- *  bound fields if a design with a heavier query makes the payload matter. */
-export function queryRows(entry: SectionRegistryEntry): Record<string, { newest: unknown[]; oldest: unknown[] }> {
-  return Object.fromEntries(
-    Object.entries(entry.dataBindings ?? {}).map(([key, binding]) => [
-      key,
-      {
-        newest: orbitWeekly.resolveSource({ ...binding, limit: 100, order: 'published_at desc' }),
-        oldest: orbitWeekly.resolveSource({ ...binding, limit: 100, order: 'published_at asc' }),
-      },
-    ]),
-  )
-}
-
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**

@@ -393,6 +393,33 @@ export const MEMBER_FORMS = ['subscribe', 'signin', 'signup'] as const
 /** The resources a `{{#get}}` may query (FR-H2's Data group Source). */
 export const GET_SOURCES = ['posts', 'tags', 'authors', 'tiers'] as const
 
+/** Ghost's own default LIMIT when a `{{#get}}` names none, per resource — asserted against what the Content API returned
+ *  with no `limit`, on both majors (`orbit-weekly.test.ts` over `capture.json`). Tiers are not paginated: every tier comes
+ *  back. It lived in the Orbit Weekly fixture module until Story 5.19 (DW-112): the engine, and through it Epic 7's
+ *  compiler, must not read a Ghost fact from fixture code. */
+export const DEFAULT_LIMIT: Readonly<Record<(typeof GET_SOURCES)[number], number | 'all'>> = { posts: 15, tags: 15, authors: 15, tiers: 'all' }
+
+/** Story 5.19 — P0·5's SOURCE, the one vocabulary the Data group's panel, `withData`'s fold and every word read
+ *  (FR-H2, R-170: "Source", never P0·5's "Filter" or A17's "Tag or author"). The values are stored in an instance's
+ *  `data[key].source`; the words are what the panel prints. */
+export const POST_SOURCES = ['latest', 'featured', 'tag', 'author', 'picked'] as const
+export type PostSource = (typeof POST_SOURCES)[number]
+export const POST_SOURCE_WORDS: Readonly<Record<PostSource, string>> = {
+  latest: 'Latest', featured: 'Featured', tag: 'By tag', author: 'By author', picked: 'Hand-picked',
+}
+
+/** The only tag or writer slug the fold writes into a `{{#get}}` filter — quoted, `tag:'…'` and `authors:'…'`. These
+ *  are the only characters Ghost's `slugify` leaves (`unidecode`, then the reserved-character sweep: `@tryghost/string`
+ *  `lib/slugify.js`, read at both majors' pins, 0.3.5 and 0.2.17), and `tag` and `authors` filter on `tags.slug` and
+ *  `authors.slug` on both majors (`core/server/models/post.js:295-313`, recorded in MEASUREMENTS §53) — `authors`, not the
+ *  singular `author`, which gscan refuses as deprecated (GS001-DEPR-AUTH-FILT, an ERROR on both majors). A stored value
+ *  outside the grammar is ignored by the fold, never interpolated (AD-36). */
+export const GHOST_SLUG_RE = /^[a-z0-9_-]+$/
+
+/** A Ghost object id — 24 hexadecimal digits — the only shape a hand-picked post's id is folded into `filter="id:…"`
+ *  with (AD-36). */
+export const GHOST_ID_RE = /^[0-9a-f]{24}$/
+
 // ─── parsers, each returning a failure sentence or null ──────────────────────
 
 const fail = (s: string) => s

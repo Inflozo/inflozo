@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { orbitWeekly } from '@inflozo/library'
-import { parseDoc, removeSection, renameSection, synthesize, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
+import { designate, isFeed, makeMainFeed, parseDoc, removeSection, renameSection, synthesize, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import { CANVASES, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './lib/editor.ts'
 import { KEYMAP } from './lib/keymap.ts'
 import {
@@ -99,9 +99,13 @@ test('R-176: offered on an untouched Home, a Home that kept its grid and a tag w
   assert.equal(offersPageTwo('tag', docs, subjectOf('tag')), true, 'the fixture tag, which the Tag canvas opens on')
   // no writer has a second page, so no Author page offers one
   for (const a of orbitWeekly.authors()) assert.equal(offersPageTwo('author', docs, { kind: 'author', slug: a.slug }), false, a.slug)
-  // a Home whose sections carry no main feed (the owner's Pilot sections) offers none
-  const landing = { ...docs, home: doc((docs.home as ProjectDoc).instances.map((i) => ({ ...i, isMainFeed: false }))) }
+  // a Home with NO FEED AT ALL — a landing page — offers none. Story 5.19: the owner's Pilot sections Home, a feed with no
+  // flag, no longer reaches here as such — `designate` repairs it on the way in (`read.ts`, the hydrate), so it is the
+  // first case below and offers a page 2
+  const landing = { ...docs, home: doc((docs.home as ProjectDoc).instances.filter((i) => !isFeed(held(i.designId)))) }
   assert.equal(offersPageTwo('home', landing, null), false)
+  const pilotSections = { ...docs, home: designate(doc((docs.home as ProjectDoc).instances.map((i) => ({ ...i, isMainFeed: false }))), 'home.hbs', held) }
+  assert.equal(offersPageTwo('home', pilotSections, null), true, 'a feed written before the rule is the main feed, and has a page 2')
   // a hidden main feed is still the main feed: page 2 is its own design, so it is offered
   const hidden = { ...docs, home: doc((docs.home as ProjectDoc).instances.map((i) => ({ ...i, hidden: true }))) }
   assert.equal(offersPageTwo('home', hidden, null), true)
@@ -179,6 +183,26 @@ test("R-179 · R-178: page 2 follows page 1 until its first change, which stores
     assert.equal(emptied.back, true)
     assert.equal(emptied.docs[two.key], EMPTY_DOC, 'the value the flush sends is an empty doc: stored, it reads as following')
     assert.ok(follows(emptied.docs, canvas))
+  }
+})
+
+test('Story 5.19 — page 1 reassigns its main feed: a FOLLOWING page 2 follows, and a page 2 of its own keeps its own (R-178)', () => {
+  const docs = opened()
+  for (const canvas of PAGED) {
+    const two = PAGE_TWO[canvas]!
+    const p1 = templateKeyOf(canvas)
+    const file = CANVASES[canvas].file
+    const main = mainFeedOf(docs[p1])!
+    // a second feed on page 1, which the rule leaves secondary
+    const one = designate(doc([...(docs[p1] as ProjectDoc).instances, { ...main, instanceId: 'second', isMainFeed: false }]), file, held)
+    assert.equal(mainFeedOf(one)?.instanceId, main.instanceId, `${canvas}: the control — the main feed stays where it was`)
+    const reassigned = makeMainFeed(one, file, 'second', held) as ProjectDoc
+    // following: page 2 IS page 1's instances, so its copy carries the flag where page 1 now does
+    const following = { ...docs, [p1]: reassigned }
+    assert.equal(mainFeedOf(pageTwoOf(following, canvas, held))?.instanceId, 'second', `${canvas}: the following copy follows`)
+    // a page 2 of its own, stored before the reassignment, keeps its own main feed
+    const own = { ...docs, [p1]: reassigned, [two.key]: one }
+    assert.equal(mainFeedOf(pageTwoOf(own, canvas, held))?.instanceId, main.instanceId, `${canvas}: page 2's own design keeps its own`)
   }
 })
 

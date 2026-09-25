@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { orbitWeekly, ringFor } from '@inflozo/library'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { ringFor } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, renderCanvas, stampControls, switchControls, withData } from '@inflozo/section-runtime'
 import type { ControlState, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
@@ -13,7 +13,7 @@ import { ring, slimScrollbar } from '@/components/kit/greyed'
 import { Panel } from '@/components/kit/icons'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
-import { wheelToFrame } from '@/lib/canvas'
+import { sampleRows, shownRows, wheelToFrame } from '@/lib/canvas'
 import { holdsCaret, shortcutFor, singleKeyOwned } from '@/lib/keymap'
 import { remixPicks, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
@@ -58,12 +58,9 @@ import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
    collapse at full width, so the editor's own is Story 5.1's to settle (DW-114). Below `tablet` the panel
    stacks under the canvas and does not collapse. */
 
-type Rows = Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>
-
 export function Review({
   designs,
   swatches,
-  rows,
   links,
   pool,
   timezone,
@@ -72,7 +69,6 @@ export function Review({
   /** Story 5.11 — the fixture RING, in `{n}` order; the page opens on the first */
   designs: readonly SectionRegistryEntry[]
   swatches: Readonly<Record<string, string>>
-  rows: Readonly<Record<string, Rows>>
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
   timezone: string
@@ -116,19 +112,13 @@ export function Review({
   const canvasAssets = Object.fromEntries(pool.map((a) => [a.id, `frame?image=${a.id}`]))
   const panelAssets = pool.map((a) => ({ id: a.id, src: `controls/frame?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))
 
-  /** Each query's rows as the canvas shows them: the stored Order picks the list, the Count slices it. Per
-   *  DESIGN since Story 5.11 — two of the three samples declare no query at all, which is itself part of the
-   *  proof that a `{{#get}}` coming and going across a swap costs the section nothing. */
-  const shown = (s: ControlState, e: SectionRegistryEntry = entry) =>
-    Object.fromEntries(
-      Object.entries(withData(e.dataBindings, s.data)).map(([key, binding]) => {
-        const both = rows[e.id]?.[key]
-        const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
-        // review: a query with no declared limit and no stored Count shows Ghost's default, as the panel says — not every row
-        const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
-        return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
-      }),
-    )
+  /** Each query's rows as the canvas shows them. STORY 5.19 — resolved PER STATE through the editor's own two
+   *  functions: `sampleRows` over the instance's FOLDED queries (a Source, a tag, a writer or picks the server cannot know
+   *  per design) and `shownRows` to slice them — never a second copy of either. Two of the three samples declare no query
+   *  at all, which is itself part of the proof that a `{{#get}}` coming and going across a swap costs the section nothing. */
+  const shown = (s: ControlState, e: SectionRegistryEntry = entry) => shownRows(e, s, sampleRows(withData(e.dataBindings, s.data)))
+  /** the ring's tiles preview each DESIGN as it always did: its declared queries, resolved */
+  const designRows = useMemo(() => Object.fromEntries(designs.map((e) => [e.id, sampleRows(e.dataBindings)])), [designs])
 
   const canvas = () => {
     const doc = frame.current?.contentDocument
@@ -365,7 +355,7 @@ export function Review({
           ring={designRing}
           at={at}
           target={entry.compileTarget[0] ?? 'home.hbs'}
-          rows={rows}
+          rows={designRows}
           pool={pool}
           icons={icons.current}
           mode="light"

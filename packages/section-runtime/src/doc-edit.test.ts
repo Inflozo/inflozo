@@ -68,6 +68,12 @@ test('duplicateSection: a new instanceId, the same name and values, landing dire
   assert.deepEqual(parseDoc(d, 'home'), d)
 })
 
+test('duplicateSection: Story 5.19 — the copy of the main feed is never the main feed (DW-194\'s duplicate half)', () => {
+  const home = doc(instance('hero', 'a4/13'), { ...(instance('grid', 'a17/1') as object), isMainFeed: true })
+  const d = ok(duplicateSection(home, 'grid', 'grid-2'))
+  assert.deepEqual(d.instances.map((i) => [i.instanceId, i.isMainFeed]), [['hero', false], ['grid', true], ['grid-2', false]])
+})
+
 test('duplicateSection: an id already in use, a blank id and an unknown section are refused', () => {
   assert.match(String(duplicateSection(home(), 'grid', 'hero')), /already holds a section hero/)
   assert.match(String(duplicateSection(home(), 'grid', '  ')), /needs an id of its own/)

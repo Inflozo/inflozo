@@ -13,14 +13,14 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, CONTROL_CAP, DIRECTIVES, INLINE_TOKENS, PAGE_NUMBER, PILL_CHARS,
-  PLACEHOLDERS, UNIVERSALS, guardField, isIsoDate, parseBindSpec,
+  CONSUMED_DIRECTIVES, CONSUMED_DIRECTIVE_RE, CONTROL_CAP, DEFAULT_LIMIT, DIRECTIVES, GHOST_ID_RE, GHOST_SLUG_RE,
+  INLINE_TOKENS, PAGE_NUMBER, PILL_CHARS, PLACEHOLDERS, POST_SOURCES, POST_SOURCE_WORDS, UNIVERSALS, guardField, isIsoDate, parseBindSpec,
   parseTokenTemplate, pillRefusal, pillWidth, placeholdersOffered, safeUrl, assertBindableAttr, valueWords,
 } from './vocabulary.ts'
 import { assembleEntry, categoryControlUnion, parseDesignDir } from './registry.ts'
 import type { CategoryContent, ControlDef, DesignJson } from './registry.ts'
 import {
-  validateCategoryContent, validateDesign, validateDesignJson, validateMarkup,
+  validateCategoryContent, validateDataBinding, validateDesign, validateDesignJson, validateMarkup,
 } from './validate.ts'
 import type { Failure } from './validate.ts'
 
@@ -611,6 +611,27 @@ test('JSON null anywhere in design.json or content.json is refused by its path, 
 
 test('R-113 — a design.json carrying quickControls[] is told there are none', () => {
   alone({ quickControls: ['cols'] } as Partial<DesignJson>, 'quick-controls-withdrawn')
+})
+
+test('Story 5.19 — a query that is NOT a declaration (a secondary feed\'s) is the same grammar with the key rule not asked', () => {
+  const feed = { source: 'posts', limit: 12, order: 'published_at desc' }
+  assert.deepEqual(validateDataBinding('posts', feed).map((f) => f.code), ['bad-get-key'], 'the control: as a declaration, `posts` is no key')
+  assert.deepEqual(validateDataBinding('posts', feed, { declared: false }), [])
+  // every OTHER rule is still asked
+  assert.deepEqual(validateDataBinding('posts', { ...feed, limit: 500 }, { declared: false }).map((f) => f.code), ['bad-get-limit'])
+  assert.deepEqual(validateDataBinding('posts', { source: 'posts', filter: 'tag:{{x}}' }, { declared: false }).map((f) => f.code), ['bad-get-filter'])
+  assert.deepEqual(validateDataBinding('posts', { source: 'posts', ids: [] }, { declared: false }).map((f) => f.code), ['bad-get-ids'])
+})
+
+test('Story 5.19 — the Source vocabulary and the two grammars the fold emits', () => {
+  assert.deepEqual([...POST_SOURCES], ['latest', 'featured', 'tag', 'author', 'picked'])
+  assert.deepEqual(POST_SOURCES.map((v) => POST_SOURCE_WORDS[v]), ['Latest', 'Featured', 'By tag', 'By author', 'Hand-picked'])
+  for (const slug of ['craft', 'field-notes', 'a_b', '2026']) assert.ok(GHOST_SLUG_RE.test(slug), slug)
+  for (const slug of ["x'", 'Field', 'a b', '', 'é', 'x"}}']) assert.ok(!GHOST_SLUG_RE.test(slug), slug)
+  assert.ok(GHOST_ID_RE.test('6a86b5fb6444934864da3283'))
+  for (const id of ['6A86B5FB6444934864DA3283', '6a86b5fb6444934864da328', 'zz', "6a86b5fb6444934864da3283'"]) assert.ok(!GHOST_ID_RE.test(id), id)
+  // DW-112: Ghost's default limit is the vocabulary's now
+  assert.deepEqual(DEFAULT_LIMIT, { posts: 15, tags: 15, authors: 15, tiers: 'all' })
 })
 
 test('every other design.json refusal fires, and its neighbour does not', () => {

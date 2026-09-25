@@ -4,7 +4,7 @@
 // name fails loudly rather than being dropped, so a writer that got ahead of its readers is a thrown error, never a
 // value lost on the next save. The stories that write a new field add it HERE, in the same change as the writer, and
 // ALWAYS with a `.default(…)` — Story 5.4 added `hidden` and `memberVisibility` that way, Story 5.5 `isMainFeed` and
-// Story 5.11 `parkedControls`. `isMainFeed`'s LIFECYCLE is still 5.19's.
+// Story 5.11 `parkedControls`. `isMainFeed`'s LIFECYCLE is Story 5.19's `main-feed.ts`.
 //
 // JITLESS, AND THE HARNESS IS WHY. The spec guessed zod's JIT probe (`allowsEval`, `new Function("")`) ran on a
 // schema's first parse, so a server-side parse would keep it out of the browser. Executed on a production build
@@ -47,11 +47,13 @@ export const instanceSchema = z.strictObject({
    *  `controlSchema` (DW-186): a declared control would stamp a second, inert copy of the value on the root through
    *  `stampControls`. Defaulted for the same reason as `hidden`. */
   memberVisibility: z.enum(MEMBER_STATES).default('everyone'),
-  /** Story 5.5 — FR-H2's main feed: THIS instance binds the template's native paginated collection. Written here
-   *  only by `synthesize`, which designates the A17 row of every collection template (`sections-inventory.md:849-861`);
-   *  Story 5.19 owns the lifecycle — the control, the visible marker and reassignment. `pageTwoStack` READS it, which
-   *  is why the field and its writer land in one change (the header rule above). Defaulted for the same reason as
-   *  `hidden`: every stored doc predates it. */
+  /** Story 5.5 — FR-H2's main feed: THIS instance binds the template's native paginated collection. Written by
+   *  `synthesize`, which designates the A17 row of every collection template (`sections-inventory.md:849-861`), and
+   *  since Story 5.19 kept true by ONE rule, `main-feed.ts`'s `designate` — at most one per paginated doc, on a feed, on
+   *  a visible one whenever one exists — which every door a doc enters the editor through passes, and Story 7.3's
+   *  compiler will too. Two flags are REPAIRED there, never refused here (DW-194): a refine would black out an editor over
+   *  a doc the rule can fix. `pageTwoStack` READS it. Defaulted for the same reason as `hidden`: every stored doc
+   *  predates it. */
   isMainFeed: z.boolean().default(false),
   /** Story 5.11 — FR-D19's PARKED VALUES, keyed by the design they came from: a control only the design being left
    *  declares is put aside against that design id and comes back exactly as it was on return. BOTH MAPS PARK

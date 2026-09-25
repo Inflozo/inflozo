@@ -29,12 +29,18 @@ const doc = () => new JSDOM('<body></body>').window.document;
 const renderSection = (src, content, users) =>
   rt.renderTheme(doc(), src, { content: content || {}, users });
 
+/** Story 5.19 — Emitter 1 for a SECONDARY feed: the same section inside its query's `{{#get}}` (`RenderInput.feed`). */
+const renderSecondary = (src, content, users, query) =>
+  rt.renderTheme(doc(), src, { content: content || {}, users, feed: { query } });
+
 /** Emitter 2 — the canvas. */
 const renderCanvas = (src, content, ghost) =>
   rt.renderCanvas(doc(), src, { content: content || {}, ghost: ghost || {} });
 
 module.exports = {
   renderSection,
+  renderSecondary,
+  feedQuery: rt.feedQuery,
   renderCanvas,
   bindValue: rt.bindValue,
   formatDate: rt.formatDate,

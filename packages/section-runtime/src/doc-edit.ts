@@ -48,9 +48,9 @@ export function moveSection(doc: ProjectDoc, instanceId: string, to: number): { 
 }
 
 /** A copy of one section, landing DIRECTLY AFTER its original with the same layer name and the same stored values —
- *  the precedent `duplicateItem` sets. Refused where R-37's Post Content singleton would be broken (FR-I1); a
- *  site-wide section is never duplicated at all (FR-D5), and its Duplicate is ABSENT rather than refused, so that rule
- *  lives in the panel that draws the row and not here. */
+ *  the precedent `duplicateItem` sets — save the main-feed flag, which the copy never carries (Story 5.19). Refused
+ *  where R-37's Post Content singleton would be broken (FR-I1); a site-wide section is never duplicated at all (FR-D5),
+ *  and its Duplicate is ABSENT rather than refused, so that rule lives in the panel that draws the row and not here. */
 export function duplicateSection(doc: ProjectDoc, instanceId: string, newInstanceId: string): ProjectDoc | string {
   const n = at(doc, instanceId)
   if (n === -1) return missing(instanceId)
@@ -59,7 +59,8 @@ export function duplicateSection(doc: ProjectDoc, instanceId: string, newInstanc
   const original = doc.instances[n]!
   const refusal = placementRefusal(original.designId, doc.instances.map((i) => i.designId))
   if (refusal !== null) return refusal
-  const copy: DocInstance = { ...original, instanceId: newInstanceId }
+  // Story 5.19 — the copy is NEVER the main feed (DW-194's duplicate half): a page has one, and the copy is made here
+  const copy: DocInstance = { ...original, instanceId: newInstanceId, isMainFeed: false }
   return withInstances(doc, [...doc.instances.slice(0, n + 1), copy, ...doc.instances.slice(n + 1)])
 }
 

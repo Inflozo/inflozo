@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-15",
+  "captured": "2026-09-25",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "5",
   "ghost_version": "5.130",
@@ -21,6 +21,26 @@
       "url": "https://ghost5.inflozo.com/author/priya-raman/",
       "website": null
     },
+    "feed_picks": [
+      {
+        "id": "6a86b5fb6444934864da3283",
+        "published_at": "2025-08-11T12:00:00.000+00:00",
+        "slug": "the-cost-of-clever",
+        "title": "The cost of clever"
+      },
+      {
+        "id": "6a86b5fb6444934864da328b",
+        "published_at": "2025-08-10T12:00:00.000+00:00",
+        "slug": "a-quiet-week-in-the-archive",
+        "title": "A quiet week in the archive"
+      },
+      {
+        "id": "6a86b5f96444934864da3278",
+        "published_at": "2025-08-12T12:00:00.000+00:00",
+        "slug": "on-typography-and-restraint",
+        "title": "On typography and restraint"
+      }
+    ],
     "locales_en": {
       "Plain key": "Plain value, read from locales/en.json",
       "probe": {
@@ -62,7 +82,7 @@
     "post_authors": [
       {
         "name": "Umang",
-        "profile_image": null,
+        "profile_image": "https://ghost5.inflozo.com/content/images/2026/09/luca-bravo-O453M2Liufs-unsplash.jpg",
         "slug": "umang",
         "url": "https://ghost5.inflozo.com/author/umang/"
       }
@@ -103,7 +123,7 @@
       "authors": "<a href=\"/author/umang/\">Umang</a>",
       "authors_plain": "Umang",
       "primary_author": "Umang",
-      "primary_author_image": "",
+      "primary_author_image": "https://ghost5.inflozo.com/content/images/2026/09/luca-bravo-O453M2Liufs-unsplash.jpg",
       "primary_author_url": "https://ghost5.inflozo.com/author/umang/"
     },
     "DATE": {

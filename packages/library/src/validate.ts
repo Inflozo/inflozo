@@ -340,10 +340,15 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
 /** The grammar of ONE `dataBindings` entry, in one place: `validateDesignJson` runs it over a
  *  design, and `@inflozo/ghost-shim`'s `getQuery` runs it again at EMISSION, because the runtime is
  *  handed `dataBindings` as an input and never runs the design validator — a filter the validator
- *  never saw would otherwise reach a `{{#get}}` by concatenation (AD-36 2, Story 4.3 review). */
-export function validateDataBinding(k: string, b: DataBinding): Failure[] {
+ *  never saw would otherwise reach a `{{#get}}` by concatenation (AD-36 2, Story 4.3 review).
+ *
+ *  STORY 5.19 — `declared: false` is a query that is NOT a declaration: a secondary feed's, built by the Data group's
+ *  fold over the native `posts` (`@inflozo/section-runtime`'s `feedQuery`). It is the same grammar with the one
+ *  declaration-only rule not asked — the KEY, which names a `data-repeat` and which such a query does not have — so it
+ *  is never validated by a second grammar. */
+export function validateDataBinding(k: string, b: DataBinding, { declared = true }: { declared?: boolean } = {}): Failure[] {
   const out: Failure[] = []
-  if (!/^[a-z][a-z0-9_]*$/.test(k) || (GET_SOURCES as readonly string[]).includes(k)) {
+  if (declared && (!/^[a-z][a-z0-9_]*$/.test(k) || (GET_SOURCES as readonly string[]).includes(k))) {
     push(out, 'bad-get-key', `dataBindings key "${k}" — a key is a lowercase identifier the markup names in data-repeat, and it may not be a source name (${GET_SOURCES.join(', ')}), which a data-repeat would read as a context path instead.`)
   }
   if (b.ids !== undefined) {

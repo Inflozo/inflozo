@@ -203,7 +203,7 @@ compared node by node) and `src/ad36.test.ts` (AD-36's vectors, each asserting t
 They used to live in `tools/stress/`, which is a separate npm project whose `node_modules` CI never
 installs — so the epic's central claim was asserted on a laptop and nowhere else.
 
-The 70-section gscan harness still lives there and still needs its own install — and, since its
+The stress theme's gscan harness (it prints its own section count) still lives there and still needs its own install — and, since its
 `compile.js` is now an adapter over the TypeScript package, a root `pnpm install` first and Node 24
 (type stripping; the shell's default is 22):
 

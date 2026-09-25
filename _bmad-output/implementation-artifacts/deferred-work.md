@@ -3040,7 +3040,14 @@ reason: R-74 makes the export the design authority, and the drawn panel is its m
 plain: For a list of posts, the panel offers "how many" and "newest or oldest first". Any other kind of list,
   or any other declared order, gets no order setting yet, and a list whose design never set a number shows
   Ghost's own default number.
-status: open
+status: done 2026-09-25 (Story 5.19)
+resolution: Story 5.19 (2026-09-25) built the full Source vocabulary and took the Ghost fact out of fixture code:
+  `DEFAULT_LIMIT` now lives in `packages/library/src/vocabulary.ts` beside `GET_SOURCES` (`orbit-weekly.ts` re-exports
+  it, so every reader answers unchanged), and the engine's `countOf` reads it from there. The Data group is P0·5's —
+  Source (`POST_SOURCES` and `POST_SOURCE_WORDS`: Latest · Featured · By tag · By author · Hand-picked), the tag or
+  writer, the picked list, Count and Order — on every posts query that is not the design's own `filter` or `ids`.
+  Order stays Newest · Oldest over posts alone, which is P0·5's own drawing and not a gap: a tags, authors or tiers
+  query offers no Source and no Order, as the spec rules.
 severity: low
 origin: Story 4.5 Dev (2026-09-13).
 owner: Story 5.19 (The Data group and the main-feed designation) — the full Source vocabulary.
@@ -3136,7 +3143,13 @@ reason: FR-F1's Icon Picker is built (Story 4.5) and every design's icon prop ed
 plain: When you drag a feature to a new place in the settings panel, a dashed empty box now shows where it will
   land. The owner asked for the same on every list that can be dragged — the Layers panel and a hand-picked list
   of posts — and those lists are built in later stories.
-status: open
+status: done 2026-09-25 (Story 5.19)
+resolution: both lists show the slot now. Story 5.19 (2026-09-25) built the hand-picked post list (P0·5,
+  `apps/web/components/controls/data-group.tsx`'s `Picks`) on the same `lib/reorder.ts` the item list and Layers use:
+  its rows translate rather than move, a dashed `data-drop-slot` the size of the row shows where it will land, and
+  `⌥↑`/`⌥↓` move a pick with `movedTo`'s sentence. The Layers half was Story 5.4's and was never recorded here: read
+  in code on 2026-09-25, `components/controls/layers.tsx` draws the same dashed `data-drop-slot`, and the canvas
+  pill's section handle drives that same Layers drag.
 severity: low
 origin: Story 4.5 owner's test (2026-09-13) — finding 9: "it should show a dotted empty space when being moved
   … Same behaviour will other editable lists too."
@@ -3774,6 +3787,12 @@ reason:
   - Meta defaults to "With photograph" (every artboard) where the panel's select reads "Name, date and reading time".
   - The empty body is the catalog's "There are no posts in this collection yet."; the panel draws another sentence.
   - No accessible name on the section (a per-instance id is not in the vocabulary); the hover underline has no fade.
+note (Story 5.19's Dev, 2026-09-25): its Story 5.19 half is done. The Three Up is a FEED: on a paginated page one is
+  the MAIN FEED (D5c's chip, `designate`), sized by the project's Posts per page, and every other one is a SECONDARY
+  feed with P0·5's Data group (Source, the tag or writer, the picked list, Count, Order), rendered through a `{{#get}}`
+  with no pager. That answers "whether the empty state shows only on the designated main feed": the main feed draws the
+  design's declared empty state, and a secondary feed at zero draws nothing at all (FR-H4). The Pagination style select
+  is Story 10.112's (R-195); the rest stands with its owners.
 
 ### DW-152: A22 #1 Inline Row — what its pilot leaves, and `{members}` has no theme form
 
@@ -3826,6 +3845,10 @@ reason: Card style's Title and date and its "Latest" label (no key); the members
   which no directive expresses); the fall-back picture when nothing is published; the short date on phones; which
   marks rule holds (`A4 Heroes - Spec.md:61` against `A4-0:327`); the phone's picture-less panel (undrawn); the tablet
   headline follows the spec's ladder (Large 44) where the artboard draws 40.
+note (Story 5.19's Dev, 2026-09-25): "Which post" is done — Latest Post's fixed query offers Source alone (R-108):
+  Latest · Featured · By tag · By author · Hand-picked, the last holding one pick. Its `{{#get}}` now carries
+  `include="tags,authors"`, without which Ghost gave the card no `primary_tag` (MEASUREMENTS §53, recorded on both
+  majors), so the emitted theme printed no tag where the canvas did. The rest stands with its owners.
 
 ### DW-155: the reference token set's page width and gutter are not the frames' 1296 px content and 72 · 40 · 20 margins
 
@@ -4030,6 +4053,8 @@ note (Story 5.19's Create, 2026-09-25): "When nothing matches" is settled withou
   in one design stays open for the first design that declares two (Epics 9–10).
 note (R-195's sweep, 2026-09-25): that design is A1 #7 Mega Bar — one query per post column — so Story 9.2 owns the naming,
   and its criteria now say so.
+note (Story 5.19's Dev, 2026-09-25): the rows are titled "Count" and "Order" (R-170), and the reset confirm names
+  them so; P0·5's Source joins them on every sourced posts query. Naming two queries in one design stays Story 9.2's.
 
 ### DW-166: titles the design export prints twice in one panel, for the category stories that build those designs
 
@@ -4694,7 +4719,15 @@ plain: Page 2 of the blog is built from your Home page "from the main feed down"
   the main feed (that control arrives with Story 5.19), so page 2 always falls back to the standard stack and this
   cannot go wrong yet. The day a feed can be marked, three cases need an answer: the marked feed is hidden, two
   sections are marked, or a section below the feed is one that is only allowed on Home.
-status: open
+status: done 2026-09-25 (Story 5.19)
+resolution: Story 5.19 (2026-09-25) — `packages/section-runtime/src/main-feed.ts`'s `designate`, the one rule
+  (AD-27(d)): on a paginated doc at most one instance carries `isMainFeed`, it is a feed, and it is a VISIBLE one
+  whenever one exists. Two flags are repaired to the first visible flagged feed; a feed with none is designated; a
+  hidden main feed hands the flag on where a visible feed exists. `duplicateSection` writes the copy's flag false. The
+  rule REPAIRS rather than refuses — no `docSchema` refine, which would black out an editor over a doc the rule can
+  fix — and runs at every door a doc enters the editor through (`read.ts`, the local hydrate, `apply`, an undo); Story
+  7.3's compiler passes every stored doc through it too (AD-27). A following page 2 copies page 1's instances, so it
+  carries page 1's one flag.
 severity: medium
 origin: Story 5.5's review (2026-09-18), Blind Hunter and Edge Case Hunter, read in
   `packages/section-runtime/src/synthesize.ts` (`indexStack`): with a designed Home it returns
@@ -5858,3 +5891,23 @@ location: `epics.md` Epic 10's preamble and order · Stories 10.54 and 10.112
 reason: a planning-order gap no story can close alone: moving a story across categories changes Epic 10's
   one-category-at-a-time rule, which is the owner's; keeping the pilot's links on the rebuilt grids departs from their
   drawings (R-74).
+
+### DW-256: the canvas's chrome layer draws no Tailwind shadow — P0-1's pill has none on the canvas
+
+plain: The small pills the editor draws over the canvas — the lock pill on text that comes from Ghost, and the note
+  when a character is refused — should cast a soft shadow, as their drawing shows. They draw none, because of how the
+  editor's styles reach the layer they sit in. Nothing is broken to use; they look flatter than drawn.
+status: open
+severity: low
+origin: Story 5.19's Dev (2026-09-25), executed on the harness editor with the repo's own Playwright: inside the
+  canvas chrome layer's shadow root, `shadow-md` and `shadow-lg` compute `box-shadow: none`, while the same classes in
+  the editor's own document compute the token shadow (the control). The cause is the one Story 5.19 fixed for borders:
+  Tailwind v4's utilities read custom properties whose initial values are `@property` registrations
+  (`--tw-inset-shadow`, `--tw-inset-ring-shadow`, `--tw-ring-offset-shadow`, `--tw-ring-shadow`), and a shadow root's
+  adopted sheet does not register them. Story 5.19 declared `--tw-border-style:solid` on the host for its MAIN FEED
+  chip's border, and the PAUSED chip's and P0-1's pill's hairlines drew from then on; the shadows did not.
+owner: unowned — needs one. The next story that touches the canvas's chrome, or a Fix run on the owner's word.
+location: `apps/web/lib/canvas-layer.ts` (`chromeLayers`, the host's style) · `apps/web/components/controls/mark-toolbar.tsx`
+  (`CanvasNote`; `P0-1 Inline Text Toolbar.dc.html:142` draws the pill with `box-shadow:0 4px 16px rgba(28,27,26,.10)`)
+reason: outside Story 5.19's surfaces — its chip draws no shadow. The fix is the same kind of line (the shadow variables'
+  `0 0 #0000` declared on the host), but it changes a surface Story 5.3 owns, which the owner should see in a test of it.

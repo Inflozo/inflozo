@@ -3678,3 +3678,47 @@ The CAS is unaffected: it runs from a **route handler under the user's own sessi
 - **The hold is an hour, measured**: still refused 55 min 23 s after the 429, answered 60 min 24 s after it. That is Ghost's own config, read in both majors' npm tarballs (6.58.0 and 5.130.6, `core/shared/config/defaults.json`): `spam.content_api_key` = `minWait` 3,600,000 · `maxWait` 86,400,000 · `lifetime` 3,600 · `freeRetries` 99 — `maxWait` is on both majors too, which §51 did not print. The limiter is `express-brute` 1.0.1 (the `dependencies` of both `ghost` packages) over its `MemoryStore` (`spam-prevention.js`'s `contentApiKey`), whose first held delay is `minWait` (`index.js:17-23`) and whose entry is deleted `lifetime` seconds after its last write (`lib/MemoryStore.js`) — both an hour after the 100th failure, which is what the table shows. FR-H4's *"for at least an hour"* holds.
 - **The probe did not lengthen what it measured**: a held request is answered by the fail callback without writing the store (`index.js:126-146`), and the first answered request resets the count.
 - The store is in memory, so a restart of that Ghost ends a hold early; nothing here depended on one.
+
+## 53. A secondary feed's `{{#get}}` — `include`, shadowing, the three Source filters, hand-picked order and `pagination` inside a get, executed on both majors; and gscan refusing `author:` · 2026-09-25
+
+**Command.** `python3 tools/probe/record-shim.py` (its docstring is its help — any flag uploads), run twice on 2026-09-25: the `FEED` group of `tools/probe/theme-shim/index.hbs`, each row under the full native feed of the same Home page, recorded into `packages/ghost-shim/fixtures/ghost{5,6}/index.json` (`values.FEED`) and asserted per commit by `packages/ghost-shim/src/contract.test.ts`. One probe-theme upload and activation per server per run, `casper` restored and the probe theme deleted each time; the second run added `by_authors`. The picks are the site's own three newest public posts, taken in the order 2nd · 3rd · 1st so that no date order can pass for the picked one (`feed_picks(g)`, substituted into `__FEED_IDS__` / `__FEED_PICKS__` at zip time).
+
+**Why.** Story 5.19 renders a SECONDARY feed — every feed on a paginated page but its main feed — as the same markup inside `{{#get "posts"}}`. That rests on facts about Ghost's `get` helper that were read in source and had never been executed (standing rule 1): that a get shadows the page's own `posts`, which of a post's relations it carries, what `pagination` means inside it, and that the fold's three filters answer on both majors.
+
+| Row (under Home's native feed) | T3 `ghost5.inflozo.com` 5.130.6 | T1 `ghost6.inflozo.com` 6.58.0 |
+|---|---|---|
+| `native` — `posts.length` · `pagination.page/pages` · `next` | `12\|1/3\|2` | `12\|1/3\|2` |
+| `get_plain` — `limit="3"`, no `include`: `title\|primary_tag.name\|primary_author.name` | `PROBEs Gated Post\|\|;On typography and restraint\|\|;The cost of clever\|\|;` | `PROBE Gated Post\|\|;On typography and restraint\|\|;The cost of clever\|\|;` |
+| `get_include` — the same with `include="tags,authors"` | `PROBEs Gated Post\|\|Umang;On typography and restraint\|Craft\|Tom Whitlock;The cost of clever\|Systems\|Umang;` | `PROBE Gated Post\|\|Umang;On typography and restraint\|Craft\|Tom Whitlock;The cost of clever\|Systems\|Umang;` |
+| `shadow_zero` — a get matching nothing: `{{#if posts}}FULL{{else}}EMPTY{{/if}}`, the get's own `{{else}}` printing `GET_ELSE` | `EMPTY` | `EMPTY` |
+| `shadow_rows` — `tag:'craft'`, `limit="2"`, the same test | `FULL:2` | `FULL:2` |
+| `by_tag` — `filter="tag:'craft'"`, oldest first, `limit="3"` | `the-weight-of-a-headline, notes-on-naming-things, systems-that-outlive-teams` | the same |
+| `by_author` — `filter="author:'priya-raman'"`, the same | `everything-is-a-list, on-dependable-dullness, the-last-mile-of-design` | the same |
+| `by_authors` — `filter="authors:'priya-raman'"`, the same | `everything-is-a-list, on-dependable-dullness, the-last-mile-of-design` | the same |
+| `featured` — `filter="featured:true"`, the same | `notes-on-naming-things, systems-that-outlive-teams, what-survives-a-migration` | the same |
+| `picks_single` — three single-id gets in the picked order (published 08-11 · 08-10 · 08-12) | `the-cost-of-clever, a-quiet-week-in-the-archive, on-typography-and-restraint` | the same |
+| `picks_existence` — the same three inside `{{#get "posts" filter="id:[…]" limit="1"}}{{#if posts}}` | the same three, in the same order | the same |
+| `picks_none` — the existence get over an id no post has | `EMPTY` | `EMPTY` |
+| `pagination_in_get` — inside `tag:'craft'` `limit="2"`: `page/pages\|next\|{{page_url pagination.next}}` | `1/5\|2\|/page/2/` | `1/5\|2\|/page/2/` |
+
+The trailing commas and semicolons are the rows' own separators; the two majors differ only in the newest post's title, which is the site's own content (T3 carries a probe post titled `PROBEs Gated Post`).
+
+**What it means.**
+
+- **A get shadows `posts`, and runs its block at zero.** Over a full native feed, `{{#if posts}}` inside a get matching nothing is false, and the get's own `{{else}}` did not run — the block ran with an empty list. So the secondary feed's premise holds on both majors, and the `{{#if posts}}` around the section is what makes zero render NOTHING, heading and container together (FR-H4): the get alone would print the section's frame around no posts.
+- **Without `include`, a get carries no tags and no writers** — `primary_tag` and `primary_author` are empty on both majors, as the Content API serializer's `defaultRelations` (Admin API only) predicted. With `include="tags,authors"` both print. **Fixed as the spec's Ask First directs: every posts query is emitted with `include="tags,authors"`** (`packages/ghost-shim/src/index.ts`, `POSTS_INCLUDE`), which moved exactly one line of the snapshots — Latest Post's `{{#get}}` (`packages/library/snapshots/a4/13/template.hbs`), whose card prints `primary_tag.name` and printed nothing on a live site until now, while the canvas printed the tag.
+- **The three Source filters answer, identically on both majors.** `tag:'…'` and `authors:'…'` expand to `tags.slug` and `authors.slug`; the singular `author:'…'` answers the same posts at render.
+- **Hand-picked order is the order of the single-id gets**, and survives inside the existence get; an existence get over ids that match nothing renders nothing — a hand-picked section whose every pick has gone vanishes.
+- **Inside a get, `pagination` is the QUERY's** (9 Craft posts at 2 a page is `1/5`), and `{{page_url pagination.next}}` is `/page/2/` — the ROUTE's page 2, Home's. A pager inside a secondary feed would link to a wrong page, not a missing one, so both emitters leave a secondary feed's pager out.
+
+**And gscan refuses the singular writer filter — the one change this record forced on the fold.** Executed with `tools/stress/gate.js` over the stress theme's five secondary feeds, and over a control copy differing only in that one filter:
+
+```
+authors:'priya-raman' (as built)          author:'priya-raman' (the control copy)
+Ghost 5.x via gscan 4.49.7 (v5) -> 0 / 0   Ghost 5.x via gscan 4.49.7 (v5) -> ERRORS 1  ERROR GS001-DEPR-AUTH-FILT
+Ghost 6.x via gscan 6.4.2  (v6) -> 0 / 0   Ghost 6.x via gscan 6.4.2  (v6) -> ERRORS 1  ERROR GS001-DEPR-AUTH-FILT
+```
+
+The rule is `level: 'error'`, `fatal: false`, at `lib/specs/v5.js:527` in both bundled gscans — the `v5` spec 4.49.7 checks Ghost 5 with, and the one 6.4.2's `v6` spec extends (`v6.js:3`, `previousSpec = require('./v5')`): *"`filter="author:[...]"` should be replaced with `filter="authors:[...]"`"*. Not fatal, which is why Ghost itself uploaded and served the probe theme carrying `by_author` on both boxes — but every theme Inflozo emits must scan at 0 errors on both majors (AD-34), so **the fold writes `authors:'…'`** (`packages/section-runtime/src/controls.ts`, `withData`), where the spec's text said `author:'…'`. The two answer the same three posts on both majors (the table), so nothing a customer sees changes.
+
+**What this does NOT say.** The markers are raw expressions written by hand into a probe theme, not the emitter's output. That the emitter produces them — the whole section inside the get and `{{#if posts}}`, the existence get around the picks, the pager left out on both emitters, a crafted Source value inert — is `agreement.test.ts`'s and `ad36.test.ts`'s, per commit, and gscan's verdict on the emitted secondary feeds is `tools/stress`'s.

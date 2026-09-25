@@ -440,7 +440,7 @@ test('row · Reset this design: every control and data control back to its defau
 test('R-115 — what Reset this design would undo: nothing at the defaults, a data-only change, and a greyed row\'s stored value, in the panel\'s order', () => {
   assert.deepEqual(resetChanges(entry, start()), [], 'nothing to reset at the defaults, so the panel asks nothing')
   const data = ok(setData(entry, ok(setData(entry, start(), 'latest', 'count', 5)), 'latest', 'order', 'oldest'))
-  assert.deepEqual(resetChanges(entry, data), ['Show', 'Order'], 'a change to the Data group alone is a change')
+  assert.deepEqual(resetChanges(entry, data), ['Count', 'Order'], 'a change to the Data group alone is a change')
   // Rule under heading set away from its default, then greyed by Alignment: its row offers no reset, but reset clears it
   const greyed = ok(setControl(entry, ok(setControl(entry, start(), 'rule', 'none')), 'align', 'center'))
   assert.equal(control(greyed, 'rule').changed, false, 'the greyed row carries no reset of its own')
@@ -454,7 +454,7 @@ test('R-115 — what Reset this design would undo: nothing at the defaults, a da
 
 test('R-115 — Reset this design removes exactly what its confirm names, and keeps what only another design uses', () => {
   const kept = start({ controls: { columns: '2', 'nav-position': 'left' }, data: { latest: { count: 5 }, rail: { count: 7 } } })
-  assert.deepEqual(resetChanges(entry, kept), ['Columns', 'Show'], 'the confirm names this design\'s changes only')
+  assert.deepEqual(resetChanges(entry, kept), ['Columns', 'Count'], 'the confirm names this design\'s changes only')
   const reset = resetSection(entry, kept)
   assert.deepEqual(reset.controls, { 'nav-position': 'left' }, 'a control this design does not declare stays')
   assert.deepEqual(reset.data, { rail: { count: 7 } }, 'a query this design does not bind keeps its Count')
@@ -489,20 +489,20 @@ test('R-115 — Reset this design removes exactly what its confirm names, and ke
   assert.deepEqual(resetSection(fixed, start({ data: { latest: { count: 5 } } })).data, { latest: { count: 5 } })
   const tags = { ...entry, dataBindings: { latest: { source: 'tags' } } }
   const both = start({ data: { latest: { count: 9, order: 'oldest' } } })
-  assert.deepEqual(resetChanges(tags, both), ['Show'])
+  assert.deepEqual(resetChanges(tags, both), ['Count'])
   assert.deepEqual(resetSection(tags, both).data, { latest: { order: 'oldest' } })
 })
 
-test('a Count reaches an emitter only where the panel draws its Show row — never for a source Ghost returns whole', () => {
+test('a Count reaches an emitter only where the panel draws its Count row — never for a source Ghost returns whole', () => {
   assert.equal(withData({ plans: { source: 'tiers' } }, { plans: { count: 2 } })['plans']!.limit, undefined)
   assert.equal(withData({ tags: { source: 'tags' } }, { tags: { count: 2 } })['tags']!.limit, 2, 'the control: a tags query takes it')
 })
 
-test('row · R-108, a query the design fixes: no Show and no Order, a stored Count and Order are ignored, and both emitters render one post', () => {
+test('row · R-108, a query the design fixes: no Count and no Order, a stored Count and Order are ignored, and both emitters render one post', () => {
   const fixed = { ...entry, dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true as const } } }
   assert.deepEqual(validateDesignJson({ ...(design as unknown as DesignJson), dataBindings: fixed.dataBindings }), [], 'the declaration validates')
-  // the panel: nothing to draw, so the Data group is absent — Story 5.19 adds Which post
-  assert.equal(sidebar(fixed, start()).groups.find((g) => g.id === 'data'), undefined, 'a fixed query alone draws no Data group')
+  // the panel: Story 5.19's Source alone (R-108) — never a Count or an Order
+  assert.deepEqual(sidebar(fixed, start()).groups.find((g) => g.id === 'data')?.rows.map((r) => (r as DataRow).control), ['source'], 'a fixed query draws Source alone')
   for (const control of ['count', 'order'] as const) {
     assert.equal(typeof setData(fixed, start(), 'latest', control, control === 'count' ? 5 : 'oldest'), 'string', `${control} is refused`)
   }
@@ -513,11 +513,144 @@ test('row · R-108, a query the design fixes: no Show and no Order, a stored Cou
   const canvas = renderCanvas(doc(), HTML, input(state, { dataBindings: fixed.dataBindings, getRows: { latest: rowsFor('latest', 5) } }))
   assert.equal((canvas.match(/class="cx__post"/g) ?? []).length, 1, `the canvas showed more than one post: ${canvas}`)
   const theme = renderTheme(doc(), HTML, input(state, { dataBindings: fixed.dataBindings })).template
-  assert.ok(theme.includes('{{#get "posts" limit="1" order="published_at desc"}}'), theme)
+  assert.ok(theme.includes('{{#get "posts" limit="1" order="published_at desc" include="tags,authors"}}'), theme)
   // the control: the same query unfixed takes the stored Count, so the flag is what held it
   const loose = { latest: { source: 'posts', limit: 1, order: 'published_at desc' } }
   assert.equal(withData(loose, stored)['latest']!.limit, 5)
   assert.ok(sidebar({ ...entry, dataBindings: loose }, start()).groups.some((g) => g.id === 'data'))
+})
+
+// ─── Story 5.19 — P0·5's Data group: Source, the tag or writer, the picked list, Count and Order ────────────────
+//
+// The sample's `latest` is a posts query the design leaves open (no declared filter or ids), so it offers Source; the
+// fold is `withData`, the ONE door both emitters and the editor's reads go through.
+
+const data = (over: Record<string, unknown>) => start({ data: { latest: over } })
+const rowsOf = (e: typeof entry, state: ControlState) =>
+  sidebar(e, state).groups.find((g) => g.id === 'data')?.rows.map((r) => r as DataRow) ?? []
+const PICK = (n: number) => ({ id: `90570000000000000000000${n}`, title: `Pick ${n}` })
+
+test('Story 5.19 · the fold, Source by Source — featured, a quoted tag or writer, and the picks in their dragged order', () => {
+  const fold = (over: Record<string, unknown>) => withData(entry.dataBindings, { latest: over })['latest']!
+  const declared = entry.dataBindings!['latest']!
+  assert.deepEqual(fold({}), declared, 'Latest, untouched, is the declaration')
+  assert.deepEqual(fold({ source: 'latest', count: 5 }), { ...declared, limit: 5 })
+  assert.deepEqual(fold({ source: 'featured' }), { ...declared, filter: 'featured:true' })
+  assert.deepEqual(fold({ source: 'tag', tag: 'field-notes', order: 'oldest' }), { ...declared, filter: "tag:'field-notes'", order: 'published_at asc' })
+  assert.deepEqual(fold({ source: 'author', author: 'rosa-menendez', count: 2 }), { ...declared, filter: "authors:'rosa-menendez'", limit: 2 })
+  // hand-picked: the ids in the dragged order, and the filter, the limit and the order dropped — the picks ARE all three
+  assert.deepEqual(fold({ source: 'picked', picks: [PICK(3), PICK(1)], count: 9, order: 'oldest' }), { source: 'posts', ids: [PICK(3).id, PICK(1).id] })
+  assert.deepEqual(fold({ source: 'picked' }), { source: 'posts', ids: [] }, 'nothing picked is zero items')
+  // NOTHING CHOSEN IS LOST BY A SOURCE SWITCH: only the value in force is folded
+  const all = { tag: 'field-notes', author: 'rosa-menendez', picks: [PICK(2)] }
+  assert.equal(fold({ source: 'tag', ...all }).filter, "tag:'field-notes'")
+  assert.equal(fold({ source: 'author', ...all }).filter, "authors:'rosa-menendez'")
+  assert.deepEqual(fold({ source: 'picked', ...all }).ids, [PICK(2).id])
+})
+
+test('Story 5.19 · AD-36 — a value outside the grammar is ignored by the fold, so the declaration stands', () => {
+  const fold = (over: Record<string, unknown>) => withData(entry.dataBindings, { latest: over })['latest']!
+  const declared = entry.dataBindings!['latest']!
+  for (const tag of ["x'}}{{#get \"posts\"}}", 'Field Notes', 'a"b', '', 7, null]) {
+    assert.deepEqual(fold({ source: 'tag', tag }), declared, `tag ${JSON.stringify(tag)}`)
+    assert.deepEqual(fold({ source: 'author', author: tag }), declared, `author ${JSON.stringify(tag)}`)
+  }
+  for (const source of ['everything', 'tags', {}, 3]) assert.deepEqual(fold({ source }), declared, `source ${JSON.stringify(source)}`)
+  // an id that is not 24 hex digits is dropped from the picks; the good one beside it survives
+  assert.deepEqual(fold({ source: 'picked', picks: [{ id: 'zz', title: 't' }, { id: `${PICK(1).id}"}}`, title: 't' }, PICK(1), 'junk'] }).ids, [PICK(1).id])
+  // and the legitimate one emits, on the theme, quoted
+  const theme = renderTheme(doc(), HTML, input(data({ source: 'tag', tag: 'field-notes' }))).template
+  assert.ok(theme.includes(`{{#get "posts" filter="tag:'field-notes'" limit="3" order="published_at desc" include="tags,authors"}}`), theme)
+})
+
+test('Story 5.19 · the rows: Source, then the tag or writer or the picked list, then Count and Order — P0·5\'s order and words', () => {
+  const controls = (state: ControlState) => rowsOf(entry, state).map((r) => [r.control, r.label])
+  assert.deepEqual(controls(start()), [['source', 'Source'], ['count', 'Count'], ['order', 'Order']])
+  assert.deepEqual(rowsOf(entry, start())[0]!.options?.map((o) => o.label), ['Latest', 'Featured', 'By tag', 'By author', 'Hand-picked'])
+  assert.deepEqual(controls(data({ source: 'tag' })), [['source', 'Source'], ['tag', 'Tag'], ['count', 'Count'], ['order', 'Order']])
+  assert.deepEqual(controls(data({ source: 'author' })), [['source', 'Source'], ['author', 'Author'], ['count', 'Count'], ['order', 'Order']])
+  assert.deepEqual(controls(data({ source: 'picked' })), [['source', 'Source'], ['picks', 'Picked posts'], ['count', 'Count'], ['order', 'Order']])
+  // Count is 1–100 and its word is Count, never Show (R-170)
+  const count = rowsOf(entry, start()).find((r) => r.control === 'count')!
+  assert.deepEqual([count.min, count.max, count.label], [1, 100, 'Count'])
+  assert.equal(setData(entry, start(), 'latest', 'count', 101), 'Count is a number from 1 to 100.')
+})
+
+test('Story 5.19 · at Hand-picked, Count shows the number of picks and Order marks no value — both greyed with P0·5\'s sentences', () => {
+  const state = data({ source: 'picked', picks: [PICK(1), PICK(2), PICK(3)], count: 5, order: 'oldest' })
+  const rows = rowsOf(entry, state)
+  const count = rows.find((r) => r.control === 'count')!
+  const order = rows.find((r) => r.control === 'order')!
+  assert.deepEqual([count.value, count.greyed], ['3', 'The list you picked is the count.'])
+  assert.deepEqual([order.value, order.greyed], ['', 'The list you picked is the order — these posts render in the order you dragged them.'])
+  assert.deepEqual(rows.find((r) => r.control === 'picks')?.picks, [PICK(1), PICK(2), PICK(3)])
+  // a greyed row takes no value; its stored Count and Order wait, untouched, and return with Latest
+  assert.equal(setData(entry, state, 'latest', 'count', 4), 'The list you picked is the count.')
+  const back = ok(setData(entry, state, 'latest', 'source', 'latest'))
+  assert.deepEqual(withData(entry.dataBindings, back.data)['latest'], { ...entry.dataBindings!['latest']!, limit: 5, order: 'published_at asc' })
+})
+
+test('Story 5.19 · setData: every Source, the tag, the writer and the picks — and junk refused in a sentence', () => {
+  let state = ok(setData(entry, start(), 'latest', 'source', 'tag'))
+  state = ok(setData(entry, state, 'latest', 'tag', 'field-notes'))
+  assert.equal(withData(entry.dataBindings, state.data)['latest']!.filter, "tag:'field-notes'")
+  // the writer row exists only under By author: a value is set for the Source in force
+  assert.equal(typeof setData(entry, state, 'latest', 'author', 'rosa-menendez'), 'string')
+  state = ok(setData(entry, state, 'latest', 'source', 'picked'))
+  state = ok(setData(entry, state, 'latest', 'picks', [PICK(2), PICK(1)]))
+  assert.deepEqual(withData(entry.dataBindings, state.data)['latest']!.ids, [PICK(2).id, PICK(1).id])
+  // past 25 nothing is blocked: the warning is the panel's, never a refusal
+  const many = Array.from({ length: 30 }, (_, i) => ({ id: `9057000000000000000000${String(i + 10).padStart(2, '0')}`, title: `P${i}` }))
+  assert.equal(withData(entry.dataBindings, ok(setData(entry, state, 'latest', 'picks', many)).data)['latest']!.ids?.length, 30)
+  // the tag is still stored while the picks are in force — nothing chosen is lost
+  assert.equal((state.data!['latest'] as Record<string, unknown>)['tag'], 'field-notes')
+  for (const [control, junk] of [['source', 'all'], ['picks', [{ id: 'nope', title: 'x' }]], ['picks', 'x']] as const) {
+    assert.equal(typeof setData(entry, state, 'latest', control, junk), 'string', `${control} ${JSON.stringify(junk)}`)
+  }
+  const tagged = ok(setData(entry, start(), 'latest', 'source', 'tag'))
+  for (const junk of ["x'}}", 'Two Words', 3]) assert.equal(typeof setData(entry, tagged, 'latest', 'tag', junk), 'string')
+})
+
+test('Story 5.19 · a FIXED query (R-108) offers Source alone, and its Hand-picked holds at most its own limit', () => {
+  const fixed = { ...entry, dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true as const } } }
+  const picked = start({ data: { latest: { source: 'picked' } } })
+  assert.deepEqual(rowsOf(fixed, picked).map((r) => r.control), ['source', 'picks'])
+  assert.equal(rowsOf(fixed, picked).find((r) => r.control === 'picks')?.cap, 1)
+  assert.equal(typeof setData(fixed, picked, 'latest', 'picks', [PICK(1), PICK(2)]), 'string', 'two picks do not fit one post')
+  const one = ok(setData(fixed, picked, 'latest', 'picks', [PICK(1)]))
+  // the fold drops `fixed` with the limit and the order — a hand-picked list is already fixed (R-20)
+  assert.deepEqual(withData(fixed.dataBindings, one.data)['latest'], { source: 'posts', ids: [PICK(1).id] })
+  // a stored list longer than the cap (from another design) is folded to the cap, never past it
+  assert.deepEqual(withData(fixed.dataBindings, { latest: { source: 'picked', picks: [PICK(1), PICK(2)] } })['latest']!.ids, [PICK(1).id])
+  // Featured, a tag and a writer fold into the fixed query as filters, its number and order unmoved
+  assert.deepEqual(withData(fixed.dataBindings, { latest: { source: 'featured', count: 9 } })['latest'], { ...fixed.dataBindings.latest, filter: 'featured:true' })
+  // a declared filter is the design's own and draws no Source row; a tags query offers none either
+  assert.ok(!rowsOf({ ...entry, dataBindings: { latest: { source: 'posts', filter: 'tag:craft' } } }, start()).some((r) => r.control === 'source'))
+  assert.ok(!rowsOf({ ...entry, dataBindings: { latest: { source: 'tags' } } }, start()).some((r) => r.control === 'source'))
+})
+
+test('Story 5.19 · the main feed\'s Data group is D5c\'s: Count greyed at the page size in force, and no Source or Order', () => {
+  const main = { ...entry, dataBindings: {}, feed: { kind: 'main' as const, postsPerPage: 12 } }
+  const rows = rowsOf(main, start())
+  assert.deepEqual(rows.map((r) => [r.control, r.value, r.greyed]), [['count', '12', "This feed is sized by your theme's Posts per page."]])
+  assert.equal(typeof setData(main, start(), 'posts', 'count', 5), 'string')
+  // a SECONDARY feed's rows are the same functions over data.posts and its base query
+  const secondary = { ...entry, dataBindings: {}, feed: { kind: 'secondary' as const, base: { source: 'posts', limit: 12, order: 'published_at desc' } } }
+  assert.deepEqual(rowsOf(secondary, start()).map((r) => [r.key, r.control, r.value]), [['posts', 'source', 'latest'], ['posts', 'count', '12'], ['posts', 'order', 'newest']])
+  const three = ok(setData(secondary, start(), 'posts', 'count', 3))
+  assert.deepEqual(three.data, { posts: { count: 3 } })
+})
+
+test('Story 5.19 · Reset names and removes every changed Data row — the Source, the tag, the picks — and keeps what is not drawn', () => {
+  let state = ok(setData(entry, start(), 'latest', 'source', 'tag'))
+  state = ok(setData(entry, state, 'latest', 'tag', 'field-notes'))
+  state = ok(setData(entry, state, 'latest', 'count', 5))
+  assert.deepEqual(resetChanges(entry, state), ['Source', 'Tag', 'Count'])
+  assert.deepEqual(resetSection(entry, state).data, {})
+  // picks drawn under Hand-picked go with a reset; a tag stored beside them is not drawn there, so it waits
+  const picked = data({ source: 'picked', picks: [PICK(1)], tag: 'field-notes' })
+  assert.deepEqual(resetChanges(entry, picked), ['Source', 'Picked posts'])
+  assert.deepEqual(resetSection(entry, picked).data, { latest: { tag: 'field-notes' } })
 })
 
 // ─── Story 5.6 — FR-D7's mode, every row of the spec's I/O matrix the engine owns ────────────────────────────────

@@ -100,6 +100,16 @@ export const pageTwoKeyOf = (canvas: CanvasKey): string | null => PAGE_TWO[canva
 export const canvasOfPageTwoKey = (key: string): CanvasKey | null =>
   (Object.keys(PAGE_TWO) as CanvasKey[]).find((canvas) => PAGE_TWO[canvas]?.key === key) ?? null
 
+/** The template FILE a stored key compiles into — `templateKeyOf`'s inverse, and a page-2 key's own file (`index` →
+ *  `index.hbs`, `tag-paged` → `tag.hbs`). `custom:custom-x.hbs` names its own. Moved here from `read.ts` by Story 5.19,
+ *  whose main-feed rule asks it of every doc on the server read and in every edit (`designate` keys on the file). A key
+ *  with no `.hbs` of its own — `paywall` (5.20), `cards` (7.13) — must be added here by the story that writes it. */
+export const fileOfKey = (key: string): string => {
+  const paged = canvasOfPageTwoKey(key)
+  if (paged !== null) return PAGE_TWO[paged]?.file as string
+  return key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
+}
+
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 /** Checked before any query, so Postgres never sees `abc` (22P02). */

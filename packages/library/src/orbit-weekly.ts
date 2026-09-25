@@ -21,7 +21,11 @@ import corpus from '../orbit-weekly/corpus.json' with { type: 'json' }
 import { CAPTURE_COMMAND, RECORDINGS } from '../orbit-weekly/fixtures/index.ts'
 import type { DataBinding } from './registry.ts'
 import { nativeResourceOf } from './placement.ts'
-import { GET_SOURCES } from './vocabulary.ts'
+import { DEFAULT_LIMIT, GET_SOURCES } from './vocabulary.ts'
+
+// Story 5.19 (DW-112): Ghost's default limit is the vocabulary's, beside `GET_SOURCES`; re-exported so the fixture
+// tests that assert it against the recording still read it here.
+export { DEFAULT_LIMIT }
 
 /** The one value `previewSeed` has, and what it resolves to. */
 export const ORBIT_WEEKLY_SEED = 'orbit-weekly'
@@ -86,9 +90,9 @@ export const postsPerPage = (): number => dataset.config.posts_per_page
 
 /** The pagination context of page `n` over `total` rows, in the shape `paginationContext()` reads. `of` names the
  *  list in the refusal, because since Story 5.13 the rows can be an ARCHIVE's rather than the whole feed and a
- *  message about "the bundled feed" would be about the wrong list. */
-function paginationOver(total: number, n: number, of: string): { page: number; pages: number; limit: number; total: number } {
-  const limit = postsPerPage()
+ *  message about "the bundled feed" would be about the wrong list. Story 5.19 — `limit` is the page size, the
+ *  project's `posts_per_page`; the dataset's by default, so every call that names none answers what it did. */
+function paginationOver(total: number, n: number, of: string, limit: number = postsPerPage()): { page: number; pages: number; limit: number; total: number } {
   const pages = Math.max(1, Math.ceil(total / limit))
   if (!Number.isInteger(n) || n < 1 || n > pages) throw new Error(`${of} has pages 1–${pages}; page ${n} does not exist`)
   return { page: n, pages, limit, total }
@@ -206,16 +210,23 @@ const subjectRow = (kind: 'tag' | 'author', slug: string): TagRow | AuthorRow =>
   return kind === 'tag' ? tagRow(use, dataset.posts) : authorRow(use, dataset.posts)
 }
 
-/** The bundled publication as a `ContentSource` — every function that takes one defaults to it. */
-export const BUNDLED: ContentSource = {
-  name: 'sample',
-  starting: (file) => fixtureSubject(file),
-  has: (subject) => subjectExists(subject),
-  pages: (target, of) => {
-    const list = listOf(target, of)
-    return list === null ? 1 : paginationOver(list.rows.length, 1, list.of).pages
-  },
+/** STORY 5.19 — the bundled publication as a `ContentSource` whose lists are paginated at `perPage`: the project's
+ *  `posts_per_page` (FR-H2 — the main feed is sized by the theme's setting, never the sample's). The dataset's own
+ *  size by default, which is `BUNDLED`. */
+export function bundledAt(perPage: number = postsPerPage()): ContentSource {
+  return {
+    name: 'sample',
+    starting: (file) => fixtureSubject(file),
+    has: (subject) => subjectExists(subject),
+    pages: (target, of) => {
+      const list = listOf(target, of)
+      return list === null ? 1 : paginationOver(list.rows.length, 1, list.of, perPage).pages
+    },
+  }
 }
+
+/** The bundled publication as a `ContentSource` — every function that takes one defaults to it. */
+export const BUNDLED: ContentSource = bundledAt()
 
 /**
  * WHICH SUBJECT IS THIS CANVAS ACTUALLY RENDERING, AND DID THE STORED ONE SURVIVE (FR-D22).
@@ -362,8 +373,9 @@ export function assemble(target: string, p: Pieces): {
  *  matches; every other target keeps `/`.
  *
  *  STORY 5.18 — the pieces are assembled by `assemble`, the one function the connected site's rows go through too. */
-export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null): ReturnType<typeof assemble> {
-  const pieces: Pieces = { site: dataset.site, postsPerPage: postsPerPage() }
+export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null, perPage: number = postsPerPage()): ReturnType<typeof assemble> {
+  // Story 5.19 — `perPage` is the project's `posts_per_page`; the dataset's by default, so every existing call is unchanged
+  const pieces: Pieces = { site: dataset.site, postsPerPage: perPage }
   if (target === 'post.hbs' || target === 'page.hbs') {
     const kind = target === 'post.hbs' ? 'post' : 'page'
     // THE DEFAULT IS TODAY'S RENDER, BYTE FOR BYTE (the story's control): no subject passed is the hard-coded
@@ -377,11 +389,11 @@ export function templateContext(target: string, feed: FeedState = 'first', of?: 
   // with it and not as an extra. `listOf` is that filter, and `feedPages` reads the same one.
   const list = listOf(target, of)
   if (list === null) return assemble(target, pieces)
-  const pages = paginationOver(list.rows.length, 1, list.of).pages
+  const pages = paginationOver(list.rows.length, 1, list.of, perPage).pages
   const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : feed === 'second' ? 2 : 1
   const pagination = feed === 'empty'
-    ? { page: 1, pages: 1, limit: postsPerPage(), total: 0 }
-    : paginationOver(list.rows.length, n, list.of)
+    ? { page: 1, pages: 1, limit: perPage, total: 0 }
+    : paginationOver(list.rows.length, n, list.of, perPage)
   const rows = feed === 'empty' ? [] : list.rows.slice((n - 1) * pagination.limit, n * pagination.limit)
   return assemble(target, { ...pieces, list: { rows, pagination, base: list.base, taxonomy: list.taxonomy } })
 }
@@ -398,9 +410,6 @@ export const DEFAULT_ORDER: Readonly<Record<Source, string>> = {
   authors: 'name asc',
   tiers: 'monthly_price asc',
 }
-
-/** Ghost's own default LIMIT, asserted the same way. Tiers are not paginated: every tier comes back. */
-export const DEFAULT_LIMIT: Readonly<Record<Source, number | 'all'>> = { posts: 15, tags: 15, authors: 15, tiers: 'all' }
 
 function rowsOf(source: string): Json[] {
   switch (source) {

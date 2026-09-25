@@ -169,6 +169,16 @@
 // (R-187); Insert puts the code in and the canvas prints the page being painted; clicking into the words shows the
 // token again and leaving shows the number; and page 1's words are untouched. Step 26's token row became the same
 // menu — P0-1's chip row is withdrawn (R-185) and nothing is drawn under a field anywhere.
+// Story 5.19 adds step 94, inside step 5's session: THE MAIN FEED AND P0·5's DATA GROUP, on the sample. The seeded Home
+// predates the flag, so it opens with its post grid REPAIRED into the main feed and nothing stored (reading writes
+// nothing, AD-22), and is stored repaired by the next edit. D5c's chip at rest (none), on a hovered feed beside the name
+// tag and never over it, on a selected one and at the panel head; the main feed's greyed Count; a second Three Up placed
+// SECONDARY — no chip, no pager — and walked through every Source with the canvas read against the app's own
+// `sampleRows`/`rowsFor` over the runtime's `feedQuery`; Make this the main feed, Delete, Hide then Show, Duplicate, and
+// the only feed deleted and hidden, each ONE gesture and ONE Undo; FR-H2's archive note on the Tag canvas and never on
+// Home; Latest Post's Source alone and its one pick; and a CRAFTED stored value, planted through the service key, that
+// the fold ignores and the canvas never prints. STEP 11 CHANGED WITH IT: the main feed's panel now carries D5c's Data
+// group (its greyed Count), so the groups it is compared with are `sidebar()`'s with the role the editor hands it.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -288,7 +298,7 @@ async function main() {
     // The app's OWN modules, read from this checkout — every expectation below is derived from them and from the
     // seed's fixture, never restated here (standing rule 4). Read before step 2, because the top bar's shape is one
     // of them since Story 5.5.
-    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, LIB, DEVICE, PV] = await Promise.all([
+    const [{ pilot, carriesMemberVisibility }, { sidebar, defaultContent, isSynthesizable, synthesize, designate, parseDoc }, { CANVASES, canvasesOf, isMembership, templateKeyOf }, LIB, DEVICE, PV] = await Promise.all([
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/pilots.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
       import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/editor.ts')).href),
@@ -603,9 +613,16 @@ async function main() {
     const nth = (id) => homeStack.findIndex(([d]) => d === id)
     const [HEADER, HERO, GRID] = [nth(TEMPLATES.site[0][0]), nth('a4/13'), nth('a17/1')]
     const layerOf = (n) => homeStack[n][1]
+    // Story 5.19 — the seed's Home as `read.ts` hands it out, through `designate`: its one post grid is the MAIN FEED (the
+    // seed predates the flag, as the owner's Pilot sections do), and a main feed's panel carries D5c's Data group — its
+    // Count, greyed at the project's page size — so its groups are `sidebar()`'s with the role the editor hands it
+    const PER_PAGE = (await call('/rest/v1', `/projects?id=eq.${P}&select=posts_per_page`)).body?.[0]?.posts_per_page
+    const MAIN_DESIGN = designate(parseDoc(SEED_DOCS.find((r) => r.template_key === 'home')?.doc, 'home'), CANVASES.home.file, heldBy).instances.find((i) => i.isMainFeed)?.designId
+    if (typeof PER_PAGE !== 'number' || MAIN_DESIGN === undefined) throw new Error(`the seed's page size (${PER_PAGE}) or its main feed (${MAIN_DESIGN}) is unreadable — step 11 and step 94 have nothing to compare with`)
     const groupsOf = (id) => {
       const entry = pilot(id)
-      return sidebar(entry, { content: defaultContent(entry.contentSchema), controls: {}, data: {}, darkOverrides: {} }).groups.map((g) => g.label)
+      const role = id === MAIN_DESIGN ? { ...entry, feed: { kind: 'main', postsPerPage: PER_PAGE } } : entry
+      return sidebar(role, { content: defaultContent(entry.contentSchema), controls: {}, data: {}, darkOverrides: {} }).groups.map((g) => g.label)
     }
     /** S4c's category word under the panel's heading (Story 5.11), from the LIBRARY's own entry rather than a
      *  word written down here — the category a design belongs to is `assembleEntry`'s to say. */
@@ -642,7 +659,7 @@ async function main() {
       const s = fr.width / f.offsetWidth
       const r = el.getBoundingClientRect()
       const c = doc.defaultView.getComputedStyle(el)
-      return { left: fr.left + r.left * s, top: fr.top + r.top * s, right: fr.left + r.right * s, bottom: fr.top + r.bottom * s, card: f.parentElement.getBoundingClientRect().toJSON(), host: el.getRootNode().host.getAttribute('data-inflozo-chrome'), text: el.textContent, tag: el.tagName, pressable: !!el.closest('button, a, [role="button"]'), size: c.fontSize, weight: c.fontWeight, family: c.fontFamily, color: c.color, bg: c.backgroundColor, padding: c.padding, radius: c.borderRadius, events: c.pointerEvents, visibility: c.visibility, shadow: c.boxShadow, hidden: el.getAttribute('aria-hidden'), faces: [...doc.fonts].filter((f) => f.family.replace(/^"|"$/g, '').startsWith('inflozo-chrome ')).map((f) => `${f.family.replace(/^"|"$/g, '')}: ${f.status}`) }
+      return { left: fr.left + r.left * s, top: fr.top + r.top * s, right: fr.left + r.right * s, bottom: fr.top + r.bottom * s, card: f.parentElement.getBoundingClientRect().toJSON(), host: el.getRootNode().host.getAttribute('data-inflozo-chrome'), text: el.textContent, transform: c.textTransform, tag: el.tagName, pressable: !!el.closest('button, a, [role="button"]'), size: c.fontSize, weight: c.fontWeight, family: c.fontFamily, color: c.color, bg: c.backgroundColor, padding: c.padding, radius: c.borderRadius, events: c.pointerEvents, visibility: c.visibility, shadow: c.boxShadow, hidden: el.getAttribute('aria-hidden'), faces: [...doc.fonts].filter((f) => f.family.replace(/^"|"$/g, '').startsWith('inflozo-chrome ')).map((f) => `${f.family.replace(/^"|"$/g, '')}: ${f.status}`) }
     }, selector)
     const tagNow = async () => {
       const t = await chromeNow('[data-chrome="tag"]')
@@ -4745,7 +4762,9 @@ async function main() {
        INSIDE STEP 5's CSP SESSION, so its zero covers page 2 in and out. The seeded Home carries NO main feed — it was
        seeded before the flag (`seed-editor-project.mjs`), which is exactly the owner's Pilot sections — so `isMainFeed`
        is PLANTED on its post grid through the service key, after the editor has gone (step 52's pattern), and the seed
-       and every row page 2 wrote are taken back at the end. Every value below is derived from the app's own modules and
+       and every row page 2 wrote are taken back at the end. Since Story 5.19 the editor repairs an unflagged Home as it
+       reads it (`designate`, step 94), so the plant is exactly what the rule gives; it stays so that the stored `home`
+       row page 2 is compared against carries the flag itself. Every value below is derived from the app's own modules and
        the library's `templateContext`, never written here: the rows page 2 lists, its pager, its address, its words. */
     const PT = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/page-two.ts')).href)
     const LIBW = LIB // one binding for the library, read at the top with the rest
@@ -5257,6 +5276,356 @@ async function main() {
     check('step 92 — restored: no page-2 row left, and the home row is the seed again (no planted feed)',
       (await rowOf92('index')) === null && (await rowOf92('tag-paged')) === null && JSON.stringify(await rowOf92('home')) === JSON.stringify(seedHome92.doc))
 
+    /* ── step 94 — Story 5.19: THE MAIN FEED AND P0·5's DATA GROUP (FR-H2, D5c, AD-27(d), AD-36) ─────────────────────
+       INSIDE STEP 5's CSP SESSION, on the sample: the seeded project links no site, and the live walk takes the same
+       group over T1 and T3. Every word is `lib/data-group.ts`'s or the engine's, and every row the canvas must draw is
+       the app's own `sampleRows`/`rowsFor` over the runtime's own `feedQuery` — never restated here. Each gesture is ONE
+       Undo (Story 5.8), pressed on the bar's own Undo as the owner's test presses it. The project is handed back as the
+       walk found it: the seed, and the Tag canvas's row as it was. */
+    const [W94, RT94, CV94] = await Promise.all([
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/data-group.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href),
+      import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/canvas.ts')).href),
+    ])
+    const WORD94 = LIB.POST_SOURCE_WORDS
+    const CLS94 = MAIN_DESIGN.replace('/', '-')
+    const HERO_DESIGN94 = homeStack[HERO][0]
+    const HERO_CLS94 = HERO_DESIGN94.replace('/', '-')
+    const HERO_KEY94 = Object.keys(pilot(HERO_DESIGN94).dataBindings ?? {})[0]
+    const seedHome94 = SEED_DOCS.find((r) => r.template_key === 'home').doc
+    const tagBefore94 = await rowOf92('tag')
+    /** what the canvas must draw for a secondary feed storing `posts`: the runtime's own fold, then the app's own rows */
+    const expected94 = (posts) => {
+      const q = RT94.feedQuery(pilot(MAIN_DESIGN), { isMainFeed: false, data: { posts } }, CANVASES.home.file, PER_PAGE)
+      return CV94.rowsFor(q, CV94.sampleRows({ posts: q }).posts).map((r) => r.title)
+    }
+    const feeds94 = () => canvasFrame().evaluate((c) => [...document.querySelectorAll(`#canvas > .${c}`)].map((s) => ({
+      titles: [...s.querySelectorAll(`.${c}__post-title`)].map((t) => t.textContent.trim()),
+      pager: s.querySelector(`.${c}__pager`) !== null,
+    })), CLS94)
+    const heroCard94 = () => canvasFrame().evaluate((c) => document.querySelector(`#canvas > .${c} .${c}__title`)?.textContent.trim() ?? null, HERO_CLS94)
+    const rows94 = () => page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => ({
+      key: r.getAttribute('data-layer-row'), name: r.querySelector('button')?.textContent ?? '', chip: r.querySelector('[data-main-feed-chip]') !== null,
+    })))
+    const chips94 = async () => (await rows94()).filter((r) => r.chip).map((r) => r.key)
+    const nameOf94 = async (key) => (await rows94()).find((r) => r.key === key)?.name ?? null
+    const row94 = (key) => page.locator(`#editor-layers [data-layer-row="${key}"]`)
+    /** a value that settles: read until `test` holds, then once more — the answer is the read, whichever way it went */
+    const until94 = async (read, test) => {
+      for (let i = 0; i < 24; i++) {
+        if (test(await read())) break
+        await page.waitForTimeout(250)
+      }
+      return read()
+    }
+    const same94 = (a) => (b) => JSON.stringify(a) === JSON.stringify(b)
+    const select94 = async (key) => { await row94(key).locator('button').first().click(); await page.waitForTimeout(400) }
+    const menu94 = async (key) => {
+      await row94(key).getByRole('button', { name: /^More for / }).click()
+      await page.waitForTimeout(250)
+      return (await page.locator(':popover-open li').allInnerTexts()).map((w) => w.trim()).filter(Boolean)
+    }
+    const shut94 = async () => { await page.keyboard.press('Escape'); await page.waitForTimeout(200) }
+    const act94 = async (key, label) => {
+      await menu94(key)
+      await page.locator(':popover-open').getByRole('button', { name: label, exact: true }).click()
+      await page.waitForTimeout(600)
+    }
+    const undo94 = async () => { await page.locator('#editor-undo').click(); await page.waitForTimeout(600) }
+    const data94 = async () => {
+      const head = page.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/ })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+      await page.waitForTimeout(250)
+      return page.locator('#editor-controls [data-data-group]')
+    }
+    const source94 = async (word) => {
+      await (await data94()).locator('button[id$="-source"]').click()
+      await page.waitForTimeout(250)
+      await page.locator(':popover-open').getByRole('button', { name: word, exact: true }).click()
+      await page.waitForTimeout(700)
+    }
+    const picks94 = async () => (await data94()).locator('[data-pick] span.truncate').allInnerTexts()
+    const off94 = async () => {
+      const b = await page.locator('aside[aria-label="Layers"]').boundingBox()
+      await page.mouse.move(b.x + b.width / 2, b.y + b.height - 12)
+      await page.waitForTimeout(250)
+    }
+    // the chip itself, inside the chrome's positioned wrapper: its words, and the CSS that uppercases them
+    const chip94 = () => chromeNow('[data-chrome="main-feed"] [data-main-feed-chip]')
+    const flags94 = async () => ((await rowOf92('home'))?.instances ?? []).filter((i) => i.isMainFeed === true).map((i) => i.instanceId)
+    const idOf94 = (key) => key.slice(key.indexOf(':') + 1)
+
+    // ── WRITTEN BEFORE THE RULE: the seed stores no flag, the editor repairs it as it reads, and reading writes nothing
+    const gridKey94 = await rowAt(GRID).getAttribute('data-layer-row')
+    const heroKey94 = await rowAt(HERO).getAttribute('data-layer-row')
+    const gridName94 = await nameOf94(gridKey94)
+    const chips0 = await chips94()
+    await page.waitForTimeout(1500)
+    check('step 94 — WRITTEN BEFORE THE RULE: the seeded Home stores no main feed, the editor opens with its post grid repaired into one — D5c\'s chip on that row alone — and reading writes nothing (AD-22)',
+      (await flags94()).length === 0 && same94([gridKey94])(chips0) && JSON.stringify(await rowOf92('home')) === JSON.stringify(seedHome94),
+      JSON.stringify({ chips: chips0, grid: gridKey94, stored: await flags94() }))
+
+    // ── D5c's chip: none at rest; on a pointed feed beside the name tag and never over it; on a selected one; the panel head
+    await off94()
+    const rest94 = await chip94()
+    await hoverOn(GRID)
+    const [hov94, tag94h] = [await chip94(), await tagNow()]
+    const over94 = hov94 !== null && tag94h !== null && hov94.left < tag94h.right && tag94h.left < hov94.right && hov94.top < tag94h.bottom && tag94h.top < hov94.bottom
+    check('step 94 — AD-37: at rest the canvas carries no MAIN FEED chip; pointed at, the main feed carries D5c\'s words, uppercased by CSS, beside the name tag and never over it (R-125)',
+      rest94 === null && hov94 !== null && hov94.text === W94.MAIN_FEED && hov94.transform === 'uppercase' && tag94h !== null && !over94,
+      JSON.stringify({ rest: rest94, chip: hov94 && { left: hov94.left, top: hov94.top, right: hov94.right, bottom: hov94.bottom, text: hov94.text, transform: hov94.transform }, tag: tag94h && { left: tag94h.left, top: tag94h.top, right: tag94h.right, bottom: tag94h.bottom } }))
+    await hoverOn(HERO)
+    check('step 94 — a pointed section that is no feed never carries it', (await chip94()) === null)
+    await clickOn(GRID)
+    await off94()
+    const head94 = await page.locator('#editor-panel-main-feed').textContent().catch(() => null)
+    check('step 94 — D5c: selected, the main feed keeps the chip on its outline with the pointer gone, and carries it beside its name at the head of the panel',
+      (await chip94()) !== null && head94 === W94.MAIN_FEED && (await panelOf()).head === gridName94, JSON.stringify({ head: head94, name: (await panelOf()).head }))
+    const mainData94 = await data94()
+    const mainText94 = (await mainData94.innerText()).replace(/\s+/g, ' ')
+    check('step 94 — D5c: the main feed\'s Data group is its Count alone, greyed at the project\'s page size with its sentence — no Source and no Order',
+      mainText94.includes(RT94.DATA_WORDS.mainCount) && (await mainData94.locator('[role="group"][id$="-count"]').innerText()).includes(String(PER_PAGE)) &&
+      (await mainData94.locator('button[id$="-source"]').count()) === 0 && (await mainData94.locator('[role="radiogroup"]').count()) === 0, mainText94.slice(0, 200))
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(300)
+    check('step 94 — deselected, the chip goes with the selection', (await chip94()) === null && !(await onScreen(GRID)).selected)
+
+    // ── PLACE ANOTHER FEED: ⌘K from the main feed lands a second Three Up SECONDARY
+    await select94(gridKey94)
+    const before94 = (await rows94()).map((r) => r.key)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(`${CMD58}+k`)
+    await page.waitForTimeout(2000)
+    await page.locator(`dialog[open] [data-cell][data-design="${MAIN_DESIGN}"]`).first().click()
+    await page.waitForTimeout(900)
+    const added94 = (await rows94()).map((r) => r.key).filter((k) => !before94.includes(k))
+    const newKey94 = added94[0] ?? '(none)'
+    const newName94 = await nameOf94(newKey94)
+    const placed94 = await until94(feeds94, (f) => f.length === 2)
+    check('step 94 — a second Three Up placed on Home lands SECONDARY: said as an ordinary placement, no chip of its own, and ONE pager — the main feed\'s',
+      added94.length === 1 && (await until94(saidNow92, (v) => v === `${newName94} added`)) === `${newName94} added` && same94([gridKey94])(await chips94()) && placed94.map((f) => f.pager).join() === 'true,false',
+      JSON.stringify({ added: added94, said: await saidNow92(), chips: await chips94(), pagers: placed94.map((f) => f.pager) }))
+    check('step 94 — …drawing the sample\'s newest posts at the project\'s page size, the base `feedQuery` gives it', same94(expected94({}))(placed94[1]?.titles), JSON.stringify(placed94[1]?.titles))
+    await select94(newKey94)
+    const d94 = await data94()
+    check('step 94 — its Data group is P0·5\'s: Source Latest, Count at the page size, Order Newest',
+      (await d94.locator('button[id$="-source"]').innerText()).includes(WORD94.latest) && (await d94.locator('[role="group"][id$="-count"]').innerText()).includes(String(PER_PAGE)) &&
+      (await d94.locator('[role="radio"][aria-checked="true"]').innerText()).trim() === 'Newest')
+
+    // ── P0·5's DATA GROUP ON THE SAMPLE, every Source, the canvas read against the app's own rows each time
+    const startTag94 = W94.optionsOf(LIB.orbitWeekly.tags())[0]
+    const startAuthor94 = W94.optionsOf(LIB.orbitWeekly.authors())[0]
+    const stored94 = { source: 'tag', tag: startTag94.slug }
+    await source94(WORD94.tag)
+    const tagBtn94 = await (await data94()).locator('button[id$="-tag"]').innerText()
+    const byTag94 = await until94(feeds94, (f) => same94(expected94(stored94))(f[1]?.titles))
+    check(`step 94 — By tag starts on the sample's fullest tag, "${startTag94.name}" beside "${W94.postsCount(startTag94.count)}" (R-193's order), and the canvas draws its posts, newest first`,
+      tagBtn94.includes(startTag94.name) && tagBtn94.includes(W94.postsCount(startTag94.count)) && same94(expected94(stored94))(byTag94[1]?.titles), JSON.stringify({ tagBtn94, drawn: byTag94[1]?.titles }))
+    const d94b = await data94()
+    await d94b.getByRole('radio', { name: 'Oldest' }).click()
+    for (let n = PER_PAGE; n > 3; n--) {
+      await d94b.getByRole('button', { name: 'Fewer Count' }).click()
+      await page.waitForTimeout(60)
+    }
+    Object.assign(stored94, { order: 'oldest', count: 3 })
+    const three94 = await until94(feeds94, (f) => same94(expected94(stored94))(f[1]?.titles))
+    check('step 94 — Order Oldest and Count 3: the tag\'s three oldest', same94(expected94(stored94))(three94[1]?.titles) && three94[1]?.titles.length === 3, JSON.stringify(three94[1]?.titles))
+    await source94(WORD94.author)
+    Object.assign(stored94, { source: 'author', author: startAuthor94.slug })
+    const authorBtn94 = await (await data94()).locator('button[id$="-author"]').innerText()
+    const byAuthor94 = await until94(feeds94, (f) => same94(expected94(stored94))(f[1]?.titles))
+    check(`step 94 — By author starts on the sample's fullest writer, "${startAuthor94.name}", keeping Count and Order`, authorBtn94.includes(startAuthor94.name) && same94(expected94(stored94))(byAuthor94[1]?.titles), JSON.stringify({ authorBtn94, drawn: byAuthor94[1]?.titles }))
+    await source94(WORD94.featured)
+    stored94.source = 'featured'
+    const featured94 = await until94(feeds94, (f) => same94(expected94(stored94))(f[1]?.titles))
+    check('step 94 — Featured: the sample\'s featured posts, oldest first, three', same94(expected94(stored94))(featured94[1]?.titles), JSON.stringify(featured94[1]?.titles))
+    await source94(WORD94.picked)
+    const dz94 = await data94()
+    const zero94 = await until94(feeds94, (f) => f.length === 1)
+    const dzText94 = (await dz94.innerText()).replace(/\s+/g, ' ')
+    check('step 94 — Hand-picked with nothing picked is ZERO items: the section leaves the canvas, heading and all, its Layers row stays, and the list says so',
+      zero94.length === 1 && (await row94(newKey94).count()) === 1 && dzText94.includes(W94.NO_PICKS), JSON.stringify({ sections: zero94.length }))
+    check('step 94 — P0·5: Count and Order grey at Hand-picked with its two sentences, and Order marks neither value (R-69)',
+      dzText94.includes(RT94.DATA_WORDS.pickedCount) && dzText94.includes(RT94.DATA_WORDS.pickedOrder) && (await dz94.locator('[role="radio"][aria-checked="true"]').count()) === 0, dzText94.slice(0, 260))
+    for (let n = 0; n < 3; n++) {
+      await (await data94()).locator('button[id$="-search"]').click()
+      await page.waitForTimeout(300)
+      await page.locator(':popover-open ul li button').first().click()
+      await page.waitForTimeout(400)
+      await shut94()
+    }
+    // the search offers the sample's posts in their own order, none already picked: the first three, each in turn
+    const want94 = W94.searchPosts(LIB.orbitWeekly.posts().map((p) => ({ id: p.id, title: p.title })), '', []).slice(0, 3).map((p) => p.title)
+    const picked94 = await until94(feeds94, (f) => same94(want94)(f[1]?.titles))
+    check('step 94 — three picks from "Search posts to add": "3 picked", and the canvas draws exactly them, in the picked order',
+      (await (await data94()).locator('[data-picked-count]').innerText()) === W94.PICKED(3) && same94(want94)(await picks94()) && same94(want94)(picked94[1]?.titles),
+      JSON.stringify({ picks: await picks94(), drawn: picked94[1]?.titles }))
+    await (await data94()).locator('[data-pick-handle="0"]').focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    const moved94 = [want94[1], want94[0], want94[2]]
+    const after94 = await until94(feeds94, (f) => same94(moved94)(f[1]?.titles))
+    const live94 = await (await data94()).locator('[data-picked-list] [aria-live="polite"]').textContent()
+    const focus94 = await page.evaluate(() => document.activeElement?.getAttribute('data-pick-handle') ?? null)
+    check('step 94 — ⌥↓ moves a pick one down, says so in P0·3\'s words, keeps the focus on it, and the canvas follows (DW-116)',
+      same94(moved94)(await picks94()) && live94 === RT94.movedTo(1, 3) && focus94 === '1' && same94(moved94)(after94[1]?.titles), JSON.stringify({ picks: await picks94(), live94, focus94 }))
+    await source94(WORD94.tag)
+    const backTag94 = [await (await data94()).locator('button[id$="-tag"]').innerText(), (await until94(feeds94, (f) => same94(expected94({ ...stored94, source: 'tag' }))(f[1]?.titles)))[1]?.titles]
+    await source94(WORD94.picked)
+    check('step 94 — a Source switch loses nothing: By tag brings back its tag, oldest, three; Hand-picked brings back the picks in their moved order',
+      backTag94[0].includes(startTag94.name) && same94(expected94({ ...stored94, source: 'tag' }))(backTag94[1]) && same94(moved94)(await picks94()), JSON.stringify({ backTag94, picks: await picks94() }))
+
+    // ── REASSIGN, DELETE, HIDE, DUPLICATE — each ONE gesture and ONE Undo
+    const newMenu94 = await menu94(newKey94)
+    await shut94()
+    const mainMenu94 = await menu94(gridKey94)
+    await shut94()
+    const heroMenu94 = await menu94(heroKey94)
+    await shut94()
+    check('step 94 — D5c\'s "Make this the main feed" is SECOND in a secondary feed\'s ⋯, after Hide (R-126), and absent on the main feed and on a section that is no feed (UX-DR3)',
+      same94(['Hide', W94.MAKE_MAIN_FEED, 'Rename', 'Duplicate', 'Delete'])(newMenu94) && !mainMenu94.includes(W94.MAKE_MAIN_FEED) && !heroMenu94.includes(W94.MAKE_MAIN_FEED),
+      JSON.stringify({ newMenu94, mainMenu94, heroMenu94 }))
+    await act94(newKey94, W94.MAKE_MAIN_FEED)
+    const re94 = await until94(feeds94, (f) => f.map((x) => x.pager).join() === 'false,true')
+    check('step 94 — Make this the main feed moves the chip in ONE edit, said aloud; the pager moves with it, and the old main feed draws the newest posts as a fixed list',
+      same94([newKey94])(await until94(chips94, same94([newKey94]))) && (await until94(saidNow92, (v) => v === W94.NOW_MAIN(newName94))) === W94.NOW_MAIN(newName94) &&
+      re94.map((f) => f.pager).join() === 'false,true' && same94(expected94({}))(re94[0]?.titles), JSON.stringify({ chips: await chips94(), said: await saidNow92(), pagers: re94.map((f) => f.pager) }))
+    await undo94()
+    check('step 94 — one Undo puts the chip back, and the picks are as they were', same94([gridKey94])(await until94(chips94, same94([gridKey94]))) && same94(moved94)((await until94(feeds94, (f) => same94(moved94)(f[1]?.titles)))[1]?.titles))
+    await act94(gridKey94, 'Delete')
+    const del94 = await until94(feeds94, (f) => f.length === 1)
+    const delSaid94 = W94.withTransfer(`${gridName94} removed`, newName94)
+    check('step 94 — Delete on the main feed hands the flag to the next feed below IN THE SAME EDIT, and says both sentences',
+      (await row94(gridKey94).count()) === 0 && same94([newKey94])(await chips94()) && (await until94(saidNow92, (v) => v === delSaid94)) === delSaid94 && del94.length === 1 && del94[0].pager,
+      JSON.stringify({ chips: await chips94(), said: await saidNow92(), feeds: del94.map((f) => f.pager) }))
+    await undo94()
+    check('step 94 — one Undo restores the feed AND its flag', (await row94(gridKey94).count()) === 1 && same94([gridKey94])(await until94(chips94, same94([gridKey94]))))
+    await act94(gridKey94, 'Hide')
+    const hideSaid94 = await until94(saidNow92, (v) => v === W94.NOW_MAIN(newName94))
+    const hiddenMenu94 = await menu94(gridKey94)
+    await shut94()
+    check('step 94 — Hide on the main feed hands the flag on, saying only "{name} is now the main feed.", and a hidden row is never offered the flag',
+      same94([newKey94])(await chips94()) && hideSaid94 === W94.NOW_MAIN(newName94) && hiddenMenu94[0] === 'Show' && !hiddenMenu94.includes(W94.MAKE_MAIN_FEED), JSON.stringify({ chips: await chips94(), said: hideSaid94, hiddenMenu94 }))
+    await act94(gridKey94, 'Show')
+    check('step 94 — showing it again never takes the flag back', same94([newKey94])(await chips94()), JSON.stringify(await chips94()))
+    await undo94()
+    await undo94()
+    check('step 94 — two Undos put the chip back on the post grid, shown', same94([gridKey94])(await until94(chips94, same94([gridKey94]))) && (await until94(feeds94, (f) => f.length === 2)).length === 2)
+    const beforeDup94 = (await rows94()).map((r) => r.key)
+    await act94(gridKey94, 'Duplicate')
+    const copy94 = (await rows94()).map((r) => r.key).filter((k) => !beforeDup94.includes(k))
+    check('step 94 — Duplicate on the main feed gives a copy that is never the main feed, and no second pager (DW-194)',
+      copy94.length === 1 && same94([gridKey94])(await chips94()) && (await until94(feeds94, (f) => f.length === 3)).filter((f) => f.pager).length === 1, JSON.stringify({ copy94, chips: await chips94() }))
+    await undo94()
+    await act94(newKey94, 'Delete')
+    check('step 94 — deleting a secondary feed moves nothing and says only its own sentence', same94([gridKey94])(await chips94()) && (await until94(saidNow92, (v) => v === `${newName94} removed`)) === `${newName94} removed`, await saidNow92())
+    await act94(gridKey94, 'Hide')
+    check('step 94 — hiding the ONLY feed keeps its flag, hidden (5.16\'s rule), and Home never carries the archive note — its page 2 is another file',
+      same94([gridKey94])(await chips94()) && (await page.locator('[data-feedless-note]').count()) === 0)
+    await undo94()
+    await act94(gridKey94, 'Delete')
+    check('step 94 — deleting the ONLY feed is allowed: no chip anywhere, no feed on the canvas', (await until94(chips94, (c) => c.length === 0)).length === 0 && (await until94(feeds94, (f) => f.length === 0)).length === 0)
+    await undo94()
+    check('step 94 — one Undo brings it back as the main feed', same94([gridKey94])(await until94(chips94, same94([gridKey94]))))
+
+    // ── LATEST POST: R-108's Source alone, and Hand-picked holding its own limit
+    await select94(heroKey94)
+    const hd94 = await data94()
+    check('step 94 — R-108: Latest Post\'s Data group offers Source alone — no Count, no Order',
+      (await hd94.locator('button[id$="-source"]').count()) === 1 && (await hd94.locator('[role="group"][id$="-count"]').count()) === 0 && (await hd94.locator('[role="radiogroup"]').count()) === 0)
+    await source94(WORD94.picked)
+    await (await data94()).locator('button[id$="-search"]').click()
+    await page.waitForTimeout(300)
+    const heroPick94 = (await page.locator(':popover-open ul li button').first().innerText()).trim()
+    await page.locator(':popover-open ul li button').first().click()
+    await page.waitForTimeout(700)
+    const heroNow94 = await until94(heroCard94, (t) => t === heroPick94)
+    const held94 = await page.evaluate(() => {
+      const b = document.querySelector('#editor-controls [data-data-group] button[id$="-search"]')
+      return b && { disabled: b.getAttribute('aria-disabled'), reason: document.getElementById(b.getAttribute('aria-describedby') ?? '')?.textContent ?? null }
+    })
+    check('step 94 — a fixed query\'s Hand-picked holds its own limit: one pick, the card shows it, and the search greys with its reason',
+      heroNow94 === heroPick94 && (await (await data94()).locator('[data-picked-count]').innerText()) === W94.PICKED(1) && held94?.disabled === 'true' && held94?.reason === W94.HOLDS(pilot(HERO_DESIGN94).name, 1),
+      JSON.stringify({ heroNow94, heroPick94, held94 }))
+    await source94(WORD94.latest)
+    const heroQ94 = pilot(HERO_DESIGN94).dataBindings[HERO_KEY94]
+    const newest94 = CV94.rowsFor(heroQ94, CV94.sampleRows({ [HERO_KEY94]: heroQ94 })[HERO_KEY94])[0]?.title
+    check('step 94 — Latest again shows the newest post, and the pick waits in its own field', (await until94(heroCard94, (t) => t === newest94)) === newest94, String(await heroCard94()))
+
+    // ── FR-H2's ARCHIVE CASE on the Tag canvas: its only feed hidden says so at the head of Layers
+    await page.goto(editorUrl('tag'), { waitUntil: 'load' })
+    await painted('tag')
+    const tagMain94 = (await until94(chips94, (c) => c.length === 1))[0]
+    check('step 94 — the Tag canvas opens with its post grid the main feed', tagMain94 !== undefined, JSON.stringify(await chips94()))
+    if (tagMain94 !== undefined) {
+      await act94(tagMain94, 'Hide')
+      const note94 = await until94(() => page.locator('[data-feedless-note]').textContent().catch(() => null), (t) => t === W94.FEEDLESS('Tag'))
+      check('step 94 — its only feed hidden, the Tag canvas says so at the head of Layers — and the hidden feed keeps the flag', note94 === W94.FEEDLESS('Tag') && same94([tagMain94])(await chips94()), JSON.stringify(note94))
+      await act94(tagMain94, 'Show')
+      const gone94 = await until94(() => page.locator('[data-feedless-note]').count(), (n) => n === 0)
+      await undo94()
+      await undo94()
+      check('step 94 — the note goes the moment a feed shows again, and two Undos leave the Tag page as it was',
+        gone94 === 0 && (await until94(() => page.locator('[data-feedless-note]').count(), (n) => n === 0)) === 0 && same94([tagMain94])(await chips94()))
+    }
+
+    // ── …AND THE NEXT EDIT STORES THE REPAIR: leaving flushes Home, whose row now carries the flag on its post grid alone
+    await leaveEditor()
+    const stored94b = await pollRow92('home', (doc) => (doc?.instances ?? []).some((i) => i.isMainFeed === true))
+    check('step 94 — the repair is STORED with the next edit of that canvas: the `home` row carries the flag on the post grid alone',
+      same94([idOf94(gridKey94)])((stored94b?.instances ?? []).filter((i) => i.isMainFeed === true).map((i) => i.instanceId)), JSON.stringify(stored94b?.instances?.map((i) => [i.designId, i.isMainFeed])))
+
+    // ── AD-36: a CRAFTED stored value, planted through the service key after the editor has gone (step 52's pattern)
+    const MARK94 = 'INFLOZO-CRAFTED-94'
+    const CRAFT94 = `x'}}{{#get "members"}}${MARK94}{{/get}}`
+    const valid94 = LIB.orbitWeekly.posts()[2]
+    const crafted94 = {
+      ...seedHome94,
+      instances: seedHome94.instances.flatMap((i) =>
+        i.designId === HERO_DESIGN94 ? [{ ...i, data: { [HERO_KEY94]: { source: 'picked', picks: [{ id: CRAFT94, title: CRAFT94 }, { id: valid94.id, title: valid94.title }] } } }]
+        : i.designId === MAIN_DESIGN ? [
+          i,
+          { ...i, instanceId: `${i.instanceId}-crafted`, layerName: 'Crafted feed', isMainFeed: false, data: { posts: { source: 'tag', tag: CRAFT94, count: CRAFT94, order: CRAFT94 } } },
+          // and a pick in Ghost's own id shape that the sample does not hold: drawn as nothing, its row kept with a note
+          { ...i, instanceId: `${i.instanceId}-lacking`, layerName: 'Lacking feed', isMainFeed: false, data: { posts: { source: 'picked', picks: [{ id: 'f'.repeat(24), title: 'A post the sample lacks' }, { id: valid94.id, title: valid94.title }] } } },
+        ]
+        : [i]),
+    }
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: crafted94 }) })
+    // read back by VALUE, not by its serialisation: `jsonb` stores an object's keys in its own order
+    const back94 = (await rowOf92('home'))?.instances ?? []
+    check('step 94 — the control: the crafted values are stored as written',
+      back94.some((i) => i.instanceId.endsWith('-crafted') && i.data?.posts?.tag === CRAFT94) && back94.some((i) => i.data?.[HERO_KEY94]?.picks?.[0]?.id === CRAFT94), JSON.stringify(back94.map((i) => i.instanceId)))
+    await page.goto(editorUrl(), { waitUntil: 'load' })
+    await painted('home')
+    const cf94 = await until94(feeds94, (f) => f.length === 3)
+    const html94 = await canvasFrame().evaluate(() => document.documentElement.outerHTML)
+    check('step 94 — AD-36: the fold IGNORES a crafted tag, Count and Order — that feed draws the default query, the newest posts at the page size — and drops a crafted pick while the valid one shows; nothing crafted reaches the canvas',
+      cf94.length === 3 && same94(expected94({}))(cf94[1].titles) && !cf94[1].pager && (await until94(heroCard94, (t) => t === valid94.title)) === valid94.title && !html94.includes(MARK94) && !html94.includes("x'}}"),
+      JSON.stringify({ drawn: cf94.map((f) => f.titles.length), hero: await heroCard94() }))
+    check('step 94 — a pick the sample does not hold draws NOTHING — the feed draws the one it does hold, never re-sorted — and draws no pager',
+      same94([valid94.title])(cf94[2]?.titles) && !cf94[2]?.pager, JSON.stringify(cf94[2]))
+    const lackingKey94 = (await rows94()).find((r) => r.name === 'Lacking feed')?.key
+    if (lackingKey94 !== undefined) {
+      await select94(lackingKey94)
+      const notes94 = await (await data94()).locator('[data-pick]').evaluateAll((els) => els.map((e) => e.querySelector('[data-pick-note]')?.textContent ?? null))
+      check('step 94 — …and its row STAYS in the picked list, saying so: "Not in the sample content."', same94([W94.PICK_LACKING('sample'), null])(notes94), JSON.stringify(notes94))
+    } else check('step 94 — the lacking feed has its Layers row', false, JSON.stringify(await rows94()))
+    const craftedKey94 = (await rows94()).find((r) => r.name === 'Crafted feed')?.key
+    if (craftedKey94 !== undefined) {
+      await select94(craftedKey94)
+      const cd94 = (await (await data94()).innerText()).replace(/\s+/g, ' ')
+      check('step 94 — …and the panel prints none of it: By tag with no tag chosen, Count and Order at the base', !cd94.includes(MARK94) && cd94.includes(WORD94.tag) && (await (await data94()).locator('[role="group"][id$="-count"]').innerText()).includes(String(PER_PAGE)), cd94.slice(0, 200))
+    } else check('step 94 — the crafted feed has its Layers row', false, JSON.stringify(await rows94()))
+
+    // THE WALK LEAVES THE PROJECT AS IT FOUND IT: the seed, and the Tag canvas's row as it was before this step
+    await leaveEditor()
+    if (tagBefore94 === null) await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.tag`, { method: 'DELETE' })
+    else await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.tag`, { method: 'PATCH', body: JSON.stringify({ doc: tagBefore94 }) })
+    await freshLoad()
+    check('step 94 — restored: the home row is the seed again, and the Tag canvas stores what it stored before this step',
+      JSON.stringify(await rowOf92('home')) === JSON.stringify(seedHome94) && JSON.stringify(await rowOf92('tag')) === JSON.stringify(tagBefore94))
+
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     for (const path of ['/harness/editor', '/harness/canvas']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
@@ -5296,7 +5665,7 @@ async function main() {
     // session, and that page's zod JIT probe is a recorded violation of its own (DW-201) — the review's first complete
     // run failed here on that one event and no other
     const session = violations.splice(0).filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
-    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — and Story 5.15\'s `core`, run from the editor against the canvas window while designing and in Preview, and Preview itself — in by the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing pressed in it — and Story 5.16\'s page 2, entered from D5d\'s row on Home and on Tag, edited, reloaded, measured at three devices in two windows, its header\'s R-180 ask cancelled and confirmed, and left by its pill — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
+    check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — and Story 5.15\'s `core`, run from the editor against the canvas window while designing and in Preview, and Preview itself — in by the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing pressed in it — and Story 5.16\'s page 2, entered from D5d\'s row on Home and on Tag, edited, reloaded, measured at three devices in two windows, its header\'s R-180 ask cancelled and confirmed, and left by its pill — and Story 5.19\'s main feed, its chip pointed at and selected, a second feed placed, reassigned, deleted, hidden, shown, duplicated and undone, P0·5\'s Data group through every Source with three picks moved by ⌥↓, Latest Post\'s one pick, the Tag canvas\'s archive note and a crafted stored value — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
     // The test runs on a TIMER, never inside the evaluate: V8 lets code run during a DevTools evaluation generate code

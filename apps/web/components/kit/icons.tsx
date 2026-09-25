@@ -614,6 +614,12 @@ export const MenuLines = (p: IconProps) => (
     <line x1="4" y1="17" x2="20" y2="17" />
   </Icon>
 )
+/* D5c's "Make this the main feed" (`D5 Canvas Markers and Template Switcher.dc.html:300`), read verbatim — Story 5.19. */
+export const Star = ({ strokeWidth = 1.7, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M12 3l2.6 5.6 6.1.8-4.5 4.2 1.1 6-5.3-3-5.3 3 1.1-6L3.3 9.4l6.1-.8z" />
+  </Icon>
+)
 export const Copy = (p: IconProps) => (
   <Icon {...p}>
     <rect x="9" y="9" width="12" height="12" rx="2" />

@@ -487,10 +487,14 @@ check("A4 #13 — R-108 and FR-H8: the card is the newest post with a sized pict
   const none = rt.renderCanvas(doc(), entry.html, input(entry, 'home.hbs', { getRows: { latest: [] } }))
   if (none.includes(newest.title)) throw new Error('an empty query still drew a card')
   const theme = rt.renderTheme(doc(), entry.html, input(entry, 'home.hbs')).template
-  if (!theme.includes('{{#get "posts" limit="1" order="published_at desc"}}')) throw new Error(`the theme does not query one post:\n${theme}`)
+  // Story 5.19: every posts query includes its tags and writers — recorded as the difference between the card's tag
+  // printing and printing nothing (MEASUREMENTS §53)
+  if (!theme.includes('{{#get "posts" limit="1" order="published_at desc" include="tags,authors"}}')) throw new Error(`the theme does not query one post with its tag:\n${theme}`)
   // FR-H8: the srcset is inside `{{#if feature_image}}`, so the unguarded state is unreachable on the theme
   if (!/\{\{#if feature_image\}\}[^]*?srcset="\{\{/.test(theme)) throw new Error(`the srcset is not inside {{#if feature_image}}:\n${theme}`)
-  if (rt.sidebar(entry, {}).groups.some((g) => g.id === 'data')) throw new Error('the panel offers a number of posts')
+  // R-108, and Story 5.19: a fixed query's Data group is Source ALONE — which post, never how many or in what order
+  const data = rt.sidebar(entry, {}).groups.find((g) => g.id === 'data')?.rows.map((r) => r.control) ?? []
+  if (data.join() !== 'source') throw new Error(`the panel offers a number or an order of posts, or no Source: ${data.join(', ')}`)
 })
 
 check('A1 #1 and A22 #1 — the member arms on the canvas: Sign in and Subscribe signed out, Account signed in, the form signed out; and none of the asks when self-signup is off', () => {

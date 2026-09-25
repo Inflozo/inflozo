@@ -323,8 +323,8 @@ pnpm check                             # lint + typecheck + every package test
 
 Since Story 4.2 the agreement proof and the AD-36 proof are
 `packages/section-runtime/src/agreement.test.ts` and `src/ad36.test.ts`, so `pnpm check` — and
-therefore CI — runs them, and the package's test run prints its own count. The 70-section gscan harness
-is still `cd tools/stress && npm install && node build.js && node gate.js theme`, after a root
+therefore CI — runs them, and the package's test run prints its own count. The stress theme's gscan
+harness is still `cd tools/stress && npm install && node build.js && node gate.js theme`, after a root
 `pnpm install` and on Node 24, because `compile.js` is now an adapter over the TypeScript package.
 
 The database proof is `architecture-.../RLS-TEST.sql`; run it against a Postgres 17 container with

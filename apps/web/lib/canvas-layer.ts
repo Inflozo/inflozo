@@ -110,10 +110,14 @@ export function chromeLayers(doc: Document): ChromeLayers {
     const el = doc.querySelector<HTMLElement>(`[data-inflozo-chrome="${kind}"]`) ?? doc.createElement('div')
     el.setAttribute('data-inflozo-chrome', kind)
     // `all: initial` so nothing of the site's body is inherited; the rest is the editor body's own type (globals.css)
+    // `--tw-border-style` (Story 5.19, found by the MAIN FEED chip): Tailwind's `border` reads it, and its `solid` is an
+    // `@property` initial value — which a shadow root's ADOPTED sheet does not register, so every chrome border drew
+    // none (the PAUSED chip's hairline included). Declared here, on the host, it is inherited as the initial value was.
+    // The shadow utilities read four more such variables and still draw nothing in this layer (DW-256).
     el.style.cssText =
       `all:initial;position:${kind === 'page' ? 'absolute' : 'fixed'};left:0;top:0;width:0;height:0;` +
       `z-index:2147483647;pointer-events:none;transform-origin:0 0;line-height:1.5;${stacks}` +
-      'font-family:var(--font-ui);-webkit-font-smoothing:antialiased'
+      '--tw-border-style:solid;font-family:var(--font-ui);-webkit-font-smoothing:antialiased'
     if (!el.isConnected) doc.body.append(el)
     const shadow = el.shadowRoot ?? el.attachShadow({ mode: 'open' })
     shadow.adoptedStyleSheets = [sheet]
@@ -135,8 +139,9 @@ export const pinned = (root: HTMLElement) => {
   return position === 'sticky' || position === 'fixed'
 }
 
-/** Places one chrome element over its root, in its host's units (one unit is one screen pixel); writes only on change. */
-export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fill' | 'top-left' | 'top-right' | 'above' | 'bottom-left') {
+/** Places one chrome element over its root, in its host's units (one unit is one screen pixel); writes only on change.
+ *  `offset` moves a `top-left` element off the corner — Story 5.19's MAIN FEED chip, against the name tag's right edge. */
+export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fill' | 'top-left' | 'top-right' | 'above' | 'bottom-left', offset = { x: 0, y: 0 }) {
   const host = (el.getRootNode() as ShadowRoot).host as HTMLElement | undefined
   if (!host) return
   const transform = `scale(${1 / fit})`
@@ -164,7 +169,7 @@ export function place(el: HTMLElement, root: HTMLElement, fit: number, how: 'fil
       : how === 'fill'
       ? { left: `${left}px`, top: `${top}px`, width: `${r.width * fit}px`, height: `${r.height * fit}px` }
       : how === 'top-left'
-        ? { left: `${left}px`, top: `${top}px` }
+        ? { left: `${left + offset.x}px`, top: `${top + offset.y}px` }
         // Story 5.15: 8px inside the bottom-left corner — a section's top corners are the tag's and the pill's (R-125)
         : how === 'bottom-left'
           ? { left: `${left + 8}px`, top: `${(r.bottom - h.top) * fit - 8 - el.offsetHeight}px` }

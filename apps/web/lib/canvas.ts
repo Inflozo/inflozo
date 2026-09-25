@@ -4,14 +4,62 @@
 //
 // Extracted from `pilots/review.tsx`'s `paint()` and `shown()` (Story 4.10) without a change in behaviour.
 
-import { orbitWeekly } from '@inflozo/library'
-import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
+import { DEFAULT_LIMIT, orbitWeekly } from '@inflozo/library'
+import type { DataBinding, IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { renderCanvas, withData } from '@inflozo/section-runtime'
 import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/section-runtime'
 import { reader, SETTINGS, siteRows, siteSource, sitePieces, zoneOf, type LiveQuery, type Look, type Row } from './live-content.ts'
 
-/** One design's declared queries, each in both orders at the Count's ceiling (`pilotRows()`). */
+/** A section's queries' rows, each in both orders at the Count's ceiling (`sampleRows`, `siteRows`). */
 export type DesignRows = Readonly<Record<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>>
+
+/** One set of queries — a design's declared ones, or since Story 5.19 an instance's FOLDED ones and its secondary feed's. */
+export type Queries = Readonly<Record<string, DataBinding>>
+
+/** ponytail: one entry per distinct query a session asks of the bundled publication, which never changes — a handful
+ *  per page. Bound it the day a session can ask thousands. */
+const sampled = new Map<string, { newest: readonly unknown[]; oldest: readonly unknown[] }>()
+
+/**
+ * STORY 5.19 — THE SAMPLE'S ROWS FOR THESE QUERIES, in `DesignRows`' shape: each at the Count's ceiling in both date
+ * orders, and a fixed query or a hand-picked list its own resolution (the picks in their dragged order, a pick the
+ * sample does not hold skipped — as Ghost's per-id get renders nothing for it). Resolved in the browser with the
+ * library's own `orbitWeekly.resolveSource`, because since the Data group a query is the INSTANCE's: a Source, a tag,
+ * a writer or a list of picks the server cannot know per design. ONE function for the canvas, the Section Picker's
+ * cards, the ring's tiles, the controls review and `pilotRows`, so a design's declared queries resolve exactly as they
+ * did (`pilots.test.ts` holds the two to one answer).
+ */
+export function sampleRows(queries: Queries | undefined): DesignRows {
+  return Object.fromEntries(
+    Object.entries(queries ?? {}).map(([key, b]) => {
+      const id = JSON.stringify(b)
+      let both = sampled.get(id)
+      if (both === undefined) {
+        if (b.fixed === true || b.ids !== undefined) {
+          const own = orbitWeekly.resolveSource(b)
+          both = { newest: own, oldest: own }
+        } else {
+          both = {
+            newest: orbitWeekly.resolveSource({ ...b, limit: 100, order: 'published_at desc' }),
+            oldest: orbitWeekly.resolveSource({ ...b, limit: 100, order: 'published_at asc' }),
+          }
+        }
+        sampled.set(id, both)
+      }
+      return [key, both]
+    }),
+  )
+}
+
+/** One query's rows as the canvas shows them: the stored Order picks the list and the Count slices it; a hand-picked
+ *  list shows every pick it found (never Ghost's default fifteen — past 25 is allowed, P0·5); a query with neither
+ *  shows Ghost's default. */
+export function rowsFor(binding: DataBinding, both: { newest: readonly unknown[]; oldest: readonly unknown[] } | undefined): unknown[] {
+  const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
+  const fallback: unknown = DEFAULT_LIMIT[binding.source as keyof typeof DEFAULT_LIMIT]
+  const cap = binding.ids !== undefined ? binding.ids.length : binding.limit ?? (typeof fallback === 'number' ? fallback : 100)
+  return (list ?? []).slice(0, cap)
+}
 
 /** What a template hands a section — `orbitWeekly.templateContext`'s answer, or the same assembly over the site's rows. */
 export type RenderContext = ReturnType<typeof orbitWeekly.assemble>
@@ -32,7 +80,7 @@ export type SitePage = {
   zone: string
   /** the render context for a section at each target */
   contexts: Readonly<Record<string, RenderContext>>
-  /** each design's `{{#get}}` rows, in `DesignRows`' shape */
+  /** each set of queries' rows, in `DesignRows`' shape, by the key `sitePage` was handed it under */
   rows: Readonly<Record<string, DesignRows>>
 }
 
@@ -57,13 +105,16 @@ export function sitePage(
     pageFile: string
     /** every target a section on this page renders at */
     targets: readonly string[]
-    /** every design drawn, for its `{{#get}}` rows */
-    designs: readonly SectionRegistryEntry[]
+    /** every set of queries the page asks, by a key of the caller's own — each section's FOLDED queries and its
+     *  secondary feed's (Story 5.19), or a card's design's declared ones — for their rows */
+    queries: Readonly<Record<string, Queries>>
+    /** Story 5.19 — the project's `posts_per_page`: the size of every page of a list, on the site as on the sample */
+    perPage: number
   },
 ): { need: readonly LiveQuery[] } | { nothing: 'tag' | 'author' } | { ready: SitePage } {
   const r = reader(look)
   const kind = orbitWeekly.subjectKindOf(o.file)
-  const w = { kind, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: orbitWeekly.postsPerPage() }
+  const w = { kind, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: o.perPage }
   const source = siteSource(w, r)
   const { subject, fellBack } = orbitWeekly.resolveSubject(o.file, o.stored, source)
   // the subject waits on a read (R-193's list, or the stored one's own `filter=slug:`): what depends on it waits too,
@@ -71,7 +122,7 @@ export function sitePage(
   const unresolved = r.need.length > 0
   const site = r.got(SETTINGS)?.rows[0]
   const zone = zoneOf(site)
-  const rows = Object.fromEntries(o.designs.map((e) => [e.id, siteRows(e.dataBindings, r, zone)]))
+  const rows = Object.fromEntries(Object.entries(o.queries).map(([key, queries]) => [key, siteRows(queries, r, zone)]))
   if (unresolved) return { need: r.need }
   if ((kind === 'tag' || kind === 'author') && subject === null) return { nothing: kind }
   // page 1's own count is always read: whether a page 2 exists is decided by it alone (§51 — past the last page Ghost
@@ -119,17 +170,9 @@ export function wheelToFrame(win: Window | null | undefined, deltaX: number, del
   win.scrollBy(deltaX * k, deltaY * k)
 }
 
-/** Each query's rows as the canvas shows them: the stored Order picks the list, the fixed or stored limit slices it,
- *  and a query with neither shows Ghost's default. */
+/** Each query's rows as the canvas shows them, through the ONE fold (`withData`) — `rowsFor` per query. */
 export const shownRows = (entry: SectionRegistryEntry, state: ControlState, rows: DesignRows | undefined) =>
-  Object.fromEntries(
-    Object.entries(withData(entry.dataBindings, state.data)).map(([key, binding]) => {
-      const both = rows?.[key]
-      const list = binding.order === 'published_at asc' ? both?.oldest : both?.newest
-      const fallback: unknown = orbitWeekly.DEFAULT_LIMIT[binding.source as keyof typeof orbitWeekly.DEFAULT_LIMIT]
-      return [key, (list ?? []).slice(0, binding.limit ?? (typeof fallback === 'number' ? fallback : 100))]
-    }),
-  )
+  Object.fromEntries(Object.entries(withData(entry.dataBindings, state.data)).map(([key, binding]) => [key, rowsFor(binding, rows?.[key])]))
 
 /** One section's canvas markup, pictures mapped. Throws when the design cannot be drawn — the caller says so loudly. */
 export function renderSection(
@@ -168,9 +211,15 @@ export function renderSection(
      *  `templateContext` and `o.rows` — which is why `/pilots`, `tools/check-snapshots.mjs`, the render matrix and the
      *  keyboard harness are untouched and are the story's control. */
     live?: { context: RenderContext; rows: DesignRows | undefined }
+    /** Story 5.19 — the project's `posts_per_page`, which sizes the page's own list on the sample as on the site. Omitting
+     *  it is the dataset's, today's render — `/pilots`, the snapshots, the matrix, the picker's cards and the tiles. */
+    perPage?: number
+    /** Story 5.19 — this section is a SECONDARY feed: its own query and the rows it returned, which the runtime renders
+     *  in place of the page's native posts, with no pager (`RenderInput.feed`). Omitted: the main feed, or no feed. */
+    secondary?: { query: DataBinding; rows: readonly unknown[] }
   },
 ): string {
-  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject)
+  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage)
   const site = o.url === undefined ? ctx.site : { ...ctx.site, currentUrl: o.url }
   return withImages(renderCanvas(doc as unknown as RuntimeDocument, entry.html, {
     target: o.target,
@@ -190,6 +239,7 @@ export function renderSection(
     icons: o.icons,
     editing: o.editing,
     ...(o.page === undefined ? {} : { tokens: { page_number: String(o.page) } }),
+    ...(o.secondary === undefined ? {} : { feed: o.secondary }),
   }))
 }
 

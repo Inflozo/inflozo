@@ -5,7 +5,8 @@ import { join } from 'node:path'
 import { ringFor, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
-import { CONTROLS_DIR, canvasDocument, imagePool, linkResources, poolImage, queryRows, referenceSwatches, sample, samples } from './lib/controls-review.ts'
+import { CONTROLS_DIR, canvasDocument, imagePool, linkResources, poolImage, referenceSwatches, sample, samples } from './lib/controls-review.ts'
+import { sampleRows } from './lib/canvas.ts'
 
 // Story 4.5's review surface, held by the files it reads — the fences `style-guide.test.ts` put around
 // Story 4.4's page, for the controls review. A core package cannot open a file, so the half of the
@@ -77,9 +78,10 @@ test('the swatches are the reference tokens, and every colour role has one', () 
 
 // review: the page's Data rows are the one thing the theme's {{#get}} order is not compared against
 test('each query is read in both orders, oldest ascending and newest descending by published_at', () => {
-  const rows = queryRows(sample())
+  // Story 5.19 — the page resolves each state's rows with the editor's own `sampleRows`; `queryRows` was its copy
+  const rows = sampleRows(sample().dataBindings)
   assert.ok(Object.keys(rows).length > 0, 'the sample declares a query')
-  const days = (list: unknown[]) => list.map((r) => String((r as { published_at: string }).published_at))
+  const days = (list: readonly unknown[]) => list.map((r) => String((r as { published_at: string }).published_at))
   for (const { newest, oldest } of Object.values(rows)) {
     assert.ok(newest.length > 1 && oldest.length === newest.length)
     assert.deepEqual(days(oldest), [...days(oldest)].sort())

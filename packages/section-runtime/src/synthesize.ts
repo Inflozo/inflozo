@@ -31,10 +31,13 @@ import { compilesTo } from '@inflozo/library'
 import type { PropDef } from '@inflozo/library'
 
 /** What synthesis asks the library about one design — the same two questions `editorData` asks (`read.ts:84-90`),
- *  plus the category union a fresh instance's content comes from. `undefined` means the library holds no such design. */
+ *  plus the category union a fresh instance's content comes from. `undefined` means the library holds no such design.
+ *  Story 5.19 — and `bindingContext`, because the main-feed rule beside this one (`main-feed.ts`'s `designate`) asks the
+ *  same library which designs are FEEDS (their contexts include the native `posts`). */
 export type SynthesisEntry = {
   compileTarget: readonly string[]
   contentSchema: Readonly<Record<string, PropDef>>
+  bindingContext: readonly string[]
 }
 export type SynthesisLibrary = (designId: string) => SynthesisEntry | undefined
 

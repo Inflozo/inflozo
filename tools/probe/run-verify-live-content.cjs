@@ -25,6 +25,13 @@
  * (`securitypolicyviolation`). The request count of the full walk is recorded — the evidence `REQUEST_CEILING` is
  * generous.
  *
+ * STORY 5.19 ADDS, on both majors: Latest Post printing the newest post's own tag (the recorder found a `{{#get}}` carries
+ * none without `include`, MEASUREMENTS §53); the main feed duplicated into a SECONDARY feed, and P0·5's Data group walked
+ * over the site's own posts — By tag and By author starting on the fullest, Order and Count, Featured, and three
+ * Hand-picked posts moved by ⌥↓ — each drawn exactly as Ghost answers the same filter read here from Node; a Source
+ * switch that keeps the tag and the picks and costs no request inside 60 s; and, in the reader's session, the chip
+ * still shown while every Data control and every ⋯ is disabled (R-192).
+ *
  * EVERY EXPECTATION IS DERIVED — the words from `apps/web/lib/live-content.ts` and `lib/preview-subject.ts`, the site's
  * own posts, tags and writers from the site itself (read here, from Node, with the same key) — and never restated
  * (standing rule 4, R-170). Node 24: it type-strips the `.ts` it reads.
@@ -126,6 +133,10 @@ async function main() {
   const { seed } = await import(pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
   const W = LIVE.LIVE_WORDS
   const PER_PAGE = OW.postsPerPage()
+  // Story 5.19 — the Data group's words and the vocabulary's Source words, each from its one list (R-170)
+  const DG = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/data-group.ts')).href)
+  const { POST_SOURCE_WORDS: SRC } = await import(pathToFileURL(path.join(REPO, 'packages/library/src/vocabulary.ts')).href)
+  const { movedTo } = await import(pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href)
 
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
@@ -310,6 +321,39 @@ async function main() {
       await page.locator(`#editor-template-menu [data-canvas="${canvas}"]`).click()
       return paintedFrom(canvas, source)
     }
+    // ── Story 5.19: Layers rows by key with D5c's chip, a row's ⋯ item, P0·5's Data group, and the canvas's post grids ──
+    const rows519 = () => page.evaluate(() => [...document.querySelectorAll('#editor-layers [data-layer-row]')].map((r) => ({
+      key: r.getAttribute('data-layer-row'), name: r.querySelector('button')?.textContent ?? '', chip: r.querySelector('[data-main-feed-chip]') !== null,
+    })))
+    const act519 = async (key, label) => {
+      await page.locator(`#editor-layers [data-layer-row="${key}"]`).getByRole('button', { name: /^More for / }).click()
+      await page.waitForTimeout(250)
+      await page.locator(':popover-open').getByRole('button', { name: label, exact: true }).click()
+      await page.waitForTimeout(600)
+    }
+    const data519 = async () => {
+      const head = page.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/ })
+      if ((await head.getAttribute('aria-expanded')) !== 'true') await head.click()
+      await page.waitForTimeout(250)
+      return page.locator('#editor-controls [data-data-group]')
+    }
+    const source519 = async (word) => {
+      await (await data519()).locator('button[id$="-source"]').click()
+      await page.waitForTimeout(250)
+      await page.locator(':popover-open').getByRole('button', { name: word, exact: true }).click()
+    }
+    const grids519 = async () => (await canvasFrame()).evaluate(() => [...document.querySelectorAll('#canvas > .a17-1')].map((s) => ({
+      titles: [...s.querySelectorAll('.a17-1__post-title')].map((t) => t.textContent.trim()), pager: s.querySelector('.a17-1__pager') !== null,
+    })))
+    /** read until `test` holds — a site read takes one real round trip — then answer the read, whichever way it went */
+    const until519 = async (read, test) => {
+      for (let i = 0; i < 60; i++) {
+        if (test(await read())) break
+        await page.waitForTimeout(250)
+      }
+      return read()
+    }
+    const same519 = (a) => (b) => JSON.stringify(a) === JSON.stringify(b)
 
     for (const m of MAJORS) {
       const g = GHOST[m]
@@ -505,6 +549,23 @@ async function main() {
             const b = document.querySelector('[data-shortfall-sample]')
             return b && { native: b.disabled, aria: b.getAttribute('aria-disabled'), words: document.querySelector('[data-shortfall]')?.textContent?.replace(/\s+/g, ' ').trim() }
           })
+          // Story 5.19 — R-192 over the main feed: its chip still shown, every ⋯ disabled (so "Make this the main feed" cannot
+          // be reached), and every control of its Data group disabled, the group's header still opening
+          const bHead = B.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/ })
+          if ((await bHead.count()) === 1 && (await bHead.getAttribute('aria-expanded')) !== 'true') await bHead.click()
+          await B.waitForTimeout(300)
+          const bRead = await B.evaluate(() => {
+            const controls = [...document.querySelectorAll('#editor-controls [data-data-group] button, #editor-controls [data-data-group] input')]
+            return {
+              chip: document.querySelector('#editor-layers [data-main-feed-chip]') !== null,
+              panelChip: document.getElementById('editor-panel-main-feed')?.textContent ?? null,
+              more: [...document.querySelectorAll('#editor-layers button[aria-label^="More for "]')].every((b) => b.matches(':disabled')),
+              data: controls.length > 0 && controls.every((c) => c.matches(':disabled')),
+              controls: controls.length,
+            }
+          })
+          check(`${tag} — R-192: reading along, the main feed's chip still shows in Layers and at the panel head, while every ⋯ and every Data control is disabled`,
+            bRead.chip && bRead.panelChip === DG.MAIN_FEED && bRead.more && bRead.data, JSON.stringify(bRead))
           if (bNote !== null) await B.locator('[data-shortfall-sample]').click()
           const bSample = await B.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.source === 'sample', null, { timeout: 10000 }).then(() => true, () => false)
           const bFocus = await B.evaluate(() => document.activeElement?.id ?? null)
@@ -588,6 +649,128 @@ async function main() {
         await page.unroute(`${g.origin}/**`)
         await page.locator('[data-source-row="site"]').click()
         check(`${tag} — …and with the network back, choosing the site reads again and paints its content`, await paintedFrom('home', 'site', 30000), JSON.stringify(await pill()))
+      }
+
+      // ── STORY 5.19 — P0·5's DATA GROUP OVER THE SITE'S OWN POSTS. The session the step above opened is on Home, reading
+      //    the site. Every expected list is Ghost's own answer to the same filter, read here from Node with the same key. ──
+      {
+        const PPP = (await rest(`/projects?id=eq.${P[m]}&select=posts_per_page`)).body?.[0]?.posts_per_page
+        const titles = async (params) => (await ghostRead(m, 'posts', { include: 'tags,authors', formats: 'mobiledoc', ...params })).posts.map((p) => p.title)
+        // Latest Post's card: the recorder found a {{#get}} carries no tags without `include` (§53), so the theme now asks.
+        // Both test sites' newest post carries no tag (§53's `get_include` row), so the card is first pointed at the
+        // site's fullest tag — Latest Post's own Source, By tag — whose newest post carries at least that one
+        const startTag519 = DG.optionsOf(tagsList)[0]
+        const cardNow = async () => (await canvasFrame()).evaluate(() => ({
+          title: document.querySelector('#canvas > .a4-13 .a4-13__title')?.textContent.trim() ?? null,
+          tag: document.querySelector('#canvas > .a4-13 .a4-13__tag')?.textContent.trim() ?? null,
+        }))
+        const hero = (await rows519()).find((r) => /Latest Post/.test(r.name))
+        if (hero === undefined) throw new Error(`${g.name}: Home has no Latest Post row, so there is no card to read`)
+        await page.locator(`#editor-layers [data-layer-row="${hero.key}"] button`).first().click()
+        await page.waitForTimeout(400)
+        await source519(SRC.tag)
+        const inTag = (await ghostRead(m, 'posts', { filter: `tag:'${startTag519.slug}'`, limit: '1', order: 'published_at desc', include: 'tags,authors', formats: 'mobiledoc' })).posts[0]
+        const card = await until519(cardNow, (c) => c.title === inTag?.title)
+        check(`${tag} — Latest Post, By tag "${startTag519.name}", prints its newest post's own tag "${inTag?.primary_tag?.name}" — what its {{#get}} now asks Ghost for (include="tags,authors", §53)`,
+          card.title === inTag?.title && typeof inTag?.primary_tag?.name === 'string' && card.tag === inTag.primary_tag.name, JSON.stringify(card))
+        await source519(SRC.latest)
+        const back = await until519(cardNow, (c) => c.title === newest.title)
+        check(`${tag} — …and Latest again shows the site's newest post, "${newest.title}"`, back.title === newest.title, JSON.stringify(back))
+
+        // the main feed duplicated: a SECONDARY feed — no chip, no pager — showing the site's newest at the page size
+        const before = await rows519()
+        const main = before.find((r) => r.chip)
+        if (main === undefined) throw new Error(`${g.name}: Home opened with no main feed, so there is no feed to duplicate`)
+        await act519(main.key, 'Duplicate')
+        const copy = (await rows519()).find((r) => !before.some((b) => b.key === r.key))
+        const latest = await titles({ limit: String(PPP), order: 'published_at desc' })
+        const two = await until519(grids519, (gs) => gs.length === 2 && same519(latest)(gs[1].titles))
+        check(`${tag} — Duplicate on the main feed lands a SECONDARY feed: no chip, no pager, the site's newest ${PPP} as a fixed list`,
+          copy !== undefined && !copy.chip && same519([main.key])((await rows519()).filter((r) => r.chip).map((r) => r.key)) && two.map((x) => x.pager).join() === 'true,false' && same519(latest)(two[1]?.titles),
+          JSON.stringify({ copy: copy?.key, pagers: two.map((x) => x.pager), drawn: two[1]?.titles.length }))
+        await page.locator(`#editor-layers [data-layer-row="${copy?.key}"] button`).first().click()
+        await page.waitForTimeout(400)
+
+        // By tag, starting on the fullest (R-193's order over the site's own tags)
+        await source519(SRC.tag)
+        const byTag = await titles({ filter: `tag:'${startTag519.slug}'`, limit: String(PPP), order: 'published_at desc' })
+        const gTag = await until519(grids519, (gs) => same519(byTag)(gs[1]?.titles))
+        const tagButton = await (await data519()).locator('button[id$="-tag"]').innerText()
+        const tagReadAt = Date.now()
+        check(`${tag} — By tag starts on the site's fullest tag, "${startTag519.name}" beside "${DG.postsCount(startTag519.count)}", and draws exactly what Ghost answers for it`,
+          tagButton.includes(startTag519.name) && tagButton.includes(DG.postsCount(startTag519.count)) && same519(byTag)(gTag[1]?.titles), JSON.stringify({ tagButton, drawn: gTag[1]?.titles }))
+        const d = await data519()
+        await d.getByRole('radio', { name: 'Oldest' }).click()
+        for (let n = PPP; n > 3; n--) {
+          await d.getByRole('button', { name: 'Fewer Count' }).click()
+          await page.waitForTimeout(60)
+        }
+        const tagOld = await titles({ filter: `tag:'${startTag519.slug}'`, limit: '3', order: 'published_at asc' })
+        check(`${tag} — Order Oldest and Count 3: the tag's three oldest, as Ghost orders them`, same519(tagOld)((await until519(grids519, (gs) => same519(tagOld)(gs[1]?.titles)))[1]?.titles), JSON.stringify(tagOld))
+
+        // By author, Featured — the Count and Order kept
+        const startAuthor519 = DG.optionsOf(authorsList)[0]
+        await source519(SRC.author)
+        const byAuthor = await titles({ filter: `authors:'${startAuthor519.slug}'`, limit: '3', order: 'published_at asc' })
+        check(`${tag} — By author starts on the site's fullest writer, "${startAuthor519.name}", keeping Count and Order`,
+          (await (await data519()).locator('button[id$="-author"]').innerText()).includes(startAuthor519.name) && same519(byAuthor)((await until519(grids519, (gs) => same519(byAuthor)(gs[1]?.titles)))[1]?.titles), JSON.stringify(byAuthor))
+        await source519(SRC.featured)
+        const featured = await titles({ filter: 'featured:true', limit: '3', order: 'published_at asc' })
+        check(`${tag} — Featured: the site's featured posts, oldest first, three`, same519(featured)((await until519(grids519, (gs) => same519(featured)(gs[1]?.titles)))[1]?.titles), JSON.stringify(featured))
+
+        // Hand-picked: three from the search over the site's own posts, drawn in the picked order; ⌥↓ moves one
+        await source519(SRC.picked)
+        for (let n = 0; n < 3; n++) {
+          await (await data519()).locator('button[id$="-search"]').click()
+          await page.waitForTimeout(300)
+          await page.locator(':popover-open ul li button').first().click()
+          await page.waitForTimeout(400)
+          await closeMenus()
+        }
+        const picked = DG.searchPosts(postsList.posts.map((p) => ({ id: p.id, title: p.title })), '', []).slice(0, 3).map((p) => p.title)
+        const picks = () => data519().then((x) => x.locator('[data-pick] span.truncate').allInnerTexts())
+        check(`${tag} — Hand-picked: three of the site's posts from "${DG.SEARCH_POSTS}", drawn exactly in the picked order`,
+          same519(picked)(await picks()) && same519(picked)((await until519(grids519, (gs) => same519(picked)(gs[1]?.titles)))[1]?.titles), JSON.stringify({ picks: await picks() }))
+        await (await data519()).locator('[data-pick-handle="0"]').focus()
+        await page.keyboard.press('Alt+ArrowDown')
+        const moved = [picked[1], picked[0], picked[2]]
+        const gMoved = await until519(grids519, (gs) => same519(moved)(gs[1]?.titles))
+        check(`${tag} — ⌥↓ moves a pick, "${movedTo(1, 3)}" is said, and the canvas redraws in the new order`,
+          same519(moved)(gMoved[1]?.titles) && (await (await data519()).locator('[data-picked-list] [aria-live="polite"]').textContent()) === movedTo(1, 3), JSON.stringify(gMoved[1]?.titles))
+
+        // a Source switch loses nothing — and inside 60 s a Source already read costs no request
+        // the two queries' OWN keys — a tag filter and an id list: the surfaces (`@site`, the lists) revalidate at a press
+        // once they are a minute old, which is the policy and not what a Source switch costs
+        const asked519 = () => [...seen.entries()].filter(([id]) => id.startsWith(g.origin) && /filter=(tag|id)%3A/.test(id)).reduce((n, [, made]) => n + made.length, 0)
+        const t519 = asked519()
+        await source519(SRC.tag)
+        const backTag = (await until519(grids519, (gs) => same519(tagOld)(gs[1]?.titles)))[1]?.titles
+        await source519(SRC.picked)
+        const backPicks = await picks()
+        const gBack = await until519(grids519, (gs) => same519(moved)(gs[1]?.titles))
+        check(`${tag} — a Source switch keeps the tag and the picks: By tag is its three oldest again, Hand-picked the picks in their moved order`,
+          same519(tagOld)(backTag) && same519(moved)(backPicks) && same519(moved)(gBack[1]?.titles), JSON.stringify({ backTag, backPicks }))
+        if (Date.now() - tagReadAt < LIVE.FRESH_MS - 5000) {
+          check(`${tag} — …and those two switches cost NO request: both queries were read in this session less than ${LIVE.FRESH_MS / 1000} s ago`, asked519() === t519, `${asked519() - t519} request(s)`)
+        } else note(`${tag} — the switch's request count`, `${Math.round((Date.now() - tagReadAt) / 1000)} s after the tag was read, past the cache's freshness, so a revalidation is allowed`)
+        // Sample content ↔ the site, the I/O matrix's last row: a pick belongs to the source it was chosen from, so on the
+        // sample — which holds none of the site's posts — the hand-picked list draws nothing and each picked row says so;
+        // back on the site every pick returns in its moved order. Nothing chosen is lost: a source switch stores nothing.
+        await openPill()
+        await page.locator('[data-source-row="sample"]').click()
+        const onSample519 = await paintedFrom('home', 'sample')
+        const sampleGrids519 = await until519(grids519, (gs) => gs.length === 1)
+        const sampleNotes519 = await (await data519()).locator('[data-pick-note]').allInnerTexts()
+        check(`${tag} — on Sample content the hand-picked list draws nothing, its section off the canvas, and each picked row says "${DG.PICK_LACKING('sample')}"`,
+          onSample519 && sampleGrids519.length === 1 && sampleNotes519.length === 3 && sampleNotes519.every((n) => n.trim() === DG.PICK_LACKING('sample')),
+          JSON.stringify({ onSample519, grids: sampleGrids519.length, sampleNotes519 }))
+        await openPill()
+        await page.locator('[data-source-row="site"]').click()
+        const onSite519 = await paintedFrom('home', 'site')
+        const siteGrids519 = await until519(grids519, (gs) => same519(moved)(gs[1]?.titles))
+        check(`${tag} — …and back on ${NAME} every pick returns in its moved order, and no picked row carries a note`,
+          onSite519 && same519(moved)(siteGrids519[1]?.titles) && same519(moved)(await picks()) && (await (await data519()).locator('[data-pick-note]').count()) === 0,
+          JSON.stringify(siteGrids519[1]?.titles))
       }
 
       // ── the whole major: no body on the wire, one request per key inside 60 s, and the policy quiet ──

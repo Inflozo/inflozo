@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { MAIN_FEED } from '@/lib/data-group'
 
 /* Editor Sidebar Kit.dc.html:159 — badges & chips. Pro is a marigold-tint pill carrying
    ✦ AND THE WORD PRO; Free is line-bordered and says Free; Live is a mint dot beside the
@@ -27,6 +28,25 @@ export const LiveBadge = ({ version }: { version?: string }) => (
     <span aria-hidden className="size-[6px] rounded-full bg-mint" />
     Live
     {version ? <span className="font-mono text-helper-caption">{version}</span> : null}
+  </span>
+)
+
+/** Story 5.19 — D5c's MAIN FEED chip (`D5 Canvas Markers and Template Switcher.dc.html:290`, `:312`, `:335`): mono 8.5px
+ *  500 at .03em, a pill. Its words are "Main feed", uppercased by CSS so assistive technology reads words (R-170, one
+ *  list: `lib/data-group.ts`). In Layers and at the panel head its ground is D5c's own `paper-sunk`, and its words `ink`,
+ *  the nearest token to the frame's text colour (which is not one); on the canvas's outline it sits on the page ground
+ *  (`paper-raised`) with a 1px `line` border and 7px sides. VersionChip is its nearest recipe. Words, never a control. */
+export const MainFeedChip = ({ on = 'panel', id }: { on?: 'panel' | 'canvas'; id?: string }) => (
+  <span
+    id={id}
+    data-main-feed-chip
+    // the mono face through `--font-mono` itself, not the `font-mono` utility, which names next/font's own variable — one
+    // the canvas's chrome layer does not carry (`lib/canvas-layer.ts`'s `fontStacks` hands the three stacks alone)
+    className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-pill py-[2px] [font-family:var(--font-mono)] text-[8.5px] font-medium uppercase leading-[1.4] tracking-[.03em] text-ink ${
+      on === 'canvas' ? 'border border-line bg-paper-raised px-[7px]' : 'bg-paper-sunk px-[6px]'
+    }`}
+  >
+    {MAIN_FEED}
   </span>
 )
 

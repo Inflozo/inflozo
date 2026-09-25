@@ -21,6 +21,7 @@ import {
   CONSUMED_DIRECTIVES,
   CONTROL_NAME_RE,
   CONTROL_VALUE_RE,
+  DEFAULT_LIMIT,
   DIRECTIVES,
   FOREIGN_ATTR_RE,
   GET_FORBIDDEN_TARGETS,
@@ -61,6 +62,7 @@ import type { BindingUse, ControlDef, DataBinding, IconLookup, PropDef, ScopeEnt
 import {
   bareHelper,
   excerpt,
+  feedExprs,
   formatDate,
   getExprs,
   ghostColor,
@@ -204,6 +206,18 @@ export type RenderInput = {
   visibility?: MemberState
 
   // ── Story 5.3 — inline editing ──────────────────────────────────────────────
+  // ── Story 5.19 — a SECONDARY feed ──────────────────────────────────────────
+  /** This section is a feed that is NOT its page's main feed: its markup repeats the native `posts`, and here renders
+   *  ITS OWN query instead (`main-feed.ts`'s `feedQuery`). THE THEME puts the whole section inside that query's
+   *  `{{#get "posts"}}` and inside `{{#if posts}}` — a get shadows `posts` and `pagination` in its block (MEASUREMENTS
+   *  §53) — so at zero it ships nothing at all, heading and container together (FR-H4); a hand-picked list is the one
+   *  existence get around R-20's N single-id gets. THE CANVAS renders against the page's context with `posts` replaced
+   *  by `rows` — which the caller fetched, `[]` while in flight — and no `pagination`: the mirror of the get's scope, so
+   *  zero renders `''`. ON BOTH, the pager — the smallest element holding every `data-pagination` element — is not
+   *  rendered: inside a get `pagination` is the query's, and its links would lead to the wrong page. Omitted: the
+   *  render is byte-identical to one before this story, which is the control. */
+  feed?: { query: DataBinding; rows?: readonly unknown[] }
+
   /** the CANVAS's alone: each surviving `text` or `richtext` prop's element is stamped `data-inflozo-prop="<path>"` (and
    *  `data-inflozo-item="<index>"` inside an authored item), each surviving Ghost word `data-inflozo-ghost="<name>"` (R-122),
    *  so the editor knows which element is which prop. The editor lifts every stamp off as it mounts the canvas; with them
@@ -563,6 +577,30 @@ function refuseGetOnForbiddenTarget(root: RuntimeElement, input: RenderInput): v
       )
     }
   }
+}
+
+/** STORY 5.19 — a secondary feed's PAGER: the smallest element holding every `data-pagination` element, which the
+ *  secondary mode does not render. A design whose pager parts meet only at the section itself has no pager to leave out,
+ *  and is refused by name rather than rendered with its whole section gone (`docs/section-authoring.md`). */
+function pagerOf(root: RuntimeElement): RuntimeElement | null {
+  const marks = all(root, '[data-pagination]')
+  if (marks.length === 0) return null
+  let pager: RuntimeElement | null = marks[0] as RuntimeElement
+  while (pager !== null && !marks.every((m) => (pager as RuntimeElement).contains(m))) pager = pager.parentElement
+  if (pager === null || pager === root || pager === root.firstElementChild) {
+    throw new Error('a feed design holds its pager — every data-pagination element — in one element inside the section, which a secondary feed leaves out (Story 5.19). This design\'s pager parts meet only at the section itself.')
+  }
+  return pager
+}
+
+/** What a secondary feed's canvas renders against: the page's context with `posts` replaced by the query's rows and
+ *  no `pagination` — the mirror of the `{{#get}}` block's own scope, where `pagination` is the query's and no page number
+ *  exists (so `{page_number}` resolves to nothing there too, as `PAGE_NUMBER_HBS`'s guard prints nothing inside it). */
+function secondaryScope(given: RenderInput, rows: readonly unknown[]): Pick<RenderInput, 'ghost' | 'site' | 'tokens'> {
+  const { pagination: _page, ...ghost } = given.ghost ?? {}
+  const { pagination: _pager, ...site } = given.site ?? {}
+  const { page_number: _n, ...tokens } = given.tokens ?? {}
+  return { ghost: { ...ghost, posts: rows }, site, tokens }
 }
 
 // ─── FR-H7 — the scope walk (Story 4.6) ──────────────────────────────────────
@@ -1540,7 +1578,17 @@ function renderTree(
   given: RenderInput,
   tokens: Tokens,
   users: UserText | null,
-): { root: RuntimeElement; partials: Record<string, string> } {
+): { root: RuntimeElement; partials: Record<string, string>; feed: ReturnType<typeof feedExprs> | undefined } {
+  // Story 5.19 — a SECONDARY feed's query is validated first, on BOTH emitters, by the shim's own grammar (AD-36): a
+  // value outside it is refused by name, never interpolated. `null` is a hand-picked list with nothing picked.
+  const feed = given.feed === undefined ? undefined : feedExprs(given.feed.query)
+  if (given.feed !== undefined && users === null && !Array.isArray(given.feed.rows)) {
+    throw new Error('this section is a secondary feed and no rows were supplied for its query (pass [] while the query is in flight). The editor runs the query the shim built; an empty feed here would be indistinguishable from a query that returned nothing.')
+  }
+  // the canvas shows exactly as many rows as the theme's get returns: the picks, or the query's limit
+  const feedRows = given.feed === undefined || feed === null
+    ? []
+    : (given.feed.rows ?? []).slice(0, given.feed.query.ids?.length ?? given.feed.query.limit ?? (DEFAULT_LIMIT.posts as number))
   // Story 4.5: the stored Count and Order are folded into the declared queries ONCE, here, so the
   // canvas rows and the theme's {{#get}} read the same numbers
   // Story 4.9: the handed strings pass `resolveStrings` once, here — the one door an override passes (S7)
@@ -1548,6 +1596,7 @@ function renderTree(
     ...given,
     ...(given.data === undefined ? {} : { dataBindings: withData(given.dataBindings, given.data) }),
     strings: handedStrings(given.strings),
+    ...(given.feed === undefined ? {} : secondaryScope(given, feedRows)),
   }
   const root = doc.createElement('div')
   root.innerHTML = src
@@ -1591,6 +1640,15 @@ function renderTree(
       }
     }
   }
+  // Story 5.19 — a secondary feed leaves its pager out on BOTH emitters, after every refusal (the design is still judged
+  // whole); and at zero the canvas draws nothing at all, heading and container together — the theme's `{{#if posts}}`
+  if (input.feed !== undefined) {
+    pagerOf(root)?.remove()
+    if (users === null && feedRows.length === 0) {
+      root.innerHTML = ''
+      return { root, partials: {}, feed }
+    }
+  }
   // Story 4.10 — after every refusal (a gated-away section still refuses what it would refuse shown) and before the
   // controls, the lists and the repeats, so a member gate is the outermost wrapper of its element on the theme
   gateMembers(doc, root, input, tokens, users)
@@ -1630,13 +1688,20 @@ function renderTree(
       // where a filter could be composed (AD-36).
       const query = own(input.dataBindings, source)
       if (query !== undefined && limit !== null) throw new Error(oneNumberOnePlace(source))
+      // Story 5.19 — a HAND-PICKED secondary feed's own `posts` repeat is R-20's N single-id gets in the dragged order,
+      // inside the one existence get `renderTheme` wraps the section in (the repeat's own limit, where it has one, cuts
+      // the picks exactly as the canvas's slice does)
+      const picked = query === undefined && source === 'posts' && !insideRepeat(el, root) ? feed?.each ?? null : null
       // ONE block per query: a filter binding is one, a hand-picked `ids` binding is N in the picked
       // order (R-20) — each its own {{#get}} around its own {{#foreach}}, because the order is the
-      // point and one get with an `id:a,id:b` filter would answer in the API's order.
-      const opens = query === undefined
+      // point and one get with an `id:a,id:b` filter would answer in the API's order. Story 5.19: a hand-picked list
+      // with NOTHING picked (`ids: []`, the Data group's fold) is zero blocks — nothing reaches a hash at all.
+      const opens = picked !== null
+        ? picked.slice(0, limit === null ? undefined : Number(limit)).map((g) => `${g}\n{{#foreach posts}}`)
+        : query === undefined
         ? [`{{#foreach ${source}${limit !== null ? ` limit="${limit}"` : ''}}}`]
-        : getExprs(source, input.dataBindings).map((g) => `${g}\n{{#foreach ${query.source}}}`)
-      const close = query === undefined ? '{{/foreach}}' : '{{/foreach}}\n{{/get}}'
+        : query.ids?.length === 0 ? [] : getExprs(source, input.dataBindings).map((g) => `${g}\n{{#foreach ${query.source}}}`)
+      const close = query === undefined && picked === null ? '{{/foreach}}' : '{{/foreach}}\n{{/get}}'
       let inner: string
       if (partialName !== null) {
         if (partialName in partials) throw new Error(`data-partial "${partialName}" is declared twice`)
@@ -1655,7 +1720,7 @@ function renderTree(
 
   emitBindings(doc, root, input, tokens, users, ghost, [])
   applyProps(root, input, users, tokens)
-  return { root, partials }
+  return { root, partials, feed }
 }
 
 /** The canvas half of THE DIFFERENCE (1), OUTER-first and recursive: each row is cloned into the
@@ -1722,14 +1787,22 @@ export function renderTheme(doc: RuntimeDocument, src: string, input: RenderInpu
   const shared = input.users
   const users = shared ?? new UserText(input.schema ?? {}, input.tokens ?? {})
   const tokens = new Tokens()
-  const { root, partials } = renderTree(doc, src, input, tokens, users)
+  const { root, partials, feed } = renderTree(doc, src, input, tokens, users)
+  // Story 5.19 — a hand-picked secondary feed with nothing picked ships nothing, as its canvas draws nothing
+  if (feed === null) return { template: '', partials: {} }
 
   // AD-4 / AD-5: serialize FIRST, then resolve into the string. No document ever parses the result,
   // so numeric entities cannot be decoded back into live braces.
   const done = (s: string) => (shared === undefined ? users.substitute(s) : s)
   const out: Record<string, string> = {}
   for (const [k, v] of Object.entries(partials)) out[k] = done(tokens.resolve(v))
-  return { template: done(tidy(tokens.resolve(root.innerHTML))), partials: out }
+  const template = tidy(tokens.resolve(root.innerHTML))
+  // Story 5.19 — ─────────── a SECONDARY FEED: the whole section inside its query's get and inside `{{#if posts}}`, so at
+  // zero Ghost renders nothing at all, heading and container together (FR-H4, MEASUREMENTS §53) ───────────
+  return {
+    template: done(feed === undefined ? template : `${feed.outer}{{#if posts}}\n${template}\n{{/if}}{{/get}}`),
+    partials: out,
+  }
 }
 
 /** Emitter 2 — the editing canvas. */

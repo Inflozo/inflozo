@@ -419,9 +419,11 @@ titles included), the export's usual practice decides which gives way:
 - Every such title is the owner's to see, under Questions for the owner (R-83), in the story that builds it. DW-166
   lists the repeats the export draws, category by category.
 
-**Data appears when a design declares a query.** The ruled example also listed "Data — Show, Order" for Three Up; its
-feed declares none, so its Data rows arrive with Story 5.19's Source and Count, and today the controls sample is the
-panel that shows Show and Order in Data.
+**Data appears when a design declares a query — or is a feed.** The ruled example also listed "Data — Show, Order" for
+Three Up; its feed declares none, so since Story 5.19 its Data group is the ENGINE's and never a declaration: the main
+feed's is its Count alone, greyed at the project's Posts per page (D5c), and a secondary feed's is P0·5's whole group —
+Source · the tag or writer · the picked list · Count · Order (*A feed design, and what a secondary feed does to it*,
+below). "Show" is **Count** everywhere (R-170).
 
 #### Pills or a dropdown — R-114 *(Story 4.10, the owner's test)*
 
@@ -928,6 +930,43 @@ prints, the same on both majors and on the canvas — and A34's category story r
 (DW-97 closed). `{{#match}}` compares numbers and `{{page_url n}}` takes one, so a short row is buildable but
 inexact with no arithmetic; that is the option R-109 declined.
 
+### A feed design, and what a secondary feed does to it *(Story 5.19, FR-H2, AD-27(d))*
+
+**A feed is a design whose `bindingContext` includes `posts`**: its markup repeats the page's NATIVE list —
+`data-repeat="posts"` over the render context, never a declared `dataBindings` key (a declared key named `posts` is
+refused, `bad-get-key`). It holds its pager in **one element** — the smallest element holding every `data-pagination`
+element, Row 6's `<nav class="pager">` — and its empty state is a `data-if="posts"` (with its `data-else`), which reads
+whichever `posts` is in scope. Nothing more is asked of it, and nothing about it is declared twice.
+
+**On a paginated page exactly one feed is the MAIN FEED** — `home`, `index`, `tag` and `author`, both pages of each.
+`packages/section-runtime/src/main-feed.ts`'s `designate` is the one rule that keeps it so: the first feed placed is
+main; a deleted or hidden main feed hands the flag to the next visible feed below, else the nearest above; a duplicate's
+copy is never main; and a doc that breaks the rule is REPAIRED, never refused. The main feed renders exactly as authored:
+the native `{{#foreach posts}}`, its pager and its empty state, sized by the project's Posts per page.
+
+**Every other feed on that page is a SECONDARY feed** — the same markup, rendered through a query of its own built from
+the instance's Data values (`feedQuery`: posts, the page size, newest first, folded with `data.posts` by `withData`):
+
+- **The theme** wraps the WHOLE section: `{{#get "posts" … include="tags,authors"}}{{#if posts}} … {{/if}}{{/get}}`.
+  Ghost's get shadows `posts` inside its block (recorded, MEASUREMENTS §53), so the design's own repeat and its
+  `data-if="posts"` read the query's rows without a word changed — and at zero NOTHING renders, heading and container
+  together (FR-H4). Hand-picked is one existence get over `filter="id:[…]" limit="1"` around the section, with R-20's
+  single-id gets inside it in the dragged order.
+- **The canvas** renders the same section against the page's context with `posts` replaced by the query's rows and no
+  `pagination` — the mirror of the get's scope. At zero the section is left off the canvas and its Layers row stays.
+- **Both leave the pager out.** Inside a get `pagination` is the query's, and `{{page_url pagination.next}}` there links
+  to the ROUTE's `/page/2/` (§53): a wrong page, not a missing one. So a feed must keep its pager in the one element,
+  and must not read `pagination` anywhere else.
+- **The fold is AD-36's door.** A stored tag or writer reaches the hash only as `^[a-z0-9_-]+$`, quoted —
+  `tag:'…'`, and `authors:'…'` for a writer: the singular `author:` answers the same posts but gscan refuses it as
+  deprecated on both majors (GS001-DEPR-AUTH-FILT, §53). A pick reaches it only as Ghost's 24-hex id. Anything else is
+  ignored and the base query stands.
+
+**A declared posts query offers Source too** (P0·5) unless it declares a `filter` or `ids` of its own; a FIXED one
+(R-108) offers Source alone, and its Hand-picked holds at most its own `limit`. Tags, authors and tiers queries offer
+no Source. **Every posts query is emitted with `include="tags,authors"`**: without it Ghost's `{{#get}}` carries no
+`primary_tag` or `primary_author` (recorded on both majors, §53).
+
 **`img_url`'s size argument is one of FR-J2's five `image_sizes` keys — `xs` · `s` · `m` · `l` ·
 `xl`** — and anything else is refused **by name at bind time**. This is not strictness for its own
 sake: Ghost generates a rendition per declared key and returns the **original** image for any other
@@ -1233,7 +1272,7 @@ makes** — a subscribe form, a Sign in action — sits inside `data-if="@site.a
 implies members, so one condition hides every ask on an invite-only site. A link whose destination the customer
 picks is not gated in markup; gating it by its Portal destination is Story 5.20's.
 
-**Row 5 · position.** `@first` spans, and "featured" reaches a grid through `Source: Featured only`
+**Row 5 · position.** `@first` spans, and "featured" reaches a grid through `Source: Featured`
 — cross-iteration state is not expressible and is not attempted (R-1). Numbering **restarts on every
 page**, and the specs say so.
 

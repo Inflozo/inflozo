@@ -379,7 +379,8 @@ export type Want = {
   /** the style-guide post and page — the entry Post and Page lead with on either source, and render with the site's
    *  own header and footer around them (the body is always the style-guide fixture, FR-H4) */
   styleGuide: Readonly<Record<'post' | 'page', Row>>
-  /** `@config.posts_per_page`: the dataset's for both sources until Story 5.19 */
+  /** `@config.posts_per_page`: since Story 5.19 the PROJECT's (`projects.posts_per_page`, FR-H2), on the site's content as
+   *  on the sample's — the size of every page of a list, and a secondary feed's starting Count */
   perPage: number
 }
 

@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { orbitWeekly } from '@inflozo/library'
-import { formatDate } from '@inflozo/section-runtime'
+import { feedQuery, formatDate, withData } from '@inflozo/section-runtime'
 import {
   addressOf, after, API_VERSION, ask, AUTHOR_FIELDS, bindingReads, FAILURES_TO_STOP, feedRead, feedShortfall, FRESH_MS,
   getShortfall, isFresh, keyOf, LIST_LIMIT, LISTS, LIVE_WORDS, named, NEVER, outcomeOf, PAGE_FIELDS, pick, POST_FIELDS,
@@ -405,8 +405,8 @@ function fakeSite(opts: { tags?: boolean; missing?: string } = {}) {
   }
   return (q: LiveQuery): Answer | undefined => (opts.missing !== undefined && keyOf(q).startsWith(opts.missing) ? undefined : pick(q.resource, body(q), words) ?? undefined)
 }
-const page = (file: string, stored: orbitWeekly.Subject | null, look = fakeSite(), designs = [] as Parameters<typeof sitePage>[1]['designs']) =>
-  sitePage(look, { file, stored, page: 1, pageFile: file, targets: [file, 'default.hbs'], designs })
+const page = (file: string, stored: orbitWeekly.Subject | null, look = fakeSite(), queries: Parameters<typeof sitePage>[1]['queries'] = {}, perPage = orbitWeekly.postsPerPage()) =>
+  sitePage(look, { file, stored, page: 1, pageFile: file, targets: [file, 'default.hbs'], queries, perPage })
 
 test('a render is ONE SOURCE THROUGHOUT: a page is ready only when every read it needs is in hand — otherwise it lists them', () => {
   const home = page('home.hbs', null)
@@ -559,4 +559,41 @@ test('every string equals the spec\'s Design Notes table (R-170: one name — th
   // the numbers in them are the module's own, never restated
   assert.equal(FAILURES_TO_STOP, 3)
   assert.equal(LIST_LIMIT, 100)
+})
+
+// ─── Story 5.19 — the INSTANCE's queries: folded, read once per distinct query, and sized by the project ──────────
+
+test('Story 5.19 · each section\'s FOLDED queries are read once per distinct query — two sections asking alike share one request', () => {
+  const asked: LiveQuery[] = []
+  const look = (q: LiveQuery): Answer | undefined => {
+    asked.push(q)
+    return undefined
+  }
+  const declared = { latest: { source: 'posts', limit: 3, order: 'published_at desc' } }
+  const tagged = withData(declared, { latest: { source: 'tag', tag: 'craft' } })
+  const feed = { posts: feedQuery({ bindingContext: ['posts'] }, { isMainFeed: false, data: { posts: { source: 'featured' } } }, 'home.hbs', 12)! }
+  const view = page('home.hbs', null, look, { a: tagged, b: tagged, c: feed })
+  assert.ok('need' in view)
+  const keys = view.need.map(keyOf)
+  assert.equal(new Set(keys).size, keys.length, 'the page lists each read once')
+  // the folded tag query is ONE read per date order, shared by both sections, and carries its quoted filter and include
+  const tag = view.need.filter((q) => q.params['filter'] === "tag:'craft'")
+  assert.deepEqual(tag.map((q) => q.params['order']).sort(), ['published_at asc', 'published_at desc'])
+  assert.ok(tag.every((q) => q.params['include'] === 'tags,authors' && q.params['formats'] === 'mobiledoc'))
+  assert.ok(view.need.some((q) => q.params['filter'] === 'featured:true'), 'the secondary feed\'s own query is asked')
+  assert.ok(asked.length > 0)
+  // a hand-picked list is ONE `filter=id:[…]` read, and a pick not in Ghost's id shape is never sent
+  const picks = withData(declared, { latest: { source: 'picked', picks: [{ id: '6a86b5fb6444934864da3283', title: 'a' }, { id: 'nope', title: 'b' }] } })
+  assert.deepEqual(bindingReads(picks['latest']!).newest?.params['filter'], 'id:[6a86b5fb6444934864da3283]')
+})
+
+test('Story 5.19 · the main feed is sized by the PROJECT\'s posts_per_page on the site, as on the sample — a value other than 12', () => {
+  const three = page('home.hbs', null, fakeSite(), {}, 3)
+  assert.ok('ready' in three)
+  const ctx = three.ready.contexts['home.hbs']!
+  assert.equal((ctx.ghost['posts'] as unknown[]).length, 3)
+  assert.deepEqual(ctx.ghost['@config'], { posts_per_page: 3 })
+  assert.equal((ctx.ghost['pagination'] as { limit: number }).limit, 3)
+  // the control: the sample at the same size
+  assert.equal((orbitWeekly.templateContext('home.hbs', 'first', undefined, 3).ghost['posts'] as unknown[]).length, 3)
 })

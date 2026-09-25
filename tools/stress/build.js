@@ -11,7 +11,7 @@
 // _bmad-output/.../fixtures-r2/gate.js: gscan 4.49.7 answers for Ghost 5, 6.4.2 for Ghost 6.
 const fs = require('fs'); const path = require('path'); const crypto = require('crypto');
 const { execFileSync } = require('child_process');
-const { renderSection, UserText, T0, T1, U0, U1 } = require('./compile');
+const { renderSection, renderSecondary, feedQuery, UserText, T0, T1, U0, U1 } = require('./compile');
 const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
 const { stressStack, source } = require('./sections');
 
@@ -68,7 +68,7 @@ function contentFor(kind, i) {
   return c;
 }
 
-// ---------------------------------------------------------------- 7 templates, 70 sections
+// ---------------------------------------------------------------- 7 templates, every archetype (the run prints the count)
 const TEMPLATES = [
   { file: 'custom-stress', sections: 40 },   // the 40-section stress template
   { file: 'index', sections: 5 }, { file: 'post', sections: 5 }, { file: 'page', sections: 5 },
@@ -92,6 +92,18 @@ for (const t of TEMPLATES) {
     sectionCount++;
     if (sectionCount % 10 === 0) mark();
   });
+}
+// Story 5.19 — the feed archetype as a SECONDARY feed, once per P0·5 Source, on the home collection beside its own feed:
+// the whole section inside the query's {{#get "posts"}} and {{#if posts}}, and the picks as the existence get around
+// R-20's single-id gets. Each query is the runtime's own fold (`feedQuery`) over a stored Data value, so gscan judges
+// exactly what a customer's secondary feed ships, on both majors.
+const PICKS = ['6a86b5fb6444934864da3283', '6a86b5fb6444934864da328b', '6a86b5f96444934864da3278'].map((id, n) => ({ id, title: `Pick ${n + 1}` }));
+for (const posts of [{}, { source: 'featured' }, { source: 'tag', tag: 'craft' }, { source: 'author', author: 'priya-raman' }, { source: 'picked', picks: PICKS }]) {
+  const query = feedQuery({ bindingContext: ['posts'] }, { isMainFeed: false, data: { posts } }, 'index.hbs', 12);
+  const r = renderSecondary(source({ kind: 'feed', i: 100 + sectionCount }), contentFor('feed', sectionCount), users, query);
+  rendered.push({ tmpl: 'index', layer: `secondary-${posts.source ?? 'latest'}`, hbs: r.template });
+  for (const [name, body] of Object.entries(r.partials)) sharedPartials[name] = body;
+  sectionCount++;
 }
 const renderMs = ms(tRender);
 mark();
