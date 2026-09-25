@@ -3,7 +3,7 @@ title: 'Story 5.18 — Live content from the connected site'
 type: 'feature'
 created: '2026-09-24'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: 'ebce8976242b11f4a7fbc7560baf6b9cac0cd0d3'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -833,3 +833,7 @@ database, and Claude's safety check would not let it write that line without you
 3. **No — leave it unlinked.** Steps 1–11 cannot be walked; only steps 12 and 13 can.
 
 **Ruled: option 1 (owner, 2026-09-25)** — *"Yes — Claude may write that one line."* Applied and read back; see Results — Deploy.
+
+## Owner's test findings
+
+None. **Passed** (the owner, 2026-09-25): all thirteen steps of the Owner's manual test on `app.inflozo.com`.
