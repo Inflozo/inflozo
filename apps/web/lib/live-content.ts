@@ -126,7 +126,9 @@ export function bindingReads(b: DataBinding): { newest: LiveQuery | null; oldest
   if (!Object.hasOwn(INCLUDE, resource)) return { newest: null, oldest: null }
   const include = { include: INCLUDE[resource] as string }
   if (b.ids !== undefined) {
-    const ids = b.ids.filter((id) => ID.test(id))
+    // SORTED (Story 5.19): Ghost answers `id:[…]` in its own order and `siteRows` re-orders by the pick, so the order in
+    // the read decides nothing — sorted, a pick dragged to a new place is the same key, read once, never again
+    const ids = b.ids.filter((id) => ID.test(id)).sort()
     const one = ids.length === 0 ? null : read(resource, { ...include, filter: `id:[${ids.join(',')}]`, limit: String(LIST_LIMIT) })
     return { newest: one, oldest: one }
   }

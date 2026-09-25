@@ -71,7 +71,10 @@ test('a `{{#get}}` is read at the Count\'s ceiling in both date orders; a fixed 
   const a = '5ab100000000000000000001'
   const b = '5ab100000000000000000002'
   const picked = bindingReads({ source: 'posts', ids: [b, 'not-an-id', a] })
-  assert.equal(picked.newest?.params['filter'], `id:[${b},${a}]`, 'an id not in Ghost\'s shape is never sent')
+  assert.equal(picked.newest?.params['filter'], `id:[${a},${b}]`, 'an id not in Ghost\'s shape is never sent')
+  // Story 5.19: the ids are read SORTED — Ghost's own order is re-ordered by the pick below, so a pick moved to a new
+  // place asks for the very same key and costs no request
+  assert.equal(keyOf(bindingReads({ source: 'posts', ids: [a, b] }).newest as LiveQuery), keyOf(picked.newest as LiveQuery))
   assert.deepEqual(bindingReads({ source: 'posts', ids: ['nope'] }), { newest: null, oldest: null }, 'nothing to send is no read at all')
   assert.equal(bindingReads({ source: 'tags' }).newest?.params['include'], 'count.posts')
   // R-20: Ghost answers a pick in ITS order (§51 (h)) — the rows come back in the PICK's, and a missing id is skipped

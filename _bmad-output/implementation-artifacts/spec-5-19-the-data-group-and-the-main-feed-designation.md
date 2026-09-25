@@ -761,6 +761,8 @@ defect, fixed in the next Dev commit:**
   such a paint now hands the read to `request()` — the one door a read goes through — which paints the site when the
   rows land; the old paint stays on screen meanwhile with nothing on it pointable, and each such read is asked once
   (`editReads`), so one that does not answer leaves the page on the sample as a press's does and is never retried.
+  With it, a hand-picked list's one `filter=id:[…]` read is keyed by its ids SORTED — Ghost answers in its own order
+  and `siteRows` re-orders by the pick — so a pick dragged or ⌥-moved to a new place reads nothing.
   The other 2 FAILs were the walk's own: its request counter counted every GET to the Ghost origin, and T3 had gained
   pictures stored on Ghost itself since 5.18's walk — the writer Umang's photo and "Reading the margins"'s feature image
   (read on T3's Content API) — so an `<img>` the canvas drew counted as a read. It now counts Content API reads only.
