@@ -706,12 +706,23 @@ def derive(story, status, specs, commits):
                  waits=None)
 
 
-def gate_epic(ep):
-    """PRD §4: in the two library epics only the first open story runs; the rest wait on the one before."""
+def run_order(stories, status):
+    """The order a library epic's stories RUN in: `sprint-status.yaml`'s, the order the Create prompt's "the previous
+    story in that epic" reads. It is the story numbers' order everywhere except where the owner moved one — R-196
+    (2026-09-25) runs Story 10.112, A34's first, straight after 10.58, A17's owner gate, because the rebuilt Post Grids
+    draw no page links and A34's are built from A17's pieces. A story the tracker does not list keeps its numeric
+    place, after the ones it does."""
+    at = {k: i for i, k in enumerate(k for k in status if isinstance(k, tuple))}
+    return sorted(stories, key=lambda s: (at.get((s['e'], s['s']), len(at)), snum(s['s'])))
+
+
+def gate_epic(ep, status):
+    """PRD §4: in the two library epics only the first open story runs; the rest wait on the one before it in
+    `run_order`."""
     if not any(g in ep['title'].lower() for g in GATED_TITLES):
         return
     prev, opened = None, False
-    for s in ep['stories']:
+    for s in run_order(ep['stories'], status):
         if s['lane'] != 'done':
             if opened:
                 s['waits'] = prev
@@ -1438,7 +1449,7 @@ def render(ctx):
         for st in ep['stories']:
             derive(st, status, ctx['specs'], ctx['commits'])
             stories.append((st, ep))
-        gate_epic(ep)
+        gate_epic(ep, status)
         ep['status'] = epic_status(ep, status)
     flat = [s for s, _ in stories]
 
@@ -2249,6 +2260,12 @@ def demo():
     assert flagged and out.count('What the amber') == flagged, out.count('What the amber')
     # 2.1: the library epic gates its stories on the one before
     assert flat['9.1']['waits'] is None and flat['9.2']['waits'] == '9.1' and 'waits for 9.1' in out
+    # R-196: a library epic runs in the tracker's order, which the owner made non-numeric once
+    moved = [{'e': 10, 's': n, 'key': f'10.{n}'} for n in ('58', '59', '112')]
+    tracked = load_status('development_status:\n  10-58-a17-gate: backlog\n  10-112-a34-first: backlog\n'
+                          '  10-59-a18-first: backlog\n')
+    assert [s['key'] for s in run_order(moved, tracked)] == ['10.58', '10.112', '10.59'], 'R-196 order not followed'
+    assert [s['key'] for s in run_order(moved, {})] == ['10.58', '10.59', '10.112'], 'untracked is not numeric'
     # F6: the commit vocabulary, and everything else shaped like ours is listed rather than dropped
     kinds = {c['kind'] for c in ctx['commits']}
     assert {'story', 'step', 'hotfix', 'retro', 'unreadable', 'other'} <= kinds, kinds

@@ -1394,7 +1394,9 @@ check that can only run after deploy belongs under `## Verification`, not in the
 
 **The category gate is modelled by the loop, not by a status.** In E9 and E10 a category is a run of
 consecutive stories, each one session (R-85); a story cannot open until the previous story in the epic is
-`done` — and `done` means the owner passed its test. The last story of a category *is* §4's owner gate:
+`done` — and `done` means the owner passed its test. "Previous" is the order `sprint-status.yaml` lists them in,
+which is the story numbers' everywhere but once: R-196 (owner, 2026-09-25) runs Story 10.112, A34's first, straight
+after 10.58, A17's owner gate, and before A18. The last story of a category *is* §4's owner gate:
 its owner test plus the automated sheet across the whole category. The Create prompt refuses to plan the
 next story before that, and the story board offers no prompt for it. A category's last story's
 `## Verification` lists §4's automated sheet — live on
@@ -1438,7 +1440,7 @@ Read docs/project-context.md first; its rulings bind. Besides the template's sec
     (R-74; EXPERIENCE.md's Information Architecture names every surface's frame).
   - `owner_test: pending` in the frontmatter of any story with a screen; `owner_test: none` for a story
     with no screen (schema, tooling, a server-only change).  - In E9 and E10 (the shell block and the gated library), refuse to plan a story unless the previous
-    story in that epic is `done` in sprint-status.yaml — the owner's test of it (R-85). A category's last story's
+    story in that epic — as sprint-status.yaml orders them (R-196) — is `done` there, the owner's test of it (R-85). A category's last story's
     "## Verification" lists PRD §4's automated sheet as commands with expected results.
   - Any question for the owner: plain English, an example, numbered options, one marked
     (RECOMMENDED), under "## Questions for the owner" — then stop and say so.

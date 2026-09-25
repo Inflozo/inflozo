@@ -4259,6 +4259,28 @@ three would have been controls with nothing to act on (R-118).
     DW-255.
   - ⬜ built — by each of those stories, in its own run.
 
+**R-196 — A34's first story runs straight after A17's owner gate, before A18.** Story 5.19's Create, Question 2, ruled
+**option 1** (owner, 2026-09-25): *"Build the pagination designs' first story (10.112) straight after the Post Grids'
+last story (10.58), before Post Lists."*
+
+- **Why it was a question.** R-195 moved the main feed's Pagination style to A34's first story. But the rebuilt Post
+  Grids draw no page links of their own (A17-0, settlement 4: "A34 attaches below"). In inventory order, then, every
+  main feed would have had none from Story 10.54 until Story 10.112 — some fifty stories — and Ghost would still serve
+  page 2 with nothing linking to it.
+- **Why not earlier.** A34's first four designs are built out of A1, A6 and A17 pieces, the last of them A17 #18's
+  inset focus ring (`A34 Pagination Styles - Spec.md`, Block 1). That piece lands in Story 10.58, so the gap is now
+  A17's own five stories and nothing more.
+- **What it does NOT change.** A34's other two stories and its owner gate stay where inventory order puts them, after
+  A33, because they need Post Lists' Load More and Featured's bands. Every other category still runs one at a time
+  behind its predecessor's gate.
+- **How the order is kept.** `sprint-status.yaml` lists Story 10.112 straight after 10.58. That list is the order the
+  Create prompt's "previous story" reads, and `tools/story-board.py`'s `run_order` follows it, so the board offers
+  10.112 after 10.58 and makes 10.59 wait for it.
+- Targets: ✅ this entry · ✅ Story 5.19's spec (Question 2) · ✅ `epics.md` (Epic 10's preamble, Stories 10.54,
+  10.58, 10.59, 10.112 and 10.113) · ✅ `sprint-status.yaml` · ✅ `tools/story-board.py` · ✅ PRD §8's E10 line ·
+  ✅ `build-sequence.md` step 7 · ✅ `_bmad/custom/bmad-build.toml` and `bmad-build-auto.toml` · ✅ `epic-5-context.md` ·
+  ✅ `deferred-work.md` DW-255 (done).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

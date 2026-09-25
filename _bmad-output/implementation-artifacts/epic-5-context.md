@@ -475,8 +475,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     got owners, as did FR-H2's Pre-flight warnings (7.18), the SEO guard (7.3), a route's page size and a channel's main
     feed (7.16, DW-252) and D5c's Theme settings link (7.9, DW-254). The archive case's EDITOR warning — a Layers note on
     a Tag or Author page with no visible feed — joined 5.19's own spec, which had missed it (PRD §8 makes it E5's).
-    **Question 2 (open)**: the Post Grids draw no page links of their own, so between Story 10.54 and 10.112 the main
-    feed would have none; it asks where A34's first story sits (DW-255).
+    **R-196 (owner, 2026-09-25, Q2)**: the Post Grids draw no page links of their own, so A34's first story (10.112)
+    runs straight after A17's owner gate (10.58), before A18 — `sprint-status.yaml` lists it there and the story board's
+    gate follows that order (DW-255, done).
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

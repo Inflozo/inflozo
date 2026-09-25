@@ -131,8 +131,9 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 - **Question 1 is RULED — R-195** (owner, 2026-09-25): the Pagination row, the Load-more rule and a design's own
   Count cap are built with the designs that need them, moved word for word into Epics 9 and 10 (Epic 9's preamble
   lists every destination).
-- **Question 2 is OPEN** (awaiting the owner). It asks where A34's first story sits in Epic 10's order, and it holds up
-  nothing in this story.
+- **Question 2 is RULED — R-196** (owner, 2026-09-25): A34's first story (Story 10.112) runs straight after A17's owner
+  gate (Story 10.58), before A18. It asked about Epic 10's order and changed nothing in this story. No question is
+  left open.
 - If the recorder finds that a `{{#get}}` on a paginated template does **not** shadow the native `posts` inside its
   block — the secondary feed's premise — stop and say so.
 - If the recorder finds `primary_tag` / `primary_author` empty on a `{{#get "posts"}}` without `include`, emit
@@ -817,4 +818,16 @@ first. This does not hold up Story 5.19.
    - No gap.
    - But those designs differ from their drawings for that whole stretch, which your rule R-74 does not allow.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-25)** — *"Build the pagination designs' first story (10.112) straight after the Post
+Grids' last story (10.58), before Post Lists."* Recorded as **R-196**. Where it landed:
+
+- **`epics.md`.** Epic 10's preamble names it as the epic's third ordering rule, beside A25's and A33's. Stories 10.54,
+  10.58, 10.59, 10.112 and 10.113 each say where they now sit.
+- **`sprint-status.yaml`.** It lists Story 10.112 in its running place, straight after 10.58, and the Create prompt's
+  "the previous story in that epic" reads that order.
+- **`tools/story-board.py`.** Its gate follows the tracker's order instead of the story numbers, so the board offers
+  10.112 after 10.58 and makes 10.59 wait for it.
+- **PRD §8, `build-sequence.md` step 7 and the two build overrides in `_bmad/custom/`.** Each states the one
+  exception.
+
+The page links are then missing only while A17's own five stories are built and tested (DW-255, closed).

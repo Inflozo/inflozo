@@ -3854,7 +3854,7 @@ button, link column, social row, inline newsletter form.
 >
 > 1. *"the main feed alone exposes Pagination style: Numbered / Load More / Infinite scroll"* — **Story 10.112**, with
 >    A34's first designs, together with the Pagination control on page 2's copy of the main feed and the two choices
->    still open on it, DW-232 and DW-233.
+>    still open on it, DW-232 and DW-233. That story runs straight after A17's owner gate, before A18 (R-196).
 > 2. *"load-more designs are main-feed-only"* — **Story 10.58** (A17 #16 Load More) and **Story 10.62** (A18 #15 Load
 >    More).
 > 3. *"a design may cap its own Count below the global and the panel states the reason"* — **every category story
@@ -4227,8 +4227,16 @@ behind §4's blocking owner gate.
 >
 > **Three requirements moved in from Story 5.19 by R-195** (owner, 2026-09-25), word for word: the main feed's
 > Pagination style (Story 10.112), the Load-more rule (Stories 10.58 and 10.62), and a design's own Count cap with its
-> reason (every category story whose designs cap a Ghost-sourced Count — Epic 9's preamble lists them). **Where A34's
-> first story sits in this epic's order is open**: Story 5.19's Question 2 (DW-255).
+> reason (every category story whose designs cap a Ghost-sourced Count — Epic 9's preamble lists them).
+>
+> **A third ordering rule, the owner's — R-196 (2026-09-25).** **A34's first story, Story 10.112, runs straight after
+> A17's owner gate (Story 10.58) and before A18's first story (Story 10.59).** The rebuilt Post Grids draw no page
+> links of their own — A34 attaches them below the main feed (A17-0, settlement 4) — so without it every main feed
+> would have none from Story 10.54 to the end of the epic. A34's first four designs are built out of A1, A6 and A17
+> pieces, the last of them A17 #18's inset focus ring, so it cannot run before A17's gate. A34's other two stories and
+> its owner gate stay where inventory order puts them. It is the one story in this epic that runs outside its
+> category's run: `sprint-status.yaml` lists it in its running place, the Create prompt's "previous story" reads that
+> order, and the story board follows it.
 
 ### A4 · Heroes — 17 designs, 5 stories
 
@@ -5647,6 +5655,9 @@ So that I can start using Post Grids on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A17 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** the rebuilt grids draw **no page links of their own** — A34 draws them (A17-0, settlement 4) — so from this
+story until Story 10.112, which runs straight after this category's owner gate (R-196), the main feed shows none; each
+A17 story's owner test says so
 **And** every one of them can be the designated main feed or a fixed feed through Story 5.19's designation rule and
 Data group, and *(moved word for word from Story 5.19 by **R-195**)* a design may cap its own Count below the global
 and **the panel states the reason** — Three Up's one to twenty-four, Two Up's stop at six (`A17 Post Grids -
@@ -5762,6 +5773,7 @@ result changes as designed, and approves
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
+**And** the story that follows this gate is **Story 10.112**, A34's first (R-196); A18 opens after it.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -5777,7 +5789,8 @@ So that I can start using Post Lists on my own site.
 
 **Acceptance Criteria:**
 
-**Given** the category's per-design spec `A18 Post Lists - Spec.md`, which exists today
+**Given** the category's per-design spec `A18 Post Lists - Spec.md`, which exists today, and **Story 10.112** done —
+A34's first story runs between A17's owner gate and this one (R-196)
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A18 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
@@ -7215,7 +7228,9 @@ So that I can start using Pagination Styles on my own site.
 
 **Acceptance Criteria:**
 
-**Given** the category's per-design spec `A34 Pagination Styles - Spec.md`, which exists today
+**Given** the category's per-design spec `A34 Pagination Styles - Spec.md`, which exists today, and A17's owner gate
+(Story 10.58) passed — **this story runs straight after it, before A18** (R-196), so the main feed's page links are
+missing only while A17's own stories are built
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A34 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
@@ -7250,7 +7265,8 @@ So that I can choose more widely within Pagination Styles on my own site.
 
 **Acceptance Criteria:**
 
-**Given** the shared content model and stylesheet delivered by this category's first story
+**Given** the shared content model and stylesheet delivered by this category's first story — which ran straight after
+A17's owner gate (R-196) — and A33's owner gate passed: this story is back in inventory order
 **When** this story lands
 **Then** designs #5 Counter · #6 Load More · #7 Endless are built **against that same model**, each with its own per-design control schema
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story

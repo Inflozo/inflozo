@@ -241,6 +241,8 @@ development_status:
   10-56-a17-designs-9-12: backlog
   10-57-a17-designs-13-15: backlog
   10-58-a17-designs-16-18-owner-gate: backlog
+  # R-196 (owner, 2026-09-25): A34's first story runs straight after A17's owner gate, before A18 — its running place
+  10-112-a34-the-content-model-the-stylesheet-and-designs-1-4: backlog
   10-59-a18-the-content-model-the-stylesheet-and-designs-1-4: backlog
   10-60-a18-designs-5-8: backlog
   10-61-a18-designs-9-12: backlog
@@ -294,7 +296,6 @@ development_status:
   10-109-a32-designs-9-12-owner-gate: backlog
   10-110-a33-the-content-model-the-stylesheet-and-designs-1-4: backlog
   10-111-a33-designs-5-6-owner-gate: backlog
-  10-112-a34-the-content-model-the-stylesheet-and-designs-1-4: backlog
   10-113-a34-designs-5-7: backlog
   10-114-a34-designs-8-10-owner-gate: backlog
   epic-10-retrospective: optional

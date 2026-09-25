@@ -5836,7 +5836,15 @@ reason: R-118 — a door arrives with the thing it opens; a link to a page with 
 plain: Today your post grid draws its own "Newer posts · 1 / 3 · Older posts" links. The finished Post Grids draw none —
   their drawings leave page links to the Pagination styles — and Epic 10 rebuilds the Post Grids long before the
   Pagination styles arrive, so for that stretch no page on your site links to its own page 2.
-status: open
+status: done 2026-09-25 (R-196)
+resolution: the owner ruled Story 5.19's Question 2, option 1 (R-196, 2026-09-25): A34's first story, Story 10.112,
+  runs straight after A17's owner gate (Story 10.58) and before A18, so the page links are missing only while A17's own
+  five stories are built and tested. Landed the same day:
+  - `epics.md` Epic 10's preamble names it the epic's third ordering rule, and Stories 10.54, 10.58, 10.59, 10.112 and
+    10.113 say where they now sit;
+  - `sprint-status.yaml` lists 10.112 straight after 10.58;
+  - `tools/story-board.py`'s gate follows the tracker's order (`run_order`, with its self-check);
+  - PRD §8's E10 line, `build-sequence.md` step 7 and both `_bmad/custom/` build overrides state the exception.
 severity: medium
 origin: Story 5.19's Create (2026-09-25), found checking R-195's moves. `A17 Post Grids - Spec.md` §4 ("No A17 design
   draws page numbers, a next link, a counter or a range of its own … A34 attaches below") and the `A17-1 Three Up.dc.html`
