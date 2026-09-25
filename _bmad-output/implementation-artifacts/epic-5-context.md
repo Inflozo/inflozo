@@ -447,6 +447,23 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       Question 4, ruled option 1: the `{{#foreach}}` note **stays a written note**, and `tools/stress/test-vocabulary.mjs`'s
       R-188 sweep — inside `pnpm check` — fails by name the day an editable prop appears inside a `data-repeat`, rather
       than forbidding it outright.
+  - **Story 5.19's planning (2026-09-25, read in the runtime, the frames D5c, P0-5 and A17-1, and Ghost's source on both
+    majors):** the flag DECIDES NOTHING AT RENDER today — every feed design on a paginated page renders the page's native
+    `posts`, so a second Three Up draws the same posts and a second pager — and nothing but `synthesize` writes it
+    (`onPlace` writes `false`, `duplicateSection` copies it). The plan: ONE pure designation rule beside `synthesize`
+    (AD-27(d)) — at most one flag per paginated doc (`PAGINATED_TARGETS`, page-2 docs included), on a FEED (its design's
+    `bindingContext` includes `posts`), on a visible one whenever one exists. A valid designation is never moved; a doc
+    written before the rule is REPAIRED where it enters the editor (the server read, the hydrate, `apply`), never refused,
+    so the owner's Pilot sections Home gains its main feed and a page 2. A SECONDARY-FEED MODE in the runtime: the same
+    markup inside `{{#get "posts"}}` — the whole section inside `{{#if posts}}`, so nothing at zero; hand-picked an
+    existence get around R-20's N ordered single-id gets — the pager dropped, and on the canvas the page's context with
+    `posts` = the query's rows. The Data group is P0·5's over the existing `data` (a secondary feed's under
+    `data.posts`), one `withData` fold, Source on every posts query, Latest Post's fixed one included (Source only).
+    Read in source and to be RECORDED first (§53): a `{{#get}}` sets no `include`, so Latest Post's `primary_tag.name`
+    may print empty on a live site today; `tag`/`author` expand to `tags.slug`/`authors.slug`; Ghost slugs are ASCII
+    (`unidecode`). The main feed is sized by `projects.posts_per_page`. No migration, **no Schema phase**. **Question 1
+    (open)** proposes that the Pagination row, the Load-more rule and per-design Count limits move to Epic 10's designs;
+    DW-252 (routes, 7.16), DW-253 (FR-H2's compile-side half, unowned) and DW-254 (D5c's Theme-settings link, 7.9) are new.
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built

@@ -2903,6 +2903,9 @@ reason: `validate.ts` lets `,` through and accepts any non-empty `previewSeed`, 
   through the resolver, which catches the drift for designs in the repo; the two grammars themselves still differ, and
   which one moves — the resolver learning `,` (an `or`) or the validator refusing it — is a call for the story that
   first needs an `or`.
+note (Story 5.19's Create, 2026-09-25): P0·5's Source is SINGLE-PICK (`P0 Editor Primitives - Spec.md:474-475`: By tag and
+  By author are "Single pick"), so the Data group composes `featured:true`, `tag:'…'` and `author:'…'` and never an
+  `or` — it cannot decide which grammar moves either. Re-owned: the first story whose filter needs `,`.
 
 ## Deferred from: spec-4-5-the-controls-engine-and-the-control-vocabulary (2026-09-13)
 
@@ -3354,6 +3357,9 @@ location: packages/library/contexts/matrix.json `universal` · appendix-b1-templ
 reason: the appendix's never-offer list does not name them, so the matrix offers them rather than inventing a
   refusal (flag, do not guess). A printed binding escapes the HTML, so nothing unsafe reaches a page; it is an
   offer nobody should see. Adding both to `neverOffer` is one line once the owner rules.
+note (Story 5.19's Create, 2026-09-25): Story 5.19 draws no binding picker — its Source composes a `{{#get}}` query from
+  a closed vocabulary and never offers a field to print. Re-owned: whichever story first draws a binding picker
+  over `offerBindings`.
 
 ## Deferred from: code review of spec-4-6-context-aware-binding-and-empty-value-guards (2026-09-14)
 
@@ -4018,6 +4024,10 @@ reason: no built design declares two queries (each pilot has at most one, and th
   query in the panel is a wording the export has not drawn yet. For the category settings: `tools/check-snapshots.mjs`
   refuses one declared as a control, naming it a query's, so the category story that builds such a design adds its
   row to the Data group (P0·5's library-wide ones, such as When nothing matches, are Story 5.19's).
+note (Story 5.19's Create, 2026-09-25): "When nothing matches" is settled without a row: R-36 left P0·5's field one
+  value (the designed empty state, never a back-fill), so it offers nothing to choose and is not drawn (UX-DR3's
+  could-never) — spec-5-19 Design Notes. The row titles become "Count" and "Order" (R-170, P0·5); naming TWO queries
+  in one design stays open for the first design that declares two (Epics 9–10).
 
 ### DW-166: titles the design export prints twice in one panel, for the category stories that build those designs
 
@@ -4555,6 +4565,9 @@ owner: Story 5.19 (the site-wide footer story) or whichever story first seeds a 
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`screenRows`, `pillGrip`)
 reason: unreachable while the seeded site doc holds one instance; the fix is to drag the site group by the Layers
   list's own layout (doc order) rather than by screen rects, or to sort the rects into canvas order first
+note (Story 5.19's Create, 2026-09-25): the owner line above is stale — Story 5.19 is the Data group and the main feed,
+  not a site-wide footer story. Re-owned: whichever story first seeds a site doc with two instances (A3's footer
+  category, Epic 9).
 
 ### DW-190: a refusal shown "where the action was pressed" has nowhere to go when the section has no root
 
@@ -5377,6 +5390,9 @@ location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/sections-
 reason: a documents disagreement with no code behind it yet — `SYNTHESIS_DEFAULTS` carries no pagination value
   (`synthesize.ts`'s FEED row says why) and no A34 design is authored. Choosing one is the owner's (R-17 chose the Free
   pair), so it waits for the story that builds the control.
+note (Story 5.19's Create, 2026-09-25): no pagination design exists, so Story 5.19 cannot choose one; its Question 1
+  proposes (RECOMMENDED) that the Pagination row — and with it this question for the owner — moves to Story 10.112,
+  the first A34 story. Awaiting the owner.
 
 ### DW-233: the four Pagination style lists disagree
 
@@ -5393,6 +5409,10 @@ owner: Story 5.19 (the Pagination style control), which must pick one vocabulary
 location: `prd.md` FR-H2 · `epics.md` Story 5.19 · `sections-inventory.md` A34 · the D5c/D5d frames (never edited, R-74)
 reason: Story 5.16 builds only the Preview page row under that control and draws no Pagination row, so it settles
   none of the four; recording them here keeps Story 5.19 from inheriting a silent choice.
+note (Story 5.19's Create, 2026-09-25): a fifth list was found — A17's own panel (`A17 Post Grids - Spec.md:316`,
+  `A17-1 Three Up.dc.html:146`) draws Numbered · Newer and older · Load more · None — and A34's reconciliation makes
+  the TEN DESIGNS the select's values (`A34 Pagination Styles - Spec.md:976-979`). Story 5.19's Question 1 proposes
+  (RECOMMENDED) that the row, and this choice, move to Story 10.112. Awaiting the owner.
 
 ## Deferred from: code review of spec-5-16-previewing-page-2 (2026-09-22)
 
@@ -5747,3 +5767,59 @@ owner: unowned — the first customer site with more than 100 posts (DW-248's tr
 location: `tools/probe/run-verify-live-content.cjs` · `apps/web/components/editor/design-picker.tsx` ·
   `apps/web/components/controls/link-picker.tsx`
 
+## Deferred from: Story 5.19's Create run (2026-09-25)
+
+### DW-252: the main feed's route half — a route's own `limit:` and a channel given a main feed at creation
+
+plain: Your main feed shows as many posts per page as your theme's Posts per page says. A collection you make later in
+  the Routes Manager can set its own number, and a channel you make there should start with a main feed of its own.
+  Neither exists yet, because the Routes Manager does not.
+status: open
+severity: medium
+origin: Story 5.19's Create (2026-09-25). FR-H2 (`prd.md:312`) sizes the main feed "by the global `posts_per_page` … or by
+  the route's own `limit:` where the template is reached through a `routes.yaml` collection that sets one", and gives
+  "a channel template created in the Routes Manager … one the same way at creation"; Ghost overwrites
+  `@config.posts_per_page` with a route's `limit` at render (`frontend/services/routing/controllers/collection.js:32-44`,
+  `channel.js:33-45`, both majors, read in source). Story 7.16's criteria (`epics.md:3075-3127`) name the per-collection
+  limit but neither the canvas reading it nor the channel's designation.
+owner: Story 7.16 (the Routes Manager) — the canvas reads the route's `limit` where the template is reached through a
+  collection that sets one, and a channel or collection template it creates is handed its main feed through Story 5.19's
+  one designation rule (`packages/section-runtime`, AD-27(d)).
+location: `epics.md` Story 7.16 · `packages/section-runtime` (the designation rule) · `apps/web/lib/canvas.ts` and
+  `packages/library/src/orbit-weekly.ts` (the page size handed in)
+reason: no route exists, so the value in force is always the project's `posts_per_page`, and no custom collection or
+  channel canvas exists either (`custom-*` 404s until its story); Story 5.19 builds the rule so a new paginated file is
+  covered by `PAGINATED_TARGETS` and the page size is an argument, not a constant.
+
+### DW-253: FR-H2's compile-side half has no story — the feed-less archive's warning and SEO guard, and the per-template hand-picked warning
+
+plain: Three things the plan promises for the live site have nobody to build them. A tag or writer page with no list of
+  posts should warn you before you ship, and should tell search engines not to index its empty page 2 onwards; and a
+  page carrying several hand-picked lists should warn you, before you ship, how much they slow the page in total.
+status: open
+severity: medium
+origin: Story 5.19's Create (2026-09-25), swept in `epics.md`: FR-H2 (`prd.md:312`) — "pre-deploy checks warn, and the
+  compiler emits the SEO guard on those templates (`noindex` beyond page 1 plus a canonical link to page 1)" for a
+  feed-less `tag.hbs`/`author.hbs`, and "the panel warns per section; the pre-deploy check warns per template" for
+  hand-picked lists. No story's criteria name `noindex`, the canonical link, the archive warning or the per-template
+  hand-picked warning (Story 7.18's Pre-flight names only FR-D16's member-state row, `epics.md:3158-3196`).
+owner: unowned — proposed: Story 7.18 (the two Pre-flight warnings) and Story 7.3 or 7.6 (the guard the compiler emits).
+location: `epics.md` Stories 7.3, 7.6 and 7.18 · FR-H2
+reason: all three are compile or deploy facts and nothing compiles yet; Story 5.19 builds the per-SECTION warning (P0·5's
+  past-25 sentence) and allows a feed-less paginated template, which is the editor half.
+
+### DW-254: the main feed's Count says where Posts per page is set, but not yet "Change it in Theme settings" with its link
+
+plain: When you click your main list of posts, its greyed Count explains that your theme's Posts per page decides it. The
+  drawing also says "Change it in Theme settings" with a link; that half waits until Theme settings has the Posts per
+  page field.
+status: open
+severity: low
+origin: Story 5.19's Create (2026-09-25). D5c (`D5 Canvas Markers and Template Switcher.dc.html:347-348`) draws "This feed is
+  sized by your theme's Posts per page. Change it in Theme settings." and "Theme settings ↗"; Theme settings holds only
+  D6a's project-mode block and the dark-overrides row (R-131), and Posts per page is Story 7.9's (FR-Q1).
+owner: Story 7.9 (Theme Settings) — the sentence gains "Change it in Theme settings." and the link, FR-Q1's "every
+  surface that mentions posts per page links HERE".
+location: `apps/web/components/controls/data-group.tsx` (Story 5.19) · `apps/web/lib/data-group.ts` (the words)
+reason: R-118 — a door arrives with the thing it opens; a link to a page with no Posts per page on it would say
+  something untrue.
