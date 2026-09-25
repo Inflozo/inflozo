@@ -768,6 +768,26 @@ defect, fixed in the next Dev commit:**
   (read on T3's Content API) — so an `<img>` the canvas drew counted as a read. It now counts Content API reads only.
   The walk read 121 requests in all, against the ceiling of 500.
 
+**The deployed walks again, at `9f330277`**, after the fix (`dc593877`, CI run 36130175074 green and deployed) and the
+sorted pick key (CI run 36130358617 — `check`, `rls` and `deploy` success, the render matrix 36130358563 success;
+`dpl_2WaiDhJDU8fQsTks8zZxEfZk8NYh` READY on `app.inflozo.com`). Each on its first run, each account deleted, users 13
+before · 13 after:
+
+- **The live walk, `MAJORS=5,6 NO_429=1`: 0 FAIL, 116 PASS.** On T3 and T1 alike: Latest Post By tag "Craft" printed
+  its newest post's own tag, "Craft" — the `include` fix, live; ⌘D on the main feed landed a secondary feed drawing the
+  site's newest 12 with no pager; By tag started on the site's fullest tag, "Craft · 9 posts", and drew exactly Ghost's
+  own answer for it; Oldest and Count 3, By author "Umang" and Featured did too; three picks from "Search posts to add"
+  drew in the picked order, and ⌥↓ moved one, said so and redrew; a Source switch kept the tag and the picks and cost 0
+  requests; on Sample content the hand-picked section left the canvas and each picked row said "Not in the sample
+  content.", and back on the site every pick returned in its moved order; reading along (R-192), the chip stayed while
+  every ⋯ and every Data control was disabled; and no key Ghost answered was asked for again inside 60 s. Per major, 7
+  requests opened the editor and the major cost 53 over 27 keys; the whole walk 107 Content API requests, against the
+  ceiling of 500.
+- **The editor walk: 0 FAIL, 621 PASS** — step 94's 44 checks and step 29's two: R-126's width on the Hero row, and on the
+  main feed's row the name 54px wide, the chip 8px after it and 8px before the ⋯.
+- **The controls walk: 0 FAIL, 113 PASS** — step 15's Data group opens on Source, offering Latest · Featured · By tag ·
+  By author · Hand-picked in that order; "Count" reads 5; and Reset names "Background role, Count and Order".
+
 **Resend and Dodo:** not touched — this story sends no email and bills nothing. No migration, so no Schema phase.
 
 **Locally, Node 24:**
