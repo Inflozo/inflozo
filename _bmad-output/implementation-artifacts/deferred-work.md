@@ -4028,6 +4028,8 @@ note (Story 5.19's Create, 2026-09-25): "When nothing matches" is settled withou
   value (the designed empty state, never a back-fill), so it offers nothing to choose and is not drawn (UX-DR3's
   could-never) — spec-5-19 Design Notes. The row titles become "Count" and "Order" (R-170, P0·5); naming TWO queries
   in one design stays open for the first design that declares two (Epics 9–10).
+note (R-195's sweep, 2026-09-25): that design is A1 #7 Mega Bar — one query per post column — so Story 9.2 owns the naming,
+  and its criteria now say so.
 
 ### DW-166: titles the design export prints twice in one panel, for the category stories that build those designs
 
@@ -5384,8 +5386,8 @@ origin: Story 5.16's Create (2026-09-22), read in the documents: `sections-inven
   §4 set "Pagination style = A34 #1 Numbers" on every collection template, while Invariant 1 says defaults reference
   only [Free] designs, and the export's `A34 Pagination Styles - Spec.md:9` makes A34's [Free] designs **#2 Prev and
   Next** and **#9 Cards** — and `prd.md`'s entitlement table (`:1168`) says "A34 #1–#2 are [Free]", a third answer.
-owner: Story 5.19 (the Pagination style control on the main feed), with the owner: which Free design an untouched
-  template's pager is.
+owner: Story 10.112 (A34's first story, which builds the Pagination style control — R-195), with the owner: which Free
+  design an untouched template's pager is. *(Was Story 5.19's until R-195, 2026-09-25.)*
 location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/sections-inventory.md` §3–§4 · `prd.md:1168`
 reason: a documents disagreement with no code behind it yet — `SYNTHESIS_DEFAULTS` carries no pagination value
   (`synthesize.ts`'s FEED row says why) and no A34 design is authored. Choosing one is the owner's (R-17 chose the Free
@@ -5393,6 +5395,8 @@ reason: a documents disagreement with no code behind it yet — `SYNTHESIS_DEFAU
 note (Story 5.19's Create, 2026-09-25): no pagination design exists, so Story 5.19 cannot choose one; its Question 1
   proposes (RECOMMENDED) that the Pagination row — and with it this question for the owner — moves to Story 10.112,
   the first A34 story. Awaiting the owner.
+note (R-195, 2026-09-25): ruled option 1 — the row moved to Story 10.112, whose criteria now name this question as one
+  the owner rules before it is built.
 
 ### DW-233: the four Pagination style lists disagree
 
@@ -5404,8 +5408,8 @@ origin: Story 5.16's Create (2026-09-22), read in the documents: FR-H2 (`prd.md:
   **Numbered / Load More / Infinite scroll**; D5c and D5d (`D5 Canvas Markers and Template Switcher.dc.html:350, :428`)
   draw **None / Older/Newer / Numbers**; A34's roster is ten designs (Numbers, Prev and Next, Bar, Pill, Counter, …);
   and `sections-inventory.md`'s A34 entry speaks of Numbered, Load More and Infinite as design families.
-owner: Story 5.19 (the Pagination style control), which must pick one vocabulary before it draws the row above D5d's
-  Preview page row
+owner: Story 10.112 (A34's first story, which builds the Pagination style control — R-195), which must pick one
+  vocabulary before it draws the row above D5d's Preview page row. *(Was Story 5.19's until R-195, 2026-09-25.)*
 location: `prd.md` FR-H2 · `epics.md` Story 5.19 · `sections-inventory.md` A34 · the D5c/D5d frames (never edited, R-74)
 reason: Story 5.16 builds only the Preview page row under that control and draws no Pagination row, so it settles
   none of the four; recording them here keeps Story 5.19 from inheriting a silent choice.
@@ -5413,6 +5417,7 @@ note (Story 5.19's Create, 2026-09-25): a fifth list was found — A17's own pan
   `A17-1 Three Up.dc.html:146`) draws Numbered · Newer and older · Load more · None — and A34's reconciliation makes
   the TEN DESIGNS the select's values (`A34 Pagination Styles - Spec.md:976-979`). Story 5.19's Question 1 proposes
   (RECOMMENDED) that the row, and this choice, move to Story 10.112. Awaiting the owner.
+note (R-195, 2026-09-25): ruled option 1 — the row and this choice moved to Story 10.112, whose criteria now name it.
 
 ## Deferred from: code review of spec-5-16-previewing-page-2 (2026-09-22)
 
@@ -5784,7 +5789,7 @@ origin: Story 5.19's Create (2026-09-25). FR-H2 (`prd.md:312`) sizes the main fe
   limit but neither the canvas reading it nor the channel's designation.
 owner: Story 7.16 (the Routes Manager) — the canvas reads the route's `limit` where the template is reached through a
   collection that sets one, and a channel or collection template it creates is handed its main feed through Story 5.19's
-  one designation rule (`packages/section-runtime`, AD-27(d)).
+  one designation rule (`packages/section-runtime`, AD-27(d)). *(Its criteria say so since R-195's sweep, 2026-09-25.)*
 location: `epics.md` Story 7.16 · `packages/section-runtime` (the designation rule) · `apps/web/lib/canvas.ts` and
   `packages/library/src/orbit-weekly.ts` (the page size handed in)
 reason: no route exists, so the value in force is always the project's `posts_per_page`, and no custom collection or
@@ -5803,7 +5808,9 @@ origin: Story 5.19's Create (2026-09-25), swept in `epics.md`: FR-H2 (`prd.md:31
   feed-less `tag.hbs`/`author.hbs`, and "the panel warns per section; the pre-deploy check warns per template" for
   hand-picked lists. No story's criteria name `noindex`, the canonical link, the archive warning or the per-template
   hand-picked warning (Story 7.18's Pre-flight names only FR-D16's member-state row, `epics.md:3158-3196`).
-owner: unowned — proposed: Story 7.18 (the two Pre-flight warnings) and Story 7.3 or 7.6 (the guard the compiler emits).
+owner: Story 7.18 (the two Pre-flight warnings) and Story 7.3 (the guard the compiler emits) — their criteria name them
+  since R-195's sweep (owner, 2026-09-25: "no requirement/feature is missed"). The archive's EDITOR warning is Story
+  5.19's own: a note at the head of Layers on a Tag or Author page with no visible feed.
 location: `epics.md` Stories 7.3, 7.6 and 7.18 · FR-H2
 reason: all three are compile or deploy facts and nothing compiles yet; Story 5.19 builds the per-SECTION warning (P0·5's
   past-25 sentence) and allows a feed-less paginated template, which is the editor half.
@@ -5819,7 +5826,27 @@ origin: Story 5.19's Create (2026-09-25). D5c (`D5 Canvas Markers and Template S
   sized by your theme's Posts per page. Change it in Theme settings." and "Theme settings ↗"; Theme settings holds only
   D6a's project-mode block and the dark-overrides row (R-131), and Posts per page is Story 7.9's (FR-Q1).
 owner: Story 7.9 (Theme Settings) — the sentence gains "Change it in Theme settings." and the link, FR-Q1's "every
-  surface that mentions posts per page links HERE".
+  surface that mentions posts per page links HERE". *(Its criteria say so since R-195's sweep, 2026-09-25.)*
 location: `apps/web/components/controls/data-group.tsx` (Story 5.19) · `apps/web/lib/data-group.ts` (the words)
 reason: R-118 — a door arrives with the thing it opens; a link to a page with no Posts per page on it would say
   something untrue.
+
+### DW-255: between Story 10.54 and Story 10.112 the main feed has no page links
+
+plain: Today your post grid draws its own "Newer posts · 1 / 3 · Older posts" links. The finished Post Grids draw none —
+  their drawings leave page links to the Pagination styles — and Epic 10 rebuilds the Post Grids long before the
+  Pagination styles arrive, so for that stretch no page on your site links to its own page 2.
+status: open
+severity: medium
+origin: Story 5.19's Create (2026-09-25), found checking R-195's moves. `A17 Post Grids - Spec.md` §4 ("No A17 design
+  draws page numbers, a next link, a counter or a range of its own … A34 attaches below") and the `A17-1 Three Up.dc.html`
+  frame ("pagination is A34's, attached below") give the rebuilt Three Up no pager, where the pilot
+  (`packages/library/designs/a17/1/index.html`) draws one today. Epic 10 runs in inventory order — A17 at Stories
+  10.54–10.58, A34 at 10.112–10.114 — and A34's first four designs are built out of A1, A6 and A17 pieces, the last of
+  them A17 #18's inset focus ring (`A34 Pagination Styles - Spec.md`, Block 1), so A34 cannot open before Story 10.58.
+owner: the owner — Story 5.19's Question 2 (where A34's first story sits in Epic 10's order); then Epic 10's preamble
+  and the stories it moves.
+location: `epics.md` Epic 10's preamble and order · Stories 10.54 and 10.112
+reason: a planning-order gap no story can close alone: moving a story across categories changes Epic 10's
+  one-category-at-a-time rule, which is the owner's; keeping the pilot's links on the rebuilt grids departs from their
+  drawings (R-74).

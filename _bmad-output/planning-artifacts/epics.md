@@ -1530,7 +1530,9 @@ doing it.
 > **The two Ghost-surface shims are built here against E4's contract** — a work split, not a second owner.
 > **FR-H5 stays E4's**, defining what the shims must render and how they stay inert; Portal's floating button
 > and Ghost's announcement strip are *canvas* work and land with the canvas.
-> **FR-H2's main-feed designation lifecycle belongs to E5.** E7 emits what E5 designated.
+> **FR-H2's main-feed designation lifecycle belongs to E5.** E7 emits what E5 designated. Three of FR-H2's pieces are
+> built with the designs that need them instead — the Pagination style, the Load-more rule and a design's own Count
+> cap (**R-195**; Epic 9's preamble lists where each landed).
 
 ### Story 5.1: The editor shell, the canvas boundary and the URL scheme
 
@@ -2257,33 +2259,42 @@ toggles for date, author, excerpt, reading time and tag chip sit in Content, whe
 **And** on every natively paginated template — index, custom collections, channels, and the **tag and author
 archives** — **exactly one section is the designated main feed**, bound to the native paginated `posts` context
 **never `{{#get}}`**, sized by the global `posts_per_page` **or by the route's own `limit:` where the template is
-reached through a collection that sets one**, and the canvas reads whichever value actually applies
-**And** the main feed **alone** exposes **Pagination style: Numbered / Load More / Infinite scroll**, and
-load-more designs are main-feed-only
+reached through a collection that sets one**, and the canvas reads whichever value actually applies — the
+project's `posts_per_page` until routes exist; the route's own `limit:` is read by Story 7.16, which builds routes
+(DW-252)
 **And** all other feeds are `{{#get}}`-driven with a fixed Count that **caps at 100** and never emits
-`limit="all"`; a design may cap its own Count below the global and **the panel states the reason**
+`limit="all"`
+**And** **three requirements are built with the designs that need them, not here — R-195** (owner, 2026-09-25):
+*"the main feed alone exposes Pagination style: Numbered / Load More / Infinite scroll"* moves to Story 10.112,
+*"load-more designs are main-feed-only"* to Stories 10.58 and 10.62, and *"a design may cap its own Count below the
+global and the panel states the reason"* to every category story whose designs cap a Ghost-sourced Count — each word
+for word, listed in Epic 9's preamble
 **And** designation has a lifecycle **owned by this epic**: the first feed placed on a paginated template
 auto-designates; archives start with one from the Synthesis Defaults; a channel created in the Routes Manager is
-given one at creation; deleting or hiding it transfers designation to the next feed section; the user may
-reassign it anytime; and the editor **marks the main feed visibly**
+given one at creation (Story 7.16, through this story's rule — DW-252); deleting or hiding it transfers designation to
+the next feed section; the user may reassign it anytime; and the editor **marks the main feed visibly**
 **And** a paginated template with **zero** feed sections is allowed, and the archive case keeps its warning
-because `tag.hbs` and `author.hbs` have no second file to fall through to
+because `tag.hbs` and `author.hbs` have no second file to fall through to — in the editor here, as a note at the head
+of Layers on a Tag or Author page with no visible feed; at Pre-flight in Story 7.18, and as the compiled SEO guard in
+Story 7.3 (DW-253)
 **And** **hand-picked order is the drawn order** — picked references are held in the order dragged and handed to
 the template in that order, **never re-sorted by `published_at`** — because `filter="id:[…]"` discards the
 requested order and a re-sort silently renumbers an ordinal design
 **And** hand-picked has **no hard cap**: the panel **warns past 25** and lets the user proceed, worded for the
 case that bites — **the budget is per page, not per section** — with the pre-deploy check warning per template
+(Story 7.18, DW-253)
 **And** the Data group's `fallback` field **selects how the designed empty state renders and never what else to
 show instead**
 **And** **the main feed on page 2's own copy is a main feed too** (Story 5.16): page 2 starts as an exact copy of page
-1, `isMainFeed` included (R-179), so the designation's lifecycle, its visible marker and the Pagination control above
-D5d's **Preview page** row apply to page 2's copy as its own section — and `duplicateSection` still copies the flag,
-which this story's one-feed rule settles (DW-194)
-**And** the marker matches D5c.
+1, `isMainFeed` included (R-179), so the designation's lifecycle and its visible marker apply to page 2's copy as its
+own section — and `duplicateSection` still copies the flag, which this story's one-feed rule settles (DW-194)
+**And** the marker matches D5c, and the Data group matches P0-5.
 
-**FRs:** FR-H2. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c. · **Owner test:** yes. ·
-**Depends on E10:** the main-feed designation and its Pagination control are built here; **A34's ten treatments
-arrive in E10**, and the two meet at A34's owner gate. *(Declared by the step-6 stress test, finding F3.)*
+**FRs:** FR-H2. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5c · `P0-5 Populate From Panel.dc.html`. ·
+**Rulings:** R-195. · **Owner test:** yes. · **Verification:** the deployed editor walk and the live-content walk on T1
+and T3 (R-82). *(The step-6 stress test's finding F3 said "the main-feed designation and its Pagination control are
+built here; A34's ten treatments arrive in E10". R-195 supersedes its second half: the Pagination control is built in
+E10, with its designs, in Story 10.112.)*
 
 ### Story 5.20: Tier-bound surfaces and the Paywall editor
 
@@ -2685,9 +2696,14 @@ preview already calls (AD-27(d), Story 5.16): page 2's own design where one is s
 **And** **an archive's page-2 design** — stored under `tag-paged` or `author-paged` (R-178) — compiles into that
 archive's own `tag.hbs` or `author.hbs` inside **`{{#is "paged"}}`**, the context Ghost adds from page 2 on
 (`context.js`, both majors), with page 1's design in its `{{else}}`
+**And** every stored doc passes through **Story 5.19's designation rule** before it compiles (AD-27(d)), so a doc
+written before the rule compiles with the main feed the canvas shows
+**And** a **feed-less `tag.hbs` or `author.hbs`** — no visible feed section — compiles with FR-H2's **SEO guard**,
+`noindex` beyond page 1 plus a canonical link to page 1, because those files have no second file to fall through to
+and their `/page/N/` would repeat page 1 (DW-253)
 **And** the warning matches D5f.
 
-**FRs:** FR-I1. · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** yes (the
+**FRs:** FR-I1, FR-H2 (the SEO guard). · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** yes (the
 warning).
 
 ### Story 7.4: Assets, fonts, per-design CSS and the dead-code strip
@@ -2868,6 +2884,8 @@ image settings are disallowed
 **And** **setting keys are immutable once deployed or exported** — renaming would erase the site owner's stored
 value, so a rename changes the label only — and deleting a setting warns that re-creating the key would resurrect
 the stored value
+**And** the main feed's greyed Count (Story 5.19) gains D5c's second sentence, *"Change it in Theme settings."*,
+and its **Theme settings ↗** link (DW-254)
 **And** the surface matches D6a Pro and D6b Free.
 
 **FRs:** FR-Q1, FR-Q2. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a · D6b. · **Owner test:** yes.
@@ -3043,7 +3061,9 @@ So that a treatment is never unreachable because its host is absent.
 **And** a project with no post-content section still styles its cards, and a template with no feed still carries
 a pagination treatment for when one is added
 **And** **emission never depends on a host section existing**, and the selection **survives that section's
-removal**.
+removal**
+**And** its pagination half offers A34's designs from the day they exist — Story 10.112 builds the Pagination style
+this surface shares (R-195) — and until then draws no pagination row (R-118).
 
 **FRs:** FR-Q9. · **Frame:** `D6 Theme Settings Completed.dc.html` D6a. · **Owner test:** yes.
 
@@ -3087,6 +3107,9 @@ defaulting to the global `posts_per_page` — with drag-to-reorder precedence
 **And** **a per-collection limit is genuinely offered**, because a `routes.yaml` route carrying an explicit
 `limit:` **overwrites `@config.posts_per_page` at render time for that route**; leaving it unset emits no `limit:`
 and inherits the global
+**And** the canvas sizes a main feed by that route's own `limit:` wherever the template is reached through a
+collection that sets one, and a **channel or collection template created here is given its main feed at creation**
+through Story 5.19's designation rule (FR-H2, DW-252)
 **And** I can define **channels** (filtered post streams with their own path and RSS feed), **custom routes**
 (static path → custom template) and taxonomy prefixes
 **And** a **live YAML preview pane** and validation run before save: path collisions, unknown templates, filter
@@ -3188,9 +3211,13 @@ half of Story 5.14's nudge): it reads `project_template_prefs.member_states_view
 `unviewed` for each canvas the deploy compiles, names the canvas and the visitors still unviewed, and **never blocks**
 — the row reminds and Ship it stays pressable; R-167 decides when a record runs out, so an edit since the last look
 puts the canvas back on this list
+**And** **Pre-flight warns, and never blocks, on FR-H2's two cases** (DW-253): a Tag or Author page with no visible
+feed — its `/page/N/` would repeat page 1, and the compiled guard (Story 7.3) keeps it out of search — and any
+template whose hand-picked lists together pass 25 picks, naming the template and the total, because **the budget is
+per page, not per section**
 **And** the screens match S8a, S8b, S8c, S8d and S8d′ on failure.
 
-**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
+**FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
 
 ### Story 7.19: The first-deploy credential step, and its decline path
@@ -3820,6 +3847,27 @@ button, link column, social row, inline newsletter form.
 > the calibration point:** the very first story of the very first category is where this is measured. If
 > Story 9.1 overruns, resize the *later* stories of each run rather than the first, and say so on the board —
 > do not discover it silently thirty categories in.
+>
+> **Moved in from Story 5.19 by R-195 (owner, 2026-09-25), word for word, so none is missed.** Story 5.19 builds the
+> main-feed designation and the Data group (P0·5's Source, the tag or author select, the hand-picked list, Count and
+> Order). Three of its requirements need designs that arrive in Epics 9 and 10, and are built with them:
+>
+> 1. *"the main feed alone exposes Pagination style: Numbered / Load More / Infinite scroll"* — **Story 10.112**, with
+>    A34's first designs, together with the Pagination control on page 2's copy of the main feed and the two choices
+>    still open on it, DW-232 and DW-233.
+> 2. *"load-more designs are main-feed-only"* — **Story 10.58** (A17 #16 Load More) and **Story 10.62** (A18 #15 Load
+>    More).
+> 3. *"a design may cap its own Count below the global and the panel states the reason"* — **every category story
+>    whose designs cap a Ghost-sourced Count**, in Epic 9 and Epic 10 alike. The first to meet one builds how a design
+>    declares its cap and its reason; every later one declares its own. Known today: A2's posts-sourced list, capped at
+>    six (Story 9.5); A3 #9 Latest Posts, two to four (Story 9.11); A17's grids, from Three Up's one to twenty-four
+>    (Story 10.54 on); A1 #7 Mega Bar's post columns (Story 9.2), where its count is a picker rather than a named set
+>    (R-18, R-30); and the other post, tag and writer lists of Epic 10 — A18, A19, A20, A21, A22 and A27.
+>
+> Two more pieces of the Data group are first needed here, because Story 5.19 had no design that needed them: P0·5's
+> **authored-or-Ghost switch** in front of Source (Story 9.5, A2's shared list — *Source: Authored · From posts*), and
+> **naming two queries in one design** so the panel and the reset confirm can tell them apart (Story 9.2, A1 #7 Mega
+> Bar's columns — DW-165).
 
 ### A1 · Headers — 15 designs, 4 stories
 
@@ -3864,6 +3912,10 @@ So that I can choose more widely within Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Floating Pill · #6 Drawer-First · #7 Mega Bar · #8 Utility + Nav are built **against that same model**, each with its own per-design control schema
+**And** #6 Drawer-First's featured post and #7 Mega Bar's post columns take their posts through **Story 5.19's Data
+group** (P0·5) — #6 in single-post mode, as Latest Post does — and #7, the library's **first design with several
+queries**, names each by its column so the Data group and the reset confirm can tell them apart (DW-165); where a
+column's count is a picker rather than a named set (R-18, R-30), its cap is declared with its reason (R-195)
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
@@ -3946,6 +3998,11 @@ So that I can start using Announcement Bars on my own site.
 **Given** the category's per-design spec `A2 Announcement Bars - Spec.md`, which exists today
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A2 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
+**And** the shared list's **Source: Authored · From posts** (A2 §0) is P0·5's authored-or-Ghost switch, built here
+in front of Story 5.19's Data group, which Story 5.19 left to the first design that is both
+**And** *(moved word for word from Story 5.19 by **R-195**)* a design may cap its own Count below the global and **the
+panel states the reason** — here the posts source, capped at the six-message cap with A2's own reason; if no earlier
+story has built how a design declares a Count cap and its reason, this one does
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Rule · #2 Split · #3 Badge · #4 Two-Line are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
@@ -4098,6 +4155,9 @@ So that I can choose more widely within Footers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Latest Posts · #10 Contact Block · #11 Colophon · #12 Card are built **against that same model**, each with its own per-design control schema
+**And** #9 Latest Posts takes its posts through Story 5.19's Data group, and *(moved word for word from Story 5.19 by
+**R-195**)* a design may cap its own Count below the global and **the panel states the reason** — its How many posts
+runs two to four (A3 #9)
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
@@ -4164,6 +4224,11 @@ behind §4's blocking owner gate.
 > module emits**, because a reading design assessed against Ghost's default card styling is being assessed
 > against markup the finished theme will never render. And **A33's treatments are delivered against that module**,
 > which must therefore land first.
+>
+> **Three requirements moved in from Story 5.19 by R-195** (owner, 2026-09-25), word for word: the main feed's
+> Pagination style (Story 10.112), the Load-more rule (Stories 10.58 and 10.62), and a design's own Count cap with its
+> reason (every category story whose designs cap a Ghost-sourced Count — Epic 9's preamble lists them). **Where A34's
+> first story sits in this epic's order is open**: Story 5.19's Question 2 (DW-255).
 
 ### A4 · Heroes — 17 designs, 5 stories
 
@@ -5582,6 +5647,10 @@ So that I can start using Post Grids on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A17 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** every one of them can be the designated main feed or a fixed feed through Story 5.19's designation rule and
+Data group, and *(moved word for word from Story 5.19 by **R-195**)* a design may cap its own Count below the global
+and **the panel states the reason** — Three Up's one to twenty-four, Two Up's stop at six (`A17 Post Grids -
+Spec.md`)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing on this design moves`, `loads o`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; both 636 cells`, `their excerpts and their meta are server-r`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `including the stress frame's short last row.`, `None. Edit-safe: yes — the hover shadow is a CSS transition on the card and does not run while a card is being edited. J` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
@@ -5670,6 +5739,9 @@ So that I can choose more widely within Post Grids on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #16 Load More · #17 Panel · #18 Edge to Edge are built **against that same model**, each with its own per-design control schema
+**And** *(moved word for word from Story 5.19 by **R-195**)* load-more designs are main-feed-only — #16 Load More is
+only ever the designated main feed, its Source locked at the page's own posts, because a fixed feed has no page 2 to
+load (R-7; `A17 Post Grids - Spec.md` §4)
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `load-more` — its edit-safe value is `registry.json`'s, research §7, `quoted: "Ghost's numbered /page/2/ paginat`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical; the full-bleed band below 767`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the band`, `its zero gutter and its scrim at Text Over are C` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
@@ -5776,6 +5848,8 @@ So that I can choose more widely within Post Lists on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Timeline · #14 Index · #15 Load More are built **against that same model**, each with its own per-design control schema
+**And** *(moved word for word from Story 5.19 by **R-195**)* load-more designs are main-feed-only — #15 Load More is
+only ever the designated main feed, because a fixed feed has no page 2 to load (R-7)
 **And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the rail`, `the markers and the dates are markup and CSS. sc`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — and Alphabetical is server-side`, `so it needs none. filter`, `load-more` — its edit-safe value is `registry.json`'s, research §7, `so the edito` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
@@ -7146,6 +7220,17 @@ So that I can start using Pagination Styles on my own site.
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A34 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
 **And** designs #1 Numbers · #2 Prev and Next · #3 Bar · #4 Pill are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** *(moved word for word from Story 5.19 by **R-195**)* the main feed **alone** exposes **Pagination style:
+Numbered / Load More / Infinite scroll**, and the Pagination control above D5d's **Preview page** row applies to page
+2's copy of the main feed as its own section (Story 5.16, R-179)
+**And** that control is built here, with its first designs: a select on the designated main feed's panel whose values
+are A34's designs (A34's reconciliation, note 1); ONE project-level value, `project_treatments.pagination_design_id`
+(AD-27 (a0)), rendered attached beneath the main feed on both emitters; and the same value Theme Settings offers where
+no feed is placed (FR-Q9, Story 7.14)
+**And** before it is built, the owner rules the two choices still open on it: which **[Free]** design an untouched
+template's pager is (DW-232 — the Synthesis Defaults name #1 Numbers, A34's spec names #2 and #9 as [Free], this
+story's line names #1 and #2), and which list names the select's values (DW-233 — FR-H2's three words, D5c's None ·
+Older/Newer · Numbers, A17's four, or the designs themselves)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**

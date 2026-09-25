@@ -67,6 +67,11 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   - Duplicate's copy is never the main feed.
   - Reassigning is one edit.
   - Each change is part of the gesture that caused it: one `apply`, one journal entry, one `⌘Z` (Story 5.8).
+- **A Tag or Author page with no visible feed is allowed, and says so** (FR-H2's archive case; PRD §8 makes the warning
+  E5's). `tag.hbs` and `author.hbs` have no second file to fall through to, so their page 2 onwards would repeat page 1.
+  A note at the head of Layers says so while it is true, in D5a's marker shape, extrapolated (R-74). Pre-flight's
+  warning is Story 7.18's and the compiled SEO guard Story 7.3's (DW-253). Home needs neither: its page 2 is another
+  file (FR-I1).
 - **A doc written before the rule** is repaired where it enters the editor, and stored repaired with the next edit of
   that canvas. That covers a feed with no flag (the owner's Pilot sections Home) and two flags (a main feed duplicated
   before this story). Reading alone writes nothing (AD-22).
@@ -123,8 +128,11 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
 **Ask First:**
 
-- **Question 1 is OPEN** (awaiting the owner). This spec is written for its option 1 (RECOMMENDED); another ruling
-  re-plans the Pagination row, the Load-more rule and per-design Count limits into this story before Dev starts.
+- **Question 1 is RULED — R-195** (owner, 2026-09-25): the Pagination row, the Load-more rule and a design's own
+  Count cap are built with the designs that need them, moved word for word into Epics 9 and 10 (Epic 9's preamble
+  lists every destination).
+- **Question 2 is OPEN** (awaiting the owner). It asks where A34's first story sits in Epic 10's order, and it holds up
+  nothing in this story.
 - If the recorder finds that a `{{#get}}` on a paginated template does **not** shadow the native `posts` inside its
   block — the secondary feed's premise — stop and say so.
 - If the recorder finds `primary_tag` / `primary_author` empty on a `{{#get "posts"}}` without `include`, emit
@@ -134,7 +142,8 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 
 **Never:**
 
-- No Pagination row, no Load-more rule and no per-design Count cap in this story: they wait for Question 1.
+- No Pagination row, no Load-more rule and no per-design Count cap in this story — R-195 moved them word for word to
+  Story 10.112, Stories 10.58 and 10.62, and every category story whose designs cap a Ghost-sourced Count.
 - No Posts per page field or link on Theme settings. That is Story 7.9's (DW-254), and R-118 applies: a door arrives
   with the thing it opens.
 - No route `limit:` and no channel designation. They are Story 7.16's (DW-252), and no route exists yet.
@@ -159,6 +168,7 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 | Delete the only feed | no other feed | zero feeds, allowed: no chip, no page 2 (R-176); Home's page 2 falls back per R-127 | N/A |
 | Hide the main feed | another visible feed | the flag moves with the hide; showing it again leaves it a secondary feed | N/A |
 | Hide the only feed | no visible feed | it keeps the flag, hidden (5.16's rule) | N/A |
+| A Tag or Author page with no visible feed | its only feed hidden (deleting the only section returns an untouched page to its defaults, AD-22) | allowed; a note at the head of Layers says its later pages repeat page 1; gone the moment a feed shows again; never on Home | N/A |
 | Duplicate the main feed | ⋯ Duplicate or `⌘D` | the copy lands secondary | N/A |
 | Reassign | ⋯ **Make this the main feed** on a visible secondary feed | the flag moves; the old main feed becomes secondary with its own stored Data values (Latest, posts per page, Newest where none); announced | absent on the main feed, a hidden row, a non-feed row and a non-paginated canvas |
 | Design switch | the main feed's ring | keeps the flag (a ring shares `bindingContext`) | N/A |
@@ -404,6 +414,8 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
     a non-paginated file, refuses).
   - `feedQuery(entry, instance, file, postsPerPage)` gives the secondary feed's folded `DataBinding` — the base is posts,
     Count = posts per page, Order newest, folded with `data.posts` — or `undefined` for a main feed or a non-feed.
+  - `feedlessArchive(doc, file, isFeed)` is true on `tag.hbs` or `author.hbs` with no visible feed — one predicate for
+    the editor's note now, and Story 7.18's Pre-flight and Story 7.3's guard later.
 
   `SynthesisEntry` gains `bindingContext`. -- AD-27(d): the designation rule in one place, for the editor now and the
   compiler at 7.3.
@@ -461,7 +473,8 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
 - [ ] `apps/web/components/controls/layers.tsx` + `apps/web/components/kit/layers-row.tsx` -- The chip on the main
   feed's row, before the ⋯. **Make this the main feed** goes in the ⋯ menu straight after Hide/Show (R-126 keeps
   Hide/Show first), only where `canLead`. The chip's words are "Main feed", uppercased by CSS, so assistive technology
-  reads words. -- D5c's two Layers pieces.
+  reads words. The feed-less archive note sits at the head of Layers beside `AutoGeneratedRow`, in its shape, while
+  `feedlessArchive` holds. -- D5c's two Layers pieces, and FR-H2's archive case in the editor.
 - [ ] `apps/web/components/controls/data-group.tsx` (new) + `sidebar.tsx` + `item-list.tsx` -- P0·5's body replaces
   `GhostList` as the Data group:
   - The Source `Select`.
@@ -553,6 +566,9 @@ phase** — `data` and `isMainFeed` already live in the `jsonb` doc and `posts_p
   (AD-36).
 - Given a session reading along, when I open the Data group or a feed's ⋯ menu, then every Data row and **Make this the
   main feed** is disabled (R-192), and the chip still shows.
+- Given a Tag or Author page with no visible feed, when it is on screen, then a note at the head of Layers says its
+  later pages would repeat page 1 and the theme asks search engines to skip them, and the note goes the moment a feed
+  shows again; Home never carries it.
 - Given this story's controls, when any of them is pressed, then none starts server work a screen waits on and no route
   is added, so `busy.test.ts` stays green (R-98).
 
@@ -593,14 +609,23 @@ and those offsets are only how it is delivered (R-138's precedent). The owner's 
 
 **What is not built, and where it went.**
 
-- **Pagination style, the Load-more rule and per-design Count limits** — Question 1. None has a design to work with:
-  the library's only feed draws its own pager, and nothing caps a Count below 100.
+- **Pagination style, the Load-more rule and per-design Count limits** — **R-195** (Question 1), word for word:
+  - the Pagination style goes to Story 10.112, with the page-2 copy's control and DW-232/DW-233;
+  - the Load-more rule goes to Stories 10.58 and 10.62;
+  - the Count cap goes to every category story whose designs cap a Ghost-sourced Count. Some of them come BEFORE
+    Epic 10 — A2's posts source (9.5) and A3 #9 Latest Posts (9.11) — so Epic 9's preamble carries the full list and
+    Epic 10's points at it.
+
+  None of them had a design to work with here: the library's only feed draws its own pager, and nothing caps a Count
+  below 100.
+- **P0·5's authored-or-Ghost switch and naming two queries in one design** — also Epic 9's: Story 9.5 (A2's shared
+  list is the first design that is both) and Story 9.2 (A1 #7 Mega Bar's columns, DW-165).
 - **D5c's "Change it in Theme settings." and its link** — Story 7.9 (DW-254). Theme settings has no Posts per page
   field until then (R-118).
 - **The route's `limit:` and a channel's designation at creation** — Story 7.16 (DW-252). No route exists, so the value
   in force is always the project's.
-- **The archive's pre-deploy warning, the per-template hand-picked warning and the SEO guard** — Epic 7, and DW-253,
-  because no story names them.
+- **The archive's Pre-flight warning, the per-template hand-picked warning and the SEO guard** — Stories 7.18 and 7.3,
+  whose criteria now name them (DW-253). The archive's EDITOR warning is this story's — the Layers note above.
 - **P0·5's "When nothing matches"** — R-36 left that field one value: the designed empty state, never a back-fill. A
   one-value field offers nothing to choose (UX-DR3's could-never), so no row is drawn, and FR-H2's sentence holds by
   construction — nothing ever back-fills. That closes DW-165's "When nothing matches" half.
@@ -642,6 +667,7 @@ and `{n}` is a number.
 | a fixed query at its cap | *"{design} shows {n} post, so it holds {n} pick."* (plural at 2+) |
 | Count refused | *"Count is a number from 1 to 100."* |
 | main feed · Count, greyed | *"This feed is sized by your theme's Posts per page."* |
+| head of Layers, a Tag or Author page with no visible feed | *"This {Tag/Author} page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them."* |
 
 ## Verification
 
@@ -676,8 +702,8 @@ and `{n}` is a number.
 On the real site after Deploy, in a desktop browser about 1440 wide. Deploy confirms the URLs.
 
 - Steps 1–13 use your **Ghost 5 Project**, which shows your ghost5.inflozo.com posts.
-- Step 14 uses **Pilot sections**.
-- Step 15 puts the Ghost 5 Project back as it was.
+- Steps 14 and 15 use **Pilot sections**.
+- Step 16 puts the Ghost 5 Project back as it was.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -695,7 +721,8 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 | 12 | same | Editor, Home | Press the pill at the foot of the canvas and choose **Sample content**. Then choose **Ghost5** again. | — | On sample content your hand-picked grid disappears from the page, and each of its picked rows says *"Not in the sample content."* Latest Post's card goes too, and its words stay. Back on Ghost5, both return exactly as you left them. |
 | 13 | same | Editor, Home | (Optional) Keep hand-picking posts in the new grid until you have 26. | any | At 26 the count **"26 picked"** turns amber and the sentence *"Past 25 picks this gets slow…"* appears. You can keep going. Nothing is blocked. |
 | 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at Layers, then click **Post Grids — Three Up**. | — | Its row now carries **MAIN FEED**. It had never been marked, and this story marks the first list on a page that has none. Its panel now offers **Preview page 1 · 2** below the settings. |
-| 15 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Put things back: open **⋯** on **Post Grids — Three Up** and choose **Delete**. Set Latest Post's **Source** back to **Latest**. | — | Home is as it was before step 2, and Latest Post shows your newest post again. |
+| 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag (Pilot sections) | Open **⋯** on **Post grid** and choose **Hide**. Then open it again and choose **Show**. Then press **Undo** twice. | — | Hidden, a note appears at the head of Layers: *"This Tag page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them."* Shown again, the note is gone. Two Undos leave the Tag page as it was. |
+| 16 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Put things back: open **⋯** on **Post Grids — Three Up** and choose **Delete**. Set Latest Post's **Source** back to **Latest**. | — | Home is as it was before step 2, and Latest Post shows your newest post again. |
 
 ## Questions for the owner
 
@@ -733,5 +760,61 @@ Pagination setting working over three stand-in test designs. With option 3 the g
 3. **Show them now, greyed, with "Arrives with the pagination designs."**
    - Says the feature exists.
    - But it is three controls that do nothing.
+
+**Ruled: option 1 (owner, 2026-09-25)** — *"Build them with those designs in Epic 10, and move these three requirements
+there word for word. Ensure these are picked up in EPIC 10 and no requirement/feature is missed."* Recorded as
+**R-195**. Where each landed, word for word:
+
+- *"the main feed alone exposes Pagination style: Numbered / Load More / Infinite scroll"* → **Story 10.112**, with
+  the Pagination control on page 2's copy of the main feed, the one project-level value it stores, Theme Settings'
+  pagination half (Story 7.14), and the two choices still open on it (DW-232, DW-233).
+- *"load-more designs are main-feed-only"* → **Stories 10.58** (A17 #16) **and 10.62** (A18 #15).
+- *"a design may cap its own Count below the global and the panel states the reason"* → every category story whose
+  designs cap a Ghost-sourced Count. The first ones come **before** Epic 10, which is why Epic 9's preamble carries
+  the full list: A2's posts source (9.5) and A3 #9 Latest Posts (9.11), then A17's grids (10.54) and the post lists of
+  Epic 10.
+
+Also given owners so nothing is missed:
+- the Data group's two first-needed pieces (Stories 9.5 and 9.2);
+- FR-H2's Pre-flight warnings and SEO guard (Stories 7.18 and 7.3, DW-253);
+- a route's own page size and a channel's main feed (Story 7.16, DW-252);
+- the Theme settings link (Story 7.9, DW-254).
+
+Checking the ruling found one gap it could not close alone — **Question 2**.
+
+### Question 2 — Your post grids lose their page links when Epic 10 rebuilds them. When should the pagination designs arrive? (raised 2026-09-25, from your ruling on Question 1)
+
+**In plain English.** Today your Three Up grid draws its own **"← Newer posts · 1 / 3 · Older posts →"** links —
+that is how a visitor reaches your older posts. In the finished library a list of posts draws no page links of its
+own: the drawings for every Post Grid and Post List leave them to the **Pagination style** attached beneath the main
+feed — the setting your ruling on Question 1 moved to Story 10.112. Epic 10 builds its categories in order:
+
+- **Story 10.54** rebuilds the Post Grids from their drawings, so the links go.
+- **Story 10.112** brings them back as a Pagination style, some fifty stories later.
+
+In between, Ghost still serves page 2, but nothing on the page leads to it. The pagination designs are built out of
+pieces of the Post Grids — their spacing and the focus ring of #18 Edge to Edge (Story 10.58) — so they cannot come
+first. This does not hold up Story 5.19.
+
+**An example.** Your Ghost 5 Home, once Epic 10 is under way:
+
+- After Story 10.54, the post grid ends at its twelfth card with nothing beneath it.
+- Once the pagination designs are in, it ends with the style you choose, for example "← Newer · Page 1 of 3 · Older
+  →".
+
+1. **Build the pagination designs' first story (10.112) straight after the Post Grids' last story (10.58), before Post
+   Lists. (RECOMMENDED)**
+   - The links are missing only while the Post Grids' own five stories are built and tested.
+   - Everything the first four pagination designs are built from exists by then.
+   - The other two pagination stories (10.113, 10.114) and their owner gate stay at the end, where what they need is
+     (Post Lists' Load More, Featured's bands).
+   - It becomes Epic 10's third stated exception to "one category at a time", beside A25's and A33's.
+2. **Keep the order.**
+   - From Story 10.54 to Story 10.112 your main feeds have no page links.
+   - That includes your own tests of every category from Post Grids to Card Treatments.
+3. **Keep the order, and let the Post Grids keep today's "Newer · 1 / 3 · Older" links until Story 10.112 replaces
+   them.**
+   - No gap.
+   - But those designs differ from their drawings for that whole stretch, which your rule R-74 does not allow.
 
 **Ruled:** _(awaiting the owner)_

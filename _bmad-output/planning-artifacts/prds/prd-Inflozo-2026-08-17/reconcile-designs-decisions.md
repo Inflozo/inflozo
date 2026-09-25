@@ -4222,6 +4222,43 @@ tag and one author (R-193's third bullet), so on live content every list is one 
   ✅ `epic-5-context.md` · ⬜ built: `components/controls/sidebar.tsx`, `editor.tsx` — Story 5.18's Dev.
 
 
+**R-195 — three of Story 5.19's requirements are built with the designs that need them, moved word for word into Epics 9
+and 10.** Story 5.19's Create, Question 1, ruled **option 1** (owner, 2026-09-25): *"Build them with those designs in
+Epic 10, and move these three requirements there word for word. Ensure these are picked up in EPIC 10 and no
+requirement/feature is missed."* Story 5.19 builds the main-feed designation and the Data group. The library holds one
+feed design — the pilot Three Up, which draws its own page links — and no design that caps a Count below 100, so the
+three would have been controls with nothing to act on (R-118).
+
+- **What moved, word for word, and where.**
+  - *"the main feed alone exposes Pagination style: Numbered / Load More / Infinite scroll"* → **Story 10.112** (A34's
+    first story), with the Pagination control on page 2's copy of the main feed, the one project-level value it stores
+    (`project_treatments.pagination_design_id`, AD-27 (a0)), Theme Settings' pagination half (Story 7.14) and the two
+    choices still open on it (DW-232, DW-233).
+  - *"load-more designs are main-feed-only"* → **Stories 10.58** (A17 #16 Load More) **and 10.62** (A18 #15 Load More).
+  - *"a design may cap its own Count below the global and the panel states the reason"* → **every category story whose
+    designs cap a Ghost-sourced Count**. The first ones come before Epic 10 — A2's posts source, capped at six (Story
+    9.5), and A3 #9 Latest Posts, two to four (Story 9.11) — so Epic 9's preamble carries the full list, Epic 10's points
+    at it, and Stories 9.5, 9.11 and 10.54 carry it by name.
+- **"No requirement is missed" — what else was given an owner the same day.**
+  - The Data group's authored-or-Ghost switch (Story 9.5) and its naming of two queries in one design (Story 9.2,
+    DW-165), which Story 5.19 had no design to need.
+  - FR-H2's two Pre-flight warnings (Story 7.18) and its SEO guard on a feed-less archive (Story 7.3), which no story
+    named (DW-253).
+  - A route's own page size and a channel's main feed at creation (Story 7.16, DW-252).
+  - D5c's Theme settings link on the main feed (Story 7.9, DW-254).
+  - The archive case's EDITOR warning, which PRD §8 makes E5's and Story 5.19's spec had missed. It is now a note at the
+    head of Layers on a Tag or Author page with no visible feed.
+- **What it raised.** A17's drawings leave page links to A34, so the Post Grids draw none of their own. From Story
+  10.54 to Story 10.112 the main feed would have no page links at all — Story 5.19's Question 2 (DW-255).
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.19's spec: Question 1, Ask First, Never, Design Notes, the matrix and the owner test.
+  - ✅ `epics.md`: Story 5.19's card; Epic 9's and Epic 10's preambles; Stories 7.3, 7.9, 7.14, 7.16, 7.18, 9.2, 9.5,
+    9.11, 10.54, 10.58, 10.62 and 10.112.
+  - ✅ `prd.md` §8's E5 note · ✅ `epic-5-context.md` · ✅ `deferred-work.md` DW-165, DW-232, DW-233 and DW-252 to
+    DW-255.
+  - ⬜ built — by each of those stories, in its own run.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

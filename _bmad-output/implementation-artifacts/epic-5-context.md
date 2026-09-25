@@ -464,6 +464,19 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     (`unidecode`). The main feed is sized by `projects.posts_per_page`. No migration, **no Schema phase**. **Question 1
     (open)** proposes that the Pagination row, the Load-more rule and per-design Count limits move to Epic 10's designs;
     DW-252 (routes, 7.16), DW-253 (FR-H2's compile-side half, unowned) and DW-254 (D5c's Theme-settings link, 7.9) are new.
+  - **R-195 (owner, 2026-09-25, Story 5.19's Q1): three of 5.19's requirements are built with the designs that need
+    them**, moved word for word:
+    - the Pagination style goes to Story 10.112, with page 2's control, Theme Settings' half and DW-232/233;
+    - the Load-more rule goes to 10.58 and 10.62;
+    - a design's own Count cap goes to every category story whose designs cap a Ghost-sourced Count. The first of them
+      is in Epic 9 (A2's posts source in 9.5, A3 #9 in 9.11), so Epic 9's preamble carries the list.
+
+    The same day, so nothing was missed, the Data group's authored-or-Ghost switch (9.5) and two-query naming (9.2)
+    got owners, as did FR-H2's Pre-flight warnings (7.18), the SEO guard (7.3), a route's page size and a channel's main
+    feed (7.16, DW-252) and D5c's Theme settings link (7.9, DW-254). The archive case's EDITOR warning — a Layers note on
+    a Tag or Author page with no visible feed — joined 5.19's own spec, which had missed it (PRD §8 makes it E5's).
+    **Question 2 (open)**: the Post Grids draw no page links of their own, so between Story 10.54 and 10.112 the main
+    feed would have none; it asks where A34's first story sits (DW-255).
 - **Tier presence is not purchasability.** Paid asks sit inside `@site.paid_members_enabled`, free asks inside `@site.allow_self_signup`, tier queries filter `type:paid+visibility:public`, the paywall is a template surface with its own editor, and nothing member-identifying is server-rendered (AD-38).
   - **Story 5.14's planning (2026-09-21, read in the runtime, the schema and the frames, and in Ghost's source on
     both majors):** member-state preview needs NO runtime change and NO migration. Story 4.10 built
@@ -920,7 +933,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - **5.16's lean is settled as well (2026-09-22, a routine call stated to the owner):** page 2 is offered on the
     section that already carries `isMainFeed`, which synthesis has set since 5.5, so it lands before 5.19; 5.19 adds
     the Pagination control above its row and the lifecycle that marks a placed feed, and rebuilds nothing here.
-- **Across epics:** Epic 3's daily settings snapshot feeds the shims and members checks; Epic 6 replaces the token set; Epic 7 compiles the doc, gates deploy and export on the lock and flush, and repeats the warnings pre-deploy; A34's (5.19) and A32's (5.20) designs arrive in Epic 10.
+- **Across epics:** Epic 3's daily settings snapshot feeds the shims and members checks; Epic 6 replaces the token set; Epic 7 compiles the doc, gates deploy and export on the lock and flush, and repeats the warnings pre-deploy; A32's (5.20) designs arrive in Epic 10, and so does A34's Pagination style — built there by R-195, not by 5.19.
 - **Undeclared forward dependencies:** the library holds only the provisional pilots, so 5.11, 5.12 and 5.23's round trip have no second design to move to, and the repo's only 40-section fixture is `tools/stress`'s compile-sizing archetypes; the Synthesis Defaults and Post Content (5.4, 5.5) name designs Epics 9–10 author; pack re-roll and undo (5.12, 5.8) have one token set until Epic 6.
   - **Story 5.1, Question 1 ruled option 1 (owner, 2026-09-17)** — nothing places a section before 5.10, so the owner's tests of 5.2–5.9 run on "Pilot sections": the pilots across `site`, `home` and `post`, added once to his own account by 5.1's Deploy through `tools/probe/seed-editor-project.mjs`. Reuse it; never seed a second.
   - **Story 5.3's planning (2026-09-17, read in the pilots and swept across every category spec):** no pilot declares an `icon` prop, a character limit or an authored array — the controls fixture's `features[].icon` is the library's only icon prop — so a story that needs one on the canvas has nothing on "Pilot sections" to try it on. The first designs with an icon a customer picks arrive in Epic 9: every A1 header button takes one (Story 9.1), and A1·11 Side Rail adds row icons (9.3). The editor canvas prints catalog-linked props in the runtime's own English (`renderSection` hands no `strings`) and substitutes no inline token (it hands no `tokens`), so Newsletter — Inline Row prints `{members}` as written. The sweep also found four live designs no Epic 9/10 story names (DW-177), design notes that disagree about icons (DW-178), and pilot words declared `text` that their own category specs give the four marks (DW-179 — the owning category stories fix them, AD-35). The "Pilot sections" project links no site (`projects.linked_site_id` is null), so every canvas story before 5.18 previews Orbit Weekly there.
