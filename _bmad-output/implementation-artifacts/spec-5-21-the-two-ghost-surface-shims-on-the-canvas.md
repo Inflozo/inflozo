@@ -545,7 +545,7 @@ green) and Vercel (`dpl_A2JC6vdqCvXD1XJVrJCh7uM5ySP7` READY at `d41f307d`, `app.
 The Acceptance Auditor found no criterion violated and every ticked task's evidence in the diff. One thing did not hold:
 T1 stands exactly as the recorder left it, byte-equal on every key the fixture records, but **T3 does not** — Question 1.
 
-- [ ] [Review][Decision] T3 `ghost5.inflozo.com` is not as the recorder read it back — `portal_button` **true**, `portal_button_style` **icon-only**, `announcement_background` **dark**, and the announcement re-wrapped in Ghost Admin's editor shape (`<p dir="ltr"><span>…`); the recorder writes none of the last two, so this is a hand edit in ghost5's admin after the recording — Question 1, **awaiting the owner**
+- [x] [Review][Decision] T3 `ghost5.inflozo.com` is not as the recorder read it back — `portal_button` **true**, `portal_button_style` **icon-only**, `announcement_background` **dark**, and the announcement re-wrapped in Ghost Admin's editor shape (`<p dir="ltr"><span>…`); the recorder writes none of the last two, so this is a hand edit in ghost5's admin after the recording — Question 1, ruled option 1: restored with the staff token and read back
 - [x] [Review][Patch] The cleared-bar claim (`script: false`) had no passing control that the recorder's selector ever found the script while the bar stood [apps/web/ghost-surfaces.test.ts:266] — each device's recorded `script.src` is now asserted to be `announcement-bar@~1.1/`
 - [x] [Review][Patch] The colour test's "recorded" corpus was the whole `surfaces.json`, which carries each test site's own accent, so a site accent hardcoded into `ghost-surfaces.ts` would have passed [apps/web/tokens.test.ts:193] — narrowed to the bar's sheet and close icon, Portal's frame sheet and icon
 - [x] [Review][Patch] `settingsPatch`'s declared branch writes the style and label from the payload beside the kept on/off answer, and no test asserted it [apps/web/probe-rule.test.ts:623] — asserted
@@ -794,8 +794,8 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 - ghost5 already carries the test announcement "Fixture announcement — seeded for VERIFY 21.", shown to public visitors
   in its green accent, and its floating button is off.
 - Steps 6, 11 and 12 change a setting in ghost5's own admin, and step 12 puts everything back.
-- **Before you start:** the review found ghost5 no longer in that state (its button on, icon only, the bar dark) —
-  **Question 1** below settles whether it is put back first. The steps assume it has been.
+- The review found ghost5 changed by hand after the recording and put it back at your word (Question 1), so the steps
+  start from the recorded state.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -840,4 +840,8 @@ portal button** on and **Icon only** chosen. Open `…/#/settings/announcement-b
    dark strip with the button already showing, its step 6 to "switch the style to Icon and text".
 3. **You did not change them.** The review restores ghost5 as in option 1 and records a defect to find what changed it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-26)** — *"You changed them, but want them back as recorded."* Done the same hour with
+`GHOST5_STAFF_ACCESS_TOKEN` through T3's Admin API and read back: `portal_button` true → **false**, `portal_button_style`
+icon-only → **icon-and-text**, `announcement_background` dark → **accent**, and the announcement's stored HTML back to the
+recorded `<p>Fixture announcement — seeded for VERIFY 21.</p>` (the words were unchanged); the audience stayed
+`["visitors"]` throughout. No defect recorded: the owner changed the site by hand.
