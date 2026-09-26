@@ -145,6 +145,9 @@ const switches5 = async () => {
   return { signup_access: rows.members_signup_access, paid_enabled: rows.paid_members_enabled }
 }
 const setAccess5 = (value) => ghostAdmin5('PUT', 'settings/', { settings: [{ key: 'members_signup_access', value }] })
+/** Two readings of the member switches agree — field by field, because the record comes back from `jsonb`, which keeps
+ *  its keys in its own order (shorter first), so a `JSON.stringify` of it never equals one built in the other order */
+const sameSwitches = (a, b) => a != null && b != null && a.signup_access === b.signup_access && a.paid_enabled === b.paid_enabled
 
 /** Anything under `obj` named one of `names`, deeply — a body field is a body field wherever Ghost nests it. */
 const carries = (obj, names) => {
@@ -880,7 +883,7 @@ async function main() {
         const refused520 = await page.evaluate(() => document.querySelector('[data-paywall-off] [role="status"]')?.textContent ?? null)
         const kept520 = (await rest(`/sites?id=eq.${siteRow520.id}&select=site_settings`)).body?.[0]?.site_settings?.members
         check('T3 — Re-check says "Re-checking…" with aria-busy and never disabled, is refused with its one sentence (no Admin key on this fixture), and leaves the record as it was',
-          busy520.during !== null && busy520.during.native !== true && refused520 === PW.PAYWALL_WORDS.refused(NAME5) && JSON.stringify(kept520) === JSON.stringify(OFF),
+          busy520.during !== null && busy520.during.native !== true && refused520 === PW.PAYWALL_WORDS.refused(NAME5) && sameSwitches(kept520, OFF),
           JSON.stringify({ busy520, refused520, kept520 }))
         // the Sites notice, from the same record
         await page.goto(at('/sites'), { waitUntil: 'load' })
@@ -939,9 +942,9 @@ async function main() {
       check(`T3 — the control: members are on before the switch (${JSON.stringify(live)})`, live.signup_access !== 'none', JSON.stringify(live))
       // (1) the Paywall canvas re-checks as it opens: the record becomes T3's own answer, and there is no card
       await open(editor(P['5'], 'paywall'))
-      const onOpen = await recordWhen((r) => JSON.stringify(r) === JSON.stringify(live))
+      const onOpen = await recordWhen((r) => sameSwitches(r, live))
       check('T3 — opening the Paywall canvas re-checks through the stored key: the record is T3\'s own answer, members on, and no card',
-        JSON.stringify(onOpen) === JSON.stringify(live) && (await page.locator('[data-paywall-off]').count()) === 0, JSON.stringify(onOpen))
+        sameSwitches(onOpen, live) && (await page.locator('[data-paywall-off]').count()) === 0, JSON.stringify(onOpen))
 
       // (2) Nobody, for under a minute: restored before the last Re-check, and in `finally` whatever happens, and read back
       const offAt = Date.now()
@@ -954,7 +957,7 @@ async function main() {
         const cardUp = await cardSays(PW.PAYWALL_WORDS.offBody(NAME5))
         const offRecord = await recordWhen((r) => r?.signup_access === 'none')
         check('T3 — the canvas re-checks as it opens: Ghost answers Nobody, the record follows, and C3b\'s card comes up in R-198\'s words',
-          cardUp && JSON.stringify(offRecord) === JSON.stringify(nobody), JSON.stringify(offRecord))
+          cardUp && sameSwitches(offRecord, nobody), JSON.stringify(offRecord))
         await page.waitForFunction((w) => document.getElementById('paywall-recheck')?.textContent === w, PW.PAYWALL_WORDS.recheck, { timeout: 30000 })
         await watchBusy('#paywall-recheck')
         await page.locator('#paywall-recheck').click()
@@ -977,15 +980,15 @@ async function main() {
         note('T3 — Subscription access was Nobody for', `${Math.round((Date.now() - offAt) / 1000)} s`)
         await page.locator('#paywall-recheck').click()
         const on = await saidIs(PW.PAYWALL_WORDS.on(NAME5))
-        const backRecord = await recordWhen((r) => JSON.stringify(r) === JSON.stringify(live))
+        const backRecord = await recordWhen((r) => sameSwitches(r, live))
         const boxBack = await (await canvasFrame()).evaluate(() => document.querySelector('[data-inflozo-box] .gh-post-upgrade-cta') !== null).catch(() => false)
         check('T3 — put back and Re-checked: "Members are on", the card gone, Ghost\'s own box back, and the record T3\'s answer again',
-          settled && on && (await page.locator('[data-paywall-off]').count()) === 0 && boxBack && JSON.stringify(backRecord) === JSON.stringify(live),
+          settled && on && (await page.locator('[data-paywall-off]').count()) === 0 && boxBack && sameSwitches(backRecord, live),
           JSON.stringify({ settled, said: await said(), backRecord, boxBack }))
       } finally {
         if (!restored) await setAccess5(live.signup_access)
         const after = await switches5()
-        check(`T3 — Subscription access is back to ${live.signup_access}, read back from Ghost`, JSON.stringify(after) === JSON.stringify(live), JSON.stringify(after))
+        check(`T3 — Subscription access is back to ${live.signup_access}, read back from Ghost`, sameSwitches(after, live), JSON.stringify(after))
       }
     }
 
