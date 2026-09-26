@@ -5,6 +5,11 @@ import type { NextConfig } from 'next'
  *  A path built from `process.cwd()` at runtime is not something the build can follow on its own, so
  *  the files are named for the two routes that read them — without this the deployed function carries
  *  none of them and the page throws ENOENT. */
+/* STORY 5.20's DEV (2026-09-26) — THESE LISTS DO NOT SHIP ANYTHING UNDER TURBOPACK. Next 16.3.1 applies
+   `outputFileTracingIncludes` only to a webpack build's trace map (`collect-build-traces.js`, `entryNameFilesMap`), so
+   the files reach the deployed functions through Turbopack's own trace of `lib/style-guide.ts`'s `process.cwd()` path
+   — the form `style-guide.test.ts` now holds — and Vercel's shared functions. Kept because a webpack build would read
+   them; DW-269 is the real cure. */
 const STYLE_GUIDE_FILES = [
   '../../packages/library/orbit-weekly/images/**',
   '../../packages/library/orbit-weekly/vendor/**',

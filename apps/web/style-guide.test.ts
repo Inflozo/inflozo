@@ -102,6 +102,20 @@ test('every directory the style-guide reads off disk is traced for both routes i
   for (const route of ['/app/style-guide', '/app/style-guide/frame']) assert.match(config, new RegExp(`'${route}': STYLE_GUIDE_FILES`))
 })
 
+// Story 5.20's Dev, executed on app.inflozo.com (2026-09-26): the lists above are NOT what ships the files. Next
+// 16.3.1 applies `outputFileTracingIncludes` only to a webpack build's trace map, which a Turbopack build does not make,
+// so the deployed functions carry `packages/**` because Turbopack traces THIS module's `process.cwd()`-relative path —
+// and Vercel hands every route grouped into a function the union of their traces. When the path went to
+// `import.meta.url` (untraced), app.func shipped no `packages/` file and every editor threw. The form is the contract.
+test('packages/ is found from the working directory first, the one form Turbopack traces into the deployed functions', () => {
+  const source = readFileSync(join('lib', 'style-guide.ts'), 'utf8')
+  const body = source.slice(source.indexOf('const PACKAGES = () =>'), source.indexOf('export const ORBIT_WEEKLY_DIR'))
+  assert.match(body, /join\(process\.cwd\(\), '\.\.', '\.\.', 'packages'\)/, 'style-guide.ts must reach packages/ through process.cwd() — the traced form')
+  assert.ok(body.indexOf('process.cwd()') < body.indexOf('import.meta.url'), 'the working directory comes first; the module address is only the fallback')
+  // the fallback still answers a reader whose working directory is not apps/web (the render matrix, from the repo root)
+  assert.ok(existsSync(join(ORBIT_WEEKLY_DIR(), 'vendor', 'cards')))
+})
+
 test('the variation sheet shows the toggle closed as recorded, then open on the same bytes', () => {
   assert.match(sheet, /data-variant="toggle"[^]*?data-kg-toggle-state="close"[^]*?data-open-toggle/)
   assert.equal((sheet.match(/data-variant="/g) ?? []).length, orbitWeekly.variants().length + 1)

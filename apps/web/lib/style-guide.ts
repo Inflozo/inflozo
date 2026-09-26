@@ -15,16 +15,30 @@
 // `packages/library/orbit-weekly/` — the recorded fixtures through the library's accessors, the
 // imagery and Ghost's vendored chunks off disk — and the runtime's reference token stylesheet.
 
-import { readdirSync, readFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { orbitWeekly } from '@inflozo/library'
 import { CTA_STYLES } from '@inflozo/section-runtime'
 
-/** Resolved from this module's own address, as `pilots.ts` resolves it (Story 4.11's reason, and its Turbopack caveat):
- *  since Story 5.20 the canvas document carries this module's stylesheets too, and the render matrix builds that
- *  document from the repo root, where the working directory is not `apps/web`. */
-const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
+/** `packages/`, from the working directory FIRST — and that form is load-bearing for the deployed app, not a style.
+ *
+ *  Turbopack traces a `process.cwd()`-relative read (it knows the working directory at build time) and ships
+ *  `packages/**` with every function that bundles this module; an `import.meta.url` one it does not trace at all. Vercel
+ *  groups most routes into shared functions and ships each the union of their traces, so THIS module's trace is how the
+ *  editor, `/canvas` and `/pilots` get the design library on disk: executed at Story 5.20's Dev (2026-09-26), where
+ *  switching this line to `import.meta.url` shipped `app.func` and `canvas.func` with no `packages/` file at all (638
+ *  files down to 266) and every editor on app.inflozo.com threw `"a4/13" is not a design`. A local build shows it:
+ *  `.next/server/app/(app)/app/(authed)/style-guide/page.js.nft.json` carries `packages/**` only in this form.
+ *  `next.config.ts`'s `outputFileTracingIncludes` does not stand in for it — Next 16.3.1 applies those only to a
+ *  webpack build's trace map, which a Turbopack build does not make (DW-269).
+ *
+ *  The module's own address is the FALLBACK, for a reader whose working directory is not `apps/web`: the render matrix
+ *  builds the canvas document (which carries this module's stylesheets since Story 5.20) from the repo root. */
+const PACKAGES = () => {
+  const fromCwd = join(process.cwd(), '..', '..', 'packages')
+  return existsSync(fromCwd) ? fromCwd : join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
+}
 export const ORBIT_WEEKLY_DIR = () => join(PACKAGES(), 'library', 'orbit-weekly')
 const VENDOR = () => join(ORBIT_WEEKLY_DIR(), 'vendor', 'cards')
 

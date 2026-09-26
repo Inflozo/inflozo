@@ -702,6 +702,15 @@ did not have; the owner-facing ones are also in the Dev report.
     leaves the line absent — has a test (`paywall.test.ts`); the editor calls it.
 16. **Step 79 also refuses `/harness/editor/paywall`** on the deployed site: the harness became a layout with a page per
     canvas (item 10), so a canvas's page is refused as the harness itself is.
+17. **Production broke at the Dev push, and the cause was a path, not the paywall** (found by the deployed editor walk,
+    fixed before any other walk ran). Item 11's neighbour change moved `lib/style-guide.ts`'s `PACKAGES` from
+    `process.cwd()` to `import.meta.url`, so the render matrix could build the canvas document from the repo root. On
+    Vercel every editor then threw `"a4/13" is not a design in packages/library/designs/`: the shared functions had
+    shipped with no `packages/` file (Vercel's own `.vc-config.json`, 638 files at 5.19, 266 now), because Turbopack
+    traces the `process.cwd()` form and not the other, and `next.config.ts`'s `outputFileTracingIncludes` is inert in a
+    Turbopack build (DW-269, with the evidence). `PACKAGES` now tries the working directory first and falls back to the
+    module's address; a local production build's traces carry `packages/**` for the editor, `/canvas`, `/pilots` and
+    `/style-guide`; `style-guide.test.ts` holds the form, and its control (the moved line) fails it.
 
 ## Design Notes
 

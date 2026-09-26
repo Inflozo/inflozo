@@ -6153,3 +6153,33 @@ origin: Story 5.20's Create (2026-09-26), the planning sweep: `epics.md:7622` ag
 owner: Story 11.11 (the Ledger starter) — its own Create checks the composition against the finished library.
 location: `epics.md` Story 11.11
 reason: a starter is composed from the finished library, so the name is settled there, not here.
+
+### DW-269: the deployed app gets its design files only by accident — `outputFileTracingIncludes` does nothing in a Turbopack build
+
+plain: The live app reads its section designs, pictures and a few stylesheets from files that must be copied into
+  each server function when we publish. The settings that were meant to list those files turn out to do nothing with
+  the build tool we use, so the files only arrive because one page's code happens to point at them in a way the tool
+  notices. On 2026-09-26 a harmless-looking change to that one line published a site where no editor could open, for
+  about an hour, until the line was put back and a test now holds it.
+status: open
+severity: high
+origin: Story 5.20's Dev (2026-09-26), executed on production and on local builds. At `3a64da0b` and `d0c9ecda` every
+  editor on app.inflozo.com threw `"a4/13" is not a design in packages/library/designs/` (Vercel's runtime log, read with
+  the Vercel CLI; the editor walk timed out at step 2 four runs in a row). Vercel's `.vc-config.json` for the shared
+  functions showed why: `canvas.func` shipped 638 files at Story 5.19's `dpl_Eo65rryxfzDWpYS5Wntd2EKYq1FM` and 266 at
+  `dpl_AkwPJp773L7ib8BTcoDkF6YSMES7`, every `packages/` file gone (most routes, the editor's among them, are symlinks
+  into `app.func`, one function for all of them). A local build of Story 5.19's commit in a worktree showed the source:
+  only `/style-guide`'s trace carried `packages/**` (370 files), from `lib/style-guide.ts`'s
+  `join(process.cwd(), '..', '..', 'packages')`, which Turbopack traces; the canvas and editor routes' own traces
+  carried none. Story 5.20 had moved that line to `import.meta.url`, which Turbopack does not trace.
+reason: Next 16.3.1's `collect-build-traces.js` applies `outputFileTracingIncludes` by iterating the build trace
+  context's `entryNameFilesMap`, which only a webpack build produces, so every list in `next.config.ts` is inert under
+  Turbopack; `pilots.test.ts`, `controls.test.ts` and `style-guide.test.ts` hold those lists complete, which proves
+  nothing about what ships. Fixed for now at the one line: `style-guide.ts` finds `packages/` from the working directory
+  first (the module address is the fallback for the render matrix, which runs from the repo root), `pilots.ts` imports
+  it so the editor, `/canvas` and `/pilots` now carry the trace themselves (384 files each in a local build), and
+  `style-guide.test.ts` holds the form. The real cure is a story of its own: a post-build check that the functions carry
+  `packages/library/designs/**` (the `.vc-config.json` file map says it), or files that do not depend on tracing at all.
+owner: unowned
+location: `apps/web/next.config.ts` (`outputFileTracingIncludes`) · `apps/web/lib/style-guide.ts` (`PACKAGES`) ·
+  `apps/web/lib/pilots.ts` · `apps/web/lib/controls-review.ts` (both `import.meta.url`, untraced)
