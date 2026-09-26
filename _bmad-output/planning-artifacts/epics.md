@@ -2376,7 +2376,7 @@ according to its z-index, as it covers Ghost's own bar at `z-index: 90` *(correc
 below Ghost's strip" is true of what is in flow — a transparent-overlay header fixed or absolutely positioned at the
 top covers Ghost's bar on the real site, and the canvas shows that too, because the strip is where Ghost puts it)*
 **And** both render **inside** the canvas iframe where Ghost puts them, and both are **non-interactive,
-non-selectable, absent from Layers, excluded from Shuffle and Remix, and never compiled into anything**
+excluded from Shuffle and Remix, and never compiled into anything** — and, by the owner's ruling at its review (2026-09-26, Question 2), named in Layers under **From your Ghost site** with a section row's own Hide / Show for the builder's eyes alone, a press choosing that row rather than the section beneath
 **And** both are **NFR-6(c3) exclusion regions**, because Ghost's real markup is Ghost's to render
 **And** the strip **disappears the moment the user clears Ghost's bar**, which is where the two-bar stack
 resolves into one *(as built by Story 5.21: the editor re-reads Ghost's settings once each time it opens, so a bar

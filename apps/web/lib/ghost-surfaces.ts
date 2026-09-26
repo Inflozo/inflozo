@@ -283,3 +283,50 @@ export function buttonMarkup(look: ButtonLook, accent: string | null): Shim {
       '</div></div>',
   }
 }
+
+/* ── THE LAYERS ROWS AND HIDE — the owner's finding at Story 5.21's review (2026-09-26, Question 2 ruled option 1) ───────
+ *
+ * Someone could take the strip or the button for something Inflozo added, and there was no way to get them out of the
+ * way while building. So the Layers panel names them, under one heading, each with a section row's own Hide / Show; the
+ * canvas shows a pointed shim the tag sections get, and a press chooses its row. HIDDEN IS THE BUILDER'S ALONE: kept in
+ * this browser per project, never in the doc, never in the theme, and not in Preview, which is the site as a visitor
+ * meets it. ONE LIST FOR THE WORDS (R-170): the rows, the tag, the sentence and what is said all read it. */
+
+export type SurfaceId = (typeof SURFACE)[keyof typeof SURFACE]
+/** the two rows, in the order they sit on the page: the strip above, the button below */
+export const GHOST_ROWS: readonly { id: SurfaceId; name: string }[] = [
+  { id: SURFACE.strip, name: 'Announcement bar' },
+  { id: SURFACE.button, name: 'Subscribe button' },
+]
+export const GHOST_WORDS = {
+  group: 'From your Ghost site',
+  line: 'Your Ghost site adds this. Hide it here while you build, or change it in Ghost admin.',
+  tag: (name: string): string => `From your Ghost site · ${name}`,
+  hidden: (name: string): string => `${name} hidden on this canvas`,
+  shown: (name: string): string => `${name} shown again`,
+  how: 'Press Enter to select it, and Space to hide or show it while you build.',
+} as const
+export const ghostName = (id: SurfaceId | null): string => GHOST_ROWS.find((r) => r.id === id)?.name ?? ''
+
+/** the browser's key for one project's hidden shims */
+export const HIDDEN_KEY = (projectId: string): string => `inflozo-ghost-hidden:${projectId}`
+type Store = Pick<Storage, 'getItem' | 'setItem'>
+/** what this browser hides for the project: the known ids alone, and nothing where the store is absent, refused or junk */
+export function readHidden(store: Store | null | undefined, projectId: string): SurfaceId[] {
+  try {
+    const raw = store?.getItem(HIDDEN_KEY(projectId))
+    const list: unknown = raw ? JSON.parse(raw) : []
+    return Array.isArray(list) ? (GHOST_ROWS.map((r) => r.id).filter((id) => list.includes(id))) : []
+  } catch {
+    return []
+  }
+}
+/** writes the list; a refusing store (a private window, a full quota) costs nothing but the memory */
+export function writeHidden(store: Store | null | undefined, projectId: string, ids: readonly SurfaceId[]): void {
+  try {
+    store?.setItem(HIDDEN_KEY(projectId), JSON.stringify(ids))
+  } catch {
+    /* the browser refused: hidden holds for this opening alone */
+  }
+}
+

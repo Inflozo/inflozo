@@ -2796,3 +2796,77 @@ test('5.21 · the editor re-reads the site ONCE per opening — reading along to
   await page.waitForTimeout(1500)
   expect(rereads, 'opened on the Paywall: one read, never two').toBe(1)
 })
+
+test('5.21 · From your Ghost site (the owner\'s finding): two Layers rows name the shims; Enter chooses one and lets the section go; Space hides it in this browser, Preview shows it anyway; a synthesized pointer over the strip draws the tag', async ({ page }) => {
+  await openSurfaces(page)
+  const ghostRows = (await rows(page)).all.filter((k) => k.startsWith('ghost:'))
+  expect(ghostRows, 'one row per surface, under the group').toEqual(GS.GHOST_ROWS.map((r) => `ghost:${r.id}`))
+  await expect(page.locator('[data-ghost-rows]')).toContainText(GS.GHOST_WORDS.group)
+  await expect(page.locator('[data-ghost-rows]')).toContainText(GS.GHOST_WORDS.line)
+  const stripRow = page.locator('[data-layer-row="ghost:announcement-bar"]')
+  // a section chosen first, then the strip's row: ONE selection — the section is let go, the row takes the tint
+  const header = (await rows(page)).site[0]
+  await select(page, header)
+  await stripRow.focus()
+  await page.keyboard.press('Enter')
+  await expect(stripRow).toHaveClass(/bg-coral-tint/)
+  await expect(page.locator(`[data-layer-row="${header}"]`)).not.toHaveClass(/bg-coral-tint/)
+  // …and the selected outline is on the strip's own box
+  const outlineOffStrip = () =>
+    canvasFrame(page).locator('body').evaluate((body) => {
+      const doc = body.ownerDocument
+      const s = doc.querySelector('[data-ghost-surface="announcement-bar"]')?.getBoundingClientRect()
+      const b = [...doc.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector('[data-chrome="selected"]')).find(Boolean)?.getBoundingClientRect()
+      return s && b ? Math.abs(b.top - s.top) + Math.abs(b.left - s.left) + Math.abs(b.width - s.width) + Math.abs(b.height - s.height) : null
+    })
+  await expect.poll(outlineOffStrip, 'the selected outline sits on the strip').toBeLessThanOrEqual(3)
+  // Space hides it: the strip gone, #canvas at the very top, the button kept, said — and nothing edited
+  const kept = await storedKeys(page)
+  await page.keyboard.press(' ')
+  await expect.poll(async () => (await shims(page)).stripFirst).toBe(false)
+  const hidden = await shims(page)
+  expect(hidden.canvasTop, 'no strip, the header at the very top').toBe(0)
+  expect(hidden.buttonShown, 'the button is its own row').toBe(true)
+  await expect(page.locator('#editor-said')).toHaveText(GS.GHOST_WORDS.hidden('Announcement bar'))
+  await expect(stripRow.locator('button').first(), 'a hidden row reads as hidden').toHaveClass(/text-ink-soft/)
+  await expect(page.locator('#editor-undo')).toHaveAttribute('aria-disabled', 'true')
+  expect(await storedKeys(page), 'hidden is this browser\'s, never the doc\'s').toEqual(kept)
+  // a reload keeps it hidden — this browser's list
+  await page.reload()
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect.poll(async () => (await shims(page)).surfaces, 'kept across a reload').toBe(1)
+  expect((await shims(page)).stripFirst).toBe(false)
+  // Preview is the site as a visitor meets it: the strip is back; leaving Preview hides it again
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('p')
+  await expect(page.locator('#editor-preview-bar')).toBeVisible()
+  await expect.poll(async () => (await shims(page)).stripFirst, 'Preview shows a hidden shim').toBe(true)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('#editor-preview-bar')).toHaveCount(0)
+  await expect.poll(async () => (await shims(page)).stripFirst).toBe(false)
+  // Space shows it again
+  await stripRow.focus()
+  await page.keyboard.press(' ')
+  await expect.poll(async () => (await shims(page)).stripFirst).toBe(true)
+  await expect(page.locator('#editor-said')).toHaveText(GS.GHOST_WORDS.shown('Announcement bar'))
+  // the pointer over the strip — synthesized as the canvas document's own `pointermove`, as `pointAt` synthesizes a
+  // `pointerover` — draws the tag sections get, with the group's words; the row takes the wash
+  await canvasFrame(page).locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    const r = doc.querySelector('[data-ghost-surface="announcement-bar"]').getBoundingClientRect()
+    doc.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', clientX: r.left + 200, clientY: r.top + r.height / 2 }))
+  })
+  const tagWords = () =>
+    canvasFrame(page).locator('body').evaluate((body) => [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector('[data-chrome="tag"]')?.textContent).find(Boolean) ?? null)
+  await expect.poll(tagWords).toBe(GS.GHOST_WORDS.tag('Announcement bar'))
+  await expect(stripRow).toHaveClass(/bg-coral-wash/)
+  // the Paywall has no rows — no shim draws there
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  await expect(page.locator('[data-ghost-rows]')).toHaveCount(0)
+})
+

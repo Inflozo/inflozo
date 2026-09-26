@@ -46,7 +46,7 @@ import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRow
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSurface, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
-import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, portalFor, SHEET, shimsOn, stripMarkup, SURFACE, type Shim } from '@/lib/ghost-surfaces'
+import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, portalFor, readHidden, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
@@ -554,6 +554,18 @@ export function Editor({
   const [surfaces, setSurfaces] = useState(site === null ? null : (site.surfaces ?? null))
   const surfacesNow = useRef(surfaces)
   surfacesNow.current = surfaces
+  /** STORY 5.21's FIX (the owner's finding, 2026-09-26, Question 2 ruled option 1) — the two shims are rows in Layers
+   *  under "From your Ghost site", each with a section row's own Hide / Show. HIDDEN IS THE BUILDER'S: kept in this
+   *  browser per project (`readHidden`), never in the doc or the theme, and not in Preview, which is the site as a
+   *  visitor meets it. A pointer over a shim shows the tag sections get; a press chooses its row and lets any section go
+   *  (one selection); the row's Enter and Space are the keyboard's path. Refs beside each state: the canvas's listeners
+   *  and `drawShims` read them, as they read `latest`. */
+  const [ghostHidden, setGhostHidden] = useState<SurfaceId[]>([])
+  const ghostHiddenNow = useRef<SurfaceId[]>([])
+  const [ghostHover, setGhostHover] = useState<SurfaceId | null>(null)
+  const ghostHoverNow = useRef<SurfaceId | null>(null)
+  const [ghostChosen, setGhostChosen] = useState<SurfaceId | null>(null)
+  const ghostChosenNow = useRef<SurfaceId | null>(null)
   const [rechecking, startRecheck] = useTransition()
   const [recheckRefusal, setRecheckRefusal] = useState<string | null>(null)
   /** C3b's card is up: the Paywall canvas, members switched off by the record, and the canvas chosen to show the site's
@@ -1869,6 +1881,11 @@ export function Editor({
   }
 
   const choose = (asked: Pick | null) => {
+    // Story 5.21's Fix: one selection — choosing a section, or nothing, lets a chosen Ghost row go
+    if (ghostChosenNow.current !== null) {
+      ghostChosenNow.current = null
+      setGhostChosen(null)
+    }
     // STORY 5.20 — ON THE PAYWALL CANVAS THE PANEL IS THE PAYWALL'S: "nothing selected" there is its one instance, where
     // a design is chosen, so its ring and its controls stay in the panel whatever the press — the box is the only thing
     // on the canvas a customer can change, and C3a draws it selected
@@ -1910,7 +1927,9 @@ export function Editor({
       for (const [name, value] of Object.entries(shim.attributes)) el.setAttribute(name, value)
       return el
     }
-    if (bar !== null && s !== null) {
+    // Story 5.21's Fix: a hidden shim is not drawn — while building; Preview shows the site as a visitor meets it
+    const hidden = latest.current.preview ? [] : ghostHiddenNow.current
+    if (bar !== null && s !== null && !hidden.includes(SURFACE.strip)) {
       // Ghost's script appends its sheet to `<head>` once, at run time — so does this, once per canvas document, and it
       // stays there once a bar has drawn (a canvas with the sheet and no strip is the Paid visitor's, and inert)
       if (doc.head.querySelector(`[${SHEET}]`) === null) {
@@ -1924,13 +1943,70 @@ export function Editor({
       strip.innerHTML = shim.html
       doc.body.prepend(strip)
     }
-    if (look !== null && s !== null) {
+    if (look !== null && s !== null && !hidden.includes(SURFACE.button)) {
       const shim = buttonMarkup(look, s.accent)
       const host = root(shim)
       host.attachShadow({ mode: 'open' }).innerHTML = shim.html
       doc.body.append(host)
     }
   }
+  /** Story 5.21's Fix — what a pointer meets of a shim, and what its chrome is drawn on: the strip's root, and the
+   *  button's pill inside its fixed frame (`pinned` walks up to the frame, so the pill's chrome rides the viewport) */
+  const ghostEl = (id: SurfaceId | null): HTMLElement | null => {
+    const doc = frame.current?.contentDocument
+    const root = id === null || !doc ? null : doc.querySelector<HTMLElement>(`[data-ghost-surface="${id}"]`)
+    if (!root) return null
+    return id === SURFACE.button ? (root.shadowRoot?.querySelector<HTMLElement>('.gh-portal-triggerbtn-container') ?? null) : root
+  }
+  /** the shim under a point, BY ITS BOX: both let every event through (inert, `pointer-events: none`), so no target ever
+   *  names them — the drawn box does. A box with no size (the button below 640px) is nothing to meet. */
+  const ghostAt = (x: number, y: number): SurfaceId | null => {
+    for (const { id } of GHOST_ROWS) {
+      const r = ghostEl(id)?.getBoundingClientRect()
+      if (r && r.width > 0 && r.height > 0 && x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) return id
+    }
+    return null
+  }
+  const pointGhost = (id: SurfaceId | null) => {
+    if (ghostHoverNow.current === id) return
+    ghostHoverNow.current = id
+    setGhostHover(id)
+  }
+  /** a chosen row: the one selection, so any section is let go first (`choose(null)` also clears a chosen row) */
+  const chooseGhost = (id: SurfaceId) => {
+    choose(null)
+    ghostChosenNow.current = id
+    setGhostChosen(id)
+  }
+  /** the shims redrawn where a painted canvas stands — a hidden list changed, or Preview entered or left */
+  const redrawShims = () => {
+    const doc = frame.current?.contentDocument
+    if (doc && paintedAt.current !== null && doc.getElementById('canvas') !== null) drawShims(doc)
+  }
+  const toggleGhostHidden = (id: SurfaceId) => {
+    const was = ghostHiddenNow.current.includes(id)
+    const next = was ? ghostHiddenNow.current.filter((h) => h !== id) : [...ghostHiddenNow.current, id]
+    ghostHiddenNow.current = next
+    setGhostHidden(next)
+    writeHidden(window.localStorage, project.id, next)
+    redrawShims()
+    setSaid(was ? GHOST_WORDS.shown(ghostName(id)) : GHOST_WORDS.hidden(ghostName(id)))
+  }
+  useEffect(() => {
+    // this browser's list, read once as the editor opens — after the first render, so the server's markup is not
+    // contradicted on hydration
+    const stored = readHidden(window.localStorage, project.id)
+    if (stored.length === 0) return
+    ghostHiddenNow.current = stored
+    setGhostHidden(stored)
+    redrawShims()
+    // once, as the editor opens; the store is read here alone
+  }, [])
+  useEffect(() => {
+    // Preview shows a hidden shim — the site as a visitor meets it — and leaving Preview hides it again
+    redrawShims()
+    // `latest.current.preview` is what `drawShims` reads, and it is set by this render
+  }, [preview])
 
   const paint = () => {
     const doc = frame.current?.contentDocument
@@ -2401,6 +2477,11 @@ export function Editor({
       // select and a field takes focus and typing as a visitor's does
       if (latest.current.preview) return
       press.current.on = true
+      // Story 5.21's Fix: a press on a shim is the shim's (its click chooses the row) — never a caret in what lies beneath
+      if (ghostAt(e.clientX, e.clientY) !== null) {
+        e.preventDefault()
+        return
+      }
       // the primary button alone starts editing: a right press would put the caret in and open the browser's editing
       // menu over it, and a middle press on Linux pastes the primary selection (review, 2026-09-18)
       const hit = e.button === 0 ? stampAt(e.target, pressedIn) : null
@@ -2450,8 +2531,15 @@ export function Editor({
     // hover is the mouse's and the pen's: touch has the hold, so a tap never flashes an outline before it selects
     // Story 5.15: and in Preview nothing hovers — no outline, no tag, no pill, no chip
     doc.addEventListener('pointerover', (e) => {
-      if (e.pointerType !== 'touch' && !latest.current.preview) point(pickAt(e.target))
+      // Story 5.21's Fix: over a shim nothing beneath is hovered — the shim is (its box, `ghostAt`)
+      if (e.pointerType !== 'touch' && !latest.current.preview) point(ghostAt(e.clientX, e.clientY) === null ? pickAt(e.target) : null)
     })
+    doc.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch' || latest.current.preview) return
+      const shim = ghostAt(e.clientX, e.clientY)
+      pointGhost(shim)
+      if (shim !== null) point(null)
+    }, { passive: true })
     doc.addEventListener('pointerout', (e) => {
       if (e.pointerType === 'touch' || e.relatedTarget !== null || latest.current.preview) return
       // Story 5.4: the pointer crossing from the iframe onto S4b's pill arrives HERE, as a `pointerout` with a null
@@ -2460,8 +2548,10 @@ export function Editor({
       // documents' pointer events have no guaranteed order.
       if (overPill(e.clientX, e.clientY)) return
       point(null)
+      pointGhost(null)
     })
     let pressed: EventTarget | null = null
+    let pressedAt = { x: 0, y: 0 }
     let state = HOLD_IDLE
     let timer: ReturnType<typeof setTimeout> | undefined
     const step = (event: HoldEvent) => {
@@ -2469,8 +2559,11 @@ export function Editor({
       state = next
       if (outcome === 'hover') point(pickAt(pressed))
       if (outcome === 'tap') {
-        const pick = pickAt(pressed)
-        if (pick) choose(pick)
+        // Story 5.21's Fix: a tap on a shim chooses its row, as a click does
+        const shim = ghostAt(pressedAt.x, pressedAt.y)
+        const pick = shim === null ? pickAt(pressed) : null
+        if (shim !== null) chooseGhost(shim)
+        else if (pick) choose(pick)
       }
       return outcome
     }
@@ -2484,6 +2577,7 @@ export function Editor({
         return
       }
       pressed = e.target
+      pressedAt = { x: e.clientX, y: e.clientY }
       point(null)
       clearTimeout(timer)
       step({ type: 'down', x: e.clientX, y: e.clientY, t: performance.now() })
@@ -2512,6 +2606,14 @@ export function Editor({
       }
       e.preventDefault()
       if (step({ type: 'click' }) === 'swallow') return
+      // Story 5.21's Fix: a press on a shim chooses its Layers row (Question 2) — found by its box, since the shim lets
+      // the event through — and the section beneath is not taken
+      const shim = ghostAt(e.clientX, e.clientY)
+      if (shim !== null) {
+        showNote(null)
+        chooseGhost(shim)
+        return
+      }
       // R-122: Ghost's own words in the selected section name themselves; the next click takes the pill away
       const ghost = stampAt(e.target, latest.current.selected)
       showNote(ghost && 'ghost' in ghost.stamp ? { el: ghost.el, kind: 'lock', words: `${ghost.stamp.ghost} — set in Ghost` } : null)
@@ -2889,9 +2991,10 @@ export function Editor({
   const chip = useRef<HTMLSpanElement>(null)
   const pointedRing = pointed ? ringOf(pointed.designId) : []
   // on a hovered selection the selected box's 1.5px is the only outline (S4c)
-  const hoverOutline = pointed && !same(hovered, selected)
-  const hoveredRoot = pointed ? rootOf(hovered) : null
-  const selectedRoot = chosen ? rootOf(selected) : null
+  // Story 5.21's Fix: a pointed or chosen Ghost row's chrome is drawn on its shim, in the tag's and the outline's own shape
+  const hoverOutline = (pointed && !same(hovered, selected)) || (ghostHover !== null && ghostHover !== ghostChosen)
+  const hoveredRoot = pointed ? rootOf(hovered) : ghostEl(ghostHover)
+  const selectedRoot = chosen ? rootOf(selected) : ghostEl(ghostChosen)
 
   // THE CHROME LAYER (the owner's finding, 2026-09-17): the boxes, the tag and the badge are portalled into the canvas
   // document, so the compositor scrolls them with their section in the same frame (`lib/canvas-layer.ts`)
@@ -3695,6 +3798,14 @@ export function Editor({
             onClearDark={askClearDark}
             onMakeMainFeed={onMakeMainFeed}
             onMove={moveTo}
+            // Story 5.21's Fix — the two rows, where the canvas draws the shims (never on a surface, never unlinked)
+            ghost={shimsOn(key, site) ? {
+              rows: GHOST_ROWS.map((r) => ({ ...r, hidden: ghostHidden.includes(r.id) })),
+              selectedId: ghostChosen,
+              hoveredId: ghostHover,
+              onSelect: chooseGhost,
+              onToggleHidden: toggleGhostHidden,
+            } : undefined}
           />
           )}
           {/* S4 Editor.dc.html:172 — the Layers footer's full-width dashed button, redrawn identically at 834 and 720
@@ -3813,12 +3924,12 @@ export function Editor({
             {hoverOutline && layerFor(hoveredRoot)
               ? createPortal(<div ref={hoverBox} aria-hidden data-chrome="hover" className="pointer-events-none absolute canvas-outline-hover" style={{ visibility: 'hidden' }} />, layerFor(hoveredRoot) as ShadowRoot)
               : null}
-            {chosen && layerFor(selectedRoot)
+            {(chosen || ghostChosen !== null) && layerFor(selectedRoot)
               ? createPortal(<div ref={selectedBox} aria-hidden data-chrome="selected" className="pointer-events-none absolute canvas-outline-selected" style={{ visibility: 'hidden' }} />, layerFor(selectedRoot) as ShadowRoot)
               : null}
             {/* S4b's name tag (S4 Editor.dc.html:181), drawn at its own 11px in the app's Inter. Never pressed: the pointer
                 passes through to the section. */}
-            {pointed && layerFor(hoveredRoot)
+            {(pointed || ghostHover !== null) && layerFor(hoveredRoot)
               ? createPortal(
                   <div
                     ref={tag}
@@ -3827,7 +3938,7 @@ export function Editor({
                     className="pointer-events-none absolute whitespace-nowrap rounded-[0_0_6px_0] bg-coral-text px-[9px] py-[3px] text-helper-caption font-semibold text-surface"
                     style={{ visibility: 'hidden' }}
                   >
-                    {pointed.layerName}
+                    {pointed ? pointed.layerName : GHOST_WORDS.tag(ghostName(ghostHover))}
                   </div>,
                   layerFor(hoveredRoot) as ShadowRoot,
                 )

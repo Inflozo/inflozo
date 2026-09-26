@@ -75,6 +75,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     paid for by a test that every colour it writes is on a recorded Ghost page; and `record-shim.py`'s fixture index now
     imports only its own recordings, or `surfaces.json` would have turned `contract.test.ts` red on its next run. The
     keyboard harness's `x-inflozo-harness-site: surfaces` site walks both shims with no database (R-146).
+  - **Story 5.21's Review and Fix (2026-09-26):** five layers found no criterion violated; eight patches (the cleared-bar
+    control, the colour corpus narrowed to Ghost's own fields, the recorder refusing a flag or an empty `MAJORS`,
+    `pinned` taking only a `px` top); DW-279 (a landed re-read's redraw is proven only by the live walk) and DW-280 (the
+    mapping writes `announcement` and `brand` over a snapshot when the payload omits them) deferred. T3 had been changed
+    by hand after the recording and was put back at the owner's word (Question 1). **The owner's finding (Question 2,
+    ruled option 1) renegotiated the frozen "never in Layers" / "nothing selects the shim":** Layers names both under
+    **From your Ghost site** with a section row's own Hide / Show, a pointed shim draws the tag sections get and a press
+    chooses its row (found by its BOX, `ghostAt` — the shims stay inert and `pointer-events: none`); hidden is this
+    browser's per project (`readHidden` / `writeHidden` in `lib/ghost-surfaces.ts`), never the doc's, and not in Preview;
+    `pinned` walks up to a fixed ancestor so the pill's chrome rides Portal's fixed frame.
 - **Never lose content.** Switching design carries a control both designs declare, parks one only the old design has (restored exactly on return) and defaults one only the new design has; props and list items a design does not show are kept invisibly, and Shuffle and Remix obey the same rule.
   - **Story 5.11's planning (2026-09-20, read in the runtime and executed over the library):** the rule is
     SMALLER THAN IT READS, and the reason is FR-G3: `contentSchema` is the CATEGORY's union and a ring never

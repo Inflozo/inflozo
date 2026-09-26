@@ -8,6 +8,7 @@ import { CANVASES, isSurface, type CanvasKey } from './lib/editor.ts'
 import {
   ANNOUNCEMENT_CSS, AUDIENCE, announcementFor, buttonMarkup, CLOSE_SVG, FRAME, GHOST_ACCENT, PORTAL_CSS, PORTAL_FONT, PORTAL_GLOBALS,
   PORTAL_MIN_WIDTH, portalFor, SHEET, shimsOn, stripMarkup, SURFACE, TRIGGER_CSS, userIcon, type ButtonLook,
+  GHOST_ROWS, GHOST_WORDS, ghostName, HIDDEN_KEY, readHidden, writeHidden,
 } from './lib/ghost-surfaces.ts'
 import type { EditorSite } from './lib/live-content.ts'
 import { PORTAL_STYLES, storedSurfaces, type Members, type Surfaces } from './lib/probe-rule.ts'
@@ -314,3 +315,28 @@ test('§55: the button\'s rules, icon, frame and font are Portal\'s own on both 
     assert.ok(PORTAL_CSS.includes(`@media (width < ${PORTAL_MIN_WIDTH}px){.gh-portal-triggerbtn-iframe{display:none}}`))
   }
 })
+
+// ── the Layers rows and Hide (the owner's finding, Question 2) ────────────────────────────────────────────────────────
+
+test('Fix: the two Layers rows ARE the two surfaces, the words come from one list, and hidden is kept per project in a store that may be absent, junk or refusing', () => {
+  assert.deepEqual(GHOST_ROWS.map((r) => r.id).sort(), Object.values(SURFACE).sort(), 'a row per surface, never a third')
+  assert.equal(ghostName(SURFACE.strip), 'Announcement bar')
+  assert.equal(ghostName(null), '')
+  assert.equal(GHOST_WORDS.tag('Announcement bar'), 'From your Ghost site · Announcement bar')
+  assert.ok(GHOST_WORDS.tag('x').startsWith(GHOST_WORDS.group), 'the tag leads with the group\'s own words (R-170)')
+  const kept = new Map<string, string>()
+  const store = { getItem: (k: string) => kept.get(k) ?? null, setItem: (k: string, v: string) => void kept.set(k, v) }
+  assert.deepEqual(readHidden(store, 'p1'), [])
+  writeHidden(store, 'p1', [SURFACE.strip])
+  assert.deepEqual(readHidden(store, 'p1'), [SURFACE.strip])
+  assert.deepEqual(readHidden(store, 'p2'), [], 'per project')
+  store.setItem(HIDDEN_KEY('p1'), 'junk')
+  assert.deepEqual(readHidden(store, 'p1'), [])
+  store.setItem(HIDDEN_KEY('p1'), JSON.stringify(['nope', SURFACE.button, 7]))
+  assert.deepEqual(readHidden(store, 'p1'), [SURFACE.button], 'only the known ids, in the rows\' order')
+  const refusing = { getItem: () => { throw new Error('private window') }, setItem: () => { throw new Error('quota') } }
+  assert.deepEqual(readHidden(refusing, 'p1'), [])
+  assert.doesNotThrow(() => writeHidden(refusing, 'p1', [SURFACE.strip]))
+  assert.deepEqual(readHidden(null, 'p1'), [], 'no store at all')
+})
+

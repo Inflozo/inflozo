@@ -140,17 +140,22 @@ export function dropChromeLayers(doc: Document) {
  *  nothing re-places it on scroll. So the answer follows the stuck state, and `editor.tsx`'s canvas scroll listener
  *  re-renders the moment it changes for the root the chrome is drawn on — the one switch happens as the root sticks. A
  *  sticky root whose `top` is `auto` never sticks at the top, and its chrome scrolls with the page.
+ *  WALKED UP FROM THE ROOT (the Fix of 2026-09-26): a root inside a fixed ancestor moves with that ancestor — Portal's
+ *  button shim is a pill inside a fixed frame — so the answer is the first positioned answer on the way to the body.
  *  ponytail: the box is read against the VIEWPORT and `top` taken as pixels, which is right while the canvas document is
  *    the scroller and every pilot's `top` is `0px`; a sticky root inside its own scroll container, one with a `%` top, or one
  *    that has hit its parent's bottom edge would need the nearest scrollport's rect instead. */
 export const pinned = (root: HTMLElement) => {
-  const style = root.ownerDocument.defaultView?.getComputedStyle(root)
-  if (style?.position === 'fixed') return true
-  if (style?.position !== 'sticky') return false
-  // only a pixel `top` is compared; `auto`, a percentage or anything else never counts as stuck (review, 2026-09-26)
-  const top = style.top.endsWith('px') ? Number.parseFloat(style.top) : Number.NaN
-  // half a pixel of slack: a stuck root's box can land a subpixel off its `top` at a fractional scroll
-  return Number.isFinite(top) && root.getBoundingClientRect().top <= top + 0.5
+  for (let el: HTMLElement | null = root; el && el !== root.ownerDocument.body; el = el.parentElement) {
+    const style = el.ownerDocument.defaultView?.getComputedStyle(el)
+    if (style?.position === 'fixed') return true
+    if (style?.position !== 'sticky') continue
+    // only a pixel `top` is compared; `auto`, a percentage or anything else never counts as stuck (review, 2026-09-26)
+    const top = style.top.endsWith('px') ? Number.parseFloat(style.top) : Number.NaN
+    // half a pixel of slack: a stuck root's box can land a subpixel off its `top` at a fractional scroll
+    return Number.isFinite(top) && el.getBoundingClientRect().top <= top + 0.5
+  }
+  return false
 }
 
 /** Places one chrome element over its root, in its host's units (one unit is one screen pixel); writes only on change.

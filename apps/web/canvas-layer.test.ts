@@ -57,7 +57,8 @@ test('place bottom-left: an anchor with no box keeps its element hidden', () => 
 test('pinned: a fixed root always; a sticky root only while stuck; a static root never', () => {
   const root = (position: string, top: string, boxTop: number) =>
     ({
-      ownerDocument: { defaultView: { getComputedStyle: () => ({ position, top }) } },
+      ownerDocument: { body: {}, defaultView: { getComputedStyle: () => ({ position, top }) } },
+      parentElement: null,
       getBoundingClientRect: () => rect(0, boxTop, 100, 60),
     }) as unknown as HTMLElement
   assert.equal(pinned(root('fixed', '0px', 300)), true, 'fixed is pinned wherever it is')
@@ -71,3 +72,14 @@ test('pinned: a fixed root always; a sticky root only while stuck; a static root
   assert.equal(pinned(root('sticky', 'auto', 0)), false, 'a sticky root with no top never sticks at the top')
   for (const position of ['static', 'relative', 'absolute']) assert.equal(pinned(root(position, '0px', 0)), false, position)
 })
+
+test('pinned: a root inside a fixed ancestor is pinned — Portal\'s pill inside its fixed frame (the Fix of 2026-09-26)', () => {
+  const body = {}
+  const view = { getComputedStyle: (el: { position: string; top: string }) => ({ position: el.position, top: el.top }) }
+  const frame = { position: 'fixed', top: 'auto', ownerDocument: { body, defaultView: view }, parentElement: body, getBoundingClientRect: () => rect(0, 500, 100, 98) }
+  const pill = { position: 'relative', top: 'auto', ownerDocument: { body, defaultView: view }, parentElement: frame, getBoundingClientRect: () => rect(0, 510, 90, 60) }
+  assert.equal(pinned(pill as unknown as HTMLElement), true)
+  const still = { position: 'relative', top: 'auto', ownerDocument: { body, defaultView: view }, parentElement: body, getBoundingClientRect: () => rect(0, 510, 90, 60) }
+  assert.equal(pinned(still as unknown as HTMLElement), false, 'the control: the same pill under a static body is not')
+})
+

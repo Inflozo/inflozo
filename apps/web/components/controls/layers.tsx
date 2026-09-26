@@ -13,6 +13,7 @@ import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Layout } from '@/lib/reorder'
 import { MAKE_MAIN_FEED } from '@/lib/data-group'
+import { GHOST_WORDS, type SurfaceId } from '@/lib/ghost-surfaces'
 import { PAYWALL_WORDS } from '@/lib/paywall'
 
 /* B7 · LAYERS (`B Missing Surfaces.dc.html`:1538-1580), AS R-126 AMENDS IT — the panel body, and Story 5.4's whole
@@ -94,6 +95,18 @@ export type LayerRow = {
  *  and this panel shows only where it will land. */
 export type SectionDrag = { doc: string; from: number; to: number; dy: number; via: 'layers' | 'pill' }
 
+/** STORY 5.21's FIX (the owner's finding, 2026-09-26, Question 2 ruled option 1): Ghost's two surfaces on the canvas —
+ *  its announcement bar and Portal's button — named as rows under "From your Ghost site", each with a section row's own
+ *  Hide / Show and nothing else: no drag, no rename, no Duplicate, no Delete, because they are the site's, not the doc's.
+ *  Hidden is the builder's, kept in this browser (`lib/ghost-surfaces.ts`). Absent where no shim can draw. */
+export type GhostRows = {
+  rows: readonly { id: SurfaceId; name: string; hidden: boolean }[]
+  selectedId: SurfaceId | null
+  hoveredId: SurfaceId | null
+  onSelect: (id: SurfaceId) => void
+  onToggleHidden: (id: SurfaceId) => void
+}
+
 export type LayersProps = {
   /** the site doc's instances in doc order — the Site-wide group's rows */
   site: readonly LayerRow[]
@@ -133,6 +146,8 @@ export type LayersProps = {
   feedless?: string | null
   /** the drop, or an `⌥`-arrow: `to` is the position in that row's own doc. Answers the words to announce. */
   onMove: (row: LayerRow, to: number) => string | null
+  /** Story 5.21's Fix — the rows for Ghost's two surfaces, where the canvas draws them */
+  ghost?: GhostRows
 }
 
 /** A row's identity across both groups: `instanceId` is unique inside a doc, not between two. */
@@ -166,6 +181,7 @@ export function Layers({
   onMakeMainFeed,
   onMove,
   feedless = null,
+  ghost,
 }: LayersProps) {
   const all = [...site, ...page]
   const panel = useRef<HTMLDivElement>(null)
@@ -392,6 +408,67 @@ export function Layers({
         </div>
         {drawGroup(page, 'page')}
       </div>
+
+      {/* Story 5.21's Fix — "From your Ghost site": the heading in the two groups' shape, the sentence, and one row per
+          surface in the Kit's row with the ⋯ → Hide / Show a section row has. Each row is its own tab stop (two, and
+          never more: the list is the surfaces'), Enter chooses it and Space hides or shows it. */}
+      {ghost === undefined ? null : (
+        <div data-ghost-rows className="flex flex-col gap-[2px] border-t border-line pt-[10px]">
+          <div className="flex items-center gap-[6px] px-[5px] pb-[5px]">
+            <span className={`flex-1 ${HEADING}`}>{GHOST_WORDS.group}</span>
+          </div>
+          <p className="px-[5px] pb-[5px] text-[11.5px] leading-[1.5] text-ink-soft-aa text-pretty">{GHOST_WORDS.line}</p>
+          {ghost.rows.map((row) => {
+            const menu = `layers-menu-ghost-${row.id}`
+            return (
+              <LayersRow
+                key={row.id}
+                name={row.name}
+                shown={!row.hidden}
+                selected={ghost.selectedId === row.id}
+                hovered={ghost.hoveredId === row.id}
+                data-layer-row={`ghost:${row.id}`}
+                tabIndex={0}
+                aria-describedby="layers-ghost-how"
+                onKeyDown={(event) => {
+                  if (event.target !== event.currentTarget) return
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    ghost.onSelect(row.id)
+                  } else if (event.key === ' ') {
+                    event.preventDefault()
+                    ghost.onToggleHidden(row.id)
+                  }
+                }}
+                onSelect={() => ghost.onSelect(row.id)}
+                overflow={
+                  <>
+                    <button
+                      type="button"
+                      aria-label={`More for ${row.name}`}
+                      popoverTarget={menu}
+                      onClick={(event) => {
+                        const el = document.getElementById(menu)
+                        if (el) openMenu(el, event.currentTarget, { side: 'down', align: 'right' })
+                      }}
+                      className={`inline-flex size-[22px] shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold tracking-[1px] text-ink-soft hover:bg-paper hover:text-ink ${ring}`}
+                    >
+                      …
+                    </button>
+                    <div id={menu} popover="auto" onKeyDown={arrowKeys} className="border-0 bg-transparent p-0">
+                      <Menu
+                        label={row.name}
+                        items={[{ label: row.hidden ? 'Show' : 'Hide', icon: row.hidden ? <Eye size={13} /> : <EyeOff size={13} />, onSelect: () => ghost.onToggleHidden(row.id) }]}
+                      />
+                    </div>
+                  </>
+                }
+              />
+            )
+          })}
+          <p id="layers-ghost-how" className="sr-only">{GHOST_WORDS.how}</p>
+        </div>
+      )}
 
       <p id="layers-how" className="sr-only">
         Press Enter to select this section, Space to hide or show it, and Option or Alt with the up or down arrow to
