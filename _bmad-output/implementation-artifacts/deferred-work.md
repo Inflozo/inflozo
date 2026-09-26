@@ -6213,6 +6213,10 @@ owner: unowned
 location: `apps/web/server/site-probe.ts`
 reason: a jsonb merge in one statement (`site_settings || $1`) is an RPC or a raw update the PostgREST client does not offer
   directly; the window is milliseconds and a lost `members` key is re-read on the next open of the canvas.
+also: **AMENDED 2026-09-26 by Story 5.21's Create.** The Paywall's re-read is widened to every key the settings payload
+  decides (the members record, the Portal keys, the announcement) and the editor now makes it once each time it opens — a
+  writer that runs without a press, on every open, beside the daily check. The window is still milliseconds, and what a
+  collision drops is re-read at the next open.
 
 ### DW-272: `readMembers`' ownership refusal is pinned by a source-text test only
 
@@ -6263,3 +6267,53 @@ location: `apps/web/lib/pilots.ts` · `apps/web/lib/style-guide.ts` (`surfaceCss
 reason: one stylesheet, one document, and the editor never reloads the canvas document to switch surfaces; loading it on
   the first surface paint is the upgrade if the size ever matters.
 
+
+### DW-276: a corner design and Ghost's floating button share the bottom-right corner, and no rule settles which moves
+
+plain: Ghost's own Subscribe button floats in the bottom-right corner of every page where the site owner has switched it
+  on. Two designs in the library put their own box in that same corner by default — the Toast announcement bar (A2 #11)
+  and the Slide-in Card (A22 #14). Story 5.21 draws Ghost's button on the canvas, so the overlap is visible while
+  designing, but nothing decides whether the design's default corner changes or whether the editor says anything.
+status: open
+severity: low
+origin: Story 5.21's Create (2026-09-26). `reconcile-designs.md:2755,2776` (a record) found FR-H5(1)'s collision with "no
+  owner"; `A2 Announcement Bars - Spec.md` gives #11 Toast "bottom right", 24px from both edges, and neither it nor A22
+  #14's spec names the button. Portal's box is 98px tall at `bottom: 0; right: 0` (Portal 2.69.339 `frame.jsx`,
+  2.51.5 the same), and Story 5.21 records it as MEASUREMENTS §55.
+owner: Story 9.7 (A2 #9–11) and Story 10.78 (A22 #13–16) — each category story decides its corner design's default against
+  the button Story 5.21 draws.
+location: `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A2 Announcement Bars - Spec.md` (the export,
+  read-only — the story writes its decision into its own spec) · `apps/web/lib/ghost-surfaces.ts`
+reason: sections-inventory A2's own rule — "No warning is needed once the thing being warned about is on screen" — keeps
+  the editor silent, and 5.21 puts it on screen. What remains is a design default, which is the category's.
+
+### DW-277: Inflozo assumes Ghost's floating button is ON when it cannot read the setting, but Ghost's own default is OFF
+
+plain: When Inflozo cannot read whether a site shows Ghost's floating Subscribe button, it asks the site owner and assumes
+  "yes" until they answer, because the PRD says Ghost switches the button on almost everywhere. Ghost's own code switches
+  it OFF on a new site, on both versions Inflozo supports, and both test servers have it off. No site we know hides the
+  setting, so the question has never been shown to anyone.
+status: open
+severity: low
+origin: Story 5.21's Create (2026-09-26), read in Ghost's source: `default-settings.json` gives `portal_button` the
+  `defaultValue` `"false"` (5.130.6 :338-344, 6.58.0 :409-415), and nothing in `core/server` sets it on at setup or in a
+  migration. T1 and T3 both answer `false` (MEASUREMENTS §39). PRD §1.2 item 2 ("on by default on essentially every site")
+  and FR-C2's reason for defaulting the ask to on carry the opposite; Story 5.21's Docs task corrects their wording and
+  leaves the ask as ruled.
+owner: the owner, if a Ghost that hides `portal_button` is ever met — the ask's recommended answer and the stored
+  assumption (`portalState`'s `true` with `'default'`) would then become "No, it's off".
+location: `apps/web/lib/probe-rule.ts` (`portalState`, `PORTAL_COPY`) · `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx`
+
+### DW-278: the canvas draws Ghost's default icon on the floating button, whichever icon the site chose
+
+plain: Ghost lets a site pick one of five icons, or upload its own, for its floating Subscribe button. The canvas always
+  draws Ghost's default person icon. The button's size and place are the same either way, and those are what the canvas
+  shows it for.
+status: open
+severity: low
+origin: Story 5.21's Create (2026-09-26), read in Portal's source (2.69.339 `trigger-button.jsx`, 2.51.5 `TriggerButton.js`):
+  `portal_button_icon` null draws `user.svg` (26px beside the label, 34px alone); `icon-1` to `icon-5` are 24px SVGs; any
+  other value is an `<img>` at 26×26. The snapshot does not store the icon.
+owner: unowned — a routine call of Story 5.21's planning (ponytail: the choice moves no edge by more than 2px). The five
+  presets and a custom image are the upgrade.
+location: `apps/web/lib/ghost-surfaces.ts` · `apps/web/lib/probe-rule.ts`
