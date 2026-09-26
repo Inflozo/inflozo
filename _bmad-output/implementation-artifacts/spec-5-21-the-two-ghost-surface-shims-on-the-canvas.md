@@ -720,9 +720,22 @@ scroll. So the layer follows the stuck state, and the one switch happens as it s
   none more on soft navigations, one more entering the Paywall, and one for an editor opened on it (Change Log 12).
 - **A local production build** (`pnpm build`, CI's own step) — exit 0.
 - **`python3 tools/doc-audit.py --check`** — PASS after the story board's regeneration.
-- **The deployed walks** — `run-verify-editor.cjs` step 96 and `run-verify-live-content.cjs`'s Story 5.21 section are
-  written and pass `node --check`. Each refuses a checkout that is not the deployed HEAD, so they run against the Dev push
-  once CI has deployed it.
+- **The deployed walks, on `app.inflozo.com` at `d41f307d` (`dpl_A2JC6vdqCvXD1XJVrJCh7uM5ySP7` READY; CI `check`, `rls`,
+  `deploy` and the Render matrix workflow success), each on its first run:**
+  - `run-verify-editor.cjs` (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`) — **0 FAIL, 633
+    PASS**. Step 96's control saw a planted `[data-ghost-surface]`; then no `[data-ghost-surface]`, no strip stylesheet
+    and `#canvas` the body's first child on every canvas the unlinked project painted; steps 3 and 4 held. Both accounts
+    deleted, HTTP 200 each, users 13 → 13.
+  - `run-verify-live-content.cjs` with `MAJORS=6 NO_429=1` (the same four plus `GHOST6_URL`, `GHOST6_CONTENT_API_KEY`,
+    `GHOST6_ADMIN_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`) — **0 FAIL, 88 PASS**. Seeded: the strip first with `#canvas` at
+    its 48px bottom in T1's accent `#3832e5`, the three marks only and the seeded script and image inert, the button
+    bottom-right, View as's three visitors, 834 against 390, Sample content keeping both, the Paywall drawing neither.
+    Real on T1: the control read Ghost as found (button off, `["visitors"]`); the re-read on open wrote T1's settings and
+    drew its bar with no button; the button switched on with the staff token and read back; reopened, Ghost's own
+    button drawn; **the canvas against T1's own anonymous page at 1440 and 834: bar 48 against 48, the button's box
+    139.4 × 60 on both, its right edge 30 against 29.6**; at 390 neither page had a button; the audience emptied and the
+    strip gone on reopening. **T1 put back and read back from Ghost:** `portal_button` false, `["visitors"]`, the fixture
+    words and accent unchanged. Account deleted, users 13 → 13.
 - **CI (`GITHUB_TOKEN`, `VERCEL_*`).** `90c66814`: `check`, `rls` and `deploy` success, the Render matrix workflow success,
   `dpl_CpMT2J2DVvban8oWfWkZBvh22mxd` READY on production. `c7a40bce` (Change Log 12): `check` RED at `pnpm keyboard` on
   ONE journey outside this story — 5.19's "Hand-picked, three picks", at `menuTo`, the CI-only red its review met twice —
