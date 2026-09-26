@@ -5732,8 +5732,15 @@ reason: `next/font/google` fetches the font CSS at compile time and Turbopack's 
   expect; `next dev` has no retry. The cure is one of: self-hosting the three typefaces under `next/font/local` (no
   network at build, and Vercel's build fetches them today too), or a single retry of the dev boot in
   `run-keyboard-gate.sh`. Either is a story of its own; a re-push is the workaround.
+evidence (Story 5.20's Dev, 2026-09-26): it reaches the DEPLOY job too, not only the keyboard walk. At `4d513f5d` CI's
+  `check` and `rls` were green, and `deploy` failed in `vercel build --prod` with the same Turbopack error on
+  `app/layout.tsx`'s Inter (21 of them, one per font file), so nothing was published. The control is the commit before
+  it, `3a64da0b`: the same app tree, built and deployed 15 minutes earlier (`dpl_AS4xd9YGvHKLNX56FiaN8ud2B8EN` READY).
+  `4d513f5d` changed one walk script under `tools/probe/`, which no build reads. So `self-hosting under next/font/local`
+  above is the cure for both halves, and a re-push is still the workaround.
 owner: unowned
-location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh`
+location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh` ·
+  `.github/workflows/ci.yml`'s `deploy` (its `vercel build`)
 
 ### DW-247: a section that prints your member count would stop drawing while the editor shows your own site
 
