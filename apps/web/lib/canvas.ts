@@ -258,6 +258,13 @@ export const SURFACE_MAJOR: orbitWeekly.Major = '6'
 
 const escText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
+/** The article's audio and video cards point at the reserved origin, and no media is bundled (`style-guide.ts`'s
+ *  `withImages` says so): on the canvas document, whose policy is `default-src 'self'`, each player's `preload` fetch is
+ *  a refused request and a `securitypolicyviolation` (the deployed editor walk's step 5, at Story 5.20's Dev). So the
+ *  players are drawn with no source — their chrome, and nothing to play, which is all they ever played. */
+const MEDIA_SRC = new RegExp(`\\ssrc="${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/media/[^"]*"`, 'g')
+export const withoutMedia = (html: string): string => html.replace(MEDIA_SRC, '')
+
 /**
  * STORY 5.20 — THE PAYWALL CANVAS'S PAGE (C3a as corrected, `C Post Body.dc.html:1423-1472`): the style-guide article
  * previewed as a Paid-members-only post — never a real body (FR-D16, FR-H4) — in the wrapper a theme gives `{{content}}`,
@@ -276,7 +283,7 @@ export function paywallPage(o: { visitor: Visitor; accent: unknown; box: string 
   const blocks = orbitWeekly.blocks(SURFACE_MAJOR, 'article')
   const whole = postAccess({ visibility: 'paid' }, o.visitor)
   const at = orbitWeekly.PREVIEW_CUT + 1
-  const run = (from: number, to?: number) => blocks.slice(from, to).map((b) => b.html).join('')
+  const run = (from: number, to?: number) => withoutMedia(blocks.slice(from, to).map((b) => b.html).join(''))
   const box = o.box ?? contentCta({ visibility: 'paid', member: o.visitor !== 'anonymous', accent: o.accent, major: SURFACE_MAJOR })
   const tail = whole
     ? `<div data-inflozo-gated><span>${escText(PAYWALL_WORDS.gated)}</span></div>${run(at)}`

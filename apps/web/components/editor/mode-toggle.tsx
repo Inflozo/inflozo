@@ -1,5 +1,6 @@
 'use client'
 
+import type { CSSProperties } from 'react'
 import type { Mode } from '@inflozo/section-runtime'
 import { ring } from '@/components/kit/greyed'
 import { Moon, Sun } from '@/components/kit/icons'
@@ -26,7 +27,18 @@ export const modeShown = (mode: Mode) => (mode === 'dark' ? 'Dark mode' : 'Light
 /* Story 5.10 — `id` is a parameter because R-151 puts a SECOND one of these in the Section Picker's header, and two
    elements carrying `editor-mode` would be one duplicated id: the deployed walk finds the top bar's sun by that id
    (`run-verify-editor.cjs` steps 46-53), and it must keep finding exactly one. */
-export function ModeToggle({ mode, onMode, id = 'editor-mode' }: { mode: Mode; onMode: (next: Mode) => void; id?: string }) {
+export function ModeToggle({
+  mode,
+  onMode,
+  id = 'editor-mode',
+  style,
+}: {
+  mode: Mode
+  onMode: (next: Mode) => void
+  id?: string
+  /** Story 5.20 — the Paywall canvas's ink bar re-points the colour variables this button's utilities read (`onInk`) */
+  style?: CSSProperties
+}) {
   const dark = mode === 'dark'
   // the DESTINATION, not the state: "Preview dark mode" is what pressing it does (R-132)
   const label = dark ? 'Back to light mode' : 'Preview dark mode'
@@ -40,6 +52,7 @@ export function ModeToggle({ mode, onMode, id = 'editor-mode' }: { mode: Mode; o
       // toolbar's `keep`, for the same reason (`inline.ts`'s focusout ends an edit whose focus moved into the editor)
       onMouseDown={(event) => event.preventDefault()}
       onClick={() => onMode(dark ? 'light' : 'dark')}
+      style={style}
       className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
     >
       {dark ? <Moon size={15} /> : <Sun size={15} />}

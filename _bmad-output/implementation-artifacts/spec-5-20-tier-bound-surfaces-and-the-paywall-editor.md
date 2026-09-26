@@ -711,6 +711,15 @@ did not have; the owner-facing ones are also in the Dev report.
     Turbopack build (DW-269, with the evidence). `PACKAGES` now tries the working directory first and falls back to the
     module's address; a local production build's traces carry `packages/**` for the editor, `/canvas`, `/pilots` and
     `/style-guide`; `style-guide.test.ts` holds the form, and its control (the moved line) fails it.
+18. **The sun is its own button on the bar again, not wrapped** (the deployed walk's steps 46 and 54, R-132). The ink
+    bar's colour variables had reached `ModeToggle` through a `<span class="contents">` around it: nothing moved on
+    screen, but the cluster the walk reads as the bar's own children — dice, sun, device track — lost the sun. It now
+    takes them as a `style` prop; `dark-mode.test.ts`'s pattern allows that prop and still holds the condition.
+19. **The Paywall canvas requests no media** (the walk's step 5: zero `securitypolicyviolation` events). The whole
+    article a paid member reads carries the style guide's audio and video cards, whose sources sit on the reserved
+    origin; on the canvas document (`default-src 'self'`) each `preload` fetch was a refused request. `paywallPage` draws
+    those players with no source (`withoutMedia`) — their chrome, and nothing to play — and `paywall.test.ts` holds it,
+    with the recorded article's own media as its control.
 
 ## Design Notes
 

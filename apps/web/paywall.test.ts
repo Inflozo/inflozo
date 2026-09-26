@@ -6,6 +6,7 @@ import { join } from 'node:path'
 import { isPaywallDesign, orbitWeekly, PAYWALL_TARGET, paywallRing, type SectionRegistryEntry, type Visitor } from '@inflozo/library'
 import { defaultContent, renderCanvas, renderTheme, type RenderInput } from '@inflozo/section-runtime'
 import { iconDrawing } from '@inflozo/library/icons'
+import { paywallPage, withoutMedia } from './lib/canvas.ts'
 import { paywallSamples } from './lib/controls-review.ts'
 import { adminAt, askLine, askOf, membersNotice, membersOff, PAYWALL_WORDS, tierLine, tierText, warnsOn } from './lib/paywall.ts'
 import { pilot } from './lib/pilots.ts'
@@ -208,4 +209,20 @@ test('both stand-ins validate, are paywall designs, form one ring, and agree on 
   const theme = renderTheme(doc(), standIns[1]!.html, atPartial(standIns[1]!, 'anonymous')).template
   assert.match(theme, /\{\{#get "tiers" filter="type:paid\+visibility:public"/, theme)
   assert.match(theme, /\{\{#if @site\.paid_members_enabled\}\}[^]*\{\{#get "tiers"/, 'the plans sit behind the paid flag')
+})
+
+test('the Paywall canvas requests no media: the article\'s players are drawn without a source, for every visitor', () => {
+  // the control: the recorded article DOES point its audio and video at the reserved origin, so the check below is live
+  const raw = orbitWeekly.blocks('6', 'article').map((b) => b.html).join('')
+  const media = new RegExp(`${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/media/`)
+  assert.match(raw, media)
+  // the canvas document's policy is `default-src 'self'`, so each such src was a refused fetch and a violation (step 5)
+  for (const visitor of ['anonymous', 'free', 'paid'] as const) {
+    assert.doesNotMatch(paywallPage({ visitor, accent: orbitWeekly.site().accent_color, box: null }), media, visitor)
+  }
+  // the players themselves stay — the paid member reads the whole article, cards and all
+  const paid = paywallPage({ visitor: 'paid', accent: orbitWeekly.site().accent_color, box: null })
+  assert.match(paid, /<audio/)
+  assert.match(paid, /<video/)
+  assert.equal(withoutMedia('<p>no media here</p>'), '<p>no media here</p>')
 })

@@ -3502,10 +3502,10 @@ export function Editor({
             />
             </ReadOnly>
           )}
-          {/* the sun sits straight on the bar, so on the ink surround its glyph takes the surround's words (`onInk`) */}
-          <span style={onInk} className="contents">
-            {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
-          </span>
+          {/* the sun sits straight on the bar, so on the ink surround its glyph takes the surround's words (`onInk`) —
+              on the button itself, never a wrapper: R-132's cluster is read as the bar's own children (the deployed
+              walk's steps 46 and 54), dice, sun, device track */}
+          {darkEnabled ? <ModeToggle mode={mode} onMode={flip} style={onInk} /> : null}
           <DeviceSwitch device={device} onDevice={pickDevice} />
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
