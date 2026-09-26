@@ -4376,6 +4376,25 @@ for a visitor who can read it — as S4d draws it."*
   - ✅ `epic-5-context.md`.
   - ✅ built — Story 5.20's Dev (2026-09-26).
 
+**R-200 — R-4's gate in the link sink applies to a design's default Portal link; a snapshot that moves for it is the rule
+landing.** Story 5.20's Review, Question 5, ruled **option 1** (owner, 2026-09-26): *"Keep the change: the rule wins, and
+the saved output was updated to match."*
+
+- **Why it was a question.** Two of the owner's own promises collided on one design. R-4 wraps a link the user pointed at
+  Portal's sign-up in `{{#if @site.allow_self_signup}}` on the theme (Story 5.20's `linkGate`, in `linkAttributes`, the
+  one link sink). Story 5.20's frozen criterion also promised that a render handed no paywall or visitor argument is
+  byte-identical to before, with the committed snapshots as the control. Latest Post (a4/13) has a primary action whose
+  DEFAULT link record is `{ portal: 'signup' }`, so its snapshot moved by one line (Story 5.20's Change Log 4).
+- **The rule.** The sink cannot tell a default from a choice and does not try: a default Portal ask ships behind the
+  site's own flag exactly as a chosen one does. A snapshot that moves for that reason alone is re-baselined and recorded
+  in the story's change log, never treated as a regression.
+- **Declined.** Option 2 exempted a design's default link, so a default Sign up button could again ship to a site that
+  cannot take it — R-4's own case.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.20's spec — Question 5 and the frozen criterion, amended.
+  - ✅ `packages/library/snapshots/a4/13/template.hbs` — moved at Story 5.20's Dev.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

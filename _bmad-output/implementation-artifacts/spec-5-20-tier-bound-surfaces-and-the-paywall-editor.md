@@ -616,7 +616,9 @@ hypotheses until the first task RECORDS them (standing rule 1).
   visitor and major, node for node with MEASUREMENTS §54.
 - Given the harness's stand-ins, when I choose one from untouched, then one instance is stored and one `⌘Z` returns to
   Ghost's own box. Given any render handed no paywall or visitor argument, when it paints, then it is byte-identical to
-  today's — the snapshots, the matrix and `/pilots` are the control.
+  today's — the snapshots, the matrix and `/pilots` are the control — **except where R-4's gate in the link sink lands
+  on a design's DEFAULT Portal link** (a4/13, Latest Post; Change Log 4), which the owner ruled is the rule landing and
+  not a regression (**R-200**, Question 5).
 - Given the Admin settings read at connect, daily or on Re-check, when the probe runs, then `site_settings.members` holds
   exactly `signup_access` and `paid_enabled`, and no other settings key.
 - Given a design with a member ask outside its flag, a tier query without `type:paid+visibility:public`, or a
@@ -640,8 +642,8 @@ Stripe text anywhere in the column), Vercel (`dpl_EnhjdP7ZidPFjWipwdonnjBYNHnG` 
 and both Ghost servers' Admin `settings/` by JWT (`members_signup_access` and `paid_members_enabled` present on T1 and T3;
 a zeroed secret 401) and Content `/tiers/` (a bogus key 401).
 
-- [ ] [Review][Decision] T3 is not as the walk left it — Subscription access reads Nobody and every tier is public — see Question 4
-- [ ] [Review][Decision] One committed snapshot moved where a frozen criterion says none would (a4/13) — see Question 5
+- [x] [Review][Decision] T3 is not as the walk left it — Subscription access reads Nobody and every tier is public — Question 4, ruled option 3: restored with the staff token and read back
+- [x] [Review][Decision] One committed snapshot moved where a frozen criterion says none would (a4/13) — Question 5, ruled option 1: the rule wins (R-200), the criterion amended
 - [x] [Review][Patch] The sync route accepts a `paywall` doc holding two instances, which `read.ts` then throws on for every canvas [apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts:74] — refused as a 422 at the one write door
 - [x] [Review][Patch] The switcher's plain list is filtered of surfaces only when no membership group exists [apps/web/components/editor/template-switcher.tsx:185] — both slices filtered
 - [x] [Review][Patch] The Sites notice returns an empty wrapper for a member record with no `url` [apps/web/app/(app)/app/(authed)/sites/site-notices.tsx:142] — the early return and the draw read one condition
@@ -1130,7 +1132,12 @@ Project** shows the members-off card and the Sites screen shows the notice right
 3. **You changed them, but want them back as they were** — the review restores both as in option 2 and records nothing
    further.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 3 (owner, 2026-09-26)** — *"You changed them, but want them back as they were."* Done the same hour with
+`GHOST5_STAFF_ACCESS_TOKEN` through T3's Admin API and read back: `members_signup_access` `none` → `all`
+(`paid_members_enabled` and `allow_self_signup` true again with it), and Ghost5 Pro `visibility` `public` → `none`; Free
+and Ghost5 untouched. The production record for ghost5 still reads members off until the Paywall canvas's re-check on
+open or the daily check rewrites it — the first step of the owner's manual test does exactly that. No defect recorded:
+the owner changed the site by hand.
 
 ### Question 5 — One saved design output changed where this story promised none would. Keep the change?
 
@@ -1148,4 +1155,6 @@ pressed. With the change it is not published at all on that site, and comes back
 2. **Exempt a design's DEFAULT link from the rule** — only a link the user set themselves is wrapped. Latest Post's saved
    output goes back to what it was, and a default Sign up button can again ship to a site that cannot take it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-26)** — *"Keep the change: the rule wins, and the saved output was updated to match."*
+Recorded as **R-200**: R-4's gate in the link sink applies to a design's default link as to a chosen one, and a snapshot
+that moves for that reason is the rule landing, not a regression. The frozen criterion above now says so.
