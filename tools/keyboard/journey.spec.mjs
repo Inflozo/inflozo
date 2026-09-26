@@ -2060,6 +2060,10 @@ const nameOf = async (page, key) => (await page.locator(`[data-layer-row="${key}
 async function menuTo(page, label) {
   // the popover opens and takes focus a frame after the key (review, 2026-09-25: CI pressed ↓ before it had)
   await page.locator(':popover-open').first().waitFor()
+  // …and FOCUS reaches its current row a frame later still (R-171's `openMenu`): on the runner at Story 5.21's `c7a40bce`
+  // ten ↓ went to the Source trigger, whose words are its value ("Latest"), before focus entered the menu — so wait for the
+  // focused element to be inside the open popover. Every menu wraps (`lib/menu.ts`), so any starting row reaches `label`.
+  await page.waitForFunction(() => [...document.querySelectorAll(':popover-open')].some((p) => p.contains(document.activeElement)))
   const seen = []
   for (let guard = 0; guard < 12; guard++) {
     const at = await page.evaluate(() => document.activeElement?.textContent?.trim() ?? '')
@@ -2788,6 +2792,7 @@ test('5.21 · the editor re-reads the site ONCE per opening — reading along to
   rereads = 0
   await page.goto(`${HARNESS}/paywall`)
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  await expect.poll(() => rereads, 'opened on the Paywall: the one read').toBe(1)
   await page.waitForTimeout(1500)
   expect(rereads, 'opened on the Paywall: one read, never two').toBe(1)
 })

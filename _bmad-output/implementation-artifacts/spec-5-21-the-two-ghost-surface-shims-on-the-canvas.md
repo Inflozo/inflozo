@@ -723,6 +723,14 @@ scroll. So the layer follows the stuck state, and the one switch happens as it s
 - **The deployed walks** — `run-verify-editor.cjs` step 96 and `run-verify-live-content.cjs`'s Story 5.21 section are
   written and pass `node --check`. Each refuses a checkout that is not the deployed HEAD, so they run against the Dev push
   once CI has deployed it.
+- **CI (`GITHUB_TOKEN`, `VERCEL_*`).** `90c66814`: `check`, `rls` and `deploy` success, the Render matrix workflow success,
+  `dpl_CpMT2J2DVvban8oWfWkZBvh22mxd` READY on production. `c7a40bce` (Change Log 12): `check` RED at `pnpm keyboard` on
+  ONE journey outside this story — 5.19's "Hand-picked, three picks", at `menuTo`, the CI-only red its review met twice —
+  with every 5.21 journey green on the runner (the new one included) and 72 of 73 passing; nothing deployed. Read from
+  the runner's own trace: ten ↓ went to the Source TRIGGER (whose words are its value, "Latest") before focus entered the
+  menu, which `openMenu` moves a frame after the popover opens. Fixed at its root in the helper — `menuTo` now waits for
+  the focused element to be inside the open popover (every menu wraps, so any starting row reaches the label) — then 4 of
+  4 cold and the whole gate 73 of 73 locally.
 
 ## Owner's manual test
 
