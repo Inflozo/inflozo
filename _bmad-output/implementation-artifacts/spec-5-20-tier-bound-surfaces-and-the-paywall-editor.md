@@ -971,6 +971,11 @@ numbers.
   fixture, not this story's.
 - **Resend** and **Dodo**: not touched — this story sends no email and bills nothing.
 
+### Results — Deploy, 2026-09-26
+
+Deployment: `dpl_4ES29X3H2RWQQfQcUSSNXypE1RmK` — READY, target production, built from `36318d0b` (HEAD; CI run 36243366391: `check`, `rls` and `deploy` all success; the matrix run 36243366470 success). Read with `GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`. `https://app.inflozo.com/sign-in` and `https://inflozo.com/` answer 200. The Review's seven patches (`89e7387b`, deployment `dpl_9Gqf6Bs5bsLB7QGDDZaVuhcbQirQ`) are in this build; `36318d0b` changed only documents over it.
+The schema step was the Schema phase's (`dbc57c12`, R-99): read back again on production through `SUPABASE_DB_POOLER_URL` — `template_key_shape` on `project_templates` and on `project_template_prefs` both accept `paywall`; `RLS-TEST.sql` is CI's `rls` job, success at HEAD. The owner's test projects read back with `SUPABASE_URL` · `SUPABASE_SECRET_KEY`: Ghost 5 Project (`99d4d277-…`) linked to `9d473e0f-…` (ghost5.inflozo.com), which steps 1–9 need; Pilot sections (`b6d4db35-…`) linked to no site, which step 10 wants. ghost5's stored members record still reads *off* (written by the 12:28 UTC daily check, before the owner's restore); the Paywall screen re-checks on open, so step 2 rewrites it. The Owner's manual test URLs already name `app.inflozo.com`; every step has its URL. `owner_test` stays `pending`.
+
 **The I/O matrix, row by row** (step 3's audit — each covering test ran and passed above):
 
 | Row | Covered by |
@@ -1007,6 +1012,7 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 - Steps 1–9 use your **Ghost 5 Project**, which reads ghost5.inflozo.com.
 - Step 10 uses **Pilot sections**.
 - Steps 6 and 9 change a setting in ghost5's own admin, and step 9 puts it back.
+- Until step 2 opens the Paywall, Sites may still show a members-off notice for ghost5 — that is last night's record, and opening the Paywall rewrites it.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
