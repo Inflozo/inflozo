@@ -5274,7 +5274,9 @@ status: open
 severity: low
 origin: Story 5.14's Dev run (2026-09-21), the deployed walk at `d4d6e266` — and Story 5.9's (2026-09-19), whose spec
   recorded the same failure ("intermittent, Story 5.4's") without a ledger row.
-owner: whoever next touches the section pill or the walk (Story 5.22's responsive pass moves both).
+owner: whoever next touches the section pill or the walk (Story 5.22's responsive pass moves both). *(Story 5.22's
+  Create, 2026-09-27: it adds walk steps 97–100 and re-expects step 14, but it touches neither step 36 nor the pill's
+  placement at full width, so this stays with the next story that does.)*
 location: `tools/probe/run-verify-editor.cjs` step 36 (`:1722-1777`) · the pill's placement in `editor.tsx`
 plain: One automated check on the little floating toolbar above a section sometimes fails and sometimes passes on the
   same build. Nothing you would see as a customer is known to be wrong; the check's own assumption is the suspect.
@@ -5527,6 +5529,7 @@ reason: The cause is a HYPOTHESIS and was not executed (standing rule 1): a scre
   refuse only if too few frames survive to measure. Diagnosing it inside a story that does not touch the screencast
   would be guessing.
 owner: whoever next touches `film()` or the scroll-filming checks (Story 5.22's responsive pass reaches them).
+  *(Story 5.22's Create, 2026-09-27: it touches neither `film()` nor step 15, so the trigger stands.)*
 location: `tools/probe/run-verify-editor.cjs` step 15's `decoder.evaluate` (`:949`) and `film()`
 
 
@@ -6353,3 +6356,24 @@ owner: unowned until a Ghost that omits a public settings key is met; the fix is
   previous value standing where the key is absent.
 location: `apps/web/lib/probe-rule.ts` (`settingsPatch`, `announcementOf`, `brandOf`)
 
+## Deferred from: Story 5.22's Create run (2026-09-27)
+
+### DW-281: the Layers rail and the Layers rows draw one generic mini-thumbnail, where D8a draws one per category
+
+plain: On a tablet, or in a narrow window, the Layers list becomes a strip of small tiles, one per section. The drawing
+  shows each tile as a tiny picture of its kind of section: a header bar, a hero, a grid of posts, a newsletter box, a
+  dark footer. What gets built is the one small tile the Layers list already shows beside every row, the same for every
+  section. The section's name is on the tile's hover and read out by a screen reader, but a finger cannot hover.
+status: open
+severity: low
+origin: Story 5.22's Create (2026-09-27).
+  - `D8 Editor Below 1440.dc.html:66-70` draws five different 34 × 24 thumbnails: Header, Hero — Split Editorial, Post
+    Grid — Magazine, Newsletter — Split, Footer — Mega Grid.
+  - The Kit has one glyph, `LayerThumb` (`apps/web/components/kit/layers-row.tsx:124-132`). It is Hero's, and every
+    Layers row has drawn it since Stories 1.3 and 5.4.
+  - The rail reuses it rather than inventing thirty-odd category glyphs the export never drew.
+owner: unowned. The owner's test of Story 5.22 decides whether it matters.
+  - Upgrade A: a glyph per category, drawn from the category's own `-0 Category Proof` frame.
+  - Upgrade B: a real miniature, rendered as the Section Picker renders its cards.
+location: `apps/web/components/kit/layers-row.tsx` (`LayerThumb`) · the rail in
+  `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`

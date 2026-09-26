@@ -818,6 +818,24 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     holds a focusable element (`frame-focusable-content`, red on every scan at `27a638fa`), so NFR-5's zero holds for
     every rule on every element EXCEPT that rule on that element — a NODE FILTER in `run-verify-editor.cjs` step 8,
     never a disabled rule, with the keyboard journey (R-146) carrying the weight the scanner no longer does.
+  - **Story 5.22's planning (2026-09-27, read in D4f, D8 and the editor, executed with the repo's Playwright 1.61.1 on
+    Chromium 149).**
+    - **Nothing in the editor answers to device or width today.** `@custom-variant coarse` is defined and used by
+      nothing. Every mount effect starts inside `Editor`: the lock, the heartbeat, the sync, IndexedDB, the live reads
+      and the Ghost re-read.
+    - **So the phone gate is a decision made in the browser before `EditorShell` mounts**, with the skeleton drawn by
+      CSS until then. It is never a route or a redirect (R-98's second effect).
+    - **R-87's 834 mis-sorts real devices.** In Playwright's device list every portrait tablet except the iPad Pro 11 is
+      under 834, and many landscape phones are over it. Question 1 offers "the short side under 500, decided at open".
+    - **D8 draws one rearrangement for both pointers; the pointer changes only target sizes** (`D8:33`). Where a fine
+      pointer meets it is drawn nowhere. Question 2 offers "below 1280".
+    - **Executed: a hidden subtree breaks the dice.** A `<dialog>` inside a `display:none` ancestor opens invisible and
+      still modal, and a transition there fires no `transitionend`. So the dice's confirm is portalled, and its roll
+      lands at once when the dice sits collapsed in ⋯.
+    - **The bar becomes a `1fr auto 1fr` grid.** The name's `calc(50% - 360px)` goes, which is R-143's "re-tunes the
+      truncation". The chip and the page-2 pill share one grid row.
+    - **D4f's Deploy history and Billing are absent until 7.23 and 12.5 (R-118).** Those stories' criteria gain the rows.
+    - DW-281.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions
