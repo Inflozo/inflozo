@@ -824,6 +824,23 @@ group's words, and the Paywall with no group; then the whole keyboard gate **74 
 counts; `check-snapshots: PASS`, no snapshot moved — the control that nothing but the editor draws or hides a shim), and
 `python3 tools/doc-audit.py --check` PASS twice. The deployed walks follow the Deploy push, as before.
 
+### Results — Deploy, 2026-09-26
+
+Deployment: `dpl_EnaDFAEd4MzstcrBQLQ6xngdTggY` — READY, target production, built from `e006cba1` (HEAD; CI run 36259735994:
+`check`, `rls` and `deploy` all success; the Render matrix run 36259735900 success). Read with `GITHUB_TOKEN`,
+`VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`. Aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`;
+`https://app.inflozo.com/sign-in` answers 200. No migration in this story (`site_settings` is `jsonb`, per the frozen
+Boundaries), so there is no Schema phase and nothing to read back on production. The Owner's manual test table already
+names `app.inflozo.com` and `ghost5.inflozo.com` on every step. `owner_test` stays `pending`.
+
+While completing this Deploy, the restore in `e006cba1` was found incomplete: Question 2's own `**Ruled:**` line still
+read the literal open token `_(awaiting the owner)_`, though the Fix task, Change Log 13, the Fix results and manual test
+steps 14–17 were all already built and committed to option 1. Confirmed against `5d5c2a24`'s commit message (which
+records the ruling and the build) and against `tools/story-board.py`'s `answered()`, which treats that exact token as the
+fixed "still open" mark by design (`OPEN_MARK`) — so the board would have kept a resolved, shipped question in the
+owner's inbox. The stamp line under Question 2 is corrected in this Deploy commit to match what the rest of the story
+already records.
+
 ## Owner's manual test
 
 On the real site after Deploy, in a desktop browser about 1440 wide. Deploy confirms the URLs.
@@ -909,5 +926,11 @@ Hide it here while you build, or change it in Ghost admin." The row's ⋯ menu h
    Fewer pieces, but a new control with no frame to lift it from, and no way to hide one and keep the other.
 3. **The message only.** The hover tag and the sentence, and no hide switch. Says what they are; leaves them in the way.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-26).** Built: Layers gains a group **From your Ghost site** at its foot with one row per
+surface — **Announcement bar**, **Subscribe button** — each with the same ⋯ → Hide / Show a section row already has and
+nothing else; hidden is this browser's alone, per project, never the doc's, and not in Preview. A pointed shim draws the
+tag a section gets; a press chooses its Layers row by the shim's box (`ghostAt`) while the shim stays inert and
+`pointer-events: none`. `pinned` now walks up to a fixed ancestor so a selected shim's chrome rides the viewport with its
+fixed frame. The manual test gains steps 14–17, and a tenth 5.21 journey walks it from the keyboard (the whole gate 74 of
+74).
 
