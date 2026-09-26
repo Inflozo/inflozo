@@ -174,7 +174,7 @@ async function main() {
   const LIVE = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/live-content.ts')).href)
   const SUBJ = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/preview-subject.ts')).href)
   const OW = await import(pathToFileURL(path.join(REPO, 'packages/library/src/orbit-weekly.ts')).href)
-  const { seed } = await import(pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
+  const { seed, TEMPLATES } = await import(pathToFileURL(path.join(__dirname, 'seed-editor-project.mjs')).href)
   const W = LIVE.LIVE_WORDS
   const PER_PAGE = OW.postsPerPage()
   // Story 5.19 — the Data group's words and the vocabulary's Source words, each from its one list (R-170)
@@ -891,10 +891,11 @@ async function main() {
         const sentence520 = PW.membersNotice(OFF, 'Ghost5 (row)')[0]
         check('T3 — the Sites screen says it too: the members-off sentence and Open Ghost admin at the Membership anchor',
           notice520.some((n) => n.text.includes(sentence520) && n.link === PW.adminAt(GHOST['5'].origin, 'members')), JSON.stringify(notice520))
-        // a placed sign-up section on Home — the seed's A22 #1 asks a visitor to join — carries the line at its panel head
+        // a placed sign-up section on Home — the seed's A22 #1 asks a visitor to join — carries the line at its panel head;
+        // Layers names a row by its layer name, which is the seed's own ("Newsletter — Inline Row"), never the design id
         await open(editor(P['5']))
         await paintedFrom('home', 'site')
-        await pickLayer('A22')
+        await pickLayer(TEMPLATES.home.find(([id]) => id === 'a22/1')[1])
         const line520 = await page.evaluate(() => document.querySelector('[data-member-ask]')?.textContent ?? null)
         check('T3 — a placed section whose design asks a visitor to join says so at its panel head, in 5.18\'s note shape',
           line520 === PW.PAYWALL_WORDS.ask(NAME5), JSON.stringify(line520))
