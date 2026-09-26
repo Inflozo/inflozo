@@ -4281,6 +4281,93 @@ last story (10.58), before Post Lists."*
   ✅ `build-sequence.md` step 7 · ✅ `_bmad/custom/bmad-build.toml` and `bmad-build-auto.toml` · ✅ `epic-5-context.md` ·
   ✅ `deferred-work.md` DW-255 (done).
 
+**R-197 — until A32's designs exist, the Paywall screen shows Ghost's own box.** Story 5.20's Create, Question 1, ruled
+**option 1** (owner, 2026-09-26): *"Build the screen now; until A32's designs exist it shows Ghost's own box."* The
+step-6 stress test (F3) placed the Paywall editor in Epic 5, "built and owner-tested against whatever designs exist".
+The library holds no A32 design until Story 10.107, so there was nothing to choose between.
+
+- **The rule.** Story 5.20 builds the Paywall canvas in full, reached through Template ▾ → **Template surfaces** →
+  **Paywall**. An untouched paywall is **Ghost's own `content-cta` box**, per visitor and per major, as the story's first
+  task records it. A Ghost site renders that box until a theme overrides `content-cta`, and an untouched paywall
+  compiles nothing (FR-I1). So this is permanent product behaviour, not a placeholder.
+- **The design ring is ABSENT while the library holds no A32 design** (UX-DR3, R-118).
+  - Choosing a design, its controls and the `paywall` doc are built now.
+  - They are proven in the automated checks on two stand-in paywalls in `packages/library/fixtures/paywall/`.
+  - The stand-ins never reach the shipped library, the editor, the Picker, Layers, Shuffle or Remix (AD-35, R-158's
+    shape).
+  - Story 10.107 brings the real designs into the same code, and the owner tests the whole at A32's owner gate (Story
+    10.109). That is F3's "the two meet at that category's own owner gate".
+- **Declined.**
+  - Option 2 put the stand-ins on the Controls review page, as R-158 did for the design ring; they would be thrown
+    away when A32 arrives.
+  - Option 3 moved the screen to Epic 10, R-195's shape. The untouched state is real behaviour worth having now, and
+    building it here keeps A32's stories pure design work.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.20's spec: Question 1, Intent, Always, Design Notes, owner test.
+  - ✅ `epics.md` Story 5.20's card.
+  - ✅ `epic-5-context.md`.
+  - ⬜ `epics.md` Stories 10.107 and 10.109 (DW-262, DW-263) — Story 5.20's docs task.
+  - ⬜ built — Story 5.20's Dev.
+
+**R-198 — with members switched off, the Paywall screen keeps C3b's shape and says what Ghost does: posts for members
+still stop at the cut, and nobody can sign up there.** Story 5.20's Create, Question 2, ruled **option 1** (owner,
+2026-09-26): *"Keep the drawn screen, and correct its words to what Ghost does."*
+
+- **Why it was a question.** C3b, as A7 item 12 corrected it, says that with Subscription access set to Nobody "nothing
+  on the site is gated and this block has nothing to appear on". Ghost's source says otherwise, on 5.130.6 and 6.58.0
+  alike:
+  - `forPost` calls `checkPostAccess` unconditionally (`post-gating.js` 5:85-121, 6:84-124). Its comment "unless
+    members is enabled" is not implemented, so a post for members still stops at the cut.
+  - `{{ghost_head}}` stops loading Portal, and with donations and recommendations also off it drops the box's
+    stylesheet (`ghost_head.js` 5:51-55, 74-76; 6:121-125, 146-148). So the box's buttons open nothing.
+- **The rule.** The screen keeps C3b's shape — the MEMBERS OFF chip, the title, the two numbered steps, **Open Ghost
+  admin** and **Re-check** (A7 item 12's "the shape stays").
+  - Its sentence becomes *"Members are switched off for {site} — subscription access is set to Nobody — so your posts
+    for members still stop at the cut, but nobody can sign up there: Ghost stops loading its sign-up window."*
+  - Step 2 becomes *"Come back here — we re-check whenever you open this screen"*, because nothing can be picked until
+    10.107 (R-197).
+  - The footnote points to Sample content, where the paywall is still shown.
+- **It stands on a recording.** Story 5.20's first task records the page on T3 with Subscription access set to Nobody
+  by the harness's staff token, then restored. If Ghost turns out to unlock posts with members off, C3b is built as
+  drawn and this ruling falls away.
+- **Declined.** Option 2 kept the paywall on screen with the card above it as a warning; option 3 used no card and one
+  panel line.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.20's spec.
+  - ✅ `epics.md` Story 5.20's card.
+  - ✅ `EXPERIENCE.md` § State Patterns, the Paywall Editor row: C3b, and the premise.
+  - ✅ `prd.md` FR-H6.
+  - ✅ `epic-5-context.md`.
+  - ⬜ MEASUREMENTS §54 — Story 5.20's first task.
+  - ⬜ built — Story 5.20's Dev.
+
+**R-199 — "Gated content — shown with sample text" marks where the locked part begins, for a visitor who may read it.**
+Story 5.20's Create, Question 3, ruled **option 1** (owner, 2026-09-26): *"The label marks where the locked part starts,
+for a visitor who can read it — as S4d draws it."*
+
+- **Why it was a question.** Story 5.20's card put the label "wherever the visitor View as is previewing may not read
+  it". But S4d (`S4 Editor.dc.html:410`) draws it with **Paid member** previewed, a visitor who can read the post. And a
+  visitor who may not read a gated body never receives it: C3a's own words are "below this line never reaches the
+  browser".
+- **The rule.**
+  - A visitor who may read the post sees the whole article, the style-guide fixture, with the label where the cut would
+    be. "May read" is Ghost's `checkPostAccess`, ported once as `postAccess`. The label says the rest stands in for the
+    post's real locked words.
+  - A visitor who may not sees exactly what Ghost sends: the preview, the cut and the box, and no label.
+  - Nothing is ever drawn below the box.
+- **Declined.** Option 2 drew the rest of the article faded under the box, with the label, for a visitor who may not
+  read it. No reader's browser ever receives that text.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.20's spec.
+  - ✅ `epics.md` Story 5.20's card.
+  - ✅ `prd.md` FR-D16's indicator sentence.
+  - ✅ `EXPERIENCE.md`'s voice row for the indicator.
+  - ✅ `epic-5-context.md`.
+  - ⬜ built — Story 5.20's Dev.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

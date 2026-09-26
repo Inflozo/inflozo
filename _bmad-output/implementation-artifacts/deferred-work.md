@@ -3357,6 +3357,14 @@ location: packages/section-runtime/src/core.ts `bindValue` (bare `reading_time`)
 reason: Ghost's `{{reading_time}}` counts the post's body and prints nothing when the body is withheld; the
   number guard (`includeZero=true`) is true because the field is 0, so the element keeps its place with no
   text. The shim has no `access` input. The site's behaviour is right; the canvas needs the preview state.
+note (Story 5.20's Create, 2026-09-26): the premise is narrower than it reads. Ghost's helper is
+  `if (!post.html && !post.reading_time) return ''`, then `post.reading_time || readingMinutes(post.html)`
+  (`@tryghost/helpers` `cjs/helpers.js:3647, 3657`, read in source on both majors), and `reading_time` is computed
+  from the WHOLE body before gating (`extra-attrs.js`). So a withheld body prints nothing only when the post's
+  `reading_time` is 0 and no preview is left. That is §41d's recorded case: every probe post reads 0. A real post
+  prints its whole reading time to every visitor. The pilots print the FIELD through `{{t}}`, so nothing on today's
+  library moves. Story 5.20 builds the rule as Ghost has it, and its first task records a withheld post above 0 on
+  both majors.
 
 ### DW-129: `@site.codeinjection_head` and `codeinjection_foot` are offered as text bindings
 

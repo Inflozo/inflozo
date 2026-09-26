@@ -612,6 +612,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       the user chose (DW-154's half).
     - Two stand-in paywalls in `fixtures/paywall/` prove the choosing half; A32's designs arrive in 10.107.
     - DW-260 to DW-268 give every piece it leaves unbuilt an owner.
+  - **R-197 · R-198 · R-199 (owner, 2026-09-26, Story 5.20's Q1–Q3, option 1 each).**
+    - **R-197:** the Paywall screen is built now and, until A32's designs exist, shows the untouched paywall — Ghost's
+      own box, per visitor. The ring is ABSENT, and the choosing half is proven on the two stand-ins in CI alone. The
+      owner tests it whole at A32's gate (10.109).
+    - **R-198:** members off keeps C3b's shape and says what Ghost does: posts for members still stop at the cut, and
+      nobody can sign up there. Step 2 now reads "we re-check whenever you open this screen". The ruling stands on the
+      first task's T3 recording.
+    - **R-199:** the gated label marks where the locked part begins, for a visitor who MAY read it (S4d). A visitor who
+      may not meets the preview, the cut and the box, with nothing below.
+    - The epics card, FR-H6, FR-D16 and EXPERIENCE.md's two rows carry them, and the spec has no open question.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
   - **Story 5.15's planning (2026-09-22, read in the runtime, the CSP and the frames, and swept over the library):**
     `core` (Story 4.7) already holds still every module that is not edit-safe (`core.js:43`), and NOTHING CALLS IT:

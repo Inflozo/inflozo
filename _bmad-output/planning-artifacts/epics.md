@@ -2321,24 +2321,32 @@ a paywall
 **And** the editor's **empty state is "members switched off"** (`members_signup_access` = none) — **not** "no paid
 tiers", because Ghost's paywall renders on every gated post whether or not a paid tier exists, so a free
 newsletter gating posts to members is exactly a site this editor serves — with two numbered steps and a Re-check
-(UX-DR6)
+(UX-DR6); and **switching members off unlocks nothing** — Ghost still stops a post for members at the cut, and the
+box there can sign nobody up because Ghost stops loading Portal (`post-gating.js`, read in source on both majors,
+recorded by this story's first task) — so the screen keeps C3b's shape and says what Ghost does (**R-198**, owner,
+2026-09-26)
 **And** **the warning never fires on synthesised instances**, so an untouched project is never warned about a
 section its user did not place
 **And** **a member's own details are never server-rendered** — no `@member.email`, name or billing detail reaches
 the page; anything identifying is a hand-off to Ghost's own account panel (AD-38)
 **And** **this is the first canvas that draws a gated body, so FR-D16's gated half lands here** (moved from Story 5.14,
-2026-09-21): the body is always the style-guide fixture, and wherever the visitor **View as** is previewing may not
-read it, the body carries S4d's **"Gated content — shown with sample text"** indicator; **`access` is worked out per
+2026-09-21): the body is always the style-guide fixture; where the visitor **View as** is previewing **may read**
+the gated part, the article is whole and S4d's **"Gated content — shown with sample text"** indicator marks where that
+part begins, while a visitor who may not meets exactly what Ghost sends — the preview, the cut and the box, and nothing
+below it (**R-199**, owner, 2026-09-26); **`access` is worked out per
 visitor** through Ghost's own `checkPostAccess` (`members/content-gating.js`), so the paywall cut, the indicator and
-the reading time all follow 5.14's visitor — **DW-128**: Ghost prints no reading time for a body it withholds, and the
-canvas must not either; switching View as to Paid member is how the owner checks the cut disappears (`C Post Body.dc.html:1548`:
+the reading time all follow 5.14's visitor — **DW-128**: Ghost's `{{reading_time}}` prints nothing only when the body
+it withholds leaves no preview and the post's `reading_time` is 0, and otherwise prints the whole post's time (read in
+source on both majors; MEASUREMENTS §41d recorded the empty case), and the canvas prints exactly what Ghost prints; switching View as to Paid member is how the owner checks the cut disappears (`C Post Body.dc.html:1548`:
 "View as stays in the chrome because switching to Paid member is the only way to check that the cut disappears")
 **And** the editor matches C3a and its empty state matches C3b as corrected.
 
-**FRs:** FR-H6, FR-D16 (the gated body). · **Frame:** `C Post Body.dc.html` C3a · C3b · `S4 Editor.dc.html` S4d's gated label. · **Owner test:** yes. · **Verification:** T1 with
+**FRs:** FR-H6, FR-D16 (the gated body). · **Frame:** `C Post Body.dc.html` C3a · C3b · `S4 Editor.dc.html` S4d's gated label. · **Rulings:** R-197, R-198, R-199. · **Owner test:** yes. · **Verification:** T1 with
 members enabled and T3 with members off (R-82). · **Depends on E10:** the editor is built and tested here against
 whatever paywall designs exist; **A32's twelve arrive in E10**, and the two meet at A32's own owner gate. Same
-shape as §8's declared A25 → FR-Q7 dependency. *(Declared by the step-6 stress test, finding F3.)*
+shape as §8's declared A25 → FR-Q7 dependency. *(Declared by the step-6 stress test, finding F3.)* None exists yet,
+so until A32's designs arrive the screen shows the untouched paywall — **Ghost's own box** — and choosing a design is
+proven on two stand-in paywalls that never ship (**R-197**, owner, 2026-09-26).
 
 ### Story 5.21: The two Ghost-surface shims on the canvas
 

@@ -63,7 +63,7 @@ two stand-in paywalls that never ship (R-158's shape); A32's own designs light i
   paid`, holding every active paid tier, as Ghost 6's preview member does. It is ONE function, used by the cut, the
   indicator and the reading time.
   - **No access** → the preview blocks at 55% (context), then C3a's cut marker, then the box.
-  - **Access** → the whole article, with S4d's "Gated content — shown with sample text" at the marker (Question 3).
+  - **Access** → the whole article, with S4d's "Gated content — shown with sample text" at the marker (R-199).
 - **The box.**
   - **Untouched:** Ghost's own `content-cta` markup and stylesheet, as recorded per major. Its accent passes
     `ghostColor` (NFR-3).
@@ -81,7 +81,7 @@ two stand-in paywalls that never ship (R-158's shape); A32's own designs light i
   - It is written at connect, by the daily check (both call `probeSite`), and by Re-check.
   - Nothing else from `settings/` is copied, and never a Stripe key.
 - **Every warning reads that record**, and a site with no record yet warns nothing.
-  - **The Paywall canvas:** C3b's members-off screen (as Question 2 rules), while the canvas shows the site's content.
+  - **The Paywall canvas:** C3b's members-off screen in R-198's words, while the canvas shows the site's content.
   - **The Sites screen:** a notice. It shows after connect and on every visit while the fact holds.
   - **A placed section whose design carries a member ask**, on a site with members switched off: a line in its panel.
     It is never shown on a synthesized (`auto-…`) instance (FR-H6).
@@ -117,9 +117,9 @@ two stand-in paywalls that never ship (R-158's shape); A32's own designs light i
 
 **Ask First:**
 
-- **Questions 1–3 are open.** Dev does not start until the owner rules them.
+- **Questions 1–3 are RULED — R-197, R-198 and R-199** (owner, 2026-09-26, option 1 each). No question is left open.
 - **If the recorder finds that a members-only post is NOT withheld with Subscription access set to Nobody** — C3b's
-  premise — stop and say so. Question 2 then falls away, and C3b is built as drawn.
+  premise — stop and say so. R-198 then falls away, as it says itself, and C3b is built as drawn.
 - **If the recorder finds that `{{reading_time}}` prints nothing on a withheld post whose `reading_time` is above 0**,
   stop and say so. The canvas would then print nothing for every withheld body.
 - **Anything that needs a migration beyond the `paywall` key:** stop — R-99.
@@ -148,7 +148,7 @@ two stand-in paywalls that never ship (R-158's shape); A32's own designs light i
 | Paid member | any paywall | no cut and no box; the whole article; "Gated content — shown with sample text" at the marker; "Showing: the whole post" | N/A |
 | Sample content | no site, or the pill on Sample | Orbit Weekly's accent and tiers: "5 tiers · 1 free", no Ghost admin link | N/A |
 | The site's content | T3 linked, connected | the site's accent; "1 tier · 1 free" (the hidden tier is not counted); Tiers in Ghost admin → `{url}/ghost/#/settings/tiers` | a failed tiers read: the line is absent, 5.18's note says why |
-| Members off | record `signup_access: none`, the site's content | C3b's card, as Question 2 rules, with Open Ghost admin → `{url}/ghost/#/settings/members` and Re-check | N/A |
+| Members off | record `signup_access: none`, the site's content | C3b's card in R-198's words, with Open Ghost admin → `{url}/ghost/#/settings/members` and Re-check | N/A |
 | Members off, Sample content | same record, the pill on Sample | the sample paywall; no card | N/A |
 | Re-check | press, or open the canvas | "Re-checking…", `aria-busy`; the record and the canvas update; `#editor-said` says the result | Ghost unreachable or credential refused: "Could not check {site} just now." under the buttons, the record unchanged |
 | No record yet | a site connected before this story | no warning anywhere; the canvas's background re-check fills it | N/A |
@@ -210,7 +210,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - `@labs.members` becomes false.
   - `{{ghost_head}}` drops Portal's script and the CTA stylesheet, but only when members, donations and recommendations
     are ALL off (`ghost_head.js` 5:51-55,74-76; 6:121-125,146-148).
-  - **So the box still shows, and its buttons open nothing. This is the source of Question 2.**
+  - **So the box still shows, and its buttons open nothing. This is the source of R-198.**
 - **`{{content}}`** (`core/frontend/helpers/content.js:50-52`, `restrictedCta` :18-29): when `access` is false it
   executes the `content-cta` template with `this` = **the post** and `data` = `@site`, plus `@member` without products.
 - **Ghost's own box** (5 `core/frontend/helpers/tpl/content-cta.hbs:1-20`; 6 `:1-32`) is the same markup on both
@@ -280,7 +280,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   9px/600, radius 4, `2px 7px`, `top:-8px`.
 - **`D5 Canvas Markers and Template Switcher.dc.html` D5b** (:104-189) draws the switcher's groups. The Membership
   group is the shape the new group takes.
-- **EXPERIENCE.md** (the doc gets a C3a→C3b fix and Question 2's correction in the doc task):
+- **EXPERIENCE.md** (its :354 row names C3b and R-198's premise, and its :271 row R-199, since the rulings):
   - :168, the IA row;
   - :207-222, the Template surfaces group, reached through the switcher, "the left panel stays Layers on every canvas";
   - :271, the indicator's words;
@@ -442,7 +442,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   `contract.test.ts` to assert every row. Write it up as MEASUREMENTS §54, including the Content API tier and
   settings reads above.
 
-  -- Question 2's premise, DW-128's rule and Ghost's own box all rest on this.
+  -- R-198's premise, DW-128's rule and Ghost's own box all rest on this.
 - [ ] `packages/library/src/access.ts` (new, exported) -- `postAccess(post, visitor)`: Ghost's `checkPostAccess` over
   the three visitors (*Always*). Pure and importless but for types. -- One rule for the cut, the indicator and the
   reading time.
@@ -526,7 +526,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
     - the canvas document's article CSS, card CSS and Ghost's CTA CSS, taken from `style-guide.ts` and §54.
   - **The chrome in the canvas layer** (AD-21, keyed `data-inflozo-*`): the 55% dim, the cut marker with its two
     labels, and S4d's indicator.
-  - **The members-off card** (`components/editor/paywall-notice.tsx`, C3b per Question 2), with Re-check (busy) and a
+  - **The members-off card** (`components/editor/paywall-notice.tsx`, C3b in R-198's words), with Re-check (busy) and a
     background re-check on open.
   - **The panel head.** "Paywall", plus "n / m" when designed, or the Ghost's-own line. The ring and the controls
     through 5.11's picker and the Sidebar appear only when designs exist.
@@ -574,14 +574,15 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - **MEASUREMENTS §54.**
   - **The spine.** AD-27(a0): the paywall is the `paywall` doc, and `paywall_design_id` is unwritten (DW-267).
   - **`prd.md`:**
-    - FR-H6: the record, the members-off truth as Question 2 rules, and the tier filter settled by execution.
-    - FR-D16: the indicator as Question 3 rules.
+    - FR-H6: the record, and the tier filter settled by execution (R-198's members-off truth landed with the ruling).
+    - FR-D16: nothing more — R-199 landed with the ruling.
     - FR-D5's Theme-settings clause for the paywall.
     - Appendix B's `@site`/Tier fields.
     - §7.6 item 14(b).
-  - **EXPERIENCE.md:** :354 (C3b, and the premise).
+  - **EXPERIENCE.md:** once §54 is recorded, confirm that :354's R-198 sentence still matches the recording.
   - **`epics.md`:**
-    - 5.20's criteria words: DW-128, and the rulings.
+    - 5.20's criteria: confirm DW-128's sentence and R-198's against §54, and correct either if the recording moves
+      it. Both were written from source, with the rulings.
     - Stories 7.18, 7.3 and 7.6: DW-260 and DW-261.
     - Stories 10.107–10.109: DW-262 and DW-263.
     - Stories 10.14 and 10.83: DW-264 and DW-266.
@@ -596,7 +597,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
     Notes*): the ink bar, NOT A PAGE SECTION, Back to post, the strip, the dimmed article, the cut marker and its two
     labels, the box, and the "How readers reach it" card.
   - Given a linked site with members switched off, when the canvas shows the site's content, then its screen **matches
-    frame C3b as corrected** by A7 item 12 and by Question 2.
+    frame C3b as corrected** by A7 item 12 and by R-198.
   - Given a Paid member on the canvas, when the article is whole, then the label **matches S4d's gated label**
     (`S4 Editor.dc.html:410`).
   - Given the Template switcher, when I open it, then the **Template surfaces** group matches D5b's Membership group's
@@ -623,7 +624,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
 
 ## Design Notes
 
-**Why the canvas is truthful before any design exists (Question 1's recommended option).** The approved plan (the
+**Why the canvas is truthful before any design exists (R-197).** The approved plan (the
 step-6 stress test's F3) builds this surface now and meets A32 at its own owner gate. With no A32 design, the honest
 paywall is Ghost's own box, which is what a Ghost site renders until a theme overrides `content-cta`. So the canvas shows
 that box, per visitor, rather than a placeholder. That state is permanent product behaviour: an untouched paywall
@@ -655,7 +656,7 @@ read, and the background re-check on opening the Paywall canvas brings the two t
   - The six controls and the "Design 4 of 12 · Two Up" names are A32's, not current (A32 #4 is Contrast Band), and
     arrive with 10.107.
   - The drawn tiers ("Reader $5 · Supporter $12") are the source's own.
-- **C3b** keeps its shape. Its words follow A7 item 12 and Question 2. Step 2's "pick a design" becomes "we re-check
+- **C3b** keeps its shape. Its words follow A7 item 12 and R-198. Step 2's "pick a design" becomes "we re-check
   whenever you open this screen", because nothing can be picked until 10.107.
 - **The Template surfaces group, the explainer card and the Sites notice** are extrapolated from D5b's Membership
   group, C3a:1407-1413 and the Sites screen's existing `Banner`s.
@@ -697,7 +698,7 @@ numbers.
 | Indicator | **Gated content — shown with sample text** |
 | Layers card | **How readers reach it** · *"Ghost cuts the post at the author's Public preview marker and renders this block in its place. You cannot move it."* · *"{n} tiers · {m} free"* (one: "1 tier") · **Tiers in Ghost admin →** |
 | Panel head | **Paywall** · **{n} / {m}** when designed · untouched: *"This is Ghost's own paywall — what your readers see today."* |
-| Members-off card (Question 2, option 1) | **MEMBERS OFF** · **Members are switched off** · *"Members are switched off for {site} — subscription access is set to Nobody — so your posts for members still stop at the cut, but nobody can sign up there: Ghost stops loading its sign-up window."* · *"In Ghost admin, open Settings → Membership and set Subscription access to anyone or invite-only"* · *"Come back here — we re-check whenever you open this screen"* · **Open Ghost admin** (→ `{url}/ghost/#/settings/members`) · **Re-check** / **Re-checking…** · *"You can still work on your paywall with sample content — switch the canvas to Sample content below."* |
+| Members-off card (R-198) | **MEMBERS OFF** · **Members are switched off** · *"Members are switched off for {site} — subscription access is set to Nobody — so your posts for members still stop at the cut, but nobody can sign up there: Ghost stops loading its sign-up window."* · *"In Ghost admin, open Settings → Membership and set Subscription access to anyone or invite-only"* · *"Come back here — we re-check whenever you open this screen"* · **Open Ghost admin** (→ `{url}/ghost/#/settings/members`) · **Re-check** / **Re-checking…** · *"You can still work on your paywall with sample content — switch the canvas to Sample content below."* |
 | Re-check, said | *"Members are on for {site}."* · *"Members are still switched off for {site}."* · refused: *"Could not check {site} just now."* |
 | Sites notice | none: *"Members are switched off on {site} — subscription access is set to Nobody — so its sign-up forms show nothing and its paywall cannot sign anyone up."* · invite: *"Only people you invite can join {site}, so free sign-up forms show nothing there."* · paid: *"New members must pay to join {site}, so free sign-up forms show nothing there."* · paid off: *"Paid memberships are off on {site} — Stripe is not connected — so paid sign-up buttons show nothing there."* · **Open Ghost admin ↗** |
 | A placed member ask | *"Members are switched off on {site}, so this section's sign-up form shows nothing there."* |
@@ -789,7 +790,8 @@ are no designs to pick yet. With option 3 the Template menu has no Paywall row u
    - The "Gated content — shown with sample text" label moves with the screen, since no other canvas draws an article
      yet.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-26)** — *"Build the screen now; until A32's designs exist it shows Ghost's own box."*
+Recorded as **R-197**.
 
 ### Question 2 — With members switched off, the drawing says nothing is locked; Ghost's own code says posts still lock, behind a box that does nothing. What should the screen show?
 
@@ -817,7 +819,9 @@ now does nothing.
    readers see.
 3. **No card.** The paywall shows as usual, and one warning line sits in the settings panel.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-26)** — *"Keep the drawn screen, and correct its words to what Ghost does."* Recorded
+as **R-198**. It stands on the first task's recording: if Ghost turns out to unlock posts with members off, C3b is
+built as drawn.
 
 ### Question 3 — "Gated content — shown with sample text": which visitor sees that label?
 
@@ -839,4 +843,5 @@ article, the coral cut line and the box. As a Paid member the line and the box d
    - No reader's browser ever receives that text. The drawing C3a itself says "below this line never reaches the
      browser".
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-26)** — *"The label marks where the locked part starts, for a visitor who can read it
+— as S4d draws it."* Recorded as **R-199**.
