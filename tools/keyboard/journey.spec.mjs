@@ -2748,3 +2748,46 @@ test('5.21 · a selected sticky header keeps its outline on its own box while th
     for (const d of ['dx', 'dy', 'dw', 'dh']) expect(at[d], `scrolled to ${y}: the outline is on the header (${d})`).toBeLessThanOrEqual(1)
   }
 })
+
+test('5.21 · the editor re-reads the site ONCE per opening — reading along too (R-192) — and the Paywall\'s re-check on entry stays; no site, no read', async ({ page }) => {
+  // a server action's POST body is its arguments, so the re-read (`recheckSite(projectId)`) is the one whose body is the
+  // project id alone — `setViewedStates` sends its rows beside it. The harness has no database, so each is refused.
+  const PROJECT = '00000000-0000-4000-8000-000000000009'
+  let rereads = 0
+  page.on('request', (r) => {
+    if (r.method() === 'POST' && r.headers()['next-action'] && r.postData() === JSON.stringify([PROJECT])) rereads++
+  })
+  // the control: an unlinked project reads nothing
+  await open(page)
+  await page.waitForTimeout(1500)
+  expect(rereads, 'no site, no re-read').toBe(0)
+  // reading along, on a connected site: the one re-read as it opens, and the snapshot stays drawn when it is refused
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces', 'x-inflozo-harness-lock': 'reader' })
+  await page.goto(HARNESS)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect.poll(() => rereads, 'one re-read as the editor opens, reading along').toBe(1)
+  expect((await shims(page)).surfaces, 'the refusal leaves the stored snapshot drawn').toBe(2)
+  // soft navigations are not openings: Post and back to Home read nothing more
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  await page.waitForTimeout(1000)
+  expect(rereads, 'a change of canvas is not an opening').toBe(1)
+  // the Paywall's own re-check on entry stays — one more
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="post"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  await expect.poll(() => rereads, 'entering the Paywall re-checks').toBe(2)
+  // an editor opened ON the Paywall makes the one read that serves both
+  rereads = 0
+  await page.goto(`${HARNESS}/paywall`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  await page.waitForTimeout(1500)
+  expect(rereads, 'opened on the Paywall: one read, never two').toBe(1)
+})

@@ -572,12 +572,22 @@ have; none changes what a surface does.
    before its + 2, the shim shrinks to fit and pads 2px. Measured on the keyboard harness at 1440: the button at x
    1270.58 against Portal's recorded 1271 — inside the spec's ±2px.
 10. **Two stored paragraphs are read with a space between them** where Ghost's `all: unset` runs them together with none
-    (`readMarks` reads a block edge as a space). Ghost Admin's Announcement field writes one paragraph; the `ponytail:`
-    comment in `announcementFor` names the ceiling.
+    (`readMarks` reads a block edge as a space). Read in Ghost Admin's shipped bundles (6.58.0 and 5.130.6): the
+    Announcement field is Koenig's single-paragraph HTML field, and it saves `''` whenever it holds no text — so only a
+    write through the API reaches two paragraphs, and "the text emptied" is an empty string, which `isFilled` and the
+    canvas's "no words" rule both answer with no bar (§55). The `ponytail:` comment in `announcementFor` names the
+    ceiling.
 11. **The strip's root carries Ghost's own id, `announcement-bar-root`, and the button's host `ghost-portal-root`**,
     beside `data-ghost-surface` — Ghost's markup is what the shims stand in for (the Frame rule), and NFR-6(c3) names
     those live roots. **DW-272 is amended** for the rename (`readMembers` → `readSettings`, `recheckMembers` →
     `recheckSite`), and the wiring test's order assertion gained its control (the old order fails it).
+12. **"Never twice for one opening" did not hold in development, and a journey found it.** A journey added after the first
+    Dev push counts `recheckSite`'s own POST (a server action's body is its arguments — the project id alone): 0 on an
+    unlinked project, 1 as the editor opens reading along, still 1 after soft navigations, 2 after entering the Paywall —
+    and 2, not 1, for an editor opened ON the Paywall. React runs a mount's effects twice in development (Strict Mode, the
+    App Router's default), and 5.20's entry re-check ran on every run whose `surface` was true. The effect now answers a
+    `surface` value once (`handled`), so a repeated run is never a second entry; production ran it once either way. The
+    journey is green with the guard, and 5.20's seven journeys with it.
 
 ## Design Notes
 
@@ -705,7 +715,9 @@ scroll. So the layer follows the stuck state, and the one switch happens as it s
   both as they were, with Layers, Undo and the device's record untouched; Sample content keeping both and the Paywall
   drawing neither; `#canvas` byte-identical with and without the site; and a selected sticky header's outline on its box
   at scroll 0, 20 and 300 with the layer following the stuck state. **The last one's control was executed:** with
-  `pinned` put back to "sticky means pinned" it went red ("page" expected, "view" received), then restored.
+  `pinned` put back to "sticky means pinned" it went red ("page" expected, "view" received), then restored. A ninth,
+  added after the first push, counts the re-read's own POST: none unlinked, one on open while reading along (R-192),
+  none more on soft navigations, one more entering the Paywall, and one for an editor opened on it (Change Log 12).
 - **A local production build** (`pnpm build`, CI's own step) — exit 0.
 - **`python3 tools/doc-audit.py --check`** — PASS after the story board's regeneration.
 - **The deployed walks** — `run-verify-editor.cjs` step 96 and `run-verify-live-content.cjs`'s Story 5.21 section are
@@ -733,6 +745,6 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 | 8 | same | Canvas | Point at the button, then click it. | — | Nothing opens. The section underneath the button is the one that outlines and gets selected. |
 | 9 | same | View as, then devices | Choose **Free member**. Then choose **Mobile**. Then go back to **Logged out user** and **Desktop**. | — | As a Free member the button is a round icon with no words. On Mobile there is no button at all, because Ghost never shows it on phones. Back at Desktop, **Subscribe** returns. |
 | 10 | same | **Template ▾** → **Paywall**, then Home and the pill at the canvas foot | Open the Paywall and look. Go back to Home, switch the pill to **Sample content**, then back to your site. | — | The Paywall shows neither the strip nor the button. On Sample content both stay, because they belong to your connected site, not to the sample posts. |
-| 11 | `https://ghost5.inflozo.com/ghost/#/settings/announcement-bar/edit` | Ghost admin → **Announcement** | Untick **Public visitors**, so that no Visibility box is ticked. Save. Reload the editor. | — | The strip is gone and your header sits at the very top of the page. |
-| 12 | the step 11 URL, then `https://ghost5.inflozo.com/ghost/#/settings/portal/edit` | Ghost admin | Tick **Public visitors** again and Save. In Portal's **Look & feel**, switch **Show portal button** off and Save. Reload the editor. | — | The strip is back and the button is gone. ghost5 is as it was. |
+| 11 | `https://ghost5.inflozo.com/ghost/#/settings/announcement-bar/edit` | Ghost admin → **Announcement** | Untick **Public visitors**, so that no Visibility box is ticked. Save. Reload the editor. | — | The strip is gone and your header sits at the very top of the page. It may go a moment after the page appears, while the editor checks your site. |
+| 12 | the step 11 URL, then `https://ghost5.inflozo.com/ghost/#/settings/portal/edit` | Ghost admin | Tick **Public visitors** again and Save. In Portal's **Look & feel**, switch **Show portal button** off and Save. Reload the editor. | — | The strip is back and the button is gone — again a moment after the page appears. ghost5 is as it was. |
 | 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | **Pilot sections**, Home | Open it. | — | No strip and no button, because this project is not linked to a site. |

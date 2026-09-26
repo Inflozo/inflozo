@@ -70,7 +70,8 @@ const WORDS: PropDef = { type: 'richtext', label: 'Announcement', marks: [...GHO
  * and read as text plus Ghost's three marks (`readMarks`) — a link survives only as http, https, mailto or tel. Its
  * paragraphs run on inline, as Ghost's `all: unset` leaves them, so no line break is ever read into it.
  * ponytail: two stored paragraphs are read with a space between them where Ghost's page runs them together with none;
- *   Ghost Admin's field writes one paragraph, and reading block edges as nothing is the upgrade if one ever needs it.
+ *   Ghost Admin's field is single-paragraph and saves `''` when it holds no text (MEASUREMENTS §55, read in its bundle),
+ *   so only a write through the API reaches this; reading block edges as nothing is the upgrade if one ever needs it.
  * A background outside Ghost's three is Ghost's own default, `dark` (its `isIn` is not a validation, so a stored value
  * is not guaranteed to be one of them).
  */

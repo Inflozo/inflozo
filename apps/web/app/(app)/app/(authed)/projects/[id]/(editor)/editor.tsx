@@ -588,11 +588,15 @@ export function Editor({
   }
   /** STORY 5.21 — ONE re-read per opening of the editor, beside the Paywall's own on entry: an editor opened ON the Paywall
    *  canvas makes the one read that serves both, and leaving it makes none. Only for a CONNECTED site (the snapshot is
-   *  handed for one alone, `read.ts`); a disconnected site has no key to read with. */
-  const reread = useRef(false)
+   *  handed for one alone, `read.ts`); a disconnected site has no key to read with. `handled` is the `surface` value the
+   *  last run answered, so a second run for the same value is never a second entry — React runs a mount's effects twice in
+   *  development (Strict Mode), and the keyboard journey counted two reads on the Paywall before this guard. */
+  const handled = useRef<boolean | undefined>(undefined)
   useEffect(() => {
-    if (surface || (!reread.current && site !== null && site.surfaces !== undefined)) recheck(false)
-    reread.current = true
+    if (handled.current === surface) return
+    const opening = handled.current === undefined
+    handled.current = surface
+    if (surface || (opening && site !== null && site.surfaces !== undefined)) recheck(false)
     // entering the surface is the question; `recheck` reads the record and the site through refs
   }, [surface])
   /** `painted.shown` as the handlers see it, in the same task the paint set it — before React has re-rendered */
