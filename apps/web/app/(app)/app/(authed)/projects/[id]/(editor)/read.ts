@@ -4,9 +4,8 @@ import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type Drop
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
-import { siteFrom, type EditorSite } from '@/lib/live-content'
+import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isSurface, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
-import { storedMembers } from '@/lib/probe-rule'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
@@ -180,6 +179,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // `sites`, `…complete_schema.sql:814-828, :1041-1042`). Nothing here reads the SITE: the Content API is the
     // browser's path, never the server's (AD-10, `admin-rule.ts:164`).
     // Story 5.20 — and its `site_settings`, for FR-H6's record of the member switches (`storedMembers` reads the one key)
+    // Story 5.21 — and for the snapshot Ghost's two surfaces are drawn from (`storedSurfaces`)
     linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings').eq('id', linked).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
@@ -325,9 +325,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
      takes above. `siteFrom` decides readable or unreadable-with-its-reason (`lib/live-content.ts`, unit-tested). */
   if (siteRow?.error) console.error('editorData: the linked site could not be read', { code: siteRow.error.code })
   const read = siteRow && !siteRow.error && siteRow.data ? siteFrom(siteRow.data, normaliseSiteUrl, hostOf) : null
-  // STORY 5.20 — FR-H6's record of the member switches, re-checked on the way out; a site with no record carries none
-  const members = siteRow?.data ? storedMembers(siteRow.data.site_settings) : null
-  const site = read !== null && members !== null ? { ...read, members } : read
+  // STORY 5.20 — FR-H6's record of the member switches, re-checked on the way out; a site with no record carries none.
+  // STORY 5.21 — and the snapshot Ghost's two surfaces are drawn from (FR-H5), on every linked site that is NOT
+  // disconnected. One pure rule, `siteWith`, unit-tested beside `siteFrom`.
+  const site = siteWith(read, siteRow?.data?.site_settings)
 
   return {
     docs,

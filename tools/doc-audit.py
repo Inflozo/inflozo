@@ -267,7 +267,9 @@ DOCS = [
   'staff token (a long one with a Public preview marker, a short one without) and deletes both in a '
   'finally, each read back gone; and on T3 alone it sets Subscription access to Nobody, re-renders the '
   'members post, and restores the setting in a finally and reads it back (MEASUREMENTS §54). Its Admin '
-  'settings read keeps five member keys and no Stripe value. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a '
+  'settings read keeps five member keys and no Stripe value. Its generated fixtures/index.ts imports only the recordings '
+  'carrying ITS OWN command (Story 5.21), so a file another recorder writes beside them — record-ghost-surfaces.cjs\'s '
+  'surfaces.json — never joins RECORDINGS. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a '
   'paraphrase; the recorded facts that mattered are that a Ghost-hosted absolute URL comes back '
   'RELATIVE, and that `size="800"` silently returns the ORIGINAL image.'),
  ('tools/probe/record-cards.py', 'tool', 'Style-guide fixture recorder',
@@ -322,6 +324,19 @@ DOCS = [
   'real key — the 429, its message, whether it carries access-control-allow-origin, and the time; T1 then refuses this '
   'machine for about an hour by Ghost\'s own config, which the run does not measure, and the script says when it began. Keys by variable name only; no URL that carries one is '
   'ever printed; writes nothing to either server and MEASUREMENTS.md §51 alone, replacing an earlier §51 of its own.'),
+ ('tools/probe/record-ghost-surfaces.cjs', 'tool', 'Ghost-surfaces recorder',
+  "Story 5.21's recorder (standing rule 1, R-82): Ghost's two surfaces on a real page, recorded BEFORE the canvas shims "
+  'were written. Anonymous, in @playwright/test\'s chromium, a fresh context per page, at 1440x900, 834x1112 and 390x844, '
+  'on T3 and T1: with the announcement bar as run-verify-all.py item 21 left it (it refuses to start otherwise), '
+  "#announcement-bar-root's place among the body's children, the verbatim <style> Ghost's script appends, the bar's, "
+  "close button's and words' boxes and computed look, the body's font, and no Portal trigger while portal_button is off "
+  "(the control); then portal_button switched ON with the staff token and each of Ghost's three portal_button_style "
+  "values: #ghost-portal-root's place, the trigger iframe's inline style and box, the button's box, height, radius, "
+  "background and shadow, the label's font and box, the icon's markup, the frame's own stylesheet, and no trigger at "
+  '390 beside the one at 834; then announcement_visibility set to [] — no script and no bar root. Every setting it '
+  'switched is put back in a finally and READ BACK. States the spec\'s Ask First findings either way and exits 3 if one '
+  'goes against the plan. Writes packages/ghost-shim/fixtures/ghost{5,6}/surfaces.json (MEASUREMENTS §55), which '
+  'apps/web/ghost-surfaces.test.ts holds the shims to; its header is its help — it reads no flag, so --help runs it.'),
  ('tools/probe/record-page-number.py', 'tool', 'Page-number guard recorder',
   "Story 5.16a's recorder (standing rule 1, R-82): R-186's page-1 guard, executed on T1 and T3 before "
   'anything is emitted for it. Generates a probe theme whose default.hbs — the layout, where a site-wide '
@@ -560,7 +575,8 @@ DOCS = [
   "bar with NOT A PAGE SECTION and Back to post and no Remix or Preview, Layers holding C3a's card alone, the cut and "
   "Ghost's own box for a logged out user and a free member, S4d's gated label for a paid member, the Design block absent "
   "while the library holds no paywall design, the switcher's Template surfaces group — and takes `paywall` off step 6's "
-  "404 list, since it is a canvas now."),
+  "404 list, since it is a canvas now. Story 5.21 adds step 96: the seeded project links no site, so every canvas the walk "
+  "paints is read for [data-ghost-surface] as it lands and none may appear, with a planted surface as the count's control."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
@@ -611,7 +627,13 @@ DOCS = [
   "Ghost's box in the site's accent, the tier line counted from the site's public tiers, Tiers in Ghost admin at its "
   "anchor — and, on T3's row, the members record SEEDED to Nobody through the service key (never the Ghost): C3b, the "
   "bar's MEMBERS OFF chip, Re-check refused with its sentence and the record unchanged, the Sites notice and a placed "
-  "sign-up section's line, the record put back after. Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/"
+  "sign-up section's line, the record put back after. Story 5.21 adds, on T1, Ghost's two surfaces on the canvas: first "
+  "from a SEEDED snapshot on T1's row (the strip as the body's first child with #canvas below it, Ghost's three marks and "
+  "two vectors kept inert, Portal's button, View as, 834 against 390, Sample content keeping both, the Paywall drawing "
+  "neither), then from T1 itself — its Admin key through Manage keys, the re-read on open writing T1's own settings, T1's "
+  "button switched ON and its bar's audience emptied with the staff token for about a minute, the canvas compared with "
+  "T1's own home page at the same device (the bar within 1px, the button's box within 2px), both put back and read back "
+  "in a finally. Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/"
   'APP_PREFIX for a local build, MAJORS=5|6 for one major and NO_429=1 to leave out the step that costs T1 an hour.'),
  ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
   'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '

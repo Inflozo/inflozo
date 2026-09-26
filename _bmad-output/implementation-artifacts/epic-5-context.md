@@ -57,6 +57,24 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     strip's height off once it sticks — so a sticky root is pinned only while stuck. The export draws neither shim (S4a is
     a bare canvas); each is drawn to Ghost's own look, recorded first (MEASUREMENTS §55 — NE-A2-7, asked at step 4a and
     never run). DW-276 to DW-278.
+  - **Story 5.21's Dev (2026-09-26):** §55 was RECORDED FIRST (`tools/probe/record-ghost-surfaces.cjs`, T3 and T1, the
+    staff token switching the button and the bar's audience and every setting read back) and every Ask First finding held;
+    one fact moved — `#ghost-portal-root` is NOT the body's last child live (`#sodo-search-root` follows). **The rules are
+    `apps/web/lib/ghost-surfaces.ts`** (pure: `announcementFor`, `portalFor`, `shimsOn`, `stripMarkup`, `buttonMarkup`,
+    Ghost's stylesheets and icons held equal to `surfaces.json` per commit) and **the DOM write is `editor.tsx`'s
+    `drawShims`**, called by `paint()` after it writes `#canvas` and by a re-read that lands. **ONE MAPPING**:
+    `settingsPatch` in `probe-rule.ts` is every key the settings payload decides; `probePatch` is it plus config's
+    `plan_ask`/capability, and 5.20's `readMembers`/`recheckMembers` became `readSettings`/`recheckSite`, returning
+    `{ members, surfaces }` as stored (`storedSurfaces`); `siteWith` (`live-content.ts`) hands `surfaces` to every linked
+    site that is not disconnected. **The re-read on open runs once per opening, for a connected site**, beside the
+    Paywall's on entry, and speaks only where C3b's card is up — `cardUp`, the one rule `offCard` reads too (5.20's
+    `speaks` spoke whenever the record said members off). **`pinned` is STUCK, not sticky** (a sticky root's top at or
+    above its computed `top`), and the canvas scroll listener re-renders when the hovered or selected root's answer
+    changes. The strip's root stands in for the theme's body font (`var(--font-body)`: the canvas `<body>` has none) and
+    `:root`'s `--ghost-accent-color`, on itself; `lib/ghost-surfaces.ts` is `tokens.test.ts`'s FOURTH colour exemption,
+    paid for by a test that every colour it writes is on a recorded Ghost page; and `record-shim.py`'s fixture index now
+    imports only its own recordings, or `surfaces.json` would have turned `contract.test.ts` red on its next run. The
+    keyboard harness's `x-inflozo-harness-site: surfaces` site walks both shims with no database (R-146).
 - **Never lose content.** Switching design carries a control both designs declare, parks one only the old design has (restored exactly on return) and defaults one only the new design has; props and list items a design does not show are kept invisibly, and Shuffle and Remix obey the same rule.
   - **Story 5.11's planning (2026-09-20, read in the runtime and executed over the library):** the rule is
     SMALLER THAN IT READS, and the reason is FR-G3: `contentSchema` is the CATEGORY's union and a ring never

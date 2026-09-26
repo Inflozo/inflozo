@@ -185,6 +185,10 @@
 // free member, S4d's gated label and no box for a paid member, the Design block absent while the library holds no
 // paywall design, the switcher's Template surfaces group, and Back to post. The site's own content, C3b and the Sites
 // notice are `run-verify-live-content.cjs`'s, over T1 and T3.
+// Story 5.21 adds step 96, inside step 5's session: GHOST'S TWO SURFACES DRAW NOTHING WITHOUT A CONNECTION. The seeded
+// project links no site, so every canvas the walk paints is read for `[data-ghost-surface]` as it lands (none may appear),
+// and one more fresh Home is read with a planted surface as the count's control; steps 3 and 4 still hold with the story
+// deployed. The strip, the button and a real Ghost are `run-verify-live-content.cjs`'s, on T1.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -360,7 +364,18 @@ async function main() {
       if (!f) throw new Error(`no /canvas frame on ${page.url()} — frames: ${page.frames().map((f) => f.url()).join(', ')}`)
       return f
     }
-    const painted = (key) => page.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 })
+    /* STORY 5.21 — STEP 96's EVIDENCE, TAKEN ON EVERY CANVAS THE WALK WAITS ON: the seeded project links no site, so no
+       `[data-ghost-surface]` may appear on any of them, and each paint this walk sees is read for one as it lands. */
+    const surfacesSeen = { paints: 0, found: [] }
+    const painted = async (key) => {
+      const landed = await page.waitForFunction((k) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === k, key, { timeout: 30000 })
+      const n = await page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.contentDocument?.querySelectorAll('[data-ghost-surface]').length ?? null).catch(() => null)
+      if (n !== null) {
+        surfacesSeen.paints++
+        if (n > 0) surfacesSeen.found.push(`${key}: ${n}`)
+      }
+      return landed
+    }
 
     /* STORY 5.8's ONE RESET, and the walk needs it in four places.
      *
@@ -5716,6 +5731,27 @@ async function main() {
     check('step 95 — Back to post leaves the surface: the bar is paper again, the post canvas paints, and the paywall\'s stylesheet is off',
       post95.sheet === 'not all' && !post95.cut && !(await page.evaluate(() => document.querySelector('header')?.hasAttribute('data-surface'))), JSON.stringify(post95))
     await leaveEditor()
+
+    /* ── step 96 — Story 5.21: GHOST'S TWO SURFACES DRAW NOTHING WITHOUT A CONNECTION (FR-H5) ─────────────────────────
+       INSIDE STEP 5's CSP SESSION. The seeded project links no site, so the canvas carries no snapshot to draw Ghost's
+       announcement bar or Portal's button from: no `[data-ghost-surface]` on any canvas the walk visited (every `painted()`
+       above counted one), and steps 3 and 4 — rest carries no `data-inflozo-*`, and every root equals /pilots' — held
+       above with the story's code deployed. The strip, the button, View as, the devices and a real Ghost are the live
+       walk's (`run-verify-live-content.cjs`, T1) and `pnpm keyboard`'s. */
+    await freshLoad()
+    const probe96 = await canvasFrame().evaluate(() => {
+      const count = () => document.querySelectorAll('[data-ghost-surface]').length
+      const at = count()
+      const planted = document.createElement('div')
+      planted.setAttribute('data-ghost-surface', 'planted')
+      document.body.prepend(planted)
+      const seen = count()
+      planted.remove()
+      return { at, seen, sheet: document.querySelector('style[data-ghost-sheet]') !== null, first: document.body.firstElementChild?.id ?? null }
+    })
+    check('step 96 — control: the count sees a planted [data-ghost-surface]', probe96.seen === probe96.at + 1, JSON.stringify(probe96))
+    check('step 96 — FR-H5: a project that links no site draws neither of Ghost\'s surfaces — no [data-ghost-surface] on any canvas the walk painted, no strip stylesheet, and #canvas is the body\'s first child',
+      surfacesSeen.paints > 0 && surfacesSeen.found.length === 0 && probe96.at === 0 && !probe96.sheet && probe96.first === 'canvas', JSON.stringify({ ...surfacesSeen, ...probe96 }))
 
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     // Story 5.20 made the harness a layout with a page per canvas, so a canvas's page is refused too

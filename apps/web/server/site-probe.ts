@@ -1,6 +1,8 @@
 import { versionVerdict } from '@/lib/connect-rule'
 import { ghostProPreviewProbe } from '@/lib/flags'
-import { capabilityOf, membersOf, probePatch, settingsOf, settingsReadable, type Members } from '@/lib/probe-rule'
+import {
+  capabilityOf, probePatch, settingsOf, settingsPatch, settingsReadable, storedMembers, storedSurfaces, type Members, type Surfaces,
+} from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 
@@ -162,25 +164,32 @@ export async function probeSite(args: {
 }
 
 /**
- * STORY 5.20 — THE EDITOR'S RE-CHECK OF THE MEMBER SWITCHES (FR-H6, C3b): ONE Admin `settings/` read through `call()`,
- * its two member keys written to `site_settings.members`, and the record handed back. The Paywall canvas's **Re-check**
- * and its background re-check on open are its callers (`(editor)/actions.ts`'s `recheckMembers`).
+ * STORY 5.21 — THE EDITOR'S RE-READ OF THE SITE'S SETTINGS (5.20's `readMembers`, widened): ONE Admin `settings/` read
+ * through `call()`, EVERY key that payload decides written through `settingsPatch` — the members record (FR-H6, C3b), the
+ * Portal keys and the announcement (FR-H5's two shims), the flag and the brand — and the snapshot handed back as stored.
+ * Its callers are `(editor)/actions.ts`'s `recheckSite`: the editor's one re-read as it opens, the Paywall canvas's
+ * re-check on entry and C3b's **Re-check**.
  *
- * WHY NOT `probeSite`: that is FOUR facts and two reads, stamped `settings_read_at` as a whole — "Checked just now" about
- * the code injection, Portal, the announcement and the brand, none of which this press re-reads. So it writes the ONE
- * field it read, merged into what is there (the same read-then-write `probeSite` makes, for the same PostgREST reason),
- * and leaves the stamp alone. AD-10 holds: an Admin read on the server, never a Content read through a route.
+ * ONE MAPPING, SO THE THREE WRITERS AGREE: connect and the daily check (`probeSite`, via `probePatch`) and this re-read all
+ * write the settings payload's keys through `settingsPatch`, so no key can be written two ways — a declared Portal answer
+ * is kept over an assumption here exactly as there, and `plan_ask` (config's) is left alone here.
  *
- * Null for every way it can fail — Ghost refused or did not answer, a payload that is not the browse shape or does not
- * carry both keys, a write that failed — and a code is logged with no value, as `probeSite` logs. Nothing is written
- * then: the record stays what the last reading made it.
+ * WHY NOT `probeSite`: that is also a `config/` read — the version and the plan — stamped `settings_read_at` as a whole
+ * ("Checked just now", FR-C5). This reads the one payload, merges what it decides into what is there (the same
+ * read-then-write `probeSite` makes, for the same PostgREST reason — DW-271, which this makes a third writer) and leaves
+ * the stamp alone. AD-10 holds: an Admin read on the server, never a Content read through a route.
+ *
+ * Null for every way it can fail — the site not the caller's, Ghost refused or did not answer, a payload that is not the
+ * browse shape, a read or a write that failed — and a code is logged with no value, as `probeSite` logs. Nothing is
+ * written then: the snapshot stays what the last reading made it. A browse that does not carry the member pair still
+ * writes the rest and leaves the previous members record standing (`settingsPatch`'s rule), never an assumption.
  *
  * THE SITE MUST BE THE CALLER'S BEFORE GHOST IS ASKED. `call()` decrypts whatever site id it is handed, and the id comes
  * from `projects.linked_site_id`, which `authenticated` may write and whose foreign key checks only that the site exists
  * — so the row is read by id AND `user_id` first, and a site that is not this user's is refused with no key decrypted
  * and no request made.
  */
-export async function readMembers(args: { siteId: string; userId: string; route: string }): Promise<Members | null> {
+export async function readSettings(args: { siteId: string; userId: string; route: string }): Promise<{ members: Members | null; surfaces: Surfaces } | null> {
   try {
     const admin = supabaseAdmin()
     const { data: owned, error: ownError } = await admin
@@ -190,17 +199,18 @@ export async function readMembers(args: { siteId: string; userId: string; route:
       .eq('user_id', args.userId)
       .maybeSingle()
     if (ownError || !owned) {
-      console.error('sites: members re-check refused a site', { code: ownError?.code ?? 'site_not_found' })
+      console.error('sites: settings re-read refused a site', { code: ownError?.code ?? 'site_not_found' })
       return null
     }
     const response = await call({ siteId: args.siteId, path: PATHS.settings, route: args.route })
     if (!response.ok) {
-      console.error('sites: members re-check refused', { code: response.code })
+      console.error('sites: settings re-read refused', { code: response.code })
       return null
     }
-    const members = settingsReadable(response.body) ? membersOf(settingsOf(response.body)) : null
-    if (members === null) {
-      console.error('sites: members re-check unreadable', { code: 'members_unreadable' })
+    // A 200 THAT IS NOT THE BROWSE SHAPE IS NOT A READ (`probeSite`'s rule): it would flatten to `{}` and the mapping
+    // would then write every key's "could not read" over the snapshot
+    if (!settingsReadable(response.body)) {
+      console.error('sites: settings re-read unreadable', { code: 'settings_unreadable' })
       return null
     }
     const { data: before, error: readError } = await admin
@@ -210,22 +220,24 @@ export async function readMembers(args: { siteId: string; userId: string; route:
       .eq('user_id', args.userId)
       .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
     if (readError || !before) {
-      console.error('sites: members re-check read failed', { code: readError?.code ?? 'site_not_found' })
+      console.error('sites: settings re-read read failed', { code: readError?.code ?? 'site_not_found' })
       return null
     }
+    const site_settings = settingsPatch((before.site_settings ?? {}) as Record<string, unknown>, settingsOf(response.body))
     const { error: writeError } = await admin
       .from('sites')
-      .update({ site_settings: { ...(before.site_settings ?? {}), members } })
+      .update({ site_settings })
       .eq('id', args.siteId)
       .eq('user_id', args.userId)
     if (writeError) {
-      console.error('sites: members re-check write failed', { code: writeError.code })
+      console.error('sites: settings re-read write failed', { code: writeError.code })
       return null
     }
-    return members
+    // AS STORED: the same re-checks `read.ts` makes on the way out, so the editor draws what the next open would
+    return { members: storedMembers(site_settings), surfaces: storedSurfaces(site_settings) }
   } catch (thrown) {
     const e = (thrown ?? {}) as { code?: string; name?: string }
-    console.error('sites: members re-check threw', { code: e.code ?? e.name })
+    console.error('sites: settings re-read threw', { code: e.code ?? e.name })
     return null
   }
 }

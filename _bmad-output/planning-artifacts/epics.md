@@ -2369,16 +2369,20 @@ connection says the button is enabled**, exactly where edge-rail and corner desi
 the theme renders**, because that is where `{{ghost_head}}` puts it — showing the real text in its real
 background, **occupying real vertical space and pushing the design down rather than overlaying it**, and honouring
 the member-state toggle
-**And** this is what makes the stacking **visible while designing rather than discovered after deploy**: an
-Inflozo announcement bar, a transparent-overlay header and a sticky header all sit *below* Ghost's strip on the
-real site
+**And** this is what makes the stacking **visible while designing rather than discovered after deploy**, stacked
+exactly as the live page stacks: whatever is in flow — an Inflozo announcement bar, a header — starts below Ghost's
+strip; a sticky header sticks once the strip has scrolled away; and an element fixed at `top: 0` covers the strip
+according to its z-index, as it covers Ghost's own bar at `z-index: 90` *(corrected at Story 5.21's Create: "all sit
+below Ghost's strip" is true of what is in flow — a transparent-overlay header fixed or absolutely positioned at the
+top covers Ghost's bar on the real site, and the canvas shows that too, because the strip is where Ghost puts it)*
 **And** both render **inside** the canvas iframe where Ghost puts them, and both are **non-interactive,
 non-selectable, absent from Layers, excluded from Shuffle and Remix, and never compiled into anything**
 **And** both are **NFR-6(c3) exclusion regions**, because Ghost's real markup is Ghost's to render
 **And** the strip **disappears the moment the user clears Ghost's bar**, which is where the two-bar stack
-resolves into one.
+resolves into one *(as built by Story 5.21: the editor re-reads Ghost's settings once each time it opens, so a bar
+cleared in Ghost admin is gone at the next open — FR-C5)*.
 
-**FRs:** the canvas half of FR-H5 (the contract stays E4's). · **Frame:** `S4 Editor.dc.html` S4a — both shims are Inflozo-drawn approximations of Ghost's own markup inside that canvas, and are NFR-6(c3) exclusion regions for exactly that reason. · **Owner test:** yes. · **Verification:** T1 with a
+**FRs:** the canvas half of FR-H5 (the contract stays E4's). · **Frame:** `S4 Editor.dc.html` S4a — the canvas the shims sit in. **S4a draws neither shim** (no frame in the export does), **so each is drawn to Ghost's own look** — Ghost's markup, stylesheet and rules, recorded on both majors (MEASUREMENTS §55): Inflozo-drawn approximations of Ghost's own markup, and NFR-6(c3) exclusion regions for exactly that reason. · **Owner test:** yes. · **Verification:** T1 with a
 real announcement bar and Portal button (R-82).
 
 ### Story 5.22: The editor's responsive floor
@@ -3679,8 +3683,11 @@ harness and the T1 droplet must exist before the **first** gated category — no
 **And** it honours the **exclusion regions**, which are §1.2's carve-outs and are named because this is the test
 that enforces them: **the post and page body** (the canvas shows the fixture, the live page shows the author's
 own HTML), **Portal's floating button and Ghost's announcement strip** (both Inflozo-drawn approximations of
-Ghost's own markup), **Ghost's native comments and search overlay**, and **any region the site's own code
-injection touches**
+Ghost's own markup — on the canvas each is marked **`[data-ghost-surface]`** (Story 5.21), and on the live page they
+are Ghost's own roots, `#announcement-bar-root` (the body's first child) and `#ghost-portal-root` (appended to the
+body, followed by `#sodo-search-root`), as MEASUREMENTS §55 recorded — **roots that float** with whatever a theme
+renders, so the regions are found by those anchors and never by a theme's markup around them, VERIFY-AT-BUILD item
+51), **Ghost's native comments and search overlay**, and **any region the site's own code injection touches**
 **And** an **intentional change is approved in one click rather than re-baselined by hand**
 **And** the cadence is set here: nightly over a **risk-weighted rotating batch sized to the serialization
 budget**, such that **every design has been compared within 30 days**, front-loading the designs most likely to

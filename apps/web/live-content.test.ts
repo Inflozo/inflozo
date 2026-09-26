@@ -5,7 +5,7 @@ import { feedQuery, formatDate, withData } from '@inflozo/section-runtime'
 import {
   addressOf, after, API_VERSION, ask, AUTHOR_FIELDS, bindingReads, FAILURES_TO_STOP, feedRead, feedShortfall, FRESH_MS,
   getShortfall, isFresh, keyOf, LIST_LIMIT, LISTS, LIVE_WORDS, named, NEVER, outcomeOf, PAGE_FIELDS, PAYWALL_FILE, pick, POST_FIELDS, PUBLIC_TIERS,
-  READ_TIMEOUT_MS, reader, REQUEST_CEILING, retriable, retried, SETTINGS, SHORTFALL, SITE_FIELDS, siteFrom, siteLinks,
+  READ_TIMEOUT_MS, reader, REQUEST_CEILING, retriable, retried, SETTINGS, SHORTFALL, SITE_FIELDS, siteFrom, siteLinks, siteWith,
   siteRows, siteTotal, slugShaped, START, startingArchive, subjectRead, TAG_FIELDS, TIER_FIELDS, wallClock, zoneOf,
   type Answer, type LiveQuery, type Reading, type Row,
 } from './lib/live-content.ts'
@@ -519,6 +519,30 @@ test('the linked site as server truth: disconnected, no key, plain http — each
   assert.deepEqual(siteFrom({ ...row, title: '  ' }, origin, host), { title: 'ghost5.example', origin: 'https://ghost5.example', key: 'k' })
   // an address that does not normalise is no site at all — connect wrote it normalised, so this is a data defect
   assert.equal(siteFrom({ ...row, url: 'not an address' }, origin, host), null)
+})
+
+test('Story 5.21: the site as the editor is handed it — the snapshot Ghost\'s surfaces are drawn from on every site that is not disconnected, the members record where there is one', () => {
+  const settings = {
+    members: { signup_access: 'all', paid_enabled: true },
+    announcement: { content: '<p>Hi</p>', background: 'accent', visibility: '["visitors"]' },
+    portal_button: true,
+    brand: { accent: '#3832e5' },
+  }
+  const readable = { title: 'Ghost6', origin: 'https://ghost6.example', key: 'k' }
+  const handed = siteWith(readable, settings)
+  assert.ok(handed !== null && 'origin' in handed)
+  assert.deepEqual(handed.members, { signup_access: 'all', paid_enabled: true })
+  assert.deepEqual(handed.surfaces?.announcement, { content: '<p>Hi</p>', background: 'accent', visibility: ['visitors'] })
+  assert.equal(handed.surfaces?.portal.button, true)
+  // a connected site the browser cannot read — no key, plain http — still has its snapshot: it is the connection's
+  for (const why of ['no_key', 'http'] as const) assert.ok(siteWith({ title: 'x', unreadable: why }, settings)?.surfaces !== undefined, why)
+  // a disconnected site is no connection: no snapshot, so no shim — the members record still travels, as before
+  const gone = siteWith({ title: 'x', unreadable: 'disconnected' }, settings)
+  assert.ok(gone !== null && gone.surfaces === undefined && gone.members !== undefined)
+  // no linked site is null; a site with no members record carries none
+  assert.equal(siteWith(null, settings), null)
+  assert.equal(siteWith(readable, {})?.members, undefined)
+  assert.ok(siteWith(readable, {})?.surfaces !== undefined, 'a snapshot with nothing in it is still handed — it draws nothing')
 })
 
 test('the panel\'s note: a list that cannot fill the section says so — zero included — and a short page 2 is ordinary pagination', () => {

@@ -2538,3 +2538,213 @@ test('5.20 · reading along (R-192): the design choice is greyed and unclickable
   await page.keyboard.press('Enter')
   await expect(page.locator('[data-paywall-off] [role="status"]')).toHaveText(P.refused('Harness site'))
 })
+
+// ── Story 5.21 — GHOST'S TWO SURFACES ON THE CANVAS (R-146's walk of the wiring; the stack and a real Ghost are the
+//    deployed walks'). The harness's `surfaces` site carries Ghost's announcement bar — to logged-out visitors and free
+//    members — and Portal's button on; its address answers nothing, so the canvas paints the sample while both shims draw
+//    from the CONNECTION's snapshot. The editor's re-read on open is refused here (no database), leaving the snapshot drawn.
+
+const GS = await import(new URL('../../apps/web/lib/ghost-surfaces.ts', import.meta.url).href)
+/** the harness site's announcement, as its words print (`harness/editor/layout.tsx`'s `SURFACES_SITE`) */
+const SHIM_WORDS = 'Fixture announcement — seeded for VERIFY 21.'
+/** its accent — the sample's own, as the harness hands it — as the browser computes a background */
+const SHIM_ACCENT = ((hex) => `rgb(${[1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)).join(', ')})`)(LIB.orbitWeekly.site().accent_color)
+
+async function openSurfaces(page, path = '') {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces' })
+  await page.goto(`${HARNESS}${path}`)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect(page.locator('[data-layer-row]').first()).toBeVisible()
+  await page.locator('body').focus()
+}
+
+/** Both shims as the canvas document holds them — read in the page; the button lives in a shadow root. */
+const shims = (page) =>
+  canvasFrame(page).locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    const strip = doc.querySelector('[data-ghost-surface="announcement-bar"]')
+    const host = doc.querySelector('[data-ghost-surface="portal-button"]')
+    const frame = host?.shadowRoot?.querySelector('.gh-portal-triggerbtn-iframe') ?? null
+    const bar = strip?.querySelector('.gh-announcement-bar') ?? null
+    return {
+      surfaces: doc.querySelectorAll('[data-ghost-surface]').length,
+      stripFirst: strip !== null && doc.body.firstElementChild === strip,
+      stripHeight: strip ? strip.getBoundingClientRect().height : null,
+      canvasTop: doc.getElementById('canvas').getBoundingClientRect().top + doc.defaultView.scrollY,
+      words: bar?.querySelector('.gh-announcement-bar-content')?.textContent ?? null,
+      background: bar ? getComputedStyle(bar).backgroundColor : null,
+      close: bar?.querySelector('button')?.getAttribute('aria-label') ?? null,
+      buttonAtEnd: host !== null && doc.body.lastElementChild === host,
+      buttonShown: frame !== null && getComputedStyle(frame).display !== 'none',
+      container: host?.shadowRoot?.querySelector('.gh-portal-triggerbtn-container')?.className ?? null,
+      label: host?.shadowRoot?.querySelector('.gh-portal-triggerbtn-label')?.textContent ?? null,
+      inert: [strip, host].filter(Boolean).every((el) => el.inert && getComputedStyle(el).pointerEvents === 'none'),
+    }
+  })
+
+test('5.21 · Ghost\'s strip is the canvas body\'s first child and #canvas starts at its bottom; Portal\'s button is fixed at the end — both inert, zero data-inflozo-* at rest', async ({ page }) => {
+  await openSurfaces(page)
+  const s = await shims(page)
+  expect(s.surfaces, 'NFR-6(c3): [data-ghost-surface] finds the two shims and nothing else').toBe(2)
+  expect(s.stripFirst, 'the strip is the body\'s FIRST child, before #canvas — where Ghost prepends its root').toBe(true)
+  expect(s.canvasTop, '#canvas begins at the strip\'s bottom edge: the design is pushed down, not changed').toBeCloseTo(s.stripHeight, 1)
+  expect(s.stripHeight, 'a one-line bar is Ghost\'s 48px').toBeCloseTo(48, 0)
+  expect(s.words).toBe(SHIM_WORDS)
+  expect(s.background, 'the words on the site\'s accent').toBe(SHIM_ACCENT)
+  expect(s.close, 'Ghost\'s ✕, drawn and doing nothing').toBe('close')
+  expect(s.buttonAtEnd, 'Portal\'s host is appended at the end of the body, outside #canvas').toBe(true)
+  expect(s.buttonShown).toBe(true)
+  expect(s.container).toBe('gh-portal-triggerbtn-container with-label')
+  expect(s.label).toBe(' Subscribe ')
+  expect(s.inert, 'both roots are inert and let every press through').toBe(true)
+  // the strip's sheet is Ghost's own, once, in <head> — and it is not a surface
+  expect(await canvasFrame(page).locator(`style[${GS.SHEET}]`).count()).toBe(1)
+  expect(await canvasFrame(page).locator(`style[${GS.SHEET}]`).evaluate((s) => s.textContent)).toBe(GS.ANNOUNCEMENT_CSS)
+  expect(await marked(page), 'at rest the page is the site: the shims carry no data-inflozo-*').toBe(0)
+})
+
+test('5.21 · a press passes through both shims: the point on the strip is the ground (R-123), the point on the button is the section beneath', async ({ page }) => {
+  await openSurfaces(page)
+  const hits = await canvasFrame(page).locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    const strip = doc.querySelector('[data-ghost-surface="announcement-bar"]').getBoundingClientRect()
+    const button = doc.querySelector('[data-ghost-surface="portal-button"]').shadowRoot.querySelector('.gh-portal-triggerbtn-container').getBoundingClientRect()
+    const at = (x, y) => doc.elementFromPoint(x, y)
+    const onStrip = at(strip.x + 200, strip.y + strip.height / 2)
+    const onButton = at(button.x + button.width / 2, button.y + button.height / 2)
+    return {
+      strip: onStrip?.tagName ?? null,
+      stripSurface: !!onStrip?.closest('[data-ghost-surface]'),
+      button: onButton?.closest('#canvas > *')?.tagName ?? null,
+      buttonSurface: !!onButton?.closest('[data-ghost-surface]') || onButton === doc.querySelector('[data-ghost-surface="portal-button"]'),
+    }
+  })
+  expect(hits.stripSurface, 'nothing on the strip can be hit').toBe(false)
+  expect(['BODY', 'HTML']).toContain(hits.strip)
+  expect(hits.buttonSurface, 'nothing on the button can be hit').toBe(false)
+  expect(hits.button, 'the section under the button takes the point').not.toBeNull()
+})
+
+test('5.21 · View as: the strip follows the audience (logged out and free, not paid) and the button takes Portal\'s member look for a member', async ({ page }) => {
+  await openSurfaces(page)
+  const want = { anonymous: [true, 'gh-portal-triggerbtn-container with-label', ' Subscribe '], free: [true, 'gh-portal-triggerbtn-container halo', null], paid: [false, 'gh-portal-triggerbtn-container halo', null] }
+  for (const visitor of ['free', 'paid', 'anonymous']) {
+    await viewAs(page, visitor)
+    await expect.poll(async () => (await shims(page)).stripFirst, visitor).toBe(want[visitor][0])
+    const s = await shims(page)
+    expect(s.container, visitor).toBe(want[visitor][1])
+    expect(s.label, visitor).toBe(want[visitor][2])
+    // no strip, no push: #canvas starts at the very top
+    if (!want[visitor][0]) expect(s.canvasTop, `${visitor}: no strip, and the header at the very top`).toBe(0)
+  }
+})
+
+test('5.21 · devices: no button at 390 and the strip wraps; the button at 834 — a media query, so no repaint', async ({ page }) => {
+  await openSurfaces(page)
+  await canvasFrame(page).locator('body').evaluate((b) => { b.ownerDocument.defaultView.__before = b.ownerDocument.querySelector('[data-ghost-surface]') })
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('3')
+  await expect.poll(async () => (await shims(page)).buttonShown, 'Portal draws no button below 640px').toBe(false)
+  const phone = await shims(page)
+  expect(phone.stripFirst).toBe(true)
+  expect(phone.stripHeight, 'the words wrap, as Ghost\'s do').toBeGreaterThan(48)
+  expect(phone.canvasTop).toBeCloseTo(phone.stripHeight, 1)
+  await page.keyboard.press('2')
+  await expect.poll(async () => (await shims(page)).buttonShown, 'at 834 the button is back').toBe(true)
+  expect((await shims(page)).stripHeight).toBeCloseTo(48, 0)
+  await page.keyboard.press('1')
+  expect(await canvasFrame(page).locator('body').evaluate((b) => b.ownerDocument.defaultView.__before === b.ownerDocument.querySelector('[data-ghost-surface]')), 'the same strip node: a device change repaints nothing').toBe(true)
+})
+
+test('5.21 · dark mode, Preview and page 2 leave both as they were; Layers, Undo and the device\'s record are untouched', async ({ page }) => {
+  await openSurfaces(page)
+  const layers = (await rows(page)).all
+  const kept = await storedKeys(page)
+  const before = await shims(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  // dark: one attribute and a re-stamp, never a repaint — the same strip node, the same look (it is Ghost's, not the pack's)
+  await canvasFrame(page).locator('body').evaluate((b) => { b.ownerDocument.defaultView.__strip = b.ownerDocument.querySelector('[data-ghost-surface]') })
+  await page.keyboard.press('.')
+  await expect.poll(() => modeOf(page)).toBe('dark')
+  expect(await shims(page)).toEqual(before)
+  expect(await canvasFrame(page).locator('body').evaluate((b) => b.ownerDocument.defaultView.__strip === b.ownerDocument.querySelector('[data-ghost-surface]'))).toBe(true)
+  await page.keyboard.press('.')
+  await expect.poll(() => modeOf(page)).toBe('light')
+  // Preview: the site, as a visitor meets it — both drawn, and still inert
+  await page.keyboard.press('p')
+  await expect(page.locator('#editor-preview-bar')).toBeVisible()
+  expect(await shims(page)).toEqual(before)
+  await page.keyboard.press('Escape')
+  await expect(page.locator('#editor-preview-bar')).toHaveCount(0)
+  // page 2: a repaint, and both drawn again exactly as on page 1
+  await toPageTwo(page)
+  expect(await shims(page)).toEqual(before)
+  await pagePill(page).getByRole('button', { name: TWO.BACK_TO_PAGE_ONE }).focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+  // a look is never an edit: no Layers row for either shim, nothing to undo, nothing stored
+  expect((await rows(page)).all).toEqual(layers)
+  await expect(page.locator('#editor-undo')).toHaveAttribute('aria-disabled', 'true')
+  expect(await storedKeys(page)).toEqual(kept)
+})
+
+test('5.21 · Sample content keeps both (the connection\'s, not the content\'s); the Paywall shows neither, and Home draws them again', async ({ page }) => {
+  await openSurfaces(page)
+  await page.locator('#editor-source').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#editor-source-menu:popover-open').waitFor()
+  for (let n = 0; n < 8 && (await page.evaluate(() => document.activeElement?.getAttribute('data-source-row'))) !== 'sample'; n++) await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-source', 'sample')
+  expect((await shims(page)).surfaces).toBe(2)
+  // Template ▾ → Paywall: a template surface, never a page Ghost prepends a bar to
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  await expect.poll(async () => (await shims(page)).surfaces).toBe(0)
+  await page.locator('#paywall-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  expect((await shims(page)).surfaces, 'a page canvas draws them again').toBe(2)
+})
+
+test('5.21 · #canvas is byte-identical with and without a connected site — the shims sit outside it', async ({ page }) => {
+  const canvasHtml = () => canvasFrame(page).locator('#canvas').evaluate((c) => c.innerHTML)
+  await open(page)
+  const bare = await canvasHtml()
+  expect((await shims(page)).surfaces, 'the control: an unlinked project draws no shim').toBe(0)
+  await openSurfaces(page)
+  expect((await shims(page)).surfaces).toBe(2)
+  expect(await canvasHtml()).toBe(bare)
+})
+
+test('5.21 · a selected sticky header keeps its outline on its own box while the strip scrolls away and the header sticks (pinned only while stuck)', async ({ page }) => {
+  await openSurfaces(page)
+  await select(page, (await rows(page)).site[0])
+  const outlineOnHeader = () =>
+    canvasFrame(page).locator('body').evaluate((body) => {
+      const doc = body.ownerDocument
+      const header = doc.querySelector('#canvas > [data-inflozo-selected]')
+      const box = [...doc.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector('[data-chrome="selected"]')).find(Boolean)
+      if (!header || !box) return null
+      const h = header.getBoundingClientRect()
+      const o = box.getBoundingClientRect()
+      return { sticky: getComputedStyle(header).position, headerTop: h.top, dx: Math.abs(o.left - h.left), dy: Math.abs(o.top - h.top), dw: Math.abs(o.width - h.width), dh: Math.abs(o.height - h.height), layer: box.getRootNode().host.getAttribute('data-inflozo-chrome') }
+    })
+  const scrollTo = (y) => canvasFrame(page).locator('body').evaluate((b, top) => b.ownerDocument.defaultView.scrollTo(0, top), y)
+  // at rest the header sits under the strip, not yet stuck: its chrome scrolls with the page
+  await expect.poll(async () => (await outlineOnHeader())?.layer).toBe('page')
+  const rest = await outlineOnHeader()
+  expect(rest.sticky, 'the harness header is sticky — the case this rule is for').toBe('sticky')
+  expect(rest.headerTop).toBeCloseTo((await shims(page)).stripHeight, 0)
+  for (const [y, layer] of [[20, 'page'], [300, 'view'], [0, 'page']]) {
+    await scrollTo(y)
+    await expect.poll(async () => (await outlineOnHeader())?.layer, `scrolled to ${y}`).toBe(layer)
+    await page.waitForTimeout(100)
+    const at = await outlineOnHeader()
+    for (const d of ['dx', 'dy', 'dw', 'dh']) expect(at[d], `scrolled to ${y}: the outline is on the header (${d})`).toBeLessThanOrEqual(1)
+  }
+})

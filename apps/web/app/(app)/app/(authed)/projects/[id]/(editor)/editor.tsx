@@ -11,7 +11,7 @@ import {
   renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
   withData,
 } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, FeedRole, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, FeedRole, MarkNode, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { HowReadersReachIt, Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
@@ -46,6 +46,7 @@ import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRow
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSurface, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, portalFor, SHEET, shimsOn, stripMarkup, SURFACE, type Shim } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
@@ -80,7 +81,7 @@ import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, NOW_MAIN, withTransfer } from '@/
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
-import { recheckMembers, setPreviewSubject, setViewedStates } from './actions'
+import { recheckSite, setPreviewSubject, setViewedStates } from './actions'
 import type { EditorData } from './read'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
@@ -540,21 +541,34 @@ export function Editor({
    * SERVER TRUTH at first paint (`read.ts` reads `site_settings.members`), and a Re-check replaces it with Ghost's own
    * answer — C3b's button, and the Paywall canvas's own re-check each time it opens ("we re-check whenever you open this
    * screen"). A site with no record yet warns nothing anywhere. A Re-check is a LOOK, never an edit: nothing reaches
-   * `commit()`, the journal or `⌘Z`, and it stays live reading along (R-192). Its busy state is the transition's (R-98). */
+   * `commit()`, the journal or `⌘Z`, and it stays live reading along (R-192). Its busy state is the transition's (R-98).
+   *
+   * STORY 5.21 — THE SAME READ, WIDENED TO THE SITE'S SNAPSHOT, AND MADE ONCE AS THE EDITOR OPENS. `recheckSite` writes
+   * every key Ghost's settings payload decides through the one mapping connect and the daily check share, and hands back
+   * the members record AND `surfaces` — the snapshot Ghost's two shims are drawn from (FR-H5, `lib/ghost-surfaces.ts`) —
+   * so a bar cleared or a button switched in Ghost admin shows at the next open instead of the next daily check. It is
+   * silent unless C3b's card is up to speak about it, and a refusal leaves the stored snapshot drawn. */
   const [members, setMembers] = useState(site === null ? null : (site.members ?? null))
   const membersNow = useRef(members)
   membersNow.current = members
+  const [surfaces, setSurfaces] = useState(site === null ? null : (site.surfaces ?? null))
+  const surfacesNow = useRef(surfaces)
+  surfacesNow.current = surfaces
   const [rechecking, startRecheck] = useTransition()
   const [recheckRefusal, setRecheckRefusal] = useState<string | null>(null)
+  /** C3b's card is up: the Paywall canvas, members switched off by the record, and the canvas chosen to show the site's
+   *  content — ONE rule, which the card's draw (`offCard`, below) and a re-read's voice both read */
+  const cardUp = (key_: CanvasKey, record: typeof members, from: 'site' | 'sample') =>
+    isSurface(key_) && membersOff(record) && from === 'site' && site !== null && 'origin' in site
   const recheck = (pressed: boolean) => {
     if (site === null) return
     setRecheckRefusal(null)
     startRecheck(async () => {
       // a thrown call (the network dropped, the session is gone) is the same refusal as a returned one
-      const answer = await recheckMembers(project.id).catch(() => ({ refused: true as const }))
+      const answer = await recheckSite(project.id).catch(() => ({ refused: true as const }))
       const name = siteNameOf()
-      // the press speaks; the canvas's own re-check speaks only where C3b's card is up to say it about
-      const speaks = pressed || membersOff(membersNow.current)
+      // the press speaks; a re-read nobody pressed speaks only where C3b's card is up to say it about
+      const speaks = pressed || cardUp(latest.current.key, membersNow.current, latest.current.source)
       if ('refused' in answer) {
         if (speaks) {
           setRecheckRefusal(PAYWALL_WORDS.refused(name))
@@ -562,12 +576,23 @@ export function Editor({
         }
         return
       }
+      membersNow.current = answer.members
       setMembers(answer.members)
+      // STORY 5.21 — the snapshot as Ghost now answers it: only the two shims are redrawn, never the page
+      surfacesNow.current = answer.surfaces
+      setSurfaces(answer.surfaces)
+      const doc = frame.current?.contentDocument
+      if (doc && paintedAt.current !== null) drawShims(doc)
       if (speaks) setSaid(membersOff(answer.members) ? PAYWALL_WORDS.stillOff(name) : PAYWALL_WORDS.on(name))
     })
   }
+  /** STORY 5.21 — ONE re-read per opening of the editor, beside the Paywall's own on entry: an editor opened ON the Paywall
+   *  canvas makes the one read that serves both, and leaving it makes none. Only for a CONNECTED site (the snapshot is
+   *  handed for one alone, `read.ts`); a disconnected site has no key to read with. */
+  const reread = useRef(false)
   useEffect(() => {
-    if (surface) recheck(false)
+    if (surface || (!reread.current && site !== null && site.surfaces !== undefined)) recheck(false)
+    reread.current = true
     // entering the surface is the question; `recheck` reads the record and the site through refs
   }, [surface])
   /** `painted.shown` as the handlers see it, in the same task the paint set it — before React has re-rendered */
@@ -1859,6 +1884,46 @@ export function Editor({
     mark()
   }
 
+  /** STORY 5.21 — GHOST'S TWO SURFACES ON THE CANVAS (FR-H5): the announcement strip as the body's FIRST child, before
+   *  `#canvas` — where Ghost prepends `#announcement-bar-root`, so it takes real space and pushes the design down — and
+   *  Portal's button as a shadow host at the body's END, fixed bottom-right. Drawn by `paint()` after it writes `#canvas`,
+   *  and by a re-read that lands (the shims alone); never by `/pilots`, the Picker, the ring or any snapshot, which never
+   *  call this. Every rule is `lib/ghost-surfaces.ts`'s; this is the DOM write. Both go and come back whole each time,
+   *  per the visitor View as previews, the snapshot in hand and the canvas in force (never a template surface). Dark mode
+   *  and a device change need no redraw: the strip is Ghost's look, and the button's 640px rule is a media query. */
+  const drawShims = (doc: Document) => {
+    const now = latest.current
+    const s = shimsOn(now.key, site) ? surfacesNow.current : null
+    // the stored HTML is parsed in an INERT document — `DOMParser`'s runs nothing and loads nothing
+    const bar = announcementFor(s, now.viewAs, (html) => new DOMParser().parseFromString(html, 'text/html').body as unknown as MarkNode)
+    const look = portalFor(s, membersNow.current, now.viewAs)
+    for (const el of doc.querySelectorAll('[data-ghost-surface]')) el.remove()
+    const root = (shim: Shim) => {
+      const el = doc.createElement('div')
+      for (const [name, value] of Object.entries(shim.attributes)) el.setAttribute(name, value)
+      return el
+    }
+    if (bar !== null && s !== null) {
+      // Ghost's script appends its sheet to `<head>` once, at run time — so does this, once per canvas document
+      if (doc.head.querySelector(`[${SHEET}]`) === null) {
+        const sheet = doc.createElement('style')
+        sheet.setAttribute(SHEET, SURFACE.strip)
+        sheet.textContent = ANNOUNCEMENT_CSS
+        doc.head.append(sheet)
+      }
+      const shim = stripMarkup(bar, s.accent)
+      const strip = root(shim)
+      strip.innerHTML = shim.html
+      doc.body.prepend(strip)
+    }
+    if (look !== null && s !== null) {
+      const shim = buttonMarkup(look, s.accent)
+      const host = root(shim)
+      host.attachShadow({ mode: 'open' }).innerHTML = shim.html
+      doc.body.append(host)
+    }
+  }
+
   const paint = () => {
     const doc = frame.current?.contentDocument
     const mount = doc?.getElementById('canvas')
@@ -1967,6 +2032,8 @@ export function Editor({
       const arriving = paintedAt.current?.key !== now.key
       const accent = live !== null ? live.site['accent_color'] : orbitWeekly.site().accent_color
       mount.innerHTML = paywall ? paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null }) : parts.join('')
+      // STORY 5.21 — Ghost's strip and button, outside `#canvas`, for the visitor and the canvas this paint drew
+      drawShims(doc)
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
       stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>('[data-inflozo-prop], [data-inflozo-ghost]'))
       const back = lock && lock.at >= 0 ? sameLock(lock.words)[lock.at] : undefined
@@ -2347,6 +2414,19 @@ export function Editor({
     doc.addEventListener('mouseup', release)
     let settle: ReturnType<typeof setTimeout> | undefined
     doc.addEventListener('scroll', () => {
+      // STORY 5.21 — A STICKY ROOT IS PINNED ONLY WHILE STUCK (`pinned`): the hovered or selected root's chrome moves
+      // between the page's layer and the viewport's the moment its answer changes, so re-render then — whichever of the
+      // two it is. A root with no chrome drawn has no answer, and nothing to move.
+      const now = latest.current
+      for (const pick of [now.hovered, now.selected]) {
+        const n = pick ? now.stack.findIndex((i) => same(i, pick)) : -1
+        const root = n === -1 ? null : (roots.current[n] ?? null)
+        const drawn = root ? drawnPinned.current.get(root) : undefined
+        if (root && drawn !== undefined && drawn !== pinned(root)) {
+          setPinTick((t) => t + 1)
+          break
+        }
+      }
       // Story 5.4: the pill is anchored from THIS document too, so it hides and re-places on the same timer as P0-1's
       // toolbar. Nothing hovered and nothing being edited means nothing outside the frame to hide (review, 5.2).
       if (!editing.current && !latest.current.hovered) return
@@ -2824,7 +2904,17 @@ export function Editor({
     if (chrome?.doc !== doc) setChrome(chromeLayers(doc))
     // `chrome` is read, not a dependency: it is what this effect sets
   }, [showing, paints])
-  const layerFor = (root: HTMLElement | null) => (preview || !root || !chrome ? null : pinned(root) ? chrome.view : chrome.page)
+  /** Story 5.21 — which layer each root's chrome was drawn in at the last render: a sticky root is pinned only while it is
+   *  STUCK (`pinned`), so the canvas's scroll listener compares the root's answer now with this one and re-renders on a
+   *  change (`setPinTick`) — the one switch, as the root sticks or comes unstuck */
+  const drawnPinned = useRef(new WeakMap<HTMLElement, boolean>())
+  const [, setPinTick] = useState(0)
+  const layerFor = (root: HTMLElement | null) => {
+    if (preview || !root || !chrome) return null
+    const stuck = pinned(root)
+    drawnPinned.current.set(root, stuck)
+    return stuck ? chrome.view : chrome.page
+  }
 
   /* STORY 5.15 — B3a's PAUSED CHIPS (R-175). One for each mount `core` held still whose part MOVES BY ITSELF — on a
      timer or as the page scrolls, with nothing pressed (the registry's `movesByItself`) — inside the hovered root and
@@ -3349,8 +3439,9 @@ export function Editor({
   /** the paywall designs this editor holds (A32 from Story 10.107; the harness's stand-ins), and where the chosen one is */
   const paywalls = surface ? paywallRing(Object.values(entries)) : []
   const paywallAt = surface && stack[0] !== undefined ? paywalls.findIndex((e) => e.id === stack[0]?.designId) : -1
-  /** C3b's card: members switched off by the record, while the canvas is chosen to show the site's content */
-  const offCard = surface && membersOff(members) && source === 'site' && site !== null && 'origin' in site
+  /** C3b's card: members switched off by the record, while the canvas is chosen to show the site's content (`cardUp`, the
+   *  one rule a re-read's voice reads too) */
+  const offCard = cardUp(key, members, source)
   /** the tier line counts the source in force's public tiers — absent where the site was chosen and could not be read */
   const tiersShown = !surface
     ? null

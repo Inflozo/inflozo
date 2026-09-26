@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { place } from './lib/canvas-layer.ts'
+import { pinned, place } from './lib/canvas-layer.ts'
 
 // `place(…, 'above')` is Story 5.3's pill placement: centred 8px above its words, below them when their top is within
 // 48px of the canvas viewport's top, and kept 8px inside the canvas. The harness measures the far-from-the-edge case
@@ -49,4 +49,25 @@ test('place bottom-left: 8px inside the anchor\'s bottom-left corner, on screen 
 test('place bottom-left: an anchor with no box keeps its element hidden', () => {
   assert.equal(stage(rect(300, 300, 0, 0), [60, 18], 1000, 'bottom-left').visibility, 'hidden')
   assert.equal(stage(rect(300, 300, 100, 0), [60, 18], 1000, 'bottom-left').visibility, 'hidden', 'collapsed in one axis is no box either')
+})
+
+// Story 5.21 — `pinned`: a fixed root always, a sticky root ONLY WHILE STUCK (its top at or above its computed `top`), and
+// anything else never. With Ghost's strip above a sticky header, the header scrolls with the page for the strip's height
+// before it sticks — which is when its chrome may move to the viewport's layer, and not before.
+test('pinned: a fixed root always; a sticky root only while stuck; a static root never', () => {
+  const root = (position: string, top: string, boxTop: number) =>
+    ({
+      ownerDocument: { defaultView: { getComputedStyle: () => ({ position, top }) } },
+      getBoundingClientRect: () => rect(0, boxTop, 100, 60),
+    }) as unknown as HTMLElement
+  assert.equal(pinned(root('fixed', '0px', 300)), true, 'fixed is pinned wherever it is')
+  // a sticky header at `top: 0` below a 48px strip: not stuck yet, then stuck once the strip has scrolled away
+  assert.equal(pinned(root('sticky', '0px', 48)), false, 'below the strip, it scrolls with the page')
+  assert.equal(pinned(root('sticky', '0px', 12)), false, 'still 12px from sticking')
+  assert.equal(pinned(root('sticky', '0px', 0)), true, 'stuck at its top')
+  assert.equal(pinned(root('sticky', '0px', 0.4)), true, 'a subpixel off its top is stuck')
+  assert.equal(pinned(root('sticky', '20px', 20)), true, 'stuck at a top of its own')
+  assert.equal(pinned(root('sticky', '20px', 21)), false)
+  assert.equal(pinned(root('sticky', 'auto', 0)), false, 'a sticky root with no top never sticks at the top')
+  for (const position of ['static', 'relative', 'absolute']) assert.equal(pinned(root(position, '0px', 0)), false, position)
 })

@@ -130,13 +130,23 @@ export function dropChromeLayers(doc: Document) {
   for (const el of doc.querySelectorAll('[data-inflozo-chrome]')) el.remove()
 }
 
-/** A sticky or fixed root does not scroll with the content, so its chrome goes in the viewport's layer.
- *  ponytail: read once per render — a sticky root that has not yet reached its stuck position still moves with the
- *  content, and its chrome then trails it by the main thread's frame until it sticks. A root that is sticky at the top of
- *  its canvas (every pilot header) is stuck from the start; per-frame switching is the upgrade if a design needs it. */
+/** A root that is not scrolling with the content — a fixed one, or a sticky one WHILE IT IS STUCK — has its chrome in the
+ *  viewport's layer; every other root's chrome scrolls with the page.
+ *
+ *  STUCK, NOT STICKY (Story 5.21): a sticky root is stuck when its top is at or above its computed `top`. Until Ghost's
+ *  announcement strip sat above them, every pilot header was sticky at the very top of its canvas and so stuck from the
+ *  first frame; with the strip above it, a sticky header scrolls with the page for the strip's height and only then
+ *  sticks. Chrome held in the fixed layer from the start would sit a strip's height below the header once it stuck, and
+ *  nothing re-places it on scroll. So the answer follows the stuck state, and `editor.tsx`'s canvas scroll listener
+ *  re-renders the moment it changes for the root the chrome is drawn on — the one switch happens as the root sticks. A
+ *  sticky root whose `top` is `auto` never sticks at the top, and its chrome scrolls with the page. */
 export const pinned = (root: HTMLElement) => {
-  const position = root.ownerDocument.defaultView?.getComputedStyle(root).position
-  return position === 'sticky' || position === 'fixed'
+  const style = root.ownerDocument.defaultView?.getComputedStyle(root)
+  if (style?.position === 'fixed') return true
+  if (style?.position !== 'sticky') return false
+  const top = Number.parseFloat(style.top)
+  // half a pixel of slack: a stuck root's box can land a subpixel off its `top` at a fractional scroll
+  return Number.isFinite(top) && root.getBoundingClientRect().top <= top + 0.5
 }
 
 /** Places one chrome element over its root, in its host's units (one unit is one screen pixel); writes only on change.

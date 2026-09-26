@@ -649,7 +649,8 @@ test('{{#get}} builds the Content API query from the DECLARATION, and the record
   assert.throws(() => getQuery('bad', { bad: { source: 'settings' } }), /not queryable/)
 })
 
-// ─── NFR-3's three carve-outs, and AD-36's paired assertions ──────────────────
+// ─── NFR-3's carve-outs the shim renders (the fourth, the announcement's words, is `ghost-surfaces.test.ts`'s),
+//     and AD-36's paired assertions ───────────────────────────────────────────
 
 test('AD-36 — a hostile Ghost URL is inert and the legitimate one beside it still works', () => {
   for (const hostile of [

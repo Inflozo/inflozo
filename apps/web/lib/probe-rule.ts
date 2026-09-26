@@ -61,15 +61,30 @@ export function injectionFlag(settings: Record<string, unknown>): boolean {
  *
  * Executed 2026-09-08: both test Ghosts answer a real JSON `false`, so the readable branch is the
  * one the live proof takes and the question is a unit contract until a Ghost that hides it exists.
+ * (Story 5.21 read Ghost's own default in source: `portal_button` is `"false"` on a new site on both
+ * majors, so the assumption above is the opposite of Ghost's — DW-277 holds that for the owner.)
+ *
+ * STORY 5.21 — AND THE BUTTON'S LOOK, off the same payload: `portal_button_style` (Ghost's three, validated by
+ * Ghost's own `isIn`; anything else is Ghost's default, `icon-and-text`) and `portal_button_signup_text` (a string,
+ * the empty one included — an empty label draws none, as Portal does — else Ghost's default "Subscribe"). Both are
+ * PUBLIC settings on both majors (MEASUREMENTS §55), and the canvas draws Portal's button from them.
  */
+export const PORTAL_STYLES = ['icon-and-text', 'icon-only', 'text-only'] as const
+export type PortalStyle = (typeof PORTAL_STYLES)[number]
+const portalStyle = (value: unknown): PortalStyle => ((PORTAL_STYLES as readonly unknown[]).includes(value) ? (value as PortalStyle) : 'icon-and-text')
+const signupText = (value: unknown): string => (typeof value === 'string' ? value : 'Subscribe')
+
 export function portalState(settings: Record<string, unknown>): {
   portal_button: boolean
   portal_button_source: 'probe' | 'default' | 'declared'
+  portal_button_style: PortalStyle
+  portal_button_signup_text: string
 } {
   const value = settings.portal_button
+  const look = { portal_button_style: portalStyle(settings.portal_button_style), portal_button_signup_text: signupText(settings.portal_button_signup_text) }
   return typeof value === 'boolean'
-    ? { portal_button: value, portal_button_source: 'probe' }
-    : { portal_button: true, portal_button_source: 'default' }
+    ? { portal_button: value, portal_button_source: 'probe', ...look }
+    : { portal_button: true, portal_button_source: 'default', ...look }
 }
 
 /**
@@ -558,6 +573,84 @@ export const storedMembers = (siteSettings: unknown): Members | null => {
 }
 
 /**
+ * STORY 5.21 — WHAT THE CANVAS DRAWS GHOST'S TWO SURFACES FROM (FR-H5): the connection's snapshot, AS STORED, re-checked
+ * on the way out exactly as `storedMembers` is — the announcement bar Story 3.3 keeps verbatim, the Portal keys and the
+ * brand's accent. Never null: a site whose snapshot is missing or junk has nothing to draw, which is the same answer
+ * (no words, an empty audience, the button off).
+ *
+ *   `announcement.visibility` is Ghost's JSON STRING (`"[\"visitors\"]"`, §39) parsed HERE, the one reader that needs it
+ *   as a list; an array is admitted too (`navOf`'s idiom), and anything that is not a string inside it is dropped.
+ *   `portal.button` is the stored boolean whatever its source — a `'default'` or `'declared'` answer is drawn as stored.
+ *   `accent` is `isAccent`'s, or null, because it is painted into CSS (NFR-3).
+ */
+export type Surfaces = {
+  announcement: { content: string; background: string; visibility: readonly string[] }
+  portal: { button: boolean; style: PortalStyle; label: string }
+  accent: string | null
+}
+
+const visibilityOf = (value: unknown): string[] => {
+  let list: unknown = value
+  if (typeof list === 'string') {
+    try {
+      list = JSON.parse(list)
+    } catch {
+      return []
+    }
+  }
+  return Array.isArray(list) ? list.filter((v): v is string => typeof v === 'string') : []
+}
+
+export const storedSurfaces = (siteSettings: unknown): Surfaces => {
+  const s = isRecord(siteSettings) ? siteSettings : {}
+  const announcement = isRecord(s.announcement) ? s.announcement : {}
+  const brand = isRecord(s.brand) ? s.brand : {}
+  return {
+    announcement: {
+      content: typeof announcement.content === 'string' ? announcement.content : '',
+      background: typeof announcement.background === 'string' ? announcement.background : '',
+      visibility: visibilityOf(announcement.visibility),
+    },
+    portal: { button: s.portal_button === true, style: portalStyle(s.portal_button_style), label: signupText(s.portal_button_signup_text) },
+    accent: isAccent(brand.accent) ? brand.accent : null,
+  }
+}
+
+/**
+ * STORY 5.21 — EVERY KEY THE ADMIN `settings/` PAYLOAD DECIDES, AS ONE MAPPING: the code-injection flag, the Portal keys
+ * under the declared rule, the announcement, the brand and the members record. Connect, the daily check (`probePatch`,
+ * below) and the editor's re-read on open (`readSettings`) all write through this one function, so the three can never
+ * disagree about a key — before it, the re-read was a second mapping of one key (5.20's `readMembers`).
+ *
+ * It GAINS keys and loses none: `previous` is spread first, so `public_url`, `plan_ask` and anything a later story puts
+ * there survive. `plan_ask` and the capability pair are config's (`hostSettings`), not this payload's — `probePatch` owns
+ * them. NEVER A STRIPE KEY: every value is built from a named key, never filtered from the payload (MEASUREMENTS §54).
+ *
+ * THE PORTAL RULE — A PROBE MAY OVERWRITE AN ANSWER WITH A READING, NEVER WITH AN ASSUMPTION. `portalState` cannot see
+ * that the user already answered, so on a Ghost that keeps hiding `portal_button` every re-read would put `true`/`default`
+ * back over the user's "No, it's off" and ask again, for ever. A real read (`'probe'`) still wins.
+ */
+export function settingsPatch(previous: Record<string, unknown>, settings: Record<string, unknown>): Record<string, unknown> {
+  const portal = portalState(settings)
+  // An assumption does not overwrite an answer; a reading does.
+  const declared = portal.portal_button_source === 'default' && previous.portal_button_source === 'declared'
+  const next: Record<string, unknown> = {
+    ...previous,
+    code_injection: injectionFlag(settings),
+    ...portal,
+    ...(declared ? { portal_button: previous.portal_button, portal_button_source: 'declared' } : {}),
+    announcement: announcementOf(settings),
+    // FR-C4, Story 3.4: the brand, on the payload that was already read.
+    brand: brandOf(settings),
+  }
+  // STORY 5.20 — FR-H6's record of the member switches, only where the payload carries both halves well-formed; an
+  // unreadable pair leaves the previous record standing (the spread above), never an assumption over a reading
+  const members = membersOf(settings)
+  if (members !== null) next.members = members
+  return next
+}
+
+/**
  * THE WHOLE WRITE A PROBE MAKES, AS A PURE FUNCTION — verdict and payload in, the row's patch out.
  * It lives here rather than in `server/site-probe.ts` because the mapping is where the story's
  * rules actually are, and behind `call()` and `supabaseAdmin()` nothing could reach it: the
@@ -570,10 +663,8 @@ export const storedMembers = (siteSettings: unknown): Members | null => {
  * TWO PRESERVATION RULES, and both are the same rule: A PROBE MAY OVERWRITE AN ANSWER WITH A
  * READING, NEVER WITH AN ASSUMPTION.
  *
- *   PORTAL — `portalState` cannot see that the user already answered, so on a Ghost that keeps
- *   hiding `portal_button` every re-check and every one of Story 3.7's cron runs would put
- *   `true`/`default` back over the user's "No, it's off" and ask again, for ever. A real read
- *   (`'probe'`) still wins, which is what "3.7 re-reads it, so `'probe'` always wins later" means.
+ *   PORTAL — `settingsPatch`'s, above: since Story 5.21 every key the settings payload decides is
+ *   that ONE mapping, which the editor's re-read on open writes through too.
  *
  *   THE PLAN QUESTION — `answerPlan` clears `plan_ask` so the question does not come back, and
  *   an unreadable `hostSettings` is unreadable every time, so the next probe would re-raise the
@@ -592,24 +683,8 @@ export function probePatch(args: {
   capability_source?: CapabilitySource
 } {
   const { previous, previousSource, settings, verdict } = args
-
-  const portal = portalState(settings)
-  // An assumption does not overwrite an answer; a reading does.
-  const declared = portal.portal_button_source === 'default' && previous.portal_button_source === 'declared'
-  const site_settings: Record<string, unknown> = {
-    ...previous,
-    code_injection: injectionFlag(settings),
-    ...(declared
-      ? { portal_button: previous.portal_button, portal_button_source: 'declared' }
-      : portal),
-    announcement: announcementOf(settings),
-    // FR-C4, Story 3.4: the brand, on the payload that was already read.
-    brand: brandOf(settings),
-  }
-  // STORY 5.20 — FR-H6's record of the member switches, only where the payload carries both halves well-formed; an
-  // unreadable pair leaves the previous record standing (the spread above), never an assumption over a reading
-  const members = membersOf(settings)
-  if (members !== null) site_settings.members = members
+  // STORY 5.21 — the settings payload's keys are the shared mapping's; what follows is config's alone
+  const site_settings = settingsPatch(previous, settings)
 
   const asked = verdict !== null && 'ask' in verdict
   if (asked && previousSource !== 'user_declared') site_settings.plan_ask = true

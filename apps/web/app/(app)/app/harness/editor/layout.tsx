@@ -11,6 +11,7 @@ import { harnessCanvasSrc } from '@/lib/canvas'
 import { imagePool, linkResources, paywallSamples, referenceSwatches, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
+import { storedSurfaces } from '@/lib/probe-rule'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
@@ -57,6 +58,11 @@ import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
  * header (`x-inflozo-harness-lock: reader`) opens the editor READING ALONG — another tab holds the lock, fresh — so R-192
  * is walked on the Paywall canvas too: the harness's own `acquire` reaches no database, and the state it opened with
  * stands (`lib/lock-client.ts`).
+ *
+ * STORY 5.21 — A THIRD VALUE OF THE SITE HEADER (`x-inflozo-harness-site: surfaces`) picks a linked site whose snapshot
+ * carries Ghost's two surfaces, so `pnpm keyboard` walks the strip and the button with no database and no Ghost: the
+ * shims follow the CONNECTION, not the content pill, so a site that never answers still draws both while the canvas paints
+ * the sample. The editor's re-read on open is refused here (no database), which leaves the stored snapshot drawn.
  */
 
 export const metadata: Metadata = { title: 'Editor harness — Inflozo', robots: { index: false, follow: false } }
@@ -95,6 +101,30 @@ const MEMBERS_OFF_SITE: EditorData['site'] = {
   members: { signup_access: 'none', paid_enabled: false },
 }
 
+/** Story 5.21 — the linked site whose snapshot carries Ghost's announcement bar and Portal's button (FR-H5): the recorded
+ *  fixture's words plus a bold word and a link, on the sample's accent, to logged-out visitors and free members, and the button on
+ *  in its default look. Through `storedSurfaces`, the one reader `read.ts` uses, so the harness can only hold a snapshot
+ *  the product could have read. No members record, so the button is not checked against one. Its address answers
+ *  nothing, as the members-off site's does. */
+const SURFACES_SITE: EditorData['site'] = {
+  title: 'Harness site',
+  origin: 'https://127.0.0.1:9',
+  key: 'harness',
+  surfaces: storedSurfaces({
+    announcement: {
+      content: '<p>Fixture announcement — <strong>seeded</strong> for <a href="https://ghost.org/">VERIFY 21</a>.</p>',
+      background: 'accent',
+      visibility: '["visitors","free_members"]',
+    },
+    portal_button: true,
+    portal_button_source: 'probe',
+    portal_button_style: 'icon-and-text',
+    portal_button_signup_text: 'Subscribe',
+    // the sample's own accent, so the harness names no colour of its own (`tokens.test.ts`)
+    brand: { accent: orbitWeekly.site().accent_color, nav: [] },
+  }),
+}
+
 /** Story 5.20 — another tab's lock, just beaten: the reader's side of B5a, for R-192's walk */
 const READER_LOCK: EditorData['lock'] = {
   holderSessionId: 'harness-another-tab',
@@ -110,6 +140,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   if (!HARNESS) notFound()
   const asked = await headers()
   const membersOff = asked.get('x-inflozo-harness-site') === 'members-off'
+  const shims = asked.get('x-inflozo-harness-site') === 'surfaces'
   const readingAlong = asked.get('x-inflozo-harness-lock') === 'reader'
 
   const ring = samples()
@@ -164,8 +195,8 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     lock: readingAlong ? READER_LOCK : null,
     // Story 5.18 — NO LINKED SITE, so the harness is the unlinked path — the story's control: the pill says "Sample
     // content" with no SOURCE group, and not one Content API request is made (`pnpm keyboard` walks exactly today's editor)
-    // Story 5.20 — unless the members-off walk asks for its site by header (above)
-    site: membersOff ? MEMBERS_OFF_SITE : null,
+    // Story 5.20 — unless the members-off walk asks for its site by header (above), or Story 5.21's the surfaces one
+    site: membersOff ? MEMBERS_OFF_SITE : shims ? SURFACES_SITE : null,
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

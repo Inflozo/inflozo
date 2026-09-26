@@ -20,7 +20,7 @@
  */
 
 import type { DataBinding, orbitWeekly } from '@inflozo/library'
-import type { Members } from './probe-rule.ts'
+import { storedMembers, storedSurfaces, type Members, type Surfaces } from './probe-rule.ts'
 
 type Subject = orbitWeekly.Subject
 type Kind = orbitWeekly.SubjectKind
@@ -510,8 +510,10 @@ export type Unreadable = 'disconnected' | 'no_key' | 'http'
 export type EditorSite =
   // STORY 5.20 — `members` is FR-H6's record of the site's member switches (`site_settings.members`), SERVER TRUTH like the
   // rest: absent for a site with no record yet, which warns nothing anywhere (`read.ts` attaches it)
-  | { title: string; origin: string; key: string; members?: Members }
-  | { title: string; unreadable: Unreadable; members?: Members }
+  // STORY 5.21 — `surfaces` is the connection's snapshot the canvas draws Ghost's two surfaces from (FR-H5,
+  // `storedSurfaces`): on every linked site that is NOT disconnected, and absent on one that is — no connection, no shims
+  | { title: string; origin: string; key: string; members?: Members; surfaces?: Surfaces }
+  | { title: string; unreadable: Unreadable; members?: Members; surfaces?: Surfaces }
   | null
 
 /** A `sites` row → `EditorSite`. Disconnected first (Story 3.5 nulls the key and keeps the link, so that is the reason,
@@ -529,6 +531,18 @@ export function siteFrom(
   if (/^http:\/\//i.test(url)) return { title, unreadable: 'http' }
   const at = origin(url)
   return at === null ? null : { title, origin: at, key: row.content_key.trim() }
+}
+
+/** THE SITE AS THE EDITOR IS HANDED IT (`read.ts`): `siteFrom`'s answer with the snapshot's readings attached, each
+ *  re-checked on the way out — Story 5.20's members record where the snapshot holds one, and Story 5.21's `surfaces` (the
+ *  snapshot Ghost's two surfaces are drawn from, FR-H5) on every linked site that is NOT DISCONNECTED: readable, keyless
+ *  or plain http alike, since the snapshot is the connection's and not its content's. A disconnected site is no
+ *  connection, so it draws no shim; no linked site is null. */
+export function siteWith(read: EditorSite, siteSettings: unknown): EditorSite {
+  if (read === null) return null
+  const members = storedMembers(siteSettings)
+  const connected = !('unreadable' in read && read.unreadable === 'disconnected')
+  return { ...read, ...(members !== null ? { members } : {}), ...(connected ? { surfaces: storedSurfaces(siteSettings) } : {}) }
 }
 
 export const LIVE_WORDS = {

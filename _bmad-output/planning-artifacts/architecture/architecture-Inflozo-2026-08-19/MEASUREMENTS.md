@@ -3766,3 +3766,48 @@ The rule is `level: 'error'`, `fatal: false`, at `lib/specs/v5.js:527` in both b
 - **The record's source is sound:** Admin `settings/` carries the stored access and Ghost's own calculated flags on both majors with the integration key, so `site_settings.members` is copied from two named keys — `members_signup_access` and `paid_members_enabled` — and never filtered from a payload that also carries every Stripe setting.
 
 **What this does NOT say.** The markers are raw expressions written by hand into a probe theme, not the emitter's output; the canvas's agreement with them is `contract.test.ts`'s (the box, the stylesheet, `readingTime`) and the section runtime's (`agreement.test.ts`, `ad36.test.ts`) per commit. Portal's "Memberships unavailable" was READ in Portal's source at the version T3 pins, not clicked in a browser on T3. Nothing here records a free member's or a paid member's page (the Content API has no member session); `postAccess` is `checkPostAccess` read in source for those, and its truth table is `access.test.ts`.
+
+## 55. Ghost's two surfaces on a page — the announcement bar `{{ghost_head}}` prepends and Portal's floating button — recorded anonymously on both majors at the editor's three devices · 2026-09-26
+
+**Command.** `env $(grep -E '^(GHOST5_URL|GHOST5_STAFF_ACCESS_TOKEN|GHOST6_URL|GHOST6_STAFF_ACCESS_TOKEN)=' tools/probe/.env | xargs) node tools/probe/record-ghost-surfaces.cjs` (its header is its help — it reads no flag, so `--help` runs it), run on 2026-09-26: once per major, then once more over both with three more fields recorded (the body's full child list, the page's body font and Portal's icon markup). Each server's home page is opened ANONYMOUSLY in `@playwright/test`'s chromium, a fresh context per page, at 1440 × 900, 834 × 1112 and 390 × 844 — R-137's three devices. It refuses to start unless the bar is `run-verify-all.py` item 21's fixture (words, shown to logged-out visitors), which both servers carried. It writes three Ghost settings with the STAFF token and puts every one back in a `finally`, READ BACK: `portal_button` on for the Portal recordings, `portal_button_style` through Ghost's three values, and `announcement_visibility` `[]` for the "cleared" load. Both servers read back as found on every run — `portal_button` false, `portal_button_style` `icon-and-text`, `announcement_visibility` `["visitors"]`. Recorded into `packages/ghost-shim/fixtures/ghost{5,6}/surfaces.json`, which `apps/web/ghost-surfaces.test.ts` holds the canvas's shims to per commit (`record-shim.py`'s index generator imports only its own recordings, so this file never joins `RECORDINGS`).
+
+**Why.** Story 5.21 draws Ghost's announcement bar and Portal's floating button on the editor's canvas, where Ghost puts them, to Ghost's own look (FR-H5; the export draws neither, R-74). Every rule and number the two shims use was read in Ghost's source at the spec's Create — `ghost_head.js`'s `isFilled`, `@tryghost/announcement-bar` 1.1.556's mount and stylesheet, Portal 2.51.5 / 2.69.339's `trigger-button` — and is a hypothesis until a real page shows it (standing rule 1). It also answers `reconcile-designs.md` NE-A2-7 (a record), which asked for exactly this probe at step 4a and never ran, and VERIFY-AT-BUILD item 21's second half.
+
+**The bar, as the fixture stands** (`<p>Fixture announcement — seeded for VERIFY 21.</p>`, background `accent`, audience `["visitors"]`):
+
+| Row (signed out) | T3 `ghost5.inflozo.com` 5.130 | T1 `ghost6.inflozo.com` 6.58 |
+|---|---|---|
+| `#announcement-bar-root`'s place | the body's FIRST child (index 0 of 8) at all three devices | the body's FIRST child (index 0 of 6) at all three devices |
+| the bar's height — 1440 · 834 · 390 | **48 · 48 · 70** (the words wrap at 390) | the same |
+| the bar's box | full width, `z-index: 90`, `position: relative`, `display: flex`, centred, padding `12px 48px`, `min-height: 48px`, 15px / 23px, weight 400 | the same |
+| its colours | `rgb(13, 165, 30)` — the site's accent `#0da51e` — and white words | `rgb(56, 50, 229)` — `#3832e5` — and white words |
+| its font | the page body's (Casper's system stack): the bar sets none | the same |
+| the close button | `button[aria-label="close"]`, 32 × 32, 8px from the right, vertically centred; its svg 10 × 10 | the same |
+| the stylesheet | ONE global `<style>` appended to `<head>` at run time, 1123 characters, ending `/*$vite$:1*/` — no shadow root, no iframe | the same bytes |
+| `--ghost-accent-color` on `:root` | `#0da51e` (`{{ghost_head}}`'s own `<style>`) | `#3832e5` |
+| the script | `<script defer src="https://cdn.jsdelivr.net/ghost/announcement-bar@~1.1/umd/announcement-bar.min.js" data-announcement-bar="{site}/" data-api-url="{site}/members/api/announcement/" crossorigin="anonymous">` | the same, T1's addresses |
+| a Portal trigger with `portal_button` off (the control) | none, at any device | none |
+
+**Portal's button, switched on** (`portal_button_signup_text` "Subscribe", `portal_button_icon` null; box in page pixels at 1440 × 900, and 834 × 1112 in brackets):
+
+| `portal_button_style` | T3 and T1 alike |
+|---|---|
+| `icon-and-text` | the trigger iframe 186 × 98 (the wrapper measured 184.42, + 2); the button at x 1271 (665), y 812 (1024), **139.42 × 60**; the person icon 26px; the label " Subscribe " — 16px / 16px line, weight 400, white, Portal's system stack, box 85.42 × 32 |
+| `icon-only` | the iframe **105** × 98; the button a 60 × 60 circle at x 1352 (746), y 812 (1024); the person icon 34px; no label |
+| `text-only` | the iframe 160 × 98; the button 113.42 × 60 at x 1297 (691); no icon; the label as above |
+| at 390, every style | **no trigger at all** — Portal's root present, its iframe never drawn |
+
+Every load: the iframe's inline style is `z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: …; max-width: 500px; height: 98px; animation: …; transition: opacity 0.3s; overflow: hidden;`; the button is `border-radius: 999px`, the site's accent, `box-shadow: rgba(0, 0, 0, 0.24) 0px 8px 16px -2px`, padding `0 12px 0 16px` with a label and `0` without; the wrapper's padding is `10px 28px 0 17px`. The frame's own stylesheet is `:root { --brandcolor: {accent} }` + Portal's global, trigger and avatar rules — 7503 characters on T3 (Portal 2.51.5) and 7495 on T1 (2.69.339), whose trigger rules differ by two blank lines and nothing else.
+
+**`#ghost-portal-root`'s place is NOT the body's last child**: T3 index 5 of 7–8, T1 index 3 of 5–6 — Portal appends its root at run time, and `#sodo-search-root` (search) and, on some loads, an iframe are appended after it.
+
+**The bar cleared** — `announcement_visibility` `[]`, the words kept, as Ghost Admin's Announcement modal clears it: **no announcement script in `{{ghost_head}}` and no bar root**, on both majors (`isFilled` = words AND a non-empty audience).
+
+**What it means.**
+
+- **Every Ask First finding of Story 5.21 held, on both majors:** Ghost's bar is the body's first child; a one-line bar at 1440 is 48px tall; Portal draws no button below 640px (and does at 834); and with the audience emptied the script is not even injected. So the canvas's strip is the body's first child, before `#canvas`, pushing the design down by the bar's height, and "cleared" is Ghost's own rule (`announcementFor`).
+- **The bar's stylesheet is one global sheet, byte-identical on both majors**, carrying no font — the bar inherits the page's body font — which is why the canvas appends it to `<head>` once and stands the strip's root in for the theme's body font (`var(--font-body)`) and `:root`'s `--ghost-accent-color` (never on `:root` itself, so the design renders exactly as before). `ANNOUNCEMENT_CSS` and the close icon are held equal to the recording per commit.
+- **Portal's button is 98px tall at `bottom: 0; right: 0`**, 105px wide without a label and its measured width + 2 with one — which is the canvas shim's frame (`buttonMarkup`, shrink-to-fit + 2px). Its trigger rules and its person icon at both sizes are held equal to the recording per commit, modulo whitespace for the rules. Measured on the keyboard harness at 1440 the shim's button sits 0.42px left of Portal's recorded box (Portal rounds the measured width before the + 2).
+- **The anchors the canvas marks for NFR-6(c3)** are Ghost's own live roots, `#announcement-bar-root` and `#ghost-portal-root` — the shim roots carry those ids AND `data-ghost-surface`, and on the live site both FLOAT relative to whatever a theme renders (VERIFY-AT-BUILD item 51), so no theme may depend on their markup.
+
+**What this does NOT say.** Nothing here records a signed-in member's page: Portal's member look — a 60px label-less circle with a 4px `rgba(255,255,255,.15)` halo and the person icon at 34px — is read in Portal's source (2.69.339 `trigger-button.jsx` :54-60, :188; 2.51.5 the same), and the bar's audience per member status is §46(c), read in source. A chosen icon (`icon-1`…`icon-5`, or an uploaded image) was not recorded — the snapshot does not store it, and the canvas draws the default person icon (DW-278). Ghost's own default `portal_button` of `"false"` is read in `default-settings.json` on both majors, not observed on a fresh site (both test servers have it off). The recording is Casper's page; another theme's CSS meets the bar and not Portal's iframe.

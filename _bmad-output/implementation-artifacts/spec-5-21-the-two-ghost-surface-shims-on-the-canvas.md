@@ -2,7 +2,7 @@
 title: 'Story 5.21 — The two Ghost-surface shims on the canvas'
 type: 'feature'
 created: '2026-09-26'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: 'f73c33d9aad31caaa264daf609810c9b3398cda1'
@@ -376,7 +376,7 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
 
 **Execution:**
 
-- [ ] **FIRST, before any code** — `tools/probe/record-ghost-surfaces.cjs` (new, with its `tools/doc-audit.py` catalogue
+- [x] **FIRST, before any code** — `tools/probe/record-ghost-surfaces.cjs` (new, with its `tools/doc-audit.py` catalogue
   row). It writes `packages/ghost-shim/fixtures/ghost{5,6}/surfaces.json`, which is written up as MEASUREMENTS **§55**. On
   T1 **and** T3, anonymous, in chromium, at 1440 × 900, 834 × 1112 and 390 × 844:
   - **With the fixture bar as it stands:**
@@ -395,7 +395,7 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
   Its header documents what it writes, because `--help` is not read (memory: the recorders run on any flag).
 
   -- NE-A2-7 and item 21's second half, recorded; every number the shims use stands on this.
-- [ ] `apps/web/lib/probe-rule.ts` (+ `probe-rule.test.ts`) — **one mapping** and one reader.
+- [x] `apps/web/lib/probe-rule.ts` (+ `probe-rule.test.ts`) — **one mapping** and one reader.
   - `settingsPatch(previous, settings)` returns every key the settings payload decides: `code_injection`, the Portal
     keys under the declared rule, `announcement`, `brand` and `members`. `probePatch` becomes that plus
     `plan_ask`/capability.
@@ -405,16 +405,16 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
   - Never a `stripe_*` key.
 
   -- Connect, the daily check and the editor's re-read write the same keys the same way.
-- [ ] `apps/web/server/site-probe.ts` + `(editor)/actions.ts` (+ `server-wiring.test.ts`) — widen and rename 5.20's pair:
+- [x] `apps/web/server/site-probe.ts` + `(editor)/actions.ts` (+ `server-wiring.test.ts`) — widen and rename 5.20's pair:
   - `readMembers` → `readSettings` and `recheckMembers` → `recheckSite`.
   - Keep the one `settings/` read, the ownership read first, the unstamped `settings_read_at` and the refusal shape.
   - Write `settingsPatch`, and return `{ members, surfaces }` as stored.
   - The wiring test's order assertion follows the rename; its control is the old order failing it.
 
   -- One read serves C3b and the shims.
-- [ ] `apps/web/lib/live-content.ts` (`EditorSite`) + `(editor)/read.ts` — `surfaces` beside `members`, from
+- [x] `apps/web/lib/live-content.ts` (`EditorSite`) + `(editor)/read.ts` — `surfaces` beside `members`, from
   `storedSurfaces`, on every linked site that is not disconnected. -- Server truth at first paint.
-- [ ] `apps/web/lib/ghost-surfaces.ts` (new, pure) + `apps/web/ghost-surfaces.test.ts` — the pure half. `node --test`
+- [x] `apps/web/lib/ghost-surfaces.ts` (new, pure) + `apps/web/ghost-surfaces.test.ts` — the pure half. `node --test`
   reaches it, as it does `lib/view-as.ts`. It holds:
   - `announcementFor(surfaces, visitor)` and `portalFor(surfaces, members, visitor)`, each answering null or what to draw;
   - `shimsOn(key, site)`, which is false on a surface and without a connection;
@@ -430,7 +430,7 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
   - both CSS sources equal to `surfaces.json` on each major.
 
   -- The rules are unit-tested; the DOM write stays a few lines.
-- [ ] `(editor)/editor.tsx` — the draw and the re-read:
+- [x] `(editor)/editor.tsx` — the draw and the re-read:
   - `paint()` syncs both shims after `mount.innerHTML`: the strip prepended to the body, the button's host appended, the
     announcement stylesheet appended once per document, and both removed where they are not due.
   - A `surfaces` state holds what the re-read lands and redraws only the shims.
@@ -438,12 +438,12 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
   - `offCard` keeps its gate.
 
   -- The canvas half of FR-H5.
-- [ ] `apps/web/lib/canvas-layer.ts` + `editor.tsx`'s scroll listener — a sticky root is `pinned` only while stuck (its
+- [x] `apps/web/lib/canvas-layer.ts` + `editor.tsx`'s scroll listener — a sticky root is `pinned` only while stuck (its
   top at or above its computed `top`). The listener re-renders when the shown root's answer changes, whether it is
   hovered or selected. The ponytail note gives way to the rule.
 
   -- The strip makes "stuck from the start" false for every sticky header.
-- [ ] `app/(app)/app/harness/editor/layout.tsx` + `tools/keyboard/journey.spec.mjs` — the harness and the walk.
+- [x] `app/(app)/app/harness/editor/layout.tsx` + `tools/keyboard/journey.spec.mjs` — the harness and the walk.
   - A `surfaces` harness site, chosen by `x-inflozo-harness-site: surfaces`:
     - the fixture's words plus a bold word and a link;
     - `accent`;
@@ -462,7 +462,7 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
     - a selected sticky header's outline equals its box after scrolling past the strip.
 
   -- R-146: the wiring, on every commit.
-- [ ] `tools/probe/run-verify-editor.cjs` (step 96) + `run-verify-live-content.cjs` (a Story 5.21 section, T1) — the
+- [x] `tools/probe/run-verify-editor.cjs` (step 96) + `run-verify-live-content.cjs` (a Story 5.21 section, T1) — the
   deployed walks (R-82).
   - **Step 96:** the seeded project links no site, so no `[data-ghost-surface]` appears on any canvas it visits, and steps
     3 and 4 still hold.
@@ -478,7 +478,7 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
     - everything is restored and read back in `finally`.
 
   -- Proven on production against a real Ghost.
-- [ ] **Docs** (standing rule 3):
+- [x] **Docs** (standing rule 3):
   - **MEASUREMENTS §55.**
   - **PRD:**
     - FR-H5, as built: the snapshot keys, the re-read on open and the marker;
@@ -533,6 +533,51 @@ and the same three `GHOST6_`).** Every call answered 200 on both servers.
   unchanged. The re-read on open runs while reading along too, and edits nothing.
 
 ## Spec Change Log
+
+**Dev (2026-09-26).** Each entry is outside the frozen block and was made where the build met a fact the plan did not
+have; none changes what a surface does.
+
+1. **The recorder held every Ask First finding, on both majors** (MEASUREMENTS §55): the bar root is the body's first
+   child at all three devices; a one-line bar at 1440 is 48px (70px at 390, where the words wrap); Portal draws no trigger
+   at 390 in any style and does at 834 and 1440; with the audience emptied no script is injected and no root exists. One
+   recorded fact moved a sentence of the plan: **`#ghost-portal-root` is NOT the body's last child on the live page** —
+   Portal appends it at run time and `#sodo-search-root` (and on some loads an iframe) is appended after it. The shim's
+   host is still appended at the body's end, which is where Portal appends its own; §55 states the live place.
+2. **The canvas document's `<body>` carries no font** (every section sets its own), while Ghost's bar inherits the page
+   body's font (recorded: the bar's font IS Casper's body's). So the strip's root sets `font-family: var(--font-body)` —
+   the reference tokens' body font, which a theme's body carries (`tools/stress/build.js`'s body rule is that shape) —
+   on itself, beside `--ghost-accent-color`, and never on `<body>` or `:root`: the design renders exactly as before.
+3. **`record-shim.py`'s fixture index would have imported `surfaces.json`** on its next run — its generator globbed every
+   `.json` in the fixture folders, and `contract.test.ts` holds each entry to record-shim's own command and image map, so
+   the contract test would have gone red. The generator now imports only the recordings carrying its own command
+   (executed on a copy: `index.ts` regenerated byte-identical, `surfaces.json` left out).
+4. **`tokens.test.ts` forbids a colour literal anywhere under `apps/web`** but three named, paid-for files. Ghost's bar
+   and Portal's button are Ghost's look, not Inflozo's (FR-H5), so `lib/ghost-surfaces.ts` is the FOURTH exemption, paid
+   for by a test that every colour it writes is one Ghost itself put on a recorded page (`surfaces.json`) or Ghost's own
+   default accent (`default-settings.json`, read in source). The keyboard harness's site takes the sample's own accent
+   rather than a literal.
+5. **5.20's re-check spoke whenever the record said members were off** (`speaks = pressed || membersOff(record)`), which
+   on the new re-read-on-open would have announced a refusal or "Members are still switched off" on Home. "Silent unless
+   C3b's card is up" is now one rule, `cardUp(key, record, source)`, which the card's own draw (`offCard`) reads too — so
+   the gate is literally the card's. The 5.20 journeys that walk C3b pass unchanged.
+6. **The re-read on open runs for a CONNECTED site only** (a linked site that is not disconnected — the snapshot is handed
+   for one alone): a disconnected site has no key to read with, and the matrix row names "a connected site with its Admin
+   key". The Paywall's re-check on entry keeps its own condition (any linked site), as 5.20 built it.
+7. **`read.ts`'s attach rule became a pure function, `siteWith` in `lib/live-content.ts`**, so "surfaces on every linked
+   site that is not disconnected" is unit-tested (`live-content.test.ts`) rather than inline server code.
+8. **Portal's trigger rules differ between 2.51.5 and 2.69.339 by two blank lines and nothing else**, so the test holds
+   `TRIGGER_CSS` (2.69.339's, verbatim) to both recordings with whitespace removed; `ANNOUNCEMENT_CSS` is byte-equal on
+   both majors, as recorded.
+9. **The shim's labelled frame is 0.42px wider than Portal's**: Portal rounds the wrapper's measured `offsetWidth`
+   before its + 2, the shim shrinks to fit and pads 2px. Measured on the keyboard harness at 1440: the button at x
+   1270.58 against Portal's recorded 1271 — inside the spec's ±2px.
+10. **Two stored paragraphs are read with a space between them** where Ghost's `all: unset` runs them together with none
+    (`readMarks` reads a block edge as a space). Ghost Admin's Announcement field writes one paragraph; the `ponytail:`
+    comment in `announcementFor` names the ceiling.
+11. **The strip's root carries Ghost's own id, `announcement-bar-root`, and the button's host `ghost-portal-root`**,
+    beside `data-ghost-surface` — Ghost's markup is what the shims stand in for (the Frame rule), and NFR-6(c3) names
+    those live roots. **DW-272 is amended** for the rename (`readMembers` → `readSettings`, `recheckMembers` →
+    `recheckSite`), and the wiring test's order assertion gained its control (the old order fails it).
 
 ## Design Notes
 
@@ -633,6 +678,39 @@ scroll. So the layer follows the stuck state, and the one switch happens as it s
   before and after.
 - **Vercel and GitHub Actions:** the deployment for each push.
 - **Resend and Dodo:** not touched.
+
+**Results (Dev, 2026-09-26, Node 24; no count written down — each suite prints its own).**
+
+- **`record-ghost-surfaces.cjs`** — run three times, exit 0 each: T3 alone, T1 alone, then both with three more fields
+  recorded (the body's full child list, the page's body font, Portal's icon markup). Every Ask First finding HELD on T3
+  5.130 and T1 6.58, stated in the run and in §55; the control (no trigger while `portal_button` is off) held. Both
+  servers were READ BACK as found after every run — `portal_button` false, `portal_button_style` `icon-and-text`,
+  `announcement_visibility` `["visitors"]`. Written to `packages/ghost-shim/fixtures/ghost{5,6}/surfaces.json` and
+  MEASUREMENTS §55. Keys by variable name: `GHOST5_URL`, `GHOST5_STAFF_ACCESS_TOKEN`, `GHOST6_URL`,
+  `GHOST6_STAFF_ACCESS_TOKEN`.
+- **`pnpm check`** — exit 0: lint, typecheck, every package's tests, with `ghost-surfaces.test.ts` (§46(c)'s table over
+  every audience subset and visitor, every rule row of the matrix, the hostile announcement as an AD-36-shaped vector
+  list — each inert and the legitimate words, marks and links still printed — and every constant held to both
+  recordings), `probe-rule.test.ts` (the one mapping on both recordings with Stripe keys fed in, the declared rule,
+  `storedSurfaces`' re-validation), `server-wiring.test.ts` (the ownership order renamed, its control failing),
+  `live-content.test.ts` (`siteWith`), `canvas-layer.test.ts` (`pinned` stuck, not sticky), `tokens.test.ts` (the
+  fourth exemption paid for), `editor.test.ts` and `busy.test.ts`; **`pilots.test.ts` unchanged and green** — the canvas
+  document gains no byte; and `check-snapshots: PASS` — no snapshot moved.
+- **`bash tools/matrix/run-matrix-gate.sh`** — exit 0 in its container: every case passed, 0 violations, no baseline
+  moved. This and the snapshots are the control that nothing but the editor draws a shim.
+- **`pnpm keyboard`** — green, the whole journey, the eight Story 5.21 journeys among the passes: the strip as the body's
+  first child with `#canvas` at its bottom, 48px, on the accent, with the ✕; the button at the body's end with its label;
+  both inert and zero `data-inflozo-*`; `elementFromPoint` passing through both (the ground under the strip, a section
+  under the button); View as's three visitors; 390 against 834 with no repaint; dark mode, Preview and page 2 leaving
+  both as they were, with Layers, Undo and the device's record untouched; Sample content keeping both and the Paywall
+  drawing neither; `#canvas` byte-identical with and without the site; and a selected sticky header's outline on its box
+  at scroll 0, 20 and 300 with the layer following the stuck state. **The last one's control was executed:** with
+  `pinned` put back to "sticky means pinned" it went red ("page" expected, "view" received), then restored.
+- **A local production build** (`pnpm build`, CI's own step) — exit 0.
+- **`python3 tools/doc-audit.py --check`** — PASS after the story board's regeneration.
+- **The deployed walks** — `run-verify-editor.cjs` step 96 and `run-verify-live-content.cjs`'s Story 5.21 section are
+  written and pass `node --check`. Each refuses a checkout that is not the deployed HEAD, so they run against the Dev push
+  once CI has deployed it.
 
 ## Owner's manual test
 

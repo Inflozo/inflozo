@@ -3,10 +3,10 @@
 import { orbitWeekly } from '@inflozo/library'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, isUuid } from '@/lib/editor'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
-import type { Members } from '@/lib/probe-rule'
+import type { Members, Surfaces } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
-import { readMembers } from '@/server/site-probe'
+import { readSettings } from '@/server/site-probe'
 
 /**
  * STORY 5.13 — THE ONE WRITE THE EDITOR'S OWN CHROME MAKES (FR-D22).
@@ -133,29 +133,33 @@ export async function setViewedStates(
 }
 
 /**
- * STORY 5.20 — C3b's **Re-check**, and the Paywall canvas's background re-check on open (FR-H6): the linked site's member
- * switches read again from Ghost and written to the one record every warning reads (`site_settings.members`).
+ * STORY 5.21 — THE EDITOR'S RE-READ OF THE LINKED SITE'S SETTINGS (5.20's `recheckMembers`, widened): once as the editor
+ * opens, on entering the Paywall canvas, and on C3b's **Re-check** (FR-H6, FR-H5, FR-C5). The site's settings are read
+ * again from Ghost and every key the payload decides written to the snapshot — the member switches every warning reads,
+ * and the announcement and the Portal keys the canvas draws Ghost's two surfaces from — and the snapshot handed back.
  *
  * WHOSE SITE IS DECIDED BY RLS: the project is read through the caller's own session, so another user's project id reaches
- * no row and no Ghost is asked — the same answer as "no linked site". The read itself is `readMembers`, the site probe's
+ * no row and no Ghost is asked — the same answer as "no linked site". The read itself is `readSettings`, the site probe's
  * one Admin `settings/` read through the chokepoint (AD-10); this file imports neither the chokepoint nor the service role.
  *
- * NOT A FORM SUBMIT: the button says "Re-checking…" from a transition (R-98, `aria-busy`, never `disabled`), and the
- * refusal is ONE sentence the editor words with the site's own name (`PAYWALL_WORDS.refused`) — only the fact travels.
+ * A LOOK, NEVER AN EDIT (FR-D18's R-192): it writes the connection's snapshot, never the doc, so it runs reading along too.
+ * NOT A FORM SUBMIT: C3b's button says "Re-checking…" from a transition (R-98, `aria-busy`, never `disabled`), and the
+ * refusal is ONE fact the editor words with the site's own name (`PAYWALL_WORDS.refused`) where C3b's card is up, and says
+ * nothing about anywhere else — a refused re-read leaves the stored snapshot drawn.
  */
-export type MembersResult = { members: Members } | { refused: true }
+export type SiteResult = { members: Members | null; surfaces: Surfaces } | { refused: true }
 
-const ROUTE = 'projects/editor/recheck-members'
+const ROUTE = 'projects/editor/recheck-site'
 
-export async function recheckMembers(projectId: string): Promise<MembersResult> {
+export async function recheckSite(projectId: string): Promise<SiteResult> {
   if (!isUuid(projectId)) return { refused: true }
   const user = await signedIn()
   const supabase = await supabaseServer()
   const { data, error } = await supabase.from('projects').select('linked_site_id').eq('id', projectId).maybeSingle()
   if (error || !data?.linked_site_id) {
-    if (error) console.error('projects/editor: members re-check could not read the project', { code: error.code })
+    if (error) console.error('projects/editor: site re-read could not read the project', { code: error.code })
     return { refused: true }
   }
-  const members = await readMembers({ siteId: data.linked_site_id as string, userId: user.id, route: ROUTE })
-  return members === null ? { refused: true } : { members }
+  const read = await readSettings({ siteId: data.linked_site_id as string, userId: user.id, route: ROUTE })
+  return read === null ? { refused: true } : read
 }

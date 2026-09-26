@@ -31,7 +31,8 @@ import type { DataBinding } from '@inflozo/library'
 
 export { IMAGE_SIZES }
 
-// ─── NFR-3's three carve-outs, here so BOTH renderers inherit them ────────────
+// ─── NFR-3's carve-outs for Ghost's values, here so BOTH renderers inherit them (its fourth, the announcement's
+//     words — Story 5.21 — is the canvas's alone: `apps/web/lib/ghost-surfaces.ts`) ──────────────────────────────
 // ARCHITECTURE-SPINE, Conventions: "Every Ghost-sourced value is scheme-validated (http/https only)
 // before reaching href, src or srcset, and excerpts render text-only and sanitized — NFR-3's three
 // carve-outs, which live in ghost-shim so both renderers inherit them."

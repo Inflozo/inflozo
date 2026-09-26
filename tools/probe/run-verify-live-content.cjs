@@ -36,6 +36,17 @@
  * Nobody with the staff token for under a minute — the card and the record following Ghost's answer, Re-check pressed
  * and saying so, the Sites notice — then put back, Re-checked back to Ghost's own box, and read back from Ghost.
  *
+ * STORY 5.21 ADDS, on T1 (MAJORS including 6): GHOST'S TWO SURFACES ON THE CANVAS. First from a SEEDED snapshot on the
+ * walk's T1 row (the service key; the row holds no Admin key yet, so the editor's re-read on open is refused and the seeded
+ * snapshot stays drawn, nothing said): the strip as the body's first child with #canvas below it, Ghost's three marks and
+ * two vectors that must stay inert, Portal's button, View as's three visitors, the button at 834 and none at 390, Sample
+ * content keeping both, the Paywall drawing neither; put back after. THEN T1 ITSELF: T1's Admin key stored through Manage
+ * keys, the editor's re-read on open writing T1's own settings to the row, **T1's `portal_button` switched ON and its bar's
+ * audience emptied with the staff token for about a minute** — the canvas compared with T1's own home page, opened
+ * anonymously at the same device (the bar's height within 1px and the button's box within 2px at 1440 and 834; no button
+ * on either at 390), and the strip gone once the bar is cleared — then both put back in a `finally` and READ BACK. Tell
+ * the owner before it runs: T1's button shows and its bar goes for about a minute.
+ *
  * STORY 5.19 ADDS, on both majors: Latest Post printing the newest post's own tag (the recorder found a `{{#get}}` carries
  * none without `include`, MEASUREMENTS §53); the main feed duplicated into a SECONDARY feed, and P0·5's Data group walked
  * over the site's own posts — By tag and By author starting on the fullest, Order and Count, Featured, and three
@@ -64,7 +75,10 @@ const NO_429 = process.env.NO_429 === '1'
 const need = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', ...(LOCAL ? [] : ['VERCEL_TOKEN', 'VERCEL_TEAM_ID']), ...MAJORS.flatMap((m) => [`GHOST${m}_URL`, `GHOST${m}_CONTENT_API_KEY`]),
   // Story 5.20 — T3's real switch: its Admin key goes in through Manage keys, and its Subscription access is flipped with
   // the staff token (the product itself never writes to Ghost's settings)
-  ...(MAJORS.includes('5') ? ['GHOST5_ADMIN_API_KEY', 'GHOST5_STAFF_ACCESS_TOKEN'] : [])]
+  ...(MAJORS.includes('5') ? ['GHOST5_ADMIN_API_KEY', 'GHOST5_STAFF_ACCESS_TOKEN'] : []),
+  // Story 5.21 — T1's real re-read: its Admin key goes in through Manage keys, and its button and bar are switched with the
+  // staff token for about a minute (the product itself never writes to Ghost's settings)
+  ...(MAJORS.includes('6') ? ['GHOST6_ADMIN_API_KEY', 'GHOST6_STAFF_ACCESS_TOKEN'] : [])]
 for (const key of need) {
   if (!process.env[key]) { console.error(`${key} is not set — read it from tools/probe/.env into this command's environment`); process.exit(2) }
 }
@@ -76,6 +90,8 @@ const GHOST = Object.fromEntries(MAJORS.map((m) => [m, { origin: new URL(process
 const KEYS = Object.values(GHOST).map((g) => g.key)
 // Story 5.20 — the two T3 credentials the real switch uses are scrubbed from every line as the Content API keys are
 if (MAJORS.includes('5')) KEYS.push(process.env.GHOST5_ADMIN_API_KEY, process.env.GHOST5_STAFF_ACCESS_TOKEN)
+// Story 5.21 — and T1's two, for its real re-read
+if (MAJORS.includes('6')) KEYS.push(process.env.GHOST6_ADMIN_API_KEY, process.env.GHOST6_STAFF_ACCESS_TOKEN)
 
 const results = []
 let fails = 0
@@ -123,8 +139,8 @@ const ghostOrigins = () => Object.values(GHOST).map((g) => g.origin)
 
 /** Story 5.20 — T3's Admin API with the STAFF token, for the one setting the walk flips and puts back (Subscription
  *  access): a short-lived JWT signed as Ghost's own Admin API expects, and never printed. */
-const staffJwt = () => {
-  const [kid, secret] = process.env.GHOST5_STAFF_ACCESS_TOKEN.split(':')
+const staffJwt = (m = '5') => {
+  const [kid, secret] = process.env[`GHOST${m}_STAFF_ACCESS_TOKEN`].split(':')
   const part = (o) => Buffer.from(JSON.stringify(o)).toString('base64url')
   const now = Math.floor(Date.now() / 1000)
   const unsigned = `${part({ alg: 'HS256', typ: 'JWT', kid })}.${part({ iat: now, exp: now + 300, aud: '/admin/' })}`
@@ -139,6 +155,24 @@ const ghostAdmin5 = async (method, resource, body) => {
   if (!r.ok) throw new Error(`T3 admin ${method} ${resource} answered HTTP ${r.status}`)
   return r.json()
 }
+/** Story 5.21 — T1's Admin API with ITS staff token, for the two settings the walk switches and puts back (the floating
+ *  button and the bar's audience) */
+const ghostAdmin6 = async (method, resource, body) => {
+  const r = await fetch(`${GHOST['6'].origin}/ghost/api/admin/${resource}`, {
+    method,
+    headers: { Authorization: `Ghost ${staffJwt('6')}`, 'Accept-Version': 'v6.0', 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (!r.ok) throw new Error(`T1 admin ${method} ${resource} answered HTTP ${r.status}`)
+  return r.json()
+}
+/** T1's two surfaces as its Admin settings hold them */
+const surfaces6 = async () => {
+  const rows = Object.fromEntries((await ghostAdmin6('GET', 'settings/')).settings.map((x) => [x.key, x.value]))
+  return { portal_button: rows.portal_button, announcement_visibility: rows.announcement_visibility, announcement_content: rows.announcement_content, accent_color: rows.accent_color }
+}
+const setSurfaces6 = (pairs) => ghostAdmin6('PUT', 'settings/', { settings: Object.entries(pairs).map(([key, value]) => ({ key, value })) })
+
 /** T3's member switches as its Admin settings hold them: the stored access and Ghost's own paid calculation */
 const switches5 = async () => {
   const rows = Object.fromEntries((await ghostAdmin5('GET', 'settings/')).settings.map((x) => [x.key, x.value]))
@@ -910,7 +944,8 @@ async function main() {
     //    Paywall canvas re-checking against Ghost itself, Re-check pressed both ways, and everything put back ──
     // The walk's T3 row is REST-made and holds no Admin key, so the key goes in first through the app's own door, Manage
     // keys (proved by `config/` before Vault holds it): the row then has what a connected site has, and every re-check
-    // below is `recheckMembers` → `readMembers` → `call()` → T3's Admin `settings/`, on production. The account's delete
+    // below is `recheckSite` → `readSettings` → `call()` → T3's Admin `settings/`, on production (5.20's `recheckMembers` →
+    // `readMembers`, widened and renamed by Story 5.21). The account's delete
     // at the end takes the key with it (the credentials row cascades, and its trigger drops the Vault secret).
     if (MAJORS.includes('5')) {
       const siteId = (await rest(`/sites?user_id=eq.${uid}&url=eq.${encodeURIComponent(GHOST['5'].origin)}&select=id`)).body?.[0]?.id
@@ -990,6 +1025,221 @@ async function main() {
         if (!restored) await setAccess5(live.signup_access)
         const after = await switches5()
         check(`T3 — Subscription access is back to ${live.signup_access}, read back from Ghost`, sameSwitches(after, live), JSON.stringify(after))
+      }
+    }
+
+    // ── Story 5.21: GHOST'S TWO SURFACES ON THE CANVAS, on T1 — first from a SEEDED snapshot (the walk's T1 row holds no
+    //    Admin key yet, so the re-read on open is refused and the seeded snapshot stays drawn), then from T1 ITSELF: its
+    //    Admin key stored through Manage keys, the re-read on open writing Ghost's own settings, the button switched on and
+    //    the bar's audience emptied with the staff token for about a minute, and the canvas compared with T1's own page ──
+    if (MAJORS.includes('6')) {
+      const GS = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/ghost-surfaces.ts')).href)
+      const g = GHOST['6']
+      const T1_SETTINGS = (await ghostRead('6', 'settings')).settings
+      const rgb = (hex) => `rgb(${[1, 3, 5].map((i) => Number.parseInt(hex.slice(i, i + 2), 16)).join(', ')})`
+      const siteRow = (await rest(`/sites?user_id=eq.${uid}&url=eq.${encodeURIComponent(g.origin)}&select=id,site_settings`)).body?.[0]
+      const siteId = siteRow?.id
+      const was521 = siteRow?.site_settings ?? null
+      const row521 = async () => (await rest(`/sites?id=eq.${siteId}&select=site_settings`)).body?.[0]?.site_settings ?? null
+      /** the row once `ok` holds, polled for up to 30 s — a re-read lands when Ghost has answered the server */
+      const rowWhen = async (ok) => {
+        for (let i = 0; i < 60; i++) {
+          const r = await row521()
+          if (ok(r)) return r
+          await page.waitForTimeout(500)
+        }
+        return row521()
+      }
+      /** both shims as the canvas holds them, with the boxes T1's own page is compared on — canvas CSS pixels */
+      const shims521 = async () => (await canvasFrame()).evaluate(() => {
+        const doc = document
+        const strip = doc.querySelector('[data-ghost-surface="announcement-bar"]')
+        const host = doc.querySelector('[data-ghost-surface="portal-button"]')
+        const bar = strip?.querySelector('.gh-announcement-bar') ?? null
+        const frame = host?.shadowRoot?.querySelector('.gh-portal-triggerbtn-iframe') ?? null
+        const button = host?.shadowRoot?.querySelector('.gh-portal-triggerbtn-container') ?? null
+        const shown = frame !== null && getComputedStyle(frame).display !== 'none'
+        const r = shown ? button.getBoundingClientRect() : null
+        const content = bar?.querySelector('.gh-announcement-bar-content')
+        return {
+          surfaces: doc.querySelectorAll('[data-ghost-surface]').length,
+          stripFirst: strip !== null && doc.body.firstElementChild === strip,
+          barHeight: bar ? bar.getBoundingClientRect().height : null,
+          canvasTop: doc.getElementById('canvas').getBoundingClientRect().top + window.scrollY,
+          words: content?.textContent ?? null,
+          tags: content ? [...new Set([...content.querySelectorAll('*')].map((e) => e.tagName.toLowerCase()))].sort() : null,
+          background: bar ? getComputedStyle(bar).backgroundColor : null,
+          buttonShown: shown,
+          container: button?.className ?? null,
+          label: host?.shadowRoot?.querySelector('.gh-portal-triggerbtn-label')?.textContent ?? null,
+          box: r && { right: document.documentElement.clientWidth - r.right, bottom: document.documentElement.clientHeight - r.bottom, width: r.width, height: r.height },
+          inert: [strip, host].filter(Boolean).every((el) => el.inert && getComputedStyle(el).pointerEvents === 'none'),
+          pwned: window.__pwned521 ?? null,
+        }
+      })
+      const shimsWhen = async (ok) => {
+        for (let i = 0; i < 60; i++) {
+          const s = await shims521().catch(() => null)
+          if (s && ok(s)) return s
+          await page.waitForTimeout(500)
+        }
+        return shims521()
+      }
+      const device521 = async (name) => {
+        await page.locator(`#editor-device button[data-device="${name}"]`).click()
+        await page.waitForTimeout(600)
+      }
+      const viewAs521 = async (visitor) => {
+        await page.locator('#editor-view-as').click()
+        await page.waitForTimeout(300)
+        await page.locator(`#editor-view-as-menu [data-visitor="${visitor}"]`).click()
+        await page.waitForTimeout(700)
+      }
+
+      // (A) THE SEEDED SNAPSHOT: a bar with Ghost's three marks and two vectors that must stay inert, the button on
+      const SEEDED_WORDS = 'Seeded for the walk — bold, italic and a link.'
+      const seeded = {
+        ...(was521 ?? {}),
+        announcement: {
+          content: '<p>Seeded for the walk — <strong>bold</strong>, <em>italic</em> and <a href="https://ghost.org/">a link</a>.</p><script>window.__pwned521=1</script><img src="https://ghost.org/x.png" onerror="window.__pwned521=2">',
+          background: 'accent',
+          visibility: '["visitors"]',
+        },
+        portal_button: true,
+        portal_button_source: 'probe',
+        portal_button_style: 'icon-and-text',
+        portal_button_signup_text: 'Subscribe',
+        brand: { ...((was521 ?? {}).brand ?? {}), accent: T1_SETTINGS.accent_color, nav: [] },
+      }
+      try {
+        await rest(`/sites?id=eq.${siteId}`, { method: 'PATCH', body: JSON.stringify({ site_settings: seeded }) })
+        await open(editor(P['6']))
+        await paintedFrom('home', 'site')
+        const home = await shimsWhen((x) => x.surfaces === 2)
+        check(`T1 — seeded: the strip is the canvas body's FIRST child, #canvas starts at its bottom, and it prints the words with Ghost's three marks on T1's accent (${T1_SETTINGS.accent_color})`,
+          home.stripFirst && Math.abs(home.canvasTop - home.barHeight) < 0.5 && home.words === SEEDED_WORDS && JSON.stringify(home.tags) === JSON.stringify(['a', 'em', 'strong'])
+            && home.background === rgb(T1_SETTINGS.accent_color) && home.inert, JSON.stringify(home))
+        check('T1 — seeded: Portal\'s button bottom-right with the person icon and "Subscribe", both roots inert', home.buttonShown && home.container === 'gh-portal-triggerbtn-container with-label' && home.label === ' Subscribe ', JSON.stringify(home))
+        check('T1 — NFR-3: the seeded script and image did nothing — no script ran, and the strip holds no script and no image', home.pwned === null && !(home.tags ?? []).some((t) => t === 'script' || t === 'img') && (await page.evaluate(() => window.__pwned521 ?? null)) === null, JSON.stringify(home.tags))
+        // the re-read on open was REFUSED (the row holds no Admin key yet): the seeded snapshot stays drawn, and nothing is said
+        await page.waitForTimeout(2000)
+        const kept521 = await row521()
+        check('T1 — seeded: the editor\'s re-read on open is refused here (no Admin key) — the row is unchanged, the snapshot stays drawn, and nothing is said about it',
+          kept521?.announcement?.content === seeded.announcement.content && kept521?.portal_button === true && (await shims521()).surfaces === 2 && !(await said()).includes('Could not'), JSON.stringify({ said: await said() }))
+        // View as: the strip follows the audience, the button takes Portal's member look
+        for (const [visitor, strip, container] of [['free', false, 'gh-portal-triggerbtn-container halo'], ['paid', false, 'gh-portal-triggerbtn-container halo'], ['anonymous', true, 'gh-portal-triggerbtn-container with-label']]) {
+          await viewAs521(visitor)
+          const v = await shimsWhen((x) => x.stripFirst === strip)
+          check(`T1 — seeded, View as ${visitor}: ${strip ? 'the strip' : 'no strip'} and ${container.endsWith('halo') ? 'Portal\'s member circle' : 'the labelled button'}`, v.stripFirst === strip && v.container === container && (strip || v.canvasTop === 0), JSON.stringify(v))
+        }
+        // devices: the button at 834, none at 390 where the words wrap — the same strip node throughout
+        await device521('tablet')
+        const tablet = await shims521()
+        await device521('mobile')
+        const phone = await shims521()
+        await device521('desktop')
+        check('T1 — seeded, devices: the strip first at 834 and 390 (wrapping at 390), the button at 834 and none at 390',
+          tablet.stripFirst && tablet.buttonShown && phone.stripFirst && !phone.buttonShown && phone.barHeight > tablet.barHeight, JSON.stringify({ tablet, phone }))
+        // Sample content keeps both — the connection's, not the content's — and the Paywall shows neither
+        await openPill()
+        await page.locator('[data-source-row="sample"]').click()
+        await paintedFrom('home', 'sample')
+        const sample = await shims521()
+        check('T1 — seeded, Sample content: both still drawn (the connection\'s settings, not its content)', sample.surfaces === 2 && sample.stripFirst && sample.buttonShown, JSON.stringify(sample))
+        await openPill()
+        await page.locator('[data-source-row="site"]').click()
+        await paintedFrom('home', 'site')
+        await switchTo('paywall')
+        const paywall = await shimsWhen((x) => x.surfaces === 0)
+        check('T1 — seeded, the Paywall: a template surface draws neither', paywall.surfaces === 0, JSON.stringify(paywall))
+      } finally {
+        if (siteId) await rest(`/sites?id=eq.${siteId}`, { method: 'PATCH', body: JSON.stringify({ site_settings: was521 }) })
+      }
+      check('T1 — the seeded row is put back as the walk found it', JSON.stringify(await row521()) === JSON.stringify(was521))
+
+      // (B) T1 ITSELF. Its Admin key goes in through the app's own door, Manage keys (proved by `config/` first), so every
+      // re-read below is `recheckSite` → `readSettings` → `call()` → T1's Admin `settings/`, on production
+      await page.goto(at(`/sites/keys?site=${siteId}`), { waitUntil: 'load' })
+      const keysForm = page.locator('form:has(#keys-admin)')
+      await keysForm.locator('#keys-admin').fill(process.env.GHOST6_ADMIN_API_KEY)
+      await keysForm.locator('button[type="submit"]').click()
+      let present521 = null
+      for (let i = 0; i < 60 && present521?.admin !== true; i++) {
+        await page.waitForTimeout(500)
+        present521 = (await rest(`/sites?id=eq.${siteId}&select=credentials_present`)).body?.[0]?.credentials_present ?? null
+      }
+      check('T1 — Manage keys stores the Admin key for the walk\'s own site (proved by config/ first; nothing is written to Ghost)', present521?.admin === true, JSON.stringify(present521))
+      const live6 = await surfaces6()
+      check(`T1 — the control: before the switch Ghost has the button off and the bar shown to logged-out visitors (${JSON.stringify({ portal_button: live6.portal_button, announcement_visibility: live6.announcement_visibility })})`,
+        live6.portal_button === false && live6.announcement_visibility === '["visitors"]', JSON.stringify(live6))
+      // the words T1's bar prints — its stored HTML with the tags taken off (the fixture is one plain paragraph)
+      const WORDS6 = String(live6.announcement_content ?? '').replace(/<[^>]+>/g, '').trim()
+      // opening the editor re-reads T1: its own bar and its button OFF, written to the row
+      await open(editor(P['6']))
+      await paintedFrom('home', 'site')
+      const read6 = await rowWhen((r) => r?.announcement?.content === live6.announcement_content && r?.portal_button === false)
+      const off6 = await shimsWhen((x) => x.surfaces === 1)
+      check('T1 — the editor re-reads as it opens: the row takes T1\'s own settings (its bar, the button off, the look), and the canvas draws T1\'s bar in T1\'s accent and NO button',
+        read6?.announcement?.content === live6.announcement_content && read6?.portal_button === false && read6?.portal_button_style === 'icon-and-text' && read6?.portal_button_signup_text === 'Subscribe'
+          && off6.stripFirst && off6.words === WORDS6 && off6.background === rgb(live6.accent_color) && !off6.buttonShown, JSON.stringify({ off6, row: { portal_button: read6?.portal_button } }))
+      const onAt = Date.now()
+      let restored521 = false
+      try {
+        await setSurfaces6({ portal_button: true })
+        check('T1 — the button switched ON with the staff token and read back', (await surfaces6()).portal_button === true)
+        await open(editor(P['6']))
+        await paintedFrom('home', 'site')
+        const on6 = await shimsWhen((x) => x.buttonShown)
+        check('T1 — reopened, the re-read draws Ghost\'s own button: the person icon and "Subscribe", bottom-right', on6.buttonShown && on6.label === ' Subscribe ' && on6.stripFirst, JSON.stringify(on6))
+        // THE CANVAS AGAINST T1's OWN PAGE, at the same device: the bar's height within 1px, the button's box within 2px
+        for (const [name, width, height] of [['desktop', 1440, 900], ['tablet', 834, 1112], ['mobile', 390, 844]]) {
+          await device521(name)
+          const canvas = await shimsWhen((x) => x.buttonShown === width >= GS.PORTAL_MIN_WIDTH)
+          const ctx = await browser.newContext({ viewport: { width, height } })
+          const live = await ctx.newPage()
+          await live.goto(`${g.origin}/`, { waitUntil: 'load' })
+          await live.waitForSelector('#announcement-bar-root .gh-announcement-bar', { timeout: 30000 })
+          await live.waitForSelector('#ghost-portal-root', { state: 'attached', timeout: 30000 })
+          if (width >= GS.PORTAL_MIN_WIDTH) await live.waitForSelector('iframe[title="portal-trigger"]', { state: 'attached', timeout: 30000 })
+          else await live.waitForTimeout(4000)
+          await live.waitForTimeout(800)
+          const ghostBar = await live.evaluate(() => document.querySelector('#announcement-bar-root .gh-announcement-bar').getBoundingClientRect().height)
+          let ghostBox = null
+          const frameEl = await live.$('iframe[title="portal-trigger"]')
+          if (frameEl) {
+            const f = await frameEl.contentFrame()
+            await f.waitForSelector('.gh-portal-triggerbtn-container', { timeout: 15000 })
+            const fr = await frameEl.boundingBox()
+            const inner = await f.evaluate(() => { const r = document.querySelector('.gh-portal-triggerbtn-container').getBoundingClientRect(); return { x: r.x, y: r.y, width: r.width, height: r.height } })
+            const vw = await live.evaluate(() => [document.documentElement.clientWidth, document.documentElement.clientHeight])
+            ghostBox = { right: vw[0] - (fr.x + inner.x + inner.width), bottom: vw[1] - (fr.y + inner.y + inner.height), width: inner.width, height: inner.height }
+          }
+          await ctx.close()
+          const near = (a, b, d) => a !== null && b !== null && ['right', 'bottom', 'width', 'height'].every((k) => Math.abs(a[k] - b[k]) <= d)
+          if (width >= GS.PORTAL_MIN_WIDTH) {
+            check(`T1 — at ${width}: the canvas matches T1's own page — the bar ${Math.round(canvas.barHeight)}px against Ghost's ${Math.round(ghostBar)}px (±1), the button's box within 2px`,
+              Math.abs(canvas.barHeight - ghostBar) <= 1 && near(canvas.box, ghostBox, 2), JSON.stringify({ canvas: { bar: canvas.barHeight, box: canvas.box }, ghost: { bar: ghostBar, box: ghostBox } }))
+          } else {
+            check(`T1 — at ${width}: neither page has a button (Portal draws none below ${GS.PORTAL_MIN_WIDTH}px)`, !canvas.buttonShown && ghostBox === null, JSON.stringify({ canvas: canvas.buttonShown, ghost: ghostBox }))
+          }
+        }
+        await device521('desktop')
+        // THE BAR CLEARED in Ghost: the audience emptied, the editor reopened — the re-read writes it, and the strip is gone
+        await setSurfaces6({ announcement_visibility: '[]' })
+        await open(editor(P['6']))
+        await paintedFrom('home', 'site')
+        const cleared = await rowWhen((r) => r?.announcement?.visibility === '[]')
+        const gone6 = await shimsWhen((x) => !x.stripFirst)
+        check('T1 — cleared in Ghost (no audience), reopened: the re-read writes it and the strip is gone, the header at the very top; the button stays',
+          cleared?.announcement?.visibility === '[]' && !gone6.stripFirst && gone6.canvasTop === 0 && gone6.buttonShown, JSON.stringify(gone6))
+        await setSurfaces6({ portal_button: live6.portal_button, announcement_visibility: live6.announcement_visibility })
+        restored521 = true
+        note('T1 — the button was on (and the bar cleared for part of it) for', `${Math.round((Date.now() - onAt) / 1000)} s`)
+      } finally {
+        if (!restored521) await setSurfaces6({ portal_button: live6.portal_button, announcement_visibility: live6.announcement_visibility })
+        const after6 = await surfaces6()
+        check(`T1 — put back and read back from Ghost: the button ${live6.portal_button ? 'on' : 'off'} and the bar to ${live6.announcement_visibility}`,
+          after6.portal_button === live6.portal_button && after6.announcement_visibility === live6.announcement_visibility, JSON.stringify(after6))
       }
     }
 

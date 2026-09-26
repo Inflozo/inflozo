@@ -350,16 +350,27 @@ test('Story 5.20: no source file names a Stripe setting — the member record is
   assert.match(readFileSync('probe-rule.test.ts', 'utf8'), /stripe_/i)
 })
 
-test('Story 5.20: Re-check reads the site as the caller\'s before it asks Ghost anything', () => {
-  // `call()` decrypts whatever site id it is handed, and Re-check's id is `projects.linked_site_id` — a column the client
-  // may write, whose foreign key checks only that the site exists. So `readMembers` must refuse a site that is not the
-  // caller's BEFORE the chokepoint runs: an owned-row read (`user_id`) ahead of the first `call(`.
+test('Story 5.20: the editor\'s re-read reads the site as the caller\'s before it asks Ghost anything', () => {
+  // `call()` decrypts whatever site id it is handed, and the re-read's id is `projects.linked_site_id` — a column the
+  // client may write, whose foreign key checks only that the site exists. So `readSettings` (Story 5.21's name for 5.20's
+  // `readMembers`, widened) must refuse a site that is not the caller's BEFORE the chokepoint runs: an owned-row read
+  // (`user_id`) ahead of the first `call(`. Since 5.21 it runs on every open of the editor, not only on a press.
+  const ownedFirst = (body: string) => {
+    const owned = body.indexOf(".eq('user_id', args.userId)")
+    const asked = body.indexOf('call({')
+    return owned > 0 && asked > 0 && owned < asked
+  }
   const source = readFileSync(SITE_PROBE, 'utf8')
-  const body = source.slice(source.indexOf('export async function readMembers'))
-  const owned = body.indexOf(".eq('user_id', args.userId)")
-  const asked = body.indexOf('call({')
-  assert.ok(owned > 0 && asked > 0, 'readMembers reads the owned row and calls the chokepoint')
-  assert.ok(owned < asked, 'readMembers asks Ghost before it has checked the site is the caller\'s')
+  const start = source.indexOf('export async function readSettings')
+  assert.ok(start >= 0, 'readSettings is not in site-probe.ts — this test is pointed at nothing')
+  const next = source.indexOf('\nexport ', start + 1)
+  const body = source.slice(start, next < 0 ? undefined : next)
+  assert.ok(ownedFirst(body), 'readSettings asks Ghost before it has checked the site is the caller\'s')
+  // the control: the OLD ORDER — the chokepoint asked first, the owned row read after — fails the same check
+  const call = body.slice(body.indexOf('    const response = await call({'), body.indexOf('\n', body.indexOf('    const response = await call({')) + 1)
+  const oldOrder = body.replace(call, '').replace('    const admin = supabaseAdmin()\n', `    const admin = supabaseAdmin()\n${call}`)
+  assert.ok(oldOrder !== body && oldOrder.indexOf('call({') < oldOrder.indexOf(".eq('user_id', args.userId)"), 'control: the old order was built')
+  assert.equal(ownedFirst(oldOrder), false, 'control: a body that asks Ghost before the ownership read is caught')
 })
 
 test('the Admin chokepoint is imported by the routes named here and by nothing else', () => {

@@ -15,13 +15,16 @@ import {
   isAccent,
   navOf,
   PLAN_COPY,
+  PORTAL_STYLES,
   portalState,
   PREVIEW_COPY,
   probePatch,
   settingsOf,
+  settingsPatch,
   settingsReadable,
   SIGNUP_ACCESS,
   storedMembers,
+  storedSurfaces,
   THEME_PREFIX,
 } from './lib/probe-rule.ts'
 import { readFileSync } from 'node:fs'
@@ -89,7 +92,11 @@ test('the payload never leaves injectionFlag — it answers a boolean and nothin
 // ── The matrix's "Portal readable" and "Portal unreadable" rows.
 
 test('portal_button is read when Ghost sends a boolean, and defaults to on when it does not', () => {
-  const state = (values: Record<string, unknown>) => portalState(settingsOf(payload(values)))
+  // the pair alone — Story 5.21's look rides the same reader and is held in its own test below
+  const state = (values: Record<string, unknown>) => {
+    const { portal_button, portal_button_source } = portalState(settingsOf(payload(values)))
+    return { portal_button, portal_button_source }
+  }
   // Executed: BOTH test Ghosts answer a real `false`, so this is the branch the live proof takes.
   assert.deepEqual(state({ portal_button: false }), { portal_button: false, portal_button_source: 'probe' })
   assert.deepEqual(state({ portal_button: true }), { portal_button: true, portal_button_source: 'probe' })
@@ -103,6 +110,21 @@ test('portal_button is read when Ghost sends a boolean, and defaults to on when 
     )
   }
   assert.deepEqual(state({}), { portal_button: true, portal_button_source: 'default' })
+})
+
+test('Story 5.21: the button\'s look is read off the same payload — Ghost\'s three styles, else icon-and-text; any string label, else Subscribe', () => {
+  const look = (values: Record<string, unknown>) => {
+    const { portal_button_style, portal_button_signup_text } = portalState(settingsOf(payload(values)))
+    return { portal_button_style, portal_button_signup_text }
+  }
+  // Ghost's own three (`default-settings.json`'s isIn, both majors) are readings, each kept as sent
+  for (const style of PORTAL_STYLES) assert.equal(look({ portal_button_style: style }).portal_button_style, style)
+  // anything else — absent, junk, another case — is Ghost's own default, never a fourth look
+  for (const junk of [undefined, null, 'ICON-ONLY', 'neon', 3]) assert.equal(look({ portal_button_style: junk }).portal_button_style, 'icon-and-text', JSON.stringify(junk))
+  // the label is ANY string — the empty one included, which draws no label, as Portal does — else Ghost's "Subscribe"
+  assert.equal(look({ portal_button_signup_text: 'Join us' }).portal_button_signup_text, 'Join us')
+  assert.equal(look({ portal_button_signup_text: '' }).portal_button_signup_text, '')
+  for (const junk of [undefined, null, 42, {}]) assert.equal(look({ portal_button_signup_text: junk }).portal_button_signup_text, 'Subscribe', JSON.stringify(junk))
 })
 
 // ── The matrix's "Announcement present" row, and its "missing keys stored as null" handling.
@@ -561,5 +583,79 @@ test('Story 5.20: the stored record is re-checked on the way out, and a site wit
   assert.deepEqual(storedMembers({ public_url: 'x', members: { signup_access: 'none', paid_enabled: false, extra: 1 } }), { signup_access: 'none', paid_enabled: false })
   for (const junk of [null, undefined, 'x', {}, { members: null }, { members: [] }, { members: { signup_access: 'nobody', paid_enabled: false } }, { members: { signup_access: 'all' } }]) {
     assert.equal(storedMembers(junk), null, JSON.stringify(junk))
+  }
+})
+
+/* ───────── STORY 5.21 — ONE MAPPING FOR EVERY KEY THE SETTINGS PAYLOAD DECIDES, and the snapshot the canvas draws Ghost's
+   two surfaces from. The payload here is what T1 answered at the recording (MEASUREMENTS §55, `surfaces.json`'s
+   `settings`), with this test's own Stripe keys fed in to prove none comes out. */
+
+const surfacesRecording = (major: '5' | '6') =>
+  JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'packages', 'ghost-shim', 'fixtures', `ghost${major}`, 'surfaces.json'), 'utf8')) as {
+    settings: Record<string, unknown>
+  }
+
+test('Story 5.21: connect, the daily check and the editor\'s re-read write the SAME keys the same way — probePatch is settingsPatch plus config\'s own', () => {
+  for (const major of ['5', '6'] as const) {
+    const settings = settingsOf(payload({ ...surfacesRecording(major).settings, ...STRIPE, codeinjection_head: '' }))
+    const previous = { public_url: 'https://x.example/', plan_ask: true, something_later: 7 }
+    const reread = settingsPatch(previous, settings)
+    const { site_settings } = probePatch({ previous, previousSource: null, settings, verdict: null })
+    // config's key is the only difference: the probe clears an unasked plan question, the re-read never touches it
+    const { plan_ask: kept, ...rest } = reread
+    assert.equal(kept, true, 'the re-read leaves plan_ask alone — it is config\'s, never the settings payload\'s')
+    assert.deepEqual(site_settings, rest, `ghost${major}: the probe's patch is the shared mapping's`)
+    // every key the payload decides, from named keys: the flag, the Portal four, the announcement verbatim, the brand
+    assert.equal(reread.code_injection, false)
+    assert.equal(reread.portal_button, false)
+    assert.equal(reread.portal_button_source, 'probe')
+    assert.equal(reread.portal_button_style, 'icon-and-text')
+    assert.equal(reread.portal_button_signup_text, 'Subscribe')
+    assert.deepEqual(reread.announcement, { content: '<p>Fixture announcement — seeded for VERIFY 21.</p>', background: 'accent', visibility: '["visitors"]' })
+    assert.equal((reread.brand as { accent: string }).accent, surfacesRecording(major).settings.accent_color)
+    // and it gains keys and loses none
+    assert.equal(reread.public_url, 'https://x.example/')
+    assert.equal(reread.something_later, 7)
+    assert.doesNotMatch(JSON.stringify(reread), /stripe|sk_test|pk_test|acct_/i, 'a Stripe key or value reached the snapshot')
+  }
+})
+
+test('Story 5.21: the re-read keeps a declared Portal answer over an assumption, and a reading still wins', () => {
+  const answered = { portal_button: false, portal_button_source: 'declared' }
+  const kept = settingsPatch(answered, settingsOf(payload({})))
+  assert.equal(kept.portal_button, false)
+  assert.equal(kept.portal_button_source, 'declared')
+  const read = settingsPatch(answered, settingsOf(payload({ portal_button: true, portal_button_style: 'icon-only' })))
+  assert.equal(read.portal_button, true)
+  assert.equal(read.portal_button_source, 'probe')
+  assert.equal(read.portal_button_style, 'icon-only')
+})
+
+test('Story 5.21: the snapshot the canvas draws from is re-checked on the way out, and junk draws nothing', () => {
+  const stored = storedSurfaces({
+    public_url: 'x',
+    announcement: { content: '<p>Hi</p>', background: 'accent', visibility: '["visitors","free_members",7]' },
+    portal_button: true,
+    portal_button_source: 'probe',
+    portal_button_style: 'text-only',
+    portal_button_signup_text: '',
+    brand: { accent: '#3832e5', nav: [] },
+  })
+  assert.deepEqual(stored, {
+    announcement: { content: '<p>Hi</p>', background: 'accent', visibility: ['visitors', 'free_members'] },
+    portal: { button: true, style: 'text-only', label: '' },
+    accent: '#3832e5',
+  })
+  // Ghost's JSON string, or an array as `navOf` admits — never anything else
+  assert.deepEqual(storedSurfaces({ announcement: { visibility: ['paid_members'] } }).announcement.visibility, ['paid_members'])
+  for (const junk of [null, 'visitors', '{"a":1}', 'not json', 42]) assert.deepEqual(storedSurfaces({ announcement: { visibility: junk } }).announcement.visibility, [], JSON.stringify(junk))
+  // a hostile accent never reaches CSS, and a button that is not `true` is off
+  assert.equal(storedSurfaces({ brand: { accent: 'red;}body{display:none' } }).accent, null)
+  for (const junk of ['true', 1, null, undefined]) assert.equal(storedSurfaces({ portal_button: junk }).portal.button, false, JSON.stringify(junk))
+  // a snapshot written before this story carries no look: Ghost's own defaults
+  assert.deepEqual(storedSurfaces({ portal_button: true }).portal, { button: true, style: 'icon-and-text', label: 'Subscribe' })
+  // nothing at all — never probed, or junk — has nothing to draw
+  for (const junk of [null, undefined, 'x', [], {}]) {
+    assert.deepEqual(storedSurfaces(junk), { announcement: { content: '', background: '', visibility: [] }, portal: { button: false, style: 'icon-and-text', label: 'Subscribe' }, accent: null }, JSON.stringify(junk))
   }
 })

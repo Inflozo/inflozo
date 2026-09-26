@@ -122,6 +122,16 @@ const IDENTITY = join('components', 'kit', 'logo.tsx')
  */
 const EMAIL = join('lib', 'email-shell.ts')
 
+/*
+ * THE FOURTH, and it is Ghost's (Story 5.21). The canvas draws Ghost's announcement bar and Portal's floating button
+ * where Ghost puts them, and they stand in for GHOST'S page, not Inflozo's interface (FR-H5, R-74's scope): their
+ * stylesheets and icons are Ghost's own, recorded on both majors and held equal to the recording by
+ * `ghost-surfaces.test.ts`. Tokenising them would be redrawing Ghost. So the literals stay, and the test BELOW pays for
+ * the exemption: every colour the file writes is one Ghost itself put on a page (MEASUREMENTS §55's `surfaces.json`), or
+ * Ghost's own default accent, read in its source (`default-settings.json`'s `accent_color`, both majors).
+ */
+const GHOST = join('lib', 'ghost-surfaces.ts')
+
 test('no .ts or .tsx under apps/web carries a colour literal', () => {
   const walk = (dir: string): string[] =>
     readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
@@ -135,7 +145,7 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
   // The ONE exempt path, not any path ending in it: `endsWith` would have exempted a future
   // `components/lib/style-pack.ts` too, which is the habit the name was chosen against
   // (review, 2026-09-06).
-  const named = [PACK_DATA, IDENTITY, EMAIL]
+  const named = [PACK_DATA, IDENTITY, EMAIL, GHOST]
   const exempt = named.map((p) => join(process.cwd(), p))
   // An exemption cannot outlive the file it names.
   for (const [i, f] of exempt.entries()) {
@@ -173,6 +183,20 @@ test('every colour the email shell writes is a token value in the theme', () => 
         'custom property, so the value is copied — and a copy that is not checked is a copy that drifts.',
     )
   }
+})
+
+test('every colour Ghost\'s two surfaces write is one Ghost itself put on a page, or Ghost\'s own default accent', () => {
+  const source = readFileSync(join(process.cwd(), GHOST), 'utf8')
+  const written = [...new Set(source.match(/#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g) ?? [])]
+  assert.ok(written.length > 0, `${GHOST} carries no colour at all — delete its exemption with them`)
+  // what Ghost put on T1's and T3's pages, as recorded: the bar's sheet and icon, Portal's frame sheet and icon
+  const recorded = ['5', '6'].map((m) => readFileSync(join(process.cwd(), '..', '..', 'packages', 'ghost-shim', 'fixtures', `ghost${m}`, 'surfaces.json'), 'utf8')).join('\n')
+  // Ghost's default accent is not on a page whose site has its own — it is `default-settings.json`'s, read in source
+  const DEFAULT_ACCENT = '#FF1A75'
+  for (const colour of written.filter((c) => c !== DEFAULT_ACCENT)) {
+    assert.ok(recorded.includes(colour), `${GHOST} writes ${colour}, which Ghost put on no recorded page — a colour of our own in Ghost's look`)
+  }
+  assert.ok(source.includes(`'${DEFAULT_ACCENT}'`), 'the default accent is the one colour this test names')
 })
 
 test('every face the theme names is a face layout.tsx loads', () => {

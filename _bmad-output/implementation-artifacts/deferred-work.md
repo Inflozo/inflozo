@@ -6229,8 +6229,12 @@ origin: Story 5.20's review (2026-09-26). `apps/web/server-wiring.test.ts:349-36
 owner: unowned — the next story that touches `site-probe.ts`: either an executing step in `run-verify-live-content.cjs`
   (a throwaway project pointed at the OTHER major's site row, Re-check refused, that row's `site_settings` unchanged) or
   the ownership read lifted into an injectable client.
-location: `apps/web/server/site-probe.ts` (`readMembers`) · `apps/web/server-wiring.test.ts`
+location: `apps/web/server/site-probe.ts` (`readSettings`, 5.20's `readMembers`) · `apps/web/server-wiring.test.ts`
 reason: RLS is not what guards this path (the service role reads), so the executing test is the only pin.
+also: **AMENDED 2026-09-26 by Story 5.21's Dev.** `readMembers` is now `readSettings` (and `recheckMembers` `recheckSite`):
+  the same one Admin `settings/` read, widened to every key the payload decides and run once each time the editor opens,
+  so the path runs far more often. The source-text assertion followed the rename and gained a control (the old order —
+  the chokepoint asked before the ownership read — fails it); the executing test is still owed.
 
 ### DW-273: the untouched box is always Ghost 6's recording
 
