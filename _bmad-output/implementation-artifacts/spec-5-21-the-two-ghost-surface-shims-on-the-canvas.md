@@ -3,7 +3,7 @@ title: 'Story 5.21 — The two Ghost-surface shims on the canvas'
 type: 'feature'
 created: '2026-09-26'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 baseline_commit: 'f73c33d9aad31caaa264daf609810c9b3398cda1'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
