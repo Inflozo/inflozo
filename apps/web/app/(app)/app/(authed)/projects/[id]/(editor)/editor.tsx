@@ -581,8 +581,9 @@ export function Editor({
       // STORY 5.21 — the snapshot as Ghost now answers it: only the two shims are redrawn, never the page
       surfacesNow.current = answer.surfaces
       setSurfaces(answer.surfaces)
+      // …only into a document that holds a painted `#canvas`: a fresh document ahead of its paint gets them from `paint()`
       const doc = frame.current?.contentDocument
-      if (doc && paintedAt.current !== null) drawShims(doc)
+      if (doc && paintedAt.current !== null && doc.getElementById('canvas') !== null) drawShims(doc)
       if (speaks) setSaid(membersOff(answer.members) ? PAYWALL_WORDS.stillOff(name) : PAYWALL_WORDS.on(name))
     })
   }
@@ -1890,7 +1891,9 @@ export function Editor({
 
   /** STORY 5.21 — GHOST'S TWO SURFACES ON THE CANVAS (FR-H5): the announcement strip as the body's FIRST child, before
    *  `#canvas` — where Ghost prepends `#announcement-bar-root`, so it takes real space and pushes the design down — and
-   *  Portal's button as a shadow host at the body's END, fixed bottom-right. Drawn by `paint()` after it writes `#canvas`,
+   *  Portal's button as a shadow host at the body's END — at rest; the chrome hosts the editor appends later on a hover
+   *  or a selection (`chromeLayers`) may follow it, and stack above it as they do above Portal's own — fixed bottom-right.
+   *  Drawn by `paint()` after it writes `#canvas`,
    *  and by a re-read that lands (the shims alone); never by `/pilots`, the Picker, the ring or any snapshot, which never
    *  call this. Every rule is `lib/ghost-surfaces.ts`'s; this is the DOM write. Both go and come back whole each time,
    *  per the visitor View as previews, the snapshot in hand and the canvas in force (never a template surface). Dark mode
@@ -1908,7 +1911,8 @@ export function Editor({
       return el
     }
     if (bar !== null && s !== null) {
-      // Ghost's script appends its sheet to `<head>` once, at run time — so does this, once per canvas document
+      // Ghost's script appends its sheet to `<head>` once, at run time — so does this, once per canvas document, and it
+      // stays there once a bar has drawn (a canvas with the sheet and no strip is the Paid visitor's, and inert)
       if (doc.head.querySelector(`[${SHEET}]`) === null) {
         const sheet = doc.createElement('style')
         sheet.setAttribute(SHEET, SURFACE.strip)

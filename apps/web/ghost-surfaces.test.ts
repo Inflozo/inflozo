@@ -35,7 +35,7 @@ const dom = (html: string) => {
 
 type Recording = {
   settings: Record<string, unknown>
-  announcement: { style: string; at: Record<string, { index: number; bar_box: { height: number }; close_svg: string; computed: { font_family: string }; body_font: string }> }
+  announcement: { style: string; at: Record<string, { index: number; bar_box: { height: number }; close_svg: string; computed: { font_family: string }; body_font: string; script: { src: string } | null }> }
   portal: {
     frame_style: string
     off: Record<string, { trigger: boolean }>
@@ -258,6 +258,9 @@ test('§55: the strip\'s stylesheet, close icon and rules are Ghost\'s own, verb
       assert.equal(at.index, 0, `ghost${m} ${device}: Ghost's root is not the body's first child`)
       // no font of its own: the bar inherits the page's body font, which the strip's root stands in for
       assert.equal(at.computed.font_family, at.body_font, `ghost${m} ${device}: the bar does not inherit the body font`)
+      // the CONTROL for the cleared-bar claim below: the same selector found `{{ghost_head}}`'s script while the bar stood
+      // (review, 2026-09-26: a result whose control did not pass is not a result)
+      assert.match(at.script?.src ?? '', /announcement-bar@~1\.1\//, `ghost${m} ${device}: the recorder's script selector found no script while the bar stood`)
     }
     // a one-line bar at 1440 is 48px tall — the min-height the sheet sets
     assert.equal(Math.round(r.announcement.at['1440x900']?.bar_box.height ?? 0), 48)

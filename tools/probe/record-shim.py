@@ -652,7 +652,14 @@ def write_fixture_index(fixtures):
             # THIS recorder's recordings only (Story 5.21): another recorder writes beside them —
             # `record-ghost-surfaces.cjs`'s `surfaces.json` — and `contract.test.ts` holds every entry here
             # to THIS command, so a file carrying another command is that recorder's, read by its own test
-            if f.endswith('.json') and json.load(open(os.path.join(d, f))).get('command') == COMMAND:
+            if not f.endswith('.json'):
+                continue
+            try:
+                with open(os.path.join(d, f)) as fh:
+                    command = json.load(fh).get('command')
+            except (ValueError, AttributeError):
+                continue  # not a recording of anyone's; never this index's (review, 2026-09-26)
+            if command == COMMAND:
                 found.append((major, f[:-5]))
     ident = lambda m, t: (m + '_' + t).replace('-', '_')
     lines = [

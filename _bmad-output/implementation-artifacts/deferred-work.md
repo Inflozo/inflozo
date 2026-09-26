@@ -6321,3 +6321,35 @@ origin: Story 5.21's Create (2026-09-26), read in Portal's source (2.69.339 `tri
 owner: unowned — a routine call of Story 5.21's planning (ponytail: the choice moves no edge by more than 2px). The five
   presets and a custom image are the upgrade.
 location: `apps/web/lib/ghost-surfaces.ts` · `apps/web/lib/probe-rule.ts`
+
+### DW-279: a re-read that lands and redraws Ghost's two surfaces is proven only by the hand-run live walk
+
+plain: When the editor opens it asks the linked Ghost site for its settings again and redraws the announcement strip and
+  the floating button from the answer. The automatic tests that run on every commit never see that answer — the keyboard
+  harness has no database, so every one of its re-reads is refused and the tests can only check that the old drawing
+  stays. Only the live walk on ghost6, run by hand for each story, sees a real answer redraw them.
+status: open
+severity: medium
+origin: Story 5.21's Review (2026-09-26), the Verification Gap layer: deleting the redraw in `recheck()` keeps `pnpm check`
+  and `pnpm keyboard` green. The keyboard journey counts the re-read's POST and asserts the stored snapshot stays drawn
+  when it is refused; `run-verify-live-content.cjs`'s (B) phase on T1 is the one place a landed answer is observed (R-82).
+owner: the story that next touches the harness's site header — a second harness snapshot handed on the second request, or
+  a harness-only answer for `recheckSite`, so one `pnpm keyboard` journey sees the button appear after a landed re-read.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`recheck`) · `apps/web/app/(app)/app/harness/editor/layout.tsx` · `tools/keyboard/journey.spec.mjs`
+
+### DW-280: the settings mapping writes the announcement and the brand over the snapshot even when the payload omits them
+
+plain: Every time Inflozo reads a site's settings from Ghost — on connect, in the daily check, and now every time the
+  editor opens — it writes the announcement bar and the brand colour into its saved copy from what Ghost sent. If Ghost's
+  answer is the right shape but happens to leave those keys out, the saved copy gets "nothing" written over a good value.
+  The member switches have a guard against exactly that; the announcement and the brand do not.
+status: open
+severity: low
+origin: Story 5.21's Review (2026-09-26), the Blind Hunter: `settingsPatch` writes `announcement: announcementOf(settings)`
+  and `brand: brandOf(settings)` unconditionally — `probePatch`'s behaviour since Story 3.3, so pre-existing, but the
+  mapping now runs on every open of the editor. `settingsReadable` guards the browse shape, not the presence of each key;
+  no Ghost read on T1 or T3 has ever omitted them (MEASUREMENTS §39, §55).
+owner: unowned until a Ghost that omits a public settings key is met; the fix is `membersOf`'s shape for each — leave the
+  previous value standing where the key is absent.
+location: `apps/web/lib/probe-rule.ts` (`settingsPatch`, `announcementOf`, `brandOf`)
+

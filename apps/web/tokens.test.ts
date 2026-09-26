@@ -189,8 +189,19 @@ test('every colour Ghost\'s two surfaces write is one Ghost itself put on a page
   const source = readFileSync(join(process.cwd(), GHOST), 'utf8')
   const written = [...new Set(source.match(/#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g) ?? [])]
   assert.ok(written.length > 0, `${GHOST} carries no colour at all — delete its exemption with them`)
-  // what Ghost put on T1's and T3's pages, as recorded: the bar's sheet and icon, Portal's frame sheet and icon
-  const recorded = ['5', '6'].map((m) => readFileSync(join(process.cwd(), '..', '..', 'packages', 'ghost-shim', 'fixtures', `ghost${m}`, 'surfaces.json'), 'utf8')).join('\n')
+  // what Ghost put on T1's and T3's pages, as recorded: the bar's sheet and close icon, Portal's frame sheet and icon —
+  // those fields ALONE, never the whole recording, which also carries each test site's own accent (review, 2026-09-26)
+  const recorded = ['5', '6']
+    .map((m) => JSON.parse(readFileSync(join(process.cwd(), '..', '..', 'packages', 'ghost-shim', 'fixtures', `ghost${m}`, 'surfaces.json'), 'utf8')) as {
+      announcement: { style: string; at: Record<string, { close_svg: string }> }
+      portal: { frame_style: string; styles: Record<string, Record<string, { icon?: { html: string } | null }>> }
+    })
+    .flatMap((r) => [
+      r.announcement.style, r.portal.frame_style,
+      ...Object.values(r.announcement.at).map((a) => a.close_svg),
+      ...Object.values(r.portal.styles).flatMap((s) => Object.values(s).map((l) => l.icon?.html ?? '')),
+    ])
+    .join('\n')
   // Ghost's default accent is not on a page whose site has its own — it is `default-settings.json`'s, read in source
   const DEFAULT_ACCENT = '#FF1A75'
   for (const colour of written.filter((c) => c !== DEFAULT_ACCENT)) {

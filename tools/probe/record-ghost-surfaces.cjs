@@ -45,7 +45,11 @@ const path = require('node:path')
 const crypto = require('node:crypto')
 const { chromium } = require('@playwright/test')
 
+// `--help` is answered by the header alone — this recorder WRITES to both servers, so it never runs on a flag (review, 2026-09-26)
+if (process.argv.slice(2).some((a) => a.startsWith('-'))) { console.error(fs.readFileSync(__filename, 'utf8').split('*/')[0]); process.exit(2) }
 const MAJORS = (process.env.MAJORS || '5,6').split(',').map((m) => m.trim()).filter((m) => m === '5' || m === '6')
+// a MAJORS that names no major is a mistake, never a green run with nothing recorded
+if (MAJORS.length === 0) { console.error(`MAJORS=${process.env.MAJORS} names neither 5 nor 6`); process.exit(2) }
 for (const m of MAJORS) {
   for (const key of [`GHOST${m}_URL`, `GHOST${m}_STAFF_ACCESS_TOKEN`]) {
     if (!process.env[key]) { console.error(`${key} is not set — read it from tools/probe/.env into this command's environment`); process.exit(2) }
@@ -201,6 +205,7 @@ async function recordMajor(browser, m) {
   // THE FIXTURE, AS IT STANDS — or no recording: the bar this records is item 21's, shown to a logged-out visitor
   let audience = []
   try { audience = JSON.parse(before.announcement_visibility ?? '[]') } catch {}
+  if (!Array.isArray(audience)) audience = []
   if (typeof before.announcement_content !== 'string' || before.announcement_content.trim() === '' || !audience.includes('visitors')) {
     throw new Error(`${g.name}'s announcement is not the fixture (words shown to visitors) — refusing to record a different bar: ${JSON.stringify({ content: before.announcement_content, visibility: before.announcement_visibility })}`)
   }

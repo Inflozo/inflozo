@@ -139,12 +139,16 @@ export function dropChromeLayers(doc: Document) {
  *  sticks. Chrome held in the fixed layer from the start would sit a strip's height below the header once it stuck, and
  *  nothing re-places it on scroll. So the answer follows the stuck state, and `editor.tsx`'s canvas scroll listener
  *  re-renders the moment it changes for the root the chrome is drawn on — the one switch happens as the root sticks. A
- *  sticky root whose `top` is `auto` never sticks at the top, and its chrome scrolls with the page. */
+ *  sticky root whose `top` is `auto` never sticks at the top, and its chrome scrolls with the page.
+ *  ponytail: the box is read against the VIEWPORT and `top` taken as pixels, which is right while the canvas document is
+ *    the scroller and every pilot's `top` is `0px`; a sticky root inside its own scroll container, one with a `%` top, or one
+ *    that has hit its parent's bottom edge would need the nearest scrollport's rect instead. */
 export const pinned = (root: HTMLElement) => {
   const style = root.ownerDocument.defaultView?.getComputedStyle(root)
   if (style?.position === 'fixed') return true
   if (style?.position !== 'sticky') return false
-  const top = Number.parseFloat(style.top)
+  // only a pixel `top` is compared; `auto`, a percentage or anything else never counts as stuck (review, 2026-09-26)
+  const top = style.top.endsWith('px') ? Number.parseFloat(style.top) : Number.NaN
   // half a pixel of slack: a stuck root's box can land a subpixel off its `top` at a fractional scroll
   return Number.isFinite(top) && root.getBoundingClientRect().top <= top + 0.5
 }

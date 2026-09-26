@@ -336,7 +336,7 @@ DOCS = [
   '390 beside the one at 834; then announcement_visibility set to [] — no script and no bar root. Every setting it '
   'switched is put back in a finally and READ BACK. States the spec\'s Ask First findings either way and exits 3 if one '
   'goes against the plan. Writes packages/ghost-shim/fixtures/ghost{5,6}/surfaces.json (MEASUREMENTS §55), which '
-  'apps/web/ghost-surfaces.test.ts holds the shims to; its header is its help — it reads no flag, so --help runs it.'),
+  'apps/web/ghost-surfaces.test.ts holds the shims to; its header is its help, and any flag (--help included) prints it and exits without running (review, 2026-09-26).'),
  ('tools/probe/record-page-number.py', 'tool', 'Page-number guard recorder',
   "Story 5.16a's recorder (standing rule 1, R-82): R-186's page-1 guard, executed on T1 and T3 before "
   'anything is emitted for it. Generates a probe theme whose default.hbs — the layout, where a site-wide '
