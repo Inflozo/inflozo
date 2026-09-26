@@ -874,6 +874,91 @@ numbers.
   Change Log 13–16 touch no render.
 - **`python3 tools/doc-audit.py --check`**, twice — PASS (the first run regenerated INDEX and the story board, as it
   does after an edit).
+- **After Change Log 17–19** (`eac42a7e`, `6046620a`): `pnpm check` exit 0 each time, with `style-guide.test.ts`'s
+  traced form, `dark-mode.test.ts`'s condition and `paywall.test.ts`'s no-media check among the passes; `pnpm keyboard`
+  green with Story 5.20's seven journeys; a local production build (`next build`) whose traces carry `packages/**` for
+  the editor, `/canvas`, `/pilots` and `/style-guide` (384 files each), against 0 at `d0c9ecda`; the canvas document
+  built byte-identical from `apps/web` and from the repo root (the matrix's working directory).
+
+**Results — the deployed walks (R-82), each on the deployment CI published from this checkout's HEAD.**
+
+- **`run-verify-editor.cjs` at `6046620a`** (`dpl_CPjUwCQrf9Xtkkgr7yUy2SwatDvZ`): **0 FAIL, 631 PASS on its first run**,
+  step 95's nine checks among them (the ink bar with no Remix and no Preview, C3a's card and the sample's tier line, the
+  cut and Ghost's own box for a logged out user, the Upgrade box for a free member, S4d's label and the whole post for a
+  paid member, the Design block absent, D5b's group with its caption on one line, Back to post), step 79 refusing
+  `/harness/editor/paywall`, and steps 5, 46 and 54; the two throwaway accounts deleted, users 13 before and after.
+  Recorded before it, stated plainly: at `d0c9ecda` (`dpl_AkwPJp773L7ib8BTcoDkF6YSMES7`) five runs died at step 2 — one
+  `page.goto` timeout on the sign-in link, then four at `painted('home')` — which was production itself failing
+  (Change Log 17); at `eac42a7e` (`dpl_GES87K9R2VZTJWgKbDxpsLhgsAzv`) one run gave 3 FAIL, 627 PASS — steps 46 and 54
+  (Change Log 18) and step 5's two `media-src` violations (Change Log 19), step 95 all PASS — then a request timeout.
+- **`run-verify-live-content.cjs` at `2f3b9194`, `NO_429=1`** (`dpl_6UKjxZRqnCRoohcRzFHMmhfqMkFb`): **0 FAIL, 134 PASS
+  on its first run**, over T3 and T1. On each: the Paywall canvas on the site's own content — Ghost's own box in the
+  site's accent (`#0da51e` on T3, `#3832e5` on T1), "1 tier · 1 free" with the hidden tier left out, Tiers in Ghost admin
+  → at the site's own anchor. On T3: the seeded members-off card in R-198's words with MEMBERS OFF in the bar, Re-check
+  busy and refused with the record unchanged (no Admin key yet), the Sites notice and its link, and the Newsletter's
+  panel line; then T3's Admin key stored through Manage keys, the canvas's re-check on open writing `{signup_access:
+  'all', paid_enabled: true}` from Ghost, **Subscription access Nobody for 8 s** (the staff token) with the record, the
+  card, "Members are still switched off" and the Sites notice following Ghost, and "Members are on for Ghost5." with the
+  card gone and Ghost's box back once it was restored — **read back `all` from Ghost**. 151 Content API requests against a
+  ceiling of 500; users 13 before and after. Recorded before it: at `6046620a` two runs passed every paywall check on
+  both majors and the seeded card, then waited on a Layers row reading "A22" that never exists — the walk's own fault,
+  fixed at `2f3b9194`.
+
+**The real services this story hit (R-82)** — keys by variable name only:
+
+- **Supabase, production.** `SUPABASE_DB_POOLER_URL`: the Schema apply and its controls on PostgreSQL 17.6 (`paywall`
+  refused before, accepted after, `paywal` refused, nothing left behind). `SUPABASE_URL` + `SUPABASE_SECRET_KEY`: every
+  walk's and probe's throwaway accounts, sites, projects and records, each deleted (users 13 before and after every run);
+  the members record written by the deployed app through the chokepoint and read back (`{"paid_enabled":true,
+  "signup_access":"all"}` — `jsonb` orders the keys, which the walk now compares field by field). With
+  `SUPABASE_PUBLISHABLE_KEY` too, a local `next dev` and a local `next start` against it to reproduce the outage — both
+  opened the editor, which is what pointed at the deployment itself.
+- **Vercel.** `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`: every deployment above READY for its commit; the Vercel
+  CLI's `logs` gave the outage's line (`"a4/13" is not a design in packages/library/designs/`); the files API's
+  `.vc-config.json` gave each function's file map (`canvas.func` 638 files at 5.19's `dpl_Eo65rryxfzDWpYS5Wntd2EKYq1FM`,
+  266 at `d0c9ecda`; after the fix `app.func` 791 and `canvas.func` 650, 384 of them under `packages/` with all 20
+  design files); `vercel pull` for the local repro (its production env file is gitignored under `.vercel/`).
+- **GitHub Actions** (`GITHUB_TOKEN`, read-only): CI `check`, `rls` and `deploy` green at `dbc57c12` (Schema),
+  `3a64da0b`, `d0c9ecda`, `eac42a7e`, `6046620a` and `2f3b9194`; at `4d513f5d` `deploy` failed in `vercel build` on
+  DW-246's Google Fonts fetch, and `d0c9ecda` re-pushed it. The per-push Render matrix green at every one of those seven
+  commits.
+- **Ghost T3 `ghost5.inflozo.com` 5.130.6 and T1 `ghost6.inflozo.com` 6.58.0** (`GHOST5_*`, `GHOST6_*`): the recorder
+  (MEASUREMENTS §54 — probe theme and restore, two probe posts created and deleted per server, T3's Subscription access
+  flipped and restored); Content API `tiers/` and `settings/` reads; the live walk above (the browser's Content API reads,
+  T3's Admin `settings/` through the deployed chokepoint with `GHOST5_ADMIN_API_KEY` stored for the walk's own site, and
+  `GHOST5_STAFF_ACCESS_TOKEN` for the switch). T3 read back at the end: `members_signup_access` `all`,
+  `allow_self_signup` and `paid_members_enabled` true. The newest post on both, "PROBE Gated Post", is 2026-08-20's
+  fixture, not this story's.
+- **Resend** and **Dodo**: not touched — this story sends no email and bills nothing.
+
+**The I/O matrix, row by row** (step 3's audit — each covering test ran and passed above):
+
+| Row | Covered by |
+|---|---|
+| Open the Paywall canvas | `pnpm keyboard` 5.20 · Template ▾ → Paywall; step 95 |
+| Untouched, Logged out user | `pnpm keyboard` (the box's words, the dim, the cut); `contract.test.ts` MEMBERS · the box node for node; step 95 |
+| Untouched, Free member | `pnpm keyboard` View as; step 95 |
+| Paid member | `pnpm keyboard` View as (no cut, no box, the label, "Showing: the whole post"); step 95 |
+| Sample content | `paywall.test.ts` (`tierLine` "5 tiers · 1 free"); `pnpm keyboard` (no admin link); step 95 |
+| The site's content (+ a failed tiers read) | the live walk on T3 and T1; `paywall.test.ts` `tierText` (a failed read is absent) |
+| Members off | `pnpm keyboard` 5.20 · members off; the live walk, seeded and by Ghost |
+| Members off, Sample content | `pnpm keyboard` 5.20 · members off, on Sample content |
+| Re-check (+ its refusal) | the live walk (Ghost's answer both ways, busy, the record); `pnpm keyboard` (busy, `aria-busy`, never `disabled`, refusal) |
+| No record yet | `probe-rule.test.ts` `storedMembers`; `paywall.test.ts` (nothing for no record); the live walk (the re-check on open writes it) |
+| A placed member ask, members off | `paywall.test.ts` `askLine`; `pnpm keyboard`; the live walk (the Newsletter's line) |
+| A synthesized instance | `paywall.test.ts` `warnsOn` |
+| Connect or the daily check | `probe-rule.test.ts` (the record from the payload, never Stripe); `paywall.test.ts` `membersNotice`; the live walk's Sites notice |
+| Choose a design | `pnpm keyboard` 5.20 · choosing a stand-in (one edit, "Design 1 of 2", "1 / 2", ⌘Z back) |
+| ◀ ▶ | `pnpm keyboard` (▶ steps the ring, one ⌘Z per edit) |
+| Reading along | `pnpm keyboard` 5.20 · reading along (R-192) |
+| A design with an ungated ask | `validate.test.ts` `member-ask-ungated` |
+| A tier query without the filter | `validate.test.ts` `tiers-unfiltered`; `ad36.test.ts` |
+| A button linked to Portal's Sign up | `agreement.test.ts` (both emitters, node for node); `a4/13`'s snapshot |
+| An inline Upgrade link | `agreement.test.ts` (`{{else}}` on the theme, unlinked words on the canvas) |
+| Another category targets the partial | `validate.test.ts` `paywall-target` |
+| `@member.email` on the partial | `contexts.test.ts` (library) — AD-38 by construction |
+| Reading time, withheld, 0, no preview | `contract.test.ts` MEMBERS · `{{reading_time}}`; `contexts.test.ts` (runtime) |
+| Reading time, withheld, above 0 | the same two |
 
 ## Owner's manual test
 
