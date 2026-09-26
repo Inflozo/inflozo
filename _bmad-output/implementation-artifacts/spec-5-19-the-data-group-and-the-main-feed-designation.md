@@ -3,7 +3,7 @@ title: 'Story 5.19 — The Data group and the main-feed designation'
 type: 'feature'
 created: '2026-09-25'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: 'ba3c821bd806f7a43f9a5deed582a1dbf71ee0fd'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -997,6 +997,10 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 | 14 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Home (Pilot sections) | Look at Layers, then click **Post Grids — Three Up**. | — | Its row now carries **MAIN FEED** — beside a name this long, the name shortens with "…" to make room. It had never been marked, and this story marks the first list on a page that has none. Its panel now offers **Preview page 1 · 2** below the settings. |
 | 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51/tag` | Editor, Tag (Pilot sections) | Open **⋯** on **Post grid** and choose **Hide**. Then open it again and choose **Show**. Then press **Undo** twice. | — | Hidden, a note appears at the head of Layers: *"This Tag page has no list of posts. Ghost still serves its page 2 onwards, which would repeat page 1, so your theme asks search engines to skip them."* Shown again, the note is gone. Two Undos leave the Tag page as it was. |
 | 16 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Put things back: open **⋯** on **Post Grids — Three Up** and choose **Delete**. Set Latest Post's **Source** back to **Latest**. | — | Home is as it was before step 2, and Latest Post shows your newest post again. |
+
+## Owner's test findings
+
+None. **Passed** (the owner, 2026-09-26): the Owner's manual test on `app.inflozo.com`.
 
 ## Questions for the owner
 
