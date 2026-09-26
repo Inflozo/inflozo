@@ -845,3 +845,27 @@ portal button** on and **Icon only** chosen. Open `…/#/settings/announcement-b
 icon-only → **icon-and-text**, `announcement_background` dark → **accent**, and the announcement's stored HTML back to the
 recorded `<p>Fixture announcement — seeded for VERIFY 21.</p>` (the words were unchanged); the audience stayed
 `["visitors"]` throughout. No defect recorded: the owner changed the site by hand.
+
+### Question 2 — Tell the user these two come from their Ghost site, and let them hide them while they build. Where?
+
+**In plain English.** You asked (2026-09-26, after the review): someone could take the strip or the floating button for
+something Inflozo added, and there is no way to get them out of the way while building. The story built both as
+untouchable — nothing happens when they are clicked, and Layers has no row for them — so adding a message and a hide
+switch changes two frozen rules, which is yours to renegotiate. Whatever is chosen: hiding is for the builder's eyes only
+(kept in this browser, like dark mode), it is never saved into the design and never changes what the published site does.
+
+**An example.** You point at the green strip. A small tag appears on it, as one does on a section, reading "From your
+Ghost site · Announcement bar". You click it: the Layers panel lights its row, whose line says "Your Ghost site adds this.
+Hide it here while you build, or change it in Ghost admin." The row's ⋯ menu has **Hide**, the same as a section's.
+
+1. **Layers rows, the same Hide as a section has. (RECOMMENDED)** The Layers panel gains a small group at its foot, "From
+   your Ghost site", with two rows — **Announcement bar** and **Subscribe button** — each with the ⋯ → Hide / Show every
+   section row already has, and nothing else (no drag, no rename, no settings). On the canvas each shim gets the hover
+   tag sections get, and a click selects its row. One vocabulary the user already knows (R-170), drawn from the Layers
+   frame and the Kit's row; built inside this story before Deploy, so you test it with the rest.
+2. **One switch in the top bar.** An eye beside **View as** that hides both at once, plus the hover tag and its sentence.
+   Fewer pieces, but a new control with no frame to lift it from, and no way to hide one and keep the other.
+3. **The message only.** The hover tag and the sentence, and no hide switch. Says what they are; leaves them in the way.
+
+**Ruled:** _(awaiting the owner)_
+
