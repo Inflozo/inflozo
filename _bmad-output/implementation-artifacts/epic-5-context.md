@@ -588,6 +588,30 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     draws links in a section writes its own rule only when it wants a different look, and then draws it on every
     ground it offers. The ground is read from `data-bg` alone, so a design drawn on a ground of its own locks the
     Background role there or writes its own rule (`docs/section-authoring.md`).
+  - **Story 5.20's planning (2026-09-26, read in Ghost's source and in Ghost Admin's shipped bundles on both majors,
+    and executed read-only on T1 and T3). Three premises moved.**
+    - **Tiers:** `/tiers/` returns the HIDDEN tier ("Ghost5 Pro"/"Ghost6 Pro", visibility `none`) and filters only
+      `active`, so FR-H6's `type:paid+visibility:public` filter is load-bearing, and §7.6 item 14(b) is settled.
+    - **Members off:** switching Subscription access to Nobody unlocks NOTHING. `forPost` calls `checkPostAccess`
+      unconditionally, so a members-only post still stops at the cut, and its box's buttons open nothing (no Portal).
+      C3b's "nothing on the site is gated" is therefore Question 2.
+    - **Reading time:** Ghost's `{{reading_time}}` prints the WHOLE post's time on a withheld body and is empty only at
+      `reading_time` 0, so DW-128 holds at 0 alone. The pilots print the field through `{{t}}` anyway.
+  - **The plan (Questions 1–3 open):**
+    - `paywall` becomes the first template surface, reached from the switcher's **Template surfaces** group. It shows
+      the style-guide article as a Paid-members-only post cut after its seventh block (C3a), per visitor through ONE
+      `postAccess` port.
+    - Untouched, the box is **Ghost's own**, recorded. Designed, it is the doc's one instance at
+      `partials/content-cta.hbs`, with the post at the root.
+    - The paywall is a `paywall` doc, so there is a **Schema phase** (`template_key_shape`); `paywall_design_id` is left
+      unwritten (DW-267).
+    - The site's switches are ONE record, `site_settings.members`, from the Admin `settings/` the probe already reads.
+      Connect, the daily check and Re-check write it; the Sites notice, the editor's lines and C3b read it — never a
+      synthesized (`auto-`) instance.
+    - Two validator rules (`member-ask-ungated`, `tiers-unfiltered`), plus a gate in `linkAttributes` for a Portal ask
+      the user chose (DW-154's half).
+    - Two stand-in paywalls in `fixtures/paywall/` prove the choosing half; A32's designs arrive in 10.107.
+    - DW-260 to DW-268 give every piece it leaves unbuilt an owner.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
   - **Story 5.15's planning (2026-09-22, read in the runtime, the CSP and the frames, and swept over the library):**
     `core` (Story 4.7) already holds still every module that is not edit-safe (`core.js:43`), and NOTHING CALLS IT:

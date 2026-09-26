@@ -5966,3 +5966,146 @@ owner: unowned — needs one. The story that first caps a Ghost-sourced Count pe
 location: `apps/web/lib/live-content.ts` (`bindingReads`, the `ids` branch) · `packages/ghost-shim/src/index.ts` (`feedExprs`)
 reason: the fix is either a paged read (several requests, and 5.18's per-key cache keyed per page) or a stated cap on
   picks, and a cap is the owner's — FR-H2 says no hard cap, the panel warns past 25.
+
+## Deferred from: Story 5.20's Create run (2026-09-26)
+
+### DW-260: FR-H6's pre-deploy repeat of the member-switch warnings has no story
+
+plain: When your site has members switched off, or cannot take free or paid sign-ups, the editor and the Sites screen
+  warn you from Story 5.20 on. The plan also promises the same warning again just before you ship, and nobody builds it.
+status: open
+severity: medium
+origin: Story 5.20's Create (2026-09-26). FR-H6 (`prd.md:336`) — "placing portal/signup sections or designing the paywall
+  on a site with members disabled warns in the editor, and a pre-deploy check repeats it" — and R-4 (`reconcile-designs-
+  decisions.md:307-329`), "warn at connect and pre-deploy". Story 7.18's Pre-flight (`epics.md:3181` onward) names FR-D16's
+  member-state row and FR-H2's warnings, never FR-H6's.
+owner: Story 7.18 (the deploy wizard's Pre-flight) — it reads Story 5.20's one record, `sites.site_settings.members`, and
+  lists the same sentences the Sites screen uses (`apps/web/lib/paywall.ts`). Its criteria gain it in Story 5.20's docs task.
+location: `epics.md` Story 7.18 · `apps/web/lib/paywall.ts` (Story 5.20)
+reason: nothing deploys yet; Story 5.20 builds the record and the connect and editor halves, which is everything that
+  can run before Epic 7.
+
+### DW-261: `partials/content-cta.hbs` has two compile rules no story names — the explicit reference and its own `{{{html}}}`
+
+plain: For a designed paywall to replace Ghost's own, the published theme must do two unusual things Ghost requires:
+  mention the paywall file once from a page template, and print the post's free preview itself. No story says so yet.
+status: open
+severity: high
+origin: Story 5.20's Create (2026-09-26). MEASUREMENTS §15b (executed 2/2 each way on both majors): the override takes
+  effect only when a template also references the partial explicitly, `{{> "content-cta"}}` — "a compile assertion".
+  And Ghost's own template's first line is `{{{html}}}` (`core/frontend/helpers/tpl/content-cta.hbs:1`, both majors, read
+  in source): a theme's override replaces the whole template, so without that line the free preview above the cut
+  disappears. It is a triple-stash, which the compile gate otherwise forbids (AD-5), so it is AD-5's second stated
+  exception, bounded to that partial's first line.
+owner: Story 7.3 (the conditional-template pattern that already names `partials/content-cta.hbs`, `epics.md:2682-2683`)
+  and Story 7.6 (FR-J5, "the paywall renders via the `content-cta.hbs` partial", `epics.md:2790-2791`). Their criteria gain
+  both rules in Story 5.20's docs task.
+location: `epics.md` Stories 7.3 and 7.6 · AD-5 in `ARCHITECTURE-SPINE.md` · the compiler (Epic 7)
+reason: Story 5.20 draws the paywall on the canvas and stores the choice; nothing compiles a theme before Epic 7.
+
+### DW-262: the Paywall editor's A32 half — the gate switcher, the four copy sets, the named-tier preview, and a way back to Ghost's own box
+
+plain: The paywall designs each come with four versions of their words — for a free post, a paid post, a free member
+  who should upgrade, and one named tier — and a switch to see each. Those arrive with the designs themselves, as does a
+  way to go back to Ghost's own paywall after choosing a design.
+status: open
+severity: medium
+origin: Story 5.20's Create (2026-09-26). `A32 Paywall - Spec.md` § Editing, inline and by gate (the P0·6 switcher
+  "Gate: Free signup · Paid · Upgrade · Named tier", in all twelve panels) and `P0-6 Editor State Switcher.dc.html:90-117`
+  ("each category declares its list; the switcher never invents one"). A tier-gated post needs a Paid member who holds
+  the tier: Ghost 6 previews one holding every active paid tier (`create-paid-member-shim.js` 6:18-41, read in source),
+  which is how Story 5.20's `postAccess` models its Paid member. Choosing a design materialises the `paywall` doc; C3a
+  draws no control that empties it again (FR-I1's emptying rule would give Ghost's box back).
+owner: Story 10.107 (A32's content model and first designs) — its criteria gain these in Story 5.20's docs task, with the
+  owner's own call on whether "back to Ghost's own box" is a control or undo alone.
+location: `epics.md` Story 10.107 · the Paywall canvas (`editor.tsx`, Story 5.20)
+reason: the gate list is the category's declaration (P0·6), and the copy sets are A32's content model; Story 5.20
+  previews one Paid-members-only post with View as alone.
+
+### DW-263: Stories 10.107–10.109 describe A32 as placeable and ring-cycled, which FR-H6 forbids
+
+plain: The three paywall design stories were written from the common category template, so they talk about "placing" a
+  paywall, "composing a page" from them and cycling them with the [ and ] keys. A paywall is chosen in its own screen and
+  is never placed on a page.
+status: open
+severity: medium
+origin: Story 5.20's Create (2026-09-26), the planning sweep: `epics.md:7089` ("so a Free user has something
+  placeable"), 10.109's owner gate (`:7147-7148`, "cycle it with `[` and `]`", "composes a page from the category's
+  designs") against FR-H6 (`prd.md:336`, a template surface absent from the Picker, Layers and Shuffle) and
+  `placement.ts:23-26` (`NON_PLACEABLE`).
+owner: Stories 10.107 and 10.109 — their criteria are corrected in Story 5.20's docs task: the Paywall editor is where
+  the owner gate chooses a design and cycles the ring, with ◀ ▶ in its panel.
+location: `epics.md` Stories 10.107–10.109
+reason: a criteria correction in a live document, owed where the finding was made (standing rule 3).
+
+### DW-264: the shim has no `{{price}}` helper, and a tier's `benefits` cannot be repeated
+
+plain: Showing a tier's price and its list of benefits needs two small pieces the editor does not have yet. The first
+  design that shows either builds them.
+status: open
+severity: low
+origin: Story 5.20's Create (2026-09-26). Prices arrive in the smallest currency unit and must print through Ghost's
+  `{{price}}` (`A32 Paywall - Spec.md:217-219`); `packages/ghost-shim/src/index.ts` has no `price`. The tier scope types
+  `benefits` as a `list` with no `of` (`packages/library/contexts/matrix.json:522-566`), and a list of plain values opens
+  no scope (`contexts.ts:293`), so no design can `data-repeat` over it.
+owner: Story 10.14 (A7's content model and first designs, the first category that prints a tier's price and benefits);
+  A32's 10.107 inherits them. Named in their criteria by Story 5.20's docs task.
+location: `packages/ghost-shim/src/index.ts` · `packages/library/contexts/matrix.json` (the tier scope)
+reason: Story 5.20's stand-ins print tier names alone, which proves the live and sample tier reads without either piece.
+
+### DW-265: the A32 spec offers "all tiers, including free" and greets a member by name, which FR-H6 and R-28 forbid
+
+plain: The paywall design notes offer a setting that would show every tier, and one that greets a signed-in member by
+  name. The first breaks the rule that only public paid tiers are shown, and the second prints a member's name into the
+  page, which the project never does.
+status: open
+severity: low
+origin: Story 5.20's Create (2026-09-26), the planning sweep: `A32 Paywall - Spec.md:234` ("Tiers: From Ghost, all") and
+  `:695` ("All, including free") against FR-H6's `type:paid+visibility:public`; `:96` and `:1118` ("greeted by name
+  where Ghost has one") against R-28 and AD-38. Story 5.20's `tiers-unfiltered` rule and the existing `@member` refusal
+  (`contexts.ts:186-188`) already refuse both at assembly.
+owner: Story 10.107 — it builds A32 without the two options, and its criteria say so (Story 5.20's docs task). The export
+  is never edited (R-74).
+location: `A32 Paywall - Spec.md` (read-only) · `epics.md` Story 10.107
+reason: the export is the design authority for what a design is built from, and the PRD for what it does; the rules
+  already hold, so this records the disagreement rather than leaving A32's author to find it by a failed build.
+
+### DW-266: the Post Content panel's "Open paywall editor →" link belongs to A25 and no story names it
+
+plain: The drawings put a link to the Paywall screen inside the settings of the article section on a post. That link
+  arrives with the article designs, and no story says so yet.
+status: open
+severity: low
+origin: Story 5.20's Create (2026-09-26): `C Post Body.dc.html:81` (C1a, "Open paywall editor →") and `:1064` (C1d,
+  "Open Paywall →"); EXPERIENCE.md:705 names them. Story 5.20 builds the entry the IA settles on — the Template
+  switcher's Template surfaces group (EXPERIENCE.md:218-222).
+owner: Story 10.83 (A25's content model and first designs) — its criteria gain it in Story 5.20's docs task.
+location: `epics.md` Story 10.83 · `C Post Body.dc.html` C1a, C1d
+reason: R-118 — a door arrives with the panel it sits in; no Post Content design exists before 10.83.
+
+### DW-267: `project_treatments.paywall_design_id` is never written
+
+plain: The database has an old column meant to remember which paywall a site uses. The editor stores the paywall with
+  its words and settings in the same place as every page's design instead, so that column stays empty and should go.
+status: open
+severity: low
+origin: Story 5.20's Create (2026-09-26). `complete_schema.sql:702-712` holds `paywall_design_id text` with no reader or
+  writer anywhere, and no column for a design's content or controls. Story 5.20 stores the paywall as the `paywall` doc
+  (AD-27's "the doc gains a row per stored state, not a second store"), and amends AD-27(a0) to say so.
+owner: Story 7.13 (the card design module, the first story to write `project_treatments`) — it drops the column in its
+  own Schema phase.
+location: `supabase/migrations/20260904120000_complete_schema.sql:705` · `SCHEMA.sql` · AD-27(a0)
+reason: dropping a column is a Schema phase of its own (R-99), and Story 5.20's migration only widens a constraint;
+  an unwritten column harms nothing until then.
+
+### DW-268: Starter 11.11 names "Hard Stop Card (A32 #2)", a design A32 does not have
+
+plain: One of the ready-made starter sites lists a paywall called "Hard Stop Card", which is not one of the twelve
+  paywall designs. The starter's own story should name a real one.
+status: open
+severity: low
+origin: Story 5.20's Create (2026-09-26), the planning sweep: `epics.md:7622` against the A32 roster
+  (`A32 Paywall - Spec.md:249-264`: #2 is Card). DW-157 covers other starter names, not this one.
+owner: Story 11.11 (the Ledger starter) — its own Create checks the composition against the finished library.
+location: `epics.md` Story 11.11
+reason: a starter is composed from the finished library, so the name is settled there, not here.
