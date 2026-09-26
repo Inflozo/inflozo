@@ -1613,3 +1613,53 @@ end $$;
 reset role;
 
 delete from auth.users where id = '99999999-5516-0000-0000-000000000009';
+
+-- ── STORY 5.20 — the paywall's key, on both tables ────────────────────────────────────────────
+--
+-- BEHAVIOURAL, for 5.8's reason. The paywall is the first template surface (R-197): its design choice, content and
+-- controls are the `paywall` doc, and View as's "looked at" record is its prefs row. A list that does not name the key
+-- refuses every write of either, so `paywall` is inserted into BOTH tables as the tenant, through RLS, and the near miss
+-- `paywal` — which must STILL be refused — is attempted beside it on each table. A regression in either direction turns
+-- one assertion red.
+
+reset role;
+
+delete from auth.users where id = '99999999-5520-0000-0000-000000000009';
+insert into auth.users(id) values ('99999999-5520-0000-0000-000000000009');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('eeeeeeee-5520-0000-0000-000000000001','99999999-5520-0000-0000-000000000009','Paywall','paywall-520','{}');
+
+set role authenticated;
+set request.jwt.claim.sub = '99999999-5520-0000-0000-000000000009';
+
+do $$
+declare
+  c_proj uuid = 'eeeeeeee-5520-0000-0000-000000000001';
+  c_user uuid = '99999999-5520-0000-0000-000000000009';
+begin
+  insert into public.project_templates(project_id,user_id,template_key,doc)
+    values (c_proj,c_user,'paywall','{"instances":[]}');
+  insert into public.project_template_prefs(project_id,user_id,template_key)
+    values (c_proj,c_user,'paywall');
+  raise notice 'PASS (5.20): paywall inserts on both tables';
+
+  begin
+    insert into public.project_templates(project_id,user_id,template_key,doc)
+      values (c_proj,c_user,'paywal','{}');
+    raise exception 'FAIL (5.20): `paywal` was accepted on project_templates — the list is exact';
+  exception when check_violation then
+    raise notice 'PASS (5.20): a key the list does not name is still refused on project_templates (%)', sqlstate;
+  end;
+
+  begin
+    insert into public.project_template_prefs(project_id,user_id,template_key)
+      values (c_proj,c_user,'paywal');
+    raise exception 'FAIL (5.20): `paywal` was accepted on project_template_prefs';
+  exception when check_violation then
+    raise notice 'PASS (5.20): a key the list does not name is still refused on project_template_prefs (%)', sqlstate;
+  end;
+end $$;
+
+reset role;
+
+delete from auth.users where id = '99999999-5520-0000-0000-000000000009';

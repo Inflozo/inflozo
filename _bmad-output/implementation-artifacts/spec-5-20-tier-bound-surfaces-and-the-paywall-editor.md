@@ -2,7 +2,7 @@
 title: 'Story 5.20 — Tier-bound surfaces and the Paywall editor'
 type: 'feature'
 created: '2026-09-26'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '33ef6b830c971f2db70d17a817420210ad95d544'
@@ -416,11 +416,21 @@ hypotheses until the first task RECORDS them (standing rule 1).
 
 **Execution:**
 
-- [ ] **SCHEMA FIRST, ALONE (R-99)** — `supabase/migrations/20260926120000_paywall_template_key.sql`, `…/architecture-Inflozo-2026-08-19/SCHEMA.sql`, `RLS-TEST.sql`, `supabase/tests/rls.sql`:
+- [x] **SCHEMA FIRST, ALONE (R-99)** — `supabase/migrations/20260926120000_paywall_template_key.sql`, `…/architecture-Inflozo-2026-08-19/SCHEMA.sql`, `RLS-TEST.sql`, `supabase/tests/rls.sql`:
   - `template_key_shape` accepts `paywall` on BOTH `project_templates` and `project_template_prefs`.
   - The migration is strictly wider and re-runnable: `drop … if exists`, then `add`.
   - The RLS proof accepts `paywall` and refuses the near-miss `paywal` as its control.
   - Apply it through `SUPABASE_DB_POOLER_URL`, read it back, and push `Story 5.20 - Schema - …` before any code.
+  - **Done (2026-09-26), on production (PostgreSQL 17.6), through `SUPABASE_DB_POOLER_URL`.** The control ran first,
+    on the same database, before the apply, inside a transaction that was rolled back (a throwaway user and project,
+    each key in its own savepoint): `index` inserted on both tables, and `paywall` was refused on both (`23514`,
+    `template_key_shape`). The migration was then applied in one transaction and read back from `pg_constraint`: both
+    constraints list `paywall`, `convalidated` true. In a second rolled-back transaction `paywall` and `index` insert on
+    both tables and `paywal` is still refused (`23514`); no user or project was left behind after either. `RLS-TEST.sql`
+    gained a Story 5.20 block (copied byte for byte to `supabase/tests/rls.sql`): `paywall` inserts on both tables as
+    the tenant and `paywal` is refused on each. `bash supabase/tests/run-rls-gate.sh` exits 0 with its three 5.20
+    notices; its control — the same gate with the migration withheld and HEAD's `SCHEMA.sql` — aborts at that block
+    (`rls.sql:1661`, `template_key_shape`, exit 3).
 
   -- The one stored key the story adds. Code that writes it must never ship before it.
 - [ ] **FIRST, before any code** — `tools/probe/theme-shim/index.hbs` + `tools/probe/record-shim.py`: add a `MEMBERS`
