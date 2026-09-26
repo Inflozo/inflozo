@@ -13,6 +13,7 @@ import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Layout } from '@/lib/reorder'
 import { MAKE_MAIN_FEED } from '@/lib/data-group'
+import { PAYWALL_WORDS } from '@/lib/paywall'
 
 /* B7 · LAYERS (`B Missing Surfaces.dc.html`:1538-1580), AS R-126 AMENDS IT — the panel body, and Story 5.4's whole
    Layers surface. The `<aside>`, its title and its fold stay in `editor.tsx`; everything below them is here, so that
@@ -442,5 +443,32 @@ export function Layers({
         </form>
       </dialog>
     </div>
+  )
+}
+
+/* ─────────────────────────────────────────── Story 5.20 — C3a's "HOW READERS REACH IT" CARD.
+
+   `C Post Body.dc.html:1407-1413`, in the Layers panel of the Paywall canvas, where C3a's left rail draws it at its foot
+   (EXPERIENCE.md:218-222 re-specified that rail as Layers plus the switcher's group, so the panel keeps its name and holds
+   no rows and no "+ Add section": the paywall is not placed, it is where Ghost cuts a post). The tier line counts the
+   source in force's PUBLIC tiers (`tierLine`) and is absent where the site was chosen but its tiers could not be read —
+   the pill says why; the link to Ghost admin's Tiers is drawn for a linked site alone, and opens a new tab. */
+export function HowReadersReachIt({ tiers, tiersHref }: { tiers: string | null; tiersHref: string | null }) {
+  return (
+    <section aria-labelledby="paywall-how-heading" data-paywall-how className="m-[10px] mt-auto flex flex-col gap-[7px] rounded border border-line bg-surface p-3">
+      <h2 id="paywall-how-heading" className="text-[12px] font-semibold">{PAYWALL_WORDS.howHeading}</h2>
+      <p className="text-[11.5px] leading-[1.5] text-ink-soft">{PAYWALL_WORDS.how}</p>
+      {tiers === null && tiersHref === null ? null : (
+        <div className="flex flex-col gap-1 border-t border-line-faint pt-2">
+          {tiers === null ? null : <span data-tier-line className="font-mono text-[10px] text-ink-soft-aa">{tiers}</span>}
+          {tiersHref === null ? null : (
+            <a href={tiersHref} target="_blank" rel="noreferrer" data-tiers-link className={`self-start rounded-sm text-[11.5px] font-semibold text-coral-text hover:underline ${ring}`}>
+              {PAYWALL_WORDS.tiersLink}
+              <span className="sr-only"> (opens in a new tab)</span>
+            </a>
+          )}
+        </div>
+      )}
+    </section>
   )
 }

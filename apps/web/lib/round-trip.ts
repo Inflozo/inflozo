@@ -1,5 +1,5 @@
 import { isDesigned, type ProjectDoc } from '@inflozo/section-runtime'
-import { canvasOfPageTwoKey, canvasOfTemplateKey, templateKeyOf, type CanvasKey } from './editor.ts'
+import { canvasOfPageTwoKey, canvasOfTemplateKey, isSurface, templateKeyOf, type CanvasKey } from './editor.ts'
 
 // AD-22's ROUND TRIP AND THE TEMPLATE COUNT, AS PURE RULES (Story 5.5's review, 2026-09-18). They lived inside
 // `editor.tsx`, where `node --test` cannot reach, and `canvas-switch.test.ts` asserted its own copies of them — so
@@ -11,9 +11,10 @@ export const EMPTY_DOC: ProjectDoc = { schemaVersion: 1, instances: [] }
 
 /** How many templates a site-wide section really reaches: every canvas offered that will actually SHIP — the
  *  auto-generated ones, plus each of the others that has a doc with sections in it. A membership canvas emits nothing
- *  until it is designed (FR-D6), so it is not counted while it is empty. */
+ *  until it is designed (FR-D6), so it is not counted while it is empty. STORY 5.20 — and a template SURFACE is never
+ *  counted: the paywall is a partial inside a post, so no header or footer ever reaches it (`isSurface`). */
 export const templatesOpen = (canvases: readonly CanvasKey[], docs: Readonly<Record<string, ProjectDoc>>, auto: ReadonlySet<CanvasKey>) =>
-  canvases.filter((key) => auto.has(key) || isDesigned(docs[templateKeyOf(key)] ?? EMPTY_DOC)).length
+  canvases.filter((key) => !isSurface(key) && (auto.has(key) || isDesigned(docs[templateKeyOf(key)] ?? EMPTY_DOC))).length
 
 /** One write to the session's docs, decided. THE FIRST EDIT MATERIALISES: the canvas written to stops being
  *  auto-generated. THE LAST SECTION OFF GIVES IT BACK: a synthesizable canvas (one with a `stacks` entry) whose doc now

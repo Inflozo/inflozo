@@ -3,7 +3,8 @@
 //
 // `/projects/<uuid>` is Home; `/projects/<uuid>/<key>` is another canvas; `/projects/<uuid>/home` 308s to the first.
 // The address names the project and the canvas and nothing else — selection, device, mode and folds are never in it.
-// Reserved and unknown segments (`paywall`, `cards`, an unbuilt `custom-…`) answer 404 until their story opens them,
+// Reserved and unknown segments (`cards`, an unbuilt `custom-…`) answer 404 until their story opens them (Story 5.20
+// opened `paywall`, the first TEMPLATE SURFACE — see `CANVASES`),
 // and `index` answers 404 PERMANENTLY (R-127: page 2 has no canvas of its own; since Story 5.16 it is a design of its
 // own, reached from the page-2 switch on its canvas and stored under `PAGE_TWO`'s keys below). The spec's Design Notes
 // are the record of why.
@@ -35,6 +36,13 @@ export const CANVASES = {
   'custom-member-home': { file: 'custom-member-home.hbs', label: 'Member home', caption: "A member's account page" },
   error: { file: 'error.hbs', label: '404', caption: 'When a page cannot be found' },
   private: { file: 'private.hbs', label: 'Private', caption: 'While your site is private' },
+  // STORY 5.20 — THE FIRST TEMPLATE SURFACE (C3a, EXPERIENCE.md:207-222): a canvas that is NOT A PAGE. Ghost renders the
+  // partial where `{{content}}` stops a post for a visitor who may not read it (`content.js:50-52`), so it has no site
+  // doc, no header or footer, no Section Picker, no page 2 and no Remix; the switcher draws it in its own group, last.
+  // Its stored key is its segment, `paywall` (`20260926120000_paywall_template_key.sql`). Its caption is NOT the spec's
+  // first "Where a members-only post stops": measured in the harness it overran the indented row by 7px and lost its
+  // end (R-171's one line), so it says the same in the indicator's own word, "gated" (R-170).
+  paywall: { file: 'partials/content-cta.hbs', label: 'Paywall', caption: 'Where a gated post stops', surface: true },
 } as const
 
 /** The one line under a custom template's row (R-171, the owner's own words). Custom templates reach the switcher with
@@ -62,6 +70,10 @@ export const CONDITIONAL: Partial<Record<CanvasKey, 'private-site'>> = { private
 
 /** D5b's Membership group — derived from the filename, so R-129's three names are written once. */
 export const isMembership = (key: CanvasKey): boolean => CANVASES[key].file.startsWith('custom-')
+
+/** STORY 5.20 — a TEMPLATE SURFACE (the switcher's "Template surfaces" group): a canvas that is not a page. Every reader
+ *  that would give it a site doc, a count in "Site-wide · N templates", a Section Picker or a page 2 asks this. */
+export const isSurface = (key: CanvasKey): boolean => 'surface' in CANVASES[key]
 
 /** The canvases a project offers, in D5b's row order. Never a literal: a conditional canvas joins the list the day its
  *  condition holds, and the switcher, the Layers count and the site-wide confirm all read this one function. The
@@ -102,11 +114,14 @@ export const canvasOfPageTwoKey = (key: string): CanvasKey | null =>
 
 /** The template FILE a stored key compiles into — `templateKeyOf`'s inverse, and a page-2 key's own file (`index` →
  *  `index.hbs`, `tag-paged` → `tag.hbs`). `custom:custom-x.hbs` names its own. Moved here from `read.ts` by Story 5.19,
- *  whose main-feed rule asks it of every doc on the server read and in every edit (`designate` keys on the file). A key
- *  with no `.hbs` of its own — `paywall` (5.20), `cards` (7.13) — must be added here by the story that writes it. */
+ *  whose main-feed rule asks it of every doc on the server read and in every edit (`designate` keys on the file).
+ *  STORY 5.20 — A CANVAS'S KEY ANSWERS ITS OWN FILE FROM `CANVASES`, which is how `paywall` compiles to
+ *  `partials/content-cta.hbs` rather than a `paywall.hbs` Ghost never reads; `cards` (7.13) arrives the same way. */
 export const fileOfKey = (key: string): string => {
   const paged = canvasOfPageTwoKey(key)
   if (paged !== null) return PAGE_TWO[paged]?.file as string
+  const canvas = canvasOfTemplateKey(key)
+  if (canvas !== null) return CANVASES[canvas].file
   return key === SITE.key ? SITE.file : key.startsWith('custom:') ? key.slice('custom:'.length) : `${key}.hbs`
 }
 

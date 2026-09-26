@@ -1,0 +1,23 @@
+{{!< default}}
+{{!--
+  Story 5.20's MEMBERS group, the post half (MEASUREMENTS §54). `record-shim.py` creates two Paid-members-only posts
+  with this template as their `custom_template` — a long one carrying a public preview marker and a short one with
+  none — renders each as a logged-out visitor, and deletes both. A template of its own so the recorder files ONLY what
+  it wrote: `post.hbs` renders a site's own post, whose body is never recorded.
+  `verbatim-content` is `{{content}}` read back WITHOUT unescaping: the preview and Ghost's own box, byte for byte.
+--}}
+{{#post}}
+<pre id="probe">
+MEMBERS|visibility=[{{visibility}}]
+MEMBERS|access=[{{access}}]
+MEMBERS|reading_time=[{{reading_time}}]
+MEMBERS|reading_time_field=[{{t "probe.reading_time" minutes=reading_time}}]
+MEMBERS|members_enabled=[{{@site.members_enabled}}]
+MEMBERS|allow_self_signup=[{{@site.allow_self_signup}}]
+MEMBERS|paid_members_enabled=[{{@site.paid_members_enabled}}]
+MEMBERS|invite_only=[{{@site.members_invite_only}}]
+MEMBERS|signup_url=[{{@site.signup_url}}]
+MEMBERS|labs_members=[{{#if @labs.members}}true{{else}}false{{/if}}]
+</pre>
+<pre id="verbatim-content">{{content}}</pre>
+{{/post}}

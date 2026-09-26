@@ -21,8 +21,9 @@ import {
   articleOrder, assemble, authors, blocks, brand, cardAssetsExclude, commentCount, commentThreads, commentsFixture,
   deepPagination, feedPage, feedPagination, feedPages, newsletters, postsPerPage, posts, previewFixtures, recording,
   fixtureSubject, resolvePreviewSeed, resolveSource, resolveSubject, simulatedChunks, site, sortRows, styleGuideBody,
-  styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants,
+  styleGuidePageBody, subject, subjectKindOf, tags, templateContext, tiers, variants, PREVIEW_CUT, paywallPost,
 } from './orbit-weekly.ts'
+import { PAYWALL_TARGET } from './vocabulary.ts'
 import type { ContentSource, Major, Subject } from './orbit-weekly.ts'
 import { NATIVE_FILES, nativeResourceOf } from './placement.ts'
 import type { DataBinding } from './registry.ts'
@@ -437,9 +438,14 @@ test('Story 5.19 — the page size is the PROJECT\'s: the dataset\'s by default 
 test('a canvas has a subject exactly where the NATIVE table gives it a singular resource — derived, never listed', () => {
   for (const file of FILES) {
     const native = nativeResourceOf(file)
-    assert.equal(fixtureSubject(file) === null, native === null, file)
-    assert.equal(subjectKindOf(file) === null, native === null, file)
+    // Story 5.20 — the ONE exception, stated: the paywall's partial carries the post at its root and previews one post,
+    // the style-guide article as a paid post, whoever is looking — so it has nothing to choose and no subject
+    const fixed = file === PAYWALL_TARGET
+    assert.equal(fixtureSubject(file) === null, native === null || fixed, file)
+    assert.equal(subjectKindOf(file) === null, native === null || fixed, file)
   }
+  assert.equal(nativeResourceOf(PAYWALL_TARGET), 'post')
+  assert.equal(subjectKindOf(PAYWALL_TARGET), null)
   // §4.2's one distinction a RESOURCE cannot draw: page.hbs carries the same `post` object and is a different
   // product, and the two fixtures are two different rows
   assert.equal(nativeResourceOf('page.hbs'), nativeResourceOf('post.hbs'))
@@ -725,4 +731,48 @@ test('THE CONTROL, again — no caller of the four review states is moved by `se
     assert.deepEqual(templateContext('tag.hbs', feed).ghost['posts'], templateContext('home.hbs', feed).ghost['posts'], feed)
     assert.equal(templateContext('tag.hbs', feed).site.paginationBase, '/', feed)
   }
+})
+
+
+// ─── Story 5.20 — the paywall's partial, and a visitor's `access` ───────────────────────────────────────────────────
+
+test("the paywall's partial carries the style-guide article at its ROOT, as a paid post open to every active paid tier", () => {
+  const { ghost } = templateContext(PAYWALL_TARGET)
+  assert.equal(ghost['slug'], subject('post').slug)
+  assert.equal(ghost['visibility'], 'paid')
+  const held = (ghost['tiers'] as { type: string; active: boolean }[])
+  assert.deepEqual(held.map((t) => t.type), tiers().filter((t) => t.type === 'paid' && t.active).map(() => 'paid'))
+  assert.ok(held.length > 0, 'the bundled publication has a paid tier for the post to be open to')
+  // untouched it previews the visitor the paywall is FOR: a logged out user, who may not read it
+  assert.equal(ghost['access'], false)
+  assert.ok(ghost['@site'] !== undefined)
+})
+
+test("a visitor re-reads access by Ghost's rule on the partial: only the paid member reads a paid post", () => {
+  const at = (v: 'anonymous' | 'free' | 'paid') => templateContext(PAYWALL_TARGET, 'first', undefined, undefined, v).ghost['access']
+  assert.deepEqual([at('anonymous'), at('free'), at('paid')], [false, false, true])
+  assert.equal(paywallPost('paid').access, true)
+  // the paywall previews ONE post whoever is looking — a subject handed in changes nothing
+  assert.equal(templateContext(PAYWALL_TARGET, 'first', { kind: 'post', slug: posts()[3]!.slug }).ghost['slug'], subject('post').slug)
+})
+
+test('PREVIEW_CUT falls after C3a\'s last visible paragraph, "I asked eleven of them…", on both majors', () => {
+  for (const major of MAJORS) {
+    const b = blocks(major, 'article')
+    assert.match(b[PREVIEW_CUT]!.html, /^<p>I asked eleven of them why October/, major)
+    // and something is left below it for the paywall to stand in for
+    assert.ok(b.length > PREVIEW_CUT + 1, major)
+  }
+})
+
+test('THE CONTROL: handed no visitor, every canvas is exactly the context it was — /pilots, the snapshots and the matrix', () => {
+  for (const file of FILES) {
+    if (file === PAYWALL_TARGET) continue
+    const before = JSON.stringify(templateContext(file))
+    assert.equal(JSON.stringify(templateContext(file, 'first', undefined, postsPerPage())), before, file)
+  }
+  // handed one, a list's rows and an entry each carry `access` by the rule, and nothing else moves
+  const feed = templateContext('home.hbs', 'first', undefined, undefined, 'anonymous').ghost['posts'] as { visibility: string; access: boolean; slug: string }[]
+  assert.ok(feed.every((row) => row.access === (row.visibility === 'public')), 'a logged out user reads exactly the public posts')
+  assert.deepEqual(feed.map((r) => r.slug), (templateContext('home.hbs').ghost['posts'] as { slug: string }[]).map((r) => r.slug))
 })

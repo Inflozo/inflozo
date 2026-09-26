@@ -14,6 +14,10 @@
   `include`, the shadowing premise at zero and with rows, the three Source filters (the writer's in both spellings:
   `author:` answers, and gscan refuses it — the fold writes `authors:`), hand-picked ids in a chosen
   order (__FEED_IDS__ / __FEED_PICKS__, substituted at zip time from the site's own posts) and `pagination` inside a get.
+  Story 5.20 adds the MEMBERS group (MEASUREMENTS §54): `{{#get "tiers"}}` plain and with FR-H6's filter — the API
+  filters only `active`, so the get's own array holds a hidden tier (`tiers_length`), while `{{#foreach}}` drops every
+  item that is not `public` unless told `visibility="all"` (`tiers_plain` against `tiers_all`) — and the three member
+  flags a design's asks are gated on. The members post itself renders through `custom-inflozo-members.hbs`.
 --}}
 <pre id="probe">
 SITE|title=[{{@site.title}}]
@@ -71,6 +75,14 @@ FEED|picks_single=[__FEED_PICKS__]
 FEED|picks_existence=[{{#get "posts" filter="id:[__FEED_IDS__]" limit="1"}}{{#if posts}}__FEED_PICKS__{{else}}EMPTY{{/if}}{{/get}}]
 FEED|picks_none=[{{#get "posts" filter="id:[000000000000000000000000]" limit="1"}}{{#if posts}}FULL{{else}}EMPTY{{/if}}{{/get}}]
 FEED|pagination_in_get=[{{#get "posts" filter="tag:'craft'" limit="2"}}{{pagination.page}}/{{pagination.pages}}|{{pagination.next}}|{{#if pagination.next}}{{page_url pagination.next}}{{/if}}{{/get}}]
+
+MEMBERS|tiers_plain=[{{#get "tiers"}}{{#foreach tiers}}{{name}}|{{type}}|{{visibility}};{{/foreach}}{{else}}NO_ROWS{{/get}}]
+MEMBERS|tiers_length=[{{#get "tiers"}}{{tiers.length}}{{/get}}]
+MEMBERS|tiers_all=[{{#get "tiers"}}{{#foreach tiers visibility="all"}}{{name}}|{{type}}|{{visibility}};{{/foreach}}{{/get}}]
+MEMBERS|tiers_public=[{{#get "tiers" filter="type:paid+visibility:public"}}{{#foreach tiers}}{{name}}|{{type}}|{{visibility}};{{/foreach}}{{else}}NO_ROWS{{/get}}]
+MEMBERS|members_enabled=[{{@site.members_enabled}}]
+MEMBERS|invite_only=[{{@site.members_invite_only}}]
+MEMBERS|signup_url=[{{@site.signup_url}}]
 
 MATCH|locale_true=[{{#match @site.locale @site.locale}}YES{{else}}NO{{/match}}]
 MATCH|locale_false=[{{#match @site.locale "zz-ZZ"}}YES{{else}}NO{{/match}}]

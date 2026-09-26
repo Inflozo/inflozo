@@ -147,7 +147,7 @@ const A = {
   <div class="band__inner">
     <h2 class="band__title" data-prop="title">Join the list</h2>
     <p class="band__sub" data-prop="subtitle" data-empty="fallback">One email a week.</p>
-    <form class="band__form" data-members-form="subscribe">
+    <form class="band__form" data-members-form="subscribe" data-if="@site.allow_self_signup">
       <label class="band__label" for="e-${i}" data-prop="emailLabel">Email address</label>
       <input class="band__input" id="e-${i}" type="email" name="email" required data-t-attr="placeholder:member.email_placeholder">
       <button class="band__btn button button--primary" type="submit" data-prop="submitLabel">Subscribe</button>

@@ -2321,10 +2321,13 @@ a paywall
 **And** the editor's **empty state is "members switched off"** (`members_signup_access` = none) — **not** "no paid
 tiers", because Ghost's paywall renders on every gated post whether or not a paid tier exists, so a free
 newsletter gating posts to members is exactly a site this editor serves — with two numbered steps and a Re-check
-(UX-DR6); and **switching members off unlocks nothing** — Ghost still stops a post for members at the cut, and the
-box there can sign nobody up because Ghost stops loading Portal (`post-gating.js`, read in source on both majors,
-recorded by this story's first task) — so the screen keeps C3b's shape and says what Ghost does (**R-198**, owner,
-2026-09-26)
+(UX-DR6); and **switching members off unlocks nothing** — Ghost still stops a post for members at the cut and still
+draws its box there, and the box can sign nobody up (`post-gating.js`, read in source on both majors; **recorded by this
+story's first task on T3 with Subscription access set to Nobody, MEASUREMENTS §54**) — so the screen keeps C3b's shape
+and says what Ghost does (**R-198**, owner, 2026-09-26). **The recording moved one clause:** Ghost does not always stop
+loading Portal — it keeps it wherever donations stay on, as a Stripe-connected site's do by default — and Portal then
+answers "Memberships unavailable, contact the owner for access.", so the screen's sentence ends "…but nobody can sign
+up there." and makes no claim about Portal
 **And** **the warning never fires on synthesised instances**, so an untouched project is never warned about a
 section its user did not place
 **And** **a member's own details are never server-rendered** — no `@member.email`, name or billing detail reaches
@@ -2337,7 +2340,9 @@ below it (**R-199**, owner, 2026-09-26); **`access` is worked out per
 visitor** through Ghost's own `checkPostAccess` (`members/content-gating.js`), so the paywall cut, the indicator and
 the reading time all follow 5.14's visitor — **DW-128**: Ghost's `{{reading_time}}` prints nothing only when the body
 it withholds leaves no preview and the post's `reading_time` is 0, and otherwise prints the whole post's time (read in
-source on both majors; MEASUREMENTS §41d recorded the empty case), and the canvas prints exactly what Ghost prints; switching View as to Paid member is how the owner checks the cut disappears (`C Post Body.dc.html:1548`:
+source on both majors; MEASUREMENTS §41d recorded the empty case, and **this story's first task recorded both cases on
+both majors — "6 min read" on a withheld post with a preview, nothing on one with none at 0, MEASUREMENTS §54**), and
+the canvas prints exactly what Ghost prints; switching View as to Paid member is how the owner checks the cut disappears (`C Post Body.dc.html:1548`:
 "View as stays in the chrome because switching to Paid member is the only way to check that the cut disappears")
 **And** the editor matches C3a and its empty state matches C3b as corrected.
 
@@ -2711,6 +2716,11 @@ written before the rule compiles with the main feed the canvas shows
 and their `/page/N/` would repeat page 1 (DW-253)
 **And** the warning matches D5f.
 
+**And** *(Story 5.20, DW-261)* **a designed paywall compiles as Ghost needs it**: `partials/content-cta.hbs` is emitted
+only where the `paywall` doc holds a design, and then (1) a template references it explicitly, `{{> "content-cta"}}`, or
+Ghost never uses the override (MEASUREMENTS §15b, executed on both majors — a compile assertion), and (2) the partial's
+first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
+the preview above the cut disappears — AD-5's second stated exception to its no-triple-stash rule, bounded to that line
 **FRs:** FR-I1, FR-H2 (the SEO guard). · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** yes (the
 warning).
 
@@ -2803,6 +2813,11 @@ literals**
 passes through `core`'s gate, and CSS-only continuous motion sits inside `@media (prefers-reduced-motion:
 no-preference)` (UX-DR15).
 
+**And** *(Story 5.20, DW-261)* **a designed paywall compiles as Ghost needs it**: `partials/content-cta.hbs` is emitted
+only where the `paywall` doc holds a design, and then (1) a template references it explicitly, `{{> "content-cta"}}`, or
+Ghost never uses the override (MEASUREMENTS §15b, executed on both majors — a compile assertion), and (2) the partial's
+first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
+the preview above the cut disappears — AD-5's second stated exception to its no-triple-stash rule, bounded to that line
 **FRs:** FR-J5. · **Owner test:** none. · **Verification:** rendered on T1 and T3.
 
 ### Story 7.7: The gscan gate
@@ -3051,6 +3066,8 @@ column they sit in**
 **And** excluding a card **restores gscan's Koenig rules for it**, so checking scales with what Inflozo wrote
 **And** the surface matches S14a–e.
 
+**And** *(Story 5.20, DW-267)* **`project_treatments.paywall_design_id` is dropped** in this story's own Schema phase
+(R-99): the paywall is the `paywall` doc since Story 5.20 (AD-27(a0)), and the column has never had a reader or a writer
 **FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
 module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
 *against* this module, which §8 requires to land first. *(Declared by the step-6 stress test, finding F3.)*
@@ -3225,6 +3242,10 @@ template whose hand-picked lists together pass 25 picks, naming the template and
 per page, not per section**
 **And** the screens match S8a, S8b, S8c, S8d and S8d′ on failure.
 
+**And** *(Story 5.20, DW-260)* **Pre-flight repeats FR-H6's member-switch warnings**: it reads the site's one record,
+`sites.site_settings.members` (`storedMembers`), and where members are off, or free or paid sign-ups cannot be taken,
+lists the same sentences the Sites screen shows (`membersNotice`, `apps/web/lib/paywall.ts`) beside any placed member
+ask or designed paywall — never for a synthesised instance, and nothing for a site with no record yet (R-4)
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
 
@@ -4612,6 +4633,9 @@ So that I can start using Pricing and Tiers on my own site.
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A7-<n> <Name>.dc.html` — and the category's `A7-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
 
+**And** *(Story 5.20, DW-264)* this category is the first to print a tier's price and its benefits, so it builds both:
+the shim's `{{price}}` (a tier's prices arrive in the smallest currency unit) and a repeatable `benefits` in the tier
+scope (`packages/library/contexts/matrix.json` types it a `list` with no `of`, so no design can repeat it today)
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A7). · **Frame:** `A7-<n> <Name>.dc.html` · `A7-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
 #### Story 10.15: A7 — designs #5–8
@@ -6450,6 +6474,9 @@ So that I can start using Post Content Layouts on my own site.
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A25-<n> <Name>.dc.html` — and the category's `A25-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
 
+**And** *(Story 5.20, DW-266)* the Post Content panel carries C1a's **"Open paywall editor →"** (`C Post Body.dc.html:81`,
+and C1d's "Open Paywall →" at `:1064`): a navigation to the Paywall canvas Story 5.20 built, the second door beside the
+Template switcher's Template surfaces group
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
 #### Story 10.84: A25 — designs #5–8
@@ -7094,7 +7121,10 @@ So that I can start using Paywall on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A32 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Fade · #2 Card · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Fade · #2 Card · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has a paywall to choose in this category from its very first story — **chosen, never placed**: A32 is a treatment, selected on the **Paywall editor** Story 5.20 built (Template ▾ → Template surfaces → Paywall) and absent from the Section Picker, Layers, Shuffle and Remix (FR-H6; *Story 5.20, DW-263*)
+**And** *(Story 5.20, DW-262)* the Paywall editor gains **A32's own half**: P0·6's gate switcher with the category's declared gates (Free signup · Paid · Upgrade · Named tier), the four per-gate copy sets, the named-tier preview (a Paid member holding the one tier, Ghost 6's preview-member model, `postAccess`), and the owner's call on whether **a way back to Ghost's own box** is a control or ⌘Z alone
+**And** *(Story 5.20, DW-264)* a tier's price prints through Ghost's `{{price}}` (smallest currency unit), and its `benefits` repeat — both built by Story 10.14 first, inherited here
+**And** *(Story 5.20, DW-265)* A32 is built **without** the spec's "Tiers: From Ghost, all" / "All, including free" option and without greeting a member by name: FR-H6's `type:paid+visibility:public` and R-28 / AD-38 forbid both, and `tiers-unfiltered` and the `@member` refusal hold them at assembly
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
 **And** the behaviour modules these designs declare — `core`, `member-form at one value` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
@@ -7156,6 +7186,10 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** *(Story 5.20, DW-263 — this category is a treatment, so the two sentences above read differently for it)*: the
+ring is cycled on the **Paywall editor**, with ◀ ▶ in its panel and `[` `]` on its selected box, never on a page; and
+the owner **chooses** a paywall there — he places none — views a members-only post on the live Ghost site as each of
+View as's three visitors, and confirms the cut and the chosen box
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**

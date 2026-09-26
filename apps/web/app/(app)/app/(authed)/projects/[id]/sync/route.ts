@@ -38,7 +38,8 @@ const json = (status: number, body: unknown) =>
 
 // Story 5.16 — page 2's two keys, `tag-paged` and `author-paged`, joined the constraint in `20260922120000` (pushed and
 // applied first, R-99) and join it here in the same words; Home's page 2 is `index`, which both have always accepted.
-const TEMPLATE_KEY = /^(site|home|index|post|page|tag|author|error|private|tag-paged|author-paged|custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs)$/
+// Story 5.20 — `paywall`, the first template surface, joined both in `20260926120000_paywall_template_key.sql` (R-99).
+const TEMPLATE_KEY = /^(site|home|index|post|page|tag|author|error|private|tag-paged|author-paged|paywall|custom:custom-[a-z0-9]+(-[a-z0-9]+)*\.hbs)$/
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   // `currentUser()`, not `signedIn()`: a route handler answers with a response of its own rather than throwing a page

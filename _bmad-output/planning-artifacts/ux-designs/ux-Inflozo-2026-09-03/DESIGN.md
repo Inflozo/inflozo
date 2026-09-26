@@ -60,6 +60,13 @@ colors:
   grey-track: '#E2DCD3 — a greyed toggle's track (P0-0, the toggle in the five shapes)'
   scrim: 'rgba(28,27,26,.4)'
   canvas-ground: '#EDEAE6 — the ground the editor's page card sits on (S4 Editor.dc.html :62). Added 2026-09-17 by Story 5.1'
+  ink-deep-text: '#F4EFE6 — words on the ink-deep surround of a template-surface canvas: the Paywall canvas's bar (C Post Body.dc.html C3a :1375, :1381). Added 2026-09-26 by Story 5.20'
+  ink-deep-soft: '#B8B0A4 — the quieter words on that surround: the NOT A PAGE SECTION chip and C3b's MEMBERS OFF chip (C3a :1377, C3b :1662)'
+  ink-mid: '#4A453D — the chip's hairline on the ink surround (C3a :1377) and the words of the Paywall canvas's strip and of C3b's card (C3a :1419-1421, C3b :1666)'
+  paywall-mat: '#D8D4CE — the ground the Paywall canvas's page card sits on, darker than canvas-ground so a canvas that is not a page reads as one (C3a :1417, C3b :1664)'
+  paywall-strip: '#E3DFD8 — the Paywall canvas's strip above the card (C3a :1418)'
+  paywall-strip-line: '#C9C4BC — the strip's rule and the hairline of the two pills on it (C3a :1418-1420)'
+  paywall-pill: '#F4F1EC — the fill of the strip's Showing pill and design chip (C3a :1419-1420)'
 
 typography:
   display:

@@ -1,0 +1,22 @@
+/* Story 5.20's second stand-in paywall — the first's words in two columns, and the site's paid plans by name. */
+
+.paywall-2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-gap); align-items: start; padding: var(--space-section) var(--space-gutter); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); }
+.paywall-2[data-layout="stack"] { grid-template-columns: minmax(0, 1fr); }
+.paywall-2[data-bg="surface"] { background: var(--bg-surface); }
+.paywall-2[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.paywall-2[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.paywall-2[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
+.paywall-2[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
+.paywall-2[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
+
+.paywall-2__words { display: flex; flex-direction: column; gap: 0.5rem; }
+.paywall-2__heading { margin: 0; font-family: var(--font-heading); font-size: 1.5rem; line-height: 1.2; }
+.paywall-2__blurb { margin: 0; color: var(--text-muted); }
+.paywall-2__actions { display: flex; flex-direction: column; gap: 0.75rem; }
+.paywall-2__plans-heading { margin: 0; font-size: 0.8125rem; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-muted); }
+.paywall-2__tiers { list-style: none; margin: 0.25rem 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.paywall-2__tier { padding: 0.25rem 0.625rem; border: 1px solid var(--border-hairline); border-radius: var(--radius-control); font-weight: 600; }
+.paywall-2__ask { margin: 0; }
+.paywall-2__cta { display: inline-block; padding: 0.625rem 1.25rem; border-radius: var(--radius-control); background: var(--accent); color: var(--text-on-accent); font-weight: 600; text-decoration: none; }
+.paywall-2__signin { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
+.paywall-2__link { color: inherit; font-weight: 600; }

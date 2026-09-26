@@ -433,7 +433,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
     (`rls.sql:1661`, `template_key_shape`, exit 3).
 
   -- The one stored key the story adds. Code that writes it must never ship before it.
-- [ ] **FIRST, before any code** — `tools/probe/theme-shim/index.hbs` + `tools/probe/record-shim.py`: add a `MEMBERS`
+- [x] **FIRST, before any code** — `tools/probe/theme-shim/index.hbs` + `tools/probe/record-shim.py`: add a `MEMBERS`
   group. It creates, with the staff token, a Paid-members-only post that has a long body and a `<!--members-only-->`
   card, and a short one with none. It deletes both in `finally`. Record on BOTH majors, anonymous:
   - `{{content}}` (the preview + Ghost's box), the CTA `<style>` that `{{ghost_head}}` injects, and whether Portal's
@@ -453,17 +453,17 @@ hypotheses until the first task RECORDS them (standing rule 1).
   settings reads above.
 
   -- R-198's premise, DW-128's rule and Ghost's own box all rest on this.
-- [ ] `packages/library/src/access.ts` (new, exported) -- `postAccess(post, visitor)`: Ghost's `checkPostAccess` over
+- [x] `packages/library/src/access.ts` (new, exported) -- `postAccess(post, visitor)`: Ghost's `checkPostAccess` over
   the three visitors (*Always*). Pure and importless but for types. -- One rule for the cut, the indicator and the
   reading time.
-- [ ] `packages/library/src/vocabulary.ts`, `placement.ts`, `validate.ts`, `contexts/matrix.json` -- The paywall target:
+- [x] `packages/library/src/vocabulary.ts`, `placement.ts`, `validate.ts`, `contexts/matrix.json` -- The paywall target:
   - `partials/content-cta.hbs` joins the targets.
   - `NATIVE` gains its row: the post at the root, plus the gettable resources.
   - The validator gets `paywall-target`, `member-ask-ungated` and `tiers-unfiltered`, each refusal naming its ruling.
   - `docs/section-authoring.md` gains the three rules.
 
   -- R-4 and FR-H6 enforced where every design is assembled.
-- [ ] `packages/library/fixtures/paywall/1`, `/2` (+ `content.json`) -- Two stand-in paywalls. They are validated, never
+- [x] `packages/library/fixtures/paywall/1`, `/2` (+ `content.json`) -- Two stand-in paywalls. They are validated, never
   shipped, and non-placeable like A32.
   - Each carries a heading, a blurb, a free ask (`data-portal="signup"` inside `@site.allow_self_signup`) and a sign-in
     line.
@@ -472,7 +472,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - They differ in layout, so ◀ ▶ shows a change.
 
   -- The choosing half has something to choose (R-158's shape).
-- [ ] `packages/library/src/orbit-weekly.ts` -- Three things:
+- [x] `packages/library/src/orbit-weekly.ts` -- Three things:
   - `templateContext` answers `partials/content-cta.hbs` with the fixture post at the root: Paid-members-only, `access`
     per visitor, and its tiers.
   - `assemble` / `templateContext` take an optional visitor that recomputes each row's `access` through `postAccess`.
@@ -480,35 +480,35 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - `PREVIEW_CUT` names the simulated marker's index (6) in one place.
 
   -- The visitor reaches the rows, with the old call as the control.
-- [ ] `packages/ghost-shim/src/index.ts` + `packages/section-runtime/src/core.ts` -- Two things:
+- [x] `packages/ghost-shim/src/index.ts` + `packages/section-runtime/src/core.ts` -- Two things:
   - `readingTime` follows Ghost's helper: nothing when the visitor's body is withheld with no preview and
     `reading_time` is 0. The bare `reading_time` path passes that state.
   - `contentCta({ visibility, member, accent, major })` returns Ghost's own box as recorded. The accent passes
     `ghostColor`.
 
   -- DW-128 as Ghost does it, and the untouched paywall as Ghost draws it.
-- [ ] `packages/section-runtime/src/marks.ts` (`linkAttributes`) + `core.ts` -- A link record whose `portal` is
+- [x] `packages/section-runtime/src/marks.ts` (`linkAttributes`) + `core.ts` -- A link record whose `portal` is
   `signup` or `account/plans` carries its gate:
   - **The theme** wraps the element, or keeps an inline mark's words in `{{else}}`.
   - **The canvas** drops the element, or keeps the words unlinked, where the site's flag is false.
 
   It is proven in `agreement.test.ts` and `ad36.test.ts`. -- R-4 for the asks a design cannot see, in the one link
   sink.
-- [ ] `apps/web/lib/probe-rule.ts`, `sites/site-notices.tsx`, `(authed)/sites/*` -- The record and its notice:
+- [x] `apps/web/lib/probe-rule.ts`, `sites/site-notices.tsx`, `(authed)/sites/*` -- The record and its notice:
   - `probePatch` writes `members: { signup_access, paid_enabled }` from `settings`, only those two, only when
     well-formed.
   - `NoticeSite` gains the field, and `SiteNotices` shows the member-capability `Banner` with *Design Notes*'
     sentences and **Open Ghost admin ↗**.
 
   -- FR-H6's "records at connect and daily", and R-4's connect warning.
-- [ ] `apps/web/lib/editor.ts` (+ `editor.test.ts`) -- `paywall` joins the scheme as the first **template surface**:
+- [x] `apps/web/lib/editor.ts` (+ `editor.test.ts`) -- `paywall` joins the scheme as the first **template surface**:
   file `partials/content-cta.hbs`, label "Paywall", its caption, a `surface` flag.
   - `fileOfKey` answers the partial.
   - Every reader in the Code Map's sweep answers the surface: no site doc, no synthesis marker but R-130's, no Picker,
     no page 2.
 
   -- One scheme, so the route, the switcher and the harness learn the word once.
-- [ ] `(editor)/read.ts`, `(editor)/actions.ts`, `projects/[id]/sync/route.ts` -- The server side:
+- [x] `(editor)/read.ts`, `(editor)/actions.ts`, `projects/[id]/sync/route.ts` -- The server side:
   - `EditorData.site.members` comes from the record.
   - The `paywall` doc accepts only a paywall-surface design, at most one instance, and loads those entries (the
     harness hands the stand-ins).
@@ -517,7 +517,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - `setViewedStates` and `TEMPLATE_KEY` accept `paywall`.
 
   -- The server truth the canvas paints from.
-- [ ] `apps/web/lib/paywall.ts` (new, pure) -- It holds:
+- [x] `apps/web/lib/paywall.ts` (new, pure) -- It holds:
   - every string in *Design Notes*;
   - `tierLine`;
   - `membersNotice(members, site)`;
@@ -525,9 +525,9 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - `warnsOn(instance)`: never `auto-`.
 
   -- `node --test` reaches it, as `lib/view-as.ts`.
-- [ ] `components/editor/template-switcher.tsx` + `kit/icons.tsx` (via `tools/vendor-icons.py`) -- The **Template
+- [x] `components/editor/template-switcher.tsx` + `kit/icons.tsx` (via `tools/vendor-icons.py`) -- The **Template
   surfaces** group in D5b's Membership shape, with Tabler `lock` for Paywall. -- EXPERIENCE.md's entry point.
-- [ ] `(editor)/editor.tsx` + `lib/canvas.ts` + `lib/pilots.ts` + the canvas route -- The Paywall canvas:
+- [x] `(editor)/editor.tsx` + `lib/canvas.ts` + `lib/pilots.ts` + the canvas route -- The Paywall canvas:
   - **The chrome.** The ink top bar, NOT A PAGE SECTION, Back to post, and no Remix. C3a's strip holds the "Showing"
     pill (static), the design chip and the note.
   - **The paint.** It has no site doc. It paints:
@@ -544,13 +544,13 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - **The member-ask line** sits at a placed instance's panel head. It is 5.18's note shape, read from the record.
 
   -- C3a and C3b, painted by the one door.
-- [ ] `components/controls/layers.tsx` -- On the paywall canvas: no rows, no "+ Add section", and C3a's card with
+- [x] `components/controls/layers.tsx` -- On the paywall canvas: no rows, no "+ Add section", and C3a's card with
   `tierLine` over the source in force's public tiers. The link is shown for a linked site only.
   - The live count is one new read in 5.18's store, `tiers?filter=visibility:public`, made only on this canvas with the
     site's content.
 
   -- C3a's left panel, as EXPERIENCE.md re-specified it.
-- [ ] `app/(app)/app/harness/editor/page.tsx` + `tools/keyboard/journey.spec.mjs` -- The harness hands in the
+- [x] `app/(app)/app/harness/editor/page.tsx` + `tools/keyboard/journey.spec.mjs` -- The harness hands in the
   stand-ins. The walk covers:
   - Template ▾ → Paywall;
   - View as through all three states (the cut, the box's words, the indicator);
@@ -560,7 +560,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - zero chrome at rest on Home.
 
   -- R-146: the wiring on every commit.
-- [ ] Tests:
+- [x] Tests:
   - `access.test.ts`: Ghost's truth table, both majors' rules.
   - `validate.test.ts`: each new refusal, with the pilots and the stand-ins passing.
   - `orbit-weekly.test.ts`: the control unedited; the partial's context; the visitor's `access`.
@@ -572,7 +572,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
   - `editor.test.ts`, `busy.test.ts`.
 
   -- The matrix is the contract.
-- [ ] `tools/probe/run-verify-editor.cjs` (step 95) + `run-verify-live-content.cjs` -- The deployed walks (R-82):
+- [x] `tools/probe/run-verify-editor.cjs` (step 95) + `run-verify-live-content.cjs` -- The deployed walks (R-82):
   - **Step 95** walks the Paywall canvas on sample content in every state of the matrix above, and drops `paywall` from
     :5750's 404 list.
   - **The live walk.** On T1 it reads the site's box and accent, "1 tier · 1 free", and the admin link. On T3 it sets
@@ -580,7 +580,7 @@ hypotheses until the first task RECORDS them (standing rule 1).
     reads the card and the Sites notice, restores, and Re-checks back.
 
   -- Proven on production, not a harness.
-- [ ] Docs:
+- [x] Docs:
   - **MEASUREMENTS §54.**
   - **The spine.** AD-27(a0): the paywall is the `paywall` doc, and `paywall_design_id` is unwritten (DW-267).
   - **`prd.md`:**
@@ -631,6 +631,77 @@ hypotheses until the first task RECORDS them (standing rule 1).
   (R-192), while View as, Re-check and Back to post work.
 
 ## Spec Change Log
+
+**Dev (2026-09-26).** Each change below is outside the frozen block and was made where the build met a fact the plan
+did not have; the owner-facing ones are also in the Dev report.
+
+1. **R-198's sentence, corrected by the recording (the docs task's own authority, "correct either if the recording
+   moves it").** With Subscription access set to Nobody on T3, the members post was still withheld and Ghost's box still
+   drawn — R-198's premise holds — but `{{ghost_head}}` still loaded Portal: it drops Portal only where members,
+   donations AND recommendations are all off (`ghost_head.js:53`), and a Stripe-connected site keeps donations on by
+   default (`SettingsHelpers.js:173-175`, `defaults.json:204`). Portal's sign-up then answers "Memberships unavailable,
+   contact the owner for access." (Portal 2.51.5, `SignupPage.js:714-716`, read in source). So C3b's sentence drops
+   ": Ghost stops loading its sign-up window" and keeps what is true either way — *"…so your posts for members still
+   stop at the cut, but nobody can sign up there."* The words table below, `lib/paywall.ts`, FR-H6, EXPERIENCE.md:354 and
+   `epics.md`'s 5.20 criteria carry it; MEASUREMENTS §54 is the record. DW-128's sentence was CONFIRMED (6 min read on a
+   withheld post with a preview; nothing bare at 0 with no preview).
+2. **The switcher caption is "Where a gated post stops", not "Where a members-only post stops".** Measured in the
+   harness the first overran the indented row (192 px of text in 185) and lost its end — R-171's one line, and
+   `editor.test.ts`'s 30-character heuristic says the same. "Gated" is the indicator's own word (R-170).
+3. **The stand-ins' node-for-node agreement at the partial is in `apps/web/paywall.test.ts`, not `agreement.test.ts`.**
+   A core package's test may not read a file (AD-1, the lint's test exemption gives back `node:test`/`node:assert`
+   alone), and the stand-ins are files. The comparison is the agreement suite's own skeleton, run on the real designs.
+4. **One committed snapshot moved, where Verification said none would**: `packages/library/snapshots/a4/13/template.hbs`,
+   one line. Latest Post's primary action defaults to the link record `{ portal: 'signup' }`, which R-4's new gate in the
+   link sink (`linkGate`) now wraps in `{{#if @site.allow_self_signup}}` — the I/O matrix's "A button the user linked to
+   Portal's Sign up" row, on a default rather than a choice. No other snapshot and no matrix baseline moved (the matrix:
+   0 violations).
+5. **The live walk stores T3's Admin key for its own row before the real switch** (corrected at the Dev verification — the
+   first draft of this entry had the walk seed the record instead, and so prove no Re-check against Ghost). Re-check reads
+   Ghost's Admin `settings/` through the chokepoint with the site's STORED Admin key, and the walk's fixture sites are
+   REST-made rows that hold none. So the walk first proves the card, the chip, the refusal with the record unchanged, the
+   Sites notice and the placed section's line from a SEEDED record (the row with no key), then stores the key through
+   **Manage keys** — the app's own door, proved by `config/` — and does what the task says: the canvas re-checks as it
+   opens, Subscription access goes to Nobody with the staff token for under a minute, Re-check follows Ghost both ways,
+   the Sites notice reads the record Ghost's answer wrote, and T3 is put back and read back. The command gains
+   `GHOST5_ADMIN_API_KEY`. The account's delete takes the key with it (its credentials row cascades, and
+   `site_credentials_drop_vault_secrets` drops the Vault secret).
+6. **Preview is absent on a template surface** (B3a's pill and `P`): the spec's bar lists what the Paywall canvas
+   carries, and Preview is not among them — a surface is no page of the site.
+7. **The visitor reaches `access` on every canvas in the editor**, not the paywall's alone: `renderSection` and
+   `sitePage` take an optional `visitor`, which the editor hands and `/pilots`, the snapshots, the matrix, the Picker's
+   cards and the ring's tiles do not — so every one of those renders is byte-identical (the story's control).
+8. **"Open Ghost admin ↗" on the Sites notice draws its ↗ as the Kit's `ExternalLink` glyph** ("opens in a new tab" to a
+   screen reader), the app's shape for every new-tab link; C3b's button carries the words alone, as C3b draws it, with the
+   new tab said in `sr-only` text.
+9. **Two fixtures gained the gates the new rule requires**: the on-disk reference design
+   (`packages/library/fixtures/reference-design/index.html`) and the stress theme's CTA archetype
+   (`tools/stress/sections.js`) each carried an ungated ask. Neither is a pilot or the export; the stress theme still
+   scans 0 / 0 on both majors.
+10. **The keyboard harness is a LAYOUT** (`harness/editor/layout.tsx`, with two pages that render nothing), and the editor
+    and the switcher take an optional canvas base (`canvasBase`, `pathOf`), so `pnpm keyboard` can switch canvas with no
+    database; a request header picks the members-off harness site. `busy.test.ts` and `app-routes.test.ts` name the new
+    page.
+11. **C3a's surround colours became tokens** (`ink-deep-text`, `ink-deep-soft`, `ink-mid`, `paywall-mat`,
+    `paywall-strip`, `paywall-strip-line`, `paywall-pill` in `globals.css` and DESIGN.md's front matter), because no `.tsx`
+    may carry a colour literal (`tokens.test.ts`); each value is C3a's or C3b's own.
+12. **The Design block gained a "nothing chosen" state** (`at = -1`): no tile active, no counter and no name — the
+    untouched paywall's chooser, where ◀ picks the ring's last design and ▶ its first.
+
+**Dev verification (2026-09-26), made before the Dev commit.**
+
+13. **Re-check reads the site as the caller's before it asks Ghost anything** (`server/site-probe.ts`'s `readMembers`).
+    `call()` decrypts whatever site id it is handed, and Re-check's id is `projects.linked_site_id`, which `authenticated`
+    may write and whose foreign key checks only that the site exists — so a project pointed at another user's site
+    would have had that site's Admin key used for the read. The owned-row read now comes first, and
+    `server-wiring.test.ts` holds the order (its control: the old order fails it).
+14. **The owner's test step 6 reloads the Paywall screen before pressing Re-check.** Re-check sits on C3b's card, which
+    is up only while the record says members are off, so with members still on there is no button to press; the screen
+    checks again every time it opens (C3b's "we re-check whenever you open this screen").
+15. **The tier line's rule is `tierText` in `lib/paywall.ts`**, so the I/O matrix's error column — a failed tiers read
+    leaves the line absent — has a test (`paywall.test.ts`); the editor calls it.
+16. **Step 79 also refuses `/harness/editor/paywall`** on the deployed site: the harness became a layout with a page per
+    canvas (item 10), so a canvas's page is refused as the harness itself is.
 
 ## Design Notes
 
@@ -701,14 +772,14 @@ numbers.
 
 | Where | What it says |
 |---|---|
-| Switcher group · row · caption | **Template surfaces** · **Paywall** · *"Where a members-only post stops"* |
+| Switcher group · row · caption | **Template surfaces** · **Paywall** · *"Where a gated post stops"* (Dev: the first wording overran its row — Change Log 2) |
 | Top bar | **Not a page section** (uppercased by CSS) · **Back to post** |
 | Strip | *"Showing: the cut only"* / *"Showing: the whole post"* · *"The article above is context, not editable here"* / *"The article is context, not editable here"* · **Design {n} of {m} · {name}** |
 | Cut marker | **Ghost cuts here · public preview marker** (uppercased) · *"below this line never reaches the browser"* |
 | Indicator | **Gated content — shown with sample text** |
 | Layers card | **How readers reach it** · *"Ghost cuts the post at the author's Public preview marker and renders this block in its place. You cannot move it."* · *"{n} tiers · {m} free"* (one: "1 tier") · **Tiers in Ghost admin →** |
 | Panel head | **Paywall** · **{n} / {m}** when designed · untouched: *"This is Ghost's own paywall — what your readers see today."* |
-| Members-off card (R-198) | **MEMBERS OFF** · **Members are switched off** · *"Members are switched off for {site} — subscription access is set to Nobody — so your posts for members still stop at the cut, but nobody can sign up there: Ghost stops loading its sign-up window."* · *"In Ghost admin, open Settings → Membership and set Subscription access to anyone or invite-only"* · *"Come back here — we re-check whenever you open this screen"* · **Open Ghost admin** (→ `{url}/ghost/#/settings/members`) · **Re-check** / **Re-checking…** · *"You can still work on your paywall with sample content — switch the canvas to Sample content below."* |
+| Members-off card (R-198) | **MEMBERS OFF** · **Members are switched off** · *"Members are switched off for {site} — subscription access is set to Nobody — so your posts for members still stop at the cut, but nobody can sign up there."* (Dev: the recording moved the ruled clause about Portal — Change Log 1, §54) · *"In Ghost admin, open Settings → Membership and set Subscription access to anyone or invite-only"* · *"Come back here — we re-check whenever you open this screen"* · **Open Ghost admin** (→ `{url}/ghost/#/settings/members`) · **Re-check** / **Re-checking…** · *"You can still work on your paywall with sample content — switch the canvas to Sample content below."* |
 | Re-check, said | *"Members are on for {site}."* · *"Members are still switched off for {site}."* · refused: *"Could not check {site} just now."* |
 | Sites notice | none: *"Members are switched off on {site} — subscription access is set to Nobody — so its sign-up forms show nothing and its paywall cannot sign anyone up."* · invite: *"Only people you invite can join {site}, so free sign-up forms show nothing there."* · paid: *"New members must pay to join {site}, so free sign-up forms show nothing there."* · paid off: *"Paid memberships are off on {site} — Stripe is not connected — so paid sign-up buttons show nothing there."* · **Open Ghost admin ↗** |
 | A placed member ask | *"Members are switched off on {site}, so this section's sign-up form shows nothing there."* |
@@ -741,10 +812,50 @@ numbers.
 - `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-editor.cjs`
   -- expected: 0 FAIL on `app.inflozo.com`, with step 95 among the passes. It is known-flaky (DW-222, DW-220), so record
   every run.
-- `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID|GHOST5_URL|GHOST5_CONTENT_API_KEY|GHOST5_STAFF_ACCESS_TOKEN|GHOST6_URL|GHOST6_CONTENT_API_KEY)=' tools/probe/.env | xargs) NO_429=1 node tools/probe/run-verify-live-content.cjs`
+- `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID|GHOST5_URL|GHOST5_CONTENT_API_KEY|GHOST5_ADMIN_API_KEY|GHOST5_STAFF_ACCESS_TOKEN|GHOST6_URL|GHOST6_CONTENT_API_KEY)=' tools/probe/.env | xargs) NO_429=1 node tools/probe/run-verify-live-content.cjs`
   -- expected: 0 FAIL on both majors, with T3's toggle restored. Tell the owner before it runs: his Ghost 5 Project
   reads T3.
 - `python3 tools/doc-audit.py --check`, twice -- expected: PASS.
+
+**Results (Dev, 2026-09-26, Node 24; no count written down — each suite prints its own).**
+
+- **RLS gate** — the Schema phase's (`dbc57c12`, the task above): exit 0, its withheld-migration control aborting at the
+  5.20 block.
+- **`record-shim.py`**, run twice — exit 0 on T1 6.58.0 and T3 5.130.6: every MEMBERS row recorded into
+  `packages/ghost-shim/fixtures/ghost{5,6}/`, both probe posts created and deleted and read back gone on each server,
+  T3's Subscription access restored to `all` and read back, `casper` restored and the probe theme deleted. Both *Ask
+  First* findings fell the plan's way: the members post IS withheld with Nobody, and a withheld post above 0 prints its
+  whole reading time. One clause of R-198 moved (Change Log 1). Written up as MEASUREMENTS §54. The donations flag the
+  write-up leans on was read again read-only today (Content API `settings/`, keys by name): `donations_enabled` true,
+  `recommendations_enabled` false and `members_signup_access` `all` on both boxes — T3 is back as the recorder left it.
+- **`pnpm check`** — exit 0: lint, typecheck, every package's tests (`access.test.ts`, `validate.test.ts`,
+  `orbit-weekly.test.ts` with its control, `contexts.test.ts` in the library and the runtime, `contract.test.ts` over
+  §54, `agreement.test.ts`, `ad36.test.ts`; in the app `paywall.test.ts` — the stand-ins node for node at the partial for
+  every visitor — `probe-rule.test.ts`, `server-wiring.test.ts`, `live-content.test.ts`, `editor.test.ts`,
+  `canvas-switch.test.ts`, `busy.test.ts`, `app-routes.test.ts`, `tokens.test.ts`), the stress vocabulary, the catalog,
+  the baseline and the snapshot check.
+- **`node tools/check-snapshots.mjs`** — ONE intended move, then PASS after `--update`: a4/13's primary action, one line
+  (Change Log 4). No other snapshot moved.
+- **`bash tools/matrix/run-matrix-gate.sh`** — exit 0 in its container, 0 violations, no baseline moved (the canvas
+  document's new stylesheet is disabled on every canvas but the paywall).
+- **`pnpm keyboard`** — green, the whole journey, with Story 5.20's among the passes: Template ▾ → Paywall and the ink
+  bar, the cut, the dim and Ghost's box in the sample's accent; View as's three visitors; a stand-in chosen from
+  untouched, stepped, set and three ⌘Z back to Ghost's own box; C3b's card, "Re-checking…" with `aria-busy` and never
+  `disabled`, and its refusal said; members off on Sample content and a placed sign-up section's line; R-192 reading
+  along; Back to post and Home at rest.
+- **The stress gate** — `node build.js && node gate.js theme`: 0 errors / 0 warnings on both majors (gscan 4.49.7 and
+  6.4.2), with the CTA archetype's ask now gated (Change Log 9).
+- **The deployed walks** — `run-verify-editor.cjs` step 95 and `run-verify-live-content.cjs`'s Story 5.20 section are
+  written and pass `node --check`. Each refuses a checkout that is not the deployed HEAD, so they run against the Dev
+  push once CI has deployed it — below.
+- **Re-run at the Dev verification, after Change Log 13–16** (Node 24): `pnpm check` exit 0, every package's suite
+  green with `server-wiring.test.ts`'s ownership order and `paywall.test.ts`'s `tierText` among the passes; `pnpm
+  keyboard` green, the whole journey with Story 5.20's seven; the frames compared by eye against screenshots of the
+  harness — C3a (the ink bar, the strip, the dimmed article, the cut and Ghost's box, each visitor), C3b's card and D5b's
+  group — each as the Design Notes correct it. The matrix gate, the snapshots and the stress gate were not re-run:
+  Change Log 13–16 touch no render.
+- **`python3 tools/doc-audit.py --check`**, twice — PASS (the first run regenerated INDEX and the story board, as it
+  does after an edit).
 
 ## Owner's manual test
 
@@ -756,12 +867,12 @@ On the real site after Deploy, in a desktop browser about 1440 wide. Deploy conf
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
-| 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Open **Template ▾**. | — | Below the templates, a **Template surfaces** heading with one row, **Paywall** — "Where a members-only post stops". |
+| 1 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Open **Template ▾**. | — | Below the templates, a **Template surfaces** heading with one row, **Paywall** — "Where a gated post stops". |
 | 2 | same → `…/paywall` | Paywall | Choose **Paywall**. | — | The top bar turns dark, with **NOT A PAGE SECTION** and **Back to post**. The left panel shows no layers, only "How readers reach it", then **1 tier · 1 free**, then **Tiers in Ghost admin →**. Your hidden "Ghost5 Pro" tier is not counted. |
 | 3 | same | Paywall | Look at the canvas, with View as on **Logged out user**. | — | "Showing: the cut only". The article's opening paragraphs are faded. A dashed coral line reads **GHOST CUTS HERE · PUBLIC PREVIEW MARKER**, with "below this line never reaches the browser". Under it is Ghost's own box, in your site's accent colour: "This post is for paying subscribers only", **Subscribe now**, "Already have an account? Sign in". |
 | 4 | same | Paywall | Set **View as** to **Free member**, then **Paid member**. | — | As a Free member the box says **Upgrade your account**. As a Paid member the line and the box disappear, the whole article shows ("Showing: the whole post"), and a small amber label, **Gated content — shown with sample text**, marks where the cut was. |
 | 5 | same | Paywall | Look at the settings panel on the right. Press **Tiers in Ghost admin →**. | — | The panel says **Paywall** and "This is Ghost's own paywall — what your readers see today." There are no designs to choose yet. The link opens ghost5's admin on its Tiers settings in a new tab. |
-| 6 | `https://ghost5.inflozo.com/ghost/#/settings/members` | Ghost admin | Set **Subscription access** to **Nobody** and save. Back in the editor, press **Re-check**. | — | The button says **Re-checking…**, then the canvas shows the **Members are switched off** card: its sentence, the two numbered steps, **Open Ghost admin** and **Re-check**. |
+| 6 | `https://ghost5.inflozo.com/ghost/#/settings/members`, then back to `…/paywall` | Ghost admin, then Paywall | Set **Subscription access** to **Nobody** and save. Back in the editor, reload the page — the Paywall screen checks ghost5 again every time it opens. Then press **Re-check**. | — | After the reload the canvas shows the **Members are switched off** card: its sentence, the two numbered steps, **Open Ghost admin** and **Re-check**. Pressing **Re-check** turns the button into **Re-checking…** for a moment, and the card stays. |
 | 7 | `…/99d4d277-540f-4407-b9e1-033d4c93058f` | Editor, Home | Click **Newsletter — Inline Row** in Layers. | — | At the top of its settings: "Members are switched off on Ghost5, so this section's sign-up form shows nothing there." |
 | 8 | `https://app.inflozo.com/sites` | Sites | Look at ghost5's card. | — | "Members are switched off on Ghost5 — subscription access is set to Nobody — so its sign-up forms show nothing and its paywall cannot sign anyone up." with **Open Ghost admin ↗**. |
 | 9 | ghost5's admin, then `…/paywall` | Ghost admin, Paywall | Set **Subscription access** back to **Anyone can sign up**. In the editor's Paywall, press **Re-check**. | — | Ghost's box comes back. The notice on Sites and the line on the Inline Row are gone. |

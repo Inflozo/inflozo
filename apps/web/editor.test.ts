@@ -4,8 +4,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, isEditorPath, isMembership, isUuid, LOCK, lockPath, PAGE_TWO, pageTwoKeyOf,
-  SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, fileOfKey, isEditorPath, isMembership, isSurface, isUuid, LOCK, lockPath, PAGE_TWO,
+  pageTwoKeyOf, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
 
@@ -26,7 +26,7 @@ test('every canvas key round-trips through its address', () => {
 })
 
 test('every reserved or unknown segment is refused — `index` permanently (R-127), and so is `settings` (R-131)', () => {
-  for (const s of ['index', 'paywall', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK]) {
+  for (const s of ['index', 'cards', 'custom-x', 'nonsense', 'constructor', '__proto__', 'toString', '', SETTINGS, SYNC, LOCK]) {
     assert.equal(canvasFromSegment(s), null, s)
   }
   assert.equal(canvasOfPath(`/projects/${ID}/nonsense`), null)
@@ -242,4 +242,25 @@ test('every key the editor writes is accepted word for word by the sync route AN
   }
   // and nothing wider: a near miss is refused by the route, as the constraint refuses it
   for (const junk of ['home-paged', 'tag-page', 'index2', 'page-2']) assert.ok(!shape.test(junk), junk)
+})
+
+// ─── Story 5.20 — the first TEMPLATE SURFACE ─────────────────────────────────────────────────────────────────────
+
+test('Story 5.20: `paywall` is a canvas and a template surface — its key is its segment, and its file is the partial', () => {
+  assert.equal(canvasFromSegment('paywall'), 'paywall', '`paywall` stopped being a reserved segment')
+  assert.equal(canvasOfPath(`/projects/${ID}/paywall`), 'paywall')
+  assert.equal(templateKeyOf('paywall'), 'paywall')
+  assert.equal(canvasOfTemplateKey('paywall'), 'paywall')
+  // the file Ghost reads where `{{content}}` stops a post (`content.js:28`), never a `paywall.hbs` it would ignore
+  assert.equal(fileOfKey('paywall'), 'partials/content-cta.hbs')
+  assert.equal(CANVASES.paywall.label, 'Paywall')
+  assert.equal(CANVASES.paywall.caption, 'Where a gated post stops')
+  // offered on every project, and the only surface: every other canvas is a page
+  assert.ok(canvasesOf().includes('paywall'))
+  assert.deepEqual((Object.keys(CANVASES) as CanvasKey[]).filter(isSurface), ['paywall'])
+  assert.ok(!isMembership('paywall'))
+  // fileOfKey still answers every other key exactly as before
+  for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.equal(fileOfKey(templateKeyOf(key)), CANVASES[key].file, key)
+  assert.equal(fileOfKey(SITE.key), SITE.file)
+  assert.equal(fileOfKey('index'), 'index.hbs')
 })

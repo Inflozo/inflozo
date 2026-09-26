@@ -1,0 +1,25 @@
+{
+  "name": "Stand-in — centred",
+  "tier": "free",
+  "bindingContext": ["none"],
+  "compileTarget": ["partials/content-cta.hbs"],
+  "controlSchema": [
+    { "name": "align", "type": "segmented", "label": "Alignment", "group": "layout", "values": ["start", "center"], "default": "center",
+      "valueLabels": { "start": "Left", "center": "Centre" } }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"], "default": "surface", "reason": "This stand-in is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "ghostCompat": { "minVersion": "5.0.0", "helpers": ["t"] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "paywall-stand-in",
+    "containment": "panel",
+    "ground": "surface",
+    "itemCount": "none",
+    "mediaPlacement": "none",
+    "emphasis": "a stand-in for A32 that proves choosing a paywall, never a library design (R-158)"
+  }
+}

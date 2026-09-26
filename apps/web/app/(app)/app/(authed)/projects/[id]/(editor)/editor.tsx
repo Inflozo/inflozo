@@ -2,9 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type HTMLAttributes } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
-import { categoryOf, DEFAULT_LIMIT, orbitWeekly, PAGINATED_TARGETS, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
   clearDarkOverrides, darkOverridesInForce, defaultContent, designate, duplicateSection, FEED_KEY, feedBase, feedlessArchive,
   feedQuery, getPath, insertSection, isDesigned, isFeed, mainFeedOf, makeMainFeed, moveSection, removeSection,
@@ -13,7 +13,7 @@ import {
 } from '@inflozo/section-runtime'
 import type { ControlState, DocInstance, FeedRole, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
-import { Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
+import { HowReadersReachIt, Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
 import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
@@ -21,6 +21,7 @@ import { PageTwoPill } from '@/components/editor/page-two-pill'
 import { LockBar } from '@/components/editor/lock-bar'
 import { LockRequest } from '@/components/editor/lock-request'
 import { LockTakeover } from '@/components/editor/lock-takeover'
+import { PaywallNotice } from '@/components/editor/paywall-notice'
 import { PreviewBar, PreviewButton } from '@/components/editor/preview-toggle'
 import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
@@ -38,13 +39,14 @@ import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/di
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
-import { ChevronLeft, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
+import { ChevronLeft, InfoCircle, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
-import { canvasAssets, canvasSrc, renderSection, rowsFor, sampleRows, shownRows, sitePage, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
+import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
-import { CANVASES, canvasOfPageTwoKey, canvasOfPath, fileOfKey, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSurface, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
   flushDecision, hydrationFor, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn,
@@ -71,14 +73,14 @@ import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, siteSubjects, subjectOptions } from '@/lib/preview-subject'
 import {
-  bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, reader, retriable, SETTINGS, siteLinks, siteTotal,
-  type Cause, type LiveQuery,
+  bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SETTINGS, siteLinks,
+  siteTotal, type Cause, type LiveQuery,
 } from '@/lib/live-content'
 import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, NOW_MAIN, withTransfer } from '@/lib/data-group'
 import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
-import { setPreviewSubject, setViewedStates } from './actions'
+import { recheckMembers, setPreviewSubject, setViewedStates } from './actions'
 import type { EditorData } from './read'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
@@ -362,12 +364,16 @@ export function Editor({
   lock: heldOnServer,
   site,
   canvasSrc: canvasPath,
+  canvasBase,
 }: EditorData & {
   project: { id: string; name: string }
   /** Story 5.9 — the canvas document's address, defaulting to the app's own `/canvas`. The keyboard harness serves
    *  the SAME `pilotsCanvasDocument()` bytes from a path of its own and names it here, so the real route keeps its
    *  session guard rather than having it bypassed for a test. */
   canvasSrc?: string
+  /** Story 5.20 — where this editor's canvases live when it is not the app's `/projects/<id>`: the keyboard harness's
+   *  own pages (`/app/harness/editor/<key>`), so its walk can switch canvas with no database (R-146). The app passes none. */
+  canvasBase?: string
 }) {
   const pathname = usePathname()
   /** the canvas document's address — and, since Story 5.19, where the sample's pictures are served for the panel too */
@@ -375,6 +381,12 @@ export function Editor({
   // the layout 404s every segment that is not a canvas, so a null here is never drawn
   const key = canvasOfPath(stripApp(pathname)) ?? 'home'
   const canvas = CANVASES[key]
+  /** STORY 5.20 — THIS CANVAS IS A TEMPLATE SURFACE (the Paywall): not a page, so no site doc, no Section Picker, no
+   *  Remix and no Preview, an ink bar, C3a's strip, and a paint of its own (`paywallPage`). */
+  const surface = isSurface(key)
+  /** where a canvas lives — the app's address, or the harness's own pages (`canvasBase`) */
+  const pathOf = (k: CanvasKey) =>
+    canvasBase === undefined ? `${isApp(pathname) ? '/app' : ''}${pathOfCanvas(project.id, k)}` : k === 'home' ? canvasBase : `${canvasBase}/${k}`
   // STORY 5.8 — EDITS NO LONGER LIVE FOR THE SESSION. They are still held here, and they are also written to this
   // browser's IndexedDB on every `commit()` and sent to the server on the timer, at tab close and on ⌘S. The server's
   // docs are the OPENING value only: the hydrate below replaces them with the local ones when the revisions agree.
@@ -523,6 +535,41 @@ export function Editor({
     return typeof title === 'string' && title.trim() !== '' ? title.trim() : (site?.title ?? '')
   }
   const siteName = siteNameOf()
+  /* ─── Story 5.20 — FR-H6's RECORD OF THE MEMBER SWITCHES, and C3b's Re-check ──────────────────────────────────────
+   *
+   * SERVER TRUTH at first paint (`read.ts` reads `site_settings.members`), and a Re-check replaces it with Ghost's own
+   * answer — C3b's button, and the Paywall canvas's own re-check each time it opens ("we re-check whenever you open this
+   * screen"). A site with no record yet warns nothing anywhere. A Re-check is a LOOK, never an edit: nothing reaches
+   * `commit()`, the journal or `⌘Z`, and it stays live reading along (R-192). Its busy state is the transition's (R-98). */
+  const [members, setMembers] = useState(site === null ? null : (site.members ?? null))
+  const membersNow = useRef(members)
+  membersNow.current = members
+  const [rechecking, startRecheck] = useTransition()
+  const [recheckRefusal, setRecheckRefusal] = useState<string | null>(null)
+  const recheck = (pressed: boolean) => {
+    if (site === null) return
+    setRecheckRefusal(null)
+    startRecheck(async () => {
+      // a thrown call (the network dropped, the session is gone) is the same refusal as a returned one
+      const answer = await recheckMembers(project.id).catch(() => ({ refused: true as const }))
+      const name = siteNameOf()
+      // the press speaks; the canvas's own re-check speaks only where C3b's card is up to say it about
+      const speaks = pressed || membersOff(membersNow.current)
+      if ('refused' in answer) {
+        if (speaks) {
+          setRecheckRefusal(PAYWALL_WORDS.refused(name))
+          setSaid(PAYWALL_WORDS.refused(name))
+        }
+        return
+      }
+      setMembers(answer.members)
+      if (speaks) setSaid(membersOff(answer.members) ? PAYWALL_WORDS.stillOff(name) : PAYWALL_WORDS.on(name))
+    })
+  }
+  useEffect(() => {
+    if (surface) recheck(false)
+    // entering the surface is the question; `recheck` reads the record and the site through refs
+  }, [surface])
   /** `painted.shown` as the handlers see it, in the same task the paint set it — before React has re-rendered */
   const paintedRef = useRef<Shown>(painted.shown)
 
@@ -748,12 +795,15 @@ export function Editor({
   /** STORY 5.10 — can anything be placed on THIS canvas at all? One query (`offeredOn`), and the hairline, the
    *  "+ Add section" pill and the Layers footer's button are all readers of it: where nothing can be placed there
    *  is no affordance, rather than an affordance that opens an empty picker (UX-DR3). */
-  const canAdd = offeredHere(entries, canvas.file, SITE.file).length > 0
+  const canAdd = !surface && offeredHere(entries, canvas.file, SITE.file).length > 0
   /** What this section may become, from the library and nowhere else (`ringFor` sits beside `offeredOn`). The
    *  design it IS is always in it; a design the library no longer holds gives an empty ring, which reads as one
    *  design with nowhere to go — the same answer every category gives today. */
   const ringOf = (designId: string): SectionRegistryEntry[] => {
     const entry_ = entries[designId]
+    // Story 5.20 — a paywall is a treatment, so `ringFor` (placeable designs) never holds one: its ring is every paywall
+    // design this editor holds (A32's from Story 10.107; the harness's two stand-ins, R-158)
+    if (entry_ !== undefined && isPaywallDesign(entry_)) return paywallRing(Object.values(entries))
     return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
   }
   // the canvas document's handlers and paint read the latest values through here
@@ -1494,6 +1544,8 @@ export function Editor({
       // Story 5.19 — every section's OWN queries, folded, and a secondary feed's: one read per distinct query
       queries: Object.fromEntries(now.stack.map((i) => [queryKey(i), queriesOf(i)])),
       perPage: postsPerPage,
+      // Story 5.20 — and each post's `access` re-read for the visitor View as previews (Ghost's own rule)
+      visitor: now.viewAs,
     })
   }
 
@@ -1725,7 +1777,9 @@ export function Editor({
    *  NEVER AN EDIT: nothing reaches `commit()`, the journal or `⌘Z`. Focus moves after the commit that hides or shows
    *  the chrome (the effect below): in to Back to editing, and out to wherever it was. */
   const enterPreview = () => {
-    if (latest.current.preview) return
+    // Story 5.20 — a template surface is no page of the site, so it has no Preview: B3a's pill is absent there, and `P`
+    // does nothing (the spec's top bar for the Paywall canvas carries no Preview)
+    if (latest.current.preview || isSurface(latest.current.key)) return
     cameFrom.current = document.activeElement instanceof HTMLElement ? document.activeElement : null
     latest.current = { ...latest.current, preview: true }
     setPreview(true)
@@ -1784,7 +1838,12 @@ export function Editor({
     })
   }
 
-  const choose = (pick: Pick | null) => {
+  const choose = (asked: Pick | null) => {
+    // STORY 5.20 — ON THE PAYWALL CANVAS THE PANEL IS THE PAYWALL'S: "nothing selected" there is its one instance, where
+    // a design is chosen, so its ring and its controls stay in the panel whatever the press — the box is the only thing
+    // on the canvas a customer can change, and C3a draws it selected
+    const only = isSurface(latest.current.key) ? latest.current.stack[0] : undefined
+    const pick = asked === null && only !== undefined ? { doc: only.doc, instanceId: only.instanceId } : asked
     if (same(pick, latest.current.selected) || (!pick && !latest.current.selected)) return
     latest.current.selected = pick
     setSelected(pick)
@@ -1864,6 +1923,10 @@ export function Editor({
       }
       const live = view !== null && 'ready' in view && reading?.stopped === null ? view.ready : null
       const sampleSubject = orbitWeekly.resolveSubject(CANVASES[now.key].file, now.stored).subject
+      // STORY 5.20 — THE PAYWALL SURFACE: a visitor who may read the paid post meets the whole article and no box, as
+      // Ghost renders the partial only where access is false — so its instance, where one is chosen, renders nothing
+      const paywall = isSurface(now.key)
+      const whole = paywall && postAccess({ visibility: 'paid' }, now.viewAs)
       const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage)
       const url = at.currentUrl
       const pageNumber = now.page === 2 ? (at.pagination as { page?: number } | undefined)?.page : undefined
@@ -1873,7 +1936,7 @@ export function Editor({
         // Story 5.4: HIDDEN IS RETAINED, NEVER REMOVED — the instance stays in the doc and renders nothing, so
         // `sectionRoots` gives it a null root exactly as a member-gated section does, and Epic 7 leaves it out of the
         // compile. R-124's audience reaches the render door as `visibility`, which gates the root on both emitters.
-        if (i.hidden) return ''
+        if (i.hidden || whole) return ''
         // Story 5.6: a repaint in dark must draw the DARK render — the mode picks the stored slice handed to the one
         // door, here as it does in `restampAll` and `onChange`, so no repaint ever silently returns to light
         // Story 5.13: the canvas's resolved subject reaches every section through the ONE door. A site-wide section
@@ -1887,7 +1950,7 @@ export function Editor({
         const own: DesignRows | undefined = live === null ? sampleRows(queries) : live.rows[queryKey(i)]
         return renderSection(doc, entry, { ...i, controls: storedFor(entry, i, now.mode) }, {
           target: i.target, rows: own, feed, url, page: pageNumber, member: now.viewAs, visibility: i.memberVisibility,
-          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage,
+          assets, icons: lookup, editing: true, subject: sampleSubject, perPage: postsPerPage, visitor: now.viewAs,
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
           secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },
         })
@@ -1897,12 +1960,22 @@ export function Editor({
       // `mountSections`' blanket `js-enabled` drew every mount in its JavaScript branch with nothing running.
       behaviours.current?.stop()
       behaviours.current = null
-      mount.innerHTML = parts.join('')
+      // STORY 5.20 — the canvas document's post-body stylesheet is ON for the surface alone (`pilots.ts`), and the
+      // surface's page is the article, the cut and the box, its instance's markup inside the box (`paywallPage`)
+      const surfaceSheet = doc.querySelector<HTMLStyleElement>('style[data-order="2b-surface"]')
+      if (surfaceSheet) surfaceSheet.media = paywall ? 'all' : 'not all'
+      const arriving = paintedAt.current?.key !== now.key
+      const accent = live !== null ? live.site['accent_color'] : orbitWeekly.site().accent_color
+      mount.innerHTML = paywall ? paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null }) : parts.join('')
       // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
       stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>('[data-inflozo-prop], [data-inflozo-ghost]'))
       const back = lock && lock.at >= 0 ? sameLock(lock.words)[lock.at] : undefined
       if (back && lock) showNote({ el: back, kind: 'lock', words: lock.words })
-      roots.current = sectionRoots(parts, mount) as (HTMLElement | null)[]
+      // a section's root is its part's element in the mount — on the surface, in the box
+      roots.current = sectionRoots(parts, paywall ? (mount.querySelector('[data-inflozo-box]') ?? mount) : mount) as (HTMLElement | null)[]
+      // STORY 5.20 — the Paywall canvas OPENS at the cut (or where the gated part begins): the article above it is context
+      const cut = paywall && arriving ? mount.querySelector('[data-inflozo-cut], [data-inflozo-gated]') : null
+      if (cut && doc.defaultView) doc.defaultView.scrollTo({ top: Math.max(0, cut.getBoundingClientRect().top + doc.defaultView.scrollY - doc.defaultView.innerHeight / 3) })
       wire(doc)
       // STORY 5.15 — `core` STARTS HERE, over the new nodes, against the canvas's own window (DW-136). While designing
       // it holds still every module that is not edit-safe and hands those mounts back for the PAUSED chip (R-174,
@@ -2377,6 +2450,8 @@ export function Editor({
     // Story 5.18: opening the editor and a canvas are reads the customer asked for — on the site's content they are
     // read, then painted once; with the sample, or everything in hand, this paints at once exactly as before
     request()
+    // Story 5.20 — and the Paywall canvas opens with its instance in the panel, where a design is chosen (`choose`)
+    if (isSurface(key)) choose(null)
     // paint reads the latest values through `latest`
   }, [key])
 
@@ -2872,7 +2947,15 @@ export function Editor({
      handler per action, never a second implementation (R-141's rule) — so the announcement has to live where BOTH
      the key and the button reach it, exactly as `moveTo`'s does. A refusal says nothing here: `refuse` puts P0-1's
      pill over the section, which is where the press was. */
+  /** Story 5.20 — the paywall's doc holds AT MOST ONE instance (`read.ts` refuses a second), and the way back to Ghost's
+   *  own box is ⌘Z alone until Story 10.107 draws one (DW-262): so its instance is never duplicated or removed, by any
+   *  door — Layers has no rows there and the pill is absent, so these two handlers are the keys' last door. */
+  const onSurfaceDoc = (docKey: string) => {
+    const owner = canvasOfTemplateKey(docKey)
+    return owner !== null && isSurface(owner)
+  }
   const onDuplicate = (pick: Pick) => {
+    if (onSurfaceDoc(pick.doc)) return
     const name = layerNameOf(pick)
     if (edit(pick, (doc) => duplicateSection(doc, pick.instanceId, crypto.randomUUID()))) setSaid(`${name} duplicated`)
   }
@@ -2905,6 +2988,33 @@ export function Editor({
     }, SWAP_MS)
   }
 
+  /** STORY 5.20 — CHOOSING A PAYWALL DESIGN FROM UNTOUCHED (FR-H6, R-197): one instance of it in the `paywall` doc —
+   *  ONE `apply`, one `commit`, one `⌘Z` back to Ghost's own box. At most one: a paywall already designed swaps through
+   *  the ring instead (`onDesign`, 5.11's carry / park / default), and `read.ts` refuses a doc holding two. */
+  const choosePaywall = (designId: string) => {
+    const now = latest.current
+    const design = entries[designId]
+    const docKey = templateKeyOf(now.key)
+    if (design === undefined || !isSurface(now.key) || (docOf(docKey)?.instances.length ?? 0) > 0) return
+    const instance = {
+      instanceId: crypto.randomUUID(),
+      layerName: `${PAYWALL_WORDS.panel} — ${design.name}`,
+      designId,
+      content: defaultContent(design.contentSchema),
+      controls: {},
+      data: {},
+      darkOverrides: {},
+      parkedControls: {},
+      hidden: false,
+      memberVisibility: 'everyone' as const,
+      isMainFeed: false,
+    }
+    if (!edit({ doc: docKey, instanceId: instance.instanceId }, (doc) => insertSection(doc, 0, instance))) return
+    const ring = ringOf(designId)
+    setSaid(announce(ring.findIndex((e) => e.id === designId), ring.length, design.name))
+    choose({ doc: docKey, instanceId: instance.instanceId })
+  }
+
   const onDesign = (pick: Pick, to: string) => {
     const placed = latest.current.stack.find((i) => same(i, pick))
     if (!placed || to === placed.designId) return
@@ -2918,6 +3028,13 @@ export function Editor({
    *  of a list reads as broken). Nothing selected, or a ring of one, does nothing and says nothing. */
   const stepDesign = (pick: Pick | null, by: number) => {
     const placed = pick ? latest.current.stack.find((i) => same(i, pick)) : undefined
+    // Story 5.20 — an untouched paywall steps INTO its ring: ▶ chooses the first design and ◀ the last
+    if (!placed && isSurface(latest.current.key)) {
+      const ring = paywallRing(Object.values(entries))
+      const to = by > 0 ? ring[0] : ring[ring.length - 1]
+      if (to !== undefined) choosePaywall(to.id)
+      return
+    }
     if (!pick || !placed) return
     const ring = ringOf(placed.designId)
     if (ring.length < 2) return
@@ -3028,6 +3145,7 @@ export function Editor({
     return before !== undefined && after !== undefined && after.instanceId !== before.instanceId ? after.layerName : null
   }
   const onRemove = (row: Pick & { layerName: string }) => {
+    if (onSurfaceDoc(row.doc)) return
     if (row.doc === SITE.key) return askFirst('remove', row)
     const before = mainFeedOf(docOf(row.doc))
     // "the gesture's own sentence, then {name} is now the main feed." where the delete handed the flag on
@@ -3205,7 +3323,9 @@ export function Editor({
 
   const onChange = (next: ControlState, kind: Edit) => {
     const now = latest.current
-    const pick = now.selected
+    // Story 5.20 — on the Paywall canvas the panel is its one instance's, selected or not (`choose`)
+    const only = isSurface(now.key) ? now.stack[0] : undefined
+    const pick = now.selected ?? (only === undefined ? null : { doc: only.doc, instanceId: only.instanceId })
     if (!pick) return
     // Story 5.16: the doc as edited (page 2's copy while it follows), and held for R-180's ask on page 2 — then nothing
     // is stamped: the panel still shows the value in force until the change lands
@@ -3223,11 +3343,37 @@ export function Editor({
     } else paint()
   }
 
+  /* ─── Story 5.20 — THE PAYWALL CANVAS, as the render reads it ─────────────────────────────────────────────────── */
+  /** does the visitor View as previews read the paid post whole (Ghost's own rule) — S4d's indicator — or meet the cut? */
+  const whole = postAccess({ visibility: 'paid' }, viewAs)
+  /** the paywall designs this editor holds (A32 from Story 10.107; the harness's stand-ins), and where the chosen one is */
+  const paywalls = surface ? paywallRing(Object.values(entries)) : []
+  const paywallAt = surface && stack[0] !== undefined ? paywalls.findIndex((e) => e.id === stack[0]?.designId) : -1
+  /** C3b's card: members switched off by the record, while the canvas is chosen to show the site's content */
+  const offCard = surface && membersOff(members) && source === 'site' && site !== null && 'origin' in site
+  /** the tier line counts the source in force's public tiers — absent where the site was chosen and could not be read */
+  const tiersShown = !surface
+    ? null
+    : tierText(livePage === null ? null : { rows: reads.current?.peek(PUBLIC_TIERS)?.rows }, painted.shown.cause !== null, orbitWeekly.tiers())
+  /** Ghost admin's Tiers, for the site's own content alone */
+  const tiersHref = surface && livePage !== null && site !== null && 'origin' in site ? adminAt(site.origin, 'tiers') : null
+  /** the ink surround's words and hovers, for the controls that sit straight on the bar (C3a :1368-1386): the Kit's own
+   *  utilities read these variables, so they are re-pointed for the bar's plain controls and for nothing else — never
+   *  for a menu, whose card stays paper */
+  const onInk = surface
+    ? ({ '--color-ink-soft': 'var(--color-ink-deep-soft)', '--color-ink': 'var(--color-ink-deep-text)', '--color-paper-sunk': 'var(--color-ink-hover)' } as CSSProperties)
+    : undefined
+
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-paper text-ink">
       {/* Story 5.15: in Preview the whole bar is HIDDEN, never unmounted — its menus, its focus and every value in it
           come back exactly as they were */}
-      <header hidden={preview} className="relative flex h-12 shrink-0 items-center gap-[10px] border-b border-line bg-paper px-3">
+      {/* STORY 5.20 — ON A TEMPLATE SURFACE THE BAR IS INK (C3a, DESIGN.md:310-313): a canvas that is not a page says so */}
+      <header
+        hidden={preview}
+        data-surface={surface || undefined}
+        className={`relative flex h-12 shrink-0 items-center gap-[10px] border-b px-3 ${surface ? 'border-ink-deep bg-ink-deep' : 'border-line bg-paper'}`}
+      >
         {/* D8c (`D8 Editor Below 1440.dc.html:311-345`) — THE FIRST FOCUSABLE THING IN THE SHELL, not rendered at
             rest and drawn on the first Tab as the frame draws it: a surface pill at left 10 / top 9, 30px high,
             `0 13px`, 12 radius, 1px line, the sm shadow AND the corrected 2px ring together (A7 item 7) — one
@@ -3250,6 +3396,7 @@ export function Editor({
           href="/"
           aria-label="Back to dashboard"
           title="Back to dashboard"
+          style={onInk}
           className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
         >
           <ChevronLeft size={15} />
@@ -3262,7 +3409,13 @@ export function Editor({
             measures it with a long name.
             ponytail: a constant sized to today's widest canvas label; Story 7.16's custom templates can carry longer
             names, and then the bar wants a three-column grid (`1fr auto 1fr`) instead of a number */}
-        <span className="max-w-[calc(50%-360px)] truncate text-ui-dense font-semibold">{project.name}</span>
+        {/* Story 5.20 — on the surface the chip follows the name, so the name stops a chip's width (and its gap) sooner */}
+        <span className={`${surface ? 'max-w-[calc(50%-510px)] text-ink-deep-text' : 'max-w-[calc(50%-360px)]'} truncate text-ui-dense font-semibold`}>{project.name}</span>
+        {surface ? (
+          <span data-surface-chip className="shrink-0 rounded-pill border border-ink-mid px-[9px] py-[3px] font-mono text-[10.5px] uppercase text-ink-deep-soft">
+            {PAYWALL_WORDS.chip}
+          </span>
+        ) : null}
         {/* S4a`:32` — the bar's third item, directly after the project name. Since R-142 it is an ICON IN A CIRCLE
             rather than B6's dot and label, and since R-144 its resting state reports what is OWED: a green check
             when everything is on the server, a grey clock the moment there is an edit that is not. The words are
@@ -3280,7 +3433,7 @@ export function Editor({
             2px apart, the unavailable one at `opacity:.35`); only where they sit has moved.
             THE KEYS ARE THE ARROWS' OWN HANDLERS (R-141), so the two can never disagree.
             `aria-disabled`, never `disabled`: the control stays in the tab order and stays announced. */}
-        <div id="editor-history" className="flex items-center gap-[2px]">
+        <div id="editor-history" style={onInk} className="flex items-center gap-[2px]">
           <IconButton
             id="editor-undo"
             label="Undo"
@@ -3311,7 +3464,7 @@ export function Editor({
             (R-169), so nothing hangs off the trigger. The deployed walk measures THIS group against the bar (step 2),
             not the switcher alone. */}
         <div id="editor-centre" className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
-          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} />
+          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : pathOf} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
               dot, because the page you are looking at is being looked at */}
           <ViewAs visitor={viewAs} viewed={seen(viewed[own] ?? [], viewAs)} onChoose={chooseVisitor} />
@@ -3331,16 +3484,28 @@ export function Editor({
               THE COUNT IS THIS CANVAS'S OWN DOC (R-161): `stack` carries the site-wide header and footer too, and
               Remix leaves them alone. Derived from the rings, never written down (standing rule 4) — in the shipped
               library every ring is length 1, so it is 0 and the confirm says so honestly. */}
-          <ReadOnly on={!lock.holder}>
-          <RemixDice
-            canvas={canvas.label}
-            count={remixable(editedDoc(docs, own, library)?.instances ?? [], ringOf)}
-            undoable
-            onRemix={onRemix}
-            handle={remixDice}
-          />
-          </ReadOnly>
-          {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
+          {/* C3b's MEMBERS OFF chip, in the bar while the card is up (:1662) */}
+          {offCard ? (
+            <span data-members-off-chip className="rounded-pill border border-ink-mid px-2 py-[2px] font-mono text-[10px] text-ink-deep-soft">
+              {PAYWALL_WORDS.offChip}
+            </span>
+          ) : null}
+          {/* Story 5.20 — ABSENT on a template surface: Site Remix never touches a treatment (FR-D17) */}
+          {surface ? null : (
+            <ReadOnly on={!lock.holder}>
+            <RemixDice
+              canvas={canvas.label}
+              count={remixable(editedDoc(docs, own, library)?.instances ?? [], ringOf)}
+              undoable
+              onRemix={onRemix}
+              handle={remixDice}
+            />
+            </ReadOnly>
+          )}
+          {/* the sun sits straight on the bar, so on the ink surround its glyph takes the surround's words (`onInk`) */}
+          <span style={onInk} className="contents">
+            {darkEnabled ? <ModeToggle mode={mode} onMode={flip} /> : null}
+          </span>
           <DeviceSwitch device={device} onDevice={pickDevice} />
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
@@ -3348,13 +3513,26 @@ export function Editor({
           <Link
             href={settingsPath(project.id)}
             id="editor-theme-settings"
+            style={onInk}
             className={`rounded-sm px-[6px] py-1 text-ui-dense text-ink-soft transition-colors hover:bg-paper-sunk hover:text-ink ${ring}`}
           >
             Theme settings
           </Link>
           {/* STORY 5.15 — B3a's Preview pill (`B Missing Surfaces.dc.html:645-649`), LAST in the cluster: B3a draws it
               immediately left of the ship button, and Story 7.18 places "Ship it" to its right. */}
-          <PreviewButton onPress={enterPreview} />
+          {/* Story 5.20 — a template surface is no page of the site, so it has no Preview (`enterPreview`) */}
+          {surface ? null : <PreviewButton onPress={enterPreview} />}
+          {/* C3a :1385 — the way back to the canvas the paywall is part of: a navigation, never an edit, so it is live
+              reading along (R-192). A link, as Theme settings is, so the editor stays mounted across it. */}
+          {surface ? (
+            <Link
+              href={pathOf('post')}
+              id="paywall-back"
+              className={`inline-flex h-8 items-center rounded-thumb border border-ink-mid px-[13px] text-control-label font-semibold text-ink-deep-text transition-colors hover:bg-ink-hover ${ring}`}
+            >
+              {PAYWALL_WORDS.back}
+            </Link>
+          ) : null}
         </div>
       </header>
 
@@ -3386,7 +3564,9 @@ export function Editor({
               <Panel size={15} />
             </IconButton>
           </div>
-          {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`) */}
+          {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`). STORY 5.20 —
+              on a template surface the panel keeps its name and holds no rows: C3a's "How readers reach it" card instead */}
+          {surface ? <HowReadersReachIt tiers={tiersShown} tiersHref={tiersHref} /> : (
           <Layers
             readOnly={!lock.holder}
             site={rowsOf(SITE.key)}
@@ -3417,6 +3597,7 @@ export function Editor({
             onMakeMainFeed={onMakeMainFeed}
             onMove={moveTo}
           />
+          )}
           {/* S4 Editor.dc.html:172 — the Layers footer's full-width dashed button, redrawn identically at 834 and 720
               (`D8 Editor Below 1440.dc.html:72`, `:202`). It is the Kit's `AddButton`, which `/kit` already draws with
               these very words. OUTSIDE the scrolling list, as the frame draws it, so it is always in reach — which is
@@ -3434,6 +3615,23 @@ export function Editor({
         </aside>
         {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" hidden={preview} /> : null}
 
+        {/* STORY 5.20 — THE CANVAS COLUMN: C3a's strip above the stage on a template surface, and nothing above it on any
+            other canvas. The wrapper is on EVERY canvas, so a canvas switch never remounts the stage or its frame. */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        {surface && !offCard ? (
+          <div data-paywall-strip hidden={preview} className="flex shrink-0 items-center gap-[9px] border-b border-paywall-strip-line bg-paywall-strip px-4 py-2">
+            {/* static text, never a menu (R-118): the visitor is View as's to choose */}
+            <span data-paywall-showing className="flex items-center gap-[6px] rounded-pill border border-paywall-strip-line bg-paywall-pill px-[11px] py-1 text-[12px] text-ink-mid">
+              {PAYWALL_WORDS.showingLead} <span className="font-semibold text-ink-deep">{PAYWALL_WORDS.showing(whole)}</span>
+            </span>
+            {paywallAt >= 0 && stack[0] !== undefined ? (
+              <span data-paywall-design className="rounded-pill border border-paywall-strip-line bg-paywall-pill px-[9px] py-[3px] font-mono text-[10.5px] text-ink-mid">
+                {PAYWALL_WORDS.design(paywallAt + 1, paywalls.length, entries[stack[0].designId]?.name ?? '')}
+              </span>
+            ) : null}
+            <span className="ml-auto text-[11.5px] text-ink-mid">{PAYWALL_WORDS.context(whole)}</span>
+          </div>
+        ) : null}
         <section
           ref={stage}
           aria-label="Canvas"
@@ -3469,7 +3667,8 @@ export function Editor({
           // fit is 1:1 in a 1440 × 900 window (B3b, "the site runs edge to edge")
           // Story 5.16: on page 2 the ground's top padding is D5d's pill's bottom (4px + its 38) plus R-138's 8px, so the
           // pill never meets the page card on any device — the ground grows rather than the pill's 30px targets shrink
-          className={`relative flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground ${preview ? '' : page === 2 ? 'px-7 pb-8 pt-[50px]' : 'px-7 py-8'}`}
+          // Story 5.20: a template surface sits on C3a's darker mat, so a canvas that is not a page reads as one
+          className={`relative flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center ${surface ? 'bg-paywall-mat' : 'bg-canvas-ground'} ${preview ? '' : page === 2 ? 'px-7 pb-8 pt-[50px]' : 'px-7 py-8'}`}
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
               ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage.
@@ -3477,7 +3676,8 @@ export function Editor({
               fit is 1, and the server's HTML would otherwise paint a full 1440 × 900 card across both panels — the
               old card was `w-full overflow-hidden` and clipped the same state, this one is `shrink-0`. */}
           <div
-            style={{ width: device.width * scale, height: device.height * scale, visibility: size.width > 0 && size.height > 0 ? undefined : 'hidden' }}
+            // Story 5.20: and hidden under C3b's card, which stands in for the canvas while members are switched off
+            style={{ width: device.width * scale, height: device.height * scale, visibility: size.width > 0 && size.height > 0 && !offCard ? undefined : 'hidden' }}
             // Story 5.15: and the card loses its radius and its shadow — the page is the site, edge to edge
             className={`relative shrink-0 overflow-hidden bg-paper-raised ${preview ? '' : 'rounded-[6px] shadow-canvas-page'}`}
           >
@@ -3593,6 +3793,13 @@ export function Editor({
             {/* STORY 5.16 — D5d's pill at the ground's top centre while page 2 is shown, 4px down (R-138's inset, the chip's),
                 and LAST for the chip's reason: the page card stays this ground's `firstElementChild` */}
             {page === 2 ? <PageTwoPill onBack={() => leavePageTwo('pill')} /> : null}
+            {/* STORY 5.20 — C3b, in the page card's place while members are switched off and the canvas is chosen to show
+                the site's content (the card is hidden above, and stays this ground's `firstElementChild`) */}
+            {offCard && site !== null && 'origin' in site ? (
+              <div className="absolute inset-0 flex items-center justify-center overflow-y-auto p-[30px]">
+                <PaywallNotice site={siteName} url={site.origin} busy={rechecking} refusal={recheckRefusal} onRecheck={() => recheck(true)} />
+              </div>
+            ) : null}
             {/* B9's CONTENT-SOURCE PILL at the canvas foot (FR-D15, FR-D22), and LAST for the same reason the chip is:
                 the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's
                 gutter find it. R-166 builds it at 24px inside R-139's existing 32px ground, so it clears the card on
@@ -3626,7 +3833,8 @@ export function Editor({
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling || preview} resources={linksNow} handle={tools} />
           <SectionPill
             readOnly={!lock.holder}
-            shown={!!pointed}
+            // Story 5.20 — ABSENT on a template surface: the paywall is not placed, moved, copied or deleted (DW-262)
+            shown={!!pointed && !surface}
             canAdd={canAdd}
             hidden={scrolling || preview}
             boxOf={pillBox}
@@ -3655,6 +3863,7 @@ export function Editor({
             }}
           />
         </section>
+        </div>
 
         {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}
         {/* STORY 5.17 — B5a: THE SETTINGS SIDEBAR DIMS TO 55% and the canvas stays fully legible. The controls stay
@@ -3670,7 +3879,7 @@ export function Editor({
             points at B5a's own sentence, which is the honest answer to "why does nothing here respond". */}
         <aside
           id="editor-controls"
-          aria-label={chosen ? 'Section settings' : 'Page settings'}
+          aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : 'Page settings'}
           hidden={controls.folded || preview}
           aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
           data-readonly={lock.holder ? undefined : ''}
@@ -3686,22 +3895,66 @@ export function Editor({
             <span className="flex min-w-0 flex-col">
               {/* Story 5.19 — D5c's panel head (:334-335): the main feed's name with its chip beside it */}
               <span className="flex min-w-0 items-center gap-2">
-                <PanelLabel id="editor-panel-name">{chosen ? chosen.layerName : 'Page'}</PanelLabel>
+                {/* Story 5.20 — on the Paywall canvas the head is C3a's :1477: "Paywall", with "n / m" once a design is
+                    chosen (the pill's own arithmetic, `pillPosition`) */}
+                <PanelLabel id="editor-panel-name">{surface ? PAYWALL_WORDS.panel : chosen ? chosen.layerName : 'Page'}</PanelLabel>
+                {surface && paywallAt >= 0 ? (
+                  <span id="editor-panel-position" className="font-mono text-[11.5px] text-ink-soft">{pillPosition(paywallAt, paywalls.length)}</span>
+                ) : null}
                 {chosen?.isMainFeed === true ? <MainFeedChip id="editor-panel-main-feed" /> : null}
               </span>
-              {chosen && entry ? <span id="editor-panel-category" className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
+              {chosen && entry && !surface ? <span id="editor-panel-category" className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
             </span>
             <IconButton ref={controls.hide} label="Collapse controls" title="Collapse controls" aria-expanded aria-controls="editor-controls" onClick={() => controls.toggle(true)}>
               <Panel size={15} className="-scale-x-100" />
             </IconButton>
           </div>
-          {chosen && entry ? (
+          {/* STORY 5.20 — a placed section whose design asks a visitor to join, on a site whose record says members are
+              switched off: one line at the panel head, in 5.18's note shape — never for a synthesized instance (FR-H6) */}
+          {chosen && entry && !surface && site !== null
+            ? ((line) =>
+                line === null ? null : (
+                  <p data-member-ask className="flex items-start gap-2 rounded-sm bg-paper-sunk p-[9px_10px] text-[11.5px] leading-[1.5] text-ink-soft">
+                    <InfoCircle size={13} className="mt-px shrink-0 text-ink-soft" />
+                    {line}
+                  </p>
+                ))(askLine(members, siteName, entry, chosen))
+            : null}
+          {surface && paywallAt < 0 ? (
+            // STORY 5.20 — THE UNTOUCHED PAYWALL (R-197): Ghost's own box is on the canvas, and the panel says so; where
+            // the editor holds paywall designs their ring is here to choose from, and absent while there are none (UX-DR3)
+            <>
+              <p id="paywall-untouched" className="text-[12px] leading-[1.5] text-ink-soft">{PAYWALL_WORDS.untouched}</p>
+              {paywalls.length > 0 ? (
+                <ReadOnly on={!lock.holder}>
+                  <DesignPicker
+                    ring={paywalls}
+                    at={-1}
+                    target={CANVASES[key].file}
+                    rows={designRows}
+                    pool={pool}
+                    icons={icons.current}
+                    mode={mode}
+                    src={src}
+                    subject={null}
+                    member={viewAs}
+                    live={cardLive}
+                    onDesign={choosePaywall}
+                    onStep={(by) => stepDesign(null, by)}
+                  />
+                </ReadOnly>
+              ) : null}
+            </>
+          ) : chosen && entry ? (
             <>
             {/* B1a — the Design block, ABOVE the settings groups and inside none of them (FR-F3: the design
                 picker is not a setting). With one design in the ring it is the counter, the name and one
                 sentence; with more it grows its arrows and its strip (the key chips and the Try-a-design card were built and
                 removed at the owner's test of 2026-09-20, findings 3 and 4)
                 on its own, because every count in it is derived (R-158). */}
+            {/* Story 5.20 — R-192 on the Paywall canvas: its design choice is an edit, greyed while reading along (the
+                fieldset draws only when on, so every other canvas keeps exactly the DOM it had) */}
+            <ReadOnly on={surface && !lock.holder}>
             <DesignPicker
               ring={chosenRing}
               at={chosenAt}
@@ -3719,6 +3972,7 @@ export function Editor({
               onDesign={(to) => onDesign(chosen, to)}
               onStep={(by) => stepDesign(chosen, by)}
             />
+            </ReadOnly>
             {/* R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it */}
             <Sidebar
               readOnly={!lock.holder}

@@ -27,6 +27,8 @@ const CONTROLS_FILES = [
 const PILOTS_FILES = [
   '../../packages/library/designs/**',
   '../../packages/library/orbit-weekly/images/**',
+  // Story 5.20: the canvas document carries the Paywall canvas's post body — Ghost's vendored card chunks among it
+  '../../packages/library/orbit-weekly/vendor/**',
   '../../packages/section-runtime/reference-tokens.css',
   // Story 5.4: R-113's control register, one row of which decides whether a section carries Member visibility
   '../../packages/library/control-groups.json',

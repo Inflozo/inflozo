@@ -1,0 +1,19 @@
+/* Story 5.20's first stand-in paywall. `var(--…)` over the reference tokens only, and every control selects on its
+   `data-` attribute on the root (AD-3). */
+
+.paywall-1 { display: flex; flex-direction: column; gap: 0.75rem; padding: var(--space-section) var(--space-gutter); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); border-radius: var(--radius-card); }
+.paywall-1[data-bg="surface"] { background: var(--bg-surface); }
+.paywall-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
+.paywall-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.paywall-1[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
+.paywall-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
+.paywall-1[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
+.paywall-1[data-align="center"] { align-items: center; text-align: center; }
+
+.paywall-1__heading { margin: 0; font-family: var(--font-heading); font-size: 1.75rem; line-height: 1.15; }
+.paywall-1__blurb { margin: 0; max-width: 32rem; color: var(--text-muted); }
+.paywall-1[data-bg="contrast"] .paywall-1__blurb { color: var(--text-on-contrast); }
+.paywall-1__ask { margin: 0.5rem 0 0; }
+.paywall-1__cta { display: inline-block; padding: 0.625rem 1.25rem; border-radius: var(--radius-control); background: var(--accent); color: var(--text-on-accent); font-weight: 600; text-decoration: none; }
+.paywall-1__signin { margin: 0; font-size: 0.875rem; color: var(--text-muted); }
+.paywall-1__link { color: inherit; font-weight: 600; }

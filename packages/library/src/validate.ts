@@ -14,15 +14,16 @@
 // (`contexts.ts`), whenever a render names its template. This scan still refuses what it can see alone.
 
 import {
-  BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
+  ASK_FLAGS, BACKGROUND_ROLES, BINDING_CONTEXTS, COMPILE_TARGETS, CONTROL_CAP, CONTROL_GROUPS, CONTROL_NAME_RE, PORTAL_ACTIONS,
   CONTROL_TYPES, CONTROL_WORD_RE, CSS_WIDE_KEYWORDS, DIRECTIVES, FOREIGN_ATTR_RE, GET_FORBIDDEN_TARGETS, GET_SOURCES,
-  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGE_NUMBER, PAGINATED_TARGETS, PLACEHOLDERS,
+  INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGE_NUMBER, PAGINATED_TARGETS, PAYWALL_TARGET, PLACEHOLDERS,
   PROP_TYPES, RETIRED_DIRECTIVES,
-  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
-  PILL_CHARS, pillRefusal, safeUrl, splitFirst, tCallRefusals, valueWords,
+  SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, formAsk, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
+  PILL_CHARS, pillRefusal, portalAsk, safeUrl, splitFirst, tCallRefusals, valueWords,
 } from './vocabulary.ts'
+import type { MemberAsk } from './vocabulary.ts'
 import { CATALOG, catalogPropRefusal } from './catalog.ts'
-import { CONTEXTS_BY_TARGET } from './placement.ts'
+import { CONTEXTS_BY_TARGET, PAYWALL_CATEGORIES } from './placement.ts'
 import { SURFACES } from './registry.ts'
 import type { CategoryContent, ControlDef, DataBinding, DesignJson, IconLookup } from './registry.ts'
 
@@ -65,6 +66,56 @@ export function scanTags(html: string): ScannedTag[] {
   return out
 }
 
+// ─── Story 5.20 — the member asks a design makes, and the flags around each (R-4) ─────────────────────────────────
+
+/** One element that asks a visitor to join, with every `data-if` path on it and on the elements around it. */
+export type MemberAskAt = { tag: string; ask: MemberAsk; how: string; gates: readonly string[] }
+
+const VOID_TAGS: ReadonlySet<string> = new Set(['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'source', 'track', 'wbr'])
+const TOKEN_RE = /<!--[\s\S]*?-->|<\/([a-zA-Z][\w:-]*)\s*>|<([a-zA-Z][\w:-]*)((?:[^>"']|"[^"]*"|'[^']*')*)>/g
+
+/** EVERY MEMBER ASK THE MARKUP MAKES, read from the attributes that make one: a `data-members-form` that subscribes or
+ *  signs up, a `data-portal` whose action signs up, upgrades or opens the plans, and a `data-portal` a Ghost binding
+ *  writes (`data-bind-attr="data-portal:signup/{id}/monthly"`, read by its literal head). Each carries the `data-if`
+ *  paths on its own element and on every element around it — the one lexical question R-4 asks, so a tag stack over
+ *  the tokens answers it with no tree: an element that is not void and does not close itself stays open until its
+ *  closing tag. `member-ask-ungated` reads this, and so does the editor's member-ask line (`apps/web/lib/paywall.ts`'s
+ *  `askOf`), so the two can never disagree about which designs ask. */
+export function memberAsks(html: string): MemberAskAt[] {
+  const out: MemberAskAt[] = []
+  const open: { name: string; gate: string | null }[] = []
+  TOKEN_RE.lastIndex = 0
+  for (let t = TOKEN_RE.exec(html); t !== null; t = TOKEN_RE.exec(html)) {
+    if (t[0].startsWith('<!--')) continue
+    if (t[1] !== undefined) {
+      // a closing tag closes the nearest open element of its name, and everything opened inside it that was never closed
+      const at = open.map((o) => o.name).lastIndexOf(t[1].toLowerCase())
+      if (at !== -1) open.length = at
+      continue
+    }
+    const name = (t[2] ?? '').toLowerCase()
+    const blob = t[3] ?? ''
+    const attrs: Array<[string, string]> = []
+    ATTR_RE.lastIndex = 0
+    for (let a = ATTR_RE.exec(blob); a !== null; a = ATTR_RE.exec(blob)) attrs.push([(a[1] ?? '').toLowerCase(), a[2] ?? a[3] ?? a[4] ?? ''])
+    const attr = (n: string) => attrs.find(([k]) => k === n)?.[1]
+    const gate = attr('data-if') ?? null
+    const gates = [...open.map((o) => o.gate), gate].filter((g): g is string => g !== null)
+    const found: [MemberAsk | null, string][] = []
+    const form = attr('data-members-form')
+    if (form !== undefined) found.push([formAsk(form), `data-members-form="${form}"`])
+    const portal = attr('data-portal')
+    if (portal !== undefined) found.push([portalAsk(portal), `data-portal="${portal}"`])
+    for (const entry of (attr('data-bind-attr') ?? '').split(';')) {
+      const [a, spec] = splitFirst(entry.trim(), ':')
+      // each bound `{token}` stands in as a value: `signup/{tier}/monthly` signs up to a TIER, which is a paid ask
+      if (a.trim().toLowerCase() === 'data-portal' && spec !== undefined) found.push([portalAsk(spec.replace(/\{[^}]*\}/g, 'x')), `data-bind-attr="data-portal:${spec}"`])
+    }
+    for (const [ask, how] of found) if (ask !== null) out.push({ tag: name, ask, how, gates })
+    if (!VOID_TAGS.has(name) && !/\/\s*$/.test(blob)) open.push({ name, gate })
+  }
+  return out
+}
 export type MarkupOptions = {
   /** the control names this design declares, WITHOUT the `data-` prefix. When omitted, the root's
    *  unrecognised `data-*` attributes are assumed to be controls and neither direction is checked. */
@@ -316,6 +367,15 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
     }
   }
 
+  // Story 5.20 — R-4: an ask to join ships behind the site's OWN flag for it, or a site that cannot take it shows a
+  // sign-up nobody can complete. A tier count or `@site.members_enabled` never stands in for the flag.
+  for (const a of memberAsks(html)) {
+    const flag = ASK_FLAGS[a.ask]
+    if (!a.gates.includes(flag)) {
+      push(out, 'member-ask-ungated', `<${a.tag} ${a.how}> asks a visitor to join ${a.ask === 'paid' ? 'a paid plan' : 'for free'} and sits inside no data-if="${flag}", so a site that cannot take the ask would still show it — a sign-up nobody can complete (R-4). Put data-if="${flag}" on it or on an element around it; a tier count or @site.members_enabled alone never says the site takes this ask.`)
+    }
+  }
+
   // The other direction (exit construct 5): every declared control must be ON the root, or the
   // control is invisible to the stylesheet and the sidebar writes an attribute nothing reads.
   if (declared !== null) {
@@ -384,6 +444,15 @@ export function validateDataBinding(k: string, b: DataBinding, { declared = true
   }
   if (b.order !== undefined && !/^[a-z_]+ (asc|desc)$/.test(b.order)) {
     push(out, 'bad-get-order', `dataBindings.${k}.order must be "<field> asc" or "<field> desc" — got ${JSON.stringify(b.order)}.`)
+  }
+  // Story 5.20 — FR-H6: the Content API answers every ACTIVE tier, a hidden one included (MEASUREMENTS §54, executed on
+  // both majors), so a tier list that does not ask for the public paid ones shows a tier the site keeps hidden. Both
+  // clauses, each at the top level of the filter — anything joined to them with `+` only narrows further.
+  if (b.source === 'tiers') {
+    const clauses = (b.filter ?? '').split('+').map((c) => c.trim())
+    if (!clauses.includes('type:paid') || !clauses.includes('visibility:public')) {
+      push(out, 'tiers-unfiltered', `dataBindings.${k} queries tiers without the filter "type:paid+visibility:public". Ghost answers every active tier, a hidden one included (MEASUREMENTS §54), so the list would show a tier the site keeps hidden (FR-H6). Declare filter "type:paid+visibility:public"; anything joined to it with + only narrows it further.`)
+    }
   }
   return out
 }
@@ -463,6 +532,11 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
     if (!isCompileTarget(t)) {
       push(out, 'bad-compile-target', `compileTarget "${t}" is not a template Inflozo emits. Legal: ${COMPILE_TARGETS.join(' · ')} · custom-{name}.hbs.`)
     }
+  }
+  // Story 5.20 — FR-H6: the paywall renders where `{{content}}` stops a post, so its partial is a place of its own and
+  // no page: a design that compiles there compiles nowhere else (the category half is `validateDesign`'s)
+  if (targets.includes(PAYWALL_TARGET) && targets.length > 1) {
+    push(out, 'paywall-target', `compileTarget lists ${PAYWALL_TARGET} beside ${targets.filter((t) => t !== PAYWALL_TARGET).join(', ')}. The paywall renders where Ghost's {{content}} stops a post for a visitor who may not read it, so it is the paywall category's ONE target (FR-H6): a paywall design compiles to ${PAYWALL_TARGET} and nothing else.`)
   }
 
   /* STORY 5.10 — THE `bindingContext` HALF OF FR-D12'S FILTER, MADE LOUD RATHER THAN SILENT.
@@ -795,6 +869,18 @@ export function validateDesign(input: {
   if (nulls.length > 0) return nulls
   const out = validateDesignJson(input.design, input.html)
   if (input.content !== undefined) out.push(...validateCategoryContent(input.content, input.icons))
+  // Story 5.20 — FR-H6, the category half of `paywall-target`: the partial is the paywall category's, and the paywall
+  // category compiles to it alone (the other half — nothing beside it — is `validateDesignJson`'s)
+  const category = input.content?.category
+  const targets = Array.isArray(input.design.compileTarget) ? input.design.compileTarget : []
+  const paywallCategory = category !== undefined && (PAYWALL_CATEGORIES as readonly string[]).includes(category)
+  if (category !== undefined && targets.includes(PAYWALL_TARGET) && !paywallCategory) {
+    push(out, 'paywall-target', `a ${category} design compiles to ${PAYWALL_TARGET}, which is the paywall category's one target (FR-H6) — Ghost renders it where a post stops for a visitor who may not read it, and only a paywall design (${PAYWALL_CATEGORIES.join(' · ')}) is drawn for that place. Remove it from compileTarget.`)
+  }
+  // (a paywall listing the partial BESIDE another target is already refused above, by `validateDesignJson`)
+  if (paywallCategory && !targets.includes(PAYWALL_TARGET)) {
+    push(out, 'paywall-target', `a ${category} design is a paywall, and a paywall compiles to ${PAYWALL_TARGET} and nothing else (FR-H6) — got ${targets.join(', ') || 'no target'}.`)
+  }
   const schema = Array.isArray(input.design.controlSchema) ? input.design.controlSchema : []
   // The markup check is handed the VALUES each control offers, universals narrowed — the one
   // declaration the sidebar and the emitters read (FR-F7), rather than names alone.

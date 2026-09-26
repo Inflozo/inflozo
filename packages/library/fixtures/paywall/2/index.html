@@ -1,0 +1,19 @@
+<!-- Story 5.20 (R-158's shape): the second STAND-IN paywall, never shipped (AD-35). It differs from the first in layout,
+     so ◀ ▶ shows a change, and it adds the site's paid plans by name: a `{{#get "tiers"}}` filtered to the public paid
+     tiers (FR-H6 — Ghost answers a hidden tier too, MEASUREMENTS §54), shown only where the site takes paid members. -->
+<aside class="paywall-2" data-bg="base" data-spacing="comfortable" data-divider="line" data-layout="split">
+  <div class="paywall-2__words">
+    <h2 class="paywall-2__heading" data-prop="heading">The rest is for members</h2>
+    <p class="paywall-2__blurb" data-prop="blurb" data-empty="hide">Eleven interviews, the full list of four hundred, and the spreadsheet behind it.</p>
+  </div>
+  <div class="paywall-2__actions">
+    <div class="paywall-2__plans" data-if="@site.paid_members_enabled">
+      <p class="paywall-2__plans-heading" data-prop="plansHeading">Paid plans</p>
+      <ul class="paywall-2__tiers">
+        <li class="paywall-2__tier" data-repeat="plans" data-bind="name">A plan</li>
+      </ul>
+    </div>
+    <p class="paywall-2__ask" data-if="@site.allow_self_signup"><a class="paywall-2__cta" data-portal="signup" href="#" data-t="member.signup_cta">Subscribe</a></p>
+    <p class="paywall-2__signin"><span data-prop="signinLead">Already a member?</span> <a class="paywall-2__link" data-portal="signin" href="#" data-t="member.signin_cta">Sign in</a></p>
+  </div>
+</aside>

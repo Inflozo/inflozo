@@ -1,0 +1,27 @@
+{
+  "name": "Stand-in — split, with the plans",
+  "tier": "free",
+  "bindingContext": ["none", "tiers"],
+  "compileTarget": ["partials/content-cta.hbs"],
+  "controlSchema": [
+    { "name": "layout", "type": "segmented", "label": "Layout", "group": "layout", "values": ["split", "stack"], "default": "split" }
+  ],
+  "universals": {
+    "bg": { "values": ["base", "surface", "contrast"], "default": "base", "reason": "This stand-in is drawn for plain grounds, so accent and image are not offered." }
+  },
+  "dataBindings": {
+    "plans": { "source": "tiers", "filter": "type:paid+visibility:public" }
+  },
+  "ghostCompat": { "minVersion": "5.0.0", "helpers": ["get", "foreach", "t"] },
+  "darkCapabilities": ["tokens"],
+  "previewSeed": "orbit-weekly",
+  "provisional": true,
+  "descriptor": {
+    "archetype": "paywall-stand-in",
+    "containment": "split",
+    "ground": "base",
+    "itemCount": "few",
+    "mediaPlacement": "none",
+    "emphasis": "the second stand-in for A32, laid out differently so the ring shows a change (R-158)"
+  }
+}

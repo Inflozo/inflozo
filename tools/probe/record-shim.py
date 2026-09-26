@@ -21,7 +21,10 @@ What it writes to the servers, and nothing else (the story's "Ask First" boundar
   * the probe theme, uploaded and activated, with the PREVIOUS theme restored at the end, read back as
     active, and the probe theme DELETED in the same cleanup and read back as gone (the owner's ruling on
     Story 4.7's Q1, which run-verify-core.py carries too).
-It creates no post, edits no post and touches no setting. The uploaded image URL reaches the theme
+  * since Story 5.20 (the MEMBERS group, below): TWO probe posts per server, created with the staff token and
+    DELETED in a `finally`, each read back as gone — and on T3 alone, Subscription access set to Nobody for a few
+    seconds, restored to its previous value in its own `finally` and read back.
+Apart from those, it creates no post, edits no post and touches no setting. The uploaded image URL reaches the theme
 through a placeholder substituted at zip time, which is why no content row has to carry it.
 
 NFR-6(c2): the theme's package.json carries FR-J2's NORMATIVE image_sizes map, READ from
@@ -48,6 +51,16 @@ existence get around them, and `pagination` inside a get. The picks are the site
 read before the zip and substituted as __FEED_IDS__ / __FEED_PICKS__ in the order second · third · first, and
 recorded as `input.feed_picks` so the contract test asserts Ghost's order against the chosen one. Reading them is a
 Content API read; it writes nothing.
+
+Story 5.20 adds the MEMBERS group (MEASUREMENTS §54). index.hbs gains `{{#get "tiers"}}` plain and with FR-H6's
+`type:paid+visibility:public`, and the three member flags; `input` gains the Content API's tiers and member settings
+and Admin `settings/` narrowed to MEMBER_KEYS, read through the INTEGRATION key as `probeSite` reads it — never a
+`stripe_*` key. AFTER every other template is recorded (so neither sits in a recorded feed) it creates two
+Paid-members-only posts rendered by `custom-inflozo-members.hbs`: a long one with a Public preview marker, and a short
+one with none. Each is filed as a logged-out visitor sees it — `{{content}}` verbatim (the preview and Ghost's own
+box), `{{reading_time}}` bare and as the field inside `{{t}}`, and what `{{ghost_head}}` injected (the CTA stylesheet,
+Portal's script, by presence only because its tag carries the key). On T3 alone the long one is rendered again with
+Subscription access set to Nobody (`members-long-nobody`), whose control is the same page before the toggle.
 """
 import os, re, sys, json, time, zlib, struct, hmac, hashlib, base64, zipfile, io, uuid, datetime
 import urllib.request, urllib.error
@@ -175,6 +188,176 @@ def img_url_block(sizes, label, path_expr):
     return '\n'.join(lines)
 
 
+# ── Story 5.20: the MEMBERS group (MEASUREMENTS §54) ──────────────────────────
+MEMBERS_TEMPLATE = 'custom-inflozo-members'
+# the only settings keys this recorder copies — never a stripe_* key, which the same list carries, secrets included
+MEMBER_KEYS = ('members_signup_access', 'members_enabled', 'members_invite_only', 'allow_self_signup',
+               'paid_members_enabled')
+PREVIEW_PARAGRAPHS = 3
+
+
+def members_lexical(paragraphs, cut=None):
+    """Koenig's own shapes (the Orbit Weekly corpus renders them on both boxes): a paragraph per string, and the
+    `paywall` card — the author's Public preview marker, which Ghost renders as `<!--members-only-->` — before
+    paragraph `cut`."""
+    kids = []
+    for i, text in enumerate(paragraphs):
+        if i == cut:
+            kids.append({'type': 'paywall', 'version': 1})
+        kids.append({'children': [{'detail': 0, 'format': 0, 'mode': 'normal', 'style': '', 'text': text,
+                                   'type': 'extended-text', 'version': 1}],
+                     'direction': 'ltr', 'format': '', 'indent': 0, 'type': 'paragraph', 'version': 1})
+    return json.dumps({'root': {'children': kids, 'direction': None, 'format': '', 'indent': 0,
+                                'type': 'root', 'version': 1}})
+
+
+def members_bodies():
+    """The long post reads for well over a minute (a real `reading_time` above 0); the short one for well under
+    (Ghost stores 0), and carries no marker, so a logged-out visitor is sent no body at all."""
+    words = ('Inflozo records what a reader who may not read this post is sent, and what a reader who may '
+             'is sent instead. ')
+    long_ = [f'Paragraph {i + 1}. ' + words * 6 for i in range(12)]
+    return long_, ['One short paragraph, and nothing after it.']
+
+
+def head_of(html):
+    """What `{{ghost_head}}` injected for members — the CTA stylesheet's text and whether Portal's and Stripe's scripts
+    are present. Portal's tag carries the Content API key as `data-key`, so only its PRESENCE is kept."""
+    style = re.search(r'<style id="gh-members-styles">(.*?)</style>', html, re.S)
+    return {
+        'cta_style': style.group(1) if style else None,
+        'portal_script': re.search(r'<script[^>]+src="[^"]*portal[^"]*"', html) is not None,
+        'stripe_script': 'js.stripe.com' in html,
+    }
+
+
+def admin_members(gi):
+    """Admin `settings/` through the INTEGRATION key — the door `probeSite` reads at connect and daily — narrowed to
+    MEMBER_KEYS. `settings/?filter=` is not honoured (record-cards.py), so the whole list is read and filtered here."""
+    rows = {s['key']: s['value'] for s in gi.api('GET', 'settings/')['settings']}
+    missing = [k for k in MEMBER_KEYS if k not in rows]
+    if missing:
+        raise RuntimeError(f'Admin settings/ carries no {missing} — the record has nothing to copy')
+    return {k: rows[k] for k in MEMBER_KEYS}
+
+
+def staff_setting(g, key):
+    return next(s['value'] for s in g.api('GET', 'settings/')['settings'] if s['key'] == key)
+
+
+def content_members(g):
+    """The Content API reads §54 writes up: every tier Ghost answers (a hidden one included), the same with FR-H6's
+    filter (`+` sent as %2B, or it is a space), and the public settings' member flags."""
+    pick = ('name', 'slug', 'type', 'visibility', 'active', 'monthly_price', 'yearly_price', 'currency',
+            'trial_days', 'benefits')
+    st, d = g.content('tiers/?include=monthly_price,yearly_price,benefits')
+    if st != 200:
+        raise RuntimeError(f'Content API tiers/ answered HTTP {st}')
+    tiers = [{k: t.get(k) for k in pick} for t in d.get('tiers') or []]
+    st, d = g.content('tiers/?filter=type:paid%2Bvisibility:public')
+    if st != 200:
+        raise RuntimeError(f'Content API tiers/?filter= answered HTTP {st}')
+    public = sorted(t['name'] for t in d.get('tiers') or [])
+    st, d = g.content('settings/')
+    if st != 200:
+        raise RuntimeError(f'Content API settings/ answered HTTP {st}')
+    s = d.get('settings') or {}
+    settings = {k: s.get(k) for k in ('members_enabled', 'members_invite_only', 'members_signup_access',
+                                      'allow_self_signup', 'paid_members_enabled', 'portal_plans')}
+    return tiers, public, settings
+
+
+def members_post(g, which, paragraphs, cut):
+    body = {'title': f'Inflozo members probe — {which}', 'slug': f'inflozo-members-probe-{which}',
+            'lexical': members_lexical(paragraphs, cut), 'status': 'published', 'visibility': 'paid',
+            'custom_template': MEMBERS_TEMPLATE}
+    return g.api('POST', 'posts/', {'posts': [body]})['posts'][0]
+
+
+def members_input(g, post, cut):
+    """The INPUT behind the rendered page: the author's whole html (Admin), and what a logged-out visitor is served
+    (Content API) — its `html` is the preview Ghost keeps, its `reading_time` the one the helpers read."""
+    full = g.api('GET', f'posts/{post["id"]}/?formats=html')['posts'][0]
+    html = full.get('html') or ''
+    marker = html.find('<!--members-only-->')
+    if (marker != -1) != (cut is not None):
+        raise RuntimeError(f'{post["slug"]}: the preview marker is {"absent" if marker == -1 else "present"} in '
+                           f'Ghost\'s html — the post is not the one the rows describe (standing rule 2)')
+    st, d = g.content(f'posts/{post["id"]}/')
+    if st != 200:
+        raise RuntimeError(f'Content API posts/{post["id"]}/ answered HTTP {st}')
+    served = d['posts'][0]
+    return {
+        'visibility': full.get('visibility'),
+        'reading_time': served.get('reading_time'),
+        'author_html_length': len(html),
+        'author_preview': html[:marker] if marker != -1 else None,
+        'served_html': served.get('html'),
+        'served_access': served.get('access'),
+    }
+
+
+def render_members(g, key, path, inputs, post_input):
+    st, html = g.page(path)
+    values, raw, verbatim = parse(html)
+    if st != 200 or 'MEMBERS' not in values or 'content' not in verbatim:
+        raise RuntimeError(f'[{key}] HTTP {st} {path} — the members template did not render; nothing is filed')
+    print(f'    [{key}] HTTP {st} {path} — reading_time {values["MEMBERS"].get("reading_time")!r}, '
+          f'field {values["MEMBERS"].get("reading_time_field")!r}, box '
+          f'{"PRESENT" if "gh-post-upgrade-cta" in verbatim["content"] else "absent"}')
+    return {'template': key, 'path': path, 'http': st, 'values': values, 'raw': raw, 'verbatim': verbatim,
+            'head': head_of(html), 'input': dict(inputs, members_post=post_input)}
+
+
+def members_phase(g, gi, inputs):
+    """Two Paid-members-only posts, rendered logged out and deleted in `finally`; on T3 (Ghost 5) alone, the long
+    one again with Subscription access set to Nobody, restored in its own `finally` and read back. The control for
+    the toggle is the same page before it."""
+    out, created = {}, []
+    long_, short = members_bodies()
+    try:
+        for which, paragraphs, cut in (('long', long_, PREVIEW_PARAGRAPHS), ('short', short, None)):
+            post = members_post(g, which, paragraphs, cut)
+            created.append(post['id'])
+            print(f'    [members] created /{post["slug"]}/ (paid, template {MEMBERS_TEMPLATE})')
+            post_input = members_input(g, post, cut)
+            out[f'members-{which}'] = render_members(g, f'members-{which}', f'/{post["slug"]}/', inputs, post_input)
+        if g.major == '5':
+            path = out['members-long']['path']
+            before = admin_members(gi)
+            previous = staff_setting(g, 'members_signup_access')
+            try:
+                g.api('PUT', 'settings/', {'settings': [{'key': 'members_signup_access', 'value': 'none'}]})
+                time.sleep(2)
+                after = admin_members(gi)
+                print(f'    [members] Subscription access {previous!r} -> {after["members_signup_access"]!r}')
+                rec = render_members(g, 'members-long-nobody', path, inputs, out['members-long']['input']['members_post'])
+                rec['input'] = dict(rec['input'], admin_settings_before=before, admin_settings_nobody=after)
+                out['members-long-nobody'] = rec
+            finally:
+                g.api('PUT', 'settings/', {'settings': [{'key': 'members_signup_access', 'value': previous}]})
+                restored = staff_setting(g, 'members_signup_access')
+                print(f'    [members] Subscription access RESTORED -> {restored!r}')
+                if restored != previous:
+                    raise RuntimeError(f'Subscription access did not come back: {restored!r}, not {previous!r} — '
+                                       'put it right in Ghost admin before re-running')
+    finally:
+        # every delete is attempted, whichever fails, and each is read back as gone
+        failed = []
+        for pid in created:
+            try:
+                g.api('DELETE', f'posts/{pid}/')
+                g.api('GET', f'posts/{pid}/')
+                failed.append(f'{pid} is still there after DELETE')
+            except urllib.error.HTTPError as e:
+                if e.code != 404:
+                    failed.append(f'{pid}: HTTP {e.code}')
+        print(f'    [members] deleted {len(created) - len(failed)} of {len(created)} probe posts, read back as gone')
+        if failed:
+            raise RuntimeError(f'probe posts left behind: {"; ".join(failed)} — delete them in Ghost admin')
+    return out
+
+
 def feed_picks(g):
     """Story 5.19: three public posts in an order that is neither date order — second, third, first newest."""
     _, d = g.content('posts/?limit=3&fields=id,slug,title,published_at&filter=visibility:public'
@@ -277,7 +460,7 @@ def redact(values):
     return values
 
 
-def record(g, label):
+def record(g, gi, label):
     print(f'\n{"="*72}\n{label}\n{"="*72}')
     sizes = image_sizes()
     print(f'    image_sizes (read from packages/library/src/vocabulary.ts): {sizes}')
@@ -339,6 +522,10 @@ def record(g, label):
             # Story 5.19: the hand-picked ids in the order the theme asked for them
             'feed_picks': picks,
         }
+        # Story 5.20 (§54): the tiers and member flags the MEMBERS rows are asserted against — Content API reads,
+        # and Admin settings/ narrowed to MEMBER_KEYS through the integration key the product reads it with
+        inputs['tiers'], inputs['tiers_public'], inputs['settings_content'] = content_members(g)
+        inputs['admin_settings'] = admin_members(gi)
 
         targets = [
             ('index', '/'),
@@ -389,6 +576,12 @@ def record(g, label):
             }
             print(f'    [{tname}] HTTP {st} {path} — {sum(len(v) for v in values.values())} values, '
                   f'{len(raw)} raw blocks')
+        # AFTER every other template, so the two probe posts never sit in a recorded feed
+        for key, rec in members_phase(g, gi, inputs).items():
+            blob = json.dumps(rec)
+            for leaked in LEAKED:
+                assert leaked not in blob, 'redaction failed — a real Content API key reached a fixture'
+            out[key] = rec
     finally:
         g.api('PUT', f'themes/{previous}/activate/')
         active = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
@@ -502,7 +695,9 @@ if __name__ == '__main__':
         try:
             g = Ghost(env[f'GHOST{M}_URL'], env[f'GHOST{M}_STAFF_ACCESS_TOKEN'], M,
                       env[f'GHOST{M}_CONTENT_API_KEY'])
-            rec = record(g, f'Ghost {M} — {env[f"GHOST{M}_URL"]}')
+            # Story 5.20: the integration key reads Admin settings/ as probeSite does; it writes nothing here
+            gi = Ghost(env[f'GHOST{M}_URL'], env[f'GHOST{M}_ADMIN_API_KEY'], M, env[f'GHOST{M}_CONTENT_API_KEY'])
+            rec = record(g, gi, f'Ghost {M} — {env[f"GHOST{M}_URL"]}')
             d = os.path.join(FIXTURES, f'ghost{M}')
             os.makedirs(d, exist_ok=True)
             for tname, body in rec['templates'].items():

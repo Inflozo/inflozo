@@ -122,7 +122,8 @@ export function DesignPicker({
   live?: Live
   /** the instance's own ring, from the library's `ringFor` — including the design it is now */
   ring: readonly SectionRegistryEntry[]
-  /** where in the ring this section is */
+  /** where in the ring this section is — or -1 where NOTHING IS CHOSEN YET: Story 5.20's untouched paywall, whose box
+   *  is Ghost's own, so no tile is active, the counter and the name are absent, and a press or an arrow is the choice */
   at: number
   target: string
   rows: Readonly<Record<string, DesignRows | undefined>>
@@ -138,7 +139,9 @@ export function DesignPicker({
   const active = designs[at]
   const many = designs.length > 1
   const { tiles, from, more } = strip(designs, at)
-  if (!active) return null
+  // nothing chosen yet is a state of its own (Story 5.20) — with nothing to choose from, there is no block at all
+  const none = at === -1 && designs.length > 0
+  if (!active && !none) return null
 
   const arrow = (by: number, label: string) => (
     <button
@@ -167,14 +170,16 @@ export function DesignPicker({
         <span className="text-control-label font-medium text-ink-soft">Design</span>
         <div className="flex items-center gap-[6px]">
           {many ? arrow(-1, PREVIOUS_WORDS) : null}
-          <span id="editor-design-count" className="min-w-[74px] text-center font-mono text-[11.5px] font-medium text-ink-soft">
-            {position(at, designs.length)}
-          </span>
+          {active ? (
+            <span id="editor-design-count" className="min-w-[74px] text-center font-mono text-[11.5px] font-medium text-ink-soft">
+              {position(at, designs.length)}
+            </span>
+          ) : null}
           {many ? arrow(1, NEXT_WORDS) : null}
         </div>
       </div>
 
-      {many ? (
+      {many || none ? (
         <div
           /* a LISTBOX, not a radio group: `← →` move FOCUS across the tiles and Enter or a press is the swap, which is
              a listbox's contract (WAI-ARIA APG: selection need not follow focus) and not a radio group's, where an
@@ -204,8 +209,9 @@ export function DesignPicker({
                   /* the tier is in the WORDS, so the ✦ never carries the only signal (UX-DR2) */
                   aria-label={`${entry.name}${entry.tier === 'pro' ? ' — Pro' : ''}`}
                   title={entry.name}
-                  /* the strip is ONE tab stop: the selected tile takes it and `← →` move between them */
-                  tabIndex={on ? 0 : -1}
+                  /* the strip is ONE tab stop: the selected tile takes it — the first, where none is chosen yet — and
+                     `← →` move between them */
+                  tabIndex={on || (none && n === 0) ? 0 : -1}
                   onClick={() => onDesign(entry.id)}
                   className={`absolute inset-0 block rounded-[6px] ${ring}`}
                 />
@@ -234,12 +240,14 @@ export function DesignPicker({
 
       {/* B1a`:388` — the active design's name, and its descriptor beneath it in the frame's own smaller ink. With
           one design in the ring the descriptor's place is where the sentence goes that says so (R-12). */}
-      <div className="flex flex-col gap-[2px]">
-        <span id="editor-design-name" className="text-[12px] font-semibold">{active.name}</span>
-        <span id="editor-design-note" className="text-[11.5px] leading-[1.45] text-ink-soft">
-          {many ? active.descriptor.emphasis : ONE_DESIGN}
-        </span>
-      </div>
+      {active ? (
+        <div className="flex flex-col gap-[2px]">
+          <span id="editor-design-name" className="text-[12px] font-semibold">{active.name}</span>
+          <span id="editor-design-note" className="text-[11.5px] leading-[1.45] text-ink-soft">
+            {many ? active.descriptor.emphasis : ONE_DESIGN}
+          </span>
+        </div>
+      ) : null}
 
     </section>
   )

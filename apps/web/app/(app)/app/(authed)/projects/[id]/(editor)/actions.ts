@@ -3,8 +3,10 @@
 import { orbitWeekly } from '@inflozo/library'
 import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, isUuid } from '@/lib/editor'
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
+import type { Members } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
+import { readMembers } from '@/server/site-probe'
 
 /**
  * STORY 5.13 — THE ONE WRITE THE EDITOR'S OWN CHROME MAKES (FR-D22).
@@ -128,4 +130,32 @@ export async function setViewedStates(
     return { error: VIEWED_REFUSED }
   }
   return { ok: true }
+}
+
+/**
+ * STORY 5.20 — C3b's **Re-check**, and the Paywall canvas's background re-check on open (FR-H6): the linked site's member
+ * switches read again from Ghost and written to the one record every warning reads (`site_settings.members`).
+ *
+ * WHOSE SITE IS DECIDED BY RLS: the project is read through the caller's own session, so another user's project id reaches
+ * no row and no Ghost is asked — the same answer as "no linked site". The read itself is `readMembers`, the site probe's
+ * one Admin `settings/` read through the chokepoint (AD-10); this file imports neither the chokepoint nor the service role.
+ *
+ * NOT A FORM SUBMIT: the button says "Re-checking…" from a transition (R-98, `aria-busy`, never `disabled`), and the
+ * refusal is ONE sentence the editor words with the site's own name (`PAYWALL_WORDS.refused`) — only the fact travels.
+ */
+export type MembersResult = { members: Members } | { refused: true }
+
+const ROUTE = 'projects/editor/recheck-members'
+
+export async function recheckMembers(projectId: string): Promise<MembersResult> {
+  if (!isUuid(projectId)) return { refused: true }
+  const user = await signedIn()
+  const supabase = await supabaseServer()
+  const { data, error } = await supabase.from('projects').select('linked_site_id').eq('id', projectId).maybeSingle()
+  if (error || !data?.linked_site_id) {
+    if (error) console.error('projects/editor: members re-check could not read the project', { code: error.code })
+    return { refused: true }
+  }
+  const members = await readMembers({ siteId: data.linked_site_id as string, userId: user.id, route: ROUTE })
+  return members === null ? { refused: true } : { members }
 }

@@ -113,9 +113,15 @@ export const BINDING_CONTEXTS = [
 ] as const
 export type BindingContext = (typeof BINDING_CONTEXTS)[number]
 
+/** STORY 5.20 — Ghost's `content-cta` partial: where a paywall design compiles. `{{content}}` executes it in place of
+ *  a post the visitor may not read, with the POST at the root (`core/frontend/helpers/content.js:28` and `:50-52`, read
+ *  on both majors), so it is a target like a template and not a section's page. It is the paywall category's ONE
+ *  target and no other category may declare it (`validate.ts`'s `paywall-target`). */
+export const PAYWALL_TARGET = 'partials/content-cta.hbs'
+
 export const COMPILE_TARGETS = [
   'default.hbs', 'home.hbs', 'index.hbs', 'post.hbs', 'page.hbs',
-  'tag.hbs', 'author.hbs', 'error.hbs', 'private.hbs',
+  'tag.hbs', 'author.hbs', 'error.hbs', 'private.hbs', PAYWALL_TARGET,
 ] as const
 /** A Routes-Manager or membership template: `custom-{name}.hbs` (FR-D6, FR-I1). */
 export const CUSTOM_TARGET_RE = /^custom-[a-z0-9][a-z0-9-]*\.hbs$/
@@ -301,6 +307,33 @@ export const PORTAL_ACTIONS: Readonly<Record<string, string>> = {
   account: 'Account',
   'account/plans': 'Upgrade',
 }
+
+/** R-4 (Story 5.20) — WHAT A VISITOR IS ASKED TO JOIN AS. A free ask signs a visitor up; a paid ask signs them up to a
+ *  paid tier, upgrades them or opens the plans. Each is shipped behind the site's OWN flag and nothing else — a tier
+ *  count, `@site.members_enabled` or a member state says nothing about whether the site will take the ask. */
+export type MemberAsk = 'free' | 'paid'
+
+/** The one `@site` flag each ask sits behind, on the theme (`{{#if …}}`) and on the canvas (the source in force's value).
+ *  `allow_self_signup` is `members_signup_access === 'all'` and `paid_members_enabled` is members on with Stripe
+ *  connected (`settings-helpers.js`, read on both majors; recorded on T3 in MEASUREMENTS §54). */
+export const ASK_FLAGS: Readonly<Record<MemberAsk, string>> = {
+  free: '@site.allow_self_signup',
+  paid: '@site.paid_members_enabled',
+}
+
+/** The ask a Portal action makes, or null for one that asks nobody to join (`signin`, `account`, `account/profile`,
+ *  `support`…). Portal's own grammar: `signup` and `signup/free` open the free sign-up; `signup/{tier}/{cadence}` and
+ *  `offers/{id}` sign up to a paid plan; `account/plans` is the upgrade. */
+export function portalAsk(action: string): MemberAsk | null {
+  const [head, next] = action.trim().split('/')
+  if (head === 'signup') return next === undefined || next === '' || next === 'free' ? 'free' : 'paid'
+  if (head === 'offers') return 'paid'
+  if (head === 'account' && next === 'plans') return 'paid'
+  return null
+}
+
+/** The ask a `data-members-form` makes: a subscribe or sign-up form is a free ask; a sign-in form signs nobody up. */
+export const formAsk = (kind: string): MemberAsk | null => (kind === 'subscribe' || kind === 'signup' ? 'free' : null)
 
 /** An authored date is the site's wall-clock day, `YYYY-MM-DD`, stored unconverted (`prd.md:952`).
  *  A real calendar day, checked by arithmetic — no `Date`, no clock, no locale (AD-1). */

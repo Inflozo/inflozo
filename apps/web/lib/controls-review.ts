@@ -25,19 +25,20 @@ const SAMPLE = () => join(CONTROLS_DIR(), '1')
  *  category, so every assertion about what happens BETWEEN two designs would be vacuous; these three fixture
  *  designs share one `bindingContext`, one `compileTarget` and one category, so `samePartition` puts them in one
  *  ring, and they are not the shipped library, so AD-35 is untouched. Read off the directory, never listed. */
-const SAMPLE_DIRS = () =>
-  readdirSync(CONTROLS_DIR())
-    .filter((n) => /^\d+$/.test(n) && statSync(join(CONTROLS_DIR(), n)).isDirectory())
+const numbered = (dir: string) =>
+  readdirSync(dir)
+    .filter((n) => /^\d+$/.test(n) && statSync(join(dir, n)).isDirectory())
     .sort((a, b) => Number(a) - Number(b))
+const SAMPLE_DIRS = () => numbered(CONTROLS_DIR())
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')
 
 /** One sample, assembled through the real `assembleEntry` and validated with the icon set — LOUDLY: a
  *  sample that does not validate is a broken story, not a page to render around. */
-function assemble(dir: string): SectionRegistryEntry {
+function assemble(dir: string, category: string = CONTROLS_DIR()): SectionRegistryEntry {
   const read = (file: string) => readFileSync(join(dir, file), 'utf8')
   const design = JSON.parse(read('design.json')) as DesignJson
-  const content = JSON.parse(readFileSync(join(CONTROLS_DIR(), 'content.json'), 'utf8')) as CategoryContent
+  const content = JSON.parse(readFileSync(join(category, 'content.json'), 'utf8')) as CategoryContent
   const html = read('index.html')
   const css = read('style.css')
   const failures = validateDesign({ html, design, content, icons: iconDrawing, css })
@@ -55,6 +56,13 @@ export const sample = (): SectionRegistryEntry => assemble(SAMPLE())
 /** Story 5.11 (R-158) — all three, in `{n}` order: the ring the deployed review page and the keyboard harness
  *  exercise carry / park / default over, before Epic 9 fills a real category. */
 export const samples = (): SectionRegistryEntry[] => SAMPLE_DIRS().map((n) => assemble(join(CONTROLS_DIR(), n)))
+
+/** STORY 5.20 (R-158's shape) — THE TWO STAND-IN PAYWALLS, `packages/library/fixtures/paywall/`, read off the directory
+ *  and validated as loudly as the ring above. The library holds no A32 design until Story 10.107, so these are the only
+ *  paywall designs anywhere, and they reach the keyboard harness and the tests alone — never `designs/`, the Section
+ *  Picker, Layers, Shuffle or Remix (AD-35). */
+export const PAYWALL_DIR = () => join(PACKAGES(), 'library', 'fixtures', 'paywall')
+export const paywallSamples = (): SectionRegistryEntry[] => numbered(PAYWALL_DIR()).map((n) => assemble(join(PAYWALL_DIR(), n), PAYWALL_DIR()))
 
 /** The picture pool: Orbit Weekly's feature images, named by asset id — read off the directory, never listed. */
 export function imagePool(): { id: string; bytes: number }[] {

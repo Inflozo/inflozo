@@ -2,7 +2,7 @@
 /**
  * STORY 5.18 — LIVE CONTENT FROM THE CONNECTED SITE, ON THE DEPLOYED EDITOR, AGAINST REAL GHOSTS (R-82).
  *
- *   env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID|GHOST5_URL|GHOST5_CONTENT_API_KEY|GHOST6_URL|GHOST6_CONTENT_API_KEY)=' tools/probe/.env | xargs) \
+ *   env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID|GHOST5_URL|GHOST5_CONTENT_API_KEY|GHOST5_ADMIN_API_KEY|GHOST5_STAFF_ACCESS_TOKEN|GHOST6_URL|GHOST6_CONTENT_API_KEY)=' tools/probe/.env | xargs) \
  *     node tools/probe/run-verify-live-content.cjs                                     # app.inflozo.com, both majors
  *   … APP_ORIGIN=http://localhost:3000 APP_PREFIX=/app node tools/probe/run-verify-live-content.cjs   # a local build
  *   MAJORS=5 walks one major (5 is T3, 6 is T1); NO_429=1 leaves out the last step — which costs T1 an hour.
@@ -24,6 +24,17 @@
  * nor `codeinjection` appears in the canvas's markup; and the page's own policy refuses nothing
  * (`securitypolicyviolation`). The request count of the full walk is recorded — the evidence `REQUEST_CEILING` is
  * generous.
+ *
+ * STORY 5.20 ADDS, on both majors: the Paywall canvas on the site's OWN content — Ghost's own box in the site's accent,
+ * "{n} tiers · {m} free" counted from the site's public tiers read here with the same key (the hidden tier left out), and
+ * Tiers in Ghost admin → at the site's own anchor. Then on T3's row, FR-H6's record of the member switches SEEDED to
+ * Subscription access "Nobody" through the service key (the record, never the Ghost): C3b's card in R-198's words, the
+ * bar's MEMBERS OFF chip, Re-check refused with its sentence and the record unchanged (the row holds no Admin key yet, so
+ * the chokepoint has nothing to read with), the Sites notice and its link, and a placed sign-up section's line; the
+ * record is put back after. THEN THE REAL SWITCH: T3's Admin key stored for the row through Manage keys (the app's own
+ * door, proved by `config/`), the Paywall canvas re-checking as it opens against T3 itself, Subscription access set to
+ * Nobody with the staff token for under a minute — the card and the record following Ghost's answer, Re-check pressed
+ * and saying so, the Sites notice — then put back, Re-checked back to Ghost's own box, and read back from Ghost.
  *
  * STORY 5.19 ADDS, on both majors: Latest Post printing the newest post's own tag (the recorder found a `{{#get}}` carries
  * none without `include`, MEASUREMENTS §53); the main feed duplicated into a SECONDARY feed, and P0·5's Data group walked
@@ -50,7 +61,10 @@ const PREFIX = process.env.APP_PREFIX ?? ''
 const LOCAL = Boolean(process.env.APP_ORIGIN)
 const MAJORS = (process.env.MAJORS || '5,6').split(',').map((m) => m.trim()).filter((m) => m === '5' || m === '6')
 const NO_429 = process.env.NO_429 === '1'
-const need = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', ...(LOCAL ? [] : ['VERCEL_TOKEN', 'VERCEL_TEAM_ID']), ...MAJORS.flatMap((m) => [`GHOST${m}_URL`, `GHOST${m}_CONTENT_API_KEY`])]
+const need = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', ...(LOCAL ? [] : ['VERCEL_TOKEN', 'VERCEL_TEAM_ID']), ...MAJORS.flatMap((m) => [`GHOST${m}_URL`, `GHOST${m}_CONTENT_API_KEY`]),
+  // Story 5.20 — T3's real switch: its Admin key goes in through Manage keys, and its Subscription access is flipped with
+  // the staff token (the product itself never writes to Ghost's settings)
+  ...(MAJORS.includes('5') ? ['GHOST5_ADMIN_API_KEY', 'GHOST5_STAFF_ACCESS_TOKEN'] : [])]
 for (const key of need) {
   if (!process.env[key]) { console.error(`${key} is not set — read it from tools/probe/.env into this command's environment`); process.exit(2) }
 }
@@ -60,6 +74,8 @@ const REPO = path.join(__dirname, '..', '..')
 const at = (p) => `${APP}${PREFIX}${p}`
 const GHOST = Object.fromEntries(MAJORS.map((m) => [m, { origin: new URL(process.env[`GHOST${m}_URL`]).origin, key: process.env[`GHOST${m}_CONTENT_API_KEY`], name: m === '5' ? 'T3' : 'T1' }]))
 const KEYS = Object.values(GHOST).map((g) => g.key)
+// Story 5.20 — the two T3 credentials the real switch uses are scrubbed from every line as the Content API keys are
+if (MAJORS.includes('5')) KEYS.push(process.env.GHOST5_ADMIN_API_KEY, process.env.GHOST5_STAFF_ACCESS_TOKEN)
 
 const results = []
 let fails = 0
@@ -105,6 +121,31 @@ const identity = (url) => {
 }
 const ghostOrigins = () => Object.values(GHOST).map((g) => g.origin)
 
+/** Story 5.20 — T3's Admin API with the STAFF token, for the one setting the walk flips and puts back (Subscription
+ *  access): a short-lived JWT signed as Ghost's own Admin API expects, and never printed. */
+const staffJwt = () => {
+  const [kid, secret] = process.env.GHOST5_STAFF_ACCESS_TOKEN.split(':')
+  const part = (o) => Buffer.from(JSON.stringify(o)).toString('base64url')
+  const now = Math.floor(Date.now() / 1000)
+  const unsigned = `${part({ alg: 'HS256', typ: 'JWT', kid })}.${part({ iat: now, exp: now + 300, aud: '/admin/' })}`
+  return `${unsigned}.${require('node:crypto').createHmac('sha256', Buffer.from(secret, 'hex')).update(unsigned).digest('base64url')}`
+}
+const ghostAdmin5 = async (method, resource, body) => {
+  const r = await fetch(`${GHOST['5'].origin}/ghost/api/admin/${resource}`, {
+    method,
+    headers: { Authorization: `Ghost ${staffJwt()}`, 'Accept-Version': 'v5.0', 'Content-Type': 'application/json' },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  })
+  if (!r.ok) throw new Error(`T3 admin ${method} ${resource} answered HTTP ${r.status}`)
+  return r.json()
+}
+/** T3's member switches as its Admin settings hold them: the stored access and Ghost's own paid calculation */
+const switches5 = async () => {
+  const rows = Object.fromEntries((await ghostAdmin5('GET', 'settings/')).settings.map((x) => [x.key, x.value]))
+  return { signup_access: rows.members_signup_access, paid_enabled: rows.paid_members_enabled }
+}
+const setAccess5 = (value) => ghostAdmin5('PUT', 'settings/', { settings: [{ key: 'members_signup_access', value }] })
+
 /** Anything under `obj` named one of `names`, deeply — a body field is a body field wherever Ghost nests it. */
 const carries = (obj, names) => {
   if (Array.isArray(obj)) return obj.some((x) => carries(x, names))
@@ -137,6 +178,8 @@ async function main() {
   const DG = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/data-group.ts')).href)
   const { POST_SOURCE_WORDS: SRC } = await import(pathToFileURL(path.join(REPO, 'packages/library/src/vocabulary.ts')).href)
   const { movedTo } = await import(pathToFileURL(path.join(REPO, 'packages/section-runtime/src/index.ts')).href)
+  // Story 5.20 — the Paywall canvas's words and rules, from their one module (R-170)
+  const PW = await import(pathToFileURL(path.join(REPO, 'apps/web/lib/paywall.ts')).href)
 
   const all = await users()
   if (all === null) throw new Error('user list unreadable — no control for the cleanup')
@@ -777,6 +820,28 @@ async function main() {
           JSON.stringify(siteGrids519[1]?.titles))
       }
 
+      // ── Story 5.20: the Paywall canvas on the site's own content ──
+      {
+        const publicTiers = (await ghostRead(m, 'tiers', { filter: 'visibility:public' })).tiers
+        await open(editor(P[m], 'paywall'))
+        const onSite520 = await paintedFrom('paywall', 'site')
+        const shown520 = await page.evaluate(() => ({
+          tiers: document.querySelector('[data-tier-line]')?.textContent ?? null,
+          link: document.querySelector('[data-tiers-link]')?.getAttribute('href') ?? null,
+          chip: document.querySelector('[data-surface-chip]')?.textContent ?? null,
+        }))
+        const box520 = await (await canvasFrame()).evaluate(() => ({
+          words: document.querySelector('[data-inflozo-box] .gh-post-upgrade-cta')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
+          ground: document.querySelector('[data-inflozo-box] .gh-post-upgrade-cta-content')?.getAttribute('style') ?? null,
+        }))
+        check(`${tag} — the Paywall canvas paints ${NAME}'s own content: Ghost's own box in the site's accent (${settings.accent_color})`,
+          onSite520 && /This post is for paying subscribers only Subscribe now/.test(box520.words ?? '') && (box520.ground ?? '').toLowerCase().includes(String(settings.accent_color).toLowerCase()),
+          JSON.stringify(box520))
+        check(`${tag} — the tier line counts ${NAME}'s PUBLIC tiers ("${PW.tierLine(publicTiers)}"), and Tiers in Ghost admin → opens its own anchor`,
+          shown520.tiers === PW.tierLine(publicTiers) && shown520.link === PW.adminAt(g.origin, 'tiers') && shown520.chip === PW.PAYWALL_WORDS.chip,
+          JSON.stringify(shown520))
+      }
+
       // ── the whole major: no body on the wire, one request per key inside 60 s, and the policy quiet ──
       const mine = bodies.filter((b) => b.id.startsWith(g.origin))
       check(`${tag} — no answer Ghost sent carried a body — no html and no plaintext, in ${mine.length} answers`, mine.length > 0 && mine.every((b) => !carries(b.body, ['html', 'plaintext'])))
@@ -787,6 +852,141 @@ async function main() {
       check(`${tag} — ONE request per key: no key Ghost answered is asked for again inside ${LIVE.FRESH_MS / 1000} s`, tooSoon.length === 0,
         JSON.stringify(tooSoon.map(([id, made]) => `${new URL(id).pathname}${new URL(id).search.slice(0, 80)} ×${made.length}`)))
       note(`${tag} — the whole walk of this major cost`, `${[...seen.entries()].filter(([id]) => id.startsWith(g.origin)).reduce((n, [, made]) => n + made.length, 0)} request(s) over ${[...seen.keys()].filter((id) => id.startsWith(g.origin)).length} key(s)`)
+    }
+
+    // ── Story 5.20: T3's record SEEDED to members off — C3b, the Sites notice, and a placed sign-up section's line ──
+    if (MAJORS.includes('5')) {
+      const siteRow520 = (await rest(`/sites?user_id=eq.${uid}&url=eq.${encodeURIComponent(GHOST['5'].origin)}&select=id,site_settings`)).body?.[0]
+      const NAME5 = (await ghostRead('5', 'settings')).settings.title
+      const OFF = { signup_access: 'none', paid_enabled: false }
+      const was520 = siteRow520?.site_settings ?? null
+      try {
+        await rest(`/sites?id=eq.${siteRow520.id}`, { method: 'PATCH', body: JSON.stringify({ site_settings: { ...(was520 ?? {}), members: OFF } }) })
+        await open(editor(P['5'], 'paywall'))
+        await page.waitForFunction((w) => document.querySelector('[data-paywall-off]')?.textContent.replace(/\s+/g, ' ').includes(w), PW.PAYWALL_WORDS.offBody(NAME5), { timeout: 30000 }).catch(() => null)
+        const card520 = await page.evaluate(() => ({
+          text: document.querySelector('[data-paywall-off]')?.textContent.replace(/\s+/g, ' ') ?? '',
+          chip: document.querySelector('[data-members-off-chip]')?.textContent ?? null,
+          admin: document.querySelector('[data-paywall-off] a[target="_blank"]')?.getAttribute('href') ?? null,
+        }))
+        check(`T3 — members off by the record: C3b's card in R-198's words, its two steps, Open Ghost admin at ${PW.adminAt(GHOST['5'].origin, 'members')}, and MEMBERS OFF in the bar`,
+          card520.text.includes(PW.PAYWALL_WORDS.offBody(NAME5)) && card520.text.includes(PW.PAYWALL_WORDS.offStep1) && card520.text.includes(PW.PAYWALL_WORDS.offStep2)
+            && card520.admin === PW.adminAt(GHOST['5'].origin, 'members') && card520.chip === PW.PAYWALL_WORDS.offChip, JSON.stringify(card520))
+        await page.waitForFunction(() => document.getElementById('paywall-recheck')?.textContent === 'Re-check', null, { timeout: 30000 })
+        await watchBusy('#paywall-recheck')
+        await page.locator('#paywall-recheck').click()
+        await page.waitForFunction(() => /Could not check/.test(document.querySelector('[data-paywall-off] [role="status"]')?.textContent ?? ''), null, { timeout: 30000 }).catch(() => null)
+        const busy520 = await busySeen()
+        const refused520 = await page.evaluate(() => document.querySelector('[data-paywall-off] [role="status"]')?.textContent ?? null)
+        const kept520 = (await rest(`/sites?id=eq.${siteRow520.id}&select=site_settings`)).body?.[0]?.site_settings?.members
+        check('T3 — Re-check says "Re-checking…" with aria-busy and never disabled, is refused with its one sentence (no Admin key on this fixture), and leaves the record as it was',
+          busy520.during !== null && busy520.during.native !== true && refused520 === PW.PAYWALL_WORDS.refused(NAME5) && JSON.stringify(kept520) === JSON.stringify(OFF),
+          JSON.stringify({ busy520, refused520, kept520 }))
+        // the Sites notice, from the same record
+        await page.goto(at('/sites'), { waitUntil: 'load' })
+        const notice520 = await page.evaluate(() => [...document.querySelectorAll('[data-members-notice]')].map((n) => ({ text: n.textContent.replace(/\s+/g, ' '), link: n.querySelector('a')?.getAttribute('href') ?? null })))
+        const sentence520 = PW.membersNotice(OFF, 'Ghost5 (row)')[0]
+        check('T3 — the Sites screen says it too: the members-off sentence and Open Ghost admin at the Membership anchor',
+          notice520.some((n) => n.text.includes(sentence520) && n.link === PW.adminAt(GHOST['5'].origin, 'members')), JSON.stringify(notice520))
+        // a placed sign-up section on Home — the seed's A22 #1 asks a visitor to join — carries the line at its panel head
+        await open(editor(P['5']))
+        await paintedFrom('home', 'site')
+        await pickLayer('A22')
+        const line520 = await page.evaluate(() => document.querySelector('[data-member-ask]')?.textContent ?? null)
+        check('T3 — a placed section whose design asks a visitor to join says so at its panel head, in 5.18\'s note shape',
+          line520 === PW.PAYWALL_WORDS.ask(NAME5), JSON.stringify(line520))
+      } finally {
+        if (siteRow520) await rest(`/sites?id=eq.${siteRow520.id}`, { method: 'PATCH', body: JSON.stringify({ site_settings: was520 }) })
+      }
+      const back520 = (await rest(`/sites?id=eq.${siteRow520?.id}&select=site_settings`)).body?.[0]?.site_settings ?? null
+      check('T3 — the record is put back as the walk found it', JSON.stringify(back520) === JSON.stringify(was520), JSON.stringify(back520))
+    }
+
+    // ── Story 5.20: T3's REAL SWITCH — Subscription access set to Nobody with the staff token for under a minute, the
+    //    Paywall canvas re-checking against Ghost itself, Re-check pressed both ways, and everything put back ──
+    // The walk's T3 row is REST-made and holds no Admin key, so the key goes in first through the app's own door, Manage
+    // keys (proved by `config/` before Vault holds it): the row then has what a connected site has, and every re-check
+    // below is `recheckMembers` → `readMembers` → `call()` → T3's Admin `settings/`, on production. The account's delete
+    // at the end takes the key with it (the credentials row cascades, and its trigger drops the Vault secret).
+    if (MAJORS.includes('5')) {
+      const siteId = (await rest(`/sites?user_id=eq.${uid}&url=eq.${encodeURIComponent(GHOST['5'].origin)}&select=id`)).body?.[0]?.id
+      const NAME5 = (await ghostRead('5', 'settings')).settings.title
+      const record = async () => (await rest(`/sites?id=eq.${siteId}&select=site_settings`)).body?.[0]?.site_settings?.members ?? null
+      /** the record once `ok` holds, polled for up to 30 s — a re-check lands when Ghost has answered the server */
+      const recordWhen = async (ok) => {
+        for (let i = 0; i < 60; i++) {
+          const r = await record()
+          if (ok(r)) return r
+          await page.waitForTimeout(500)
+        }
+        return record()
+      }
+      const saidIs = (words) => page.waitForFunction((w) => document.getElementById('editor-said')?.textContent === w, words, { timeout: 30000 }).then(() => true, () => false)
+      const cardSays = (words) => page.waitForFunction((w) => document.querySelector('[data-paywall-off]')?.textContent.replace(/\s+/g, ' ').includes(w), words, { timeout: 30000 }).then(() => true, () => false)
+
+      await page.goto(at(`/sites/keys?site=${siteId}`), { waitUntil: 'load' })
+      const keysForm = page.locator('form:has(#keys-admin)')
+      await keysForm.locator('#keys-admin').fill(process.env.GHOST5_ADMIN_API_KEY)
+      await keysForm.locator('button[type="submit"]').click()
+      let present = null
+      for (let i = 0; i < 60 && present?.admin !== true; i++) {
+        await page.waitForTimeout(500)
+        present = (await rest(`/sites?id=eq.${siteId}&select=credentials_present`)).body?.[0]?.credentials_present ?? null
+      }
+      check('T3 — Manage keys stores the Admin key for the walk\'s own site (proved by config/ first; nothing is written to Ghost)', present?.admin === true, JSON.stringify(present))
+
+      const live = await switches5()
+      check(`T3 — the control: members are on before the switch (${JSON.stringify(live)})`, live.signup_access !== 'none', JSON.stringify(live))
+      // (1) the Paywall canvas re-checks as it opens: the record becomes T3's own answer, and there is no card
+      await open(editor(P['5'], 'paywall'))
+      const onOpen = await recordWhen((r) => JSON.stringify(r) === JSON.stringify(live))
+      check('T3 — opening the Paywall canvas re-checks through the stored key: the record is T3\'s own answer, members on, and no card',
+        JSON.stringify(onOpen) === JSON.stringify(live) && (await page.locator('[data-paywall-off]').count()) === 0, JSON.stringify(onOpen))
+
+      // (2) Nobody, for under a minute: restored before the last Re-check, and in `finally` whatever happens, and read back
+      const offAt = Date.now()
+      let restored = false
+      try {
+        await setAccess5('none')
+        const nobody = await switches5()
+        check('T3 — Subscription access set to Nobody with the staff token and read back: Ghost\'s paid flag goes false with it', nobody.signup_access === 'none' && nobody.paid_enabled === false, JSON.stringify(nobody))
+        await open(editor(P['5'], 'paywall'))
+        const cardUp = await cardSays(PW.PAYWALL_WORDS.offBody(NAME5))
+        const offRecord = await recordWhen((r) => r?.signup_access === 'none')
+        check('T3 — the canvas re-checks as it opens: Ghost answers Nobody, the record follows, and C3b\'s card comes up in R-198\'s words',
+          cardUp && JSON.stringify(offRecord) === JSON.stringify(nobody), JSON.stringify(offRecord))
+        await page.waitForFunction((w) => document.getElementById('paywall-recheck')?.textContent === w, PW.PAYWALL_WORDS.recheck, { timeout: 30000 })
+        await watchBusy('#paywall-recheck')
+        await page.locator('#paywall-recheck').click()
+        const stillOff = await saidIs(PW.PAYWALL_WORDS.stillOff(NAME5))
+        const pressOff = await busySeen()
+        check('T3 — Re-check says "Re-checking…" with aria-busy and never disabled, then Ghost\'s answer: "Members are still switched off"',
+          stillOff && pressOff.during !== null && pressOff.during.native !== true && pressOff.during.words === PW.PAYWALL_WORDS.rechecking, JSON.stringify({ pressOff, said: await said() }))
+        // the Sites notice, from the record Ghost's own answer wrote
+        await page.goto(at('/sites'), { waitUntil: 'load' })
+        await page.getByText(PW.membersNotice(nobody, 'Ghost5 (row)')[0]).first().waitFor({ state: 'visible', timeout: 20000 }).catch(() => null)
+        const notices = await page.evaluate(() => [...document.querySelectorAll('[data-members-notice]')].map((n) => n.textContent.replace(/\s+/g, ' ')))
+        check('T3 — the Sites screen says members are off, from the record Ghost\'s own answer wrote',
+          notices.some((t) => t.includes(PW.membersNotice(nobody, 'Ghost5 (row)')[0])), JSON.stringify(notices))
+        // back on the canvas with the card up and its own re-check finished (it speaks while the card is up), T3 is put
+        // back, and one press brings Ghost's own box back
+        await open(editor(P['5'], 'paywall'))
+        const settled = (await cardSays(PW.PAYWALL_WORDS.offBody(NAME5))) && (await saidIs(PW.PAYWALL_WORDS.stillOff(NAME5)))
+        await setAccess5(live.signup_access)
+        restored = true
+        note('T3 — Subscription access was Nobody for', `${Math.round((Date.now() - offAt) / 1000)} s`)
+        await page.locator('#paywall-recheck').click()
+        const on = await saidIs(PW.PAYWALL_WORDS.on(NAME5))
+        const backRecord = await recordWhen((r) => JSON.stringify(r) === JSON.stringify(live))
+        const boxBack = await (await canvasFrame()).evaluate(() => document.querySelector('[data-inflozo-box] .gh-post-upgrade-cta') !== null).catch(() => false)
+        check('T3 — put back and Re-checked: "Members are on", the card gone, Ghost\'s own box back, and the record T3\'s answer again',
+          settled && on && (await page.locator('[data-paywall-off]').count()) === 0 && boxBack && JSON.stringify(backRecord) === JSON.stringify(live),
+          JSON.stringify({ settled, said: await said(), backRecord, boxBack }))
+      } finally {
+        if (!restored) await setAccess5(live.signup_access)
+        const after = await switches5()
+        check(`T3 — Subscription access is back to ${live.signup_access}, read back from Ghost`, JSON.stringify(after) === JSON.stringify(live), JSON.stringify(after))
+      }
     }
 
     // ── a REAL 401: one request, never retried, named ──

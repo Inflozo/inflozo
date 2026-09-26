@@ -10,18 +10,23 @@ import ghost5_author from './ghost5/author.json' with { type: 'json' }
 import ghost5_error from './ghost5/error.json' with { type: 'json' }
 import ghost5_index_page_2 from './ghost5/index-page-2.json' with { type: 'json' }
 import ghost5_index from './ghost5/index.json' with { type: 'json' }
+import ghost5_members_long_nobody from './ghost5/members-long-nobody.json' with { type: 'json' }
+import ghost5_members_long from './ghost5/members-long.json' with { type: 'json' }
+import ghost5_members_short from './ghost5/members-short.json' with { type: 'json' }
 import ghost5_post from './ghost5/post.json' with { type: 'json' }
 import ghost5_tag from './ghost5/tag.json' with { type: 'json' }
 import ghost6_author from './ghost6/author.json' with { type: 'json' }
 import ghost6_error from './ghost6/error.json' with { type: 'json' }
 import ghost6_index_page_2 from './ghost6/index-page-2.json' with { type: 'json' }
 import ghost6_index from './ghost6/index.json' with { type: 'json' }
+import ghost6_members_long from './ghost6/members-long.json' with { type: 'json' }
+import ghost6_members_short from './ghost6/members-short.json' with { type: 'json' }
 import ghost6_post from './ghost6/post.json' with { type: 'json' }
 import ghost6_tag from './ghost6/tag.json' with { type: 'json' }
 
 export const CAPTURE_COMMAND = "python3 tools/probe/record-shim.py"
 
 export const RECORDINGS: Readonly<Record<string, Readonly<Record<string, unknown>>>> = {
-  ghost5: { "author": ghost5_author, "error": ghost5_error, "index-page-2": ghost5_index_page_2, "index": ghost5_index, "post": ghost5_post, "tag": ghost5_tag },
-  ghost6: { "author": ghost6_author, "error": ghost6_error, "index-page-2": ghost6_index_page_2, "index": ghost6_index, "post": ghost6_post, "tag": ghost6_tag },
+  ghost5: { "author": ghost5_author, "error": ghost5_error, "index-page-2": ghost5_index_page_2, "index": ghost5_index, "members-long-nobody": ghost5_members_long_nobody, "members-long": ghost5_members_long, "members-short": ghost5_members_short, "post": ghost5_post, "tag": ghost5_tag },
+  ghost6: { "author": ghost6_author, "error": ghost6_error, "index-page-2": ghost6_index_page_2, "index": ghost6_index, "members-long": ghost6_members_long, "members-short": ghost6_members_short, "post": ghost6_post, "tag": ghost6_tag },
 }

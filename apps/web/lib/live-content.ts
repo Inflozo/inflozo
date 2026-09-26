@@ -20,6 +20,7 @@
  */
 
 import type { DataBinding, orbitWeekly } from '@inflozo/library'
+import type { Members } from './probe-rule.ts'
 
 type Subject = orbitWeekly.Subject
 type Kind = orbitWeekly.SubjectKind
@@ -71,6 +72,11 @@ export const addressOf = (origin: string, q: LiveQuery, key: string): string =>
 
 /** `@site`: the site's settings. */
 export const SETTINGS = read('settings')
+
+/** STORY 5.20 — THE SITE'S PUBLIC TIERS, the one new read the Paywall canvas makes (its "{n} tiers · {m} free" line and
+ *  the paid tiers its paid post is open to), and only there. `visibility:public` because Ghost's `/tiers/` answers a
+ *  HIDDEN tier with the rest — `input/tiers.js` ANDs `active:true` and filters nothing else (MEASUREMENTS §54). */
+export const PUBLIC_TIERS = read('tiers', { filter: 'visibility:public' })
 
 /** THE LISTS IN HAND — D5e's subject rows, the Link Picker's search and R-193's starting archive: the newest 100 posts,
  *  and pages, tags and writers to 100 each, the fullest archives first. Search stays CLIENT-SIDE over these (DW-248):
@@ -387,6 +393,9 @@ export type Want = {
 }
 
 const LIST_FILES = ['home.hbs', 'index.hbs', 'tag.hbs', 'author.hbs']
+/** `vocabulary.ts`'s `PAYWALL_TARGET`, restated because this module imports nothing but types; `live-content.test.ts`
+ *  holds the two equal. */
+export const PAYWALL_FILE = 'partials/content-cta.hbs'
 const archiveOf = (target: string, of: Subject | null | undefined) =>
   (target === 'tag.hbs' || target === 'author.hbs') && of != null && of.kind === (target === 'tag.hbs' ? 'tag' : 'author') && slugShaped(of.slug)
     ? { kind: of.kind as 'tag' | 'author', slug: of.slug }
@@ -431,6 +440,12 @@ export function sitePieces(w: Want, subject: Subject | null, target: string, pag
   const settings = r.got(SETTINGS)?.rows[0] ?? {}
   const zone = zoneOf(settings)
   const base: Pieces = { site: settings, postsPerPage: w.perPage }
+  // STORY 5.20 — THE PAYWALL'S PARTIAL: the style-guide article at the ROOT as a paid post (`content.js:28`), open to the
+  // site's own public paid tiers; `assemble` re-reads its `access` for the visitor. The body is never the site's (FR-H4).
+  if (target === PAYWALL_FILE) {
+    const paid = (r.got(PUBLIC_TIERS)?.rows ?? []).filter((t) => t['type'] === 'paid')
+    return { ...base, entry: { ...w.styleGuide.post, visibility: 'paid', tiers: paid } }
+  }
   if ((target === 'post.hbs' || target === 'page.hbs') && subject !== null && (subject.kind === 'post' || subject.kind === 'page')) {
     const fixture = w.styleGuide[subject.kind]
     if (subject.slug === fixture['slug']) return { ...base, entry: fixture }
@@ -492,7 +507,12 @@ export type Unreadable = 'disconnected' | 'no_key' | 'http'
  *  its Content API key, delivered on purpose (FR-C3: `sites.content_key` is browser-safe by Ghost's design) — or
  *  unreadable with its reason, where no read is ever attempted; null where no site is linked. `title` is the site's
  *  name until `/settings/` answers: `sites.title`, or its host where that is empty. */
-export type EditorSite = { title: string; origin: string; key: string } | { title: string; unreadable: Unreadable } | null
+export type EditorSite =
+  // STORY 5.20 — `members` is FR-H6's record of the site's member switches (`site_settings.members`), SERVER TRUTH like the
+  // rest: absent for a site with no record yet, which warns nothing anywhere (`read.ts` attaches it)
+  | { title: string; origin: string; key: string; members?: Members }
+  | { title: string; unreadable: Unreadable; members?: Members }
+  | null
 
 /** A `sites` row → `EditorSite`. Disconnected first (Story 3.5 nulls the key and keeps the link, so that is the reason,
  *  not the missing key); then no key; then a plain `http:` address, which an https page cannot read (mixed content,

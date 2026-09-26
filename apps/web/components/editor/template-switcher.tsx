@@ -3,12 +3,13 @@
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, useTransition } from 'react'
 import {
-  CanvasAuthor, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPost, CanvasPrivate, CanvasSignin,
+  CanvasAuthor, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
   CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff,
 } from '@/components/kit/icons'
 import { ring } from '@/components/kit/greyed'
 import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
-import { CANVASES, canvasPath, isMembership, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasPath, isMembership, isSurface, type CanvasKey } from '@/lib/editor'
+import { PAYWALL_WORDS } from '@/lib/paywall'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { isApp } from '@/routing'
 
@@ -69,6 +70,7 @@ const GLYPH: Readonly<Record<CanvasKey, typeof CanvasHome>> = {
   'custom-member-home': CanvasMemberHome,
   error: CanvasError,
   private: CanvasPrivate,
+  paywall: CanvasPaywall,
 }
 
 /** The row's state mark, in D5b's two states plus R-130's third — since R-171 in the row's TRAILING slot, where its
@@ -96,6 +98,7 @@ export function TemplateSwitcher({
   canvases,
   auto,
   empty,
+  pathOf,
 }: {
   projectId: string
   /** the canvas the editor is showing — its row is highlighted and navigates nowhere */
@@ -106,6 +109,9 @@ export function TemplateSwitcher({
   auto: ReadonlySet<CanvasKey>
   /** the canvases that are neither designed nor auto-generatable: R-130's `circle-off` glyph and the word "Empty" */
   empty: ReadonlySet<CanvasKey>
+  /** Story 5.20 — where a canvas lives, when it is not the app's own `canvasPath`: the keyboard harness's pages, so its
+   *  walk can switch canvas without a database (R-146). The app passes none. */
+  pathOf?: (key: CanvasKey) => string
 }) {
   const router = useRouter()
   // The internal `/app` prefix is on the path on localhost and never on the app host, so a push has to carry whatever
@@ -118,6 +124,8 @@ export function TemplateSwitcher({
   const [going, setGoing] = useState<CanvasKey | null>(null)
   /** D5b's Membership group, open as the frame draws it — the chevron is the control that shuts it */
   const [groupOpen, setGroupOpen] = useState(true)
+  /** Story 5.20 — the Template surfaces group, in the Membership group's shape and with its own chevron */
+  const [surfacesOpen, setSurfacesOpen] = useState(true)
   const menu = useRef<HTMLDivElement>(null)
 
   // the transition settling is the new canvas being there; the menu closes then, not on the press (R-98)
@@ -135,7 +143,7 @@ export function TemplateSwitcher({
     }
     if (pending) return // one navigation at a time — a second press has nowhere sensible to land
     setGoing(key)
-    start(() => router.push(`${prefix}${canvasPath(projectId, key)}`))
+    start(() => router.push(pathOf ? pathOf(key) : `${prefix}${canvasPath(projectId, key)}`))
   }
 
   const row = (key: CanvasKey) => {
@@ -154,7 +162,7 @@ export function TemplateSwitcher({
           aria-disabled={busy || undefined}
           aria-busy={busy || undefined}
           onClick={() => go(key)}
-          indent={isMembership(key)}
+          indent={isMembership(key) || isSurface(key)}
           glyph={<Glyph size={15} className="shrink-0 text-ink-soft" />}
           name={CANVASES[key].label}
           // R-98: the pressed row's line says what is happening while the transition runs
@@ -174,8 +182,42 @@ export function TemplateSwitcher({
   // three slices are cut out of the row order rather than re-ordered here (R-129's names are `lib/editor.ts`'s).
   const membership = canvases.filter(isMembership)
   const first = canvases.findIndex(isMembership)
-  const before = first === -1 ? canvases : canvases.slice(0, first)
-  const after = first === -1 ? [] : canvases.slice(first + membership.length)
+  const before = first === -1 ? canvases.filter((k) => !isSurface(k)) : canvases.slice(0, first)
+  const after = first === -1 ? [] : canvases.slice(first + membership.length).filter((k) => !isSurface(k))
+  // STORY 5.20 — the TEMPLATE SURFACES group, last (EXPERIENCE.md:207-222): a canvas that is not a page, in D5b's
+  // Membership group's shape. It holds Paywall alone — Cards arrives with Story 7.13 (R-118), and Error pages is 404.
+  const surfaces = canvases.filter(isSurface)
+
+  /** One of D5b's groups: a chevron BUTTON heading the group (the owner's test of Story 5.5 — a control that is present
+   *  must work), its rows indented under it, and its rows NOT RENDERED while it is shut, so `arrowKeys` never steps onto
+   *  a row nobody can see. Never shut while one of its own rows is the only thing saying "Opening…" (R-98). */
+  const group = (id: string, heading: string, keys: readonly CanvasKey[], open: boolean, toggle: (next: (was: boolean) => boolean) => void) =>
+    keys.length === 0 ? null : (
+      <li className="flex flex-col">
+        <ul aria-labelledby={id} className="flex list-none flex-col gap-px">
+          <li className="flex flex-col">
+            <button
+              type="button"
+              id={id}
+              aria-expanded={open}
+              aria-controls={`${id}-rows`}
+              onClick={() => toggle((was) => (going !== null && keys.includes(going) ? was : !was))}
+              className={`flex items-center gap-[9px] rounded-sm px-[10px] py-[7px] text-left text-ui-dense font-semibold transition-colors hover:bg-paper ${ring}`}
+            >
+              {open ? (
+                <ChevronDown size={12} aria-hidden className="shrink-0 text-ink-soft" />
+              ) : (
+                <ChevronRight size={12} aria-hidden className="shrink-0 text-ink-soft" />
+              )}
+              {heading}
+            </button>
+          </li>
+          <li id={`${id}-rows`} className="flex flex-col">
+            <ul className="flex list-none flex-col gap-px">{open ? keys.map(row) : null}</ul>
+          </li>
+        </ul>
+      </li>
+    )
 
   return (
     <>
@@ -201,8 +243,11 @@ export function TemplateSwitcher({
         onToggle={(event) => {
           const opening = (event as unknown as ToggleEvent).newState === 'open'
           setOpen(opening)
-          // the group opens WITH the menu, as D5b draws it: a fold left shut would hide the checked row next time
-          if (opening) setGroupOpen(true)
+          // the groups open WITH the menu, as D5b draws them: a fold left shut would hide the checked row next time
+          if (opening) {
+            setGroupOpen(true)
+            setSurfacesOpen(true)
+          }
         }}
         onKeyDown={arrowKeys}
         className={BAR_POPOVER}
@@ -213,40 +258,11 @@ export function TemplateSwitcher({
             row in force. The card, its heading and the scrolling list are View as's too (`bar-menu.tsx`, R-171). */}
         <BarMenuCard width="w-[min(284px,calc(100vw-16px))]" headingId="editor-template-heading" heading="Templates">
           {before.map(row)}
-          {membership.length > 0 ? (
-            <li className="flex flex-col">
-              <ul aria-labelledby="editor-template-membership" className="flex list-none flex-col gap-px">
-                {/* THE CHEVRON IS A CONTROL, so it is a button (the owner's test of Story 5.5, 2026-09-18): D5b draws
-                    the group with one and it drew nothing here, which is the same fault R-118 names from the other
-                    end — a control that is present must work. The heading keeps its own id, so the group stays
-                    labelled by it whether it is open or shut, and `arrowKeys` walks it with every row because it is
-                    now one of the menu's `button`s. Collapsed rows are NOT rendered rather than hidden: a hidden
-                    button is still a `querySelector('button')`, so `arrowKeys` would step onto a row nobody can see. */}
-                <li className="flex flex-col">
-                  <button
-                    type="button"
-                    id="editor-template-membership"
-                    aria-expanded={groupOpen}
-                    aria-controls="editor-template-membership-rows"
-                    // never while one of its rows is the only thing saying "Opening…" (R-98)
-                    onClick={() => setGroupOpen((was) => (going !== null && isMembership(going) ? was : !was))}
-                    className={`flex items-center gap-[9px] rounded-sm px-[10px] py-[7px] text-left text-ui-dense font-semibold transition-colors hover:bg-paper ${ring}`}
-                  >
-                    {groupOpen ? (
-                      <ChevronDown size={12} aria-hidden className="shrink-0 text-ink-soft" />
-                    ) : (
-                      <ChevronRight size={12} aria-hidden className="shrink-0 text-ink-soft" />
-                    )}
-                    Membership
-                  </button>
-                </li>
-                <li id="editor-template-membership-rows" className="flex flex-col">
-                  <ul className="flex list-none flex-col gap-px">{groupOpen ? membership.map(row) : null}</ul>
-                </li>
-              </ul>
-            </li>
-          ) : null}
+          {/* A PLAIN LIST UNDER ITS HEADING, and each group a nested labelled list (`group` above): the Membership group
+              between Author and 404, where D5b draws it, and Story 5.20's Template surfaces group last */}
+          {group('editor-template-membership', 'Membership', membership, groupOpen, setGroupOpen)}
           {after.map(row)}
+          {group('editor-template-surfaces', PAYWALL_WORDS.group, surfaces, surfacesOpen, setSurfacesOpen)}
         </BarMenuCard>
       </div>
     </>

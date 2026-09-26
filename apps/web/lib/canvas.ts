@@ -4,9 +4,10 @@
 //
 // Extracted from `pilots/review.tsx`'s `paint()` and `shown()` (Story 4.10) without a change in behaviour.
 
-import { DEFAULT_LIMIT, orbitWeekly } from '@inflozo/library'
-import type { DataBinding, IconLookup, SectionRegistryEntry } from '@inflozo/library'
-import { renderCanvas, withData } from '@inflozo/section-runtime'
+import { DEFAULT_LIMIT, orbitWeekly, postAccess, safeCssColor } from '@inflozo/library'
+import type { DataBinding, IconLookup, SectionRegistryEntry, Visitor } from '@inflozo/library'
+import { contentCta, renderCanvas, withData } from '@inflozo/section-runtime'
+import { PAYWALL_WORDS } from './paywall.ts'
 import type { ControlState, MemberState, RuntimeDocument } from '@inflozo/section-runtime'
 import { reader, SETTINGS, siteRows, siteSource, sitePieces, zoneOf, type LiveQuery, type Look, type Row } from './live-content.ts'
 
@@ -112,6 +113,8 @@ export function sitePage(
     queries: Readonly<Record<string, Queries>>
     /** Story 5.19 — the project's `posts_per_page`: the size of every page of a list, on the site as on the sample */
     perPage: number
+    /** Story 5.20 — the visitor each post's `access` is re-read for; omitted, every row is the row Ghost answered */
+    visitor?: Visitor
   },
 ): { need: readonly LiveQuery[] } | { nothing: 'tag' | 'author' } | { ready: SitePage } {
   const r = reader(look)
@@ -130,7 +133,7 @@ export function sitePage(
   // page 1's own count is always read: whether a page 2 exists is decided by it alone (§51 — past the last page Ghost
   // answers `200 []`), and a subject whose archive fits one page takes page 2 away (R-176)
   const pages = source.pages(o.pageFile, subject)
-  const contexts = Object.fromEntries(o.targets.map((t) => [t, orbitWeekly.assemble(t, sitePieces(w, subject, t, o.page, r))]))
+  const contexts = Object.fromEntries(o.targets.map((t) => [t, orbitWeekly.assemble(t, sitePieces(w, subject, t, o.page, r), o.visitor)]))
   if (r.need.length > 0 || site === undefined) return { need: r.need }
   return { ready: { subject, fellBack, source, pages, site, zone, contexts, rows } }
 }
@@ -219,9 +222,13 @@ export function renderSection(
     /** Story 5.19 — this section is a SECONDARY feed: its own query and the rows it returned, which the runtime renders
      *  in place of the page's native posts, with no pager (`RenderInput.feed`). Omitted: the main feed, or no feed. */
     secondary?: { query: DataBinding; rows: readonly unknown[] }
+    /** Story 5.20 — the visitor whose `access` each post in the sample's context is re-read for (`postAccess`, Ghost's own
+     *  rule), so `{{#if access}}`, the cut and the reading time answer for the visitor View as previews. Omitting it is
+     *  exactly today's render — `/pilots`, the snapshots, the matrix, the picker's cards and the ring's tiles pass none. */
+    visitor?: Visitor
   },
 ): string {
-  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage)
+  const ctx = o.live?.context ?? orbitWeekly.templateContext(o.target, o.feed, o.subject, o.perPage, o.visitor)
   const site = o.url === undefined ? ctx.site : { ...ctx.site, currentUrl: o.url }
   return withImages(renderCanvas(doc as unknown as RuntimeDocument, entry.html, {
     target: o.target,
@@ -243,6 +250,40 @@ export function renderSection(
     ...(o.page === undefined ? {} : { tokens: { page_number: String(o.page) } }),
     ...(o.secondary === undefined ? {} : { feed: o.secondary }),
   }))
+}
+
+/** STORY 5.20 — THE MAJOR the Paywall canvas previews: the style-guide's own (`style-guide.ts`' `PREVIEW_MAJOR`, T1's,
+ *  the one the card chunks were vendored from). Ghost's box differs between the majors by one line's indent (§54). */
+export const SURFACE_MAJOR: orbitWeekly.Major = '6'
+
+const escText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * STORY 5.20 — THE PAYWALL CANVAS'S PAGE (C3a as corrected, `C Post Body.dc.html:1423-1472`): the style-guide article
+ * previewed as a Paid-members-only post — never a real body (FR-D16, FR-H4) — in the wrapper a theme gives `{{content}}`,
+ * `.gh-content`, which the canvas document's surface stylesheet styles (`style-guide.ts`' `surfaceCss`).
+ *
+ * WHO MAY READ IT IS GHOST'S OWN RULE (`postAccess`, one port of `checkPostAccess`). A visitor who may not meets the
+ * article's preview — up to the SIMULATED Public preview marker after `PREVIEW_CUT` — then C3a's cut marker, then `box`:
+ * the paywall instance's own markup, or Ghost's own box where none is chosen. A visitor who may read it meets the whole
+ * article, S4d's gated rule where the locked part begins (R-199), and NO box — Ghost renders the partial only where
+ * access is false (`content.js:50-52`). The article is context either way, so it is dimmed in both.
+ *
+ * `box` IS WRITTEN WHOLE, and both of its sources are trusted: the runtime's own render, and `contentCta`'s constants
+ * with the accent through the colour parser. Every other word here is `PAYWALL_WORDS`' constant.
+ */
+export function paywallPage(o: { visitor: Visitor; accent: unknown; box: string | null }): string {
+  const blocks = orbitWeekly.blocks(SURFACE_MAJOR, 'article')
+  const whole = postAccess({ visibility: 'paid' }, o.visitor)
+  const at = orbitWeekly.PREVIEW_CUT + 1
+  const run = (from: number, to?: number) => blocks.slice(from, to).map((b) => b.html).join('')
+  const box = o.box ?? contentCta({ visibility: 'paid', member: o.visitor !== 'anonymous', accent: o.accent, major: SURFACE_MAJOR })
+  const tail = whole
+    ? `<div data-inflozo-gated><span>${escText(PAYWALL_WORDS.gated)}</span></div>${run(at)}`
+    : `<div data-inflozo-cut><span data-inflozo-cut-label>${escText(PAYWALL_WORDS.cut)}</span><span data-inflozo-cut-note>${escText(PAYWALL_WORDS.below)}</span></div><div data-inflozo-box>${box}</div>`
+  // the accent Ghost's `{{ghost_head}}` hands the card stylesheet, as the style guide sets it — through the colour parser
+  const accent = safeCssColor(o.accent, '--accent').replace(/"/g, '&quot;')
+  return withImages(`<main style="padding:40px 0 56px;--ghost-accent-color:${accent}"><article class="gh-content" data-inflozo-dim>${run(0, at)}${tail}</article></main>`)
 }
 
 /** Writes sections into the mount and puts every module mount in its JavaScript branch, with no script running:

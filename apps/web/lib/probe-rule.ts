@@ -527,6 +527,37 @@ export function settingsReadable(body: unknown): boolean {
 }
 
 /**
+ * STORY 5.20 — FR-H6's ONE RECORD OF THE MEMBER SWITCHES: `site_settings.members`, copied from the Admin `settings/`
+ * payload the probe already reads (connect, the daily check and the editor's Re-check), and read by every warning — the
+ * Paywall canvas's members-off card, the Sites notice and a placed member ask's line.
+ *
+ * EXACTLY TWO FIELDS, AND NEVER A STRIPE KEY. The same payload carries every Stripe setting, secrets included
+ * (executed read-only on T1 6.58.0 and T3 5.130.6 at the story's Create, and recorded as MEASUREMENTS §54), so the record
+ * is BUILT from two named keys rather than filtered from the payload: `members_signup_access` — the stored switch, one of
+ * Ghost's four values (`default-settings.json`) — and `paid_members_enabled`, Ghost's own calculation (members on AND
+ * Stripe connected, `SettingsHelpers.js` :79-81). Anything else, or either missing, is no reading: the record is left as
+ * it was, because a probe may overwrite an answer with a reading, never with an assumption (`probePatch`'s rule).
+ */
+export const SIGNUP_ACCESS = ['all', 'paid', 'invite', 'none'] as const
+export type Members = { signup_access: (typeof SIGNUP_ACCESS)[number]; paid_enabled: boolean }
+
+const membersFrom = (signupAccess: unknown, paidEnabled: unknown): Members | null =>
+  (SIGNUP_ACCESS as readonly unknown[]).includes(signupAccess) && typeof paidEnabled === 'boolean'
+    ? { signup_access: signupAccess as Members['signup_access'], paid_enabled: paidEnabled }
+    : null
+
+/** The record, from Ghost's flattened Admin settings — or null where the payload does not carry both, well-formed. */
+export const membersOf = (settings: Record<string, unknown>): Members | null =>
+  membersFrom(settings.members_signup_access, settings.paid_members_enabled)
+
+/** The record AS STORED (`sites.site_settings.members`), re-checked on the way out — or null for a site with no record
+ *  yet, which warns nothing anywhere (the spec's "No record yet" row). */
+export const storedMembers = (siteSettings: unknown): Members | null => {
+  const members = isRecord(siteSettings) ? siteSettings.members : undefined
+  return isRecord(members) ? membersFrom(members.signup_access, members.paid_enabled) : null
+}
+
+/**
  * THE WHOLE WRITE A PROBE MAKES, AS A PURE FUNCTION — verdict and payload in, the row's patch out.
  * It lives here rather than in `server/site-probe.ts` because the mapping is where the story's
  * rules actually are, and behind `call()` and `supabaseAdmin()` nothing could reach it: the
@@ -575,6 +606,10 @@ export function probePatch(args: {
     // FR-C4, Story 3.4: the brand, on the payload that was already read.
     brand: brandOf(settings),
   }
+  // STORY 5.20 — FR-H6's record of the member switches, only where the payload carries both halves well-formed; an
+  // unreadable pair leaves the previous record standing (the spread above), never an assumption over a reading
+  const members = membersOf(settings)
+  if (members !== null) site_settings.members = members
 
   const asked = verdict !== null && 'ask' in verdict
   if (asked && previousSource !== 'user_declared') site_settings.plan_ask = true

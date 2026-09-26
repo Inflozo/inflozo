@@ -5,7 +5,7 @@
       <h1 class="a4-13__headline">The personal page never disappeared. It went quiet.</h1>
       <p class="a4-13__sub">Orbit Weekly is a letter about the small web — the sites people still build by hand, and the tools that keep getting in their way. One essay, every Thursday.</p>
       <div class="a4-13__actions">
-        <a class="a4-13__action a4-13__action--primary" href="#" data-portal="signup">{{t "member.signup_cta"}}</a>
+        {{#if @site.allow_self_signup}}<a class="a4-13__action a4-13__action--primary" href="#" data-portal="signup">{{t "member.signup_cta"}}</a>{{/if}}
         <a class="a4-13__action a4-13__action--secondary" href="https://orbit-weekly.example/tag/archive/">Browse the archive</a>
       </div>
     </div>

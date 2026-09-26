@@ -2298,3 +2298,227 @@ test('5.19 · the first feed placed on a page with none lands as the MAIN feed, 
   await expect(page.locator(`[data-layer-row="${added}"]`)).toHaveCount(0)
   await expect(chipRow(page)).toHaveCount(0)
 })
+
+// ── Story 5.20 — THE PAYWALL CANVAS, A TEMPLATE SURFACE (R-146's walk of the wiring; the stack is the deployed walk's) ──
+
+const PAYWALL = await import(new URL('../../apps/web/lib/paywall.ts', import.meta.url).href)
+const P = PAYWALL.PAYWALL_WORDS
+const surfaceBox = (page) => canvasFrame(page).locator('[data-inflozo-box]')
+
+/** Template ▾, then End — the Template surfaces group is the menu's last — and Enter: one soft navigation, the editor
+ *  mounted across it, and the Paywall canvas painted. */
+async function openPaywall(page) {
+  await open(page)
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  // the menu opens ON ITS CHECKED ROW a frame after the key (R-171) — the next key waits for it, as `menuTo` does
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(page).toHaveURL(/\/app\/harness\/editor\/paywall$/)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+}
+
+/** View as, from the keyboard: open its menu and step to `visitor`'s row. */
+async function viewAs(page, visitor) {
+  await page.locator('#editor-view-as').focus()
+  await page.keyboard.press('Enter')
+  const menu = page.locator('#editor-view-as-menu')
+  await expect(menu).toBeVisible()
+  // the menu takes focus ON ITS CHECKED ROW a frame after the key (R-171): step only once a row holds it
+  await expect(menu.locator('[data-visitor]:focus')).toHaveCount(1)
+  for (let n = 0; n < 4 && (await page.evaluate(() => document.activeElement?.getAttribute('data-visitor'))) !== visitor; n++) await page.keyboard.press('ArrowDown')
+  await expect(menu.locator(`[data-visitor="${visitor}"]`)).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect(menu).toBeHidden()
+}
+
+test('5.20 · Template ▾ → Paywall: the ink bar says so, Layers holds C3a\'s card alone, and a logged out user meets the cut and Ghost\'s own box', async ({ page }) => {
+  await openPaywall(page)
+  // the bar: ink, NOT A PAGE SECTION, Back to post — and no Remix and no Preview (FR-D17, the spec's bar)
+  await expect(page.locator('header[data-surface]')).toHaveCount(1)
+  await expect(page.locator('[data-surface-chip]')).toHaveText(P.chip)
+  await expect(page.locator('#paywall-back')).toHaveText(P.back)
+  await expect(page.locator('#editor-remix')).toHaveCount(0)
+  await expect(page.locator('#editor-preview')).toHaveCount(0)
+  // the switcher's row: R-130's "Empty" while the paywall is untouched, in the Template surfaces group
+  await expect(page.locator('#editor-template-surfaces')).toHaveText(P.group)
+  await expect(page.locator('[data-canvas="paywall"] [data-mark="empty"]')).toHaveCount(1)
+  // Layers: no rows, no "+ Add section", and C3a's card with the sample's own tier line — and no admin link (no site)
+  await expect(page.locator('[data-layer-row]')).toHaveCount(0)
+  await expect(page.locator('#editor-add-section')).toHaveCount(0)
+  await expect(page.locator('[data-paywall-how]')).toContainText(P.howHeading)
+  await expect(page.locator('[data-tier-line]')).toHaveText(PAYWALL.tierLine(LIB.orbitWeekly.tiers()))
+  await expect(page.locator('[data-tiers-link]')).toHaveCount(0)
+  // the strip: the cut, and the article above it is context
+  await expect(page.locator('[data-paywall-showing]')).toHaveText(`${P.showingLead} ${P.showing(false)}`)
+  await expect(page.locator('[data-paywall-strip]')).toContainText(P.context(false))
+  // the canvas: the cut marker's two labels, then Ghost's own box in Ghost's own words (MEASUREMENTS §54)
+  await expect(canvasFrame(page).locator('[data-inflozo-cut-label]')).toHaveText(P.cut)
+  await expect(canvasFrame(page).locator('[data-inflozo-cut-note]')).toHaveText(P.below)
+  await expect(surfaceBox(page).locator('aside.gh-post-upgrade-cta h2')).toHaveText('This post is for paying subscribers only')
+  await expect(surfaceBox(page).locator('a[data-portal="signup"]')).toHaveText('Subscribe now')
+  await expect(surfaceBox(page).locator('a[data-portal="signin"]')).toHaveText('Sign in')
+  // the article is context, at C3a's 55% — and the box wears the sample's own accent, Orbit Weekly's
+  expect(await canvasFrame(page).locator('[data-inflozo-dim] > p').first().evaluate((el) => getComputedStyle(el).opacity)).toBe('0.55')
+  expect((await surfaceBox(page).locator('.gh-post-upgrade-cta-content').getAttribute('style')).toLowerCase()).toContain(String(LIB.orbitWeekly.site().accent_color).toLowerCase())
+  // the panel: "Paywall", and Ghost's own paywall said so
+  await expect(page.locator('#editor-panel-name')).toHaveText(P.panel)
+  await expect(page.locator('#paywall-untouched')).toHaveText(P.untouched)
+})
+
+test('5.20 · View as walks the three visitors: Ghost\'s own box for each who may not read, and S4d\'s gated label for the paid member (R-199)', async ({ page }) => {
+  await openPaywall(page)
+  await viewAs(page, 'free')
+  await expect(surfaceBox(page).locator('a[data-portal="account/plans"]')).toHaveText('Upgrade your account')
+  await expect(canvasFrame(page).locator('[data-inflozo-gated]')).toHaveCount(0)
+  await viewAs(page, 'paid')
+  // the whole post: no cut, no box, the label where the locked part begins — and the strip says so
+  await expect(canvasFrame(page).locator('[data-inflozo-cut]')).toHaveCount(0)
+  await expect(surfaceBox(page)).toHaveCount(0)
+  await expect(canvasFrame(page).locator('[data-inflozo-gated]')).toHaveText(P.gated)
+  await expect(page.locator('[data-paywall-showing]')).toHaveText(`${P.showingLead} ${P.showing(true)}`)
+  await viewAs(page, 'anonymous')
+  await expect(surfaceBox(page).locator('a[data-portal="signup"]')).toHaveText('Subscribe now')
+})
+
+test('5.20 · choosing a stand-in from untouched is ONE edit — the strip and the head count it, ▶ steps the ring, a setting changes it, and one ⌘Z per edit returns Ghost\'s own box', async ({ page }) => {
+  await openPaywall(page)
+  const tiles = page.locator('[data-design-tile]')
+  const ring = await tiles.count()
+  expect(ring, 'the harness hands in two stand-ins (R-158)').toBeGreaterThan(1)
+  // the strip is one tab stop — its first tile where nothing is chosen yet — and Enter chooses
+  await page.locator('[data-design-tile][tabindex="0"]').focus()
+  await page.keyboard.press('Enter')
+  const first = await tiles.first().getAttribute('aria-label')
+  await expect(page.locator('#editor-said')).toHaveText(`Design 1 of ${ring} — ${first}`)
+  await expect(page.locator('[data-paywall-design]')).toHaveText(P.design(1, ring, first))
+  await expect(page.locator('#editor-panel-position')).toHaveText(`1 / ${ring}`)
+  await expect(surfaceBox(page).locator('aside.gh-post-upgrade-cta')).toHaveCount(0)
+  await expect(surfaceBox(page).locator(':scope > *')).toHaveCount(1)
+  // ▶ steps the ring, one edit
+  await page.locator('[data-design-step="1"]').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-panel-position')).toHaveText(`2 / ${ring}`)
+  // a setting: the layout group's segmented control, one step along
+  await openEveryGroup(page)
+  const radio = page.locator('#editor-controls [role="radiogroup"] [role="radio"][tabindex="0"]').first()
+  const was = await radio.getAttribute('aria-label')
+  await radio.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(page.locator('#editor-controls [role="radiogroup"] [role="radio"][aria-checked="true"]').first()).not.toHaveAttribute('aria-label', was ?? '')
+  // three edits, three ⌘Z — and the last one is Ghost's own box again, untouched
+  await page.locator('section[aria-label="Canvas"]').focus()
+  for (let n = 0; n < 3; n++) await page.keyboard.press('ControlOrMeta+z')
+  await expect(surfaceBox(page).locator('aside.gh-post-upgrade-cta')).toHaveCount(1)
+  await expect(page.locator('#paywall-untouched')).toHaveText(P.untouched)
+  await expect(page.locator('#editor-panel-position')).toHaveCount(0)
+})
+
+test('5.20 · members off: C3b\'s card in R-198\'s words; Re-check says "Re-checking…" with aria-busy and never disabled, and its refusal is said', async ({ page }) => {
+  // the harness's members-off site, asked for by header; its Re-check is refused (no database, 5.14's precedent), and
+  // held for a moment on the wire so the busy state is really on screen to be read
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off' })
+  await page.route('**/app/harness/editor/paywall', async (route) => {
+    if (route.request().method() === 'POST' && route.request().headers()['next-action']) await new Promise((r) => setTimeout(r, 700))
+    await route.continue()
+  })
+  await page.goto(`${HARNESS}/paywall`)
+  const card = page.locator('[data-paywall-off]')
+  await expect(card).toBeVisible()
+  await expect(card).toContainText(P.offTitle)
+  await expect(card).toContainText(P.offBody('Harness site'))
+  await expect(card).toContainText(P.offStep1)
+  await expect(card).toContainText(P.offStep2)
+  await expect(page.locator('[data-members-off-chip]')).toHaveText(P.offChip)
+  // the page card is hidden under it, and the strip is not drawn
+  await expect(page.locator('[data-paywall-strip]')).toHaveCount(0)
+  const recheck = page.locator('#paywall-recheck')
+  // the canvas re-checks on open by itself ("we re-check whenever you open this screen"): the press waits for that one
+  await expect(recheck).toHaveText(P.recheck)
+  await expect(card.locator('[role="status"]'), 'the re-check on open was refused too, and said so').toHaveText(P.refused('Harness site'))
+  await recheck.focus()
+  await page.keyboard.press('Enter')
+  await expect(recheck).toHaveText(P.rechecking)
+  await expect(recheck).toHaveAttribute('aria-busy', 'true')
+  await expect(recheck).not.toHaveAttribute('disabled', /.*/)
+  await expect(card.locator('[role="status"]')).toHaveText(P.refused('Harness site'))
+  await expect(recheck).toHaveText(P.recheck)
+  await expect(page.locator('#editor-said')).toHaveText(P.refused('Harness site'))
+})
+
+test('5.20 · Back to post leaves the surface: the bar is paper again, the stylesheet is off, and Home carries no paywall chrome at rest', async ({ page }) => {
+  await openPaywall(page)
+  await page.locator('#paywall-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  await expect(page.locator('header[data-surface]')).toHaveCount(0)
+  expect(await canvasFrame(page).locator('style[data-order="2b-surface"]').evaluate((s) => s.media)).toBe('not all')
+  await expect(canvasFrame(page).locator('[data-inflozo-cut], [data-inflozo-dim], [data-inflozo-box], [data-inflozo-gated]')).toHaveCount(0)
+  // and Home, from the switcher's first row
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="post"]')).toBeFocused()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'home')
+  await expect(canvasFrame(page).locator('[data-inflozo-cut], [data-inflozo-dim], [data-inflozo-box], [data-inflozo-gated]')).toHaveCount(0)
+  expect(await marked(page), 'at rest the page is the site').toBe(0)
+})
+
+
+test('5.20 · members off, on Sample content: the sample paywall and no card; and a placed sign-up section says members are off (FR-H6)', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off' })
+  await page.goto(`${HARNESS}/paywall`)
+  await expect(page.locator('[data-paywall-off]')).toBeVisible()
+  // B9's pill → Sample content: a view, never an edit — and the card is about the site's content, so it goes
+  await page.locator('#editor-source').focus()
+  await page.keyboard.press('Enter')
+  await page.locator('#editor-source-menu:popover-open').waitFor()
+  for (let n = 0; n < 8 && (await page.evaluate(() => document.activeElement?.getAttribute('data-source-row'))) !== 'sample'; n++) await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-paywall-off]')).toHaveCount(0)
+  await expect(surfaceBox(page).locator('aside.gh-post-upgrade-cta')).toHaveCount(1)
+  await expect(page.locator('[data-tier-line]')).toHaveText(PAYWALL.tierLine(LIB.orbitWeekly.tiers()))
+  // Home: the Newsletter band asks a visitor to join, so its panel carries the line — in 5.18's note shape
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'home')
+  const band = await page.locator('[data-layer-row]', { hasText: 'Inline Row' }).first().getAttribute('data-layer-row')
+  await select(page, band)
+  await expect(page.locator('[data-member-ask]')).toHaveText(P.ask('Harness site'))
+  // a section that asks nothing carries no line
+  const quiet = await page.locator('[data-layer-row]', { hasText: 'Three Up' }).first().getAttribute('data-layer-row')
+  await select(page, quiet)
+  await expect(page.locator('[data-member-ask]')).toHaveCount(0)
+})
+
+test('5.20 · reading along (R-192): the design choice is greyed and unclickable, while View as, Re-check and Back to post still work', async ({ page }) => {
+  // another tab holds the lock (the harness's reader header), and the site's record says members are off
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  await page.goto(`${HARNESS}/paywall`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  const tile = page.locator('[data-design-tile]').first()
+  await expect(tile).toBeDisabled()
+  await expect(page.locator('[data-design-step="1"]')).toBeDisabled()
+  // a look is not an edit: View as still previews the paid member's whole post
+  await viewAs(page, 'paid')
+  await expect(canvasFrame(page).locator('[data-inflozo-gated]')).toHaveText(P.gated)
+  // and the way back is a navigation
+  await page.locator('#paywall-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  // Re-check is a look too: pressable reading along, and refused here with its sentence (no database)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader', 'x-inflozo-harness-site': 'members-off' })
+  await page.goto(`${HARNESS}/paywall`)
+  const recheck = page.locator('#paywall-recheck')
+  await expect(recheck).toHaveText(P.recheck)
+  await expect(recheck).toBeEnabled()
+  await recheck.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-paywall-off] [role="status"]')).toHaveText(P.refused('Harness site'))
+})

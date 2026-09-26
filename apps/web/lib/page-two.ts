@@ -20,7 +20,7 @@
 
 import { orbitWeekly } from '@inflozo/library'
 import { isDesigned, mainFeedOf, pageTwoStack, type DocInstance, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasStack, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './editor.ts'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasStack, isSurface, PAGE_TWO, SITE, templateKeyOf, type CanvasKey } from './editor.ts'
 import { EMPTY_DOC } from './round-trip.ts'
 
 /** The page a canvas shows: its first, or its second — which stands for every later page (R-177). */
@@ -136,7 +136,8 @@ export function stackOf(docs: Docs, canvas: CanvasKey, page: Page, library: Synt
   const target = pageFileOf(canvas, page)
   const own = key === templateKeyOf(canvas) ? docs[key] : pageTwoOf(docs, canvas, library)
   return canvasStack(
-    (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string })),
+    // STORY 5.20 — a template SURFACE draws no site doc: the paywall is a partial inside a post, not a page
+    isSurface(canvas) ? [] : (docs[SITE.key]?.instances ?? []).map((i) => ({ ...i, target: SITE.file as string, doc: SITE.key as string })),
     (own?.instances ?? []).map((i) => ({ ...i, target, doc: key })),
   )
 }

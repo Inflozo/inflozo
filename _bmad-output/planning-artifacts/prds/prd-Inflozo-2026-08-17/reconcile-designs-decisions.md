@@ -4307,8 +4307,8 @@ The library holds no A32 design until Story 10.107, so there was nothing to choo
   - ✅ Story 5.20's spec: Question 1, Intent, Always, Design Notes, owner test.
   - ✅ `epics.md` Story 5.20's card.
   - ✅ `epic-5-context.md`.
-  - ⬜ `epics.md` Stories 10.107 and 10.109 (DW-262, DW-263) — Story 5.20's docs task.
-  - ⬜ built — Story 5.20's Dev.
+  - ✅ `epics.md` Stories 10.107 and 10.109 (DW-262, DW-263) — Story 5.20's docs task.
+  - ✅ built — Story 5.20's Dev (2026-09-26).
 
 **R-198 — with members switched off, the Paywall screen keeps C3b's shape and says what Ghost does: posts for members
 still stop at the cut, and nobody can sign up there.** Story 5.20's Create, Question 2, ruled **option 1** (owner,
@@ -4333,6 +4333,14 @@ still stop at the cut, and nobody can sign up there.** Story 5.20's Create, Ques
   drawn and this ruling falls away.
 - **Declined.** Option 2 kept the paywall on screen with the card above it as a warning; option 3 used no card and one
   panel line.
+- **The recording held the premise and moved one clause** (Story 5.20's Dev, 2026-09-26, MEASUREMENTS §54). On T3 with
+  Subscription access set to Nobody the members post was still withheld and Ghost's box still drawn — so this ruling
+  stands. But the page still loaded Portal: `{{ghost_head}}` drops it only where members, donations AND
+  recommendations are all off, and a Stripe-connected site keeps donations on by default; Portal's sign-up then answers
+  "Memberships unavailable, contact the owner for access.". Nobody can sign up either way, which is the ruling's
+  substance, so under its own words — *"correct its words to what Ghost does"* — the built sentence ends *"…but nobody
+  can sign up there."* and makes no claim about Portal. The second bullet of *Why it was a question* above holds only
+  for a site with donations and recommendations off.
 - Targets:
   - ✅ this entry.
   - ✅ Story 5.20's spec.
@@ -4340,8 +4348,8 @@ still stop at the cut, and nobody can sign up there.** Story 5.20's Create, Ques
   - ✅ `EXPERIENCE.md` § State Patterns, the Paywall Editor row: C3b, and the premise.
   - ✅ `prd.md` FR-H6.
   - ✅ `epic-5-context.md`.
-  - ⬜ MEASUREMENTS §54 — Story 5.20's first task.
-  - ⬜ built — Story 5.20's Dev.
+  - ✅ MEASUREMENTS §54 — Story 5.20's first task.
+  - ✅ built — Story 5.20's Dev (2026-09-26), with the sentence as the recording corrected it.
 
 **R-199 — "Gated content — shown with sample text" marks where the locked part begins, for a visitor who may read it.**
 Story 5.20's Create, Question 3, ruled **option 1** (owner, 2026-09-26): *"The label marks where the locked part starts,
@@ -4366,7 +4374,7 @@ for a visitor who can read it — as S4d draws it."*
   - ✅ `prd.md` FR-D16's indicator sentence.
   - ✅ `EXPERIENCE.md`'s voice row for the indicator.
   - ✅ `epic-5-context.md`.
-  - ⬜ built — Story 5.20's Dev.
+  - ✅ built — Story 5.20's Dev (2026-09-26).
 
 ## B · Approved decisions superseded by this session
 

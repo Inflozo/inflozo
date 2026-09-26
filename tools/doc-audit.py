@@ -262,8 +262,12 @@ DOCS = [
   "because NFR-6(c2) says Ghost's resize behaviour follows the theme's own map — renders every "
   'FR-H5 helper into a parseable block on both majors, and writes '
   'packages/ghost-shim/fixtures/ghost{5,6}/ with the capture date and the command. It restores the '
-  'previous theme, creates no content, touches no setting, and REDACTS the Content API key to its '
-  'shape. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a '
+  'previous theme and REDACTS the Content API key to its shape. SINCE STORY 5.20 IT WRITES TWO THINGS '
+  'AND PUTS BOTH BACK: its MEMBERS group creates two Paid-members-only probe posts per server with the '
+  'staff token (a long one with a Public preview marker, a short one without) and deletes both in a '
+  'finally, each read back gone; and on T3 alone it sets Subscription access to Nobody, re-renders the '
+  'members post, and restores the setting in a finally and reads it back (MEASUREMENTS §54). Its Admin '
+  'settings read keeps five member keys and no Stripe value. It is what makes `packages/ghost-shim/src/contract.test.ts` a recording rather than a '
   'paraphrase; the recorded facts that mattered are that a Ghost-hosted absolute URL comes back '
   'RELATIVE, and that `size="800"` silently returns the ORIGINAL image.'),
  ('tools/probe/record-cards.py', 'tool', 'Style-guide fixture recorder',
@@ -552,7 +556,11 @@ DOCS = [
   "Mobile — and step 5's second control, eval called from the editor on the canvas window throwing EvalError. Story "
   "5.18 (DW-230) amends step 4: on the Post canvas the header is told the post's own address, so its root equals "
   "/pilots' with the nav-current class aside, and that class is asserted on its own — none in the editor, Home in "
-  "/pilots, which draws a site-wide design at `/`."),
+  "/pilots, which draws a site-wide design at `/`. Story 5.20 adds step 95: the Paywall canvas on the sample — the ink "
+  "bar with NOT A PAGE SECTION and Back to post and no Remix or Preview, Layers holding C3a's card alone, the cut and "
+  "Ghost's own box for a logged out user and a free member, S4d's gated label for a paid member, the Design block absent "
+  "while the library holds no paywall design, the switcher's Template surfaces group — and takes `paywall` off step 6's "
+  "404 list, since it is a canvas now."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
@@ -599,7 +607,11 @@ DOCS = [
   'no key Ghost answered is asked for again inside 60 s, no answer carries html or plaintext, neither the Content API '
   'key nor codeinjection is in the canvas markup, the page\'s policy refuses nothing, and the full walk\'s request '
   "count is recorded. Every expectation is read from apps/web/lib/live-content.ts and lib/preview-subject.ts or from "
-  'the site itself (standing rule 4). Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/'
+  'the site itself (standing rule 4). Story 5.20 adds, per major, the Paywall canvas on the site\'s own content — '
+  "Ghost's box in the site's accent, the tier line counted from the site's public tiers, Tiers in Ghost admin at its "
+  "anchor — and, on T3's row, the members record SEEDED to Nobody through the service key (never the Ghost): C3b, the "
+  "bar's MEMBERS OFF chip, Re-check refused with its sentence and the record unchanged, the Sites notice and a placed "
+  "sign-up section's line, the record put back after. Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/"
   'APP_PREFIX for a local build, MAJORS=5|6 for one major and NO_429=1 to leave out the step that costs T1 an hour.'),
  ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
   'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '
@@ -997,7 +1009,12 @@ DOCS = [
   "stated exception since Story 5.15: R-175's PAUSED chip is drawn on a pointed section, so those stops synthesize the "
   "canvas's own pointerover in the page (never the pointer device, and reaching no task a keyboard could not); Story "
   "5.15 also walks Preview (P in, Back to editing, Esc and P out, the chrome hidden, core's js-enabled flipping, only "
-  "P, Esc, 1 2 3 and ⌘S acting there) and the chip on controls fixture 1's marquee list. Stores no "
+  "P, Esc, 1 2 3 and ⌘S acting there) and the chip on controls fixture 1's marquee list. Story 5.20 walks the "
+  "Paywall canvas: Template ▾ → Paywall, the ink bar and C3a's card, View as's three visitors, a stand-in chosen from "
+  "untouched, stepped and set, and three ⌘Z back to Ghost's own box, C3b's Re-check on the members-off harness site "
+  "(asked for by a request header, and refused — no database), the sample paywall once the pill is on Sample content "
+  "and a placed sign-up section's line, R-192 reading along (a second header: the design choice greyed while View as, "
+  "Re-check and Back to post still work), and Back to post with Home at rest. Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
   'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '

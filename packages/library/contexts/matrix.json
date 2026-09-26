@@ -257,6 +257,9 @@
     },
     "private.hbs": {
       "top": "private"
+    },
+    "partials/content-cta.hbs": {
+      "top": "post"
     }
   },
   "get": {
@@ -412,7 +415,7 @@
       },
       "reading_time": {
         "kind": "number",
-        "note": "a helper over the field: it prints Ghost's rounded \"1 min read\" (the API's 0 included, hence includeZero=true), and prints NOTHING for a post whose body the visitor may not read, because it counts the body (recorded on both majors)"
+        "note": "a helper over the field: it prints Ghost's rounded \"1 min read\" (the API's 0 included, hence includeZero=true), and the WHOLE post's time on a body the visitor may not read; it prints NOTHING only where the visitor was sent no body at all and the field is 0 (`!post.html && !post.reading_time`, @tryghost/helpers; recorded on both majors, MEASUREMENTS §41d and §54)"
       },
       "post_class": {
         "kind": "helper"

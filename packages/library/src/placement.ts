@@ -16,14 +16,21 @@
 //   - a second Post Content section is a REFUSAL of an action the user really did take, so `placementRefusal` answers
 //     with the sentence to show where the action was pressed.
 
-import { GET_FORBIDDEN_TARGETS } from './vocabulary.ts'
+import { GET_FORBIDDEN_TARGETS, PAYWALL_TARGET } from './vocabulary.ts'
 import type { BindingContext } from './vocabulary.ts'
 import type { Surface } from './registry.ts'
 
+/** STORY 5.20 — THE PAYWALL'S CATEGORIES: A32 Paywall / Content CTA, and R-158's two stand-ins for it
+ *  (`packages/library/fixtures/paywall/`), which prove the choosing half until Story 10.107 brings A32's own designs and
+ *  never ship (AD-35). They are the only categories whose designs compile to Ghost's `content-cta` partial
+ *  (`validate.ts`'s `paywall-target`), and neither is ever placed on a canvas. */
+export const PAYWALL_CATEGORIES = ['a32', 'paywall'] as const
+
 /** The non-placeable treatments (`sections-inventory.md` § Placeable vs non-placeable): A32 Paywall / Content CTA,
- *  chosen in the Paywall Template editor; A33 Koenig Card Treatments, chosen by the card design module; A34 Pagination
- *  Styles, chosen on the designated main feed. One per project, chosen elsewhere, never dragged onto a canvas. */
-export const NON_PLACEABLE = ['a32', 'a33', 'a34'] as const
+ *  chosen in the Paywall Template editor (with its stand-ins, above); A33 Koenig Card Treatments, chosen by the card
+ *  design module; A34 Pagination Styles, chosen on the designated main feed. One per project, chosen elsewhere, never
+ *  dragged onto a canvas. */
+export const NON_PLACEABLE = [...PAYWALL_CATEGORIES, 'a33', 'a34'] as const
 
 /** A25 Post Content Layouts — the section that wraps Ghost's `{{content}}`. At most ONE per layout (R-37, FR-I1): a
  *  template that printed the article twice would print the post's body twice. */
@@ -81,6 +88,9 @@ const NATIVE: Readonly<Record<string, readonly BindingContext[]>> = {
   'author.hbs': ['none', 'author', 'posts'],
   'error.hbs': ['none', 'error'],
   'private.hbs': ['none', 'private'],
+  // Story 5.20: `{{content}}` executes the partial with the POST as `this` (`content.js:28`), so the post is at the ROOT
+  // here, not inside a `{{#post}}` block — and the gettable resources join it below, as on any target a get may run on
+  [PAYWALL_TARGET]: ['none', 'post'],
 }
 
 /** The files `NATIVE` has a row for — so a walk over "every template" reads the table and never a list beside it. */
@@ -188,4 +198,17 @@ export function ringFor<T extends RingEntry>(entries: Iterable<T>, entry: RingEn
   if (!isPlaceable(entry.id)) return []
   const n = (id: string) => Number(id.split('/')[1] ?? 0)
   return [...entries].filter((e) => isPlaceable(e.id) && samePartition(entry, e)).sort((a, b) => n(a.id) - n(b.id))
+}
+
+// ─── Story 5.20 — THE PAYWALL'S RING: chosen on its own canvas, never placed (FR-H6, R-197) ──────────────────────
+
+/** Is this a paywall design? Known by its one target, which `paywall-target` holds to the paywall's own categories. */
+export const isPaywallDesign = (entry: { compileTarget: readonly string[] }): boolean => entry.compileTarget.includes(PAYWALL_TARGET)
+
+/** Every paywall design the library holds, in `{n}` order — the Paywall canvas's ring. `ringFor` answers nothing for a
+ *  treatment (it is never placed), so this is the one door a paywall design is chosen through: A32's designs from Story
+ *  10.107, and today nothing at all, which is why the ring is ABSENT on the canvas (UX-DR3). */
+export function paywallRing<T extends RingEntry>(entries: Iterable<T>): T[] {
+  const n = (id: string) => Number(id.split('/')[1] ?? 0)
+  return [...entries].filter(isPaywallDesign).sort((a, b) => n(a.id) - n(b.id))
 }

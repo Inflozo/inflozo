@@ -338,6 +338,30 @@ test('the code-injection payload is named in exactly one file, and it is the pur
   )
 })
 
+test('Story 5.20: no source file names a Stripe setting — the member record is built from two named keys', () => {
+  // FR-H6's record (`site_settings.members`) is copied from the Admin `settings/` payload, which carries every Stripe
+  // setting, secrets included (MEASUREMENTS §54). `membersOf` names the two keys it copies and nothing else, so a Stripe
+  // key's NAME appearing anywhere in the app is a reader of it on its way somewhere — the codeinjection rule's shape.
+  const named = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => /stripe_/i.test(readFileSync(p, 'utf8')))
+  assert.deepEqual(named, [], `${named.join(', ')} names a Stripe setting. Nothing in the app may; the member record copies two keys (FR-H6).`)
+  // the control: the pattern is live — the probe rule's own test feeds Stripe keys in to prove none comes out
+  assert.match(readFileSync('probe-rule.test.ts', 'utf8'), /stripe_/i)
+})
+
+test('Story 5.20: Re-check reads the site as the caller\'s before it asks Ghost anything', () => {
+  // `call()` decrypts whatever site id it is handed, and Re-check's id is `projects.linked_site_id` — a column the client
+  // may write, whose foreign key checks only that the site exists. So `readMembers` must refuse a site that is not the
+  // caller's BEFORE the chokepoint runs: an owned-row read (`user_id`) ahead of the first `call(`.
+  const source = readFileSync(SITE_PROBE, 'utf8')
+  const body = source.slice(source.indexOf('export async function readMembers'))
+  const owned = body.indexOf(".eq('user_id', args.userId)")
+  const asked = body.indexOf('call({')
+  assert.ok(owned > 0 && asked > 0, 'readMembers reads the owned row and calls the chokepoint')
+  assert.ok(owned < asked, 'readMembers asks Ghost before it has checked the site is the caller\'s')
+})
+
 test('the Admin chokepoint is imported by the routes named here and by nothing else', () => {
   // AD-10 allows no third path: no Admin API call from a browser and no generic proxy endpoint.
   // The module is a library that server actions and routes import, and this is that list.

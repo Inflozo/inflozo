@@ -179,6 +179,12 @@
 // Home; Latest Post's Source alone and its one pick; and a CRAFTED stored value, planted through the service key, that
 // the fold ignores and the canvas never prints. STEP 11 CHANGED WITH IT: the main feed's panel now carries D5c's Data
 // group (its greyed Count), so the groups it is compared with are `sidebar()`'s with the role the editor hands it.
+// Story 5.20 adds step 95, inside step 5's session: THE PAYWALL CANVAS on the sample — `/paywall` answers 200 now (it left
+// step 6's 404 list for OFFERED), the ink bar with NOT A PAGE SECTION and Back to post and neither Remix nor Preview,
+// Layers holding C3a's card alone with the sample's tier line, the cut and Ghost's own box for a logged out user and a
+// free member, S4d's gated label and no box for a paid member, the Design block absent while the library holds no
+// paywall design, the switcher's Template surfaces group, and Back to post. The site's own content, C3b and the Sites
+// notice are `run-verify-live-content.cjs`'s, over T1 and T3.
 const { chromium, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -5633,8 +5639,87 @@ async function main() {
     check('step 94 — restored: the home row is the seed again, and the Tag canvas stores what it stored before this step',
       JSON.stringify(await rowOf92('home')) === JSON.stringify(seedHome94) && JSON.stringify(await rowOf92('tag')) === JSON.stringify(tagBefore94))
 
+    /* ── step 95 — Story 5.20: THE PAYWALL CANVAS, ON THE SAMPLE (FR-H6, FR-D16, C3a as corrected, R-197, R-199) ─────────
+       INSIDE STEP 5's CSP SESSION. The seeded project links no site, so this is the sample in every visitor's state; the
+       site's own content, C3b and the Sites notice are the live walk's (`run-verify-live-content.cjs`, over T1 and T3).
+       The shipped library holds NO paywall design until Story 10.107, so the Design block is ABSENT here (UX-DR3) and the
+       choosing half is `pnpm keyboard`'s, over the harness's two stand-ins. Every word is `lib/paywall.ts`'s; the tier
+       line is the library's own sample tiers through the app's own `tierLine`. */
+    const PW95 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/paywall.ts')).href)
+    const P95 = PW95.PAYWALL_WORDS
+    await freshLoad('paywall')
+    const bar95 = await page.evaluate(() => {
+      const h = document.querySelector('header')
+      return {
+        surface: h?.hasAttribute('data-surface'), ground: h ? getComputedStyle(h).backgroundColor : null,
+        chip: document.querySelector('[data-surface-chip]')?.textContent, back: document.querySelector('#paywall-back')?.textContent,
+        backHref: document.querySelector('#paywall-back')?.getAttribute('href'),
+        remix: !!document.querySelector('#editor-remix'), preview: !!document.querySelector('#editor-preview'),
+      }
+    })
+    check('step 95 — C3a: the bar is ink (`--color-ink-deep`) and carries NOT A PAGE SECTION and Back to post — no Remix, no Preview',
+      bar95.surface === true && bar95.ground === 'rgb(35, 32, 25)' && bar95.chip === P95.chip && bar95.back === P95.back && /\/post$/.test(bar95.backHref ?? '') && !bar95.remix && !bar95.preview, JSON.stringify(bar95))
+    const rail95 = await page.evaluate(() => ({
+      rows: document.querySelectorAll('[data-layer-row]').length, add: !!document.querySelector('#editor-add-section'),
+      how: document.querySelector('[data-paywall-how]')?.textContent ?? null, tiers: document.querySelector('[data-tier-line]')?.textContent ?? null,
+      link: !!document.querySelector('[data-tiers-link]'),
+    }))
+    check('step 95 — Layers keeps its name and holds no rows and no "+ Add section": C3a\'s card, the sample\'s tier line, and no Ghost admin link (no site)',
+      rail95.rows === 0 && !rail95.add && (rail95.how ?? '').includes(P95.howHeading) && (rail95.how ?? '').includes(P95.how) && rail95.tiers === PW95.tierLine(LIB.orbitWeekly.tiers()) && !rail95.link, JSON.stringify(rail95))
+    const surface95 = () => canvasFrame().evaluate(() => ({
+      cut: document.querySelector('[data-inflozo-cut-label]')?.textContent ?? null, note: document.querySelector('[data-inflozo-cut-note]')?.textContent ?? null,
+      box: document.querySelector('[data-inflozo-box] .gh-post-upgrade-cta')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
+      gated: document.querySelector('[data-inflozo-gated]')?.textContent ?? null,
+      sheet: document.querySelector('style[data-order="2b-surface"]')?.media ?? null,
+      dim: getComputedStyle(document.querySelector('[data-inflozo-dim] > p') ?? document.body).opacity,
+    }))
+    const strip95 = () => page.evaluate(() => ({ showing: document.querySelector('[data-paywall-showing]')?.textContent ?? null, note: document.querySelector('[data-paywall-strip]')?.textContent ?? null }))
+    const anon95 = await surface95()
+    const anonStrip95 = await strip95()
+    check('step 95 — a logged out user: the article dimmed to C3a\'s 55%, the cut with its two labels, and Ghost\'s own box in Ghost\'s words — Subscribe now and Sign in (§54)',
+      anon95.sheet === 'all' && anon95.dim === '0.55' && anon95.cut === P95.cut && anon95.note === P95.below && /This post is for paying subscribers only Subscribe now Already have an account\? Sign in/.test(anon95.box ?? '') && anon95.gated === null, JSON.stringify(anon95))
+    check('step 95 — the strip: "Showing: the cut only" — static text, never a menu — and the article above is context',
+      anonStrip95.showing === `${P95.showingLead} ${P95.showing(false)}` && (anonStrip95.note ?? '').includes(P95.context(false)), JSON.stringify(anonStrip95))
+    const panel95 = await page.evaluate(() => ({ name: document.querySelector('#editor-panel-name')?.textContent, line: document.querySelector('#paywall-untouched')?.textContent, tiles: document.querySelectorAll('[data-design-tile]').length }))
+    check('step 95 — the panel: "Paywall" and Ghost\'s own paywall said so; the Design block ABSENT while the library holds no paywall design (UX-DR3)',
+      panel95.name === P95.panel && panel95.line === P95.untouched && panel95.tiles === 0, JSON.stringify(panel95))
+    const pick95 = async (visitor) => {
+      await page.locator('#editor-view-as').click()
+      await page.locator(`#editor-view-as-menu [data-visitor="${visitor}"]`).click()
+      await page.waitForTimeout(700)
+    }
+    await pick95('free')
+    const free95 = await surface95()
+    check('step 95 — a free member meets the Upgrade box', /Upgrade your account/.test(free95.box ?? '') && free95.gated === null, JSON.stringify(free95))
+    await pick95('paid')
+    const paid95 = await surface95()
+    const paidStrip95 = await strip95()
+    check('step 95 — a paid member reads the whole post: no cut and no box, S4d\'s gated label where the locked part begins (R-199), and the strip says so',
+      paid95.cut === null && paid95.box === null && paid95.gated === P95.gated && paidStrip95.showing === `${P95.showingLead} ${P95.showing(true)}`, JSON.stringify({ paid95, paidStrip95 }))
+    await pick95('anonymous')
+    await page.screenshot({ path: path.join(OUT, 'step95-paywall.png') })
+    // the switcher: the Template surfaces group, and R-130's Empty mark while nothing is chosen
+    await page.locator('#editor-template').click()
+    await page.waitForTimeout(300)
+    const menu95 = await page.evaluate(() => ({
+      group: document.querySelector('#editor-template-surfaces')?.textContent, row: document.querySelector('[data-canvas="paywall"] [data-name]')?.textContent,
+      caption: document.querySelector('[data-canvas="paywall"] [data-caption]')?.textContent, mark: document.querySelector('[data-canvas="paywall"] [data-mark]')?.getAttribute('data-mark'),
+      fits: ((c) => (c ? c.scrollWidth <= c.clientWidth : false))(document.querySelector('[data-canvas="paywall"] [data-caption]')),
+    }))
+    check('step 95 — D5b\'s shape: "Template surfaces" holds Paywall, its caption on one line, and R-130\'s Empty mark while untouched',
+      menu95.group === P95.group && menu95.row === CANVASES.paywall.label && menu95.caption === CANVASES.paywall.caption && menu95.fits && menu95.mark === 'empty', JSON.stringify(menu95))
+    await page.keyboard.press('Escape')
+    // Back to post: a soft navigation — the editor stays mounted, and the post canvas paints with the stylesheet off
+    await page.locator('#paywall-back').click()
+    await painted('post')
+    const post95 = await canvasFrame().evaluate(() => ({ sheet: document.querySelector('style[data-order="2b-surface"]')?.media ?? null, cut: !!document.querySelector('[data-inflozo-cut]') }))
+    check('step 95 — Back to post leaves the surface: the bar is paper again, the post canvas paints, and the paywall\'s stylesheet is off',
+      post95.sheet === 'not all' && !post95.cut && !(await page.evaluate(() => document.querySelector('header')?.hasAttribute('data-surface'))), JSON.stringify(post95))
+    await leaveEditor()
+
     // ── step 79 — the harness does NOT exist in production (R-146) ──
-    for (const path of ['/harness/editor', '/harness/canvas']) {
+    // Story 5.20 made the harness a layout with a page per canvas, so a canvas's page is refused too
+    for (const path of ['/harness/editor', '/harness/editor/paywall', '/harness/canvas']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
       check(`step 79 — R-146: ${path} answers 404 on the deployed site — the keyboard harness is the gate's alone`, r.status() === 404, `HTTP ${r.status()}`)
     }
@@ -5747,7 +5832,8 @@ async function main() {
     check('step 6 — /home answers 308 to /projects/<id>', home.status() === 308 && new URL(home.headers().location, APP).pathname.endsWith(`/projects/${P}`), `HTTP ${home.status()} → ${home.headers().location}`)
     // `index` is 404 PERMANENTLY (R-127: page 2 has no canvas), `private` is 404 because this project's site has not
     // asked for one — a canvas the switcher does not offer must not be reachable by typing its address either
-    for (const key of ['index', 'private', 'paywall', 'cards', 'custom-x', 'custom-nonsense', 'nonsense']) {
+    // (Story 5.20 opened `paywall`, the first template surface: it is in OFFERED now, and answers 200 above)
+    for (const key of ['index', 'private', 'cards', 'custom-x', 'custom-nonsense', 'nonsense']) {
       const r = await context.request.get(editorUrl(key), { maxRedirects: 0 })
       check(`step 6 — /${key} answers 404`, r.status() === 404 && /Page not found/.test(await r.text()), `HTTP ${r.status()}`)
     }

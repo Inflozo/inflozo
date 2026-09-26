@@ -20,8 +20,12 @@ import {
   probePatch,
   settingsOf,
   settingsReadable,
+  SIGNUP_ACCESS,
+  storedMembers,
   THEME_PREFIX,
 } from './lib/probe-rule.ts'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 /* Story 3.3 — the connect-time probes' pure half, and the I/O matrix's rows that are a PARSING
    question. The rest of the matrix — the two Admin calls, the merged write, the four blocks on
@@ -519,4 +523,43 @@ test('brandRetry: paint the project the other press made, retry the slug with ro
   assert.equal(brandRetry(true, [other], site), 'refresh')
   // …which is exactly where brandTarget answers differently, and why this is not brandTarget
   assert.equal(brandTarget(true, [other], site), other)
+})
+
+
+// ── Story 5.20 — FR-H6's record of the member switches, from the payload the probe already reads ──
+
+/** The Admin settings T3 answered at the recording (MEASUREMENTS §54), before and during Subscription access "Nobody" —
+ *  the member keys only: the recorder never kept a Stripe value, and the Stripe keys below are this test's own. */
+const recorded = JSON.parse(readFileSync(join(import.meta.dirname, '..', '..', 'packages', 'ghost-shim', 'fixtures', 'ghost5', 'members-long-nobody.json'), 'utf8')) as {
+  input: { admin_settings: Record<string, unknown>; admin_settings_nobody: Record<string, unknown> }
+}
+const STRIPE = { stripe_secret_key: 'sk_test_X', stripe_publishable_key: 'pk_test_X', stripe_connect_secret_key: 'sk_test_Y', stripe_connect_account_id: 'acct_X', stripe_plans: '[]' }
+
+test('Story 5.20: the record copies exactly two keys from the recorded payload, and never a Stripe one', () => {
+  const on = patchOf({ settings: { ...recorded.input.admin_settings, ...STRIPE } }).site_settings
+  assert.deepEqual(on.members, { signup_access: 'all', paid_enabled: true })
+  const off = patchOf({ settings: { ...recorded.input.admin_settings_nobody, ...STRIPE } }).site_settings
+  assert.deepEqual(off.members, { signup_access: 'none', paid_enabled: false })
+  // nothing of Stripe's reaches the row, by name or by value
+  for (const row of [on, off]) assert.doesNotMatch(JSON.stringify(row), /stripe|sk_test|pk_test|acct_/i)
+  assert.deepEqual(Object.keys(off.members as object).sort(), ['paid_enabled', 'signup_access'])
+})
+
+test('Story 5.20: each of Ghost\'s four access values is a reading; anything else leaves the record as it was', () => {
+  for (const access of SIGNUP_ACCESS) {
+    assert.deepEqual(patchOf({ settings: { members_signup_access: access, paid_members_enabled: false } }).site_settings.members, { signup_access: access, paid_enabled: false })
+  }
+  const previous = { members: { signup_access: 'invite', paid_enabled: true } }
+  for (const junk of [{}, { members_signup_access: 'everyone', paid_members_enabled: true }, { members_signup_access: 'all' }, { members_signup_access: 'all', paid_members_enabled: 'yes' }]) {
+    assert.deepEqual(patchOf({ previous, settings: junk }).site_settings.members, previous.members, JSON.stringify(junk))
+  }
+  // a site with no record and no reading gains none
+  assert.equal(patchOf({ settings: {} }).site_settings.members, undefined)
+})
+
+test('Story 5.20: the stored record is re-checked on the way out, and a site with no record reads as none', () => {
+  assert.deepEqual(storedMembers({ public_url: 'x', members: { signup_access: 'none', paid_enabled: false, extra: 1 } }), { signup_access: 'none', paid_enabled: false })
+  for (const junk of [null, undefined, 'x', {}, { members: null }, { members: [] }, { members: { signup_access: 'nobody', paid_enabled: false } }, { members: { signup_access: 'all' } }]) {
+    assert.equal(storedMembers(junk), null, JSON.stringify(junk))
+  }
 })

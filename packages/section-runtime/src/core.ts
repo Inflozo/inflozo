@@ -75,7 +75,7 @@ import {
   srcset,
   t,
 } from '@inflozo/ghost-shim'
-import { escapeUserText, isRich, linkAttributes, serializeMarks } from './marks.ts'
+import { escapeUserText, flagOn, isRich, linkAttributes, linkGate, serializeMarks } from './marks.ts'
 import type { PropValue, ThemeSink } from './marks.ts'
 import { resolveControls, withData } from './controls.ts'
 
@@ -515,6 +515,21 @@ const guarded = new WeakMap<RuntimeElement, Set<string>>()
 /** an OWN property or nothing — `dataBindings['constructor']` must not be Object's function */
 function own<T>(o: Readonly<Record<string, T>> | undefined, k: string): T | undefined {
   return o !== undefined && Object.prototype.hasOwnProperty.call(o, k) ? o[k] : undefined
+}
+
+/** Story 5.20 — the `@site` the CANVAS renders with, or undefined where the render was handed none (the theme never
+ *  reads it: Ghost decides per request). */
+const siteOf = (input: RenderInput): Readonly<Record<string, unknown>> | undefined => {
+  const site = input.ghost?.['@site']
+  return site !== null && typeof site === 'object' && !Array.isArray(site) ? (site as Record<string, unknown>) : undefined
+}
+
+/** Story 5.20 — does an element around `el` already stand behind `{{#if field}}` on the theme? `guarded` records the
+ *  field for every `data-if` and every guard as it is emitted, so a link gated by its own design (Header — Rail's
+ *  Subscribe, inside `data-if="@site.allow_self_signup"`) is not wrapped a second time. */
+const guardedAbove = (el: RuntimeElement, field: string): boolean => {
+  for (let p = el.parentElement; p !== null; p = p.parentElement) if (guarded.get(p)?.has(field) === true) return true
+  return false
 }
 
 const oneNumberOnePlace = (source: string): string =>
@@ -1080,8 +1095,15 @@ export function bindValue(spec: string, ctx: unknown, site?: RenderInput['site']
   // majors over an API value of 0 — which the number guard lets through (Story 4.6).
   if (parsed.helper === undefined && parsed.path === 'reading_time') {
     const raw = get(ctx, 'reading_time')
-    // a number is the post's API value; anything else is some other scope's field of that name
-    if (typeof raw === 'number') return isEmpty(raw, includeZero) ? null : readingTime(raw)
+    // a number is the post's API value; anything else is some other scope's field of that name.
+    // Story 5.20 — DW-128 as Ghost does it: the helper prints nothing only where the visitor was sent NO body and the
+    // field is 0 (MEASUREMENTS §54). "Sent a body" is the row's own answer: a post the visitor may read, or a withheld
+    // one that kept a preview — which is exactly when Ghost's serializer leaves its `excerpt` (`post-gating.js` empties
+    // `html`, `plaintext` and `excerpt` together when there is no marker to cut at).
+    if (typeof raw === 'number') {
+      const served = get(ctx, 'access') !== false || !isEmpty(get(ctx, 'excerpt'))
+      return isEmpty(raw, includeZero) ? null : readingTime(raw, {}, served)
+    }
   }
   // A BARE `excerpt` on the theme is Ghost's HELPER, not the field: it prefers `custom_excerpt`,
   // escapes, and truncates a computed excerpt to 50 words (read in source — see the shim). The
@@ -1117,6 +1139,7 @@ function catalogProp(path: string, def: PropDef | undefined): string | null {
 }
 
 function applyProps(
+  doc: RuntimeDocument,
   scope: RuntimeElement,
   input: RenderInput,
   users: UserText | null,
@@ -1172,8 +1195,8 @@ function applyProps(
       el.textContent = users.put(path, v)
     } else {
       // AD-4: on the canvas the serializer's output goes INTO a DOM, because the user must see
-      // their own literal text and their own marks.
-      el.innerHTML = serializeMarks(v, def, tokenValues)
+      // their own literal text and their own marks. Story 5.20: with the source's `@site`, for R-4's link gate
+      el.innerHTML = serializeMarks(v, def, tokenValues, undefined, siteOf(input))
     }
   }
 
@@ -1199,6 +1222,8 @@ function applyProps(
     const entries = (consume(el, 'data-prop-attr') ?? '').split(';').filter((e) => e.trim() !== '')
     const mode = guardMode(el, false)
     let firstMissing = false
+    // Story 5.20 — the canvas took the element out for R-4's gate: nothing more is written to it
+    let gone = false
     for (const [i, entry] of entries.entries()) {
       const [rawAttr, rawPath] = splitFirst(entry.trim(), ':')
       const attr = assertBindableAttr(rawAttr) // AD-36 (3)
@@ -1219,6 +1244,18 @@ function applyProps(
         if (attrs['href'] === undefined) {
           if (i === 0) firstMissing = true
           continue
+        }
+        // Story 5.20 — R-4, DW-154's half: a link the USER pointed at a Portal ask ships behind the site's own flag for
+        // it (`linkGate`). The theme wraps the element in `{{#if flag}}` — unless an element around it already stands
+        // behind that very flag, which `guarded` records for a `data-if` (Header — Rail's Subscribe) — and the canvas
+        // leaves it out where the source in force's flag is false. A render handed no `@site` decides nothing.
+        const gate = linkGate(attrs)
+        if (gate !== null && users !== null && !guardedAbove(el, gate)) wrapGuard(doc, el, gate, tokens)
+        const site = siteOf(input)
+        if (gate !== null && users === null && site !== undefined && !flagOn(site, gate)) {
+          el.remove()
+          gone = true
+          break
         }
         for (const [k, val] of Object.entries(attrs)) {
           // the href is user text and is parked on the theme like any other; the rest are closed values
@@ -1246,7 +1283,7 @@ function applyProps(
     }
     // DW-93: the harness removed only its own attribute here and implemented no `hide`, so an
     // element whose only content is a user-picked image kept a dead `data-empty` and never hid.
-    if (firstMissing && mode === 'hide') el.remove()
+    if (firstMissing && mode === 'hide' && !gone) el.remove()
   }
 
   // `data-empty` is read, never consumed, by the loops above — it is shared by every directive on
@@ -1338,7 +1375,7 @@ function expandItems(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
       el.before(clone)
       // bindings first, as every other walk does: `data-empty` is shared and applyProps sweeps it
       emitBindings(doc, clone, input, tokens, users, input.ghost ?? {}, [])
-      applyProps(clone, input, users, tokens, { [path]: item }, index)
+      applyProps(doc, clone, input, users, tokens, { [path]: item }, index)
     }
     el.remove()
   }
@@ -1679,7 +1716,7 @@ function renderTree(
       el.replaceWith(holder)
       holder.append(el)
       emitBindings(doc, holder, input, tokens, users, ghost, where)
-      applyProps(holder, input, users, tokens)
+      applyProps(doc, holder, input, users, tokens)
       const body = holder.innerHTML
       // §7.3 gap row 2 / exit construct 1, and the half that was missing until Story 4.3: a
       // `data-repeat` naming a `dataBindings` KEY is a `{{#get}}`, not a `{{#foreach}}`. It used to
@@ -1724,7 +1761,7 @@ function renderTree(
   }
 
   emitBindings(doc, root, input, tokens, users, ghost, [])
-  applyProps(root, input, users, tokens)
+  applyProps(doc, root, input, users, tokens)
   return { root, partials, feed }
 }
 
@@ -1778,7 +1815,7 @@ function expandRepeats(
       el.before(clone)
       expandRepeats(doc, clone, input, tokens, row, inner)
       emitBindings(doc, clone, input, tokens, null, row, inner)
-      applyProps(clone, input, null, tokens)
+      applyProps(doc, clone, input, null, tokens)
     }
     el.remove()
   }

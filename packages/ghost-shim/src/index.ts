@@ -195,16 +195,123 @@ export function formatDate(raw: unknown, fmt?: string): string {
 // ─── {{reading_time}} ─────────────────────────────────────────────────────────
 // Recorded: the post's API `reading_time` was **0** and the helper printed **"1 min read"** — Ghost
 // floors at one minute. A shim that trusted the field would print "0 min read" on every short post.
+//
+// STORY 5.20 — DW-128 AS GHOST DOES IT (recorded on both majors, MEASUREMENTS §54): the helper is
+// `if (!post.html && !post.reading_time) return ''` and then the field, or the body counted (`@tryghost/helpers`
+// 1.1.97 and 1.1.106, `readingTime`). So it prints NOTHING only where the visitor was sent no body at all AND the
+// field is 0 — a withheld post with no preview, recorded as `members-short`. A withheld post whose field is above 0
+// prints the WHOLE post's time (`members-long`: a 6-minute paid post, a logged-out visitor, "6 min read"), because the
+// field was computed from the whole body before Ghost withheld it. `served` is whether the visitor was sent any body.
 
 export function readingTime(
   minutes: unknown,
   opts: { minute?: string; minutes?: string } = {},
+  served = true,
 ): string {
+  if (!served && !(Number(minutes) || 0)) return ''
   const n = Math.max(1, Math.round(Number(minutes) || 0))
   const one = opts.minute ?? '1 min read'
   const many = opts.minutes ?? '% min read'
   return n === 1 ? one : many.split('%').join(String(n))
 }
+
+// ─── Story 5.20 — Ghost's own paywall box, `{{content}}` on a post the visitor may not read ──────────────────────
+//
+// RECORDED ON BOTH MAJORS (MEASUREMENTS §54, `members-long` and `members-short`): `{{content}}` executes Ghost's
+// `content-cta` template with the POST as `this` (`core/frontend/helpers/content.js:18-29, 50-52`) — the preview Ghost
+// kept, then this box. The markup is the same on both majors (`helpers/tpl/content-cta.hbs`, 5 :1-20 and 6 :1-32);
+// Ghost 6 writes its words through `{{t}}`, which a theme with no entry for them prints as written, and nests the h2
+// one block deeper, so its line carries four more spaces. What follows `{{{html}}}` is returned here, byte for byte.
+// The signed-in arm ("Upgrade your account") is the same template's other `{{#if @member}}` branch, read in source:
+// the recorder signs nobody in.
+
+/** A paywall box's visitor, as Ghost's template sees it: signed in or not — `{{#if @member}}` is the only test. */
+export type CtaInput = { visibility: 'paid' | 'members'; member: boolean; accent: unknown; major: '5' | '6' }
+
+const HBS_ESCAPE: Readonly<Record<string, string>> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '`': '&#x60;', '=': '&#x3D;' }
+
+/** Ghost's own box, as it follows the preview: the site's accent through the library's colour parser (NFR-3 — a
+ *  stored accent is not necessarily a colour, MEASUREMENTS §21e), then escaped as Handlebars escapes `{{…}}`. Trusted
+ *  markup by construction — constants and a parsed colour — which is why the canvas may write it whole. */
+export function contentCta({ visibility, member, accent, major }: CtaInput): string {
+  const colour = ghostColor(accent).replace(/[&<>"'`=]/g, (c) => HBS_ESCAPE[c] as string)
+  const title = visibility === 'paid' ? 'This post is for paying subscribers only' : 'This post is for subscribers only'
+  const ask = member
+    ? `            <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="color:${colour}">Upgrade your account</a>\n`
+    : `            <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="color:${colour}">Subscribe now</a>\n` +
+      `            <p><small>Already have an account? <a data-portal="signin" href="#/portal/signin">Sign in</a></small></p>\n`
+  return `\n<aside class="gh-post-upgrade-cta">\n    <div class="gh-post-upgrade-cta-content" style="background-color: ${colour}">\n` +
+    `${major === '6' ? '                ' : '            '}<h2>${title}</h2>\n${ask}    </div>\n</aside>\n`
+}
+
+/** The stylesheet `{{ghost_head}}` injects for that box as `<style id="gh-members-styles">` — `helpers/tpl/styles.js`,
+ *  identical on both majors, and recorded byte for byte on both (MEASUREMENTS §54). Ghost drops it only where members,
+ *  donations and recommendations are ALL off (`ghost_head.js`); a site with Stripe connected keeps donations on, so it
+ *  kept it with Subscription access set to Nobody (recorded on T3). The Paywall canvas carries it for Ghost's own box. */
+export const CTA_STYLES = `.gh-post-upgrade-cta-content,
+.gh-post-upgrade-cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    text-align: center;
+    width: 100%;
+    color: #ffffff;
+    font-size: 16px;
+}
+
+.gh-post-upgrade-cta-content {
+    border-radius: 8px;
+    padding: 40px 4vw;
+}
+
+.gh-post-upgrade-cta h2 {
+    color: #ffffff;
+    font-size: 28px;
+    letter-spacing: -0.2px;
+    margin: 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta p {
+    margin: 20px 0 0;
+    padding: 0;
+}
+
+.gh-post-upgrade-cta small {
+    font-size: 16px;
+    letter-spacing: -0.2px;
+}
+
+.gh-post-upgrade-cta a {
+    color: #ffffff;
+    cursor: pointer;
+    font-weight: 500;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a:hover {
+    color: #ffffff;
+    opacity: 0.8;
+    box-shadow: none;
+    text-decoration: underline;
+}
+
+.gh-post-upgrade-cta a.gh-btn {
+    display: block;
+    background: #ffffff;
+    text-decoration: none;
+    margin: 28px 0 0;
+    padding: 8px 18px;
+    border-radius: 4px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.gh-post-upgrade-cta a.gh-btn:hover {
+    opacity: 0.92;
+}`
 
 // ─── {{excerpt}} / {{custom_excerpt}} ─────────────────────────────────────────
 // Recorded: `words="10"` takes the first ten whitespace-separated words; `characters="40"` takes the

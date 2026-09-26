@@ -99,3 +99,80 @@
     animation: none;
   }
 }
+
+/* STORY 5.20 — THE PAYWALL CANVAS'S PAINTED CHROME (C3a, `C Post Body.dc.html:1423-1436`; S4d, `S4 Editor.dc.html:408-411`).
+   A template surface is not a page, and it says so INSIDE the canvas too: the article is context, so it sits at C3a's 55%
+   (in both states — the owner's call, stated in the spec); Ghost's cut is C3a's dashed coral rule with its two labels;
+   and for a visitor who may read the whole post, S4d's gated rule marks where the locked part begins (R-199). None of it
+   is on any other canvas — the paywall's paint is the only thing that writes these attributes — so every other canvas
+   at rest is still the site with zero chrome. The hexes are C3a's and S4d's own, written out for the reason the
+   hairline above gives: this document carries the design's reference tokens and none of the app's.
+
+   THE DIM IS PER CHILD, NOT ON THE ARTICLE: the box and the marker are the article's children too (Ghost renders the
+   paywall inside `{{content}}`, in the content column), and an opacity on the article would dim them with it. */
+[data-inflozo-dim] > :not([data-inflozo-box]):not([data-inflozo-cut]):not([data-inflozo-gated]) {
+  opacity: 0.55;
+}
+[data-inflozo-cut] {
+  grid-column: full-start / full-end;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 26px;
+  padding: 0 max(16px, calc((100% - 720px) / 2));
+  font-family: Inter, system-ui, sans-serif;
+}
+[data-inflozo-cut]::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, #C2381F 0 7px, transparent 7px 14px);
+}
+[data-inflozo-cut] > [data-inflozo-cut-label] {
+  position: relative;
+  border-radius: 4px;
+  padding: 2px 8px;
+  background: #C2381F;
+  color: #FFFFFF;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+[data-inflozo-cut] > [data-inflozo-cut-note] {
+  position: relative;
+  border-radius: 4px;
+  padding: 2px 7px;
+  background: #FFF4D6;
+  color: #8A6100;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+[data-inflozo-gated] {
+  position: relative;
+  border-top: 1px dashed #C9C2B8;
+  padding-top: 6px;
+}
+[data-inflozo-gated] > span {
+  position: absolute;
+  top: -8px;
+  left: 0;
+  border-radius: 4px;
+  padding: 2px 7px;
+  background: #FFF4D6;
+  color: #8A6100;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+}

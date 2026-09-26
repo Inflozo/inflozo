@@ -3344,7 +3344,16 @@ reason: `private.hbs` needs private mode and `errorDetails` a theme validation e
 
 plain: For a paid post in a feed, the editor would show a reading time that a signed-out visitor never sees
   on the real site.
-status: open
+status: done 2026-09-26 (Story 5.20)
+resolution: RECORDED FIRST, then built as Ghost has it (MEASUREMENTS §54, both majors, signed out): a Paid-members-only
+  post with a Public preview marker and a stored `reading_time` of 6 prints "6 min read" through the bare helper AND the
+  field — the WHOLE post's time, with only the preview sent — while one with no marker and a `reading_time` of 0 is sent
+  no body and prints nothing bare and "0 min read" through the field. So the note below was right and the title's premise
+  holds at 0 only. `readingTime(minutes, opts, served)` in `packages/ghost-shim/src/index.ts` prints nothing exactly
+  there, the bare `reading_time` path in `core.ts` hands it whether a body or a preview reached the visitor (`access`, or
+  a non-empty `excerpt`), and `access` is Ghost's own rule per visitor (`packages/library/src/access.ts`, one port of
+  `checkPostAccess`) wherever the editor hands a visitor (`templateContext`, `sitePage`). `contract.test.ts` asserts the
+  four cases against the recording; the pilots print the FIELD, so no pilot moved.
 severity: low
 origin: Story 4.6 (2026-09-14) — recorded on both majors (MEASUREMENTS §41d)
 owner: **Story 5.20** (the Paywall editor), the first canvas that draws a gated body — moved there from Story 5.14 by that
@@ -3853,6 +3862,12 @@ reason: Card style's Title and date and its "Latest" label (no key); the members
   which no directive expresses); the fall-back picture when nothing is published; the short date on phones; which
   marks rule holds (`A4 Heroes - Spec.md:61` against `A4-0:327`); the phone's picture-less panel (undrawn); the tablet
   headline follows the spec's ladder (Large 44) where the artboard draws 40.
+note (Story 5.20's Dev, 2026-09-26): "gating an action by its Portal destination" is done — a link record the customer
+  points at a Portal ask (`signup`, `signup/…`, `offers/…`, `account/plans`) is gated by its destination in the one link
+  sink (`linkGate` in `packages/section-runtime/src/marks.ts`, R-4): the theme wraps a button in `{{#if <flag>}}` and keeps
+  an inline mark's words in `{{else}}`, and the canvas leaves the ask out where the site's flag is off; sign in and account
+  stay ungated. Latest Post's primary action defaults to `{ portal: 'signup' }`, so its committed snapshot moved by that
+  one line (`packages/library/snapshots/a4/13/template.hbs`). `agreement.test.ts` and `ad36.test.ts` hold it.
 note (Story 5.19's Dev, 2026-09-25): "Which post" is done — Latest Post's fixed query offers Source alone (R-108):
   Latest · Featured · By tag · By author · Hand-picked, the last holding one pick. Its `{{#get}}` now carries
   `include="tags,authors"`, without which Ghost gave the card no `primary_tag` (MEASUREMENTS §53, recorded on both
@@ -5992,6 +6007,8 @@ owner: Story 7.18 (the deploy wizard's Pre-flight) — it reads Story 5.20's one
 location: `epics.md` Story 7.18 · `apps/web/lib/paywall.ts` (Story 5.20)
 reason: nothing deploys yet; Story 5.20 builds the record and the connect and editor halves, which is everything that
   can run before Epic 7.
+note (Story 5.20's Dev, 2026-09-26): Story 7.18's Pre-flight criteria now name it (`epics.md`), reading `site_settings.members`
+  through `storedMembers` and printing `membersNotice`'s sentences — the ones the Sites screen already shows.
 
 ### DW-261: `partials/content-cta.hbs` has two compile rules no story names — the explicit reference and its own `{{{html}}}`
 
@@ -6010,6 +6027,7 @@ owner: Story 7.3 (the conditional-template pattern that already names `partials/
   both rules in Story 5.20's docs task.
 location: `epics.md` Stories 7.3 and 7.6 · AD-5 in `ARCHITECTURE-SPINE.md` · the compiler (Epic 7)
 reason: Story 5.20 draws the paywall on the canvas and stores the choice; nothing compiles a theme before Epic 7.
+note (Story 5.20's Dev, 2026-09-26): Stories 7.3 and 7.6 now carry both rules in their criteria (`epics.md`).
 
 ### DW-262: the Paywall editor's A32 half — the gate switcher, the four copy sets, the named-tier preview, and a way back to Ghost's own box
 
@@ -6029,6 +6047,9 @@ owner: Story 10.107 (A32's content model and first designs) — its criteria gai
 location: `epics.md` Story 10.107 · the Paywall canvas (`editor.tsx`, Story 5.20)
 reason: the gate list is the category's declaration (P0·6), and the copy sets are A32's content model; Story 5.20
   previews one Paid-members-only post with View as alone.
+note (Story 5.20's Dev, 2026-09-26): Story 10.107's criteria now carry the four (`epics.md`). Built here: the paywall canvas
+  previews one Paid-members-only post through View as, and ⌘Z is the only way back to Ghost's own box (the pill, Layers and
+  the Delete and ⌘D keys all leave the paywall's one instance alone — `onSurfaceDoc` in `editor.tsx`).
 
 ### DW-263: Stories 10.107–10.109 describe A32 as placeable and ring-cycled, which FR-H6 forbids
 
@@ -6045,6 +6066,8 @@ owner: Stories 10.107 and 10.109 — their criteria are corrected in Story 5.20'
   the owner gate chooses a design and cycles the ring, with ◀ ▶ in its panel.
 location: `epics.md` Stories 10.107–10.109
 reason: a criteria correction in a live document, owed where the finding was made (standing rule 3).
+note (Story 5.20's Dev, 2026-09-26): Stories 10.107 and 10.109 corrected in `epics.md` — the Paywall editor is where A32 is
+  chosen and its ring cycled, with ◀ ▶ in its panel; the two stand-ins prove the machinery (`pnpm keyboard`).
 
 ### DW-264: the shim has no `{{price}}` helper, and a tier's `benefits` cannot be repeated
 
@@ -6060,6 +6083,7 @@ owner: Story 10.14 (A7's content model and first designs, the first category tha
   A32's 10.107 inherits them. Named in their criteria by Story 5.20's docs task.
 location: `packages/ghost-shim/src/index.ts` · `packages/library/contexts/matrix.json` (the tier scope)
 reason: Story 5.20's stand-ins print tier names alone, which proves the live and sample tier reads without either piece.
+note (Story 5.20's Dev, 2026-09-26): Stories 10.14 and 10.107 name them in their criteria (`epics.md`).
 
 ### DW-265: the A32 spec offers "all tiers, including free" and greets a member by name, which FR-H6 and R-28 forbid
 
@@ -6077,6 +6101,8 @@ owner: Story 10.107 — it builds A32 without the two options, and its criteria 
 location: `A32 Paywall - Spec.md` (read-only) · `epics.md` Story 10.107
 reason: the export is the design authority for what a design is built from, and the PRD for what it does; the rules
   already hold, so this records the disagreement rather than leaving A32's author to find it by a failed build.
+note (Story 5.20's Dev, 2026-09-26): Story 10.107's criteria say A32 is built without both options (`epics.md`);
+  `tiers-unfiltered` and the `@member` refusal hold them at assembly meanwhile.
 
 ### DW-266: the Post Content panel's "Open paywall editor →" link belongs to A25 and no story names it
 
@@ -6090,6 +6116,7 @@ origin: Story 5.20's Create (2026-09-26): `C Post Body.dc.html:81` (C1a, "Open p
 owner: Story 10.83 (A25's content model and first designs) — its criteria gain it in Story 5.20's docs task.
 location: `epics.md` Story 10.83 · `C Post Body.dc.html` C1a, C1d
 reason: R-118 — a door arrives with the panel it sits in; no Post Content design exists before 10.83.
+note (Story 5.20's Dev, 2026-09-26): Story 10.83's criteria now name the link (`epics.md`).
 
 ### DW-267: `project_treatments.paywall_design_id` is never written
 
@@ -6105,6 +6132,8 @@ owner: Story 7.13 (the card design module, the first story to write `project_tre
 location: `supabase/migrations/20260904120000_complete_schema.sql:705` · `SCHEMA.sql` · AD-27(a0)
 reason: dropping a column is a Schema phase of its own (R-99), and Story 5.20's migration only widens a constraint;
   an unwritten column harms nothing until then.
+note (Story 5.20's Dev, 2026-09-26): AD-27(a0) now says the paywall is the `paywall` doc and the column is unwritten
+  (`ARCHITECTURE-SPINE.md`); Story 7.13's criteria name the drop (`epics.md`).
 
 ### DW-268: Starter 11.11 names "Hard Stop Card (A32 #2)", a design A32 does not have
 

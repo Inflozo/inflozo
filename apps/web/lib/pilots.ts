@@ -12,6 +12,7 @@ import { assembleEntry, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { sampleRows, type DesignRows } from './canvas.ts'
+import { surfaceCss } from './style-guide.ts'
 
 /** Resolved from this module's own address, not the working directory, so the render matrix (Story 4.11) reads the
  *  same canvas document from the repo root that the app reads from `apps/web`. Never `new URL('…', import.meta.url)`:
@@ -125,6 +126,10 @@ export function pilotsCanvasDocument(only?: string, extra: readonly { id: string
     `<title>${esc('Pilot sections')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
     `<style data-order="2-document">html,body{margin:0;background:var(--bg-page)}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}</style>` +
+    // STORY 5.20 — the Paywall canvas's post body (`style-guide.ts`'s `surfaceCss`), DISABLED: `media="not all"` matches
+    // nothing, so every other canvas renders exactly as before, and the paywall's paint switches it on and off again. A
+    // preview never draws a surface, so a narrowed document leaves it out.
+    (only === undefined ? `<style data-order="2b-surface" media="not all">${surfaceCss()}</style>` : '') +
     `<style data-order="3-pilots">${css}</style>` +
     `<style data-order="4-editor">${readFileSync(CHROME(), 'utf8')}</style></head>` +
     `<body><div id="canvas"></div></body></html>`

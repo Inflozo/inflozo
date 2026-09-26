@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-25",
+  "captured": "2026-09-26",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "5",
   "ghost_version": "5.130",
@@ -12,6 +12,13 @@
     "xs": 150
   },
   "input": {
+    "admin_settings": {
+      "allow_self_signup": true,
+      "members_enabled": true,
+      "members_invite_only": false,
+      "members_signup_access": "all",
+      "paid_members_enabled": true
+    },
     "author": {
       "bio": "Writes about systems and the long tail of maintenance.",
       "cover_image": null,
@@ -96,6 +103,18 @@
         "visibility": "public"
       }
     ],
+    "settings_content": {
+      "allow_self_signup": true,
+      "members_enabled": true,
+      "members_invite_only": false,
+      "members_signup_access": "all",
+      "paid_members_enabled": true,
+      "portal_plans": [
+        "free",
+        "monthly",
+        "yearly"
+      ]
+    },
     "tag": {
       "accent_color": null,
       "description": null,
@@ -104,7 +123,48 @@
       "slug": "archive",
       "url": "https://ghost5.inflozo.com/tag/archive/",
       "visibility": "public"
-    }
+    },
+    "tiers": [
+      {
+        "active": true,
+        "benefits": [],
+        "currency": null,
+        "monthly_price": null,
+        "name": "Free",
+        "slug": "free",
+        "trial_days": 0,
+        "type": "free",
+        "visibility": "public",
+        "yearly_price": null
+      },
+      {
+        "active": true,
+        "benefits": [],
+        "currency": "USD",
+        "monthly_price": 500,
+        "name": "Ghost5",
+        "slug": "default-product",
+        "trial_days": 0,
+        "type": "paid",
+        "visibility": "public",
+        "yearly_price": 5000
+      },
+      {
+        "active": true,
+        "benefits": [],
+        "currency": "USD",
+        "monthly_price": 1500,
+        "name": "Ghost5 Pro",
+        "slug": "ghost5-pro",
+        "trial_days": 7,
+        "type": "paid",
+        "visibility": "none",
+        "yearly_price": 15000
+      }
+    ],
+    "tiers_public": [
+      "Ghost5"
+    ]
   },
   "note": "AD-23: every Ghost fact in this repository enters here. Nothing is written against a paraphrase of this file and no helper is implemented before its recording exists.",
   "path": "/page/2/",
@@ -120,8 +180,8 @@
   "uploaded_image": "https://ghost5.inflozo.com/content/images/2026/09/inflozo-shim-probe-5.png",
   "values": {
     "ASSET": {
-      "no_such": "/assets/css/nope.css?v=8e31f8c5fc",
-      "screen_css": "/assets/css/screen.css?v=8e31f8c5fc"
+      "no_such": "/assets/css/nope.css?v=df630ab4c4",
+      "screen_css": "/assets/css/screen.css?v=df630ab4c4"
     },
     "CORE": {
       "content_api_key_shape": {
@@ -194,6 +254,15 @@
       "allow_self_signup": "true",
       "if_member": "ANONYMOUS",
       "paid_enabled": "true"
+    },
+    "MEMBERS": {
+      "invite_only": "false",
+      "members_enabled": "true",
+      "signup_url": "#/portal",
+      "tiers_all": "Free|free|public;Ghost5|paid|public;Ghost5 Pro|paid|none;",
+      "tiers_length": "3",
+      "tiers_plain": "Free|free|public;Ghost5|paid|public;",
+      "tiers_public": "Ghost5|paid|public;"
     },
     "PAGE": {
       "page_url_next": "/page/3/",

@@ -85,6 +85,14 @@
   --color-grey-border: #EAE5DD;    /* P0-0: a greyed control's border */
   --color-grey-track: #E2DCD3;     /* P0-0: a greyed toggle's track */
   --color-canvas-ground: #EDEAE6;  /* the editor's canvas ground, under the page card — S4a :62 (Story 5.1) */
+  /* Story 5.20 — the Paywall canvas's ink surround, strip and mat: C Post Body C3a :1368-1421 and C3b :1649-1678 */
+  --color-ink-deep-text: #F4EFE6;
+  --color-ink-deep-soft: #B8B0A4;
+  --color-ink-mid: #4A453D;
+  --color-paywall-mat: #D8D4CE;
+  --color-paywall-strip: #E3DFD8;
+  --color-paywall-strip-line: #C9C4BC;
+  --color-paywall-pill: #F4F1EC;
 
   /* shape — small things barely rounded, large things soft; 9999px occurs nowhere */
   --radius-sm: 8px;

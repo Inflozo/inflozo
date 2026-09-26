@@ -403,3 +403,16 @@ test('every text, date and number field and every helper in the matrix has a pla
   assert.equal(ghostLabel('navigation', { target: 'default.hbs', scope: [] }, 'helper'), 'Navigation')
   assert.equal(ghostLabel('title', { target: 'home.hbs', scope: [] }), null, 'a path that names no field here has no name')
 })
+
+test('Story 5.20 · the paywall\'s partial carries the POST at its root (`content.js:28`), and AD-38 holds there by construction', () => {
+  // the post's own fields bind at the top of the partial, as they do inside post.hbs's {{#post}} — and the page's list does not
+  assert.equal(bindable('title', at('partials/content-cta.hbs')), null)
+  assert.equal(bindable('visibility', at('partials/content-cta.hbs')), null)
+  assert.notEqual(bindable('posts', { ...at('partials/content-cta.hbs'), use: 'repeat' }), null)
+  // the I/O matrix's row: a member's email on the partial is refused by the existing check (R-28, AD-38)
+  assert.match(bindable('@member.email', at('partials/content-cta.hbs')) ?? '', /R-28/)
+  assert.match(bindable('@member.name', at('partials/content-cta.hbs')) ?? '', /R-28/)
+  // @site still binds there: the flags a paywall's asks sit behind
+  assert.equal(bindable('@site.allow_self_signup', { ...at('partials/content-cta.hbs'), use: 'condition' }), null)
+  assert.equal(bindable('@site.paid_members_enabled', { ...at('partials/content-cta.hbs'), use: 'condition' }), null)
+})

@@ -49,7 +49,9 @@ const SELF_GUARDED = [join('restore', 'page.tsx')]
 // guard is that it DOES NOT EXIST unless the gate turned it on: `notFound()` unless
 // `INFLOZO_HARNESS=1`, which nothing in production sets. The test below is the promise that it
 // does, and the deployed walk asserts the 404 on the real stack (`run-verify-editor.cjs`).
-const HARNESS_ONLY = [join('harness', 'editor', 'page.tsx')]
+// Story 5.20: the harness became a LAYOUT holding the editor with two pages under it, Home and every other canvas —
+// each page and the layout guard themselves, so no one file's guard is what keeps the mount out of production
+const HARNESS_ONLY = [join('harness', 'editor', 'page.tsx'), join('harness', 'editor', '[template]', 'page.tsx')]
 
 test('every page under /app is inside the (authed) group, or named as public here', () => {
   const found = pages()
@@ -105,6 +107,9 @@ test('every harness page does not exist unless the gate switched it on', () => {
       `${page} sits outside (authed) and does not refuse without INFLOZO_HARNESS=1 — it would ship a test mount to production.`,
     )
   }
+  // Story 5.20 — and the LAYOUT the editor now lives in, which no walk of pages meets either
+  const layout = readFileSync(join(APP, 'harness', 'editor', 'layout.tsx'), 'utf8').replace(/\/\/[^\n]*|\/\*[^]*?\*\//g, ' ')
+  assert.match(layout, /if \(!HARNESS\) notFound\(\)/, 'the harness layout does not refuse without INFLOZO_HARNESS=1')
   // the canvas ROUTE beside it is no page, so the walk above never meets it (review, 2026-09-19)
   const route = readFileSync(join(APP, 'harness', 'canvas', 'route.ts'), 'utf8').replace(/\/\/[^\n]*|\/\*[^]*?\*\//g, ' ')
   assert.match(route, /if \(!HARNESS\) return new NextResponse\('not found', \{ status: 404 \}\)/)

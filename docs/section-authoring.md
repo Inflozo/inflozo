@@ -581,7 +581,8 @@ from `nofollow · noreferrer · sponsored` (`LINK_RELS`), and both act only on a
 never act on a Portal modal or the search popup (R-68).
 
 **A link becomes attributes in exactly one place** — `linkAttributes` in
-`packages/section-runtime/src/marks.ts`, which the `a` mark and `data-prop-attr="href:…"` both call:
+`packages/section-runtime/src/marks.ts`, which the `a` mark and `data-prop-attr="href:…"` both call. *(Story 5.20)* A
+Portal record that asks to join is also gated there, by its destination (`linkGate`, R-4 — see row 4's member asks):
 
 | Record | Emitted |
 |---|---|
@@ -968,7 +969,9 @@ the instance's Data values (`feedQuery`: posts, the page size, newest first, fol
 
 **A declared posts query offers Source too** (P0·5) unless it declares a `filter` or `ids` of its own; a FIXED one
 (R-108) offers Source alone, and its Hand-picked holds at most its own `limit`. Tags, authors and tiers queries offer
-no Source. **Every posts query is emitted with `include="tags,authors"`**: without it Ghost's `{{#get}}` carries no
+no Source. *(Story 5.20)* **A tiers query carries `type:paid+visibility:public` at its top level** (FR-H6,
+`tiers-unfiltered`): Ghost's Content API returns a tier the owner hid and the free tier with the rest (recorded on both
+majors, §54), and a plan card must offer only what Portal would sell. **Every posts query is emitted with `include="tags,authors"`**: without it Ghost's `{{#get}}` carries no
 `primary_tag` or `primary_author` (recorded on both majors, §53).
 
 **`img_url`'s size argument is one of FR-J2's five `image_sizes` keys — `xs` · `s` · `m` · `l` ·
@@ -1087,8 +1090,12 @@ so `data-if`'s condition, `data-text`'s tokens and every later path-carrying dir
 **Two recorded facts the matrix encodes.** Inside a post, tag or author, `{{meta_title}}` and
 `{{meta_description}}` are Ghost's *page* meta helpers — the site title on a feed — whatever the resource
 carries, so neither is a bindable field. And `reading_time` is Ghost's helper over the field: it prints
-the rounded "1 min read" (an API value of 0 included, hence the number guard) and prints **nothing** on a
-post the visitor may not read, because it counts the body.
+the rounded "1 min read" (an API value of 0 included, hence the number guard) and, on a post the visitor
+may not read, the **whole** post's time — the field is computed from the whole body before Ghost withholds
+it. It prints **nothing** only where the visitor was sent no body at all *and* the field is 0
+(`!post.html && !post.reading_time` in `@tryghost/helpers`; recorded on both majors, MEASUREMENTS §54 —
+DW-128 as Ghost does it, Story 5.20). The field inside `{{t … minutes=reading_time}}` is the whole post's for
+everyone.
 
 ### The media rule, and the zero *(Story 4.6)*
 
@@ -1273,8 +1280,16 @@ that value, on both emitters, and on the canvas a visitor outside it gets `""`. 
 itself while `visibility` is not `everyone` is refused: one audience per section — and so is a root `data-if` whose
 `data-else` sits beside it, outside the root the show-to gates; put both arms inside the root. **A member ask the markup itself
 makes** — a subscribe form, a Sign in action — sits inside `data-if="@site.allow_self_signup"` (R-4): self-signup
-implies members, so one condition hides every ask on an invite-only site. A link whose destination the customer
-picks is not gated in markup; gating it by its Portal destination is Story 5.20's.
+implies members, so one condition hides every ask on an invite-only site. *(Story 5.20)* **The flag is the ask's own**:
+a free ask — a subscribe or sign-up form, `data-portal="signup"` or `signup/free` — sits inside
+`@site.allow_self_signup`; a paid ask — `signup/<tier>…`, `offers/…`, `account/plans`, or a bound
+`data-bind-attr="data-portal:signup/{id}…"` — inside `@site.paid_members_enabled`. The gate may be on the element or
+on any element around it, never on an else arm; `members_enabled`, a tier count or the other flag never satisfies it
+(`member-ask-ungated`, `memberAsks` in `validate.ts` is the one reader of which asks a design makes). Sign in and
+Account ask nobody to join and are never gated. **A link whose destination the customer picks is gated by that
+destination, in `linkAttributes`' one place** (`linkGate` in `marks.ts`): a Portal record that asks to join is wrapped
+in `{{#if <flag>}}` in the theme — a link mark keeps its words in `{{else}}` — and on the canvas the ask is absent
+where the connected site's flag is off (UX-DR3). A link already inside a `data-if` on its flag is not wrapped twice.
 
 **Row 5 · position.** `@first` spans, and "featured" reaches a grid through `Source: Featured`
 — cross-iteration state is not expressible and is not attempted (R-1). Numbering **restarts on every
@@ -1323,7 +1338,7 @@ there is English no customer can translate, refused as `chrome-literal` — writ
 catalog key with the value as a param (`data-t="post.reading_time minutes=reading_time"`).
 
 ```html
-<a class="tier__cta" data-bind-attr="data-portal:signup/{id}" data-prop="tierCta">Choose this plan</a>  <!-- inside a tiers repeat: id is the tier's -->
+<a class="tier__cta" data-bind-attr="data-portal:signup/{id}" data-prop="tierCta">Choose this plan</a>  <!-- inside a tiers repeat: id is the tier's; a paid ask, so inside data-if="@site.paid_members_enabled" (R-4) -->
 <p class="pager__of" data-text="{pagination.page} / {pagination.pages}">1 / 3</p>
 ```
 
@@ -1559,6 +1574,9 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a `content.json` from another category | R-102, at assembly. |
 | `fixed` that is not `true`, `fixed` beside `ids`, or `fixed` without both `limit` and `order` (`bad-get-fixed`) | *(Story 4.10)* R-108: the design fixes the number and the order, so it states both; a hand-picked list is already fixed. Also refused at emission by the shim's `getQuery`, which re-runs the declaration's grammar. |
 | a value on `data-members-email` or `data-members-error` | *(Story 4.10)* Portal reads the attribute, not a value; both are valueless, like `data-ghost-search`. |
+| an ask to join outside a `data-if` on its own flag — a free ask outside `@site.allow_self_signup`, a paid one outside `@site.paid_members_enabled` (`member-ask-ungated`) | *(Story 5.20)* R-4. With the flag off Ghost's Portal answers the click with "Memberships unavailable" or signs nobody up, so the ask is absent rather than broken (UX-DR3). A link record the customer sets is gated at emission instead, by `linkGate`. |
+| a `tiers` query without `type:paid` and `visibility:public` at its top level (`tiers-unfiltered`) | *(Story 5.20)* FR-H6. The Content API answers the free tier and a hidden one with the rest (§54). Also refused at emission by the shim's `getQuery`, which re-runs the declaration's grammar. |
+| `partials/content-cta.hbs` beside another target, in a category that is not a paywall, or a paywall without it (`paywall-target`) | *(Story 5.20)* FR-H6. Ghost renders the partial where `{{content}}` stops a post for a visitor who may not read it — a place, not a page — so it is the paywall category's one target and no other category's. |
 | a `data-else` that is not the next element sibling of a `data-if` · either arm of a pair on a `data-repeat` or `data-items` · a `data-members` inside another, or on a `data-repeat`, `data-items`, `data-if` or `data-else` · a root `data-members` beside a show-to · a root `data-if` whose `data-else` sits beside it, under a show-to · a `member` or `visibility` outside the closed states | *(Story 4.10)* **refused by the runtime, by name**, on both emitters: the else arm follows its if arm; an arm beside a repeat would split the `{{#if}}` across the rows; member states do not nest and one element has one audience; one audience per section (the show-to gates the root alone). |
 
 ### What the validator deliberately does **not** check

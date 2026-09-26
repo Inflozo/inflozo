@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-25",
+  "captured": "2026-09-26",
   "command": "python3 tools/probe/record-shim.py",
   "ghost_major": "6",
   "ghost_version": "6.58",
@@ -12,6 +12,13 @@
     "xs": 150
   },
   "input": {
+    "admin_settings": {
+      "allow_self_signup": true,
+      "members_enabled": true,
+      "members_invite_only": false,
+      "members_signup_access": "all",
+      "paid_members_enabled": true
+    },
     "author": {
       "bio": "Writes about systems and the long tail of maintenance.",
       "cover_image": null,
@@ -96,6 +103,18 @@
         "visibility": "public"
       }
     ],
+    "settings_content": {
+      "allow_self_signup": true,
+      "members_enabled": true,
+      "members_invite_only": false,
+      "members_signup_access": "all",
+      "paid_members_enabled": true,
+      "portal_plans": [
+        "free",
+        "monthly",
+        "yearly"
+      ]
+    },
     "tag": {
       "accent_color": null,
       "description": null,
@@ -104,7 +123,48 @@
       "slug": "archive",
       "url": "https://ghost6.inflozo.com/tag/archive/",
       "visibility": "public"
-    }
+    },
+    "tiers": [
+      {
+        "active": true,
+        "benefits": [],
+        "currency": null,
+        "monthly_price": null,
+        "name": "Free",
+        "slug": "free",
+        "trial_days": 0,
+        "type": "free",
+        "visibility": "public",
+        "yearly_price": null
+      },
+      {
+        "active": true,
+        "benefits": [],
+        "currency": "USD",
+        "monthly_price": 500,
+        "name": "Ghost6",
+        "slug": "default-product",
+        "trial_days": 0,
+        "type": "paid",
+        "visibility": "public",
+        "yearly_price": 5000
+      },
+      {
+        "active": true,
+        "benefits": [],
+        "currency": "USD",
+        "monthly_price": 1500,
+        "name": "Ghost6 Pro",
+        "slug": "ghost6-pro",
+        "trial_days": 7,
+        "type": "paid",
+        "visibility": "none",
+        "yearly_price": 15000
+      }
+    ],
+    "tiers_public": [
+      "Ghost6"
+    ]
   },
   "note": "AD-23: every Ghost fact in this repository enters here. Nothing is written against a paraphrase of this file and no helper is implemented before its recording exists.",
   "path": "/author/priya-raman/",

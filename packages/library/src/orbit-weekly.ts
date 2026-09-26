@@ -21,7 +21,8 @@ import corpus from '../orbit-weekly/corpus.json' with { type: 'json' }
 import { CAPTURE_COMMAND, RECORDINGS } from '../orbit-weekly/fixtures/index.ts'
 import type { DataBinding } from './registry.ts'
 import { nativeResourceOf } from './placement.ts'
-import { DEFAULT_LIMIT, GET_SOURCES } from './vocabulary.ts'
+import { DEFAULT_LIMIT, GET_SOURCES, PAYWALL_TARGET } from './vocabulary.ts'
+import { postAccess, type Visitor } from './access.ts'
 
 // Story 5.19 (DW-112): Ghost's default limit is the vocabulary's, beside `GET_SOURCES`; re-exported so the fixture
 // tests that assert it against the recording still read it here.
@@ -172,6 +173,9 @@ export function subject(which: SubjectKind): (PostRow & Json) | TagRow | AuthorR
  *  one distinction §3 draws that a RESOURCE cannot: `page.hbs` carries the same `post` object as `post.hbs` and is a
  *  different PRODUCT (§4.2), and their fixtures are two different rows. */
 export const subjectKindOf = (file: string): SubjectKind | null => {
+  // Story 5.20 — the paywall's partial carries the post at its root and previews ONE post, the style-guide article as a
+  // Paid-members-only post (`paywallPost`), whoever is looking: there is nothing to choose, so it has no subject
+  if (file === PAYWALL_TARGET) return null
   const native = nativeResourceOf(file)
   return native === null ? null : native === 'post' && file === 'page.hbs' ? 'page' : native
 }
@@ -334,20 +338,42 @@ const addressFrom = (url: unknown): string =>
  * ADDRESS — a list page's (`addressOf`, DW-218), a post's or page's own URL, and the 404's missed path (DW-230) —
  * which is what `{{navigation}}` marks the current item against.
  */
-export function assemble(target: string, p: Pieces): {
+export function assemble(target: string, p: Pieces, visitor?: Visitor): {
   ghost: Record<string, unknown>
   site: { url: string; navigation: Json[]; pagination?: Json; paginationBase?: string; currentUrl: string }
 } {
   const ghost: Record<string, unknown> = { '@site': p.site, '@config': { posts_per_page: p.postsPerPage } }
   const address = p.entry !== undefined ? addressFrom(p.entry['url']) : target === 'error.hbs' ? MISSED_ADDRESS : '/'
   const base = { url: p.site['url'] as string, navigation: p.site['navigation'] as Json[], currentUrl: address }
-  if (p.entry !== undefined) return { ghost: { ...ghost, ...p.entry }, site: base }
+  // STORY 5.20 — A VISITOR, WHERE ONE IS HANDED, re-reads each post's `access` through Ghost's own rule (`postAccess`),
+  // so the canvas answers `{{#if access}}`, the cut and the reading time for the visitor View as previews. Handed none,
+  // every row is exactly the row it was — the control `/pilots`, the snapshots and the matrix stand on.
+  const seen = (row: Json): Json => (visitor === undefined ? row : { ...row, access: postAccess(row, visitor) })
+  if (p.entry !== undefined) return { ghost: { ...ghost, ...seen(p.entry) }, site: base }
   if (p.list === undefined) return { ghost, site: base }
   const { rows, pagination, base: at, taxonomy } = p.list
   return {
-    ghost: { ...ghost, ...(taxonomy === undefined ? {} : { [taxonomy.kind]: taxonomy.row }), posts: rows, pagination },
+    ghost: { ...ghost, ...(taxonomy === undefined ? {} : { [taxonomy.kind]: taxonomy.row }), posts: visitor === undefined ? rows : rows.map(seen), pagination },
     site: { ...base, pagination, paginationBase: at, currentUrl: addressOf(pagination.page, at) },
   }
+}
+
+/** STORY 5.20 — WHERE C3a's CUT FALLS in the style-guide article: after the block at this index, the seventh ("I asked
+ *  eleven of them why October…"), which is C3a's last visible paragraph (`C Post Body.dc.html:1423-1436`). The fixture
+ *  carries no `<!--members-only-->` of its own (`orbit-weekly.test.ts`), so the Paywall canvas SIMULATES the author's
+ *  Public preview marker here — the one place its position is named. */
+export const PREVIEW_CUT = 6
+
+/** The paid tiers of the bundled publication: every active one, as a Paid-members-only post is open to them all. */
+const paidTiers = (): Json[] => dataset.tiers.filter((t) => t.type === 'paid' && t.active)
+
+/** STORY 5.20 — THE POST THE PAYWALL PREVIEWS: the style-guide article as a Paid-members-only post (C3a:1548 — on a paid
+ *  post the three visitors meet three different things: the paid gate, the upgrade gate and no cut), open to the source
+ *  in force's paid tiers, with `access` for `visitor` by Ghost's own rule. The body is never this row's: it is the
+ *  style-guide fixture, cut at `PREVIEW_CUT` (FR-D16, FR-H4). */
+export function paywallPost(visitor: Visitor = 'anonymous', tiers: readonly Json[] = paidTiers()): PostRow & Json {
+  const post = { ...subject('post'), visibility: 'paid', tiers: [...tiers] }
+  return { ...post, access: postAccess(post, visitor) }
 }
 
 /** Orbit Weekly as a template hands it to a section on `target`, in `RenderInput`'s shape: `ghost` is the render
@@ -373,29 +399,31 @@ export function assemble(target: string, p: Pieces): {
  *  matches; every other target keeps `/`.
  *
  *  STORY 5.18 — the pieces are assembled by `assemble`, the one function the connected site's rows go through too. */
-export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null, perPage: number = postsPerPage()): ReturnType<typeof assemble> {
+export function templateContext(target: string, feed: FeedState = 'first', of?: Subject | null, perPage: number = postsPerPage(), visitor?: Visitor): ReturnType<typeof assemble> {
   // Story 5.19 — `perPage` is the project's `posts_per_page`; the dataset's by default, so every existing call is unchanged
   const pieces: Pieces = { site: dataset.site, postsPerPage: perPage }
+  // Story 5.20 — the paywall's partial: the POST AT THE ROOT (`content.js:28`), the style-guide article as a paid post
+  if (target === PAYWALL_TARGET) return assemble(target, { ...pieces, entry: paywallPost(visitor) }, visitor)
   if (target === 'post.hbs' || target === 'page.hbs') {
     const kind = target === 'post.hbs' ? 'post' : 'page'
     // THE DEFAULT IS TODAY'S RENDER, BYTE FOR BYTE (the story's control): no subject passed is the hard-coded
     // fixture `/pilots`, `check-snapshots` and the render matrix have always drawn.
     const row = of === undefined || of === null || of.kind !== kind ? subject(kind) : postOf(kind, of.slug)
-    return assemble(target, { ...pieces, entry: row })
+    return assemble(target, { ...pieces, entry: row }, visitor)
   }
   // AN ARCHIVE RENDERS ITS OWN POSTS (§3: the taxonomy object at the root, `posts` and `pagination` flat beside it).
   // Until Story 5.13 `tag.hbs` and `author.hbs` were handed the WHOLE bundled feed — the same rows `home.hbs` gets —
   // so the canvas drew a page Ghost would never serve. FR-D22's subject IS the filter, which is why the fix arrives
   // with it and not as an extra. `listOf` is that filter, and `feedPages` reads the same one.
   const list = listOf(target, of)
-  if (list === null) return assemble(target, pieces)
+  if (list === null) return assemble(target, pieces, visitor)
   const pages = paginationOver(list.rows.length, 1, list.of, perPage).pages
   const n = feed === 'middle' ? Math.ceil(pages / 2) : feed === 'last' ? pages : feed === 'second' ? 2 : 1
   const pagination = feed === 'empty'
     ? { page: 1, pages: 1, limit: perPage, total: 0 }
     : paginationOver(list.rows.length, n, list.of, perPage)
   const rows = feed === 'empty' ? [] : list.rows.slice((n - 1) * pagination.limit, n * pagination.limit)
-  return assemble(target, { ...pieces, list: { rows, pagination, base: list.base, taxonomy: list.taxonomy } })
+  return assemble(target, { ...pieces, list: { rows, pagination, base: list.base, taxonomy: list.taxonomy } }, visitor)
 }
 
 // ─── resolveSource ────────────────────────────────────────────────────────────

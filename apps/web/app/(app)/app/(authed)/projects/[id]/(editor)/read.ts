@@ -1,11 +1,12 @@
 import { cache } from 'react'
-import { compilesTo, isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, compilesTo, isPaywallDesign, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
 import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, type EditorSite } from '@/lib/live-content'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isSurface, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { storedMembers } from '@/lib/probe-rule'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
@@ -178,7 +179,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // Story 5.18 — THE LINKED SITE'S OWN ROW, through the user's session (the owner policy and `grant select` on
     // `sites`, `…complete_schema.sql:814-828, :1041-1042`). Nothing here reads the SITE: the Content API is the
     // browser's path, never the server's (AD-10, `admin-rule.ts:164`).
-    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at').eq('id', linked).maybeSingle(),
+    // Story 5.20 — and its `site_settings`, for FR-H6's record of the member switches (`storedMembers` reads the one key)
+    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings').eq('id', linked).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -188,10 +190,18 @@ export async function editorData(projectId: string): Promise<EditorData> {
     const key = row.template_key as string
     const doc = parseDoc(row.doc, key)
     const file = fileOf(key)
+    // STORY 5.20 — THE PAYWALL IS A TEMPLATE SURFACE: its doc holds AT MOST ONE instance, and that one is a paywall design
+    // — the one place a treatment is stored in a doc (FR-H6's "one design active per project", R-197). Anything else
+    // is a doc nothing in the product could have written, and it throws as the treatment rule below does.
+    const canvas = canvasOfTemplateKey(key)
+    const surface = canvas !== null && isSurface(canvas)
+    if (surface && doc.instances.length > 1) {
+      throw new Error(`${key}: a paywall holds one design, and this doc holds ${doc.instances.length}`)
+    }
     for (const [n, instance] of doc.instances.entries()) {
       const where = `${key} instance ${n} (${instance.instanceId}, ${instance.designId})`
       // Story 5.4, before the library is even asked: a treatment is chosen outside the canvas and never placed on one
-      if (!isPlaceable(instance.designId)) {
+      if (!surface && !isPlaceable(instance.designId)) {
         throw new Error(`${where}: that design is a treatment chosen outside the canvas, never placed on one`)
       }
       let entry = entries[instance.designId]
@@ -199,6 +209,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
         entry ??= pilot(instance.designId)
       } catch (e) {
         throw new Error(`${where}: ${(e as Error).message}`)
+      }
+      if (surface && !isPaywallDesign(entry)) {
+        throw new Error(`${where}: only a paywall design stands where a post stops, and ${instance.designId} is not one`)
       }
       // `compilesTo`, the library's one rule (Story 5.16): a Home design may sit on `index.hbs`, Home's page 2, because
       // Ghost hands the two files the same posts — so R-179's exact copy of a Home never blacks out this editor
@@ -265,6 +278,9 @@ export async function editorData(projectId: string): Promise<EditorData> {
    * (DW-200).
    */
   for (const id of pilotIds()) if (isPlaceable(id)) held(id)
+  // STORY 5.20 — AND EVERY PAYWALL DESIGN, the Paywall canvas's ring (A32 — none until Story 10.107; the keyboard harness
+  // hands the two stand-ins instead, R-158). A treatment is never placed, so the loop above leaves them out.
+  for (const id of pilotIds()) if ((PAYWALL_CATEGORIES as readonly string[]).includes(categoryOf(id))) held(id)
 
   /* STORY 5.19 — EVERY DOC LEAVES THROUGH THE MAIN-FEED RULE (AD-27(d)): on a paginated page exactly one visible feed
    * carries the flag. A doc written before the rule — the owner's "Pilot sections" Home, whose grid was seeded with no
@@ -308,7 +324,10 @@ export async function editorData(projectId: string): Promise<EditorData> {
   /* STORY 5.18 — THE LINKED SITE, and a failed read is SAMPLE CONTENT, not a black editor: the safe side the prefs read
      takes above. `siteFrom` decides readable or unreadable-with-its-reason (`lib/live-content.ts`, unit-tested). */
   if (siteRow?.error) console.error('editorData: the linked site could not be read', { code: siteRow.error.code })
-  const site = siteRow && !siteRow.error && siteRow.data ? siteFrom(siteRow.data, normaliseSiteUrl, hostOf) : null
+  const read = siteRow && !siteRow.error && siteRow.data ? siteFrom(siteRow.data, normaliseSiteUrl, hostOf) : null
+  // STORY 5.20 — FR-H6's record of the member switches, re-checked on the way out; a site with no record carries none
+  const members = siteRow?.data ? storedMembers(siteRow.data.site_settings) : null
+  const site = read !== null && members !== null ? { ...read, members } : read
 
   return {
     docs,

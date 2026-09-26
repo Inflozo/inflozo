@@ -288,6 +288,9 @@ export const CanvasPrivate = (p: IconProps) => (
     <path d="M8 11v-4a4 4 0 1 1 8 0v4" />
   </Icon>
 )
+/** Tabler `lock` — Paywall, the first template surface (Story 5.20: the spec names the glyph Private already carries,
+ *  so it is that drawing, not a second copy of it) */
+export const CanvasPaywall = CanvasPrivate
 /** Tabler `template` — any custom template a user creates (Story 7.16) */
 export const CanvasCustom = (p: IconProps) => (
   <Icon {...p}>

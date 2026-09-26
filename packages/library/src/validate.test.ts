@@ -20,7 +20,7 @@ import {
 import { assembleEntry, categoryControlUnion, parseDesignDir } from './registry.ts'
 import type { CategoryContent, ControlDef, DesignJson } from './registry.ts'
 import {
-  validateCategoryContent, validateDataBinding, validateDesign, validateDesignJson, validateMarkup,
+  memberAsks, validateCategoryContent, validateDataBinding, validateDesign, validateDesignJson, validateMarkup,
 } from './validate.ts'
 import type { Failure } from './validate.ts'
 
@@ -49,13 +49,13 @@ const EVERY_DIRECTIVE = `
     <p data-else data-bind="excerpt">Generated</p>
   </div>
   <div data-members="anonymous">
-    <form data-members-form="subscribe">
+    <form data-members-form="subscribe" data-if="@site.allow_self_signup">
       <input type="email" data-members-email data-t-attr="aria-label:member.email_placeholder;placeholder:member.email_placeholder">
       <p data-members-error></p>
       <button data-t="member.signup_cta" data-t-attr="title:post.by author=primary_author.name">Subscribe</button>
     </form>
   </div>
-  <a data-members="free" data-bind-attr="data-portal:signup/{tier}" href="#">Upgrade</a>
+  <span data-if="@site.paid_members_enabled"><a data-members="free" data-bind-attr="data-portal:signup/{tier}" href="#">Upgrade</a></span>
   <button data-ghost-search>Search</button>
   <p data-text="{total_members}">12,000</p>
   <div data-helper="content"></div>
@@ -254,9 +254,10 @@ test('an inline style beyond AD-3\'s carve-out is refused; one custom property i
 })
 
 test('the token form of data-bind-attr is accepted; a stray brace is refused (R-27, row 11)', () => {
+  // Story 5.20: a Portal ask sits behind its flag (R-4), so both sides are gated and only the brace differs
   refuses('bad-value',
-    '<a data-bind-attr="data-portal:signup/{tier">x</a>',
-    '<a data-bind-attr="data-portal:signup/{tier}">x</a>')
+    '<span data-if="@site.paid_members_enabled"><a data-bind-attr="data-portal:signup/{tier">x</a></span>',
+    '<span data-if="@site.paid_members_enabled"><a data-bind-attr="data-portal:signup/{tier}">x</a></span>')
   assert.equal(typeof parseTokenTemplate('a}b'), 'string')
   assert.equal(typeof parseTokenTemplate('{a b}'), 'string')
   assert.deepEqual(parseTokenTemplate('Read in {reading_time} minutes'), ['reading_time'])
@@ -264,8 +265,8 @@ test('the token form of data-bind-attr is accepted; a stray brace is refused (R-
 
 test('a guard on a token-template binding is refused; on a plain first entry it is not', () => {
   refuses('guard-on-template',
-    '<a data-bind-attr="data-portal:signup/{tier}" data-empty="hide">x</a>',
-    '<a data-bind-attr="href:url;data-portal:signup/{tier}" data-empty="hide">x</a>')
+    '<span data-if="@site.paid_members_enabled"><a data-bind-attr="data-portal:signup/{tier}" data-empty="hide">x</a></span>',
+    '<span data-if="@site.paid_members_enabled"><a data-bind-attr="href:url;data-portal:signup/{tier}" data-empty="hide">x</a></span>')
 })
 
 test('the lexical shape checks: duplicates, orphan modifiers, both arms on one element, empty markup', () => {
@@ -440,7 +441,7 @@ test('data-empty="fallback" on a media binding is refused; hide, and fallback on
 test('a guard sits on the URL entry when there is one, so a template entry before it is not refused', () => {
   refuses('guard-on-template',
     '<a data-bind-attr="title:signup/{tier}" data-empty="hide">x</a>',
-    '<a data-bind-attr="data-portal:signup/{tier};href:url" data-empty="hide">x</a>')
+    '<span data-if="@site.paid_members_enabled"><a data-bind-attr="data-portal:signup/{tier};href:url" data-empty="hide">x</a></span>')
 })
 
 test('data-initials takes a declared TEXT prop — a Ghost field name the category never declared is refused (R-2)', () => {
@@ -994,7 +995,7 @@ test('an authored date is a real calendar day in YYYY-MM-DD, and nothing else', 
 })
 
 test("Portal's form attributes are directives that take no value (Story 4.10)", () => {
-  const form = (attrs: string) => root(`<form data-members-form="subscribe"><input type="email" ${attrs}><p data-members-error></p></form>`)
+  const form = (attrs: string) => root(`<form data-members-form="subscribe" data-if="@site.allow_self_signup"><input type="email" ${attrs}><p data-members-error></p></form>`)
   clean(validateMarkup(form('data-members-email'), { controls: [] }), 'the email input Portal submits')
   for (const bad of ['data-members-email="x"']) {
     assert.deepEqual(codes(validateMarkup(form(bad), { controls: [] })), ['bad-value'], bad)
@@ -1002,4 +1003,77 @@ test("Portal's form attributes are directives that take no value (Story 4.10)", 
   assert.deepEqual(codes(validateMarkup(root('<p data-members-error="oops"></p>'), { controls: [] })), ['bad-value'])
   assert.equal(DIRECTIVES['data-members-email']?.emitted, true)
   assert.equal(DIRECTIVES['data-members-error']?.emitted, true)
+})
+
+
+// ─── Story 5.20 — R-4 and FR-H6, where every design is assembled ─────────────────────────────────────────────────
+
+test('member-ask-ungated (R-4): an ask to join sits inside a data-if on the site\'s OWN flag for it — on itself or around it', () => {
+  // a free ask: a subscribe or sign-up form, a Portal signup, a bound signup to the free tier
+  refuses('member-ask-ungated',
+    '<form data-members-form="subscribe"><input type="email" data-members-email></form>',
+    '<form data-members-form="subscribe" data-if="@site.allow_self_signup"><input type="email" data-members-email></form>')
+  refuses('member-ask-ungated',
+    '<p><a data-portal="signup" href="#">Join</a></p>',
+    '<div data-if="@site.allow_self_signup"><p><a data-portal="signup" href="#">Join</a></p></div>')
+  // a paid ask: a tier's signup, an offer, the upgrade
+  for (const action of ['signup/abc/monthly', 'account/plans', 'offers/xyz']) {
+    refuses('member-ask-ungated',
+      `<a data-portal="${action}" href="#">Go</a>`,
+      `<span data-if="@site.paid_members_enabled"><a data-portal="${action}" href="#">Go</a></span>`)
+  }
+  refuses('member-ask-ungated',
+    '<a data-bind-attr="data-portal:signup/{id}/monthly" href="#">Go</a>',
+    '<span data-if="@site.paid_members_enabled"><a data-bind-attr="data-portal:signup/{id}/monthly" href="#">Go</a></span>')
+})
+
+test('member-ask-ungated: the WRONG flag, members_enabled, a tier count or the else arm never satisfies it; sign-in asks nothing', () => {
+  const fails = (html: string) => codes(validateMarkup(root(html), { controls: [] })).includes('member-ask-ungated')
+  assert.ok(fails('<div data-if="@site.paid_members_enabled"><a data-portal="signup" href="#">x</a></div>'), 'a free ask behind the paid flag')
+  assert.ok(fails('<div data-if="@site.allow_self_signup"><a data-portal="account/plans" href="#">x</a></div>'), 'a paid ask behind the free flag')
+  assert.ok(fails('<div data-if="@site.members_enabled"><a data-portal="signup" href="#">x</a></div>'), 'members_enabled is not the flag')
+  assert.ok(fails('<div data-if="tiers"><a data-portal="signup" href="#">x</a></div>'), 'a tier count is not the flag')
+  // the else arm renders when the flag is FALSE — the ask there is ungated by construction
+  assert.ok(fails('<p data-if="@site.allow_self_signup">on</p><p data-else><a data-portal="signup" href="#">x</a></p>'))
+  // a closing tag ends the gate: an ask after the gated element is outside it
+  assert.ok(fails('<div data-if="@site.allow_self_signup"><p>in</p></div><a data-portal="signup" href="#">x</a>'))
+  // asks nobody to join: sign in, account, a sign-in form
+  for (const quiet of ['<a data-portal="signin" href="#">x</a>', '<a data-portal="account" href="#">x</a>', '<form data-members-form="signin"><input type="email" data-members-email></form>']) {
+    clean(validateMarkup(root(quiet), { controls: [] }), quiet)
+  }
+})
+
+test('memberAsks: the one reader of which asks a design makes, with the data-if paths around each', () => {
+  const asks = memberAsks(root('<div data-if="@site.paid_members_enabled"><img alt="" src="x"><a data-portal="account/plans" href="#">x</a></div><form data-members-form="signup" data-if="@site.allow_self_signup"></form><a data-portal="signin" href="#">y</a>'))
+  assert.deepEqual(asks.map((a) => [a.tag, a.ask, a.gates]), [
+    ['a', 'paid', ['@site.paid_members_enabled']],
+    ['form', 'free', ['@site.allow_self_signup']],
+  ])
+})
+
+test('tiers-unfiltered (FR-H6): every tiers query carries type:paid and visibility:public at its top level', () => {
+  const bad = (filter?: string) => codes(validateDataBinding('plans', { source: 'tiers', ...(filter === undefined ? {} : { filter }) }))
+  for (const filter of [undefined, 'type:paid', 'visibility:public', 'type:paid,visibility:public', 'type:paid+visibility:public,visibility:none']) {
+    assert.ok(bad(filter).includes('tiers-unfiltered'), `${String(filter)} was not refused`)
+  }
+  for (const filter of ['type:paid+visibility:public', 'visibility:public+type:paid', 'type:paid+visibility:public+slug:-old']) {
+    assert.deepEqual(bad(filter), [], filter)
+  }
+  // no other source is touched
+  assert.deepEqual(codes(validateDataBinding('latest', { source: 'posts', limit: 3 })), [])
+})
+
+test('paywall-target (FR-H6): the partial is the paywall category\'s ONE target, and no other category may declare it', () => {
+  const at = (compileTarget: string[]) => design({ compileTarget })
+  const content = (category: string): CategoryContent => ({ category, title: `${category} designs`, props: {} })
+  const run = (d: DesignJson, category: string) => codes(validateDesign({ html: EVERY_DIRECTIVE, design: d, content: content(category) }))
+  // another category targets the partial
+  assert.ok(run(at(['partials/content-cta.hbs']), 'a22').includes('paywall-target'))
+  // a paywall beside another target, and a paywall without it
+  assert.ok(codes(validateDesignJson(at(['partials/content-cta.hbs', 'post.hbs']))).includes('paywall-target'))
+  assert.ok(run(at(['post.hbs']), 'a32').includes('paywall-target'))
+  // A32 and its stand-ins, at the partial alone, pass
+  for (const category of ['a32', 'paywall']) assert.ok(!run(at(['partials/content-cta.hbs']), category).includes('paywall-target'), category)
+  // and every other category keeps its own targets
+  assert.ok(!run(at(['home.hbs']), 'a22').includes('paywall-target'))
 })

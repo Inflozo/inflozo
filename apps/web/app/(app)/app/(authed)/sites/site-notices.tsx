@@ -1,7 +1,11 @@
 import type { ReactNode } from 'react'
 import { Banner } from '@/components/kit/banner'
+import { ring } from '@/components/kit/greyed'
+import { ExternalLink } from '@/components/kit/icons'
 import { Submit } from '@/components/kit/submit'
-import { INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY } from '@/lib/probe-rule'
+import { hostOf } from '@/lib/connect-rule'
+import { adminAt, membersNotice, PAYWALL_WORDS } from '@/lib/paywall'
+import { INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY, storedMembers } from '@/lib/probe-rule'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
@@ -50,6 +54,9 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
 
 export type NoticeSite = {
   id: string
+  /** Story 5.20 — the site's name and address, for the member notice's sentence and its Ghost admin link */
+  title?: string | null
+  url?: string
   capability: 'full' | 'preview_only' | null
   capability_source: string | null
   code_injection_notice_shown_at: string | null
@@ -59,6 +66,8 @@ export type NoticeSite = {
     plan_ask?: boolean
     /** FR-C4, Story 3.4: `unknown`, because `hasBrand` is what decides whether it offers anything. */
     brand?: unknown
+    /** Story 5.20 — FR-H6's record of the member switches: `unknown`, because `storedMembers` is its guard. */
+    members?: unknown
   } | null
 }
 
@@ -126,7 +135,11 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   const planAsk = settings.plan_ask === true
   const portalAsk = settings.portal_button_source === 'default'
   const preview = site.capability === 'preview_only'
-  if (!injection && !planAsk && !portalAsk && !preview) return null
+  // STORY 5.20 — R-4's connect warning (FR-H6): the member switches the probe recorded, after connect and on every visit
+  // while the fact holds. It TELLS, so it is a sentence and a link — Inflozo never flips the setting (P8, AD-10).
+  const name = site.title || (site.url ? hostOf(site.url) : '')
+  const members = membersNotice(storedMembers(site.site_settings), name)
+  if (!injection && !planAsk && !portalAsk && !preview && members.length === 0) return null
 
   return (
     <div className="flex flex-col gap-[10px]">
@@ -171,6 +184,26 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
       ) : null}
 
       {preview ? <PreviewOnly siteId={site.id} recheckFailed={recheckFailed} /> : null}
+
+      {members.length > 0 && site.url ? (
+        <Banner kind="info">
+          <span data-members-notice className="flex flex-col gap-[6px]">
+            {members.map((sentence) => (
+              <span key={sentence}>{sentence}</span>
+            ))}
+            {/* a new tab, and it says so — the Sites card's own address link, `(list)/page.tsx`'s markup */}
+            <a
+              href={adminAt(site.url, 'members')}
+              target="_blank"
+              rel="noreferrer"
+              className={`inline-flex items-center gap-[5px] self-start rounded-sm font-semibold text-sky-text underline underline-offset-2 ${ring}`}
+            >
+              {PAYWALL_WORDS.adminLink}
+              <ExternalLink size={12} className="shrink-0" label="opens in a new tab" />
+            </a>
+          </span>
+        </Banner>
+      ) : null}
     </div>
   )
 }

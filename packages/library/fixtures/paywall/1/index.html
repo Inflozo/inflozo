@@ -1,0 +1,10 @@
+<!-- Story 5.20 (R-158's shape): the first of two STAND-IN paywalls. Not a library design — it lives outside `designs/`,
+     its category id `paywall` stands in for A32 until Story 10.107, and it reaches only the keyboard harness and the
+     tests (AD-35). It proves the choosing half on the Paywall canvas: its free ask sits behind the site's own flag
+     (R-4), and it compiles to Ghost's `content-cta` partial and nothing else (FR-H6). -->
+<aside class="paywall-1" data-bg="surface" data-spacing="comfortable" data-divider="none" data-align="center">
+  <h2 class="paywall-1__heading" data-prop="heading">The rest is for members</h2>
+  <p class="paywall-1__blurb" data-prop="blurb" data-empty="hide">Eleven interviews, the full list of four hundred, and the spreadsheet behind it.</p>
+  <p class="paywall-1__ask" data-if="@site.allow_self_signup"><a class="paywall-1__cta" data-portal="signup" href="#" data-t="member.signup_cta">Subscribe</a></p>
+  <p class="paywall-1__signin"><span data-prop="signinLead">Already a member?</span> <a class="paywall-1__link" data-portal="signin" href="#" data-t="member.signin_cta">Sign in</a></p>
+</aside>

@@ -30,6 +30,7 @@ import type { DataBinding } from '@inflozo/library'
 import { CAPTURE_COMMAND, RECORDINGS } from '../fixtures/index.ts'
 import {
   CONTENT_API_KEY_PLACEHOLDER,
+  CTA_STYLES,
   POSTS_INCLUDE,
   EXCERPT_DEFAULT_WORDS,
   SAMPLE_MEMBERS,
@@ -38,6 +39,7 @@ import {
   bareHelper,
   contentApiKey,
   contentApiUrl,
+  contentCta,
   excerpt,
   feedExprs,
   formatDate,
@@ -952,4 +954,169 @@ test('FEED · inside a {{#get}} `pagination` is the QUERY\'s, and page_url leads
     assert.equal(next, '2')
     assert.equal(url, '/page/2/', 'a link to the ROUTE\'s page 2 — a wrong page, not a missing one')
   })
+})
+
+// ─── Story 5.20 — the MEMBERS group: Ghost's own box, its stylesheet, the reading time and the tiers (§54) ────────
+//
+// Two Paid-members-only posts the recorder created and deleted on each box — a long one with a Public preview marker and
+// a short one with none — rendered for a logged-out visitor through `custom-inflozo-members.hbs`, plus the tier rows of
+// index.hbs and, on T3 alone, the long one again with Subscription access set to Nobody. Every assertion below reads
+// Ghost's own answer; the shim's side is asserted against it.
+
+type MembersPost = {
+  visibility: string
+  reading_time: number
+  author_html_length: number
+  author_preview: string | null
+  served_html: string
+  served_access: boolean
+}
+type Head = { cta_style: string | null; portal_script: boolean; stripe_script: boolean }
+
+const membersPost = (major: Major, template: string) =>
+  input<MembersPost>(major, template, 'members_post', `the ${template} post`)
+const headOf = (major: Major, template: string): Head => {
+  const h = (recording(major, template, `{{ghost_head}} on ${template}`) as Recording & { head?: Head }).head
+  assert.ok(h !== undefined, `${template} recorded no {{ghost_head}} reading — re-run ${CAPTURE_COMMAND} ${major}`)
+  return h
+}
+const contentOf = (major: Major, template: string): string => {
+  const v = recording(major, template, `{{content}} on ${template}`).verbatim?.['content']
+  assert.ok(typeof v === 'string', `${template} recorded no {{content}}`)
+  return v
+}
+const accentOf = (major: Major) => recorded(major, 'index', 'SITE', 'accent_color', '@site.accent_color')
+
+test('MEMBERS · the control: each post is the one the rows describe — paid, withheld, the long one cut at its marker', () => {
+  assertBoth('the members posts', (major) => {
+    const long = membersPost(major, 'members-long')
+    const short = membersPost(major, 'members-short')
+    for (const p of [long, short]) {
+      assert.equal(p.visibility, 'paid')
+      assert.equal(p.served_access, false, 'a logged-out visitor may read the post — the rows prove nothing')
+    }
+    // the author wrote more than was served, and what was served is exactly the html before the marker (`forPost`)
+    assert.ok(long.author_preview !== null && long.author_preview.length > 0)
+    assert.ok(long.author_html_length > long.served_html.length)
+    assert.equal(long.served_html, long.author_preview, 'Ghost kept the html before <!--members-only--> and nothing else')
+    // with no marker, nothing is served at all
+    assert.equal(short.author_preview, null)
+    assert.equal(short.served_html, '')
+    assert.ok(long.reading_time > 0, 'the long post must read for more than a minute, or the DW-128 row proves nothing')
+    assert.equal(short.reading_time, 0)
+    for (const t of ['members-long', 'members-short']) assert.equal(recorded(major, t, 'MEMBERS', 'access', `{{access}} on ${t}`), 'false')
+  })
+})
+
+test("MEMBERS · Ghost's own box follows the preview, node for node — contentCta is exactly it, on each major", () => {
+  assertBoth("Ghost's paywall box", (major) => {
+    for (const template of ['members-long', 'members-short']) {
+      const served = membersPost(major, template).served_html
+      const box = contentCta({ visibility: 'paid', member: false, accent: accentOf(major), major })
+      assert.equal(contentOf(major, template), served + box, `${template}: {{content}} is the preview and then Ghost's box`)
+    }
+  })
+  // the two majors differ in the h2's indentation alone — expressed, never averaged
+  const five = contentCta({ visibility: 'paid', member: false, accent: '#123456', major: '5' })
+  const six = contentCta({ visibility: 'paid', member: false, accent: '#123456', major: '6' })
+  assert.notEqual(five, six)
+  assert.equal(five.replace(/ +<h2>/, '<h2>'), six.replace(/ +<h2>/, '<h2>'))
+  // the signed-in arm is the template's other branch (read in source): Upgrade, and no Sign in line
+  const member = contentCta({ visibility: 'paid', member: true, accent: '#123456', major: '6' })
+  assert.match(member, /data-portal="account\/plans" href="#\/portal\/account\/plans" style="color:#123456">Upgrade your account<\/a>/)
+  assert.doesNotMatch(member, /Subscribe now|Sign in/)
+  assert.match(contentCta({ visibility: 'members', member: false, accent: '#123456', major: '5' }), /<h2>This post is for subscribers only<\/h2>/)
+  // NFR-3: an accent that is not a colour never reaches the attribute
+  const hostile = contentCta({ visibility: 'paid', member: false, accent: 'red;}body{display:none', major: '6' })
+  assert.match(hostile, /background-color: var\(--accent\)/)
+  assert.doesNotMatch(hostile, /display:none/)
+})
+
+test("MEMBERS · the box's stylesheet is the one {{ghost_head}} injects, byte for byte, and Portal loads with members on", () => {
+  assertBoth('the CTA stylesheet', (major) => {
+    for (const template of ['members-long', 'members-short']) {
+      const head = headOf(major, template)
+      assert.equal(head.cta_style, CTA_STYLES, `${template}: the stylesheet Ghost injected is not CTA_STYLES`)
+      assert.equal(head.portal_script, true, 'Portal did not load with members on')
+    }
+  })
+})
+
+test('MEMBERS · {{reading_time}}: nothing only where no body was sent AND the field is 0 — otherwise the whole post\'s time', () => {
+  assertBoth('{{reading_time}} on a withheld post', (major) => {
+    const long = membersPost(major, 'members-long')
+    const short = membersPost(major, 'members-short')
+    // 1 · withheld WITH a preview, field above 0: the whole post's time (the second Ask First of the spec, answered)
+    const wholeLong = recorded(major, 'members-long', 'MEMBERS', 'reading_time', '{{reading_time}} on members-long')
+    assert.notEqual(wholeLong, '', 'Ghost printed nothing on a withheld post whose reading_time is above 0 — stop: DW-128 would hide every withheld body')
+    assert.equal(readingTime(long.reading_time, {}, long.served_html !== ''), wholeLong)
+    // 2 · withheld with NO preview and a field of 0: nothing — DW-128's case
+    assert.equal(recorded(major, 'members-short', 'MEMBERS', 'reading_time', '{{reading_time}} on members-short'), '')
+    assert.equal(readingTime(short.reading_time, {}, short.served_html !== ''), '')
+    // the field inside {{t}} is the whole post's for everyone, 0 included
+    const locale = input<Record<string, string>>(major, 'members-long', 'locales_en', '{{t}}')
+    for (const [template, p] of [['members-long', long], ['members-short', short]] as const) {
+      assert.equal(t('probe.reading_time', { minutes: p.reading_time }, locale), recorded(major, template, 'MEMBERS', 'reading_time_field', `{{t minutes=reading_time}} on ${template}`))
+    }
+  })
+  // 3 · a body sent and a field of 0: the floor, as recorded on the public post above ("1 min read")
+  assert.equal(readingTime(0, {}, true), '1 min read')
+  // 4 · no body sent and a field above 0 — read in source, `!post.html && !post.reading_time` fails on the field
+  assert.equal(readingTime(4, {}, false), '4 min read')
+  // the default is a body sent, so every call written before this story answers what it answered
+  assert.equal(readingTime(0), readingTime(0, {}, true))
+})
+
+test("MEMBERS · {{#get \"tiers\"}} answers a HIDDEN tier; {{#foreach}} drops it unless told visibility=\"all\"; FR-H6's filter returns the public paid ones", () => {
+  assertBoth('tiers', (major) => {
+    const api = input<{ name: string; type: string; visibility: string }[]>(major, 'index', 'tiers', 'the Content API tiers')
+    const publicPaid = input<string[]>(major, 'index', 'tiers_public', 'the filtered Content API tiers')
+    const rows = (key: string) => recorded(major, 'index', 'MEMBERS', key, key).split(';').filter((r) => r !== '').map((r) => r.split('|'))
+    // the control: the box carries a hidden tier, or nothing below says anything about one
+    const hidden = api.filter((x) => x.visibility !== 'public')
+    assert.ok(hidden.length > 0, 'no tier on this box is hidden — the rows prove nothing about FR-H6')
+    // the get's own array holds every active tier, the hidden one included…
+    assert.equal(recorded(major, 'index', 'MEMBERS', 'tiers_length', 'tiers.length'), String(api.length))
+    assert.deepEqual(rows('tiers_all').map((r) => r[0]).sort(), api.map((x) => x.name).sort())
+    // …{{#foreach}} drops a tier that is not public, by its own default visibility…
+    assert.deepEqual(rows('tiers_plain').map((r) => r[0]).sort(), api.filter((x) => x.visibility === 'public').map((x) => x.name).sort())
+    // …and the filter the validator requires answers exactly the public paid ones, as the Content API does
+    assert.deepEqual(rows('tiers_public').map((r) => r[0]).sort(), [...publicPaid].sort())
+    assert.ok(rows('tiers_public').every((r) => r[1] === 'paid' && r[2] === 'public'))
+  })
+})
+
+test('MEMBERS · the record\'s source: Admin settings/ carries the stored access and the calculated flags, and no stripe_* key was copied', () => {
+  assertBoth('Admin settings/', (major) => {
+    const admin = input<Record<string, unknown>>(major, 'index', 'admin_settings', 'Admin settings/')
+    assert.deepEqual(Object.keys(admin).sort(), ['allow_self_signup', 'members_enabled', 'members_invite_only', 'members_signup_access', 'paid_members_enabled'])
+    assert.equal(admin['members_signup_access'], 'all')
+    assert.equal(admin['paid_members_enabled'], true)
+    // no Ghost `stripe_*` setting (the head's own `stripe_script` is a presence flag of ours) and no Stripe key value
+    const blob = JSON.stringify(RECORDINGS[`ghost${major}`])
+    assert.ok(!/"stripe_(?!script")/.test(blob), 'a stripe_* setting reached a fixture')
+    assert.ok(!/"(sk|pk|rk)_(test|live)_/.test(blob), 'a Stripe key reached a fixture')
+  })
+})
+
+test('MEMBERS · Subscription access Nobody (T3): the post is STILL withheld and the box still renders — R-198\'s premise — while the flags go false', () => {
+  const nobody = 'members-long-nobody'
+  const before = contentOf('5', 'members-long')
+  // THE PREMISE (the spec's first Ask First): members off unlocks nothing — the same preview and the same box
+  assert.equal(contentOf('5', nobody), before, 'members off changed what a logged-out visitor is sent — stop: C3b is built as drawn (R-198 falls away)')
+  assert.equal(recorded('5', nobody, 'MEMBERS', 'access', '{{access}}'), 'false')
+  const after = recording('5', nobody, 'Admin settings/').input as Record<string, Record<string, unknown>>
+  assert.equal(after['admin_settings_before']?.['members_signup_access'], 'all', 'the control: members were on before the toggle')
+  assert.equal(after['admin_settings_nobody']?.['members_signup_access'], 'none')
+  for (const flag of ['members_enabled', 'allow_self_signup', 'paid_members_enabled']) assert.equal(after['admin_settings_nobody']?.[flag], false, flag)
+  // the page itself saw the toggle: the flags are false and the sign-up URL is the RSS feed (`update-global-template-options.js`)
+  for (const flag of ['members_enabled', 'allow_self_signup', 'paid_members_enabled']) assert.equal(recorded('5', nobody, 'MEMBERS', flag, `@site.${flag}`), 'false', flag)
+  assert.equal(recorded('5', nobody, 'MEMBERS', 'labs_members', '@labs.members'), 'false')
+  assert.match(recorded('5', nobody, 'MEMBERS', 'signup_url', '@site.signup_url'), /rss/)
+  // AND WHAT MOVED THE SENTENCE: with Stripe connected Ghost keeps donations on, so {{ghost_head}} still loads Portal and
+  // the CTA stylesheet — the box's buttons open Portal, which turns every sign-up away (§54). Stripe's own script goes.
+  const head = headOf('5', nobody)
+  assert.equal(head.portal_script, true)
+  assert.equal(head.cta_style, CTA_STYLES)
+  assert.equal(head.stripe_script, false)
 })

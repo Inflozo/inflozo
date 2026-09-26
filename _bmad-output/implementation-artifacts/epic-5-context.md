@@ -622,6 +622,26 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     - **R-199:** the gated label marks where the locked part begins, for a visitor who MAY read it (S4d). A visitor who
       may not meets the preview, the cut and the box, with nothing below.
     - The epics card, FR-H6, FR-D16 and EXPERIENCE.md's two rows carry them, and the spec has no open question.
+  - **As built (Story 5.20's Dev, 2026-09-26).** §54 was RECORDED FIRST on both majors (`record-shim.py`'s MEMBERS group,
+    two probe posts created and deleted, T3 toggled to Nobody and restored): Ghost withholds exactly as read, reading
+    time is the whole post's except at 0, the box and its stylesheet are one markup and `tpl/styles.js` byte for byte,
+    and `/tiers/` answers the hidden tier. ONE PREMISE MOVED: with Nobody, T3 still loaded Portal (donations stay on with
+    Stripe connected), whose sign-up says "Memberships unavailable" — so R-198's sentence dropped "Ghost stops loading its
+    sign-up window" and keeps "nobody can sign up there" (`lib/paywall.ts`, the spec's change log).
+    - **The library:** `access.ts` (`postAccess`), `PAYWALL_TARGET` in the targets and `NATIVE`, `PAYWALL_CATEGORIES`,
+      `paywallRing`, `memberAsks` and the three rules (`member-ask-ungated`, `tiers-unfiltered`, `paywall-target`),
+      `templateContext`'s partial and optional visitor (omitted, byte-identical), `PREVIEW_CUT`; two stand-ins in
+      `fixtures/paywall/`. **The runtime:** `readingTime`'s `served`, `contentCta`/`CTA_STYLES` (re-exported for the app),
+      `linkGate` in the one link sink — it moved ONE snapshot line, a4/13's default Sign-up action, now gated.
+    - **The app:** `paywall` in `CANVASES` with `surface: true` (`isSurface`) — no site doc, no count in "Site-wide · N
+      templates", no Picker, no Remix, no Preview; `fileOfKey` answers the partial. `paywallPage` (`lib/canvas.ts`) paints
+      the article, the cut and the box through the one door; the canvas document carries the post body's stylesheet
+      DISABLED (`media="not all"`) and the paint switches it on. The record is `site_settings.members` (`membersOf`,
+      `storedMembers`), re-checked by `readMembers` in `server/site-probe.ts` (one Admin `settings/` read) behind
+      `recheckMembers`. C3b is `paywall-notice.tsx`, C3a's card `HowReadersReachIt`, the Sites notice in `site-notices.tsx`.
+    - **The keyboard harness is a LAYOUT now** (`harness/editor/layout.tsx` with two empty pages), so `pnpm keyboard` walks
+      Template ▾ → Paywall, the three visitors, a stand-in chosen, stepped and undone, C3b's Re-check (refused — no
+      database) and Back to post. The caption became "Where a gated post stops": the spec's first overran its row.
 - **Behaviours hold still while designing.** Layout CSS is always live; module JavaScript runs on the canvas only for edit-safe modules, the others render at rest with a PAUSED chip on the behaviour, and Preview runs everything without chrome.
   - **Story 5.15's planning (2026-09-22, read in the runtime, the CSP and the frames, and swept over the library):**
     `core` (Story 4.7) already holds still every module that is not edit-safe (`core.js:43`), and NOTHING CALLS IT:
@@ -980,7 +1000,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     above the guard, and the group is what lets `settings/` have a skeleton of its own without standing over the
     editor. `SETTINGS`/`settingsPath` are in `lib/editor.ts` and `editor.test.ts` asserts `settings` resolves as no
     canvas.
-  - **Story 5.1 settled both (2026-09-17, spec § Design Notes):** `/projects/<uuid>` is Home and `/projects/<uuid>/{post,page,tag,author,error}` the rest (`apps/web/lib/editor.ts` is the scheme as data — the route, the Shell and the harness read it there); `/home` 308s; `index`, `private`, `custom-<slug>`, `paywall`, `cards` 404 until their stories. Canvas change is a soft-navigation push inside the `[id]` layout, which holds the editor so it stays mounted (5.8's flush hooks its unmount); modes and folds never enter the URL. Pages render nothing — the active canvas is read from the pathname.
+  - **Story 5.1 settled both (2026-09-17, spec § Design Notes):** `/projects/<uuid>` is Home and `/projects/<uuid>/{post,page,tag,author,error}` the rest (`apps/web/lib/editor.ts` is the scheme as data — the route, the Shell and the harness read it there); `/home` 308s; `index`, `private`, `custom-<slug>`, `paywall`, `cards` 404 until their stories (Story 5.20 opened `paywall`). Canvas change is a soft-navigation push inside the `[id]` layout, which holds the editor so it stays mounted (5.8's flush hooks its unmount); modes and folds never enter the URL. Pages render nothing — the active canvas is read from the pathname.
 - **5.8 underpins the loop:** its one-transaction-per-gesture journal makes a shuffle one edit (5.11, 5.12), gives 5.17 `unsynced_edits` and the superseding hydrate, and gives 5.23 a doc to assert over.
   - **Story 5.5's review (2026-09-18, executed on production):** 5.8 is the first writer of `project_templates`, and the stored `template_key_shape` refuses every `custom:` key (two backslashes in the pattern) — so 5.8 **has a Schema phase** that fixes the constraint before its code ships (DW-193, R-99).
 - **Earlier stories lean on later ones:** link search (5.3) and picker previews (5.10) share 5.18's fetch layer, 5.13's subject picker and 5.16's page 2 need 5.19, 5.14 needs 5.21's strip, 5.4's Post Content refusal lives in 5.10's picker, and 5.9's map spans the epic.

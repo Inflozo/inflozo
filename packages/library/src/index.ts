@@ -15,6 +15,9 @@ export * from './catalog.ts'
 // Story 5.4 — FR-D5 and R-37's placement rules: `isPlaceable` (the non-placeable treatments) and `placementRefusal`
 // (at most one Post Content per layout), read by the editor and by Story 5.10's Section Picker.
 export * from './placement.ts'
+// Story 5.20 — Ghost's own `checkPostAccess`, over View as's three visitors: one rule for the cut, the indicator and the
+// reading time.
+export * from './access.ts'
 // Story 4.4 — the bundled sample publication, its three fixtures and the offline Source resolver. A
 // namespace rather than a flat re-export: `posts`, `tags` and `site` are too general to claim at the
 // package root.

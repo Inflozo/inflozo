@@ -13,7 +13,7 @@
 // mark list narrows them further, the rel values are closed, the inline tokens are declared per prop
 // and anything else in braces stays literal text (R-27).
 
-import { INLINE_TOKENS, LINK_RELS, MARKS, PAGE_NUMBER, PORTAL_ACTIONS, safeUrl } from '@inflozo/library'
+import { ASK_FLAGS, INLINE_TOKENS, LINK_RELS, MARKS, PAGE_NUMBER, PORTAL_ACTIONS, portalAsk, safeUrl } from '@inflozo/library'
 import type { Link, PropDef } from '@inflozo/library'
 
 /** One mark range over the prop's text. An `a` mark carries the same link record a `url` prop holds
@@ -125,6 +125,25 @@ export function linkAttributes(link: unknown): Record<string, string> {
   return attrs
 }
 
+/** STORY 5.20 — R-4 FOR THE ASKS A DESIGN CANNOT SEE (DW-154's 5.20 half). A link the USER pointed at Portal's Sign up
+ *  or Upgrade — a button prop or an inline `a` mark, from 5.3's Link Picker — asks a visitor to join, and a design that
+ *  drew the button cannot know what it will be pointed at. So the one link sink decides it: from `linkAttributes`' own
+ *  answer, the `@site` flag this link ships behind, or null for a link that asks nobody to join (`signin`, `account`,
+ *  an `href`, search). Both emitters read it — the theme wraps the element in `{{#if flag}}`, the canvas leaves it out
+ *  where the source in force's flag is false — so the two agree node for node (`agreement.test.ts`). */
+export function linkGate(attrs: Readonly<Record<string, string>>): string | null {
+  const action = attrs['data-portal']
+  const ask = action === undefined ? null : portalAsk(action)
+  return ask === null ? null : ASK_FLAGS[ask]
+}
+
+/** A flag's value in the `@site` the canvas renders with, as Handlebars' `{{#if}}` reads it — `''`, `0`, `false`,
+ *  `null`, `undefined` and `[]` are all false. */
+export const flagOn = (site: Readonly<Record<string, unknown>>, flag: string): boolean => {
+  const v = site[flag.replace(/^@site\./, '')]
+  return !(v == null || v === '' || v === false || v === 0 || (Array.isArray(v) && v.length === 0))
+}
+
 /** An `a` mark always has attributes here: one naming no destination was dropped before the sweep (DW-120). */
 function openTag(m: Mark): string {
   if (m.mark !== 'a') return `<${m.mark}>`
@@ -195,12 +214,19 @@ function replacementFor(
  *  `tokenValues` LEFT OUT means "show every token as the customer typed it" — the two editing sinks.
  *  `theme` is the theme emitter saying which of its two sinks this is, and `'text'` is the only way to
  *  reach `PAGE_NUMBER_HBS`; `UserText` is its one caller and exists only on the theme path, so the canvas
- *  cannot emit a mustache even by mistake. */
+ *  cannot emit a mustache even by mistake.
+ *
+ *  STORY 5.20 — `site` is the CANVAS's `@site`, for R-4's gate on an `a` mark the user pointed at a Portal ask
+ *  (`linkGate`): where its flag is false the words stay and the anchor goes, as Ghost's `{{else}}` leaves them. On the
+ *  theme's text sink the same mark is `{{#if flag}}<a …>words</a>{{else}}words{{/if}}` — the SECOND constant AD-5 lets
+ *  into user text beside `PAGE_NUMBER_HBS`, built from `ASK_FLAGS`' closed pair and never from anything typed. With
+ *  neither — the editing sinks — every link is shown as stored. */
 export function serializeMarks(
   value: PropValue,
   def?: PropDef,
   tokenValues?: Readonly<Record<string, string>>,
   theme?: ThemeSink,
+  site?: Readonly<Record<string, unknown>>,
 ): string {
   const rich = isRich(value)
   const text = rich ? value.text : value == null ? '' : String(value)
@@ -266,6 +292,15 @@ export function serializeMarks(
     (a, b) => a - b,
   )
 
+  // Story 5.20 — each open `a` run's gate: `drop` on the canvas where its flag is false (no tags, the words stay), `at`
+  // on the theme's text sink (where its words began, so its close repeats them as the `{{else}}` arm)
+  const gates = new Map<Mark, { drop: true } | { flag: string; at: number }>()
+  const close = (m: Mark): string => {
+    const g = gates.get(m)
+    gates.delete(m)
+    if (g === undefined) return `</${m.mark}>`
+    return 'drop' in g ? '' : `</a>{{else}}${out.slice(g.at)}{{/if}}`
+  }
   let out = ''
   let open: Mark[] = []
   for (let k = 0; k < points.length - 1; k++) {
@@ -276,16 +311,22 @@ export function serializeMarks(
     // ranges therefore emit well-nested markup rather than crossed tags
     let keep = 0
     while (keep < open.length && keep < want.length && open[keep] === want[keep]) keep++
-    for (let j = open.length - 1; j >= keep; j--) out += `</${(open[j] as Mark).mark}>`
+    for (let j = open.length - 1; j >= keep; j--) out += close(open[j] as Mark)
     open = open.slice(0, keep)
     for (let j = keep; j < want.length; j++) {
       const m = want[j] as Mark
-      out += openTag(m)
+      const flag = m.mark === 'a' ? linkGate(linkAttributes(m)) : null
+      if (flag !== null && theme === 'text') {
+        out += `{{#if ${flag}}}${openTag(m)}`
+        gates.set(m, { flag, at: out.length })
+      } else if (flag !== null && theme === undefined && site !== undefined && !flagOn(site, flag)) {
+        gates.set(m, { drop: true })
+      } else out += openTag(m)
       open.push(m)
     }
     out += esc(text.slice(a, b))
   }
-  for (let j = open.length - 1; j >= 0; j--) out += `</${(open[j] as Mark).mark}>`
+  for (let j = open.length - 1; j >= 0; j--) out += close(open[j] as Mark)
   return out
 }
 

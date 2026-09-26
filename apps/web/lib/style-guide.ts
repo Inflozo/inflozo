@@ -16,11 +16,15 @@
 // imagery and Ghost's vendored chunks off disk — and the runtime's reference token stylesheet.
 
 import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { orbitWeekly } from '@inflozo/library'
+import { CTA_STYLES } from '@inflozo/section-runtime'
 
-/** Every reader runs with `apps/web` as the working directory (`tokens.ts` relies on the same). */
-const PACKAGES = () => join(process.cwd(), '..', '..', 'packages')
+/** Resolved from this module's own address, as `pilots.ts` resolves it (Story 4.11's reason, and its Turbopack caveat):
+ *  since Story 5.20 the canvas document carries this module's stylesheets too, and the render matrix builds that
+ *  document from the repo root, where the working directory is not `apps/web`. */
+const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
 export const ORBIT_WEEKLY_DIR = () => join(PACKAGES(), 'library', 'orbit-weekly')
 const VENDOR = () => join(ORBIT_WEEKLY_DIR(), 'vendor', 'cards')
 
@@ -78,7 +82,7 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * theme owns regardless of `card_assets`, and prose type. It consumes the reference tokens and nothing
  * else, as a design's CSS must.
  */
-const THEME_CSS = `
+export const THEME_CSS = `
 *,*::before,*::after{box-sizing:border-box}
 html{background:var(--bg-page);color:var(--text-body);font-family:var(--font-body);-webkit-text-size-adjust:100%}
 body{margin:0;font-size:1.0625rem;line-height:1.7}
@@ -125,6 +129,14 @@ figcaption{margin-top:.75em;padding:0 var(--space-gutter);text-align:center;font
 .inflozo-variant{grid-column:wide-start/wide-end;margin-top:3rem!important;padding-top:.6rem;border-top:1px dashed var(--border-hairline);font:500 .75rem/1.4 ui-monospace,Menlo,monospace;color:var(--text-muted)}
 .inflozo-variant+*{margin-top:1rem}
 `
+
+/**
+ * STORY 5.20 — THE PAYWALL CANVAS'S STYLESHEET: a post body as a customer's site meets it, in `{{ghost_head}}`'s order —
+ * the theme stand-in above, the simulated `cards.min.css`, then Ghost's own CTA stylesheet (`tpl/styles.js`, recorded on
+ * both majors as MEASUREMENTS §54 and held equal by `contract.test.ts`), which is what draws Ghost's own box. The canvas
+ * document carries it DISABLED and the Paywall canvas's paint enables it, so no other canvas is touched (`pilots.ts`).
+ */
+export const surfaceCss = (): string => `${THEME_CSS}\n${simulatedCardsCss().css}\n${CTA_STYLES}`
 
 function head(title: string): string {
   const tokens = readFileSync(join(PACKAGES(), 'section-runtime', 'reference-tokens.css'), 'utf8')

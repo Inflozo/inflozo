@@ -590,3 +590,32 @@ test('AD-36 · a crafted Source value is inert through the fold, refused when ha
   const good = renderTheme(doc(), feedSrc, { feed: { query: { source: 'posts', limit: 6, order: 'published_at asc', filter: "tag:'craft'" } } }).template
   assert.ok(good.startsWith(`{{#get "posts" filter="tag:'craft'" limit="6" order="published_at asc" include="tags,authors"}}{{#if posts}}`), good)
 })
+
+// ═══ Story 5.20 — the tier filter and a Portal ask, closed at emission ═══
+
+test('AD-36 · a tier query that could answer a hidden tier is refused at emission; the public paid filter emits (FR-H6)', () => {
+  const src = '<ul class="t"><li class="t__row" data-repeat="plans" data-bind="name">A plan</li></ul>'
+  const at = (filter: string | undefined) => ({ dataBindings: { plans: { source: 'tiers', ...(filter === undefined ? {} : { filter }) } }, getRows: { plans: [] } })
+  for (const hostile of [undefined, 'type:paid', 'visibility:public', 'type:paid+visibility:public,visibility:none', 'type:paid,visibility:public', '(type:paid+visibility:public)']) {
+    assert.throws(() => renderTheme(doc(), src, at(hostile)), /tiers-unfiltered/, `the filter ${String(hostile)} was not refused`)
+  }
+  // the legitimate one, and one that only narrows it further
+  for (const filter of ['type:paid+visibility:public', 'visibility:public+type:paid+slug:-legacy']) {
+    const theme = renderTheme(doc(), src, at(filter)).template
+    assert.ok(theme.includes(`{{#get "tiers" filter="${filter}"}}`), theme)
+    assert.doesNotThrow(() => renderCanvas(doc(), src, at(filter)))
+  }
+})
+
+test("AD-36 · a crafted Portal action never borrows an ask's gate or an attribute; the four keep theirs (R-4)", () => {
+  // a value dressed as an ask is not one of the four, so it is an unset link on both emitters and gates nothing
+  for (const hostile of ['signup}}{{#if true', 'account/plans" data-x="1', ' signup', 'SIGNUP']) {
+    for (const html of Object.values(linkOn({ portal: hostile }))) {
+      assert.doesNotMatch(html, /data-portal|@site|href=/, `${JSON.stringify(hostile)} reached the link: ${html}`)
+    }
+  }
+  // the two asks carry their own flag on the theme, and only theirs; the other two carry none
+  assert.ok(linkOn({ portal: 'signup' }).theme.startsWith('{{#if @site.allow_self_signup}}'))
+  assert.ok(linkOn({ portal: 'account/plans' }).theme.startsWith('{{#if @site.paid_members_enabled}}'))
+  for (const quiet of ['signin', 'account']) assert.doesNotMatch(linkOn({ portal: quiet }).theme, /@site/)
+})

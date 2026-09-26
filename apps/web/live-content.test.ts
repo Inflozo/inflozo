@@ -1,10 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { orbitWeekly } from '@inflozo/library'
+import { orbitWeekly, PAYWALL_TARGET } from '@inflozo/library'
 import { feedQuery, formatDate, withData } from '@inflozo/section-runtime'
 import {
   addressOf, after, API_VERSION, ask, AUTHOR_FIELDS, bindingReads, FAILURES_TO_STOP, feedRead, feedShortfall, FRESH_MS,
-  getShortfall, isFresh, keyOf, LIST_LIMIT, LISTS, LIVE_WORDS, named, NEVER, outcomeOf, PAGE_FIELDS, pick, POST_FIELDS,
+  getShortfall, isFresh, keyOf, LIST_LIMIT, LISTS, LIVE_WORDS, named, NEVER, outcomeOf, PAGE_FIELDS, PAYWALL_FILE, pick, POST_FIELDS, PUBLIC_TIERS,
   READ_TIMEOUT_MS, reader, REQUEST_CEILING, retriable, retried, SETTINGS, SHORTFALL, SITE_FIELDS, siteFrom, siteLinks,
   siteRows, siteTotal, slugShaped, START, startingArchive, subjectRead, TAG_FIELDS, TIER_FIELDS, wallClock, zoneOf,
   type Answer, type LiveQuery, type Reading, type Row,
@@ -599,4 +599,40 @@ test('Story 5.19 · the main feed is sized by the PROJECT\'s posts_per_page on t
   assert.equal((ctx.ghost['pagination'] as { limit: number }).limit, 3)
   // the control: the sample at the same size
   assert.equal((orbitWeekly.templateContext('home.hbs', 'first', undefined, 3).ghost['posts'] as unknown[]).length, 3)
+})
+
+
+test('Story 5.20 · the paywall\'s partial: the style-guide article at the ROOT as a paid post open to the site\'s public paid tiers, access by the visitor — and the one tiers read, made there alone', () => {
+  // the module imports nothing but types, so it restates the library's target; the two are held equal here
+  assert.equal(PAYWALL_FILE, PAYWALL_TARGET)
+  assert.deepEqual(PUBLIC_TIERS, { resource: 'tiers', params: { filter: 'visibility:public' } })
+  const base = fakeSite()
+  const tiersBody = { tiers: [
+    { id: 'f', name: 'Free', slug: 'free', type: 'free', visibility: 'public', active: true },
+    { id: 'g', name: 'Ghost5', slug: 'ghost5', type: 'paid', visibility: 'public', active: true },
+  ] }
+  const asked: string[] = []
+  const look = (q: LiveQuery): Answer | undefined => {
+    asked.push(keyOf(q))
+    return q.resource === 'tiers' ? (pick('tiers', tiersBody, words) ?? undefined) : base(q)
+  }
+  const at = (visitor: 'anonymous' | 'free' | 'paid') =>
+    sitePage(look, { file: PAYWALL_FILE, stored: null, page: 1, pageFile: PAYWALL_FILE, targets: [PAYWALL_FILE], queries: {}, perPage: 12, visitor })
+  const anon = at('anonymous')
+  assert.ok('ready' in anon)
+  const ctx = anon.ready.contexts[PAYWALL_FILE]!.ghost
+  assert.equal(ctx['slug'], orbitWeekly.subject('post').slug, 'the body is the style-guide fixture, never a real post (FR-H4)')
+  assert.equal(ctx['visibility'], 'paid')
+  assert.equal(ctx['access'], false)
+  assert.deepEqual((ctx['tiers'] as { slug: string }[]).map((t) => t.slug), ['ghost5'], 'open to the PAID public tiers — the free one is no tier a paid post is open to')
+  assert.ok(asked.includes(keyOf(PUBLIC_TIERS)))
+  for (const [visitor, access] of [['free', false], ['paid', true]] as const) {
+    const v = at(visitor)
+    assert.ok('ready' in v)
+    assert.equal(v.ready.contexts[PAYWALL_FILE]!.ghost['access'], access, visitor)
+  }
+  // and no other page asks for the tiers
+  asked.length = 0
+  page('home.hbs', null, look)
+  assert.ok(asked.length > 0 && !asked.includes(keyOf(PUBLIC_TIERS)))
 })

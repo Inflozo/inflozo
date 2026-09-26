@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { samples } from '@/lib/controls-review'
+import { paywallSamples, samples } from '@/lib/controls-review'
 import { HARNESS } from '@/lib/harness'
 import { pilotIds, pilotImage, pilotsCanvasDocument } from '@/lib/pilots'
 
@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
   // STORY 5.10, the owner's ruling of 2026-09-20 (Question 4, option 3): a PREVIEW asks for one design and is
   // served one design's stylesheet. The editor's own canvas asks for none and is served them all, because it may
   // draw any section in the document. An unknown id is a 404 like an unknown picture — never served as "all".
-  const ring = samples()
+  // Story 5.20 — and the two stand-in paywalls (R-158's shape), which the harness's Paywall canvas chooses between
+  const ring = [...samples(), ...paywallSamples()]
   const design = request.nextUrl.searchParams.get('design')
   if (design !== null && ![...pilotIds(), ...ring.map((e) => e.id)].includes(design)) {
     return new NextResponse('that design is not in the library', { status: 404, headers })

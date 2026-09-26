@@ -1,0 +1,205 @@
+{
+  "captured": "2026-09-26",
+  "command": "python3 tools/probe/record-shim.py",
+  "ghost_major": "5",
+  "ghost_version": "5.130",
+  "head": {
+    "cta_style": ".gh-post-upgrade-cta-content,\n.gh-post-upgrade-cta {\n    display: flex;\n    flex-direction: column;\n    align-items: center;\n    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;\n    text-align: center;\n    width: 100%;\n    color: #ffffff;\n    font-size: 16px;\n}\n\n.gh-post-upgrade-cta-content {\n    border-radius: 8px;\n    padding: 40px 4vw;\n}\n\n.gh-post-upgrade-cta h2 {\n    color: #ffffff;\n    font-size: 28px;\n    letter-spacing: -0.2px;\n    margin: 0;\n    padding: 0;\n}\n\n.gh-post-upgrade-cta p {\n    margin: 20px 0 0;\n    padding: 0;\n}\n\n.gh-post-upgrade-cta small {\n    font-size: 16px;\n    letter-spacing: -0.2px;\n}\n\n.gh-post-upgrade-cta a {\n    color: #ffffff;\n    cursor: pointer;\n    font-weight: 500;\n    box-shadow: none;\n    text-decoration: underline;\n}\n\n.gh-post-upgrade-cta a:hover {\n    color: #ffffff;\n    opacity: 0.8;\n    box-shadow: none;\n    text-decoration: underline;\n}\n\n.gh-post-upgrade-cta a.gh-btn {\n    display: block;\n    background: #ffffff;\n    text-decoration: none;\n    margin: 28px 0 0;\n    padding: 8px 18px;\n    border-radius: 4px;\n    font-size: 16px;\n    font-weight: 600;\n}\n\n.gh-post-upgrade-cta a.gh-btn:hover {\n    opacity: 0.92;\n}",
+    "portal_script": true,
+    "stripe_script": true
+  },
+  "http": 200,
+  "image_sizes": {
+    "l": 1200,
+    "m": 750,
+    "s": 400,
+    "xl": 2000,
+    "xs": 150
+  },
+  "input": {
+    "admin_settings": {
+      "allow_self_signup": true,
+      "members_enabled": true,
+      "members_invite_only": false,
+      "members_signup_access": "all",
+      "paid_members_enabled": true
+    },
+    "author": {
+      "bio": "Writes about systems and the long tail of maintenance.",
+      "cover_image": null,
+      "name": "Priya Raman",
+      "profile_image": null,
+      "slug": "priya-raman",
+      "url": "https://ghost5.inflozo.com/author/priya-raman/",
+      "website": null
+    },
+    "feed_picks": [
+      {
+        "id": "6a86b5fb6444934864da3283",
+        "published_at": "2025-08-11T12:00:00.000+00:00",
+        "slug": "the-cost-of-clever",
+        "title": "The cost of clever"
+      },
+      {
+        "id": "6a86b5fb6444934864da328b",
+        "published_at": "2025-08-10T12:00:00.000+00:00",
+        "slug": "a-quiet-week-in-the-archive",
+        "title": "A quiet week in the archive"
+      },
+      {
+        "id": "6a86b5f96444934864da3278",
+        "published_at": "2025-08-12T12:00:00.000+00:00",
+        "slug": "on-typography-and-restraint",
+        "title": "On typography and restraint"
+      }
+    ],
+    "locales_en": {
+      "Plain key": "Plain value, read from locales/en.json",
+      "probe": {
+        "nested_miss": "Nested value, which a flat lookup never reaches"
+      },
+      "probe.by": "By {author}",
+      "probe.dotted_hit": "Dotted key, looked up as one key",
+      "probe.escape": "Tom & <b>Jerry</b> \"said\" it's",
+      "probe.page_of": "Page {page} of {pages}",
+      "probe.posts_many": "% posts <i>many</i>",
+      "probe.posts_none": "No posts",
+      "probe.posts_one": "% post <i>one</i>",
+      "probe.reading_time": "{minutes} min read",
+      "probe.updated_on": "Updated {date}"
+    },
+    "members": {
+      "comped": 0,
+      "free": 57,
+      "paid": 0,
+      "total": 57
+    },
+    "members_post": {
+      "author_html_length": 8110,
+      "author_preview": "<p>Paragraph 1. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p><p>Paragraph 2. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p><p>Paragraph 3. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p>",
+      "reading_time": 6,
+      "served_access": false,
+      "served_html": "<p>Paragraph 1. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p><p>Paragraph 2. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p><p>Paragraph 3. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p>",
+      "visibility": "paid"
+    },
+    "post": {
+      "access": true,
+      "created_at": "2026-08-20T08:08:47.000+00:00",
+      "custom_excerpt": null,
+      "excerpt": "A brief history of the sidebar. This fixture post exists so a design has something structurally real to render.\n\n\nA second heading\n\nA further paragraph, so excerpt truncation and reading time have something to work on.\n\nA pull quote, for the Koenig card treatments.",
+      "feature_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
+      "feature_image_alt": "Cover for A brief history of the sidebar",
+      "featured": false,
+      "id": "6a86b60f6444934864da331b",
+      "published_at": "2025-07-18T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "a-brief-history-of-the-sidebar",
+      "title": "A brief history of the sidebar",
+      "updated_at": "2026-08-20T08:08:47.000+00:00",
+      "url": "https://ghost5.inflozo.com/a-brief-history-of-the-sidebar/",
+      "visibility": "public"
+    },
+    "post_authors": [
+      {
+        "name": "Umang",
+        "profile_image": "https://ghost5.inflozo.com/content/images/2026/09/luca-bravo-O453M2Liufs-unsplash.jpg",
+        "slug": "umang",
+        "url": "https://ghost5.inflozo.com/author/umang/"
+      }
+    ],
+    "post_tags": [
+      {
+        "accent_color": null,
+        "name": "Systems",
+        "slug": "systems",
+        "url": "https://ghost5.inflozo.com/tag/systems/",
+        "visibility": "public"
+      }
+    ],
+    "settings_content": {
+      "allow_self_signup": true,
+      "members_enabled": true,
+      "members_invite_only": false,
+      "members_signup_access": "all",
+      "paid_members_enabled": true,
+      "portal_plans": [
+        "free",
+        "monthly",
+        "yearly"
+      ]
+    },
+    "tag": {
+      "accent_color": null,
+      "description": null,
+      "feature_image": null,
+      "name": "Archive",
+      "slug": "archive",
+      "url": "https://ghost5.inflozo.com/tag/archive/",
+      "visibility": "public"
+    },
+    "tiers": [
+      {
+        "active": true,
+        "benefits": [],
+        "currency": null,
+        "monthly_price": null,
+        "name": "Free",
+        "slug": "free",
+        "trial_days": 0,
+        "type": "free",
+        "visibility": "public",
+        "yearly_price": null
+      },
+      {
+        "active": true,
+        "benefits": [],
+        "currency": "USD",
+        "monthly_price": 500,
+        "name": "Ghost5",
+        "slug": "default-product",
+        "trial_days": 0,
+        "type": "paid",
+        "visibility": "public",
+        "yearly_price": 5000
+      },
+      {
+        "active": true,
+        "benefits": [],
+        "currency": "USD",
+        "monthly_price": 1500,
+        "name": "Ghost5 Pro",
+        "slug": "ghost5-pro",
+        "trial_days": 7,
+        "type": "paid",
+        "visibility": "none",
+        "yearly_price": 15000
+      }
+    ],
+    "tiers_public": [
+      "Ghost5"
+    ]
+  },
+  "note": "AD-23: every Ghost fact in this repository enters here. Nothing is written against a paraphrase of this file and no helper is implemented before its recording exists.",
+  "path": "/inflozo-members-probe-long/",
+  "raw": {},
+  "site": "https://ghost5.inflozo.com",
+  "template": "members-long",
+  "uploaded_image": "https://ghost5.inflozo.com/content/images/2026/09/inflozo-shim-probe-5.png",
+  "values": {
+    "MEMBERS": {
+      "access": "false",
+      "allow_self_signup": "true",
+      "invite_only": "false",
+      "labs_members": "true",
+      "members_enabled": "true",
+      "paid_members_enabled": "true",
+      "reading_time": "6 min read",
+      "reading_time_field": "6 min read",
+      "signup_url": "#/portal",
+      "visibility": "paid"
+    }
+  },
+  "verbatim": {
+    "content": "<p>Paragraph 1. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p><p>Paragraph 2. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p><p>Paragraph 3. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. Inflozo records what a reader who may not read this post is sent, and what a reader who may is sent instead. </p>\n<aside class=\"gh-post-upgrade-cta\">\n    <div class=\"gh-post-upgrade-cta-content\" style=\"background-color: #0da51e\">\n            <h2>This post is for paying subscribers only</h2>\n            <a class=\"gh-btn\" data-portal=\"signup\" href=\"#/portal/signup\" style=\"color:#0da51e\">Subscribe now</a>\n            <p><small>Already have an account? <a data-portal=\"signin\" href=\"#/portal/signin\">Sign in</a></small></p>\n    </div>\n</aside>\n"
+  }
+}

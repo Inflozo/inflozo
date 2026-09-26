@@ -5,7 +5,7 @@ import {
   defaultContent, isDesigned, isSynthesizable, pageTwoStack, parseDoc, removeSection, setHidden, synthesize, SYNTHESIS_DEFAULTS,
   type ProjectDoc, type SynthesisLibrary,
 } from '@inflozo/section-runtime'
-import { CANVASES, CONDITIONAL, canvasesOf, isMembership, templateKeyOf, type CanvasKey } from './lib/editor.ts'
+import { CANVASES, CONDITIONAL, canvasesOf, isMembership, isSurface, templateKeyOf, type CanvasKey } from './lib/editor.ts'
 import { committed, templatesOpen } from './lib/round-trip.ts'
 import { pilot, pilotIds } from './lib/pilots.ts'
 
@@ -35,11 +35,11 @@ const opened = (privateSite = false) => {
   return { docs, auto }
 }
 
-test('every canvas the project offers is either synthesizable or opens empty — and the never-synthesized set is R-129\'s three plus Private', () => {
+test('every canvas the project offers is either synthesizable or opens empty — and the never-synthesized set is R-129\'s three plus Private, and the paywall surface (5.20)', () => {
   const never = canvasesOf(true).filter((key) => !isSynthesizable(CANVASES[key].file))
-  assert.deepEqual(never.sort(), ['custom-member-home', 'custom-signin', 'custom-signup', 'private'])
+  assert.deepEqual(never.sort(), ['custom-member-home', 'custom-signin', 'custom-signup', 'paywall', 'private'])
   for (const key of never) {
-    assert.ok(isMembership(key) || key === 'private', key)
+    assert.ok(isMembership(key) || key === 'private' || isSurface(key), key)
     assert.deepEqual(synthesize(CANVASES[key].file, held), { instances: [], dropped: [] }, key)
   }
   // and a canvas with no doc at all draws nothing and is not marked — the two halves of "opens empty"
@@ -145,6 +145,9 @@ test('the site-wide count is the templates that SHIP, not every canvas the switc
   // design one, and it joins the count — the number follows the project rather than a literal
   const designed = { ...docs, [templateKeyOf('custom-signup')]: doc(synthesize('tag.hbs', held).instances) }
   assert.equal(templatesOpen(canvases, designed, auto), count + 1)
+  // Story 5.20 — a designed PAYWALL is no template a header reaches: a surface never joins the count
+  const paywalled = { ...docs, [templateKeyOf('paywall')]: doc(synthesize('tag.hbs', held).instances.slice(0, 1)) }
+  assert.equal(templatesOpen(canvases, paywalled, auto), count)
   // nothing in this change is allowed to be a written-down number: every count above came out of `canvasesOf`
   assert.equal(canvases.length, Object.keys(CANVASES).length - Object.keys(CONDITIONAL).length, 'every canvas but the conditional ones')
 })

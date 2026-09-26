@@ -274,3 +274,17 @@ test('a condition is legal as a boolean, a value or a list; @member, a missing f
   // AD-36's grammar, before any syntax
   throwsBoth('<p data-if="x}}{{evil">·</p>', {}, /AD-36: data-if/)
 })
+
+test('Story 5.20 · DW-128 on the canvas: a withheld post prints no reading time only where no body was sent AND the field is 0 — otherwise the whole post\'s (MEASUREMENTS §54)', () => {
+  const src = '<p class="r" data-bind="reading_time">5 min</p>'
+  const at = (ghost: Record<string, unknown>) => renderCanvas(doc(), src, { target: 'post.hbs', ghost })
+  // withheld with no preview — Ghost empties html, plaintext AND excerpt — at 0: nothing, as Ghost's helper prints nothing
+  const none = at({ reading_time: 0, access: false, excerpt: '' })
+  assert.ok(!/min read/.test(none) && !none.includes('5 min'), none)
+  // withheld with a real reading time: the WHOLE post's, as recorded ("6 min read" on both majors)
+  assert.ok(at({ reading_time: 6, access: false, excerpt: '' }).includes('>6 min read<'))
+  // a preview was sent (the excerpt is kept): Ghost's floor, never nothing
+  assert.ok(at({ reading_time: 0, access: false, excerpt: 'The preview.' }).includes('>1 min read<'))
+  // the control: a post the visitor may read, at 0 — Ghost's floor of one minute, as before this story
+  assert.ok(at({ reading_time: 0, access: true }).includes('>1 min read<'))
+})

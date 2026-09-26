@@ -1,0 +1,10 @@
+{
+  "category": "paywall",
+  "title": "Paywall stand-ins",
+  "props": {
+    "heading": { "label": "Heading", "type": "text", "maxChars": 60, "default": "The rest is for members" },
+    "blurb": { "label": "Blurb", "type": "text", "maxChars": 160, "default": "Eleven interviews, the full list of four hundred, and the spreadsheet behind it." },
+    "signinLead": { "label": "Sign-in line", "type": "text", "maxChars": 40, "default": "Already a member?" },
+    "plansHeading": { "label": "Plans heading", "type": "text", "maxChars": 40, "default": "Paid plans" }
+  }
+}

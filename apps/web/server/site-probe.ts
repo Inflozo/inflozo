@@ -1,6 +1,6 @@
 import { versionVerdict } from '@/lib/connect-rule'
 import { ghostProPreviewProbe } from '@/lib/flags'
-import { capabilityOf, probePatch, settingsOf, settingsReadable } from '@/lib/probe-rule'
+import { capabilityOf, membersOf, probePatch, settingsOf, settingsReadable, type Members } from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
 
@@ -158,5 +158,74 @@ export async function probeSite(args: {
     const e = (thrown ?? {}) as { code?: string; name?: string }
     console.error('sites: probe threw', { code: e.code ?? e.name })
     return { ok: false, code: e.code ?? e.name }
+  }
+}
+
+/**
+ * STORY 5.20 — THE EDITOR'S RE-CHECK OF THE MEMBER SWITCHES (FR-H6, C3b): ONE Admin `settings/` read through `call()`,
+ * its two member keys written to `site_settings.members`, and the record handed back. The Paywall canvas's **Re-check**
+ * and its background re-check on open are its callers (`(editor)/actions.ts`'s `recheckMembers`).
+ *
+ * WHY NOT `probeSite`: that is FOUR facts and two reads, stamped `settings_read_at` as a whole — "Checked just now" about
+ * the code injection, Portal, the announcement and the brand, none of which this press re-reads. So it writes the ONE
+ * field it read, merged into what is there (the same read-then-write `probeSite` makes, for the same PostgREST reason),
+ * and leaves the stamp alone. AD-10 holds: an Admin read on the server, never a Content read through a route.
+ *
+ * Null for every way it can fail — Ghost refused or did not answer, a payload that is not the browse shape or does not
+ * carry both keys, a write that failed — and a code is logged with no value, as `probeSite` logs. Nothing is written
+ * then: the record stays what the last reading made it.
+ *
+ * THE SITE MUST BE THE CALLER'S BEFORE GHOST IS ASKED. `call()` decrypts whatever site id it is handed, and the id comes
+ * from `projects.linked_site_id`, which `authenticated` may write and whose foreign key checks only that the site exists
+ * — so the row is read by id AND `user_id` first, and a site that is not this user's is refused with no key decrypted
+ * and no request made.
+ */
+export async function readMembers(args: { siteId: string; userId: string; route: string }): Promise<Members | null> {
+  try {
+    const admin = supabaseAdmin()
+    const { data: owned, error: ownError } = await admin
+      .from('sites')
+      .select('id')
+      .eq('id', args.siteId)
+      .eq('user_id', args.userId)
+      .maybeSingle()
+    if (ownError || !owned) {
+      console.error('sites: members re-check refused a site', { code: ownError?.code ?? 'site_not_found' })
+      return null
+    }
+    const response = await call({ siteId: args.siteId, path: PATHS.settings, route: args.route })
+    if (!response.ok) {
+      console.error('sites: members re-check refused', { code: response.code })
+      return null
+    }
+    const members = settingsReadable(response.body) ? membersOf(settingsOf(response.body)) : null
+    if (members === null) {
+      console.error('sites: members re-check unreadable', { code: 'members_unreadable' })
+      return null
+    }
+    const { data: before, error: readError } = await admin
+      .from('sites')
+      .select('site_settings')
+      .eq('id', args.siteId)
+      .eq('user_id', args.userId)
+      .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
+    if (readError || !before) {
+      console.error('sites: members re-check read failed', { code: readError?.code ?? 'site_not_found' })
+      return null
+    }
+    const { error: writeError } = await admin
+      .from('sites')
+      .update({ site_settings: { ...(before.site_settings ?? {}), members } })
+      .eq('id', args.siteId)
+      .eq('user_id', args.userId)
+    if (writeError) {
+      console.error('sites: members re-check write failed', { code: writeError.code })
+      return null
+    }
+    return members
+  } catch (thrown) {
+    const e = (thrown ?? {}) as { code?: string; name?: string }
+    console.error('sites: members re-check threw', { code: e.code ?? e.name })
+    return null
   }
 }

@@ -1038,7 +1038,9 @@ test('Story 4.5 — control attributes, data-items trees, link attributes, icons
   // the item bodies, value for value: every attribute below is a closed value or a baked user value
   const items = (html: string) => [...html.matchAll(/<li class="f__item">[^]*?<\/li>/g)].map((m) => m[0])
   assert.equal(items(canvas).length, 3)
-  assert.deepEqual(items(canvas), items(theme), 'the data-items copies differ between emitters')
+  // Story 5.20 — the Upgrade link ships behind the site's paid flag on the theme (R-4); decided true, the copies are equal
+  assert.ok(theme.includes('{{#if @site.paid_members_enabled}}<a class="f__link" href="#" data-portal="account/plans">'), theme)
+  assert.deepEqual(items(canvas), items(decide(theme, { '@site.paid_members_enabled': true })), 'the data-items copies differ between emitters')
   const [portal, search, away] = items(canvas)
   assert.match(portal ?? '', /<a class="f__link" href="#" data-portal="account\/plans">Portal<\/a>/)
   assert.match(search ?? '', /<a class="f__link" href="#" data-ghost-search="">Search<\/a>/)
@@ -1499,4 +1501,76 @@ test('Story 5.19 · `{page_number}` inside a secondary feed prints nothing on th
   const given = { content: { title: 'Page {page_number}' }, schema, tokens: { page_number: '2' }, ghost: PAGE, target: 'index.hbs' }
   assert.ok(renderCanvas(doc(), src, given).includes('Page 2'), 'the control: the main feed on page 2 prints its number')
   assert.ok(renderCanvas(doc(), src, { ...given, feed: { query: QUERY, rows: PAGE.posts } }).includes('>Page <'))
+})
+
+// ── Story 5.20 — R-4 for the asks a design cannot see: a link the USER pointed at a Portal ask (DW-154's half) ──────────
+//
+// A button prop or an inline `a` mark pointed at Sign up or Upgrade ships behind the site's own flag for it. The theme
+// carries both answers and Ghost picks per request; the canvas carries the one the source in force's `@site` picks —
+// so agreement is taken with the theme's blocks DECIDED by the same flag the canvas was handed (`agreeDecided`).
+
+const ASK_SCHEMA: Record<string, PropDef> = {
+  label: { type: 'text', label: 'Label' },
+  action: { type: 'url', label: 'Action' },
+  words: { type: 'richtext', label: 'Words', marks: ['strong', 'a'] },
+}
+const ASK_SRC = `<section class="ask" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <a class="ask__button" data-prop="label" data-prop-attr="href:action">Join</a>
+  <p class="ask__words" data-prop="words">Words</p>
+</section>`
+const askInput = (action: unknown, words: unknown, site: Record<string, unknown> | undefined): RenderInput => ({
+  schema: ASK_SCHEMA,
+  content: { label: 'Subscribe', action, words },
+  ...(site === undefined ? {} : { ghost: { '@site': site } }),
+})
+const OFF = { allow_self_signup: false, paid_members_enabled: false }
+const ON = { allow_self_signup: true, paid_members_enabled: true }
+
+test("Story 5.20 · a button the user linked to Portal's Sign up: the theme wraps it in the site's flag, the canvas leaves it out where the flag is false — node for node", () => {
+  const input = (site: Record<string, unknown>) => askInput({ portal: 'signup' }, 'Plain words', site)
+  const theme = renderTheme(doc(), ASK_SRC, input(OFF)).template
+  assert.ok(theme.includes('{{#if @site.allow_self_signup}}<a class="ask__button" href="#" data-portal="signup">'), theme)
+  // self-signup off: the button is gone from the canvas, and the decided theme agrees node for node
+  const off = agreeDecided(ASK_SRC, input(OFF), { '@site.allow_self_signup': false })
+  assert.doesNotMatch(off.canvas, /ask__button/)
+  // on: both keep it
+  const on = agreeDecided(ASK_SRC, input(ON), { '@site.allow_self_signup': true })
+  assert.match(on.canvas, /<a class="ask__button" href="#" data-portal="signup">Subscribe<\/a>/)
+  // Upgrade stands behind the PAID flag, never the signup one
+  const upgrade = renderTheme(doc(), ASK_SRC, askInput({ portal: 'account/plans' }, 'x', OFF)).template
+  assert.ok(upgrade.includes('{{#if @site.paid_members_enabled}}<a class="ask__button" href="#" data-portal="account/plans">'), upgrade)
+  agreeDecided(ASK_SRC, askInput({ portal: 'account/plans' }, 'x', { allow_self_signup: true, paid_members_enabled: false }), { '@site.paid_members_enabled': false })
+})
+
+test('Story 5.20 · an inline Upgrade link: its words stay, unlinked, on both emitters — `{{else}}` on the theme', () => {
+  const words = { text: 'Upgrade to read everything.', marks: [{ start: 0, end: 7, mark: 'a', portal: 'account/plans' }, { start: 8, end: 12, mark: 'strong' }] }
+  const theme = renderTheme(doc(), ASK_SRC, askInput('https://x.example/', words, OFF)).template
+  assert.ok(theme.includes('{{#if @site.paid_members_enabled}}<a href="#" data-portal="account/plans">Upgrade</a>{{else}}Upgrade{{/if}}'), theme)
+  // paid off: the canvas keeps "Upgrade" as plain words, and the decided theme is the same tree
+  const off = agreeDecided(ASK_SRC, askInput('https://x.example/', words, OFF), { '@site.paid_members_enabled': false })
+  assert.match(off.canvas, /<p class="ask__words">Upgrade <strong>to r<\/strong>ead everything\.<\/p>/)
+  // paid on: linked on the canvas, and the decided theme agrees
+  const on = agreeDecided(ASK_SRC, askInput('https://x.example/', words, ON), { '@site.paid_members_enabled': true })
+  assert.match(on.canvas, /<a href="#" data-portal="account\/plans">Upgrade<\/a>/)
+})
+
+test('Story 5.20 · Sign in and Account sign nobody up and stay ungated; a render handed no @site decides nothing', () => {
+  for (const portal of ['signin', 'account']) {
+    const theme = renderTheme(doc(), ASK_SRC, askInput({ portal }, 'w', OFF)).template
+    assert.doesNotMatch(theme, /@site\./, `${portal} was gated`)
+    const { canvas } = agree(ASK_SRC, askInput({ portal }, 'w', OFF))
+    assert.match(canvas, new RegExp(`data-portal="${portal}"`))
+  }
+  // THE CONTROL: no `@site` handed, so the canvas has no flag to read and keeps the link, exactly as before this story
+  const { canvas } = bothWays(ASK_SRC, askInput({ portal: 'signup' }, 'w', undefined))
+  assert.match(canvas, /<a class="ask__button" href="#" data-portal="signup">/)
+})
+
+test("Story 5.20 · a link the design already stands behind its flag (Header — Rail's Subscribe) is not wrapped a second time", () => {
+  const src = `<section class="rail" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <span class="rail__ask" data-if="@site.allow_self_signup"><a class="rail__cta" data-prop="label" data-prop-attr="href:action">Join</a></span>
+</section>`
+  const theme = renderTheme(doc(), src, askInput({ portal: 'signup' }, 'w', ON)).template
+  assert.equal(theme.split('{{#if @site.allow_self_signup}}').length - 1, 1, `the flag was asked twice: ${theme}`)
+  agreeDecided(src, askInput({ portal: 'signup' }, 'w', OFF), { '@site.allow_self_signup': false })
 })
