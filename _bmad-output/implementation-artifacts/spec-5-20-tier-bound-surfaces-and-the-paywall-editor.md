@@ -3,7 +3,7 @@ title: 'Story 5.20 — Tier-bound surfaces and the Paywall editor'
 type: 'feature'
 created: '2026-09-26'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 baseline_commit: '33ef6b830c971f2db70d17a817420210ad95d544'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
