@@ -54,7 +54,7 @@ export function PaywallNotice({
         </h2>
         <p className="text-[13px] leading-[1.6] text-ink-mid">{PAYWALL_WORDS.offBody(site)}</p>
       </div>
-      <ol className="flex w-full list-none flex-col gap-2 border-t border-line-faint pt-[15px]">
+      <ol role="list" className="flex w-full list-none flex-col gap-2 border-t border-line-faint pt-[15px]">
         {[PAYWALL_WORDS.offStep1, PAYWALL_WORDS.offStep2].map((step, n) => (
           <li key={step} className="flex items-center gap-[9px] text-left">
             <span aria-hidden className="inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-paper-sunk text-[10px] font-semibold text-ink-soft-aa">

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { docSchema } from '@inflozo/section-runtime'
-import { isUuid } from '@/lib/editor'
+import { canvasOfTemplateKey, isSurface, isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
 import { heldElsewhere } from '@/lib/lock'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
@@ -73,6 +73,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     if (!TEMPLATE_KEY.test(key)) return no(422, 'Not a template key')
     const doc = docSchema.safeParse((docs as Record<string, unknown>)[key])
     if (!doc.success) return no(422, `${key} is not a document this editor could have written`)
+    // Review 5.20 — a TEMPLATE SURFACE holds at most one instance (FR-H6's "one design active per project"). `read.ts`
+    // throws on a doc with more, which blacks out every canvas of the project, so the one write door refuses it first.
+    const canvas = canvasOfTemplateKey(key)
+    if (canvas !== null && isSurface(canvas) && doc.data.instances.length > 1) return no(422, `${key} holds one design`)
     parsed[key] = doc.data
   }
 

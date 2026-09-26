@@ -182,7 +182,7 @@ export function TemplateSwitcher({
   // three slices are cut out of the row order rather than re-ordered here (R-129's names are `lib/editor.ts`'s).
   const membership = canvases.filter(isMembership)
   const first = canvases.findIndex(isMembership)
-  const before = first === -1 ? canvases.filter((k) => !isSurface(k)) : canvases.slice(0, first)
+  const before = (first === -1 ? canvases : canvases.slice(0, first)).filter((k) => !isSurface(k))
   const after = first === -1 ? [] : canvases.slice(first + membership.length).filter((k) => !isSurface(k))
   // STORY 5.20 — the TEMPLATE SURFACES group, last (EXPERIENCE.md:207-222): a canvas that is not a page, in D5b's
   // Membership group's shape. It holds Paywall alone — Cards arrives with Story 7.13 (R-118), and Error pages is 404.

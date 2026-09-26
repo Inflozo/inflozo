@@ -1573,4 +1573,12 @@ test("Story 5.20 · a link the design already stands behind its flag (Header —
   const theme = renderTheme(doc(), src, askInput({ portal: 'signup' }, 'w', ON)).template
   assert.equal(theme.split('{{#if @site.allow_self_signup}}').length - 1, 1, `the flag was asked twice: ${theme}`)
   agreeDecided(src, askInput({ portal: 'signup' }, 'w', OFF), { '@site.allow_self_signup': false })
+  // Review 5.20 — and the flag on the LINK ITSELF, not a span around it: `guarded` records a `data-if` on its own
+  // element, so the walk up starts there, or the same element is wrapped twice
+  const own = `<section class="rail" data-bg="base" data-spacing="comfortable" data-divider="none">
+  <a class="rail__cta" data-if="@site.allow_self_signup" data-prop="label" data-prop-attr="href:action">Join</a>
+</section>`
+  const ownTheme = renderTheme(doc(), own, askInput({ portal: 'signup' }, 'w', ON)).template
+  assert.equal(ownTheme.split('{{#if @site.allow_self_signup}}').length - 1, 1, `the flag was asked twice: ${ownTheme}`)
+  agreeDecided(own, askInput({ portal: 'signup' }, 'w', OFF), { '@site.allow_self_signup': false })
 })

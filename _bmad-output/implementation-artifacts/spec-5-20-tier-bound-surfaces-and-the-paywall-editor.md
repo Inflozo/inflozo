@@ -2,7 +2,7 @@
 title: 'Story 5.20 — Tier-bound surfaces and the Paywall editor'
 type: 'feature'
 created: '2026-09-26'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '33ef6b830c971f2db70d17a817420210ad95d544'
@@ -630,6 +630,38 @@ hypotheses until the first task RECORDS them (standing rule 1).
 - Given a session reading along, when I open the Paywall canvas, then choosing a design and its controls are disabled
   (R-192), while View as, Re-check and Back to post work.
 
+### Review Findings
+
+Review of 2026-09-26 over `33ef6b83..a516850f`, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier). The real-infra layer read production through `SUPABASE_DB_POOLER_URL` (both
+`template_key_shape` constraints list `paywall`, `convalidated`; `paywall` accepted and `paywal` refused on both tables in
+rolled-back transactions; the ghost5 row's `site_settings.members` holds exactly `signup_access` and `paid_enabled`, no
+Stripe text anywhere in the column), Vercel (`dpl_EnhjdP7ZidPFjWipwdonnjBYNHnG` READY at `a516850f`; a bogus bearer 403),
+and both Ghost servers' Admin `settings/` by JWT (`members_signup_access` and `paid_members_enabled` present on T1 and T3;
+a zeroed secret 401) and Content `/tiers/` (a bogus key 401).
+
+- [ ] [Review][Decision] T3 is not as the walk left it — Subscription access reads Nobody and every tier is public — see Question 4
+- [ ] [Review][Decision] One committed snapshot moved where a frozen criterion says none would (a4/13) — see Question 5
+- [x] [Review][Patch] The sync route accepts a `paywall` doc holding two instances, which `read.ts` then throws on for every canvas [apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts:74] — refused as a 422 at the one write door
+- [x] [Review][Patch] The switcher's plain list is filtered of surfaces only when no membership group exists [apps/web/components/editor/template-switcher.tsx:185] — both slices filtered
+- [x] [Review][Patch] The Sites notice returns an empty wrapper for a member record with no `url` [apps/web/app/(app)/app/(authed)/sites/site-notices.tsx:142] — the early return and the draw read one condition
+- [x] [Review][Patch] C3b's two steps are an `<ol>` with `list-style: none`, which WebKit strips of list semantics [apps/web/components/editor/paywall-notice.tsx:57] — `role="list"`
+- [x] [Review][Patch] `[template]/layout.tsx`'s comment still lists `paywall` among the reserved 404s [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/[template]/layout.tsx:7]
+- [x] [Review][Patch] No journey pressed ⌘D, Delete or P on the Paywall canvas, nor ◀ from untouched — the three refusals and `stepDesign`'s surface branch were unpinned [tools/keyboard/journey.spec.mjs:2386] — the stand-in journey presses all four; 7 of 7 green
+- [x] [Review][Patch] The "not wrapped a second time" test covered a span around the link, never the flag on the link itself [packages/section-runtime/src/agreement.test.ts:1569] — the same-element case added; it held (`wrapGuard` reads `guarded` on the element), so the reported double wrap was a false positive and the case is now executed
+- [x] [Review][Patch] Verification said the stress theme "is unchanged" while its `sections.js` was edited for the new rule [spec, Verification] — the sentence corrected; the pilots are the control
+- [x] [Review][Defer] A paid View as visitor is shown the cut on a live `tiers` post: the posts read includes `tags,authors` and no `tiers`, so `postAccess` sees none [apps/web/lib/live-content.ts:123] — deferred, DW-270
+- [x] [Review][Defer] `readMembers` and `probeSite` both read-then-write the whole `site_settings` jsonb; a Re-check racing the daily check drops one side's keys [apps/web/server/site-probe.ts:204] — deferred, pre-existing shape, DW-271
+- [x] [Review][Defer] `readMembers`' ownership refusal is held by a source-text assertion only [apps/web/server-wiring.test.ts:349] — deferred, DW-272
+- [x] [Review][Defer] The untouched box is always Ghost 6's recording; the linked site's major is not known to the editor [apps/web/lib/canvas.ts:257] — deferred (node for node equal, one indent apart), DW-273
+- [x] [Review][Defer] A placed ask's panel line speaks only for `signup_access: none`, while the Sites notice also speaks for invite-only, paid-only and Stripe off [apps/web/lib/paywall.ts:121] — deferred, the I/O matrix binds it to members off, DW-274
+- [x] [Review][Defer] The paywall's stylesheet is inlined, disabled, into every canvas document [apps/web/lib/pilots.ts:132] — deferred, DW-275
+
+Dismissed as noise or as the spec's own words: 19 (among them the `guardedAbove` double wrap, disproved by execution; a
+held Enter fanning out Re-checks, refused by the button while busy; the panel line's "sign-up form" wording, the members-off
+step's two values and the paid-plus-Stripe-off pair, all R-198's or Design Notes' words; the written-down `['paywall']` and
+two stand-ins, which are the story's own claims; propagation, which reached the spine, MEASUREMENTS §54 and the register).
+
 ## Spec Change Log
 
 **Dev (2026-09-26).** Each change below is outside the frozen block and was made where the build met a fact the plan
@@ -720,6 +752,11 @@ did not have; the owner-facing ones are also in the Dev report.
     origin; on the canvas document (`default-src 'self'`) each `preload` fetch was a refused request. `paywallPage` draws
     those players with no source (`withoutMedia`) — their chrome, and nothing to play — and `paywall.test.ts` holds it,
     with the recorded article's own media as its control.
+20. **The review's patches (2026-09-26)**: the sync route refuses a surface doc holding more than one instance (422, the
+   read had thrown on it); the switcher's plain list is filtered of surfaces in both branches; the Sites notice's early
+   return matches its draw; C3b's steps carry `role="list"`; the reserved-segment comment drops `paywall`; the stand-in
+   journey presses ◀ from untouched and ⌘D, Delete and P on a chosen paywall; the double-wrap test covers the flag on the
+   link itself. Two questions for the owner (4 and 5), six items deferred (DW-270 to DW-275). No product word changed.
 
 ## Design Notes
 
@@ -825,8 +862,9 @@ numbers.
   No pilot prints the bare reading-time helper.
 - `pnpm keyboard` -- expected: green, with the paywall journey among the passes.
 - `cd tools/stress && npm install && node build.js && node gate.js theme` -- expected: 0 errors / 0 warnings on both
-  majors (a root `pnpm install` first, Node 24). It is unchanged, and it is the control that the validator's new rules
-  refuse nothing already built.
+  majors (a root `pnpm install` first, Node 24). Its `sections.js` gained `data-if="@site.allow_self_signup"` on the CTA
+  archetype's form (Change Log 9), so it is NOT the control that the validator's new rules refuse nothing already built
+  — the pilots, which pass unchanged, are that control (corrected at the Review).
 - `env $(grep -E '^(SUPABASE_URL|SUPABASE_SECRET_KEY|VERCEL_TOKEN|VERCEL_TEAM_ID)=' tools/probe/.env | xargs) node tools/probe/run-verify-editor.cjs`
   -- expected: 0 FAIL on `app.inflozo.com`, with step 95 among the passes. It is known-flaky (DW-222, DW-220), so record
   every run.
@@ -1069,3 +1107,45 @@ article, the coral cut line and the box. As a Paid member the line and the box d
 
 **Ruled: option 1 (owner, 2026-09-26)** — *"The label marks where the locked part starts, for a visitor who can read it
 — as S4d draws it."* Recorded as **R-199**.
+
+### Question 4 — Your ghost5 test site is not as the automated walk left it. Did you change it?
+
+**In plain English.** The Dev walk this morning (08:17 UTC) set your ghost5 site's Subscription access to Nobody for a
+few seconds, put it back to "Anyone can sign up", and read it back — that passed. When the review read the site again
+at 12:35 UTC, Subscription access was **Nobody** and every tier, including "Ghost5 Pro", was **public** (it was hidden
+when this story was written). Ghost does not say when a setting changed, so the review cannot tell whether you changed
+these in Ghost admin — perhaps getting ready for your test — or whether something went wrong.
+
+The app is doing what it should: the daily check at 12:28 UTC recorded members off for ghost5, so your **Ghost 5
+Project** shows the members-off card and the Sites screen shows the notice right now. Your manual test's step 2 expects
+"1 tier · 1 free" with Ghost5 Pro hidden; with every tier public it will read "2 tiers · 1 free".
+
+**An example.** Open `https://ghost5.inflozo.com/ghost/#/settings/members` and look at Subscription access; then
+`…/ghost/#/settings/tiers` and look at Ghost5 Pro's visibility.
+
+1. **You changed them, and they stay as they are. (RECOMMENDED if you did)** The review notes it and your manual test's
+   step 2 is reworded to "2 tiers · 1 free". Nothing else moves.
+2. **You did not change them.** The review puts ghost5 back the way the story found it — Subscription access "Anyone
+   can sign up", Ghost5 Pro hidden — with the staff token, reads it back, and records a defect to find what flipped it.
+3. **You changed them, but want them back as they were** — the review restores both as in option 2 and records nothing
+   further.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 5 — One saved design output changed where this story promised none would. Keep the change?
+
+**In plain English.** This story adds a rule: a button the user points at Ghost's "Sign up" window is wrapped in
+"only if this site lets people sign up" on every published theme (your ruling R-4). The story also promised that
+nothing already built would come out differently, and kept the saved outputs of every design as the proof. One of them
+did change: **Latest Post** (a4/13) has a button whose default link is that very Sign up window, so its saved output now
+carries the wrapper. Both promises were yours, and they collide on this one design, so the choice is yours.
+
+**An example.** On a site where sign-up is switched off, Latest Post's button used to publish and do nothing when
+pressed. With the change it is not published at all on that site, and comes back the moment sign-up is on.
+
+1. **Keep the change: the rule wins, and the saved output was updated to match. (RECOMMENDED)** It is exactly what R-4
+   asks for, the change is one line, and the canvas and the theme agree on it node for node.
+2. **Exempt a design's DEFAULT link from the rule** — only a link the user set themselves is wrapped. Latest Post's saved
+   output goes back to what it was, and a default Sign up button can again ship to a site that cannot take it.
+
+**Ruled:** _(awaiting the owner)_

@@ -6183,3 +6183,83 @@ reason: Next 16.3.1's `collect-build-traces.js` applies `outputFileTracingInclud
 owner: unowned
 location: `apps/web/next.config.ts` (`outputFileTracingIncludes`) · `apps/web/lib/style-guide.ts` (`PACKAGES`) ·
   `apps/web/lib/pilots.ts` · `apps/web/lib/controls-review.ts` (both `import.meta.url`, untraced)
+
+## Deferred from: code review of spec-5-20-tier-bound-surfaces-and-the-paywall-editor.md (2026-09-26)
+
+### DW-270: a live `tiers` post reads as locked for the paid View as visitor
+
+plain: If one of your posts is open to some tiers only, the editor's "Paid member" preview shows it cut, although a paid
+  reader with that tier would read it. Only the preview is wrong; the published site is Ghost's own.
+status: open
+severity: medium
+origin: Story 5.20's review (2026-09-26). `postAccess` (`packages/library/src/access.ts`) blocks a `tiers` post whose
+  `tiers` list is absent; the Content API posts read (`apps/web/lib/live-content.ts:123`, `INCLUDE.posts = 'tags,authors'`)
+  requests no `tiers`, so every live `tiers` post arrives without one.
+owner: unowned — a Story 5.x fix or the next live-content story; adding `tiers` to the include is one word, but the shim
+  fixtures were recorded without it and would be re-recorded (`record-shim.py`, T1 and T3), which is why it is not a
+  review patch.
+location: `apps/web/lib/live-content.ts` (`INCLUDE`) · `packages/library/src/access.ts`
+reason: a claim about the Content API's `include=tiers` on posts is a hypothesis until executed on both majors (standing rule 1).
+
+### DW-271: two writers read-then-write the whole `site_settings` column
+
+plain: The daily check and the Paywall screen's Re-check both rewrite the same stored record of your site's settings. If
+  they land at the same moment, one can overwrite the other's part.
+status: open
+severity: low
+origin: Story 5.20's review (2026-09-26). `readMembers` (`apps/web/server/site-probe.ts:204-221`) and `probeSite` both
+  select `site_settings`, spread, and update — the shape Story 3.3 set; Story 5.20 adds the second writer.
+owner: unowned
+location: `apps/web/server/site-probe.ts`
+reason: a jsonb merge in one statement (`site_settings || $1`) is an RPC or a raw update the PostgREST client does not offer
+  directly; the window is milliseconds and a lost `members` key is re-read on the next open of the canvas.
+
+### DW-272: `readMembers`' ownership refusal is pinned by a source-text test only
+
+plain: The rule that Re-check refuses to look at a site that is not yours is checked by reading the code's text, not by
+  running it.
+status: open
+severity: medium
+origin: Story 5.20's review (2026-09-26). `apps/web/server-wiring.test.ts:349-362` asserts the index of `.eq('user_id', …)`
+  precedes `call({`; the live walk exercises Re-check on the caller's own site only.
+owner: unowned — the next story that touches `site-probe.ts`: either an executing step in `run-verify-live-content.cjs`
+  (a throwaway project pointed at the OTHER major's site row, Re-check refused, that row's `site_settings` unchanged) or
+  the ownership read lifted into an injectable client.
+location: `apps/web/server/site-probe.ts` (`readMembers`) · `apps/web/server-wiring.test.ts`
+reason: RLS is not what guards this path (the service role reads), so the executing test is the only pin.
+
+### DW-273: the untouched box is always Ghost 6's recording
+
+plain: Until you choose a design, the Paywall screen shows Ghost's own box as recorded from Ghost 6, even when your site
+  runs Ghost 5. The two differ by one indent and read the same.
+status: open
+severity: low
+origin: Story 5.20's review (2026-09-26). `SURFACE_MAJOR = '6'` (`apps/web/lib/canvas.ts:257`); the editor does not know
+  the linked site's major (`EditorSite` carries no version).
+owner: unowned — Epic 7 reads the site's version at connect for the theme; the box can follow it then.
+location: `apps/web/lib/canvas.ts` · `packages/ghost-shim/src/contract.test.ts` (the two recordings, node for node equal)
+
+### DW-274: a placed ask's panel line speaks only for members off
+
+plain: A placed sign-up section warns in its panel only when members are switched off entirely, while the Sites screen
+  also warns when your site is invite-only, paid-only or has no Stripe.
+status: open
+severity: low
+origin: Story 5.20's review (2026-09-26). `askLine` (`apps/web/lib/paywall.ts:121`) reads `membersOff`; `membersNotice`
+  reads all four facts. The story's I/O matrix binds the panel line to members off, so it is built as specified.
+owner: the owner, if he wants the panel to say the same as the Sites screen — a question for a later story, not this one.
+location: `apps/web/lib/paywall.ts`
+
+### DW-275: the paywall's stylesheet rides in every canvas document, disabled
+
+plain: The Paywall screen's article styles are sent with every editor screen, switched off, and only switched on for the
+  paywall.
+status: open
+severity: low
+origin: Story 5.20's review (2026-09-26). `apps/web/lib/pilots.ts:132` inlines `surfaceCss()` with `media="not all"` on
+  every canvas; the matrix's narrowed documents leave it out.
+owner: unowned
+location: `apps/web/lib/pilots.ts` · `apps/web/lib/style-guide.ts` (`surfaceCss`)
+reason: one stylesheet, one document, and the editor never reloads the canvas document to switch surfaces; loading it on
+  the first surface paint is the upgrade if the size ever matters.
+

@@ -138,7 +138,9 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
   // STORY 5.20 — R-4's connect warning (FR-H6): the member switches the probe recorded, after connect and on every visit
   // while the fact holds. It TELLS, so it is a sentence and a link — Inflozo never flips the setting (P8, AD-10).
   const name = site.title || (site.url ? hostOf(site.url) : '')
-  const members = membersNotice(storedMembers(site.site_settings), name)
+  // one condition for the early return and the draw: the notice needs the site's address for its link
+  const url = site.url
+  const members = url ? membersNotice(storedMembers(site.site_settings), name) : []
   if (!injection && !planAsk && !portalAsk && !preview && members.length === 0) return null
 
   return (
@@ -185,7 +187,7 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
 
       {preview ? <PreviewOnly siteId={site.id} recheckFailed={recheckFailed} /> : null}
 
-      {members.length > 0 && site.url ? (
+      {members.length > 0 && url ? (
         <Banner kind="info">
           <span data-members-notice className="flex flex-col gap-[6px]">
             {members.map((sentence) => (
@@ -193,7 +195,7 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
             ))}
             {/* a new tab, and it says so — the Sites card's own address link, `(list)/page.tsx`'s markup */}
             <a
-              href={adminAt(site.url, 'members')}
+              href={adminAt(url, 'members')}
               target="_blank"
               rel="noreferrer"
               className={`inline-flex items-center gap-[5px] self-start rounded-sm font-semibold text-sky-text underline underline-offset-2 ${ring}`}

@@ -4,7 +4,7 @@ import { canvasFromSegment, canvasPath } from '@/lib/editor'
 
 /**
  * THE SCHEME'S REFUSALS (Story 5.1, Design Notes): `/projects/<id>/home` is a 308 to the project's own address, and
- * every segment that is not a canvas — reserved (`paywall`, `cards`, an unbuilt `custom-…`), CONDITIONAL (`private`,
+ * every segment that is not a canvas — reserved (`cards`, an unbuilt `custom-…`; `paywall` is a canvas since Story 5.20), CONDITIONAL (`private`,
  * which the switcher offers to nobody yet) or unknown — is a real 404. `index` is a 404 PERMANENTLY (R-127: page 2
  * has no canvas and is derived from the Home doc). A layout, so all of it runs in the part of the response rendered
  * before the editor's Suspense boundary (`../layout.tsx` renders this outside it), where the status line is still

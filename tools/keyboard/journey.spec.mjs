@@ -2388,6 +2388,13 @@ test('5.20 · choosing a stand-in from untouched is ONE edit — the strip and t
   const tiles = page.locator('[data-design-tile]')
   const ring = await tiles.count()
   expect(ring, 'the harness hands in two stand-ins (R-158)').toBeGreaterThan(1)
+  // Review 5.20 — ◀ from untouched chooses the LAST design, ▶ the first (`stepDesign`'s surface branch), one edit each
+  await page.locator('[data-design-step="-1"]').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-panel-position')).toHaveText(`${ring} / ${ring}`)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('#paywall-untouched')).toHaveText(P.untouched)
   // the strip is one tab stop — its first tile where nothing is chosen yet — and Enter chooses
   await page.locator('[data-design-tile][tabindex="0"]').focus()
   await page.keyboard.press('Enter')
@@ -2397,6 +2404,15 @@ test('5.20 · choosing a stand-in from untouched is ONE edit — the strip and t
   await expect(page.locator('#editor-panel-position')).toHaveText(`1 / ${ring}`)
   await expect(surfaceBox(page).locator('aside.gh-post-upgrade-cta')).toHaveCount(0)
   await expect(surfaceBox(page).locator(':scope > *')).toHaveCount(1)
+  // Review 5.20 — ⌘D, Delete and P are refused on a surface: still one instance, no preview bar, the ink bar stays
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+d')
+  await page.keyboard.press('Delete')
+  await page.keyboard.press('p')
+  await expect(surfaceBox(page).locator(':scope > *')).toHaveCount(1)
+  await expect(page.locator('#paywall-untouched')).toHaveCount(0)
+  await expect(page.locator('#editor-preview-bar')).toHaveCount(0)
+  await expect(page.locator('header[data-surface]')).toHaveCount(1)
   // ▶ steps the ring, one edit
   await page.locator('[data-design-step="1"]').focus()
   await page.keyboard.press('Enter')
