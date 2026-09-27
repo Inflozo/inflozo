@@ -3,7 +3,7 @@ title: 'Story 5.22 — The editor''s responsive floor'
 type: 'feature'
 created: '2026-09-27'
 status: 'in-review'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 baseline_commit: '78fe2112233e63813f2a08acbfa1cac0566a8d4b'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
