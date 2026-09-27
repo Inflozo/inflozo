@@ -66,6 +66,13 @@ import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
  * carries Ghost's two surfaces, so `pnpm keyboard` walks the strip and the button with no database and no Ghost: the
  * shims follow the CONNECTION, not the content pill, so a site that never answers still draws both while the canvas paints
  * the sample. The editor's re-read on open is refused here (no database), which leaves the stored snapshot drawn.
+ *
+ * STORY 5.23a — `x-inflozo-harness-home: <n>` builds Home as n sections CYCLING the designs Home is built from below (the
+ * pilots that compile there and the fixture ring's first design), the main feed flagged on the first alone: the long
+ * page FR-D14 and NFR-1 measure on, with no database. The keyboard journey asks for it to prove the keyed paint node for
+ * node and to walk DW-215's Remix over several sections; `tools/perf/fps-trace.mjs` traces NFR-1 on it. Each names its
+ * own n and where it comes from. Without the header the default fixture is untouched — every other stop counts on it,
+ * which is DW-215's own reason for waiting.
  */
 
 export const metadata: Metadata = { title: 'Editor harness — Inflozo', robots: { index: false, follow: false } }
@@ -78,7 +85,7 @@ const HARNESS_PROJECT = { id: '00000000-0000-4000-8000-000000000009', name: 'Pil
  *  marked here, DERIVED from that table rather than named, so `pnpm keyboard` walks page 2 on every commit. */
 const MAIN_FEED = SYNTHESIS_DEFAULTS['home.hbs']?.find((row) => row.isMainFeed === true)?.designId
 
-const instanceOf = (entry: SectionRegistryEntry, key: string) => ({
+const instanceOf = (entry: SectionRegistryEntry, mainFeed: boolean) => ({
   instanceId: randomUUID(),
   layerName: `${entry.category.toUpperCase()} — ${entry.name}`,
   designId: entry.id,
@@ -86,14 +93,17 @@ const instanceOf = (entry: SectionRegistryEntry, key: string) => ({
   controls: {},
   data: {},
   darkOverrides: {},
-  isMainFeed: key === templateKeyOf('home') && entry.id === MAIN_FEED,
+  isMainFeed: mainFeed,
 })
 
 /** Through AD-27's ONE schema, exactly as `read.ts` and the seed do — so every field a later story defaults is
  *  defaulted here too, and a fixture the real editor could not have stored throws at the harness rather than in the
- *  browser. */
-const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc =>
-  parseDoc({ schemaVersion: 1, instances: entries.map((entry) => instanceOf(entry, key)) }, key)
+ *  browser. The main feed is Home's FIRST instance of `MAIN_FEED` alone: a page holds one (Story 5.19's rule), and a
+ *  cycled Home (Story 5.23a) holds that design many times. */
+const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc => {
+  const feed = key === templateKeyOf('home') ? entries.findIndex((entry) => entry.id === MAIN_FEED) : -1
+  return parseDoc({ schemaVersion: 1, instances: entries.map((entry, n) => instanceOf(entry, n === feed)) }, key)
+}
 
 /** Story 5.20 — the linked site the members-off walk previews: readable in shape, answering nothing (port 9 is
  *  `discard`, and the harness's CSP admits it nowhere), with a record whose Subscription access is Nobody */
@@ -155,12 +165,16 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   ])
   const placed = Object.values(entries).filter((e) => isPlaceable(e.id))
   const compiling = (file: string) => placed.filter((e) => e.compileTarget.includes(file))
+  // the fixture ring rides with them: its designs compile to `home.hbs`, so `compiling` picks up the first of
+  // the three and the journey has a section whose `[` and `]` really move
+  const home = compiling(CANVASES.home.file).filter((e) => !ring.slice(1).some((r) => r.id === e.id))
+  // Story 5.23a — the long Home, when asked for: n sections cycling the same designs in the same order
+  const cycled = Number(asked.get('x-inflozo-harness-home'))
+  const homeShown = Number.isInteger(cycled) && cycled > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
 
   const docs: Record<string, ProjectDoc> = {
     [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
-    // the fixture ring rides with them: its designs compile to `home.hbs`, so `compiling` picks up the first of
-    // the three and the journey has a section whose `[` and `]` really move
-    [templateKeyOf('home')]: docOf(templateKeyOf('home'), compiling(CANVASES.home.file).filter((e) => !ring.slice(1).some((r) => r.id === e.id))),
+    [templateKeyOf('home')]: docOf(templateKeyOf('home'), homeShown),
   }
 
   const data: EditorData = {

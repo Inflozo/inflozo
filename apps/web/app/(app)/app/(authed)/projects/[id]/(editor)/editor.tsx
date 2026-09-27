@@ -105,6 +105,20 @@ import type { EditorData } from './read'
    kept. Nothing on it is chrome at rest: the chrome stylesheet inside is keyed on `data-inflozo-*`, and a root carries
    one only while hovered or selected.
 
+   THE PAINT REDRAWS ONLY WHAT CHANGED (Story 5.23a — R-206, R-208): A DESIGN CHANGE REPLACES ONE SECTION, AND A MOVE MOVES
+   ONE. `paint()` keeps a record of what it drew, per section — the JSON of the stack entry it drew from, EVERY top-level
+   node its part parsed to (a part may open with a comment), its root and its stamps — and the render context all of them
+   were drawn under. A section whose entry and context are unchanged keeps its nodes; any other is rendered and parsed
+   ALONE, with an element of `#canvas`'s kind as the parse's context, in a full repaint too; then every drawing's nodes
+   are put in stack order. So another canvas, page, mode, visitor, subject or source, Preview, or a read that lands (the
+   store's `version()`) repaints the page — one walk, which a full repaint takes with nothing to reuse. A record is
+   trusted only while nothing else has written its section, so whatever writes one outside `paint()` drops it: the
+   control stamp, an inline editing session, a mode flip (every record), and the two that take the page's roots away.
+   Everything after the write is as after a full repaint: editing ended, the hover let go, `core` stopped before and
+   started after, `mark()`, the shims. The Paywall surface keeps its own page write and no records. The keyboard gate
+   proves it on the harness's long Home, node for node against a full repaint; the frame times are NFR-1's manual trace
+   (`tools/perf/fps-trace.mjs`), and the panels beside the canvas still redraw in full — Story 5.23b's (R-208).
+
    HOVER AND SELECTION (Story 5.2 — S4b and S4c). The editor listens on the canvas document from this one, and marks
    the section root under the pointer `data-inflozo-hover` and the chosen one `data-inflozo-selected` — state marks, which
    nothing inside the frame paints today. A press inside the canvas selects and does nothing else: `click`, `submit`,
@@ -143,7 +157,7 @@ import type { EditorData } from './read'
    Delete) as its only control and answering `↑ ↓ / ⌥↑ ⌥↓ / Enter / Space` on the row itself. Every operation goes through `doc-edit.ts` — ONE place decides what a move, a copy, a removal, a
    rename, a hide and an audience mean, so 5.8's journal and Epic 7's compiler read the rules rather than re-derive
    them — and each writes this session's `docs` and repaints. A HIDDEN instance stays in the doc and renders `''`, so
-   `sectionRoots` gives it a null root exactly as a gated section does; R-124's Member visibility is an instance field
+   it draws no node and has a null root exactly as a gated section does; R-124's Member visibility is an instance field
    handed to the render door as `RenderInput.visibility`, which Story 4.10 already honours on both emitters, and the
    panel draws it at the head of Section Settings (never in Layers). A SITE-WIDE section is one shared instance: its
    Duplicate is absent, and Delete or Hide asks first in the app's one dialog vocabulary, naming every template.
@@ -953,6 +967,13 @@ function EditorShell({
   const [failure, setFailure] = useState<Error | null>(null)
   // Story 5.3 — each paint's editing stamps, the field being edited, its toolbar, and the pill
   const stamps = useRef(new Map<HTMLElement, Stamp>())
+  /** STORY 5.23a — what `paint()` drew, per section (`queryKey`): the signature of the stack entry it drew from (its JSON),
+   *  EVERY top-level node its part parsed to — a part may open with a comment, and the section owns that too — its root
+   *  and its stamps; and the render context they were all drawn under. Trusted only while nothing else has written the
+   *  section: whatever writes one outside `paint()` drops its record, or every record (`restampAll`, `blank`). */
+  type Drawn = { sig: string; nodes: ChildNode[]; root: HTMLElement | null; stamps: Map<HTMLElement, Stamp> }
+  const drawn = useRef(new Map<string, Drawn>())
+  const drawnUnder = useRef<string | null>(null)
   type Editing = { inline: Inline; target: HTMLElement; path: string; item?: number; n: number }
   const editing = useRef<Editing | null>(null)
   const [session, setSession] = useState<Inline | null>(null)
@@ -1717,6 +1738,9 @@ function EditorShell({
    *  the text selection, the scroll position and the selection all survive the flip (the story's whole point). */
   const restampAll = () => {
     const now = latest.current
+    // Story 5.23a: every root is written here, outside the paint, so no record of a drawing may be trusted after it —
+    // not even when a flip back returns the mode the page was drawn in before the next paint
+    drawn.current.clear()
     roots.current.forEach((root, n) => {
       const placed = now.stack[n]
       const input = placed ? slice(placed) : undefined
@@ -1785,6 +1809,7 @@ function EditorShell({
     if (mount) mount.innerHTML = ''
     roots.current = []
     stamps.current = new Map()
+    drawn.current.clear()
     paintedAt.current = null
     latest.current.hovered = null
     setHovered(null)
@@ -2252,6 +2277,8 @@ function EditorShell({
         for (const q of view.need) editReads.current.add(liveKey(q))
         roots.current = []
         stamps.current = new Map()
+        // Story 5.23a: the page left standing is not a drawing anything may be kept from
+        drawn.current.clear()
         latest.current.hovered = null
         setHovered(null)
         mark()
@@ -2267,12 +2294,13 @@ function EditorShell({
       const { site: at } = live !== null ? (live.contexts[pageFile] as RenderContext) : orbitWeekly.templateContext(pageFile, feed, sampleSubject, postsPerPage)
       const url = at.currentUrl
       const pageNumber = now.page === 2 ? (at.pagination as { page?: number } | undefined)?.page : undefined
-      const parts = now.stack.map((i) => {
+      /** One section's markup, exactly as every paint has drawn it. */
+      const partOf = (i: Placed): string => {
         const entry: SectionRegistryEntry | undefined = entries[i.designId]
         if (!entry) throw new Error(`${i.designId} was not read for this project`)
-        // Story 5.4: HIDDEN IS RETAINED, NEVER REMOVED — the instance stays in the doc and renders nothing, so
-        // `sectionRoots` gives it a null root exactly as a member-gated section does, and Epic 7 leaves it out of the
-        // compile. R-124's audience reaches the render door as `visibility`, which gates the root on both emitters.
+        // Story 5.4: HIDDEN IS RETAINED, NEVER REMOVED — the instance stays in the doc and renders nothing, so it owns no
+        // node and has no root, exactly as a member-gated section, and Epic 7 leaves it out of the compile. R-124's
+        // audience reaches the render door as `visibility`, which gates the root on both emitters.
         if (i.hidden || whole) return ''
         // Story 5.6: a repaint in dark must draw the DARK render — the mode picks the stored slice handed to the one
         // door, here as it does in `restampAll` and `onChange`, so no repaint ever silently returns to light
@@ -2291,10 +2319,56 @@ function EditorShell({
           live: live === null ? undefined : { context: live.contexts[i.target] as RenderContext, rows: own },
           secondary: secondary === undefined ? undefined : { query: secondary, rows: rowsFor(secondary, own?.[FEED_KEY]) },
         })
-      })
+      }
+      // Story 5.3: the stamps are lifted into memory in the same task they are parsed, so none is ever painted or observable
+      const STAMPED = '[data-inflozo-prop], [data-inflozo-ghost]'
+      /* STORY 5.23a — THE KEYED PAINT (R-206): a section whose stack entry (its JSON — equal JSON is equal plain data, so a
+         false "same" cannot happen) and render context are both unchanged KEEPS ITS NODES; any other is rendered and
+         parsed alone. The context is every input of `renderSection` but the instance — the icons are set once before the
+         first paint and the design entries never change in a session — plus Preview, which decides how `core` starts;
+         so another canvas, page, mode, visitor, subject or source, Preview, or a read that lands repaints the page.
+         One walk: a full repaint is the same walk with nothing to reuse. */
+      const context = JSON.stringify([
+        now.key, now.page, pageFile, feed, url, pageNumber ?? null, now.mode, now.viewAs, now.preview, now.source,
+        live === null ? null : (reads.current?.version() ?? null), now.stored ?? null, sampleSubject ?? null, postsPerPage, assets,
+      ])
+      const keep = context === drawnUnder.current ? drawn.current : new Map<string, Drawn>()
+      /* EACH PART IS PARSED ALONE, with an element of `#canvas`'s own kind in the canvas document as its context — the
+         parse `#canvas.innerHTML` gave the whole page before — so a section parses the same whether it is redrawn alone or
+         with every other. Through `innerHTML` and never `Range.createContextualFragment`, which un-marks a `<script>`: EXECUTED
+         (2026-09-27) on the harness canvas under its own policy, a `<script src>` inserted from a contextual fragment was
+         fetched and RAN — `'strict-dynamic'` admits a script that is not parser-inserted — while `innerHTML` and a
+         `<template>` fetched nothing. No part carries a script (`validate.ts`'s `authored-script`), and this keeps it inert
+         if one ever did. */
+      const parse = (html: string): ChildNode[] => {
+        if (html === '') return []
+        const into = doc.createElement(mount.localName)
+        into.innerHTML = html
+        return [...into.childNodes]
+      }
+      const order = paywall
+        ? []
+        : now.stack.map((i): [string, Drawn] => {
+            const id = queryKey(i)
+            const sig = JSON.stringify(i)
+            const was = keep.get(id)
+            if (was !== undefined && was.sig === sig && was.nodes.every((node) => node.parentNode === mount)) return [id, was]
+            // a section OWNS every top-level node its part parses to — the controls fixtures open with a comment — and its
+            // root is the one element among them; a hidden or gated section's `''` owns nothing and has no root
+            const nodes = parse(partOf(i))
+            const elements = nodes.filter((node): node is HTMLElement => node.nodeType === Node.ELEMENT_NODE)
+            const stamped = elements.flatMap((el) => [...(el.matches(STAMPED) ? [el] : []), ...el.querySelectorAll<HTMLElement>(STAMPED)])
+            return [id, { sig, nodes, root: elements[0] ?? null, stamps: takeStamps(stamped) }]
+          })
+      // Story 5.20: the surface's page is written whole, as it always was, and keeps no drawing
+      const parts = paywall ? now.stack.map(partOf) : []
       // Story 5.15: the behaviours running on the markup about to be replaced stop first, putting every mount back
       // at rest — and the new markup is written PLAIN. Whether a mount runs is `core`'s to say, mount by mount, below;
       // `mountSections`' blanket `js-enabled` drew every mount in its JavaScript branch with nothing running.
+      // ponytail: EVERY mount stops and restarts, kept or not — `core` scans the whole document once at start and has no
+      // per-root scope, and a full repaint restarted them all before Story 5.23a; `sync()` already halts and restarts a
+      // mount on the same element, so a module survives it. Scope it to the redrawn sections the day a running module's
+      // restart becomes visible — a change to `core.js`, which is Ask First.
       behaviours.current?.stop()
       behaviours.current = null
       // STORY 5.20 — the canvas document's post-body stylesheet is ON for the surface alone (`pilots.ts`), and the
@@ -2303,15 +2377,35 @@ function EditorShell({
       if (surfaceSheet) surfaceSheet.media = paywall ? 'all' : 'not all'
       const arriving = paintedAt.current?.key !== now.key
       const accent = live !== null ? live.site['accent_color'] : orbitWeekly.site().accent_color
-      mount.innerHTML = paywall ? paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null }) : parts.join('')
+      if (paywall) {
+        mount.innerHTML = paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null })
+        stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>(STAMPED))
+        // a section's root is its part's element — on the surface, in the box
+        roots.current = sectionRoots(parts, mount.querySelector('[data-inflozo-box]') ?? mount) as (HTMLElement | null)[]
+        drawn.current = new Map()
+        drawnUnder.current = null
+      } else {
+        // every child no kept drawing owns goes (the last page's, a blanked canvas's, the surface's); then each drawing's
+        // nodes are put in stack order — a kept node already in its place stays where it is, so a move moves one section
+        const owned = new Set(order.flatMap(([, d]) => d.nodes))
+        for (const node of [...mount.childNodes]) if (!owned.has(node)) node.remove()
+        let cursor = mount.firstChild
+        for (const [, d] of order) {
+          for (const node of d.nodes) {
+            if (node === cursor) cursor = node.nextSibling
+            else mount.insertBefore(node, cursor)
+          }
+        }
+        drawn.current = new Map(order)
+        drawnUnder.current = context
+        // document order, section by section — `sameLock`'s index reads it
+        stamps.current = new Map(order.flatMap(([, d]) => [...d.stamps]))
+        roots.current = order.map(([, d]) => d.root)
+      }
       // STORY 5.21 — Ghost's strip and button, outside `#canvas`, for the visitor and the canvas this paint drew
       drawShims(doc)
-      // Story 5.3: the stamps lifted into memory in the same task, so none is ever painted or observable
-      stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>('[data-inflozo-prop], [data-inflozo-ghost]'))
       const back = lock && lock.at >= 0 ? sameLock(lock.words)[lock.at] : undefined
       if (back && lock) showNote({ el: back, kind: 'lock', words: lock.words })
-      // a section's root is its part's element in the mount — on the surface, in the box
-      roots.current = sectionRoots(parts, paywall ? (mount.querySelector('[data-inflozo-box]') ?? mount) : mount) as (HTMLElement | null)[]
       // STORY 5.20 — the Paywall canvas OPENS at the cut (or where the gated part begins): the article above it is context
       const cut = paywall && arriving ? mount.querySelector('[data-inflozo-cut], [data-inflozo-gated]') : null
       if (cut && doc.defaultView) doc.defaultView.scrollTo({ top: Math.max(0, cut.getBoundingClientRect().top + doc.defaultView.scrollY - doc.defaultView.innerHeight / 3) })
@@ -2447,6 +2541,9 @@ function EditorShell({
     const placed = latest.current.stack[n]
     const def = placed ? entries[placed.designId]?.contentSchema[stamp.path] : undefined
     if (!placed || !def) return false
+    // Story 5.23a: the session writes this section's DOM itself (the span below, `lib/inline.ts`, the same prop drawn
+    // twice), so its drawing is dropped — the repaint after editing ends draws it fresh, typed into or not
+    drawn.current.delete(queryKey(placed))
     // moving between fields: the first ends in place, and its end asks for no paint because it is no longer current
     const was = editing.current
     editing.current = null
@@ -3795,6 +3892,9 @@ function EditorShell({
     const input = kind === 'control' && placed ? slice(placed, next) : undefined
     if (input && root && design) {
       stampControls(root as unknown as RuntimeElement, input)
+      // Story 5.23a: stamped in place, so the root is no longer what its record says was drawn — an undo back to the
+      // stored value would otherwise match the record and keep this stamp
+      if (placed) drawn.current.delete(queryKey(placed))
       mark()
     } else paint()
   }

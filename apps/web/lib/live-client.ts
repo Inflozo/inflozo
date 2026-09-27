@@ -37,6 +37,10 @@ export type LiveStore = {
   reading: () => Reading
   /** choosing the site in the SOURCE group — the one "try again", never after a refused key or the ceiling */
   retry: () => void
+  /** Story 5.23a — how many answers have been written to the cache: a read that lands, a background one included. The
+   *  canvas keeps each section's drawing while its render context holds, and this is the context's word for "the rows
+   *  in hand have changed", so any landing repaints the whole page. */
+  version: () => number
 }
 
 /** `feature_image_caption` is stored as HTML (§31a): reduced to its words through an INERT document — `DOMParser`'s
@@ -54,6 +58,8 @@ export function liveStore(origin: string, key: string, now: () => number = Date.
   let reading: Reading = START
   /** has a read answered in this session? Until one has, the key is unproven and reads go one at a time */
   let answered = false
+  /** answers written to the cache (`version()`) */
+  let written = 0
 
   const width = () => (answered && reading.failures === 0 ? WIDTH : 1)
   const pump = () => {
@@ -97,6 +103,7 @@ export function liveStore(origin: string, key: string, now: () => number = Date.
           if (answer !== null) {
             answered = true
             cache.set(k, { at: now(), answer })
+            written++
           }
         }
       } finally {
@@ -128,5 +135,6 @@ export function liveStore(origin: string, key: string, now: () => number = Date.
     retry: () => {
       reading = retried(reading)
     },
+    version: () => written,
   }
 }

@@ -578,7 +578,12 @@ DOCS = [
   "Ghost's own box for a logged out user and a free member, S4d's gated label for a paid member, the Design block absent "
   "while the library holds no paywall design, the switcher's Template surfaces group — and takes `paywall` off step 6's "
   "404 list, since it is a canvas now. Story 5.21 adds step 96: the seeded project links no site, so every canvas the walk "
-  "paints is read for [data-ghost-surface] as it lands and none may appear, with a planted surface as the count's control."),
+  "paints is read for [data-ghost-surface] as it lands and none may appear, with a planted surface as the count's control. "
+  "Story 5.23a adds to step 60, on its planted 40-section Home: ⌥↓ on a planted row keeps every section root the same "
+  "node and moves one, with the longest task noted; a word typed into a planted heading on the canvas and taken back, the "
+  "repaint that ends the session drawing that section fresh and keeping every other root; and Preview in and out, whose "
+  "full repaint must equal the canvas node for node — then it leaves the editor before putting Home back, since the step "
+  "now edits the plant."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
@@ -1011,6 +1016,18 @@ DOCS = [
   'sized to the section, toHaveScreenshot against packages/library/baselines/{category}/{n}/, then axe-core 4.12.1 at '
   'WCAG 2.1 AA behind an alt-less <img> control that must be reported or the case aborts. Only --update inside the '
   'image writes.'),
+ ('tools/perf/fps-trace.mjs', 'tool', "NFR-1's 3-second trace, run by hand",
+  ("Story 5.23a (R-206, R-208): NFR-1's frame-time gate, manual on the reference computer and NEVER CI's. It builds and "
+   'starts the production harness itself (INFLOZO_HARNESS=1 on `next build` and `next start`, never `next dev`), opens '
+   "the editor on the harness's long Home (x-inflozo-harness-home, FR-D14's and NFR-1's 40 sections) at 1440 x 900 and, "
+   'per run in a fresh context, warms it as NFR-1 defines warm — a ringed section selected, hovered so its pill mounts, '
+   'its Style group open — then refuses the run unless an 80 ms busy task on a timer shows as a long task AND as dropped '
+   'vsyncs (standing rule 2). The clock is 3 s at --rate x CPU throttle (default 4) for --runs (default 3): a Shuffle '
+   'from the pill, two control changes, a pill-grip drag of about 20 moves and a drop, and a ⌥↓ from the Layers row; a '
+   'gesture that cannot be performed fails the run. A rAF interval of n vsyncs drops n − 1, so p95 ≤ 16.7 ms is "at most '
+   '5% of vsyncs dropped"; it prints per run the gestures, vsyncs, dropped and their share, the p95 and the longest task, '
+   'PASS or FAIL against NFR-1, and exits 0 only when every run passes. It restores apps/web/next-env.d.ts and stops its '
+   'own server; never beside pnpm keyboard, since both build into apps/web/.next-harness.')),
  ('tools/keyboard/run-keyboard-gate.sh', 'tool', 'The keyboard gate — NFR-6(d), on every commit',
   ("Story 5.9's gate (R-146), modelled on tools/matrix/run-matrix-gate.sh and supabase/tests/run-rls-gate.sh: it boots "
    '`next dev` itself on a free port with INFLOZO_HARNESS=1 and no Supabase environment, waits for /app/harness/editor '
@@ -1044,7 +1061,17 @@ DOCS = [
   "does not move; L's Layers overlay handing over to Controls; the skip link landing in Controls; crossing 1280 live; a "
   "Light-only project with no dark row (a fourth header); R-192 reading along, its view rows acting; and a confirm open "
   "in a panel closing as the window crosses 1280 rather than staying modal and unseen; and R-203's Section Picker at "
-  "720, one column its arrows still walk. Stores no "
+  "720, one column its arrows still walk. Story 5.23a walks the keyed paint on the harness's LONG HOME (its own request header, "
+  "x-inflozo-harness-home, FR-D14's and NFR-1's 40 sections), each section root tagged with an expando before a gesture: "
+  "`]`, `[`, the panel's ◀ and ▶ and a thumbnail replace one root; ⌥↓ and ⌥↑ keep every root and move one, its comment with it; "
+  "Space, ⌘D, Del, the Picker and their ⌘Z and ⇧⌘Z touch only their section; a control stamped in place keeps its node and "
+  "is drawn fresh at the next paint, an undo back to its drawn value included; a flip and a flip back leave every root "
+  "drawn fresh; then P P, whose full repaint must equal the keyed canvas node for node and keep every part's own comment; "
+  "DW-215's Remix over several sections undone by ONE ⌘Z; View as, page 2, another canvas, a subject, a source and "
+  "the Paywall's own page write each redraw the whole page; and a read that LANDS does too — the linked harness site's "
+  "reads answered from the bundled sample through page.route and the page's clock moved past the minute a read stays "
+  "fresh, so a background revalidation lands unpainted and the next edit's paint redraws every section and shows it. "
+  "Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',
   "Story 5.22's journeys that may tap, in the keyboard gate's own run (R-201, R-202, D4f, D8a, D8b), on Playwright's "

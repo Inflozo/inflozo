@@ -5190,7 +5190,7 @@ reason: MEASURED, AND THE BOX IS NOT VISIBLE. At step 2 the window's scroll rang
 
 ### DW-215: one `⌘Z` restoring SEVERAL remixed sections is proved on the pure fold, never in a browser
 
-status: open
+status: done 2026-09-27 (Story 5.23a, Dev) — walked in a browser on every commit
 severity: low
 origin: Story 5.12's Review (2026-09-20), Verification Gap reviewer and Blind Hunter.
 owner: Story 5.23a (R-206, owner, 2026-09-27) — its 40-section harness page is where several sections re-roll and one
@@ -5202,6 +5202,13 @@ plain: Remix promises that one Undo puts a whole page back. The automated walk o
 reason: The review made the fold pure (`remixFold`) and tests it with two picks and with a refusal, and the editor
   commits its result once, so the claim is structurally held. An end-to-end stop needs a second ringed section on
   the harness Home doc, which shifts the fixtures every other stop counts on; left for the story that has a real ring.
+fix: Story 5.23a (2026-09-27). The harness builds a LONG Home on request (`x-inflozo-harness-home`, FR-D14's long page,
+  the Home designs cycled — `harness/editor/layout.tsx`), so the default fixture every other stop counts on is
+  untouched, and the keyboard gate's DW-215 stop (the 5.23a describe in `tools/keyboard/journey.spec.mjs`) remixes it:
+  every section of the fixture ring re-rolls, the stop asserts more than one did, ONE ⌘Z puts the canvas back equal to
+  its pre-Remix snapshot node for node (`isEqualNode`), and no other section's root was replaced at either step. Its
+  control: on the paint as it stood before 5.23a the same stop failed — every root on the page new after the Remix,
+  not only the re-rolled ones.
 
 ### DW-216: the die's pip-centre measurement is written three times
 

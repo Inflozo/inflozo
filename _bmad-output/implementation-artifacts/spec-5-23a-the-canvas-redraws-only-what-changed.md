@@ -2,7 +2,7 @@
 title: 'Story 5.23a — The canvas redraws only what changed'
 type: 'feature'
 created: '2026-09-27'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '1a55920de16816a4403dda48dcba1173ea5bc684'
@@ -148,32 +148,32 @@ re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `plac
 
 **Execution:**
 
-- [ ] `apps/web/lib/live-client.ts` -- `LiveStore` gains `version()`: the number of answers written to the cache --
+- [x] `apps/web/lib/live-client.ts` -- `LiveStore` gains `version()`: the number of answers written to the cache --
   a read that lands, a background one included, changes the render context.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- `paint()` becomes Design Notes' walk: a
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- `paint()` becomes Design Notes' walk: a
   record per section by `queryKey` (its signature, every top-level node, its root, its stamps) and the context it was
   drawn under; reuse, render-and-parse alone (`Range.createContextualFragment` over `#canvas`), remove what no kept
   record owns, insert in stack order; `roots` and `stamps` from the records. The Paywall keeps `paywallPage` and no
   records. Records dropped by `blank`, the edit-that-needs-a-read branch, `restampAll`, `startEditing` and `onChange`'s
   stamp. The file header's paint paragraph says so -- R-206's "a design change replaces one section, a move moves one".
-- [ ] `apps/web/app/(app)/app/harness/editor/layout.tsx` -- `x-inflozo-harness-home: <n>` builds Home as n instances
+- [x] `apps/web/app/(app)/app/harness/editor/layout.tsx` -- `x-inflozo-harness-home: <n>` builds Home as n instances
   cycling today's Home designs, the main feed flagged on the first alone; the header comment says so -- the 40-section
   fixture with no database, the default fixture untouched (DW-215's own reason).
-- [ ] `tools/keyboard/journey.spec.mjs` -- a `describe` on the 40-section Home (roots tagged with an expando before each
+- [x] `tools/keyboard/journey.spec.mjs` -- a `describe` on the 40-section Home (roots tagged with an expando before each
   gesture): `]`/`[` replace one root; ⌥↓ moves one; Space, ⌘D, Del and their ⌘Z touch only their section; a control
   changed in place, then another section's ⌥↓, leaves the changed section's root new, and `.` then an edit leaves every
   root new; after them all, `P` `P` and `isEqualNode` against a `cloneNode(true)` taken before; DW-215's Remix and one ⌘Z
   against its pre-Remix snapshot. Run the identity stops once on the baseline paint and record them failing -- the
   mechanism's gate, on every commit.
-- [ ] `tools/perf/fps-trace.mjs` (new) -- the manual NFR-1 trace in Design Notes: builds and starts the production
+- [x] `tools/perf/fps-trace.mjs` (new) -- the manual NFR-1 trace in Design Notes: builds and starts the production
   harness, warms it, traces 3 s at `--rate` (default 4) for `--runs` (default 3), prints and exits 0/1, restores
   `apps/web/next-env.d.ts` and stops its own server -- NFR-1's gate, never CI's.
-- [ ] `tools/probe/run-verify-editor.cjs` -- step 60, on the planted 40-section Home: ⌥↓ keeps every root and moves one;
+- [x] `tools/probe/run-verify-editor.cjs` -- step 60, on the planted 40-section Home: ⌥↓ keeps every root and moves one;
   a canvas typing round trip (a word typed into a planted heading, then taken back) and `P` `P`, then `isEqualNode`; the
   longest task noted -- R-82 on production, where the canvas typing path lives.
-- [ ] `tools/doc-audit.py` -- a row for `tools/perf/fps-trace.mjs`; the journey's and the walk's rows name 5.23a's
+- [x] `tools/doc-audit.py` -- a row for `tools/perf/fps-trace.mjs`; the journey's and the walk's rows name 5.23a's
   additions -- the gate walks every file under `tools/`.
-- [ ] `_bmad-output/implementation-artifacts/deferred-work.md`, `.../reconcile-designs-decisions.md` -- DW-215 closed with
+- [x] `_bmad-output/implementation-artifacts/deferred-work.md`, `.../reconcile-designs-decisions.md` -- DW-215 closed with
   its journey stop; R-206's "⬜ built — Story 5.23a" and R-208's 5.23a half ticked with what was built and measured --
   standing rule 3.
 
@@ -202,6 +202,30 @@ re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `plac
   no migration exists.
 
 ## Spec Change Log
+
+**Dev (2026-09-27 and 09-28).** Each entry is outside the frozen block and was made where the build met a fact the plan did not
+have; none changes what the canvas draws.
+
+1. **Each part is parsed through `innerHTML` on a detached element of `#canvas`'s own kind, not
+   `Range.createContextualFragment`** (the task named it). Executed on the harness canvas under its own policy
+   (`script-src 'self' 'nonce-…' 'strict-dynamic'`): a `<script src>` inserted from a contextual fragment was fetched and
+   ran, while `innerHTML` and a `<template>` fetched nothing. The context element is `#canvas`'s kind in the canvas
+   document, so the frozen rule — each part parsed alone with `#canvas` as its context, in the full repaint too — holds;
+   the finding is the comment beside the code.
+2. **The journey pins each part's opening comment directly.** Both paints take the one walk, so `P` `P`'s node-for-node
+   comparison cannot see a defect the two share — executed: dropping every part's comment passed it. The journey reads,
+   from the library's own files, every design whose markup opens with a comment and requires that comment directly
+   before each such root, after a keyed move and after the full repaint.
+3. **The trace performs the drag before the ⌥↓**, while the dragged section is still where the warm-up put it on
+   screen. The gesture set is the Design Notes'.
+4. **"A read that lands" is walked in the keyboard gate** — the one whole-page change the harness had no way to make,
+   because its linked site answers nothing. The journey answers that site's Content API reads from the bundled sample
+   (`page.route`) and moves the page's clock past `FRESH_MS` (`page.clock`): a background revalidation lands unpainted,
+   and the next edit's paint must redraw every section and show what landed. Its control: with `version()` taken out of
+   the paint's context, the stop fails at "the next one repaints the whole page".
+5. **Step 60 also checks that the paint ending an inline session draws that section fresh** and keeps every other root.
+   Its control, a scratch edit: without the drop in `startEditing`, the typed section's root was kept after Esc and every
+   step-60 check the task named still passed.
 
 ## Design Notes
 
@@ -290,6 +314,101 @@ A24 compiles to `post.hbs` alone and R-37 allows one Post Content per page, so i
   controls seen and every gesture performed in every run; record each run's numbers as printed.
 - `python3 tools/doc-audit.py --check`, twice -- expected: PASS.
 - `git diff --stat 1a55920de16816a4403dda48dcba1173ea5bc684 HEAD -- supabase` -- expected: empty (no Schema phase).
+
+**Recorded at Dev (2026-09-27; this computer, the i5-6600K; Node 24.18.1; Playwright 1.61.1 with Chromium 149):**
+
+- `tsc --noEmit -p .` (TypeScript 7.0.2, run non-incrementally): no output, exit 0. Its control, a type error planted in
+  `paint()`, was reported and then removed.
+- `pnpm check`: exit 0, no failing test in any package.
+- **The identity stops on the baseline paint: red, as expected.** The 5.23a describe run against `paint()` as it stood
+  at `1a55920d` failed its first identity stop (after `]`, every root on the page was new where one was expected) and
+  DW-215's stop (every root new after the Remix, not only the re-rolled ones). Its whole-page stops passed there, since
+  a full repaint makes every root new.
+- **After: `pnpm keyboard`, 0 failed** — printed `105 passed (3.9m)`, the floor journeys included.
+- **The stops' controls.** Each was a scratch edit of `editor.tsx`, reverted and compared byte for byte afterwards:
+  - without the drop at the control stamp, "⌘Z of a stamped control" went red: the undo reused the stamped drawing;
+  - without the drop at the flip, "after a flip and back, the next paint draws every section fresh" went red;
+  - with Preview left out of the render context, "Preview in and out is a whole-page repaint" went red;
+  - with a part's comment left out of its drawing, and with the walk moving only each drawing's root, the comment pin
+    went red.
+- **Found at Dev: why the comment pin exists.** Both paints go through the ONE walk, so `P` `P`'s node-for-node
+  comparison cannot see a defect the two share. Executed: dropping every part's comment passed it. So the journey reads,
+  from the library's own files, every design whose markup opens with a comment. It then requires that comment directly
+  before each such root, after a keyed move and after the full repaint.
+- **Found at Dev: the parse.** `Range.createContextualFragment`, the Code Map's named call, un-marks a `<script>`.
+  Executed on the harness canvas under its own policy (`script-src 'self' 'nonce-…' 'strict-dynamic'`): a `<script
+  src>` inserted from a contextual fragment was fetched and ran (`load`, no violation), while `innerHTML` and a
+  `<template>` fetched nothing. So each part is parsed through `innerHTML` on a detached element of `#canvas`'s own kind.
+  That is the same parse, with `#canvas`'s kind as the context, so the frozen rule holds. The finding is the comment
+  beside the code.
+- **The trace before**, on `paint()` as at `1a55920d` (planning's 31.9–32.3% in Design Notes came from an earlier script
+  whose two control changes never ran, so the two are not compared):
+  - `--rate 4 --runs 3`, exit 1:
+    - `run 1: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3151 ms (the gestures outran the 3 s) · 189 vsyncs, 114 dropped (60.3%; NFR-1 allows 5.0%) · p95 frame 66.6 ms · longest task 636 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+    - `run 2: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3125 ms (the gestures outran the 3 s) · 188 vsyncs, 111 dropped (59.0%; NFR-1 allows 5.0%) · p95 frame 66.7 ms · longest task 621 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+    - `run 3: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3122 ms (the gestures outran the 3 s) · 187 vsyncs, 110 dropped (58.8%; NFR-1 allows 5.0%) · p95 frame 50.0 ms · longest task 628 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+  - `--rate 1 --runs 1`, exit 1:
+    - `run 1: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3002 ms · 180 vsyncs, 24 dropped (13.3%; NFR-1 allows 5.0%) · p95 frame 16.8 ms · longest task 172 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+- **The trace after:**
+  - `--rate 4 --runs 3`, exit 1:
+    - `run 1: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3000 ms · 180 vsyncs, 13 dropped (7.2%; NFR-1 allows 5.0%) · p95 frame 16.8 ms · longest task 75 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+    - `run 2: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3002 ms · 180 vsyncs, 13 dropped (7.2%; NFR-1 allows 5.0%) · p95 frame 16.8 ms · longest task 71 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+    - `run 3: FAIL — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3001 ms · 180 vsyncs, 17 dropped (9.4%; NFR-1 allows 5.0%) · p95 frame 33.3 ms · longest task 75 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+  - `--rate 1 --runs 1`, exit 0:
+    - `run 1: PASS — 5 gestures (Shuffle, a control, a control, a pill-grip drag, ⌥↓) in 3004 ms · 180 vsyncs, 1 dropped (0.6%; NFR-1 allows 5.0%) · p95 frame 16.7 ms · longest task 0 ms (NFR-1 allows 50) · control: 80 ms task seen as 80 ms, 3 vsyncs dropped`
+  - At 4× the gestures now fit inside the 3 s, and NFR-1 still fails there: that is the panels' share, Story 5.23b's
+    (R-208).
+  - The trace's own fixes, found while building it. The radios carry no name, so a control change is read by its group's
+    label and the checked place — the planning run's missed lookup. The drag lifts only once Layers' drop slot has moved,
+    or the drop read a landing not yet rendered. The drag runs before the ⌥↓, while its section is still on screen.
+- **Step 60's new block, dry-run before the deploy.** Its production run follows the Dev push, because the walk refuses a
+  dirty tree and a deployment that is not HEAD. The block, with the walk's own helpers copied into a scratch probe, ran against the production harness build
+  on its long Home, and every check passed. Its control, a scratch edit: without the drop when an inline session starts,
+  the typed section's root was KEPT after Esc, and every step-60 check written until then still passed. So step 60 now
+  also checks that the repaint ending the session draws that section fresh and keeps every other root.
+- `python3 tools/doc-audit.py --check`: the first run regenerated the index for the new catalogue row and asked for the
+  story board (`tools/story-board.py`); then PASS on each of the next two runs.
+- `git diff --stat 1a55920de16816a4403dda48dcba1173ea5bc684 -- supabase` (the working tree): empty — no migration, no
+  Schema phase.
+
+**Re-run at the hand-back (2026-09-28; the same computer and toolchain), after the journey gained Spec Change Log 4's stop
+and the panel's ◀:**
+
+- `tsc --noEmit -p .`: exit 0, no output.
+- `pnpm check`: exit 0 — lint, typecheck, every package's tests with 0 failed, and `check-snapshots: PASS`.
+- `pnpm keyboard`, the whole gate on the final tree: `106 passed (3.9m)`, 0 failed — the six 5.23a stops among them.
+- **A read that lands** (Spec Change Log 4): passed alone and in the whole gate. Its control, a scratch edit taking
+  `version()` out of the paint's context (restored and compared byte for byte): red at *"a read landed since the last
+  paint: the next one repaints the whole page"*, received `false`.
+- **The comment pin, corrected.** With the panel's ◀ added, the ringed section sits on controls/2 rather than controls/3
+  when the pin runs, and the pin reported *"root 40 (cy)"* lost. The comment was there: the canvas draws controls/2's
+  opening comment without the blank line its file has (executed — 1016 characters drawn against the file's 1017, a
+  `\n\n` drawn as `\n`), and the pin compared characters. It now compares words, whitespace folded on both sides. Its
+  control, re-run: with every part's comment left out of its drawing, it listed every commented root as lost, `root 5
+  (cx)` to `root 40 (cy)`.
+- **The 5.23a describe on the baseline paint** (`editor.tsx` as at `1a55920d`, swapped in, then restored and compared
+  byte for byte): `3 failed, 3 passed` — red at *"`]`: that section alone is new"*, DW-215's *"exactly the re-rolled
+  sections are new"* and the read-lands stop's own control, *"nothing landed: ⌥↓ keeps every root and moves one"*. The
+  whole-page stops pass there, as a full repaint must.
+- **The pointer-only doors, executed once.** A scratch Playwright probe (not committed, and not a gate — the journey takes
+  no pointer) on the harness's long Home at 1440 × 900, read by the journey's expando method: `0 FAIL, 3 PASS`. The pill's
+  Shuffle (1 of 3 → 2 of 3) replaced root 4 alone; a Layers-row grip drag and a pill-grip drag each kept every root and
+  moved one. Its control, the same probe on the baseline paint: `3 FAIL, 0 PASS`, every root new each time.
+- **The trace after, re-run:** `--rate 4 --runs 3`, exit 1 — 8.9%, 7.2% and 9.4% of vsyncs dropped, longest tasks 76, 69
+  and 69 ms, every control seen; `--rate 1 --runs 1`, exit 0 — `PASS`, 0.6% dropped, no long task. The figures above
+  reproduce. **Its refusal, executed** (standing rule 2): a copy with the control's busy task cut to 20 ms, under a long
+  task's 50, printed `run 1: REFUSED — the control was not seen — an 20 ms task read as a 0 ms long task and 0 dropped
+  vsyncs` and exited 1. The copy was deleted.
+
+**Real infrastructure (R-82)** — what this Dev phase hit and what each returned, keys by variable name only:
+
+- **Before the push.** GitHub Actions (`GITHUB_TOKEN`): CI run 36334607544 at `42b549f7` — `check`, `rls` and `deploy`
+  success; Render matrix run 36334607539 success. Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): production
+  is `dpl_5wq5VCQZ5wtV9ytkz97MEMaKv76A`, READY at `42b549f7` — the paint as it stood before this story.
+- **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo. This story calls no Ghost API — the keyboard gate's
+  read that lands is answered from the bundled sample by the journey itself — sends no email and bills nothing.
+- **After the push:** the CI run, the deployment and step 60 on production's planted Home are recorded by the next Dev
+  commit, because the walk refuses a dirty tree and a deployment that is not HEAD.
 
 **Manual checks (R-82, after CI publishes):**
 

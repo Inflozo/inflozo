@@ -921,6 +921,21 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     *The canvas redraws only what changed*, ships the keyed canvas and records the trace; a new Story 5.23b, straight
     after, makes the editor's panels redraw only what changed and carries the 60 fps pass; Epic 5 exits when 5.23b's
     trace passes, and Story 5.24 runs after 5.23b.
+  - **Story 5.23a's Dev (2026-09-27): the keyed paint is `editor.tsx`'s `paint()`, ONE walk.** A drawing per section
+    (`drawn`, by `queryKey`: the stack entry's JSON, every top-level node, the root, the stamps) and the context they were
+    drawn under — every `renderSection` input but the instance, plus Preview and the live store's `version()`. The
+    control stamp, an inline session, a flip, `blank` and the edit-read branch drop records. **Each part is parsed through
+    `innerHTML` on a detached element of `#canvas`'s kind, never `createContextualFragment`**: executed, a `<script src>`
+    from a contextual fragment was fetched and ran under the canvas's `'strict-dynamic'` policy. **One walk means `P` `P`
+    cannot see a defect both paints share** (dropping every part's comment passed it), so the journey pins each part's
+    opening comment from the library's own files, as words (the canvas drops a blank line inside a comment). **A read
+    can land in the harness:** the journey answers the linked harness site's Content API reads from the bundled sample
+    (`page.route`) and moves the page's clock past `FRESH_MS` (`page.clock`). The harness's long Home is
+    `x-inflozo-harness-home: <n>`. The manual
+    trace is `tools/perf/fps-trace.mjs`. At 4×: 59–60% of vsyncs dropped before and 7–9% after, the longest task 621–636 ms
+    before and 71–75 ms after. At 1×: 13.3% and 172 ms before, and a PASS after. **For 5.23b:** the misses left at 4× are
+    the panels' (R-208). Every mount still restarts on each paint, because `core` has no per-root scope; the `ponytail:`
+    in `paint()` says so, and a change to `core.js` is Ask First.
 
 ## Technical Decisions
 

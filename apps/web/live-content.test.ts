@@ -166,11 +166,14 @@ test('fresh: a key read in the last minute is served from memory with NO request
   try {
     let clock = 0
     const s = liveStore('https://ghost5.example', 'k', () => clock, words)
+    assert.equal(s.version(), 0, 'Story 5.23a: nothing written yet')
     await Promise.all([s.ensure([SETTINGS]), s.ensure([SETTINGS])])
     assert.equal(net.calls.length, 1, 'two consumers, one key: one request')
+    assert.equal(s.version(), 1, 'Story 5.23a: a read that lands is one more answer in hand — the canvas repaints on it')
     clock += FRESH_MS - 1
     await s.ensure([SETTINGS])
     assert.equal(net.calls.length, 1, 'fresh: no request')
+    assert.equal(s.version(), 1, 'a fresh hit writes nothing')
     assert.equal(s.peek(SETTINGS)?.rows[0]?.['title'], 'Ghost5')
     // STALE: served at once — `peek` still answers — and revalidated ONCE, in the background, never awaited
     clock += 2
@@ -181,6 +184,7 @@ test('fresh: a key read in the last minute is served from memory with NO request
     await again
     await new Promise((r) => setTimeout(r, 10))
     assert.equal(net.calls.length, 2, 'one background revalidation, however many ask')
+    assert.equal(s.version(), 2, 'Story 5.23a: a background revalidation that lands counts too — "the next paint shows it"')
     // the request carries the key in its address and the version in its header — the header is not in the URL
     assert.equal(net.calls[0]?.searchParams.get('key'), 'k')
   } finally {
@@ -202,6 +206,7 @@ test('stale, and the revalidation fails: the failure is COUNTED, and what is in 
     assert.equal(net.calls.length, 2, 'the stale key was revalidated once')
     assert.deepEqual({ failures: s.reading().failures, last: s.reading().last, stopped: s.reading().stopped }, { failures: 1, last: 'unanswered', stopped: null })
     assert.equal(s.peek(SETTINGS)?.rows[0]?.['title'], 'Ghost5', 'the stale answer is still what a paint reads')
+    assert.equal(s.version(), 1, 'Story 5.23a: a failed read writes nothing, so nothing repaints for it')
   } finally {
     net.restore()
   }

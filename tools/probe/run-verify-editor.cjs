@@ -203,6 +203,12 @@
 // RE-EXPECTED: its context is coarse, so the editor is compact and the tap opens the Controls overlay, which Esc closes
 // before the tap into the headline. STEP 9 IS RE-EXPECTED: the server now always draws the skeleton, never the editor,
 // because a phone must never mount it. Step 90 reads the name in the bar's left column, where the grid puts it.
+// Story 5.23a ADDS TO STEP 60, on its planted 40-section Home (R-206): ⌥↓ on a planted row keeps every section root the
+// same node and moves that one a place on (read by an expando on each root, the keyboard gate's method), with the longest
+// main-thread task noted; a word typed into a planted heading ON THE CANVAS and taken back — the typing path the keyboard
+// gate cannot reach — whose ending repaint must draw that section fresh and keep every other root; and then Preview in
+// and out, whose full repaint must equal the canvas node for node (`isEqualNode`).
+// Because the step now EDITS the plant, it leaves the editor before putting Home back (step 52's reason).
 const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -2903,9 +2909,82 @@ async function main() {
     check(`step 60 — FR-D14: NOTHING CAPS SECTIONS PER TEMPLATE — all ${FIXTURE} planted sections plus the site-wide ones are drawn`, bigRoots === bigStack, `${bigRoots} roots · want ${bigStack}`)
     check('step 60 — FR-D14\'s lockup bound: no main-thread task over 5s while a device change lands on that canvas (slower is acceptable, a lockup is not)', longest < 5000, `longest long task ${Math.round(longest)}ms`)
     note('step 60', `NFR-1's 60fps / p95 <= 16.7ms / no-task-over-50ms gate is NOT asserted here — manual-only at 4x throttle on the reference laptop, Story 5.23b (longest task this run: ${Math.round(longest)}ms)`)
-    // the fixture is put back before anything else reads this canvas
-    const restored = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: homeDoc }) })
-    check('step 60 — the planted fixture is removed and Home is the doc it was, so every later step reads the seed', (restored.status === 200 || restored.status === 204) && JSON.stringify((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc) === JSON.stringify(homeDoc), `HTTP ${restored.status}`)
+
+    // ── step 60 (Story 5.23a, R-206) — THE KEYED PAINT ON PRODUCTION'S LONG HOME. Every root is tagged with an expando
+    // before a gesture: a node a paint kept still carries it. ⌥↓ must keep every root and move one; a word typed into a
+    // planted heading ON THE CANVAS — the typing path the keyboard gate cannot reach (FR-D1) — and taken back must leave
+    // nothing behind, so a full repaint (Preview in and out) equals the canvas node for node.
+    const tag60 = () => canvasFrame().evaluate(() => { const roots = [...document.querySelectorAll('#canvas > *')]; roots.forEach((el, n) => { el.__keyed = n }); return roots.length })
+    const tags60 = () => canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].map((el) => el.__keyed ?? null))
+    const ownRows60 = () => page.evaluate(() => [...document.querySelectorAll('aside[aria-label="Layers"] [data-layer-row]')].map((r) => r.dataset.layerRow).filter((k) => !k.startsWith('site:')))
+    const moving60 = (await ownRows60())[1]
+    await page.locator(`[data-layer-row="${moving60}"]`).focus()
+    await page.keyboard.press('Enter')
+    await page.waitForTimeout(500)
+    const at60 = await canvasFrame().evaluate(() => [...document.querySelectorAll('#canvas > *')].findIndex((el) => el.hasAttribute('data-inflozo-selected')))
+    const n60 = await tag60()
+    await page.evaluate(() => { window.__long60 = []; window.__obs60 = new PerformanceObserver((list) => window.__long60.push(...list.getEntries().map((e) => e.duration))); window.__obs60.observe({ type: 'longtask' }) })
+    await page.locator(`[data-layer-row="${moving60}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await page.waitForTimeout(800)
+    const longest60 = await page.evaluate(() => { window.__obs60.disconnect(); return Math.max(0, ...window.__long60) })
+    const moved60 = await tags60()
+    const want60 = [...Array(n60).keys()]
+    ;[want60[at60], want60[at60 + 1]] = [want60[at60 + 1], want60[at60]]
+    check('step 60 — Story 5.23a: ⌥↓ on a planted row keeps EVERY root the same node and moves that one a place on — nothing drawn again',
+      at60 > 0 && (await ownRows60()).indexOf(moving60) === 2 && JSON.stringify(moved60) === JSON.stringify(want60),
+      `place ${at60} of ${n60} · ${JSON.stringify(moved60.map((t, i) => (t === i ? '=' : t)))}`)
+    note('step 60', `Story 5.23a — the ⌥↓ among ${FIXTURE} planted sections: longest main-thread task ${Math.round(longest60)}ms (a move drew every section before; NFR-1's bar is the manual trace, tools/perf/fps-trace.mjs)`)
+    const grid60 = await canvasFrame().evaluate((cls) => [...document.querySelectorAll('#canvas > *')].findIndex((el) => el.querySelector(cls) !== null), TITLE)
+    const title60 = await wordsOf(grid60, TITLE)
+    await clickOn(grid60)
+    await caretInto(grid60, TITLE)
+    await page.keyboard.type(' Summer')
+    await page.waitForTimeout(300)
+    const typed60 = await wordsOf(grid60, TITLE)
+    for (let n = 0; n < ' Summer'.length; n++) await page.keyboard.press('Backspace')
+    await page.waitForTimeout(300)
+    // Esc's first rung ends the editing session, and its repaint draws the section fresh
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(800)
+    const back60 = await wordsOf(grid60, TITLE)
+    check('step 60 — Story 5.23a: a word typed into a planted heading on the canvas lands, and taken back the heading reads as it did', grid60 > 0 && typed60?.endsWith(' Summer') && back60 === title60, `${JSON.stringify(title60)} → ${JSON.stringify(typed60)} → ${JSON.stringify(back60)}`)
+    // THE SESSION'S SECTION IS DRAWN FRESH at the repaint that ends it — never kept, though its words came back as they
+    // were drawn: the session wrote its DOM. Nothing else paints between the tags above and that repaint (a first press
+    // only selects, typing never repaints), so every other root still carries its tag. Executed at 5.23a's Dev: without
+    // the drop in `startEditing` this section's root was KEPT and every other step-60 check still passed.
+    const afterEsc60 = await tags60()
+    check('step 60 — Story 5.23a: the paint that ends an inline session draws that section fresh, and keeps every other root', JSON.stringify(afterEsc60) === JSON.stringify(moved60.map((t, i) => (i === grid60 ? null : t))), `section ${grid60} · ${JSON.stringify(afterEsc60.map((t, i) => (t === moved60[i] ? '=' : t)))}`)
+    // the pointer leaves the canvas first, so no hover — a state mark, not the page — differs between the two readings
+    await page.mouse.move(4, 4)
+    await page.waitForTimeout(300)
+    await canvasFrame().evaluate(() => { window.__before60 = document.getElementById('canvas').cloneNode(true) })
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('p')
+    await page.waitForTimeout(900)
+    await page.keyboard.press('p')
+    await page.waitForTimeout(900)
+    const agree60 = await canvasFrame().evaluate(() => {
+      const c = document.getElementById('canvas')
+      const was = window.__before60
+      if (c.isEqualNode(was)) return { equal: true, fresh: [...c.children].every((el) => el.__keyed === undefined) }
+      const n = [...Array(Math.max(c.childNodes.length, was.childNodes.length)).keys()].find((i) => !c.childNodes[i]?.isEqualNode(was.childNodes[i] ?? null))
+      const say = (node) => (node === undefined ? 'nothing' : node.nodeType === 1 ? node.outerHTML.slice(0, 200) : `${node.nodeName} ${JSON.stringify((node.textContent ?? '').slice(0, 100))}`)
+      return { equal: false, first: `child ${n} — now ${say(c.childNodes[n])} — was ${say(was.childNodes[n])}` }
+    })
+    check('step 60 — Story 5.23a: after the move and the typing, a full repaint (Preview in and out) draws every section fresh and equals the canvas node for node', agree60.equal && agree60.fresh, JSON.stringify(agree60))
+    // THE EDITOR GOES FIRST again, for step 52's reason: this step now EDITS the plant, and a departing page's flush would
+    // land on top of the restore. Written and read back up to three times, as `freshLoad` does, for the same race.
+    await leaveEditor()
+    let restored = { status: 0 }
+    let homeNow60 = null
+    for (let attempt = 0; attempt < 3; attempt++) {
+      restored = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: homeDoc }) })
+      await page.waitForTimeout(400)
+      homeNow60 = (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc
+      if (JSON.stringify(homeNow60) === JSON.stringify(homeDoc)) break
+    }
+    check('step 60 — the planted fixture is removed and Home is the doc it was, so every later step reads the seed', (restored.status === 200 || restored.status === 204) && JSON.stringify(homeNow60) === JSON.stringify(homeDoc), `HTTP ${restored.status}`)
 
     // ── Story 5.8's steps, inside step 5's CSP session ────────────────────────────────────────────────────────────
     //

@@ -4577,7 +4577,12 @@ Epic 5 closes when both stories are green, and this one keeps to 'nothing is los
   - ✅ `epic-5-context.md`.
   - ✅ the ledger — DW-215.
   - ✅ `run-verify-editor.cjs`'s header and step 60, which named Story 5.23 as the fps gate's.
-  - ⬜ built — Story 5.23a.
+  - ✅ built — Story 5.23a's Dev (2026-09-27): `paint()` keeps a drawing per section and redraws only what changed — a
+    design change replaces one section, a move moves one — proved node for node in the keyboard gate on the harness's
+    long Home (`x-inflozo-harness-home`), DW-215's Remix and one ⌘Z with it, and a read that lands repainting the page;
+    the deployed walk's step 60 carries the same checks to production (R-82). NFR-1's trace is `tools/perf/fps-trace.mjs`, run before and after and
+    recorded in the spec: at 4× the share of vsyncs dropped fell from 59–60% to 7–9% and the longest task from 621–636 ms
+    to 71–75 ms, and at 1× the trace now passes. The 60 fps pass at 4× is Story 5.23b's (R-208).
 - *Amended by **R-208** (owner, 2026-09-27): the 60 fps pass moved to a new Story 5.23b, and Epic 5 exits when 5.23,
   5.23a and 5.23b are green. 5.23a keeps the canvas: a design change replaces one section and a move moves one.*
 
@@ -4639,7 +4644,9 @@ stays one job, the half-second freezes go sooner, and 5.23b is planned from its 
   - ✅ `sprint-status.yaml` — 5.23a's key renamed, 5.23b added.
   - ✅ `epic-5-context.md`.
   - ✅ `run-verify-editor.cjs`'s header and step 60, which named Story 5.23a as the fps gate's.
-  - ⬜ built — Story 5.23a (the canvas) and Story 5.23b (the panels and the 60 fps pass).
+  - ✅ built — Story 5.23a, the canvas (its Dev, 2026-09-27; R-206's tick has what was measured). The trace still misses
+    NFR-1 at 4× — 7.2–9.4% of vsyncs dropped and 71–75 ms tasks — which is the panels' work this ruling gives 5.23b.
+  - ⬜ built — Story 5.23b (the panels and the 60 fps pass).
 
 ## B · Approved decisions superseded by this session
 

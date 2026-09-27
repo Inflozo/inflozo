@@ -21,7 +21,7 @@
 //
 // Every expectation below is the spec's I/O matrix, row for row.
 
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
 
@@ -3318,4 +3318,465 @@ test('Story 5.22 — a confirm open in a panel as the window crosses 1280 closes
   await page.locator('#editor-more').focus()
   await page.keyboard.press('Enter')
   await expect(moreRows(page).first()).toBeFocused()
+})
+
+/* ── Story 5.23a — THE CANVAS REDRAWS ONLY WHAT CHANGED (R-206, R-208, DW-215) ────────────────────────────────────────
+   On the harness's LONG Home — asked for by header, so every stop above keeps the default fixture — each section root is
+   tagged with an expando before a gesture: a node the paint kept still carries its tag, a node it made carries none. So
+   "that section's nodes are new and every other root is the same node in the same place" is read off the canvas itself.
+   After the matrix's gestures, a full repaint (`P` `P`) must draw exactly what the keyed paints left, node for node; and
+   DW-215's Remix over several sections is undone by ONE ⌘Z. The mechanism's gate, on every commit — the frame times are
+   NFR-1's manual trace (`tools/perf/fps-trace.mjs`), never CI's. */
+
+/** FR-D14's long page and NFR-1's (`prd.md` §5 FR-D14, §6 NFR-1): the section count both are measured on. */
+const LONG_HOME = 40
+
+/** Every section root tagged with its place — an expando on the node itself, which only a node a paint KEPT carries on. */
+const tagRoots = (page) =>
+  canvasFrame(page).locator('#canvas').evaluate((c) => {
+    for (const [n, el] of [...c.children].entries()) el.__keyed = n
+    return c.children.length
+  })
+/** Each root's tag in canvas order: the place it was tagged at, or null for a node a paint made since. */
+const tagsOf = (page) => canvasFrame(page).locator('#canvas').evaluate((c) => [...c.children].map((el) => el.__keyed ?? null))
+/** The selected section's place among the roots. */
+const selectedPlace = (page) => canvasFrame(page).locator('#canvas').evaluate((c) => [...c.children].findIndex((el) => el.hasAttribute('data-inflozo-selected')))
+/** 0 … n-1: every root still where it was tagged. */
+const kept = (n) => [...Array(n).keys()]
+/** …with the root at `at` and the one after it changing places. */
+const swapped = (n, at) => kept(n).toSpliced(at, 2, at + 1, at)
+/** Every root a node the last paint made — a whole-page repaint. */
+const allNew = (tags) => tags.length > 0 && tags.every((t) => t === null)
+
+/** The first setting in the selected section's Style group that is its group's tab stop — pinned by the label its group
+ *  is named by (the radios carry no name but their words) — with the place of its checked radio. Opens Style first. */
+async function styleSetting(page) {
+  const style = page.locator('#editor-controls button[id$="-group-style"]')
+  if ((await style.getAttribute('aria-expanded')) !== 'true') {
+    await style.focus()
+    await page.keyboard.press('Enter')
+    await expect(style).toHaveAttribute('aria-expanded', 'true')
+  }
+  const label = await page.evaluate(() =>
+    document.querySelector('#editor-controls [id$="-group-style-body"] [role="radio"][tabindex="0"]')?.closest('[role="radiogroup"]')?.getAttribute('aria-labelledby') ?? null)
+  expect(label, "the section's Style group holds a setting to change").not.toBeNull()
+  const group = `#editor-controls [role="radiogroup"][aria-labelledby="${label}"]`
+  return {
+    stop: page.locator(`${group} [role="radio"][tabindex="0"]`),
+    checked: () => page.locator(`${group} [role="radio"]`).evaluateAll((radios) => radios.findIndex((r) => r.getAttribute('aria-checked') === 'true')),
+  }
+}
+
+/** Each design whose markup OPENS WITH A COMMENT, by its root's first class, with the comment's words — read off the
+ *  library and its fixtures, so nothing here names a design. Compared as WORDS, whitespace folded on both sides: the canvas
+ *  draws controls/2's comment without the blank line its file has (executed at 5.23a's Dev), and that is not a lost comment. */
+const folded = (words) => words.replace(/\s+/g, ' ').trim()
+const OPENING_COMMENTS = (() => {
+  const lib = new URL('../../packages/library/', import.meta.url)
+  return Object.fromEntries(['designs', 'fixtures/controls'].flatMap((dir) =>
+    readdirSync(new URL(dir, lib), { recursive: true })
+      .filter((file) => String(file).endsWith('index.html'))
+      .flatMap((file) => {
+        const opening = readFileSync(new URL(`${dir}/${file}`, lib), 'utf8').match(/^\s*<!--([\s\S]*?)-->\s*<[a-z]+[^>]*\bclass="([^"\s]+)/)
+        return opening === null ? [] : [[opening[2], folded(opening[1])]]
+      })))
+})()
+/** A part OWNS every top-level node it parses to (Story 5.23a): so every root whose design opens with a comment is drawn
+ *  with that comment directly before it, wherever a keyed paint has moved it. How many such roots are drawn, and which
+ *  have lost theirs. */
+const commentsKept = (page) =>
+  canvasFrame(page).locator('#canvas').evaluate((c, openings) => {
+    let drawn = 0
+    const lost = []
+    for (const [n, el] of [...c.children].entries()) {
+      const words = openings[el.classList[0]]
+      if (words === undefined) continue
+      drawn++
+      let before = el.previousSibling
+      while (before !== null && before.nodeType === 3 && before.data.trim() === '') before = before.previousSibling
+      if (before === null || before.nodeType !== 8 || before.data.replace(/\s+/g, ' ').trim() !== words) lost.push(`root ${n} (${el.className})`)
+    }
+    return { drawn, lost }
+  }, OPENING_COMMENTS)
+
+/** A LINKED SITE THAT ANSWERS (Story 5.23a). The harness's linked site (`SURFACES_SITE`) answers nothing, so no read ever
+ *  lands in the harness. Here every Content API read is answered from the bundled sample, whose rows are the Content
+ *  API's own shape (`live-content.test.ts` holds the whitelist to them): filtered by slug, tag, writer or id, ordered by
+ *  date and paged, as Ghost does. `revise()` retitles the newest post from then on, so a read that lands afterwards
+ *  carries words no drawing made before it holds; `finished()` counts the answers the page has received. */
+const SAMPLE = JSON.parse(readFileSync(new URL('../../packages/library/orbit-weekly/dataset.json', import.meta.url), 'utf8'))
+const LIVE = await import(new URL('../../apps/web/lib/live-content.ts', import.meta.url).href)
+async function answeringSite(page) {
+  const newest = SAMPLE.posts.toSorted((a, b) => b.published_at.localeCompare(a.published_at))[0]
+  const revised = `${newest.title} (revised)`
+  let posts = SAMPLE.posts
+  let finished = 0
+  page.on('requestfinished', (r) => {
+    if (r.url().includes('/ghost/api/content/') && r.method() === 'GET') finished++
+  })
+  const cors = { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }
+  await page.route('**/ghost/api/content/**', (route) => {
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers: cors })
+    const url = new URL(route.request().url())
+    const resource = url.pathname.split('/').filter(Boolean).at(-1)
+    const q = Object.fromEntries(url.searchParams)
+    if (resource === 'settings') return route.fulfill({ json: { settings: SAMPLE.site }, headers: cors })
+    const all = { posts, pages: [SAMPLE.subjects.page], tags: SAMPLE.tags, authors: SAMPLE.authors, tiers: SAMPLE.tiers }[resource] ?? []
+    const [, field, value = ''] = /^(\w+):(.*)$/.exec(q.filter ?? '') ?? []
+    const among = value.replace(/^\[|\]$/g, '').split(',').map((v) => v.replace(/^'|'$/g, ''))
+    const rows = all.filter((r) =>
+      field === 'slug' ? among.includes(r.slug)
+      : field === 'id' ? among.includes(r.id)
+      : field === 'tags' ? (r.tags ?? []).some((t) => among.includes(t.slug))
+      : field === 'authors' ? (r.authors ?? []).some((a) => among.includes(a.slug))
+      : field === 'visibility' ? r.visibility === value
+      : true)
+    const dated = rows.every((r) => typeof r.published_at === 'string')
+    const ordered = dated ? rows.toSorted((a, b) => (q.order?.endsWith('asc') ? 1 : -1) * a.published_at.localeCompare(b.published_at)) : rows
+    const limit = q.limit === 'all' ? Math.max(1, ordered.length) : Number(q.limit ?? 15)
+    const at = Number(q.page ?? 1)
+    const pagination = { page: at, limit, pages: Math.max(1, Math.ceil(ordered.length / limit)), total: ordered.length }
+    return route.fulfill({ json: { [resource]: ordered.slice((at - 1) * limit, at * limit), meta: { pagination } }, headers: cors })
+  })
+  return {
+    newest: newest.title,
+    revised,
+    revise: () => {
+      posts = SAMPLE.posts.map((p) => (p.id === newest.id ? { ...p, title: revised } : p))
+    },
+    finished: () => finished,
+  }
+}
+
+/** The canvas as it stands, cloned into the canvas window to compare against later. */
+const snapshot = (page) => canvasFrame(page).locator('#canvas').evaluate((c) => { c.ownerDocument.defaultView.__snapshot = c.cloneNode(true) })
+/** null while `#canvas` equals the snapshot node for node (`isEqualNode`); otherwise the FIRST differing child, named. */
+const differs = (page) =>
+  canvasFrame(page).locator('#canvas').evaluate((c) => {
+    const was = c.ownerDocument.defaultView.__snapshot
+    if (c.isEqualNode(was)) return null
+    const n = [...Array(Math.max(c.childNodes.length, was.childNodes.length)).keys()].find((i) => !c.childNodes[i]?.isEqualNode(was.childNodes[i] ?? null))
+    const say = (node) => (node === undefined ? 'nothing' : node.nodeType === 1 ? node.outerHTML.slice(0, 240) : `${node.nodeName} ${JSON.stringify((node.textContent ?? '').slice(0, 120))}`)
+    return `child ${n} of ${c.childNodes.length} (was ${was.childNodes.length}) — now ${say(c.childNodes[n])} — was ${say(was.childNodes[n])}`
+  })
+
+test.describe('Story 5.23a — the canvas redraws only what changed, on the long Home', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-home': String(LONG_HOME) })
+  })
+
+  test('a design change replaces one section, a move moves one, and hide, show, duplicate, delete, place, undo and redo touch only theirs; a control stamped in place and a flip are drawn fresh; then a full repaint equals it all node for node', async ({ page }) => {
+    await open(page)
+    const own = async () => (await rows(page)).page
+    expect(await own(), 'the harness built the long Home').toHaveLength(LONG_HOME)
+    const canvasStop = page.locator('section[aria-label="Canvas"]')
+    const count = async (n) => expect.poll(async () => (await tagsOf(page)).length).toBe(n)
+
+    // ── A DESIGN CHANGE — `]`, `[`, the panel's ◀ ▶ and a thumbnail: that section's nodes new, every other root in place
+    await selectRinged(page)
+    const ringed = await selectedPlace(page)
+    let n = await tagRoots(page)
+    await canvasStop.focus()
+    await page.keyboard.press(']')
+    await expect(counter(page)).toHaveText(/^2 of \d+$/)
+    expect(await tagsOf(page), '`]`: that section alone is new').toEqual(kept(n).toSpliced(ringed, 1, null))
+    await tagRoots(page)
+    await page.keyboard.press('[')
+    await expect(counter(page)).toHaveText(/^1 of \d+$/)
+    expect(await tagsOf(page), '`[`: that section alone is new').toEqual(kept(n).toSpliced(ringed, 1, null))
+    await tagRoots(page)
+    await page.locator('[data-design-step="1"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(counter(page)).toHaveText(/^2 of \d+$/)
+    expect(await tagsOf(page), "the panel's ▶: that section alone is new").toEqual(kept(n).toSpliced(ringed, 1, null))
+    await tagRoots(page)
+    await page.locator('[data-design-step="-1"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(counter(page)).toHaveText(/^1 of \d+$/)
+    expect(await tagsOf(page), "the panel's ◀: that section alone is new").toEqual(kept(n).toSpliced(ringed, 1, null))
+    await tagRoots(page)
+    await page.locator('[data-design-strip] [role="option"][tabindex="0"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await page.keyboard.press('Enter')
+    await expect(counter(page)).toHaveText(/^2 of \d+$/)
+    expect(await tagsOf(page), 'a thumbnail: that section alone is new').toEqual(kept(n).toSpliced(ringed, 1, null))
+
+    // ── A MOVE — ⌥↓ and ⌥↑ on a Layers row: nothing rendered, every root the same node, the moved one a place on — and a
+    //    section whose part opens with a comment (the controls fixtures do) moves WITH its comment
+    const [, second, third, fourth, , sixth] = await own()
+    await select(page, fourth)
+    const from = await selectedPlace(page)
+    n = await tagRoots(page)
+    await page.locator(`[data-layer-row="${fourth}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await expect.poll(async () => (await own()).indexOf(fourth)).toBe(4)
+    expect(await tagsOf(page), '⌥↓: every root the same node, the moved one a place on').toEqual(swapped(n, from))
+    const carried = await commentsKept(page)
+    const movedClass = await canvasFrame(page).locator('#canvas').evaluate((c, at) => c.children[at].classList[0], from + 1)
+    expect(Object.keys(OPENING_COMMENTS), 'the control: the section moved opens with a comment').toContain(movedClass)
+    expect(carried.lost, 'a part owns its comment: it moved with its root').toEqual([])
+    await page.keyboard.press('Alt+ArrowUp')
+    await expect.poll(async () => (await own()).indexOf(fourth)).toBe(3)
+    expect(await tagsOf(page), '⌥↑: every root the same node, back in its place').toEqual(kept(n))
+
+    // ── HIDE AND SHOW — Space on a row: its nodes go, then come back new; ⌘Z and ⇧⌘Z touch that section alone
+    await select(page, second)
+    const at = await selectedPlace(page)
+    n = await tagRoots(page)
+    await page.locator(`[data-layer-row="${second}"]`).focus()
+    await page.keyboard.press(' ')
+    await count(n - 1)
+    expect(await tagsOf(page), 'hidden: its root goes and no other').toEqual(kept(n).toSpliced(at, 1))
+    await page.keyboard.press(' ')
+    await count(n)
+    expect(await tagsOf(page), 'shown: its root comes back new and no other').toEqual(kept(n).toSpliced(at, 1, null))
+    await tagRoots(page)
+    await page.keyboard.press('ControlOrMeta+z')
+    await count(n - 1)
+    expect(await tagsOf(page), '⌘Z of the show: its root goes and no other').toEqual(kept(n).toSpliced(at, 1))
+    await page.keyboard.press('ControlOrMeta+Shift+z')
+    await count(n)
+    expect(await tagsOf(page), '⇧⌘Z: its root comes back new and no other').toEqual(kept(n).toSpliced(at, 1, null))
+
+    // ── DUPLICATE — ⌘D: one new root directly after the selection; ⌘Z takes it away again
+    await select(page, second)
+    n = await tagRoots(page)
+    await page.keyboard.press('ControlOrMeta+d')
+    await count(n + 1)
+    expect(await tagsOf(page), '⌘D: one new root after it, no other replaced').toEqual(kept(n).toSpliced(at + 1, 0, null))
+    await page.keyboard.press('ControlOrMeta+z')
+    await count(n)
+    expect(await tagsOf(page), '⌘Z of the duplicate: the copy goes and no other').toEqual(kept(n))
+
+    // ── DELETE — Del: the selection's nodes go; ⌘Z brings them back new, ⇧⌘Z takes them again, ⌘Z once more
+    await select(page, second)
+    await page.keyboard.press('Delete')
+    await count(n - 1)
+    expect(await tagsOf(page), 'Del: its root goes and no other').toEqual(kept(n).toSpliced(at, 1))
+    await page.keyboard.press('ControlOrMeta+z')
+    await count(n)
+    expect(await tagsOf(page), '⌘Z of the delete: its root back new, no other').toEqual(kept(n).toSpliced(at, 1, null))
+    await page.keyboard.press('ControlOrMeta+Shift+z')
+    await count(n - 1)
+    expect(await tagsOf(page), '⇧⌘Z of the delete: its root goes again').toEqual(kept(n).toSpliced(at, 1))
+    await page.keyboard.press('ControlOrMeta+z')
+    await count(n)
+
+    // ── PLACE — ⌘K and Enter: the placed section's nodes come, directly after the selection; ⌘Z takes them away
+    await select(page, third)
+    const after = await selectedPlace(page)
+    n = await tagRoots(page)
+    await canvasStop.focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(picker(page)).toBeVisible()
+    await picker(page).locator('[data-cell]:not([aria-label*="Site-wide"])').first().focus()
+    await page.keyboard.press('Enter')
+    await expect(picker(page)).toHaveCount(0)
+    await count(n + 1)
+    expect(await tagsOf(page), 'placed: one new root after the selection, no other replaced').toEqual(kept(n).toSpliced(after + 1, 0, null))
+    await page.keyboard.press('ControlOrMeta+z')
+    await count(n)
+    expect(await tagsOf(page), '⌘Z of the placement: it goes and no other').toEqual(kept(n))
+
+    // ── A CONTROL STAMPED IN PLACE keeps its node — and the NEXT paint draws that section fresh, while another section's
+    //    ⌥↓ moves only that one
+    await select(page, fourth)
+    const stamped = await selectedPlace(page)
+    n = await tagRoots(page)
+    let setting = await styleSetting(page)
+    let was = await setting.checked()
+    await setting.stop.focus()
+    await page.keyboard.press('ArrowRight')
+    await expect.poll(setting.checked, 'the arrow moved the setting').not.toBe(was)
+    expect(await tagsOf(page), 'a control is stamped in place: every root the same node (the fast path)').toEqual(kept(n))
+    await select(page, sixth)
+    const mover = await selectedPlace(page)
+    expect(mover, 'the control: the section moved is not the one stamped, nor next to it').toBeGreaterThan(stamped + 1)
+    await page.locator(`[data-layer-row="${sixth}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await expect.poll(async () => (await own()).indexOf(sixth)).toBe(6)
+    expect(await tagsOf(page), 'the next paint: the stamped section fresh, the moved one a place on, every other the same node').toEqual(swapped(n, mover).toSpliced(stamped, 1, null))
+    // …and an UNDO BACK TO THE DRAWN VALUE: the stored section equals its drawing again, but the root was stamped since —
+    // only its dropped record keeps the stamp off the page
+    await select(page, fourth)
+    n = await tagRoots(page)
+    setting = await styleSetting(page)
+    was = await setting.checked()
+    await setting.stop.focus()
+    await page.keyboard.press('ArrowRight')
+    await expect.poll(setting.checked, 'the arrow moved the setting').not.toBe(was)
+    expect(await tagsOf(page), 'stamped in place again: every root the same node').toEqual(kept(n))
+    await canvasStop.focus()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect.poll(setting.checked, 'the undo put the setting back').toBe(was)
+    expect(await tagsOf(page), '⌘Z of a stamped control: that section drawn fresh, every other root the same node').toEqual(kept(n).toSpliced(stamped, 1, null))
+
+    // ── A FLIP AND A FLIP BACK, then an edit: the render context is as drawn, yet every section is drawn fresh — the
+    //    flip re-stamped every root outside the paint, so every record was dropped
+    n = await tagRoots(page)
+    await canvasStop.focus()
+    await page.keyboard.press('.')
+    expect(await modeOf(page)).toBe('dark')
+    expect(await tagsOf(page), 'a flip is a re-stamp, never a repaint (Story 5.6)').toEqual(kept(n))
+    await page.keyboard.press('.')
+    expect(await modeOf(page)).toBe('light')
+    await page.locator(`[data-layer-row="${sixth}"]`).focus()
+    await page.keyboard.press('Alt+ArrowUp')
+    await expect.poll(async () => (await own()).indexOf(sixth)).toBe(5)
+    expect(allNew(await tagsOf(page)), 'after a flip and back, the next paint draws every section fresh').toBe(true)
+
+    // ── AGREEMENT — a full repaint (Preview in and out) draws exactly what the keyed paints left, node for node
+    await expect(canvasFrame(page).locator('[data-inflozo-swapped]'), 'the swap settle is over, so the snapshot is at rest').toHaveCount(0)
+    await snapshot(page)
+    await tagRoots(page)
+    await canvasStop.focus()
+    await page.keyboard.press('p')
+    await expect(bar(page)).toBeVisible()
+    await page.keyboard.press('p')
+    await expect(bar(page)).toHaveCount(0)
+    expect(allNew(await tagsOf(page)), 'the control: Preview in and out is a whole-page repaint').toBe(true)
+    expect(await differs(page), 'the full repaint equals the keyed canvas, node for node').toBeNull()
+    // and the one walk both paints take keeps every part's comment — which no comparison between the two could see
+    const whole = await commentsKept(page)
+    expect(whole.drawn, 'the control: the long Home draws sections whose part opens with a comment').toBeGreaterThan(0)
+    expect(whole.lost, 'every part drawn with its own comment').toEqual([])
+  })
+
+  test('DW-215: Remix re-rolls several sections, and ONE ⌘Z restores every one of them exactly — no other root is replaced', async ({ page }) => {
+    await open(page)
+    await snapshot(page)
+    const n = await tagRoots(page)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('Shift+R')
+    await expect(remixDialog(page)).toBeVisible()
+    await page.keyboard.press('Tab')
+    await expect(page.locator('[data-remix-go]')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect.poll(() => said(page)).toMatch(/^Remixed \d+ sections? on Home\.$/)
+    const rolled = Number((await said(page)).match(/\d+/)[0])
+    expect(rolled, 'SEVERAL sections re-rolled, or this is one ⌘Z for one section').toBeGreaterThan(1)
+    const tags = await tagsOf(page)
+    expect(tags.filter((t) => t === null), 'exactly the re-rolled sections are new').toHaveLength(rolled)
+    expect(tags, 'every other root is the same node, in its place').toEqual(kept(n).map((i) => (tags[i] === null ? null : i)))
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect.poll(() => differs(page), 'ONE ⌘Z puts the whole page back, node for node').toBeNull()
+    expect(await tagsOf(page), 'and only the re-rolled sections were drawn again — no other root replaced').toEqual(tags)
+  })
+
+  test('every whole-page change repaints the whole page: a flip then an edit, View as, page 2, another canvas and a subject', async ({ page }) => {
+    await open(page)
+    const canvasStop = page.locator('section[aria-label="Canvas"]')
+    const own = (await rows(page)).page
+    // the mode: a flip is a re-stamp, and the edit after it paints the page in the other mode
+    await tagRoots(page)
+    await canvasStop.focus()
+    await page.keyboard.press('.')
+    await page.locator(`[data-layer-row="${own[0]}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await expect.poll(async () => allNew(await tagsOf(page)), 'the mode').toBe(true)
+    await page.keyboard.press('Alt+ArrowUp')
+    await canvasStop.focus()
+    await page.keyboard.press('.')
+    // View as
+    await tagRoots(page)
+    await viewAs(page, 'free')
+    await expect.poll(async () => allNew(await tagsOf(page)), 'View as').toBe(true)
+    // page 2, and back
+    await tagRoots(page)
+    await toPageTwo(page)
+    await expect.poll(async () => allNew(await tagsOf(page)), 'page 2').toBe(true)
+    await tagRoots(page)
+    await pageRow(page).locator('[role="radio"][aria-checked="true"]').focus()
+    await page.keyboard.press('ArrowLeft')
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
+    await expect.poll(async () => allNew(await tagsOf(page)), 'page 1 again').toBe(true)
+    // another canvas: Template ▾ → Post
+    await tagRoots(page)
+    await page.locator('#editor-template').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+    await expect.poll(async () => allNew(await tagsOf(page)), 'another canvas').toBe(true)
+    // a subject: D5e's next row
+    await tagRoots(page)
+    await page.locator('#editor-source').focus()
+    await page.keyboard.press('Enter')
+    await page.waitForFunction(() => [...document.querySelectorAll(':popover-open')].some((p) => p.contains(document.activeElement)))
+    const current = await page.evaluate(() => document.querySelector('#editor-source-menu [data-subject-row][aria-current="true"]')?.getAttribute('data-subject-row') ?? null)
+    for (let guard = 0; guard < 12; guard++) {
+      const on = await page.evaluate(() => document.activeElement?.getAttribute('data-subject-row') ?? null)
+      if (on !== null && on !== current) break
+      await page.keyboard.press('ArrowDown')
+    }
+    await page.keyboard.press('Enter')
+    await expect.poll(async () => allNew(await tagsOf(page)), 'a subject').toBe(true)
+  })
+
+  test('a source chosen repaints the whole page', async ({ page }) => {
+    // the linked harness site (it never answers, so the page is the sample either way), then Sample content — this
+    // header replaces the long Home's, which a source does not need
+    await openSurfaces(page)
+    await tagRoots(page)
+    await page.locator('#editor-source').focus()
+    await page.keyboard.press('Enter')
+    await page.locator('#editor-source-menu:popover-open').waitFor()
+    for (let n = 0; n < 8 && (await page.evaluate(() => document.activeElement?.getAttribute('data-source-row'))) !== 'sample'; n++) await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-source', 'sample')
+    await expect.poll(async () => allNew(await tagsOf(page)), 'a source').toBe(true)
+  })
+
+  test('a read that lands repaints the whole page: a background revalidation lands, and the next paint draws every section fresh with what it read', async ({ page }) => {
+    // the page's clock is the test's to move, so the minute a read stays fresh can pass without waiting for it
+    await page.clock.install()
+    // the long Home, and the linked harness site — which answers here (`answeringSite`), so reads really land
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-home': String(LONG_HOME), 'x-inflozo-harness-site': 'surfaces' })
+    const site = await answeringSite(page)
+    await open(page)
+    const shows = (words) => canvasFrame(page).locator('#canvas').evaluate((c, w) => c.textContent.includes(w), words)
+    // THE CONTROL: the page is drawn from the site's reads, not the sample — or nothing below has landed at all
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-source', 'site')
+    expect(await shows(site.newest), "the control: the site's newest post is on the page").toBe(true)
+    // and on the site's content a move still moves one section: while nothing lands, every drawing is kept
+    const [, second] = (await rows(page)).page
+    await select(page, second)
+    const at = await selectedPlace(page)
+    let n = await tagRoots(page)
+    await page.locator(`[data-layer-row="${second}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await expect.poll(async () => (await rows(page)).page.indexOf(second)).toBe(2)
+    expect(await tagsOf(page), 'nothing landed: ⌥↓ keeps every root and moves one').toEqual(swapped(n, at))
+    // THE LANDING: the site retitles its newest post, the reads in hand go stale, and the Picker's cards ask for their rows
+    // — served from memory at once and revalidated in the background, which never paints by itself (`lib/live-client.ts`)
+    site.revise()
+    const asked = site.finished()
+    await page.clock.setSystemTime(Date.now() + LIVE.FRESH_MS + 1000)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(picker(page)).toBeVisible()
+    await expect.poll(site.finished, 'the Picker revalidated the reads it shares with the page').toBeGreaterThan(asked)
+    // the answers are in the page; a moment more and the store has written them (a few microtasks after each arrives)
+    await page.waitForTimeout(500)
+    await page.keyboard.press('Escape')
+    await expect(picker(page)).toHaveCount(0)
+    expect(await shows(site.revised), 'a read landing in the background paints nothing by itself').toBe(false)
+    // THE NEXT PAINT — an edit that moves one section back — redraws the whole page, and shows what landed
+    n = await tagRoots(page)
+    await page.locator(`[data-layer-row="${second}"]`).focus()
+    await page.keyboard.press('Alt+ArrowUp')
+    await expect.poll(async () => (await rows(page)).page.indexOf(second)).toBe(1)
+    expect(allNew(await tagsOf(page)), 'a read landed since the last paint: the next one repaints the whole page').toBe(true)
+    expect(await shows(site.revised), 'and the page shows what landed').toBe(true)
+  })
+
+  test('the Paywall keeps its own page write: written whole on every paint, none of its nodes kept', async ({ page }) => {
+    await openPaywall(page)
+    await tagRoots(page)
+    await page.locator('[data-design-tile][tabindex="0"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-panel-position')).toHaveText(/^1 \/ \d+$/)
+    await expect.poll(async () => allNew(await tagsOf(page)), 'the Paywall surface').toBe(true)
+  })
 })
