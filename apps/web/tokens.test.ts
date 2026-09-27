@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { group, readTheme, shortName, themeFile } from './tokens.ts'
+import { COMPACT, PHONE } from './lib/floor.ts'
 
 // F-110's grep, made permanent. The Claude Design export is the design authority (R-74) and
 // the token layer is a TRANSCRIPTION of it — so the transcription is checked, not trusted.
@@ -229,7 +230,26 @@ test('the app’s three widths are the export’s three widths', () => {
   assert.deepEqual(widths, { mobile: '390px', tablet: '834px', desktop: '1440px' })
 })
 
-test('app-floor is a coarse-pointer condition, never a bare width', () => {
+/** A block-form custom variant's media text, read out of `globals.css` rather than restated here. */
+const variantMedia = (name: string) => {
   const css = readFileSync(themeFile(), 'utf8')
-  assert.match(css, /@custom-variant coarse \(@media \(pointer: coarse\)\)/)
+  const found = new RegExp(`@custom-variant ${name} \\{\\s*@media ([^{]+?) \\{\\s*@slot;`).exec(css)
+  assert.ok(found, `globals.css has no block-form @custom-variant ${name}`)
+  return found[1]
+}
+
+test('Story 5.22 — the phone and compact variants carry lib/floor.ts\'s own media text, verbatim (one source per rule)', () => {
+  // CSS cannot import the module, so the two copies are held equal here: `matchMedia` and a `phone:`/`compact:` class
+  // can never answer differently about the same window
+  assert.equal(variantMedia('phone'), PHONE)
+  assert.equal(variantMedia('compact'), COMPACT)
+})
+
+test('app-floor is a coarse-pointer condition, never a bare width (R-76, R-201)', () => {
+  // the notice's rule: a coarse pointer in EVERY branch of the list, so a desktop at 200% zoom never meets it
+  const branches = variantMedia('phone').split(',')
+  assert.ok(branches.length > 0)
+  for (const branch of branches) assert.match(branch, /\(pointer: coarse\)/, `"${branch.trim()}" would be a bare width`)
+  // …and `coarse` still sizes a touch screen's targets (D8a), apart from the notice
+  assert.match(readFileSync(themeFile(), 'utf8'), /@custom-variant coarse \(@media \(pointer: coarse\)\)/)
 })

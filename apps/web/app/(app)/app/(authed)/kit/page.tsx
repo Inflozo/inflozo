@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import type { ReactNode } from 'react'
 import { group, shortName, theme, type Token } from '@/tokens'
+import { PHONE } from '@/lib/floor'
 import { Accordion } from '@/components/kit/accordion'
 import { FreeBadge, LiveBadge, ProBadge, ResultChip, StatusChip, TagChip, VersionChip } from '@/components/kit/badge'
 import { Banner, BannerLink } from '@/components/kit/banner'
@@ -142,7 +143,8 @@ function TokenSheet({ tokens }: { tokens: Token[] }) {
           </span>
         ))}
         <span className="inline-flex items-center gap-2 rounded-pill border border-line bg-surface px-[14px] py-[7px] text-ui-dense font-medium text-ink">
-          app-floor <span className="font-mono text-ink-soft">pointer: coarse</span>
+          {/* Story 5.22 — R-201's rule itself, from the one module that holds it: a coarse pointer, on its SHORT side */}
+          app-floor <span className="font-mono text-ink-soft">{PHONE}</span>
         </span>
         {durations.map(({ name, value }) => (
           <span key={name} className="inline-flex items-center gap-2 rounded-pill border border-line bg-surface px-[14px] py-[7px] text-ui-dense font-medium text-ink">

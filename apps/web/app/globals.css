@@ -111,6 +111,7 @@
                                                       not lg's .14 — D4a, D4b and S12c all draw it */
   --shadow-hairline-inset: inset 0 0 0 1px rgba(28,27,26,.12);
   --shadow-canvas-page: 0 4px 16px rgba(28,27,26,.10);  /* the editor's page card — S4a :63 (Story 5.1) */
+  --shadow-panel-overlay: -12px 0 40px rgba(28,27,26,.18);  /* the Controls overlay below 1280 — D8 :121 (Story 5.22) */
   --shadow-focus: 0 0 0 2px #C2381F;   /* the one ring, everywhere (Calibration Set, 2026-09-04) */
 
   /* type roles — the frames also set half steps (12.5, 11.5); read those off the frame
@@ -315,10 +316,25 @@
   background-position: 28% 24%, 28% 50%, 28% 76%, 72% 24%, 72% 50%, 72% 76%;
 }
 
-/* `app-floor`'s condition is a COARSE POINTER, never a bare width (R-76, R-87): a desktop
-   at 200% zoom is 720px wide and stays in the editor. Nothing here collapses anything —
-   the editor's own ladder is D8 and Story 5.22. */
+/* THE EDITOR'S FLOOR (Story 5.22). `app-floor`'s condition is a COARSE POINTER, never a bare width (R-76): a desktop
+   at 200% zoom is 720px wide and stays in the editor. `coarse` is a touch screen and sizes targets (D8a); `phone` is
+   R-201's device that gets D4f's notice instead of the editor; `compact` is R-202's D8 rearrangement. The two media
+   texts are `lib/floor.ts`'s `PHONE` and `COMPACT`, VERBATIM — CSS cannot import them, so `tokens.test.ts` holds them
+   equal. The BLOCK form, because the shorthand splits its parentheses on commas and would read the second half of a
+   media query LIST as a selector (Tailwind 4.3's own parser, read in `dist/lib.js`). */
 @custom-variant coarse (@media (pointer: coarse));
+
+@custom-variant phone {
+  @media (pointer: coarse) and (width < 500px), (pointer: coarse) and (height < 500px) {
+    @slot;
+  }
+}
+
+@custom-variant compact {
+  @media (pointer: coarse), (width < 1280px) {
+    @slot;
+  }
+}
 
 /* base — the Kit frame's own <style>, transcribed (Editor Sidebar Kit.dc.html:15-18) */
 @layer base {
@@ -348,6 +364,19 @@
   button:not(:disabled, [aria-disabled='true'], [aria-disabled='true'] *),
   [role='button']:not([aria-disabled='true'], [aria-disabled='true'] *) {
     cursor: pointer;
+  }
+
+  /* STORY 5.22 — D8a's 44px, AS ONE RULE: "the only thing this width changes about the controls themselves"
+     (`D8 Editor Below 1440.dc.html:167`), so a pass per component would miss the next control. Scoped to the editor
+     (`[data-editor]`) and to a touch screen, never a fine pointer (D8b keeps 28–32px). `:where()` and `@layer base`,
+     so a component can still win. Exempt: a switch (drawn 52 × 30 in a 44px row, `kit/toggle.tsx`), the skip link
+     (`sr-only` until focused, D8c's own 30px), and an inline text link — `min-*` never applies to an inline box. */
+  @media (pointer: coarse) {
+    :where([data-editor])
+      :where(button, a[href], summary, select, textarea, input:not([type='hidden'], [type='checkbox'], [type='radio']), [role='button'], [role='menuitem'], [role='radio'], [role='tab'], [role='option']):where(:not([role='switch'], [data-skip-canvas])) {
+      min-block-size: 44px;
+      min-inline-size: 44px;
+    }
   }
 
   /* Every motion rule degrades to no motion under the same query (DESIGN.md § Motion). */

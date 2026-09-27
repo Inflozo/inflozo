@@ -1036,12 +1036,30 @@ DOCS = [
   "untouched, stepped and set, and three ⌘Z back to Ghost's own box, C3b's Re-check on the members-off harness site "
   "(asked for by a request header, and refused — no database), the sample paywall once the pill is on Sample content "
   "and a placed sign-up section's line, R-192 reading along (a second header: the design choice greyed while View as, "
-  "Re-check and Back to post still work), and Back to post with Home at rest. Stores no "
+  "Re-check and Back to post still work), and Back to post with Home at rest. Story 5.22 walks the compact editor at "
+  "720 x 900 (R-202, D8b): Tab to the ⋯ and its rows in the controls' own words, each pressing its control's handler; "
+  "Remix from ⋯ with its confirm visible though the dice is collapsed; a rail item opening Controls over a canvas that "
+  "does not move; L's Layers overlay handing over to Controls; the skip link landing in Controls; crossing 1280 live; a "
+  "Light-only project with no dark row (a fourth header); R-192 reading along, its view rows acting; and a confirm open "
+  "in a panel closing as the window crosses 1280 rather than staying modal and unseen. Stores no "
   'count: every subject is read off the page.'),
+ ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',
+  "Story 5.22's journeys that may tap, in the keyboard gate's own run (R-201, R-202, D4f, D8a, D8b), on Playwright's "
+  'own device descriptors driven in Chromium: a phone (iPhone 13) gets D4f\'s notice and sends no request to the lock or '
+  'the sync route, with a tablet sending them as the control; turning the phone keeps the notice, and one opened sideways '
+  'gets it too; a large tablet sideways (1366 x 1024) is compact; at the iPad Mini and '
+  'the iPad Pro 11 the compact editor passes the 44px sweep at rest, with ⋯ open, over Layers and over every section\'s '
+  'Controls with every group open (switches 52 x 30 in 44px rows), and the tap that opens the overlay fires no click '
+  'into it (executed without the guard, the click landed on the scrim); 1279 is compact, with D8b\'s 32px rail items, '
+  'a 28px ⋯ and hover live, and 1280 is not; and at 720 '
+  'D5d\'s page-2 pill never meets the viewport chip, centred or slid right of it; and the bar at every width from 720, '
+  'either pointer, on Home and on the Paywall: the centred group meets neither side and no control leaves the window. '
+  'Stores no count.'),
  ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
   'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '
-  'boots is the only thing this journey means anything against. Also covers tools/keyboard/test-results/, which is '
-  'generated output.'),
+  'boots is the only thing this journey means anything against. Since Story 5.22 it runs floor.spec.mjs beside the '
+  'journey and PINS the window at 1280 x 720, because below 1280 a fine pointer gets the compact editor (R-202). Also '
+  'covers tools/keyboard/test-results/, which is generated output.'),
  ('tools/matrix/playwright.config.mjs', 'tool', 'The render matrix runner configuration',
   'Story 4.11: the one place NFR-6(a)\'s numbers live — threshold 0.1, maxDiffPixelRatio 0.01, animations disabled, '
   'caret hidden — with updateSnapshots none (a missing baseline fails) and the baseline path template. Refuses to load '

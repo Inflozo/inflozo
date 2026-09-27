@@ -189,7 +189,20 @@
 // project links no site, so every canvas the walk paints is read for `[data-ghost-surface]` as it lands (none may appear),
 // and one more fresh Home is read with a planted surface as the count's control; steps 3 and 4 still hold with the story
 // deployed. The strip, the button and a real Ghost are `run-verify-live-content.cjs`'s, on T1.
-const { chromium, request: pwRequest } = require('@playwright/test')
+// Story 5.22 adds steps 97-101 — THE EDITOR'S FLOOR (R-201, R-202, D4f, D8): a phone (the iPhone 13 descriptor, in
+// Chromium) gets D4f's notice, reaches /sites, and leaves NO `edit_locks` row, read through the lock route's own
+// non-holder beat under the phone's session (the service key cannot read the table); a tablet (the iPad Pro 11) gets D8a
+// with every visible pressable at least 44px, ⋯'s rows working and the overlay leaving the chip's fit unchanged, and
+// leaves the row the phone did not — the phone's control; REAL 200% browser zoom (a persistent context whose profile
+// zooms every page, against the same launch at 100% as its control) gets D8b with a fine pointer, hover live and no
+// notice; and at 390 with touch the Dashboard, Sign In, /sites and inflozo.com/ have no sideways overflow (measured
+// against `clientWidth`, never `innerWidth`, which an `isMobile` page grows) and zero axe violations. Step 101 narrows a
+// 1440 window with a section chosen to 1279 and widens it again: the layout follows, the selection stays, the editor
+// root and the canvas document are never replaced, and the lock row keeps its holder and its generation. STEP 14 IS
+// RE-EXPECTED: its context is coarse, so the editor is compact and the tap opens the Controls overlay, which Esc closes
+// before the tap into the headline. STEP 9 IS RE-EXPECTED: the server now always draws the skeleton, never the editor,
+// because a phone must never mount it. Step 90 reads the name in the bar's left column, where the grid puts it.
+const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
 const AXE = require.resolve('axe-core/axe.min.js')
@@ -4401,7 +4414,8 @@ async function main() {
       await page.waitForTimeout(400)
       room90.push({ width, ...(await page.evaluate((labels) => {
         // React's OWN text nodes are borrowed and given back, so nothing it renders afterwards is left detached
-        const nameText = document.querySelector('header > span.truncate')?.firstChild
+        // Story 5.22: the name is the bar grid's left column's, no longer the header's own child
+        const nameText = document.querySelector('header span.truncate')?.firstChild
         const labelText = document.querySelector('#editor-template span.font-semibold')?.firstChild
         if (!nameText || !labelText) return { room: null }
         const [name, label] = [nameText.nodeValue, labelText.nodeValue]
@@ -6160,6 +6174,9 @@ async function main() {
     await axeContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──
+    // STORY 5.22 — RE-EXPECTED: `hasTouch` makes the pointer COARSE, and every touch screen that is not a phone gets D8's
+    // compact editor (R-202) — so here the tap that selects also opens the Controls OVERLAY, and Esc's first rung closes
+    // it before the second one deselects. A 1440 × 900 window is no phone (R-201: its short side is 900).
     const touchContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, hasTouch: true })
     // the spine: every gesture an Epic 5 story adds runs under the recorder. Touch needs a context of its own, so it
     // carries the same recorder; the EvalError control is step 5's, in the same run
@@ -6185,7 +6202,12 @@ async function main() {
       const root = document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.querySelectorAll('#canvas > *')[n]
       const inChrome = (sel) => [...root.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector(sel)).find(Boolean) ?? null
       const tag = inChrome('[data-chrome="tag"]')
-      return { hover: root.hasAttribute('data-inflozo-hover'), outline: !!inChrome('[data-chrome="hover"]'), selected: root.hasAttribute('data-inflozo-selected'), tag: tag?.textContent ?? null, panel: document.querySelector('#editor-controls').getAttribute('aria-label') }
+      return {
+        hover: root.hasAttribute('data-inflozo-hover'), outline: !!inChrome('[data-chrome="hover"]'), selected: root.hasAttribute('data-inflozo-selected'), tag: tag?.textContent ?? null, panel: document.querySelector('#editor-controls').getAttribute('aria-label'),
+        // Story 5.22: the compact editor's Controls OVERLAY — drawn, with its scrim — and the page behind it inert
+        overlay: document.querySelector('#editor-controls').checkVisibility() && document.querySelector('[data-scrim]') !== null,
+        compact: document.querySelector('#editor-more')?.checkVisibility() === true && document.querySelector('[data-icon-rail]') !== null,
+      }
     }, heroN)
     await touch('touchStart', [heroPoint])
     await touchPage.waitForTimeout(600)
@@ -6200,6 +6222,12 @@ async function main() {
     await touchPage.waitForTimeout(400)
     const tapped = await touchState()
     check('step 14 — a 50ms tap selects it', tapped.selected && tapped.panel === 'Section settings', JSON.stringify(tapped))
+    check('step 14 — Story 5.22: a touch screen gets the COMPACT editor at any width (R-202), and the tap opened Controls as the overlay (D8a)', lifted.compact === true && tapped.overlay === true, JSON.stringify({ compact: lifted.compact, overlay: tapped.overlay }))
+    // Esc: the sheet's rung first — the overlay closes and the section stays chosen — then rung 2 lets it go
+    await touchPage.keyboard.press('Escape')
+    await touchPage.waitForTimeout(200)
+    const closed14 = await touchState()
+    check('step 14 — Story 5.22: Esc closes the overlay and KEEPS the selection; the next Esc deselects', closed14.selected && !closed14.overlay, JSON.stringify(closed14))
     // a finger that moves past the slop is a scroll, not a press: no hover, no tap, whatever the browser fires on its lift
     await touchPage.keyboard.press('Escape')
     await touchPage.waitForTimeout(200)
@@ -6217,6 +6245,9 @@ async function main() {
     await touchPage.waitForTimeout(50)
     await touch('touchEnd', [])
     await touchPage.waitForTimeout(400)
+    // Story 5.22: the tap opened the overlay over the page, so it is closed first (Esc's first rung keeps the selection)
+    await touchPage.keyboard.press('Escape')
+    await touchPage.waitForTimeout(300)
     const headlineTap = await touchPage.evaluate((n) => {
       const f = document.querySelector('section[aria-label="Canvas"] iframe')
       const fr = f.getBoundingClientRect()
@@ -6242,23 +6273,289 @@ async function main() {
     await handBack(touchPage)
     await touchContext.close()
 
+    /* ── steps 97-101 — STORY 5.22, THE EDITOR'S FLOOR (R-201, R-202, D4f, D8a, D8b) ──────────────────────────────────
+     *
+     * Every rule is `apps/web/lib/floor.ts`'s and every size `lib/device.ts`'s, read from this checkout. The devices are
+     * Playwright's own descriptors — the planning's evidence was their list — driven in the Chromium this walk launches
+     * (a descriptor's `defaultBrowserType` is dropped). `edit_locks` is invisible to the service key (MEASUREMENTS §50),
+     * so the lock row is read through the lock route's own NON-HOLDER BEAT under the page's own session: a `beat` from a
+     * session that holds nothing changes zero rows and answers the row as it stands — the read a reader polls with. */
+    const FLOOR = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/floor.ts')).href)
+    const described97 = (name) => (({ defaultBrowserType, ...rest }) => rest)(devices[name])
+    const READ_SESSION = 'walk-5-22-read-only'
+    const lockRow = (p) => p.evaluate(async ({ url, session }) => {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'beat', session }) })
+      return r.ok ? { row: (await r.json()).row } : { status: r.status }
+    }, { url: `${PREFIX}/projects/${P}/lock`, session: READ_SESSION })
+    /** every request a page makes to the lock or the sync route, except this walk's own read of the row */
+    const mountCalls = (p) => {
+      const hits = []
+      p.on('request', (r) => {
+        if (/\/(lock|sync)$/.test(new URL(r.url()).pathname) && !(r.postData() ?? '').includes(READ_SESSION)) hits.push(`${r.method()} ${new URL(r.url()).pathname}`)
+      })
+      return hits
+    }
+    /** THE 44px SWEEP (D8a), the keyboard gate's `floor.spec.mjs` in the deployed editor: every visible pressable in the
+     *  editor root at least 44 × 44, each switch 52 × 30 in a row at least 44 tall, and only the rule's own exemptions */
+    const sweep98 = (p) => p.evaluate(() => {
+      const root = document.querySelector('[data-editor]')
+      const PRESS = 'button, a[href], summary, select, textarea, input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]), [role="button"], [role="menuitem"], [role="radio"], [role="tab"], [role="option"], [role="switch"]'
+      const small = []
+      let checked = 0
+      for (const el of root?.querySelectorAll(PRESS) ?? []) {
+        if (!el.checkVisibility({ visibilityProperty: true })) continue
+        if (el.matches('[data-skip-canvas]') || getComputedStyle(el).display === 'inline') continue
+        const r = el.getBoundingClientRect()
+        checked++
+        const name = `${el.tagName}${el.id ? `#${el.id}` : ''}[${el.getAttribute('aria-label') ?? el.textContent.trim().slice(0, 30)}]`
+        if (el.getAttribute('role') === 'switch') {
+          const row = el.parentElement.getBoundingClientRect()
+          if (Math.round(r.width) !== 52 || Math.round(r.height) !== 30 || row.height < 44) small.push(`${name} switch ${r.width}x${r.height} in ${row.height}`)
+        } else if (r.width < 43.5 || r.height < 43.5) small.push(`${name} ${r.width.toFixed(1)}x${r.height.toFixed(1)}`)
+      }
+      return { checked, small, root: root !== null }
+    })
+
+    // ── step 97 — a PHONE on production: D4f, and the editor never mounted ──
+    const phoneContext = await browser.newContext(described97('iPhone 13'))
+    const phoneViolations = []
+    await recorder(phoneContext, phoneViolations)
+    const phone = steady(await phoneContext.newPage())
+    await phone.goto(await magic(emailA), { waitUntil: 'load' })
+    const before97 = await lockRow(phone)
+    check('step 97 — control: before the phone opens the project, the lock row is readable through the route and there is none (step 14 handed its lock back)', 'row' in before97 && before97.row === null, JSON.stringify(before97))
+    const calls97 = mountCalls(phone)
+    await phone.goto(editorUrl(), { waitUntil: 'load' })
+    await phone.waitForSelector('[data-small-screen]', { timeout: 30000 }).catch(() => null)
+    const notice97 = await phone.evaluate((phoneQuery) => {
+      const n = document.querySelector('[data-small-screen]')
+      const box = (el) => (el ? el.getBoundingClientRect().toJSON() : null)
+      const rows = [...(n?.querySelectorAll('section a') ?? [])]
+      const avatar = n?.querySelector('span[aria-hidden].rounded-full')
+      return {
+        phone: matchMedia(phoneQuery).matches, notice: n !== null, editor: document.querySelector('[data-editor]') !== null, canvas: document.querySelector('iframe[title$="canvas"]') !== null,
+        bar: box(n?.firstElementChild)?.height ?? null, back: n?.querySelector('a[aria-label="Back to dashboard"]')?.getAttribute('href') ?? null, backBox: box(n?.querySelector('a[aria-label="Back to dashboard"]')),
+        name: n?.firstElementChild?.querySelector('span.truncate')?.textContent ?? null, avatar: avatar ? { text: avatar.textContent, w: box(avatar).width, h: box(avatar).height } : null,
+        title: n?.querySelector('h1')?.textContent ?? null, body: n?.querySelector('h1 + p')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
+        titleFont: n?.querySelector('h1') ? getComputedStyle(n.querySelector('h1')).fontFamily : null, heading: n?.querySelector('h2')?.textContent ?? null,
+        rows: rows.map((a) => ({ words: a.textContent.trim(), href: a.getAttribute('href'), h: box(a).height })),
+        overflow: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      }
+    }, FLOOR.PHONE)
+    await phone.screenshot({ path: `${OUT}/phone-notice-390.png` })
+    check('step 97 — R-201: the iPhone 13 is a phone by `PHONE`, and the project opens on D4f\'s notice with no editor and no canvas mounted', notice97.phone && notice97.notice && !notice97.editor && !notice97.canvas, JSON.stringify({ phone: notice97.phone, notice: notice97.notice, editor: notice97.editor, canvas: notice97.canvas }))
+    check('step 97 — D4f\'s bar: 60px, a 44px back link to the dashboard, the project\'s name, and the user\'s 32px initial (decorative)', notice97.bar === 60 && notice97.back === '/' && notice97.backBox?.width === 44 && notice97.backBox?.height === 44 && notice97.name === 'Pilot sections' && notice97.avatar?.w === 32 && notice97.avatar?.text === emailA.charAt(0).toUpperCase(), JSON.stringify({ bar: notice97.bar, back: notice97.back, backBox: notice97.backBox, name: notice97.name, avatar: notice97.avatar }))
+    check('step 97 — D4f\'s words, verbatim, in Bricolage', notice97.title === 'The editor needs a bigger screen.' && notice97.body === "Dragging sections and a 300-pixel control panel don't fit on a phone yet. Open this project on a laptop or tablet." && /Bricolage/i.test(notice97.titleFont ?? ''), JSON.stringify({ title: notice97.title, body: notice97.body, font: notice97.titleFont }))
+    check('step 97 — What works here holds ONE 56px row, Your sites — Deploy history and Billing ABSENT until 7.23 and 12.5 (R-118)', /what works here/i.test(notice97.heading ?? '') && notice97.rows.length === 1 && notice97.rows[0].words === 'Your sites' && /\/sites$/.test(notice97.rows[0].href ?? '') && notice97.rows[0].h === 56 && !notice97.overflow, JSON.stringify({ heading: notice97.heading, rows: notice97.rows, overflow: notice97.overflow }))
+    await phone.waitForTimeout(5000)
+    const after97 = await lockRow(phone)
+    check('step 97 — NOTHING OF THE EDITOR STARTED: no request to the lock or the sync route in the seconds after, and no edit_locks row for the project after 5s', calls97.length === 0 && 'row' in after97 && after97.row === null, JSON.stringify({ calls: calls97, after: after97 }))
+    await phone.setViewportSize({ width: 844, height: 390 })
+    await phone.waitForTimeout(500)
+    const turned97 = await phone.evaluate(() => ({ notice: document.querySelector('[data-small-screen]') !== null, editor: document.querySelector('[data-editor]') !== null }))
+    await phone.setViewportSize({ width: 390, height: 844 })
+    check('step 97 — turning the phone sideways keeps the notice: decided once as the project opened (R-201)', turned97.notice && !turned97.editor && calls97.length === 0, JSON.stringify(turned97))
+    await phone.locator('[data-small-screen] section a').first().tap()
+    await phone.waitForURL((u) => u.pathname.endsWith('/sites'), { timeout: 30000 }).catch(() => null)
+    check('step 97 — Your sites reaches the sites list', new URL(phone.url()).pathname.endsWith('/sites'), phone.url())
+    check('step 97 — the phone context records zero securitypolicyviolation events', phoneViolations.filter((v) => /\/(projects\/|sites$)/.test(new URL(v.url).pathname)).length === 0, JSON.stringify(phoneViolations))
+    await phoneContext.close()
+
+    // ── step 98 — a TABLET on production: D8a, every target 44px, and the lock the phone never took ──
+    const tabletContext = await browser.newContext(described97('iPad Pro 11'))
+    const tablet = steady(await tabletContext.newPage())
+    await tablet.goto(await magic(emailA), { waitUntil: 'load' })
+    await tablet.goto(editorUrl(), { waitUntil: 'load' })
+    await tablet.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await tablet.waitForTimeout(600)
+    const shape98 = await tablet.evaluate((q) => {
+      const box = (s) => document.querySelector(s)?.getBoundingClientRect().toJSON() ?? null
+      const visible = (s) => document.querySelector(s)?.checkVisibility() ?? null
+      return {
+        phone: matchMedia(q.phone).matches, compact: matchMedia(q.compact).matches, bar: box('header')?.height, rail: box('[data-icon-rail]')?.width,
+        more: box('#editor-more'), thumb: box('[data-rail-row] span'), cluster: visible('#editor-mode') ?? visible('#editor-device'), layers: visible('#editor-layers'), controls: visible('#editor-controls'),
+      }
+    }, { phone: FLOOR.PHONE, compact: FLOOR.COMPACT })
+    await tablet.screenshot({ path: `${OUT}/tablet-834x1194.png` })
+    check('step 98 — D8a on the iPad Pro 11: no phone, compact; a 56px bar, a 56px rail with 34 × 24 thumbs, a 44px ⋯, the cluster collapsed and both panels closed', !shape98.phone && shape98.compact && shape98.bar === 56 && shape98.rail === 56 && Math.round(shape98.thumb?.width) === 34 && Math.round(shape98.thumb?.height) === 24 && shape98.more?.width === 44 && shape98.more?.height === 44 && shape98.cluster === false && shape98.layers === false && shape98.controls === false, JSON.stringify(shape98))
+    const rest98 = await sweep98(tablet)
+    await tablet.locator('#editor-more').tap()
+    await tablet.waitForTimeout(300)
+    const menu98 = await sweep98(tablet)
+    const rows98 = await tablet.locator('#editor-more-menu li :is(button, a)').allInnerTexts()
+    const words98 = await tablet.evaluate(() => ({
+      remix: document.getElementById('editor-remix')?.getAttribute('aria-label')?.replace(' — ', '') ?? null,
+      mode: document.getElementById('editor-mode')?.getAttribute('aria-label') ?? null,
+      device: document.querySelector('#editor-device [aria-checked="true"]')?.getAttribute('aria-label') ?? null,
+      theme: document.getElementById('editor-theme-settings')?.textContent.trim() ?? null,
+      preview: document.getElementById('editor-preview')?.textContent.trim() ?? null,
+    }))
+    const one = (w) => w.replace(/\s+/g, '')
+    check('step 98 — ⋯ holds the cluster\'s rows in its order, each in its control\'s own words (R-170): Site Remix, the sun\'s, the device, Theme settings, Preview', rows98.length >= 4 && one(rows98[0]) === one(words98.remix ?? '') && rows98.some((r) => one(r) === one(`Device — ${words98.device}`)) && rows98.some((r) => one(r) === one(words98.theme ?? '')) && one(rows98[rows98.length - 1]) === one(words98.preview ?? '') && (words98.mode === null || one(rows98[1]).startsWith(one(words98.mode))), JSON.stringify({ rows98, words98 }))
+    await tablet.getByRole('button', { name: /^Device — / }).tap()
+    await tablet.waitForTimeout(400)
+    const device98 = await tablet.locator('#editor-device [aria-checked="true"]').getAttribute('aria-label')
+    check('step 98 — the Device row is the device track\'s own pick: it moves to the next device', device98 === DEVICE.DEVICES[1].label, device98)
+    await tablet.locator('section[aria-label="Canvas"]').focus()
+    await tablet.keyboard.press('1')
+    await tablet.waitForTimeout(300)
+    const chip98 = await tablet.locator('#editor-viewport').innerText()
+    const stage98 = await tablet.evaluate(() => {
+      const s = document.querySelector('section[aria-label="Canvas"]')
+      const cs = getComputedStyle(s)
+      return { width: s.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight), height: s.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) }
+    })
+    await tablet.locator('[data-rail-row]').nth(1).tap()
+    await tablet.waitForTimeout(500)
+    for (let guard = 0; guard < 14; guard++) {
+      const closed = tablet.locator('#editor-controls button[aria-expanded="false"]')
+      if ((await closed.count()) === 0) break
+      await closed.first().tap()
+    }
+    const panel98 = await sweep98(tablet)
+    const over98 = await tablet.evaluate(() => ({ controls: document.querySelector('#editor-controls').checkVisibility(), label: document.querySelector('#editor-controls').getAttribute('aria-label'), scrim: document.querySelector('[data-scrim]') !== null, chip: document.getElementById('editor-viewport').textContent }))
+    check('step 98 — a rail item opens Controls as the overlay, and the overlay leaves the canvas\'s fit — the chip\'s words, `fitFor` over the stage — unchanged (D8:161)', over98.controls && over98.label === 'Section settings' && over98.scrim && over98.chip.toLowerCase() === chip98.toLowerCase() && chip98.toLowerCase() === DEVICE.viewportWords(DEVICE.DESKTOP, DEVICE.fitFor(stage98, DEVICE.DESKTOP)).toLowerCase(), JSON.stringify({ over98, chip98, stage98 }))
+    check('step 98 — the 44px sweep: every visible pressable in the editor at least 44 × 44, switches 52 × 30 in 44px rows — at rest, with ⋯ open, and over Controls with every group open', rest98.root && rest98.small.length === 0 && menu98.small.length === 0 && panel98.small.length === 0 && panel98.checked > rest98.checked, JSON.stringify({ rest: rest98, menu: menu98, panel: panel98 }))
+    const row98 = await lockRow(tablet)
+    check('step 98 — the phone\'s CONTROL: the tablet mounted the editor, and its lock row is there', 'row' in row98 && row98.row !== null && typeof row98.row.holderSessionId === 'string', JSON.stringify(row98))
+    await handBack(tablet)
+    await tabletContext.close()
+
+    // ── step 99 — REAL 200% browser zoom: a 1440 display at 200% is D8b — a fine pointer, hover live, and no notice ──
+    /* NOT `Emulation.setPageScaleFactor`, which is a pinch: the browser's own zoom, from the profile, which is what a
+       person presses ⌘+ for. A persistent context on a SHORT path (a long one is "socket path too long"), its default
+       zoom level `ln 2 / ln 1.2` — Chrome's scale for 200% — and the same launch without it as the control. */
+    const zoomed99 = {}
+    for (const zoom of [false, true]) {
+      const dir = fs.mkdtempSync('/tmp/z99-')
+      fs.mkdirSync(path.join(dir, 'Default'), { recursive: true })
+      if (zoom) fs.writeFileSync(path.join(dir, 'Default', 'Preferences'), JSON.stringify({ partition: { default_zoom_level: { x: Math.log(2) / Math.log(1.2) } } }))
+      const zoomContext = await chromium.launchPersistentContext(dir, { channel: 'chromium', viewport: null, args: ['--window-size=1440,900'] })
+      try {
+        const z = steady(zoomContext.pages()[0] ?? (await zoomContext.newPage()))
+        await z.goto(await magic(emailA), { waitUntil: 'load' })
+        await z.goto(editorUrl(), { waitUntil: 'load' })
+        await z.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+        await z.waitForTimeout(600)
+        const m = await z.evaluate((q) => ({
+          inner: innerWidth, dpr: devicePixelRatio, fine: matchMedia('(pointer: fine)').matches, compact: matchMedia(q).matches,
+          notice: document.querySelector('[data-small-screen]') !== null, more: document.getElementById('editor-more')?.checkVisibility() ?? null,
+          item: document.querySelector('[data-rail-row]')?.getBoundingClientRect().width ?? null,
+        }), FLOOR.COMPACT)
+        let hover = null
+        if (zoom) {
+          const item = z.locator('[data-rail-row]').nth(1)
+          const rest = await item.evaluate((e) => getComputedStyle(e).backgroundColor)
+          await item.hover()
+          await z.waitForTimeout(300)
+          hover = { rest, over: await item.evaluate((e) => getComputedStyle(e).backgroundColor) }
+          await z.screenshot({ path: `${OUT}/zoom-200.png` })
+        }
+        zoomed99[zoom ? 'at200' : 'at100'] = { ...m, hover }
+        await handBack(z)
+      } finally {
+        await zoomContext.close()
+        fs.rmSync(dir, { recursive: true, force: true })
+      }
+    }
+    check('step 99 — control: the same launch at 100% is a 1440 window with the full editor (no ⋯, no rail)', zoomed99.at100?.inner === 1440 && zoomed99.at100.compact === false && zoomed99.at100.more === false && zoomed99.at100.item === null, JSON.stringify(zoomed99.at100))
+    check('step 99 — at REAL 200% zoom: a 720 window at DPR 2 with a FINE pointer, the compact editor (D8b, R-202), 32px rail items, and never the notice (R-76, WCAG 1.4.4)', zoomed99.at200?.inner === 720 && zoomed99.at200.dpr === 2 && zoomed99.at200.fine && zoomed99.at200.compact && zoomed99.at200.more === true && zoomed99.at200.item === 32 && !zoomed99.at200.notice, JSON.stringify(zoomed99.at200))
+    check('step 99 — hover is live at 200% ("Hover states are live here"): a rail item under the pointer lights', zoomed99.at200?.hover !== null && zoomed99.at200?.hover?.rest !== zoomed99.at200?.hover?.over, JSON.stringify(zoomed99.at200?.hover))
+
+    // ── step 100 — THE 390 SWEEP: the surfaces a phone keeps, fully usable at 390 (UX-DR16, FR-D1) ──
+    /* Width measured against `clientWidth`, never `innerWidth` — executed at planning: an `isMobile` page's innerWidth
+       GROWS to fit whatever overflows (a planted 600px box read 608), while media queries and `clientWidth` stay 390.
+       axe in a context of its own with the policy bypassed, as step 8's is, behind the same positive control. */
+    const SITE_ORIGIN = process.env.SITE_ORIGIN || (LOCAL ? APP : 'https://inflozo.com')
+    const sweep100 = []
+    for (const [label, signedIn, url] of [['Dashboard', true, at('/')], ['Sites', true, at('/sites')], ['Sign In', false, at('/sign-in')], ['inflozo.com/', false, `${SITE_ORIGIN}/`]]) {
+      const c = await browser.newContext({ ...described97('iPhone 13'), bypassCSP: true })
+      try {
+        const p = steady(await c.newPage())
+        if (signedIn) await p.goto(await magic(emailA), { waitUntil: 'load' })
+        await p.goto(url, { waitUntil: 'load' })
+        await p.waitForTimeout(800)
+        for (const f of p.frames()) await f.addScriptTag({ path: AXE }).catch(() => {})
+        const r = await p.evaluate(async (tags) => {
+          const probe = document.createElement('img')
+          probe.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACw='
+          document.body.append(probe)
+          const control = (await window.axe.run(document, { runOnly: tags })).violations.some((v) => v.id === 'image-alt')
+          probe.remove()
+          const found = (await window.axe.run(document, { runOnly: tags })).violations.map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`)
+          const d = document.documentElement
+          return { control, axe: found, scrollWidth: d.scrollWidth, clientWidth: d.clientWidth, path: location.pathname }
+        }, WCAG)
+        await p.screenshot({ path: `${OUT}/390-${label.replace(/[^a-z]/gi, '')}.png`, fullPage: true })
+        sweep100.push({ label, ...r })
+      } finally {
+        await c.close()
+      }
+    }
+    for (const r of sweep100) {
+      check(`step 100 — ${r.label} at 390 with touch: no sideways overflow (scrollWidth ${r.scrollWidth} ≤ clientWidth ${r.clientWidth}) and zero axe violations, behind axe's positive control`, r.control && r.scrollWidth <= r.clientWidth && r.axe.length === 0, JSON.stringify(r))
+    }
+
+    // ── step 101 — the window crosses 1280 on production: the layout follows, and NOTHING REMOUNTS ──
+    /* The matrix's "resize across the line" and its criterion: "the lock row, the journal and the selection are
+       unchanged". A fine pointer at 1440 with a section chosen, narrowed to 1279 and widened again. The lock row is read
+       through the same non-holder beat as steps 97-98, and it must be THIS TAB's, with the same generation, at all three
+       widths. A remount would replace the editor's root element and reload the canvas document, so an expando planted on
+       each must survive both crossings. The journal is the keyboard gate's (`pnpm keyboard`, "crossing 1280 is live"):
+       the harness proves it with a ⌘Z across the line, where an edit costs this project nothing. */
+    const crossContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const cross = steady(await crossContext.newPage())
+    await cross.goto(await magic(emailA), { waitUntil: 'load' })
+    await cross.goto(editorUrl(), { waitUntil: 'load' })
+    await cross.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await cross.waitForTimeout(600)
+    await cross.locator('[data-layer-row]').nth(1).focus()
+    await cross.keyboard.press('Enter')
+    await cross.waitForTimeout(400)
+    const state101 = () => cross.evaluate(() => {
+      const root = document.querySelector('[data-editor]')
+      const frame = document.querySelector('section[aria-label="Canvas"] iframe')
+      return {
+        compact: document.getElementById('editor-more')?.checkVisibility() === true,
+        rail: document.querySelector('[data-icon-rail]') !== null,
+        docked: document.getElementById('editor-controls')?.checkVisibility() === true,
+        panel: document.getElementById('editor-controls')?.getAttribute('aria-label') ?? null,
+        name: document.getElementById('editor-panel-name')?.textContent ?? null,
+        kept: root?.__walk101 === 1 && frame?.contentWindow?.__walk101 === 1,
+        session: sessionStorage.getItem('inflozo-lock-session'),
+      }
+    })
+    await cross.evaluate(() => {
+      document.querySelector('[data-editor]').__walk101 = 1
+      document.querySelector('section[aria-label="Canvas"] iframe').contentWindow.__walk101 = 1
+    })
+    const at1440 = { ...(await state101()), lock: (await lockRow(cross)).row ?? null }
+    await cross.setViewportSize({ width: 1279, height: 900 })
+    await cross.waitForTimeout(600)
+    const at1279 = { ...(await state101()), lock: (await lockRow(cross)).row ?? null }
+    await cross.setViewportSize({ width: 1440, height: 900 })
+    await cross.waitForTimeout(600)
+    const back1440 = { ...(await state101()), lock: (await lockRow(cross)).row ?? null }
+    const sameLock = (a, b) => a.lock !== null && b.lock !== null && a.lock.holderSessionId === b.lock.holderSessionId && a.lock.generation === b.lock.generation
+    check('step 101 — 1440 → 1279 → 1440 with a section chosen: full, then compact (⋯, the rail, the overlay closed), then full again, the selection kept throughout, and the editor root and the canvas document never replaced — nothing remounted', !at1440.compact && at1440.docked && at1440.panel === 'Section settings' && at1440.kept && at1279.compact && at1279.rail && !at1279.docked && at1279.panel === 'Section settings' && at1279.name === at1440.name && at1279.kept && !back1440.compact && back1440.docked && back1440.panel === 'Section settings' && back1440.name === at1440.name && back1440.kept, JSON.stringify({ at1440, at1279, back1440 }))
+    check('step 101 — the lock row is unchanged across both crossings: this tab holds it, with the same generation, at all three widths', at1440.lock?.holderSessionId === at1440.session && sameLock(at1440, at1279) && sameLock(at1440, back1440), JSON.stringify({ at1440: at1440.lock, at1279: at1279.lock, back1440: back1440.lock, session: at1440.session }))
+    await handBack(cross)
+    await crossContext.close()
+
     // ── step 9 — the skeleton streams first ──
     const streamContext = await browser.newContext()
     await (await streamContext.newPage()).goto(await magic(emailA), { waitUntil: 'load' })
-    // Whether the fallback streams at all is a race between the docs read and the first flush — a fast read renders the
-    // editor straight into the shell, which is correct. So up to five opens: the skeleton must stream ahead of the editor
-    // in at least one (its HTML, `>Opening…`, never the same words inside the flight data), and the dashboard's cards
-    // must stream in none.
+    // STORY 5.22 — RE-EXPECTED: THE SERVER NEVER DRAWS THE EDITOR NOW. It cannot know the pointer, and a phone must never
+    // mount the editor (R-201), so `Editor`'s gate draws the skeleton until the browser has asked — the Suspense fallback's
+    // and the gate's are the same one. So on EVERY open the raw HTML carries the skeleton's sentence (its HTML, `>Opening…`,
+    // never the same words inside the flight data), never the editor's canvas, and never the dashboard's cards.
     const opens = []
-    for (let n = 0; n < 5; n++) {
+    for (let n = 0; n < 3; n++) {
       const raw = await (await streamContext.request.get(editorUrl(), { maxRedirects: 0 })).text()
-      const sentence = raw.indexOf('>Opening the editor for')
-      const editor = raw.indexOf('aria-label="Canvas"')
-      opens.push({ sentence, editor, dashboard: raw.includes('Loading projects') })
-      if (sentence > -1 && sentence < editor) break
+      opens.push({ sentence: raw.indexOf('>Opening the editor for'), editor: raw.indexOf('aria-label="Canvas"'), dashboard: raw.includes('Loading projects') })
     }
     await streamContext.close()
-    check('step 9 — the raw stream carries the skeleton\'s sr-only sentence ahead of the editor, and never the dashboard\'s cards', opens.some((o) => o.sentence > -1 && o.sentence < o.editor) && opens.every((o) => !o.dashboard), JSON.stringify(opens))
+    check('step 9 — every open\'s raw stream carries the skeleton\'s sr-only sentence and never the editor, nor the dashboard\'s cards (Story 5.22: the gate draws the skeleton until the browser decides)', opens.every((o) => o.sentence > -1 && o.editor === -1 && !o.dashboard), JSON.stringify(opens))
   } finally {
     if (browser) await browser.close()
     if (entitlementBack !== null) {

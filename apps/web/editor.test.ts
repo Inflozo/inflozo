@@ -8,6 +8,7 @@ import {
   pageTwoKeyOf, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
+import { COMPACT, isCompact, isPhone, PHONE } from './lib/floor.ts'
 
 // Story 5.1's URL scheme, held by the module the route, the Shell, the switcher and the harness read it from.
 // Story 5.5 added R-129's three membership canvases, whose stored key is not their segment, and Private's condition.
@@ -263,4 +264,37 @@ test('Story 5.20: `paywall` is a canvas and a template surface — its key is it
   for (const key of Object.keys(CANVASES) as CanvasKey[]) assert.equal(fileOfKey(templateKeyOf(key)), CANVASES[key].file, key)
   assert.equal(fileOfKey(SITE.key), SITE.file)
   assert.equal(fileOfKey('index'), 'index.hbs')
+})
+
+// ─── Story 5.22 — the editor's floor: which device gets the editor, and which of its two shapes ─────────────────
+
+test('R-201: a phone is a TOUCH screen whose SHORTER side is under 500 — held either way, and never a fine pointer', () => {
+  // the edge, on the short side: 499 is a phone and 500 is not
+  assert.equal(isPhone({ coarse: true, width: 499, height: 900 }), true)
+  assert.equal(isPhone({ coarse: true, width: 500, height: 900 }), false)
+  // portrait and landscape are the same device — turning it never changes the answer
+  for (const [w, h] of [[390, 844], [844, 390], [360, 863], [484, 1000], [768, 1024], [834, 1194], [1366, 1024], [600, 960]]) {
+    assert.equal(isPhone({ coarse: true, width: w, height: h }), isPhone({ coarse: true, width: h, height: w }), `${w} × ${h}`)
+  }
+  // Playwright's device list, the planning's evidence: phones' short sides reach 484, tablets' start at 600
+  assert.equal(isPhone({ coarse: true, width: 390, height: 844 }), true, 'iPhone 13')
+  assert.equal(isPhone({ coarse: true, width: 863, height: 360 }), true, 'a Pixel 7 held sideways is still a phone')
+  assert.equal(isPhone({ coarse: true, width: 768, height: 1024 }), false, 'an iPad Mini held upright is a tablet')
+  assert.equal(isPhone({ coarse: true, width: 640, height: 1024 }), false, 'a Galaxy Tab S9 held upright is a tablet')
+  // R-76: a fine pointer is NEVER a phone — a desktop at 200% zoom is about 720 × 406 and keeps the editor (WCAG 1.4.4)
+  assert.equal(isPhone({ coarse: false, width: 390, height: 844 }), false)
+  assert.equal(isPhone({ coarse: false, width: 720, height: 406 }), false)
+  // and the media text says the same thing, a coarse pointer in both branches
+  assert.equal(PHONE.split(',').length, 2)
+  for (const branch of PHONE.split(',')) assert.match(branch, /\(pointer: coarse\) and \((width|height) < 500px\)/)
+})
+
+test('R-202: D8\'s rearrangement below 1280 on a fine pointer, and at ANY width on a touch screen', () => {
+  assert.equal(isCompact({ coarse: false, width: 1279 }), true)
+  assert.equal(isCompact({ coarse: false, width: 1280 }), false)
+  assert.equal(isCompact({ coarse: false, width: 1440 }), false)
+  assert.equal(isCompact({ coarse: false, width: 720 }), true, 'a 1440 display at 200% zoom')
+  for (const width of [768, 834, 1194, 1366, 2560]) assert.equal(isCompact({ coarse: true, width }), true, `coarse at ${width}`)
+  // the media text is the same rule: a coarse pointer, or a width
+  assert.deepEqual(COMPACT.split(',').map((b) => b.trim().replace(/\d+/, 'N')), ['(pointer: coarse)', '(width < Npx)'])
 })

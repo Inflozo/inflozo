@@ -1,6 +1,7 @@
 'use client'
 
-import { useRef, useState, type RefObject, type TransitionEvent } from 'react'
+import { useEffect, useRef, useState, type RefObject, type TransitionEvent } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
@@ -39,6 +40,13 @@ import { NOTHING_TO_REMIX, REMIX_WORDS, UNDO_NOTE, remixAsk } from '@/lib/remix'
  * WHERE NOTHING CAN MOVE IT SAYS SO AND OFFERS CLOSE ALONE (R-12's shape, as R-134 already answers an empty
  * "Clear dark overrides"). That is today's answer in the customer's own editor, because every category in the
  * shipped library holds one design (R-158) — honest, not a bug, and not a greyed button.
+ *
+ * STORY 5.22 — THE DICE CAN SIT COLLAPSED, and two things break inside a hidden subtree (executed in Chromium 149 with
+ * the repo's Playwright): a `<dialog>` under a `display: none` ancestor opens INVISIBLE (0 × 0) and still modal, with
+ * focus nowhere, and a transition there fires no `transitionrun`, `transitionend` or `transitioncancel` at all. Below
+ * 1280 the bar's cluster is `hidden` and ⋯'s Site Remix row presses this dice (R-141), so the confirm is PORTALLED once
+ * mounted — to the editor's root, where the 44px touch rule still reaches its buttons, or to `<body>` where there is
+ * no editor (`/controls`) — and a confirmed Remix on a die that is not rendered lands AT ONCE, with nothing to roll.
  */
 
 /** The six rotations that bring each face to the front. Any six distinct pairs would do; these are the cube's own. */
@@ -85,6 +93,9 @@ export function RemixDice({
    *  question never named would make the dice a liar. The roll settles quietly there instead. */
   const confirmed = useRef(canvas)
   const [turn, setTurn] = useState({ ...TILT, rolls: 0 })
+  /** where the confirm is drawn — outside any collapsed ancestor, decided once the dice is mounted */
+  const [host, setHost] = useState<Element | null>(null)
+  useEffect(() => setHost(die.current?.closest('[data-editor]') ?? document.body), [])
 
   /** THE DICE'S ONE DOOR, and both the button and `⇧R` come through it: the confirm opens at once (R-164). A
    *  press while the cube is still in the air is ignored — one roll, one re-roll. */
@@ -98,6 +109,11 @@ export function RemixDice({
    *  the re-roll takes to arrive. */
   const go = () => {
     dialog.current?.close()
+    // a die that is not rendered (the cluster collapsed into ⋯) would fire no `transitionend`: nothing rolls, it lands
+    if (!die.current?.checkVisibility()) {
+      onRemix()
+      return
+    }
     rolling.current = true
     confirmed.current = canvas
     const face = FACES[Math.floor(Math.random() * FACES.length)] ?? FACES[0]!
@@ -141,44 +157,49 @@ export function RemixDice({
         </span>
       </button>
 
-      <dialog
-        ref={dialog}
-        data-remix-confirm
-        onClick={closeOnBackdrop}
-        onClose={() => die.current?.focus()}
-        aria-labelledby="editor-remix-title"
-        aria-describedby="editor-remix-body"
-        className={`${sheet} gap-[18px]`}
-      >
-        <div className="flex flex-col gap-[6px]">
-          <h2 id="editor-remix-title" className={`flex items-center gap-[10px] ${title}`}>
-            {/* B8's own heading glyph — the Kit's `Refresh`, the same one Shuffle wears in the section's pill */}
-            <Refresh size={16} className="shrink-0" />
-            Remix {canvas}?
-          </h2>
-          <p id="editor-remix-body" className="text-ui-dense leading-[1.55] text-ink-soft">
-            {count > 0 ? remixAsk(count, canvas) : NOTHING_TO_REMIX}
-          </p>
-        </div>
-        <div className="flex items-center gap-[10px]">
-          {count > 0 && undoable ? <span className="text-helper-caption text-ink-soft">{UNDO_NOTE}</span> : null}
-          <span className="flex-1" />
-          <Button type="button" variant="secondary" size={36} data-cancel onClick={() => dialog.current?.close()}>
-            {count > 0 ? 'Cancel' : 'Close'}
-          </Button>
-          {count > 0 ? (
-            <Button
-              type="button"
-              variant="coral"
-              size={36}
-              data-remix-go
-              onClick={go}
-            >
-              Remix
-            </Button>
-          ) : null}
-        </div>
-      </dialog>
+      {host === null
+        ? null
+        : createPortal(
+          <dialog
+            ref={dialog}
+            data-remix-confirm
+            onClick={closeOnBackdrop}
+            onClose={() => die.current?.focus()}
+            aria-labelledby="editor-remix-title"
+            aria-describedby="editor-remix-body"
+            className={`${sheet} gap-[18px]`}
+          >
+            <div className="flex flex-col gap-[6px]">
+              <h2 id="editor-remix-title" className={`flex items-center gap-[10px] ${title}`}>
+                {/* B8's own heading glyph — the Kit's `Refresh`, the same one Shuffle wears in the section's pill */}
+                <Refresh size={16} className="shrink-0" />
+                Remix {canvas}?
+              </h2>
+              <p id="editor-remix-body" className="text-ui-dense leading-[1.55] text-ink-soft">
+                {count > 0 ? remixAsk(count, canvas) : NOTHING_TO_REMIX}
+              </p>
+            </div>
+            <div className="flex items-center gap-[10px]">
+              {count > 0 && undoable ? <span className="text-helper-caption text-ink-soft">{UNDO_NOTE}</span> : null}
+              <span className="flex-1" />
+              <Button type="button" variant="secondary" size={36} data-cancel onClick={() => dialog.current?.close()}>
+                {count > 0 ? 'Cancel' : 'Close'}
+              </Button>
+              {count > 0 ? (
+                <Button
+                  type="button"
+                  variant="coral"
+                  size={36}
+                  data-remix-go
+                  onClick={go}
+                >
+                  Remix
+                </Button>
+              ) : null}
+            </div>
+          </dialog>,
+          host,
+        )}
     </>
   )
 }

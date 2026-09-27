@@ -56,8 +56,8 @@ drew them:
 
 | | Widths | Surfaces |
 |---|---|---|
-| **Phone, tablet and desktop** | 390 · 834 · 1440 | Sign In · Magic Link Sent · Dashboard · Account Menu · Notifications · Billing · Suggestions · every marketing page |
-| **Tablet and desktop only** | 834 · 1440 | Editor and everything it contains · Section Picker · Variant Shuffle · Style Packs · Deploy Wizard · Deploy History · Routes Manager · Theme Settings · Translations · Assets · Sites · Editor Cards · Paywall Editor · Post Content · Error Pages |
+| **Phone, tablet and desktop** | 390 · 834 · 1440 | Sign In · Magic Link Sent · Dashboard · Account Menu · Notifications · Billing · Suggestions · Sites · Deploy History · every marketing page |
+| **Tablet and desktop only** | 834 · 1440 | Editor and everything it contains · Section Picker · Variant Shuffle · Style Packs · Deploy Wizard · Routes Manager · Theme Settings · Translations · Assets · Editor Cards · Paywall Editor · Post Content · Error Pages |
 
 **The editor is drawn at 834 and at 720 as well as at 1440** — `D8 Editor Below 1440.dc.html` D8a
 (834 × 1112, touch) and D8b (720 × 900, captioned as a 1440 display at 200% browser zoom). Until the

@@ -96,8 +96,11 @@ export function ViewportChip({ device, fit }: { device: Device; fit: number }) {
     <span
       id="editor-viewport"
       // pointer-events-none on purpose: a press here lands on the ground `<section>` itself, so R-123's deselect still
-      // reads `e.target === e.currentTarget` and the chip is not a fourth ground of its own
-      className="pointer-events-none absolute left-1 top-1 rounded-pill border border-line-strong bg-paper px-2 py-[2px] font-mono text-[9.5px] uppercase text-ink-soft-aa"
+      // reads `e.target === e.currentTarget` and the chip is not a fourth ground of its own.
+      // Story 5.22: the first column of the ground's one top row (`editor.tsx`), which sits at R-138's 4px / 4px, so
+      // page 2's pill in the middle column can never meet it; `nowrap`, because a grid column is as narrow as its
+      // content allows and the chip must stay one line
+      className="pointer-events-none col-start-1 justify-self-start whitespace-nowrap rounded-pill border border-line-strong bg-paper px-2 py-[2px] font-mono text-[9.5px] uppercase text-ink-soft-aa"
     >
       {viewportWords(device, fit)}
     </span>

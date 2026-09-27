@@ -845,6 +845,25 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       remounts nothing. R-143's "below 1440" now reads below 1280.
     - Both reached the register, `epics.md`, `EXPERIENCE.md`, `DESIGN.md`, the R-76 summaries and the walkthrough
       (`needsBigScreen` takes the height; its self-check passes) at Create.
+  - **Story 5.22's Dev (2026-09-27).**
+    - **The rules are `apps/web/lib/floor.ts`** (`PHONE`, `COMPACT`, `isPhone`, `isCompact`), held equal to
+      `globals.css`'s `phone` and `compact` variants by `tokens.test.ts`. They are the BLOCK form: Tailwind 4.3's
+      shorthand splits its parentheses on commas and would read the second half of a media-query list as a selector.
+    - **`Editor` is the gate and `EditorShell` the old body.** A layout effect reads `PHONE` once; the server and the
+      first client render draw the skeleton, already in the device's shape by CSS; a phone gets `SmallScreenNotice` (D4f,
+      one row: Your sites). `compact` is live over `matchMedia(COMPACT)`, and ONE `sheet` state holds the overlay.
+    - **The bar is a grid whose side tracks keep their content's minimum** (`minmax(min-content, 1fr)`); the name and the
+      MEMBERS OFF chip give way first (`w-0 grow max-w-fit`), the Paywall's NOT A PAGE SECTION chip is whole or absent
+      (not drawn below 1280 — truncated it read "NO"), and the centred group is `w-max`. That retires 5.14's
+      `calc(50% - 360px)`.
+    - **Crossing 1280 closes a confirm the new layout no longer draws**: a modal `<dialog>` under a now-`hidden` aside stays
+      open, modal and 0 × 0 and blocks every press (executed), so the layout effect closes it.
+    - **The 44px touch rule is one `@layer base` rule under `[data-editor]`.** Three components' own sizes outrank it and
+      are sized for touch inside the editor (`coarse:in-[[data-editor]]:`): the Kit's `Toggle` (52 × 30 in a 44px row),
+      the link picker, and a Layers row's gaps.
+    - **Executed:** a tap that opens the Controls overlay must cancel its own `touchend` — without it the tap's click
+      landed on the scrim and closed the overlay at once; real 200% browser zoom is D8b with hover live and no notice.
+    - The Section Picker's cards at 720–834 are the spec's Question 3 (an Ask First layout). DW-282 and DW-283 are new.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions

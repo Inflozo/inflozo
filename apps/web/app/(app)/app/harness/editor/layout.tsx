@@ -59,6 +59,9 @@ import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
  * is walked on the Paywall canvas too: the harness's own `acquire` reaches no database, and the state it opened with
  * stands (`lib/lock-client.ts`).
  *
+ * STORY 5.22 — `x-inflozo-harness-dark: off` opens the fixture as a LIGHT-ONLY project (`dark_enabled` false), so the
+ * compact editor's ⋯ menu is walked without its dark row, as the bar is without its sun.
+ *
  * STORY 5.21 — A THIRD VALUE OF THE SITE HEADER (`x-inflozo-harness-site: surfaces`) picks a linked site whose snapshot
  * carries Ghost's two surfaces, so `pnpm keyboard` walks the strip and the button with no database and no Ghost: the
  * shims follow the CONNECTION, not the content pill, so a site that never answers still draws both while the canvas paints
@@ -170,8 +173,9 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     pool: imagePool(),
     swatches: { light: referenceSwatches('light'), dark: referenceSwatches('dark') },
     // both halves of the map are walked: the sun is drawn, so `.` has something to press (R-135's other arm is the
-    // deployed walk's, on a real Light-only project)
-    darkEnabled: true,
+    // deployed walk's, on a real Light-only project). Story 5.22: a FOURTH header (`x-inflozo-harness-dark: off`) opens a
+    // Light-only project, so the journey proves ⋯ carries no dark row where the bar carries no sun (UX-DR3)
+    darkEnabled: asked.get('x-inflozo-harness-dark') !== 'off',
     revision: 0,
     // IndexedDB is per ORIGIN, so the harness names its own database and never collides with a real session's
     userId: 'harness',

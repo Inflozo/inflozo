@@ -1,5 +1,8 @@
 /* Editor Sidebar Kit.dc.html:274 — shortcut rows: the action, and its mono kbd chips. */
 
+/** The mono kbd chip, as the Kit draws it — shared with the Menu's row (Story 5.22, D8a's "Undo ⌘Z"), so one chip. */
+export const kbd = 'rounded-[5px] border border-line bg-surface px-[6px] py-px font-mono text-helper-caption text-ink-soft'
+
 export function ShortcutRow({ action, keys, last = false }: { action: string; keys: string[]; last?: boolean }) {
   return (
     <div
@@ -8,10 +11,7 @@ export function ShortcutRow({ action, keys, last = false }: { action: string; ke
       <span className="text-[12.5px] font-medium text-ink">{action}</span>
       <span className="flex gap-1">
         {keys.map((k) => (
-          <kbd
-            key={k}
-            className="rounded-[5px] border border-line bg-surface px-[6px] py-px font-mono text-helper-caption text-ink-soft"
-          >
+          <kbd key={k} className={kbd}>
             {k}
           </kbd>
         ))}

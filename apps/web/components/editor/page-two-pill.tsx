@@ -18,16 +18,21 @@ import { BACK_TO_PAGE_ONE, PAGE_TWO_WORDS } from '@/lib/page-two'
    Both are named by their own words (WCAG 2.5.3): no `aria-label` over visible text.
 
    WHERE IT SITS is `editor.tsx`'s: 4px from the ground's top — R-138's inset for the viewport chip, not D5d's 16px —
-   with the ground's top padding grown under it on page 2, so it never covers the page card. */
+   with the ground's top padding grown under it on page 2, so it never covers the page card.
+
+   STORY 5.22 — IT SHARES ONE ROW WITH THE CHIP: the middle of a `1fr auto 1fr` grid whose first column holds B11's chip
+   (`editor.tsx`). So it is centred while there is room, and slides right of the chip when there is not — the two can no
+   longer meet, which they did below about 1205px with both panels open. The row lets presses through to the ground
+   (R-123); the pill takes its own back. On a touch screen its two parts are 44px, as every target is (D8a). */
 
 export function PageTwoPill({ onBack }: { onBack: () => void }) {
   return (
     <div
       id="editor-page-two"
       data-page-two-pill
-      className="absolute left-1/2 top-1 z-10 flex -translate-x-1/2 items-center gap-1 rounded-thumb bg-ink p-1 shadow-modal"
+      className="pointer-events-auto col-start-2 flex items-center gap-1 rounded-thumb bg-ink p-1 shadow-modal"
     >
-      <span className="inline-flex h-[30px] items-center gap-2 rounded-[7px] bg-surface/8 px-3">
+      <span className="inline-flex h-[30px] items-center gap-2 rounded-[7px] bg-surface/8 px-3 coarse:h-11">
         <PageLines size={13} className="shrink-0 text-surface/66" />
         <span className="text-[12.5px] font-semibold text-surface">{PAGE_TWO_WORDS}</span>
       </span>

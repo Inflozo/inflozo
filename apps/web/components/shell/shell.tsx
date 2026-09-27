@@ -3,7 +3,7 @@
 import Form from 'next/form'
 import Link from 'next/link'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type MouseEvent, type ReactNode } from 'react'
 import { Button, buttonClasses } from '@/components/kit/button'
 import { openOnCancel } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
@@ -39,6 +39,12 @@ import type { ShellUser } from '@/lib/shell-user'
    sites and offers "Connect site" (the owner's finding 5 on Story 3.2 — "make it similar to
    Projects page"). Every other surface has neither, because there it would be a control with
    nothing to act on. */
+
+/** STORY 5.22 — THE USER, FOR A SURFACE THE SHELL DRAWS NO CHROME AROUND. On an editor path the shell is `<main>` alone,
+ *  so the Small Screen Notice has no account row to read the user off; D4f draws their avatar in its bar, and this is
+ *  how it reaches it. Null where there is no shell at all (the keyboard harness), and the notice then draws none. */
+const ShellUserContext = createContext<ShellUser | null>(null)
+export const useShellUser = () => useContext(ShellUserContext)
 
 const NAV = [
   { href: '/', label: 'Projects', Icon: Projects },
@@ -294,7 +300,13 @@ export function Shell({
   // THE EDITOR OWNS THE WINDOW (Story 5.1, S4a): on `/projects/<id>` and below the shell draws its `<main>` and nothing
   // else — no sidebar, no phone bar, no drawer. It is still the one `<main>` (`app-routes.test.ts`), so an editor-path
   // 404 lands inside it. After every hook, so the hook order is the same on every path.
-  if (isEditorPath(path)) return <main className="flex min-h-dvh flex-col">{children}</main>
+  if (isEditorPath(path)) {
+    return (
+      <main className="flex min-h-dvh flex-col">
+        <ShellUserContext value={user}>{children}</ShellUserContext>
+      </main>
+    )
+  }
 
   /**
    * `showModal()` hands focus to the first focusable thing inside the panel, which is the

@@ -16,7 +16,8 @@ if (!process.env.KEYBOARD_BASE_URL) {
 
 export default defineConfig({
   testDir: '.',
-  testMatch: 'journey.spec.mjs',
+  // Story 5.22: and the floor's touch journeys, which may tap — kept out of the journey, whose first test refuses a pointer
+  testMatch: ['journey.spec.mjs', 'floor.spec.mjs'],
   outputDir: './test-results',
   fullyParallel: false,
   workers: 1,
@@ -31,5 +32,9 @@ export default defineConfig({
     // sibling and refuses if a mouse API appears in it; this is the other half — a touch screen would give the
     // editor a second input path and the hold-to-hover state that goes with it.
     hasTouch: false,
+    // PINNED, AND THE WIDTH IS LOAD-BEARING SINCE STORY 5.22: below 1280 a fine pointer gets D8's compact editor
+    // (R-202), so every journey that expects today's full editor needs this window. It was Playwright's default and
+    // written nowhere; the 720 journeys set their own, and `floor.spec.mjs` its devices.
+    viewport: { width: 1280, height: 720 },
   },
 })

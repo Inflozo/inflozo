@@ -357,8 +357,11 @@ function Card({
         onAspect={(aspect) => setSpan(spanFor(aspect))}
       />
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three
-          tracks, the middle one auto, so the button is centred on the CARD however long the name is. */}
-      <div className="grid h-[41px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-[10px_14px]">
+          tracks, the middle one auto, so the button is centred on the CARD however long the name is.
+          Story 5.22 — on a touch screen the Add is the editor's 44px (D8a), so the strip grows to hold it (44 and its
+          10px either side), and neither side's words may spill over it: each is clipped to its own track. How the
+          picker lays out its cards at 720 and 834 is a layout the frames do not draw (the spec's Ask First). */}
+      <div className="grid h-[41px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-[10px_14px] coarse:h-16">
         <span className="flex min-w-0 items-center gap-[5px]">
           <span className="truncate text-ui-dense font-semibold text-ink">{entry.name}</span>
           {/* R-152: the mark, before the press. `title` on the wrapper, because an SVG's own title is not a tooltip */}
@@ -387,7 +390,7 @@ function Card({
         {/* the owner's ruling of 2026-09-20: the CATEGORY before the tier pill, in the rail heading's own mono 10.5 —
             it is a label beside a name, not a second name, and a search crosses the rail so the card must say where
             it came from. No new size and no new token. */}
-        <span className="flex min-w-0 items-center justify-end gap-[6px]">
+        <span className="flex min-w-0 items-center justify-end gap-[6px] overflow-hidden">
           <span className="truncate font-mono text-[10.5px] tracking-[0.02em] text-ink-soft-aa">{entry.categoryTitle}</span>
           {entry.tier === 'pro' ? <ProBadge /> : <FreeBadge />}
         </span>

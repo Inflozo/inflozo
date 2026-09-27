@@ -1,7 +1,9 @@
-import type { ReactNode } from 'react'
+import Link from 'next/link'
+import type { MouseEvent, ReactNode } from 'react'
 import { anchorTo, arrowKeys } from '@/lib/menu'
 import { Check, ChevronDown, ChevronRight, Trash } from './icons'
-import { fieldTone, greyedProps, labelTone, reason, ring, slimScrollbar, valueTone, type Greyed } from './greyed'
+import { fieldTone, greyedProps, labelTone, ReadOnly, reason, ring, slimScrollbar, valueTone, type Greyed } from './greyed'
+import { kbd } from './shortcut-row'
 
 /* Editor Sidebar Kit.dc.html:109 — select rows and menus. A closed select may carry a mini
    thumbnail; a font row renders a live "Aa" in the face itself; a dropdown marks the active
@@ -179,6 +181,13 @@ export type MenuItem = {
   icon?: ReactNode
   /** Story 4.5: the row acts — the popover it sits in closes first, so focus is back on its trigger */
   onSelect?: () => void
+  /** Story 5.22 — the gesture's keys, drawn as the Kit's kbd chips after the label, as D8a's "Undo ⌘Z" draws them */
+  keys?: readonly string[]
+  /** Story 5.22 — a row that NAVIGATES is a link (Theme settings, Back to post), never a button that pushes */
+  href?: string
+  /** Story 5.22 — R-192: a row whose action EDITS, inside the Kit's `ReadOnly` while reading along — greyed, out of the
+   *  Tab order and unresponsive, as the control it stands for is */
+  readOnly?: boolean
 }
 
 /** The dropdown itself: the active row is coral-tint with a check, danger sits last. */
@@ -190,34 +199,47 @@ export function Menu({ label, items }: { label: string; items: MenuItem[] }) {
       // icon picker's category list ran the height of the window (the owner's finding 8 on Story 4.5).
       className={`flex max-h-[min(320px,60vh)] w-[210px] list-none flex-col gap-px overflow-y-auto rounded border border-line bg-surface p-[6px] shadow-lg ${slimScrollbar}`}
     >
-      {items.map((item, i) => (
-        <li key={item.label} className="flex flex-col">
-          {item.danger && i > 0 ? <hr className="mx-2 my-1 h-px border-0 bg-line" /> : null}
-          <button
-            type="button"
-            aria-current={item.active ? 'true' : undefined}
-            onClick={
-              item.onSelect
-                ? (event) => {
-                    event.currentTarget.closest<HTMLElement>('[popover]')?.hidePopover()
-                    item.onSelect?.()
-                  }
-                : undefined
-            }
-            className={`flex items-center gap-2 rounded-sm px-[10px] py-[7px] text-left text-ui-dense ${ring} ${
-              item.active
-                ? 'bg-coral-tint font-semibold text-ink'
-                : item.danger
-                  ? 'font-medium text-danger-text hover:bg-danger-tint'
-                  : 'font-medium text-ink hover:bg-paper'
-            }`}
-          >
+      {items.map((item, i) => {
+        const act = (event: MouseEvent<HTMLElement>) => {
+          event.currentTarget.closest<HTMLElement>('[popover]')?.hidePopover()
+          item.onSelect?.()
+        }
+        const className = `flex items-center gap-2 rounded-sm px-[10px] py-[7px] text-left text-ui-dense disabled:opacity-35 disabled:hover:bg-transparent ${ring} ${
+          item.active
+            ? 'bg-coral-tint font-semibold text-ink'
+            : item.danger
+              ? 'font-medium text-danger-text hover:bg-danger-tint'
+              : 'font-medium text-ink hover:bg-paper'
+        }`
+        const inside = (
+          <>
             {item.danger ? <Trash size={13} /> : item.icon}
             <span className="flex-1">{item.label}</span>
+            {item.keys?.map((k) => (
+              <kbd key={k} className={kbd}>
+                {k}
+              </kbd>
+            ))}
             {item.active ? <Check size={13} className="text-coral-deep" /> : null}
-          </button>
-        </li>
-      ))}
+          </>
+        )
+        return (
+          <li key={item.label} className="flex flex-col">
+            {item.danger && i > 0 ? <hr className="mx-2 my-1 h-px border-0 bg-line" /> : null}
+            {item.href !== undefined ? (
+              <Link href={item.href} aria-current={item.active ? 'true' : undefined} onClick={act} className={className}>
+                {inside}
+              </Link>
+            ) : (
+              <ReadOnly on={item.readOnly === true}>
+                <button type="button" aria-current={item.active ? 'true' : undefined} onClick={item.onSelect ? act : undefined} className={className}>
+                  {inside}
+                </button>
+              </ReadOnly>
+            )}
+          </li>
+        )
+      })}
     </ul>
   )
 }

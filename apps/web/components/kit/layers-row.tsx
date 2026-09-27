@@ -74,7 +74,9 @@ export function LayersRow({
   return (
     <div
       // The ring is the row's, over whichever state it is already in (D8e), which is why it is not on the name button.
-      className={`group flex items-center gap-2 rounded-sm px-2 py-[7px] ${ring} ${
+      // Story 5.22: on a touch screen the ⋯ is 44px (the editor's touch rule), and on the main feed's row D5c's chip then
+      // left the name 32px to be pressed in — so there the gaps are 4px, and the name is at least a finger's 44.
+      className={`group flex items-center gap-2 rounded-sm px-2 py-[7px] coarse:in-[[data-editor]]:gap-1 ${ring} ${
         selected ? 'bg-coral-tint' : hovered ? 'bg-coral-wash' : 'hover:bg-coral-wash'
       } ${className}`}
       {...rest}
@@ -105,8 +107,9 @@ export function LayersRow({
   )
 }
 
-export const LayerThumb = () => (
-  <span aria-hidden className="flex h-[21px] w-[30px] gap-[2px] rounded-[4px] border border-line bg-surface p-[3px]">
+/** Story 5.22 — `size` is the box alone: D8's icon rail draws the same thumb at 26 × 19 and, on touch, 34 × 24. */
+export const LayerThumb = ({ size = 'h-[21px] w-[30px]' }: { size?: string }) => (
+  <span aria-hidden className={`flex ${size} gap-[2px] rounded-[4px] border border-line bg-surface p-[3px]`}>
     <span className="flex flex-1 flex-col justify-center gap-[2px]">
       <span className="h-[3px] rounded-[1px] bg-ink" />
       <span className="h-[2px] w-[70%] rounded-[1px] bg-line-strong" />

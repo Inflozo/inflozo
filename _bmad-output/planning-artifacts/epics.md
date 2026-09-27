@@ -632,7 +632,8 @@ So that every screen Inflozo ships is the one Claude Design drew.
 recorded token names are the names used
 **And** every sidebar control, panel, badge and state in the Editor Sidebar Kit has a component, including the
 greyed-with-reason pattern from `P0-0 Greyed Control Pattern.dc.html` (UX-DR3)
-**And** the three app widths are 1440 / 834 / 390 and the collapse ladder is `R Responsive System`'s (UX-DR16)
+**And** the three app widths are 1440 / 834 / 390 and the collapse ladder is `R Responsive System`'s *(the app's own
+ladder is D8 — Story 5.22; R Responsive System is the library's, `EXPERIENCE.md:79-82`)* (UX-DR16)
 **And** no second interface vocabulary is introduced beside the export's
 **And** a component gallery route renders every component in light and dark for review.
 
@@ -3246,6 +3247,7 @@ puts the canvas back on this list
 feed — its `/page/N/` would repeat page 1, and the compiled guard (Story 7.3) keeps it out of search — and any
 template whose hand-picked lists together pass 25 picks, naming the template and the total, because **the budget is
 per page, not per section**
+**And** in the compact bar (Story 5.22, D8a · D8b) Ship it stays in the bar, right of ⋯, and is 44px on a touch screen
 **And** the screens match S8a, S8b, S8c, S8d and S8d′ on failure.
 
 **And** *(Story 5.20, DW-260)* **Pre-flight repeats FR-H6's member-switch warnings**: it reads the site's one record,
@@ -3413,7 +3415,9 @@ allowed, on any plan
 require the edit lock**
 **And** the Roll back confirm **opens with focus on the cancelling action** (UX-DR14)
 **And** with no deploys the empty state is "Nothing shipped yet" **and the limit is stated anyway** (UX-DR6)
-**And** the history is reachable from a phone, because it is what the Small Screen Notice offers
+**And** the history is reachable from a phone, because it is what the Small Screen Notice offers, and this story adds
+D4f's Deploy history card to that notice — the live version and a one-tap Roll back to the one before it — which Story
+5.22 built without it (R-118)
 **And** the screens match S8e and D2a Pro pinning, D2b pin refusal and D2c Free.
 
 **FRs:** FR-J9. · **Frame:** `S8 Deploy.dc.html` S8e · `D2 Deploy History Completed.dc.html` D2a · D2b · D2c. ·
@@ -7863,7 +7867,8 @@ So that I am never surprised by a charge.
 resume, and **plan-limit meters**
 **And** cancelling stops auto-renew and states plainly when access ends
 **And** invoices match S12d and the page matches S12a
-**And** it is **fully usable at 390**, because it is one of the three things the Small Screen Notice offers
+**And** it is **fully usable at 390**, because it is one of the three things the Small Screen Notice offers, and this
+story adds D4f's Billing row to that notice, which Story 5.22 built without it (R-118)
 **And** **FR-A5's two Dodo calls land here with the adapter**: auto-renew stops the moment an account asks to be
 deleted, and Restore offers one-click resume at the same plan and price, saying plainly when the paid period
 ended meanwhile — deferred from Story 2.5 by ruling **R-97** (owner, 2026-09-07; `deferred-work.md` DW-42).
@@ -7973,6 +7978,7 @@ suggestion**
 harder throttling for new accounts**
 **And** images go through the asset upload pipeline — type and size limits, **and server-side sanitisation**,
 because an approved image reaches every visitor
+**And** the board is **fully usable at 390** (UX-DR16, FR-D1)
 **And** the surfaces match S13a and the submit sheet S13b, with S13c as the empty state (UX-DR6).
 
 **FRs:** FR-M1, FR-M2. · **Frame:** `S13 Suggestions.dc.html` S13a · S13b · S13c. · **Owner test:** yes.

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useTransition, type CSSProperties, type HTMLAttributes } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes } from 'react'
 import { createPortal } from 'react-dom'
 import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
@@ -16,7 +16,7 @@ import { loadIcons } from '@/components/controls/icon-picker'
 import { HowReadersReachIt, Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
 import { DeviceSwitch, ViewportChip } from '@/components/editor/device-switch'
-import { ModeToggle, modeShown } from '@/components/editor/mode-toggle'
+import { ModeToggle, modeShown, modeWords } from '@/components/editor/mode-toggle'
 import { PageTwoPill } from '@/components/editor/page-two-pill'
 import { LockBar } from '@/components/editor/lock-bar'
 import { LockRequest } from '@/components/editor/lock-request'
@@ -25,6 +25,7 @@ import { PaywallNotice } from '@/components/editor/paywall-notice'
 import { PreviewBar, PreviewButton } from '@/components/editor/preview-toggle'
 import { RemixDice, type RemixHandle } from '@/components/editor/remix-dice'
 import { SectionPicker, type Placement } from '@/components/editor/section-picker'
+import { SmallScreenNotice } from '@/components/editor/small-screen-notice'
 import { SourcePill } from '@/components/editor/source-pill'
 import { SaveState } from '@/components/editor/save-state'
 import { openShortcuts, ShortcutsSheet } from '@/components/editor/shortcuts-sheet'
@@ -39,12 +40,15 @@ import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/di
 import { EmptyPanel } from '@/components/kit/empty-panel'
 import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
-import { ChevronLeft, InfoCircle, Panel, Pause, Redo as RedoIcon, Undo as UndoIcon } from '@/components/kit/icons'
+import { ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, Undo as UndoIcon, X } from '@/components/kit/icons'
+import { LayerThumb } from '@/components/kit/layers-row'
+import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
 import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
 import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
+import { COMPACT, PHONE } from '@/lib/floor'
 import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSurface, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, portalFor, readHidden, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
@@ -57,13 +61,13 @@ import {
   HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, SELF_MARK, stillAsking, type LockRow,
 } from '@/lib/lock'
 import { askLock, lockSignals, lockUrl, tabSession, type LockAnswer, type LockSignal } from '@/lib/lock-client'
-import { edits, holdsCaret, IN_PREVIEW, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
-import { BACK_SAID, PAUSED, PREVIEW_SAID } from '@/lib/preview'
+import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
+import { BACK_SAID, PAUSED, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
 import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
 import { askToPersist, openLocal, type LocalStore } from '@/lib/local-store'
-import { closeMenus } from '@/lib/menu'
+import { arrowKeys, closeMenus, openMenu } from '@/lib/menu'
 import { committed, EMPTY_DOC, templatesOpen } from '@/lib/round-trip'
 import {
   carry, COPY_MARKER, editedDoc, ENTERED_SAID, follows, followersOf, leftBecause, LEFT_SAID, mainFeedOn, offersPageTwo,
@@ -82,6 +86,7 @@ import { liveStore, type LiveStore } from '@/lib/live-client'
 import { VIEW_AS_SAID, afterChange, seen, type Viewed, type Visitor } from '@/lib/view-as'
 import { isApp, stripApp } from '@/routing'
 import { recheckSite, setPreviewSubject, setViewedStates } from './actions'
+import { EditorSkeleton } from './editor-skeleton'
 import type { EditorData } from './read'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
@@ -200,7 +205,18 @@ import type { EditorData } from './read'
    session state like the mode, and resets to Desktop on reload. The `ResizeObserver` watches the stage `<section>` and
    not the card, because the card is now the ANSWER (the device's size, fitted) and the stage is the question (the room
    available). NO ZOOM CONTROL and no per-breakpoint editing (UX-DR17, UX-DR20, FR-D8): the fit is derived and only
-   reported. `1` `2` `3` are Story 5.9's whole keyboard map, and D8b's collapse into `⋯` below 1440 is Story 5.22's.
+   reported. `1` `2` `3` are Story 5.9's whole keyboard map.
+
+   THE FLOOR (Story 5.22 — D4f, D8, R-201, R-202). ONE GATE AND ONE REARRANGEMENT, and both rules are `lib/floor.ts`'s. A
+   PHONE — a touch screen whose shorter side is under 500px — never mounts this shell: `Editor` below asks `PHONE` once,
+   in the browser, as the project opens, and draws D4f's Small Screen Notice instead, so no lock, heartbeat, sync,
+   IndexedDB or live read ever starts there; the server always draws the skeleton, in the device's shape by CSS (R-98).
+   Every OTHER touch screen, and a fine-pointer window below 1280 (a 1440 display at 200% zoom included, WCAG 1.4.4),
+   gets D8's ONE rearrangement, live (`COMPACT`): Layers is the icon rail and opens over the canvas, Controls is an
+   overlay on the right that a pick opens, behind a scrim that stops at the rail, and the bar's right-hand cluster moves
+   WHOLE into one ⋯ menu — mounted and hidden, its rows calling the controls' own handlers (R-141) in their own words
+   (R-170). The pointer changes only target sizes (`D8:33`): 44px on touch, by ONE rule in `globals.css`. Opening a
+   panel never resizes the canvas, one overlay is open at a time (`D8:283`), and nothing reads or blocks browser zoom.
 
    VIEW AS (Story 5.14 — S4a's eye, S4d's menu, B9, FR-D16, R-167 to R-170). A MODE LIKE THE DEVICE: session state,
    back to the logged out user on reload, never in the URL (`EXPERIENCE.md:230`), and it sits in S4a's CENTRED GROUP
@@ -292,6 +308,93 @@ function Rail({ fold, label, controls, side, hidden }: { fold: ReturnType<typeof
   )
 }
 
+/** STORY 5.22 — D8's ICON RAIL (`D8 Editor Below 1440.dc.html:63-73`, `:193-203`), the Layers panel's left edge: folded
+ *  at full width, and always below 1280. One rail, not two — at full width the fold used to be the one Show button.
+ *
+ *  "Show layers", a 1px divider, one button per section of the stack the page paints, then "+" (`Add section`) where
+ *  anything can be placed. Each row button is the section's generic thumb (DW-281: D8a draws one per category) and is
+ *  NAMED by its layer name — the rail has no room for the words, so they are its accessible name and hover title; the
+ *  selected one carries `aria-current` and the coral tint, a hidden one is dimmed and says so. The pointer changes only
+ *  target sizes (`D8:33`): 32px rows and 26 × 19 thumbs in a 44px rail on a mouse, 44px rows (the editor's touch rule) and
+ *  34 × 24 thumbs in a 56px rail on touch. The Show button sits in a head of its own, 44 wide, so the rail's rule is
+ *  drawn over its right edge (`after:`) rather than taking a pixel of it. Hidden in Preview, never unmounted. */
+function IconRail({
+  fold,
+  hidden,
+  expanded,
+  rows,
+  onShow,
+  onRow,
+  add,
+}: {
+  fold: ReturnType<typeof useFold>
+  hidden: boolean
+  /** is the Layers panel open over the canvas right now (the compact overlay) */
+  expanded: boolean
+  rows: readonly { key: string; name: string; hidden: boolean; selected: boolean; pick: Pick }[]
+  onShow: () => void
+  onRow: (pick: Pick) => void
+  add: { readOnly: boolean; onAdd: () => void } | null
+}) {
+  const cell = `inline-flex size-8 shrink-0 items-center justify-center rounded-sm transition-colors ${ring}`
+  return (
+    <div
+      hidden={hidden}
+      data-icon-rail
+      className="relative flex w-11 shrink-0 flex-col items-center bg-paper py-[6px] after:pointer-events-none after:absolute after:inset-y-0 after:right-0 after:w-px after:bg-line coarse:w-14"
+    >
+      <div className="flex w-full shrink-0 justify-center">
+        <button
+          ref={fold.show}
+          type="button"
+          aria-label="Show layers"
+          title="Show layers"
+          aria-expanded={expanded}
+          aria-controls="editor-layers"
+          onClick={onShow}
+          className={`${cell} text-ink-soft hover:bg-paper-sunk`}
+        >
+          <Panel size={15} />
+        </button>
+      </div>
+      <span aria-hidden className="my-[3px] h-px w-6 shrink-0 bg-line coarse:my-1 coarse:w-8" />
+      <div className={`flex min-h-0 w-full flex-1 flex-col items-center gap-[2px] overflow-y-auto py-[2px] ${slimScrollbar}`}>
+        {rows.map((row) => {
+          const name = row.hidden ? `${row.name}, hidden` : row.name
+          return (
+            <button
+              key={row.key}
+              type="button"
+              data-rail-row={row.key}
+              aria-label={name}
+              title={name}
+              aria-current={row.selected ? 'true' : undefined}
+              onClick={() => onRow(row.pick)}
+              className={`${cell} ${row.selected ? 'bg-coral-tint' : 'hover:bg-paper-sunk'} ${row.hidden ? 'opacity-40' : ''}`}
+            >
+              <LayerThumb size="h-[19px] w-[26px] coarse:h-6 coarse:w-[34px]" />
+            </button>
+          )
+        })}
+      </div>
+      {add === null ? null : (
+        <ReadOnly on={add.readOnly}>
+          <button
+            type="button"
+            data-rail-add
+            aria-label="Add section"
+            title="Add section"
+            onClick={add.onAdd}
+            className={`${cell} mt-[2px] border border-dashed border-line-strong text-[15px] text-ink-soft hover:border-coral hover:text-coral-deep disabled:opacity-35 disabled:hover:border-line-strong disabled:hover:text-ink-soft`}
+          >
+            +
+          </button>
+        </ReadOnly>
+      )}
+    </div>
+  )
+}
+
 /** Story 5.15 — where a behaviour's error goes: LOGGED, NEVER SAID, and its section stays at rest. `lib/behaviours.ts`
  *  names the module in the error, because `core` hands on whatever the module threw. */
 const reportBehaviour = (error: unknown) => console.error('A behaviour on the canvas failed, and its section stays at rest.', error)
@@ -342,7 +445,47 @@ const acrossPages = (p: Pick) => {
   return `${paged === null ? p.doc : templateKeyOf(paged)}:${p.instanceId}`
 }
 
-export function Editor({
+type EditorProps = EditorData & {
+  project: { id: string; name: string }
+  /** Story 5.9 — the canvas document's address, defaulting to the app's own `/canvas`. The keyboard harness serves
+   *  the SAME `pilotsCanvasDocument()` bytes from a path of its own and names it here, so the real route keeps its
+   *  session guard rather than having it bypassed for a test. */
+  canvasSrc?: string
+  /** Story 5.20 — where this editor's canvases live when it is not the app's `/projects/<id>`: the keyboard harness's
+   *  own pages (`/app/harness/editor/<key>`), so its walk can switch canvas with no database (R-146). The app passes none. */
+  canvasBase?: string
+}
+
+/* ─── STORY 5.22 — THE GATE (R-201, D4f) ─────────────────────────────────────────────────────────────────────────────
+ *
+ * A PHONE NEVER MOUNTS THE EDITOR. Every mount side effect — the lock and its heartbeat, the tab session, the IndexedDB
+ * hydrate, the autosave and the flushes, the Ghost re-read, the live reads, the "looked at" write — lives in
+ * `EditorShell`'s effects, so NOT MOUNTING IT is the whole of keeping a phone out: no redirect, no route of its own (R-98's
+ * second effect would make a `redirect()` behind the boundary a client navigation anyway).
+ *
+ * ASKED ONCE, IN THE BROWSER, BEFORE ANY EDITOR EFFECT RUNS: the server cannot know the pointer, so it draws the skeleton,
+ * in this device's shape by CSS, and so does the first client render; a layout effect then reads `PHONE` before the
+ * browser paints again. NO SUBSCRIPTION (R-201): the viewport changes under an editor in use — the device turns, a split
+ * view, some keyboards — and a live re-check would unmount the editor mid-edit. The cost is one case: a small tablet
+ * opened in a narrow split view keeps the notice until a reload. Both callers (the `(editor)` layout and the keyboard
+ * harness) import THIS name, so both get the gate. */
+export function Editor(props: EditorProps) {
+  const [phone, setPhone] = useState<boolean | null>(null)
+  useLayoutEffect(() => setPhone(window.matchMedia(PHONE).matches), [])
+  if (phone === null) return <EditorSkeleton name={props.project.name} />
+  return phone ? <SmallScreenNotice name={props.project.name} /> : <EditorShell {...props} />
+}
+
+/** R-202's rule, LIVE — `useSyncExternalStore` over `matchMedia(COMPACT)`, so a window crossing 1280 (or a zoom) re-renders
+ *  the one editor and remounts nothing. Module-level, so the subscription is one function for the component's life. */
+const compactNow = () => window.matchMedia(COMPACT).matches
+const onCompact = (change: () => void) => {
+  const query = window.matchMedia(COMPACT)
+  query.addEventListener('change', change)
+  return () => query.removeEventListener('change', change)
+}
+
+function EditorShell({
   project,
   docs: stored,
   entries,
@@ -366,16 +509,7 @@ export function Editor({
   site,
   canvasSrc: canvasPath,
   canvasBase,
-}: EditorData & {
-  project: { id: string; name: string }
-  /** Story 5.9 — the canvas document's address, defaulting to the app's own `/canvas`. The keyboard harness serves
-   *  the SAME `pilotsCanvasDocument()` bytes from a path of its own and names it here, so the real route keeps its
-   *  session guard rather than having it bypassed for a test. */
-  canvasSrc?: string
-  /** Story 5.20 — where this editor's canvases live when it is not the app's `/projects/<id>`: the keyboard harness's
-   *  own pages (`/app/harness/editor/<key>`), so its walk can switch canvas with no database (R-146). The app passes none. */
-  canvasBase?: string
-}) {
+}: EditorProps) {
   const pathname = usePathname()
   /** the canvas document's address — and, since Story 5.19, where the sample's pictures are served for the panel too */
   const src = canvasPath ?? canvasSrc(isApp(pathname))
@@ -778,6 +912,22 @@ export function Editor({
 
   const layers = useFold()
   const controls = useFold()
+  /* ─── Story 5.22 — D8's REARRANGEMENT (R-202), and its ONE overlay ────────────────────────────────────────────────
+   *
+   * `compact` is live: every touch screen that reached the editor, and a fine-pointer window below 1280. `sheet` is the
+   * one overlay a compact editor has open — Layers over the canvas beside the rail, or Controls on the right — and ONE
+   * state is how "only one overlay at a time" (`D8:283`) holds by construction; a bar menu opening closes it too. It is
+   * layout, never an edit, and it is session state that nothing stores. */
+  const compact = useSyncExternalStore(onCompact, compactNow, () => false)
+  const [sheet, setSheet] = useState<'layers' | 'controls' | null>(null)
+  /** what held focus when a sheet opened — where closing it gives focus back, or the canvas where it cannot */
+  const sheetFrom = useRef<HTMLElement | null>(null)
+  /** a door that moves focus INTO the sheet it opens (`L`, Show layers, the skip link) names it here for the effect below */
+  const focusInto = useRef<'layers' | 'controls' | null>(null)
+  /** …and a close names where focus goes BACK. Both move after the render, never in the handler: until it commits, the
+   *  sheet being opened is still `hidden` and the canvas being uncovered is still `inert`, and focus goes to neither */
+  const focusBack = useRef<HTMLElement | 'stage' | null>(null)
+  const bar = useRef<HTMLElement>(null)
   const frame = useRef<HTMLIFrameElement>(null)
   /** the canvas ground: its CONTENT BOX is the room the card is fitted into — the card itself is the answer, so
    *  measuring it would measure the fit rather than the space (Story 5.7; it was the card until R-137) */
@@ -851,14 +1001,49 @@ export function Editor({
   // the canvas document's handlers and paint read the latest values through here
   // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
   // with) and the source the last paint counted pages in
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource }
+  // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet })
+  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet }
   /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
    *  every change of page, so a section asks again the next time page 2 is shown. */
   const asked = useRef(new Set<string>())
   /** …and the section whose change is HELD right now, until the dialog answers: a second section's change arriving in
    *  the same frame is dropped rather than silently replacing the one the dialog is about (review, 2026-09-22) */
   const holding = useRef<string | null>(null)
+
+  /* ─── Story 5.22 — THE SHEET'S DOORS (D8). Open: a customer's pick (`choose`), the selected section's rail item, "Show
+   *  layers" and `L`, a Layers row, and the skip link and `Esc`'s third rung. Close: its close button, a press on the
+   *  scrim, `Esc`, a bar menu opening, and crossing 1280. Closing keeps the selection and gives focus back to what opened
+   *  it, or to the canvas. Only in the compact layout — at full width both panels are docked and there is no sheet. */
+  const putSheet = (next: 'layers' | 'controls' | null) => {
+    latest.current = { ...latest.current, sheet: next }
+    setSheet(next)
+  }
+  const openSheet = (which: 'layers' | 'controls', focusIn = false) => {
+    const now = latest.current
+    if (!now.compact) return
+    if (now.sheet === which) {
+      // already drawn, so focus can go now — unless this very task put it there, and then the effect below takes it
+      const close = (which === 'layers' ? layers.hide : controls.hide).current
+      if (focusIn && close?.checkVisibility()) close.focus()
+      else if (focusIn) focusInto.current = which
+      return
+    }
+    // the way back is what opened the FIRST sheet: a Layers row that hands over to Controls has gone with its panel
+    if (now.sheet === null) {
+      const at = document.activeElement
+      sheetFrom.current = at instanceof HTMLElement && at !== document.body ? at : null
+    }
+    if (focusIn) focusInto.current = which
+    putSheet(which)
+  }
+  const closeSheet = (giveBack = true) => {
+    if (latest.current.sheet === null) return
+    focusBack.current = giveBack ? (sheetFrom.current ?? 'stage') : null
+    sheetFrom.current = null
+    putSheet(null)
+  }
+  const toggleLayers = () => (latest.current.sheet === 'layers' ? closeSheet() : openSheet('layers', true))
 
   /** Story 5.14 — the changed records, into the session and down the one write chain. Only rows that CHANGE reach it:
    *  `seen` hands back the same array and `afterChange` returns only what moved, so an empty map writes nothing. */
@@ -1898,6 +2083,9 @@ export function Editor({
     // a change of selection ends editing
     editing.current?.inline.end()
     mark()
+    // STORY 5.22 — below 1280 a CUSTOMER's pick opens Controls as the overlay (D8). Only a non-null `asked` is one: the
+    // Paywall canvas maps `choose(null)` to its one instance, and that is the editor choosing, not the customer
+    if (asked !== null) openSheet('controls')
   }
   const point = (pick: Pick | null) => {
     if (same(pick, latest.current.hovered) || (!pick && !latest.current.hovered)) return
@@ -2350,7 +2538,11 @@ export function Editor({
   /** D8c's skip link and the `Esc` ladder's third rung land in the same place: the Controls sidebar's first control,
    *  which is the rail's Show button while it is folded. The REFS are asked and not `controls.folded`, because these
    *  handlers are bound once at mount — `show` exists only while the rail is drawn, so it answers the question. */
-  const toChrome = () => (controls.show.current ?? controls.hide.current)?.focus()
+  const toChrome = () => {
+    // Story 5.22: below 1280 the panel is the overlay, so this door opens it and lands on its close button
+    if (latest.current.compact) return openSheet('controls', true)
+    ;(controls.show.current ?? controls.hide.current)?.focus()
+  }
 
   const run = (gesture: Gesture) => {
     // R-192 — a session reading along edits nothing, whatever key asks (`lib/keymap.ts`'s `edits`)
@@ -2373,7 +2565,8 @@ export function Editor({
       // one confirm. With nothing selected both do nothing and say nothing.
       case 'duplicate': return void (pick && pick.doc !== SITE.key && onDuplicate(pick))
       case 'remove': return void (pick && onRemove({ ...pick, layerName: layerNameOf(pick) }))
-      case 'layers': return layers.toggle((was) => !was)
+      // Story 5.22: below 1280 `L` opens and closes Layers as the overlay, as "Show layers" does; at full width, the fold
+      case 'layers': return latest.current.compact ? toggleLayers() : layers.toggle((was) => !was)
       // R-135: on a Light-only project there is no sun to press, so nothing happens and nothing is announced
       case 'dark': return void (darkEnabled && flip(latest.current.mode === 'dark' ? 'light' : 'dark'))
       case 'shortcuts': return openShortcuts(shortcuts)
@@ -2438,6 +2631,13 @@ export function Editor({
       return
     }
     if (!escDeselects(target)) return
+    // STORY 5.22 — THE SHEET'S RUNG, FIRST: an overlay open below 1280 closes, the selection stays, and focus goes back
+    // to what opened it (D8). The next Esc is rung 2's, as it always was.
+    if (latest.current.sheet !== null) {
+      e.preventDefault()
+      closeSheet()
+      return
+    }
     if (latest.current.selected) {
       choose(null)
       stage.current?.focus()
@@ -2554,6 +2754,11 @@ export function Editor({
     let pressedAt = { x: 0, y: 0 }
     let state = HOLD_IDLE
     let timer: ReturnType<typeof setTimeout> | undefined
+    /** STORY 5.22 — THIS TAP OPENED THE CONTROLS OVERLAY. A tap selects on its lift, and the browser fires the lift's
+     *  mouse events and its click AFTER that, hit-tested again — onto the scrim, or onto whichever control the overlay
+     *  now puts under the finger. So the tap that opened it ends there: its `touchend` is cancelled, which is what stops
+     *  the compatibility mouse events and the click (pointer events arrive before touch events, so this is set first). */
+    let tapOpened = false
     const step = (event: HoldEvent) => {
       const [next, outcome] = hold(state, event)
       state = next
@@ -2563,10 +2768,19 @@ export function Editor({
         const shim = ghostAt(pressedAt.x, pressedAt.y)
         const pick = shim === null ? pickAt(pressed) : null
         if (shim !== null) chooseGhost(shim)
-        else if (pick) choose(pick)
+        else if (pick) {
+          const was = latest.current.sheet
+          choose(pick)
+          tapOpened = latest.current.sheet !== was
+        }
       }
       return outcome
     }
+    doc.addEventListener('touchend', (e) => {
+      if (!tapOpened) return
+      tapOpened = false
+      e.preventDefault()
+    }, { passive: false })
     doc.addEventListener('pointerdown', (e) => {
       // Story 5.15: in Preview a touch is the visitor's, and no hold starts
       if (e.pointerType !== 'touch' || latest.current.preview) return
@@ -2843,6 +3057,43 @@ export function Editor({
     return () => watch.disconnect()
   }, [])
   useLayoutEffect(mark, [selected, hovered])
+  /* STORY 5.22 — THE LAYOUT FOLLOWS THE WINDOW, and whatever overlay was open closes as it crosses 1280: the sheet, and
+     every bar menu. Focus stays where it is — at full width both panels are docked, so nothing it was on has gone.
+     AND A CONFIRM OPEN IN A PANEL THE NEW LAYOUT NO LONGER DRAWS: under a `hidden` aside a modal `<dialog>` stays open,
+     modal and 0 × 0 — executed in the harness (the panel's "Reset this design?" at 1280, then 1000): every press on the
+     editor was blocked by a confirm nobody could see. So it closes, which is the Cancel it would otherwise have been. */
+  useEffect(() => {
+    closeSheet(false)
+    closeMenus()
+    for (const open of document.querySelectorAll<HTMLDialogElement>('[data-editor] dialog[open]')) if (!open.checkVisibility()) open.close()
+    // the layout is the question; both read the latest state through refs
+  }, [compact])
+  /* …and ONE OVERLAY AT A TIME (`D8:283`): a bar menu opening — Template, View as, ⋯, the save state — closes the sheet
+     and keeps the focus it took. `toggle` does not bubble, so it is heard on the way DOWN, once, for every menu in the bar. */
+  useEffect(() => {
+    const el = bar.current
+    if (!el) return
+    const opened = (e: Event) => {
+      if ((e as ToggleEvent).newState === 'open') closeSheet(false)
+    }
+    el.addEventListener('toggle', opened, true)
+    return () => el.removeEventListener('toggle', opened, true)
+    // mount only; `closeSheet` reads the sheet through `latest`
+  }, [])
+  /* …and focus follows the sheet, once it is drawn: a door that opened one to go INTO it (`L`, Show layers, the skip link,
+     a Layers row) lands on its close button — the fold's own handoff, for the overlay — and a close gives focus back to
+     what opened it where that can still take it, else to the canvas (an iframe opener IS the canvas: a press on the page,
+     whose one tab stop is the stage). */
+  useLayoutEffect(() => {
+    const into = focusInto.current
+    focusInto.current = null
+    if (into !== null && into === sheet) return void (into === 'layers' ? layers.hide : controls.hide).current?.focus()
+    const back = focusBack.current
+    focusBack.current = null
+    if (back === null || sheet !== null) return
+    if (back !== 'stage' && back.isConnected && back.tagName !== 'IFRAME' && back.checkVisibility()) back.focus()
+    else stage.current?.focus()
+  }, [sheet])
   /* Story 5.15 — FOCUS FOLLOWS PREVIEW, after the commit that hides or shows the chrome: in, onto B3b's Back to editing;
      out, back to where it was — or onto the pill, if that element has gone or will not take it. `previewed` stays false until Preview has
      been entered once, so the first render moves nothing. */
@@ -3566,15 +3817,58 @@ export function Editor({
     ? ({ '--color-ink-soft': 'var(--color-ink-deep-soft)', '--color-ink': 'var(--color-ink-deep-text)', '--color-paper-sunk': 'var(--color-ink-hover)' } as CSSProperties)
     : undefined
 
+  /* STORY 5.22 — THE ⋯ MENU (D8a's "one overflow menu", `D8 Editor Below 1440.dc.html:283-293`): below 1280 the bar's
+     right-hand cluster moves into it WHOLE, in the cluster's order, and the cluster itself stays MOUNTED and hidden, so
+     every row calls the control's OWN handler (R-141) — the dice's press, the sun's flip, the device track's pick,
+     Theme settings' link, the pill's Preview — in the control's own words (R-170, the chips are `KEYMAP`'s). A row is
+     absent where its control is (UX-DR3): no dark row on a Light-only project, no Remix or Preview on a template
+     surface, which has Back to post instead. The device is ONE row that moves to the next device, because the menu is
+     "one item deep" (`D8:293`). Undo and redo stay beside the indicator (R-143), and D8a's Export row has no control at
+     1440 to be (Ship it's own menu carries Download theme, 7.18). Only the Remix row edits, so it alone greys reading
+     along (R-192). */
+  const chipsOf = (gesture: Gesture) => KEYMAP.find((b) => b.gesture === gesture)?.chips
+  /** the glyph slot of a row whose control draws none (Theme settings is words at 1440, and R-92 forbids inventing one):
+   *  empty, so its words line up with the rows that do carry one, as every D8a row does */
+  const noGlyph = <span aria-hidden className="size-[13px] shrink-0" />
+  const nextDevice = DEVICES[(DEVICES.findIndex((d) => d.name === device.name) + 1) % DEVICES.length] ?? DESKTOP
+  const more: MenuItem[] = [
+    ...(surface ? [] : [{ label: KEYMAP.find((b) => b.gesture === 'remix')?.action ?? 'Site Remix', icon: <Refresh size={13} />, keys: chipsOf('remix'), readOnly: !lock.holder, onSelect: () => remixDice.current?.press() }]),
+    ...(darkEnabled ? [{ label: modeWords(mode), icon: mode === 'dark' ? <Moon size={13} /> : <Sun size={13} />, keys: chipsOf('dark'), onSelect: () => flip(latest.current.mode === 'dark' ? 'light' : 'dark') }] : []),
+    { label: `Device — ${device.label}`, icon: <Laptop size={13} />, onSelect: () => pickDevice(nextDevice) },
+    { label: 'Theme settings', icon: noGlyph, href: settingsPath(project.id) },
+    ...(surface ? [] : [{ label: PREVIEW, icon: <PreviewEye size={13} />, keys: chipsOf('preview'), onSelect: enterPreview }]),
+    ...(surface ? [{ label: PAYWALL_WORDS.back, icon: noGlyph, href: pathOf('post') }] : []),
+  ]
+  /** the rail's rows: the stack the page paints, in its order — none on a template surface, whose Layers holds no rows */
+  const railRows = (surface ? [] : stack).map((i) => ({
+    key: keyOf(i),
+    name: i.layerName,
+    hidden: i.hidden,
+    selected: same(i, selected),
+    pick: { doc: i.doc, instanceId: i.instanceId },
+  }))
+  /** Controls is drawn: docked unless folded at full width, and only while it is the sheet below 1280 */
+  const controlsShown = !preview && (compact ? sheet === 'controls' : !controls.folded)
+
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-paper text-ink">
+    // Story 5.22: `data-editor` is the 44px touch rule's scope (`globals.css`), and where the dice's confirm is portalled
+    <div data-editor className="flex h-dvh flex-col overflow-hidden bg-paper text-ink">
       {/* Story 5.15: in Preview the whole bar is HIDDEN, never unmounted — its menus, its focus and every value in it
           come back exactly as they were */}
       {/* STORY 5.20 — ON A TEMPLATE SURFACE THE BAR IS INK (C3a, DESIGN.md:310-313): a canvas that is not a page says so */}
+      {/* STORY 5.22 — A THREE-COLUMN GRID: the centred group is centred on the bar while both sides have room, as S4a draws
+          it at 1440, and a grid never overlaps its columns, so the group can meet neither side at any width — which
+          retires the name's `360px` constant its own comment asked this to replace (R-143's "re-tunes the name's
+          truncation"). The side tracks are `minmax(min-content, 1fr)` rather than `minmax(0, 1fr)`: each side's controls
+          can then never overflow into the group — a narrow tablet held upright moves the group over instead — and the
+          name and the MEMBERS OFF chip contribute NOTHING to that minimum, so they are what shrinks and truncates first
+          (the Paywall's NOT A PAGE SECTION chip is whole or absent, below). 56px on touch, with D8a's own 6px padding
+          and gaps (`D8 Editor Below 1440.dc.html:42`). */}
       <header
+        ref={bar}
         hidden={preview}
         data-surface={surface || undefined}
-        className={`relative flex h-12 shrink-0 items-center gap-[10px] border-b px-3 ${surface ? 'border-ink-deep bg-ink-deep' : 'border-line bg-paper'}`}
+        className={`relative grid h-12 shrink-0 grid-cols-[minmax(min-content,1fr)_auto_minmax(min-content,1fr)] items-center gap-x-[10px] border-b px-3 coarse:h-14 coarse:gap-x-[6px] coarse:px-[6px] ${surface ? 'border-ink-deep bg-ink-deep' : 'border-line bg-paper'}`}
       >
         {/* D8c (`D8 Editor Below 1440.dc.html:311-345`) — THE FIRST FOCUSABLE THING IN THE SHELL, not rendered at
             rest and drawn on the first Tab as the frame draws it: a surface pill at left 10 / top 9, 30px high,
@@ -3594,27 +3888,27 @@ export function Editor({
         >
           Skip the canvas
         </button>
+        {/* the left column: the way back, the name — which truncates here, before the centred group — and the history */}
+        <div className="flex min-w-0 items-center gap-[10px] coarse:gap-[6px]">
         <Link
           href="/"
           aria-label="Back to dashboard"
           title="Back to dashboard"
           style={onInk}
-          className={`inline-flex size-7 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
+          className={`inline-flex size-7 shrink-0 items-center justify-center rounded-sm text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
         >
           <ChevronLeft size={15} />
         </Link>
-        {/* THE NAME STOPS SHORT OF THE CENTRED GROUP, which since Story 5.14 holds View as too. The widest group today —
-            "Template · Member home" beside View as's slot at its widest name — starts 213px left of centre; with the
-            name at its limit, the bar's left cluster (padding, back link, name, indicator, undo pair and their gaps)
-            ends at `50% + 132px - N`. So `N = 360` leaves a 15px gap at any width — measured in the harness at 1440
-            and 1280, where the old `320` let a long name run 25px under the group. The deployed walk's step 90
-            measures it with a long name.
-            ponytail: a constant sized to today's widest canvas label; Story 7.16's custom templates can carry longer
-            names, and then the bar wants a three-column grid (`1fr auto 1fr`) instead of a number */}
-        {/* Story 5.20 — on the surface the chip follows the name, so the name stops a chip's width (and its gap) sooner */}
-        <span className={`${surface ? 'max-w-[calc(50%-510px)] text-ink-deep-text' : 'max-w-[calc(50%-360px)]'} truncate text-ui-dense font-semibold`}>{project.name}</span>
+        {/* THE NAME STOPS SHORT OF THE CENTRED GROUP BY CONSTRUCTION (Story 5.22): it grows to its own width and no further
+            (`max-w-fit`) from a basis of nothing (`w-0`), so it adds nothing to the column's minimum and is what gives way,
+            truncating with an ellipsis where the column ends — at 1440, at 720 and beside Story 7.16's longest custom
+            template name alike. The deployed walk's step 90 measures it with a long name. */}
+        <span className={`${surface ? 'text-ink-deep-text' : ''} w-0 min-w-0 max-w-fit grow truncate text-ui-dense font-semibold`}>{project.name}</span>
         {surface ? (
-          <span data-surface-chip className="shrink-0 rounded-pill border border-ink-mid px-[9px] py-[3px] font-mono text-[10.5px] uppercase text-ink-deep-soft">
+          // Story 5.22: WHOLE OR NOT AT ALL. Truncated beside the name it read as a fragment — "NO" at 720, with the name
+          // gone to nothing (measured in the harness) — so it never shrinks, and below 1280 it is not drawn: the ink bar
+          // and the strip under it already say this canvas is not a page, and the name keeps the room it gives back
+          <span data-surface-chip className="shrink-0 rounded-pill border border-ink-mid px-[9px] py-[3px] font-mono text-[10.5px] uppercase text-ink-deep-soft compact:hidden">
             {PAYWALL_WORDS.chip}
           </span>
         ) : null}
@@ -3623,7 +3917,7 @@ export function Editor({
             when everything is on the server, a grey clock the moment there is an edit that is not. The words are
             still B6's five — they are the hover and the announcement now, not printed. One indicator, one place
             (`EXPERIENCE.md`'s own rule), and still never a spinner. */}
-        <span id="editor-save-state">
+        <span id="editor-save-state" className="shrink-0">
           {/* nothing is claimed before the device has answered: the initial state is green "Synced", and a reload with
               edits owed must never show that for the moment IndexedDB takes (the review) */}
           {hydrated ? <SaveState state={sync} onRetry={retryNow} retrying={pressingRetry} held={!fellBack.current} /> : null}
@@ -3635,7 +3929,7 @@ export function Editor({
             2px apart, the unavailable one at `opacity:.35`); only where they sit has moved.
             THE KEYS ARE THE ARROWS' OWN HANDLERS (R-141), so the two can never disagree.
             `aria-disabled`, never `disabled`: the control stays in the tab order and stays announced. */}
-        <div id="editor-history" style={onInk} className="flex items-center gap-[2px]">
+        <div id="editor-history" style={onInk} className="flex shrink-0 items-center gap-[2px]">
           <IconButton
             id="editor-undo"
             label="Undo"
@@ -3657,6 +3951,7 @@ export function Editor({
             <RedoIcon size={14} />
           </IconButton>
         </div>
+        </div>
         {/* S4a's CENTRED GROUP (`S4 Editor.dc.html:33`, D5a :37): Template, a gap of 8, then View as — where every drawn
             top bar puts the eye (S4a–c, S6, S7, S14, P0-6, D8, M1). The owner removed the marker CHIP that stood
             beside the switcher at his test of Story 5.5 (R-130); he did not remove the group's second control, which
@@ -3664,8 +3959,9 @@ export function Editor({
             grows — and a change of visitor does not move it either, because View as's value slot is as wide as its
             widest name. S4d's "2 not viewed" marker is not drawn here: the owner moved the reminder into the menu
             (R-169), so nothing hangs off the trigger. The deployed walk measures THIS group against the bar (step 2),
-            not the switcher alone. */}
-        <div id="editor-centre" className="absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2">
+            not the switcher alone. Since Story 5.22 it is the grid's middle column rather than absolutely centred, and
+            Template and View as keep their size and their words at every width (D8). */}
+        <div id="editor-centre" className="flex w-max items-center gap-2">
           <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : pathOf} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
               dot, because the page you are looking at is being looked at */}
@@ -3678,7 +3974,19 @@ export function Editor({
             The sun is ABSENT, NOT DISABLED, on a Light-only project (UX-DR3, R-118, R-128, and AD-17's own Rule in so
             many words): there is no toggle rather than a theme that declares less. The device track is NOT scoped by
             dark — R-135 scopes the mode and nothing else — so it is drawn on every project. */}
-        <div className="ml-auto flex items-center gap-[10px]">
+        {/* the right column: the cluster, or below 1280 the ⋯ it collapses into (Story 5.22) */}
+        <div className="flex min-w-0 items-center justify-end gap-[10px] coarse:gap-[6px]">
+          {/* C3b's MEMBERS OFF chip, in the bar while the card is up (:1662) — and still in the bar below 1280, where it
+              gives way before the ⋯ does, as the Paywall's other chip does on the left */}
+          {offCard ? (
+            <span data-members-off-chip className="w-0 max-w-fit grow truncate rounded-pill border border-ink-mid px-2 py-[2px] font-mono text-[10px] text-ink-deep-soft">
+              {PAYWALL_WORDS.offChip}
+            </span>
+          ) : null}
+        {/* STORY 5.22 — HIDDEN BELOW 1280, NEVER UNMOUNTED: the ⋯ rows press these very controls, and the dice's confirm
+            is portalled out of here so it still opens (`remix-dice.tsx`). The walk reads the cluster's order off this
+            element's own children (steps 46 and 54). */}
+        <div hidden={compact} className="flex items-center gap-[10px]">
           {/* STORY 5.12 — the dice LEADS the cluster rather than following the sun, and the reason is R-135:
               `ModeToggle` is not rendered at all on a Light-only project, so a dice placed after it would move on
               some projects and not others. First, its seat is the same everywhere — and it is still "next to the
@@ -3686,12 +3994,6 @@ export function Editor({
               THE COUNT IS THIS CANVAS'S OWN DOC (R-161): `stack` carries the site-wide header and footer too, and
               Remix leaves them alone. Derived from the rings, never written down (standing rule 4) — in the shipped
               library every ring is length 1, so it is 0 and the confirm says so honestly. */}
-          {/* C3b's MEMBERS OFF chip, in the bar while the card is up (:1662) */}
-          {offCard ? (
-            <span data-members-off-chip className="rounded-pill border border-ink-mid px-2 py-[2px] font-mono text-[10px] text-ink-deep-soft">
-              {PAYWALL_WORDS.offChip}
-            </span>
-          ) : null}
           {/* Story 5.20 — ABSENT on a template surface: Site Remix never touches a treatment (FR-D17) */}
           {surface ? null : (
             <ReadOnly on={!lock.holder}>
@@ -3736,6 +4038,25 @@ export function Editor({
             </Link>
           ) : null}
         </div>
+          {/* D8's ⋯ (`:54`, `:184`): 28px on a mouse, 44 on touch by the editor's rule, and the Kit's menu card (D8a's). */}
+          <IconButton
+            id="editor-more"
+            hidden={!compact}
+            label="More editor actions"
+            title="More editor actions"
+            style={onInk}
+            popoverTarget="editor-more-menu"
+            onClick={(event) => {
+              const menu = document.getElementById('editor-more-menu')
+              if (menu) openMenu(menu, event.currentTarget, { side: 'down', align: 'right' })
+            }}
+          >
+            <span aria-hidden className="text-[13px] font-semibold leading-none">⋯</span>
+          </IconButton>
+          <div id="editor-more-menu" popover="auto" onKeyDown={arrowKeys} className="overflow-visible border-0 bg-transparent p-0">
+            <Menu label="More editor actions" items={more} />
+          </div>
+        </div>
       </header>
 
       {/* STORY 5.17 — B5a's bar, ABOVE the canvas and below the top bar, where the frame draws it. Hidden in
@@ -3758,13 +4079,28 @@ export function Editor({
         />
       )}
 
-      <div className="flex min-h-0 flex-1">
-        <aside id="editor-layers" aria-label="Layers" hidden={layers.folded || preview} className="flex w-[240px] shrink-0 flex-col border-r border-line bg-paper">
+      {/* STORY 5.22 — `relative`, because below 1280 both panels are OVERLAYS positioned over this row: Layers beside the
+          rail, Controls on the right. Nothing in flow moves when one opens, so the stage's measured size — the fit, and
+          the chip's words — never changes under it (`D8:161`, `:298`). */}
+      <div className="relative flex min-h-0 flex-1">
+        <aside
+          id="editor-layers"
+          aria-label="Layers"
+          hidden={preview || (compact ? sheet !== 'layers' : layers.folded)}
+          className={`flex w-[240px] shrink-0 flex-col border-r border-line bg-paper ${compact ? 'absolute inset-y-0 left-11 z-30 coarse:left-14' : ''}`}
+        >
           <div className="flex items-center gap-2 px-4 pt-[10px]">
             <span className="flex-1 text-[12.5px] font-semibold">Layers</span>
-            <IconButton ref={layers.hide} label="Collapse layers" title="Collapse layers" aria-expanded aria-controls="editor-layers" onClick={() => layers.toggle(true)}>
-              <Panel size={15} />
-            </IconButton>
+            {/* below 1280 it is an overlay's close, D8's X (D8b draws Controls' at :224; Layers' is extrapolated from it) */}
+            {compact ? (
+              <IconButton ref={layers.hide} label="Close layers" title="Close layers" onClick={() => closeSheet()}>
+                <X size={15} />
+              </IconButton>
+            ) : (
+              <IconButton ref={layers.hide} label="Collapse layers" title="Collapse layers" aria-expanded aria-controls="editor-layers" onClick={() => layers.toggle(true)}>
+                <Panel size={15} />
+              </IconButton>
+            )}
           </div>
           {/* B7's two groups, every row pressable — and R-123's third ground inside it (`controls/layers.tsx`). STORY 5.20 —
               on a template surface the panel keeps its name and holds no rows: C3a's "How readers reach it" card instead */}
@@ -3788,8 +4124,14 @@ export function Editor({
             hoveredKey={hovered ? keyOf(hovered) : null}
             drag={drag}
             onDrag={setDrag}
-            // the owner's ruling of 2026-09-20: choosing a row brings its section into view, with a little air above it
-            onSelect={(pick) => { choose(pick); reveal(pick) }}
+            // the owner's ruling of 2026-09-20: choosing a row brings its section into view, with a little air above it.
+            // Story 5.22: below 1280 the row's press hands the overlay to Controls — the row goes with its panel, so focus
+            // goes to Controls' close — and it does so for the section already selected too
+            onSelect={(pick) => {
+              choose(pick)
+              reveal(pick)
+              openSheet('controls', true)
+            }}
             onGround={() => choose(null)}
             onToggleHidden={onToggleHidden}
             onRename={onRename}
@@ -3823,11 +4165,29 @@ export function Editor({
             </div>
           ) : null}
         </aside>
-        {layers.folded ? <Rail fold={layers} label="Show layers" controls="editor-layers" side="left" hidden={preview} /> : null}
+        {/* STORY 5.22 — D8's icon rail: where Layers is folded at full width, and always below 1280 */}
+        {compact || layers.folded ? (
+          <IconRail
+            fold={layers}
+            hidden={preview}
+            expanded={compact && sheet === 'layers'}
+            rows={railRows}
+            onShow={() => (compact ? toggleLayers() : layers.toggle(false))}
+            // a rail item chooses and reveals exactly as a Layers row does, and below 1280 it (re-)opens Controls
+            onRow={(pick) => {
+              choose(pick)
+              reveal(pick)
+              openSheet('controls')
+            }}
+            add={canAdd ? { readOnly: !lock.holder, onAdd: () => openPicker(null) } : null}
+          />
+        ) : null}
 
         {/* STORY 5.20 — THE CANVAS COLUMN: C3a's strip above the stage on a template surface, and nothing above it on any
-            other canvas. The wrapper is on EVERY canvas, so a canvas switch never remounts the stage or its frame. */}
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+            other canvas. The wrapper is on EVERY canvas, so a canvas switch never remounts the stage or its frame.
+            STORY 5.22 — `inert` while a sheet is open over it: the scrim takes the press that closes it, and nothing on
+            the page behind can be reached (never in Preview, where there is no sheet to draw). */}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col" inert={compact && sheet !== null && !preview}>
         {surface && !offCard ? (
           <div data-paywall-strip hidden={preview} className="flex shrink-0 items-center gap-[9px] border-b border-paywall-strip-line bg-paywall-strip px-4 py-2">
             {/* static text, never a menu (R-118): the visitor is View as's to choose */}
@@ -3878,7 +4238,10 @@ export function Editor({
           // Story 5.16: on page 2 the ground's top padding is D5d's pill's bottom (4px + its 38) plus R-138's 8px, so the
           // pill never meets the page card on any device — the ground grows rather than the pill's 30px targets shrink
           // Story 5.20: a template surface sits on C3a's darker mat, so a canvas that is not a page reads as one
-          className={`relative flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center ${surface ? 'bg-paywall-mat' : 'bg-canvas-ground'} ${preview ? '' : page === 2 ? 'px-7 pb-8 pt-[50px]' : 'px-7 py-8'}`}
+          // Story 5.22: on a touch screen the source pill is 44px, so the ground's bottom is 52 (its 4px inset, 44 and 4),
+          // and on page 2 D5d's pill is 52 tall, so the top is 64 (4, 52 and R-138's 8) — the fit shrinks on its own
+          // (`fitFor` measures the content box), and no pill ever meets the card
+          className={`relative flex min-h-0 min-w-0 flex-1 flex-col items-center justify-center ${surface ? 'bg-paywall-mat' : 'bg-canvas-ground'} ${preview ? '' : page === 2 ? 'px-7 pb-8 pt-[50px] coarse:pb-[52px] coarse:pt-16' : 'px-7 py-8 coarse:pb-[52px]'}`}
         >
           {/* R-137: the card is the DEVICE's size, fitted — centred in the ground, rounded on all four corners, with
               ground below it. `shrink-0` because the fit already guarantees it is never larger than the stage.
@@ -3996,13 +4359,17 @@ export function Editor({
           {/* Story 5.15: B11's chip and B9's pill are hidden in Preview, never unmounted — `contents`, so the wrapper
               draws no box of its own, and both stay positioned against this ground */}
           <div hidden={preview} className="contents">
-            {/* B11's chip: the true size first, the fit second, and nothing sets it (UX-DR17, UX-DR20). LAST, not first:
-                the page card must stay this ground's `firstElementChild`, which is how the harness and step 27's gutter
-                find it — and out of flow it paints over the ground either way. */}
-            <ViewportChip device={device} fit={scale} />
-            {/* STORY 5.16 — D5d's pill at the ground's top centre while page 2 is shown, 4px down (R-138's inset, the chip's),
-                and LAST for the chip's reason: the page card stays this ground's `firstElementChild` */}
-            {page === 2 ? <PageTwoPill onBack={() => leavePageTwo('pill')} /> : null}
+            {/* STORY 5.22 — ONE ROW FOR THE CHIP AND THE PILL, 4px in (R-138's inset): a `1fr auto 1fr` grid with B11's chip in
+                the first column and D5d's pill in the second, so the pill is centred while there is room and slides right of
+                the chip when there is not — "never overlaps" by construction. It lets presses through to the ground (R-123),
+                and the pill takes its own back. LAST, not first, as both always were: the page card must stay this ground's
+                `firstElementChild`, which is how the harness and step 27's gutter find it. */}
+            <div className="pointer-events-none absolute inset-x-1 top-1 z-10 grid grid-cols-[1fr_auto_1fr] items-start gap-x-2">
+              {/* B11's chip: the true size first, the fit second, and nothing sets it (UX-DR17, UX-DR20) */}
+              <ViewportChip device={device} fit={scale} />
+              {/* STORY 5.16 — D5d's pill at the ground's top centre while page 2 is shown */}
+              {page === 2 ? <PageTwoPill onBack={() => leavePageTwo('pill')} /> : null}
+            </div>
             {/* STORY 5.20 — C3b, in the page card's place while members are switched off and the canvas is chosen to show
                 the site's content (the card is hidden above, and stays this ground's `firstElementChild`) */}
             {offCard && site !== null && 'origin' in site ? (
@@ -4075,7 +4442,18 @@ export function Editor({
         </section>
         </div>
 
-        {controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}
+        {/* STORY 5.22 — THE SCRIM (`D8:119`, `:219`): `scrim` at 70% is D8's .28, over the canvas column ONLY — never the bar
+            and never the rail, because "the one thing that survives the overlay is the way back to another section". A
+            press on it closes the sheet and keeps the selection. */}
+        {compact && sheet !== null && !preview ? (
+          <div aria-hidden data-scrim onClick={() => closeSheet()} className="absolute inset-y-0 left-11 right-0 z-20 bg-scrim/70 coarse:left-14" />
+        ) : null}
+
+        {!compact && controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}
+        {/* STORY 5.22 — below 1280 Controls is an OVERLAY anchored right at its own 280px (`D8:33`, `:298`, recorded against
+            the drawings' 320 and 288), with D8's shadow. This wrapper is the overlay's opaque paper, so B5a's 55% dim on
+            the panel still reads over the page rather than through to it; at full width it draws no box at all. */}
+        <div hidden={compact && !controlsShown} className={compact ? 'absolute inset-y-0 right-0 z-30 flex bg-paper shadow-panel-overlay' : 'contents'}>
         {/* STORY 5.17 — B5a: THE SETTINGS SIDEBAR DIMS TO 55% and the canvas stays fully legible. The controls stay
             VISIBLE and announced so the reader can see what is set — never `inert` and never `hidden`, either of
             which would take them out of the accessibility tree and leave a screen-reader user unable to read their
@@ -4090,7 +4468,7 @@ export function Editor({
         <aside
           id="editor-controls"
           aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : 'Page settings'}
-          hidden={controls.folded || preview}
+          hidden={!controlsShown}
           aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
           data-readonly={lock.holder ? undefined : ''}
           className={`flex w-[280px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-line bg-paper p-4 ${slimScrollbar} ${
@@ -4115,9 +4493,16 @@ export function Editor({
               </span>
               {chosen && entry && !surface ? <span id="editor-panel-category" className="truncate text-[11.5px] text-ink-soft">{entry.categoryTitle}</span> : null}
             </span>
-            <IconButton ref={controls.hide} label="Collapse controls" title="Collapse controls" aria-expanded aria-controls="editor-controls" onClick={() => controls.toggle(true)}>
-              <Panel size={15} className="-scale-x-100" />
-            </IconButton>
+            {/* below 1280 it is the overlay's close, D8's X (`:128`, `:224`) */}
+            {compact ? (
+              <IconButton ref={controls.hide} label="Close controls" title="Close controls" onClick={() => closeSheet()}>
+                <X size={15} />
+              </IconButton>
+            ) : (
+              <IconButton ref={controls.hide} label="Collapse controls" title="Collapse controls" aria-expanded aria-controls="editor-controls" onClick={() => controls.toggle(true)}>
+                <Panel size={15} className="-scale-x-100" />
+              </IconButton>
+            )}
           </div>
           {/* STORY 5.20 — a placed section whose design asks a visitor to join, on a site whose record says members are
               switched off: one line at the panel head, in 5.18's note shape — never for a synthesized instance (FR-H6) */}
@@ -4245,6 +4630,7 @@ export function Editor({
             <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
           )}
         </aside>
+        </div>
       </div>
 
       {/* STORY 5.15 — B3b's floating bar (`B Missing Surfaces.dc.html:700-710`), the one piece of chrome Preview keeps:

@@ -2870,3 +2870,375 @@ test('5.21 · From your Ghost site (the owner\'s finding): two Layers rows name 
   await expect(page.locator('[data-ghost-rows]')).toHaveCount(0)
 })
 
+
+// ── Story 5.22 — THE COMPACT EDITOR (R-202, D8b), FROM THE KEYBOARD. A 1440 display at 200% zoom is a 720 CSS px window
+//    with a fine pointer, and it keeps the editor, rearranged: the icon rail, Controls and Layers as overlays, the bar's
+//    right-hand cluster collapsed into one ⋯ — mounted and hidden, so every ⋯ row presses the control's own handler
+//    (R-141), in the control's own words (R-170). The touch half, and the phone's notice, are `floor.spec.mjs`'s.
+
+const KEYS = await import(new URL('../../apps/web/lib/keymap.ts', import.meta.url).href)
+const FLOOR = await import(new URL('../../apps/web/lib/floor.ts', import.meta.url).href)
+
+/** The compact editor, painted: the canvas has drawn its sections and the rail has its items (Layers is not drawn) */
+async function openCompact(page) {
+  await page.goto(HARNESS)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect(page.locator('[data-rail-row]').first()).toBeVisible()
+  await page.locator('body').focus()
+}
+
+/** the ringed section, chosen from the RAIL — the last page section, as `selectRinged` finds it in Layers */
+async function railRinged(page) {
+  const item = page.locator('[data-rail-row]').last()
+  await item.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#editor-controls')).toBeVisible()
+  await expect(counter(page), 'the harness must carry a section whose category holds a ring').not.toHaveText('1 of 1')
+  return item
+}
+
+/** the ⋯ menu's rows, as its buttons and links print them — a greyed row (R-192) inside its fieldset included */
+const moreRows = (page) => page.locator('#editor-more-menu li :is(button, a)')
+/** a keyboard walk to `target`, one Tab at a time, within as many stops as the page has (counted off it) */
+async function tabTo(page, target) {
+  const budget = (await stopsIn(page, 'body')) + 2
+  for (let n = 0; n < budget; n++) {
+    if ((await focused(page)) === target) return
+    await page.keyboard.press('Tab')
+  }
+  expect(await focused(page), `Tab never reached ${target}`).toBe(target)
+}
+
+test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine pointer', () => {
+  test.use({ viewport: { width: 720, height: 900 } })
+
+  test('the width is R-202\'s: the window is compact, the rail stands where Layers did, the cluster is mounted and hidden', async ({ page }) => {
+    await openCompact(page)
+    expect(await page.evaluate((q) => matchMedia(q).matches, FLOOR.COMPACT), 'a 720 window is below the line').toBe(true)
+    expect(await page.evaluate((q) => matchMedia(q).matches, FLOOR.PHONE), 'and a fine pointer is never a phone (R-76)').toBe(false)
+    await expect(page.locator('[data-icon-rail]')).toBeVisible()
+    await expect(page.locator('#editor-layers')).toBeHidden()
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    await expect(page.locator('#editor-more')).toBeVisible()
+    for (const id of ['#editor-remix', '#editor-mode', '#editor-device', '#editor-theme-settings', '#editor-preview']) {
+      await expect(page.locator(id), `${id} is collapsed into ⋯`).toBeHidden()
+      await expect(page.locator(id), `${id} stays MOUNTED, so its row presses it`).toHaveCount(1)
+    }
+    // the rail: Show layers, then one button per section the page paints — each named by its layer name
+    const rail = await page.locator('[data-rail-row]').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))
+    const layerNames = await page.locator('[data-layer-row] > button:not([aria-label])').evaluateAll((els) => els.map((e) => e.textContent.trim()))
+    expect(rail.length, 'a rail item per section').toBeGreaterThan(0)
+    for (const name of rail) expect(layerNames, `${name} is a layer's own name`).toContain(name)
+  })
+
+  test('Tab reaches ⋯, and its rows arrow and act — each in its control\'s own words, pressing its control\'s handler', async ({ page }) => {
+    await openCompact(page)
+    await tabTo(page, 'BUTTON#editor-more[More editor actions]')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-more-menu')).toBeVisible()
+    // R-170: the rows' words ARE the controls' — read off the controls themselves, never written here
+    const words = await page.evaluate(() => ({
+      remix: document.getElementById('editor-remix').getAttribute('aria-label').replace(' — ', ''),
+      mode: document.getElementById('editor-mode').getAttribute('aria-label'),
+      device: document.querySelector('#editor-device [aria-checked="true"]').getAttribute('aria-label'),
+      theme: document.getElementById('editor-theme-settings').textContent.trim(),
+      preview: document.getElementById('editor-preview').textContent.trim(),
+    }))
+    const chip = (gesture) => KEYS.KEYMAP.find((b) => b.gesture === gesture).chips.join('')
+    await expect(moreRows(page)).toHaveText([
+      words.remix,
+      `${words.mode}${chip('dark')}`,
+      `Device — ${words.device}`,
+      words.theme,
+      words.preview,
+    ])
+    // opened ON its first row, and the arrows walk the rows
+    await expect(moreRows(page).first()).toBeFocused()
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowDown')
+    await expect(moreRows(page).nth(2)).toBeFocused()
+    // the Device row is `pickDevice` to the NEXT device: the track moves, the live region says so, and focus is back on ⋯
+    const track = await page.locator('#editor-device [role="radio"]').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-more-menu')).toBeHidden()
+    expect(await deviceOf(page)).toBe(track[1])
+    expect(await said(page)).toContain(track[1])
+    await expect(page.locator('#editor-more')).toBeFocused()
+    await page.keyboard.press('Enter')
+    // `openMenu` steps into the menu on the NEXT frame, so a key before that would land on ⋯ itself
+    await expect(moreRows(page).first()).toBeFocused()
+    await expect(moreRows(page).nth(2), 'one row, reading the device now showing').toHaveText(`Device — ${track[1]}`)
+    // the dark row is the sun's `flip`: the canvas's one mode signal moves, and the row now reads the way back
+    await page.keyboard.press('ArrowDown')
+    await expect(moreRows(page).nth(1)).toBeFocused()
+    await page.keyboard.press('Enter')
+    expect(await modeOf(page)).toBe('dark')
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first()).toBeFocused()
+    await expect(moreRows(page).nth(1)).toHaveText(`${await page.locator('#editor-mode').getAttribute('aria-label')}${chip('dark')}`)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-more')).toBeFocused()
+    // the Preview row is B3a's pill: Preview comes, and Esc brings focus back to ⋯
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first()).toBeFocused()
+    await page.keyboard.press('End')
+    await expect(moreRows(page).last()).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-preview-bar')).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-preview-bar')).toHaveCount(0)
+    await expect(page.locator('#editor-more')).toBeFocused()
+  })
+
+  test('Remix from ⋯: the confirm is VISIBLE though the dice is collapsed, the re-roll lands at once, and one ⌘Z takes it back', async ({ page }) => {
+    await openCompact(page)
+    await railRinged(page)
+    const was = await designName(page).innerText()
+    await page.locator('#editor-more').focus()
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first()).toBeFocused()
+    // ONE OVERLAY AT A TIME (D8:283): the bar menu opening closed the Controls overlay the rail had opened
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    await expect(page.locator('[data-scrim]')).toHaveCount(0)
+    await page.keyboard.press('Enter')
+    // executed at planning: a `<dialog>` under a `display: none` ancestor opens invisible and still modal — so it is
+    // portalled to the editor's root, and here it is drawn
+    await expect(remixDialog(page)).toBeVisible()
+    expect(await remixDialog(page).evaluate((d) => d.getBoundingClientRect().width), 'drawn, not a 0 × 0 modal').toBeGreaterThan(100)
+    await expect(page.locator('dialog[open] [data-cancel]')).toBeFocused()
+    await page.keyboard.press('Tab')
+    await expect(page.locator('[data-remix-go]')).toBeFocused()
+    await page.keyboard.press('Enter')
+    // a hidden die fires no `transitionend`: nothing rolls, and the re-roll lands at once
+    await expect(designName(page)).not.toHaveText(was)
+    expect(await said(page)).toMatch(/^Remixed [1-9]\d* sections? on Home\.$/)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(designName(page), 'one transaction, one undo').toHaveText(was)
+  })
+
+  test('a rail item selects its section and Controls opens OVER the page, which does not move; Esc closes it and gives focus back', async ({ page }) => {
+    await openCompact(page)
+    const chip = await page.locator('#editor-viewport').innerText()
+    const stage = await page.locator('section[aria-label="Canvas"]').evaluate((s) => s.getBoundingClientRect().toJSON())
+    await tabTo(page, `BUTTON[${await page.locator('[data-rail-row]').nth(1).getAttribute('aria-label')}]`)
+    const item = page.locator('[data-rail-row]').nth(1)
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    await expect(page.locator('#editor-controls')).toHaveAttribute('aria-label', 'Section settings')
+    await expect(item).toHaveAttribute('aria-current', 'true')
+    await expect(page.locator('[data-scrim]')).toBeVisible()
+    // the scrim covers the canvas column and stops AT THE RAIL's edge — "the one thing that survives the overlay is the
+    // way back to another section" (D8:298)
+    const [scrim, rail] = await Promise.all(['[data-scrim]', '[data-icon-rail]'].map((s) => page.locator(s).boundingBox()))
+    expect(Math.round(scrim.x), 'the scrim starts where the rail ends').toBe(Math.round(rail.x + rail.width))
+    expect(await page.locator('section[aria-label="Canvas"]').evaluate((s) => s.closest('[inert]') !== null), 'the page behind is inert').toBe(true)
+    // the overlay covers the canvas and never resizes it: the fit, and so the chip's words, are what they were (D8:161)
+    expect(await page.locator('#editor-viewport').innerText()).toBe(chip)
+    expect(await page.locator('section[aria-label="Canvas"]').evaluate((s) => s.getBoundingClientRect().toJSON())).toEqual(stage)
+    await expect(item, 'focus stays on the rail, the way back to another section').toBeFocused()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    await expect(page.locator('[data-scrim]')).toHaveCount(0)
+    await expect(item, 'the selection is kept').toHaveAttribute('aria-current', 'true')
+    await expect(item, 'and focus is back on what opened it').toBeFocused()
+    // the selected section's own rail item opens it again
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    // and its own Close does what Esc did: the overlay goes, the selection stays, focus goes back to what opened it
+    await page.locator('#editor-controls button[aria-label="Close controls"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    await expect(item, 'the selection is kept').toHaveAttribute('aria-current', 'true')
+    await expect(item, 'and focus is back on the rail item that opened it').toBeFocused()
+  })
+
+  test('L opens the Layers overlay onto its close button, and a row hands the overlay to Controls', async ({ page }) => {
+    await openCompact(page)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('l')
+    await expect(page.locator('#editor-layers')).toBeVisible()
+    expect(await focused(page)).toBe('BUTTON[Close layers]')
+    // L again closes it, and focus goes back to the canvas that opened it
+    await page.keyboard.press('l')
+    await expect(page.locator('#editor-layers')).toBeHidden()
+    expect(await focused(page)).toBe('SECTION[Canvas]')
+    // a row's Enter: the section is chosen, Layers goes with its row and Controls comes, on its close button
+    await page.keyboard.press('l')
+    const key = (await rows(page)).page[0]
+    await page.locator(`[data-layer-row="${key}"]`).focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-layers')).toBeHidden()
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    await expect(page.locator('#editor-controls')).toHaveAttribute('aria-label', 'Section settings')
+    expect(await focused(page)).toBe('BUTTON[Close controls]')
+    // Esc: the sheet's rung first — the section stays chosen — then rung 2 lets it go
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    expect(await focused(page), 'back to the canvas, where L was pressed').toBe('SECTION[Canvas]')
+    await expect(page.locator('[data-rail-row][aria-current="true"]')).toHaveCount(1)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('[data-rail-row][aria-current="true"]')).toHaveCount(0)
+  })
+
+  test('D8c: the skip link lands in Controls — the overlay opens on its close button', async ({ page }) => {
+    await openCompact(page)
+    await page.keyboard.press('Tab')
+    await expect(page.locator('[data-skip-canvas]')).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    expect(await focused(page)).toBe('BUTTON[Close controls]')
+  })
+
+  test('crossing 1280 is live: the overlay closes, both panels dock, and the selection, the journal and the canvas survive', async ({ page }) => {
+    await openCompact(page)
+    // an EDIT first, so there is a journal to keep: the ringed section's `]` — one design swap, one ⌘Z (R-145)
+    await railRinged(page)
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    const was = await designName(page).textContent()
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(']')
+    await expect(designName(page)).not.toHaveText(was)
+    const swapped = await designName(page).textContent()
+    // the overlay open as the line is crossed, as the matrix's row has it
+    await page.locator('[data-rail-row][aria-current="true"]').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    // `textContent`, never `innerText`: the panel prints the name uppercase in CSS, and `toHaveText` reads the words
+    const chosenName = await page.locator('#editor-panel-name').textContent()
+    // the canvas's own scroll, and a mark on its document that a reload would wipe
+    const scrolled = await canvasFrame(page).locator('body').evaluate((b) => {
+      b.dataset.kept = 'yes'
+      b.ownerDocument.defaultView.scrollTo(0, 240)
+      return b.ownerDocument.defaultView.scrollY
+    })
+    expect(scrolled, 'the page is long enough to scroll').toBeGreaterThan(0)
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await expect(page.locator('#editor-more')).toBeHidden()
+    await expect(page.locator('[data-icon-rail]')).toHaveCount(0)
+    await expect(page.locator('#editor-layers')).toBeVisible()
+    await expect(page.locator('#editor-controls')).toBeVisible()
+    await expect(page.locator('[data-scrim]')).toHaveCount(0)
+    await expect(page.locator('#editor-panel-name'), 'the selection survived the change of layout').toHaveText(chosenName)
+    expect(await canvasFrame(page).locator('body').evaluate((b) => b.dataset.kept), 'the canvas document was never reloaded').toBe('yes')
+    expect(await canvasFrame(page).locator('body').evaluate((b) => b.ownerDocument.defaultView.scrollY), 'and it kept its scroll').toBe(scrolled)
+    // THE JOURNAL CROSSED THE LINE TOO: the swap made below 1280 is still the design, and one ⌘Z at 1280 takes it back
+    await expect(designName(page)).toHaveText(swapped)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(designName(page), 'the edit made in the compact layout is undone in the full one').toHaveText(was)
+    await page.setViewportSize({ width: 720, height: 900 })
+    await expect(page.locator('#editor-controls'), 'and back below the line, no overlay is left open').toBeHidden()
+  })
+
+  test('UX-DR3 on a Light-only project: the bar has no sun, so ⋯ has no dark row', async ({ page }) => {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-dark': 'off' })
+    await openCompact(page)
+    await expect(page.locator('#editor-mode')).toHaveCount(0)
+    await page.locator('#editor-more').focus()
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first()).toBeFocused()
+    const rowWords = await moreRows(page).allInnerTexts()
+    expect(rowWords.some((w) => /dark mode|light mode/i.test(w)), JSON.stringify(rowWords)).toBe(false)
+    expect(rowWords.length, 'and the others are all there').toBeGreaterThan(2)
+  })
+
+  test('the Paywall\'s ⋯: no Site Remix and no Preview — a template surface has neither — and Back to post, a link', async ({ page }) => {
+    await page.goto(`${HARNESS}/paywall`)
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+    await page.locator('#editor-more').focus()
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first()).toBeFocused()
+    const words = await moreRows(page).allInnerTexts()
+    expect(words.some((w) => /Remix|^Preview\s*P?$/.test(w.trim())), JSON.stringify(words)).toBe(false)
+    const back = moreRows(page).last()
+    await expect(back).toHaveText(P.back)
+    expect(await back.evaluate((a) => a.tagName)).toBe('A')
+    await expect(back).toHaveAttribute('href', /\/post$/)
+    // and it navigates, as the bar's own does
+    await page.keyboard.press('End')
+    await expect(back).toBeFocused()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  })
+
+  test('a 60-character name truncates with an ellipsis before the centred group, which stays centred', async ({ page }) => {
+    await openCompact(page)
+    const m = await page.evaluate(() => {
+      const name = document.querySelector('header span.truncate')
+      name.firstChild.nodeValue = 'A sixty character project name that runs on and on past it!!'
+      const header = document.querySelector('header').getBoundingClientRect()
+      const group = document.getElementById('editor-centre').getBoundingClientRect()
+      const left = document.getElementById('editor-history').getBoundingClientRect()
+      return { clipped: name.scrollWidth > name.clientWidth, ellipsis: getComputedStyle(name).textOverflow, room: group.left - left.right, off: (group.left + group.right) / 2 - (header.left + header.right) / 2 }
+    })
+    expect(m.clipped && m.ellipsis === 'ellipsis', JSON.stringify(m)).toBe(true)
+    expect(m.room, 'the left column ends before the group').toBeGreaterThan(0)
+    expect(Math.abs(m.off), 'and the group is still centred on the bar').toBeLessThan(2)
+  })
+
+  test('R-192 reading along: the Remix row and the rail\'s + are greyed and skipped, while the rail, the overlays and the views stay live', async ({ page }) => {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+    await openCompact(page)
+    await expect(page.locator('[data-rail-add]')).toBeDisabled()
+    await page.locator('#editor-more').focus()
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).first(), 'Site Remix edits, so it greys').toBeDisabled()
+    await expect(moreRows(page).nth(1), 'the menu opens on the first row that can act').toBeFocused()
+    await page.keyboard.press('ArrowUp')
+    await expect(moreRows(page).last(), 'and the arrows never land on the greyed one').toBeFocused()
+    // every OTHER row changes the view, never the doc, so each stays live — and each still acts (R-192's live list)
+    const count = await moreRows(page).count()
+    for (let n = 1; n < count; n++) await expect(moreRows(page).nth(n), `row ${n + 1} is a view, so it stays live`).toBeEnabled()
+    const track = await page.locator('#editor-device [role="radio"]').evaluateAll((els) => els.map((e) => e.getAttribute('aria-label')))
+    await page.locator('#editor-more-menu li button', { hasText: 'Device — ' }).focus()
+    await page.keyboard.press('Enter')
+    expect(await deviceOf(page), 'the device row moves the device while reading along').toBe(track[1])
+    await page.keyboard.press('Enter')
+    await expect(moreRows(page).nth(1)).toBeFocused()
+    await page.keyboard.press('Enter')
+    expect(await modeOf(page), 'and the dark row flips the mode').toBe('dark')
+    await page.keyboard.press('Enter')
+    // `openMenu` steps into the menu on the NEXT frame: a key pressed before that would land on ⋯ itself
+    await expect(moreRows(page).nth(1)).toBeFocused()
+    await page.keyboard.press('End')
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-preview-bar'), 'and the Preview row previews').toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-preview-bar')).toHaveCount(0)
+    await page.locator('[data-rail-row]').first().focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-controls'), 'picking a section is a look, never an edit').toBeVisible()
+    // …and the other overlay: L opens Layers while reading along, as "Show layers" does
+    await page.keyboard.press('Escape')
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('l')
+    await expect(page.locator('#editor-layers'), 'L opens the Layers overlay while reading along').toBeVisible()
+  })
+})
+
+test('Story 5.22 — a confirm open in a panel as the window crosses 1280 closes with it, never left modal and unseen', async ({ page }) => {
+  // the gate's own 1280: the full editor, with the Controls panel docked
+  await open(page)
+  const { page: own } = await rows(page)
+  await select(page, own[0])
+  // DW-167's reset confirm lives INSIDE the panel, so it needs a change to ask about (that test's own route to it)
+  await openEveryGroup(page)
+  const pill = page.locator('#editor-controls [role="radio"][tabindex="0"]').first()
+  await pill.focus()
+  await page.keyboard.press('ArrowRight')
+  const reset = page.locator('#editor-controls button', { hasText: 'Reset this design' })
+  await reset.focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('dialog[open]')).toBeVisible()
+  // below the line the panel is an overlay that is not open, so its aside is `hidden`: a modal left open under it is
+  // 0 × 0 and blocks every press (executed) — so it closes, as the Cancel it would have been
+  await page.setViewportSize({ width: 720, height: 900 })
+  await expect(page.locator('#editor-more')).toBeVisible()
+  await expect(page.locator('dialog[open]'), 'no confirm is left open where nothing draws it').toHaveCount(0)
+  // and the editor answers: ⋯ opens onto its first row
+  await page.locator('#editor-more').focus()
+  await page.keyboard.press('Enter')
+  await expect(moreRows(page).first()).toBeFocused()
+})

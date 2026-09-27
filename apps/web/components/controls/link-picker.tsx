@@ -130,7 +130,9 @@ export function LinkPicker({
           const el = document.getElementById(pop)
           if (el) openPopover(el, event.currentTarget, { side: 'down', align: 'left' }, document.getElementById(`${id}-q`))
         }}
-        className={`flex min-h-[38px] items-center gap-[9px] rounded-sm border border-line bg-surface px-[11px] py-[6px] text-left hover:border-line-strong ${ring}`}
+        // Story 5.22: its own 38px minimum outranks the editor's 44px touch rule (a utility beats `@layer base`), so a
+        // touch screen inside the editor asks for the finger's 44 here too (D8a)
+        className={`flex min-h-[38px] items-center gap-[9px] rounded-sm border border-line bg-surface px-[11px] py-[6px] text-left hover:border-line-strong coarse:in-[[data-editor]]:min-h-11 ${ring}`}
       >
         <Link size={13} className="shrink-0 text-ink-soft" />
         <span className="flex min-w-0 flex-1 flex-col">

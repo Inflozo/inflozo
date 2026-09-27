@@ -6377,3 +6377,36 @@ owner: unowned. The owner's test of Story 5.22 decides whether it matters.
   - Upgrade B: a real miniature, rendered as the Section Picker renders its cards.
 location: `apps/web/components/kit/layers-row.tsx` (`LayerThumb`) · the rail in
   `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`
+
+## Deferred from: Story 5.22's Dev run (2026-09-27)
+
+### DW-282: selecting the Newsletter section logs React's "two children with the same key" warning
+
+plain: When the Newsletter section (Inline Row) is chosen, the browser's developer console prints a warning that two
+  controls in its settings panel share one internal name. Nothing on screen is wrong today, but React says it may drop
+  or duplicate one of the two controls in a future version, and the warning hides real ones.
+status: open
+severity: low
+origin: Story 5.22's Dev (2026-09-27), found while driving the compact editor in the keyboard harness and confirmed
+  PRE-EXISTING by choosing the same section at 1440 on the full layout, which 5.22 does not touch: `sidebar.tsx:458-459`
+  keys a prop's row `read-${r.path}` and a control's row `read-${r.name}`, and a22/1 declares a prop and a control of the
+  same name (`blurb`), so both rows get `read-blurb`.
+owner: unowned — the fix is a kind prefix in the key (`read-prop-…`, `read-control-…`), which moves nothing on screen.
+location: `apps/web/components/controls/sidebar.tsx` (the rows' `ReadOnly` keys)
+
+### DW-283: on the Paywall canvas, a touch tablet narrower than about 628px with members switched off pushes ⋯ off the bar
+
+plain: On a small Android tablet held upright (about 600–627 pixels wide), the Paywall screen's top bar has one thing too
+  many when the site's members are switched off: the ⋯ button at the right edge is pushed partly off the screen. Every
+  other screen, and the Paywall itself on anything 630 pixels or wider, fits.
+status: open
+severity: low
+origin: Story 5.22's Dev (2026-09-27), measured in the harness across widths: the bar's grid keeps every control out of
+  the centred group by construction, the name and the MEMBERS OFF chip give way first, and the NOT A PAGE SECTION chip is
+  not drawn below 1280 — but the fixed controls — the way back, the save state, undo and redo, Template and View as (which
+  never shrink), and ⋯ — with the MEMBERS OFF chip's own padding need about 628px with D8a's 6px spacing (it was about
+  654 while the NOT A PAGE SECTION chip still shrank beside the name, re-measured after it was made whole-or-absent).
+  Home fits down to 600. The AC's floor is 720, and every width from 720 up passes (`floor.spec.mjs`, the journey at 720).
+owner: unowned until a tablet under 660px wide meets the Paywall; the options are the owner's (R-143 keeps undo and redo
+  in the bar, and "never shrink or relabel" keeps Template and View as whole).
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the bar)

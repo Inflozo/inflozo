@@ -26,6 +26,10 @@ import type { KeyboardEvent } from 'react'
 export const item =
   'flex w-full items-center gap-[9px] rounded-sm p-[8px_12px] text-left text-ui-dense font-medium transition-colors'
 
+/** A menu's rows as focus can reach them: every link, and every button that is not disabled (a greyed row, R-192) —
+ *  `focus()` on a disabled one does nothing, so an arrow that landed there would stick. */
+const ROWS = 'a[href], button:not(:disabled)'
+
 type Placement = {
   /** `up` puts the menu's bottom above the trigger (the sidebar chip); `down` below it. */
   side: 'up' | 'down'
@@ -143,8 +147,10 @@ export function openMenu(menu: HTMLElement, trigger: Element, placement: Placeme
     // focuses at all — a second frame scheduled from the popover's `toggle` raced a fast keyboard: the arrow moved
     // focus, then that late frame took it back (executed, the View as journey). The scroll is the list's own, which
     // the listener armed below ignores; a menu with no row in force opens on its first item, as before.
+    // Story 5.22 — never onto a row that cannot take focus: R-192 greys an editing row while reading along, and
+    // `focus()` on a disabled button is a no-op that would leave focus outside the menu and the arrows with nothing
     const current = menu.querySelector<HTMLElement>('[aria-current="true"]')
-    ;(current ?? menu.querySelector<HTMLElement>('a[href], button'))?.focus({ preventScroll: true })
+    ;(current ?? menu.querySelector<HTMLElement>(ROWS))?.focus({ preventScroll: true })
     current?.scrollIntoView({ block: 'nearest' })
     // `closed`: a menu shut and reopened inside this one frame must not arm the listener of the open that already
     // left — nothing would ever remove it now that `once` is gone (review, 2026-09-21)
@@ -174,7 +180,7 @@ export function arrowKeys(event: KeyboardEvent<HTMLElement>) {
   const end = event.key === 'End' ? 1 : event.key === 'Home' ? -1 : 0
   if (!step && !end) return
 
-  const items = [...event.currentTarget.querySelectorAll<HTMLElement>('a[href], button')]
+  const items = [...event.currentTarget.querySelectorAll<HTMLElement>(ROWS)]
   if (items.length === 0) return
   event.preventDefault()
 

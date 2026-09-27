@@ -2,7 +2,7 @@
 title: 'Story 5.22 — The editor''s responsive floor'
 type: 'feature'
 created: '2026-09-27'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '78fe2112233e63813f2a08acbfa1cac0566a8d4b'
@@ -282,13 +282,13 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
 
 **Execution:**
 
-- [ ] **`apps/web/lib/floor.ts`** (new — pure and importless, like `lib/device.ts`) — the phone and compact rules.
+- [x] **`apps/web/lib/floor.ts`** (new — pure and importless, like `lib/device.ts`) — the phone and compact rules.
   - `PHONE = '(pointer: coarse) and (width < 500px), (pointer: coarse) and (height < 500px)'`.
   - `COMPACT = '(pointer: coarse), (width < 1280px)'`.
   - `isPhone({ coarse, width, height })` and `isCompact({ coarse, width })`.
   - A header comment cites R-76, R-87, R-201 and R-202.
   - The two numbers are R-201's and R-202's, and nothing else in the code states them.
-- [ ] **`apps/web/app/globals.css`** — the variants, the 44px rule and one shadow token.
+- [x] **`apps/web/app/globals.css`** — the variants, the 44px rule and one shadow token.
   - `@custom-variant phone (@media …)` and `@custom-variant compact (@media …)`, each with the same string as
     `floor.ts`.
   - **ONE touch rule** under `@media (pointer: coarse)`, scoped to the editor root (`[data-editor]`). It gives
@@ -306,12 +306,12 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
   - Rewrite the `coarse` comment at :318-320: the editor's ladder now exists.
   - `/kit`'s app-floor row (`app/(app)/app/(authed)/kit/page.tsx:145`) names `PHONE` instead of `pointer: coarse`.
   - `tokens.test.ts:232-235`'s "app-floor is a coarse-pointer condition" asserts the `phone` variant.
-- [ ] **`apps/web/tokens.test.ts`, `apps/web/editor.test.ts`** — the tests.
+- [x] **`apps/web/tokens.test.ts`, `apps/web/editor.test.ts`** — the tests.
   - The two variants' media text equals `floor.ts`'s strings.
   - `isPhone` edges: short side 499 is a phone and 500 is not; portrait and landscape are the same; a fine pointer is
     never a phone.
   - `isCompact`: 1279 is compact and 1280 is not, and coarse is compact at any width.
-- [ ] **`apps/web/components/editor/small-screen-notice.tsx`** (new) — D4f (`D4:378-430`).
+- [x] **`apps/web/components/editor/small-screen-notice.tsx`** (new) — D4f (`D4:378-430`).
   - A 60px top bar:
     - a 44 × 44 back link to `/`, "Back to dashboard", with a 20px `ChevronLeft`;
     - the project name at 15/600;
@@ -325,27 +325,27 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
   - **WHAT WORKS HERE**, holding the nav card with **one** row: **Your sites**. It is a 56px `<Link href="/sites">`
     with the `Globe` tile and a `ChevronRight`.
   - The Deploy history card and the Billing row are **absent** (R-118, UX-DR3). Stories 7.23 and 12.5 add them.
-- [ ] **`apps/web/components/shell/shell.tsx`** — hand the user down on the editor path. The `<main>` it draws there
+- [x] **`apps/web/components/shell/shell.tsx`** — hand the user down on the editor path. The `<main>` it draws there
   provides `user` through a small context (`useShellUser()`), for the notice's avatar.
-- [ ] **`.../(editor)/editor-skeleton.tsx`** — the skeleton in the device's shape (R-98).
+- [x] **`.../(editor)/editor-skeleton.tsx`** — the skeleton in the device's shape (R-98).
   - A `phone:` twin is drawn in D4f's shape.
   - `compact:` hides the 240/280 panels and draws the rail's column in their place.
   - `aria-hidden` and the one `sr-only` sentence stay.
-- [ ] **`apps/web/components/editor/remix-dice.tsx`** — make the dice work from ⋯.
+- [x] **`apps/web/components/editor/remix-dice.tsx`** — make the dice work from ⋯.
   - The `<dialog>` is portalled once mounted, so no collapsed ancestor can hide it.
     - Its target is the dice's `closest('[data-editor]')`, so the 44px rule still reaches its buttons on a tablet.
     - Where there is no editor root it falls back to `document.body`; that is `/controls`.
   - `go()` calls `onRemix()` at once when the die is not rendered (`!die.current?.checkVisibility()`).
   - Both are the executed pitfalls above.
-- [ ] **`apps/web/components/kit/select.tsx`** — `MenuItem` gains two options.
+- [x] **`apps/web/components/kit/select.tsx`** — `MenuItem` gains two options.
   - `keys?: string[]`, drawn as the kbd chip, as D8a's "Undo ⌘Z".
   - `href?`, which renders the row as a `next/link`. Theme settings and Back to post are navigations.
-- [ ] **`apps/web/components/editor/page-two-pill.tsx`, `device-switch.tsx`** (`ViewportChip`) — one row for the chip
+- [x] **`apps/web/components/editor/page-two-pill.tsx`, `device-switch.tsx`** (`ViewportChip`) — one row for the chip
   and the pill. The ground holds a single absolute row, `inset-x-1 top-1 grid grid-cols-[1fr_auto_1fr]`, with the
   chip in column 1 and the pill in column 2. The pill is centred when there is room and slides right of the chip when
   there is not, and never overlaps it. The row is `pointer-events-none` and the pill `pointer-events-auto`, so a press
   on the ground under the row still deselects (R-123).
-- [ ] **`.../(editor)/editor.tsx`** — the gate and the compact layout.
+- [x] **`.../(editor)/editor.tsx`** — the gate and the compact layout.
   - **The gate.**
     - `Editor` reads `PHONE` once in the browser, with no subscription.
     - Before it knows, it renders `EditorSkeleton`, as the server does.
@@ -399,7 +399,7 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
   - **Paddings.**
     - On coarse, the ground's bottom is 52px, for the source pill's 44px.
     - On coarse page 2, the top is 64px: 4px + 52 + 8.
-- [ ] **`tools/keyboard/journey.spec.mjs`, `playwright.config.mjs`** — keyboard journeys at 720 × 900.
+- [x] **`tools/keyboard/journey.spec.mjs`, `playwright.config.mjs`** — keyboard journeys at 720 × 900.
   - Pin the config's `viewport` to 1280 × 720, saying so, because the gate's width is now load-bearing.
   - Add keyboard-only journeys in a `describe` at 720 × 900:
     - Tab reaches ⋯; its rows arrow and act;
@@ -408,7 +408,7 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
     - `L` opens the Layers overlay;
     - the skip link lands in Controls;
     - a Light-only project has no dark row.
-- [ ] **`tools/keyboard/floor.spec.mjs`** (new; add it to the config's `testMatch`; taps are allowed here, not in
+- [x] **`tools/keyboard/floor.spec.mjs`** (new; add it to the config's `testMatch`; taps are allowed here, not in
   `journey.spec.mjs`) — the touch journeys. Playwright's iPhone and iPad descriptors default to WebKit; drop
   `defaultBrowserType` so they run in the gate's Chromium.
   - A phone draws the notice and **sends no `…/lock` or `…/sync` request**. The control: the tablet context sends one.
@@ -418,7 +418,7 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
     - Its only exemptions are inline links, the skip link and switches; switches must be 52 × 30 in 44px rows.
   - 1279 is compact and 1280 is not.
   - At 720 page 2, the pill's box and the chip's box do not intersect.
-- [ ] **`tools/probe/run-verify-editor.cjs`** — the deployed walk (R-82).
+- [x] **`tools/probe/run-verify-editor.cjs`** — the deployed walk (R-82).
   - **Step 14** is re-expected: its context is coarse, so the editor is compact. The Controls overlay opens on the
     tap, so close it before the tap into the headline.
   - **Step 97, a phone on production** (the iPhone 13 descriptor, in Chromium):
@@ -435,7 +435,7 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
     - Dashboard, sign-in, `/sites` and `inflozo.com/`;
     - `scrollWidth <= clientWidth` on each;
     - zero axe violations on each.
-- [ ] **Docs** — each change is also a Dev-phase edit, and the words here are exact.
+- [x] **Docs** — each change is also a Dev-phase edit, and the words here are exact.
   - **`epics.md`, Story 7.23:** after "…because it is what the Small Screen Notice offers", add ", and this story adds
     D4f's Deploy history card to that notice — the live version and a one-tap Roll back to the one before it — which
     Story 5.22 built without it (R-118)".
@@ -479,6 +479,83 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
   and the doc gate are green.
 
 ## Spec Change Log
+
+**Dev (2026-09-27).** Each entry is outside the frozen block and was made where the build met a fact the plan did not
+have; none changes what a surface does.
+
+1. **The bar's side tracks are `minmax(min-content, 1fr)`, not `minmax(0, 1fr)`.** Measured in the harness at every
+   width and on both canvases: with `minmax(0, 1fr)` a side's fixed controls can overflow their track and be drawn over
+   the centred group — on the Paywall at 720 the NOT A PAGE SECTION chip alone does, and on touch the left column's 44px
+   controls need about 762px. So each side keeps its content's minimum, and the three things that may give way — the
+   project name, the Paywall's chip and the MEMBERS OFF chip — contribute nothing to it (`w-0 grow max-w-fit`: they grow
+   to their own width and no further, and truncate first). `#editor-centre` is `w-max`, so Template and View as never
+   shrink ("never shrink or relabel"). On touch the bar takes D8a's own 6px padding and gaps (`D8:42`). Result: at every
+   width from 720 (fine) and 768 (touch) up, on Home and on the Paywall with members off, no control meets the group, and
+   the group is centred (the Paywall's slides at most 8px). Below the AC's floor, only the Paywall with members switched
+   off runs short, under about 654px on touch: DW-283. The back link is `shrink-0` — at 720 it was squeezed to 15px.
+2. **The MEMBERS OFF chip moved from the cluster's first child to the right column, just before the cluster**, so it stays
+   in the bar while the cluster is hidden. Steps 46 and 54 read the cluster's children by id, which the chip has none of.
+3. **Three reads of the bar's source or children beyond the three the Code Map lists.** Step 90 found the name as
+   `header > span.truncate`; the grid puts it in the left column, so the walk reads `header span.truncate`. Step 9
+   asserted the editor's canvas streams in the server HTML; the gate means the server never draws the editor (the Design
+   Notes' "check each one"), so it now asserts the skeleton's sentence and no canvas on every open. Step 14 is
+   re-expected as the Tasks say.
+4. **The icon rail draws its right rule with `after:`** rather than a border, so "Show layers" sits in a head exactly 44
+   wide: step 5 reads the Show button's parent for "a 44px rail with one Show button", and a border would have made it 43.
+5. **`MenuItem` gains a third option, `readOnly`**, beside `keys` and `href`: the Remix row "inside `ReadOnly`" is that
+   row's button in the Kit's fieldset, and rows carry `disabled:opacity-35` so a greyed row reads greyed (R-192).
+   `lib/menu.ts`'s `openMenu` and `arrowKeys` now skip a disabled row — `focus()` on one is a no-op, so reading along the
+   ⋯ opened with focus outside it and the arrows stuck. The Kit's kbd chip class is exported from `shortcut-row.tsx` and
+   shared, so the card's chips and the menu's are one.
+6. **A tap that opens the Controls overlay cancels its own `touchend`.** Executed on the harness with the guard taken out:
+   the tap's compatibility click was hit-tested again after the overlay drew, landed on the scrim and closed it at once;
+   under the finger on the right it would press whatever control the overlay put there. `floor.spec.mjs` taps where the
+   scrim lands and counts the clicks, and goes red without the guard.
+7. **Three components' own sizes outrank the 44px rule** (a utility beats `@layer base`, as designed), and each is sized for
+   touch inside the editor only (`coarse:in-[[data-editor]]:`): the Kit's `Toggle` is D8a's 52 × 30 with a 24px knob in a
+   44px row; the link picker's `min-h-[38px]` becomes 44; and a Layers row's gaps drop to 4px, because on the main feed's
+   row D5c's chip left the name 32px to press. The sweep found nothing else, over every section's panel with every
+   group open.
+8. **The Section Picker, on touch** (the Ask First case): its card foot is a fixed 41px strip, so the 44px Add overflowed
+   it and the tier pill spilled over the Add. Fixed only that: the strip is 64px on touch, and the right column is
+   clipped to its track. Its cards are still too narrow at 720–834 to show a name — pre-existing at 720 on a mouse — which
+   is a layout the frames do not draw: Question 3.
+9. **The ⋯ rows' glyphs** are the controls' own where they draw one — Remix the Kit's `Refresh` (B8's), the sun's
+   `Sun`/`Moon`, D8a's `Laptop` for the device, B3a's eye for Preview — and an empty glyph slot for Theme settings and
+   Back to post, which are words at 1440 (R-92), so every row's words line up as D8a's do.
+10. **D4f's two grey bars** are a warm grey no token carries; they are drawn in `grey-track`, the nearest, and the
+    rounding is named in the component, as `ViewportChip` names its.
+11. **The keyboard harness gains a fourth header**, `x-inflozo-harness-dark: off`, for the Light-only journey.
+12. **Story 1.3's note cites `EXPERIENCE.md:79-82`**, where the "R Responsive System is not this app's responsive spec"
+    blockquote actually is; the Docs task's words said 78-81.
+13. **Two findings are recorded, not fixed:** DW-282 (a pre-existing duplicate React key in the settings panel, seen
+    while driving the compact editor and confirmed at 1440 on untouched code) and DW-283 (item 1's short Paywall).
+14. **A confirm open in a panel closes as the window crosses 1280** (found at the task audit, executed in the harness).
+    At 1280 the panel's "Reset this design?" confirm was opened, and the window narrowed to 1000: the Controls aside became
+    `hidden`, and the modal `<dialog>` inside it stayed open, modal and 0 × 0, so every press on the editor was blocked by a
+    confirm nobody could see (the planning's hidden-subtree pitfall, met by a resize instead of a collapse). The layout
+    effect now closes any open dialog in the editor that is no longer rendered, which is the Cancel it would have been, and
+    the matrix's "any overlay closes" holds for confirms too. A journey proves it, and goes red with the line taken out.
+15. **The Paywall's NOT A PAGE SECTION chip is whole or absent** — this supersedes item 1 for that chip. Shrinking beside
+    the name, it read "NO" at 720 while the name had shrunk to nothing, and "NOT…" beside a one-letter name on an iPad Pro
+    11 (measured). It never shrinks now, and below 1280 it is not drawn (`compact:hidden`): the ink bar and the strip under
+    it already say the canvas is not a page. The name gets the room back (22px → a readable few letters at 720, 53px at 834
+    on touch), the group is centred on the Paywall at 720 too, and DW-283's short Paywall moves from about 654px to about
+    628px (re-measured, and DW-283 rewritten to say so).
+16. **The matrix audit added coverage the Tasks did not list.** `floor.spec.mjs`: a phone opened sideways (844 × 390), a
+    large tablet sideways (1366 × 1024, touch) that is compact at a width a mouse would get the full editor at, and D8b's
+    sizes at 1279 (a 44px rail of 32px items, 26 × 19 thumbs, a 28px ⋯), hover lighting a rail item, a click opening the
+    overlay with the scrim at the rail's edge, and the scrim's click closing it. The journey: the crossing test now carries
+    an edit made below 1280 and undone at 1280 (the journal) and the canvas's scroll across the line; the rail test presses
+    Controls' own Close and measures the scrim's edge; reading along acts on the device, dark and Preview rows and opens
+    Layers with `L`; and item 14's confirm. A last `floor.spec.mjs` test is the fifth criterion itself: the bar at 720, 900,
+    1100, 1279, 1280 and 1440 on a mouse and at 768, 834, 1024 and 1366 on touch, on Home and on the Paywall, with the
+    centred group meeting neither side and no control outside the window — red when the group is moved over the left side
+    (the control, executed), and green with the spec's own `minmax(0, 1fr)` too now that item 15 took the chip out of the
+    compact bar. The deployed walk gains **step 101**: a 1440 window with a section chosen,
+    narrowed to 1279 and widened again, with the lock row read before and after each crossing (the holder and the
+    generation unchanged) and an expando on the editor root and on the canvas window surviving both — the criterion's
+    "nothing remounts: the lock row, the journal and the selection are unchanged", on the real database.
 
 ## Design Notes
 
@@ -571,8 +648,43 @@ the pointer, not the layout".
 - `pnpm keyboard` — expected: every journey green, including the 720 ones, and `floor.spec.mjs` green.
 - `python3 tools/doc-audit.py --check`, run twice — expected: exit 0.
 - `node tools/probe/run-verify-editor.cjs`, with `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN` and
-  `VERCEL_TEAM_ID` from `tools/probe/.env`, by name — expected: 0 FAIL, including steps 97–100 and the re-expected
-  step 14.
+  `VERCEL_TEAM_ID` from `tools/probe/.env`, by name — expected: 0 FAIL, including steps 97–101 and the re-expected
+  steps 9, 14 and 90.
+- `pnpm build` (CI's own step) — expected: exit 0.
+
+**Results (Dev, 2026-09-27, Node 24; the counts are the runs' own output, not restated).**
+
+- **`pnpm check`** — exit 0: lint, typecheck, and every package test; `tokens.test.ts` (the variants equal to
+  `lib/floor.ts`, the phone variant a coarse pointer in every branch, `panel-overlay` named in DESIGN.md) and
+  `editor.test.ts` (R-201's and R-202's edges) among them, with `busy.test.ts`, `dark-mode.test.ts` and
+  `placeholder-menu.test.ts` green; `check-snapshots: PASS`.
+- **`pnpm keyboard`** — 97 passed, 0 failed, in one run of the final tree: every existing journey unchanged at the pinned
+  1280 × 720, the Story 5.22 journeys at 720 × 900 and the confirm-on-crossing one, and every `floor.spec.mjs` test.
+- **`pnpm build`** — exit 0 (a local production build, CI's own step).
+- **`python3 tools/doc-audit.py --check`**, twice — PASS, after the first run regenerated INDEX and the story board.
+- **Controls executed, each red with its fix taken out and green with it:** the tap guard (change log 6 — the tap's click
+  landed on the scrim); the confirm on crossing (14 — `dialog[open]` stayed, 0 × 0 and modal, and a press on ⋯ timed
+  out); the bar sweep (16 — red with the centred group moved over the left side).
+- **Executed in the harness, beyond the gates:**
+  - the server's HTML is the skeleton on every open (no `data-editor`, no canvas), and with JavaScript OFF the skeleton
+    already takes each shape by CSS: D4f's 60px bar on the iPhone 13, a 56px bar and the rail's column on the iPad Pro
+    11, S4a's 48px bar at 1440;
+  - REAL 200% browser zoom (a persistent profile zooming every page): a 720 window at DPR 2, a fine pointer, ⋯ and the
+    rail with 32px items, hover lighting a rail item, and no notice — against the same launch at 100%, a 1440 window with
+    the full editor;
+  - screenshots against the frames: D4f on the iPhone 13 (the harness has no shell, so no avatar), D8a on the iPad Pro 11
+    at rest, with ⋯ open and with Controls over the page, D8b at 720 with Controls over the page, and S4a at 1440;
+  - the bar at 720, 900, 1024, 1100, 1279, 1280 and 1440 on a mouse and at 600–1366 on touch, on Home and on the
+    Paywall, members on and off (change log 1 and 15; DW-283 re-measured at about 628px);
+  - on touch: a Layers row's tap hands over to Controls, which stays open; a rail item's tap opens it; ⋯'s Device row's
+    tap moves the device and closes the menu;
+  - Question 3's claim: the Section Picker's cards are 85px wide at 720 on a mouse and 97px on the iPad Mini, each name
+    cut to one letter (225px and whole at 1280);
+  - Sign In and the marketing home at 390: the home has no sideways overflow and zero axe violations; Sign In answers 500
+    in the harness (no Supabase), so step 100 is its first real reading.
+- **The deployed walk runs after this push**, once CI's `deploy` has put this commit on `app.inflozo.com`: the walk
+  refuses to start unless Vercel serves HEAD and the tree is clean. Its results — steps 97–101 and the re-expected 9, 14
+  and 90 — are recorded here by the next Dev commit.
 
 **Real infrastructure** (R-82):
 
@@ -668,3 +780,25 @@ click away instead of in view.
    editor too.
 
 **Ruled: option 1 (owner, 2026-09-27)** — *"Below 1280."* Recorded as **R-202**.
+
+### Question 3 — On a tablet, the Section Picker's cards are too narrow to show their names. How should it lay them out?
+
+**In plain English.** When you press **+ Add section** on a tablet, or in a laptop window narrower than about 1,000
+pixels, the picker still lays its cards out in the columns it uses on a big screen. Each card is then only about 85–120
+pixels wide, so a design's name is cut to its first letter and its Free or Pro tag is cut off.
+
+- It is not new on a narrow laptop window, but a tablet now opens the picker too, and the drawings show the picker only at
+  full width.
+- This story made the card's **+** finger-sized on a touch screen and stopped the tag spilling over it. It did not change
+  the layout, because the story says to ask first.
+
+**An example.** On an iPad mini, the Latest Post card shows "L." beside its **+**, and its Pro tag is hidden.
+
+1. **Fewer, wider cards on narrower screens (RECOMMENDED).** Below 1280 the picker shows two columns of cards, and one
+   below about 600 pixels, so every card has room for its name, its **+** and its Free or Pro tag. The same cards and the
+   same words; only the number of columns changes.
+2. **Keep the columns, and give each card's foot two lines.** The name on the first line, the tag and the **+** on the
+   second.
+3. **Leave it as it is** until Claude Design draws the picker at 834.
+
+**Ruled:** _(awaiting the owner)_

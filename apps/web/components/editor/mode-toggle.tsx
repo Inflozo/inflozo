@@ -24,6 +24,10 @@ import { Moon, Sun } from '@/components/kit/icons'
 /** What the live region says once the flip has landed — the mode NOW SHOWING, never the press. */
 export const modeShown = (mode: Mode) => (mode === 'dark' ? 'Dark mode' : 'Light mode')
 
+/** The button's words — the DESTINATION, not the state: "Preview dark mode" is what pressing it does (R-132). Story
+ *  5.22's ⋯ row reads the same words, so the control and its row have one name (R-170). */
+export const modeWords = (mode: Mode) => (mode === 'dark' ? 'Back to light mode' : 'Preview dark mode')
+
 /* Story 5.10 — `id` is a parameter because R-151 puts a SECOND one of these in the Section Picker's header, and two
    elements carrying `editor-mode` would be one duplicated id: the deployed walk finds the top bar's sun by that id
    (`run-verify-editor.cjs` steps 46-53), and it must keep finding exactly one. */
@@ -40,8 +44,7 @@ export function ModeToggle({
   style?: CSSProperties
 }) {
   const dark = mode === 'dark'
-  // the DESTINATION, not the state: "Preview dark mode" is what pressing it does (R-132)
-  const label = dark ? 'Back to light mode' : 'Preview dark mode'
+  const label = modeWords(mode)
   return (
     <button
       id={id}
