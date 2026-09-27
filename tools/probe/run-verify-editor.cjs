@@ -208,7 +208,8 @@
 // main-thread task noted; a word typed into a planted heading ON THE CANVAS and taken back — the typing path the keyboard
 // gate cannot reach — whose ending repaint must draw that section fresh and keep every other root; and then Preview in
 // and out, whose full repaint must equal the canvas node for node (`isEqualNode`).
-// Because the step now EDITS the plant, it leaves the editor before putting Home back (step 52's reason).
+// Because the step now EDITS the plant, it sends the owed work with ⌘S and waits for Synced, then leaves the editor before
+// putting Home back (step 52's reason): a departing page's own flush once landed after step 61's hydrate (Dev, run 3).
 const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
@@ -2973,8 +2974,19 @@ async function main() {
       return { equal: false, first: `child ${n} — now ${say(c.childNodes[n])} — was ${say(was.childNodes[n])}` }
     })
     check('step 60 — Story 5.23a: after the move and the typing, a full repaint (Preview in and out) draws every section fresh and equals the canvas node for node', agree60.equal && agree60.fresh, JSON.stringify(agree60))
-    // THE EDITOR GOES FIRST again, for step 52's reason: this step now EDITS the plant, and a departing page's flush would
-    // land on top of the restore. Written and read back up to three times, as `freshLoad` does, for the same race.
+    // THE TYPING LEFT WORK OWED, SO IT IS SENT AND HEARD BEFORE THE EDITOR GOES. The departing page's own flush lands
+    // whenever it lands: executed at 5.23a's Dev (run 3 at `0ea616db`), it arrived after step 61's hydrate had read the
+    // seed, so the plant was back on the server behind the walk and step 66's ⌘S met "This project was changed
+    // somewhere else" and 40 instances. ⌘S, and the indicator resting on the label `lib/journal.ts` gives a session that
+    // owes nothing, leaves the departing page nothing to send.
+    const SYNCED60 = (await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href)).labelOf({ kind: 'rest', owed: false })
+    await page.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
+    await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+s`)
+    const sent60 = await page.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED60, { timeout: 20000 }).then(() => true, () => false)
+    check('step 60 — the typing\'s owed work is sent and heard before the editor goes (⌘S, the indicator resting on Synced), so no departing flush can land behind the restore', sent60,
+      await page.evaluate(() => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') ?? 'no indicator'))
+    // THE EDITOR GOES FIRST again, for step 52's reason, and the restore is written and read back up to three times, as
+    // `freshLoad` does
     await leaveEditor()
     let restored = { status: 0 }
     let homeNow60 = null

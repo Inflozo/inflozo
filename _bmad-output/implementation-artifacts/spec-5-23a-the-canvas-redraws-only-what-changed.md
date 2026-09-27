@@ -234,6 +234,11 @@ have; none changes what the canvas draws.
    was redrawn; a layout that moves other content under the pointer is the browser's to report, as it always was. The
    frozen *"the hover clears"* is read as what it was written for — behave as after a full repaint, which on screen means
    the hover under a resting pointer is still drawn. The evidence is under Verification, *"The kept hover"*.
+7. **Step 60 sends the typing's owed work before it leaves.** The task's typing round trip made step 60 the first step to
+   EDIT the plant, and the departing page's own flush lands whenever it lands: in the deployed walk's run 3 at `0ea616db`
+   it arrived after step 61's hydrate had read the seed, so step 66's ⌘S met *"This project was changed somewhere else"*
+   and 40 instances on the server. Step 60 now presses ⌘S and waits for the indicator to rest on Synced (`lib/journal.ts`'s
+   own label) before it leaves the editor and puts Home back, so the departing page has nothing to send.
 
 ## Design Notes
 
@@ -462,7 +467,18 @@ at 1440 × 900 with a REAL pointer, three runs per build, `editor.tsx` swapped i
   - **Run 2: 1 FAIL, then a HARNESS ERROR.** The FAIL is step 8's pill — Spec Change Log 6, fixed. Step 60's 5.23a checks
     passed again with the same readings. The walk then died at its last step, step 9's raw `GET /projects/<id>` (`:6661`), after 662 PASS.
     Accounts deleted, HTTP 200, users 13 → 13. Both deaths are DW-204's, whose row carries them.
-- **After the fix's push:** its CI run, its deployment and a complete walk are recorded by the Dev commit that follows.
+- **The kept-hover push, `0ea616db`.** GitHub Actions (`GITHUB_TOKEN`): CI run 36345381507 — `check` (the runner's
+  `pnpm keyboard` printing `107 passed (4.9m)`), `rls` and `deploy` success; Render matrix run 36345381473: success.
+  Vercel (`VERCEL_*`): `dpl_3XMFAQ6HfMeCyLyJYXqza1givXEc` READY, production, built from `0ea616db`.
+  - **Walk run 3 at `0ea616db`: 3 FAIL, then a HARNESS ERROR — and the FAILs were this story's own step.** Step 60's
+    5.23a checks passed again with the same readings. Then step 66's ⌘S went `["Syncing","Saved on this device"]`, the
+    revision stayed at 10 and the stored Home held 40 instances; the walk died at step 66b on the *"This project was
+    changed somewhere else"* dialog over the Undo button. Step 61 had read revision 10 in all three runs, and runs 1 and 2
+    moved it to 11 at step 66 with the edited doc: the step-60 page's departing flush — owed only since step 60 types —
+    had landed before `freshLoad`'s restore there, and after step 61's hydrate here. Fixed in the walk (Spec Change Log
+    7). Accounts deleted, HTTP 200, users 13 → 13.
+- **After the walk's fix is pushed:** its CI run, its deployment and a complete walk are recorded by the Dev commit that
+  follows.
 
 **Manual checks (R-82, after CI publishes):**
 

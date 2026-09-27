@@ -582,8 +582,9 @@ DOCS = [
   "Story 5.23a adds to step 60, on its planted 40-section Home: ⌥↓ on a planted row keeps every section root the same "
   "node and moves one, with the longest task noted; a word typed into a planted heading on the canvas and taken back, the "
   "repaint that ends the session drawing that section fresh and keeping every other root; and Preview in and out, whose "
-  "full repaint must equal the canvas node for node — then it leaves the editor before putting Home back, since the step "
-  "now edits the plant."),
+  "full repaint must equal the canvas node for node — then, since the step now edits the plant, it sends the owed work "
+  "with ⌘S and waits for Synced before leaving the editor and putting Home back, so no departing flush lands behind the "
+  "restore."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
