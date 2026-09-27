@@ -287,6 +287,11 @@ screen-reader walk:
 
 ## Verification
 
+**Deployment:** `dpl_Bxb2ZYRE3i1ofJBhd8a3QK8xoLMX` READY, production, built from `4c6f89f2` (HEAD), aliased to
+`app.inflozo.com`, `inflozo.com` and `www.inflozo.com`. CI run for `4c6f89f2`: `check`, `rls`, `deploy` and the
+render matrix all success. No migration (`git diff --stat 3361bb6a HEAD -- supabase` empty), so no Schema-phase
+apply was needed.
+
 **Commands:**
 
 - `cd apps/web && node --test play-loop.test.ts` (Node 24) -- expected: every seed passes and every control is reported
