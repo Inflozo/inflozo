@@ -320,7 +320,7 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
   - The message card:
     - D4f's laptop drawing inline, in token colours;
     - "The editor needs a bigger screen." in Bricolage 700 at 22px;
-    - "Dragging sections and a 300-pixel control panel don't fit on a phone yet. Open this project on a laptop or
+    - "Dragging sections and a 280-pixel control panel don't fit on a phone yet. Open this project on a laptop or
       tablet."
   - **WHAT WORKS HERE**, holding the nav card with **one** row: **Your sites**. It is a 56px `<Link href="/sites">`
     with the `Globe` tile and a `ChevronRight`.
@@ -503,7 +503,7 @@ Supabase (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) answering 200 on the admin user
 as MEASUREMENTS §50 records, a bogus table 404. The Acceptance Auditor found no criterion and no Never/Always rule
 violated. Fixes are in the working tree of the Review commit; each test added went red with the defect put back.
 
-- [ ] [Review][Decision] The notice says "a 300-pixel control panel" (D4f's words) while the built panel is 280px — Question 4
+- [x] [Review][Decision] The notice says "a 300-pixel control panel" (D4f's words) while the built panel is 280px — Question 4, ruled option 1 (R-204): it says 280-pixel
 - [x] [Review][Patch] A cancelled lift (`touchcancel`) left `tapOpened` armed, so the NEXT tap's click was swallowed [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:2779] — reset on `touchcancel`
 - [x] [Review][Patch] The Remix confirm's `onClose` focused the die, which is `hidden` below 1280, so focus fell to the body after a remix from ⋯ [apps/web/components/editor/remix-dice.tsx:167] — a die that is not drawn hands focus to ⋯
 - [x] [Review][Patch] The scrim was unmounted in Preview while everything else this story adds is hidden (the spec's Always list, Story 5.15) [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:4449] — `hidden={preview}`
@@ -634,6 +634,8 @@ have; none changes what a surface does.
     Section Picker, Template and View as open (its Add is 44 on both iPads, as the footer's comment claimed); the rail at
     full width; the Theme settings row's `href`; no IndexedDB on a phone (`next dev` keeps a debug channel of its own, so
     the test counts `inflozo-*` databases only). Question 4 asks whether the notice's "300-pixel" should say 280.
+21. **Question 4 ruled option 1 (R-204, 2026-09-27).** The notice says "280-pixel": one word in `small-screen-notice.tsx`,
+    the floor test and the deployed walk's step 97. The export is untouched (R-74); the recorded deviation above says so.
 
 ## Design Notes
 
@@ -702,7 +704,7 @@ the pointer, not the layout".
   them add their rows.
 - The avatar is decorative, as D4f draws it with no role. The owner's ruling of 2026-09-05 moved the dashboard's phone
   avatar into ☰ because it duplicated the drawer's; the notice has no drawer to duplicate.
-- The copy is D4f's verbatim, including "300-pixel".
+- The copy is D4f's verbatim but for one word: "280-pixel", the panel's true width, where D4f wrote "300-pixel" (R-204, Question 4).
 - Its sites row is why **Sites is a 390 surface**. R-76 and `DESIGN.md:380` already say so. `EXPERIENCE.md:60`'s
   tablet-only row is the stale one.
 
@@ -971,4 +973,4 @@ number is a reason, not a control: it only has to be believable.
 2. **Keep "300-pixel", D4f's words.** Nothing changes; the sentence stays a round number.
 3. **Drop the number: "a control panel".** One word fewer; the sentence loses its concreteness.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27)** — *"Say '280-pixel', the true width."* Recorded as **R-204**; change log 21.

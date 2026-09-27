@@ -4496,6 +4496,16 @@ screens."*
   - ✅ built — Story 5.22's Dev (2026-09-27): `section-picker.tsx`'s grid, held by `tools/keyboard/floor.spec.mjs` and
     the deployed walk's step 98.
 
+**R-204 — the Small Screen Notice says "a 280-pixel control panel", the panel's true width, where D4f wrote
+"300-pixel".** Story 5.22's Review, Question 4, ruled **option 1** (owner, 2026-09-27): *"Say '280-pixel', the true
+width."* A product fact the frame guessed at; every other word of D4f's stays, and the export is untouched (R-74).
+
+- **Declined.** Option 2, keeping "300-pixel"; option 3, dropping the number.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.22's spec — Question 4, its notice task, the recorded deviation and change log 21.
+  - ✅ built — Story 5.22's Review (2026-09-27): `small-screen-notice.tsx`, `floor.spec.mjs`, the walk's step 97.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

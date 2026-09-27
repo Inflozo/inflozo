@@ -66,7 +66,7 @@ test.describe('R-201 · a phone gets D4f, never the editor', () => {
     expect(await page.evaluate((q) => matchMedia(q).matches, FLOOR.PHONE), 'the descriptor is a phone by R-201').toBe(true)
     await expect(page.locator('[data-small-screen] h1')).toHaveText('The editor needs a bigger screen.')
     await expect(page.locator('[data-small-screen]')).toContainText(
-      "Dragging sections and a 300-pixel control panel don't fit on a phone yet. Open this project on a laptop or tablet.",
+      "Dragging sections and a 280-pixel control panel don't fit on a phone yet. Open this project on a laptop or tablet.",
     )
     await expect(page.locator('[data-small-screen] h2')).toHaveText(/what works here/i)
     // ONE row today (R-118): the sites list. Deploy history and Billing arrive with 7.23 and 12.5 — absent, never greyed

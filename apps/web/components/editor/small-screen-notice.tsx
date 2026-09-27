@@ -60,7 +60,7 @@ export function SmallScreenNotice({ name }: { name: string }) {
           <div className="flex flex-col gap-2">
             <h1 className="font-display text-[22px] font-bold leading-[1.2] tracking-[-0.01em]">The editor needs a bigger screen.</h1>
             <p className="text-[13.5px] leading-[1.6] text-ink-soft-aa text-pretty">
-              Dragging sections and a 300-pixel control panel don&apos;t fit on a phone yet. Open this project on a laptop or
+              Dragging sections and a 280-pixel control panel don&apos;t fit on a phone yet. Open this project on a laptop or
               tablet.
             </p>
           </div>

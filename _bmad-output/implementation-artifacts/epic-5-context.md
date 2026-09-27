@@ -866,7 +866,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     - The Section Picker's cards at 720–834 were the spec's Question 3 (an Ask First layout), ruled option 1 as
       **R-203**: two columns below 1280 (the `compact` variant), one where two would cut a card's name (a container under
       514px — `@min-`/`@max-` of one width, because the `compact` rule is emitted after the container's). DW-282 and
-      DW-283 are new.
+      DW-283 are new. At Review, **R-204**: the notice says "280-pixel", the panel's true width, not D4f's "300".
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions
