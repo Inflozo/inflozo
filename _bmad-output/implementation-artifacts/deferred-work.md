@@ -6500,3 +6500,26 @@ location: `apps/web/components/editor/small-screen-notice.tsx` · `apps/web/comp
   `apps/web/app/(app)/app/harness/editor/layout.tsx`
 reason: closing it means the harness layout handing a fixture user through the same provider, the harness header's
   pattern; a small change to a shared harness, outside a review's patch scope.
+
+### DW-286: a dark override a design only remembers is invisible to the moon, the row and Theme settings' count
+
+plain: Since Story 5.23 a section remembers each design's dark settings when you move it to another design. Suppose
+  every dark override a project has is remembered in that way and none is in use. Theme settings then says "Nothing to
+  clear", and the moment a section goes back to its design, the dark override is there again. Clear itself removes the
+  remembered ones too, but it is only offered while at least one override is in use. No customer can reach this today,
+  because every shipped design has only one version.
+status: open
+severity: low
+origin: Story 5.23's Dev (2026-09-27), R-205. `clearDarkOverrides` now empties every record's dark map, and the
+  project-level Clear visits a section through `holdsDarkOverride` (live or remembered). What OFFERS a clear still asks
+  what is in force: the panel row and the `⋯` item read `darkOverridesInForce`, and Theme settings reads D6a's
+  `darkOverrideCount`, which counts only what an emitter could use. Executed on production the same day: 0 of 33
+  sections hold any record.
+owner: Story 9.1 — A1's designs #1–4 are the first shipped ring, so it is the first story in which a customer can hold
+  a remembered override. It decides whether "Nothing to clear" names them or the count includes them, which is a D6a
+  surface question for the owner in R-83's shape.
+location: `apps/web/components/controls/sidebar.tsx` (`darkOverridesInForce`, the row's "Nothing to clear") ·
+  `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx` (`n === 0`) ·
+  `packages/section-runtime/src/doc-edit.ts` (`darkOverrideCount`, `holdsDarkOverride`)
+reason: Story 5.23 draws nothing differently (its Boundaries: "No surface changes"). Counting what is remembered would
+  change D6a's sub-caption and the row's availability, which are surfaces with frames, so it is not a Dev call.

@@ -4543,8 +4543,10 @@ Remix — always shows it exactly as you left it."*
   - ✅ `epics.md` — FR-D19's line, Story 5.11's carry / park / default criterion and Story 5.23's card.
   - ✅ `EXPERIENCE.md`'s Design picker row.
   - ✅ `epic-5-context.md`.
-  - ⬜ built — Story 5.23's Dev: `switchControls` and its comment, `clearDarkOverrides`, the project-wide Clear, their
-    tests, the play-loop gate, the keyboard journey's FR-D19 stop and `run-verify-controls.cjs`'s ring walk.
+  - ✅ built — Story 5.23's Dev (2026-09-27): `switchControls` and its comment, `clearDarkOverrides`, the project-wide
+    Clear (through `holdsDarkOverride`), their tests, the play-loop gate, the keyboard journey's FR-D19 stop and
+    `run-verify-controls.cjs`'s ring walk. A design left at its defaults keeps an EMPTY record, so its return is a return
+    and not a first visit (the spec's change log 1).
 
 **R-206 — the 60 fps half of Epic 5's exit is its own story, 5.23a: the editor redraws only what changed, then the trace
 is measured.** Story 5.23's Create, Question 2, ruled **option 1** (owner, 2026-09-27): *"Its own story, 5.23a, straight

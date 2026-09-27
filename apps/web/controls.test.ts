@@ -125,9 +125,15 @@ test('the ring proves every arm of carry / park / default, and FR-D13\'s cap, by
     assert.ok(a.has(shared) && b.has(shared) && c.has(shared), `${shared} must be declared by every design to prove a carry`)
   }
   // PARK: `tint` is the library's only `darkOverride: true` control and ONLY design 1 declares it, so a value
-  // parked against design 1 must survive design 3 to be restored — the one path worth proving
+  // parked against design 1 must survive design 3 to be restored
   assert.ok(a.has('tint') && !b.has('tint') && !c.has('tint'), 'tint must be design 1\'s alone')
   assert.equal(one!.controlSchema.find((x) => x.name === 'tint')?.darkOverride, true)
+  // SHARED BY TWO (Story 5.23, R-205): `icons` and `image` are designs 1's and 2's and not design 3's — the path the rule
+  // as built at 5.11 lost round the ring (they travelled on to design 2 and were put aside against IT), so the ring must
+  // keep one for `play-loop.test.ts`, the runtime's round-the-ring test and the keyboard journey to walk
+  for (const shared of ['icons', 'image']) {
+    assert.ok(a.has(shared) && b.has(shared) && !c.has(shared), `${shared} must be shared by designs 1 and 2 and not 3`)
+  }
   // DEFAULT: a control only the incoming design declares
   assert.ok(b.has('frame') && !a.has('frame'), 'design 2 must add one of its own')
   assert.ok(c.has('stack') && !a.has('stack') && !b.has('stack'), 'design 3 must add a different one')

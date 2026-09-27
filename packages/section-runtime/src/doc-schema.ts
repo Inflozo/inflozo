@@ -55,13 +55,15 @@ export const instanceSchema = z.strictObject({
    *  a doc the rule can fix. `pageTwoStack` READS it. Defaulted for the same reason as `hidden`: every stored doc
    *  predates it. */
   isMainFeed: z.boolean().default(false),
-  /** Story 5.11 — FR-D19's PARKED VALUES, keyed by the design they came from: a control only the design being left
-   *  declares is put aside against that design id and comes back exactly as it was on return. BOTH MAPS PARK
-   *  TOGETHER, because a dark override is a second value of the SAME control (AD-30, `storedFor`) and "restored
-   *  exactly" means both — parking `tint` while leaving `darkOverrides.tint` behind would restore the light value
-   *  and lose the dark one. A restore CLEARS the record, so a doc cannot accumulate a stale second copy of a value
-   *  the customer has since changed. It lives inside `project_templates.doc`, which is `jsonb` and carries no DDL
-   *  for its shape, so this field is the whole of the storage change (R-99: no migration, no Schema phase).
+  /** Story 5.11 — FR-D19's PARKED VALUES, keyed by the design they came from. Since Story 5.23 (R-205) EVERY DESIGN
+   *  REMEMBERS ITSELF: leaving a design records every value it declares against its id — the ones the next design
+   *  shares too, and an empty record for a design left at its defaults — and a return by any route restores it
+   *  exactly (`controls.ts`'s `switchControls`). BOTH MAPS ARE KEPT TOGETHER, because a dark override is a second value
+   *  of the SAME control (AD-30, `storedFor`) and "restored exactly" means both — keeping `tint` while leaving
+   *  `darkOverrides.tint` behind would restore the light value and lose the dark one. A restore CLEARS the record, so a
+   *  doc holds at most one per design visited and never a stale second copy; a deliberate Clear dark overrides empties
+   *  the records' dark maps with the live one. It lives inside `project_templates.doc`, which is `jsonb` and carries no
+   *  DDL for its shape, so this field is the whole of the storage change (R-99: no migration, no Schema phase).
    *  Defaulted for the same reason as `hidden`: every stored doc predates it. */
   parkedControls: z.record(z.string(), z.strictObject({ controls: values, darkOverrides: values })).default({}),
 })

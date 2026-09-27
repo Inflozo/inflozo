@@ -549,7 +549,9 @@ DOCS = [
   'with real scrollbars, keyboard-only reorder with its announcement, axe-core at WCAG 2.1 AA at 1440 and '
   '390 with a positive control, and the control stamp and content re-render timed under 4x CPU throttle; '
   'the account deleted with the user count read before and after. Committed at Review so the deployed '
-  "checks that re-verified the owner's nine findings can be re-run from a clone."),
+  "checks that re-verified the owner's nine findings can be re-run from a clone. Since Story 5.11 it also walks "
+  "the design ring over the controls fixture's designs (R-158), and since Story 5.23 the ring's long way round "
+  'carries Image position — a setting the next design shares — back exactly as it was left (R-205), besides Card tint.'),
  ('tools/probe/run-verify-pilots.cjs', 'tool', 'Pilots review page harness',
   "Story 4.10's deployed walk of /pilots and the live Supabase (R-82): a throwaway account signed in through the "
   'Auth Admin API, then every pilot at Light and Dark, Desktop 1440, Tablet 834 and Phone 390, and each View as, '

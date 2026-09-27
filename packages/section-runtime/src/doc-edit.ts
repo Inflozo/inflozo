@@ -142,10 +142,24 @@ export function setMemberVisibility(doc: ProjectDoc, instanceId: string, visibil
  *  identical. A DELIBERATE clear, and one of only two in the product — the other is the project-level row on Theme
  *  settings — because everything else keeps a stored override on purpose: a mode change keeps them (FR-D7) and so
  *  does `resetSection` (FR-F4, `controls.test.ts:413`). The whole map goes, not only the names in force: a value
- *  this design narrows away is still a dark override the customer asked for on this section. */
+ *  this design narrows away is still a dark override the customer asked for on this section.
+ *
+ *  STORY 5.23 (R-205) — AND WHAT THE SECTION REMEMBERS GOES WITH IT. A design remembers everything it was left with,
+ *  dark overrides included, so a clear that emptied only the live map would see one come back the day the section
+ *  returns to that design. Every record's dark map is emptied too; the light values it remembers stay. */
 export function clearDarkOverrides(doc: ProjectDoc, instanceId: string): ProjectDoc | string {
-  return withOne(doc, instanceId, (i) => ({ ...i, darkOverrides: {} }))
+  return withOne(doc, instanceId, (i) => ({
+    ...i,
+    darkOverrides: {},
+    parkedControls: Object.fromEntries(Object.entries(i.parkedControls).map(([id, record]) => [id, { ...record, darkOverrides: {} }])),
+  }))
 }
+
+/** STORY 5.23 (R-205) — does this section hold a dark override ANYWHERE: live, or remembered against a design it has
+ *  left? What the project-level Clear visits (`settings/actions.ts`), so a remembered override is cleared with the rest.
+ *  Not what the moon, the panel row or the `⋯` item read: those ask what is IN FORCE, `darkOverridesInForce`. */
+export const holdsDarkOverride = (i: Pick<DocInstance, 'darkOverrides' | 'parkedControls'>): boolean =>
+  Object.keys(i.darkOverrides).length > 0 || Object.values(i.parkedControls).some((r) => Object.keys(r.darkOverrides).length > 0)
 
 /** How many sections across these docs carry a dark override AN EMITTER COULD USE — D6a's count, DERIVED by walking
  *  the docs and never stored (standing rule 4). `entryOf` is the library, in `synthesize`'s own shape: a design it

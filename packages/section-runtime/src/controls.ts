@@ -52,13 +52,16 @@ export type ControlState = {
   controls?: Readonly<Record<string, unknown>>
   darkOverrides?: Readonly<Record<string, unknown>>
   data?: Readonly<Record<string, unknown>>
-  /** Story 5.11 — FR-D19's parked values, by the design they came from. Written only by `switchControls`, read
-   *  only by it, and beyond every reset's reach (`resetSection`'s own comment says so). */
+  /** Story 5.11 — FR-D19's parked values, by the design they came from; since Story 5.23 (R-205) EVERY value a design
+   *  held when it was left. Written only by `switchControls` and read only by it — save that a deliberate Clear dark
+   *  overrides empties their dark maps too (`doc-edit.ts`'s `clearDarkOverrides`) — and beyond every reset's reach
+   *  (`resetSection`'s own comment says so). */
   parkedControls?: ParkedControls
 }
 
-/** One design's put-aside values: its `controls` and its `darkOverrides` together, because a dark override is a
- *  second value of the SAME control (AD-30) and "restored exactly" means both. */
+/** One design's remembered values — everything it held when it was left (R-205): its `controls` and its
+ *  `darkOverrides` together, because a dark override is a second value of the SAME control (AD-30) and "restored
+ *  exactly" means both. */
 export type ParkedControls = Readonly<Record<string, {
   controls: Readonly<Record<string, unknown>>
   darkOverrides: Readonly<Record<string, unknown>>
@@ -549,28 +552,40 @@ export function sidebar(entry: ControlEntry, state: ControlState = {}, mode: Mod
   return { groups }
 }
 
-// ─── Story 5.11 — the design ring's one rule: carry / park / default (FR-D19) ─
+// ─── Story 5.11 — the design ring's one rule: carry / park / default (FR-D19), and since Story 5.23 R-205 ─
 
 /** WHAT MOVING FROM ONE DESIGN TO ANOTHER MEANS, over one instance's stored slice — decided here and nowhere else,
- *  so the panel's arrows, the section's arrows, `[` / `]` and Shuffle are four doors onto one rule.
+ *  so the panel's arrows, the section's arrows, `[` / `]`, Shuffle and Remix are doors onto one rule.
  *
- *  THREE ARMS, AND THE THREE WORDS ARE EXACT (FR-D19, FR-D13):
- *    - a control BOTH designs declare CARRIES its value, in light and in dark — nothing is written and nothing moves;
- *    - a control only the OUTGOING design declares is PARKED against that design's id, its dark override with it;
+ *  EVERY DESIGN REMEMBERS ITSELF (R-205, owner, 2026-09-27, Story 5.23's Q1). Leaving a design RECORDS every value it
+ *  declares — the shared ones too, in light and in dark — against its own id, and a RETURN by any route restores that
+ *  record exactly and then CLEARS it. So going back to a design always shows it exactly as it was left, which is R-160's
+ *  promise in every case rather than one: as built at 5.11 only what the next design lacked was put aside, so a setting
+ *  two designs share travelled on and was put aside against the SECOND design when a third lacked it, and the first
+ *  showed its default on return (`]` round the whole ring brought Show icons and Image position back On and Top).
+ *
+ *  A FIRST VISIT IS FR-D19'S THREE ARMS, UNCHANGED (FR-D19, FR-D13), and the three words are exact:
+ *    - a control BOTH designs declare CARRIES its value, in light and in dark;
+ *    - a control only the OUTGOING design declares is PARKED — gone from the live maps, kept in the record;
  *    - a control only the INCOMING design declares is left unstored, so `resolveControls` gives it ITS OWN DEFAULT.
- *  And the fourth thing, which is the promise the whole story exists for: a parked record for the design being
- *  ARRIVED AT is restored exactly and then CLEARED, so a round trip costs nothing and cannot accumulate a stale copy.
+ *
+ *  A RETURN TAKES THE RECORD OVER WHATEVER CARRIED (R-160, R-205): a name the returning design declares that its record
+ *  lacks was at its default when that design was left, so a value carried in from the design being left goes — it is
+ *  in THAT design's record now, so nothing is lost. The one visible trade, ruled with R-205: change Columns on design 2,
+ *  go back to design 1, and design 1 shows the Columns it was left with.
+ *
+ *  AN EMPTY RECORD IS KEPT, and that is deliberate: a design left with nothing stored was left at its defaults, and
+ *  "exactly as you left it" means those defaults on return. Dropped, the return would read as a first visit and carry
+ *  whatever the customer set elsewhere — the one case R-205's "always" would still miss. So the doc holds at most one
+ *  record per design visited, per section, in the existing `parkedControls` shape (no migration).
  *
  *  CONTENT IS NOT HERE, AND THAT IS WHAT KEEPS THIS SMALL. `contentSchema` is the CATEGORY's union (FR-G3) and a
  *  ring never leaves its category, so every prop, every list item and every `data` value stays in the instance byte
  *  for byte — invisible only where the incoming markup does not name it.
  *
  *  A NAME NEITHER DESIGN DECLARES IS LEFT ALONE, exactly as `resetSection` leaves it: it is a third design's to
- *  mean, and it returns with the design that uses it.
- *
- *  A RESTORED VALUE WINS OVER A CARRIED ONE, in the one case where both exist (a shared control the customer changed
- *  on an intermediate design). "Restored exactly as it was" is the promise the ring is sold on, and the record goes
- *  in the same breath, so it happens once and never again. */
+ *  mean, and it returns with the design that uses it. A record never loses a value either: the whole of it is restored,
+ *  so a name its design has since stopped declaring comes back to wait like any other name no design here declares. */
 export function switchControls(
   from: { id: string } & Pick<ControlEntry, 'controlSchema' | 'universals'>,
   to: { id: string } & Pick<ControlEntry, 'controlSchema' | 'universals'>,
@@ -588,24 +603,25 @@ export function switchControls(
 
   const leaving = new Set(declared(from).map((d) => d.name))
   const arriving = new Set(declared(to).map((d) => d.name))
-  const park = { controls: {} as Record<string, unknown>, darkOverrides: {} as Record<string, unknown> }
-  for (const [live, aside] of [[controls, park.controls], [darkOverrides, park.darkOverrides]] as const) {
+  const back = parkedControls[to.id]
+  // LEAVING: the record is every live value `from` declares, and what `to` does not declare leaves the live maps
+  const record = { controls: {} as Record<string, unknown>, darkOverrides: {} as Record<string, unknown> }
+  for (const [live, kept] of [[controls, record.controls], [darkOverrides, record.darkOverrides]] as const) {
     for (const name of Object.keys(live)) {
-      if (!leaving.has(name) || arriving.has(name)) continue
-      aside[name] = live[name]
-      delete live[name]
+      if (!leaving.has(name)) continue
+      kept[name] = live[name]
+      if (!arriving.has(name)) delete live[name]
     }
   }
-  if (Object.keys(park.controls).length > 0 || Object.keys(park.darkOverrides).length > 0) parkedControls[from.id] = park
-  else delete parkedControls[from.id]
+  parkedControls[from.id] = record
 
-  // R-160 (owner, 2026-09-20, Story 5.11's Q3): where a parked record and a carried value both exist for one control
-  // — a shared control changed on an intermediate design — the PARKED one wins: going back to a design always looks
-  // exactly the way you left it. `Object.assign` after the carry is that rule.
-  const back = parkedControls[to.id]
+  // ARRIVING at a design visited before: its record, exactly — a carried value it did not hold goes back to the default
+  // it was left at (R-160, R-205), and the record is cleared so a doc never keeps a stale second copy
   if (back !== undefined) {
-    Object.assign(controls, back.controls)
-    Object.assign(darkOverrides, back.darkOverrides)
+    for (const [live, kept] of [[controls, back.controls], [darkOverrides, back.darkOverrides]] as const) {
+      for (const name of arriving) if (!own(kept, name) && leaving.has(name)) delete live[name]
+      Object.assign(live, kept)
+    }
     delete parkedControls[to.id]
   }
   return { controls, darkOverrides, parkedControls }

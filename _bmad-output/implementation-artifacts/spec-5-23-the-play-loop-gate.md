@@ -2,7 +2,7 @@
 title: 'Story 5.23 — The play-loop gate'
 type: 'feature'
 created: '2026-09-27'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '3361bb6aef749d5a0d559ba976133e3535b717fc'
@@ -129,20 +129,20 @@ The owner ruled all three questions option 1 on 2026-09-27: **R-205** (every des
 
 **Execution:**
 
-- [ ] `apps/web/play-loop.test.ts` -- NEW: the fixture, the session per seed, the checks and the controls in Design
+- [x] `apps/web/play-loop.test.ts` -- NEW: the fixture, the session per seed, the checks and the controls in Design
   Notes -- FR-D17's gate, on every commit.
-- [ ] `packages/section-runtime/src/controls.ts` -- `switchControls` becomes Design Notes' rule, and its comment says
+- [x] `packages/section-runtime/src/controls.ts` -- `switchControls` becomes Design Notes' rule, and its comment says
   so -- R-160 in every case, not one.
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- `clearDarkOverrides` also empties `darkOverrides` in the
+- [x] `packages/section-runtime/src/doc-edit.ts` -- `clearDarkOverrides` also empties `darkOverrides` in the
   section's records -- a cleared section never gets one back.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- the project-wide Clear also visits a
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- the project-wide Clear also visits a
   section whose records hold a dark override -- same.
-- [ ] `packages/section-runtime/src/controls.test.ts`, `packages/section-runtime/src/doc-edit.test.ts` -- update the
+- [x] `packages/section-runtime/src/controls.test.ts`, `packages/section-runtime/src/doc-edit.test.ts` -- update the
   record-shape assertions; add round the ring with Show icons and Image position, changed on the way, and the Clear --
   the rule's own tests.
-- [ ] `tools/keyboard/journey.spec.mjs` -- the FR-D19 stop also sets Image position on sample 1 and reads it after
+- [x] `tools/keyboard/journey.spec.mjs` -- the FR-D19 stop also sets Image position on sample 1 and reads it after
   the wrap; run it once on the baseline and record it failing -- the browser's view of the fix.
-- [ ] `tools/probe/run-verify-controls.cjs`, `tools/doc-audit.py` -- the long-way-round step also carries Image
+- [x] `tools/probe/run-verify-controls.cjs`, `tools/doc-audit.py` -- the long-way-round step also carries Image
   position; the row's prose says so -- R-82 on production.
 
 **Acceptance Criteria:**
@@ -166,6 +166,18 @@ The owner ruled all three questions option 1 on 2026-09-27: **R-205** (every des
 - Given the change, then `pnpm check` and `pnpm keyboard` are green and CI publishes.
 
 ## Spec Change Log
+
+1. **Dev, 2026-09-27 — an empty record is kept.** The rule's sketch deleted a record left empty. Dev keeps it, because a
+   design left with nothing stored was left at its defaults. Deleted, a return reads as a first visit and carries whatever
+   was set on the design after it. That breaks R-205's "always", the register's own words ("arriving at a design with a
+   record … returns one the record lacks to its default") and the PRD's FR-D19 ("the three arms above describe a design
+   not yet visited"). It is inside "a return is exactly as it was left", so it is not an Ask First change. The gate cannot
+   see the case, because every fixture section stores a universal. `controls.test.ts`'s empty-record test pins it, and
+   the reason sits beside `switchControls`.
+2. **Dev, 2026-09-27 — two checks gained the controls they lacked (standing rule 2).**
+   - The Partition row's "never in a ring" is now asserted directly: no Home section's ring holds the decoy, and the
+     same-category control ring does.
+   - The site doc's byte-identity now has a control: a finished session that a stray write reached must fail it.
 
 ## Design Notes
 
@@ -191,7 +203,7 @@ Intel Core i5-6600K with 4 cores).**
 
 ```
 leaving `from`:  record = every live value `from` declares, in controls and in darkOverrides
-                 parked[from] = record, or delete parked[from] when it is empty
+                 parked[from] = record, kept even when it is empty (Spec Change Log 1)
                  remove from the live maps what `to` does not declare
 arriving at `to`: if parked[to] exists, for every name `to` declares:
                     take it from parked[to]; if parked[to] lacks it and `from` declares it, remove it (default)
@@ -255,6 +267,73 @@ screen-reader walk:
 - `env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) node tools/probe/run-verify-controls.cjs`
   against `https://app.inflozo.com`: the ring walk's new step passes with 0 FAIL, the throwaway account is deleted, and
   the user count is unchanged.
+
+**Results (Dev, 2026-09-27, Node 24.18.1; every count is a run's own output, not restated).**
+
+- **The gate on the baseline rule first.** `play-loop.test.ts` was run while `switchControls` was still as built at
+  5.11: 3 pass, 2 fail.
+  - Back-to-the-start failed 354 times on 97 of 100 seeds (3,900 moves over 40 sections). Each failure names its seed,
+    section and setting — e.g. *seed 1, section-11 (Controls sample — a banded pair — section 11): back on controls/2,
+    its controls are not as it started — icons "off" → unset, image "top" → unset*.
+  - Round the ring failed from `controls/1` (icons, image) and `controls/3` (rule).
+  - The stored-value, untouched, partition and as-built checks found nothing: nothing was ever deleted, as planning
+    found.
+  - Re-run at the Dev hand-back with HEAD's `controls.ts` put back for the run: the same 354 failures and the same two
+    wraps. The file was then restored and compared byte for byte (`cmp`).
+- **The gate on R-205:** 5 pass, 0 fail — *100 seeds, 3900 moves over 40 sections: 0 failures*. Every check has a
+  control, and each control is reported failing the check it targets:
+  - a switch that drops remembered records → the stored-value check, 5,345 times on 100 of 100 seeds;
+  - a same-category ring → the partition check, 1,684 times, e.g. *its Shuffle moved controls/2 → controls/4, the
+    decoy*;
+  - the rule as built at 5.11 → back-to-the-start, 354 times on 97 of 100 seeds, and round the ring from `controls/1`
+    and `controls/3`;
+  - a switch that also rewrites the section's data → the untouched check, 700 times;
+  - a ring that is the whole library → *a ring of one changed*, 2,100 times;
+  - a stray write to the site doc → *seed 1: the site doc changed (R-161)* (change log 2).
+  - The fixture also asserts that no Home section's ring holds the decoy, while the same-category ring does (change
+    log 2).
+- **The rule's own tests, each seen red without its fix.**
+  - Against the 5.11 rule, `controls.test.ts`'s new round-the-ring, changed-on-the-way and empty-record tests fail.
+  - Against the old live-only `clearDarkOverrides`, both Clear tests in `doc-edit.test.ts` fail.
+  - The first-visit test passes on both rules, as it must: FR-D19's arms are unchanged.
+- **The empty record (change log 1).** Run against the sketch's delete-when-empty variant, the gate stays green, because
+  its fixture stores a universal on every section and no record is ever empty. Only `controls.test.ts` goes red: its
+  empty-record test, and the two record-shape tests that now expect an empty record kept (a name neither design
+  declares; junk in the stored maps). That is why the empty-record test exists.
+- **`pnpm check`** — exit 0 on the final tree: lint, typecheck (the gate included), every package test and
+  `check-snapshots: PASS`. The gate and the new runtime tests are in its output.
+- **`pnpm keyboard`.**
+  - The FR-D19 stop with Image position, run alone on the baseline rule, twice (the subagent's run, then the hand-back's):
+    1 failed, *a SHARED setting comes back exactly as it was left too (R-205) — Expected: "Side", Received: "Top"*
+    (`journey.spec.mjs:1030`).
+  - After R-205, the whole gate: **100 passed** (3.9 m), the FR-D19 stop among them.
+- **`git diff --stat 3361bb6aef749d5a0d559ba976133e3535b717fc HEAD -- supabase`** is empty, and so is the working tree
+  against the baseline: no Schema phase.
+- **`python3 tools/doc-audit.py --check`**, twice — PASS; the first run regenerated INDEX and the story board.
+- **The deployed walk BEFORE the push, as the control for its new check.** `run-verify-controls.cjs` against
+  `https://app.inflozo.com` at `2973a798` (`dpl_aCdwAbbKnCPodVp7FBG7ZA8NRhai`, the rule as built at 5.11): **113 PASS,
+  1 FAIL**. The one FAIL is the new check, *ring — R-205: … Image position is Side after the long way round* →
+  `{"root":"cx","attr":"top","panel":"Top"}`. The new step-7 control (Alignment Centre, Image position Side, Card tint
+  Strong and the typed heading) passed. So did every step after the put-back to Top: the DW-209 wheel, Shuffle's seat
+  and the Remix walk. Account deleted, HTTP 200, users 13 → 13.
+
+**Real infrastructure** (R-82) — what this Dev phase hit and what each returned (keys by variable name only):
+
+- **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`):
+  - A read-only census of `project_templates` through PostgREST: HTTP 200, 19 template rows across 6 projects and 33
+    sections. None holds a `parkedControls` record (12 carry the key, every one empty). The designs in use are `a1/1`,
+    `a17/1`, `a22/1`, `a24/1` and `a4/13`, each a ring of one. So no record written under the 5.11 rule exists for R-205
+    to read differently. The census's control: the same counter over one synthetic record counts 1 of 1.
+  - The walk's throwaway account, through the Auth Admin API: created, then deleted with HTTP 200, users 13 → 13.
+- **`app.inflozo.com/controls`** — the walk above, at `2973a798`.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — production before the push is
+  `dpl_aCdwAbbKnCPodVp7FBG7ZA8NRhai`, READY at `2973a798`.
+- **GitHub Actions** (`GITHUB_TOKEN`) — CI run 36314380832 at `2973a798`: `check`, `rls` and `deploy` success. The
+  Render matrix run 36314380762: success.
+- **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo. This story calls no Ghost API, sends no email and
+  bills nothing.
+- **After the push** — CI and the Vercel deployment at the Dev commit, the same walk expecting 0 FAIL, then the owner's
+  manual test: recorded by the next Dev commit.
 
 ## Owner's manual test
 

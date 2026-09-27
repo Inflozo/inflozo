@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { clearDarkOverrides, parseDoc } from '@inflozo/section-runtime'
+import { clearDarkOverrides, holdsDarkOverride, parseDoc } from '@inflozo/section-runtime'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, settingsPath } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
@@ -111,7 +111,9 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
     }
     let changed = false
     for (const instance of doc.instances) {
-      if (Object.keys(instance.darkOverrides).length === 0) continue
+      // Story 5.23 (R-205): a section whose override is only REMEMBERED, against a design it has left, is cleared too —
+      // or the override would come back the day the section returns to that design
+      if (!holdsDarkOverride(instance)) continue
       const next = clearDarkOverrides(doc, instance.instanceId)
       // a sentence here would mean the instance left the doc between two lines of this loop
       if (typeof next === 'string') continue

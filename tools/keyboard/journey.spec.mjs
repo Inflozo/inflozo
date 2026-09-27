@@ -944,6 +944,8 @@ async function selectRinged(page) {
 const counter = (page) => page.locator('#editor-design-count')
 const tintRow = (page) => page.locator('#editor-controls [id$="-control-tint"]')
 const tintValue = (page) => tintRow(page).locator('[role="radio"][aria-checked="true"]').innerText()
+const imageRow = (page) => page.locator('#editor-controls [id$="-control-image"]')
+const imageValue = (page) => imageRow(page).locator('[role="radio"][aria-checked="true"]').innerText()
 
 test('R-145: `]` moves to the next design and announces its position, `[` comes back', async ({ page }) => {
   const canvas = await open(page)
@@ -1000,9 +1002,24 @@ test('FR-D19: a setting only the design you LEAVE has is parked, and comes back 
   const chosen_ = await tintValue(page)
   expect(chosen_, 'the control really changed, or nothing below is parked').not.toBe(was)
 
+  // STORY 5.23 (R-205) — AND A SETTING THE NEXT DESIGN SHARES: Image position, which the second design declares and the
+  // third does not. As built at 5.11 it travelled on to the second design and was put aside against IT when the third
+  // lacked it, so the first came back on its default; every design now remembers itself, so it comes back as it was left
+  const layout = page.locator('#editor-controls button[id$="-group-layout"]')
+  if ((await layout.getAttribute('aria-expanded')) === 'false') {
+    await layout.focus()
+    await page.keyboard.press('Enter')
+  }
+  const imageWas = await imageValue(page)
+  await imageRow(page).locator('[role="radio"][tabindex="0"]').focus()
+  await page.keyboard.press('ArrowRight')
+  const imageChosen = await imageValue(page)
+  expect(imageChosen, 'Image position really changed, or nothing below is remembered').not.toBe(imageWas)
+
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press(']')
   await expect(tintRow(page), 'the design you moved to does not declare it, so the row is gone').toHaveCount(0)
+  await expect(imageRow(page), 'the design you moved to SHARES Image position, so its row stays').toHaveCount(1)
 
   // THE LONG WAY ROUND: a parked value must survive an INTERMEDIATE design, which is why the ring holds three
   const length = Number((await counter(page).innerText()).match(/of (\d+)/)[1])
@@ -1010,6 +1027,7 @@ test('FR-D19: a setting only the design you LEAVE has is parked, and comes back 
   await expect(counter(page)).toHaveText(`1 of ${length}`)
   await expect(tintRow(page)).toHaveCount(1)
   expect(await tintValue(page), 'the parked value must come back exactly as it was left').toBe(chosen_)
+  expect(await imageValue(page), 'a SHARED setting comes back exactly as it was left too (R-205)').toBe(imageChosen)
 })
 
 test("EXPERIENCE.md:503 — `← →` cross the thumbnail strip, mirroring `[` and `]`", async ({ page }) => {

@@ -173,6 +173,24 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     leaving a design records all its values against it, a return by any route restores them exactly, first visits still
     carry and default, and Clear dark overrides clears what is remembered (prototyped: 0 of 12,000). The PRD's FR-D19,
     `epics.md`, `EXPERIENCE.md`'s Design picker row and the register carry it; 5.23's Dev builds it.
+  - **Story 5.23's Dev (2026-09-27): R-205 is `switchControls`'s one rule, and the gate is `apps/web/play-loop.test.ts`.**
+    Leaving a design records EVERY value it declares, light and dark, against its id; a return restores that record
+    exactly — a carried value it lacks goes back to the default it was left at, and is in the leaving design's record by
+    then, so nothing is lost — and clears it; a first visit is FR-D19's three arms, unchanged. **An EMPTY record is kept**:
+    a design left at its defaults comes back at them, where dropping it (the planning sketch's "delete when empty") would
+    read the return as a first visit and carry — the one case R-205's "always" would still miss, and the one the gate's
+    fixture cannot see (every section stores a universal), so `controls.test.ts` pins it. `clearDarkOverrides` empties
+    every record's dark map too, and `holdsDarkOverride` (live or remembered) is what Theme settings' Clear visits; the row,
+    the `⋯` item, the moon and D6a's count still ask what is IN FORCE, so a project whose overrides are all remembered reads
+    "Nothing to clear" until a section returns to its design — unreachable while every shipped ring is one design, and
+    DW-286's for Story 9.1, the first shipped ring. The
+    gate runs inside `pnpm check`: the harness's library plus an in-memory decoy (the next free `controls/n`, `post.hbs`
+    alone), Home's 40 sections cycling every design offered there, 100 seeds of 20 Shuffles and a Remix through the
+    editor's own `ringFor`, `shuffleTo`, `switchDesign`, `remixPicks`, `remixFold` and `designate`, and its checks. Every
+    check has a control that the gate reports failing. The spec names three: a switch dropping records, a same-category
+    ring that lands on the decoy, and the rule as built at 5.11, kept in the test. Dev added one for each remaining check,
+    the site doc's byte-identity included. On the 5.11 rule the gate failed back-to-the-start on 97 of 100 seeds; on
+    R-205, none.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`

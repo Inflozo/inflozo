@@ -119,6 +119,8 @@ export type { DocInstance, ProjectDoc } from './doc-schema.ts'
 export {
   clearDarkOverrides,
   darkOverrideCount,
+  // Story 5.23 (R-205) — a dark override held anywhere, remembered ones included: what the project-level Clear visits
+  holdsDarkOverride,
   duplicateSection,
   insertSection,
   isDesigned,

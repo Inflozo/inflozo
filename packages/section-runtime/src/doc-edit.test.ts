@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import { UNIVERSALS } from '@inflozo/library'
 import type { ControlEntry } from './controls.ts'
 import {
-  clearDarkOverrides, darkOverrideCount, duplicateSection, insertSection, isDesigned, moveSection, removeSection,
-  renameSection, setHidden, setMemberVisibility, switchDesign,
+  clearDarkOverrides, darkOverrideCount, duplicateSection, holdsDarkOverride, insertSection, isDesigned, moveSection,
+  removeSection, renameSection, setHidden, setMemberVisibility, switchDesign,
 } from './doc-edit.ts'
 import { parseDoc, type DocInstance, type ProjectDoc } from './doc-schema.ts'
 
@@ -263,7 +263,8 @@ test('switchDesign: the one instance takes the new design, and carry / park / de
   assert.equal(i.designId, 'a17/2')
   assert.equal(i.controls['both'], 'b', 'carried')
   assert.equal(i.controls['only1'], undefined, 'parked')
-  assert.deepEqual(i.parkedControls, { 'a17/1': { controls: { only1: 'y' }, darkOverrides: { only1: 'x' } } })
+  // R-205: remembered against a17/1 with everything else a17/1 was left with, the carried `both` included
+  assert.deepEqual(i.parkedControls, { 'a17/1': { controls: { both: 'b', only1: 'y' }, darkOverrides: { only1: 'x' } } })
   assert.equal(i.controls['only2'], undefined, 'defaulted, which means nothing is stored for it')
 })
 
@@ -284,7 +285,43 @@ test('switchDesign: the round trip restores exactly, and clears the record', () 
   const [i] = home_.instances as [DocInstance]
   assert.equal(i.controls['only1'], 'y')
   assert.equal(i.darkOverrides['only1'], 'x')
-  assert.deepEqual(i.parkedControls, {})
+  assert.equal(i.parkedControls['a17/1'], undefined, 'the record is cleared')
+  assert.deepEqual(i.parkedControls, { 'a17/2': { controls: { both: 'b' }, darkOverrides: {} } }, 'and a17/2 remembers what it was left with (R-205)')
+})
+
+/* ─── Story 5.23 — R-205's Clear: what a section REMEMBERS is cleared with what it shows ────────────────────────
+   The row and the `⋯` item are one confirm in `editor.tsx` calling `clearDarkOverrides` (`dark-mode.test.ts` holds that
+   wiring); Theme settings' project-level Clear visits every section `holdsDarkOverride` names, then calls the same. */
+
+test('R-205 — a cleared section never gets a dark override back when it returns to the design that remembered one', () => {
+  // `only1`'s dark value is remembered against a17/1 once the section is on a17/2; a live one there too, on the
+  // mode-scoped universal, so the row and the `⋯` item — which ask what is IN FORCE — offer the clear at all
+  const away = ok(switchDesign(ringDoc(), 'grid', 'a17/2', RING))
+  const live = { [universal().name]: universal().values[universal().values.length - 1] }
+  const both: ProjectDoc = { ...away, instances: away.instances.map((i) => ({ ...i, darkOverrides: { ...i.darkOverrides, ...live } })) }
+  assert.deepEqual(both.instances[0]?.parkedControls['a17/1']?.darkOverrides, { only1: 'x' }, 'remembered, not live')
+  const cleared = ok(clearDarkOverrides(both, 'grid'))
+  const [i] = cleared.instances as [DocInstance]
+  assert.deepEqual(i.darkOverrides, {})
+  assert.deepEqual(i.parkedControls['a17/1']?.darkOverrides, {}, 'the remembered dark value goes too')
+  assert.deepEqual(i.parkedControls['a17/1']?.controls, both.instances[0]?.parkedControls['a17/1']?.controls, 'the light values it remembers stay')
+  assert.deepEqual(parseDoc(cleared, 'home'), cleared, 'and the doc still parses')
+  // BACK ON THE DESIGN THAT REMEMBERED IT: no dark override comes back — and the light value still does
+  const [back] = ok(switchDesign(cleared, 'grid', 'a17/1', RING)).instances as [DocInstance]
+  assert.deepEqual(back.darkOverrides, {})
+  assert.equal(back.controls['only1'], 'y')
+  // CONTROL: without the clear, the same return brings the dark value back — so the assertion above can fail
+  const [kept] = ok(switchDesign(both, 'grid', 'a17/1', RING)).instances as [DocInstance]
+  assert.equal(kept.darkOverrides['only1'], 'x')
+})
+
+test('R-205 — holdsDarkOverride: a live override, a remembered one, and none — what the project-level Clear visits', () => {
+  const away = ok(switchDesign(ringDoc(), 'grid', 'a17/2', RING)).instances[0]!
+  assert.deepEqual(away.darkOverrides, {}, 'nothing live, so nothing is in force for the row or the `⋯` item')
+  assert.equal(holdsDarkOverride(away), true, 'but it holds one, remembered against a17/1')
+  assert.equal(holdsDarkOverride(ringDoc().instances[0]!), true, 'a live one')
+  assert.equal(holdsDarkOverride(home().instances[0]!), false, 'none at all')
+  assert.equal(holdsDarkOverride(ok(clearDarkOverrides(doc(away), 'grid')).instances[0]!), false, 'and none once cleared')
 })
 
 test('switchDesign: a design OUTSIDE the ring writes nothing and answers a sentence', () => {

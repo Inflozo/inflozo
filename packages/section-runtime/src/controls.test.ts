@@ -800,9 +800,10 @@ test('a control BOTH designs declare carries its value, in light and in dark', (
   const next = switchControls(withId(d1), withId(d2), state)
   assert.equal(next.controls['align'], 'center')
   assert.equal(next.controls['columns'], '4')
-  // a universal is declared by every design, so it can never park
+  // a universal is declared by every design, so it always carries
   assert.equal(next.darkOverrides['bg'], 'contrast')
-  assert.deepEqual(next.parkedControls, {})
+  // R-205: and design 1 REMEMBERS them as it was left, so a change made on design 2 never reaches design 1's own look
+  assert.deepEqual(next.parkedControls, { 'controls/1': { controls: { align: 'center', columns: '4' }, darkOverrides: { bg: 'contrast' } } })
 })
 
 test('a control only the OUTGOING design declares parks against ITS design id, its dark override with it', () => {
@@ -810,7 +811,8 @@ test('a control only the OUTGOING design declares parks against ITS design id, i
   const next = switchControls(withId(d1), withId(d2), state)
   assert.equal(next.controls['tint'], undefined, 'the outgoing design\'s own control is not left on the instance')
   assert.equal(next.darkOverrides['tint'], undefined, 'and neither is its dark override (AD-30)')
-  assert.deepEqual(next.parkedControls, { 'controls/1': { controls: { tint: 'strong' }, darkOverrides: { tint: 'soft' } } })
+  // R-205: parked against design 1 beside everything else design 1 was left with
+  assert.deepEqual(next.parkedControls, { 'controls/1': { controls: { tint: 'strong', align: 'center' }, darkOverrides: { tint: 'soft', bg: 'contrast' } } })
   // nothing else moved
   assert.equal(next.controls['align'], 'center')
   assert.equal(next.darkOverrides['bg'], 'contrast')
@@ -829,13 +831,14 @@ test('THE ROUND TRIP: 1 → 2 → 3 → 1 restores every parked value exactly, d
   assert.equal(resolveControls(d2, one.controls)['tint'], undefined)
   // THE INTERMEDIATE DESIGN: design 3 declares neither, so the record is still design 1's and untouched
   const two = switchControls(withId(d2), withId(d3), { ...one })
-  assert.deepEqual(two.parkedControls['controls/1'], { controls: { tint: 'strong', rule: 'none' }, darkOverrides: { tint: 'soft' } })
+  assert.deepEqual(two.parkedControls['controls/1'], { controls: { tint: 'strong', rule: 'none', align: 'center' }, darkOverrides: { tint: 'soft' } })
   // AND HOME
   const back = switchControls(withId(d3), withId(d1), { ...two })
   assert.equal(back.controls['tint'], 'strong')
   assert.equal(back.controls['rule'], 'none')
   assert.equal(back.darkOverrides['tint'], 'soft')
-  assert.deepEqual(back.parkedControls, {}, 'a restore clears the record, so a doc cannot keep a stale second copy')
+  assert.equal(back.parkedControls['controls/1'], undefined, 'a restore clears the record, so a doc cannot keep a stale second copy')
+  assert.deepEqual(Object.keys(back.parkedControls).sort(), ['controls/2', 'controls/3'], 'and the designs passed through remember themselves (R-205)')
   assert.equal(back.controls['align'], 'center', 'and the carried control never left')
 })
 
@@ -843,7 +846,8 @@ test('a name NEITHER design declares is left exactly where it is — it is a thi
   const next = switchControls(withId(d2), withId(d3), { controls: { unknownName: 'x' }, darkOverrides: { alsoUnknown: 'y' } })
   assert.equal(next.controls['unknownName'], 'x')
   assert.equal(next.darkOverrides['alsoUnknown'], 'y')
-  assert.deepEqual(next.parkedControls, {})
+  // and design 2, which held nothing of its own, is remembered at its defaults — an empty record, never the stranger's values
+  assert.deepEqual(next.parkedControls, { 'controls/2': { controls: {}, darkOverrides: {} } })
 })
 
 test('switching to the design already in force changes nothing at all', () => {
@@ -860,13 +864,76 @@ test('a restored value wins over a carried one, and it happens once', () => {
   const changed: ControlState = { ...on3, controls: { ...on3.controls, rule: 'line' } }
   const home_ = switchControls(withId(d3), withId(d1), changed)
   assert.equal(home_.controls['rule'], 'none', 'the value design 1 was left with is what design 1 gets back')
-  assert.deepEqual(home_.parkedControls, {})
+  assert.equal(home_.parkedControls['controls/1'], undefined, 'once: its record is cleared')
+  // R-205: and the 'line' set on design 3 is design 3's, so design 3 comes back as IT was left
+  assert.deepEqual(home_.parkedControls['controls/3'], { controls: { rule: 'line' }, darkOverrides: {} })
 })
 
 test('junk in the stored maps is ignored rather than thrown, as every other read of a stored record is', () => {
   const next = switchControls(withId(d1), withId(d2), { controls: 'nonsense' as unknown as Record<string, unknown>, parkedControls: { 'controls/1': null as unknown as { controls: Record<string, unknown>; darkOverrides: Record<string, unknown> } } })
   assert.deepEqual(next.controls, {})
-  assert.deepEqual(next.parkedControls, {})
+  // the junk record is replaced by design 1's own, which held nothing
+  assert.deepEqual(next.parkedControls, { 'controls/1': { controls: {}, darkOverrides: {} } })
+})
+
+// ─── Story 5.23 — R-205: every design remembers itself ──────────────────────────────────────────────────────
+//
+// The fixture ring again: `icons` and `image` are declared by designs 1 and 2 and not by 3, `rule` by 1 and 3 and not by
+// 2, and `columns` by all three — so a setting SHARED by two designs is a real declaration here, not a mock.
+
+/** `]` from design 1 round the whole ring and home, through the one rule. */
+const roundTheRing = (state: ControlState): ControlState => {
+  const ring = [d1, d2, d3, d1]
+  return ring.slice(1).reduce<ControlState>((s, to, n) => ({ ...s, ...switchControls(withId(ring[n]!), withId(to), s) }), state)
+}
+
+test('R-205 — ROUND THE RING: settings the next design SHARES come back exactly as they were left, not on their defaults', () => {
+  // the matrix's row: Show icons Off and Image position Side on design 1, then `]` three times. As built at 5.11 both
+  // travelled on to design 2, were parked against IT when design 3 lacked them, and design 1 came back On and Top
+  const home_ = roundTheRing({ controls: { icons: 'off', image: 'side' } })
+  assert.equal(home_.controls?.['icons'], 'off')
+  assert.equal(home_.controls?.['image'], 'side')
+  assert.deepEqual([resolveControls(d1, home_.controls)['icons'], resolveControls(d1, home_.controls)['image']], ['off', 'side'], 'and design 1 stamps them')
+  assert.equal(home_.parkedControls?.['controls/1'], undefined, 'its record is cleared on the return')
+  // every kind at once — one design's own with its dark value, shared by two, shared by all — and nothing else stored
+  const all: ControlState = { controls: { tint: 'strong', icons: 'off', image: 'side', rule: 'none', columns: '4' }, darkOverrides: { tint: 'soft', bg: 'contrast' } }
+  const back = roundTheRing(all)
+  assert.deepEqual(back.controls, all.controls)
+  assert.deepEqual(back.darkOverrides, all.darkOverrides)
+})
+
+test('R-205 — CHANGED ON THE WAY: design 1 shows the Columns it was left with, and design 2 the Columns IT was left with', () => {
+  // design 1 at Columns 4; ▶ carries it (a first visit, FR-D19); Columns 2 on design 2; ◀ — the matrix's row
+  const on2 = switchControls(withId(d1), withId(d2), { controls: { columns: '4' } })
+  assert.equal(on2.controls['columns'], '4', 'a first visit carries a shared setting')
+  const back = switchControls(withId(d2), withId(d1), { ...on2, controls: { ...on2.controls, columns: '2' } })
+  assert.equal(back.controls['columns'], '4', 'design 1 is exactly as it was left (R-160, R-205)')
+  const again = switchControls(withId(d1), withId(d2), back)
+  assert.equal(again.controls['columns'], '2', 'and ▶ again shows the 2 design 2 was left with')
+})
+
+test('R-205 — A FIRST VISIT still carries what both declare and defaults what only the new design has (FR-D19)', () => {
+  // design 1 → design 3, never visited
+  const on3 = switchControls(withId(d1), withId(d3), { controls: { columns: '4', rule: 'none', icons: 'off' }, darkOverrides: { bg: 'contrast', tint: 'soft' } })
+  assert.equal(on3.controls['columns'], '4', 'shared by both: carried')
+  assert.equal(on3.controls['rule'], 'none', 'shared by both: carried')
+  assert.equal(on3.darkOverrides['bg'], 'contrast', 'a dark value carries with its control')
+  assert.equal(on3.controls['icons'], undefined, 'design 3 does not declare it: gone from the live maps')
+  assert.equal(on3.darkOverrides['tint'], undefined)
+  const stacking = d3.controlSchema.find((c) => c.name === 'stack')
+  assert.ok(stacking, 'design 3 declares a control of its own')
+  assert.equal(on3.controls['stack'], undefined, 'only design 3 has it: nothing is stored')
+  assert.equal(resolveControls(d3, on3.controls)['stack'], stacking.default, 'so it takes its own default')
+})
+
+test('R-205 — a design left with NOTHING stored comes back at its defaults, never with a value set on the design after it', () => {
+  // the record is kept even when empty: design 1 was left at its defaults, and that is what "as it was left" means on return
+  const on2 = switchControls(withId(d1), withId(d2), {})
+  assert.deepEqual(on2.parkedControls, { 'controls/1': { controls: {}, darkOverrides: {} } })
+  const back = switchControls(withId(d2), withId(d1), { ...on2, controls: { columns: '2' }, darkOverrides: { bg: 'contrast' } })
+  assert.equal(back.controls['columns'], undefined, 'design 1 shows its own default Columns, as it was left')
+  assert.equal(back.darkOverrides['bg'], undefined, 'and follows its light ground in dark, as it was left')
+  assert.deepEqual(back.parkedControls['controls/2'], { controls: { columns: '2' }, darkOverrides: { bg: 'contrast' } }, 'both are design 2\'s now — nothing is lost')
 })
 
 test('FR-D13: the panel reports what THIS design draws, and the items past it are untouched', () => {

@@ -23,6 +23,8 @@
 // sits in a closed accordion opens it, and step 16 answers the confirm.
 // Story 5.19 re-shaped step 15's Data group into P0·5's: "Show" is **Count** (FR-H2, R-170), the Ghost-sourced card's
 // grey list went, and a **Source** row heads the group — read here against the vocabulary's one list of its words.
+// Story 5.23 (R-205) — every design remembers itself — adds Image position to the ring walk's long way round: a setting
+// design 2 SHARES and design 3 lacks, which the rule as built at 5.11 brought back on its default.
 const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
 const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
 const APP = 'https://app.inflozo.com'
@@ -524,9 +526,11 @@ async function main() {
       (await block511.count()) === 1 && (await counter511.innerText()).trim() === '1 of 3' && (await block511.locator('[data-design-tile]').count()) === 3,
       `${(await counter511.innerText()).trim()} · ${await block511.locator('[data-design-tile]').count()} tiles`)
 
-    // the owner's step 7 — change two settings and type something recognisable
+    // the owner's step 7 — change the settings and type something recognisable. Story 5.23 (R-205) adds Image position,
+    // a setting design 2 SHARES and design 3 lacks: the path the rule as built at 5.11 lost on the long way round
     await openGroup('Layout')
     await page.getByRole('radio', { name: 'Centre', exact: true }).first().click()
+    await page.getByRole('radio', { name: 'Side', exact: true }).first().click()
     await openGroup('Style')
     await page.getByRole('radio', { name: 'Strong', exact: true }).first().click()
     await openGroup('Content')
@@ -535,9 +539,9 @@ async function main() {
     await page.keyboard.press('ControlOrMeta+a')
     await page.keyboard.type('Ring words')
     await page.waitForTimeout(300)
-    check('ring — the control: Alignment is Centre, Card tint is Strong and the heading is the typed words',
-      (await canvas()).attrs['data-align'] === 'center' && (await canvas()).attrs['data-tint'] === 'strong' && (await canvas()).title === 'Ring words',
-      JSON.stringify({ align: (await canvas()).attrs['data-align'], tint: (await canvas()).attrs['data-tint'], title: (await canvas()).title }))
+    check('ring — the control: Alignment is Centre, Image position is Side, Card tint is Strong and the heading is the typed words',
+      (await canvas()).attrs['data-align'] === 'center' && (await canvas()).attrs['data-image'] === 'side' && (await canvas()).attrs['data-tint'] === 'strong' && (await canvas()).title === 'Ring words',
+      JSON.stringify({ align: (await canvas()).attrs['data-align'], image: (await canvas()).attrs['data-image'], tint: (await canvas()).attrs['data-tint'], title: (await canvas()).title }))
     const tintWas511 = await tintValue511()
 
     // the owner's step 8 — ▶ swaps the design in place
@@ -567,6 +571,16 @@ async function main() {
     check('ring — UX-DR5: ▶ at the end WRAPS to the first, and the parked setting comes back EXACTLY as it was left, even the long way round',
       (await rootClass()) === 'cx' && (await counter511.innerText()).trim() === '1 of 3' && (await tintValue511()) === tintWas511 && (await canvas()).attrs['data-tint'] === 'strong' && (await drawnHeading()) === 'Ring words',
       JSON.stringify({ root: await rootClass(), tint: await tintValue511(), was: tintWas511, attr: (await canvas()).attrs['data-tint'] }))
+    // STORY 5.23 (R-205) — and a SHARED setting comes back exactly too. As built at 5.11 Image position travelled on to
+    // design 2, was put aside against IT when design 3 lacked it, and design 1 came back on its default, Top
+    const image511 = page.locator('#section-controls [id$="-control-image"] [role="radio"][aria-checked="true"]')
+    check('ring — R-205: a setting the next design SHARES comes back exactly as it was left — Image position is Side after the long way round, on the section root and in the panel',
+      (await rootClass()) === 'cx' && (await canvas()).attrs['data-image'] === 'side' && (await image511.textContent())?.trim() === 'Side',
+      JSON.stringify({ root: await rootClass(), attr: (await canvas()).attrs['data-image'] ?? null, panel: (await image511.textContent())?.trim() ?? null }))
+    // put back to Top, so every later step walks the page it was written against (DW-209's wheel below needs the frame's range)
+    await openGroup('Layout')
+    await page.getByRole('radio', { name: 'Top', exact: true }).first().click()
+    await page.waitForTimeout(300)
     // and ◀ is the same ring backwards
     await page.locator('[data-design-step="-1"]').click()
     await page.waitForTimeout(500)

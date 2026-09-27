@@ -103,3 +103,11 @@ test('R-133 — two entry points, ONE confirm, and it opens on Cancel (R-115, UX
   assert.match(layers, /row\.darkOverride \? \[\{ label: 'Clear dark overrides'/)
   assert.doesNotMatch(layers, /Clear dark overrides'[^\n]*greyed/i)
 })
+
+test('R-205 — Theme settings\' Clear visits a section whose dark override is only REMEMBERED, through the one clear', () => {
+  // the runtime's `doc-edit.test.ts` proves the predicate and the clear; this holds the third door to them
+  const actions = readFileSync('app/(app)/app/(authed)/projects/[id]/settings/actions.ts', 'utf8')
+  assert.match(actions, /if \(!holdsDarkOverride\(instance\)\) continue/, 'a section is skipped only when it holds no override anywhere')
+  assert.match(actions, /clearDarkOverrides\(doc, instance\.instanceId\)/)
+  assert.doesNotMatch(actions, /Object\.keys\(instance\.darkOverrides\)/, 'the live map alone would miss a remembered override')
+})
