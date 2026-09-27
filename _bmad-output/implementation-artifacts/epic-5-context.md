@@ -34,7 +34,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - Story 5.21: The two Ghost-surface shims on the canvas
 - Story 5.22: The editor's responsive floor
 - Story 5.23: The play-loop gate
-- Story 5.23a: The editor redraws only what changed, at 60 fps (R-206)
+- Story 5.23a: The canvas redraws only what changed (R-206, R-208)
+- Story 5.23b: The editor's panels redraw only what changed, at 60 fps (R-208)
 - Story 5.24: The deferred-work sweep at the end of Epic 5 (R-207)
 
 ## Requirements & Constraints
@@ -315,7 +316,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     viewport (`prd.md:569`). A device change is a STYLE change, never a repaint — the selection, the stamps, the
     inline caret and the scroll survive it, and every section root is the same node. The device is session state like
     the mode: no column, no migration, **no Schema phase**. `1` `2` `3` stay Story 5.9's and the `⋯` collapse at 834
-    stays Story 5.22's; FR-D14's fps gate stays Story 5.23's (Story 5.23a's since R-206), while its **no-cap** and **5 s lockup bound** are 5.7's.
+    stays Story 5.22's; FR-D14's fps gate stays Story 5.23's (Story 5.23a's since R-206, Story 5.23b's since R-208), while its **no-cap** and **5 s lockup bound** are 5.7's.
   - **R-138 · R-139 (owner, 2026-09-19, Story 5.7's Q2 and its Review) — the chip and the ground.** The invariant is
     that the viewport chip NEVER OVERLAPS the page card, on any device; measured on the deployed editor, a height-bound
     card rose under a chip pinned to the stage's corner (Tablet by 5px, folded Desktop to within 4px), because the chip
@@ -916,8 +917,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     does not pass NFR-1's trace**: at 4× it drops 7.4–8.9% of vsyncs (32% today; the limit 5%) with long tasks of 50–88 ms,
     because every change still re-renders the whole editor — React's reconciliation about 53 ms, `EditorShell`'s body
     9–15 ms, the chrome's placement loops forcing layout — and a session's first hover (the pill and the chrome layers
-    mounting) is one 193 ms task. Where that work goes is 5.23a's **Question 1, open** (recommended: a new Story 5.23b
-    carries the 60 fps pass; 5.23a ships the canvas and records the trace).
+    mounting) is one 193 ms task. **Ruled at 5.23a's Question 1 as R-208** (owner, 2026-09-27): split — 5.23a, renamed
+    *The canvas redraws only what changed*, ships the keyed canvas and records the trace; a new Story 5.23b, straight
+    after, makes the editor's panels redraw only what changed and carries the 60 fps pass; Epic 5 exits when 5.23b's
+    trace passes, and Story 5.24 runs after 5.23b.
 
 ## Technical Decisions
 
@@ -1191,5 +1194,5 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `data-items-limit`; DW-215 → Story 5.23a (R-206); DW-188, DW-207, DW-219, DW-220 → Story 5.24 (R-207). Fifteen
     more open entries name only finished Epic 5 stories (DW-102, 104, 122, 129, 165, 171, 175, 197, 202, 204, 206, 240,
     250, 278, 281), and DW-203's two owners are both done; DW-165, 197 and 206 are already fixed and only the ledger
-    lags. **R-207** (owner, 2026-09-27): Story 5.24, after 5.23a, sweeps EVERY open entry in the ledger, not only Epic
-    5's, and closes whatever it can; the sixteen orphans now name it.
+    lags. **R-207** (owner, 2026-09-27): Story 5.24, after 5.23a (after 5.23b since R-208), sweeps EVERY open entry in
+    the ledger, not only Epic 5's, and closes whatever it can; the sixteen orphans now name it.

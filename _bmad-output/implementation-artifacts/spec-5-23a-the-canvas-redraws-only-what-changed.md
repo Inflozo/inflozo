@@ -1,5 +1,5 @@
 ---
-title: 'Story 5.23a — The editor redraws only what changed, at 60 fps'
+title: 'Story 5.23a — The canvas redraws only what changed'
 type: 'feature'
 created: '2026-09-27'
 status: 'ready-for-dev'
@@ -16,7 +16,8 @@ redrawn, so on a 40-section home page the change lands at once instead of after 
 test computer. Nothing on your screen looks different — every page, panel and setting is exactly as before, and an
 automatic check on every change we push proves the redrawn page is identical to a full redraw, and that one Undo after a
 Remix puts every re-rolled section back. The editor's side panels still redraw in full after each change, which keeps the
-full 60-frames-a-second test just short of its bar — where that last piece of work goes is your Question 1.
+full 60-frames-a-second test just short of its bar; as you ruled (R-208), the next story, 5.23b, makes them redraw only
+what changed and carries that test.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -36,11 +37,10 @@ remixed sections has never been walked in a browser (DW-215).
   repaint is the same walk with nothing to reuse.
 - **Proved mechanically in the keyboard gate** on a 40-section Home the harness builds on request: which nodes survive
   each gesture, and that the canvas equals a full repaint node for node. DW-215 is walked there too.
-- **The 3-second trace is a manual script** (NFR-1), run on this computer at 4× and recorded. The planning prototype
-  says the canvas alone does not clear the bar — the side panels redraw in full on every change (7.4–8.9% of frames
-  dropped against 5%). Where that work goes is **Question 1**; this spec is written to its recommended option: the pass
-  moves to a new Story 5.23b and this story records the result. Ruled option 2, the panel work joins this story and it is
-  re-planned before Dev; ruled option 3, the pass goes to Story 15.4 and this spec stands.
+- **The 3-second trace is a manual script** (NFR-1), run on this computer at 4× before and after, and recorded. The
+  planning prototype says the canvas alone does not clear the bar — every change still re-renders the whole editor
+  (7.4–8.9% of frames dropped against 5%) — so the 60 fps pass is Story 5.23b's, straight after this one (**R-208**, the
+  owner's ruling on Question 1).
 
 ## Boundaries & Constraints
 
@@ -68,7 +68,7 @@ remixed sections has never been walked in a browser (DW-215).
 
 - Never a doc field or a migration — no Schema phase.
 - Never a frame-time gate in CI (NFR-1): the trace is manual; CI gates the mechanism.
-- Never memoize or restructure the editor's panels, Layers or chrome here — that is Question 1's work.
+- Never memoize or restructure the editor's panels, Layers or chrome here — that is Story 5.23b's (R-208).
 - Never author a shipped design (AD-35, R-158) and never edit the design export (R-74).
 
 ## I/O & Edge-Case Matrix
@@ -135,12 +135,12 @@ remixed sections has never been walked in a browser (DW-215).
 - `tools/keyboard/run-keyboard-gate.sh` — the boot pattern (free port, readiness on the harness page, `next-env.d.ts`
   restored) the trace script mirrors with `next build` + `next start`.
 - `tools/probe/run-verify-editor.cjs` step 60 :2862-2908 — plants a 40-section Home on production through the service key,
-  reloads, measures FR-D14's lockup bound; its note names Story 5.23a.
+  reloads, measures FR-D14's lockup bound; its note names Story 5.23b as the fps gate's (R-208).
 - `tools/doc-audit.py` — catalogue rows: `run-verify-editor.cjs` :562, `journey.spec.mjs` :1026; a new file under `tools/`
   needs its own row.
 - `_bmad-output/implementation-artifacts/deferred-work.md:5191` — DW-215.
 
-**Not this story's (Question 1), recorded for whichever story takes it:** the chrome `useLayoutEffect` at :3299-3327
+**Not this story's — Story 5.23b's (R-208), recorded for its planning:** the chrome `useLayoutEffect` at :3299-3327
 re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `place()` and the section pill's own loop
 (`components/controls/section-pill.tsx:129-163`) read geometry every frame; `EditorShell`'s render body; Layers' rows.
 
@@ -170,11 +170,12 @@ re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `plac
   `apps/web/next-env.d.ts` and stops its own server -- NFR-1's gate, never CI's.
 - [ ] `tools/probe/run-verify-editor.cjs` -- step 60, on the planted 40-section Home: ⌥↓ keeps every root and moves one;
   a canvas typing round trip (a word typed into a planted heading, then taken back) and `P` `P`, then `isEqualNode`; the
-  longest task noted; step 60's note names Question 1's owner -- R-82 on production, where the canvas typing path lives.
+  longest task noted -- R-82 on production, where the canvas typing path lives.
 - [ ] `tools/doc-audit.py` -- a row for `tools/perf/fps-trace.mjs`; the journey's and the walk's rows name 5.23a's
   additions -- the gate walks every file under `tools/`.
 - [ ] `_bmad-output/implementation-artifacts/deferred-work.md`, `.../reconcile-designs-decisions.md` -- DW-215 closed with
-  its journey stop; R-206's "⬜ built — Story 5.23a" ticked with what was built and measured -- standing rule 3.
+  its journey stop; R-206's "⬜ built — Story 5.23a" and R-208's 5.23a half ticked with what was built and measured --
+  standing rule 3.
 
 **Acceptance Criteria:**
 
@@ -195,8 +196,8 @@ re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `plac
   `D8 Editor Below 1440.dc.html` as Stories 5.1–5.22 built them — nothing is drawn differently, which the node-for-node
   criterion and every unchanged journey hold.
 - Given `fps-trace.mjs` on this computer, when it runs at 4× and at 1×, then it prints NFR-1's numbers with its controls
-  seen, and the results before and after this story are recorded under Verification — the pass belongs to Question 1's
-  owner (as recommended, Story 5.23b).
+  seen, and the results before and after this story are recorded under Verification — the pass is Story 5.23b's
+  (R-208).
 - Given the change, when the gates run, then `pnpm check`, `pnpm keyboard` and the doc gate are green, CI publishes, and
   no migration exists.
 
@@ -224,7 +225,7 @@ sections by a scratch header). Every scratch edit was reverted and the harness r
 - **Where the rest goes** (a sampled CPU profile mapped through source maps, one Shuffle at 4×): React's reconciliation
   53–56 ms self (a Shuffle, a reorder); `EditorShell`'s own render body 9–15 ms; the chrome placement loops'
   `getBoundingClientRect` 27–40 ms across the 1.2 s window; 31 ms of garbage collection after a press. The first hover of a
-  session — which mounts the pill and the chrome layers — is one 193 ms long task. That is Question 1.
+  session — which mounts the pill and the chrome layers — is one 193 ms long task. That is Story 5.23b's (R-208).
 
 **The walk (the whole of `paint()`'s change):**
 
@@ -322,4 +323,11 @@ tenth of a second — about two hundredths of a second at your computer's normal
 3. **Canvas only, and move the rest to Story 15.4**, the launch performance check. Epic 5 closes on this story alone,
    with the test recorded as it stands. You declined moving the speed work to 15.4 once (R-206, option 3).
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27).** *"Split it. This story ships the canvas fix, proves it, and records the
+3-second test as it stands. A new Story 5.23b, straight after, makes the panels redraw only what changed and carries the
+60 fps pass. Epic 5 closes when 5.23b's test passes. Each story stays one job, the half-second freezes go sooner, and
+5.23b is planned from its own measurement."* Recorded as **R-208**. This story is renamed *The canvas redraws only what
+changed* (its spec file and sprint-status key with it); Story 5.23b, *The editor's panels redraw only what changed, at 60
+fps*, joins `epics.md` and `sprint-status.yaml` straight after it, carrying the 60 fps criterion; the PRD's Epic 5 exit,
+the register (R-206 and R-207 noted), `epic-5-context.md` and `run-verify-editor.cjs`'s notes follow; and Story 5.24 runs
+after 5.23b, since nothing may come between 5.23a and 5.23b.

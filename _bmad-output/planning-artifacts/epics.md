@@ -2453,22 +2453,26 @@ designs share was parked against the second when a third lacked it, so the first
 **And** the ring's surfaces draw exactly what Story 5.11 built; only what a return shows changes.
 
 *The 60 fps criterion that stood here moved to Story 5.23a — **R-206** (owner, 2026-09-27, Question 2): measured at this
-story's planning, every design change or move repainted all 40 sections.*
+story's planning, every design change or move repainted all 40 sections — and on to Story 5.23b with **R-208** (owner,
+2026-09-27, Story 5.23a's Question 1), once the canvas fix alone was measured short of the bar.*
 
 **FRs:** FR-D17 (the gate), FR-D19 (R-205). · **Rulings:** R-160, R-205, R-206. · **Owner test:** yes — the Controls
 review page, where going round the ring now brings every setting back (R-205). · **Verification:** `pnpm check` and
 `pnpm keyboard` in CI; `run-verify-controls.cjs` on production (R-82).
 
-### Story 5.23a: The editor redraws only what changed, at 60 fps
+### Story 5.23a: The canvas redraws only what changed
 
 As a user editing a long page,
 I want a design change or a move to redraw only the section it touches,
-So that the editor stays smooth however many sections the page holds.
+So that the canvas answers at once however many sections the page holds.
 
 *Added straight after Story 5.23 on the owner's word — **R-206** (owner, 2026-09-27, Story 5.23's Question 2): "Its own
 story, 5.23a, straight after this one." Found at 5.23's planning on a production build of the harness with Home at 40
 sections: one design change was a 492–512 ms long task at 4× CPU throttle (131–138 ms at 1×) and one move 436 ms (130
-ms), because every edit repainted every section; a control change, stamped in place, was none.*
+ms), because every edit repainted every section; a control change, stamped in place, was none. **Split by R-208** (owner,
+2026-09-27, this story's Question 1): prototyped at its planning, the keyed canvas took one `]` to a 9–12 ms paint at 4×,
+but NFR-1's trace still dropped 7.4–8.9% of vsyncs, because every change also re-renders the whole editor — so this story
+ships the canvas and records the trace, and the 60 fps pass is Story 5.23b's.*
 
 **Acceptance Criteria:**
 
@@ -2479,23 +2483,54 @@ throttle** (R-206: slower per core than a current mid-tier laptop, so the harder
 a change that alters every section may still repaint the page
 **And** the selection, the hover, inline editing, the running behaviours and every piece of chrome behave exactly as
 they do after a full repaint, and the canvas agrees node for node with a full repaint of the same doc
-**And** the full editing loop on the five pilot sections holds **60 fps**: p95 frame time ≤ 16.7 ms with **no long task
-> 50 ms** across a 3-second trace of drag, reorder, Variant Shuffle and control changes — Shuffle traced on the
-harness's fixture ring (R-158), since every shipped ring is one design, and frame time counted in dropped frames rather
-than in timestamp jitter
 **And** one `⌘Z` after a Remix of several sections restores every one of them, walked on the 40-section page in the
 keyboard gate (DW-215)
+**And** NFR-1's 3-second trace of drag, reorder, Variant Shuffle and control changes is built as a manual script, never
+a CI gate (NFR-1) — Shuffle traced on the harness's fixture ring (R-158), since every shipped ring is one design, and
+frame time counted in dropped frames rather than in timestamp jitter — and run on the development computer at 4× before
+and after this story, its results recorded; **the 60 fps pass is Story 5.23b's (R-208)**.
+
+**FRs:** FR-D14 (the canvas half of the fps gate), NFR-1. · **Rulings:** R-158, R-206, R-208. · **Owner test:** none —
+nothing on screen changes; the keyboard gate and the deployed editor walk hold it. · **Verification:** the keyboard gate
+in CI; the trace on the development computer at 4× CPU throttle, manual-only — a CI number would be noise presented as
+a gate.
+
+### Story 5.23b: The editor's panels redraw only what changed, at 60 fps
+
+*Added straight after Story 5.23a on the owner's word — **R-208** (owner, 2026-09-27, Story 5.23a's Question 1): "Split
+it. This story ships the canvas fix, proves it, and records the 3-second test as it stands. A new Story 5.23b, straight
+after, makes the panels redraw only what changed and carries the 60 fps pass. Epic 5 closes when 5.23b's test passes."
+Found at 5.23a's planning, with the keyed canvas prototyped at 4×: the trace still dropped 7.4–8.9% of vsyncs with long
+tasks of 50–88 ms, because every change re-renders the whole editor — React's reconciliation about 53 ms, `EditorShell`'s
+own render 9–15 ms, the chrome's placement loops forcing layout — and a session's first hover is one 193 ms task. Planned
+from its own measurement, on 5.23a's trace script.*
+
+As a user editing a long page,
+I want a change to redraw only the parts of the editor it touches,
+So that the editor stays smooth however many sections the page holds.
+
+**Acceptance Criteria:**
+
+**Given** the 40-section stress fixture on NFR-1's reference environment — the development computer at 4× CPU throttle
+(R-206)
+**When** a design changes, a section moves, a section is hovered or selected, or a control changes
+**Then** the Layers list, the Controls panel, the rail and the canvas chrome re-render only what the change touched
+**And** the full editing loop on the five pilot sections holds **60 fps**: p95 frame time ≤ 16.7 ms with
+**no long task over 50 ms** across a 3-second trace of drag, reorder, Variant Shuffle and control changes, run by Story
+5.23a's trace script — Shuffle traced on the harness's fixture ring (R-158), frame time counted in dropped frames rather
+than in timestamp jitter
+**And** nothing on screen changes: every keyboard journey and the deployed editor walk pass unchanged
 **And** the trace is a manual script, never a CI gate (NFR-1); Story 15.4 still runs the release gate.
 
-**FRs:** FR-D14 (the fps gate), NFR-1. · **Rulings:** R-158, R-206. · **Owner test:** none — nothing on screen changes;
-the trace, the keyboard gate and the deployed editor walk hold it. · **Verification:** the development computer at 4×
-CPU throttle, manual-only — a CI number would be noise presented as a gate.
+**FRs:** FR-D14 (the fps gate), NFR-1. · **Rulings:** R-158, R-206, R-208. · **Owner test:** none — nothing on screen
+changes; the trace, the keyboard gate and the deployed editor walk hold it. · **Verification:** the development computer
+at 4× CPU throttle, manual-only — a CI number would be noise presented as a gate.
 
 ### Story 5.24: The deferred-work sweep at the end of Epic 5
 
 *Added 2026-09-27 by the owner — **R-207** (Story 5.23's Question 3, option 1, widened): "A sweep story, 5.24, like 3.9
 at the end of Epic 3 … It runs after 5.23a. — Do a complete sweep across all deferred items and close whatever we can
-now."*
+now." Since **R-208** put Story 5.23b straight after 5.23a, it runs after 5.23b.*
 
 As the owner watching a ledger that has only ever grown,
 I want every deferred item that can be finished now to be finished now, across the whole ledger,
@@ -2503,7 +2538,7 @@ So that the list left open is the list that is genuinely blocked, and every item
 
 **Acceptance Criteria:**
 
-**Given** the deferred-work ledger after Story 5.23a
+**Given** the deferred-work ledger after Story 5.23b
 **When** every open entry is triaged — in every epic, not only Epic 5's
 **Then** each one is closed by a change that makes its claim false, closed with its evidence where it is already fixed,
 or left open with a named later story that will really build it — and **no entry is deleted or renumbered**
@@ -2518,7 +2553,7 @@ it touches (R-74). · **Rulings:** R-207. · **Owner test:** yes (the screens it
 closure's evidence on the real services it concerns (R-82).
 
 *Exit:* the play-loop gate green (Story 5.23), and the full editing loop on the five pilot sections at 60 fps on NFR-1's
-reference environment and fixture (Story 5.23a, R-206).
+reference environment and fixture (Stories 5.23a and 5.23b, R-206, R-208).
 
 ---
 

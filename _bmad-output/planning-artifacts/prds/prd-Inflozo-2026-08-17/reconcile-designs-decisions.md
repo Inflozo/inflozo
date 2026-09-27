@@ -4578,6 +4578,8 @@ Epic 5 closes when both stories are green, and this one keeps to 'nothing is los
   - ✅ the ledger — DW-215.
   - ✅ `run-verify-editor.cjs`'s header and step 60, which named Story 5.23 as the fps gate's.
   - ⬜ built — Story 5.23a.
+- *Amended by **R-208** (owner, 2026-09-27): the 60 fps pass moved to a new Story 5.23b, and Epic 5 exits when 5.23,
+  5.23a and 5.23b are green. 5.23a keeps the canvas: a design change replaces one section and a move moves one.*
 
 **R-207 — a sweep story, 5.24, after 5.23a, across the WHOLE deferred-work ledger.** Story 5.23's Create, Question 3,
 ruled **option 1, widened** (owner, 2026-09-27): *"A sweep story, 5.24, like 3.9 at the end of Epic 3. Each item is fixed,
@@ -4603,6 +4605,41 @@ closed with its evidence, or given a named later story, and you test whatever it
   - ✅ `epic-5-context.md`.
   - ✅ the ledger — the sixteen orphaned entries and DW-188, DW-207, DW-219 and DW-220 name Story 5.24.
   - ⬜ built — Story 5.24.
+- *Since **R-208** (owner, 2026-09-27) put Story 5.23b straight after 5.23a, Story 5.24 runs after 5.23b.*
+
+**R-208 — the 60 fps pass moves to a new Story 5.23b: Story 5.23a ships the canvas, 5.23b makes the editor's panels
+redraw only what changed.** Story 5.23a's Create, Question 1, ruled **option 1** (owner, 2026-09-27): *"Split it. This
+story ships the canvas fix, proves it, and records the 3-second test as it stands. A new Story 5.23b, straight after,
+makes the panels redraw only what changed and carries the 60 fps pass. Epic 5 closes when 5.23b's test passes. Each story
+stays one job, the half-second freezes go sooner, and 5.23b is planned from its own measurement."*
+
+- **Why it was a question.** R-206 gave Story 5.23a the canvas fix and then the trace. Prototyped at 5.23a's planning on a
+  production build of the harness with Home at 40 sections, at 4× CPU throttle on the development computer: the canvas
+  keeping a record per section and redrawing only what changed took one `]` from a 488–501 ms long task to a 9–12 ms
+  paint and one ⌥↓ to 4–6 ms, with the canvas equal to a full repaint node for node. But NFR-1's 3-second trace still
+  dropped 7.4–8.9% of vsyncs (32% before; the bar is 5%) with long tasks of 50–88 ms (the bar is 50), because every change
+  also re-renders the whole editor — React's reconciliation about 53 ms, `EditorShell`'s own render 9–15 ms, the chrome's
+  placement loops forcing layout. Where that work went was the owner's to say, as R-206's was.
+- **The rule.**
+  - Story 5.23a is renamed *The canvas redraws only what changed*: the keyed canvas paint, proved node for node in the
+    keyboard gate on a 40-section harness Home, DW-215's Remix and one ⌘Z, and the manual trace script, run and recorded
+    before and after. It does not carry the 60 fps pass.
+  - Story 5.23b, *The editor's panels redraw only what changed, at 60 fps*, comes straight after 5.23a and is planned from
+    its own measurement: the Layers list, the Controls panel, the rail and the chrome re-render only what a change
+    touched, and NFR-1's trace passes at 4× on the development computer.
+  - Epic 5 exits when 5.23, 5.23a and 5.23b are green, amending R-206's "5.23 and 5.23a". Story 5.24 runs after 5.23b,
+    because nothing may come between 5.23a and 5.23b.
+- **Declined.** Option 2, the canvas and the panels in one story; option 3, the rest moved to Story 15.4.
+- Targets:
+  - ✅ this entry, and R-206's and R-207's notes.
+  - ✅ Story 5.23a's spec — Question 1, its title, intent, criteria and file name.
+  - ✅ `epics.md` — Story 5.23's note, Story 5.23a's card (renamed), the new Story 5.23b card, Story 5.24's card and
+    Epic 5's exit line.
+  - ✅ the PRD's Epic 5 exit (§8).
+  - ✅ `sprint-status.yaml` — 5.23a's key renamed, 5.23b added.
+  - ✅ `epic-5-context.md`.
+  - ✅ `run-verify-editor.cjs`'s header and step 60, which named Story 5.23a as the fps gate's.
+  - ⬜ built — Story 5.23a (the canvas) and Story 5.23b (the panels and the 60 fps pass).
 
 ## B · Approved decisions superseded by this session
 
