@@ -150,9 +150,9 @@ The owner ruled all three questions option 1 on 2026-09-27: **R-205** (every des
 Review 1 (2026-09-27; five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
 verifier). Every patch applied the same day; the one decision is Question 4 below.
 
-- [ ] [Review][Decision] The three Clear doors open only on an override IN FORCE, so a section whose only dark override
+- [x] [Review][Decision] The three Clear doors open only on an override IN FORCE, so a section whose only dark override
   is REMEMBERED cannot be cleared from the row, the `⋯` item or Theme settings — the frozen Clear row and its criterion
-  name all three doors; Dev recorded it as DW-286 (Story 9.1) without a ruling. Question 4.
+  name all three doors; Dev recorded it as DW-286 (Story 9.1) without a ruling. Question 4 — ruled option 1 (owner, 2026-09-27): Story 9.1 decides.
 - [x] [Review][Patch] The return path's stranger arm (`!own(kept, name) && leaving.has(name)`) had no test: dropping the
   guard left every test green [packages/section-runtime/src/controls.ts:622] — one test pins it, seen red with the guard
   dropped (61 pass, 1 fail).
@@ -535,4 +535,7 @@ so it is yours to confirm.
 3. **Every door counts them now.** All three offer Clear on a remembered override too. Touches the panel row's and
    the `⋯` item's wording, which have frames (B1a, S6), so it is a design pass inside this story.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27).** *"Confirm DW-286: Story 9.1 decides."* Nothing changes in this story: its
+Clear criterion reads "when a Clear runs, the remembered ones go too", which is built and tested. Story 9.1, the first
+story in which a customer can hold a remembered override, asks how the count and the three doors treat one, in R-83's
+shape with the frames in front of him. DW-286's owner and reason stand as written.

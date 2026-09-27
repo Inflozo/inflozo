@@ -6518,6 +6518,7 @@ origin: Story 5.23's Dev (2026-09-27), R-205. `clearDarkOverrides` now empties e
 owner: Story 9.1 — A1's designs #1–4 are the first shipped ring, so it is the first story in which a customer can hold
   a remembered override. It decides whether "Nothing to clear" names them or the count includes them, which is a D6a
   surface question for the owner in R-83's shape.
+  Confirmed by the owner at Story 5.23's review (option 1, 2026-09-27): Story 9.1 decides.
 location: `apps/web/components/controls/sidebar.tsx` (`darkOverridesInForce`, the row's "Nothing to clear") ·
   `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx` (`n === 0`) ·
   `packages/section-runtime/src/doc-edit.ts` (`darkOverrideCount`, `holdsDarkOverride`)
