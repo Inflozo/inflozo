@@ -3444,7 +3444,13 @@ plain: The planning pages carry "generated on <date>". That date is taken from t
 status: open
 severity: high
 origin: Story 4.6 review (2026-09-14) — executed: run 34823025267 (the Dev push, 08:29 UTC) failed `check` with `STALE — regenerated INDEX.md and INDEX.html`, `STALE: BUILD-BOARD.html`, `STALE: CATEGORY-PROMPTS.html`; `deploy` skipped. The Review commit's own diff of those files is `updated: 2026-09-13 → 2026-09-14` and nothing else; run 34825820806 (the Review push) passed and deployed.
-owner: unowned — needs one. A tooling story, or the next story whose first push of a day fails.
+owner: Story 5.24, the deferred-work sweep (R-207 triages every open entry). *(Story 5.23a's Dev, 2026-09-28: was
+  "unowned — needs one. A tooling story, or the next story whose first push of a day fails." 5.23a was that story; its
+  scope is R-206's and R-208's, so the sweep that already reads this row keeps it.)*
+seen again: Story 5.23a's Dev push `a4d96c37` (2026-09-28 00:12 +0530, the day's first commit): CI run 36341672890
+  failed `check` at `python3 tools/doc-audit.py --check` — `STALE — regenerated INDEX.md and INDEX.html`, `STALE:
+  BUILD-BOARD.html`, `STALE: CATEGORY-PROMPTS.html` — with `deploy` skipped and `pnpm keyboard`, `pnpm check` and `pnpm
+  build` never run. Regenerated locally, the three differ from the commit by `2026-09-27 → 2026-09-28` and nothing else.
 location: tools/doc-audit.py `generate()` (`git log -1 --format=%cs`) · tools/build-board.py:329 · tools/category-prompts.py:382 · tools/story-board.py:1624 · tools/hooks/pre-commit (the one retry)
 reason: each generator stamps `git log -1 --format=%cs`, the date of HEAD. At pre-commit HEAD is the previous
   commit, so the hook regenerates and stages the artefacts with yesterday's date; once the commit lands HEAD

@@ -407,8 +407,15 @@ and the panel's ◀:**
   is `dpl_5wq5VCQZ5wtV9ytkz97MEMaKv76A`, READY at `42b549f7` — the paint as it stood before this story.
 - **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo. This story calls no Ghost API — the keyboard gate's
   read that lands is answered from the bundled sample by the journey itself — sends no email and bills nothing.
-- **After the push:** the CI run, the deployment and step 60 on production's planted Home are recorded by the next Dev
-  commit, because the walk refuses a dirty tree and a deployment that is not HEAD.
+- **The Dev push, `a4d96c37`: CI red on DW-132, nothing published.** GitHub Actions (`GITHUB_TOKEN`): CI run 36341672890
+  — `rls` success, `check` failure at `python3 tools/doc-audit.py --check` (`STALE — regenerated INDEX.md and
+  INDEX.html`, `STALE: BUILD-BOARD.html`, `STALE: CATEGORY-PROMPTS.html`), `deploy` skipped; the keyboard gate, `pnpm
+  check` and `pnpm build` never ran on the runner. Render matrix run 36341672896: success. Vercel (`VERCEL_*`): production
+  still `dpl_5wq5VCQZ5wtV9ytkz97MEMaKv76A` at `42b549f7`. It was the day's first commit, and regenerated here the three
+  pages differ from it by `2026-09-27 → 2026-09-28` alone — DW-132, whose row now carries this sighting. The next push
+  publishes.
+- **After the next push:** the CI run, the deployment and step 60 on production's planted Home are recorded by the Dev
+  commit that follows it, because the walk refuses a dirty tree and a deployment that is not HEAD.
 
 **Manual checks (R-82, after CI publishes):**
 
