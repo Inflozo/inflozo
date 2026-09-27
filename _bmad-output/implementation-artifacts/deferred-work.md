@@ -5746,6 +5746,11 @@ evidence (Story 5.20's Dev, 2026-09-26): it reaches the DEPLOY job too, not only
   it, `3a64da0b`: the same app tree, built and deployed 15 minutes earlier (`dpl_AS4xd9YGvHKLNX56FiaN8ud2B8EN` READY).
   `4d513f5d` changed one walk script under `tools/probe/`, which no build reads. So `self-hosting under next/font/local`
   above is the cure for both halves, and a re-push is still the workaround.
+evidence (Story 5.22's Dev, 2026-09-27): a third place it lands — `check`'s own `pnpm build` step. At `c34dfbd3` (CI run
+  36295360427) `pnpm keyboard` and `pnpm check` were green and `pnpm build` failed with the same "Can't resolve
+  '@vercel/turbopack-next/internal/font/google/font'" Turbopack error, so `deploy` was skipped. `c34dfbd3` changed only
+  the spec and this ledger; the same app tree built and deployed from `9212ecc4` an hour earlier
+  (`dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB` READY), and a local `pnpm build` of it exits 0.
 owner: unowned
 location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh` ·
   `.github/workflows/ci.yml`'s `deploy` (its `vercel build`)

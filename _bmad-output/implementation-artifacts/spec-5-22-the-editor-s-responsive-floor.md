@@ -733,6 +733,10 @@ the pointer, not the layout".
     context compact, its tap opening the overlay that Esc closes with the selection kept. Both throwaway accounts
     deleted, HTTP 200 each, users 13 → 13.
 - **DW-220** gains `765cdbde`'s sighting and the clean pass after it; **DW-284** is new (the record's late write).
+- **CI at `c34dfbd3`** (the commit recording the walk, spec and ledger only): `check` RED at `pnpm build` on DW-246's
+  Google Fonts fetch at compile time (run 36295360427 — `pnpm keyboard` and `pnpm check` green before it), `rls`
+  success, `deploy` skipped. Production stays `dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB`, the walked build of the same app
+  tree. DW-246 gains the sighting; the commit that records it is the re-push the ledger prescribes.
 
 **Real infrastructure** (R-82) — what this Dev phase hit, and what each returned (keys by variable name only):
 
