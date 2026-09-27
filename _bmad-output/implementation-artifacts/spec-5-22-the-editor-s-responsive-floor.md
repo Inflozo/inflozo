@@ -822,6 +822,11 @@ the pointer, not the layout".
 **Results (Review, 2026-09-27, Node 24).** `pnpm check` exit 0; `pnpm keyboard` **100 passed, 0 failed** (the four tests the
 review added among them); the doc gate PASS twice. The real services the review itself hit are listed under Review Findings.
 
+**Deploy (2026-09-27).** No migration in this story (Design Notes: "no Schema phase"), so Deploy is the app code already
+built by the push to `main`. CI at `e4a8074e` (`GITHUB_TOKEN`): `check`, `rls`, `deploy` and the Render matrix workflow
+all success. `Deployment: dpl_3khtpgJ9H7LMkDcVwg7ueCePzG2T` (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — READY,
+production, built from `e4a8074e`, aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`.
+
 **Real infrastructure** (R-82) — what this Dev phase hit, and what each returned (keys by variable name only):
 
 - **GitHub Actions** (`GITHUB_TOKEN`) — CI run 36291300831 at `db6965a9`: `check` failure at `pnpm keyboard` (change log
