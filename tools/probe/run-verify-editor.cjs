@@ -80,7 +80,7 @@
 // size or repainting; a device change repainting NOTHING (same nodes, same stamps, the selection, the chrome re-placed,
 // the caret mid-word); R-123's ground beside a letterboxed phone; the arrows moving the device; and FR-D14's two clauses
 // this story owns — no cap, and no main-thread task over 5s on a 40-section planted doc (NFR-1's fps gate is Story
-// 5.23's, manual-only). STEP 2 CHANGED WITH R-137: the page card is no longer flush with the bottom at a top-only
+// 5.23a's since R-206, manual-only). STEP 2 CHANGED WITH R-137: the page card is no longer flush with the bottom at a top-only
 // radius, it is Desktop's 1440 x 900 fitted, centred, rounded all round — the one change the owner is asked to expect.
 // Story 5.9 adds steps 71-80, inside step 5's CSP session, and they are the journey `pnpm keyboard` runs over a
 // harness mount (`tools/keyboard/journey.spec.mjs`, R-146) — here with a real session, a real read, the real canvas
@@ -2863,7 +2863,7 @@ async function main() {
     // The fixture is planted through the service key, because 40 sections are not a gesture anybody makes. Its 40
     // instances are the seeded stack cycled with fresh ids, so every design is one this project already reads.
     // NFR-1's 60fps / p95 / 50ms gate is NOT owed here — it is manual-only on the reference laptop at 4x throttle and
-    // is Story 5.23's. The 5s LOCKUP BOUND is FR-D14's own pass/fail condition and is measurable, so it is owed here.
+    // is Story 5.23a's (R-206). The 5s LOCKUP BOUND is FR-D14's own pass/fail condition and is measurable, so it is owed here.
     const homeBefore = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)
     const homeDoc = homeBefore.body?.[0]?.doc ?? null
     const FIXTURE = 40
@@ -2902,7 +2902,7 @@ async function main() {
     const bigStack = rootsAtSeed - homeDoc.instances.filter((i) => !i.hidden).length + FIXTURE
     check(`step 60 — FR-D14: NOTHING CAPS SECTIONS PER TEMPLATE — all ${FIXTURE} planted sections plus the site-wide ones are drawn`, bigRoots === bigStack, `${bigRoots} roots · want ${bigStack}`)
     check('step 60 — FR-D14\'s lockup bound: no main-thread task over 5s while a device change lands on that canvas (slower is acceptable, a lockup is not)', longest < 5000, `longest long task ${Math.round(longest)}ms`)
-    note('step 60', `NFR-1's 60fps / p95 <= 16.7ms / no-task-over-50ms gate is NOT asserted here — manual-only at 4x throttle on the reference laptop, Story 5.23 (longest task this run: ${Math.round(longest)}ms)`)
+    note('step 60', `NFR-1's 60fps / p95 <= 16.7ms / no-task-over-50ms gate is NOT asserted here — manual-only at 4x throttle on the reference laptop, Story 5.23a (longest task this run: ${Math.round(longest)}ms)`)
     // the fixture is put back before anything else reads this canvas
     const restored = await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: homeDoc }) })
     check('step 60 — the planted fixture is removed and Home is the doc it was, so every later step reads the seed', (restored.status === 200 || restored.status === 204) && JSON.stringify((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc) === JSON.stringify(homeDoc), `HTTP ${restored.status}`)

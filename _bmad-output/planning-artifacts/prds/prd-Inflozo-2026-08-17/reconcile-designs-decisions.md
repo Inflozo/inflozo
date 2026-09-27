@@ -3370,6 +3370,11 @@ exactly the way you left it, which is the promise the whole story is sold on."*
   `packages/section-runtime/src/controls.ts`), so returning to a design always shows it as it was left — which is what the
   owner's own test of the page checks (step 9). The other reading is one line and is not built.
 - Targets: ✅ this entry · ✅ Story 5.11's spec (Question 3) · ✅ `epic-5-context.md` · ✅ the comment beside `switchControls`.
+- **EXTENDED BY R-205 (owner, 2026-09-27, Story 5.23's Question 1).** "Returning to a design always shows it as it was
+  left" was true only where the value had been parked against that design. A setting two designs share CARRIED to the
+  second and was parked against the SECOND when a third lacked it, so the first showed its default on return — executed
+  at Story 5.23's planning (`]` three times from sample 1 brought Show icons and Image position back On and Top). R-205
+  makes every design keep ALL its settings when it is left, so R-160's own words now hold on every path.
 
 **R-161 — Site Remix re-rolls the canvas you are looking at, and the header and footer are left alone.**
 Story 5.12's Question 1, ruled **option 1** (owner, 2026-09-20): *"Leave the header and footer alone in this
@@ -4505,6 +4510,97 @@ width."* A product fact the frame guessed at; every other word of D4f's stays, a
   - ✅ this entry.
   - ✅ Story 5.22's spec — Question 4, its notice task, the recorded deviation and change log 21.
   - ✅ built — Story 5.22's Review (2026-09-27): `small-screen-notice.tsx`, `floor.spec.mjs`, the walk's step 97.
+
+**R-205 — every design remembers itself: leaving a design keeps ALL its settings against it, so a return by any route
+shows it exactly as it was left.** Story 5.23's Create, Question 1, ruled **option 1** (owner, 2026-09-27): *"Every design
+remembers itself. Leaving a design remembers all its settings, so coming back — by ◀ ▶, round the ring, by Shuffle or by
+Remix — always shows it exactly as you left it."*
+
+- **Why it was a question.** FR-D19 parked only what the NEXT design lacks, against the design being left. A setting two
+  designs share therefore carried to the second and was parked against THAT one when a third lacked it, and the first
+  showed its default on return: R-160's "always" was false on that path. Executed at 5.23's planning over the real ring
+  (`samples()`, `switchDesign`): `]` three times from sample 1 brought Show icons and Image position back On and Top,
+  parked against `controls/2`; over 300 seeds × 40 sections, 1,435 of 12,000 sections were not as left when switched
+  back to their first design. Nothing was ever deleted. 5.11's tests and the owner's step 9 used Card tint, the one
+  control only sample 1 declares.
+- **The rule.**
+  - Leaving a design records every value it declares, light and dark, against its id, and removes from the live maps
+    what the next design does not declare.
+  - Arriving at a design with a record sets each value it declares from that record, returns one the record lacks to its
+    default, and clears the record.
+  - A design not yet visited still carries what both declare and defaults what only it declares — FR-D19's three arms,
+    unchanged.
+  - R-160 now holds in every case, trade included: a shared setting changed on design 2 does not follow you back to
+    design 1, which shows what it was left with.
+  - Clear dark overrides (R-133, R-134) also clears what the section's designs remember, so a cleared section never gets
+    one back.
+  - No new field and no migration: the records are `parkedControls`' existing shape.
+- **Declined.** Option 2, keeping the rule as built and rewording R-160's "always".
+- Targets:
+  - ✅ this entry, and R-160's extension note.
+  - ✅ Story 5.23's spec — Question 1, its tasks, criteria and owner's test.
+  - ✅ the PRD's FR-D19.
+  - ✅ `epics.md` — FR-D19's line, Story 5.11's carry / park / default criterion and Story 5.23's card.
+  - ✅ `EXPERIENCE.md`'s Design picker row.
+  - ✅ `epic-5-context.md`.
+  - ⬜ built — Story 5.23's Dev: `switchControls` and its comment, `clearDarkOverrides`, the project-wide Clear, their
+    tests, the play-loop gate, the keyboard journey's FR-D19 stop and `run-verify-controls.cjs`'s ring walk.
+
+**R-206 — the 60 fps half of Epic 5's exit is its own story, 5.23a: the editor redraws only what changed, then the trace
+is measured.** Story 5.23's Create, Question 2, ruled **option 1** (owner, 2026-09-27): *"Its own story, 5.23a, straight
+after this one. The editor redraws only the section that changed: a design change replaces one section, and a move moves
+one. Then the 3-second trace — drag, reorder, Shuffle, setting changes — is measured on the 40-section page at 4× slowdown
+on this development computer. It is slower per core than today's mid-tier laptops, so a pass here is the harder test.
+Epic 5 closes when both stories are green, and this one keeps to 'nothing is lost'."*
+
+- **Why it was a question.** Measured at 5.23's planning on a production build of the harness with Home at 40 sections:
+  one design change is a long task of 131–138 ms at 1× and 492–512 ms at 4× CPU throttle, one move 130 ms and 436 ms,
+  and a control change none — against NFR-1's 50 ms. `apply` → `paint()` renders every section and rewrites `#canvas`.
+  The fix changes the heart of the editor, so where it went was the owner's to say.
+- **The rule.**
+  - Story 5.23a, straight after 5.23: a design change replaces one section and a move moves one.
+  - It then measures NFR-1's 3-second trace (drag, reorder, Variant Shuffle, control changes) on the 40-section page at
+    4× CPU throttle on the development computer — an Intel Core i5-6600K desktop, slower per core than a current mid-tier
+    laptop, so the harder test. That is the reference environment for Epic 5's exit; Story 15.4 still runs the release
+    gate before launch.
+  - Shuffle is traced where a ring exists — the harness's fixture ring (R-158) — because every shipped ring is one design.
+  - Epic 5 exits when 5.23 and 5.23a are both green. DW-215 goes with 5.23a.
+- **Declined.** Option 2, both in Story 5.23; option 3, moving the speed work to Story 15.4.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.23's spec — Question 2.
+  - ✅ `epics.md` — Story 5.23's card loses the 60 fps criterion, Story 5.23a's card, and Epic 5's exit line.
+  - ✅ the PRD's Epic 5 exit (§8), which names the reference environment for this exit.
+  - ✅ `sprint-status.yaml`.
+  - ✅ `epic-5-context.md`.
+  - ✅ the ledger — DW-215.
+  - ✅ `run-verify-editor.cjs`'s header and step 60, which named Story 5.23 as the fps gate's.
+  - ⬜ built — Story 5.23a.
+
+**R-207 — a sweep story, 5.24, after 5.23a, across the WHOLE deferred-work ledger.** Story 5.23's Create, Question 3,
+ruled **option 1, widened** (owner, 2026-09-27): *"A sweep story, 5.24, like 3.9 at the end of Epic 3. Each item is fixed,
+closed with its evidence, or given a named later story, and you test whatever it changes on screen. It runs after 5.23a.
+— Do a complete sweep across all deferred items and close whatever we can now."*
+
+- **Why it was a question.** Epic 5's last story found fifteen open entries whose only owners are finished Epic 5
+  stories, and DW-203 whose two owners are both done; four of the nine that named 5.23 are screen or walk work a gate
+  cannot do; and three entries were already fixed with the ledger lagging (DW-165's half, DW-197, DW-206).
+- **The rule.**
+  - Story 5.24 runs after 5.23a and triages EVERY open entry in `deferred-work.md`, not only Epic 5's.
+  - Each is closed by a change that makes its claim false, closed with its evidence where it is already fixed, or left
+    open with a named later story that will really build it. No entry is deleted or renumbered.
+  - What it changes on screen, the owner tests (R-80).
+  - Read as the sweep's scope, since option 1 runs it after 5.23a; the owner was asked to say if he meant it to run
+    sooner.
+- **Declined.** Option 2, the Epic 5 retrospective; option 3, leaving them.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.23's spec — Question 3.
+  - ✅ `epics.md` — Story 5.24's card.
+  - ✅ `sprint-status.yaml`.
+  - ✅ `epic-5-context.md`.
+  - ✅ the ledger — the sixteen orphaned entries and DW-188, DW-207, DW-219 and DW-220 name Story 5.24.
+  - ⬜ built — Story 5.24.
 
 ## B · Approved decisions superseded by this session
 

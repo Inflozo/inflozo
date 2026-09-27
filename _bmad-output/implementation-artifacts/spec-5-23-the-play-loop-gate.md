@@ -13,10 +13,10 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 
 Nothing new is drawn on your screen: this story adds the automatic check behind Inflozo's central promise — shuffle and
 remix as much as you like, and nothing you typed or set is ever lost. On every change we push, a 40-section page is
-shuffled twenty times and then remixed, and every word, picture, list and setting must still be there; with Question 1's
-recommended fix, a design you go back to also looks exactly as you left it, which today is not always true (you can see
-it on the Controls review page). Making the editor fast enough on very big pages — it currently freezes for about half a
-second per design change on a deliberately slowed computer — is Question 2's new story, not this one.
+shuffled twenty times and then remixed, and every word, picture, list and setting must still be there — and, as you
+ruled (R-205), a design you go back to by any route now looks exactly as you left it, which you can check in four steps
+on the Controls review page. Making the editor fast enough on very big pages — it currently freezes for about half a
+second per design change on a deliberately slowed computer — is Story 5.23a, straight after this one (R-206).
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -32,18 +32,19 @@ second per design change on a deliberately slowed computer — is Question 2's n
   you, then is put aside against the SECOND design when a third lacks it — so back on the first it shows its default.
   Nothing is deleted, but R-160's "going back to a design always looks exactly the way you left it" is false on that
   path, and 5.11's tests and the owner's step 9 used Card tint, the one case that works.
-- **The 60 fps half cannot pass today.** Every design change or move repaints all 40 sections (Question 2).
+- **The 60 fps half cannot pass today.** Every design change or move repaints all 40 sections; R-206 gives it Story
+  5.23a.
 
-**Approach** (written for the recommended answers; Questions 1–3 are open):
+**Approach** (the owner ruled all three questions option 1 on 2026-09-27 — R-205, R-206 and R-207):
 
 - **One pure gate, `apps/web/play-loop.test.ts`, inside `pnpm check`.** It builds the 40-section stress fixture from the
   library, plays 20 Variant Shuffles and a full Site Remix through the editor's own functions for every seed, and asserts
   zero loss, the round trip, the partition and its own controls.
-- **Every design remembers itself** (Question 1, option 1). Leaving a design records all of its values against it, and
+- **Every design remembers itself** (R-205). Leaving a design records all of its values against it, and
   a return restores them exactly. A first visit still carries and defaults (FR-D19). Clear dark overrides also clears
   what is remembered.
-- **The 60 fps work is its own story, 5.23a** (Question 2), and Epic 5's orphaned ledger entries go to a sweep story
-  (Question 3). No migration, so no Schema phase.
+- **The 60 fps work is its own story, 5.23a** (R-206), and Story 5.24 then sweeps every open entry in the deferred-work
+  ledger (R-207). No migration, so no Schema phase.
 
 ## Boundaries & Constraints
 
@@ -64,49 +65,49 @@ second per design change on a deliberately slowed computer — is Question 2's n
 
 **Ask First:**
 
-- Any change to what a FIRST visit carries or defaults (FR-D19's three arms), or to R-160 beyond "a return is exactly as
-  it was left".
-- Anything in the render or paint path.
+- Any change to what a FIRST visit carries or defaults (FR-D19's three arms), or to R-160 and R-205 beyond "a return is
+  exactly as it was left".
 
 **Never:**
 
 - **Never author a shipped design** (AD-35, R-158). The ring is `packages/library/fixtures/controls/`, and the decoy is
   an in-memory entry, never a file.
 - **Never a new doc field or a migration.** What a design remembers uses the existing `parkedControls` shape.
-- **Never measure frames or add a browser check here.** That is Question 2's story.
+- **Never measure frames or touch the render or paint path here.** That is Story 5.23a's (R-206).
 - **Never edit the design export.**
 
 ## I/O & Edge-Case Matrix
 
-Rows marked ¹ hold only if Question 1 is ruled option 1.
+The owner ruled all three questions option 1 on 2026-09-27: **R-205** (every design remembers itself), **R-206** (the
+60 fps work is Story 5.23a) and **R-207** (Story 5.24 sweeps the whole ledger).
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
 | The session | 40-section Home, 20 Shuffles across its ringed sections, then a full Remix, every seed | Every content prop, list item, data value, name, hidden flag, audience and main-feed flag exactly as before; every control value and dark override that was held is still held, live or remembered | A failure names its seed and section |
-| Back to the start ¹ | After the session, each section switched back to the design it started on | Its controls and dark overrides exactly as at the start | N/A |
+| Back to the start | After the session, each section switched back to the design it started on | Its controls and dark overrides exactly as at the start | N/A |
 | Away and back | Sample 1 with Card tint Strong (dark: Soft) → sample 2 → sample 1 | Absent on sample 2 and remembered against sample 1; back on 1, Strong and Soft, and sample 1's record cleared | N/A |
-| Round the ring ¹ | Sample 1 with Show icons Off and Image position Side, then `]` three times | Back on sample 1: Off and Side. As built today: On and Top | N/A |
-| Changed on the way ¹ | Sample 1 at Columns 4; ▶, set Columns 2 on sample 2; ◀ | Sample 1 shows 4, as left (R-160); ▶ again shows 2 | N/A |
+| Round the ring | Sample 1 with Show icons Off and Image position Side, then `]` three times | Back on sample 1: Off and Side. As built today: On and Top | N/A |
+| Changed on the way | Sample 1 at Columns 4; ▶, set Columns 2 on sample 2; ◀ | Sample 1 shows 4, as left (R-160, R-205); ▶ again shows 2 | N/A |
 | First visit | Sample 1 → sample 3, never visited | Shared settings carry; Stacking takes its default | N/A |
 | Partition | A decoy `controls` design compiling to `post.hbs` in the library | Never in a ring, never landed on | N/A |
 | Ring of one | Every pilot section | Never moves | N/A |
 | Site-wide | a1/1 in the site doc | Byte-identical after the session (R-161) | N/A |
-| Clear ¹ | A section with a remembered dark override; Clear dark overrides by row, ⋯ or Theme settings; back to that design | No dark override comes back | N/A |
-| Controls | A switch that drops remembered records; a ring that ignores the partition; ¹ the rule as built at 5.11 | Each is reported by the check it targets | A control that passes fails the gate |
+| Clear | A section with a remembered dark override; Clear dark overrides by row, ⋯ or Theme settings; back to that design | No dark override comes back | N/A |
+| Controls | A switch that drops remembered records; a ring that ignores the partition; the rule as built at 5.11 | Each is reported by the check it targets | A control that passes fails the gate |
 
 </frozen-after-approval>
 
 ## Code Map
 
 - `packages/section-runtime/src/controls.ts:552-612` -- `switchControls`, the one rule (carry, park, default, R-160),
-  and ¹ the change. `declared()` (:92-108, not exported) adds the three universals; `UNIVERSAL_CONTROLS`
+  and the change (R-205). `declared()` (:92-108, not exported) adds the three universals; `UNIVERSAL_CONTROLS`
   (`packages/library/src/vocabulary.ts:300`) names them for the gate.
 - `packages/section-runtime/src/doc-edit.ts:96-113` -- `switchDesign`, which Shuffle and Remix call. `:141-148`
-  `clearDarkOverrides` serves both Clears; ¹ it also empties remembered dark maps.
+  `clearDarkOverrides` serves both Clears; under R-205 it also empties remembered dark maps.
 - `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts:114` -- the project-wide Clear skips a section with
-  no live override; ¹ it must also visit one whose records hold one.
+  no live override; under R-205 it must also visit one whose records hold one.
 - `packages/section-runtime/src/controls.test.ts:776-870` -- the rule's tests. Several assert `parkedControls` is `{}`
-  after a switch (¹ update); the 1 → 2 → 3 → 1 test (:825) carries only tint and rule, so it cannot see the gap.
+  after a switch (update them); the 1 → 2 → 3 → 1 test (:825) carries only tint and rule, so it cannot see the gap.
 - `packages/section-runtime/src/doc-edit.test.ts:260-308` -- `switchDesign`'s tests; same record-shape updates.
 - `apps/web/lib/ring.ts:43` `step`, `:50` `shuffleTo` · `apps/web/lib/remix.ts:42` `remixPicks`, `:63` `remixFold` --
   the play loop, pure and importable under `node --test`.
@@ -120,8 +121,8 @@ Rows marked ¹ hold only if Question 1 is ruled option 1.
   (a few lines, e.g. mulberry32), since that helper only cycles values. `apps/web/package.json`'s `node --test
   '*.test.ts'` picks up a new top-level file; core packages may not read files or call `Math.random`
   (`eslint.config.js:45-60`).
-- `tools/keyboard/journey.spec.mjs:989-1013` -- the FR-D19 stop (tint round the ring); ¹ gains Image position.
-- `tools/probe/run-verify-controls.cjs:~560-570` -- the ring walk's long way round on production; ¹ gains a shared
+- `tools/keyboard/journey.spec.mjs:989-1013` -- the FR-D19 stop (tint round the ring); gains Image position.
+- `tools/probe/run-verify-controls.cjs:~560-570` -- the ring walk's long way round on production; gains a shared
   control. Its catalogue row is in `tools/doc-audit.py:546`.
 
 ## Tasks & Acceptance
@@ -130,18 +131,18 @@ Rows marked ¹ hold only if Question 1 is ruled option 1.
 
 - [ ] `apps/web/play-loop.test.ts` -- NEW: the fixture, the session per seed, the checks and the controls in Design
   Notes -- FR-D17's gate, on every commit.
-- [ ] `packages/section-runtime/src/controls.ts` -- ¹ `switchControls` becomes Design Notes' rule, and its comment says
+- [ ] `packages/section-runtime/src/controls.ts` -- `switchControls` becomes Design Notes' rule, and its comment says
   so -- R-160 in every case, not one.
-- [ ] `packages/section-runtime/src/doc-edit.ts` -- ¹ `clearDarkOverrides` also empties `darkOverrides` in the
+- [ ] `packages/section-runtime/src/doc-edit.ts` -- `clearDarkOverrides` also empties `darkOverrides` in the
   section's records -- a cleared section never gets one back.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- ¹ the project-wide Clear also visits a
+- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/settings/actions.ts` -- the project-wide Clear also visits a
   section whose records hold a dark override -- same.
-- [ ] `packages/section-runtime/src/controls.test.ts`, `packages/section-runtime/src/doc-edit.test.ts` -- ¹ update the
+- [ ] `packages/section-runtime/src/controls.test.ts`, `packages/section-runtime/src/doc-edit.test.ts` -- update the
   record-shape assertions; add round the ring with Show icons and Image position, changed on the way, and the Clear --
   the rule's own tests.
-- [ ] `tools/keyboard/journey.spec.mjs` -- ¹ the FR-D19 stop also sets Image position on sample 1 and reads it after
+- [ ] `tools/keyboard/journey.spec.mjs` -- the FR-D19 stop also sets Image position on sample 1 and reads it after
   the wrap; run it once on the baseline and record it failing -- the browser's view of the fix.
-- [ ] `tools/probe/run-verify-controls.cjs`, `tools/doc-audit.py` -- ¹ the long-way-round step also carries Image
+- [ ] `tools/probe/run-verify-controls.cjs`, `tools/doc-audit.py` -- the long-way-round step also carries Image
   position; the row's prose says so -- R-82 on production.
 
 **Acceptance Criteria:**
@@ -149,16 +150,16 @@ Rows marked ¹ hold only if Question 1 is ruled option 1.
 - Given the 40-section fixture, when the gate plays 20 Variant Shuffles across its ringed sections and then a full Site
   Remix of Home for every seed, then no content prop, list item, data value, name, hidden flag, audience or main-feed
   flag changes, and every control value and dark override held before is still held — zero loss.
-- ¹ Given the same session, when every section is switched back to the design it started on, then its settings, light
+- Given the same session, when every section is switched back to the design it started on, then its settings, light
   and dark, are exactly as they started.
 - Given a design carrying a control the next design does not declare, when the section is shuffled away and back, then
   the value is restored exactly and its record is cleared.
-- ¹ Given any design of the ring, when `]` goes round the whole ring back to it, then it is exactly as left — in the
+- Given any design of the ring, when `]` goes round the whole ring back to it, then it is exactly as left — in the
   gate and in the keyboard journey.
 - Given every move of every session, then each lands inside its section's `ringFor` partition, the decoy is never
   landed on, a ring of one never moves, and the site doc is byte-identical.
 - Given each control, when the gate's checks run over it, then the check it targets fails.
-- ¹ Given a section with a remembered dark override, when Clear dark overrides runs (the row, the ⋯ item or Theme
+- Given a section with a remembered dark override, when Clear dark overrides runs (the row, the ⋯ item or Theme
   settings) and the section returns to that design, then no dark override comes back.
 - Given the editor and `/controls`, then nothing is drawn differently from what 5.11 built from B1a, S4b and S6.
 - Given the deployed `/controls`, when the owner walks `## Owner's manual test`, then every step holds (R-80).
@@ -178,7 +179,7 @@ Intel Core i5-6600K with 4 cores).**
 - *300 seeds × 40 sections, 20 Shuffles and a Remix each.* As built: 0 values lost from the doc, 1,435 of 12,000
   sections not as left when switched back to their first design, and 2 of the 3 wraps not as left. The rule below,
   prototyped: 0, 0 and 0.
-- *The paint (input for Question 2).* A production build of the harness, Home at 40 sections by a temporary header,
+- *The paint (input for Story 5.23a, R-206).* A production build of the harness, Home at 40 sections by a temporary header,
   since reverted. One design change (`]`) is one long task of 131–138 ms at 1× and 492–512 ms at 4× CPU throttle; a move
   (⌥↓) is 130 ms and 436 ms; a control change is none, because `onChange` stamps one root (`editor.tsx:3780-3801`). The
   cause is `apply` → `paint()`, which renders every section and rewrites `#canvas` (`editor.tsx:2199-2310`).
@@ -186,7 +187,7 @@ Intel Core i5-6600K with 4 cores).**
     counts dropped frames, not 0.1 ms of timestamp jitter.
   - Where a ring exists (the harness) is where Shuffle can be traced: on production every ring is one design.
 
-**The rule for Question 1's option 1:**
+**The rule (R-205):**
 
 ```
 leaving `from`:  record = every live value `from` declares, in controls and in darkOverrides
@@ -214,19 +215,17 @@ section, in the existing shape, so there is no migration.
 - **Each seed (1 to 100)** plays 20 Shuffles, each on a random section whose ring holds two or more, then one Remix of
   Home. Every move is recorded.
 - **The checks.** Everything but `designId` and the three control maps is deep-equal to the start. Every (map, name,
-  value) stored at the start is still stored, live or in a record. ¹ Switched back to its first design, each section is
+  value) stored at the start is still stored, live or in a record. Switched back to its first design, each section is
   exactly as it started. Every move satisfies `samePartition` and `isPlaceable`, and the decoy is never a target. The
   site doc and the pilots never change. The docs still parse.
-- **Two more tests.** Away and back uses a pair derived from the declarations, never hard-coded names. ¹ The wrap is
+- **Two more tests.** Away and back uses a pair derived from the declarations, never hard-coded names. The wrap is
   `step` round the ring from every design.
 - **The controls.** A switch that drops `parkedControls` must fail the stored-value check. A ring that is only "same
-  category" must land on the decoy. ¹ The rule as built at 5.11, kept in the test as a named control, must fail
+  category" must land on the decoy. The rule as built at 5.11, kept in the test as a named control, must fail
   back-to-the-start.
 
 **Routine calls.** The gate lives in `apps/web` because core packages may not read files or use `Math.random`. It runs
-100 seeds. For Question 2's measurement, this computer at 4× throttle stands in for NFR-1's reference laptop: a 2015
-desktop processor is slower per core than a current mid-tier laptop, so a pass here is the harder test, and Story 15.4
-runs the release gate.
+100 seeds.
 
 **Deferred work.** None of the nine entries that name this story is its to build, because it has no screen and no
 screen-reader walk:
@@ -234,18 +233,18 @@ screen-reader walk:
 - DW-205 → Story 15.2, whose manual screen-reader pass checks the live region.
 - DW-211 and DW-214 → Story 9.1, the first shipped ring.
 - DW-212 → the first Epic 9 story that ships a `data-items-limit`.
-- DW-215 → Story 5.23a, Question 2.
-- DW-188, DW-207, DW-219 and DW-220 → the Epic 5 sweep, Question 3.
+- DW-215 → Story 5.23a (R-206), whose 40-section harness page re-rolls several sections for one ⌘Z.
+- DW-188, DW-207, DW-219 and DW-220 → Story 5.24, the sweep (R-207).
 
 ## Verification
 
 **Commands:**
 
 - `cd apps/web && node --test play-loop.test.ts` (Node 24) -- expected: every seed passes and every control is reported
-  failing inside the test. ¹ Run once on the baseline rule first: back-to-the-start fails and names seeds. Record both
+  failing inside the test. Run once on the baseline rule first: back-to-the-start fails and names seeds. Record both
   runs.
 - `pnpm check` -- expected: exit 0.
-- `pnpm keyboard` -- expected: 0 failed. ¹ The FR-D19 stop with Image position fails on the baseline and passes after;
+- `pnpm keyboard` -- expected: 0 failed. The FR-D19 stop with Image position fails on the baseline and passes after;
   record both runs.
 - `git diff --stat 3361bb6aef749d5a0d559ba976133e3535b717fc HEAD -- supabase` -- expected: empty (no Schema phase).
 
@@ -253,13 +252,13 @@ screen-reader walk:
 
 - The GitHub Actions run for HEAD (`check`, `rls`, `deploy`) is green and the Vercel deployment is READY at HEAD, read
   with `GITHUB_TOKEN` and `VERCEL_*` from `tools/probe/.env`.
-- ¹ `env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) node tools/probe/run-verify-controls.cjs`
+- `env $(grep -E '^SUPABASE_(URL|SECRET_KEY)=' tools/probe/.env | xargs) node tools/probe/run-verify-controls.cjs`
   against `https://app.inflozo.com`: the ring walk's new step passes with 0 FAIL, the throwaway account is deleted, and
   the user count is unchanged.
 
 ## Owner's manual test
 
-Only if Question 1 is ruled option 1; otherwise this story has no test for you. Deploy confirms the address.
+Deploy confirms the address.
 
 1. **URL:** `https://app.inflozo.com/controls` · **Screen:** Controls review, the internal page with the three sample
    designs. **Do:** nothing yet. **See:** the sample on the left, its panel on the right, and the Design block reading
@@ -270,7 +269,7 @@ Only if Question 1 is ruled option 1; otherwise this story has no test for you. 
    then back to 1 of 3. **See:** back on sample 1, all four read as you set them — Off, Side, Strong and 4. Before this
    story, Show icons and Image position came back On and Top.
 4. **URL:** `https://app.inflozo.com/controls` · **Screen:** the same. **Do:** press **▶** once to sample 2, set
-   **Columns** to *2*, then press **◀**. **See:** sample 1 shows Columns **4**, as you left it (R-160). Press ▶ again:
+   **Columns** to *2*, then press **◀**. **See:** sample 1 shows Columns **4**, as you left it (R-205). Press ▶ again:
    sample 2 shows **2**.
 
 ## Questions for the owner
@@ -304,7 +303,10 @@ page shows it; from Epic 9 every customer would.
    reworded to "when that design is the one it was put aside against". Nothing on screen changes, and there is no test
    for you.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27).** *"Every design remembers itself. Leaving a design remembers all its settings, so
+coming back — by ◀ ▶, round the ring, by Shuffle or by Remix — always shows it exactly as you left it."* Recorded as
+**R-205**; it reaches the register, FR-D19, `epics.md` (FR-D19's line, Stories 5.11 and 5.23), `EXPERIENCE.md`'s Design
+picker row and `epic-5-context.md`, and this spec's tasks build it.
 
 ### Question 2 — The editor is too slow on a 40-section page. Where should that work go?
 
@@ -325,7 +327,11 @@ it answers.
 3. **Move the speed work to Story 15.4**, the launch performance gate, and close Epic 5 on "nothing is lost" alone. The
    editor stays slow on very big pages until launch hardening.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27).** *"Its own story, 5.23a, straight after this one. The editor redraws only the
+section that changed: a design change replaces one section, and a move moves one. Then the 3-second trace … is measured
+on the 40-section page at 4× slowdown on this development computer."* Recorded as **R-206**: Story 5.23a is added to
+`epics.md` and `sprint-status.yaml` with the board's lettered numbering, the 60 fps criterion moves to it from this
+story's card, and DW-215 goes with it.
 
 ### Question 3 — Epic 5 leaves loose ends whose owning stories are finished. Who takes them?
 
@@ -345,4 +351,8 @@ returns" instead of asking you to sign in again. Its owner was Story 5.17, which
 The fifteen: DW-102, DW-104, DW-122, DW-129, DW-165, DW-171, DW-175, DW-197, DW-202, DW-204, DW-206, DW-240, DW-250,
 DW-278 and DW-281. From this story's own list: DW-188, DW-207, DW-219 and DW-220.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27), widened.** *"A sweep story, 5.24, like 3.9 at the end of Epic 3 … It runs after
+5.23a. — Do a complete sweep across all deferred items and close whatever we can now."* Recorded as **R-207**: Story
+5.24, after 5.23a, triages EVERY open entry in the ledger, not only Epic 5's, and closes whatever can be closed with
+evidence at that point; the rest keep, or gain, a named owner. Read as the sweep's scope, since option 1 runs it after
+5.23a — say so if you meant it to run sooner.

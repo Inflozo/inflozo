@@ -101,7 +101,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 - **FR-D16** Member-state preview — Logged out user / Free member / Paid member — with the proven `@member` field set, the shimmed announcement strip following visibility, gated bodies always rendering the fixture, and a nudge naming the states not yet looked at.
 - **FR-D17** Site Remix: one action re-rolls pack and/or every placed design with all content preserved. Never-lose-content covers **control values** as well as content props, and the gate is mechanical.
 - **FR-D18** Edit lock: one editing context per project across tabs, browsers and devices, with the request/no-response/take-over protocol and the unsynced-edit count stated in edits. Deploy and ZIP export require the lock.
-- **FR-D19** Design navigation — the library's primary control: `[` `]`, hover arrows, and the sidebar Design picker showing position. Switching obeys **carry, park, default**.
+- **FR-D19** Design navigation — the library's primary control: `[` `]`, hover arrows, and the sidebar Design picker showing position. Switching obeys **carry, park, default**, and every design remembers itself — a return by any route shows it exactly as it was left (R-205).
 - **FR-D20** Preview toggle: JavaScript behaviours do not run on the canvas while designing; layout-affecting CSS always does. Each module declares `edit-safe`, and the non-edit-safe ones — shrinking headers, scroll reveal, tabs and accordions among them (R-174) — render in their resting state; a held-still part that moves by itself carries a PAUSED chip only while its section is pointed at or selected (R-175).
 - **FR-D21** Paginated preview: any canvas showing a paginated feed can be previewed on page 2, deliberately a middle page carrying both a previous and a next link.
 - **FR-D22** Preview subject: every single-resource canvas renders one chosen resource — the fixture by default, overridable from the sample publication now and from the site's own content once connected (R-165), persisted per canvas and named in the pill.
@@ -1913,7 +1913,9 @@ is legible rather than endless, with `]` past the last returning to the first (U
 **And** **"Design" is the only term** — not layout, not variation, not variant
 **And** the rule is **carry, park, default**: a control present in both designs **carries** its value; one
 present only in the design being left is **parked against that design so returning restores it exactly**; one
-present only in the design being entered takes its **default**
+present only in the design being entered takes its **default** — **and every design remembers itself** (**R-205**, owner,
+2026-09-27, Story 5.23's Question 1): leaving a design keeps ALL its settings against it, so returning by any route shows
+it exactly as it was left, which is what makes R-160 true on every path
 **And** **Variant Shuffle** cycles the same ring but chooses for the user, carrying content props and control
 values under the same rule
 **And** both are **restricted to designs sharing the instance's `bindingContext` and `compileTarget`**, and where
@@ -2443,15 +2445,80 @@ loss**
 does not declare, shuffle back, and **the parked value is restored exactly**
 **And** every re-roll obeyed the `bindingContext` / `compileTarget` restriction
 **And** the whole assertion runs **programmatically over the project doc — no telemetry, no human judgment**
-**And** the full editing loop on the five pilot sections holds **60 fps** on NFR-1's reference environment: p95
-frame time ≤ 16.7 ms with **no long task > 50 ms** across a 3-second trace of drag, reorder, Variant Shuffle and
-control changes.
+**And** **every design remembers itself** (**R-205**, owner, 2026-09-27, Question 1): switched back to the design it
+started on after the whole session — or taken round the ring with `]` — every section's settings, light and dark, are
+exactly as they were left, which the gate asserts beside zero loss. *Found at this story's planning: a setting two
+designs share was parked against the second when a third lacked it, so the first came back on its default — 1,435 of
+12,000 sections over 300 seeds; nothing was ever deleted.* Clear dark overrides also clears what is remembered
+**And** the ring's surfaces draw exactly what Story 5.11 built; only what a return shows changes.
 
-**FRs:** FR-D17 (the gate). · **Owner test:** none (a programmatic assertion). · **Verification:** the reference
-laptop at 4× CPU throttle, manual-only — a CI number would be noise presented as a gate.
+*The 60 fps criterion that stood here moved to Story 5.23a — **R-206** (owner, 2026-09-27, Question 2): measured at this
+story's planning, every design change or move repainted all 40 sections.*
 
-*Exit:* full editing loop on the five pilot sections at 60 fps on NFR-1's reference environment and fixture, and
-the play-loop gate green.
+**FRs:** FR-D17 (the gate), FR-D19 (R-205). · **Rulings:** R-160, R-205, R-206. · **Owner test:** yes — the Controls
+review page, where going round the ring now brings every setting back (R-205). · **Verification:** `pnpm check` and
+`pnpm keyboard` in CI; `run-verify-controls.cjs` on production (R-82).
+
+### Story 5.23a: The editor redraws only what changed, at 60 fps
+
+As a user editing a long page,
+I want a design change or a move to redraw only the section it touches,
+So that the editor stays smooth however many sections the page holds.
+
+*Added straight after Story 5.23 on the owner's word — **R-206** (owner, 2026-09-27, Story 5.23's Question 2): "Its own
+story, 5.23a, straight after this one." Found at 5.23's planning on a production build of the harness with Home at 40
+sections: one design change was a 492–512 ms long task at 4× CPU throttle (131–138 ms at 1×) and one move 436 ms (130
+ms), because every edit repainted every section; a control change, stamped in place, was none.*
+
+**Acceptance Criteria:**
+
+**Given** the 40-section stress fixture on NFR-1's reference environment — **the development computer at 4× CPU
+throttle** (R-206: slower per core than a current mid-tier laptop, so the harder test)
+**When** a design changes (◀ ▶, `[` `]`, Shuffle or a thumbnail) or a section moves (a drag, or `⌥↑` / `⌥↓`)
+**Then** **only the section it touches is redrawn** — a design change replaces one section and a move moves one — while
+a change that alters every section may still repaint the page
+**And** the selection, the hover, inline editing, the running behaviours and every piece of chrome behave exactly as
+they do after a full repaint, and the canvas agrees node for node with a full repaint of the same doc
+**And** the full editing loop on the five pilot sections holds **60 fps**: p95 frame time ≤ 16.7 ms with **no long task
+> 50 ms** across a 3-second trace of drag, reorder, Variant Shuffle and control changes — Shuffle traced on the
+harness's fixture ring (R-158), since every shipped ring is one design, and frame time counted in dropped frames rather
+than in timestamp jitter
+**And** one `⌘Z` after a Remix of several sections restores every one of them, walked on the 40-section page in the
+keyboard gate (DW-215)
+**And** the trace is a manual script, never a CI gate (NFR-1); Story 15.4 still runs the release gate.
+
+**FRs:** FR-D14 (the fps gate), NFR-1. · **Rulings:** R-158, R-206. · **Owner test:** none — nothing on screen changes;
+the trace, the keyboard gate and the deployed editor walk hold it. · **Verification:** the development computer at 4×
+CPU throttle, manual-only — a CI number would be noise presented as a gate.
+
+### Story 5.24: The deferred-work sweep at the end of Epic 5
+
+*Added 2026-09-27 by the owner — **R-207** (Story 5.23's Question 3, option 1, widened): "A sweep story, 5.24, like 3.9
+at the end of Epic 3 … It runs after 5.23a. — Do a complete sweep across all deferred items and close whatever we can
+now."*
+
+As the owner watching a ledger that has only ever grown,
+I want every deferred item that can be finished now to be finished now, across the whole ledger,
+So that the list left open is the list that is genuinely blocked, and every item on it has a living owner.
+
+**Acceptance Criteria:**
+
+**Given** the deferred-work ledger after Story 5.23a
+**When** every open entry is triaged — in every epic, not only Epic 5's
+**Then** each one is closed by a change that makes its claim false, closed with its evidence where it is already fixed,
+or left open with a named later story that will really build it — and **no entry is deleted or renumbered**
+**And** no open entry is left owned only by a finished story — Epic 5's included
+**And** the checks the ledger says are missing exist, each with a control that fails when the thing it protects is
+reverted (standing rule 2)
+**And** whatever it changes on screen, the owner tests on the deployed site (R-80)
+**And** `pnpm check`, `pnpm keyboard`, the RLS gate and the documentation gate are all green.
+
+**FRs:** none new — it closes debt against FRs other stories own. · **Frame:** each fix names the frame of the surface
+it touches (R-74). · **Rulings:** R-207. · **Owner test:** yes (the screens its fixes touch). · **Verification:** each
+closure's evidence on the real services it concerns (R-82).
+
+*Exit:* the play-loop gate green (Story 5.23), and the full editing loop on the five pilot sections at 60 fps on NFR-1's
+reference environment and fixture (Story 5.23a, R-206).
 
 ---
 

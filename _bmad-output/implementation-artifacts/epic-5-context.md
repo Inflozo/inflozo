@@ -34,6 +34,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - Story 5.21: The two Ghost-surface shims on the canvas
 - Story 5.22: The editor's responsive floor
 - Story 5.23: The play-loop gate
+- Story 5.23a: The editor redraws only what changed, at 60 fps (R-206)
+- Story 5.24: The deferred-work sweep at the end of Epic 5 (R-207)
 
 ## Requirements & Constraints
 
@@ -167,9 +169,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     first shows its default on return. `]` three times from sample 1 brings Show icons and Image position back On and
     Top (parked against `controls/2`); retracing and one hop are exact. Over 300 seeds × 40 sections, 1,435 of 12,000
     sections were not as left when switched back to their first design. 5.11's tests and the owner's step 9 used Card
-    tint, the one case that works. **Question 1 (open)** offers "every design remembers itself" — leaving a design
-    records all its values against it, a return restores them exactly, first visits still carry and default, and Clear
-    dark overrides clears what is remembered (prototyped: 0 of 12,000) — or keeping it as built.
+    tint, the one case that works. **Ruled at Question 1 as R-205** (owner, 2026-09-27): every design remembers itself —
+    leaving a design records all its values against it, a return by any route restores them exactly, first visits still
+    carry and default, and Clear dark overrides clears what is remembered (prototyped: 0 of 12,000). The PRD's FR-D19,
+    `epics.md`, `EXPERIENCE.md`'s Design picker row and the register carry it; 5.23's Dev builds it.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`
@@ -294,7 +297,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     viewport (`prd.md:569`). A device change is a STYLE change, never a repaint — the selection, the stamps, the
     inline caret and the scroll survive it, and every section root is the same node. The device is session state like
     the mode: no column, no migration, **no Schema phase**. `1` `2` `3` stay Story 5.9's and the `⋯` collapse at 834
-    stays Story 5.22's; FR-D14's fps gate stays Story 5.23's, while its **no-cap** and **5 s lockup bound** are 5.7's.
+    stays Story 5.22's; FR-D14's fps gate stays Story 5.23's (Story 5.23a's since R-206), while its **no-cap** and **5 s lockup bound** are 5.7's.
   - **R-138 · R-139 (owner, 2026-09-19, Story 5.7's Q2 and its Review) — the chip and the ground.** The invariant is
     that the viewport chip NEVER OVERLAPS the page card, on any device; measured on the deployed editor, a height-bound
     card rose under a chip pinned to the stage's corner (Tablet by 5px, folded Desktop to within 4px), because the chip
@@ -882,7 +885,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     i5-6600K):** every design change or move REPAINTS EVERY SECTION (`apply` → `paint()` renders the whole stack and
     rewrites `#canvas`): one `]` is a 131–138 ms long task at 1× and 492–512 ms at 4×, one ⌥↓ 130 ms and 436 ms, while a
     control change is none (the `onChange` fast path stamps one root). The 60 fps half of the exit cannot pass until the
-    editor repaints only what changed; **Question 2 (open)** offers its own story, 5.23a. Also measured: the rAF p95
+    editor repaints only what changed — **R-206** (owner, 2026-09-27) makes that Story 5.23a, straight after 5.23, measured
+    on this computer at 4× (slower per core than a current mid-tier laptop). Also measured: the rAF p95
     reads 16.6–16.8 ms on smooth windows (timestamp jitter at 60 Hz), so the trace must count dropped frames rather than
     compare 0.1 ms; and on production every ring is one design, so Shuffle is traced only where the harness has a ring.
 
@@ -1155,6 +1159,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - **Read the deferred-work ledger's Epic 5 entries at each Create:** DW-114 (5.1) may need the owner, DW-176 (the selection cleared by a canvas change) is CLOSED by 5.5's Dev, and DW-107 (image focus) and DW-122 (moving a section across templates) have no owner.
   - **Story 5.23's Create (2026-09-27):** none of the nine entries naming 5.23 is its to build (no screen, no
     screen-reader walk): DW-205 → Story 15.2; DW-211, DW-214 → Story 9.1; DW-212 → the first Epic 9 story shipping a
-    `data-items-limit`; DW-215 → Story 5.23a (Question 2); DW-188, DW-207, DW-219, DW-220 → the Epic 5 sweep (Question
-    3). Fifteen more open entries name only finished Epic 5 stories (DW-102, 104, 122, 129, 165, 171, 175, 197, 202,
-    204, 206, 240, 250, 278, 281; DW-165, 197 and 206 are already fixed and only the ledger lags) — **Question 3 (open)**.
+    `data-items-limit`; DW-215 → Story 5.23a (R-206); DW-188, DW-207, DW-219, DW-220 → Story 5.24 (R-207). Fifteen
+    more open entries name only finished Epic 5 stories (DW-102, 104, 122, 129, 165, 171, 175, 197, 202, 204, 206, 240,
+    250, 278, 281), and DW-203's two owners are both done; DW-165, 197 and 206 are already fixed and only the ledger
+    lags. **R-207** (owner, 2026-09-27): Story 5.24, after 5.23a, sweeps EVERY open entry in the ledger, not only Epic
+    5's, and closes whatever it can; the sixteen orphans now name it.
