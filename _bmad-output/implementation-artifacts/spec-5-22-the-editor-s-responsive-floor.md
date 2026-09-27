@@ -556,6 +556,14 @@ have; none changes what a surface does.
     narrowed to 1279 and widened again, with the lock row read before and after each crossing (the holder and the
     generation unchanged) and an expando on the editor root and on the canvas window surviving both — the criterion's
     "nothing remounts: the lock row, the journal and the selection are unchanged", on the real database.
+17. **CI's keyboard gate went red at `db6965a9` on one assertion item 16 added**, and nothing deployed: the crossing
+    journey's "and it kept its scroll" read 249 against 240 on the runner (CI run 36291300831; `check` failed at `pnpm
+    keyboard`, 96 of 97 passing, `rls` green, `deploy` skipped). Reproduced cold once in three locally (261 against 240) and
+    traced in the harness: `scrollTo(0, 240)` reads 240 at once, and a frame later the page itself has moved to 238–261
+    with no crossing at all — one scroll event, the page settling under the chosen section — while the settled value is
+    the same before and after 1280 (244 and 244; 238 and 238). So the TEST read the scroll too early: it now reads it once
+    it has settled, and the expectation — the canvas keeps its scroll across the line — is unchanged. Then 9 of 9 cold
+    runs passed (`run-keyboard-gate.sh -g "crossing 1280" --repeat-each 3`, three times).
 
 ## Design Notes
 
@@ -682,7 +690,10 @@ the pointer, not the layout".
     cut to one letter (225px and whole at 1280);
   - Sign In and the marketing home at 390: the home has no sideways overflow and zero axe violations; Sign In answers 500
     in the harness (no Supabase), so step 100 is its first real reading.
-- **The deployed walk runs after this push**, once CI's `deploy` has put this commit on `app.inflozo.com`: the walk
+- **CI (`GITHUB_TOKEN`, by name).** `db6965a9`: `check` RED at `pnpm keyboard` on one assertion this story added (96 of
+  97, run 36291300831), `rls` success, `deploy` skipped and nothing published — change log 17; the Render matrix workflow
+  success. The fix is the next Dev commit, after the whole gate passed again locally (97 of 97).
+- **The deployed walk runs after the push that deploys**, once CI's `deploy` has put the commit on `app.inflozo.com`: the walk
   refuses to start unless Vercel serves HEAD and the tree is clean. Its results — steps 97–101 and the re-expected 9, 14
   and 90 — are recorded here by the next Dev commit.
 

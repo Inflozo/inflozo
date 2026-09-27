@@ -3107,13 +3107,22 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
     await expect(page.locator('#editor-controls')).toBeVisible()
     // `textContent`, never `innerText`: the panel prints the name uppercase in CSS, and `toHaveText` reads the words
     const chosenName = await page.locator('#editor-panel-name').textContent()
-    // the canvas's own scroll, and a mark on its document that a reload would wipe
-    const scrolled = await canvasFrame(page).locator('body').evaluate((b) => {
+    // the canvas's own scroll, and a mark on its document that a reload would wipe. The scroll is read once it has
+    // SETTLED, never straight after `scrollTo`: the page moves a few pixels on its own a frame later (executed: 240 read at
+    // once, then 238–261 with no crossing at all — CI's red on db6965a9), and that is the page, not the line being crossed
+    await canvasFrame(page).locator('body').evaluate((b) => {
       b.dataset.kept = 'yes'
       b.ownerDocument.defaultView.scrollTo(0, 240)
-      return b.ownerDocument.defaultView.scrollY
     })
-    expect(scrolled, 'the page is long enough to scroll').toBeGreaterThan(0)
+    const scrollOf = () => canvasFrame(page).locator('body').evaluate((b) => b.ownerDocument.defaultView.scrollY)
+    await expect
+      .poll(async () => {
+        const was = await scrollOf()
+        await page.waitForTimeout(200)
+        return was > 0 && (await scrollOf()) === was
+      }, { message: 'the page is long enough to scroll, and its scroll settles' })
+      .toBe(true)
+    const scrolled = await scrollOf()
     await page.setViewportSize({ width: 1280, height: 900 })
     await expect(page.locator('#editor-more')).toBeHidden()
     await expect(page.locator('[data-icon-rail]')).toHaveCount(0)
