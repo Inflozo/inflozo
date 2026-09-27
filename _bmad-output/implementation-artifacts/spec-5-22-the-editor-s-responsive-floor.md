@@ -755,14 +755,25 @@ the pointer, not the layout".
   Google Fonts fetch at compile time (run 36295360427 — `pnpm keyboard` and `pnpm check` green before it), `rls`
   success, `deploy` skipped. Production stays `dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB`, the walked build of the same app
   tree. DW-246 gains the sighting; the commit that records it is the re-push the ledger prescribes.
+- **CI at `f676d87c`** (that re-push): `check`, `rls` and `deploy` success; `dpl_5n9J7emmUnxgBrp6BYFModXzVKpL` READY.
+- **Question 3 ruled, R-203 built** (change log 19): `pnpm check` exit 0, `pnpm keyboard` **99 passed** (the picker's floor
+  test and its 720 journey among them), `pnpm build` exit 0 with both container rules in the shipped CSS, the doc gate
+  PASS twice. **CI at `1eda2e75`**: `check`, `rls` and `deploy` success (run 36298139184), the Render matrix workflow
+  success; `dpl_2uiqcEnXKjyjC2ZJckoPnkc7YS4J` READY on production.
+- **The deployed walk at `1eda2e75`, on its first run: 0 FAIL, 660 PASS** — every step above again, and step 98's new
+  R-203 line: the Section Picker on the iPad Pro 11 in two columns, with Rail, Latest Post, Three Up and Inline Row each
+  keeping its whole name and its Free or Pro tag. Both accounts deleted, HTTP 200 each, users 13 → 13.
 
 **Real infrastructure** (R-82) — what this Dev phase hit, and what each returned (keys by variable name only):
 
 - **GitHub Actions** (`GITHUB_TOKEN`) — CI run 36291300831 at `db6965a9`: `check` failure at `pnpm keyboard` (change log
-  17), `rls` success, `deploy` skipped; run 36291900529 at `765cdbde` and run 36293062483 at `9212ecc4`: `check`, `rls` and
-  `deploy` success. The Render matrix workflow success at all three.
-- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — `dpl_4Ln5NMuSuYafAPCo52uooUTbDPQ4` (`765cdbde`) and
-  `dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB` (`9212ecc4`) READY on production; `db6965a9` was never deployed.
+  17), `rls` success, `deploy` skipped; runs 36291900529 at `765cdbde` and 36293062483 at `9212ecc4`: `check`, `rls` and
+  `deploy` success; run 36295360427 at `c34dfbd3`: `check` failure at `pnpm build` (DW-246), `deploy` skipped; runs at
+  `f676d87c` and 36298139184 at `1eda2e75`: all three success. The Render matrix workflow success at every one.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — `dpl_4Ln5NMuSuYafAPCo52uooUTbDPQ4` (`765cdbde`),
+  `dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB` (`9212ecc4`), `dpl_5n9J7emmUnxgBrp6BYFModXzVKpL` (`f676d87c`) and
+  `dpl_2uiqcEnXKjyjC2ZJckoPnkc7YS4J` (`1eda2e75`, the build the last walk passed on) READY on production; `db6965a9` and
+  `c34dfbd3` were never deployed (CI red at `pnpm keyboard` and at `pnpm build`).
 - **`app.inflozo.com`** — the deployed walk: the editor as a phone (iPhone 13: D4f, no lock, `/sites` reached), a tablet
   (iPad Pro 11: D8a and the 44px sweep), a 1440 window narrowed to 1279 and back, and real 200% zoom; the Dashboard,
   `/sites` and Sign In at 390.
