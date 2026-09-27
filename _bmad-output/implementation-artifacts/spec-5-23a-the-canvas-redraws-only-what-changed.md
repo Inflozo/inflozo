@@ -473,12 +473,30 @@ at 1440 × 900 with a REAL pointer, three runs per build, `editor.tsx` swapped i
   - **Walk run 3 at `0ea616db`: 3 FAIL, then a HARNESS ERROR — and the FAILs were this story's own step.** Step 60's
     5.23a checks passed again with the same readings. Then step 66's ⌘S went `["Syncing","Saved on this device"]`, the
     revision stayed at 10 and the stored Home held 40 instances; the walk died at step 66b on the *"This project was
-    changed somewhere else"* dialog over the Undo button. Step 61 had read revision 10 in all three runs, and runs 1 and 2
-    moved it to 11 at step 66 with the edited doc: the step-60 page's departing flush — owed only since step 60 types —
-    had landed before `freshLoad`'s restore there, and after step 61's hydrate here. Fixed in the walk (Spec Change Log
-    7). Accounts deleted, HTTP 200, users 13 → 13.
-- **After the walk's fix is pushed:** its CI run, its deployment and a complete walk are recorded by the Dev commit that
-  follows.
+    changed somewhere else"* dialog over the Undo button. The only write that holds 40 instances after step 60's restore
+    is the step-60 page's own departing flush, owed only since step 60 types — so here it landed after step 61's hydrate,
+    and in runs 1 and 2, which read the same baseline revision 10 at step 61 and moved it to 11 at step 66 with the edited
+    doc, before `freshLoad`'s restore. Fixed in the walk (Spec Change Log 7), whose new check says the page had nothing
+    left to send. Accounts deleted, HTTP 200, users 13 → 13.
+- **The walk's fix, `e7b4b169`.** GitHub Actions (`GITHUB_TOKEN`): CI run 36346666471 — `check` (the runner's `pnpm
+  keyboard` printing `107 passed (4.5m)`), `rls` and `deploy` success; Render matrix run 36346666473: success. Vercel
+  (`VERCEL_*`): `dpl_43RXwjvgBAVuS5dWxsUcMRM6Eom4` READY, production, built from `e7b4b169`.
+  - **Walk run 4: a HARNESS ERROR, not a result** — step 9's raw `GET /projects/<id>` (`:6673`) after **0 FAIL, 664
+    PASS**, the same place as run 2. A repeat is sampled before it is called DW-204's: a scratch probe seeded a throwaway
+    account as the walk does, signed it in by magic link and sent the same raw GET 30 times — 30 of 30 answered 200 with
+    the skeleton, in 464–1521 ms (median 593), none over 5 s; its account deleted, HTTP 200, users 13 → 13. The route does
+    not stall alone, and this story changed no server code; DW-204's row carries it.
+  - **Walk run 5: complete — `0 FAIL, 665 PASS`.** Step 60 on production's planted 40-section Home: ⌥↓ kept all 41 roots
+    and moved one, its longest task 0 ms; the typing round trip landed and was taken back; the paint ending that session
+    drew section 3 fresh and kept every other root; `P` `P` equalled the canvas node for node
+    (`{"equal":true,"fresh":true}`); the owed work was sent before the editor went (`Synced`); the plant was removed.
+    Step 66: revision 10 → 11 with the edited doc. Step 8 with S4b's pill and a Layers row's ⋯ menu open: PASS. Step 79's
+    three 404s and step 9's skeleton: PASS. Accounts deleted, HTTP 200, users 13 → 13.
+- **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): in every walk, two throwaway accounts created and deleted through
+  the Auth Admin API (users 13 → 13 each time), the seed, and step 60's plant and restore through PostgREST; the step-9
+  sample's one account likewise.
+- **No migration:** `git diff --stat 1a55920de16816a4403dda48dcba1173ea5bc684 HEAD -- supabase` is empty, so there is no
+  Schema phase.
 
 **Manual checks (R-82, after CI publishes):**
 

@@ -4986,11 +4986,14 @@ seen again: Story 5.11's Review (2026-09-20, build `56d801c7`) — five attempts
   `page.goBack` before any patch, and two dead at the SAME place after — step 53's soft navigation Back to the editor,
   `painted('home')`, 492 PASS and 0 FAIL each time. Same shape (a navigation that never settles), a new step to add
   to the list of where it lands; the step's own code was not touched by that story.
-seen again: Story 5.23a's Dev (2026-09-28, build `10c30db4`) — two walks, each dead on a Playwright request that never
-  answered in 30 s, at two different places: run 1 at step 79's `GET /harness/editor` (`run-verify-editor.cjs:5856`) after
-  579 PASS and 0 FAIL, while curl had the same three addresses answer 404 in 0.24–0.29 s straight after; run 2 at the
-  very last step, step 9's raw `GET /projects/<id>` (`:6661`), after 662 PASS. Neither request goes through `steady`'s
-  retry, which covers page navigations only. Both runs deleted their accounts (users 13 → 13).
+seen again: Story 5.23a's Dev (2026-09-28) — three of five walks died on a Playwright request that never answered in 30 s.
+  Run 1 (`10c30db4`) at step 79's `GET /harness/editor` (`run-verify-editor.cjs:5856`) after 579 PASS and 0 FAIL, while
+  curl had the same three addresses answer 404 in 0.24–0.29 s straight after. Runs 2 (`10c30db4`) and 4 (`e7b4b169`) at
+  the SAME place, the last step: step 9's raw `GET /projects/<id>` (`:6661`, then `:6673`), after 662 and 664 PASS. That
+  repeat was sampled, as a repeat must be: a throwaway account seeded as the walk seeds it, signed in by magic link, sent
+  the same raw GET 30 times in a fresh context — 30 of 30 answered 200 with the skeleton, in 464–1521 ms (median 593), none
+  over 5 s. So the route does not stall alone; it stalls late in a long walk, as this row says. Neither request goes
+  through `steady`'s retry, which covers page navigations only. Every run deleted its accounts (users 13 → 13).
 
 plain: Our automated walk of the live site opens the editor dozens of times. On 2026-09-19 roughly one opening in
   twenty never finished loading within 30 seconds, which stops the walk. Ordinary pages on the same site answer in a
