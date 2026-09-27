@@ -564,6 +564,15 @@ have; none changes what a surface does.
     the same before and after 1280 (244 and 244; 238 and 238). So the TEST read the scroll too early: it now reads it once
     it has settled, and the expectation — the canvas keeps its scroll across the line — is unchanged. Then 9 of 9 cold
     runs passed (`run-keyboard-gate.sh -g "crossing 1280" --repeat-each 3`, three times).
+18. **The deployed walk's step 90 read the left side's end ONCE, and the grid made that a stale number.** The Dev walk at
+    `765cdbde` (`dpl_4Ln5NMuSuYafAPCo52uooUTbDPQ4`) failed it at both widths, room −16 against a floor of 8. The step sets
+    a very long name, reads where the left side ends, then tries every canvas label in the switcher and keeps the one
+    that pushes the centred group furthest left. Under the old absolute centring the left side's end did not depend on
+    the label; in the grid a wider group narrows the left column, so the name truncates sooner and the history moves left
+    with it. The step now reads the left side's end beside each label, as the grid lays it out. Executed in the harness at
+    1440 and 1280 over every label in the switcher: the old reading gives −117 and −163 there, the new one 10 at both —
+    the grid's own gap, and above the floor. The check's claim and its floor are unchanged; this is item 3's third read
+    of the bar, whose layout model moved under it.
 
 ## Design Notes
 
@@ -693,7 +702,23 @@ the pointer, not the layout".
 - **CI (`GITHUB_TOKEN`, by name).** `db6965a9`: `check` RED at `pnpm keyboard` on one assertion this story added (96 of
   97, run 36291300831), `rls` success, `deploy` skipped and nothing published — change log 17; the Render matrix workflow
   success. The fix is the next Dev commit, after the whole gate passed again locally (97 of 97).
-- **The deployed walk runs after the push that deploys**, once CI's `deploy` has put the commit on `app.inflozo.com`: the walk
+- **CI at `765cdbde`** (the journey fix): `check`, `rls` and `deploy` success, the Render matrix workflow success;
+  `dpl_4Ln5NMuSuYafAPCo52uooUTbDPQ4` READY on production (read with `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`).
+- **The deployed walk, run 1, at `765cdbde`** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`) —
+  **3 FAIL, 656 PASS**, stated plainly: step 66b's two lines ("Saved on this device → synced false · revision 10 → 10",
+  DW-220's known intermittent autosave-on-tab-hide stop, word for word, in code this story does not touch) and step 90
+  (room −16 at 1440 and 1280 — the walk's own stale reading, change log 18, fixed in the next commit). Every Story 5.22
+  step passed on production: 97 (D4f on the iPhone 13 — the 60px bar, the 44px back link, the user's 32px initial, the
+  words verbatim in Bricolage, one 56px Your sites row reaching `/sites`, no request to the lock or the sync route and
+  no `edit_locks` row after 5s, the notice kept sideways, and the control reading no row before), 98 (D8a on the iPad
+  Pro 11, ⋯'s rows in the controls' own words, the Device row moving to Tablet, the overlay leaving the chip's words
+  and `fitFor` unchanged, the 44px sweep at rest, with ⋯ open and over Controls with every group open, and the tablet's
+  lock row as the phone's control), 99 (real 200%: a 720 window at DPR 2 with a fine pointer, compact, 32px rail items,
+  hover live, no notice — against the 1440 control at 100%), 100 (the Dashboard, Sites, Sign In and `inflozo.com/` at
+  390 with touch: no sideways overflow and zero axe violations behind axe's positive control), 101 (1440 → 1279 → 1440:
+  the selection kept, nothing remounted, the lock row's holder and generation unchanged), and the re-expected 9 and 14.
+- **The deployed walk runs again after the push that deploys the step-90 fix**, once CI's `deploy` has put it on
+  `app.inflozo.com`: the walk
   refuses to start unless Vercel serves HEAD and the tree is clean. Its results — steps 97–101 and the re-expected 9, 14
   and 90 — are recorded here by the next Dev commit.
 

@@ -4420,15 +4420,18 @@ async function main() {
         if (!nameText || !labelText) return { room: null }
         const [name, label] = [nameText.nodeValue, labelText.nodeValue]
         nameText.nodeValue = 'An exceptionally long project name that runs far past any sensible length for a publication'
-        const leftEnds = document.getElementById('editor-history').getBoundingClientRect().right
-        // the widest label is whichever pushes the centred group furthest left — measured, never named here
+        // the widest label is whichever pushes the centred group furthest left — measured, never named here.
+        // STORY 5.22: and the left side's end is read BESIDE EACH LABEL, not once: in the bar's grid a wider group narrows
+        // the left column, so the name truncates sooner and the history moves left with it. Read once, with the label the
+        // page opened on, the end was a stale number the grid had already moved (the Dev walk at 765cdbde: -16 at both
+        // widths, where the grid's own gap is 10).
         const widest = labels.map((l) => {
           labelText.nodeValue = l
-          return { l, left: document.getElementById('editor-centre').getBoundingClientRect().left }
+          return { l, left: document.getElementById('editor-centre').getBoundingClientRect().left, leftEnds: document.getElementById('editor-history').getBoundingClientRect().right }
         }).sort((a, b) => a.left - b.left)[0]
         nameText.nodeValue = name
         labelText.nodeValue = label
-        return { widest: widest.l, room: Math.round(widest.left - leftEnds) }
+        return { widest: widest.l, room: Math.round(widest.left - widest.leftEnds) }
       }, labels90)) })
     }
     await page.setViewportSize({ width: 1440, height: 900 })
