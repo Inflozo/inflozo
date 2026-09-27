@@ -2,8 +2,8 @@
 title: 'Story 5.23 — The play-loop gate'
 type: 'feature'
 created: '2026-09-27'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '3361bb6aef749d5a0d559ba976133e3535b717fc'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
