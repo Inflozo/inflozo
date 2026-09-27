@@ -5246,6 +5246,11 @@ evidence (Story 5.14's Dev, 2026-09-21, at `6f2944ef`): step 66b failed again on
   515 PASS**). Story 5.14 adds no request inside 66b: its one write, the "looked at" record, fires only when the record
   CHANGES, and by step 66b Home's record already holds the visitor on screen, so the undo/redo that owes the edit writes
   nothing. Two stories and two builds now, the same stop.
+evidence (Story 5.22's Dev, 2026-09-27): the same stop, word for word — **3 FAIL, 656 PASS** at `765cdbde`
+  (`dpl_4Ln5NMuSuYafAPCo52uooUTbDPQ4`), 66b's two lines "Saved on this device → synced false · revision 10 → 10" beside a
+  step 90 failure of the walk's own — then **0 FAIL, 659 PASS** at `9212ecc4`, whose app code is the same (that push
+  changed only the walk and the spec). Story 5.22 touches no save code: the autosave and the flushes are `EditorShell`'s
+  effects, moved unchanged. Three stories and three builds now.
 
 ## Deferred from: Story 5.14's Dev run (2026-09-21)
 
@@ -6410,3 +6415,24 @@ origin: Story 5.22's Dev (2026-09-27), measured in the harness across widths: th
 owner: unowned until a tablet under 660px wide meets the Paywall; the options are the owner's (R-143 keeps undo and redo
   in the bar, and "never shrink or relabel" keeps Template and View as whole).
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the bar)
+
+### DW-284: the deployed editor walk's step 90 read the "looked at" record before its own writes had landed
+
+plain: One automated check of View as — "the database remembers which visitors you have looked at" — failed once and
+  passed on the next run of the same build. The record was behind by more than ten seconds, then caught up: the check
+  waited for it and gave up too soon, or the save was slow that once. Nothing a customer does is affected: a record that
+  arrives late, or not at all, only brings back a reminder dot, which is the design.
+status: open
+severity: low
+origin: Story 5.22's Dev (2026-09-27), the deployed walk at `9212ecc4` (`dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB`), its second run
+  there: **2 FAIL, 657 PASS** — `project_template_prefs.member_states_viewed` still `["anonymous"]` after the walk's
+  ten-second poll, while the session had already recorded all three visitors (its own menu carried no dot), and after the
+  reload the menu dotted `free` alone, so Paid's write had landed by then and Free's had not. The runs before and after
+  on the same app code passed it (`765cdbde`, and `9212ecc4`'s third run: **0 FAIL, 659 PASS**).
+owner: unowned — whoever next touches the View as record (`recordViewed`'s one write chain, a queue of server actions) or
+  the walk's step 90.
+location: `tools/probe/run-verify-editor.cjs` (step 90, the `storedViewed90` poll) · `recordViewed` in
+  `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`
+reason: Story 5.22 changes neither the record nor its writes. Telling a slow write from a short poll needs its own look —
+  the write chain is serial by design ("a refused write rides the next one"), and a reload drops what is still queued —
+  not a guess inside a Dev run.

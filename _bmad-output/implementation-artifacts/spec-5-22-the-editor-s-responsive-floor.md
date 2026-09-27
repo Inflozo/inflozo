@@ -717,18 +717,39 @@ the pointer, not the layout".
   hover live, no notice — against the 1440 control at 100%), 100 (the Dashboard, Sites, Sign In and `inflozo.com/` at
   390 with touch: no sideways overflow and zero axe violations behind axe's positive control), 101 (1440 → 1279 → 1440:
   the selection kept, nothing remounted, the lock row's holder and generation unchanged), and the re-expected 9 and 14.
-- **The deployed walk runs again after the push that deploys the step-90 fix**, once CI's `deploy` has put it on
-  `app.inflozo.com`: the walk
-  refuses to start unless Vercel serves HEAD and the tree is clean. Its results — steps 97–101 and the re-expected 9, 14
-  and 90 — are recorded here by the next Dev commit.
+- **CI at `9212ecc4`** (the step-90 fix): `check`, `rls` and `deploy` success, the Render matrix workflow success;
+  `dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB` READY on production.
+- **The deployed walk at `9212ecc4`, three runs, every one recorded:**
+  - run 1 — a HARNESS ERROR, not a result: `locator.click` timed out after 30s on Theme settings' clear row, whose submit
+    was still `aria-busy` (0 FAIL, 261 PASS before it; Story 5.6's screen, untouched here — DW-222's kind of timeout);
+  - run 2 — **2 FAIL, 657 PASS**: step 90's stored "looked at" record still held only the logged-out visitor after the
+    walk's ten-second poll, while the session had all three, and a reload dotted `free` alone — the record caught up
+    late. The same app code passed it in the runs either side, and this story does not touch the record: **DW-284**,
+    new. Step 90's name check passed here, room 10 at 1440 and 1280;
+  - run 3 — **0 FAIL, 659 PASS**. Steps 97–101 as in run 1 at `765cdbde`, all passing; step 90's name check at room 10 at
+    both widths; step 66b green; steps 2, 5, 46, 54 and 92 green (the bar 48px, the group centred, both folds to a
+    44px rail, the sun and the device track in the cluster's order, the page-2 pill clear of the card and the chip at
+    every device in a 1440 and a 1280 window); step 9's raw stream the skeleton on every open; and step 14's touch
+    context compact, its tap opening the overlay that Esc closes with the selection kept. Both throwaway accounts
+    deleted, HTTP 200 each, users 13 → 13.
+- **DW-220** gains `765cdbde`'s sighting and the clean pass after it; **DW-284** is new (the record's late write).
 
-**Real infrastructure** (R-82):
+**Real infrastructure** (R-82) — what this Dev phase hit, and what each returned (keys by variable name only):
 
-- **Vercel** — the deployment READY for the Dev commit.
-- **`app.inflozo.com`** — the editor as a phone, a tablet, 1280 and 1279, and real 200% zoom.
-- **`inflozo.com/`** — the 390 sweep.
-- **Supabase** — the walk's throwaway accounts, and `edit_locks` read for the phone's no-row claim and the tablet's
-  control.
+- **GitHub Actions** (`GITHUB_TOKEN`) — CI run 36291300831 at `db6965a9`: `check` failure at `pnpm keyboard` (change log
+  17), `rls` success, `deploy` skipped; run 36291900529 at `765cdbde` and run 36293062483 at `9212ecc4`: `check`, `rls` and
+  `deploy` success. The Render matrix workflow success at all three.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — `dpl_4Ln5NMuSuYafAPCo52uooUTbDPQ4` (`765cdbde`) and
+  `dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB` (`9212ecc4`) READY on production; `db6965a9` was never deployed.
+- **`app.inflozo.com`** — the deployed walk: the editor as a phone (iPhone 13: D4f, no lock, `/sites` reached), a tablet
+  (iPad Pro 11: D8a and the 44px sweep), a 1440 window narrowed to 1279 and back, and real 200% zoom; the Dashboard,
+  `/sites` and Sign In at 390.
+- **`inflozo.com/`** — step 100 at 390 with touch: `scrollWidth` 390 against `clientWidth` 390, zero axe violations.
+- **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) — per run, two throwaway accounts through the Auth Admin API,
+  created and deleted (HTTP 200 each, users 13 → 13); `edit_locks` read through the lock route's own non-holder beat
+  under the page's session (read in `lock/route.ts`: a non-holder's `beat` changes no rows and answers the row as it
+  stands) — no row for the phone after 5s and none before it (step 97), the tablet's row as the control (step 98), and
+  the same holder and generation at 1440, 1279 and 1440 again (step 101); `project_template_prefs` read by step 90.
 - **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo. This story calls no Ghost API. The Ghost 5
   Project's surfaces are Story 5.21's, and only appear in its canvas.
 
