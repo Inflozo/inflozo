@@ -907,6 +907,17 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     on this computer at 4× (slower per core than a current mid-tier laptop). Also measured: the rAF p95
     reads 16.6–16.8 ms on smooth windows (timestamp jitter at 60 Hz), so the trace must count dropped frames rather than
     compare 0.1 ms; and on production every ring is one design, so Shuffle is traced only where the harness has a ring.
+  - **Story 5.23a's planning (2026-09-27, the same computer and build, the keyed paint PROTOTYPED and reverted):** `paint()`
+    keeping a record per section (a JSON signature of its stack entry, every top-level node its part parsed to, its root and
+    stamps) and reusing it while the render context is unchanged takes one `]` from a 488–501 ms long task to an 8.8–12 ms
+    paint at 4×, and one ⌥↓ to 3.7–6 ms, with 40 of 41 roots (41 of 41 for the move) the same nodes and the canvas equal
+    to a full repaint (`P` `P`). **A section owns every top-level node its part gives, not only its root** — the controls
+    fixtures open with a comment, and a prototype that moved only the root failed that agreement check. **The canvas alone
+    does not pass NFR-1's trace**: at 4× it drops 7.4–8.9% of vsyncs (32% today; the limit 5%) with long tasks of 50–88 ms,
+    because every change still re-renders the whole editor — React's reconciliation about 53 ms, `EditorShell`'s body
+    9–15 ms, the chrome's placement loops forcing layout — and a session's first hover (the pill and the chrome layers
+    mounting) is one 193 ms task. Where that work goes is 5.23a's **Question 1, open** (recommended: a new Story 5.23b
+    carries the 60 fps pass; 5.23a ships the canvas and records the trace).
 
 ## Technical Decisions
 
