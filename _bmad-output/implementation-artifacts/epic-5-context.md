@@ -863,7 +863,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       the link picker, and a Layers row's gaps.
     - **Executed:** a tap that opens the Controls overlay must cancel its own `touchend` — without it the tap's click
       landed on the scrim and closed the overlay at once; real 200% browser zoom is D8b with hover live and no notice.
-    - The Section Picker's cards at 720–834 are the spec's Question 3 (an Ask First layout). DW-282 and DW-283 are new.
+    - The Section Picker's cards at 720–834 were the spec's Question 3 (an Ask First layout), ruled option 1 as
+      **R-203**: two columns below 1280 (the `compact` variant), one where two would cut a card's name (a container under
+      514px — `@min-`/`@max-` of one width, because the `compact` rule is emitted after the container's). DW-282 and
+      DW-283 are new.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions

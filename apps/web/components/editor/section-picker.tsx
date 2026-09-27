@@ -29,7 +29,7 @@ import type { Visitor } from '@/lib/view-as'
  * miniature with its `Add` and its tier badge.
  *
  * FOUR THINGS HERE ARE THE OWNER'S TEST OF 2026-09-20 AND NOT S5a (R-153, and the four he asked for after it): the
- * grid's shape (`COLUMNS` below), the `Add`'s seat (`Card`), the rail's first row and its renamed heading, and the
+ * grid's shape (the grid below, and R-203's narrower columns), the `Add`'s seat (`Card`), the rail's first row and its renamed heading, and the
  * hover, which is a BORDER — no wash, no shadow, no lift. S5a`:81`'s `· shown in your pack: Paper` is gone with
  * them. Everything else in S5a and S5c stands.
  *
@@ -69,8 +69,15 @@ import type { Visitor } from '@/lib/view-as'
  * shorter than the `Add` pill inside it, so the button was CUT OFF. Four fixed columns over a row unit fix all
  * three at once, and a card's SHAPE now says what the section is: a band spans two columns, a feed spans two rows
  * (`spanFor`, measured from the design's own drawn aspect). The `Add` moved out of the wash and into the footer
- * strip, where it cannot be cropped by a short preview. */
-const COLUMNS = 4
+ * strip, where it cannot be cropped by a short preview.
+ *
+ * STORY 5.22 — FEWER, WIDER CARDS ON NARROWER SCREENS (R-203, owner, 2026-09-27). Four columns at a tablet's width drew
+ * cards 85–120px wide, a name cut to its first letter and its tier tag hidden. So below the editor's own line (R-202's,
+ * the `compact` variant) the grid is TWO columns, and ONE where two would leave a card less room than the full editor's
+ * own smallest one — four columns at 1280 draw it 225px, so two need 2 × 225 + a 16px gap + the grid's 48px of padding:
+ * a container narrower than 514px. Measured in the harness: two columns keep every card at 226px or more down to an 800px
+ * window, and would cut names again below it (210px on the iPad mini, 186px at 720). The same cards and the same words;
+ * only the number of columns changes, and a band still spans the whole row. */
 /** One row of the grid, in pixels — a tile is this tall, a two-row tile twice it plus the gap.
  *  ponytail: a guessed unit, not a rule. Raise it if the miniatures read too small on his screen. */
 const ROW = 190
@@ -218,7 +225,8 @@ export function SectionPicker({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      {/* `@container`: R-203's one-column rule measures the room the cards have, not the window (above) */}
+      <div className="@container flex min-w-0 flex-1 flex-col">
         {/* S5a`:79-86`: the header */}
         <div className="flex items-center gap-3 border-b border-line p-[16px_24px]">
           <h2 className="font-display text-[20px] font-bold tracking-[-0.01em] text-ink">{title}</h2>
@@ -255,19 +263,21 @@ export function SectionPicker({
             </div>
           </div>
         ) : (
-          /* S5a`:88`'s grid, re-shaped by the owner's test: `COLUMNS` tiles of `ROW`, packed DENSE so a two-column
-             band does not leave a hole behind it. A `group` with a label and the arrow walk on it, exactly as the
-             icon picker's grid is. */
+          /* S5a`:88`'s grid, re-shaped by the owner's test: four columns of `ROW` tiles (two, then one, on narrower
+             screens — R-203), packed DENSE so a two-column band does not leave a hole behind it. A `group` with a label
+             and the arrow walk on it, exactly as the icon picker's grid is. */
           <div
             ref={grid}
             data-picker-grid=""
             role="group"
             aria-label="Designs"
-            /* a real grid runs ACROSS its rows in DOM order, so "right" is one cell and "down" is a whole row —
-               `COLUMNS` is the one place that number lives, and the layout below reads the same constant */
+            /* a real grid runs ACROSS its rows in DOM order, so "right" is one cell and "down" is the nearest cell
+               below — measured, never a column count, so it holds at four columns, two and one alike. The two and the
+               one are EXCLUSIVE conditions (`@min-` / `@max-` of one width), because Tailwind emits the `compact` rule
+               after the container's and the later rule would win wherever both held (measured: two columns at 768) */
             onKeyDown={(event) => gridKeys(event, { right: 1, down: 'nearest' })}
-            style={{ gridTemplateColumns: `repeat(${COLUMNS}, minmax(0, 1fr))`, gridAutoRows: `${ROW}px` }}
-            className={`grid flex-1 gap-4 overflow-y-auto p-[20px_24px] [grid-auto-flow:row_dense] ${slimScrollbar}`}
+            style={{ gridAutoRows: `${ROW}px` }}
+            className={`grid flex-1 grid-cols-4 gap-4 overflow-y-auto p-[20px_24px] [grid-auto-flow:row_dense] compact:@min-[514px]:grid-cols-2 @max-[514px]:grid-cols-1 ${slimScrollbar}`}
           >
             {shown.map((entry, n) => (
               <Card
@@ -340,7 +350,7 @@ function Card({
          lifts the card 2px and swaps its shadow; he asked for none of the three — a wash over a miniature hides the
          very thing the miniature is for, and a card that moves under the pointer is a card you chase. */
       className={`group relative flex h-full flex-col overflow-hidden rounded-[12px] border border-line bg-surface shadow-sm transition-colors hover:border-coral focus-within:border-coral ${
-        span === 'wide' ? 'col-span-2' : span === 'tall' ? 'row-span-2' : ''
+        span === 'wide' ? 'col-span-2 @max-[514px]:col-span-1' : span === 'tall' ? 'row-span-2' : ''
       }`}
     >
       <SectionPreview
@@ -359,8 +369,8 @@ function Card({
       {/* S5a`:99`: the footer — the design's name at 13/600 and its tier badge, with the Add between them. Three
           tracks, the middle one auto, so the button is centred on the CARD however long the name is.
           Story 5.22 — on a touch screen the Add is the editor's 44px (D8a), so the strip grows to hold it (44 and its
-          10px either side), and neither side's words may spill over it: each is clipped to its own track. How the
-          picker lays out its cards at 720 and 834 is a layout the frames do not draw (the spec's Ask First). */}
+          10px either side), and neither side's words may spill over it: each is clipped to its own track. How many
+          columns the cards take below 1280 is R-203's (above). */}
       <div className="grid h-[41px] shrink-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2 p-[10px_14px] coarse:h-16">
         <span className="flex min-w-0 items-center gap-[5px]">
           <span className="truncate text-ui-dense font-semibold text-ink">{entry.name}</span>

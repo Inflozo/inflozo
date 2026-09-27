@@ -3187,6 +3187,33 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
     expect(Math.abs(m.off), 'and the group is still centred on the bar').toBeLessThan(2)
   })
 
+  test('R-203: the Section Picker at 720 is ONE column, and the arrows walk it — the next card is both below and next', async ({ page }) => {
+    await openCompact(page)
+    const before = (await rows(page)).all.length
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(picker(page)).toBeVisible()
+    expect(await picker(page).locator('[data-picker-grid]').evaluate((g) => getComputedStyle(g).gridTemplateColumns.split(' ').length), 'one column where two would cut the names').toBe(1)
+    // the site-wide card is not walked from, for the reason the full-width journey gives (R-152)
+    const cells = picker(page).locator('[data-cell]:not([aria-label*="Site-wide"])')
+    expect(await cells.count(), 'at least two page cards to walk between').toBeGreaterThan(1)
+    await cells.first().focus()
+    const first = await page.evaluate(() => document.activeElement?.dataset.design)
+    await page.keyboard.press('ArrowDown')
+    const below = await page.evaluate(() => document.activeElement?.dataset.design)
+    expect(below, 'ArrowDown moves to the card below').not.toBe(first)
+    await page.keyboard.press('ArrowUp')
+    expect(await page.evaluate(() => document.activeElement?.dataset.design)).toBe(first)
+    await page.keyboard.press('ArrowRight')
+    expect(await page.evaluate(() => document.activeElement?.dataset.design), 'in one column the next card is also the one below').toBe(below)
+    // Enter places, and one ⌘Z takes it back, as at full width
+    await page.keyboard.press('Enter')
+    await expect(picker(page)).toHaveCount(0)
+    expect((await rows(page)).all).toHaveLength(before + 1)
+    await page.keyboard.press('ControlOrMeta+z')
+    expect((await rows(page)).all).toHaveLength(before)
+  })
+
   test('R-192 reading along: the Remix row and the rail\'s + are greyed and skipped, while the rail, the overlays and the views stay live', async ({ page }) => {
     await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
     await openCompact(page)

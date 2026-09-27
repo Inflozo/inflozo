@@ -1041,7 +1041,8 @@ DOCS = [
   "Remix from ⋯ with its confirm visible though the dice is collapsed; a rail item opening Controls over a canvas that "
   "does not move; L's Layers overlay handing over to Controls; the skip link landing in Controls; crossing 1280 live; a "
   "Light-only project with no dark row (a fourth header); R-192 reading along, its view rows acting; and a confirm open "
-  "in a panel closing as the window crosses 1280 rather than staying modal and unseen. Stores no "
+  "in a panel closing as the window crosses 1280 rather than staying modal and unseen; and R-203's Section Picker at "
+  "720, one column its arrows still walk. Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',
   "Story 5.22's journeys that may tap, in the keyboard gate's own run (R-201, R-202, D4f, D8a, D8b), on Playwright's "
@@ -1053,8 +1054,9 @@ DOCS = [
   'into it (executed without the guard, the click landed on the scrim); 1279 is compact, with D8b\'s 32px rail items, '
   'a 28px ⋯ and hover live, and 1280 is not; and at 720 '
   'D5d\'s page-2 pill never meets the viewport chip, centred or slid right of it; and the bar at every width from 720, '
-  'either pointer, on Home and on the Paywall: the centred group meets neither side and no control leaves the window. '
-  'Stores no count.'),
+  'either pointer, on Home and on the Paywall: the centred group meets neither side and no control leaves the window; '
+  'and R-203\'s Section Picker, four columns at full width, two below 1280, one where two would cut a name, with no '
+  'name or tier tag cut that full width shows whole. Stores no count.'),
  ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
   'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '
   'boots is the only thing this journey means anything against. Since Story 5.22 it runs floor.spec.mjs beside the '

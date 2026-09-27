@@ -451,6 +451,16 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
   - The rulings' own words already landed at Create, in every place R-201's and R-202's targets list. Dev does not
     repeat them.
   - **`tools/doc-audit.py`:** a catalogue row for `tools/keyboard/floor.spec.mjs`.
+- [x] **`apps/web/components/editor/section-picker.tsx`** — **R-203** (Question 3, ruled at Dev): fewer, wider cards.
+  - Four columns at full width, unchanged (R-153); two below 1280 (`compact:`); one where two would give a card less
+    room than the full editor's own smallest (a grid container under 514px, `@container`).
+  - The two and the one are exclusive conditions (`@min-`/`@max-` of one width): Tailwind emits `compact` after the
+    container rule, and the later rule would win where both held.
+  - A band spans its whole row at one column too; the arrows walk the grid by position, never by a column count.
+  - Held by `floor.spec.mjs` (columns at 1440, 1279, 900, the iPad Pro 11, the iPad mini, 720 and 640, with no name or
+    tier tag cut that full width shows whole), a journey at 720 (one column, ↓ and → reach the same next card, Enter
+    places and ⌘Z takes it back), and the deployed walk's step 98 (two columns on the iPad Pro 11, every name and tag
+    whole). `EXPERIENCE.md`'s S5 row, `epics.md` Story 5.10, the register and `epic-5-context.md` carry the ruling.
 
 **Acceptance Criteria:**
 
@@ -573,6 +583,14 @@ have; none changes what a surface does.
     1440 and 1280 over every label in the switcher: the old reading gives −117 and −163 there, the new one 10 at both —
     the grid's own gap, and above the floor. The check's claim and its floor are unchanged; this is item 3's third read
     of the bar, whose layout model moved under it.
+19. **Question 3 was ruled option 1 after the Dev push, and built in this phase (R-203).** Two columns below 1280 kept
+    every card as roomy as the full editor's own (226px or more) down to an 800px window, and cut names again below it
+    (the iPad mini's cards 210px, 720's 186px, two of seven and one of seven names whole), so the one-column line is a
+    grid container under 514px — two full-width cards, the gap and the padding — and not the question's "about 600".
+    Measured after: at every width from 1440 down to 560, as many names whole as at full width (the harness's three long
+    fixture names are cut at 1440 too) and every tier tag whole. The first build let the two-column rule win at 768:
+    Tailwind emits the `compact` variant after the container query, so the two are now written as exclusive conditions.
+    Its control: without the one-column rule the new floor test fails at the iPad mini (two columns, not one).
 
 ## Design Notes
 
@@ -760,7 +778,7 @@ the pointer, not the layout".
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build. You need your phone and your laptop; an iPad is optional.
-Both questions are ruled (R-201, R-202), and these steps follow them.
+All three questions are ruled (R-201, R-202, R-203), and these steps follow them.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -779,6 +797,7 @@ Both questions are ruled (R-201, R-202), and these steps follow them.
 | 13 | same | Full width | Press **⌘ +** five times, to 200%. Point at the tiles. Then press **⌘ 0**. | — | At 200% the narrow layout with bigger text, tiles lighting under the pointer, and no "bigger screen" card. ⌘ 0 brings the full editor back. |
 | 14 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Ghost 5 Project, Home, narrow window | Click the post grid, choose **Preview page 2**, then narrow the window slowly. | — | The dark **Page 2 · Back to page 1** pill and the small size label in the corner never overlap. The pill moves right to make room. |
 | 15 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | **iPad**, if you have one | Open the project. Tap a section, then **⋯**. | — | The narrow layout with bigger, finger-sized buttons. Settings slide over on a tap. |
+| 16 | same | Laptop, window about half your screen | Press **⌘K** (or the **+** at the bottom of the tile strip). Then widen the window a little at a time. | — | The Add a section picker shows its cards one to a row, each with its whole name, its **+** and its Free or Pro tag. Wider, two to a row; at full width, four, as before. |
 
 ## Questions for the owner
 
@@ -862,4 +881,8 @@ pixels wide, so a design's name is cut to its first letter and its Free or Pro t
    second.
 3. **Leave it as it is** until Claude Design draws the picker at 834.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27)** — *"Fewer, wider cards on narrower screens."* Recorded as **R-203**. The
+one-column line sits where two columns stop giving a card room — a picker grid under 514px wide, about an 800px window —
+rather than the "about 600 pixels" this question estimated, which forgot the picker's own 240px category rail
+(measured at Dev: two columns cut names again on the iPad mini and at 720). That is the option's stated purpose, "every
+card has room for its name, its + and its Free or Pro tag"; change log 19.

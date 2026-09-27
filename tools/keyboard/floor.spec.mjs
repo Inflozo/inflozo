@@ -389,3 +389,56 @@ test.describe('the bar at every width from 720, either pointer, on Home and on t
     })
   }
 })
+
+/** The Section Picker's grid as a width draws it: its column count, and per design whether its name and its tier tag
+ *  are whole. The card's footer is its last child: the name's span first, the category and tier tag last (`Card`). */
+async function pickerAt(browser, baseURL, options) {
+  const context = await browser.newContext({ baseURL, ...options })
+  const page = await context.newPage()
+  await page.goto(HARNESS)
+  await painted(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+k')
+  const grid = page.locator('dialog[open][aria-label="Add a section"] [data-picker-grid]')
+  await expect(grid).toBeVisible()
+  // a card takes its span once its preview has drawn and reported its shape (`spanFor`)
+  await page.waitForTimeout(1500)
+  const read = await grid.evaluate((g) => ({
+    columns: getComputedStyle(g).gridTemplateColumns.split(' ').length,
+    cards: Object.fromEntries([...g.children].map((card) => {
+      const foot = card.lastElementChild
+      const name = foot.firstElementChild.firstElementChild
+      const tags = foot.lastElementChild
+      const [tier, track] = [tags.lastElementChild.getBoundingClientRect(), tags.getBoundingClientRect()]
+      return [card.querySelector('[data-cell]').dataset.design, {
+        name: name.scrollWidth <= name.clientWidth + 0.5,
+        tier: tier.left >= track.left - 0.5 && tier.right <= track.right + 0.5,
+      }]
+    })),
+  }))
+  await context.close()
+  return read
+}
+
+test.describe('R-203 · the Section Picker below 1280: fewer, wider cards, each keeping its name, its Add and its tier tag', () => {
+  test('four columns at full width, two below 1280 and on the iPad Pro 11, one where two would cut the names — and nothing cut that full width shows whole', async ({ browser, baseURL }) => {
+    const full = await pickerAt(browser, baseURL, { viewport: { width: 1440, height: 900 } })
+    expect(full.columns, 'S5a as the owner re-shaped it (R-153): four columns').toBe(4)
+    for (const [label, options, columns] of [
+      ['1279', { viewport: { width: 1279, height: 900 } }, 2],
+      ['900', { viewport: { width: 900, height: 900 } }, 2],
+      ['iPad Pro 11', device('iPad Pro 11'), 2],
+      ['iPad Mini', device('iPad Mini'), 1],
+      ['720', { viewport: { width: 720, height: 900 } }, 1],
+      ['640', { viewport: { width: 640, height: 900 } }, 1],
+    ]) {
+      const at = await pickerAt(browser, baseURL, options)
+      expect(at.columns, `${label}: the number of columns`).toBe(columns)
+      for (const [id, card] of Object.entries(at.cards)) {
+        expect(card.tier, `${label}: ${id}'s Free or Pro tag is whole`).toBe(true)
+        // a name too long for the widest card is cut at full width too (the harness's fixture ring); every other is whole
+        if (full.cards[id]?.name) expect(card.name, `${label}: ${id}'s name, whole at full width, is whole here`).toBe(true)
+      }
+    }
+  })
+})

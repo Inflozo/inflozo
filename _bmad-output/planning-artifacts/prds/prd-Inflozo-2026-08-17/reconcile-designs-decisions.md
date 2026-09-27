@@ -4434,7 +4434,7 @@ once when the project opens."*
   - ✅ the walkthrough: `app.js`'s `needsBigScreen`, the comments in `build-app.py` and `_app.css`, rebuilt.
   - ✅ `epic-5-context.md`.
   - `prd.md` FR-D1 unchanged: it states the device test with no number, as R-87 left it.
-  - ⬜ built — Story 5.22's Dev (`lib/floor.ts`'s `PHONE`, `globals.css`'s `phone` variant).
+  - ✅ built — Story 5.22's Dev (2026-09-27): `lib/floor.ts`'s `PHONE`, `globals.css`'s `phone` variant.
 
 **R-202 — on a fine pointer the editor takes D8's rearrangement below 1280 px; every touch screen that is not a phone
 takes it at any width.** Story 5.22's Create, Question 2, ruled **option 1** (owner, 2026-09-27): *"Below 1280."*
@@ -4462,7 +4462,39 @@ takes it at any width.** Story 5.22's Create, Question 2, ruled **option 1** (ow
   - ✅ `EXPERIENCE.md` § Responsive & Platform.
   - ✅ `DESIGN.md` § Layout & Spacing.
   - ✅ `epic-5-context.md`.
-  - ⬜ built — Story 5.22's Dev (`lib/floor.ts`'s `COMPACT`, `globals.css`'s `compact` variant).
+  - ✅ built — Story 5.22's Dev (2026-09-27): `lib/floor.ts`'s `COMPACT`, `globals.css`'s `compact` variant.
+
+**R-203 — below 1280 the Section Picker shows fewer, wider cards: two columns, and one where two would cut a card's
+name.** Story 5.22's Dev, Question 3, ruled **option 1** (owner, 2026-09-27): *"Fewer, wider cards on narrower
+screens."*
+
+- **Why it was a question.** R-153 made the picker's grid four columns, and the export draws the picker only at full
+  width. At a tablet's width those four columns drew cards 85–120 px wide (measured at Story 5.22's Dev): a design's
+  name was cut to its first letter and its Free or Pro tag was hidden — the iPad mini's Latest Post card read "L". It was
+  already so in a narrow laptop window; D8 brought the tablet into the editor. A layout the frames do not draw was the
+  spec's Ask First.
+- **The rule.**
+  - At full width, four columns, unchanged (R-153).
+  - Below the editor's own line — R-202's, the `compact` variant — two columns.
+  - One column where two would give a card less room than the full editor's own smallest card (225 px, four columns at
+    1280): a grid container narrower than 514 px. Measured, that is a window under about 800 px — the iPad mini, and a
+    1440 display at 200 % zoom.
+  - The same cards and the same words; only the number of columns changes. A band still spans its whole row.
+- **The one-column line is the option's own purpose, not its estimate.** The question offered "one below about 600
+  pixels"; that number forgot the picker's own 240 px category rail. Measured at Dev, two columns cut names again below
+  about 800 px (210 px cards on the iPad mini, 186 at 720), so the line sits where the option's stated purpose —
+  "every card has room for its name, its + and its Free or Pro tag" — holds.
+- **Declined.**
+  - Option 2, keeping the columns and giving each card's foot two lines.
+  - Option 3, leaving the picker as it was until Claude Design draws it at 834.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.22's spec — Question 3, its task and change log 19.
+  - ✅ `EXPERIENCE.md`'s S5 row, where R-153's four columns are recorded.
+  - ✅ `epics.md` Story 5.10's grid criterion.
+  - ✅ `epic-5-context.md`.
+  - ✅ built — Story 5.22's Dev (2026-09-27): `section-picker.tsx`'s grid, held by `tools/keyboard/floor.spec.mjs` and
+    the deployed walk's step 98.
 
 ## B · Approved decisions superseded by this session
 

@@ -192,8 +192,9 @@
 // Story 5.22 adds steps 97-101 — THE EDITOR'S FLOOR (R-201, R-202, D4f, D8): a phone (the iPhone 13 descriptor, in
 // Chromium) gets D4f's notice, reaches /sites, and leaves NO `edit_locks` row, read through the lock route's own
 // non-holder beat under the phone's session (the service key cannot read the table); a tablet (the iPad Pro 11) gets D8a
-// with every visible pressable at least 44px, ⋯'s rows working and the overlay leaving the chip's fit unchanged, and
-// leaves the row the phone did not — the phone's control; REAL 200% browser zoom (a persistent context whose profile
+// with every visible pressable at least 44px, ⋯'s rows working, the overlay leaving the chip's fit unchanged and its
+// Section Picker in two columns with every name and tier tag whole (R-203), and leaves the row the phone did not — the
+// phone's control; REAL 200% browser zoom (a persistent context whose profile
 // zooms every page, against the same launch at 100% as its control) gets D8b with a fine pointer, hover live and no
 // notice; and at 390 with touch the Dashboard, Sign In, /sites and inflozo.com/ have no sideways overflow (measured
 // against `clientWidth`, never `innerWidth`, which an `isMobile` page grows) and zero axe violations. Step 101 narrows a
@@ -6419,6 +6420,30 @@ async function main() {
     const over98 = await tablet.evaluate(() => ({ controls: document.querySelector('#editor-controls').checkVisibility(), label: document.querySelector('#editor-controls').getAttribute('aria-label'), scrim: document.querySelector('[data-scrim]') !== null, chip: document.getElementById('editor-viewport').textContent }))
     check('step 98 — a rail item opens Controls as the overlay, and the overlay leaves the canvas\'s fit — the chip\'s words, `fitFor` over the stage — unchanged (D8:161)', over98.controls && over98.label === 'Section settings' && over98.scrim && over98.chip.toLowerCase() === chip98.toLowerCase() && chip98.toLowerCase() === DEVICE.viewportWords(DEVICE.DESKTOP, DEVICE.fitFor(stage98, DEVICE.DESKTOP)).toLowerCase(), JSON.stringify({ over98, chip98, stage98 }))
     check('step 98 — the 44px sweep: every visible pressable in the editor at least 44 × 44, switches 52 × 30 in 44px rows — at rest, with ⋯ open, and over Controls with every group open', rest98.root && rest98.small.length === 0 && menu98.small.length === 0 && panel98.small.length === 0 && panel98.checked > rest98.checked, JSON.stringify({ rest: rest98, menu: menu98, panel: panel98 }))
+    // R-203 (Question 3, owner, 2026-09-27), on production: the Section Picker on the iPad Pro 11 is TWO columns, and every
+    // card keeps its whole name and its Free or Pro tag — four columns drew them 85-120px wide, a name cut to one letter
+    await tablet.keyboard.press('Escape')
+    await tablet.locator('section[aria-label="Canvas"]').focus()
+    await tablet.keyboard.press('ControlOrMeta+k')
+    await tablet.waitForSelector('dialog[open][aria-label="Add a section"] [data-picker-grid]', { timeout: 15000 }).catch(() => null)
+    await tablet.waitForTimeout(1500)
+    const picker98 = await tablet.evaluate(() => {
+      const g = document.querySelector('dialog[open][aria-label="Add a section"] [data-picker-grid]')
+      if (!g) return null
+      return {
+        columns: getComputedStyle(g).gridTemplateColumns.split(' ').length,
+        // the card's footer is its last child: the name's span first, the category and the tier tag last (`Card`)
+        cards: [...g.children].map((card) => {
+          const foot = card.lastElementChild
+          const name = foot.firstElementChild.firstElementChild
+          const tags = foot.lastElementChild
+          const [tier, track] = [tags.lastElementChild.getBoundingClientRect(), tags.getBoundingClientRect()]
+          return { id: card.querySelector('[data-cell]')?.dataset.design, name: name.textContent, whole: name.scrollWidth <= name.clientWidth + 0.5, tier: tier.left >= track.left - 0.5 && tier.right <= track.right + 0.5 }
+        }),
+      }
+    })
+    check('step 98 — R-203: the Section Picker on the iPad Pro 11 is TWO columns, and every card keeps its whole name and its Free or Pro tag', picker98 !== null && picker98.columns === 2 && picker98.cards.length > 0 && picker98.cards.every((c) => c.whole && c.tier), JSON.stringify(picker98))
+    await tablet.keyboard.press('Escape')
     const row98 = await lockRow(tablet)
     check('step 98 — the phone\'s CONTROL: the tablet mounted the editor, and its lock row is there', 'row' in row98 && row98.row !== null && typeof row98.row.holderSessionId === 'string', JSON.stringify(row98))
     await handBack(tablet)

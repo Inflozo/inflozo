@@ -1873,7 +1873,8 @@ position, because the stack order is derived; **a second one in the same categor
 and a site-wide design is marked on its picker card by the Kit's **`Globe`** with a hover title and the same words as
 its accessible name — **never a sentence, a toast or a banner** (**R-152**, owner, 2026-09-19). Layers still carries
 no glyph (R-126 stands)
-**And** the grid is **four columns of a fixed row unit**, a card's **span is its section's own drawn shape** — a band
+**And** the grid is **four columns of a fixed row unit** *(two below 1280, and one where two would cut a card's name —
+**R-203**, Story 5.22)*, a card's **span is its section's own drawn shape** — a band
 spans two columns, a feed two rows — and the **`Add` is an icon in the card's footer strip**, centred between the name
 and the tier badge (**R-153**, the owner's test of the deployed story, 2026-09-20): S5a's multi-column drew a header as
 a sliver and its hover wash cropped the `Add` pill on any short section
