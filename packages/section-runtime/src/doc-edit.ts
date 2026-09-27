@@ -139,8 +139,8 @@ export function setMemberVisibility(doc: ProjectDoc, instanceId: string, visibil
 }
 
 /** R-133's clear, for ONE section: its dark version follows its light one again, and every other byte of the doc is
- *  identical. A DELIBERATE clear, and one of only two in the product — the other is the project-level row on Theme
- *  settings — because everything else keeps a stored override on purpose: a mode change keeps them (FR-D7) and so
+ *  identical. A DELIBERATE clear — every door onto it (the panel row, the `⋯` item and the project-level row on Theme
+ *  settings) asks first — because everything else keeps a stored override on purpose: a mode change keeps them (FR-D7) and so
  *  does `resetSection` (FR-F4, `controls.test.ts:413`). The whole map goes, not only the names in force: a value
  *  this design narrows away is still a dark override the customer asked for on this section.
  *

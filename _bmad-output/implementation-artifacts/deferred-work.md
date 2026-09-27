@@ -6541,3 +6541,22 @@ reason: `networkidle` waits for 500 ms with no request in flight, which a live p
   (472, 513) are already followed by a `waitForFunction` on the sample's own markup, so `waitUntil: 'load'` would lose
   nothing there. The two `goto` calls (79, 82) would each need a wait for their own landmark first. Not changed here:
   it is not this story's step, and a walk edited in the same commit it verifies proves less.
+
+## Deferred from: code review of spec-5-23-the-play-loop-gate.md (2026-09-27)
+
+### DW-288: a remembered record for a design the library no longer holds is kept, and nothing says so
+
+plain: A section remembers the settings of every design it has been shown as. If a design is ever removed from the
+  library, the settings remembered against it stay in the section's saved page, harmless and unused. That is fine, but
+  no comment or test says it is on purpose.
+status: open
+severity: low
+origin: Story 5.23's review (2026-09-27). `parkedControls` is keyed by design id (`doc-schema.ts`) and a record is
+  written for every design left (R-205); `isDesigned` and `read.ts` look only at the live `designId`, so a stale key is
+  never read and never pruned. Pre-existing since Story 5.11, wider since R-205 because every visited design now leaves
+  a record.
+owner: unowned — the first story that retires a design from the library (Epic 9 onward) says whether a stale record is
+  pruned on parse or kept, with a test either way.
+location: `packages/section-runtime/src/doc-schema.ts` (`parkedControls`) · `packages/section-runtime/src/read.ts`
+reason: no design has ever left the library, so there is nothing to execute the claim against; a sentence and a test
+  belong beside the first removal, not in a review patch.

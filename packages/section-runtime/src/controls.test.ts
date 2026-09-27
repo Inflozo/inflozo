@@ -936,6 +936,18 @@ test('R-205 — a design left with NOTHING stored comes back at its defaults, ne
   assert.deepEqual(back.parkedControls['controls/2'], { controls: { columns: '2' }, darkOverrides: { bg: 'contrast' } }, 'both are design 2\'s now — nothing is lost')
 })
 
+test('R-205 — a STRANGER survives a return: a value the design being left does not declare is never taken for a carried one', () => {
+  // review, 2026-09-27: the return path removes a carried value only where the design being LEFT declares it. Design 3
+  // declares no `image`; a live `image` there is a third design's (a doc written outside the ring), and design 1's record
+  // lacking it says nothing about it — so it stays, exactly as "a name neither design declares is left alone" promises.
+  const state: ControlState = { controls: { image: 'side', rule: 'none' }, parkedControls: { 'controls/1': { controls: { columns: '4' }, darkOverrides: {} } } }
+  const back = switchControls(withId(d3), withId(d1), state)
+  assert.equal(back.controls['image'], 'side', 'the stranger is not design 3\'s to carry, so the record cannot have put it aside')
+  assert.equal(back.controls['rule'], undefined, 'while the rule design 3 DOES declare goes back to what design 1 was left with — its default')
+  assert.equal(back.controls['columns'], '4', 'and the record is restored')
+  assert.equal(back.parkedControls['controls/1'], undefined)
+})
+
 test('FR-D13: the panel reports what THIS design draws, and the items past it are untouched', () => {
   // the category authors three features; design 2 declares `data-items-limit="2"` and the others declare none
   const listOf = (e: typeof d1) => {

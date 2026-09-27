@@ -577,10 +577,13 @@ async function main() {
     check('ring — R-205: a setting the next design SHARES comes back exactly as it was left — Image position is Side after the long way round, on the section root and in the panel',
       (await rootClass()) === 'cx' && (await canvas()).attrs['data-image'] === 'side' && (await image511.textContent())?.trim() === 'Side',
       JSON.stringify({ root: await rootClass(), attr: (await canvas()).attrs['data-image'] ?? null, panel: (await image511.textContent())?.trim() ?? null }))
-    // put back to Top, so every later step walks the page it was written against (DW-209's wheel below needs the frame's range)
+    // put back to Top, so every later step walks the page it was written against (DW-209's wheel below needs the frame's
+    // range) — clicked inside Image position's own row, and read back, so a click that missed cannot hand the wheel a
+    // page nobody wrote it for (review, 2026-09-27)
     await openGroup('Layout')
-    await page.getByRole('radio', { name: 'Top', exact: true }).first().click()
+    await page.locator('#section-controls [id$="-control-image"]').getByRole('radio', { name: 'Top', exact: true }).click()
     await page.waitForTimeout(300)
+    check('ring — the put-back landed: Image position reads Top again before the later steps', (await canvas()).attrs['data-image'] === 'top', JSON.stringify({ attr: (await canvas()).attrs['data-image'] ?? null }))
     // and ◀ is the same ring backwards
     await page.locator('[data-design-step="-1"]').click()
     await page.waitForTimeout(500)

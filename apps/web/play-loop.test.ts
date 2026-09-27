@@ -61,7 +61,7 @@ const DECOY: SectionRegistryEntry = {
   id: `${categoryOf(RING[0]!.id)}/${Math.max(...RING.map((e) => Number(e.id.split('/')[1]))) + 1}`,
   compileTarget: ['post.hbs'],
 }
-/** The keyboard harness's library (`harness/editor/layout.tsx:149-155`): the placeable pilots, the ring, the stand-in
+/** The keyboard harness's library (`entries` in `harness/editor/layout.tsx`): the placeable pilots, the ring, the stand-in
  *  paywalls — and the decoy. */
 const ENTRIES: Readonly<Record<string, SectionRegistryEntry>> = Object.fromEntries([
   ...pilotIds().filter(isPlaceable).map((id) => [id, pilot(id)] as const),
@@ -246,7 +246,8 @@ const untouched: Check = (s) => {
     : [`${where(s, i)}: something beside its design and its settings changed — ${differ(kept(before[n]!), kept(i))}`]))
 }
 
-/** ZERO LOSS: every (map, name, value) stored at the start is still stored — live, or remembered against a design. */
+/** ZERO LOSS: every (map, name, value) stored at the start is still stored — live, or remembered against a design. WHICH
+ *  design is not this check's question (a value remembered against the wrong one still exists): `backToStart` asks that. */
 const stillStored: Check = (s) => START[HOME]!.instances.flatMap((before, n) => {
   const after = s.docs[HOME]!.instances[n]!
   const held = (map: 'controls' | 'darkOverrides', name: string, value: unknown) =>
@@ -263,8 +264,12 @@ const backToStart: Check = (s, switchOne, ringAt) => START[HOME]!.instances.flat
   const back = now.designId === before.designId ? end : switchOne(end, now.instanceId, before.designId, ringAt(now.designId))
   if (typeof back === 'string') return [`${where(s, now)}: cannot go back to ${before.designId} — ${back}`]
   const i = back.instances.find((x) => x.instanceId === before.instanceId)!
-  return (['controls', 'darkOverrides'] as const).flatMap((map) => (isDeepStrictEqual(i[map], before[map]) ? []
-    : [`${where(s, i)}: back on ${before.designId}, its ${map} are not as it started — ${differ(before[map], i[map])}`]))
+  return [
+    ...(['controls', 'darkOverrides'] as const).flatMap((map) => (isDeepStrictEqual(i[map], before[map]) ? []
+      : [`${where(s, i)}: back on ${before.designId}, its ${map} are not as it started — ${differ(before[map], i[map])}`])),
+    // and a return clears the record it restored, so a doc never keeps a stale second copy (the away-and-back criterion)
+    ...(i.parkedControls[before.designId] === undefined ? [] : [`${where(s, i)}: back on ${before.designId}, its record is still held`]),
+  ]
 })
 
 /** THE PARTITION: every move lands inside its section's `ringFor` partition — never the decoy, never a treatment. */
@@ -280,9 +285,9 @@ const partitioned: Check = (s) => s.moves.flatMap((m) => {
 
 /** A ring of one never moves, the site doc is byte-identical (R-161), and both docs still parse through AD-27's schema. */
 const stillAsBuilt: Check = (s) => [
-  ...(JSON.stringify(s.docs[SITE.key]) === JSON.stringify(START[SITE.key]) ? [] : [`seed ${s.seed}: the site doc changed (R-161)`]),
+  ...(isDeepStrictEqual(s.docs[SITE.key], START[SITE.key]) ? [] : [`seed ${s.seed}: the site doc changed (R-161)`]),
   ...START[HOME]!.instances.flatMap((before, n) => (ringOf(before.designId).length > 1
-    || JSON.stringify(s.docs[HOME]!.instances[n]) === JSON.stringify(before) ? [] : [`${where(s, before)}: a ring of one changed`])),
+    || isDeepStrictEqual(s.docs[HOME]!.instances[n], before) ? [] : [`${where(s, before)}: a ring of one changed`])),
   ...Object.entries(s.docs).flatMap(([key, doc]) => {
     try {
       return isDeepStrictEqual(parseDoc(doc, key), doc) ? [] : [`seed ${s.seed}: the ${key} doc parses to something else`]

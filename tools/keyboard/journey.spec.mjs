@@ -1006,7 +1006,7 @@ test('FR-D19: a setting only the design you LEAVE has is parked, and comes back 
   // third does not. As built at 5.11 it travelled on to the second design and was put aside against IT when the third
   // lacked it, so the first came back on its default; every design now remembers itself, so it comes back as it was left
   const layout = page.locator('#editor-controls button[id$="-group-layout"]')
-  if ((await layout.getAttribute('aria-expanded')) === 'false') {
+  if ((await layout.getAttribute('aria-expanded')) !== 'true') {
     await layout.focus()
     await page.keyboard.press('Enter')
   }

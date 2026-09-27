@@ -2,9 +2,9 @@
 title: 'Story 5.23 — The play-loop gate'
 type: 'feature'
 created: '2026-09-27'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '3361bb6aef749d5a0d559ba976133e3535b717fc'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -145,6 +145,42 @@ The owner ruled all three questions option 1 on 2026-09-27: **R-205** (every des
 - [x] `tools/probe/run-verify-controls.cjs`, `tools/doc-audit.py` -- the long-way-round step also carries Image
   position; the row's prose says so -- R-82 on production.
 
+### Review Findings
+
+Review 1 (2026-09-27; five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). Every patch applied the same day; the one decision is Question 4 below.
+
+- [ ] [Review][Decision] The three Clear doors open only on an override IN FORCE, so a section whose only dark override
+  is REMEMBERED cannot be cleared from the row, the `⋯` item or Theme settings — the frozen Clear row and its criterion
+  name all three doors; Dev recorded it as DW-286 (Story 9.1) without a ruling. Question 4.
+- [x] [Review][Patch] The return path's stranger arm (`!own(kept, name) && leaving.has(name)`) had no test: dropping the
+  guard left every test green [packages/section-runtime/src/controls.ts:622] — one test pins it, seen red with the guard
+  dropped (61 pass, 1 fail).
+- [x] [Review][Patch] Back-to-the-start never asserted the record is CLEARED on return, so the away-and-back criterion's
+  second half ran only on `switchDesign` directly [apps/web/play-loop.test.ts:260] — the check now reports a held
+  record; seen red with the delete removed (2 fail, "its record is still held").
+- [x] [Review][Patch] The site-doc and ring-of-one tripwires compared `JSON.stringify` output, which is key-order
+  sensitive [apps/web/play-loop.test.ts:283] — `isDeepStrictEqual`, as every other check.
+- [x] [Review][Patch] `parkedControls`' doc said "written only by `switchControls` and read only by it" while
+  `holdsDarkOverride` now reads it [packages/section-runtime/src/controls.ts:55]; `clearDarkOverrides`' doc counted "only
+  two" doors while a third exists [packages/section-runtime/src/doc-edit.ts:143]; the gate cited harness lines that had
+  already drifted and `stillStored`'s comment did not say the record's identity is not its question
+  [apps/web/play-loop.test.ts:64,247] — wording, no count written down.
+- [x] [Review][Patch] The journey opened the Layout accordion only on `aria-expanded === 'false'`, so an absent attribute
+  skipped the open and failed obscurely [tools/keyboard/journey.spec.mjs:1009] — `!== 'true'`.
+- [x] [Review][Patch] The deployed walk's put-back to Top clicked the first "Top" radio on the page and never read it
+  back, so the DW-209 wheel could walk a page nobody wrote it for [tools/probe/run-verify-controls.cjs:583] — clicked
+  inside Image position's row and checked; re-run on production below.
+- [x] [Review][Defer] A record whose key is no longer a design in the library is kept and inert, and nothing says so
+  [packages/section-runtime/src/doc-schema.ts:68] — deferred, pre-existing (`parkedControls` since Story 5.11); DW-288.
+
+Dismissed as noise or answered by evidence: the fixture's `pool` cannot be empty (the fixture test asserts a ring to
+play on first); the gate's runtime is 3.2 s on this computer, no budget needed; legacy 5.11 records on production —
+none exist (0 of 33 sections, executed twice); `resetSection` leaving records alone is the spec's own boundary and what
+"every design remembers itself" means; a panel cue that a design remembers itself is a surface, and this story adds
+none; the catalogue does not index `apps/web/*.test.ts` and never has; the Design Notes' rule wording and fixture prose
+lagged the code — corrected in prose, not code.
+
 **Acceptance Criteria:**
 
 - Given the 40-section fixture, when the gate plays 20 Variant Shuffles across its ringed sections and then a full Site
@@ -205,9 +241,9 @@ Intel Core i5-6600K with 4 cores).**
 leaving `from`:  record = every live value `from` declares, in controls and in darkOverrides
                  parked[from] = record, kept even when it is empty (Spec Change Log 1)
                  remove from the live maps what `to` does not declare
-arriving at `to`: if parked[to] exists, for every name `to` declares:
-                    take it from parked[to]; if parked[to] lacks it and `from` declares it, remove it (default)
-                  delete parked[to]
+arriving at `to`: if parked[to] exists: for every name `to` declares that parked[to] lacks, remove it if
+                    `from` declares it (it was carried in; `to` was left at its default) — a name `from` does not
+                    declare is a stranger and stays; then restore the WHOLE record, and delete parked[to]
 ```
 
 A first visit still carries what both designs declare and defaults what only `to` declares (FR-D19). A name neither
@@ -219,11 +255,12 @@ section, in the existing shape, so there is no migration.
 - **The library** is what the harness assembles: the placeable pilots, `samples()` and `paywallSamples()`, plus one
   decoy. The decoy is an in-memory copy of a sample with a free id in `controls` and `compileTarget: ['post.hbs']`, so a
   wrong partition rule has something to land on.
-- **The fixture.** Home's 40 instances cycle `offeredOn(entry, 'home.hbs')`, and the site doc holds `a1/1`. Each
-  instance's content is its category's default with every text prop made unique to the section. Every declared control
-  and universal gets a non-default offered value, and every `darkOverride` control a dark value different from its
-  light one. One ringed section is hidden and one has a non-default audience. `controls/1`'s `latest` query stores a
-  `data` value. Both docs are run through `designate` and `parseDoc`.
+- **The fixture.** Home's 40 instances cycle `offeredOn(entry, 'home.hbs')`, and the site doc holds every design
+  `offeredOn(entry, 'default.hbs')` gives (as built, `a1/1` alone). Each instance's content is its category's default
+  with every text prop made unique to the section. Every declared control and universal gets a non-default offered
+  value, and every `darkOverride` control a dark value different from its light one. One ringed section is hidden and
+  one has a non-default audience. Every Data row of every section stores a non-default value. Both docs are run through
+  `designate` and `parseDoc`. (Prose corrected at review to what the code derives — review, 2026-09-27.)
 - **Each seed (1 to 100)** plays 20 Shuffles, each on a random section whose ring holds two or more, then one Remix of
   Home. Every move is recorded.
 - **The checks.** Everything but `designId` and the three control maps is deep-equal to the start. Every (map, name,
@@ -347,6 +384,32 @@ screen-reader walk:
       and in the panel. Account deleted, HTTP 200, users 13 → 13.
   - **Next:** the owner's manual test on `https://app.inflozo.com/controls` (R-80).
 
+**Review (2026-09-27, Node 24.18.1; every count is a run's own output).**
+
+- **Real infrastructure, re-executed by the review's own verifier** (R-82; keys by variable name only):
+  - **GitHub Actions** (`GITHUB_TOKEN`): HEAD `2f25af08` CI run 36318278556 — `check`, `rls`, `deploy` success; Render
+    matrix 36318278553 success. The Dev commit `9263b6e3`: run 36317522512, all three success (the spec's own ids).
+    Negative control: `head_sha=0000…` → 0 runs.
+  - **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): `dpl_fo43Lf6JozwjFu2NyxxV8Chy9ANR` READY, production,
+    built from `2f25af08`, aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`. Negative control: a
+    made-up deployment id → HTTP 404.
+  - **Supabase** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`), read-only: the `project_templates` census again — HTTP 200, 19
+    rows, 6 projects, 33 sections, 12 carrying the `parkedControls` key and 0 non-empty; the counter's control over one
+    synthetic record counts 1. GET only.
+  - **The deployed walk before the patches**, at `2f25af08`: **0 FAIL, 114 PASS**, the R-205 check reading
+    `{"root":"cx","attr":"side","panel":"Side"}`; account deleted, HTTP 200, users 13 → 13; no DW-287 timeout.
+  - **No migration** (`git diff --stat 3361bb6a HEAD -- supabase` empty), so R-99's schema read was not needed.
+  - Ghost T1 and T3, Resend and Dodo: not touched and not claimed, as at Dev.
+- **The gate**, before and after the patches: 5 pass, 0 fail, *100 seeds, 3900 moves over 40 sections: 0 failures*,
+  3.2 s. Two new controls, each seen red: the guard on the stranger arm dropped → `controls.test.ts` 61 pass, 1 fail;
+  the record's delete on return removed → the gate 3 pass, 2 fail, *back on controls/1, its record is still held*.
+- **The runtime's tests** after the patches: 90 pass, 0 fail (`controls.test.ts` and `doc-edit.test.ts`).
+- **`pnpm check`** on the patched tree: exit 0 — lint, typecheck, every package test and `check-snapshots: PASS`.
+- **The FR-D19 journey stop** alone (`pnpm keyboard -g 'FR-D19'`), with the accordion guard patched: 1 passed (6.1 s).
+- **The deployed walk with the new put-back check**, against `https://app.inflozo.com` at `2f25af08`: **0 FAIL,
+  115 PASS** — the R-205 check `{"root":"cx","attr":"side","panel":"Side"}` and the put-back `{"attr":"top"}`; account
+  deleted, HTTP 200, users 13 → 13. Two walks this review, neither hit DW-287.
+
 ## Owner's manual test
 
 Deploy confirms the address.
@@ -447,3 +510,29 @@ DW-278 and DW-281. From this story's own list: DW-188, DW-207, DW-219 and DW-220
 5.24, after 5.23a, triages EVERY open entry in the ledger, not only Epic 5's, and closes whatever can be closed with
 evidence at that point; the rest keep, or gain, a named owner. Read as the sweep's scope, since option 1 runs it after
 5.23a — say so if you meant it to run sooner.
+
+### Question 4 — A dark setting a design only remembers cannot be cleared from anywhere. Leave that to Story 9.1, or fix the count now?
+
+Since this story, a section remembers each design's dark settings when you move it to another design. But the three
+places that offer **Clear dark overrides** — the row in the panel, the `⋯` menu in Layers, and Theme settings — only
+offer it when a dark override is *in use* right now. A remembered one is not in use, so none of the three opens.
+
+**An example you can try on the Controls review page.** On sample 1, switch the moon to dark and set **Card tint** to
+*Soft*. Press ▶ to sample 2, which has no Card tint: the dark tint is now remembered against sample 1. Theme settings
+says "No sections carry a dark override" and its Clear says "Nothing to clear". Press ◀: the dark tint is back on sample
+1. Your ruling said Clear also clears what is remembered — and it does, but only when some other override is in use to
+open the door. Today no customer can reach this, because every shipped design is one of a kind. Dev wrote it down as
+DW-286 and handed it to Story 9.1, the first story with a real ring. That narrows a frozen line of this story's spec,
+so it is yours to confirm.
+
+1. **(RECOMMENDED) Confirm DW-286: Story 9.1 decides.** Nothing changes now. This story's Clear criterion is read as
+   "when a Clear runs, the remembered ones go too", which is built and tested. Story 9.1, where a customer can first
+   hold a remembered override, asks you how the count and the three doors should treat one — a screen question, with
+   the frames in front of you.
+2. **Count remembered overrides now.** Theme settings' sentence and Clear count a section that holds a dark override
+   anywhere, remembered included, so its Clear opens; the panel row and the `⋯` item stay as they are. A small change
+   to Theme settings' sub-caption in this story, and one more step in your manual test.
+3. **Every door counts them now.** All three offer Clear on a remembered override too. Touches the panel row's and
+   the `⋯` item's wording, which have frames (B1a, S6), so it is a design pass inside this story.
+
+**Ruled:** _(awaiting the owner)_

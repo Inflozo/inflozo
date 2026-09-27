@@ -53,9 +53,9 @@ export type ControlState = {
   darkOverrides?: Readonly<Record<string, unknown>>
   data?: Readonly<Record<string, unknown>>
   /** Story 5.11 — FR-D19's parked values, by the design they came from; since Story 5.23 (R-205) EVERY value a design
-   *  held when it was left. Written only by `switchControls` and read only by it — save that a deliberate Clear dark
-   *  overrides empties their dark maps too (`doc-edit.ts`'s `clearDarkOverrides`) — and beyond every reset's reach
-   *  (`resetSection`'s own comment says so). */
+   *  held when it was left. `switchControls` alone writes a record; a fresh instance starts with none; `holdsDarkOverride`
+   *  reads them for the project-wide Clear, and a deliberate Clear dark overrides empties their dark maps too
+   *  (`doc-edit.ts`'s `clearDarkOverrides`). Beyond every reset's reach (`resetSection`'s own comment says so). */
   parkedControls?: ParkedControls
 }
 
