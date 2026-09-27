@@ -1174,7 +1174,7 @@ owner because neither the PRD nor the export settled them; one is architectural.
 
 | # | Ruling | Where it lands |
 |---|---|---|
-| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. **Width amended 2026-09-04 by R-87 (§A15):** the threshold is **834** — a coarse pointer below 834 (a phone) gets the notice; a tablet at 834 and above gets the editor as D8a draws it. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ✅ prompt **A4** drew **Small Screen Notice** (D4f, landed 2026-09-04); 5b and 5c lift it, and 5c hands a coarse pointer below 834 to it |
+| **R-76** | **Inflozo's own editor is a DESKTOP AND TABLET surface, and the floor is designed.** **The floor is a device test, not a width test** *(refined 2026-09-03 by step 5's own stress test, and it does not reverse the ruling)*: on a **coarse pointer at a small viewport** a project opens onto a notice that says the editor needs a wider screen and offers what does work from a phone — deploy history with one-tap rollback, the sites list, billing; on a desktop-class device **the editor holds at 200 % browser zoom**. Stated as a bare 1024 px it would have evicted a low-vision user for zooming (**WCAG 1.4.4**), which is the opposite of the ruling's purpose. **And the export draws the editor at 1440 and nowhere else** — so R-76's *tablet* half was asserted with no frame behind it. Prompt **A8** draws 834 and 720. **Width amended 2026-09-04 by R-87 (§A15):** the threshold is **834** — a coarse pointer below 834 (a phone) gets the notice; a tablet at 834 and above gets the editor as D8a draws it. **Amended again 2026-09-27 by R-201:** a phone is a touch screen whose shorter side is under 500 px, decided once as a project opens, because 834 sent every portrait tablet but the iPad Pro 11 to the notice. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390. **This follows what was drawn rather than deciding against it:** `S1`, `S3` and `M1`–`M9` each carry a 390 frame and `S4`–`S14` carry none | ✅ **`prd.md` FR-D1** · ✅ `EXPERIENCE.md` § Foundation, § Responsive & Platform · ✅ prompt **A4** drew **Small Screen Notice** (D4f, landed 2026-09-04); 5b and 5c lift it, and 5c hands a coarse pointer below 834 to it |
 | **R-77** | **Site Remix drops the drawn "Keep Free designs only" tick-box.** Remix always re-rolls from the whole library; FR-L3's exit sheet catches Pro designs at the exits, which is the mechanism the product already has. `B8` drew an affordance no requirement carries, and the owner declined to adopt it | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-D17 is unaffected** · ⬜ `B8` loses the row (prompt **A7**, item 6's canvas) |
 | **R-78** | **Redesign proposals build FR-C7 as written** — 2–3 **whole-site** starter × Style Pack combinations on the user's real content, which must differ in layout structure. **`B22`'s card, its NOW / PROPOSED pairing and above all its argued-from-your-own-data sentence are kept**, one per combination instead of one per section. Its per-section swap model is not built | ✅ `EXPERIENCE.md` § *Drawn, but on the wrong mechanism* · **no PRD change — FR-C7 is confirmed as written** |
 | **R-79** | **The deploy-history pinning decision's home is `prd.md`, not `BACKUP-GATE.md`** *(architectural — the owner decided the substance on 2026-08-21 and this is propagation, not a new decision)*. §37.7 recorded it as a `prd-defect` and it was still true: a story written from the PRD alone would have built a history with no pin control. **FR-J7 now carries all three rules** — the limit is stated not implied, the history never shows a version it cannot restore, and at most N−1 may be pinned with a visible refusal — and **FR-J9 carries the surface**, including the two rows that are not ordinary versions | ✅ **`prd.md` FR-J7 and FR-J9** · ✅ `EXPERIENCE.md` F8 · ⬜ prompt **A2** (D2a/D2b) draws the pin and its refusal; 5b names them and draws nothing (R-74), 5c holds them out until the export carries them (F-090) |
@@ -1542,7 +1542,7 @@ item 1 removes the figure at the source. Until then the gate is green on a scree
 | | Ruling |
 |---|---|
 | **R-86** | **A9 runs whole — both halves in one Claude Design session** (decision 1, option 1). The misses (items 1–9) and the ten deferred frames (items 10–18) are one corrections pass in A7's shape; export once after it, run the runbook once. `EXPERIENCE.md` A9's preamble and its second-half heading say so, and the "unchanged — A9's optional half" rows now read "A9's second half — runs". |
-| **R-87** | **The touch-device threshold is 834, amending R-76's width** (decision 2, option 1): on a **coarse pointer below 834** — a phone — opening a project lands on Small Screen Notice (D4f); a tablet at **834 and above gets the editor as A8 drew it** (D8a); a fine pointer never meets the floor (a desktop at 200 % zoom keeps the editor, D8b). D4f's own caption, "Open this project on a laptop or tablet", already says this, so nothing is added to A9. Propagated the same day: `EXPERIENCE.md` § Foundation, the IA row, the Editor states row, § Responsive & Platform, A9 item 5 · `DESIGN.md` `app-floor` and the accessibility floor · `prd.md` FR-D1 states the device test with no width and is unchanged · `HANDOVER.md` and `build-sequence.md` R-76 summaries · the R-76 row in §A11 · the walkthrough (`app.js` `needsBigScreen`, `build-app.py`, `_app.css`), which already tested 834 and now cites the ruling. |
+| **R-87** | **The touch-device threshold is 834, amending R-76's width** (decision 2, option 1): on a **coarse pointer below 834** — a phone — opening a project lands on Small Screen Notice (D4f); a tablet at **834 and above gets the editor as A8 drew it** (D8a); a fine pointer never meets the floor (a desktop at 200 % zoom keeps the editor, D8b). D4f's own caption, "Open this project on a laptop or tablet", already says this, so nothing is added to A9. Propagated the same day: `EXPERIENCE.md` § Foundation, the IA row, the Editor states row, § Responsive & Platform, A9 item 5 · `DESIGN.md` `app-floor` and the accessibility floor · `prd.md` FR-D1 states the device test with no width and is unchanged · `HANDOVER.md` and `build-sequence.md` R-76 summaries · the R-76 row in §A11 · the walkthrough (`app.js` `needsBigScreen`, `build-app.py`, `_app.css`), which already tested 834 and now cites the ruling. **Amended 2026-09-27 by R-201:** a phone is a touch screen whose shorter side is under 500 px, decided once as a project opens. The 834 width sent every portrait tablet in Playwright's device list but the iPad Pro 11 to the notice, and many sideways phones to the editor. |
 
 The two decisions as they were put, kept for the record:
 
@@ -4395,6 +4395,75 @@ the saved output was updated to match."*
   - ✅ Story 5.20's spec — Question 5 and the frozen criterion, amended.
   - ✅ `packages/library/snapshots/a4/13/template.hbs` — moved at Story 5.20's Dev.
 
+**R-201 — a phone is a touch screen whose shorter side is under 500 px, decided once as a project opens; it amends
+R-87's 834.** Story 5.22's Create, Question 1, ruled **option 1** (owner, 2026-09-27): *"Go by the short side, decided
+once when the project opens."*
+
+- **Why it was a question.** R-87 drew the line at 834 on the width. Its example was "an iPad held upright is about 834
+  wide". Checked against Playwright 1.61.1's recorded device list (Story 5.22's Create, 2026-09-27), that holds for the
+  iPad Pro 11 and for no other tablet in the list:
+  - held upright, every other tablet is narrower than 834 — iPad Mini 768, iPad (gen 7) 810, Galaxy Tab S9 640 — so it
+    would have got the phone notice;
+  - turned sideways, many phones are wider — Pixel 7 863 × 360, iPhone 16 Pro Max 838 × 390 — so they would have got the
+    tablet editor, about 360 px tall.
+
+  That is the opposite of R-87's own sentence: a phone gets the notice, a tablet gets the editor.
+- **The rule.**
+  - A touch screen (`pointer: coarse`) whose shorter side is under 500 CSS px is a phone. Opening a project on it lands
+    on Small Screen Notice (D4f), whichever way it is held.
+  - Every other touch screen gets the editor. A fine pointer never meets the floor (R-76's device test, unchanged).
+  - The list's phones are at most 484 on their short side (a folding phone's cover screen), and its tablets at least
+    600, so 500 sits in the gap. A folding phone opened flat counts as a tablet.
+- **Decided once, as the project opens.** Nothing checks it again. Turning the device, a split view or an on-screen
+  keyboard never swaps the editor out mid-edit. The one cost: a tablet opened in a narrow split view keeps the notice
+  until a reload.
+- **What it does NOT change.**
+  - R-76's device test, and its reason (WCAG 1.4.4).
+  - D4f as drawn.
+  - The three drawn widths, 1440 · 834 · 390. They are where the frames sit, not where the floor is.
+- **Declined.**
+  - Option 2 kept 834 on the width, decided at open.
+  - Option 3 kept 834, checked again whenever the device turns.
+- Targets:
+  - ✅ this entry, and R-76's and R-87's rows.
+  - ✅ Story 5.22's spec.
+  - ✅ `epics.md`: FR-D1's summary, UX-DR16 and Story 5.22's card.
+  - ✅ `EXPERIENCE.md`: § Foundation, the IA row, the Editor states row and § Responsive & Platform.
+  - ✅ `DESIGN.md`: `app-floor` and § Layout & Spacing.
+  - ✅ `HANDOVER.md` and `build-sequence.md`: their R-76 summaries.
+  - ✅ the walkthrough: `app.js`'s `needsBigScreen`, the comments in `build-app.py` and `_app.css`, rebuilt.
+  - ✅ `epic-5-context.md`.
+  - `prd.md` FR-D1 unchanged: it states the device test with no number, as R-87 left it.
+  - ⬜ built — Story 5.22's Dev (`lib/floor.ts`'s `PHONE`, `globals.css`'s `phone` variant).
+
+**R-202 — on a fine pointer the editor takes D8's rearrangement below 1280 px; every touch screen that is not a phone
+takes it at any width.** Story 5.22's Create, Question 2, ruled **option 1** (owner, 2026-09-27): *"Below 1280."*
+
+- **Why it was a question.** The export draws the full editor at 1440 (S4a). D8 draws one rearrangement at 834 and at
+  720: Layers as an icon rail, Controls as an overlay behind a scrim, the bar's right-hand cluster in one ⋯ menu. No
+  frame says where a mouse-and-keyboard window switches from one to the other.
+  - D8's title reads "The editor below 1440", but its own text names only the tablet and a desktop at 200% zoom.
+  - At 1280 the full editor fits today. The cluster clears the centred group by 44px and the page-2 pill clears the chip
+    by 38px (measured 2026-09-22). It shows the page at about 49%.
+- **The rule.**
+  - A fine-pointer window narrower than 1280 CSS px gets D8b's arrangement, at the fine pointer's own 28–32px targets.
+    That includes a 1440 display at 200% browser zoom.
+  - Every touch screen that is not a phone (R-201) gets D8a's arrangement, with 44px targets, at any width.
+  - A fine pointer at 1280 and above keeps S4a, unchanged.
+  - It is checked live, because changing the layout remounts nothing.
+- **What it amends.**
+  - R-143's consequence, "Story 5.22 collapses the bar's RIGHT cluster into D8b's `⋯` below 1440", now reads below 1280.
+  - UX-DR16's "Layers collapses first" is read as D8's one rearrangement: both panels change together, at one line.
+- **Declined.** Option 2, below 1440 as D8's title reads. It would have given 1280 and 1366 laptops the compact editor.
+- Targets:
+  - ✅ this entry, and R-143's consequence.
+  - ✅ Story 5.22's spec.
+  - ✅ `epics.md`: UX-DR16 and Story 5.22's card.
+  - ✅ `EXPERIENCE.md` § Responsive & Platform.
+  - ✅ `DESIGN.md` § Layout & Spacing.
+  - ✅ `epic-5-context.md`.
+  - ⬜ built — Story 5.22's Dev (`lib/floor.ts`'s `COMPACT`, `globals.css`'s `compact` variant).
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
@@ -4599,7 +4668,7 @@ Tabler Icons for different stages. Add title/labels so we can hover over it to k
   had behaviour behind it.
 - **Only the POSITION moves.** The buttons are still S4a's own: 28 × 28, 8px radius, 2px apart, the unavailable one at
   `opacity:.35`, `aria-disabled` and never `disabled`. R-141's keys still call the arrows' own handlers.
-- **One consequence to carry forward.** Story 5.22 collapses the bar's RIGHT cluster into D8b's `⋯` below 1440. The
+- **One consequence to carry forward.** Story 5.22 collapses the bar's RIGHT cluster into D8b's `⋯` below 1440 *(below 1280 since R-202, 2026-09-27)*. The
   pair will not collapse with it — which is right for undo, and means that story re-tunes the project name's
   truncation rather than the pair.
 

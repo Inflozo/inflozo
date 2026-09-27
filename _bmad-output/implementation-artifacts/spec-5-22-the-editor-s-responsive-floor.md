@@ -36,10 +36,11 @@ top bar's buttons never run into each other and the page-2 pill never runs into 
 
 **Approach:**
 
-- **A phone never gets the editor.** A phone is the rule in Question 1. `Editor` decides once, in the browser, as the
-  project opens, and draws D4f's Small Screen Notice instead. The notice offers what works from a phone today, which
-  is the sites list. Deploy history and Billing are absent until Stories 7.23 and 12.5 add them (R-118).
-- **Every touch screen, and every window narrower than Question 2's width, gets D8's one rearrangement.**
+- **A phone never gets the editor.** A phone is a touch screen whose shorter side is under 500px (R-201). `Editor`
+  decides once, in the browser, as the project opens, and draws D4f's Small Screen Notice instead. The notice offers
+  what works from a phone today, which is the sites list. Deploy history and Billing are absent until Stories 7.23 and
+  12.5 add them (R-118).
+- **Every other touch screen, and every fine-pointer window narrower than 1280px (R-202), gets D8's one rearrangement.**
   - Layers becomes the icon rail and opens over the canvas.
   - Controls becomes an overlay on the right, opened by a selection, with a scrim that stops at the rail.
   - The top bar keeps Template and View as and moves its right-hand cluster, whole, into one ⋯ menu.
@@ -92,7 +93,8 @@ top bar's buttons never run into each other and the page-2 pill never runs into 
 
 ## I/O & Edge-Case Matrix
 
-These rows assume Question 1 and Question 2 are ruled option 1.
+Both questions were ruled option 1 by the owner on 2026-09-27: **R-201** (a phone is a touch screen whose shorter side
+is under 500px, decided once as the project opens) and **R-202** (a fine pointer takes D8's rearrangement below 1280px).
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |----------|--------------|---------------------------|----------------|
@@ -284,8 +286,8 @@ These rows assume Question 1 and Question 2 are ruled option 1.
   - `PHONE = '(pointer: coarse) and (width < 500px), (pointer: coarse) and (height < 500px)'`.
   - `COMPACT = '(pointer: coarse), (width < 1280px)'`.
   - `isPhone({ coarse, width, height })` and `isCompact({ coarse, width })`.
-  - A header comment cites R-76, R-87 and Questions 1–2.
-  - The two numbers are the rulings. If the owner rules otherwise, they are the only constants that change.
+  - A header comment cites R-76, R-87, R-201 and R-202.
+  - The two numbers are R-201's and R-202's, and nothing else in the code states them.
 - [ ] **`apps/web/app/globals.css`** — the variants, the 44px rule and one shadow token.
   - `@custom-variant phone (@media …)` and `@custom-variant compact (@media …)`, each with the same string as
     `floor.ts`.
@@ -298,7 +300,12 @@ These rows assume Question 1 and Question 2 are ruled option 1.
     It is written in `:where()`, so a component can still win. Inline text links stay exempt, because `min-*` does
     not apply to an inline box.
   - Add `--shadow-panel-overlay: -12px 0 40px rgba(28,27,26,.18)`, which is `D8:121` verbatim.
+    - **Record its name in `DESIGN.md`'s `elevation:` block as `panel-overlay`** in the same task.
+    - `tokens.test.ts:78-86` holds each `--shadow-*` and `DESIGN.md`'s `elevation:` names equal both ways, so a
+      token DESIGN.md does not name fails the test.
   - Rewrite the `coarse` comment at :318-320: the editor's ladder now exists.
+  - `/kit`'s app-floor row (`app/(app)/app/(authed)/kit/page.tsx:145`) names `PHONE` instead of `pointer: coarse`.
+  - `tokens.test.ts:232-235`'s "app-floor is a coarse-pointer condition" asserts the `phone` variant.
 - [ ] **`apps/web/tokens.test.ts`, `apps/web/editor.test.ts`** — the tests.
   - The two variants' media text equals `floor.ts`'s strings.
   - `isPhone` edges: short side 499 is a phone and 500 is not; portrait and landscape are the same; a fine pointer is
@@ -345,6 +352,7 @@ These rows assume Question 1 and Question 2 are ruled option 1.
     - A phone gets `SmallScreenNotice`. Everything else gets `EditorShell`, which is the old body unchanged.
   - **`compact`** is `useSyncExternalStore` over `matchMedia(COMPACT)`, which is live.
   - **The root** `div` carries `data-editor`: the 44px rule's scope, the dice's portal target and the sweep's.
+  - The file's header comment at :203 ("D8b's collapse into `⋯` below 1440") is rewritten for R-202.
   - **The bar.**
     - It becomes `grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]`. The name's `calc(50%-360px)` and
       `calc(50%-510px)` go (R-143), and the name truncates in the left column.
@@ -440,19 +448,19 @@ These rows assume Question 1 and Question 2 are ruled option 1.
     Story 5.22; R Responsive System is the library's, `EXPERIENCE.md:78-81`)*".
   - **`EXPERIENCE.md:59-60`:** move **Sites** and **Deploy History** into the 390 row, because the notice offers both
     and R-76 names "the sites list" as working from a phone. `DESIGN.md:380` already says so.
-  - **`EXPERIENCE.md` § Responsive & Platform and `DESIGN.md` `app-floor`:** name the `compact` layout and its width.
-  - **Once the questions are ruled:** each ruling reaches the places in Design Notes' last paragraph.
+  - The rulings' own words already landed at Create, in every place R-201's and R-202's targets list. Dev does not
+    repeat them.
   - **`tools/doc-audit.py`:** a catalogue row for `tools/keyboard/floor.spec.mjs`.
 
 **Acceptance Criteria:**
 
-- Given a phone (Question 1), when a project opens, then the page **matches frame D4f**. The differences are only the
+- Given a phone (R-201), when a project opens, then the page **matches frame D4f**. The differences are only the
   recorded ones: Deploy history and Billing are absent, and the avatar is the user's initial. The server's first paint
   is the notice-shaped skeleton, never the editor's.
 - Given a touch screen that is not a phone, when a project opens, then the editor **matches frame D8a**. The recorded
   deviations are in Design Notes. Every visible pressable in the editor is at least 44 × 44, and switches are 52 × 30
   in 44px rows.
-- Given a fine pointer below 1280 (Question 2), including a 1440 display at 200% browser zoom, when a project opens,
+- Given a fine pointer below 1280 (R-202), including a 1440 display at 200% browser zoom, when a project opens,
   then the editor **matches frame D8b**. Hover is live, targets stay at 28–32px, and the notice never appears.
 - Given a fine pointer at 1280 or wider, when a project opens, then the editor is S4a as it is today. The deployed
   walk's steps 2, 5, 46, 54, 90 and 92 still pass.
@@ -485,7 +493,7 @@ These rows assume Question 1 and Question 2 are ruled option 1.
   time, which that HTML never gave (5.23 measures it). Any walk step that reads the editor's server HTML now finds the
   skeleton; check each one.
 
-**Why the phone is decided once, at open** (Question 1). The layout viewport changes under an editor in use: the device
+**Why the phone is decided once, at open** (R-201). The layout viewport changes under an editor in use: the device
 turns, split view, and some browsers' on-screen keyboards. A live re-check would unmount the editor mid-edit.
 Deciding at open costs one case: a small tablet opened in a narrow split view keeps the notice until a reload.
 
@@ -533,19 +541,19 @@ the pointer, not the layout".
 - Its sites row is why **Sites is a 390 surface**. R-76 and `DESIGN.md:380` already say so. `EXPERIENCE.md:60`'s
   tablet-only row is the stale one.
 
-**If the owner rules otherwise.**
+**What the rulings changed at Create** (2026-09-27).
 
-- **Question 1.** Option 2 or 3 makes `PHONE` `(pointer: coarse) and (width < 834px)`. Option 3 also subscribes to
-  it.
-- **Question 2.** Option 2 makes `COMPACT` `(pointer: coarse), (width < 1440px)`, and the keyboard config pins
-  1440 × 900.
-- Either ruling also reaches:
-  - `reconcile-designs-decisions.md`, as a new ruling beside R-87;
-  - `prd.md` FR-D1, only if the device test's wording changes;
-  - `epics.md` UX-DR16, line 86 and this story's criteria;
-  - `EXPERIENCE.md` § Foundation, the IA row, the Editor states row and § Responsive & Platform;
-  - `DESIGN.md` `app-floor`;
-  - the walkthrough's `needsBigScreen` (`app.js:298-304`), then `python3 build-app.py`.
+- **R-201** amends R-87's 834. It reached:
+  - the register (its entry, and R-76's and R-87's rows);
+  - `epics.md` (FR-D1's summary, UX-DR16 and this story's card);
+  - `EXPERIENCE.md` (§ Foundation, the IA row, the Editor states row and § Responsive & Platform);
+  - `DESIGN.md` (`app-floor` and § Layout & Spacing);
+  - the R-76 summaries in `HANDOVER.md` and `build-sequence.md`;
+  - the walkthrough: `app.js`'s `needsBigScreen` now takes the height, and `_selfcheck.html`'s five floor checks pass
+    in Chromium.
+- **R-202** reached the register (its entry, and R-143's consequence), UX-DR16, this story's card, `EXPERIENCE.md`
+  and `DESIGN.md`.
+- **`prd.md` FR-D1 is unchanged.** It states the device test with no number, as R-87 left it.
 
 **Deferred work this story leaves as it is.**
 
@@ -579,8 +587,7 @@ the pointer, not the layout".
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build. You need your phone and your laptop; an iPad is optional.
-**These steps assume both questions are ruled option 1.** If you rule otherwise, the steps change to match before
-Deploy.
+Both questions are ruled (R-201, R-202), and these steps follow them.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
@@ -631,7 +638,8 @@ this project on a laptop or tablet" — while holding a tablet.
    - As option 2, but turning a small tablet sideways swaps the notice for the editor.
    - Turning it back swaps the editor for the notice. Anything unsaved is sent first.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27)** — *"Go by the short side, decided once when the project opens."* Recorded as
+**R-201**, amending R-87's 834.
 
 ### Question 2 — From what window width does the editor switch to its compact layout?
 
@@ -659,4 +667,4 @@ click away instead of in view.
 2. **Below 1440, as the D8 drawing's title reads ("The editor below 1440").** 1280 and 1366 laptops get the compact
    editor too.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-27)** — *"Below 1280."* Recorded as **R-202**.

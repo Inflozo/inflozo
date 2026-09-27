@@ -83,7 +83,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 
 **FR-D · Editor Core**
 
-- **FR-D1** Layout: slim top bar, collapsible left Layers panel, centre canvas, right Controls sidebar; the canvas carries zero editing chrome. The floor is a **device test, not a width test**: a coarse pointer below 834 gets the Small Screen Notice; a desktop-class device holds the editor at 200% browser zoom.
+- **FR-D1** Layout: slim top bar, collapsible left Layers panel, centre canvas, right Controls sidebar; the canvas carries zero editing chrome. The floor is a **device test, not a width test**: a phone — a touch screen whose shorter side is under 500 px, decided once as a project opens (R-201) — gets the Small Screen Notice; a desktop-class device holds the editor at 200% browser zoom.
 - **FR-D2** Hover state: 1px outline, name tag, Previous/Next design arrows, duplicate, delete, drag handle, and a hairline "+" between sections.
 - **FR-D3** Click selects a section; Esc deselects; clicking a text element inside a selection enters inline editing.
 - **FR-D4** Inline editing of every text prop, with a floating toolbar offering exactly four marks — bold, italic, underline, link. Rich text is stored as **text plus mark ranges**, never as an HTML string; the compiler is the single serialisation point.
@@ -298,7 +298,7 @@ work and is not story material**; it is cited here only where it names the frame
 - **UX-DR13 · One timed interaction exists** — the edit-lock nudge, a **no-response** timer that **restarts from the holder's last interaction with the popover, focus included — it does not stop** (F-079, `reconcile-designs-decisions.md:1313-1314`; `EXPERIENCE.md`'s F2 has stated it at length since). A holder who focuses the card and does nothing has not answered, so §AD4's window runs again from that moment and the requester's take-over is then offered. The two agree in effect — a timer that restarts on interaction still only runs out when nobody is there — so this is the earlier summary corrected, not a reversal (Story 5.17, standing rule 3).
 - **UX-DR14 · A confirm whose primary action is irreversible opens with focus on the cancelling action** (D8f draws the rule; it is a rule, not a list).
 - **UX-DR15 · Reduced motion honoured throughout**, including the confetti moment, the 300 ms pack crossfade, the 180 ms design slide-fade and the drag tilt — each becoming an instant state change, never a removed affordance.
-- **UX-DR16 · The app floor is 834 on a coarse pointer** (R-76 as amended by R-87). At 834+ the editor's four-part shape holds and Layers collapses first (D8a); at 720 on a fine pointer — a 1440 display at 200% browser zoom — it reflows rather than redirecting (D8b); below 834 on a coarse pointer, **Small Screen Notice** (D4f). Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390.
+- **UX-DR16 · The app floor is a phone: a touch screen whose shorter side is under 500 px**, decided once as a project opens (R-76 as amended by R-87 and R-201). A phone gets **Small Screen Notice** (D4f). Every other touch screen, and every fine-pointer window below 1280 px (R-202), gets D8's one rearrangement — Layers as an icon rail, the Controls sidebar as an overlay, the bar's right-hand cluster in one ⋯ menu — with 44px targets on touch (D8a) and the fine pointer's own on a mouse (D8b, which is also a 1440 display at 200% browser zoom); both panels change together (R-202). A fine pointer at 1280 and above keeps S4a. Sign In, Dashboard, Billing, Suggestions and every marketing page stay fully usable at 390.
 - **UX-DR17 · The canvas is a viewport, not a column.** Device preview resizes **both** axes to a real device size (390 × 844, not a 390-wide column of infinite height). There is no user zoom: the only scale is fit-to-screen, reported in a mono chip — "viewport 390 × 844 · shown at 55%". **B11's Zoom control is re-specified: keep the chip, remove the control.**
 - **UX-DR18 · Touch.** The tablet range is touch-first: 44 px minimum targets, hover affordances that also appear on tap-and-hold, and no interaction discoverable only by hover.
 - **UX-DR19 · Component behaviours** — greyed control · absent control · item list · design picker · section on canvas · inline toolbar (a mark a field does not permit is **absent, not greyed**, with a fixed button order) · site-wide singleton with its page count and its affects-every-template confirm · Pro badge (**no upgrade sheet on click, ever**) · persistence indicator (one dot and the labels `B Missing Surfaces` B6 draws — five, never a spinner) · feedback banner · wizard step rail (4 steps normally, **6 on the first deploy to a site**) · typed confirm, only where the action is irreversible and account-wide.
@@ -2395,15 +2395,17 @@ So that zooming to read is not treated as using a phone.
 
 **Given** a device and a viewport
 **When** I open a project
-**Then** on a **coarse pointer below 834** — a phone — I land on the **Small Screen Notice**, which says the
+**Then** on a **phone — a touch screen whose shorter side is under 500 px, decided once as the project opens (R-201,
+amending R-87's 834)** — I land on the **Small Screen Notice**, which says the
 editor needs a wider screen and offers what genuinely works from a phone: **the project's deploy history with
 one-tap rollback, the sites list and billing**
-**And** on a **coarse pointer at 834 and above** — a tablet — I get the editor as drawn: the Layers panel as an
+**And** on **any other touch screen** — a tablet, whichever way it is held (R-201) — I get the editor as drawn: the Layers panel as an
 icon rail, the Controls sidebar as an overlay with a scrim, **every target at least 44 px**, and one overflow
 menu (UX-DR18)
 **And** on a **fine pointer the floor is never met**: a 1440 display at 200% browser zoom presents roughly a
 720 px viewport and **keeps the editor**, reflowing rather than redirecting — the Layers panel collapses to an
-icon rail, the Controls sidebar becomes an overlay panel, and the canvas keeps its own scroll
+icon rail, the Controls sidebar becomes an overlay panel, and the canvas keeps its own scroll. **Every fine-pointer
+window below 1280 px reflows the same way, and one at 1280 or wider keeps the full editor (R-202)**
 **And** **this is browser zoom, which Inflozo does not own and may not defeat** (WCAG 1.4.4) — it is not the
 canvas scale FR-D14 refuses, and the two never meet
 **And** the Dashboard, Sign In, Billing, Suggestions and every marketing page stay **fully usable at 390**
@@ -2411,7 +2413,7 @@ canvas scale FR-D14 refuses, and the two never meet
 Template and View as, and since Story 5.15 the cluster ends with B3a's Preview pill: measured in the keyboard harness
 on 2026-09-22 it clears the group by 44px at 1280 and meets it between about 1190 and 1195px (it met it near 950px
 before the pill). Below that width the cluster's controls move into the one overflow menu, as D8 draws, rather than the
-two buttons shrinking or losing their labels.
+two buttons shrinking or losing their labels. *(R-202: they move below 1280, with the rest of D8's rearrangement.)*
 **And** **D5d's page-2 pill never meets the viewport chip** (Story 5.16). Centred 4px from the ground's top, it clears
 the page card on every device by the ground's grown top padding, but with both panels open it can meet the chip, which
 is pinned to the ground's corner: measured in the keyboard harness on 2026-09-22 it clears the chip by 118px at 1440,

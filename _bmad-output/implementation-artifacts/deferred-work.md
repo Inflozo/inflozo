@@ -3095,7 +3095,7 @@ resolution: Story 5.1 (2026-09-17) — the editor at `/projects/{id}` folds both
 severity: low
 origin: Story 4.5 owner's test (2026-09-13) — finding 3, on `https://app.inflozo.com/controls`.
 owner: Story 5.1 (The editor shell, the canvas boundary and the URL scheme) — the right Controls sidebar;
-  Story 5.22 owns its overlay below 1440.
+  Story 5.22 owns its overlay below 1440 *(below 1280 on a fine pointer since R-202, 2026-09-27)*.
 location: `S4 Editor.dc.html:337` (S4c's Controls sidebar: 280 wide, flush right, border-left, no collapse)
   · `D8 Editor Below 1440.dc.html:128`, `:240` ("Close controls" on the overlay) and `:194` (the Layers
   rail's "Show layers") · `apps/web/app/(app)/app/(authed)/controls/review.tsx` (the review page's docked,

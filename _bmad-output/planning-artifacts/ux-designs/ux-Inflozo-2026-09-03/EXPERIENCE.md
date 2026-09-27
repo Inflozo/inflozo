@@ -65,8 +65,9 @@ D canvases landed on 2026-09-04 every one of those surfaces was drawn at 1440 an
 and the 834 column was the owner's ruling rather than the export's evidence; prompt A8 is what made
 it true, because R-74 forbids a surface that exists only in prose.
 
-On a **coarse pointer below 834px** (a phone — the tablet A8 drew at 834 keeps the editor; ruling R-76, its
-width amended to 834 by R-87 on 2026-09-04), opening a project lands on **Small Screen Notice** — a designed
+On a **phone — a touch screen whose shorter side is under 500px, decided once as a project opens** (ruling R-76,
+its width amended to 834 by R-87 on 2026-09-04 and to the short side by R-201 on 2026-09-27, because 834 sent most
+tablets held upright to the notice; every other touch screen keeps the editor), opening a project lands on **Small Screen Notice** — a designed
 surface, not a broken layout — which says the editor needs a wider screen and offers what does work from a phone:
 the project's deploy history, a one-tap rollback, the sites list and billing. The Dashboard itself
 stays fully usable at 390, exactly as `S3 Dashboard.dc.html` draws it.
@@ -134,7 +135,7 @@ The other marketing pages exist and are drawn (`M1`–`M9`); this pass does not 
 | **Invoices** | S12d | Billing | Receipts, Dodo portal link |
 | **Suggestions** | `S13 Suggestions.dc.html` S13a–c | Account Menu | Board, submit sheet, empty state |
 | **Over-Limit Sheet** | D4c · D4d Which project stays editable · D4e Read-only project | grace expiry · any blocked exit while over | Itemised: what is over and by how much (FR-L3) |
-| **Small Screen Notice** | D4f, at 390 | opening a project on a coarse pointer below 834px | What works from a phone (R-76) |
+| **Small Screen Notice** | D4f, at 390 | opening a project on a phone — a touch screen whose shorter side is under 500px (R-201) | What works from a phone (R-76) |
 
 ### Editor
 
@@ -343,7 +344,7 @@ whose Loading cell is "—": a surface with nothing to shimmer still has control
 | Surface | Empty | Loading | Error | Refusal |
 |---|---|---|---|---|
 | **Dashboard** | S3b: "Every great site starts somewhere. Yours starts with hundreds of gorgeous sections." + New project | skeleton cards | a project card carrying a Failed chip, with "See what failed →" | Free at 1 project: New Project Sheet opens on the Upgrade Sheet path (FR-B4) |
-| **Editor** | a blank canvas with "+ Add section" and nothing else — the canvas is sacred, so no grid, no placeholder | skeleton section blocks | Content API unreachable → falls back to sample content **and names the cause** (FR-H4) | coarse pointer below 834px → Small Screen Notice |
+| **Editor** | a blank canvas with "+ Add section" and nothing else — the canvas is sacred, so no grid, no placeholder | skeleton section blocks | Content API unreachable → falls back to sample content **and names the cause** (FR-H4) | a phone (a touch screen whose shorter side is under 500px, R-201) → Small Screen Notice |
 | **Control Sidebar** | "Nothing selected. Click any section on the canvas — its controls appear here." | — | — | greyed control + reason |
 | **Section Picker** | search with no matches: the category rail stays, the grid says what was searched for | lazy previews, skeletons | — | a design whose `bindingContext` does not match this template is **never shown** (FR-D12) |
 | **Layers** | a template with no sections shows only the Site-wide group, its page count at 0 | — | — | second Post Content refused at placement, with the reason (R-37) |
@@ -633,9 +634,12 @@ is kept because it is already true and is proved on every run** (`run-verify-gho
 
 Three widths for Inflozo's own surfaces: **1440 · 834 · 390**, per `DESIGN.md` § Layout & Spacing.
 
-**The app floor is 834px, on a coarse pointer** (ruling R-76; its width amended from 1024 to 834 by R-87, owner,
-2026-09-04, because A8 drew the editor on a tablet at 834 with touch — D8a). At 834 and above the editor's
-four-part shape holds and the Layers panel collapses first. On a touch device below it, **Small Screen Notice**.
+**The app floor is a phone: a touch screen whose shorter side is under 500px**, decided once as a project opens
+(ruling R-76; its width amended from 1024 to 834 by R-87, owner, 2026-09-04, and to the short side by **R-201**, owner,
+2026-09-27, because in the test browser's device list 834 sent every tablet held upright but the iPad Pro 11 to the
+notice). A phone gets **Small Screen Notice**. Every other touch screen, and every fine-pointer window below **1280px**
+(**R-202**, owner, 2026-09-27), gets D8's one rearrangement — the Layers icon rail, the Controls overlay, the bar's
+right-hand cluster in one ⋯ menu — with both panels changing together; a fine pointer at 1280 and above keeps S4a.
 
 > **The floor is a device test, not a width test — and that distinction is load-bearing.** A 1440px
 > display at 200% browser zoom presents roughly a 720px CSS viewport. Keying the notice on CSS width

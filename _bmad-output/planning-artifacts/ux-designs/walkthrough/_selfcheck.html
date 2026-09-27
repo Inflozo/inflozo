@@ -193,11 +193,12 @@ window.addEventListener('load', function () {
   $('#pin-on').click();
   check('and back', !$('#pin-off').hidden && $('#pin-on').hidden);
 
-  // 12 · Small Screen Notice fires on a coarse pointer below 834, never on width alone (R-76 as amended by R-87, D4f, D8a, D8b)
-  check('a phone (390, coarse) gets the notice', window.needsBigScreen(390, true) === true);
-  check('just under the tablet width (833, coarse) still gets the notice', window.needsBigScreen(833, true) === true);
-  check('a desktop at 200% zoom (720, fine) keeps the editor', window.needsBigScreen(720, false) === false);
-  check('a tablet (834, coarse) keeps the editor', window.needsBigScreen(834, true) === false);
+  // 12 · Small Screen Notice fires on a phone — a coarse pointer whose shorter side is under 500 — never on width alone (R-76 as amended by R-87 and R-201, D4f, D8a, D8b)
+  check('a phone (390 × 844, coarse) gets the notice', window.needsBigScreen(390, 844, true) === true);
+  check('a phone turned sideways (844 × 390, coarse) still gets the notice (R-201)', window.needsBigScreen(844, 390, true) === true);
+  check('a desktop at 200% zoom (720 × 406, fine) keeps the editor', window.needsBigScreen(720, 406, false) === false);
+  check('a small tablet held upright (768 × 1024, coarse) keeps the editor (R-201)', window.needsBigScreen(768, 1024, true) === false);
+  check('a tablet (834 × 1194, coarse) keeps the editor', window.needsBigScreen(834, 1194, true) === false);
 
   // 8 · page-level keys are inert inside a text field (WCAG 2.1.4) and live outside it
   var navigated = null;

@@ -114,7 +114,7 @@ spacing:
   breakpoint-desktop: '1440px'
   breakpoint-tablet: '834px — the editor is drawn here, D8a (2026-09-04)'
   breakpoint-mobile: '390px — Small Screen Notice is drawn here, D4f'
-  app-floor: '834px — a COARSE-POINTER threshold, never a bare width (R-76; its width amended from 1024 to 834 by R-87, 2026-09-04): a tablet at 834 gets the editor as D8a draws it, a phone gets D4f; a desktop at 200% zoom stays in the editor — D8b draws it at 720 to prove it'
+  app-floor: 'a phone: a COARSE POINTER whose shorter side is under 500px, never a bare width, decided once as a project opens (R-76; amended from 1024 to 834 by R-87, 2026-09-04, and to the short side by R-201, 2026-09-27): a phone gets D4f and every other touch screen the editor as D8a draws it; a desktop at 200% zoom stays in the editor — D8b draws it at 720 to prove it; D8''s rearrangement applies below 1280px on a fine pointer (R-202)'
 
 components:
   button-primary:
@@ -372,9 +372,10 @@ is drawn to fit that width, which is why the vocabulary has no free-form inputs 
 the generated sites use, and that is a convenience rather than a shared system — `R Responsive
 System.dc.html` describes the *sites*, not this app.
 
-**Below 834px on a coarse pointer the editor is not offered** *(ruling R-76, owner, 2026-09-03,
-refined by step 5's stress test; its width amended from 1024 to 834 by R-87, owner, 2026-09-04 — the tablet
-A8 drew at 834 with touch, D8a, gets the editor)*. **It is a device test, not a width test:** a desktop at 200%
+**On a phone — a coarse pointer whose shorter side is under 500px, decided once as a project opens — the editor is
+not offered** *(ruling R-76, owner, 2026-09-03, refined by step 5's stress test; its width amended from 1024 to 834 by
+R-87, owner, 2026-09-04, and to the short side by R-201, owner, 2026-09-27, because 834 sent most tablets held upright
+to the notice — every other touch screen gets the editor as D8a draws it)*. **It is a device test, not a width test:** a desktop at 200%
 browser zoom presents roughly a 720px viewport and keeps the editor, because browser zoom is the
 reader's accessibility setting and is not the canvas scale FR-D14 refuses. Sign In, the
 Dashboard, Deploy history, Sites and Billing are drawn and usable at 390; the editor, the Section
@@ -382,8 +383,10 @@ Picker, Style Packs, Deploy, Routes, Assets, Editor Cards and the template surfa
 tablet shapes. Opening a project below the floor lands on a designed surface that says so and
 offers what does work — it is a state, not a broken layout. **All three widths are drawn since
 2026-09-04**: the editor at 834 (`D8 Editor Below 1440.dc.html` D8a, touch) and at 720 (D8b, a 1440
-display at 200% zoom), the notice at 390 (`D4 Dashboard Sheets and Blocks.dc.html` D4f). See
-`EXPERIENCE.md` § Responsive & Platform.
+display at 200% zoom), the notice at 390 (`D4 Dashboard Sheets and Blocks.dc.html` D4f). **D8's one
+rearrangement — the Layers icon rail, the Controls overlay, the bar's cluster in one ⋯ menu — applies on every touch
+screen that is not a phone and on a fine pointer below 1280px** (R-202, owner, 2026-09-27); the pointer changes only
+the target sizes, 44px on touch (D8a) and 28–32px on a mouse (D8b). See `EXPERIENCE.md` § Responsive & Platform.
 
 ---
 

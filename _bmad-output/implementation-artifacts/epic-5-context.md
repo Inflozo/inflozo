@@ -836,6 +836,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       truncation". The chip and the page-2 pill share one grid row.
     - **D4f's Deploy history and Billing are absent until 7.23 and 12.5 (R-118).** Those stories' criteria gain the rows.
     - DW-281.
+  - **R-201 · R-202 (owner, 2026-09-27, Story 5.22's Q1 and Q2, option 1 each).**
+    - **R-201: a phone is a touch screen whose shorter side is under 500px, decided once as a project opens.** It
+      amends R-87's 834. The phone decision is never checked again: turning the device or the keyboard sliding up
+      never swaps the editor out mid-edit.
+    - **R-202: a fine pointer takes D8's one rearrangement below 1280px, and every other touch screen takes it at any
+      width.** At 1280 and above a fine pointer keeps S4a. The compact check is live, because changing the layout
+      remounts nothing. R-143's "below 1440" now reads below 1280.
+    - Both reached the register, `epics.md`, `EXPERIENCE.md`, `DESIGN.md`, the R-76 summaries and the walkthrough
+      (`needsBigScreen` takes the height; its self-check passes) at Create.
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
 
 ## Technical Decisions
