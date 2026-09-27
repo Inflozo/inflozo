@@ -4592,8 +4592,9 @@ severity: low
 origin: Story 5.4's Dev (2026-09-18) — the mirroring Story 5.2 built runs ONE way (`editor.tsx`'s `point()` sets
   `data-inflozo-hover` from the canvas's own `pointerover`, and `controls/layers.tsx` draws the wash from `hoveredKey`);
   no frame draws the reverse, and no FR or ruling asks for it
-owner: Story 5.9 (the keyboard map, and keyboard completeness) or 5.23's play-loop gate, whichever first finds a user
-  cannot tell which section a row is
+owner: the Epic 5 sweep — Story 5.24, if Story 5.23's Question 3 is ruled option 1. *(Story 5.23's Create, 2026-09-27:
+  was "Story 5.9 … or 5.23's play-loop gate, whichever first finds a user cannot tell which section a row is"; 5.9 is
+  done and 5.23 has no screen, so neither can find one.)*
 location: `apps/web/components/controls/layers.tsx` · `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`
   (`point`) · `apps/web/lib/canvas-chrome.css`
 reason: the section's name is on its row and its name tag is on the canvas, so nothing is unreachable today; the
@@ -4993,7 +4994,9 @@ status: open
 severity: low
 origin: Story 5.9's Review (2026-09-19), Edge Case Hunter. `setSaid` is a plain `useState`; React skips an identical
   value. The pattern is every story's since 5.2 — the keyboard map only makes a repeat likelier.
-owner: Story 5.23's play-loop gate, where the editor is walked with a screen reader.
+owner: Story 15.2, whose manual screen-reader pass per surface verifies the live-region announcements (UX-DR12).
+  *(Story 5.23's Create, 2026-09-27: was "Story 5.23's play-loop gate, where the editor is walked with a screen
+  reader"; 5.23 walks nothing with a screen reader.)*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`setSaid`, every caller)
 reason: the fix is one helper every announcement routes through, and whether a repeat should be re-spoken at all is
   best judged with a screen reader running, not from the code.
@@ -5018,7 +5021,8 @@ plain: (1) If a section is refused, the sentence saying so stays on screen after
 status: open
 severity: low
 origin: Story 5.10's Review (2026-09-20), Acceptance Auditor and Blind Hunter.
-owner: Story 5.23's play-loop gate.
+owner: the Epic 5 sweep — Story 5.24, if Story 5.23's Question 3 is ruled option 1. *(Story 5.23's Create, 2026-09-27:
+  was "Story 5.23's play-loop gate"; these are three visible Section Picker fixes and 5.23 has no screen.)*
 location: `apps/web/components/editor/section-picker.tsx`
 reason: each is cosmetic and none blocks a placement; the refusal itself is reachable by one design only (R-37).
 
@@ -5071,7 +5075,10 @@ fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium thr
 status: open
 severity: medium
 origin: Story 5.11's Review (2026-09-20), Verification Gap reviewer.
-owner: Story 5.23 (the play-loop gate), or the first Epic 9 story that gives a shipped category a second design.
+owner: Story 9.1 — A1's designs #1–4 are the first shipped ring, so its deployed walk rewrites step 86 and presses the
+  pill's ◀ ▶ and Shuffle on production. *(Story 5.23's Create, 2026-09-27: was "Story 5.23 (the play-loop gate), or
+  the first Epic 9 story that gives a shipped category a second design"; 5.23's gate runs over the project doc, not
+  the pill.)*
 location: `editor.tsx` (`stepDesign(hovered, ±1)`, `onShuffle(hovered)` wired at the `<SectionPill>` mount); `tools/keyboard/journey.spec.mjs`
 plain: The little arrows and the Shuffle button on a section's own pill, in the real editor, are connected to the
   right code — but no automated check ever presses them there. The keyboard journey may not use a mouse, the deployed
@@ -5089,7 +5096,8 @@ reason: `journey.spec.mjs:134` refuses every pointer API, `run-verify-editor.cjs
 status: open
 severity: low
 origin: Story 5.11's Review (2026-09-20), Blind Hunter.
-owner: Story 5.23, or the first Epic 9 story that ships a `data-items-limit`.
+owner: the first Epic 9 story that ships a `data-items-limit`. *(Story 5.23's Create, 2026-09-27: "Story 5.23, or"
+  dropped; the fix changes a sentence the owner approved, and 5.23 changes no panel words.)*
 location: `apps/web/components/controls/item-list.tsx` (the `range` line)
 plain: When a design shows fewer items than the section holds, the list's header says "3 items · 2 shown in this
   design" (the sentence the PRD asks for) INSTEAD of "2–6 · 3 used". The add and remove buttons still stop at 2 and
@@ -5116,7 +5124,9 @@ reason: The honest fix is a validator rule — one `data-items-limit` per path, 
 status: open
 severity: low
 origin: Story 5.11's Review (2026-09-20), Blind Hunter and Verification Gap reviewer.
-owner: Story 5.23, or the first Epic 9 story that gives a shipped category a second design.
+owner: Story 9.1 — the first shipped ring, where the owner sees the fade in his own editor. *(Story 5.23's Create,
+  2026-09-27: was "Story 5.23, or the first Epic 9 story that gives a shipped category a second design"; 5.23 draws
+  nothing.)*
 location: `apps/web/lib/canvas-chrome.css` (`[data-inflozo-swapped]`); `editor.tsx` `markSwapped`; `review.tsx` `paint`
 plain: When a section changes design in the editor it fades in over 180ms. The only page where a design can change
   today is the internal Controls review page, and that page does not draw the fade — so nobody has seen it. The
@@ -5162,7 +5172,10 @@ reason: MEASURED, AND THE BOX IS NOT VISIBLE. At step 2 the window's scroll rang
 status: open
 severity: low
 origin: Story 5.12's Review (2026-09-20), Verification Gap reviewer and Blind Hunter.
-owner: the first Epic 9 story that gives a shipped category a second design, or Story 5.23.
+owner: Story 5.23a, if Story 5.23's Question 2 is ruled option 1 — its 40-section harness page is where several
+  sections re-roll and one ⌘Z restores them; otherwise Story 5.23. *(Story 5.23's Create, 2026-09-27: was "the first
+  Epic 9 story that gives a shipped category a second design, or Story 5.23". The location's `harness/editor/page.tsx`
+  has been `layout.tsx` since Story 5.20.)*
 location: `tools/keyboard/journey.spec.mjs` (the FR-D17 stop); `apps/web/app/(app)/app/harness/editor/page.tsx`
 plain: Remix promises that one Undo puts a whole page back. The automated walk only ever remixes a page with one
   changeable section, so "one Undo for many" is proved by a unit test of the logic, not by pressing keys in a browser.
@@ -5221,7 +5234,8 @@ reason: Pre-existing — the archive branch inherited both values from the home 
 status: open
 severity: low
 origin: Story 5.13's Review (2026-09-21), Verification Gap reviewer and Acceptance Auditor.
-owner: Story 5.23, or whoever next extends step 89.
+owner: the Epic 5 sweep — Story 5.24, if Story 5.23's Question 3 is ruled option 1. *(Story 5.23's Create, 2026-09-27:
+  was "Story 5.23, or whoever next extends step 89"; unrelated to the play loop.)*
 location: `tools/probe/run-verify-editor.cjs` (step 89); `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts`
 plain: The automated walk proves choosing an article works and is saved. It does not try a deliberately bad choice to
   see it refused, and it visits the Post and Tag canvases but not Author or Page, which only unit tests cover.
@@ -5234,7 +5248,9 @@ reason: The refusal guards run inside a server action the harness cannot call wi
 status: open
 severity: low
 origin: Story 5.13's Review (2026-09-21), the deployed walk at `efda9d6c`.
-owner: Story 5.23, or whoever next touches autosave or the walk.
+owner: the Epic 5 sweep — Story 5.24, if Story 5.23's Question 3 is ruled option 1. *(Story 5.23's Create, 2026-09-27:
+  was "Story 5.23, or whoever next touches autosave or the walk"; that trigger fired at 5.13, 5.14 and 5.22 and nobody
+  took it, and it is unrelated to the play loop.)*
 location: `tools/probe/run-verify-editor.cjs` (steps 66b, 66c)
 plain: The automated walk's "save when the tab is hidden" check failed once and passed twice on the same build. Either
   the check is timing-sensitive or the save on tab-hide occasionally does not land; nobody knows which yet.

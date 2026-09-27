@@ -160,6 +160,16 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     or a bare `r` would bind too) and reaches the same handle `run(gesture)` uses, so the key and the button are one
     control down to the animation. R-162: the same component is mounted on `/controls` over that page's own
     `ControlState`, and its existing key effect widened to accept `remix` rather than growing a second key table.
+  - **Story 5.23's planning (2026-09-27, executed over the real `samples()` ring, `switchDesign`, `shuffleTo`,
+    `remixPicks` and `remixFold`):** nothing is ever DELETED — every stored value survives 20 Shuffles and a Remix on a
+    40-section page — but R-160's "going back to a design always looks exactly the way you left it" is FALSE on one path:
+    a setting two designs share CARRIES to the second, is parked against the SECOND when a third lacks it, and so the
+    first shows its default on return. `]` three times from sample 1 brings Show icons and Image position back On and
+    Top (parked against `controls/2`); retracing and one hop are exact. Over 300 seeds × 40 sections, 1,435 of 12,000
+    sections were not as left when switched back to their first design. 5.11's tests and the owner's step 9 used Card
+    tint, the one case that works. **Question 1 (open)** offers "every design remembers itself" — leaving a design
+    records all its values against it, a return restores them exactly, first visits still carry and default, and Clear
+    dark overrides clears what is remembered (prototyped: 0 of 12,000) — or keeping it as built.
 - **Only what can work is offered.** Picker, ring, Shuffle and Remix offer only designs whose `bindingContext` and `compileTarget` fit the template or instance (partitioned rings, plus A30's surface partition); invalid bindings are never presented, and non-placeable treatments never appear in Layers, Picker, Shuffle or Remix.
   - **Story 5.10's planning (2026-09-19, read in the source and executed over the library):** `placement.ts` was
     written AT 5.4 for this story — its header names the Picker as the caller `isPlaceable` and `placementRefusal`
@@ -868,6 +878,13 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
       514px — `@min-`/`@max-` of one width, because the `compact` rule is emitted after the container's). DW-282 and
       DW-283 are new. At Review, **R-204**: the notice says "280-pixel", the panel's true width, not D4f's "300".
 - **Performance is a manual gate.** TTI under 3 s warm, p95 frame ≤ 16.7 ms with no long task over 50 ms, control change under 100 ms, lockup = a main-thread block over 5 s — on the reference laptop at 4× throttle, never on CI.
+  - **Story 5.23's planning (2026-09-27, a production build of the harness with Home at 40 sections, this computer, an
+    i5-6600K):** every design change or move REPAINTS EVERY SECTION (`apply` → `paint()` renders the whole stack and
+    rewrites `#canvas`): one `]` is a 131–138 ms long task at 1× and 492–512 ms at 4×, one ⌥↓ 130 ms and 436 ms, while a
+    control change is none (the `onChange` fast path stamps one root). The 60 fps half of the exit cannot pass until the
+    editor repaints only what changed; **Question 2 (open)** offers its own story, 5.23a. Also measured: the rAF p95
+    reads 16.6–16.8 ms on smooth windows (timestamp jitter at 60 Hz), so the trace must count dropped frames rather than
+    compare 0.1 ms; and on production every ring is one design, so Shuffle is traced only where the harness has a ring.
 
 ## Technical Decisions
 
@@ -1136,3 +1153,8 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     Private canvas is conditional on the linked site reporting itself private; EXECUTED 2026-09-18, `sites.site_settings`
     carries no such flag, so the row is absent for every project today and `/private` 404s (DW-192).
 - **Read the deferred-work ledger's Epic 5 entries at each Create:** DW-114 (5.1) may need the owner, DW-176 (the selection cleared by a canvas change) is CLOSED by 5.5's Dev, and DW-107 (image focus) and DW-122 (moving a section across templates) have no owner.
+  - **Story 5.23's Create (2026-09-27):** none of the nine entries naming 5.23 is its to build (no screen, no
+    screen-reader walk): DW-205 → Story 15.2; DW-211, DW-214 → Story 9.1; DW-212 → the first Epic 9 story shipping a
+    `data-items-limit`; DW-215 → Story 5.23a (Question 2); DW-188, DW-207, DW-219, DW-220 → the Epic 5 sweep (Question
+    3). Fifteen more open entries name only finished Epic 5 stories (DW-102, 104, 122, 129, 165, 171, 175, 197, 202,
+    204, 206, 240, 250, 278, 281; DW-165, 197 and 206 are already fixed and only the ledger lags) — **Question 3 (open)**.
