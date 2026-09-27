@@ -2,7 +2,7 @@
 title: 'Story 5.22 — The editor''s responsive floor'
 type: 'feature'
 created: '2026-09-27'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '78fe2112233e63813f2a08acbfa1cac0566a8d4b'
@@ -12,7 +12,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 ## In plain English
 
 Open one of your projects on your phone and, instead of an editor squeezed onto a screen it cannot fit, you get a clear
-page saying the editor needs a bigger screen, with a way to what does work there — your sites today, and your deploy
+page saying the editor needs a bigger screen, with a way to reach what does work there — your sites today, and your deploy
 history and billing as those screens are built. On a tablet, in a narrower laptop window, or with the browser zoomed to
 200%, the editor now rearranges itself instead of breaking: the Layers list becomes a strip of thumbnails down the left,
 a section's settings slide over the page from the right when you pick it, and Remix, dark mode, the device, Theme
@@ -239,7 +239,7 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
 - `lib/keymap.ts` — `KEYMAP`'s `chips` per gesture. `L` is at :109.
 - `components/kit/button.tsx:134` — `IconButton` is `size-7`.
 - `components/kit/toggle.tsx:32-47` — a 36 × 20 `role="switch"`.
-- `components/kit/layers-row.tsx:124-132` — `LayerThumb`, the one generic mini-thumbnail every Layers row draws.
+- `components/kit/layers-row.tsx:111` — `LayerThumb`, the one generic mini-thumbnail every Layers row draws.
 - `components/kit/icons.tsx` — `ChevronLeft` :98, `ChevronRight` :103, `X` :378, `Globe` :593, `Card` :646, `Laptop` :699
   (D8a's Device glyph) and `Panel` :761.
 
@@ -488,6 +488,43 @@ is under 500px, decided once as the project opens) and **R-202** (a fine pointer
 - Given the finished story, when the gates run, then `pnpm check`, `pnpm keyboard` (the journeys and `floor.spec.mjs`)
   and the doc gate are green.
 
+### Review Findings
+
+Review of 2026-09-27 over `78fe2112..55556e99`, five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance
+Auditor, Real-infra verifier). The real-infra layer confirmed, keys by name: no migration in the diff (R-99 holds, nothing
+to read on the pooler); GitHub Actions (`GITHUB_TOKEN`) run 36298139184 at `1eda2e75` and the latest run on `main` at
+`55556e99` with `check`, `rls` and `deploy` success, and run 36291300831 at `db6965a9` as the control (`check` failure,
+`deploy` skipped); Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) `dpl_2uiqcEnXKjyjC2ZJckoPnkc7YS4J` READY
+and current production `dpl_Dc1CDWkG22acKrur76z4GUiozJkU` READY at `55556e99`, the same app tree; the deployed CSS bundle
+carrying the compiled `COMPACT` and `PHONE` queries and the `-12px 0 40px` shadow (a string not in the source: 0 hits);
+`app.inflozo.com/sign-in` and `inflozo.com/` at 390 × 844 with touch: `width=device-width, initial-scale=1` with no
+`maximum-scale` or `user-scalable`, `scrollWidth` ≤ `clientWidth` (a 2000px div injected flipped the check — the control);
+Supabase (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`) answering 200 on the admin users route, `edit_locks` 403 to the service key
+as MEASUREMENTS §50 records, a bogus table 404. The Acceptance Auditor found no criterion and no Never/Always rule
+violated. Fixes are in the working tree of the Review commit; each test added went red with the defect put back.
+
+- [ ] [Review][Decision] The notice says "a 300-pixel control panel" (D4f's words) while the built panel is 280px — Question 4
+- [x] [Review][Patch] A cancelled lift (`touchcancel`) left `tapOpened` armed, so the NEXT tap's click was swallowed [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:2779] — reset on `touchcancel`
+- [x] [Review][Patch] The Remix confirm's `onClose` focused the die, which is `hidden` below 1280, so focus fell to the body after a remix from ⋯ [apps/web/components/editor/remix-dice.tsx:167] — a die that is not drawn hands focus to ⋯
+- [x] [Review][Patch] The scrim was unmounted in Preview while everything else this story adds is hidden (the spec's Always list, Story 5.15) [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:4449] — `hidden={preview}`
+- [x] [Review][Patch] The 44px sweep never opened the Section Picker, Template or View as, so the picker's Add (26px in its own utility) was an unexecuted claim [tools/keyboard/floor.spec.mjs:243] — swept with each open on both iPads; every target held
+- [x] [Review][Patch] The folded-Layers rail at full width (rows, `aria-current`, `+`, no overlay, no inert) had no test; the 720 journeys were the only ones pressing a rail row [tools/keyboard/journey.spec.mjs:230] — a 1280 journey
+- [x] [Review][Patch] The ⋯ Theme settings row was asserted by its words only, never its `href` [tools/keyboard/journey.spec.mjs:2955] — it is an `<a>` with the bar link's own `href`
+- [x] [Review][Patch] "No IndexedDB on a phone" was in the intent and in no test [tools/keyboard/floor.spec.mjs:87] — no `inflozo-*` database on the phone, one on the tablet control
+- [x] [Review][Patch] Docs: "a way to what does work there" (In plain English); `epics.md` Story 5.22's Then-clause still promised three rows; the R-76 register row still said "5c hands a coarse pointer below 834 to it"; HANDOVER and build-sequence led R-76 with 834; two `LayerThumb` cites at `:124-132` (it is `:111`); `epic-5-context.md`'s bare "DW-281." bullet — all corrected
+- [x] [Review][Patch] Design Notes did not record: why native checkboxes and radios are outside the 44px rule; that on a tablet a tap that selects a section opens the overlay, so an inline edit is one more tap; that a phone still makes the server read the project's data; and that the phone gate ran in Chromium only — recorded below and under Verification
+- [x] [Review][Defer] D4f's avatar (`ShellUserContext`) is checked only by the hand-run deployed walk's step 97; the keyboard harness has no shell [apps/web/components/shell/shell.tsx:300] — deferred, DW-285
+
+Dismissed as noise or by design, with the reason: a shim's tap in compact not opening Controls (a Ghost surface has no
+settings; the docked panel at full width shows Page settings for it, and an empty overlay would be worse); Esc in a field
+inside the overlay not closing it (`escDeselects` gives a field its own Esc at every width, Tab reaches the X); Preview with
+a sheet open (the sheet is hidden with the rest and returns, which is the rule); the crossing effect closing a hidden dialog
+in Preview and its first run at mount (both no-ops there); `MenuItem` `href` rows skipping `ReadOnly` (no such row exists);
+media range syntax (inside the browserslist baseline); a ⌘-click on a link row hiding the menu (the tab opens; the menu
+going is right); the Device row naming the current device (recorded deviation, `D8:293`; the owner's step 10 walks it); the
+rail's width written as paired utilities; DW-282 (another story's); `waitForTimeout` in the phone test (the window is
+stated); `press()` before the dice's host effect (no press can arrive before mount).
+
 ## Spec Change Log
 
 **Dev (2026-09-27).** Each entry is outside the frozen block and was made where the build met a fact the plan did not
@@ -592,6 +629,12 @@ have; none changes what a surface does.
     Tailwind emits the `compact` variant after the container query, so the two are now written as exclusive conditions.
     Its control: without the one-column rule the new floor test fails at the iPad mini (two columns, not one).
 
+20. **Review (2026-09-27).** A cancelled lift no longer leaves the tap guard armed; the Remix confirm hands focus to ⋯ when
+    the die is not drawn; the scrim is hidden in Preview rather than unmounted. Four tests added: the 44px sweep with the
+    Section Picker, Template and View as open (its Add is 44 on both iPads, as the footer's comment claimed); the rail at
+    full width; the Theme settings row's `href`; no IndexedDB on a phone (`next dev` keeps a debug channel of its own, so
+    the test counts `inflozo-*` databases only). Question 4 asks whether the notice's "300-pixel" should say 280.
+
 ## Design Notes
 
 **Why the gate lives inside `Editor`, and not in a route or a redirect.**
@@ -634,6 +677,16 @@ the pointer, not the layout".
 - The ⋯ rows follow the cluster, which postdates D8. So the rows are Remix, dark mode, the device, Theme settings and
   Preview.
 - "Device — Tablet" is one row that moves to the next device, because the menu is "one item deep" (`D8:293`).
+- Native checkboxes and radios are outside the 44px rule, and the sweep exempts the same two: the Kit draws neither
+  as a bare input inside the editor (`link-picker.tsx`'s checkbox sits in a 44px row on touch, `coarse:in-[[data-editor]]:min-h-11`), and
+  sizing a native box to 44 would draw a 44px tick. The row is the target; the rule cannot say that, so the exemption is
+  recorded here (review, 2026-09-27).
+- On a touch screen a tap that selects a section opens the Controls overlay, and the canvas behind it is inert, so an
+  inline edit (FR-D3) is one more tap: close the overlay, then tap the text. That is D8's shape — the selection opens the
+  overlay — and the owner's iPad steps walk it; if he finds the second tap wrong, it is fixed inside this story (R-80).
+- A phone still makes the server read the project's data — `EditorData`, the docs, the site — for a page that draws a
+  name and one link, because the decision is made in the browser (the Always list). The read is the editor route's own
+  and costs nothing new; a server-side floor would need the client hint the Design Notes rule out.
 
 **Why a grid, twice.**
 
@@ -764,6 +817,9 @@ the pointer, not the layout".
   R-203 line: the Section Picker on the iPad Pro 11 in two columns, with Rail, Latest Post, Three Up and Inline Row each
   keeping its whole name and its Free or Pro tag. Both accounts deleted, HTTP 200 each, users 13 → 13.
 
+**Results (Review, 2026-09-27, Node 24).** `pnpm check` exit 0; `pnpm keyboard` **100 passed, 0 failed** (the four tests the
+review added among them); the doc gate PASS twice. The real services the review itself hit are listed under Review Findings.
+
 **Real infrastructure** (R-82) — what this Dev phase hit, and what each returned (keys by variable name only):
 
 - **GitHub Actions** (`GITHUB_TOKEN`) — CI run 36291300831 at `db6965a9`: `check` failure at `pnpm keyboard` (change log
@@ -784,7 +840,9 @@ the pointer, not the layout".
   stands) — no row for the phone after 5s and none before it (step 97), the tablet's row as the control (step 98), and
   the same holder and generation at 1440, 1279 and 1440 again (step 101); `project_template_prefs` read by step 90.
 - **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo. This story calls no Ghost API. The Ghost 5
-  Project's surfaces are Story 5.21's, and only appear in its canvas.
+  Project's surfaces are Story 5.21's, and only appear in its canvas. **And no WebKit:** the phone and tablet
+  descriptors ran in the gate's Chromium (their `defaultBrowserType` dropped, no WebKit installed), so the media-range
+  syntax `PHONE` and `COMPACT` use is read in the browserslist baseline, not executed in Safari (review, 2026-09-27).
 
 ## Owner's manual test
 
@@ -897,3 +955,20 @@ one-column line sits where two columns stop giving a card room — a picker grid
 rather than the "about 600 pixels" this question estimated, which forgot the picker's own 240px category rail
 (measured at Dev: two columns cut names again on the iPad mini and at 720). That is the option's stated purpose, "every
 card has room for its name, its + and its Free or Pro tag"; change log 19.
+
+### Question 4 — The phone notice says "a 300-pixel control panel", but the panel is 280 pixels wide. Keep the frame's words or state the fact?
+
+The notice's sentence is D4f's, word for word: *"Dragging sections and a 300-pixel control panel don't fit on a phone
+yet."* The panel it describes is 280 pixels wide, in the editor and in this story's overlay (a recorded deviation above).
+The spec forbids changing any of D4f's words without asking, so this is yours.
+
+**An example.** Someone reads the notice on their phone, then opens the project on a laptop and measures nothing. The
+number is a reason, not a control: it only has to be believable.
+
+1. **Say "280-pixel", the true width (RECOMMENDED).** One word changes in `small-screen-notice.tsx` and in the two tests
+   that quote the sentence; the design export is untouched (R-74 governs what it is built from, and the number is a
+   product fact the frame guessed at).
+2. **Keep "300-pixel", D4f's words.** Nothing changes; the sentence stays a round number.
+3. **Drop the number: "a control panel".** One word fewer; the sentence loses its concreteness.
+
+**Ruled:** _(awaiting the owner)_

@@ -6379,7 +6379,7 @@ severity: low
 origin: Story 5.22's Create (2026-09-27).
   - `D8 Editor Below 1440.dc.html:66-70` draws five different 34 × 24 thumbnails: Header, Hero — Split Editorial, Post
     Grid — Magazine, Newsletter — Split, Footer — Mega Grid.
-  - The Kit has one glyph, `LayerThumb` (`apps/web/components/kit/layers-row.tsx:124-132`). It is Hero's, and every
+  - The Kit has one glyph, `LayerThumb` (`apps/web/components/kit/layers-row.tsx:111`). It is Hero's, and every
     Layers row has drawn it since Stories 1.3 and 5.4.
   - The rail reuses it rather than inventing thirty-odd category glyphs the export never drew.
 owner: unowned. The owner's test of Story 5.22 decides whether it matters.
@@ -6441,3 +6441,21 @@ location: `tools/probe/run-verify-editor.cjs` (step 90, the `storedViewed90` pol
 reason: Story 5.22 changes neither the record nor its writes. Telling a slow write from a short poll needs its own look —
   the write chain is serial by design ("a refused write rides the next one"), and a reload drops what is still queued —
   not a guess inside a Dev run.
+
+## Deferred from: code review of spec-5-22-the-editor-s-responsive-floor.md (2026-09-27)
+
+### DW-285: the phone notice's avatar is checked only by the hand-run deployed walk
+
+plain: The small card a phone shows carries the user's initial in a circle at the top right. Whether it is still there is
+  checked only when someone runs the deployed editor walk by hand; the automated gates cannot see it, because their
+  editor has no signed-in user.
+status: open
+severity: low
+origin: Story 5.22's review (2026-09-27). `SmallScreenNotice` draws the avatar from `useShellUser()`, which the shell
+  provides on the editor path (`apps/web/components/shell/shell.tsx`); the keyboard harness sits outside the shell, so
+  the branch never renders there, and `run-verify-editor.cjs` step 97 is the only assertion.
+owner: unowned — the next story that touches the harness editor layout or the shell.
+location: `apps/web/components/editor/small-screen-notice.tsx` · `apps/web/components/shell/shell.tsx` ·
+  `apps/web/app/(app)/app/harness/editor/layout.tsx`
+reason: closing it means the harness layout handing a fixture user through the same provider, the harness header's
+  pattern; a small change to a shared harness, outside a review's patch scope.

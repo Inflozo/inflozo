@@ -2400,7 +2400,7 @@ So that zooming to read is not treated as using a phone.
 **Then** on a **phone — a touch screen whose shorter side is under 500 px, decided once as the project opens (R-201,
 amending R-87's 834)** — I land on the **Small Screen Notice**, which says the
 editor needs a wider screen and offers what genuinely works from a phone: **the project's deploy history with
-one-tap rollback, the sites list and billing**
+one-tap rollback, the sites list and billing** *(one row today, Your sites; Stories 7.23 and 12.5 add theirs — R-118)*
 **And** on **any other touch screen** — a tablet, whichever way it is held (R-201) — I get the editor as drawn: the Layers panel as an
 icon rail, the Controls sidebar as an overlay with a scrim, **every target at least 44 px**, and one overflow
 menu (UX-DR18)

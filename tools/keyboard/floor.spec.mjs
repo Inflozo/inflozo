@@ -83,6 +83,9 @@ test.describe('R-201 · a phone gets D4f, never the editor', () => {
     await expect(page.locator('iframe[title$="canvas"]')).toHaveCount(0)
     await page.waitForTimeout(3000)
     expect(hits, 'a phone never starts the lock, the heartbeat or the sync').toEqual([])
+    // …and no IndexedDB either: the local store is opened by the editor's effects, which never ran (review, 2026-09-27)
+    // (`next dev` keeps a debug channel of its own in IndexedDB; only Inflozo's `inflozo-doc-*` counts)
+    expect(await page.evaluate(async () => (await indexedDB.databases()).map((d) => d.name).filter((n) => /^inflozo-/.test(n))), 'a phone opens no database').toEqual([])
     // no sideways scroll at 390, measured against clientWidth (an `isMobile` innerWidth grows to fit overflow)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth)).toBe(true)
 
@@ -93,6 +96,7 @@ test.describe('R-201 · a phone gets D4f, never the editor', () => {
     await other.goto(HARNESS)
     await painted(other)
     await expect.poll(() => control.length, { message: 'a tablet mounts the editor, whose effects ask for the lock' }).toBeGreaterThan(0)
+    await expect.poll(() => other.evaluate(async () => (await indexedDB.databases()).filter((d) => /^inflozo-/.test(d.name)).length), { message: 'and open the local store' }).toBeGreaterThan(0)
     await tablet.close()
   })
 
@@ -236,6 +240,26 @@ for (const name of ['iPad Mini', 'iPad Pro 11']) {
       await page.locator('[data-scrim]').tap({ position: { x: 20, y: 200 } })
       await expect(page.locator('#editor-controls')).toBeHidden()
       await expect(page.locator('[data-rail-row][aria-current="true"]')).toHaveCount(1)
+
+      // the surfaces the sweeps above never open (review, 2026-09-27): the Section Picker — its Add, its category
+      // rail and its search — and the two bar menus, Template and View as
+      // from the keyboard: `next dev`'s own floating button sits over the rail's foot in the harness
+      await page.locator('[data-rail-add]').focus()
+      await page.keyboard.press('Enter')
+      await expect(page.locator('dialog[open][aria-label="Add a section"] [data-picker-grid]')).toBeVisible()
+      await page.waitForTimeout(1500)
+      const picker = await sweep(page)
+      expect(picker.small, `with the Section Picker open (${picker.checked} checked)`).toEqual([])
+      await page.keyboard.press('Escape')
+      await expect(page.locator('dialog[open][aria-label="Add a section"]')).toHaveCount(0)
+      for (const trigger of ['#editor-template', '#editor-view-as']) {
+        await page.locator(trigger).tap()
+        await expect(page.locator(`${trigger}-menu`)).toBeVisible()
+        const menu = await sweep(page)
+        expect(menu.small, `with ${trigger} open (${menu.checked} checked)`).toEqual([])
+        await page.keyboard.press('Escape')
+        await expect(page.locator(`${trigger}-menu`)).toBeHidden()
+      }
     })
   })
 }

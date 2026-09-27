@@ -164,7 +164,9 @@ export function RemixDice({
             ref={dialog}
             data-remix-confirm
             onClick={closeOnBackdrop}
-            onClose={() => die.current?.focus()}
+            // the die is not drawn below 1280 (the cluster collapsed into ⋯), and a hidden element cannot take focus:
+            // focus goes back to ⋯, which is what pressed it there (review, 2026-09-27)
+            onClose={() => (die.current?.checkVisibility() ? die.current.focus() : document.getElementById('editor-more')?.focus())}
             aria-labelledby="editor-remix-title"
             aria-describedby="editor-remix-body"
             className={`${sheet} gap-[18px]`}

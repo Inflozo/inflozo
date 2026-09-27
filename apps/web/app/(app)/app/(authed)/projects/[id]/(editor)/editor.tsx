@@ -2781,6 +2781,10 @@ function EditorShell({
       tapOpened = false
       e.preventDefault()
     }, { passive: false })
+    // review, 2026-09-27: a lift the browser cancels instead of ending would leave the flag armed for the NEXT tap
+    doc.addEventListener('touchcancel', () => {
+      tapOpened = false
+    })
     doc.addEventListener('pointerdown', (e) => {
       // Story 5.15: in Preview a touch is the visitor's, and no hold starts
       if (e.pointerType !== 'touch' || latest.current.preview) return
@@ -4445,8 +4449,9 @@ function EditorShell({
         {/* STORY 5.22 — THE SCRIM (`D8:119`, `:219`): `scrim` at 70% is D8's .28, over the canvas column ONLY — never the bar
             and never the rail, because "the one thing that survives the overlay is the way back to another section". A
             press on it closes the sheet and keeps the selection. */}
-        {compact && sheet !== null && !preview ? (
-          <div aria-hidden data-scrim onClick={() => closeSheet()} className="absolute inset-y-0 left-11 right-0 z-20 bg-scrim/70 coarse:left-14" />
+        {compact && sheet !== null ? (
+          // hidden in Preview, never unmounted, like everything else this story adds (Story 5.15; review, 2026-09-27)
+          <div aria-hidden hidden={preview} data-scrim onClick={() => closeSheet()} className="absolute inset-y-0 left-11 right-0 z-20 bg-scrim/70 coarse:left-14" />
         ) : null}
 
         {!compact && controls.folded ? <Rail fold={controls} label="Show controls" controls="editor-controls" side="right" hidden={preview} /> : null}

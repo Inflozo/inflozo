@@ -229,6 +229,26 @@ test('L folds and unfolds Layers, and focus follows the button that replaced the
   expect(await focused(page)).toBe('BUTTON[Collapse layers]')
 })
 
+test('5.22 · at full width the folded Layers rail is D8\'s rail: a row selects and reveals its section into the DOCKED Controls, no overlay, and + opens the picker', async ({ page }) => {
+  await open(page)
+  await page.locator('#editor-canvas-anchor, section[aria-label="Canvas"]').first().focus()
+  await page.keyboard.press('l')
+  await expect(page.locator('#editor-layers')).toBeHidden()
+  const rows = page.locator('[data-rail-row]')
+  expect(await rows.count(), 'a row per section').toBeGreaterThan(1)
+  await rows.nth(1).focus()
+  await page.keyboard.press('Enter')
+  await expect(rows.nth(1)).toHaveAttribute('aria-current', 'true')
+  await expect(page.locator('#editor-controls')).toBeVisible()
+  await expect(page.locator('#editor-controls')).toHaveAttribute('aria-label', 'Section settings')
+  await expect(page.locator('[data-scrim]'), 'docked, not an overlay').toHaveCount(0)
+  expect(await page.locator('section[aria-label="Canvas"]').evaluate((s) => s.closest('[inert]') !== null), 'the page is live').toBe(false)
+  await page.locator('[data-rail-add]').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('dialog[open][aria-label="Add a section"]')).toBeVisible()
+  await page.keyboard.press('Escape')
+})
+
 test('. flips the canvas between light and dark, and says which is showing', async ({ page }) => {
   await open(page)
   expect(await modeOf(page)).toBe('light')
@@ -2952,6 +2972,9 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
       words.theme,
       words.preview,
     ])
+    // the Theme settings row goes where the bar's own link goes, not only reads as it does (review, 2026-09-27)
+    expect(await moreRows(page).nth(3).evaluate((a) => a.tagName)).toBe('A')
+    await expect(moreRows(page).nth(3)).toHaveAttribute('href', await page.locator('#editor-theme-settings').getAttribute('href'))
     // opened ON its first row, and the arrows walk the rows
     await expect(moreRows(page).first()).toBeFocused()
     await page.keyboard.press('ArrowDown')

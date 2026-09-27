@@ -186,8 +186,7 @@ things it found are worth knowing before you touch a UI task:
   which R-76's tablet half and the accessibility floor both need, and which the export has never
   drawn at any width but 1440. **They block nothing** — and both builds were made without them, so  they ran on 2026-09-04 and both builds now lift the D canvases; §A15 records what landed.
 
-**Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop
-and tablet surface with a designed floor below 834 px on a touch device (the width amended from 1024 by R-87, 2026-09-04, and to a touch screen whose shorter side is under 500 px by R-201, 2026-09-27) · **R-77** Site Remix drops the drawn "Keep
+**Four rulings landed as `reconcile-designs-decisions.md` §A11:** **R-76** the editor is a desktop and tablet surface with a designed floor: a touch screen whose shorter side is under 500 px gets the notice (R-201, 2026-09-27; the floor was 1024 at first, then 834 by R-87, 2026-09-04) · **R-77** Site Remix drops the drawn "Keep
 Free designs only" · **R-78** redesign proposals build FR-C7's whole-site combinations · **R-79**
 pinning's home is the PRD, not `BACKUP-GATE.md`. `prd.md` moved three times, all propagation:
 **FR-D1**, **FR-J7** and **FR-J9**.
