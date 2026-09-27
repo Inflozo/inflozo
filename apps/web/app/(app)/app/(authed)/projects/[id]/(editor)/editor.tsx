@@ -114,8 +114,10 @@ import type { EditorData } from './read'
    store's `version()`) repaints the page — one walk, which a full repaint takes with nothing to reuse. A record is
    trusted only while nothing else has written its section, so whatever writes one outside `paint()` drops it: the
    control stamp, an inline editing session, a mode flip (every record), and the two that take the page's roots away.
-   Everything after the write is as after a full repaint: editing ended, the hover let go, `core` stopped before and
-   started after, `mark()`, the shims. The Paywall surface keeps its own page write and no records. The keyboard gate
+   Everything after the write is as after a full repaint: editing ended, `core` stopped before and started after,
+   `mark()`, the shims — and the hover as a customer sees it. A full repaint let the hover go and the browser hovered the
+   new node under a resting pointer again; a kept node gets no such word from the browser, so a hover whose section was
+   kept stays. The Paywall surface keeps its own page write and no records. The keyboard gate
    proves it on the harness's long Home, node for node against a full repaint; the frame times are NFR-1's manual trace
    (`tools/perf/fps-trace.mjs`), and the panels beside the canvas still redraw in full — Story 5.23b's (R-208).
 
@@ -2377,6 +2379,8 @@ function EditorShell({
       if (surfaceSheet) surfaceSheet.media = paywall ? 'all' : 'not all'
       const arriving = paintedAt.current?.key !== now.key
       const accent = live !== null ? live.site['accent_color'] : orbitWeekly.site().accent_color
+      /** did this paint KEEP the hovered section's drawing? Then the node under a resting pointer is the same node */
+      let hoverKept = false
       if (paywall) {
         mount.innerHTML = paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null })
         stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>(STAMPED))
@@ -2396,6 +2400,8 @@ function EditorShell({
             else mount.insertBefore(node, cursor)
           }
         }
+        const hoveredKey = now.hovered === null ? null : queryKey(now.hovered)
+        hoverKept = order.some(([id, d]) => id === hoveredKey && d === keep.get(id))
         drawn.current = new Map(order)
         drawnUnder.current = context
         // document order, section by section — `sameLock`'s index reads it
@@ -2415,9 +2421,15 @@ function EditorShell({
       // R-175); in Preview everything runs. A restamp keeps the nodes, so it never reaches here and running mounts
       // survive it.
       if (doc.defaultView) behaviours.current = startBehaviours(doc.defaultView, !now.preview, reportBehaviour)
-      // the hovered root was replaced, and the pointer has not said where it is since
-      latest.current.hovered = null
-      setHovered(null)
+      // the hovered root was replaced, and the pointer has not said where it is since — so the browser says it: a resting
+      // pointer over a NEW node gets its own `pointerover`, which hovers it again. Over a KEPT node the browser says
+      // nothing, so the hover stays, or its outline and pill would vanish under a pointer that never moved (Story 5.23a,
+      // executed: a full repaint's hover came back by itself, a kept node's did not). A layout that moves other content
+      // under the pointer is the browser's to report, as it always was.
+      if (!hoverKept) {
+        latest.current.hovered = null
+        setHovered(null)
+      }
       mark()
       setPaints((n) => n + 1)
       frame.current.dataset.painted = now.key

@@ -1067,6 +1067,8 @@ DOCS = [
   "Space, ⌘D, Del, the Picker and their ⌘Z and ⇧⌘Z touch only their section; a control stamped in place keeps its node and "
   "is drawn fresh at the next paint, an undo back to its drawn value included; a flip and a flip back leave every root "
   "drawn fresh; then P P, whose full repaint must equal the keyed canvas node for node and keep every part's own comment; "
+  "a pointed-at section (a synthesized pointerover, R-175's precedent) keeping its hover and pill through a paint that keeps "
+  "it, and losing them to one that redraws it; "
   "DW-215's Remix over several sections undone by ONE ⌘Z; View as, page 2, another canvas, a subject, a source and "
   "the Paywall's own page write each redraw the whole page; and a read that LANDS does too — the linked harness site's "
   "reads answered from the bundled sample through page.route and the page's clock moved past the minute a read stays "

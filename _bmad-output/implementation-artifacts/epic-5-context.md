@@ -931,7 +931,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     opening comment from the library's own files, as words (the canvas drops a blank line inside a comment). **A read
     can land in the harness:** the journey answers the linked harness site's Content API reads from the bundled sample
     (`page.route`) and moves the page's clock past `FRESH_MS` (`page.clock`). The harness's long Home is
-    `x-inflozo-harness-home: <n>`. The manual
+    `x-inflozo-harness-home: <n>`. **A kept section keeps its hover:** a full repaint let the hover go and the browser
+    hovered the NEW node under a resting pointer again by its own `pointerover`; a kept node gets no such word, so
+    `paint()` lets the hover go only when the hovered section was redrawn (found by the deployed walk's step 8 at Dev). The manual
     trace is `tools/perf/fps-trace.mjs`. At 4×: 59–60% of vsyncs dropped before and 7–9% after, the longest task 621–636 ms
     before and 71–75 ms after. At 1×: 13.3% and 172 ms before, and a PASS after. **For 5.23b:** the misses left at 4× are
     the panels' (R-208). Every mount still restarts on each paint, because `core` has no per-root scope; the `ponytail:`

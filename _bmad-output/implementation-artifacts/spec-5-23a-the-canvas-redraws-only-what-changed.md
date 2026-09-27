@@ -226,6 +226,14 @@ have; none changes what the canvas draws.
 5. **Step 60 also checks that the paint ending an inline session draws that section fresh** and keeps every other root.
    Its control, a scratch edit: without the drop in `startEditing`, the typed section's root was kept after Esc and every
    step-60 check the task named still passed.
+6. **A hover whose section the paint kept stays.** Found by the deployed walk at `10c30db4`: run 2's step 8, *"axe: zero
+   violations with S4b's pill showing … and a Layers row's ⋯ menu open"*, failed with no violation — the pill was gone. A
+   full repaint let the hover go, and the browser hovered the NEW node under a resting pointer again with its own
+   `pointerover`. A kept node gets no such word, so the outline and the pill vanished under a pointer that never moved —
+   something drawn differently, which the criteria forbid. `paint()` now lets the hover go only when the hovered section
+   was redrawn; a layout that moves other content under the pointer is the browser's to report, as it always was. The
+   frozen *"the hover clears"* is read as what it was written for — behave as after a full repaint, which on screen means
+   the hover under a resting pointer is still drawn. The evidence is under Verification, *"The kept hover"*.
 
 ## Design Notes
 
@@ -400,6 +408,29 @@ and the panel's ◀:**
   task's 50, printed `run 1: REFUSED — the control was not seen — an 20 ms task read as a 0 ms long task and 0 dropped
   vsyncs` and exited 1. The copy was deleted.
 
+**The kept hover (Spec Change Log 6; 2026-09-28, the same computer, each probe a scratch Playwright script on the harness
+at 1440 × 900 with a REAL pointer, three runs per build, `editor.tsx` swapped in and restored byte for byte):**
+
+- **The mechanism.** The pointer resting on Home's first section while the selected ringed section changes design by `]`:
+  the baseline paint (`1a55920d`) showed that section hovered and its pill drawn afterwards in 3 of 3 runs; the keyed
+  paint as pushed (`a4d96c37`), in 0 of 3 (`hovered -1, pill 0`); with the fix, 3 of 3.
+- **The walk's own sequence**, replayed on the long Home so that a kept section sits above the grid as production's Latest
+  Post does (hover and select Three Up, type-select *spring*, open the link panel, Esc Esc, the pointer back where Three Up
+  was, a Layers row's ⋯ opened by keyboard): the pushed paint failed 3 of 3 (`hovered -1 · pill 0`); the baseline and the
+  fix passed 3 of 3 (`hovered 4 · pill 1 · open popovers 1`). On the default Home, whose Three Up has no section above it,
+  all three builds pass — which is why the gate never saw it.
+- **The hover still follows the pointer.** With the fix, the hovered section itself moved by ⌥↓, the last section climbed
+  to the top by ⌥↑ one place at a time, and the third section moved above the hovered one: in every run the hovered
+  section was the one under the pointer (`elementFromPoint`).
+- **The gate.** A new 5.23a stop points at a section (a synthesized `pointerover`, R-175's precedent) and presses `]` on
+  the ringed one below it: the pointed section keeps its hover and its pill; pointed at the ringed section itself, `[`
+  lets the hover go. Its control, the pushed paint: red at *"the pointed section was kept, and so is its hover"* —
+  expected 39, received -1.
+- **The gates on the fixed tree.** `tsc --noEmit -p .`: exit 0. `pnpm check`: exit 0, every package's tests 0 failed,
+  `check-snapshots: PASS`. `pnpm keyboard`: `107 passed (4.0m)`, 0 failed. The pointer-only doors' probe: `0 FAIL, 3 PASS`.
+  The trace: `--rate 4 --runs 3` 8.9%, 7.8% and 8.9% dropped, longest tasks 74, 70 and 70 ms, every control seen;
+  `--rate 1 --runs 1` `PASS`, 0.0% dropped, no long task.
+
 **Real infrastructure (R-82)** — what this Dev phase hit and what each returned, keys by variable name only:
 
 - **Before the push.** GitHub Actions (`GITHUB_TOKEN`): CI run 36334607544 at `42b549f7` — `check`, `rls` and `deploy`
@@ -414,8 +445,24 @@ and the panel's ◀:**
   still `dpl_5wq5VCQZ5wtV9ytkz97MEMaKv76A` at `42b549f7`. It was the day's first commit, and regenerated here the three
   pages differ from it by `2026-09-27 → 2026-09-28` alone — DW-132, whose row now carries this sighting. The next push
   publishes.
-- **After the next push:** the CI run, the deployment and step 60 on production's planted Home are recorded by the Dev
-  commit that follows it, because the walk refuses a dirty tree and a deployment that is not HEAD.
+- **The publishing push, `10c30db4`.** GitHub Actions (`GITHUB_TOKEN`): CI run 36341840489 — `check` success (the doc
+  gate, `pnpm keyboard` printing `106 passed (5.1m)` on the runner, `pnpm check`, `pnpm build`), `rls` success, `deploy`
+  success; Render matrix run 36341840520: success. Vercel (`VERCEL_*`): `dpl_4X3Cs9SayUhNJ4kUFLkbyVXUJ3AZ` READY,
+  production, built from `10c30db4`.
+- **The deployed walk at `10c30db4`** — `run-verify-editor.cjs` against `https://app.inflozo.com`, Supabase through
+  `SUPABASE_URL` and `SUPABASE_SECRET_KEY` (two throwaway accounts through the Auth Admin API, the seed, step 60's plant
+  and restore through PostgREST):
+  - **Run 1: a HARNESS ERROR, not a result.** `GET /harness/editor` (step 79, `:5856`) did not answer in 30 s, after
+    **0 FAIL, 579 PASS** — curl had the three harness addresses answer 404 in 0.24–0.29 s straight after. Every step-60
+    check passed on production's planted 40-section Home: ⌥↓ kept all 41 roots and moved one
+    (`["=","=",3,2,"=",…]`), its longest task 0 ms; a word typed into the planted heading landed and was taken back
+    (*"… this spring Summer"* → *"… this spring"*); the paint ending that session drew section 3 fresh and kept every
+    other root; `P` `P` equalled the canvas node for node (`{"equal":true,"fresh":true}`); the plant was removed (HTTP 200).
+    Accounts deleted, HTTP 200, users 13 → 13.
+  - **Run 2: 1 FAIL, then a HARNESS ERROR.** The FAIL is step 8's pill — Spec Change Log 6, fixed. Step 60's 5.23a checks
+    passed again with the same readings. The walk then died at its last step, step 9's raw `GET /projects/<id>` (`:6661`), after 662 PASS.
+    Accounts deleted, HTTP 200, users 13 → 13. Both deaths are DW-204's, whose row carries them.
+- **After the fix's push:** its CI run, its deployment and a complete walk are recorded by the Dev commit that follows.
 
 **Manual checks (R-82, after CI publishes):**
 

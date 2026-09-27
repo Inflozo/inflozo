@@ -13,7 +13,8 @@
 // ONE STATED EXCEPTION, AND IT PRESSES NOTHING (Story 5.15): R-175's PAUSED chip is drawn on a POINTED section, and a
 // keyboard cannot point. So those stops SYNTHESIZE the canvas document's own `pointerover` in the page — the event the
 // editor listens for — to read what the chip looks like and where it sits; it is never the pointer device, it reaches
-// no task a keyboard could not, and the selected half of the same rule is walked from the keyboard alone.
+// no task a keyboard could not, and the selected half of the same rule is walked from the keyboard alone. Story 5.23a's
+// hover-through-a-paint stop points the same way, to read whether a pointed section is still pointed at after a paint.
 //
 // WHAT IT CANNOT PROVE is the deployed walk's, which R-82 requires of every story anyway: the read, the session, the
 // sync route and the CSP. A harness proves the wiring and never the stack — `tools/probe/run-verify-editor.cjs` runs
@@ -3640,6 +3641,34 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     const whole = await commentsKept(page)
     expect(whole.drawn, 'the control: the long Home draws sections whose part opens with a comment').toBeGreaterThan(0)
     expect(whole.lost, 'every part drawn with its own comment').toEqual([])
+  })
+
+  test('a pointed-at section the paint keeps stays pointed at — its outline and pill with it — and one the paint redraws is let go', async ({ page }) => {
+    // the pointer resting on a section (synthesized, as R-175's stop does). A full repaint gave the browser a NEW node under
+    // a resting pointer, and its own `pointerover` hovered it again; a KEPT node gets no such word, so the paint keeps the
+    // hover itself — or the outline and the pill would vanish under a pointer that never moved (executed at 5.23a's Dev)
+    await open(page)
+    await selectRinged(page)
+    const ringed = await selectedPlace(page)
+    await pointAt(page, `#canvas > :nth-child(${ringed})`)
+    const hoveredAt = () => canvasFrame(page).locator('#canvas').evaluate((c) => [...c.children].findIndex((el) => el.hasAttribute('data-inflozo-hover')))
+    await expect.poll(hoveredAt, 'the control: the section above the ringed one is pointed at').toBe(ringed - 1)
+    await expect(page.locator('[data-section-pill]')).toHaveCount(1)
+    const n = await tagRoots(page)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(']')
+    await expect(counter(page)).toHaveText(/^2 of \d+$/)
+    expect(await tagsOf(page), '`]` redrew the ringed section alone').toEqual(kept(n).toSpliced(ringed, 1, null))
+    expect(await hoveredAt(), 'the pointed section was kept, and so is its hover').toBe(ringed - 1)
+    await expect(page.locator('[data-section-pill]'), 'and its pill').toHaveCount(1)
+    // …and the section the paint REDRAWS is let go, as every paint has let go a replaced root
+    await pointAt(page, `#canvas > :nth-child(${ringed + 1})`)
+    await expect.poll(hoveredAt, 'the control: the ringed section itself is pointed at').toBe(ringed)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('[')
+    await expect(counter(page)).toHaveText(/^1 of \d+$/)
+    expect(await hoveredAt(), 'the pointed section was redrawn: its hover is let go').toBe(-1)
+    await expect(page.locator('[data-section-pill]')).toHaveCount(0)
   })
 
   test('DW-215: Remix re-rolls several sections, and ONE ⌘Z restores every one of them exactly — no other root is replaced', async ({ page }) => {
