@@ -6523,3 +6523,21 @@ location: `apps/web/components/controls/sidebar.tsx` (`darkOverridesInForce`, th
   `packages/section-runtime/src/doc-edit.ts` (`darkOverrideCount`, `holdsDarkOverride`)
 reason: Story 5.23 draws nothing differently (its Boundaries: "No surface changes"). Counting what is remembered would
   change D6a's sub-caption and the row's availability, which are surfaces with frames, so it is not a Dev call.
+
+### DW-287: the deployed controls walk can die on a reload that waits for the network to go quiet
+
+plain: The automatic check that walks the Controls review page on the live site stopped once, part-way, because a page
+  reload waited 30 seconds for the network to go completely quiet. Nothing was wrong with the page. The same walk passed
+  in full when run again, so the only cost is a re-run.
+status: open
+severity: low
+origin: Story 5.23's Dev (2026-09-27), the walk against `9263b6e3`. Run 1 was a HARNESS ERROR, `page.reload: Timeout
+  30000ms exceeded` at `run-verify-controls.cjs:472` (step 18's reload), with 0 FAIL and 85 PASS before it. Run 2 was
+  0 FAIL, 114 PASS. The run before the push, at `2973a798`, passed that line.
+owner: Story 5.24 — the sweep (R-207) — or the next story that edits the walk.
+location: `tools/probe/run-verify-controls.cjs` — the `goto` and `reload` calls that pass `waitUntil: 'networkidle'`
+  (lines 79, 82, 472 and 513 at `9263b6e3`)
+reason: `networkidle` waits for 500 ms with no request in flight, which a live page does not promise. The two reloads
+  (472, 513) are already followed by a `waitForFunction` on the sample's own markup, so `waitUntil: 'load'` would lose
+  nothing there. The two `goto` calls (79, 82) would each need a wait for their own landmark first. Not changed here:
+  it is not this story's step, and a walk edited in the same commit it verifies proves less.

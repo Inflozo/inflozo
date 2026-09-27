@@ -324,16 +324,28 @@ screen-reader walk:
     sections. None holds a `parkedControls` record (12 carry the key, every one empty). The designs in use are `a1/1`,
     `a17/1`, `a22/1`, `a24/1` and `a4/13`, each a ring of one. So no record written under the 5.11 rule exists for R-205
     to read differently. The census's control: the same counter over one synthetic record counts 1 of 1.
-  - The walk's throwaway account, through the Auth Admin API: created, then deleted with HTTP 200, users 13 → 13.
-- **`app.inflozo.com/controls`** — the walk above, at `2973a798`.
+  - Each walk's throwaway account, through the Auth Admin API: created, then deleted with HTTP 200, users 13 → 13, in
+    every run.
+- **`app.inflozo.com/controls`** — the walks: before the push at `2973a798`, and after it at `9263b6e3`.
 - **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`) — production before the push is
   `dpl_aCdwAbbKnCPodVp7FBG7ZA8NRhai`, READY at `2973a798`.
 - **GitHub Actions** (`GITHUB_TOKEN`) — CI run 36314380832 at `2973a798`: `check`, `rls` and `deploy` success. The
   Render matrix run 36314380762: success.
 - **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo. This story calls no Ghost API, sends no email and
   bills nothing.
-- **After the push** — CI and the Vercel deployment at the Dev commit, the same walk expecting 0 FAIL, then the owner's
-  manual test: recorded by the next Dev commit.
+- **After the push, at `9263b6e3`** (the Dev commit):
+  - **GitHub Actions** (`GITHUB_TOKEN`): CI run 36317522512 — `check`, `rls` and `deploy` success. The Render matrix
+    run 36317522499: success.
+  - **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): `dpl_Fs2qBDCzB2S4zbMBi17AyupU1yyM` READY, production,
+    built from `9263b6e3` and aliased to `app.inflozo.com`, `inflozo.com` and `www.inflozo.com`.
+  - **The deployed walk, every run recorded.**
+    - Run 1 was a HARNESS ERROR, not a result: `page.reload` timed out after 30 s waiting for `networkidle`
+      (`run-verify-controls.cjs:472`), with 0 FAIL and 85 PASS before it. The ring walk never ran; the account was
+      deleted (HTTP 200, users 13 → 13). Recorded as **DW-287** (new, owner Story 5.24).
+    - Run 2: **0 FAIL, 114 PASS** — the same checks as the run before the push. The new check now reads
+      `{"root":"cx","attr":"side","panel":"Side"}`: Image position is Side after the long way round, on the section root
+      and in the panel. Account deleted, HTTP 200, users 13 → 13.
+  - **Next:** the owner's manual test on `https://app.inflozo.com/controls` (R-80).
 
 ## Owner's manual test
 
