@@ -442,6 +442,22 @@ Nothing in the repository was edited.**
     180), p95 1 refresh, no long task.
   - The DOM comparison against the baseline: 18 of 18 states the same. The drag probe: unchanged (the press 40 rows, the
     moves 1, the drop 42 and the chrome once; the slot stayed until the rows landed and left in the reorder's commit).
+- **The hand-over's push, `db3e1496`.** GitHub Actions (`GITHUB_TOKEN`): CI run 36400619780 — `check` success (the
+  runner's doc gate PASS, `pnpm keyboard` printing `118 passed (5.0m)`, `check-snapshots: PASS`), `rls` and `deploy`
+  success; Render matrix run 36400619785: success. Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`):
+  `dpl_5AJtc8A9YKsV7m7kK7o8VDAmsusY` READY, production, built from `db3e1496`, serving `app.inflozo.com` and `inflozo.com`;
+  a wrong bearer → HTTP 403.
+  - **Walk run 4 at `db3e1496`: complete — `0 FAIL, 665 PASS`.** Step 12: On scroll → Static moved the header's selected
+    box to the scrolling layer (`host page`). Step 94: the second Three Up's row was there at 900 ms (`"added":
+    ["home:1da8e209-…"]`), said as an ordinary placement with one pager. Step 60 on production's planted 40-section
+    Home: ⌥↓ kept all 41 roots and moved one; the typing round trip landed and was taken back; `P` `P` equalled the
+    canvas node for node (`{"equal":true,"fresh":true}`); Synced before the editor went; the plant removed (HTTP 200).
+    Step 8's axe: zero WCAG 2.1 AA violations in every state it opens, after its positive control. Supabase
+    (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): two throwaway accounts through the Auth Admin API, the seed, step 60's plant
+    and restore through PostgREST; accounts deleted, HTTP 200, users 13 → 13.
+- **Not touched and not claimed:** Ghost T1 and T3, Resend and Dodo — the story reads from no Ghost, sends no email and
+  bills nothing (the harness's linked site in the keyboard gate is a stand-in that answers nothing).
+- **No migration:** `git diff --stat bc51ecbd HEAD -- supabase` is empty, so there is no Schema phase.
 
 ## Questions for the owner
 
