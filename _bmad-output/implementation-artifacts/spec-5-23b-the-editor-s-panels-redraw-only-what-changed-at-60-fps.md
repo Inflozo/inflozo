@@ -39,7 +39,8 @@ time (DW-289).
 - **Counted, not asserted.** React's own `<Profiler>` counts each part's renders in the keyboard gate's dev build (a no-op
   in production); journey stops on the long Home require each gesture to redraw its own parts and no other.
 - **Canvas first** (**R-210**, Question 1 ruled option 1): a section operation paints the canvas at once and hands React its
-  state as a transition, so the panels follow a frame later; a control change stays in the same frame (FR-F4); a panel
+  state in the next task, so the panels follow a frame later (Question 2 ruled option 1, owner, 2026-09-28 — the
+  hand-over of Spec Change Log 8, not a transition); a control change stays in the same frame (FR-F4); a panel
   change made from a panel still drawn for a replaced design or instance is dropped, never written.
 - **The trace gates on every reading** (DW-289): at most 5% of refreshes dropped, the p95 frame counted in whole
   refreshes at most one refresh, and no long task over 50 ms — manual, never CI (NFR-1).
@@ -169,8 +170,8 @@ time (DW-289).
   with explicit props, placed from the paint's current roots by a loop keyed on what chrome shows; `IconRail` `memo`; every
   handler a memoized part gets through `useStable`; `latest` written by handlers alone for what they change; a `<Profiler>`
   INSIDE each memoized part's own boundary (a Layers row, the Design block, the settings, the rail, the chrome, the pill) —
-  outside a `memo` it would count its parent's renders; per R-210: `apply` and `restore` hand React their state as a
-  transition (a drop's end in the same one), and `onChange` drops a change from a panel drawn for another design or
+  outside a `memo` it would count its parent's renders; per R-210: `apply` and `restore` hand React their state in the
+  next task — the hand-over (a drop's end in the same one; Question 2), and `onChange` drops a change from a panel drawn for another design or
   instance.
 - [x] `tools/keyboard/journey.spec.mjs` -- a Story 5.23b describe on the long Home: the matrix's render-count rows (counts
   reset before a gesture, read after its own end), the rail row at 1100 px, the stale-panel and the urgent-render stops;
@@ -569,4 +570,6 @@ kept the deleted row for about two seconds on the harness. Built as it is now, t
 3. **Rebuild it as a transition** — matches the wording, but the panels lag behind every server call (measured 2 to 4
    seconds on the harness) and your ruling's "too short to see" would not hold.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Update the wording — the frozen sentence becomes 'hands React its state in the
+next task, so the panels follow a frame later'; R-210 itself is unchanged."* The frozen Approach bullet now reads so and
+cites this ruling; the Execution bullet for `editor.tsx` reads "the hand-over" for what it ticked. No question left open.
