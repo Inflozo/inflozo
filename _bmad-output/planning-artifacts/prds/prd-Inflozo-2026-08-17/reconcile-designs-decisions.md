@@ -4813,14 +4813,16 @@ the section asks for"*.
 - **Declined.** Option 2, members off only.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 7 · ⬜ built — Story 5.24e, with FR-H6's sentence.
 
-**R-217 — pointing at a Layers row outlines its section and brings it into view.** Story 5.24's Create, Question 8,
-ruled **option 2** (owner, 2026-09-28): *"Outline it and scroll it into view."*
+**R-217 — pointing at a Layers row outlines its section; only a click brings it into view.** Story 5.24's Create,
+Question 8, ruled **option 2** (owner, 2026-09-28): *"Outline it and scroll it into view."* — and **amended the same day**
+(owner, 2026-09-28): *"I do not want to scroll the canvas when just mouse pointer rests on Layers Panel. Only if someone
+clicks on it."*
 
 - **Why it was a question.** The hover worked one way only (DW-188); no frame or ruling asked for the other.
-- **The rule.** Pointing at a row gives its section the hover outline and scrolls it into view the way choosing a row
-  does (R-156, a sticky section exempt). A routine call beside it, stated to the owner: the scroll waits until the
-  pointer rests on the row for a moment, so sweeping down the list does not make the page jump.
-- **Declined.** Option 1, outline without scrolling (the recommendation); option 3, as it was.
+- **The rule.** Pointing at a row gives its section the hover outline, and the canvas never scrolls for a pointer; a click
+  on the row brings the section into view, as R-156 already has it (a sticky section exempt). The amendment withdraws the
+  reading first recorded here — a scroll once the pointer rests on the row.
+- **Declined.** A scroll on hover (option 2 as first read); option 3, as it was.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 8 · ⬜ built — Story 5.24e, with EXPERIENCE's Layers row.
 
 **R-218 — a capped list's header keeps its range.** Story 5.24's Create, Question 9, ruled **option 2** (owner,
@@ -4876,6 +4878,23 @@ a Global section so that changes are not applied to other Global sections."*
 - **Declined.** Option 2, deleting FR-D16's sentence.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 13 · ⬜ built — Story 5.24a: `prd.md` §4 and every
   owner-gate story in `epics.md`.
+
+**R-223 — the database refuses a signed-out ticket at once.** Story 5.24's Create, Question 5, ruled **option 3**
+(owner, 2026-09-28): *"Make the database refuse a signed-out ticket at once. It doesn't slow anything down, but it's about
+a day's work and a database change."*
+
+- **Why it was a question.** After Sign out everywhere, GoTrue refuses the old access token at once, but `/rest/v1`
+  answered it until `jwt_exp` (3,600 s) — executed by `run-verify-sign-out-everywhere.py`'s `rest-residual` and `jwt-exp`
+  steps (DW-40). The owner asked first whether option 3 would slow the canvas or editing: timed read-only on production
+  (2026-09-28), one look-up of a sign-in record takes 0.077 ms, and a round trip from the development computer was a median
+  140.2 ms without it and 140.5 ms with it; the canvas asks the database nothing while designing.
+- **The rule.** A request carrying a ticket whose sign-in session has ended is refused by the database itself, on every
+  read and write, not only by the app's pages. The mechanism is chosen at Story 5.24b's Create from Supabase's own source
+  (standing rule 1) — for example PostgREST's pre-request function, or a check in the row policies — and it ships as a
+  migration pushed first, on its own (R-99). A save and a lock check-in are timed before and after on production.
+- **Declined.** Option 1, keeping the hour (the recommendation); option 2, ten minutes.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 5 · ✅ `epics.md` — Story 5.24b's card · ⬜ built — Story 5.24b
+  (its Schema phase, SCHEMA.sql, an RLS-TEST assertion, and `rest-residual` turned from a record into a refusal).
 
 ## B · Approved decisions superseded by this session
 

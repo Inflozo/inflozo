@@ -57,7 +57,6 @@ ledger and the plan:
 
 **Ask First:**
 
-- **Question 5 is open until the owner rules it**, and the task it decides waits for him.
 - **A closure bigger than its triage says** stops, and the entry is re-homed to a named story instead.
 - **Any edit to an Epic 9 or 10 story beyond the lines a ruling or an entry names.**
 
@@ -106,8 +105,8 @@ stories; each later story's Create takes its own group from here.
 
 | Story | Entries |
 |---|---|
-| **5.24a — this story** | DW-111, 118, 132, 140, 143, 148, 164, 172, 177, 179, 217, 227 · the orphan check · R-212's plan correction · and, on the owner's rulings, DW-64 (R-220), DW-122 (R-221), DW-221 (R-222), and DW-40 as Question 5 is ruled |
-| **5.24b — accounts, sites and connections** | DW-14, 25, 27, 29, 32, 41, 47, 50, 52, 57, 58, 59, 65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271, 272 · DW-55 (R-219) |
+| **5.24a — this story** | DW-111, 118, 132, 140, 143, 148, 164, 172, 177, 179, 217, 227 · the orphan check · R-212's plan correction · and, on the owner's rulings, DW-64 (R-220), DW-122 (R-221), DW-221 (R-222) |
+| **5.24b — accounts, sites and connections** | DW-14, 25, 27, 29, 32, 41, 47, 50, 52, 57, 58, 59, 65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271, 272 · DW-55 (R-219) · DW-40 (R-223, with a Schema phase) |
 | **5.24c — the section runtime, the library and the recordings** | DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159, 161, 168, 171, 186, 196, 213, 224, 228, 237, 288 |
 | **5.24d — the checks and the walks** | DW-117, 162, 174, 182, 183, 201, 204, 208, 211, 216, 219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287, 291 |
 | **5.24e — the editor** | DW-102, 181, 187, 189, 198, 199, 205, 207, 223, 225, 226, 229, 235, 240, 241, 242, 243, 244, 248, 250, 256, 258, 259, 270, 273, 275, 278, 280, 281, 282, 283, 290 · DW-188 (R-217), 202 (R-213), 203 (R-214), 212 (R-218), 274 (R-216), 277 (R-215) |
@@ -289,8 +288,8 @@ gain the sentence, with its DW id; **"carried"** means its text already says it 
 
 ### The owner's
 
-Every question below is ruled except Question 5 (DW-40), which stays with this story until he rules it: options 1 and
-2 close DW-40 here; option 3 moves it to Story 5.24b, which then gains a Schema phase (R-99).
+Every question below is ruled (owner, 2026-09-28). Question 5 moved DW-40 to Story 5.24b, which gains a Schema phase
+(R-223, R-99); Question 8 was amended the same day (R-217).
 
 ## Code Map
 
@@ -313,7 +312,7 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
 · `tools/check-baseline.mjs:248,414` · `tools/check-catalog.mjs:13-18,53,74,153-157` ·
 `prds/…/appendix-h1-string-catalog.md` §2 · `docs/section-authoring.md` (:257, prop types :485 :530, :822) ·
 `prds/…/reconcile-designs-decisions.md` (R-175) · `tools/design-patch-prompts.py:522` ·
-`architecture/…/VERIFY-AT-BUILD.md` (row 27) · `docs/project-context.md` (Question 5).
+`architecture/…/VERIFY-AT-BUILD.md` (row 27) .
 
 ## Tasks & Acceptance
 
@@ -324,7 +323,7 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
   the re-homing below, since today's ledger fails it. Stories 5.24b–e already name their entries on their cards.
 - [ ] `epics.md` + `deferred-work.md` — **re-home every entry**: each under *Left open* gets its sentence in its story's
   criteria word for word and an `owner:` line naming that story, with a dated note keeping the old owner; each entry of
-  the other four sweep stories is owned by that story (R-211); DW-40 is owned by Story 5.24a (Question 5) until ruled.
+  the other four sweep stories is owned by that story (R-211) — DW-40 by Story 5.24b (R-223).
   Every re-homed entry stays `open`.
 - [ ] `deferred-work.md` — close every entry under *Already fixed* with its evidence re-executed at Dev.
 - [ ] `docs/section-authoring.md` — **DW-111** (:257: read `universals` from the drawn panel, never the spec table),
@@ -360,10 +359,7 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
 - [ ] **R-222** (Question 13) — PRD §4's owner check and every category's owner-gate story in `epics.md` include the
   member-state pass (every members-aware design as Logged out user, Free member and Paid member); DW-221 closed on it.
 - [ ] **R-220, R-221** — DW-64 and DW-122 closed on the rulings (R-221's Appendix G bullet, and FR-H7 as the rule any
-  later move follows). **Question 5** as ruled: option 1 — the one-hour limit written into `docs/project-context.md`'s
-  security rules and DW-40 closed; option 2 — `jwt_exp` set to ten minutes in Supabase's auth settings and DW-40 closed with the
-  sign-out harness's `jwt-exp` reading; option 3 — DW-40 re-homed to Story 5.24b, whose card gains it with a Schema
-  phase (R-99).
+  later move follows).
 - [ ] `deferred-work.md` — **the close itself**: every entry this story closes reads `status: done <date>` with a
   `resolution:` naming Story 5.24a and its evidence; **no entry deleted or renumbered**.
 - [ ] Standing rule 7 — grep for every DW id touched and for "Story 5.24" outside records; fix what it finds.
@@ -389,6 +385,13 @@ is a task of Story 5.24a.**
 
 ### Story 5.24b — accounts, sites and connections
 
+- **Schema phase first (R-99, R-223) — DW-40**: the database refuses a ticket whose sign-in session has ended, on every
+  read and write. The mechanism is read in Supabase's own source before it is chosen (standing rule 1) — PostgREST's
+  pre-request function checking the ticket's session in `auth.sessions`, or a check in the row policies — and ships as
+  one migration pushed alone, with `SCHEMA.sql`, an `RLS-TEST.sql` assertion (a ticket of an ended session refused, a
+  live one served) and the hand-applied production step. Controls: `run-verify-sign-out-everywhere.py`'s `rest-residual`
+  turns from a record into a refusal, the step before still signed-in; a save and a lock check-in timed before and after
+  on production.
 - `apps/web/server/site-probe.ts` — **DW-65, DW-271**: one helper every `site_settings` writer goes through
   (`probeSite`, `readSettings`, `answerPortal`, `answerPlan`, and the Content save — **DW-84**'s second half): it reads
   `site_settings, updated_at`, patches, updates `.eq('updated_at', …)`, and on no row re-reads and re-patches, three
@@ -440,7 +443,8 @@ is a task of Story 5.24a.**
 - `app/api/cron/purge-accounts/route.ts` + `lib/purge-rule.ts` — **DW-47**: the run excludes failed ids and loops
   within a time budget under 300 s (`ponytail:` names the ceiling and the `purge_attempts` upgrade). Control: 25
   always-failing accounts before one good one — the good one is purged in the same run.
-- `apps/web/server/db.ts` — **DW-50** (Question 15, ruled yes — the owner's certificate file, awaited): `ssl: { ca, rejectUnauthorized: true }` with Supabase's CA
+- `apps/web/server/db.ts` — **DW-50** (Question 15 — the owner's file is `supabase/prod-ca-2021.crt`, Supabase Root 2021 CA, valid until
+  2031-04-26, a date for VERIFY-AT-BUILD): `ssl: { ca, rejectUnauthorized: true }` with Supabase's CA
   inlined as a constant (a file read would meet DW-269's tracing trap). Control: a harness step connects with the pinned
   CA (passes) and a self-made CA (fails); the deployed Sites page still reads the key store.
 - `lib/admin-rule.ts` + `lib/connect-rule.ts` — **DW-52**: `ghost_unavailable` for 429 and ≥500, with the sentence
@@ -652,8 +656,8 @@ deployment logs (`npx vercel logs`) for DW-204, and CI's `check` job for DW-269;
     Announcement bar when the site has an announcement — following the site's setting, not the width or View as.
   - **R-216** (DW-274): the sign-up section's settings line follows its ask, in the Sites screen's own sentence
     (`membersNotice`, R-170); FR-H6's sentence follows.
-  - **R-217** (DW-188): pointing at a Layers row gives its section the hover outline and, once the pointer rests on the
-    row for a moment, brings it into view the way choosing a row does (R-156, a sticky section exempt).
+  - **R-217** (DW-188, amended by the owner the same day): pointing at a Layers row gives its section the hover outline
+    and never scrolls the canvas; only a click on the row brings it into view, as R-156 already does.
   - **R-218** (DW-212): the capped list's header reads "{n} items · {shown} shown in this design · {min}–{max}".
 
 **Its code.** `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`useHanded` :1222,
@@ -677,7 +681,7 @@ deployment logs (`npx vercel logs`) for DW-204, and CI's `check` job for DW-269;
 |---|-----|--------|------------|------------|---------------------|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Pilot sections, Home | Look at the small pictures at the start of each Layers row. | — | Each kind of section has its own: the header, hero, post grid and newsletter pictures differ. Before, all were the same. |
 | 2 | same | Pilot sections, window narrower than about 1280 | Look at the tile strip. | — | The tiles show the same per-kind pictures. |
-| 3 | same | Pilot sections, full width | Scroll the page to the top. Point at the **Newsletter** row in Layers and hold still for a moment (don't click). | — | The Newsletter section gets its thin outline and the page brings it into view. |
+| 3 | same | Pilot sections, full width | Scroll the page to the top. Point at the **Newsletter** row in Layers without clicking and hold still. Then click the row. | — | Pointing gives the Newsletter section its thin outline and the page does not move. The click brings it into view. |
 | 4 | same | Pilot sections | Select the Newsletter section, click into its description on the page, and paste a line copied from a Google Doc. Undo afterwards (⌘Z). | a Google Doc line with one **bold** and one *italic* word | The bold word stays bold and the italic word stays italic. |
 | 5 | same | Section Picker | Press ⌘K. Click a category in the left rail, then type in the search. Then click a card and press ⌘K again. | `grid` | While you search, **All sections** is the one marked in the rail. The second ⌘K puts the cursor back in the search with your text selected. |
 | 6 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f/post` | Ghost 5 Project, Post | Open the **Previewing with** pill at the foot, choose a different article, and reload at once (⌘R). | — | After the reload the page still shows the article you just chose. |
@@ -740,8 +744,8 @@ ruling, as Story 5.23a's was at R-208.
 6. **Two new sentences in the established voice** (5.24b, 5.24e): DW-52's "Ghost didn't answer just now. Try again in a
    moment." and DW-229's "PAUSED — this part moves by itself on your site; it holds still while you design, and Preview
    runs it" (EXPERIENCE's own words, R-170).
-7. **Two readings of the owner's rulings**, stated in the register: R-215's Layers row rule applies to the Announcement
-   bar as well as the Subscribe button; R-217's scroll waits for the pointer to rest on the row.
+7. **One reading of the owner's rulings**, stated in the register: R-215's Layers row rule applies to the Announcement
+   bar as well as the Subscribe button.
 
 **The free-pair finding (R-212).** R-17 was amended on 2026-08-28 and the picks were made category by category on 29–30
 August; `epics.md` was written on 2026-09-04 from the positional rule, and neither it, FR-G2, the tiering note nor
@@ -752,7 +756,7 @@ screen. DW-232 (A34's pager) and DW-268 (Ledger's paywall) are the same finding,
 
 ## Questions for the owner
 
-The owner ruled them on 2026-09-28, all but Question 5, which he asked about first; its answer is under it.
+The owner ruled them all on 2026-09-28 — Question 5 after its answer, and Question 8 amended the same day.
 
 ### Question 1 — This sweep is four times the last one. One story, or five in a row?
 
@@ -856,7 +860,9 @@ the hour only matters to someone who has already stolen a cookie no script on th
 2. Cut it to ten minutes. Six times shorter; every open tab renews its ticket six times an hour.
 3. Make the database refuse a signed-out ticket at once — a check on every read, about a day's work.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 3 (owner, 2026-09-28).** *"Make the database refuse a signed-out ticket at once. It doesn't slow anything
+down, but it's about a day's work and a database change."* Recorded as **R-223**: DW-40 moves to Story 5.24b, which gains
+a Schema phase (R-99).
 
 ### Question 6 — When Inflozo cannot tell whether your site shows Ghost's floating Subscribe button, what should the editor assume? (DW-277)
 
@@ -897,7 +903,10 @@ outline it gets when you point at it there.
 2. Outline it and scroll it into view.
 3. Leave it as it is.
 
-**Ruled: option 2 (owner, 2026-09-28).** *"Outline it and scroll it into view."* Recorded as **R-217** (Story 5.24e): it scrolls once the pointer rests on the row for a moment, so sweeping down the list does not make the page jump.
+**Ruled: option 2 (owner, 2026-09-28)**, *"Outline it and scroll it into view."* — **amended the same day (owner,
+2026-09-28):** *"I do not want to scroll the canvas when just mouse pointer rests on Layers Panel. Only if someone clicks
+on it."* Recorded as **R-217**: pointing outlines the section and never scrolls; a click on the row brings it into view,
+as R-156 already does (Story 5.24e).
 
 ### Question 9 — When a design shows only some of a list's items, should the list's header keep its allowed range? (DW-212)
 
@@ -997,7 +1006,8 @@ would not notice.
 1. **Yes — download it and tell me where the file is (RECOMMENDED).**
 2. Not now — DW-50 moves to Story 15.8 with DW-49, where the connection is made anew for the live site.
 
-**Ruled: option 1 (owner, 2026-09-28).** *"Yes — download it and tell me where the file is"*. The file is awaited; Story 5.24b's DW-50 task waits for it.
+**Ruled: option 1 (owner, 2026-09-28).** *"Yes — download it and tell me where the file is"*. The file arrived the same day at `supabase/prod-ca-2021.crt` (Supabase Root 2021 CA, valid until 2031-04-26); Story
+5.24b's DW-50 task inlines it.
 
 ## Owner's manual test
 

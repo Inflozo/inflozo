@@ -41,12 +41,12 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - Story 5.24a: The sweep: the ledger and the plan (R-207, R-211)
   - R-211 (owner, 2026-09-28, 5.24's Create Q1): the sweep runs as five stories in order — 5.24a the ledger and the plan, 5.24b accounts, sites and connections, 5.24c the section runtime, the library and the recordings, 5.24d the checks and the walks, 5.24e the editor; 5.24a's spec holds the triage of every open entry (at `6bf7c4e0`).
   - R-212 (Q2): the free pair is the owner's R-17 pick in every category — each first story trades its misplaced designs for the pick, and the untouched body, comments and author header move to A25 #2, A28 #1, A29 #1.
-  - R-219–R-222 (Q10–Q13): a Ghost under a path is refused and said so, support is future work (PRD Appendix G); Re-check keeps no wait; no copy or move across page types at launch, Global sections are future work (Appendix G); every owner gate includes the member-state pass. Q5 (DW-40) awaits the owner.
+  - R-219–R-222 (Q10–Q13): a Ghost under a path is refused and said so, support is future work (PRD Appendix G); Re-check keeps no wait; no copy or move across page types at launch, Global sections are future work (Appendix G); every owner gate includes the member-state pass. R-223 (Q5): the database refuses a signed-out ticket at once — DW-40, Story 5.24b, with a Schema phase.
 - Story 5.24b: The sweep: accounts, sites and connections (R-211)
 - Story 5.24c: The sweep: the section runtime, the library and the recordings (R-211)
 - Story 5.24d: The sweep: the checks and the walks (R-211)
 - Story 5.24e: The sweep: the editor (R-211)
-  - R-213–R-218 (owner, 2026-09-28, 5.24's Create Q3, Q4, Q6–Q9): the signed-out save state (B6's sixth); sign-out erases the browser copy after sending; Ghost's floating button assumed off when unreadable, and a Ghost surface's Layers row only when the site has it on; a sign-up section's settings say when the site cannot take its sign-up; a Layers row's pointer outlines and scrolls to its section; a capped list's header keeps its range.
+  - R-213–R-218 (owner, 2026-09-28, 5.24's Create Q3, Q4, Q6–Q9): the signed-out save state (B6's sixth); sign-out erases the browser copy after sending; Ghost's floating button assumed off when unreadable, and a Ghost surface's Layers row only when the site has it on; a sign-up section's settings say when the site cannot take its sign-up; a Layers row's pointer outlines its section and only a click scrolls to it (R-217 as amended the same day); a capped list's header keeps its range.
 
 ## Requirements & Constraints
 

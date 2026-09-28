@@ -2573,8 +2573,9 @@ self-check, with each new check's control; CI's `check` job on a day's first pus
 
 ### Story 5.24b: The sweep: accounts, sites and connections
 
-*R-211's second story, after 5.24a: Group B of 5.24a's triage — DW-14, 25, 27, 29, 32, 41, 47, 50, 52, 55, 57, 58, 59,
-65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271 and 272.*
+*R-211's second story, after 5.24a: Group B of 5.24a's triage — DW-14, 25, 27, 29, 32, 40, 41, 47, 50, 52, 55, 57, 58,
+59, 65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271 and 272. DW-40 (**R-223**) gives it a Schema phase, pushed
+first and on its own (R-99).*
 
 As a customer signing in and connecting my Ghost sites,
 I want the small faults in sign-in, Projects, Sites and connect fixed,
@@ -2591,12 +2592,14 @@ search
 **And** an address with a path is refused with *"Inflozo connects a Ghost site at the root of its address — /blog isn't
 supported yet."* (**R-219**)
 **And** the app checks the database's certificate (DW-50), from the file the owner downloads
+**And** the database itself refuses a ticket whose sign-in session has ended, on every read and write (**R-223**,
+DW-40) — its migration pushed first, alone (R-99), a save and a lock check-in timed before and after on production
 **And** every touched surface matches its frame, with zero axe violations at 1440, 834 and 390
 **And** the owner tests it on the deployed site (R-80), and `pnpm check`, the RLS gate and the documentation gate are
 green.
 
 **FRs:** none new. · **Frame:** `S3 Dashboard.dc.html` S3a · `S11 Sites.dc.html` S11a · `S11e Manage Keys Popup.dc.html`
-· `S2 Onboarding.dc.html` S2c and S2b·2 (R-74). · **Rulings:** R-207, R-211, R-219. · **Owner test:** yes. ·
+· `S2 Onboarding.dc.html` S2c and S2b·2 (R-74). · **Rulings:** R-207, R-211, R-219, R-223. · **Owner test:** yes. ·
 **Verification:** `app.inflozo.com`, Supabase, T1, public DNS and the GitHub API, read-only where the entry says (R-82).
 
 ### Story 5.24c: The sweep: the section runtime, the library and the recordings
@@ -2662,7 +2665,8 @@ So that it shows what is true and keeps what I did.
 **And** the owner's rulings of 2026-09-28 are built: the signed-out save state (**R-213**); the browser's copy erased at
 sign-out after sending what is owed (**R-214**); Ghost's floating Subscribe button assumed off when unreadable, and a
 Ghost surface listed in Layers only when the site shows it (**R-215**); a sign-up section's settings saying when the site
-cannot take its sign-up (**R-216**); a Layers row's pointer outlining its section and bringing it into view (**R-217**);
+cannot take its sign-up (**R-216**); a Layers row's pointer outlining its section, and only a click bringing it into
+view (**R-217**);
 a capped list's header keeping its range (**R-218**)
 **And** every touched surface matches its frame, with zero axe violations at 1440, 834 and 390
 **And** the owner tests it on the deployed site (R-80), and `pnpm check`, `pnpm keyboard` and the deployed walks pass.
