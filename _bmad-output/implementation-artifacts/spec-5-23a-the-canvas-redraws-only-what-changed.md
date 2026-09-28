@@ -2,7 +2,7 @@
 title: 'Story 5.23a — The canvas redraws only what changed'
 type: 'feature'
 created: '2026-09-27'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: '1a55920de16816a4403dda48dcba1173ea5bc684'
@@ -564,6 +564,24 @@ at 1440 × 900 with a REAL pointer, three runs per build, `editor.tsx` swapped i
 - **Noted, not a finding:** the GitHub repository answers unauthenticated reads (`private: false`), so `GITHUB_TOKEN` is
   not needed to read CI — `tools/probe/.env.example` describes it as for a private repo; and `tools/probe/.env`'s
   `RESEND_FROM` value is unquoted, so `source`-ing the file stops there (the `env $(grep …)` pattern is unaffected).
+
+### Results — Deploy, 2026-09-28
+
+Deployment: `dpl_BV2R5Ws6gT1qKwdsxfECbgX9ok6s` — READY, target production, built from `4e1d5a31` (HEAD; unauthenticated
+GitHub Actions read — `GITHUB_TOKEN` from `tools/probe/.env` returned `401 Bad credentials` on both `/check-runs` and
+`/user` despite answering earlier this session, and the repo is public (`private: false`, noted at Review), so the same
+check-runs read was repeated with no token: CI run 36374618231/36374618281 — `check`, `rls`, `matrix` and `deploy` all
+`success`). Read with `VERCEL_TOKEN`, `VERCEL_PROJECT`, `VERCEL_TEAM_ID`: the deployment's own `alias` list is
+`inflozo.com`, `app.inflozo.com`, `www.inflozo.com` and two `*.vercel.app` aliases. `https://app.inflozo.com/` answers
+307 to `/sign-in` (200); `https://app.inflozo.com/harness/editor` answers 404, the negative control (the harness is
+`INFLOZO_HARNESS`-only). No migration in this story (`git diff --stat 1a55920d HEAD -- supabase` empty), so there is no
+Schema phase and nothing to read back on production. This story has no screen (`owner_test: none` — "nothing on your
+screen looks different" is the story's own claim) so there is no Owner's manual test to fill in; the story is marked
+`done` in `sprint-status.yaml` instead, per R-80's no-screen path.
+
+`GITHUB_TOKEN`'s failure is not this story's finding to fix — read-only, unrelated to any change here — but it is worth
+a row wherever GitHub credential health is tracked, since a prior sighting (memory) only ever saw it refuse a *write*
+(workflow dispatch, 403), never refuse a *read* with `401 Bad credentials`.
 
 ## Questions for the owner
 
