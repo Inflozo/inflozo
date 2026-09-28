@@ -1086,6 +1086,24 @@ def render_story(story, ep, phase_prompts, briefs):
     return f'<section class="sd" id="sd-{kid}" hidden>{"".join(parts)}</section>'
 
 
+# R-224's two pills: a calendar for when the story left the backlog, a stopwatch for how long it took to Done. The
+# words a screen reader hears are the whole sentence; the eye gets the icon and the figure.
+ICON_START = ('<svg aria-hidden="true" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="2"/>'
+              '<path d="M16 3v4M8 3v4M4 11h16M8 15h2"/></svg>')
+ICON_TOOK = ('<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="14" r="7"/>'
+             '<path d="M12 11v3l2 1.5M10 3h4M12 3v4M18 7l1.5-1.5"/></svg>')
+
+
+def times_pills(story):
+    if not story.get('started'):
+        return ''
+    d, h, m = story['took'].split(':') if story.get('took') else ('', '', '')
+    took = (f'<span class="tp took" title="Took {int(d)} days, {int(h)} hours and {int(m)} minutes (days:hours:minutes)">'
+            f'{ICON_TOOK}<span class="vh">Took </span>{e(story["took"])}</span>') if story.get('took') else ''
+    return (f'<div class="times"><span class="tp start" title="Started {e(story["started"])}">{ICON_START}'
+            f'<span class="vh">Started </span>{e(story["started"])}</span>{took}</div>')
+
+
 def render_card(story, ep):
     kid = story['key'].replace('.', '-')
     pk = PROMPT_FOR[story['phase']]
@@ -1113,9 +1131,7 @@ def render_card(story, ep):
             f'<div class="ch"><span class="ebadge">E{ep["n"]}</span><span class="key">{e(story["key"])}</span>'
             + phchip(story["phase"], lab(story["phase"])) + '</div>'
             f'<h3>{e(story["title"])}</h3>'
-            + (f'<div class="times">Started {e(story["started"])}'
-               + (f' · Took <span title="days:hours:minutes">{e(story["took"])}</span>' if story['took'] else '')
-               + '</div>' if story['started'] else '') +
+            + times_pills(story) +
             f'<div class="cf">{btn}{tag}<a class="more" href="#{e(story["key"])}" aria-label="open story {e(story["key"])}">Details</a></div></article>')
 
 
@@ -1269,7 +1285,15 @@ letter-spacing:.05em;padding:1px 6px;border-radius:99px;background:var(--cs);col
 .p-Review,.p-Deploy{--c:var(--l-review);--cs:var(--l-review-s)}.p-Test{--c:var(--l-test);--cs:var(--l-test-s)}
 .p-Done{--c:var(--l-done);--cs:var(--l-done-s)}.p-Fix,.p-Blocked{--c:var(--crit);--cs:var(--crit-s)}
 .card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}
-.card .times{color:var(--muted);font-size:.68rem;margin:-3px 0 7px;font-variant-numeric:tabular-nums}
+.card .times{display:flex;flex-wrap:wrap;gap:4px;margin:-1px 0 8px}
+.tp{display:inline-flex;align-items:center;gap:4px;padding:3px 8px 3px 6px;border-radius:99px;white-space:nowrap;
+font-size:.66rem;font-weight:650;line-height:1.15;font-variant-numeric:tabular-nums;letter-spacing:.01em;
+background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.tp svg{width:12px;height:12px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;
+stroke-linejoin:round}
+.tp.start svg{color:var(--muted)}
+.tp.took{background:var(--l-done-s);color:var(--l-done);box-shadow:inset 0 0 0 1px currentColor}
+.vh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
 background:var(--accent);color:var(--on);cursor:pointer;white-space:nowrap}
@@ -2246,6 +2270,12 @@ def demo():
         derive(story, {key: spec_status}, {key: spec}, log)
         return story['started'], story['took']
     assert timed(['Done', 'Dev', 'Create'], 'done', 'passed') == ('04-Sep-2026 09:13 PM', '1:03:06')
+    done_pills = times_pills({'started': '04-Sep-2026 09:13 PM', 'took': '1:03:06'})
+    assert 'class="tp start"' in done_pills and 'class="tp took"' in done_pills, done_pills
+    assert 'Started </span>04-Sep-2026 09:13 PM' in done_pills and 'Took </span>1:03:06' in done_pills, done_pills
+    assert 'Took 1 days, 3 hours and 6 minutes' in done_pills, done_pills
+    open_pills = times_pills({'started': '04-Sep-2026 09:13 PM', 'took': ''})
+    assert 'tp start' in open_pills and 'tp took' not in open_pills and times_pills({'started': ''}) == '', open_pills
     assert timed(['Review', 'Dev', 'Create'], 'in-review', 'pending') == ('04-Sep-2026 09:13 PM', '')
     moved = adopt_split([{'kind': 'story', 'e': 5, 's': '24', 'key': '5.24'}], {(5, '24a')})
     kept = adopt_split([{'kind': 'story', 'e': 5, 's': '16', 'key': '5.16'}], {(5, '16'), (5, '16a')})

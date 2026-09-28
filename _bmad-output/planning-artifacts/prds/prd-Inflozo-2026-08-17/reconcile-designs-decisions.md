@@ -4901,8 +4901,10 @@ a day's work and a database change."*
 it took that story from Backlog to Done in Days:HH:MM format. … I want this to be available and visible on the story cards
 itself. Just show the time it started and total time it took."*
 
-- **The rule.** Each card on `STORY-BOARD.html` reads *"Started 28-Sep-2026 06:37 PM"* and, once the story is Done,
-  *"Took 0:13:45"* — days, hours and minutes of clock time. Both are read from git, never typed in: the start is the
+- **The rule.** Each card on `STORY-BOARD.html` carries two pills (the owner, the same day: *"beautiful easy to see
+  and read pills"*): a calendar with *28-Sep-2026 06:37 PM*, when the story started, and once it is Done a green
+  stopwatch with *0:13:45* — days, hours and minutes of clock time; each pill's tooltip and screen-reader words say
+  "Started …" and "Took … days, … hours and … minutes". Both are read from git, never typed in: the start is the
   story's first R-81 commit (when it left the backlog) and the end its newest Done commit (its newest commit, where the
   Done is read off the spec). So it is mandatory by construction — every story commits every phase (R-81, the
   commit-msg hook), no card can lack its times, and every story already finished has them. A story renamed into a
