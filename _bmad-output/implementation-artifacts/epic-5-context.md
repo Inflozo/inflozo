@@ -39,6 +39,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - Story 5.23b: The editor's panels redraw only what changed, at 60 fps (R-208)
   - R-210 (owner, 2026-09-28, 5.23b's Create Q1): canvas first, panels a frame later for every change to a section; a control change stays in its frame (FR-F4); a press on a stale settings panel is ignored.
 - Story 5.24: The deferred-work sweep at the end of Epic 5 (R-207)
+  - Story 5.24's Create (2026-09-28): the whole ledger triaged at `6bf7c4e0` — already fixed, closable now in five area groups, or re-homed to one named later story whose text gains it; Question 1 asks the owner to run the groups as five stories (5.24a–e), Question 2 whether the free pair is his R-17 pick or "the first two" (the plan disagrees with his picks).
 
 ## Requirements & Constraints
 
@@ -1252,3 +1253,9 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     250, 278, 281), and DW-203's two owners are both done; DW-165, 197 and 206 are already fixed and only the ledger
     lags. **R-207** (owner, 2026-09-27): Story 5.24, after 5.23a (after 5.23b since R-208), sweeps EVERY open entry in
     the ledger, not only Epic 5's, and closes whatever it can; the sixteen orphans now name it.
+  - **Story 5.24's Create (2026-09-28):** every open entry has one verdict in 5.24's spec § The triage. Four findings
+    reach past the ledger: (1) R-17's amendment (2026-08-28, the owner picks each category's [Free] pair) never reached
+    `epics.md`'s E9/E10 design lists, FR-G2, the tiering note or `sections-inventory.md:12`, and it makes three
+    `SYNTHESIS_DEFAULTS` rows Pro (`a25/1`, `a28/2`, `a29/2`) — Question 2; (2) many "later" owners are stories whose own
+    text never names the entry, so each gains the sentence with its DW id; (3) a gate check is planned that refuses an
+    open entry owned only by finished stories; (4) DW-267 stays Story 7.13's, so the sweep has no Schema phase.
