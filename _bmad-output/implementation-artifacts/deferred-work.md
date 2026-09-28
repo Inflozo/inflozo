@@ -3987,8 +3987,8 @@ severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
 owner: Stories 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
   word for word with its id (R-195), and 10.112 (A34 — the content model, the stylesheet and designs #2, #3, #4 and #9),
-  which carries the Pagination style select (R-195, the note below) and names this entry beside it since Story 5.24a's
-  review. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Source, Count and the main-feed
+  which carries the Pagination style select (R-195, the note below) and names this entry beside it since the sweep's review (5.24a,
+   2026-09-28). *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Source, Count and the main-feed
   designation) · A34's category story (the Pagination style select) · DW-107 (Image focus) · A17's category story (Epic
   10) for the rest")*
 location: packages/library/designs/a17/1/ · packages/section-runtime/src/controls.ts (`disabledBy` greys a whole control)
@@ -4131,7 +4131,7 @@ severity: low
 origin: Story 4.10's propagation grep for `A4 #2` and `Split Editorial` (standing rule 7) — outside R-108, which is the
   pilot row only
 owner: Story 11.2 (The starter chooser), whose criteria carry its requirement word for word with its id (R-195), and
-  since Story 5.24a's review (2026-09-28) the same re-read covers a design the owner's Free picks (R-212) made Pro —
+  since the sweep's review (5.24a, 2026-09-28) (2026-09-28) the same re-read covers a design the owner's Free picks (R-212) made Pro —
   Quiet's A25 #1 Measured, where A25's Free pair is #2 Plain and #5 Full Bleed — so FR-O4's all-Free starters hold.
   *(Story 5.24a's Dev, 2026-09-28: was "the starters' story (Epic 11, Story 11.2 the starter chooser, or the story that
   authors `starters/`)")*
@@ -4642,7 +4642,7 @@ origin: Story 5.3's Create run (2026-09-17), the icon sweep over every category 
 owner: Stories 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry A1's half word
   for word with its id (R-195), 10.50 (A16 — the content model, the stylesheet and designs #2, #3, #4 and #9), whose
   criteria build the same answer for A16's `socials[]`, and 10.26 (A10 — the content model, the stylesheet and designs
-  #1, #3, #4 and #8), whose criteria carry A10's icon field (Story 5.24a's review, 2026-09-28: the Dev line named 9.1
+  #1, #3, #4 and #8), whose criteria carry A10's icon field (the sweep's review, 2026-09-28: the Dev line named 9.1
   alone and dropped the two halves). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1's content model: whether A1's social
   glyphs are slots, asked in R-83's shape if the 29 August ruling does not already settle it), Story 10.50 (A16's
   content model, the same question), Story 10.26 (A10's content model: the icon field's name and type)")*
