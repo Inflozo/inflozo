@@ -1,4 +1,5 @@
-import { useCallback, useInsertionEffect, useRef, type ProfilerOnRenderCallback } from 'react'
+import { useCallback, useInsertionEffect, useMemo, useRef, useState, type Dispatch, type ProfilerOnRenderCallback, type SetStateAction } from 'react'
+import { flushSync } from 'react-dom'
 
 /* STORY 5.23b — THE TWO TOOLS EVERY PART THAT REDRAWS ONLY WHAT TOUCHED IT NEEDS (R-208), ONCE.
  *
@@ -35,4 +36,65 @@ export const counted: ProfilerOnRenderCallback = (id) => {
   const w = window as Window & { __inflozoRenders?: Renders }
   const renders = (w.__inflozoRenders ??= {})
   renders[id] = (renders[id] ?? 0) + 1
+}
+
+/* R-210's HAND-OVER — CANVAS FIRST, THE PANELS IN THE NEXT TASK (Story 5.23b's Dev, found by the deployed walk).
+ *
+ * A section operation paints the canvas and moves the editor's `latest` in the press's own task, inside `canvasFirst`; every
+ * call it makes to a `handed` setter is HELD, in order, and handed to React together in the NEXT task (`flushSync`), so
+ * the press's task stays short and the panels follow at once after it. NOT A TRANSITION: Next's server actions and
+ * navigations are router transitions, and React renders every pending transition in one batch — so a transition's panels
+ * waited for whatever server call was in flight. Executed on the harness with each server action's answer held 2 s: a
+ * Delete's Layers rows landed 2.2 s after the canvas, an ⌥↓ during the editor's opening re-read 3.8 s after it.
+ *
+ * ORDER IS KEPT, which a transition's rebasing gave for free: the hold closes when the press's task yields (a microtask),
+ * and a handed setter called after that and before the hand-over's task first hands over everything owed, so no later
+ * state ever lands before an earlier one (a hover the paint let go, then the pointer's own hover of the new node).
+ * Setters that are not `handed` run as they always did. */
+let holding: (() => void)[] | null = null
+let owed: (() => void)[] = []
+
+function payOwed() {
+  const calls = owed
+  owed = []
+  for (const call of calls) call()
+}
+
+/** The hand-over's own task: everything owed, in order, rendered at once. */
+function settle() {
+  if (owed.length > 0) flushSync(payOwed)
+}
+
+/** Runs `operation` now and holds every `handed` setter call made until the press's task yields. Nested calls join. */
+export function canvasFirst(operation: () => void): void {
+  if (holding !== null) return operation()
+  const held: (() => void)[] = []
+  holding = held
+  queueMicrotask(() => {
+    if (holding === held) holding = null
+    if (held.length === 0) return
+    owed.push(...held)
+    // ponytail: a timer, not a MessageChannel — a later setter call pays what is owed first anyway, so only the panels'
+    // first frame waits on it; a background tab's throttled timer delays panels nobody is looking at
+    setTimeout(settle, 0)
+  })
+  operation()
+}
+
+/** A setter the hand-over can hold — outside one it sets at once, after anything still owed. */
+export function handed<T>(set: Dispatch<SetStateAction<T>>): Dispatch<SetStateAction<T>> {
+  return (value) => {
+    if (holding !== null) {
+      holding.push(() => set(value))
+      return
+    }
+    if (owed.length > 0) payOwed()
+    set(value)
+  }
+}
+
+/** `useState` whose setter is `handed` — the editor's state, and the Layers rows' focus that moves with it. */
+export function useHanded<S>(initial: S | (() => S)): [S, Dispatch<SetStateAction<S>>] {
+  const [state, set] = useState(initial)
+  return [state, useMemo(() => handed(set), [set])]
 }

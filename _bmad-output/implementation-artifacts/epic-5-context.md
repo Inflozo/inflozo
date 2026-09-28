@@ -964,10 +964,12 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     selected and pointed sections kept BY VALUE (their JSON, the paint's own signature) and handlers of fixed identity
     (`lib/renders.ts`'s `useStable`); the drag is a store of one value (`lib/reorder.ts`'s `oneValue`) that Layers alone
     subscribes to; React's `<Profiler>` inside each part counts its renders in the keyboard gate (`window.__inflozoRenders`,
-    development only). `apply` and `restore` paint the canvas and move `latest` in the press's task and hand React the rest
-    as a transition, and **`latest` is the handlers'** — a commit writes only what it derives (the canvas, what can be
-    placed, the layout, the page's list and subject), so a render drawn from state a transition has not delivered moves
-    nothing back. `onChange` drops a press on a panel drawn for another design or section; the chrome and the pill are
+    development only). `apply` and `restore` paint the canvas and move `latest` in the press's task and HAND React the
+    rest over in the next (`canvasFirst`; every editor state is `useHanded`, and a later setter call pays what is owed
+    first). **Never a React transition in the editor for this**: the deployed walk's step 94 found one waiting for any
+    server call in flight — Next's server actions are router transitions, and React renders pending transitions
+    together. **`latest` is the handlers'** — a commit writes only what it derives (the canvas, what can be placed, the
+    layout, the page's list and subject), so a render drawn before a hand-over lands moves nothing back. `onChange` drops a press on a panel drawn for another design or section; the chrome and the pill are
     placed from the paint's current roots; a drop's slot stays until its moved rows land; a Layers move is re-based on the
     newest doc. **A memoized part asks what it reads only when it renders**: the deployed walk's step 12 caught the chrome
     keeping a header's box in the fixed layer after On scroll → Static restamped it in place, so every restamp in place

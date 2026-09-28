@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, Profiler, startTransition, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent } from 'react'
+import { memo, Profiler, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent } from 'react'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
@@ -12,7 +12,7 @@ import { LayersRow, SiteWideGroup } from '@/components/kit/layers-row'
 import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
 import { captureLayout, landingAt, shift, slotTop, type Layout, type Store } from '@/lib/reorder'
-import { counted, useStable } from '@/lib/renders'
+import { canvasFirst, counted, useHanded, useStable } from '@/lib/renders'
 import { MAKE_MAIN_FEED } from '@/lib/data-group'
 import { GHOST_WORDS, type SurfaceId } from '@/lib/ghost-surfaces'
 import { PAYWALL_WORDS } from '@/lib/paywall'
@@ -42,7 +42,7 @@ import { PAYWALL_WORDS } from '@/lib/paywall'
    same numbers P0-3's item list drags by. The drag lives in a STORE OF ONE VALUE that `editor.tsx` holds (`lib/reorder.ts`'s
    `oneValue`), because the canvas pill's grip drives the same reorder from the other side of the frame: whichever grip is
    held, this panel draws the slot — and since Story 5.23b it is the only thing that subscribes, so a pointer move redraws
-   the slot and the rows it slides and never the editor. A drop that moved is handed to React as a transition (R-210): the
+   the slot and the rows it slides and never the editor. A drop that moved is handed to React a task later (R-210): the
    slot and the slid rows stay as they are until the moved rows arrive here, and then the drag is let go, so Layers never
    shows the old order in between.
 
@@ -102,7 +102,7 @@ export type LayerRow = {
 
 /** The drag in flight, over one doc's own rows. Held by `editor.tsx`, because the canvas pill starts one too —
  *  `via` says which grip, because only a row's own drag lifts the row: a pill drag moves the section on the CANVAS,
- *  and this panel shows only where it will land. `landing`: dropped, its move handed to React as a transition (R-210) —
+ *  and this panel shows only where it will land. `landing`: dropped, its move handed to React a task later (R-210) —
  *  the slot stays until the moved rows arrive, and nothing else may start or move it meanwhile. */
 export type SectionDrag = { doc: string; from: number; to: number; dy: number; via: 'layers' | 'pill'; landing?: true }
 
@@ -305,10 +305,11 @@ export const Layers = memo(function Layers({
   /** the rows of the dragged group as they stood when the press landed — captured for a pill-started drag too */
   const layout = useRef<Layout>({ tops: [], heights: [], gap: 0 })
   const startY = useRef(0)
-  /** roving tabindex: the row the panel offers Tab, by instanceId — the first row until one is stepped onto */
-  const [current, setCurrent] = useState<string | null>(null)
+  /** roving tabindex: the row the panel offers Tab, by instanceId — the first row until one is stepped onto. Handed
+   *  (Story 5.23b): a move's focus is handed over with the rows it follows (R-210) */
+  const [current, setCurrent] = useHanded<string | null>(null)
   /** the row to put focus back on after a render that reordered the rows, so a move follows its section */
-  const [focusOn, setFocusOn] = useState<string | null>(null)
+  const [focusOn, setFocusOn] = useHanded<string | null>(null)
   const [renaming, setRenaming] = useState<LayerRow | null>(null)
   const [nameError, setNameError] = useState<string | null>(null)
   const rename = useRef<HTMLDialogElement>(null)
@@ -317,8 +318,8 @@ export const Layers = memo(function Layers({
   const tabAt = current !== null && all.some((r) => keyOf(r) === current) ? current : (selectedKey ?? (all[0] ? keyOf(all[0]) : null))
   const rowEl = (key: string) => panel.current?.querySelector<HTMLElement>(`[data-layer-row="${CSS.escape(key)}"]`)
 
-  // a LAYOUT effect (Story 5.23b): a move reaches these rows as a transition, whose reorder takes the focus off the row it
-  // moves — so it is put back in that same commit, before a second key can arrive at the page instead of the row
+  // a LAYOUT effect (Story 5.23b): a move reaches these rows a task after the canvas (R-210's hand-over), and its reorder
+  // takes the focus off the row it moves — so it is put back in that same commit, before a second key can reach the page
   useLayoutEffect(() => {
     if (focusOn === null) return
     rowEl(focusOn)?.focus()
@@ -361,15 +362,17 @@ export const Layers = memo(function Layers({
   }
 
   /** True when the move landed. The announce is the editor's to read out, so the pill's drop announces through the same
-   *  live region. R-210: the move reaches these rows as a transition, so the row's focus follows in the SAME one — set
-   *  now, it would land before the move and the reorder that follows would take it away. */
+   *  live region. R-210: the move reaches these rows in the editor's hand-over, so the row's focus goes in the SAME one —
+   *  set now, it would land before the move and the reorder that follows would take it away. */
   const move = (row: LayerRow, to: number) => {
-    if (onMove(row, to) === null) return false
-    startTransition(() => {
+    let moved = false
+    canvasFirst(() => {
+      if (onMove(row, to) === null) return
+      moved = true
       setCurrent(keyOf(row))
       setFocusOn(keyOf(row))
     })
-    return true
+    return moved
   }
 
   const onRowKey = (row: LayerRow, event: KeyboardEvent<HTMLDivElement>) => {

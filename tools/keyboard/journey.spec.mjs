@@ -4046,36 +4046,43 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     await expect.poll(() => imageValue(page), 'the control: a press on the current panel lands').not.toBe(was)
   })
 
-  test('R-210: an urgent render between two edits loses neither — `]`, a device key, then Space on another row, in one task', async ({ page }) => {
+  test('R-210: a key after a section operation never lands before it, and neither edit is lost — `]`, a device key, then Space on another row', async ({ page }) => {
     await open(page)
     await selectRinged(page)
     const other = (await rows(page)).page[1]
     const n = await tagRoots(page)
     await page.locator('section[aria-label="Canvas"]').focus()
-    // ONE TASK: the design change is handed to React as a transition; `2`'s device is an URGENT update, rendered in the
-    // microtasks after it, before the transition lands — a render drawn from state the transition has not delivered;
-    // then Space hides another section. The editor must make that second edit against the newest doc.
+    // `]` paints the canvas in its own task and holds what it hands React for the next (`lib/renders.ts`'s `canvasFirst`).
+    // The press's task ends — a microtask, as between two keys — and `2`'s device, an URGENT update, reaches React before
+    // that next task: it must hand the design change over FIRST, so its render shows both. Then Space hides another
+    // section, and the editor must make that second edit against the newest doc.
     const between = await page.evaluate(async (row) => {
       const press = (target, key) => target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+      const settle = async () => { for (let k = 0; k < 3; k++) await Promise.resolve() }
+      const counterNow = () => document.querySelector('#editor-design-count')?.textContent?.trim() ?? null
       const stage = document.querySelector('section[aria-label="Canvas"]')
       const canvas = document.querySelector('iframe[title$="canvas"]').contentDocument.getElementById('canvas')
       const ringed = canvas.querySelector(':scope > [data-inflozo-selected]')
       press(stage, ']')
       // CANVAS FIRST: the ringed section's drawing is replaced in the key's own task, before any render
       const canvasFirst = ringed !== null && !ringed.isConnected && canvas.querySelector(':scope > [data-inflozo-selected]') !== null
+      await settle()
+      const held = counterNow()
       press(stage, '2')
-      for (let k = 0; k < 3; k++) await Promise.resolve()
+      await settle()
       const seen = {
         canvasFirst,
+        held,
         device: document.querySelector('#editor-device [role="radio"][aria-checked="true"]')?.getAttribute('data-device') ?? null,
-        counter: document.querySelector('#editor-design-count')?.textContent?.trim() ?? null,
+        counter: counterNow(),
       }
       press(document.querySelector(`[data-layer-row="${row}"]`), ' ')
       return seen
     }, other)
     expect(between.canvasFirst, 'R-210: `]` redrew the canvas in its own task').toBe(true)
-    expect(between.device, 'the control: the urgent render landed in between').toBe('tablet')
-    expect(between.counter, 'the control: …before the design change had reached the panel (R-210)').toMatch(/^1 of \d+$/)
+    expect(between.held, 'R-210: …and its panel waits for the next task').toMatch(/^1 of \d+$/)
+    expect(between.device, "the device key's urgent render landed").toBe('tablet')
+    expect(between.counter, 'and it handed the design change over first — nothing set later lands before it').toMatch(/^2 of \d+$/)
     // BOTH edits are in the doc: the ringed section on its second design, and the other section hidden
     await expect(counter(page), 'the design change was not lost').toHaveText(/^2 of \d+$/)
     await expect.poll(async () => (await tagsOf(page)).length, 'the hide was not lost').toBe(n - 1)
@@ -4097,6 +4104,58 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     expect(undone.canvasFirst, 'R-210: ⌘Z redrew the canvas in its own task').toBe(true)
     expect(undone.counter, 'R-210: …and the panel follows a frame later').toMatch(/^2 of \d+$/)
     await expect(counter(page)).toHaveText(/^1 of \d+$/)
+  })
+
+  test('R-210: a server call in flight never holds the panels — the rows land while the site is still being re-read, and while the looked-at record is still being written', async ({ page }) => {
+    // Next's server actions are router transitions, and React renders every pending transition together: a section
+    // operation handed to React as one waited for whatever server call was in flight (the deployed walk's step 94 found it;
+    // Layers 2.2 s and 3.8 s behind the canvas on the harness with each answer held 2 s). Here every server action is held
+    // until the stop lets it go, as a slow production round trip would hold it.
+    let holding = false
+    const waiting = []
+    let finished = 0
+    const isAction = (request) => request.method() === 'POST' && request.headers()['next-action'] !== undefined
+    page.on('requestfinished', (request) => {
+      if (isAction(request)) finished++
+    })
+    await page.route('**/app/harness/editor**', async (route) => {
+      if (holding && isAction(route.request())) await new Promise((go) => waiting.push(go))
+      await route.continue()
+    })
+    const letGo = () => {
+      holding = false
+      for (const go of waiting.splice(0)) go()
+    }
+    // (a) the linked harness site: opening the editor re-reads it (`recheck`), and that read is held
+    holding = true
+    await openSurfaces(page)
+    await expect.poll(() => waiting.length, 'the control: the opening re-read of the linked site is in flight, held').toBeGreaterThan(0)
+    const own = (await rows(page)).page
+    await page.locator(`[data-layer-row="${own[0]}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await expect.poll(async () => (await rows(page)).page[1], 'the moved row lands while that read is still held').toBe(own[0])
+    expect(waiting.length, '…and it still is').toBeGreaterThan(0)
+    letGo()
+    // (b) R-167: two other visitors looked at, their writes through; then an edit that makes them unviewed again sends the
+    // record in the SAME task as the section operation — and that write is held
+    await expect.poll(() => finished, 'the re-read answered').toBeGreaterThan(0)
+    for (const visitor of ['free', 'paid']) {
+      const done = finished
+      await page.locator('#editor-view-as').focus()
+      await page.keyboard.press('Enter')
+      await expect(page.locator('#editor-view-as-menu [aria-current="true"]')).toBeFocused()
+      await page.locator(`#editor-view-as-menu [data-visitor="${visitor}"]`).focus()
+      await page.keyboard.press('Enter')
+      await expect(page.locator('#editor-view-as-menu')).toBeHidden()
+      await expect.poll(() => finished, `the record of ${visitor} written`).toBeGreaterThan(done)
+    }
+    const gone = (await rows(page)).page[0]
+    await select(page, gone)
+    holding = true
+    await page.keyboard.press('Delete')
+    await expect.poll(async () => (await rows(page)).page.includes(gone), 'the deleted row goes while the record is still being written').toBe(false)
+    expect(waiting.length, 'the control: the write the Delete sent is held').toBeGreaterThan(0)
+    letGo()
   })
 
   test('the chrome\'s layer follows a control\'s restamp in place — On scroll → Static moves the selected box from the fixed layer to the scrolling one', async ({ page }) => {

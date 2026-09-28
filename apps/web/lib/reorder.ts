@@ -56,7 +56,7 @@ export function landingAt(layout: Layout, from: number, pointerY: number, startY
    editor's React state it re-rendered the whole editor on each one — 23 commits and 943 Layers row renders for one drag
    of the pill, measured at planning. Held here, it is read only where it is drawn: the editor's grips write it and read
    it in their handlers, and Layers alone subscribes (`useSyncExternalStore`), so a move redraws the landing slot and the
-   rows it slides and nothing else. `landing` marks a drop whose move has been handed to React as a transition (R-210):
+   rows it slides and nothing else. `landing` marks a drop whose move is being handed to React, a task later (R-210):
    the slot stays until the moved rows land, and Layers lets it go then. */
 export type Store<T> = { get: () => T; set: (next: T) => void; subscribe: (listener: () => void) => () => void }
 

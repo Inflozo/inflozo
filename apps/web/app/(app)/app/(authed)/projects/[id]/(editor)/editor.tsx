@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { memo, Profiler, startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
+import { memo, Profiler, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
@@ -75,7 +75,7 @@ import {
 } from '@/lib/page-two'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, oneValue, type Layout } from '@/lib/reorder'
-import { counted, useStable } from '@/lib/renders'
+import { canvasFirst, counted, useHanded, useStable } from '@/lib/renders'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, siteSubjects, subjectOptions } from '@/lib/preview-subject'
 import {
@@ -131,13 +131,14 @@ import type { EditorData } from './read'
    (`lib/reorder.ts`), so a pointer move redraws the slot and the rows it slides and not the editor. React's own
    `<Profiler>` inside each part counts its renders, and the keyboard gate reads the counts on the long Home.
    R-210 (owner, 2026-09-28): A SECTION OPERATION — a design change, a move, hide or show, duplicate, delete, a placement,
-   Remix, undo and redo — paints the canvas and moves `latest` in the press's own task, and hands React its state as a
-   TRANSITION (`apply`, `restore`), so the panels follow a frame later and the press's task stays short; a drop's slot
-   stays until its row lands. A control change stays in its own frame (FR-F4). Because a render can now be drawn from state
-   a transition has not delivered, `latest` is written by the HANDLERS for what they change and by a commit only for what
-   it derives, never from a render's own state; the chrome and the pill are placed from the paint's CURRENT roots, never
-   against one a paint removed; and a press on a Controls panel still drawn for a replaced design or section is dropped,
-   never written (`onChange`).
+   Remix, undo and redo — paints the canvas and moves `latest` in the press's own task, and HANDS React its state over in
+   the next (`apply`, `restore` → `lib/renders.ts`'s `canvasFirst`; every state here is `useHanded`), so the panels follow a
+   frame later and the press's task stays short; a drop's slot stays until its row lands. Not a React transition: those
+   wait for whatever server call is in flight (the deployed walk found it). A control change stays in its own frame
+   (FR-F4). Because a render can be drawn before a hand-over lands, `latest` is written by the HANDLERS for what they
+   change and by a commit only for what it derives, never from a render's own state; the chrome and the pill are placed
+   from the paint's CURRENT roots, never against one a paint removed; and a press on a Controls panel still drawn for a
+   replaced design or section is dropped, never written (`onChange`).
 
    HOVER AND SELECTION (Story 5.2 — S4b and S4c). The editor listens on the canvas document from this one, and marks
    the section root under the pointer `data-inflozo-hover` and the chosen one `data-inflozo-selected` — state marks, which
@@ -770,10 +771,10 @@ function EditorShell({
   // STORY 5.8 — EDITS NO LONGER LIVE FOR THE SESSION. They are still held here, and they are also written to this
   // browser's IndexedDB on every `commit()` and sent to the server on the timer, at tab close and on ⌘S. The server's
   // docs are the OPENING value only: the hydrate below replaces them with the local ones when the revisions agree.
-  const [docs, setDocs] = useState(stored)
+  const [docs, setDocs] = useHanded(stored)
   /** Story 5.5 — the canvases that are UNTOUCHED right now: D5a's Layers marker and D5b's hollow dot read this one set.
    *  It starts as the server's `synthesized` and `commit()` is the only thing that changes it. */
-  const [auto, setAuto] = useState<ReadonlySet<CanvasKey>>(() => new Set(synthesized))
+  const [auto, setAuto] = useHanded<ReadonlySet<CanvasKey>>(() => new Set(synthesized))
   /** Story 5.16 — the library as page 2 asks it: R-127's fallback in `pageTwoStack` synthesizes, and that reads the
    *  designs this editor holds. `entries` never changes in a session, so every render's copy reads the same map. */
   const library = useCallback<SynthesisLibrary>((designId) => entries[designId], [entries])
@@ -810,7 +811,7 @@ function EditorShell({
    * its page 1, and the `[key]` effect below puts it back to page 1 for good — the way back included. Which pages
    * exist, what page 2 is and which stack it paints are `lib/page-two.ts`'s; the stack KNOWS THE PAGE, so the roots,
    * the picks, the marks, the restamps, the panel's fast path and every edit agree with what is painted. */
-  const [shownPage, setShownPage] = useState<{ key: CanvasKey; page: Page }>({ key, page: 1 })
+  const [shownPage, setShownPage] = useHanded<{ key: CanvasKey; page: Page }>({ key, page: 1 })
   const page: Page = shownPage.key === key ? shownPage.page : 1
   /** the doc this canvas EDITS on the page in force — page 2's own key on page 2; the preview SUBJECT stays the canvas's */
   const own = ownKeyOf(key, page)
@@ -825,28 +826,28 @@ function EditorShell({
     () => new Set(canvases.filter((k) => stacks[templateKeyOf(k)] === undefined && !isDesigned(docs[templateKeyOf(k)] ?? EMPTY_DOC))),
     [canvases, stacks, docs],
   )
-  const [selected, setSelected] = useState<Pick | null>(null)
-  const [hovered, setHovered] = useState<Pick | null>(null)
-  const [paints, setPaints] = useState(0)
+  const [selected, setSelected] = useHanded<Pick | null>(null)
+  const [hovered, setHovered] = useHanded<Pick | null>(null)
+  const [paints, setPaints] = useHanded(0)
   /** Story 5.6 — the mode the canvas is SHOWING. Session state, like `pilots/review.tsx`'s: it is never in the URL
    *  (`lib/editor.ts`) and never a stored per-canvas preference. A Light-only project has no way to leave 'light'. */
-  const [mode, setMode] = useState<Mode>('light')
+  const [mode, setMode] = useHanded<Mode>('light')
   /** Story 5.7 — the device the canvas IS. Session state like the mode, for the same reason: it is a property of the
    *  person looking and not of the canvas, so it survives a canvas switch (this component stays mounted), resets to
    *  Desktop on reload, and no column stores it. R-137 makes Desktop a viewport too, so there is no state in which the
    *  card fills the room available. */
-  const [device, setDevice] = useState<Device>(DESKTOP)
+  const [device, setDevice] = useHanded<Device>(DESKTOP)
   /** Story 5.14 — the visitor the canvas PREVIEWS (FR-D16). Session state like the mode and the device, and for the
    *  same reason: it is a property of the person looking and not of the canvas, so it survives a canvas switch (this
    *  component stays mounted), goes back to the logged out user on reload, and is never in the URL or a column —
    *  `EXPERIENCE.md:230` makes View as a mode. It reaches every surface through `renderSection`'s one `member` option:
    *  the canvas, R-124's caption, the Section Picker's cards and the Design ring's tiles. */
-  const [viewAs, setViewAs] = useState<Visitor>('anonymous')
+  const [viewAs, setViewAs] = useHanded<Visitor>('anonymous')
   /** Story 5.15 — PREVIEW (FR-D20, B3a · B3b). Session state like the mode, the device and the visitor, and for the
    *  same reason: `EXPERIENCE.md:230` makes it a mode. It is never in the URL, never stored and never an edit — nothing
    *  reaches `commit()`, the journal or `⌘Z` — and a reload is back to editing. View as, the mode, the device and the
    *  preview subject all carry into it, because `paint()` reads them all through `latest`. */
-  const [preview, setPreview] = useState(false)
+  const [preview, setPreview] = useHanded(false)
   /* ─── Story 5.13 — FR-D22's PREVIEW SUBJECT, and the pill that names it ──────────────────────────────────────
    *
    * PER CANVAS (and per user only while a project has one owner: the table's key is `(project_id, template_key)`,
@@ -860,9 +861,9 @@ function EditorShell({
    * unit test rather than a browser observation. A canvas with no singular resource resolves to null, and the pill
    * then states the source and offers nothing to open.
    */
-  const [subjects, setSubjects] = useState(storedSubjects)
+  const [subjects, setSubjects] = useHanded(storedSubjects)
   /** the last save's refusal, carried in the menu: the choice stands for the session and will not survive a reload */
-  const [subjectRefusal, setSubjectRefusal] = useState<string | null>(null)
+  const [subjectRefusal, setSubjectRefusal] = useHanded<string | null>(null)
   const [, startSubject] = useTransition()
   const subjectTurn = useRef(0)
   /** the bundled publication — the sample content (R-165) */
@@ -890,17 +891,17 @@ function EditorShell({
     reads.current ??= liveStore(site.origin, site.key)
     return reads.current
   }
-  const [source, setSource] = useState<'site' | 'sample'>(readable ? 'site' : 'sample')
+  const [source, setSource] = useHanded<'site' | 'sample'>(readable ? 'site' : 'sample')
   type Shown = { source: 'site' | 'sample'; cause: Cause | null; nothing: 'tag' | 'author' | null }
-  const [painted, setPainted] = useState<{ shown: Shown; site: SitePage | null; key: CanvasKey | null }>({
+  const [painted, setPainted] = useHanded<{ shown: Shown; site: SitePage | null; key: CanvasKey | null }>({
     shown: { source: readable ? 'site' : 'sample', cause: null, nothing: null },
     site: null,
     key: null,
   })
   /** a read the customer asked for has landed: every surface that reads the rows in hand derives again */
-  const [liveTick, setLiveTick] = useState(0)
+  const [liveTick, setLiveTick] = useHanded(0)
   /** R-98: the row a read is in flight for — `'site'` for the SOURCE row, or a subject's slug — until its paint lands */
-  const [busy, setBusy] = useState<string | null>(null)
+  const [busy, setBusy] = useHanded<string | null>(null)
   /** the newest read the customer asked for: an older one landing late never paints over it */
   const readTurn = useRef(0)
   /** a read the customer asked for is in flight, and it paints when it lands — every other paint waits for it */
@@ -910,7 +911,7 @@ function EditorShell({
   const editReads = useRef(new Set<string>())
   /** the canvas and page the last paint drew, and whether the canvas is blank for another page's reads (`blank`) */
   const paintedAt = useRef<{ key: CanvasKey; page: Page } | null>(null)
-  const [blanked, setBlanked] = useState(false)
+  const [blanked, setBlanked] = useHanded(false)
   /** the named causes already said aloud, once each (FR-H4's named tier); choosing the site again forgets them */
   const announcedCauses = useRef(new Set<Cause>())
   /** R-170: the site's ONE name — the title its `/settings/` reports once answered, `sites.title` until then (or its
@@ -932,10 +933,10 @@ function EditorShell({
    * the members record AND `surfaces` — the snapshot Ghost's two shims are drawn from (FR-H5, `lib/ghost-surfaces.ts`) —
    * so a bar cleared or a button switched in Ghost admin shows at the next open instead of the next daily check. It is
    * silent unless C3b's card is up to speak about it, and a refusal leaves the stored snapshot drawn. */
-  const [members, setMembers] = useState(site === null ? null : (site.members ?? null))
+  const [members, setMembers] = useHanded(site === null ? null : (site.members ?? null))
   const membersNow = useRef(members)
   membersNow.current = members
-  const [surfaces, setSurfaces] = useState(site === null ? null : (site.surfaces ?? null))
+  const [surfaces, setSurfaces] = useHanded(site === null ? null : (site.surfaces ?? null))
   const surfacesNow = useRef(surfaces)
   surfacesNow.current = surfaces
   /** STORY 5.21's FIX (the owner's finding, 2026-09-26, Question 2 ruled option 1) — the two shims are rows in Layers
@@ -944,14 +945,14 @@ function EditorShell({
    *  visitor meets it. A pointer over a shim shows the tag sections get; a press chooses its row and lets any section go
    *  (one selection); the row's Enter and Space are the keyboard's path. Refs beside each state: the canvas's listeners
    *  and `drawShims` read them, as they read `latest`. */
-  const [ghostHidden, setGhostHidden] = useState<SurfaceId[]>([])
+  const [ghostHidden, setGhostHidden] = useHanded<SurfaceId[]>([])
   const ghostHiddenNow = useRef<SurfaceId[]>([])
-  const [ghostHover, setGhostHover] = useState<SurfaceId | null>(null)
+  const [ghostHover, setGhostHover] = useHanded<SurfaceId | null>(null)
   const ghostHoverNow = useRef<SurfaceId | null>(null)
-  const [ghostChosen, setGhostChosen] = useState<SurfaceId | null>(null)
+  const [ghostChosen, setGhostChosen] = useHanded<SurfaceId | null>(null)
   const ghostChosenNow = useRef<SurfaceId | null>(null)
   const [rechecking, startRecheck] = useTransition()
-  const [recheckRefusal, setRecheckRefusal] = useState<string | null>(null)
+  const [recheckRefusal, setRecheckRefusal] = useHanded<string | null>(null)
   /** C3b's card is up: the Paywall canvas, members switched off by the record, and the canvas chosen to show the site's
    *  content — ONE rule, which the card's draw (`offCard`, below) and a re-read's voice both read */
   const cardUp = (key_: CanvasKey, record: typeof members, from: 'site' | 'sample') =>
@@ -1040,7 +1041,7 @@ function EditorShell({
    * answer arriving late can never stand over a later record. A refusal is LOGGED AND NEVER SAID: the record is
    * bookkeeping, and losing it costs one reminder after a reload, where announcing it would interrupt someone who
    * changed nothing (Story 5.13 said its refusal because a subject is an explicit choice; this is not one). */
-  const [viewed, setViewed] = useState<Viewed>(storedViewed)
+  const [viewed, setViewed] = useHanded<Viewed>(storedViewed)
   const viewedWrites = useRef<Promise<void>>(Promise.resolve())
   const unsavedViewed = useRef<Record<string, readonly Visitor[]>>({})
 
@@ -1059,14 +1060,14 @@ function EditorShell({
    * THE FIRST PAINT IS GATED ON THE LOCAL READ. A reload must never flash the cloud document over the local one, so
    * `paint()` returns early until `hydrated` and the skeleton stays up for the one IndexedDB round trip.
    */
-  const [journal, setJournal] = useState<Journal>(EMPTY_JOURNAL)
-  const [sync, setSync] = useState<SyncState>({ kind: 'rest', owed: false })
-  const [hydrated, setHydrated] = useState(false)
+  const [journal, setJournal] = useHanded<Journal>(EMPTY_JOURNAL)
+  const [sync, setSync] = useHanded<SyncState>({ kind: 'rest', owed: false })
+  const [hydrated, setHydrated] = useHanded(false)
   // `paint()` is called from the canvas document's own handlers, which never re-close over a new render's state
   const hydratedRef = useRef(false)
   /** B6's "Retry now" is in flight — R-98's swapped label and its two aria attributes */
-  const [pressingRetry, setPressingRetry] = useState(false)
-  const [conflicted, setConflicted] = useState(false)
+  const [pressingRetry, setPressingRetry] = useHanded(false)
+  const [conflicted, setConflicted] = useHanded(false)
   const conflict = useRef<HTMLDialogElement>(null)
   /** R-147's card, opened by `?` here and by the account menu's row everywhere else — one component, one door */
   const shortcuts = useRef<HTMLDialogElement>(null)
@@ -1075,13 +1076,13 @@ function EditorShell({
    * platform's (`EXPERIENCE.md:502`). `invoked` is the STACK INDEX the "+" was pressed under, or null for `⌘K`
    * with nothing selected; `lib/picker.ts`'s `invokedAt` turns it into one position in the canvas's own doc. */
   const picker = useRef<HTMLDialogElement>(null)
-  const [picking, setPicking] = useState(false)
-  const [invoked, setInvoked] = useState<number | null>(null)
+  const [picking, setPicking] = useHanded(false)
+  const [invoked, setInvoked] = useHanded<number | null>(null)
   /** has the picker been opened in this session? Once it has, it stays mounted (R-155's pair, the owner's ruling of
    *  2026-09-20): `picking` still says whether it is SHOWN, and a closed dialog draws nothing. */
-  const [opened, setOpened] = useState(false)
+  const [opened, setOpened] = useHanded(false)
   /** DW-190's home: R-37's refusal, shown in the picker where the press was */
-  const [pickerRefusal, setPickerRefusal] = useState<string | null>(null)
+  const [pickerRefusal, setPickerRefusal] = useHanded<string | null>(null)
   /** null means FALLBACK MODE: IndexedDB refused, or a write failed, and every change goes straight to the cloud */
   const local = useRef<LocalStore | null>(null)
   /** AD-15's `base_revision`: the `projects.revision` this session's document descends from */
@@ -1107,7 +1108,7 @@ function EditorShell({
    * tabs of one browser hear each other instantly through `BroadcastChannel`, everything else waits for the ~15 s
    * heartbeat, and Realtime is not used in v1 (R-191, owner, 2026-09-24).
    */
-  const [lock, setLock] = useState<LockUi>(() => ({
+  const [lock, setLock] = useHanded<LockUi>(() => ({
     // A READER MUST NOT FLASH AN EDITABLE SHELL, so the first paint is decided by the row `read.ts` read above the
     // boundary: a live lock held by somebody else is read-only from the very first frame, and the `acquire` below
     // only confirms it.
@@ -1127,13 +1128,13 @@ function EditorShell({
    *  never the session alone, or the same tab asking again would be swallowed for good. Without it B5b would come
    *  straight back on the next beat: Keep editing clears the columns, but the expiry deliberately does not — the
    *  requester's own timer owns that half. */
-  const [dismissed, setDismissed] = useState<string | null>(null)
+  const [dismissed, setDismissed] = useHanded<string | null>(null)
   /** UX-DR12's SECOND live region, and it is ASSERTIVE. `#editor-said` is the editor's polite one and stays polite:
    *  widening it would make every design-ring announcement shout. Only this story writes here. */
-  const [announced, setAnnounced] = useState('')
+  const [announced, setAnnounced] = useHanded('')
   /** what a session that was just taken over from LOST, shown in B5a's own sentence slot until it asks again or holds
    *  again. The assertive region SAYS it; this SHOWS it — a sighted person was otherwise never told. */
-  const [lost, setLost] = useState<string | null>(null)
+  const [lost, setLost] = useHanded<string | null>(null)
   /** when this session deliberately handed the lock over. It then stops trying to `acquire` for one nudge's worth
    *  of time, so it cannot take back the lock it just gave away before the requester's next poll reaches it.
    *  ponytail: one grace window; if hand-over ever needs to be instant across devices, the release becomes a CAS
@@ -1169,7 +1170,7 @@ function EditorShell({
    * state is how "only one overlay at a time" (`D8:283`) holds by construction; a bar menu opening closes it too. It is
    * layout, never an edit, and it is session state that nothing stores. */
   const compact = useSyncExternalStore(onCompact, compactNow, () => false)
-  const [sheet, setSheet] = useState<'layers' | 'controls' | null>(null)
+  const [sheet, setSheet] = useHanded<'layers' | 'controls' | null>(null)
   /** what held focus when a sheet opened — where closing it gives focus back, or the canvas where it cannot */
   const sheetFrom = useRef<HTMLElement | null>(null)
   /** a door that moves focus INTO the sheet it opens (`L`, Show layers, the skip link) names it here for the effect below */
@@ -1193,10 +1194,10 @@ function EditorShell({
   /** B3b's Back to editing, which takes focus on the way in, and where focus was before it (Story 5.15) */
   const backButton = useRef<HTMLButtonElement>(null)
   const cameFrom = useRef<HTMLElement | null>(null)
-  const [size, setSize] = useState({ width: 0, height: 0 })
+  const [size, setSize] = useHanded({ width: 0, height: 0 })
   // A section that will not draw is a broken doc or design, not a canvas to show around it: thrown in render, so the
   // app's error boundary shows it (the spec's "never a partly drawn canvas").
-  const [failure, setFailure] = useState<Error | null>(null)
+  const [failure, setFailure] = useHanded<Error | null>(null)
   // Story 5.3 — each paint's editing stamps, the field being edited, its toolbar, and the pill
   const stamps = useRef(new Map<HTMLElement, Stamp>())
   /** STORY 5.23a — what `paint()` drew, per section (`queryKey`): the signature of the stack entry it drew from (its JSON),
@@ -1208,18 +1209,18 @@ function EditorShell({
   const drawnUnder = useRef<string | null>(null)
   type Editing = { inline: Inline; target: HTMLElement; path: string; item?: number; n: number }
   const editing = useRef<Editing | null>(null)
-  const [session, setSession] = useState<Inline | null>(null)
-  const [inlineAt, setInlineAt] = useState<ScreenSelection | null>(null)
-  const [scrolling, setScrolling] = useState(false)
+  const [session, setSession] = useHanded<Inline | null>(null)
+  const [inlineAt, setInlineAt] = useHanded<ScreenSelection | null>(null)
+  const [scrolling, setScrolling] = useHanded(false)
   // Story 5.4 — the one reorder, held here because EITHER grip starts it: a Layers row's or the canvas pill's. Story 5.23b:
   // in a store of one value that Layers alone subscribes to, so a pointer move never re-renders the editor (R-208)
-  const [dragStore] = useState(() => oneValue<SectionDrag | null>(null))
+  const [dragStore] = useHanded(() => oneValue<SectionDrag | null>(null))
   /** the pill drag's own start: the pointer's Y and the dragged doc's sections as they sat ON SCREEN */
   const pillDrag = useRef<{ y: number; layout: Layout }>({ y: 0, layout: { tops: [], heights: [], gap: 0 } })
   const pill = useRef<HTMLDivElement | null>(null)
   /** what a completed move says, politely — `moveSection`'s own words, announced from here so both grips announce */
-  const [said, setSaid] = useState('')
-  const [note, setNote] = useState<Note | null>(null)
+  const [said, setSaid] = useHanded('')
+  const [note, setNote] = useHanded<Note | null>(null)
   // the pill as the canvas document's handlers see it, in the same task it was set — paint reads it before React has
   // rendered the state
   const noteRef = useRef<Note | null>(null)
@@ -1261,15 +1262,16 @@ function EditorShell({
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
   const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet })
-  /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation now reaches React as a transition, so a
-     render can be drawn from state the transition has not delivered — an urgent one in between, for a hover or a device —
-     and a render that wrote `latest` from its own state would put an OLDER doc back: the next edit would be made against it,
-     and an edit would be lost. So the HANDLERS are the only writers of what they change — the docs, the stack, `auto`, the
-     journal, the selection, the hover, the page, the mode, the device, the visitor, the looked-at record, Preview, the
-     source, the lock and the sheet — and a COMMIT writes only what it derives and no handler writes: the canvas in force
-     (the URL's), what can be placed on it, the layout, the list its pages are counted in, and its subject (which
-     `chooseSubject` also writes, for the paint in its own task — from state no transition carries). In a layout effect, so
-     a render React throws away writes nothing, and before this component's other layout effects, which read it. */
+  /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation's state reaches React a task after the
+     canvas (the hand-over), so a render can be drawn before it lands — never one this component's own setters cause, since
+     each pays what is owed first, but one an external store causes (the layout crossing 1280) — and a render that wrote
+     `latest` from its own state would put an OLDER doc back: the next edit would be made against it, and an edit would be
+     lost. So the HANDLERS are the only writers of what they change — the docs, the stack, `auto`, the journal, the
+     selection, the hover, the page, the mode, the device, the visitor, the looked-at record, Preview, the source, the lock
+     and the sheet — and a COMMIT writes only what it derives and no handler writes: the canvas in force (the URL's), what
+     can be placed on it, the layout, the list its pages are counted in, and its subject (which `chooseSubject` also writes,
+     for the paint in its own task). In a layout effect, so a render React throws away writes nothing, and before this
+     component's other layout effects, which read it. */
   useLayoutEffect(() => {
     latest.current = { ...latest.current, key, canAdd, compact, contentSource, subject: previewing.subject, stored: storedSubject }
   })
@@ -1371,8 +1373,8 @@ function EditorShell({
     return next.back
   }
 
-  /** `commit`'s two early answers, asked on their own so `apply` can ask them BEFORE it hands anything to React as a
-   *  transition (Story 5.23b, R-210): R-180's dialog opens on the next frame, and its words must be in by then. True when
+  /** `commit`'s two early answers, asked on their own so `apply` can ask them BEFORE its hand-over holds anything (Story
+   *  5.23b, R-210): R-180's dialog opens on the next frame, and its words must be in by then. True when
    *  the change does not land — nothing happened, say nothing, repaint nothing.
    *
    *  STORY 5.17 — FR-D18'S READ-ONLY GUARD, AND IT IS ONE EARLY RETURN. This is the one door every change passes,
@@ -1471,7 +1473,7 @@ function EditorShell({
    * synthesizable canvas and then undoing it moves the marker back and forth through the one rule.
    *
    * R-210 (Story 5.23b): UNDO AND REDO ARE SECTION OPERATIONS — the canvas is painted and `latest` moves in this task, and
-   * every state update below reaches React as one transition, so the panels follow a frame later.
+   * every state update below is handed to React in the next (`canvasFirst`), so the panels follow a frame later.
    */
   const restore = (r: Restore | null) => {
     if (!r) return
@@ -1480,7 +1482,7 @@ function EditorShell({
       setSaid(`That change cannot be undone: the ${missing} design is no longer in the library.`)
       return
     }
-    startTransition(() => restored(r))
+    canvasFirst(() => restored(r))
   }
   const restored = (r: Restore) => {
     const now = latest.current
@@ -3649,7 +3651,7 @@ function EditorShell({
   // THE CHROME LAYER (the owner's finding, 2026-09-17): the boxes, the tag and the badge are portalled into the canvas
   // document, so the compositor scrolls them with their section in the same frame (`lib/canvas-layer.ts`) — drawn and
   // placed by `CanvasChrome` since Story 5.23b; the two hosts are made and dropped here
-  const [chrome, setChrome] = useState<ChromeLayers | null>(null)
+  const [chrome, setChrome] = useHanded<ChromeLayers | null>(null)
   // Story 5.15: in Preview the layer is dropped, so no outline, tag, badge, lock pill or chip can exist — while the
   // selection itself stays in state and is drawn again on the way back
   const showing = !preview && !!(hoveredRoot || selectedRoot)
@@ -3673,7 +3675,7 @@ function EditorShell({
    *  too: a stamp can make a root stop sticking (On scroll → Static, the deployed walk's step 12) with no new node for the
    *  chrome to see */
   const drawnPinned = useRef(new WeakMap<HTMLElement, boolean>())
-  const [pinTick, setPinTick] = useState(0)
+  const [pinTick, setPinTick] = useHanded(0)
   /** the hovered and the selected root AS THE CANVAS DRAWS THEM NOW, for the chrome's loop — every frame, never a render's */
   const chromeRoots = useStable(() => {
     const now = latest.current
@@ -3746,14 +3748,14 @@ function EditorShell({
     const next = designated(pick.doc, done, doc)
     const asking = about ?? { instanceId: pick.instanceId, name: layerNameOf(pick) }
     // R-180: held for its ask (or a session reading along) — nothing has changed yet, so there is nothing to repaint and
-    // nothing refused. Asked BEFORE the transition below, so the ask's dialog opens on the next frame with its words in
+    // nothing refused. Asked BEFORE the hand-over below, so the ask's dialog opens on the next frame with its words in
     if (heldBack({ [pick.doc]: next }, pick.doc, asking)) return HELD
-    /* R-210 — CANVAS FIRST, THE PANELS A FRAME LATER (Story 5.23b). Inside the transition `commit` moves `latest` and the
+    /* R-210 — CANVAS FIRST, THE PANELS A FRAME LATER (Story 5.23b). Inside the hand-over `commit` moves `latest` and the
        journal, and `paint()` redraws the canvas, in THIS task exactly as before; what React is handed — the docs, the
-       journal, the selection, the hover, what the paint drew — arrives as ONE transition, rendered once the press's task
-       has ended, so the panels follow a frame later and the press stays short. A render drawn in between is drawn from the
-       older state and moves nothing back: `latest` is the handlers' alone. */
-    startTransition(() => {
+       journal, the selection, the hover, what the paint drew, and whatever the caller says after — is held and handed over
+       at once in the NEXT task (`lib/renders.ts`), so the panels follow a frame later and the press stays short. Never a
+       transition: those wait for any server call in flight. `latest` is the handlers' alone, so nothing moves it back. */
+    canvasFirst(() => {
       const now = latest.current
       const back = commit({ [pick.doc]: next }, pick.doc, asking)
       // a selection cannot outlive the section it was on — and neither can it (or a hover) outlive a canvas returning to
@@ -3856,11 +3858,10 @@ function EditorShell({
     }
     if (!edit({ doc: docKey, instanceId: instance.instanceId }, (doc) => insertSection(doc, 0, instance))) return
     const ring = ringOf(designId)
-    // with the choice's own transition (R-210), so the panel opens on the instance in the render that first holds it
-    startTransition(() => {
-      setSaid(announce(ring.findIndex((e) => e.id === designId), ring.length, design.name))
-      choose({ doc: docKey, instanceId: instance.instanceId })
-    })
+    // in the same hand-over as the placement (R-210, still open in this task), so the panel opens on the instance in the
+    // render that first holds it
+    setSaid(announce(ring.findIndex((e) => e.id === designId), ring.length, design.name))
+    choose({ doc: docKey, instanceId: instance.instanceId })
   }
 
   const onDesign = (pick: Pick, to: string) => {
@@ -3946,7 +3947,7 @@ function EditorShell({
    *  one dialog vocabulary asks first, opening on Cancel (EXPERIENCE § destructive confirms). SHOWING one again asks
    *  nothing: it is the restoring half. The dialog lives here and not in Layers, because the canvas pill's Delete
    *  must open the same one. */
-  const [ask, setAsk] = useState<
+  const [ask, setAsk] = useHanded<
     | { kind: 'hide' | 'remove'; pick: Pick; name: string }
     | { kind: 'change'; pick: Pick; name: string; held: { written: Readonly<Record<string, ProjectDoc>>; touched: string; base: ProjectDoc | undefined; also?: string; said?: string } }
     | null
@@ -3976,7 +3977,7 @@ function EditorShell({
    *  Hide's and for the same reason (`layers.tsx`'s header): two entry points, one act, one dialog. It asks first,
    *  names the count, and opens on Cancel (R-115, UX-DR14). Neither entry point ever reaches it with nothing to
    *  clear: the panel row says so itself and the menu item is absent. */
-  const [askDark, setAskDark] = useState<{ pick: Pick; name: string; count: number } | null>(null)
+  const [askDark, setAskDark] = useHanded<{ pick: Pick; name: string; count: number } | null>(null)
   const clearDark = useRef<HTMLDialogElement>(null)
   const askClearDark = (row: Pick & { layerName: string }) => {
     const placed = latest.current.stack.find((i) => same(i, row))

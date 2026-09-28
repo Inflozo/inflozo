@@ -217,8 +217,9 @@ have; none changes what is drawn, stored, journalled or synced.
    a `useEffect` refocus landed after the reorder had taken the focus away, and the next key reached the page.
 4. **Chrome whose root a paint removed is hidden for the frame until the chrome follows**, never placed against it — the
    Always rule's "never against a root a paint removed", on the chrome's one loop.
-5. **A section operation's announcement stays an urgent update.** `setSaid` after `edit()` renders the editor's shell once
-   in the press's task; every memoized part skips that render (the `]` stop counts it), and the trace passes with it.
+5. **A section operation's announcement travels with its state** (entry 8): `setSaid` after `edit()` runs in the press's
+   task while the hand-over still holds, so the live region speaks with the panels. Under the first build it was an urgent
+   update that rendered the editor's shell once in the press's task.
 6. **The urgent-render stop also proves "canvas first" at both doors** — the I/O matrix's section-operation row. In the
    key's own task the ringed section's drawing is replaced by `]` (`apply`) and by ⌘Z (`restore`), and after ⌘Z's own
    microtasks the panel still reads the design it undoes. Each check is red with its door changed (Verification).
@@ -232,6 +233,30 @@ have; none changes what is drawn, stored, journalled or synced.
    on the baseline editor, and red on the code as pushed (`view`). The flip's tick has no stop: no mode-scoped control can
    move a root today (they are colours, `bg` and the fixture's `tint`), and it keeps the old editor's behaviour for a
    design that declares one.
+8. **R-210 is built as a HAND-OVER in the next task, not a React transition** — the frozen Approach names a transition,
+   and it could not keep the ruling. Found by the deployed walk at `f4d054d1` (run 3, step 94: a second Three Up placed,
+   the announcement said and the canvas drawn, and 900 ms later no Layers row). Read in React's source (the copy Next
+   ships, 19.2): while an async action is in flight, every transition takes its lane and waits for it; and every new
+   update clears the root's suspended lanes, so a server action or navigation still pending is rendered in the same batch
+   as the next transition and holds it until the server answers. Next's server actions are router transitions, and the
+   editor calls three (`setViewedStates`, `setPreviewSubject`, `recheckSite`). Executed on the harness with every
+   server-action request held 2 s by a route: a Delete that changed R-167's record showed its Layers rows 2.2 s after the
+   canvas, and an ⌥↓ during the opening re-read of a linked site 3.8 s after it. The panels were a round trip behind
+   the canvas, not a frame — the ruling's *"too short to see"* broken wherever a server call was in flight.
+   Now `lib/renders.ts`'s `canvasFirst` runs the operation in the press's task — the canvas painted, `latest` moved, as
+   before — and HOLDS, in order, every call to a `handed` setter until that task yields. It then hands them to React at
+   once in the next task (`flushSync`), never as a transition. Every state of the editor is `useHanded`, and so is the
+   Layers rows' focus, which moves with them. A handed setter called after the press and before that task first pays
+   what is owed, so no later state lands before an earlier one — the order a transition's rebasing had kept.
+   Outside a hand-over a handed setter sets at once, so a control change is still in its own frame (FR-F4).
+   `apply`, `restore` and a Layers move are the doors, `choosePaywall` joins `apply`'s, and `startTransition` is gone from
+   the editor. Same probe after: 91 ms and 80 ms (a development build), with the answers still held. The urgent-render
+   stop's scenario is kept, and its control changed with the design: an urgent key after an operation now pays the
+   operation's state first, so the key's render shows both. It fails with the pay-first taken away. The old control, the
+   render writing `latest` from its own state, cannot put an older doc back through that stop any more. The rule stays as
+   a guard for a render an external store causes. A new stop makes the finding a gate: server actions held by a route,
+   the rows land while the opening re-read is held, and while the write a Delete sent is held. It is red on the code as
+   pushed at `f4d054d1`.
 
 ## Design Notes
 
@@ -389,6 +414,34 @@ Nothing in the repository was edited.**
   file restored and `cmp`-identical. The trace: `--rate 4 --runs 3`, exit 0 — 3.9% (7 of 180), 2.8% (5 of 180), 3.3%
   (6 of 180) dropped, the p95 frame 1 refresh (16.8 ms) and no long task in every run, every control seen;
   `--rate 1 --runs 1`, exit 0 — 0.0% (0 of 180). The DOM comparison against the baseline: 18 of 18 states the same.
+- **The layer fix's push, `f4d054d1`.** GitHub Actions (`GITHUB_TOKEN`): CI run 36394085276 — `check` success (the
+  runner's doc gate PASS, `pnpm keyboard` printing `117 passed (4.3m)`, `check-snapshots: PASS`), `rls` and `deploy`
+  success; Render matrix run 36394085348: success. Vercel (`VERCEL_*`): `dpl_6FCuDdmvksJ5RBAUZkrG4hnRGvKS` READY,
+  production, built from `f4d054d1`, serving both domains.
+  - **Walk run 2: a HARNESS ERROR, not a result** — step 6's raw `GET` of `/home`, which expects its 308, timed out at
+    30 s (`:5976`, `apiRequestContext.get`) after **0 FAIL, 599 PASS**. Step 12 passed there on production (`host page`).
+    Accounts deleted, HTTP 200, users 13 → 13.
+  - **Walk run 3: `1 FAIL, 532 PASS`, then a HARNESS ERROR** — the FAIL is step 94, Spec Change Log 8: 900 ms after a
+    second Three Up was placed, Layers held no new row (`{"added":[],"said":"Post Grids — Three Up added",…,"pagers":
+    [true,false]}`), and the walk then died waiting for a row named `(none)` (`select94`, `:5460`). Step 12 passed again.
+    Accounts deleted, HTTP 200, users 13 → 13.
+- **The hand-over, re-run on this computer before its push:**
+  - The scratch lag probe (not committed; `next dev`, every server-action POST held 2 s by a route): before, on the
+    transition, a Delete's Layers rows 2,210 ms after the canvas and an ⌥↓ during the opening re-read 3,794 ms; after,
+    91 ms and 80 ms. In both the canvas changed in the key's own task.
+  - `tsc --noEmit -p .` exit 0; ESLint clean; `pnpm check` exit 0 — the web package 599 of 599, `renders.test.ts`'s two
+    checks of the hand-over's order among them.
+  - `pnpm keyboard`: `118 passed (4.2m)`, 0 failed — the ten 5.23b stops among them.
+  - Controls, one scratch edit each, every file restored `cmp`-identical: the server-call stop on `editor.tsx` and
+    `layers.tsx` as pushed at `f4d054d1` — red at *"the moved row lands while that read is still held"*; the pay-first
+    taken out of `handed` — the urgent-key stop red at *"it handed the design change over first"* (`"1 of 3"`), and
+    `renders.test.ts` 1 failed; `restore` without its hand-over — red at *"…and the panel follows a frame later"*
+    (`"1 of 3"`); `onChange`'s guard taken away — the stale-panel stop red (`"Top"` written over `"Side"`).
+  - The trace: `--rate 4 --runs 3`, exit 0 — 2.8% (5 of 180), 4.4% (8 of 181), 3.3% (6 of 180) dropped, the p95 frame 1
+    refresh (16.8 ms) and **no long task** in every run, every control seen; `--rate 1 --runs 1`, exit 0 — 0.6% (1 of
+    180), p95 1 refresh, no long task.
+  - The DOM comparison against the baseline: 18 of 18 states the same. The drag probe: unchanged (the press 40 rows, the
+    moves 1, the drop 42 and the chrome once; the slot stayed until the rows landed and left in the reorder's commit).
 
 ## Questions for the owner
 

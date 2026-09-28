@@ -4708,14 +4708,19 @@ speed test passes and Epic 5 closes as you ruled."*
   - ✅ `epics.md` — Story 5.23b's card.
   - ✅ `epic-5-context.md`.
   - ✅ built — Story 5.23b's Dev (2026-09-28): `apply` and `restore` paint the canvas and move `latest` in the press's
-    own task and hand React the rest as ONE transition; a drop's slot stays until its moved rows land (a MutationObserver
-    saw it leave in the reorder's own commit); a control change stays urgent (FR-F4); `latest` is written by the handlers
-    for what they change and by a commit only for what it derives; `onChange` drops a press from a panel drawn for another
-    design or section; the chrome and the pill are placed from the paint's current roots; and a Layers move is re-based on
-    where the section is in the newest doc, so a second ⌥↓ inside the frame moves again rather than journaling a move onto
-    itself. The keyboard gate proves the two guarantees in one task each — a stale press writes nothing, and an urgent
-    render between two edits loses neither — each red with its guard taken away; the journey checks that read a panel in
-    the instant after a section operation now wait for it, and check nothing different.
+    own task and HAND React the rest over in the next (`lib/renders.ts`'s `canvasFirst`: every handed setter call held in
+    order, then rendered at once, and a later call pays what is owed first) — NOT a React transition, which the spec's
+    Approach named: the deployed walk's step 94 found a transition's panels waiting for whatever server call was in flight
+    (Next's server actions are router transitions; on the harness, with each answer held 2 s, Layers followed the canvas
+    2.2 and 3.8 s late; with the hand-over, 91 and 80 ms, the answers still held). A drop's slot stays until its moved
+    rows land (a MutationObserver saw it leave in the reorder's own commit); a control change stays in its own frame
+    (FR-F4); `latest` is written by the handlers for what they change and by a commit only for what it derives; `onChange`
+    drops a press from a panel drawn for another design or section; the chrome and the pill are placed from the paint's
+    current roots; and a Layers move is re-based on where the section is in the newest doc, so a second ⌥↓ inside the
+    frame moves again rather than journaling a move onto itself. The keyboard gate proves the guarantees — a stale press
+    writes nothing, a key after an operation never lands before it and neither edit is lost, and a server call in flight
+    never holds the panels — each red with its guard taken away; the journey checks that read a panel in the instant after
+    a section operation now wait for it, and check nothing different.
 
 ## B · Approved decisions superseded by this session
 
