@@ -2,7 +2,7 @@
 title: 'Story 5.24a — The sweep: the ledger and the plan'
 type: 'chore'
 created: '2026-09-28'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '8dda56747680bb4e189ad73c18f37b3b7845b30b'
@@ -1228,3 +1228,20 @@ screen steps go with Stories 5.24b and 5.24e (§ The four stories after this one
   record — `explain analyze select exists (select 1 from auth.sessions where id = gen_random_uuid())` — Execution Time
   0.077 ms; twenty round trips each from the development computer, median 140.2 ms for `select 1` and 140.5 ms with the
   look-up.
+
+**Executed at Deploy (2026-09-28) — real services (R-82), every key read into a command's environment only.**
+
+- This story ships no app code and no migration (its own diff touches only `deferred-work.md`, `STORY-BOARD.html`,
+  `epics.md`, `sprint-status.yaml` and the tools/docs its tasks name); `Deploy` therefore has nothing of its own to
+  ship. Recorded here per the Deploy prompt's "tooling — nothing".
+- **GitHub Actions API** (`GITHUB_TOKEN`, read-only): HEAD (`55806eb1`) — CI run 36455607508, `rls`, `check`, `deploy`
+  all success; matrix run 36455607526 success.
+- **Vercel API** (`VERCEL_*`, read-only): `deploy`'s `vercel deploy --prebuilt --prod` at HEAD produced
+  `dpl_ATATZTDQQnyNsgsDdX6fEn4SUH6B`, READY. **Deployment: `dpl_ATATZTDQQnyNsgsDdX6fEn4SUH6B`** (production, READY,
+  commit `55806eb1`).
+- **A race, noted and inert.** Two Review pushes landed 79 seconds apart (`154b61ea` then `55806eb1`); their `deploy`
+  jobs ran concurrently and `154b61ea`'s finished second (17:13:29 vs 17:11:59 UTC), so `app.inflozo.com` /
+  `inflozo.com` are currently aliased to its deployment (`dpl_4dLQjBKzTnhTsQS1osKv9VL2YJQu`) rather than HEAD's. Both
+  commits carry identical `apps/web` and `packages/` source — `55806eb1`'s diff is `deferred-work.md` and
+  `STORY-BOARD.html` only — so the live site is unaffected; not a finding this story owns, since neither commit is
+  app code of this story's own. Left for the owner to note; the next app-code push will settle the alias.
