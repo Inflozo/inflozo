@@ -4896,6 +4896,21 @@ a day's work and a database change."*
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 5 · ✅ `epics.md` — Story 5.24b's card · ⬜ built — Story 5.24b
   (its Schema phase, SCHEMA.sql, an RLS-TEST assertion, and `rest-residual` turned from a record into a refusal).
 
+**R-224 — every story card shows when the story started and how long it took to Done.** The owner, 2026-09-28:
+*"Can we make it mandatory to add the start timestamp for each story in DD-MMM-YYYY HH:MM AM/PM format and then total time
+it took that story from Backlog to Done in Days:HH:MM format. … I want this to be available and visible on the story cards
+itself. Just show the time it started and total time it took."*
+
+- **The rule.** Each card on `STORY-BOARD.html` reads *"Started 28-Sep-2026 06:37 PM"* and, once the story is Done,
+  *"Took 0:13:45"* — days, hours and minutes of clock time. Both are read from git, never typed in: the start is the
+  story's first R-81 commit (when it left the backlog) and the end its newest Done commit (its newest commit, where the
+  Done is read off the spec). So it is mandatory by construction — every story commits every phase (R-81, the
+  commit-msg hook), no card can lack its times, and every story already finished has them. A story renamed into a
+  lettered part keeps its earlier commits (R-211 made 5.24 into 5.24a).
+- **What it does not count.** The planning session before a story's first commit: git holds no earlier mark.
+- Targets: ✅ this entry · ✅ `tools/story-board.py` — `when`, `took`, `adopt_split`, the card, and the self-check with
+  its controls · ✅ its catalogue row in `tools/doc-audit.py` · ✅ `docs/project-context.md`'s story-board line.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

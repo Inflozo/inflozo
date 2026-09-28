@@ -1184,7 +1184,9 @@ DOCS = [
   'phase) and its tracker and spec status; Done comes only from a Done commit, `owner_test: passed`, or '
   '`owner_test: none` once a Deploy commit exists — a review\'s `done` alone reads as In review; deployed '
   'means a Deploy commit, nothing else. Matches a spec to a story on exact key segments, so 1-1 never '
-  'matches 1-10. `--check` regenerates in memory and fails on drift; the gate runs it.'),
+  'matches 1-10. Each card shows when its story started — its first commit — and, once Done, the '
+  'days:hours:minutes to its Done commit, both read from git (R-224). `--check` regenerates in memory '
+  'and fails on drift; the gate runs it.'),
  ('docs/project-context.md', 'live', 'Project context — the facts every BMAD skill loads',
   'The block bmad-build, bmad-build-auto, bmad-code-review and the planning skills load as persistent '
   'facts on every run (their customize.toml lists `file:{project-root}/**/project-context.md`; the '

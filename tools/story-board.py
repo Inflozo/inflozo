@@ -24,7 +24,7 @@ The `--demo` fixture feeds markdown strings through the SAME loaders, so it exer
 and doubles as this script's self-check: it asserts every lane is populated, the R-83 flags fire, and
 each derivation rule below has a story that exercises it.
 """
-import os, re, sys, html, subprocess, importlib.util
+import os, re, sys, html, datetime, subprocess, importlib.util
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLAN = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
@@ -547,39 +547,68 @@ def load_specs(files):
 def load_commits(lines):
     """`hash<TAB>date<TAB>subject` lines, newest first → the shaped commits (R-81): story, step, hotfix
     and retro, plus every subject that STARTS like one of those and does not parse ('unreadable'), so
-    a typo in a phase word is listed rather than silently dropped."""
+    a typo in a phase word is listed rather than silently dropped. The date is git's `%cI` — ISO with
+    the time and the committer's offset — or a bare `YYYY-MM-DD` (the demo's): `date` keeps the day the
+    feed prints, and `at` the whole time a card's clock reads (R-224), empty when the line has none."""
     out = []
     for line in lines:
         parts = line.split('\t', 2)
         if len(parts) != 3:
             continue
         h, d, s = parts
+        at, d = (d if 'T' in d else ''), d[:10]
         m = STORY_COMMIT.match(s)
         if m:
-            out.append({'h': h, 'date': d, 'kind': 'story', 'e': int(m.group(1)), 's': m.group(2),
+            out.append({'h': h, 'date': d, 'at': at, 'kind': 'story', 'e': int(m.group(1)), 's': m.group(2),
                         'key': f'{m.group(1)}.{m.group(2)}', 'phase': m.group(3), 'msg': m.group(4)})
             continue
         m = STEP_COMMIT.match(s)
         if m:
-            out.append({'h': h, 'date': d, 'kind': 'step', 'key': f'Step {m.group(1)}',
+            out.append({'h': h, 'date': d, 'at': at, 'kind': 'step', 'key': f'Step {m.group(1)}',
                         'phase': m.group(2), 'msg': m.group(3)})
             continue
         m = HOTFIX_COMMIT.match(s)
         if m:
-            out.append({'h': h, 'date': d, 'kind': 'hotfix', 'key': 'Hotfix', 'phase': '', 'msg': m.group(1)})
+            out.append({'h': h, 'date': d, 'at': at, 'kind': 'hotfix', 'key': 'Hotfix', 'phase': '', 'msg': m.group(1)})
             continue
         m = RETRO_COMMIT.match(s)
         if m:
-            out.append({'h': h, 'date': d, 'kind': 'retro', 'key': f'Epic {m.group(1)}', 'phase': 'Retro',
+            out.append({'h': h, 'date': d, 'at': at, 'kind': 'retro', 'key': f'Epic {m.group(1)}', 'phase': 'Retro',
                         'msg': m.group(2)})
             continue
         if SHAPED.match(s):
-            out.append({'h': h, 'date': d, 'kind': 'unreadable', 'key': '', 'phase': '', 'msg': s})
+            out.append({'h': h, 'date': d, 'at': at, 'kind': 'unreadable', 'key': '', 'phase': '', 'msg': s})
             continue
         # Everything else — board tooling, planning, the design passes. Kept (owner, 2026-09-05) so the
         # feed is the whole history rather than the story-shaped slice of it, and greyed where it renders.
-        out.append({'h': h, 'date': d, 'kind': 'other', 'key': '', 'phase': '', 'msg': s})
+        out.append({'h': h, 'date': d, 'at': at, 'kind': 'other', 'key': '', 'phase': '', 'msg': s})
     return out
+
+
+MONTHS = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec')
+
+
+def when(at):
+    """An ISO commit time → '28-Sep-2026 02:28 PM' (R-224), on the clock the commit was made on — the owner's own.
+    The month is spelt from this table, not `%b`, so the page is the same whatever the machine's locale."""
+    t = datetime.datetime.fromisoformat(at)
+    return f'{t.day:02d}-{MONTHS[t.month - 1]}-{t.year} {t.hour % 12 or 12:02d}:{t.minute:02d} {"AM" if t.hour < 12 else "PM"}'
+
+
+def took(start, end):
+    """Two ISO commit times → 'D:HH:MM', the whole minutes between them (R-224)."""
+    m = int((datetime.datetime.fromisoformat(end) - datetime.datetime.fromisoformat(start)).total_seconds() // 60)
+    return f'{m // 1440}:{m % 1440 // 60:02d}:{m % 60:02d}'
+
+
+def adopt_split(commits, keys):
+    """A story renamed into a lettered part keeps its earlier commits: R-211 made Story 5.24 into 5.24a, so 5.24's
+    Create commit is 5.24a's start. Only a number no story still carries moves — 5.16 and 5.16a are two stories."""
+    for c in commits:
+        if c['kind'] == 'story' and (c['e'], c['s']) not in keys and (c['e'], c['s'] + 'a') in keys:
+            c['s'] += 'a'
+            c['key'] += 'a'
+    return commits
 
 
 def dup_dw_ids(text):
@@ -699,6 +728,14 @@ def derive(story, status, specs, commits):
     phase = max(by_trail, by_status, key=RANK.get)
     lane = LANE_OF.get(phase) or ('progress' if 'in-progress' in (st, ss) else 'ready')
     screen = bool(spec and (spec['test'] or ot in ('pending', 'issues', 'passed')))
+    # R-224: a story left the backlog with its first commit (R-81 makes one per phase), and it took until its
+    # newest Done commit — or its newest commit, for a Done read off the spec. Read from git, so no card can
+    # lack its times and none is typed in.
+    timed = [c for c in mine if c.get('at')]
+    first = min(timed, key=lambda c: datetime.datetime.fromisoformat(c['at'])) if timed else None
+    last = next((c for c in timed if c['phase'] == 'Done'), timed[0] if timed else None)
+    story.update(started=when(first['at']) if first else '',
+                 took=took(first['at'], last['at']) if first and phase == 'Done' else '')
     story.update(status=st, spec=spec, commits=mine, phase=phase, lane=lane, issues=phase == 'Fix',
                  handoff=phase == 'Test' and screen,                    # the owner's move
                  blocked=(bool(phases) and phases[0] == 'Blocked') or 'blocked' in (st, ss),
@@ -1076,6 +1113,9 @@ def render_card(story, ep):
             f'<div class="ch"><span class="ebadge">E{ep["n"]}</span><span class="key">{e(story["key"])}</span>'
             + phchip(story["phase"], lab(story["phase"])) + '</div>'
             f'<h3>{e(story["title"])}</h3>'
+            + (f'<div class="times">Started {e(story["started"])}'
+               + (f' · Took <span title="days:hours:minutes">{e(story["took"])}</span>' if story['took'] else '')
+               + '</div>' if story['started'] else '') +
             f'<div class="cf">{btn}{tag}<a class="more" href="#{e(story["key"])}" aria-label="open story {e(story["key"])}">Details</a></div></article>')
 
 
@@ -1229,6 +1269,7 @@ letter-spacing:.05em;padding:1px 6px;border-radius:99px;background:var(--cs);col
 .p-Review,.p-Deploy{--c:var(--l-review);--cs:var(--l-review-s)}.p-Test{--c:var(--l-test);--cs:var(--l-test-s)}
 .p-Done{--c:var(--l-done);--cs:var(--l-done-s)}.p-Fix,.p-Blocked{--c:var(--crit);--cs:var(--crit-s)}
 .card h3{font-size:.8rem;font-weight:600;margin:5px 0 7px;line-height:1.3}
+.card .times{color:var(--muted);font-size:.68rem;margin:-3px 0 7px;font-variant-numeric:tabular-nums}
 .card .cf{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
 .cp{font:inherit;font-size:.7rem;font-weight:650;padding:3px 8px;border-radius:7px;border:1px solid var(--accent);
 background:var(--accent);color:var(--on);cursor:pointer;white-space:nowrap}
@@ -1660,16 +1701,18 @@ def real():
         for f in sorted(os.listdir(IMPL)):
             if SPEC_RE.match(f):
                 specs.append((os.path.relpath(os.path.join(IMPL, f), ROOT), read(os.path.join(IMPL, f))))
-    log = subprocess.run(['git', 'log', '--format=%h%x09%cs%x09%s'], cwd=ROOT,
+    log = subprocess.run(['git', 'log', '--format=%h%x09%cI%x09%s'], cwd=ROOT,
                          capture_output=True, text=True).stdout.splitlines()
     # The date only, as the build board stamps — the hashes are in the feed, and a hash here would
     # make the page stale on every doc-only commit as well as on every story commit.
     head = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
                           capture_output=True, text=True).stdout.strip()
-    return {'epics': load_epics(epics_md) if epics_md else load_prd_epics(read(PRD)),
+    epics = load_epics(epics_md) if epics_md else load_prd_epics(read(PRD))
+    keys = {(s['e'], s['s']) for ep in epics for s in ep['stories']}
+    return {'epics': epics,
             'have_epics': bool(epics_md), 'have_status': bool(status_md),
             'status': load_status(status_md or ''), 'specs': load_specs(specs),
-            'commits': load_commits(log), 'deferred': load_deferred(deferred_md or ''),
+            'commits': adopt_split(load_commits(log), keys), 'deferred': load_deferred(deferred_md or ''),
             'deferred_exists': deferred_md is not None,
             'phase_prompts': phase, 'step6': step6, 'step6b': step6b, 'briefs': briefs, 'demo': False,
             'stamp': f'on {head}' if head else 'outside git'}
@@ -2189,6 +2232,24 @@ def demo():
         'a Dev commit with an unticked task reads as Review — the board claims development is finished'
     assert after_dev([(True, 'pin the runner'), (True, 'build the harness')]) == ('Review', 'review'), \
         'a finished Dev run (every task ticked, status still in-progress) no longer reads as Review'
+    # R-224: a card's clock. The format, noon and midnight included; the span across a day; the start is the FIRST
+    # commit and the end the newest Done one; a story not yet Done shows its start and no span.
+    assert when('2026-09-28T14:05:09+05:30') == '28-Sep-2026 02:05 PM', when('2026-09-28T14:05:09+05:30')
+    assert when('2026-01-03T00:30:00+05:30') == '03-Jan-2026 12:30 AM' and when('2026-01-03T12:00:00+05:30')[-8:] == '12:00 PM'
+    assert took('2026-09-04T21:13:53+05:30', '2026-09-06T00:20:10+05:30') == '1:03:06'
+
+    def timed(phases, spec_status, ot):
+        story, key = {'e': 9, 's': '7'}, (9, '7')
+        spec = {'status': spec_status, 'owner_test': ot, 'tasks': [], 'test': None, 'real_service': True}
+        at = ['2026-09-06T00:20:10+05:30', '2026-09-05T10:00:00+05:30', '2026-09-04T21:13:53+05:30']
+        log = [{'kind': 'story', 'e': 9, 's': '7', 'phase': p, 'at': a} for p, a in zip(phases, at)]   # newest first
+        derive(story, {key: spec_status}, {key: spec}, log)
+        return story['started'], story['took']
+    assert timed(['Done', 'Dev', 'Create'], 'done', 'passed') == ('04-Sep-2026 09:13 PM', '1:03:06')
+    assert timed(['Review', 'Dev', 'Create'], 'in-review', 'pending') == ('04-Sep-2026 09:13 PM', '')
+    moved = adopt_split([{'kind': 'story', 'e': 5, 's': '24', 'key': '5.24'}], {(5, '24a')})
+    kept = adopt_split([{'kind': 'story', 'e': 5, 's': '16', 'key': '5.16'}], {(5, '16'), (5, '16a')})
+    assert moved[0]['key'] == '5.24a' and kept[0]['key'] == '5.16', (moved, kept)
     # ── THE RULING CONTRACT. A ruling is the owner's SIGNED, DATED decision; anything else is open,
     #    and a block that claims a ruling and carries neither the signature nor the open token stops
     #    the build rather than being guessed at. Every shape below is one the repository has really
