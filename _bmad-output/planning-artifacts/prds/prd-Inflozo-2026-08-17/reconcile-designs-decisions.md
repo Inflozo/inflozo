@@ -4908,6 +4908,8 @@ itself. Just show the time it started and total time it took."*
   commit-msg hook), no card can lack its times, and every story already finished has them. A story renamed into a
   lettered part keeps its earlier commits (R-211 made 5.24 into 5.24a).
 - **What it does not count.** The planning session before a story's first commit: git holds no earlier mark.
+- **Declined** (owner, 2026-09-28, *"Keep it as it is"*): a start mark committed when planning begins, which would
+  have needed a new phase word in the commit-msg hook and the board. The clock starts when a story's plan is saved.
 - Targets: ✅ this entry · ✅ `tools/story-board.py` — `when`, `took`, `adopt_split`, the card, and the self-check with
   its controls · ✅ its catalogue row in `tools/doc-audit.py` · ✅ `docs/project-context.md`'s story-board line.
 
