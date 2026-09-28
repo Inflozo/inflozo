@@ -117,7 +117,7 @@ import type { EditorData } from './read'
    Everything after the write is as after a full repaint: editing ended, `core` stopped before and started after,
    `mark()`, the shims — and the hover as a customer sees it. A full repaint let the hover go and the browser hovered the
    new node under a resting pointer again; a kept node gets no such word from the browser, so a hover whose section was
-   kept stays. The Paywall surface keeps its own page write and no records. The keyboard gate
+   kept stays (R-209, the owner's reading of the story's "the hover clears"). The Paywall surface keeps its own page write and no records. The keyboard gate
    proves it on the harness's long Home, node for node against a full repaint; the frame times are NFR-1's manual trace
    (`tools/perf/fps-trace.mjs`), and the panels beside the canvas still redraw in full — Story 5.23b's (R-208).
 

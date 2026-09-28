@@ -4648,6 +4648,26 @@ stays one job, the half-second freezes go sooner, and 5.23b is planned from its 
     NFR-1 at 4× — 7.2–9.4% of vsyncs dropped and 71–75 ms tasks — which is the panels' work this ruling gives 5.23b.
   - ⬜ built — Story 5.23b (the panels and the 60 fps pass).
 
+**R-209 — a hover whose section the paint kept stays; one whose section was redrawn is let go.** Story 5.23a's Review,
+Question 2, ruled **option 1** (owner, 2026-09-28): *"Keep it as built. The outline under a resting mouse stays when its
+section was not redrawn, and goes when it was. Nothing on screen changes from before this story, which is what the story
+promised. The frozen sentence is read as 'behave as a full repaint looked', and this ruling records that reading."*
+
+- **Why it was a question.** The story's frozen block says *"the hover clears"* after every paint. Under a full repaint
+  the browser hovered the new node under a resting pointer again by itself, so the clearing was never seen; under the
+  keyed paint a kept node gets no such word, and clearing would leave the section under the pointer without its outline
+  and pill until the pointer moved — the deployed walk saw exactly that (Spec Change Log 6). Dev kept the hover; the
+  review flagged a frozen sentence read against its words.
+- **The rule.** `paint()` lets the hover go only when the hovered section's drawing was redrawn or removed. On screen a
+  keyed paint looks as a full repaint looked. The frozen sentence is not rewritten; this entry is its reading.
+- **Declined.** Option 2, the literal reading — every paint clears the hover, and the outline blinks off on a section the
+  edit did not touch.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.23a's spec — Question 2, the Review Findings' decision row.
+  - ✅ `editor.tsx`'s paint header names the ruling beside the kept hover.
+  - ✅ `epic-5-context.md` — 5.23a's line.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

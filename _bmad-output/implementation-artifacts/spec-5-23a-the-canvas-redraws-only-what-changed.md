@@ -204,11 +204,12 @@ re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `plac
 ### Review Findings
 
 Review 1 (2026-09-28; five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
-verifier). Every patch applied the same day; the one decision is Question 2 below, open.
+verifier). Every patch applied the same day; the one decision is Question 2 below, ruled the same day (R-209).
 
-- [ ] [Review][Decision] The frozen block says *"the hover clears"* after every paint; Spec Change Log 6 keeps the hover
+- [x] [Review][Decision] The frozen block says *"the hover clears"* after every paint; Spec Change Log 6 keeps the hover
   when the hovered section's drawing was kept [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:2404],
-  reading the sentence as "behave as after a full repaint", and the frozen text was not renegotiated — Question 2.
+  reading the sentence as "behave as after a full repaint", and the frozen text was not renegotiated — Question 2, ruled
+  option 1 (owner, 2026-09-28): kept as built, recorded as R-209.
 - [x] [Review][Patch] The record drop when an inline session starts was pinned only by the hand-run production walk:
   deleting the line left `pnpm check` and `pnpm keyboard` green [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:2558]
   — a 5.23a journey stop starts a session as the pointer does (a synthesized primary press on a stamped element, R-175's
@@ -617,4 +618,7 @@ sentence taken literally, the hero's outline and toolbar would vanish and come b
 2. **Take the sentence literally.** Every redraw clears the hover, even under a resting mouse. Simpler rule, but the
    outline blinks off on a section you did not touch, which the deployed walk saw as a failure.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Keep it as built. The outline under a resting mouse stays when its section was
+not redrawn, and goes when it was. Nothing on screen changes from before this story, which is what the story promised.
+The frozen sentence is read as "behave as a full repaint looked", and this ruling records that reading."* Recorded as
+**R-209**; the frozen text stands as written, with this reading beside it in the register and in the paint's header.

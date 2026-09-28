@@ -35,6 +35,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - Story 5.22: The editor's responsive floor
 - Story 5.23: The play-loop gate
 - Story 5.23a: The canvas redraws only what changed (R-206, R-208)
+  - R-209 (owner, 2026-09-28, 5.23a's Review Q2): a hover whose section the keyed paint kept stays; one whose section was redrawn is let go — the frozen "the hover clears" read as "behave as a full repaint looked".
 - Story 5.23b: The editor's panels redraw only what changed, at 60 fps (R-208)
 - Story 5.24: The deferred-work sweep at the end of Epic 5 (R-207)
 
