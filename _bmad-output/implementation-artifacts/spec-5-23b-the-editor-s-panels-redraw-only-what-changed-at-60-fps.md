@@ -222,6 +222,16 @@ have; none changes what is drawn, stored, journalled or synced.
 6. **The urgent-render stop also proves "canvas first" at both doors** — the I/O matrix's section-operation row. In the
    key's own task the ringed section's drawing is replaced by `]` (`apply`) and by ⌘Z (`restore`), and after ⌘Z's own
    microtasks the panel still reads the design it undoes. Each check is red with its door changed (Verification).
+7. **Every restamp in place asks the chrome's layer again.** Found by the deployed walk at `8312344f` (run 1, step 12:
+   *"On scroll → Static … its selected box moves from the fixed layer to the scrolling one — host view"*). The chrome is a
+   `memo` part and asks `pinned` only when it renders. A control change restamps the root without a new node, so nothing
+   asked, and the header's box stayed in the fixed layer after the header stopped sticking — something drawn differently.
+   The old editor asked on every render. Now `onChange`'s stamp and the flip's `restampAll` tick `pinTick`, as the canvas's
+   scroll listener already did; each tick is batched with its handler's own update, so no render is added. A new journey
+   stop drives it from the keyboard on the harness (scrolled 700 px, Shrink → Static → Sticky). It is green on the fix and
+   on the baseline editor, and red on the code as pushed (`view`). The flip's tick has no stop: no mode-scoped control can
+   move a root today (they are colours, `bg` and the fixture's `tint`), and it keeps the old editor's behaviour for a
+   design that declares one.
 
 ## Design Notes
 
@@ -357,6 +367,28 @@ Nothing in the repository was edited.**
 - `run-verify-editor.cjs` against `https://app.inflozo.com`: 0 FAIL, step 60 on the planted 40-section Home included;
   Supabase through the walk's service key (the accounts, the plant, the restore); the user count unchanged. Ghost T1/T3,
   Resend and Dodo are not touched — the story reads and sends nothing.
+
+**Real infrastructure (R-82) — what this Dev phase hit and what each returned, keys by variable name only:**
+
+- **The Dev push, `8312344f`.** GitHub Actions (`GITHUB_TOKEN`): CI run 36390167490 — `check` success (on the runner the
+  doc gate PASS, `pnpm keyboard` printing `116 passed (5.0m)`, every package's tests 0 failed, `check-snapshots: PASS`),
+  `rls` and `deploy` success; Render matrix run 36390167255: success. Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`):
+  `dpl_H9oSfnBsmoFbnSKga7FMTfhRyTfy` READY, production, built from `8312344f`, serving both `app.inflozo.com` and
+  `inflozo.com`; a wrong bearer → HTTP 403, the control.
+- **Walk run 1 at `8312344f`: `1 FAIL, 664 PASS`** — the FAIL is step 12's layer, Spec Change Log 7. Every step-60 check
+  passed on production's planted 40-section Home: ⌥↓ kept all 41 roots and moved one (`["=","=",3,2,"=",…]`), its
+  longest task 0 ms; the typed word landed and was taken back; the paint ending the session drew section 3 fresh and
+  kept every other root; `P` `P` equalled the canvas node for node (`{"equal":true,"fresh":true}`); Synced before the
+  editor went; the plant removed (HTTP 200). Supabase (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): two throwaway accounts
+  through the Auth Admin API, the seed, step 60's plant and restore through PostgREST; accounts deleted, HTTP 200, users
+  13 → 13.
+- **The fix, re-run on this computer before its push:** `tsc --noEmit -p .` exit 0; `pnpm check` exit 0 (the web package
+  597 of 597); `pnpm keyboard` `117 passed (4.3m)`, 0 failed, the new layer stop among them. Its control: the same stop
+  on `editor.tsx` exactly as pushed at `8312344f` — red at *"a control change: Static moves the box to the scrolling
+  layer"*, received `"view"`, the walk's own reading; on the baseline editor (`bc51ecbd`'s app files) it passes; every
+  file restored and `cmp`-identical. The trace: `--rate 4 --runs 3`, exit 0 — 3.9% (7 of 180), 2.8% (5 of 180), 3.3%
+  (6 of 180) dropped, the p95 frame 1 refresh (16.8 ms) and no long task in every run, every control seen;
+  `--rate 1 --runs 1`, exit 0 — 0.0% (0 of 180). The DOM comparison against the baseline: 18 of 18 states the same.
 
 ## Questions for the owner
 

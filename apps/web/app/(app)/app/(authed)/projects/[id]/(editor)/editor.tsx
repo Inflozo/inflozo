@@ -518,7 +518,8 @@ type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
  * The boxes, the name tag, R-119's Pro badge, D5c's MAIN FEED chip, P0-1's pill and B3a's PAUSED chips — the editor's own
  * elements PORTALLED into the chrome hosts on the canvas document's `<body>` (`lib/canvas-layer.ts`), so the compositor
  * scrolls them with their section in the same frame. A MODULE-LEVEL `memo` part with explicit props: it redraws when what
- * it shows changes — a hover, a selection, a root a paint replaced — and never for the editor's other renders.
+ * it shows changes — a hover, a selection, a root a paint replaced, a root that may have changed layer (`pinTick`: a
+ * scroll that sticks it, a restamp in place) — and never for the editor's other renders. The layer is asked only here.
  *
  * PLACED FROM THE PAINT'S CURRENT ROOTS, ON ONE LOOP. Position follows LAYOUT, not render — a section that grows, a header
  * that shrinks, a fold that re-fits the canvas — so a frame loop places every element; it starts when chrome shows and no
@@ -553,7 +554,8 @@ type ChromeProps = {
   badge: RefObject<HTMLDivElement | null>
   /** which host each root's chrome was drawn in, for the canvas's scroll listener (Story 5.21's stuck test) */
   pins: RefObject<WeakMap<HTMLElement, boolean>>
-  /** a sticky root stuck or came unstuck: which host its chrome goes in is asked again */
+  /** a sticky root stuck or came unstuck, or a restamp in place may have moved a root (a control change, a flip): which
+   *  host its chrome goes in is asked again */
   pinTick: number
   /** the paint's CURRENT hovered and selected roots, read every frame */
   roots: () => { hovered: HTMLElement | null; selected: HTMLElement | null }
@@ -2010,6 +2012,11 @@ function EditorShell({
     })
     // `stampControls` strips every root `data-*` it does not own, `data-inflozo-*` included
     mark()
+    // Story 5.23b: the chrome asks `pinned` only when it renders, and every restamp in place asks it again, as the canvas's
+    // scroll listener does. No flip can move a root between the two layers today — the mode-scoped controls are colours
+    // (`bg`, the fixture's `tint`) — but the declaration decides, never the name (`controls.ts`'s `scoped`), so a design
+    // declaring a mode-scoped position works the day it lands; the flip renders the editor anyway, so this costs nothing
+    setPinTick((t) => t + 1)
   }
 
   /** R-132's press: the attribute, a re-stamp, and the mode now showing announced politely through the editor's one
@@ -3661,7 +3668,10 @@ function EditorShell({
   }, [showing, paints])
   /** Story 5.21 — which layer each root's chrome was drawn in at the last render: a sticky root is pinned only while it is
    *  STUCK (`pinned`), so the canvas's scroll listener compares the root's answer now with this one and re-renders on a
-   *  change (`setPinTick`) — the one switch, as the root sticks or comes unstuck */
+   *  change (`setPinTick`) — the one switch, as the root sticks or comes unstuck. Story 5.23b: the chrome is a `memo` part
+   *  that asks only when it renders, so the two doors that restamp a root IN PLACE — a control change and a flip — tick it
+   *  too: a stamp can make a root stop sticking (On scroll → Static, the deployed walk's step 12) with no new node for the
+   *  chrome to see */
   const drawnPinned = useRef(new WeakMap<HTMLElement, boolean>())
   const [pinTick, setPinTick] = useState(0)
   /** the hovered and the selected root AS THE CANVAS DRAWS THEM NOW, for the chrome's loop — every frame, never a render's */
@@ -4202,6 +4212,9 @@ function EditorShell({
       // stored value would otherwise match the record and keep this stamp
       drawn.current.delete(queryKey(placed))
       mark()
+      // Story 5.23b: and the stamp can move the root between the chrome's two layers (On scroll → Static, the deployed
+      // walk's step 12), which the chrome asks only when it renders — so it is asked again
+      setPinTick((t) => t + 1)
     } else paint()
   }
 

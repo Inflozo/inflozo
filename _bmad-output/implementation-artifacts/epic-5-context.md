@@ -969,7 +969,10 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     placed, the layout, the page's list and subject), so a render drawn from state a transition has not delivered moves
     nothing back. `onChange` drops a press on a panel drawn for another design or section; the chrome and the pill are
     placed from the paint's current roots; a drop's slot stays until its moved rows land; a Layers move is re-based on the
-    newest doc. Measured with only the counters added before the story: a hover redrew 82 Layers rows, a selection 41, a
+    newest doc. **A memoized part asks what it reads only when it renders**: the deployed walk's step 12 caught the chrome
+    keeping a header's box in the fixed layer after On scroll → Static restamped it in place, so every restamp in place
+    (a control change, a flip) now ticks `pinTick` as the scroll listener does — look for such a read in any part made
+    `memo` later. Measured with only the counters added before the story: a hover redrew 82 Layers rows, a selection 41, a
     control change 41, ⌥↓ 82, `]` 41, a rail hover 123 rail rows; after it, the matrix's. NFR-1 at 4× passes every bar
     (2.8% to 4.4% (8, 7 and 5 of 180), the p95 frame ONE refresh in every run, and no long task at all; before, 8.9%, 7.8% and 7.8% of refreshes dropped (16, 14 and 14 of 180), p95 16.8, 33.3 and 16.8 ms, longest tasks 76, 71 and 78 ms).
 

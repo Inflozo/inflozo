@@ -1086,6 +1086,8 @@ DOCS = [
   "settings panel still drawn for the design just replaced writes nothing (the second design carries the value as it "
   "was), and `]`, a device key whose urgent render lands before the transition, then Space on another row lose neither "
   "edit — and both doors, `]` and ⌘Z, redraw the canvas in the key's own task while the panel follows a frame later. "
+  "And the chrome, a part of its own, still moves its layer when a control restamps a root in place: On scroll → Static "
+  "takes the stuck header's selected box from the fixed layer to the scrolling one (the deployed walk's step 12). "
   "Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',

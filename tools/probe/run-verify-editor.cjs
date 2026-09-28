@@ -881,7 +881,8 @@ async function main() {
     await openGroup('Section Settings')
     await controlsAside().getByRole('radiogroup', { name: 'On scroll' }).getByRole('radio', { name: 'Static' }).click()
     await page.waitForTimeout(200)
-    // the layer is chosen per render from the root's computed position (`pinned`), so the stamp moves the box
+    // the layer follows the root's computed position (`pinned`), asked again at every restamp in place since Story 5.23b
+    // made the chrome a part of its own — so the stamp moves the box (this check found that door missing, 2026-09-28)
     const staticBox = await boxNow('selected')
     check('step 12 — site-wide: Header — Rail · On scroll → Static stamps data-on-scroll="static", and its selected box moves from the fixed layer to the scrolling one', (await attr(HEADER, 'data-on-scroll')) === 'static' && (await onScreen(HEADER)).selected && staticBox?.host === 'page' && fits(staticBox, await onScreen(HEADER)), `host ${staticBox?.host}`)
     await clickOn(GRID)

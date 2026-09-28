@@ -4098,4 +4098,45 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     expect(undone.counter, 'R-210: …and the panel follows a frame later').toMatch(/^2 of \d+$/)
     await expect(counter(page)).toHaveText(/^1 of \d+$/)
   })
+
+  test('the chrome\'s layer follows a control\'s restamp in place — On scroll → Static moves the selected box from the fixed layer to the scrolling one', async ({ page }) => {
+    // Story 5.21's rule: a stuck root's chrome is drawn in the viewport's layer, any other in the page's. The chrome is a
+    // `memo` part since 5.23b and asks `pinned` only when it renders, so a control change that restamps the root WITHOUT a
+    // new node must make it ask again — the deployed walk's step 12 found it missing. (A flip restamps in place too, but no
+    // mode-scoped control can move a root today: they are colours, so there is nothing a flip could be driven with here.)
+    const canvas = await open(page)
+    const header = (await rows(page)).site[0]
+    await select(page, header)
+    await openEveryGroup(page)
+    const onScroll = page.locator('#editor-controls [id$="-control-on-scroll"]')
+    await expect(onScroll, 'the header carries On scroll').toHaveCount(1)
+    const checked = onScroll.locator('[role="radio"][aria-checked="true"]')
+    /** the value chosen from the keyboard, one arrow at a time — each press a control change, as a customer's is */
+    const setOnScroll = async (words) => {
+      const all = await onScroll.locator('[role="radio"]').allInnerTexts()
+      const want = all.indexOf(words)
+      expect(want, `On scroll offers ${words}`).toBeGreaterThan(-1)
+      for (let n = 0; n < all.length; n++) {
+        const at = all.indexOf(await checked.innerText())
+        if (at === want) break
+        await checked.focus()
+        await page.keyboard.press(at < want ? 'ArrowRight' : 'ArrowLeft')
+      }
+      await expect(checked).toHaveText(words)
+    }
+    const hostOfSelected = () =>
+      canvas.locator('body').evaluate((body) =>
+        [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].find((h) => h.shadowRoot?.querySelector('[data-chrome="selected"]'))?.getAttribute('data-inflozo-chrome') ?? null)
+    await setOnScroll('Shrink')
+    // scrolled, the sticky header is STUCK and its box is drawn in the viewport's layer — the control
+    await canvas.locator('body').evaluate((body) => body.ownerDocument.scrollingElement.scrollTo(0, 700))
+    await expect.poll(hostOfSelected, 'the control: scrolled, the stuck header\'s box is in the fixed layer').toBe('view')
+    // the control change restamps the root in place: Static scrolls with the page, and so does its box
+    await setOnScroll('Static')
+    await expect(canvas.locator('[data-on-scroll]').first()).toHaveAttribute('data-on-scroll', 'static')
+    await expect.poll(hostOfSelected, 'a control change: Static moves the box to the scrolling layer').toBe('page')
+    // …and back: Sticky, still scrolled, sticks again and its box returns to the fixed layer
+    await setOnScroll('Sticky')
+    await expect.poll(hostOfSelected, 'Sticky moves it back to the fixed layer').toBe('view')
+  })
 })
