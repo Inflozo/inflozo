@@ -12,12 +12,14 @@ recently by design prompt 3, which was run against a version missing four requir
 Status is declared below rather than parsed, because "is this step done" is a judgement about the
 world and not a string in a document.
 """
-import os, re, sys, html, subprocess
+import os, re, sys, html, importlib.util
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLAN = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
 SRC  = os.path.join(PLAN, 'build-sequence.md')
 OUT  = os.path.join(PLAN, 'BUILD-BOARD.html')
+_s = importlib.util.spec_from_file_location('doc_audit', os.path.join(ROOT, 'tools', 'doc-audit.py'))
+da = importlib.util.module_from_spec(_s); _s.loader.exec_module(da)      # `dated()`, DW-132's one rule
 
 # The prompt for the step the owner is CURRENTLY on is also written as a plain-text file, because
 # it is the one he pastes by hand and a .txt is the easiest thing to open and select-all. IT IS
@@ -326,8 +328,6 @@ def build():
         print(f'  ! build-sequence.md has {len(blocks)} slash-prompts, PROMPTS declares '
               f'{len(PROMPTS)}. Update tools/build-board.py.', file=sys.stderr)
         sys.exit(2)
-    date = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
-                          capture_output=True, text=True).stdout.strip()
     e = html.escape
     by_step, claimed = {}, set()
     for skey, title, kind, note, needle in PROMPTS:
@@ -389,7 +389,8 @@ def build():
     for kind, t, d in ACTIONS:
         acts[kind].append(f'<li><b>{e(t)}</b><span>{e(d)}</span></li>')
 
-    open(OUT, 'w', encoding='utf8').write(f'''<!doctype html>
+    # computed BEFORE the file is opened: `open(OUT, 'w')` truncates it, and `dated()` reads the date on it (DW-132)
+    page = da.dated(f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Inflozo — Build Board</title><style>
@@ -526,7 +527,7 @@ drift apart.</p>
 
 {''.join(cards)}
 
-<footer>Generated {e(date)} from <code>build-sequence.md</code>, which governs on any conflict.
+<footer>Generated {da.STAMP} from <code>build-sequence.md</code>, which governs on any conflict.
 Regenerate with <code>python3 tools/build-board.py</code>. A prompt marked <b>template</b> is filled in per story on STORY-BOARD.html; one marked <b>historical</b> has no
 copy button on purpose — one of them contains an instruction that execution disproved.</footer>
 </div>
@@ -539,7 +540,8 @@ document.querySelectorAll('button.copy').forEach(b => b.onclick = async () => {{
   const was = b.textContent; b.textContent = 'Copied'; b.classList.add('ok');
   setTimeout(() => {{ b.textContent = was; b.classList.remove('ok'); }}, 1800);
 }});
-</script></body></html>''')
+</script></body></html>''', OUT)
+    open(OUT, 'w', encoding='utf8').write(page)
 
     open(PASTE, 'w', encoding='utf8').write(paste[0].rstrip() + '\n')
     return len(blocks)

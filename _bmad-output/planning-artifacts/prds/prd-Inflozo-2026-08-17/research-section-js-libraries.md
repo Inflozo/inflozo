@@ -564,7 +564,7 @@ Two further notes for section authors:
 |---|---|---|---|
 | The flat design stylesheets | **`stylelint-plugin-use-baseline`** **1.4.6** (was 1.4.5 here — Story 4.8), `available: "widely"` + explicit Tier-2 allowlist | MIT | §6.5. Stylelint runs directly on flat CSS files — **no build step, no bundler, no preprocessor**, which is exactly why it fits §7.1 |
 | Every FR-G7 module and `core` | **`eslint-plugin-compat`** 7.0.2 against the pinned browserslist | MIT | DOM/JS APIs below the floor |
-| Compiled `assets/js/main.js` | **`size-limit`** 13.0.3 with `@size-limit/file`, `limit: "40 kB"`, **brotli** — its default metric (VERIFY-AT-BUILD 27); this row said gzip | MIT | NFR-2's JS budget — the maximal-design fixture theme is the input; until Story 7.5 it is `bundle()` of every registry module with a source, as a warning |
+| Compiled `assets/js/main.js` | **`size-limit`** 13.0.3 with `@size-limit/file` and `gzip: true`, limit **40,960 bytes, gzip level 9** — NFR-2's own words since DW-140 (Story 5.24a); brotli is the tool's default and its `kB` is 1,024 bytes (VERIFY-AT-BUILD 27) | MIT | NFR-2's JS budget — the maximal-design fixture theme is the input; until Story 7.5 it is `bundle()` of every registry module with a source, as a warning |
 | Third-party code | one grep asserting `assets/js/` contains only repo-authored files | — | §5's licence rule, by construction |
 
 Add a fourth, human check: **bumping `widelyAvailableOnDate` requires a render-matrix re-run**, because widening the CSS vocabulary is exactly the kind of change NFR-6(a) exists to catch.

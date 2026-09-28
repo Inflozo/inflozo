@@ -10,16 +10,20 @@
 // - the TOTALS are printed here and stored nowhere.
 //
 // What it does:
-//  1. holds §3 and catalog.json equal, in order and in both directions — key, English default, marks, retired or not;
+//  1. holds §3 and catalog.json equal, in order and in both directions — key, English default, marks, retired or not,
+//     and the key it is superseded by (DW-148: §3's status form "**superseded by** `key`");
 //  2. refuses a key written twice in catalog.json's bytes (JSON.parse would keep the last silently);
 //  3. runs the format rules;
 //  4. renders every default through intl-messageformat 5.4.3 and through the shim's `t()` with a sample value per
 //     placeholder, and fails on any key where the two differ or Ghost's format throws;
-//  5. prints the totals.
+//  5. reads every committed catalog.json from git and fails on a key any of them held that is gone now (DW-143: a key
+//     is retired or superseded, never removed — S1), naming the key and the last commit that held it;
+//  6. prints the totals.
 //
 //     node tools/check-catalog.mjs          (Node 24: it imports packages/library/src/catalog.ts)
 
 import { createRequire } from 'node:module'
+import { execFileSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -40,7 +44,8 @@ const CATALOG = JSON.parse(CATALOG_TEXT)
 const MARKS_CELL = /^(JS|a11y|prop|locked|canvas)(, (JS|a11y|prop|locked|canvas))*$/
 
 /** §3's rows, in order. A marks cell holding prose ("as above", `comments.count_one`'s note) contributes no
- *  marks; a status cell compares as retired or not — the reason sentence is catalog.json's own. */
+ *  marks; a status cell compares as retired or not — the reason sentence is catalog.json's own — and, in §2's form
+ *  "**superseded by** `key`", as the key that replaced it (DW-148). */
 function appendixRows(md) {
   const start = md.indexOf('\n## 3. The catalog')
   const end = md.indexOf('\n## 4.', start)
@@ -50,7 +55,8 @@ function appendixRows(md) {
     if (!/^\| `[a-z]/.test(line)) continue
     const cells = line.split('|').slice(1, -1).map((c) => c.trim())
     const marks = MARKS_CELL.test(cells[2] ?? '') ? cells[2].split(', ').map((m) => m.toLowerCase()) : []
-    rows.push({ key: cells[0].slice(1, -1), en: cells[1], marks, retired: /^\*\*retired\*\*/.test(cells[3] ?? '') })
+    const superseded = /^\*\*superseded by\*\* `([^`]+)`/.exec(cells[3] ?? '')?.[1]
+    rows.push({ key: cells[0].slice(1, -1), en: cells[1], marks, retired: /^\*\*retired\*\*/.test(cells[3] ?? ''), superseded })
   }
   return rows
 }
@@ -72,6 +78,7 @@ function copyFailures(rows, catalog) {
     if (e.en !== r.en) out.push(`${r.key} — the English default differs: ${APPENDIX_PATH} says ${JSON.stringify(r.en)}, ${CATALOG_PATH} says ${JSON.stringify(e.en)}`)
     if (JSON.stringify(e.marks) !== JSON.stringify(r.marks)) out.push(`${r.key} — the marks differ: ${APPENDIX_PATH} ${JSON.stringify(r.marks)}, ${CATALOG_PATH} ${JSON.stringify(e.marks)}`)
     if ((e.retired !== undefined) !== r.retired) out.push(`${r.key} — ${r.retired ? `${APPENDIX_PATH} marks it retired and ${CATALOG_PATH} does not` : `${CATALOG_PATH} marks it retired and ${APPENDIX_PATH} does not`}`)
+    if ((e.supersededBy ?? null) !== (r.superseded ?? null)) out.push(`${r.key} — superseded by: ${APPENDIX_PATH} says ${JSON.stringify(r.superseded ?? null)}, ${CATALOG_PATH} says ${JSON.stringify(e.supersededBy ?? null)}`)
   }
   const seen = new Set()
   for (const r of rows) {
@@ -91,6 +98,27 @@ function duplicateFailures(text) {
   }
   return out
 }
+
+/** 5 — a key never leaves (DW-143, S1): every key any committed catalog held is still in `current`, live, retired or
+ *  superseded — the two copies can agree with each other and both have lost a key, which only history can see.
+ *  `previous` is [{ commit, keys }], newest first, so the first commit met holding a key is the last that held it. */
+function droppedFailures(previous, current) {
+  const out = []
+  const seen = new Set()
+  for (const { commit, keys } of previous) {
+    for (const k of keys) {
+      if (seen.has(k)) continue
+      seen.add(k)
+      if (!Object.hasOwn(current.keys, k)) out.push(`${k} — in ${CATALOG_PATH} at ${commit} and gone now; a key is retired or superseded, never removed, because deployed themes and customers' overrides point at it (appendix-h1 S1)`)
+    }
+  }
+  return out
+}
+
+/** Every committed catalog.json, newest first. A shallow clone sees only what it holds; CI's check job is full. */
+const committedCatalogs = () => execFileSync('git', ['log', '--format=%h', '--', CATALOG_PATH], { cwd: REPO, encoding: 'utf8' })
+  .split('\n').filter(Boolean)
+  .map((commit) => ({ commit, keys: Object.keys(JSON.parse(execFileSync('git', ['show', `${commit}:${CATALOG_PATH}`], { cwd: REPO, encoding: 'utf8' })).keys) }))
 
 /** 4 — Ghost's render against the shim's, per key, with a sample value per placeholder. */
 function agreementFailures(catalog) {
@@ -156,6 +184,15 @@ check('control — a key moved out of order, a mark dropped and a retirement lif
   mustFail(f, /^countdown\.days — the marks differ/, 'a dropped mark')
   return mustFail(f, /^search\.overlay_empty — .*retired/, 'a lifted retirement')
 })
+check('control — DW-148: a supersededBy in one copy only is named, from either side', () => {
+  const c = clone()
+  c.keys['nav.menu'].supersededBy = 'nav.close'
+  mustFail(copyFailures(ROWS, c), /^nav\.menu — superseded by: .* says null, .* says "nav\.close"/, 'a supersededBy catalog.json alone carries')
+  const rows = ROWS.map((r) => (r.key === 'nav.menu' ? { ...r, superseded: 'nav.close' } : r))
+  return mustFail(copyFailures(rows, CATALOG), /^nav\.menu — superseded by: .* says "nav\.close", .* says null/, 'a superseded row §3 alone carries')
+})
+check('control — DW-143: a key an earlier committed catalog held, gone now, is named with that commit', () =>
+  mustFail(droppedFailures([{ commit: 'abc1234', keys: [...Object.keys(CATALOG.keys), 'nav.gone'] }], CATALOG), /^nav\.gone — in .* at abc1234 and gone now/, 'a dropped key'))
 check('control — a key written twice in the bytes is named', () =>
   mustFail(duplicateFailures(CATALOG_TEXT.replace('"nav.close":', '"nav.menu":')), /^nav\.menu — written twice/, 'a duplicate key'))
 for (const [label, en, pattern] of [
@@ -189,6 +226,12 @@ check('every format rule holds (S1, S3, S7, the removal rule)', () => {
 check(`every default renders under intl-messageformat ${IMF_VERSION} exactly as the shim's t() renders it`, () => {
   const f = agreementFailures(CATALOG)
   if (f.length) throw new Error(f.join('\n'))
+})
+check('every key of every committed catalog.json is still in catalog.json — live, retired or superseded (DW-143)', () => {
+  const previous = committedCatalogs()
+  const f = droppedFailures(previous, CATALOG)
+  if (f.length) throw new Error(f.join('\n'))
+  return `${previous.length} committed catalog(s) read`
 })
 
 // ── the totals, printed and stored nowhere ────────────────────────────────────────────────────────────────

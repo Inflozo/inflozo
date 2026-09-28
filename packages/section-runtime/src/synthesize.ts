@@ -64,27 +64,30 @@ export type Synthesis = { instances: DocInstance[]; dropped: DroppedRow[] }
 const FEED: readonly DefaultRow[] = [{ designId: 'a17/1', layerName: 'Post grid', isMainFeed: true }]
 
 /** The seven synthesizable files (`sections-inventory.md:786`) and their stacks (:802-847). Six have a canvas; the
- *  seventh, `index.hbs`, is Home's PAGE 2 and has no canvas of its own: it is `pageTwoStack`'s (R-127, R-179). */
+ *  seventh, `index.hbs`, is Home's PAGE 2 and has no canvas of its own: it is `pageTwoStack`'s (R-127, R-179).
+ *  Every row is one of its category's two [Free] designs — the pair the owner picked (R-17 as amended, R-212), so an
+ *  untouched template compiles all-Free on any plan (Invariant 1): A25 #2 Plain, A28 #1 Rule and A29 #1 Centred, where
+ *  "the first two" had put A25 #1, A28 #2 and A29 #2, which his picks make Pro. */
 export const SYNTHESIS_DEFAULTS: Readonly<Record<string, readonly DefaultRow[]>> = {
   'home.hbs': FEED,
   'index.hbs': FEED,
   'post.hbs': [
     { designId: 'a24/1', layerName: 'Post header' },
-    { designId: 'a25/1', layerName: 'Post content' },
+    { designId: 'a25/2', layerName: 'Post content' },
     { designId: 'a26/1', layerName: 'Author bio' },
     { designId: 'a27/1', layerName: 'Related posts' },
-    { designId: 'a28/2', layerName: 'Comments' },
+    { designId: 'a28/1', layerName: 'Comments' },
   ],
   // :824 — the meta row is hidden, "pages aren't dated content"; A24's `byline` and `tag-line` are that row.
   // A25 is target-agnostic and binds `post` on both templates, so its values are `post.hbs`'s exactly (:830).
   'page.hbs': [
     { designId: 'a24/1', layerName: 'Page header', controls: { byline: 'off', 'tag-line': 'off' } },
-    { designId: 'a25/1', layerName: 'Page content' },
+    { designId: 'a25/2', layerName: 'Page content' },
   ],
   'tag.hbs': [{ designId: 'a29/1', layerName: 'Archive header' }, ...FEED],
-  // :840 — #2 Split Head over #1: its right column carries a description and a count, which is what an author
-  // archive has to say. A29 is one design over three archives, so #1 would be legal here too.
-  'author.hbs': [{ designId: 'a29/2', layerName: 'Archive header' }, ...FEED],
+  // A29 is one design over three archives, so the tag archive's #1 Centred serves the author's too — his name, bio and
+  // post count from `{{#author}}` (R-212; #2 Split Head, the old default here, is Pro under the owner's picks).
+  'author.hbs': [{ designId: 'a29/1', layerName: 'Archive header' }, ...FEED],
   'error.hbs': [{ designId: 'a31/1', layerName: 'Error message' }],
 }
 

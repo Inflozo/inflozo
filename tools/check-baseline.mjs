@@ -16,13 +16,16 @@
 //  3. every Tier-2 date recomputed as `baseline_low_date` + 30 months, and R-105's one exception held alone;
 //  4. the stylelint plugin diffed against the pin, row by row, over every identifier-shaped `css.properties` row;
 //  5. the matrix's stylesheet rows and the repository's own sheets through the real config;
-//  6. `size-limit` over `bundle()`'s maximal main.js: NFR-2's 40 kB (brotli) as a WARNING, with a 1 B control.
+//  6. `size-limit` over `bundle()`'s maximal main.js at NFR-2's budget — 40,960 bytes, gzip level 9 (DW-140) — as a
+//     WARNING, with a 1 B control, its size held equal to zlib's own gzip of the file, and NFR-2's sentence held to
+//     naming what is checked.
 //
 //     node tools/check-baseline.mjs          (Node 24: it imports packages/library/src/modules.ts)
 
 import { createRequire } from 'node:module'
 import { execFileSync } from 'node:child_process'
 import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { gzipSync } from 'node:zlib'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -241,11 +244,16 @@ await check('a Tier-2 date altered is refused, naming the entry and both dates',
   if (!refusals.some((r) => r.includes(first.feature) && r.includes('2099-01-01') && r.includes(first.widely))) fail(`not refused: ${JSON.stringify(refusals)}`)
 })
 
-let sizeFile
+// NFR-2's JS budget, in the one unit that cannot be misread (DW-140): `size-limit`'s own default is brotli, and its
+// `kB` is 1,024 bytes, so "40 KB" named neither the base nor the metric. The config file is how `gzip: true` reaches it —
+// its CLI takes no metric flag — and `@size-limit/file` gzips at level 9.
+const NFR2_BYTES = 40960
+const NFR2_WORDS = `${NFR2_BYTES.toLocaleString('en-US')} bytes, gzip level 9`
+let sizeFile, sizeConfig
 const sizeLimit = (limit) => {
   let out
   try {
-    out = execFileSync(join(REPO, 'node_modules/.bin/size-limit'), ['--json', '--limit', limit, sizeFile], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
+    out = execFileSync(join(REPO, 'node_modules/.bin/size-limit'), ['--json', '--limit', limit, '--config', sizeConfig], { cwd: REPO, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] })
   } catch (e) {
     out = e.stdout || e.message // size-limit exits 1 over its limit; NFR-2 wants a warning, so the JSON decides
   }
@@ -266,6 +274,8 @@ try {
   const sources = Object.fromEntries(['core', ...present].map((n) => [n, readFileSync(join(REPO, `packages/library/modules/${n}.js`), 'utf8')]))
   sizeFile = join(tmp, 'main.js')
   writeFileSync(sizeFile, bundle(present, sources))
+  sizeConfig = join(tmp, 'size-limit.json')
+  writeFileSync(sizeConfig, JSON.stringify([{ path: 'main.js', gzip: true }]))
 
   await check('the size control: the same main.js at --limit "1 B" reports passed: false', () => {
     const r = sizeLimit('1 B')
@@ -410,10 +420,18 @@ try {
 
   console.log('\nsize')
 
-  await check('size-limit over bundle() of every registry module with a source: NFR-2, 40 kB brotli', () => {
-    const r = sizeLimit('40 kB')
-    const said = `main.js (core${present.map((n) => ` · ${n}`).join('')}) is ${r.size} B brotli`
-    if (r.passed === false) console.log(`  WARNING NFR-2: ${said}, over the 40 kB budget — a warning, not a failure (Story 7.5 owns the gate)`)
+  await check(`NFR-2 names what this checks: "${NFR2_WORDS}"`, () => {
+    const prd = readFileSync(join(REPO, '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md'), 'utf8')
+    const nfr2 = prd.slice(prd.indexOf('**NFR-2 '), prd.indexOf('**NFR-3 '))
+    if (!nfr2.includes(`< 40 KB gzipped (${NFR2_WORDS})`)) fail(`prd.md NFR-2 does not say "< 40 KB gzipped (${NFR2_WORDS})", which is what size-limit is run at here`)
+  })
+
+  await check(`size-limit over bundle() of every registry module with a source: NFR-2, ${NFR2_WORDS}`, () => {
+    const r = sizeLimit(`${NFR2_BYTES} B`)
+    const zlib = gzipSync(readFileSync(sizeFile), { level: 9 }).length
+    if (r.size !== zlib) fail(`size-limit measured ${r.size} B and zlib's gzip at level 9 is ${zlib} B — the gate is not measuring NFR-2's metric`)
+    const said = `main.js (core${present.map((n) => ` · ${n}`).join('')}) is ${r.size} B gzipped`
+    if (r.passed === false) console.log(`  WARNING NFR-2: ${said}, over the ${NFR2_WORDS} budget — a warning, not a failure (Story 7.5 owns the gate)`)
     return said
   })
 } finally {

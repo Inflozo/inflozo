@@ -81,6 +81,8 @@ reason: `@types/node@26.4.1` types Node 26 while the stack pins Node 24.x, so co
 
 plain: One safety rule is stricter than intended and also blocks a few harmless things; nothing is broken, and it gets narrowed the first time it blocks real work.
 status: open
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.1 review (2026-09-04)
 location: eslint.config.js
@@ -335,6 +337,8 @@ reason: Hosted `storage.objects` has `protect_objects_delete BEFORE DELETE ... F
 
 plain: Two files in the design export give two different oranges for one colour scheme and a purple versus a blue for another; the story that builds the colour schemes must take them from the product plan, not from either file.
 status: open
+owner: Story 6.2 (The twelve presets and the font pool), whose criteria carry its requirement word for word with its
+  id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.3 create (2026-09-05), found while distilling the frames
 location: _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/a29-kit.js · Calibration Set.dc.html
@@ -402,6 +406,8 @@ plain: One session setting we asked Supabase for needs their paid plan, so it wa
   about the thirty-day sign-in depends on it — it is only worth revisiting if a later story wants
   sessions to expire after a period of doing nothing, and that would be a decision about money.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.4 dev (2026-09-05), executed against the live project
 location: tools/probe/configure-supabase-auth.py (the SOFT block)
@@ -426,6 +432,8 @@ plain: The little wireframe on each project card is coloured with the "Paper" co
   place those three colours are written down today is a drawing; the story that builds the colour
   schemes properly must replace them from the product plan, and the card will follow automatically.
 status: open
+owner: Story 6.2 (The twelve presets and the font pool), whose criteria carry its requirement word for word with its
+  id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.5 create (2026-09-05), found while reading D4a and Appendix D together
 location: apps/web/lib/style-pack.ts (PRESETS, once Story 1.5's Dev run writes it) · prd.md Appendix D
@@ -663,6 +671,9 @@ plain: If someone's card fails, we keep them on Pro for a grace period so their 
   payment leaves the account on Pro indefinitely rather than for seven days. Nobody is in that state
   now, and Epic 12 (billing) is where the clock gets connected.
 status: open
+owner: Story 12.2 (Webhooks and the entitlement state machine), whose criteria already say it — "`pro_past_due → free`
+  on grace expiry" — and name this entry beside those words since Story 5.24a. *(Story 5.24a's Dev, 2026-09-28: it had
+  no owner line.)*
 severity: medium
 origin: Story 1.5 fifth review (2026-09-06), Blind Hunter layer
 location: apps/web/lib/entitlement.ts (`resolveEntitlement`) · apps/web/lib/plan.ts (`planFor`) ·
@@ -710,6 +721,8 @@ plain: When you open the dashboard fresh, there is a moment where the page is bl
   the grey outline of the cards. The outline only appears when you move around inside the app, not on
   the first load. Cosmetic, and only on a slow connection.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
 location: apps/web/app/(app)/app/(authed)/layout.tsx · apps/web/app/(app)/app/(authed)/(dashboard)/loading.tsx
@@ -746,6 +759,8 @@ reason: The owner accepted the 404s explicitly — the spec's plain English says
 plain: On a computer, once you have typed in the project search there is no × to clear it — you have to
   select the text, delete it and press Enter. The phone has a close button that does clear it.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
 location: apps/web/components/shell/shell.tsx (`[&::-webkit-search-cancel-button]:hidden`) ·
@@ -784,6 +799,8 @@ reason: The select list is spread straight into the insert, so a column added by
 plain: If the billing lookup fails, the app is meant to treat you as being on the Free plan rather than
   guessing. That rule is one character of code and nothing checks it.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 1.5 sixth review (2026-09-06), Blind Hunter layer
 location: apps/web/lib/entitlement.ts (`planFor(data?.state)`)
@@ -847,6 +864,8 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
 
 plain: Four things about passkeys could only be checked by a person. Story 2.2 built a harness that checks the whole add-rename-revoke-sign-in journey by itself, and that one is done. It also asked the second-passkey question — is adding a second passkey on a device that already has one refused? — and on the deployed site, yes, it is. The last two are still by hand: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey".
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 2.1 code review (2026-09-06), the Verification Gap layer
 location: apps/web/app/(app)/app/sign-in/actions.ts (`finishPasskeySignIn`'s flag guard) · apps/web/app/(app)/app/(authed)/account/passkeys-card.tsx (`getAuthenticatorData()`)
@@ -1060,6 +1079,8 @@ plain: When a user moves their account to a new email address, the address they 
   ends "contact support immediately", which names a support channel the product does not yet have. Every
   other email Inflozo sends is branded. This one is the exception until Epic 12 fixes it.
 status: open
+owner: Story 12.7 (The grace banner and the payment-failed email), whose criteria carry its requirement word for word
+  with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 2.3 code review (2026-09-07) — Blind Hunter raised the risk; the owner ruled the notice ON
   (R-95, `reconcile-designs-decisions.md` §A19), which turned the question into this branding job
@@ -1083,6 +1104,9 @@ plain: When you sign out everywhere, Inflozo refuses the old sign-in on every pa
   out of a stolen cookie, until the ticket's own expiry passes. Nothing in the app ever hands that
   ticket to a browser script, so the cookie has to be stolen first.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry and carries the Schema phase R-223 gave this entry, pushed first and alone (R-99). *(Story 5.24a's
+  Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 2.4 spec (2026-09-07), read in the installed client — `GoTrueClient.js:2714-2718`,
   `lib/fetch.js:82-86` — and in the app's guard (`lib/supabase/server.ts` `currentUser()`, `proxy.ts:25-39`)
@@ -1114,6 +1138,8 @@ plain: The ordinary Sign out has a note saying that if Supabase cannot be reache
   the red line's page would bounce you to the sign-in page with nothing said. Not yet executed — it
   needs Supabase to be unreachable from the live site.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 2.4 spec (2026-09-07), read in the installed client
 location: apps/web/app/(app)/app/sign-in/actions.ts:82-97 (`signOut`, its comment, `signOutPathFor(Boolean(error))`) ·
@@ -1140,6 +1166,8 @@ plain: When someone asks to delete their account, their card must never be charg
   Nothing in the product talks to Dodo yet and nobody can buy a plan, so Story 2.5 could not build this;
   the billing epic builds it with the rest of Dodo. Until then nobody can be charged, because nobody can pay.
 status: open
+owner: Story 12.5 (The billing page), whose criteria already carry it with its id: "FR-A5's two Dodo calls land here
+  with the adapter". *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 2.5 spec (2026-09-07), the owner's ruling R-97 on its question 2
 location: apps/web/app/(app)/app/(authed)/account/actions.ts (`requestDeletion`, `restoreAccount` — the two
@@ -1251,6 +1279,8 @@ plain: If the daily clean-up job fails, the only sign is a red entry in Vercel's
   emailed about. Until the error-alerting service the requirements name is set up, checking that page after a
   deletion is the owner's job.
 status: open
+owner: Story 15.5 (Reliability — alarms and the restore drill), whose criteria carry its requirement word for word
+  with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 2.6 spec (2026-09-07)
 location: apps/web/app/api/cron/purge-accounts/route.ts (answers 500 whenever an account failed, so the
@@ -1269,6 +1299,8 @@ plain: The daily clean-up takes the 25 accounts whose deadline passed longest ag
   the next day. If 25 accounts ever fail every single day — a systemic fault, not a normal one — the accounts
   behind them are never reached, and every day's run is red. Today that is only a red log line (DW-46).
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 2.6 code review (2026-09-07)
 location: apps/web/app/api/cron/purge-accounts/route.ts (`.order('purge_after').limit(BATCH)`) ·
@@ -1311,6 +1343,8 @@ plain: The server reaches the encrypted key store with the database's main passw
   audit log would limit what a leak of that one setting could do; it is the right change to make when the
   password is next rotated, not before.
 status: open
+owner: Story 15.8 (The Test → Live cutover), whose criteria carry its requirement word for word with its id (R-195).
+  *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.1 spec (2026-09-07), the connection decision
 location: apps/web/server/ghost-admin/db.ts (to be created by 3.1, `SUPABASE_DB_POOLER_URL`) ·
@@ -1332,6 +1366,8 @@ plain: The server's connection to the key store is scrambled, but the server doe
   is really Supabase's; checking needs Supabase's own certificate bundled into the app, and that belongs
   with the next password rotation, alongside the narrower database account.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 3.1 code review (2026-09-07), the Blind Hunter layer — executed by the review
 location: apps/web/server/ghost-admin/db.ts (`ssl: 'require'`) · MEASUREMENTS.md §21j (the 2026-09-07 re-probe)
@@ -1348,6 +1384,8 @@ reason: postgres.js 3.4.9 sets `rejectUnauthorized: false` for `ssl: 'require'` 
 plain: The one door Inflozo talks to a Ghost site through can only send text-shaped requests today; uploading
   a theme, which the deploy in Epic 7 needs, sends a file, so the door will need to learn that shape then.
 status: open
+owner: Story 7.18 (The deploy wizard), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.1 code review (2026-09-07), the Edge Case Hunter layer
 location: apps/web/server/ghost-admin/index.ts (`fetchWithKey`, the `payload` / `Content-Type` lines) ·
@@ -1363,6 +1401,8 @@ plain: When a Ghost site is down for maintenance or is rate-limiting, Inflozo wo
   that Ghost refused it, which is the wrong story; the stories that make the real reads and writes will
   see those answers and can name them properly.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.1 code review (2026-09-07), the Blind Hunter and Edge Case Hunter layers
 location: apps/web/server/ghost-admin/admin-rule.ts (`ghostCode`)
@@ -1411,6 +1451,8 @@ status: open — `rotated` closed by Story 3.2 (Review, 2026-09-08); **the decry
   nothing in the product had a way in for the token. **`write-denied` alone remains, and it is Epic 7's** — no
   product caller makes an allowed Ghost write until the deploy path exists, and `ADMIN_WRITES` still
   carries `announcement_clear` with no caller (DW-66).
+owner: Story 7.18 (The deploy wizard), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.2 spec (2026-09-08), Design Notes "The harness after the route"; the decrypt path added by
   3.2's code review (2026-09-08, Edge Case Hunter)
@@ -1461,6 +1503,8 @@ plain: The connect screen refuses obvious non-addresses — a bare word, `localh
   On Vercel's functions there is little behind such an address to reach, which is why this is recorded and
   not fixed today.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.2 code review 2 (2026-09-08), Blind Hunter and Edge Case Hunter
 location: apps/web/lib/connect-rule.ts (`normaliseSiteUrl` — refuses `localhost`, IP literals and non-http(s)
@@ -1483,6 +1527,8 @@ plain: The code that undoes a half-made connection (the key could not be stored,
   Next. Extracting the sequence into a plain function that takes its collaborators as arguments — the shape
   Story 2.6's purge used — would let a test run it with a store that fails.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.2 code review 2 (2026-09-08), Verification Gap Reviewer
 location: apps/web/app/(app)/app/(authed)/sites/actions.ts (the `store()` catch; the `site/` read's `isHttpUrl`
@@ -1537,6 +1583,8 @@ plain: Ghost can live at an address like `https://example.com/blog` rather than 
   three ways is one record — so such a site would be looked for at `https://example.com` and refused with
   "Ghost refused the connection (HTTP 404)". Nobody has asked for one yet.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.2 code review (2026-09-08) — Edge Case Hunter
 location: apps/web/lib/connect-rule.ts (`normaliseSiteUrl` drops the path) · apps/web/server/ghost-admin/admin-rule.ts
@@ -1557,6 +1605,8 @@ plain: The card on the Sites page no longer looks like the drawing it came from.
   "for all site cards" — one component draws every card, so that is already true. What this entry exists for is
   the stories that add MORE to this card: they must add to what is there now, not put back what the frame draws.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 3.2 owner's test (2026-09-08, findings 4 and 6) — his test outranks the frame, R-80 as amended
 location: apps/web/app/(app)/app/(authed)/sites/page.tsx (the one card component, and the comment at the top of
@@ -1610,6 +1660,9 @@ plain: The blue "Preview-only" card tells someone on a restricted Ghost(Pro) pla
   deploy to anything. The card says what clears the restriction and offers **Re-check plan**, which does work.
   When the export and the deploy exist, the two buttons go back on this card.
 status: open
+owner: Stories 7.26 (Theme ZIP export) and 15.7 (The Ghost(Pro) launch gate), whose criteria each carry their half
+  word for word with its id — the Preview-only card at export, and the tier's name decided by the captured payload
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.3 spec (2026-09-08), Boundaries "Never" and the Acceptance Criteria — UX-DR3, "a control that
   could never act is ABSENT, not greyed"
@@ -1719,7 +1772,10 @@ plain: The **Re-check plan** button on a Preview-only card can be pressed as oft
   each press decrypts the stored key twice, makes two calls to their Ghost and writes four audit rows.
   **Story 3.7 added a second such button** — **Re-check connection**, on every site's ⋯ menu — and
   deliberately gave it no cooldown either.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), closed on the owner's ruling **R-220** (2026-09-28, 5.24's Create, Question 11):
+  *"No wait, as today"* — Re-check plan and Re-check connection ask the customer's Ghost on every press, and the double
+  press stays blocked (R-98).
 severity: low
 origin: Story 3.3 code review (2026-09-08), Blind Hunter; **amended 2026-09-10 by Story 3.7**, which weighed
   it as this entry asked and left it open on purpose
@@ -1744,6 +1800,8 @@ plain: Four things now write to the same box of settings on a site's record — 
   two happened at the same instant the second would erase the first's change. It needs two things to
   happen within the same fraction of a second on one site.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.3 code review (2026-09-08), Blind Hunter and the Edge Case Hunter
 location: apps/web/server/site-probe.ts (`probeSite`'s read-then-write, and its own `ponytail:` note) ·
@@ -1776,6 +1834,8 @@ plain: FR-C4 promises four things at connect. Story 3.4 built two of them: Inflo
   on their live site with nothing behind it. The same is true of the canvas showing live content from
   their site instead of placeholder text.
 status: open
+owner: Story 9.5 (A2 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 3.4 spec (2026-09-08) — the owner ruled it at Question 2, option 1
 location: apps/web/lib/probe-rule.ts (`announcementOf` already stores `content`, `background` and
@@ -1805,6 +1865,8 @@ plain: When you open a link to something that is not yours or no longer exists �
   status code the browser receives says 200 (success) rather than 404. A person sees the correct page;
   a search engine, a monitor or a script would be told the page was fine.
 status: open — amended by Story 3.9 (2026-09-11); the PAGE half is closed
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 resolution: Story 3.9 (2026-09-11) — THE PAGE HALF CLOSES.
   `apps/web/app/(app)/app/(authed)/not-found.tsx` renders M9 404's words in the app's own Kit
   inside the shell, and `(authed)/[...unbuilt]/page.tsx` — which carries NO `loading.tsx`,
@@ -1870,6 +1932,8 @@ status: open
   changed is the run's LENGTH: `moved-domains` performs a full disconnect-and-reconnect through the UI
   per hint, which Story 3.9 took from two to five. Recorded here so a future session does not read the
   timeouts as this entry's 60-second stall; the length problem is DW-92.
+owner: Story 15.1 (The E2E suite, including the keyboard-only journey), whose criteria carry its requirement word for
+  word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
 origin: Story 3.4 Review (2026-09-08) — seven consecutive full harness runs against app.inflozo.com,
   each losing exactly one navigation out of roughly fifty
@@ -2010,6 +2074,8 @@ plain: When you have more than one project, the "Use your brand" screen now show
   by copying the pieces from two screens that ARE drawn. Umang's own rule says a screen with no
   drawing gets drawn in the same design project, so it is a picture that is owed, not a decision.
 status: open
+owner: Story 6.6 (Auto-branding seeds the pack), whose criteria carry its requirement word for word with its id
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.4 Review 3 (2026-09-08) — raised by the blind-hunter layer
 location: apps/web/app/(app)/app/(authed)/sites/brand/page.tsx (the `choosing` fieldset) ·
@@ -2036,6 +2102,8 @@ plain: When Inflozo reads your brand off your Ghost site it keeps seven things. 
   nothing reads them. That is fine if some later part
   of the product wants them, but nothing has said which part, so they could sit there for ever.
 status: open
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.4 Review 3 (2026-09-08) — raised by the blind-hunter layer
 location: apps/web/lib/probe-rule.ts (`brandOf`) · apps/web/lib/style-pack.ts (the `brand` key) ·
@@ -2121,6 +2189,8 @@ status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF I
   Executed at Review, with the control: the site answered 200 on both hosts and two other browser
   harnesses passed against the same deployment). So the change below is IN the harness and has never
   been executed. Closing it needs one completed run, which is what DW-92 is about.
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 resolution: Story 3.9 (2026-09-11) — the arrival control is reliable because the page changed
   under it. `brand-ownership` reads the landing out of `<main>`, and Next's default not-found
   REPLACED the route rather than filling the landmark — which is the entry's own eighth-run datum.
@@ -2173,8 +2243,10 @@ plain: When someone deploys with Inflozo for the first time, Inflozo archives a 
 status: open
 severity: medium
 origin: Story 3.5 Create (2026-09-09) — the owner's ruling at Question 1, option 1
-owner: **Story 7.20** (the backup gate and the pre-Inflozo snapshot), Epic 7 — the story that first writes a
-  `site_snapshots` row, so the purge and its subject are designed together
+owner: Story 7.20 (The backup gate and the pre-Inflozo snapshot), whose criteria already carry it with its id:
+  "FR-C6's 90-day orphan purge is built here". *(Story 5.24a's Dev, 2026-09-28: was "**Story 7.20** (the backup gate and
+  the pre-Inflozo snapshot), Epic 7 — the story that first writes a `site_snapshots` row, so the purge and its subject
+  are designed together")*
 location: `_bmad-output/planning-artifacts/epics.md` Story 7.20 (its AC now carries the purge) and Story 3.5
   (its AC now points here) · `ARCHITECTURE-SPINE.md` AD-33, AD-29, AD-32 (the cron's owning epic, amended
   2026-09-09) · `apps/web/lib/storage-drain.ts` (the header names its future callers) ·
@@ -2255,8 +2327,9 @@ status: open
 severity: low
 origin: Story 3.5 code review (2026-09-09) — the Edge Case Hunter and the Blind Hunter both reached it from
   `disconnectSite`'s two sequential `remove()` calls
-owner: **Epic 7**, the story that first stores a Staff Access Token — which is the story that makes this
-  reachable at all
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "**Epic 7**, the story that first stores a Staff Access Token —
+  which is the story that makes this reachable at all")*
 location: `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`disconnectSite`, the two `remove()` calls
   inside one `try`) · `apps/web/server/ghost-admin/index.ts` (`remove()`, one `sql().begin()` per call)
 reason: **It cannot happen today.** Nothing stores a staff token until Epic 7, so `remove('staff')` matches no
@@ -2311,8 +2384,9 @@ amended: THE SILENT DRIFT CLOSES AND THE "ONE HOME" HALF STAYS OPEN. A test now 
   **Story 7.20's**, the first code that depends on both.
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Blind Hunter, against standing rule 4
-owner: **Story 7.20**, the orphan purge — the job that acts on the deadline, and the only place that can
-  read both homes at once
+owner: Story 7.20 (The backup gate and the pre-Inflozo snapshot), whose criteria carry its requirement word for word
+  with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "**Story 7.20**, the orphan purge — the job that acts on the
+  deadline, and the only place that can read both homes at once")*
 location: `apps/web/lib/connect-rule.ts` (`ORPHAN_SNAPSHOT_DAYS`) · `supabase/migrations/
   20260907150000_account_deletion_window.sql` (`disconnected_at + interval '90 days'` in the view)
 reason: They agree today and `connect-rule.test.ts` pins the app's copy at 90, so a silent drift needs
@@ -2351,7 +2425,9 @@ plain: The API keys screen has three separate save buttons, one per credential, 
 status: open
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Edge Case Hunter
-owner: the story that gives Manage keys a single combined Save, if one ever does
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that gives Manage keys a single combined Save, if
+  one ever does")*
 location: `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`saveKeys`, the three sequential branches)
 reason: Unreachable from the product. `keys-panel.tsx` renders three `<form>`s and each carries exactly one
   typed field, which `keys-js-off` asserts off the SERVED markup every run — so producing this needs a
@@ -2371,8 +2447,9 @@ plain: If you have typed something into the Sites search box and then open "Use 
 status: open
 severity: low
 origin: Story 3.4 code review, seventh review (2026-09-10) — the Blind Hunter and the Edge Case Hunter
-owner: the story that next touches the Sites list's filter, or whichever of Epic 3's stories the owner
-  reports it on
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next touches the Sites list's filter, or
+  whichever of Epic 3's stories the owner reports it on")*
 location: `apps/web/app/(app)/app/(authed)/sites/panel-link.tsx` (`router.push(panel)` — `brandPopupPath`
   and `keysPopupPath` carry only the site id) · `panel-modal.tsx` (`router.replace('/sites')`) ·
   `sites/actions.ts` (`SITES_URL` as every action's landing) · `brand-panel.tsx` and `keys-panel.tsx`
@@ -2406,7 +2483,9 @@ resolution: Story 3.9 (2026-09-11) — `findSiteByAdminKeyId`'s `order by` gains
   in the spec's `## Verification`, Executed at Review.
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
-owner: the story that next touches FR-C8's hint, or Story 3.7 if its health check reads `admin_key_id`
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next touches FR-C8's hint, or Story 3.7 if its
+  health check reads `admin_key_id`")*
 location: `apps/web/server/ghost-admin/index.ts` (`findSiteByAdminKeyId`, `order by s.created_at desc limit 1`)
 reason: needs a third record carrying the same Admin key id under one account, which nobody has today;
   the fix is an `order by (s.disconnected_at is null) desc` or returning every match, and either wants
@@ -2419,7 +2498,8 @@ plain: If you press Save and then Escape before the answer arrives, the window c
 status: open
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
-owner: the story that next touches `panel-modal.tsx`
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next touches `panel-modal.tsx`")*
 location: `apps/web/app/(app)/app/(authed)/sites/panel-modal.tsx` (`onClose` → `router.replace('/sites')`) ·
   `sites/actions.ts` (`keysRedirect` onto `/sites?manage=…`)
 reason: a race a customer has to work to reach — the panel's own saves answer in well under a second —
@@ -2444,7 +2524,9 @@ resolution: Story 3.9 (2026-09-11) — all three seedings are in `run-verify-gho
   read half alone had a driver.
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Verification Gap reviewer
-owner: the next story that touches `tools/probe/run-verify-ghost-admin.py`'s Manage-keys block
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that touches
+  `tools/probe/run-verify-ghost-admin.py`'s Manage-keys block")*
 location: `tools/probe/run-verify-ghost-admin.py` (`moved-domains`, `keys-forged`, `brand-ownership`)
 reason: (1) the `?old=live` hint — a matched record that is STILL connected drawing
   `KEYS.movedStillConnected` — needs a second decoy seeding; (2) a decoy under `OTHER_USER_ID` carrying
@@ -2460,7 +2542,9 @@ plain: The API keys screen tells you where in Ghost Admin to find your Staff Acc
 status: open
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Blind Hunter
-owner: Story 3.7, or the first story that opens Ghost Admin's UI in a browser for another reason
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 3.7, or the first story that opens Ghost Admin's UI in a
+  browser for another reason")*
 location: `apps/web/lib/connect-rule.ts` (`KEYS.staff.ask`, `KEYS.rollHint`)
 reason: standing rule 1 is about API facts Inflozo depends on; these are wayfinding sentences a
   customer can correct in one click, and checking them means driving Ghost Admin's UI on T1 and T3,
@@ -2489,13 +2573,14 @@ amendment: Story 4.10 (2026-09-15) — the library now holds its first five desi
   shipped to broadcast about; owner unchanged.
 severity: medium
 origin: Story 3.7 Create (2026-09-10) — the owner's ruling at Question 1, option 1
-owner: **Story 9.1** — A1 Headers' content model, stylesheet and designs #1-4, the first story that ships
-  designs to customers and the first in which any design declares `ghostCompat`. Epic 7's redeploy path
-  (FR-J14) exists by then, so the notice has somewhere to send people. **One caveat for whoever picks it
-  up, not a second-guess of the ruling:** epics.md flags Story 9.1 as the one story in each category run
-  that "does strictly more than the others" and names A1 as the calibration point for session sizing. If
-  9.1 overruns, this is the piece to move to A1's owner gate (Story 9.4) rather than something the
-  category itself owes — the epic's own note says to resize the later stories, and this is not a design.
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with its
+  id: "FR-C5's compatibility watch is built here". *(Story 5.24a's Dev, 2026-09-28: was "**Story 9.1** — A1 Headers'
+  content model, stylesheet and designs #1-4, the first story that ships designs to customers and the first in which any
+  design declares `ghostCompat`. Epic 7's redeploy path (FR-J14) exists by then, so the notice has somewhere to send
+  people. **One caveat for whoever picks it up, not a second-guess of the ruling:** epics.md flags Story 9.1 as the one
+  story in each category run that "does strictly more than the others" and names A1 as the calibration point for session
+  sizing. If 9.1 overruns, this is the piece to move to A1's owner gate (Story 9.4) rather than something the category
+  itself owes — the epic's own note says to resize the later stories, and this is not a design.")*
 location: `_bmad-output/planning-artifacts/epics.md` (Story 3.7's ACs, where the two compatibility bullets
   are struck with this ruling's date; Story 9.1, which gains the AC) ·
   `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md`
@@ -2517,6 +2602,8 @@ reason: FR-C5 asks for a broadcast "using each design's `ghostCompat`" and FR-P2
 
 plain: The welcome screen shows three choices and the middle one — "start from a ready-made site" — is greyed out with a short line saying starters aren't ready yet. When the ready-made sites are actually built, that line has to go, or the screen will keep apologising for something that now works.
 status: open
+owner: Story 11.2 (The starter chooser), whose door line now carries it word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
 origin: Story 3.8 Dev (2026-09-11)
 location: apps/web/lib/first-run.ts · apps/web/app/(app)/app/(authed)/start/doors.tsx · apps/web/app/(app)/app/(authed)/new-project-sheet.tsx
@@ -2582,7 +2669,8 @@ plain: The date the read-only GitHub key stops working is now written in the rig
 status: open
 severity: low
 origin: Story 3.9 review (2026-09-11), on DW-5's closure
-owner: whichever story next touches `tools/probe/check-access.py`
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "whichever story next touches `tools/probe/check-access.py`")*
 location: tools/probe/check-access.py · VERIFY-AT-BUILD.md "The read-only GitHub token expires"
 reason: GitHub answers a fine-grained token's requests with a `github-authentication-token-expiration`
   header. `check-access.py` already calls the API with `GITHUB_TOKEN`; reading that header and printing
@@ -2599,9 +2687,10 @@ plain: Two small fixes were checked by hand once and nothing checks them again: 
 status: open
 severity: low
 origin: Story 3.9 review (2026-09-11), verification-gap layer, on DW-34 and DW-37
-owner: the first story to add a local-build step to a harness (DW-34's own note names
-  `run-verify-dashboard.py --url` on a `next build && next start` as the shape), or Story 12.x's
-  sign-in work for the passkey half
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first story to add a local-build step to a harness
+  (DW-34's own note names `run-verify-dashboard.py --url` on a `next build && next start` as the shape), or Story 12.x's
+  sign-in work for the passkey half")*
 location: apps/web/app/(app)/app/error.tsx:52 · apps/web/app/(app)/app/sign-in/sign-in-form.tsx:156 ·
   tools/probe/run-verify-passkeys.py
 reason: `document.title` in the error boundary and `inert`/`aria-hidden` on the pending card are each
@@ -2620,8 +2709,10 @@ status: open
 severity: medium
 origin: Story 3.9 review (2026-09-11) — four consecutive attempts, one network death and three 2700s
   timeouts, with the site answering 200 on both hosts throughout and two sibling harnesses passing
-owner: the next story that needs a `run-verify-ghost-admin.py` step executed — which is the next story
-  to touch connect, Manage keys or Use your brand, and immediately Story 3.9's own re-run
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that needs a `run-verify-ghost-admin.py` step
+  executed — which is the next story to touch connect, Manage keys or Use your brand, and immediately Story 3.9's own
+  re-run")*
 location: tools/probe/run-verify-ghost-admin.py (`run_browser`'s `limit`, `moved-domains`'s
   `movedAgain()`, and the absence of a step filter) · the steps owed a run: the three `rendered()`
   retargets, DW-74's `notFoundInMain`, DW-85 (1)(2)(3), DW-83's two-record seeding
@@ -2722,8 +2813,10 @@ status: open
 severity: low
 origin: Story 4.2 review (2026-09-11) — Edge Case Hunter; pre-existing in the stress harness, which
   ran the same trim on both paths
-owner: the first category story (Epics 9–11) whose design's stylesheet sets `white-space: pre` or `pre-wrap` on user
-  text — none of Story 4.10's five pilots does (re-owned 2026-09-15); the category gate checks it
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first category story (Epics 9–11)
+  whose design's stylesheet sets `white-space: pre` or `pre-wrap` on user text — none of Story 4.10's five pilots does
+  (re-owned 2026-09-15); the category gate checks it")*
 location: packages/section-runtime/src/core.ts `tidy` (`renderCanvas` runs it after user content is
   in the DOM; `renderTheme` runs it before `substitute`)
 reason: no design in the reference set or the 70-section fixture preserves whitespace, so the
@@ -2811,9 +2904,11 @@ resolution: partial, and the entry stays open — Story 4.9 (2026-09-14) made `t
   `data-t-attr` render on both emitters and the canvas calls the shim's `t()` over the project's strings, asserted
   against the new `{{t}}` recordings on both majors (MEASUREMENTS §44). `{{total_paid_members}}`,
   `{{content_api_url}}` and `taxonomyItems` are still unreachable.
-owner: re-owned by Story 4.10 (2026-09-15), whose pilots needed none of the three: A22's category story for
-  `{{total_paid_members}}` (A22 #1's paid count, left there by the pilot), and the first category story that authors a
-  design reading `{{content_api_url}}` (A29's filter) or a tag/author list (`taxonomyItems`)
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "re-owned by Story 4.10 (2026-09-15), whose
+  pilots needed none of the three: A22's category story for `{{total_paid_members}}` (A22 #1's paid count, left there by
+  the pilot), and the first category story that authors a design reading `{{content_api_url}}` (A29's filter) or a
+  tag/author list (`taxonomyItems`)")*
 location: packages/library/src/vocabulary.ts `BARE_HELPERS`; packages/ghost-shim/src/index.ts `bareHelper`
 reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a review of 4.3 does not do
   on its own; the functions exist so the change is one line when its story arrives
@@ -2845,7 +2940,11 @@ reason: FR-H3(1) has the canvas load the four vendored scripts, so they run whil
 
 plain: The drawing of the sample article shows a "collectible" card near the end, but Ghost's current editor
   cannot make that card at all, so the real recorded article leaves it out.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed — re-executed: `packages/library/src/orbit-weekly.test.ts` asserts
+  that neither Ghost major ships a Lexical NFT renderer (its test named for this entry) and holds the style-guide
+  article to C4's CARDS row less the feature image and the NFT card; both pass under `node --test` today. R-67 keeps
+  `kg-nft-card` unstyled, so no category owes an NFT treatment, and C4's frame is never edited (R-74).
 severity: low
 origin: Story 4.4 Dev (2026-09-13) — executed. `kg-default-nodes` 2.2.0 (Ghost 6.58.0) and 2.0.1 (Ghost
   5.130.6) carry no `nft` node directory; `kg-nft-card` exists only in the mobiledoc renderer
@@ -2866,9 +2965,10 @@ origin: Story 4.4 Dev (2026-09-13). The corpus points the audio and video cards 
   `https://orbit-weekly.example/media/…`, which nothing serves; the review page's CSP (`default-src 'self'`,
   no `media-src`) blocks the load and the browser logs it. The cards' chrome, thumbnails and Ghost's player
   scripts all render and bind.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "E5 (the editing canvas), if a playable preview is wanted — a short
-  internally-produced clip served same-origin, and the recording re-run.")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "E5 (the editing canvas), if a playable preview is
+  wanted — a short internally-produced clip served same-origin, and the recording re-run.")*")*
 location: packages/library/orbit-weekly/corpus.json (`audio`, `video-*`) · apps/web/lib/style-guide.ts `withImages`
 reason: no encoder is installed to produce a licence-clean video, and nothing in Story 4.4's acceptance plays media.
 
@@ -2878,7 +2978,9 @@ plain: The sample data's "newest first, fifteen at a time" rule is checked again
 status: open
 severity: low
 origin: Story 4.4 review (2026-09-13) — Blind Hunter.
-owner: the first story that re-runs `tools/probe/record-cards.py` for another reason (a Ghost target bump, NFR-6)
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first story that re-runs
+  `tools/probe/record-cards.py` for another reason (a Ghost target bump, NFR-6)")*
 location: tools/probe/record-cards.py `api_defaults` · packages/library/orbit-weekly/fixtures/ghost{5,6}/capture.json `content_api_defaults`
 reason: `api_defaults` records the live boxes' own posts, tags, authors and tiers with no order or limit passed, and
   `orbit-weekly.test.ts` sorts them by the resolver's default order and asserts equality. That proves Ghost's default
@@ -2894,10 +2996,12 @@ plain: The checker that approves a design's data query allows a little more than
 status: open
 severity: low
 origin: Story 4.4 review (2026-09-13) — Verification Gap.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "Story 5.19 (the Data group's Source, the first place a customer composes a filter) —
-  re-owned by Story 4.10 (2026-09-15): none of the five pilots declares a filter at all (A4 #13's query is `fixed`
-  with no filter), so the pilots could not decide which grammar moves")*
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep
+  (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story this line named is done. Was: "Story 5.19
+  (the Data group's Source, the first place a customer composes a filter) — re-owned by Story 4.10 (2026-09-15): none of
+  the five pilots declares a filter at all (A4 #13's query is `fixed` with no filter), so the pilots could not decide
+  which grammar moves")*")*
 location: packages/library/src/validate.ts `bad-get-filter` (`,` allowed) and `preview-seed-missing` (any non-empty string) · packages/library/src/orbit-weekly.ts `predicate` (`,` refused by name) and `resolvePreviewSeed`
 reason: `validate.ts` lets `,` through and accepts any non-empty `previewSeed`, while `resolveSource` refuses `,`,
   parentheses and comparisons by name and `resolvePreviewSeed` refuses everything but `orbit-weekly`. The review added
@@ -2919,7 +3023,9 @@ plain: One Comments design, "Slim", is drawn with its background row locked at a
 status: open
 severity: low
 origin: Story 4.5 Create (2026-09-13) — R-103, re-checked across every category the same day.
-owner: A28's category story that builds 10 Slim — Story 10.95 (A28 — designs #8–10, owner gate).
+owner: Story 10.95 (A28 — designs #8–10 (owner gate)), whose criteria carry its requirement word for word with its id
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A28's category story that builds 10 Slim — Story 10.95 (A28 — designs
+  #8–10, owner gate).")*
 location: A28-10 Slim.dc.html:132 (the row drawn "None 🔒 Locked") · A28 Comments - Spec.md:1253-1276
   (Question 2, the "None: show whatever is behind" premise) · A1-4 Overlay.dc.html:86 (the shape to build)
 reason: R-103 keeps Background role at its five roles, so Slim's `design.json` narrows `bg` to `"values": []`
@@ -2934,9 +3040,10 @@ plain: A date a customer picks — "next issue on 1 October" — shows on the pa
 status: open
 severity: low
 origin: Story 4.5 Create (2026-09-13) — Design Notes, "A date is the site's wall-clock day, stored unconverted".
-owner: the first story that prints a written-out authored date — A2's Story 9.6 (6 Countdown, whose
-  `countdown` module reads the Date Picker's value, `prd.md:952`), unless an Epic 7 compiler story reaches
-  a formatted authored date first.
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first story that prints a written-out authored
+  date — A2's Story 9.6 (6 Countdown, whose `countdown` module reads the Date Picker's value, `prd.md:952`), unless an
+  Epic 7 compiler story reaches a formatted authored date first.")*
 location: packages/section-runtime/src/core.ts `applyProps` (a `date` prop prints unconverted) ·
   packages/library/src/vocabulary.ts `isIsoDate`
 reason: a formatted, localised display needs the site's locale and Ghost's timezone handling; the core is
@@ -2953,9 +3060,10 @@ status: open
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — the controls sample's absent note uses P0-9's own sentence, which
   made the gap visible.
-owner: unowned — needs one. No story in Epic 5 or Epic 8 (Asset Library) names focus; the architecture
-  must decide the emission first, then the first category story with a cropping design (A13, per R-51's
-  ⬜) cannot build its panel without it.
+owner: Story 9.8 (A2 — designs #12–14 (owner gate)), whose criteria carry its requirement word for word with its id
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. No story in Epic 5 or Epic 8 (Asset Library) names
+  focus; the architecture must decide the emission first, then the first category story with a cropping design (A13, per
+  R-51's ⬜) cannot build its panel without it.")*
 location: prd.md Appendix C, Image Picker row (both axes, R-51) · reconcile-designs-decisions.md R-51
   (`:1010`, ⬜ A13 and every cropping design) · P0 Editor Primitives - Spec.md:748-755 (P0·9's
   never-offered case) · ARCHITECTURE-SPINE.md AD-3
@@ -2974,8 +3082,9 @@ plain: The icon set's licence has to travel with every theme that uses one of it
 status: open
 severity: medium
 origin: Story 4.5 Dev (2026-09-13) — vendoring the whole set under R-104.
-owner: Epic 7 — Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip, FR-J3's budget) is the
-  nearest home; its acceptance criteria name neither.
+owner: Story 7.4 (Assets, fonts, per-design CSS and the dead-code strip), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Epic 7 — Story 7.4 (Assets, fonts, per-design CSS
+  and the dead-code strip, FR-J3's budget) is the nearest home; its acceptance criteria name neither.")*
 location: packages/library/icons/LICENSE-tabler.txt · packages/library/src/icons.ts `TABLER_LICENSE` ·
   prd.md Appendix C, Icon Picker row ("the licence text ships in the emitted theme"; "that cost is measured
   against FR-J's budget") · reconcile-designs-decisions.md R-26 · epics.md Story 7.4
@@ -2992,7 +3101,9 @@ plain: The settings for Ghost's callout box use the same name, "Background role"
 status: open
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — writing the universal Background role once for the whole library.
-owner: the card-panels story — Story 7.13 (The Ghost card design module and `cards.css`, FR-Q7).
+owner: Story 7.13 (The Ghost card design module and `cards.css`), whose criteria carry its requirement word for word
+  with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the card-panels story — Story 7.13 (The Ghost card design
+  module and `cards.css`, FR-Q7).")*
 location: P0 Editor Primitives - Spec.md:586 (Callout: "Background role (Base · Surface · Tint · Accent)") ·
   packages/library/src/vocabulary.ts `UNIVERSALS` (`bg`: Base · Surface · Accent · Contrast · Image) ·
   reconcile-designs-decisions.md R-53
@@ -3009,8 +3120,9 @@ plain: The header design that sits transparently over a hero picture has to know
 status: open
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — the R-103 sweep through A1·4.
-owner: A1's category story that builds 4 Overlay — Story 9.1 (A1 — the content model, the stylesheet and
-  designs #1–4).
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A1's category story that builds 4 Overlay — Story
+  9.1 (A1 — the content model, the stylesheet and designs #1–4).")*
 location: A1 Headers - Spec.md:183 ("A1·4 must know whether the section below it has a loadable image") and
   `:353` (decided at build from what is placed below) · packages/library/src/vocabulary.ts `ADJACENCY_NEEDS`
   (`section-above`, `image-above`, …) · ARCHITECTURE-SPINE.md AD-37 · reconcile-designs-decisions.md R-8
@@ -3023,7 +3135,10 @@ reason: AD-37 and R-8 make adjacency a compile-time input answered from the plac
 
 plain: In some category write-ups, the table of settings shows a design's background row as freely
   choosable, while the drawing of that same design shows it locked. The drawing is right.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — the rule is written where every category story reads it:
+  `docs/section-authoring.md` § 2, beside `universals`, "Read a design's narrowing off its drawn panel, never off its
+  spec's table", naming A22·14 and the categories the R-103 sweep found. The export is not edited (R-74).
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — the R-103 sweep, by descriptor tuple and by text, across every
   category's spec and drawn panel.
@@ -3074,8 +3189,9 @@ severity: low
 origin: Story 4.5 Dev (2026-09-13) — measured: the library's typecheck rose from about 0.6 s to about
   2.2 s and about 690 MB; a `tabler.d.json.ts` declaration with `allowArbitraryExtensions` measured at
   about 0.09 s.
-owner: the first story where typecheck time or CI memory matters — Epic 7's compiler, which imports
-  `@inflozo/library/icons`, at the latest.
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first story where typecheck time or CI
+  memory matters — Epic 7's compiler, which imports `@inflozo/library/icons`, at the latest.")*
 location: packages/library/src/icons.ts (`import tabler from '../icons/tabler.json'`) ·
   packages/library/tsconfig.json (`resolveJsonModule`, `icons` in `include`)
 reason: every package importing `@inflozo/library/icons` pays the inference. A declaration file beside the
@@ -3125,11 +3241,13 @@ origin: Story 4.5 owner's question (2026-09-13) — "we are yet to build the ico
   canvas … I assume these are part of later stories?" Checked against `epics.md`: selection and click-to-edit
   text are Story 5.2's, inline editing, the four-mark toolbar and the link picker Story 5.3's; the icon slot
   appears in neither, nor anywhere else.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4) — moved there from Story 5.3 by the owner's
-  ruling R-121 (2026-09-17), because none of the pilot sections carries an icon to click and Story 9.1's designs are the
-  first whose buttons carry one (A1·11 Side Rail's row icons follow in 9.3). The owner first ruled it into Story 5.3 on
-  2026-09-13, over Story 5.2. The criterion is in `epics.md` Story 9.1, beside the button icons the same ruling put there,
-  so this entry closes when that story is done.
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with its
+  id: R-121's icon slot, which opens the Icon Picker. *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1 — the content
+  model, the stylesheet and designs #1–4) — moved there from Story 5.3 by the owner's ruling R-121 (2026-09-17), because
+  none of the pilot sections carries an icon to click and Story 9.1's designs are the first whose buttons carry one
+  (A1·11 Side Rail's row icons follow in 9.3). The owner first ruled it into Story 5.3 on 2026-09-13, over Story 5.2.
+  The criterion is in `epics.md` Story 9.1, beside the button icons the same ruling put there, so this entry closes when
+  that story is done.")*
 location: `P0-2 Icon Slot and Picker.dc.html` · `P0 Editor Primitives - Spec.md:220-224` (a slot is filled or
   empty — a dashed 20 px placeholder visible only while the section is selected; the picker "opens from any
   slot click (either state)") · `apps/web/components/controls/icon-picker.tsx` (the picker, opened today only
@@ -3176,7 +3294,9 @@ plain: The test that says "the picture frame refuses a signed-out visitor" check
 status: open
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Verification Gap
-owner: the story that next touches a frame route (Story 5.1's editor surface is the nearest)
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next touches a frame route (Story 5.1's editor
+  surface is the nearest)")*
 note: Story 5.1 (2026-09-17) moved the pilots frame route to the one canvas route, `(authed)/canvas/route.ts`, with the same
   guard shape, and did NOT close this: `next/server` still cannot load under `node --test`, so `pilots.test.ts` still reads
   the guard as text. `tools/probe/run-verify-editor.cjs` step 6 executes the signed-out 303 on `/canvas` against the
@@ -3191,7 +3311,10 @@ reason: Story 4.4's `style-guide.test.ts` set the shape and 4.5 copied it; a rou
 plain: One old sentence about a hand-picked icon set is still in the file that holds the prompts sent to Claude
   Design in August. It was left because that file records what was sent then, and rewriting it would change
   the record.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — `tools/design-patch-prompts.py` renders a note beside P0's prompt, outside the
+  `<pre>` its Copy button reads: kept as sent on 2026-08-25, its "curated Tabler set" superseded on 2026-09-13 by R-104.
+  The prompt text is the record and is unchanged; DESIGN-PATCH-PROMPTS.html regenerated with that note alone added.
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Acceptance Auditor
 owner: nobody yet — a note beside the line, or a "superseded by R-104" footer in the generated page, when the prompts page is next regenerated for another reason
@@ -3263,7 +3386,10 @@ reason: rendering needs a DOM; `jsdom` is a dependency of `packages/section-runt
 plain: The rule "moving a section to another kind of page must check its Ghost information first" now has
   its check, but no planned screen lets anyone move or copy a section to another kind of page, so nothing
   calls the check yet.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), closed on the owner's ruling **R-221** (2026-09-28, 5.24's Create, Question 12):
+  no copying or moving a section across page types at launch; Global sections are future work in PRD Appendix G, and
+  FR-H7's re-validation stays the rule any later move follows (`checkBindings` and `offerBindings` already answer it).
 severity: medium
 origin: Story 4.6 Create (2026-09-13) — the story's own acceptance criterion is the only place epics.md names it
 owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
@@ -3282,7 +3408,8 @@ plain: The design notes say the site's extra social links arrived in Ghost 6.38,
 status: open
 severity: low
 origin: Story 4.6 (2026-09-14) — Ghost's source read at 6.35.0, 6.36.0 and 6.38.0 (MEASUREMENTS §41e)
-owner: A1's category story (Headers & Navigation), which decides when its social rows show
+owner: Story 9.2 (A1 — designs #5–8), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: was "A1's category story (Headers & Navigation), which decides when its social rows show")*
 location: design export `A1 Headers - Spec.md:116`, `:1037`, `:1088` · `P0 Editor Primitives - Spec.md:262-272` (R-74: never edited) · packages/library/contexts/matrix.json
 reason: `public.js` and `default-settings.json` add the site's social `@site` keys at 6.36.0, unchanged through
   6.38.0; the export's 6.38.0 comes from release notes and matches the `{{#social_accounts}}` block helper,
@@ -3296,7 +3423,9 @@ plain: A design that shows "12 posts" beside a tag or a writer cannot be built y
 status: open
 severity: medium
 origin: Story 4.6 (2026-09-14) — left out of the matrix on purpose
-owner: the first category story that shows a post count (A29 tag cards or A21 author showcases)
+owner: Story 9.10 (A3 — designs #5–8), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: was "the first category story that shows a post count (A29 tag cards or A21 author
+  showcases)")*
 location: packages/library/src/registry.ts `DataBinding` · packages/ghost-shim/src/index.ts `getExprs` · packages/library/contexts/matrix.json
 reason: appendix B.1 §4.3/§4.4: a tag's or author's post count exists only through
   `{{#get "tags" include="count.posts"}}`. `DataBinding` declares source, filter, limit, order and ids — no
@@ -3309,7 +3438,9 @@ plain: The big test theme that proves Ghost accepts our output contains two list
 status: open
 severity: low
 origin: Story 4.6 Create (2026-09-13)
-owner: Story 7.35 (the E4/E7 joint compile gate) — the harness becomes the compiler's, which names its targets
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 7.35 (the E4/E7 joint compile gate)
+  — the harness becomes the compiler's, which names its targets")*
 location: tools/stress/sections.js:37 (`data-repeat="navigation"`) and :115 (`data-repeat="tiers"`) · tools/stress/compile.js (renders with no target)
 reason: Ghost's key is `@site.navigation`, and tiers exist only through `{{#get}}` (appendix §5). The harness
   renders every archetype with no `target`, so gscan still passes 0/0 — gscan never checks scope. Naming a
@@ -3323,7 +3454,8 @@ plain: A custom page reached through a site's route settings gets its Ghost info
 status: open
 severity: medium
 origin: Story 4.6 (2026-09-14) — appendix B.1 §3's route row, out of this story's scope
-owner: Story 7.16 (the Routes Manager, FR-I2)
+owner: Story 7.16 (The Routes Manager), whose criteria carry its requirement word for word with its id (R-195).
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 7.16 (the Routes Manager, FR-I2)")*
 location: packages/library/contexts/matrix.json `targets["custom-{name}.hbs"]` · appendix-b1-template-contexts.md §3
 reason: the matrix's one `custom-{name}.hbs` row is the ENTRY form (post block). The route form's root is flat
   and carries exactly the `data:` keys the route declares, where `{{#page}}` is the only form — so its row
@@ -3336,7 +3468,10 @@ plain: Some of the new rules are read from Ghost's code or its notes rather than
 status: open
 severity: low
 origin: Story 4.6 (2026-09-14) — MEASUREMENTS §41f
-owner: the story that next runs `python3 tools/probe/record-contexts.py` with seeded content (A21's and A29's category stories need the author and tag fields)
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next runs `python3
+  tools/probe/record-contexts.py` with seeded content (A21's and A29's category stories need the author and tag
+  fields)")*
 location: packages/library/contexts/matrix.json (every `unverified`) · tools/probe/record-contexts.py
 reason: `private.hbs` needs private mode and `errorDetails` a theme validation error, neither of which the
   recorder may cause. Versions below 5.130.6 were read in source for `@site` only; P0·2 dates the author social
@@ -3386,9 +3521,10 @@ plain: Two site settings that hold raw code are on the list of things a design c
 status: open
 severity: low
 origin: Story 4.6 (2026-09-14) — the universal set transcribed as `public.js` less appendix §6's never-offer list
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "Story 5.19 or whichever Epic 5 story first draws the binding picker (it consumes
-  `offerBindings`)")*
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep
+  (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story this line named is done. Was: "Story 5.19
+  or whichever Epic 5 story first draws the binding picker (it consumes `offerBindings`)")*")*
 location: packages/library/contexts/matrix.json `universal` · appendix-b1-template-contexts.md §6
 reason: the appendix's never-offer list does not name them, so the matrix offers them rather than inventing a
   refusal (flag, do not guess). A printed binding escapes the HTML, so nothing unsafe reaches a page; it is an
@@ -3441,7 +3577,16 @@ plain: The planning pages carry "generated on <date>". That date is taken from t
   day changes, the pages the computer checked before the commit and the pages CI rebuilds after it carry
   different dates, CI calls them stale, and that push never reaches the live site. The next push of the day
   passes. Story 4.6's Dev push was one of these: its code went live only with the Review push.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — one rule for the four generators, `tools/doc-audit.py`'s `dated()`: a generated
+  page keeps the date already on disk while nothing else in it changes, and only a content change stamps the day; the
+  INDEX pair, `build-board.py`, `category-prompts.py` and `story-board.py` all stamp through it, and none reads HEAD's
+  date any more. The control runs in the gate: `doc-audit.py --check` regenerates every page with the date faked a day
+  ahead (`INFLOZO_TODAY`) and fails on any byte that moves — red with the old rule put back (the day written
+  unconditionally), green with the new — and puts each page back when it fails, so tomorrow's date never outlives the
+  fix. A date read from git moves with HEAD rather than with the faked day, so the gate also refuses a generator that
+  reads HEAD's date again: red with HEAD's own `build-board.py` put back. The field proof, CI on a day's first push, is
+  read at the story's Review.
 severity: high
 origin: Story 4.6 review (2026-09-14) — executed: run 34823025267 (the Dev push, 08:29 UTC) failed `check` with `STALE — regenerated INDEX.md and INDEX.html`, `STALE: BUILD-BOARD.html`, `STALE: CATEGORY-PROMPTS.html`; `deploy` skipped. The Review commit's own diff of those files is `updated: 2026-09-13 → 2026-09-14` and nothing else; run 34825820806 (the Review push) passed and deployed.
 owner: Story 5.24, the deferred-work sweep (R-207 triages every open entry). *(Story 5.23a's Dev, 2026-09-28: was
@@ -3496,7 +3641,9 @@ plain: The check that proves a site carries only Inflozo's own scripts looks in 
 status: open
 severity: medium
 origin: Story 4.7 (2026-09-14) — spec task "propagate"; FR-G7(1)'s assertion is over `assets/js/` by definition
-owner: Story 7.5 (emitting `main.js` and `cards.js`), which assembles the theme `checkThemeJs` runs over
+owner: Story 7.5 (JS bundling — two files, two origins), whose criteria carry its requirement word for word with its
+  id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.5 (emitting `main.js` and `cards.js`), which assembles the
+  theme `checkThemeJs` runs over")*
 location: packages/library/src/modules.ts `checkThemeJs` · Story 7.5's compile gate over emitted `.hbs`
 reason: `checkThemeJs` sees only files under `assets/js/`. (The DESIGN-markup form — a `<script>`, an `on*`
   handler or a `javascript:` URL authored into `index.html` — is refused by the validator as `authored-script` since
@@ -3513,7 +3660,8 @@ plain: Ghost's own card scripts are allowed through the scripts check by name. I
 status: open
 severity: low
 origin: Story 4.7 (2026-09-14) — `checkThemeJs` skips `assets/js/cards.js` wholesale
-owner: Story 7.5, which emits `cards.js` from the vendored chunks
+owner: Story 7.5 (JS bundling — two files, two origins), whose criteria carry its requirement word for word with its
+  id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.5, which emits `cards.js` from the vendored chunks")*
 location: packages/library/src/modules.ts `checkThemeJs` · packages/library/orbit-weekly/vendor/cards/js/
 reason: FR-J4 declares `cards.js` Ghost's MIT code, vendored by `tools/probe/record-cards.py` at the pinned
   version, but nothing assembles it yet, so there are no bytes to compare with. When 7.5 builds it from the
@@ -3564,7 +3712,9 @@ severity: medium
 origin: Story 4.8's Dev run (2026-09-14) — `packages/library/baseline.json` carries `details-name` and
   `fetch-priority` as `html` entries, and `tools/check-baseline.mjs` recomputes their Widely dates; stylelint and
   eslint-plugin-compat read no markup
-owner: Story 7.8 (the emitted-theme quality gate — FR-J17 already asserts valid HTML over every compiled theme)
+owner: Story 7.8 (The emitted-theme quality gate), whose criteria carry its requirement word for word with its id
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.8 (the emitted-theme quality gate — FR-J17 already asserts
+  valid HTML over every compiled theme)")*
 location: packages/library/baseline.json `tier2[].html` · tools/check-baseline.mjs · Story 7.8's gate
 reason: 4.8's Never bars the HTML Baseline check. The data is ready for it: an `html` entry names its element and
   attribute, so the gate can refuse any element or attribute below Widely on the pin that `baseline.json` does not
@@ -3605,7 +3755,9 @@ origin: Story 4.8's review (2026-09-14) — Verification Gap: executed through t
   { … }`, `.a { color: if(style(--x: 1): red; else: blue); }`, `sibling-index()` and `random()` all pass, while the
   check prints `0 wider, 0 narrower`; its diff covers `css.properties` rows only, and `web-features` 3.35.0 also
   carries `css.at-rules`, `css.selectors` and `css.types` rows. `docs/section-authoring.md` says so since the review.
-owner: Story 7.8 (the emitted-theme quality gate) — ruled by the owner on Q2 in spec 4.8 (option 1, 2026-09-14)
+owner: Story 7.8 (The emitted-theme quality gate), whose criteria carry its requirement word for word with its id
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.8 (the emitted-theme quality gate) — ruled by the owner on Q2
+  in spec 4.8 (option 1, 2026-09-14)")*
 location: tools/check-baseline.mjs "the plugin against the pin" · stylelint.config.mjs · web-features `css.at-rules.*`,
   `css.selectors.*`, `css.types.*`
 reason: 4.8's matrix scoped the diff to identifier-shaped `css.properties` rows because the other key families'
@@ -3618,7 +3770,14 @@ reason: 4.8's matrix scoped the diff to identifier-shaped `css.properties` rows 
 plain: The size budget is written as "40 KB" without saying whether a KB is 1000 or 1024 bytes. The tool that
   measures it reads "40 kB" as 1024-based, so today the budget is slightly more generous than the round number
   suggests. Nothing is near the limit, so nothing changes yet.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — NFR-2 names its metric and its base: "< 40 KB gzipped (40,960 bytes, gzip level
+  9)". `tools/check-baseline.mjs` runs `size-limit` with `gzip: true` (a config file; its CLI takes no metric flag),
+  asserts its size equals `zlib.gzipSync(file, { level: 9 }).length` and that NFR-2's sentence names what is checked —
+  each seen red first, the sentence before `prd.md` changed and the equality with the config's `gzip: true` removed
+  (size-limit's brotli default measured 2,445 B against gzip's 2,878 B). VERIFY-AT-BUILD row 27, the spine's size-limit
+  row, the research row, MEASUREMENTS' inference and Stories 7.5 and 7.33 follow; a grep for "brotli" leaves records and
+  the tool's own default.
 severity: low
 origin: Story 4.8's review (2026-09-14) — Blind Hunter: `tools/check-baseline.mjs` passes `--limit "40 kB"`, which
   `size-limit` parses with the `bytes` package (`kB` = 1024), while `prd.md` NFR-2 says "40 KB gzipped" with no base
@@ -3640,7 +3799,9 @@ severity: medium
 origin: Story 4.9's recording (MEASUREMENTS §44) — `{{plural pagination.total … plural=(t "probe.posts_many")}}` with
   `"% posts <i>many</i>"` printed `33 posts <i>many</i>` on 5.130.6 and 6.58.0; `helpers/plural.js:30-36` returns a
   `SafeString`. VERIFY-AT-BUILD row 32's "an override cannot inject markup" holds for `{{t}}` and not for this.
-owner: Story 7.12 (override validation, V9/V10)
+owner: Story 7.12 (The Translations surface, `locales/` emission, and override validation), whose line on `{{t}}`
+  escaping now carries the `{{plural}}` exception word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28:
+  was "Story 7.12 (override validation, V9/V10)")*
 location: appendix-h1 §3.9 and §3.10 (`comments.count_*`, `archive.posts_*`) · VERIFY-AT-BUILD row 32
 reason: 4.9 owns the catalog's format, not override validation; the fix is a refusal of `<` and `&` in an override
   for a key a design passes to `{{plural}}`, or an escape the compiler applies before the locale file is written.
@@ -3656,7 +3817,8 @@ origin: Story 4.9 (executed, MEASUREMENTS §44 (c)) — `@formatjs/icu-messagefo
   "current", parses `'{'` as a literal brace and `It''s` as `It's`; 5.4.3 throws on `'{'`, and plain `{snake_case}`
   placeholders (appendix-h1 S3) forbid both. appendix-h1 V9 and FR-Q8 say a constructor throw is a "whole-page 500",
   which is read in source (`i18n.js:208-223`), not observed: MEASUREMENTS §15j saw a 400 for a template error.
-owner: Story 7.12
+owner: Story 7.12 (The Translations surface, `locales/` emission, and override validation), whose parser line is
+  replaced word for word, naming this entry (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.12")*
 location: ARCHITECTURE-SPINE.md's dependency row for `@formatjs/icu-messageformat-parser` · appendix-h1 V9, V10 · prd.md FR-Q8
 reason: 4.9's Never excludes V9 and V10. The shape is to validate with the 5.4.3 both majors bundle (already a root
   devDependency) plus S3's placeholder rule, and to observe the 500 on T1/T3 before a surface promises it.
@@ -3665,7 +3827,11 @@ reason: 4.9's Never excludes V9 and V10. The shape is to validate with the 5.4.3
 
 plain: A phrase's name must never disappear, because live sites and customers' translations point at it. Today the
   check compares the two copies of the list with each other, so deleting a phrase from both at once would pass.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — `tools/check-catalog.mjs` reads every committed `catalog.json` from git and
+  fails on a key any of them held that is gone now, naming the key and the last commit that held it; its control, an
+  in-memory earlier catalog with an extra key, is caught — and not caught with the check's refusal removed, which is how
+  it was seen red. appendix-h1 S1 says so.
 severity: medium
 origin: Story 4.9 — `tools/check-catalog.mjs` holds appendix-h1 §3 and `catalog.json` equal and runs S1's removal
   rule within one catalog (a key is `retired` or `supersededBy`, never absent); it cannot see a key both copies lost
@@ -3682,7 +3848,8 @@ status: open
 severity: low
 origin: Story 4.9 — appendix-h1 §3.3a's defaults are `{count} days` and `{count} hours`, and S3 now forbids ICU plural
   syntax because `core`, the shim and Ghost's i18next backend substitute names only (MEASUREMENTS §44)
-owner: the story that writes the `countdown` module (A2 #6 / A6 #11's category)
+owner: Story 9.6 (A2 — designs #5–8), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: was "the story that writes the `countdown` module (A2 #6 / A6 #11's category)")*
 location: appendix-h1 §3.3a · packages/library/strings/catalog.json `countdown.*`
 reason: adding a singular key or rewording is Ask First; the module's author decides, with the owner, between a
   `countdown.day` / `countdown.hour` pair the module picks at runtime and a unit-free form like "Days: {count}".
@@ -3696,7 +3863,8 @@ severity: medium
 origin: Story 4.9 — S6 links a text prop to a `prop`-marked catalog key only where appendix-h1 has one; every other
   `content.json` `default` is user text from the first render. `reconcile-designs.md:5929` raised it and it was
   never ruled.
-owner: Story 7.12
+owner: Story 7.12 (The Translations surface, `locales/` emission, and override validation), whose criteria carry its
+  requirement word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.12")*
 location: appendix-h1 S6 · each category's content.json `default`s
 reason: whether every visible default must have a catalog key, or a non-English project must be prompted to retype
   them, is an owner decision the Translations surface forces; 4.9 builds the mechanism (`catalog` on a prop) and
@@ -3714,7 +3882,9 @@ severity: low
 origin: Story 4.9's review — `moduleStringsRefusals` checks that every declared key is a live `js` key; the inverse
   cannot be derived today because the js keys of modules not yet written map to no row (namespaces are by function,
   not by module).
-owner: each category story that writes a module (Story 4.7's rule), and 7.12's Translations surface as the backstop
+owner: Story 7.5 (JS bundling — two files, two origins), whose criteria already say it — "no module contains a
+  visitor-facing literal" — and name this entry beside those words since Story 5.24a. *(Story 5.24a's Dev, 2026-09-28:
+  was "each category story that writes a module (Story 4.7's rule), and 7.12's Translations surface as the backstop")*
 location: packages/library/src/modules.ts `moduleStringsRefusals` · modules/registry.json `strings`
 reason: the inverse needs a way to know which module a js key belongs to — a per-key `module` in appendix-h1, or a
   scan of each module's `translate(...)` calls (Story 4.7's lexical scan is the shape) — and either is a spec change
@@ -3728,7 +3898,9 @@ status: open
 severity: low
 origin: Story 4.7's cleanup (owner's ruling on Q1), inherited unchanged by Story 4.9's recorder; noticed at 4.9's
   review. The error does reach the operator — it is not silent — but the cleanup is not attempted.
-owner: the next story that touches `record-shim.py`
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that touches
+  `record-shim.py`")*
 location: tools/probe/record-shim.py `finally`
 reason: pre-existing; a `try`/`except` around the activate that still attempts the DELETE and re-raises is the fix.
 
@@ -3737,7 +3909,11 @@ reason: pre-existing; a `try`/`except` around the activate that still attempts t
 plain: The two copies of the phrase list — the human table and the machine file — are held equal by a check. The
   check compares whether a phrase is retired, but the human table has no column for "replaced by", so the first time a
   phrase is replaced, the two copies could disagree without the check noticing.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — appendix-h1 §2 gives the Status column its two forms, "**retired**" with its
+  reason and "**superseded by** `key`", and `check-catalog.mjs` compares the second with `catalog.json`'s `supersededBy`
+  in both directions; its control — a cloned catalog carrying a `supersededBy` §3 does not, and §3 carrying one the
+  catalog does not — is caught from both sides, and was not caught with the comparison removed.
 severity: low
 origin: Story 4.9's review — `appendixRows` reads a status cell as retired or not; `catalog.json` carries
   `supersededBy`, and `catalogFailures` checks it against `migrations`, but nothing ties it to the table.
@@ -3756,7 +3932,10 @@ plain: One of the drawn pagination styles shows "← 1 2 3 … 11 →". The owne
 status: open
 severity: low
 origin: R-109 (owner, 2026-09-15), Story 4.10's Q2
-owner: A34's category story (Epic 10) — redraw A34 #1 Numbers to the indicator form in the Claude Design project
+owner: Story 10.114 (A34 — designs #8–10 (owner gate)), whose criteria carry it word for word with its id — R-212's
+  trade moved A34 #1 Numbers from the first story, Story 10.112, to this one, and its design-specific criterion moved
+  with it. *(Story 5.24a's Dev, 2026-09-28: was "A34's category story (Epic 10) — redraw A34 #1 Numbers to the indicator
+  form in the Claude Design project")*
 location: design export `A34-1 Numbers.dc.html` (never edited here, R-74) · `docs/section-authoring.md` § 3
 reason: Ghost hands a theme only page, pages, prev and next; the indicator is what both emitters produce identically.
 
@@ -3768,7 +3947,10 @@ plain: The Rail header on the pilots page is the resting header with its member-
 status: open
 severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: A1's category story (Story 9.1 onward)
+owner: Stories 9.1 (A1 — the content model, the stylesheet and designs #1–4), 9.2 (A1 — designs #5–8) and 7.3
+  (Synthesis Defaults and the emptying rules), 9.1's criteria already carry R-111's navigation partial with its id, and
+  9.2 (the resting no-JS takeover and panel) and 7.3 (`default.hbs`'s `<main>` target) carry their halves word for word
+  with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A1's category story (Story 9.1 onward)")*
 location: packages/library/designs/a1/ (provisional, AD-35)
 reason: each needs a vocabulary piece, a module or a field the pilot story does not own:
   - authored nav children and dropdown panels — **R-111 (owner, 2026-09-15): built on Inflozo's own
@@ -3802,8 +3984,10 @@ plain: The Three Up grid on the pilots page shows real feed pages. Choosing whic
 status: open
 severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: Story 5.19 (Source, Count and the main-feed designation) · A34's category story (the Pagination style select) ·
-  DW-107 (Image focus) · A17's category story (Epic 10) for the rest
+owner: Story 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Source, Count and the main-feed
+  designation) · A34's category story (the Pagination style select) · DW-107 (Image focus) · A17's category story (Epic
+  10) for the rest")*
 location: packages/library/designs/a17/1/ · packages/section-runtime/src/controls.ts (`disabledBy` greys a whole control)
 reason:
   - "Three lines greyed at Four" is one value switched off by another control's value; `disabledBy` greys the whole
@@ -3831,8 +4015,10 @@ plain: The newsletter row on the pilots page shows the sign-up form, and "Signed
 status: open
 severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: A22's category story (Epic 10); the `{members}` theme form to the story that first ships a design with Social
-  proof on (the runtime owns it: `packages/section-runtime/src/marks.ts` `substituteTokens`)
+owner: Story 10.75 (A22 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A22's category story (Epic 10); the
+  `{members}` theme form to the story that first ships a design with Social proof on (the runtime owns it:
+  `packages/section-runtime/src/marks.ts` `substituteTokens`)")*
 location: packages/library/designs/a22/1/ · packages/section-runtime/src/marks.ts
 reason:
   - Submitting, Done and Invalid and their words; the name field and the newsletter choice; the paid count (DW-99);
@@ -3852,7 +4038,10 @@ plain: The post header on the pilots page shows one post's tag, title, standfirs
 status: open
 severity: low
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: A24's category story (Epic 10), with E7's page wrapper · DW-107 (Image focus)
+owner: Stories 10.79 (A24 — the content model, the stylesheet and designs #1–4) and 7.3 (Synthesis Defaults and the
+  emptying rules), whose criteria already say it — 10.79's "each design matches its frame" and 7.3's
+  `show_title_and_feature_image` gate — and name this entry beside those words since Story 5.24a. *(Story 5.24a's Dev,
+  2026-09-28: was "A24's category story (Epic 10), with E7's page wrapper · DW-107 (Image focus)")*
 location: packages/library/designs/a24/1/ (target `post.hbs` only)
 reason: `page.hbs` and `@page.show_title_and_feature_image` need `data-target`; all tags, and several authors with
   "and"/"and others" (R-3's key); the updated-date Meta value; the caption's links (bound as escaped text); the "Post
@@ -3867,8 +4056,11 @@ plain: The Latest Post hero shows your newest post in its card. Choosing which p
 status: open
 severity: low
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: Story 5.19 (Which post) · Story 5.4 (Member visibility) · Story 5.20 (gating an action by its Portal
-  destination) · A4's category story (Epic 10) for the rest
+owner: Story 10.4 (A4 — designs #12–14), whose criteria already say it — "each design matches its frame", #13 Latest
+  Post's included — and name this entry beside those words since Story 5.24a; Story 5.4's half is done
+  (`carriesMemberVisibility`, `memberVisibility`). *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Which post) · Story
+  5.4 (Member visibility) · Story 5.20 (gating an action by its Portal destination) · A4's category story (Epic 10) for
+  the rest")*
 location: packages/library/designs/a4/13/
 reason: Card style's Title and date and its "Latest" label (no key); the members-only marker (a match on `visibility`,
   which no directive expresses); the fall-back picture when nothing is published; the short date on phones; which
@@ -3895,11 +4087,13 @@ status: open
 severity: medium
 origin: Story 4.10's Dev run — reported by all five pilot authors; the spec's rule was "every row the Paper objects
   name takes their values; every other row keeps today's value", and no Paper token object names a width or gutter
-owner: the owner, at Story 4.10's owner test (step 14 compares arrangement and spacing); otherwise Epic 6, whose packs
-  author these rows. Story 4.10's review added to the same list the rows derived from the retired ink and accent that
-  no Paper object names — `--border-fade` and `--scrim` (rgba of `#1c1a17`), and both modes' `--accent-on-contrast`
-  (`#e8a87c` / `#8a3b12`, the pre-Paper accent on Paper's contrast ground); and Light `--link-color`, which took the
-  accent and was Story 4.10's Q5 — ruled R-112: ink words, accent underline (that row leaves this list)
+owner: Story 6.1 (The token engine — computed or authored, and nothing in between), whose criteria carry its
+  requirement word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the owner, at Story 4.10's owner
+  test (step 14 compares arrangement and spacing); otherwise Epic 6, whose packs author these rows. Story 4.10's review
+  added to the same list the rows derived from the retired ink and accent that no Paper object names — `--border-fade`
+  and `--scrim` (rgba of `#1c1a17`), and both modes' `--accent-on-contrast` (`#e8a87c` / `#8a3b12`, the pre-Paper accent
+  on Paper's contrast ground); and Light `--link-color`, which took the accent and was Story 4.10's Q5 — ruled R-112:
+  ink words, accent underline (that row leaves this list)")*
 amended: Story 5.14 (Dev, 2026-09-21), R-173 — **`--accent-on-contrast` is now drawn.** The token block's link rule
   underlines a typed link on a contrast ground with it, so the pre-Paper `#e8a87c` / `#8a3b12` on this list is now
   visible on the canvas (7.99:1 and 6.28:1 on Paper's contrast grounds, measured by Story 5.14's sweep). Epic 6's
@@ -3916,7 +4110,9 @@ plain: Two pilot cards print a post's reading time through the translatable phra
 status: open
 severity: low
 origin: Story 4.10's Dev run (A17 #1, A24 #1), from the fact MEASUREMENTS §44 recorded (a plain param is the FIELD)
-owner: the story that settles reading-time phrasing library-wide — A17's category story (Epic 10) is the first
+owner: Story 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the story that settles reading-time phrasing
+  library-wide — A17's category story (Epic 10) is the first")*
 location: packages/library/designs/a17/1/index.html · packages/library/designs/a24/1/index.html · catalog key `post.reading_time`
 reason: `data-bind="reading_time"` prints Ghost's rounded string but untranslatable English; the catalog form is
   translatable but passes the raw field. No Orbit Weekly post has a reading time of 0, so the canvas never shows it.
@@ -3930,7 +4126,9 @@ status: open
 severity: low
 origin: Story 4.10's propagation grep for `A4 #2` and `Split Editorial` (standing rule 7) — outside R-108, which is the
   pilot row only
-owner: the starters' story (Epic 11, Story 11.2 the starter chooser, or the story that authors `starters/`)
+owner: Story 11.2 (The starter chooser), whose criteria carry its requirement word for word with its id (R-195).
+  *(Story 5.24a's Dev, 2026-09-28: was "the starters' story (Epic 11, Story 11.2 the starter chooser, or the story that
+  authors `starters/`)")*
 location: prd.md Appendix E (Signal and Ledger, `:1127`, `:1133`) · epics.md (`:7103`, `:7272`)
 reason: which hero each starter now uses is a composition choice, not a rename — "Split Editorial" merged into
   another design, and picking its successor is the owner's or the starters' story's call, not a propagation.
@@ -3967,7 +4165,9 @@ severity: low
 origin: Story 4.10's review — every `snapshots/*/template.hbs` began with the pilot's authoring comment
   (`<!-- A1 #1 Rail — Story 4.10 pilot, provisional (AD-35). Frame: … -->`); nothing in `core.ts` strips a comment
   and `docs/section-authoring.md` does not say whether one is consumed or emitted
-owner: Story 7.1 (E7's formatting pass re-baselines every snapshot once; stripping comments belongs in the same pass)
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 7.1 (E7's formatting pass
+  re-baselines every snapshot once; stripping comments belongs in the same pass)")*
 location: packages/section-runtime/src/core.ts (`renderTree`) · packages/library/designs/*/*/index.html · tools/check-snapshots.mjs
 reason: the runtime's own markers are comments (`<!--__HBS_n__-->`, R2-7), so a strip must run before the tokens
   are put and never touch them — a small change with an agreement-test row, not a review patch. Until then a
@@ -3983,8 +4183,10 @@ origin: Story 4.10's review — `packages/library/designs/a4/content.json` `seco
   `{ "href": "https://orbit-weekly.example/tag/archive/", "ref": { "kind": "tag", "id": "7a9…01" } }`, and
   `snapshots/a4/13/template.hbs` carries the `.example` href verbatim; A17 #1's `linkUrl` has no default and hides
   by `data-empty`
-owner: Epic 5's Link Picker and persistence stories (the `ref` is resolved against the connected Ghost there; a
-  cached `href` from the sample must never reach a compiled theme), with A4's category story for the drawn default
+owner: Story 10.4 (A4 — designs #12–14), whose criteria carry its requirement word for word with its id (R-195).
+  *(Story 5.24a's Dev, 2026-09-28: was "Epic 5's Link Picker and persistence stories (the `ref` is resolved against the
+  connected Ghost there; a cached `href` from the sample must never reach a compiled theme), with A4's category story
+  for the drawn default")*
 location: packages/library/designs/a4/content.json · packages/library/snapshots/a4/13/template.hbs
 reason: the frame draws both buttons and owner test step 12 expects "Browse the archive", so removing the default
   changes the drawn state (R-74); what a `ref` resolves to on a real site is Epic 5's contract, not the pilot's.
@@ -3997,7 +4199,9 @@ status: open
 severity: low
 origin: Story 4.10's review — `validateMarkup` walks the markup as a flat token stream (no ancestors), and the
   directives' summaries state the rule without enforcing it
-owner: A22's category story (the first with several member forms), or Story 4.11 if the matrix adds a structural walk
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "A22's category story (the first with
+  several member forms), or Story 4.11 if the matrix adds a structural walk")*
 location: packages/library/src/validate.ts · packages/library/src/vocabulary.ts (`data-members-email`, `data-members-error`)
 reason: the validator carries no ancestor stack today; adding one for two attributes is more than a review patch,
   and the five pilots place both correctly (the snapshot check would show a move).
@@ -4012,7 +4216,9 @@ severity: low
 origin: Story 4.10's review — `apps/web/pilots.test.ts` asserts `await currentUser()` precedes the body calls and
   `/303/` appears; `run-verify-pilots.cjs` signs in first and never fetches the frame signed out. Pre-existing
   pattern: `controls.test.ts:18`, `style-guide.test.ts:84` (DW-133's note names the executed 303 for `/controls`)
-owner: the story that next touches an internal frame route, or Story 4.11
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next touches an internal frame route, or Story
+  4.11")*
 location: apps/web/pilots.test.ts · apps/web/app/(app)/app/(authed)/pilots/frame/route.ts
 reason: `apps/web` evaluates app `.ts` under Node 24 type-stripping already; the fix is one executed test with
   `@/lib/supabase/server` stubbed to return null, asserting 303 and `location` ending in `/sign-in`, for all three
@@ -4042,7 +4248,13 @@ CLOSED 2026-09-18 by **R-124** — Story 5.4's Q1, ruled option 1 by the owner: 
 
 plain: In some library story cards, the line that names a design's behaviour scripts shows broken bits of sentences
   instead of module names.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — every library story's module line in `epics.md` is one sentence: the modules
+  each design's own **Behaviour module** line in its category's spec names, never `core` (FR-G7(4)), each module's
+  edit-safe value read from `registry.json` (research §7). The generator's fragments, the "none" where research §2.1
+  derives a module, and the A31 and A32 cards' `core` go together. `tools/doc-audit.py`'s `plan_failures` fails a
+  library story whose module line is anything else — red on HEAD for every library story, green now. A1-16 Reveal is
+  DW-177's, closed beside it.
 severity: low
 origin: Story 4.10's Fix review (sweep 1, blind hunter) — e.g. the A17 and A18 stories' "behaviour modules these
   designs declare" lines carry `loads o`, `their excerpts and their meta are server-r`; pre-existing, from the
@@ -4074,10 +4286,14 @@ severity: low
 origin: Story 4.10's Fix review (sweep 2, edge-case hunter) — `dataRows()` in
   `packages/section-runtime/src/controls.ts` titles every query's rows alike; `tools/check-snapshots.mjs` refuses such a
   panel under R-13, so it cannot ship unnoticed
-owner: Story 9.2 names two queries in one design (R-195's sweep, the note below); Story 5.24, the deferred-work sweep
-  (R-207, owner, 2026-09-27), records the halves already settled. *(Story 5.23's Create, 2026-09-27: every story this
-  line named is done. Was: "Story 5.19 (the Data group's Source, Count and Order), which owns the query rows'
-  vocabulary — the words that name each query are its to draw, from P0·5")*
+owner: Stories 9.2 (A1 — designs #5–8) and 9.1 (A1 — the content model, the stylesheet and designs #1–4), 9.2's
+  criteria already carry the naming of two queries with its id, and 9.1's carry A1's Nav children as a Data-group row
+  word for word; the halves already settled stay recorded — the Data group's rows are titled Count and Order (R-170,
+  Story 5.19), and R-36 leaves "When nothing matches" undrawn. *(Story 5.24a's Dev, 2026-09-28: was "Story 9.2 names two
+  queries in one design (R-195's sweep, the note below); Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27),
+  records the halves already settled. *(Story 5.23's Create, 2026-09-27: every story this line named is done. Was:
+  "Story 5.19 (the Data group's Source, Count and Order), which owns the query rows' vocabulary — the words that name
+  each query are its to draw, from P0·5")*")*
 location: packages/section-runtime/src/controls.ts (`dataRows`) · apps/web/components/controls/sidebar.tsx (the confirm's
   list)
 reason: no built design declares two queries (each pilot has at most one, and the controls sample one), and naming a
@@ -4098,7 +4314,12 @@ note (Story 5.19's Dev, 2026-09-25): the rows are titled "Count" and "Order" (R-
 plain: In some drawn panels the same title appears twice — a setting and a text field both called "Note line", or a
   setting called "Layout" inside the Layout group. One panel may print a title only once (R-13), so the story that
   builds each design changes one of the two, by the rule the export itself follows, and shows you the new words.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed — the rule lives where every category story reads it,
+  `docs/section-authoring.md` § 2 "When the export's titles would repeat in one panel", each new title put to the owner
+  (R-83) by the story that builds its design; `tools/check-snapshots.mjs` refuses a panel that prints one title twice,
+  its accordions' included — re-run today, its R-13 control is caught and the subject passes over every built design.
+  The list of repeats above stays as the record those stories read.
 severity: low
 origin: Story 4.10's Fix review (sweep 3, acceptance audit and the register research, 2026-09-15) — every drawn panel
   read against its category's fields and the accordion titles
@@ -4168,8 +4389,9 @@ severity: medium
 origin: Story 4.10's whole-story code review (2026-09-15, acceptance audit) — the spec's boundary "`ghostCompat.minVersion`
   is at least every `since` the matrix gives a field the design reads" holds for the five pilots (A1 #1 and A22 #1 at
   5.62.0 for `@site.allow_self_signup`, the rest at 5.0.0) by hand; `validate.ts` never reads `matrix.json`'s `since`
-owner: Story 9.1, the first story that ships designs to customers (DW-87's owner, whose compatibility check reads
-  `ghostCompat`)
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1, the first story that ships
+  designs to customers (DW-87's owner, whose compatibility check reads `ghostCompat`)")*
 location: packages/library/src/validate.ts · packages/library/contexts/matrix.json · tools/check-snapshots.mjs
 reason: `checkBindings` already walks every Ghost path a design reads at each target; the check is that walk's
   fields mapped to their `since` and compared with `minVersion`, one row in `tools/check-snapshots.mjs`. No shipped
@@ -4189,7 +4411,9 @@ origin: Story 4.11's planning (2026-09-17) — NFR-6(a) names "3 reference Style
   exclusively, so the canvas needs a token block three epics before any pack exists), and Epic 6 authors the
   twelve. `tools/matrix/cases.mjs` therefore DERIVES the axis from the token sets that exist (standing rule 4)
   rather than restating three; inventing two throwaway packs now would invent a decision the owner never made.
-owner: Epic 6 (the story that authors the packs picks the three references and re-takes the baselines)
+owner: Story 6.2 (The twelve presets and the font pool), whose criteria carry its requirement word for word with its
+  id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Epic 6 (the story that authors the packs picks the three references
+  and re-takes the baselines)")*
 location: packages/section-runtime/src/tokens.ts · tools/matrix/cases.mjs · packages/library/baselines/
 reason: widening the axis re-renders every case, which is a MASS REBASELINE under NFR-6(a)'s own rule — the
   owner's approval on a sampled visual review, its own commit touching baselines only, naming the change that
@@ -4207,7 +4431,9 @@ severity: medium
 origin: Story 4.11's review (2026-09-17) — Acceptance Auditor and Blind Hunter: epic-4-context.md says "the scan stops
   at the edge of the post body"; `tools/matrix/matrix.spec.mjs` scans all of `#canvas` with a `ponytail:` comment
   deferring the exclusion
-owner: the first story whose design binds `{{content}}` (A32/A33's category)
+owner: Story 10.83 (A25 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first story whose design binds
+  `{{content}}` (A32/A33's category)")*
 location: tools/matrix/matrix.spec.mjs — the `axe.run(document.getElementById('canvas'), …)` calls
 reason: 4.11's Never excludes the categories that do not exist yet. The shape is one `exclude` selector on the post body's
   mount, derived from the design's binding, not a written list; a case whose markup carries the binding and no exclusion
@@ -4223,9 +4449,11 @@ severity: low
 origin: Story 4.11's review (2026-09-17) — Acceptance Auditor, Verification Gap and Edge Case Hunter: `review.tsx`'s
   `DRAWS_SHOW_TO = ['a22/1', 'a4/13']` vs `cases.mjs`'s `/\bdata-members=/`; `a1/1` gets six `show-to-*` baselines the
   editor never draws, `a4/13`'s Show-to arm has none. Pixel risk is nil: a hidden Show-to arm draws nothing
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "Epic 5's canvas (Story 5.x that mounts Show-to in the real panel — the list becomes
-  the panel's own rule, and the matrix and the editor read one source)")*
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep
+  (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story this line named is done. Was: "Epic 5's
+  canvas (Story 5.x that mounts Show-to in the real panel — the list becomes the panel's own rule, and the matrix and
+  the editor read one source)")*")*
 location: apps/web/app/(app)/app/(authed)/pilots/review.tsx `DRAWS_SHOW_TO` · tools/matrix/cases.mjs `fixtureRows`
 reason: the spec's frozen Boundaries fix the matrix's derivation ("its markup carries `data-members` → the visitor and
   Show-to arms"), so the matrix is not the side to change here; `/pilots` is a provisional surface. When the real panel
@@ -4235,7 +4463,11 @@ reason: the spec's frozen Boundaries fix the matrix's derivation ("its markup ca
 
 plain: The check that refuses a "development finished" commit while tasks are still open is not itself tested. If it
   broke, every such commit would pass again and nothing would say so.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — `tools/story-board.py`'s self-check (`demo()`, which the gate runs) runs
+  `tools/hooks/commit-msg` for real in a throwaway repository (`hook_dev_guard`): a Dev commit with no spec exits 1 ("no
+  spec matches"), one with a task unticked exits 1 naming the count ("1 unticked task(s)"), and one with every task
+  ticked exits 0. Seen red with the hook's unticked-task refusal removed.
 severity: low
 origin: Story 4.11's review (2026-09-17) — Verification Gap: `tools/hooks/commit-msg`'s Dev block (spec glob, staged
   read, parse_spec import, three exit-1 arms) runs in no test; only the board's side is asserted in `story-board.py`'s demo
@@ -4249,7 +4481,14 @@ reason: a hook self-check needs a temporary index and two throwaway specs; small
 plain: The photo machine was run six times in a row on the same files. Five runs passed; one failed on a single
   photograph and then passed again. A check that sometimes fails for no reason would make the owner approve photos
   that did not change, so the cause must be found before the matrix grows.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed — re-executed through the GitHub Actions API (read-only):
+  all 330 runs of `matrix.yml` created from 2026-09-18 to 2026-09-28 completed `success`, the nightly scheduled runs over
+  every design among them. On 2026-09-17, 32 of its 35 runs succeeded and the other three are not this flake: run
+  35187418366 was Story 4.11's deliberate red control (`MATRIX_DESIGNS` naming `zz/1`, "names no design"), and runs
+  35209869288 and 35210157233 are two jobs GitHub never started (no steps; Story 5.1's Deploy and Blocked pushes). So
+  the one failure, which was on this machine and did not reproduce, has not recurred in CI; and a failure keeps its
+  context, because the workflow uploads `tools/matrix/test-results/` on failure (`matrix.yml:76-81`).
 severity: medium
 origin: Story 4.11's review (2026-09-17) — the gate inside the pinned image on this machine: run 1 of 6 exited 1 on
   `a17/1 · reference-light-1440-reduced-motion-feed-first` with a thrown error (an `error-context.md` was written, so not a
@@ -4274,7 +4513,9 @@ origin: Story 5.1's Dev run (2026-09-17) — `tools/probe/run-verify-editor.cjs`
   `script-src` `eval` violation from zod's core chunk on `/` (Projects) at every load, and the same on the editor until
   `doc-schema.ts` set `jitless`. zod runs `new Function("")` when a `z.object` is CONSTRUCTED
   (`zod/v4/core/schemas.js:970-972`), so any object schema in a client bundle trips the app's nonce policy.
-owner: the next story that touches `apps/web/lib/style-pack.ts` or the New Project Sheet (Epic 6's style packs)
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that touches `apps/web/lib/style-pack.ts` or the New
+  Project Sheet (Epic 6's style packs)")*
 location: apps/web/lib/style-pack.ts (`stylePackSchema`, reached in the browser through `new-project-sheet.tsx`'s
   `PRESETS` import; `apps/web/lib/health-rule.ts`'s schema is reached only by server modules, checked 2026-09-17) ·
   packages/section-runtime/src/doc-schema.ts (the editor's fix, the pattern)
@@ -4290,7 +4531,11 @@ reason: out of this story's surface. The fix is `z.config({ jitless: true })` be
 plain: Now and then a page on the app never starts loading: the browser connects, asks, and waits forever. It happened
   on the sign-in page and on the editor alike, about once in a hundred tries from the machine that runs our checks. A
   refresh fixes it, but a customer who meets it thinks the product is broken, and our automated checks stop half-way.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed — the entry's own two probes, re-run from the same machine at
+  2026-09-28T15:22Z: 150 fresh-connection GETs of `https://app.inflozo.com/sign-in` and 150 keep-alive GETs over one
+  connection, every one answered 200 with no stall. The entry's rule is to close with the runs as the record. Stalls on
+  signed-in routes stay DW-204's (Story 5.24d).
 severity: medium
 origin: Story 5.1's Deploy run (2026-09-17), against `dpl_2r2ERRnFejqV3F5H4dxejKH7gc4y` (production, built from
   `e8745189`). `tools/probe/run-verify-editor.cjs` stopped twice on a 30s timeout, both signed in (`GET
@@ -4348,7 +4593,11 @@ closed: Story 5.5 built D5b's switcher, which pushes inside a `useTransition` wh
 plain: Four designs that are drawn and written up for your library — Reveal (Headers), Triple (Announcement Bars),
   Overlap Card (Heroes) and Ledger (FAQ) — appear in no story of the plan, so as the plan stands nobody would ever build
   them. In each of those four categories one design number was retired, and the stories' ranges stopped one design short.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — the owner's word on the plan came with R-212 (5.24's Create): Stories 9.4, 9.8,
+  10.5 and 10.25 now build A1 #16 Reveal, A2 #15 Triple, A4 #18 Overlap Card and A9 #15 Ledger, and
+  `tools/doc-audit.py`'s `plan_failures` fails a live roster design that no story of its category builds — red on HEAD
+  naming exactly those four, green now.
 severity: high
 origin: Story 5.3's Create run (2026-09-17). The icon sweep noticed three; the check was then derived for every category
   rather than trusted: each design `tools/export-roster.py` lists as not deleted, compared with the `#n Name` pairs the
@@ -4384,9 +4633,10 @@ origin: Story 5.3's Create run (2026-09-17), the icon sweep over every category 
     it is Ghost": the theme ships a glyph per platform, and the glyphs "are no longer picked per row".
   - `A10 Stats and Numbers - Spec.md:43` offers "Icons: None (default) · Shown" with "the slot above the value", and the
     shared field list at `:49` names no icon field.
-owner: Story 9.1 (A1's content model: whether A1's social glyphs are slots, asked in R-83's shape if the 29 August
-  ruling does not already settle it), Story 10.50 (A16's content model, the same question), Story 10.26 (A10's content
-  model: the icon field's name and type)
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1's content model: whether A1's social
+  glyphs are slots, asked in R-83's shape if the 29 August ruling does not already settle it), Story 10.50 (A16's
+  content model, the same question), Story 10.26 (A10's content model: the icon field's name and type)")*
 location: the four spec lines above, in `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/`
 reason: the export is Claude Design's and is never edited (R-74); a disagreement inside it is settled by the owner at the
   story that authors the content model, not by whichever reader meets it first. Found while planning where the canvas
@@ -4398,7 +4648,11 @@ plain: On your pilot page some words cannot be made bold, italic, underlined or 
   eyebrow, its button words, Newsletter's button, Post Grid's eyebrow — although each of those sections' design notes say
   every word you write on a section takes all four. The pilots were written before inline editing existed, and each
   category's own story rewrites its content model anyway, so that is where they are put right.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — the rule is written where every content model is authored:
+  `docs/section-authoring.md`, beside the content editors' table, "Every word a visitor reads that the customer writes
+  is `richtext` with the four marks" unless its spec narrows it, a label that is itself a link narrowing `a` away; it
+  names the pilots' `text` props, which each category's content-model story puts right (AD-35).
 severity: medium
 origin: Story 5.3's Create run (2026-09-17), read in the pilots' `content.json` and in their category specs. The P0 rule
   (`P0 Editor Primitives - Spec.md:131-149`): a text field defaults to the four marks, "Where a spec says nothing, the
@@ -4427,8 +4681,10 @@ severity: low
 origin: Story 5.3 (2026-09-18), which built FR-D4's hard limit (`PropDef.maxChars`, refused at `beforeinput` and clamped
   in `replaceRange`). Found in `A10 Stats and Numbers - Spec.md:43` and again at :1093 — "the editor's character counters
   advise rather than truncate".
-owner: Story 10.26 (A10 — the content model, the stylesheet and designs #1–4), the first category story whose spec asks
-  for one
+owner: Story 10.1 (A4 — the content model, the stylesheet and designs #1–4), whose criteria carry its half word for
+  word with its id — the triage wrote it with DW-247's, which moved to Story 10.5 with A4 #2 Flush Left (R-212). *(Story
+  5.24a's Dev, 2026-09-28: was "Story 10.26 (A10 — the content model, the stylesheet and designs #1–4), the first
+  category story whose spec asks for one")*
 location: `packages/library/src/registry.ts` (`PropDef.maxChars`) · `packages/library/src/validate.ts`
   (`max-chars-*`) · `apps/web/lib/inline.ts` (`limitSentence`, the `max` clamp) ·
   `apps/web/components/controls/rich-field.tsx` (`LimitCaption`) · `A10 Stats and Numbers - Spec.md:43,1093`
@@ -4448,7 +4704,9 @@ status: open
 severity: low
 origin: Story 5.3's code review (2026-09-18, blind-hunter layer). The spec's matrix says `span style` "arrives as its
   text", which is what `readMarks` does; the finding is that the most common sources of a formatted paste use exactly that.
-owner: none yet — the first story that hears it from a user, or Story 5.8 (saving), whichever comes first
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "none yet — the first story that hears it from a user, or Story 5.8 (saving),
+  whichever comes first")*
 location: `packages/section-runtime/src/marks.ts` (`readMarks`, `TAG_MARKS`)
 reason: reading `font-weight`, `font-style` and `text-decoration` from inline styles is a rule the spec did not take —
   where the threshold sits (600? 700? `bold`?), and whether a styled span inside a `<b style="font-weight:normal">`
@@ -4464,8 +4722,9 @@ status: open
 severity: low
 origin: Story 5.3's code review (2026-09-18, verification-gap layer): `editor.tsx`'s `onRefused` → `CanvasNote` with
   `kind: 'limit'`, and `inline.ts`'s `onFocusOut` guard `win.top?.document.hasFocus() === false`.
-owner: the first category story whose design declares `maxChars` (DW-180 names Story 10.26) for the pill; the window
-  rule stays a manual check
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first category story whose design declares `maxChars` (DW-180
+  names Story 10.26) for the pill; the window rule stays a manual check")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`onRefused`) · `apps/web/lib/inline.ts`
   (`onFocusOut`) · `tools/probe/run-verify-editor.cjs`
 reason: the editor harness runs on "Pilot sections" and no pilot is this story's to edit (AD-35); the first design that
@@ -4514,7 +4773,9 @@ also: Story 5.4's Dev (2026-09-18) added the third and fourth observations and N
   What stays true of this entry: a blind retry of `goBack` or of the magic-link `goto` is still wrong for the two
   reasons above. What does not: "the retry breaks the control" — it never did, so a retry of the idempotent signed-in
   loads alone is back on the table for whoever takes this.
-owner: the first story that touches the harness's session (Story 5.8's saving, or the next editor story with a new step)
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first story that touches the harness's session (Story 5.8's
+  saving, or the next editor story with a new step)")*
 location: `tools/probe/run-verify-editor.cjs` (its signed-in navigations, and `main().catch`)
 reason: the pattern is now named and two shapes of fix are excluded, but the remaining one — retrying only the
   genuinely idempotent, non-auth navigations, or making the stall visible as a NOTE and re-running just that step —
@@ -4556,9 +4817,10 @@ origin: Story 5.4's planning (2026-09-18) — `prd.md` :909 and Appendix C's Mem
   A26; `packages/library/control-groups.json` carries a `"Member visibility"` entry for a4, a5, a6, a7, a8, a9, a16,
   a21, a22 and a29 as the file stands, and `A4-13 Latest Post.dc.html:256` and `A22-1 Inline Row.dc.html:69` both draw
   the row
-owner: the first E9/E10 category story whose designs the two lists disagree about, with the answer put to the owner in
-  R-83's shape — R-74 and DW-111 make a drawn panel win over a spec table, so the PRD is the likelier of the two to be
-  corrected
+owner: Story 9.5 (A2 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first E9/E10 category story whose designs the
+  two lists disagree about, with the answer put to the owner in R-83's shape — R-74 and DW-111 make a drawn panel win
+  over a spec table, so the PRD is the likelier of the two to be corrected")*
 location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` (:909, Appendix C) ·
   `packages/library/control-groups.json`
 reason: Story 5.4 draws the row for whichever section carries it and reads the register rather than the PRD's list, so
@@ -4576,8 +4838,10 @@ origin: Story 5.4's planning (2026-09-18) — Story 4.10 already gates a section
   `data-member-visibility` on the root through `stampControls`, a second copy nothing reads. The category specs list
   `memberVisibility` in their control tables (`A22 Newsletter - Spec.md:291`) — that describes the panel ROW, not a
   `controlSchema` entry.
-owner: each E9/E10 category story that builds a CTA-bearing design — **the rule itself landed in
-  `docs/section-authoring.md` § 2 on 2026-09-18 with R-124, so what is left here is the validator's refusal**
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "each E9/E10 category story that builds a
+  CTA-bearing design — **the rule itself landed in `docs/section-authoring.md` § 2 on 2026-09-18 with R-124, so what is
+  left here is the validator's refusal**")*
 location: `docs/section-authoring.md` · `packages/library/src/validate.ts` ·
   `packages/section-runtime/src/doc-schema.ts` (`memberVisibility`, the one place it is stored)
 reason: no built design declares it and `tools/check-snapshots.mjs` reads only declared settings, so nothing can go
@@ -4593,8 +4857,9 @@ severity: low
 origin: Story 5.4's planning (2026-09-18) — `apps/web/lib/editor.ts`'s `canvasStack` (:47-51) splits the site doc by
   `designId.startsWith('a3/')` and draws the footers last; the seeded "Pilot sections" project holds one site-wide
   section, so the case cannot be reached on it
-owner: Story 5.5 (the template switcher and the synthesised templates), or the first story that seeds a footer beside a
-  header
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.5 (the template switcher and the synthesised templates), or the first
+  story that seeds a footer beside a header")*
 location: `apps/web/lib/editor.ts` (`canvasStack`) · `apps/web/components/controls/layers.tsx`
 reason: no project in the repo holds both a header and a footer, and "footers compile last" is the compiler's rule, not
   the list's — whether the card should refuse that drop or the canvas should follow it is a decision, not a patch.
@@ -4609,9 +4874,10 @@ severity: low
 origin: Story 5.4's Dev (2026-09-18) — the mirroring Story 5.2 built runs ONE way (`editor.tsx`'s `point()` sets
   `data-inflozo-hover` from the canvas's own `pointerover`, and `controls/layers.tsx` draws the wash from `hoveredKey`);
   no frame draws the reverse, and no FR or ruling asks for it
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: was "Story
-  5.9 … or 5.23's play-loop gate, whichever first finds a user cannot tell which section a row is"; 5.9 is done and
-  5.23 has no screen, so neither can find one.)*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: was "Story 5.9 … or 5.23's play-loop gate, whichever first finds a user cannot tell which section
+  a row is"; 5.9 is done and 5.23 has no screen, so neither can find one.)*")*
 location: `apps/web/components/controls/layers.tsx` · `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx`
   (`point`) · `apps/web/lib/canvas-chrome.css`
 reason: the section's name is on its row and its name tag is on the canvas, so nothing is unreachable today; the
@@ -4629,7 +4895,9 @@ origin: Story 5.4's Review (2026-09-18, Edge Case Hunter) — `editor.tsx`'s `sc
   doc's instances in DOC order with each one's on-screen top; DW-187 records that the `a3/` footers compile last
   whatever the doc order, so a site doc holding a header after its footer would count the landing against a footer
   that is drawn at the bottom
-owner: Story 5.19 (the site-wide footer story) or whichever story first seeds a site doc with two instances
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (the site-wide footer story) or whichever story first seeds a site
+  doc with two instances")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/editor.tsx` (`screenRows`, `pillGrip`)
 reason: unreachable while the seeded site doc holds one instance; the fix is to drag the site group by the Layers
   list's own layout (doc order) rather than by screen rects, or to sort the rects into canvas order first
@@ -4668,8 +4936,10 @@ origin: Story 5.5's Create run (2026-09-18), executed against the repo: `package
   `compileTarget: ['post.hbs']`, while `sections-inventory.md:824` puts **A24 #1 Centred** at row 1 of `page.hbs`'s
   default stack and `A24 Post Headers - Spec.md:226` says in so many words "A24 compiles to `page.hbs` as well as
   `post.hbs`". So the narrowing is the pilot's, not the design's.
-owner: A24's category story (Post Headers, Epic 10), which sets the category's real `compileTarget`s — AD-35: a
-  defect in a provisional pilot goes to its owning category, never to the story that noticed it.
+owner: Story 10.79 (A24 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A24's category story (Post Headers, Epic 10),
+  which sets the category's real `compileTarget`s — AD-35: a defect in a provisional pilot goes to its owning category,
+  never to the story that noticed it.")*
 location: `packages/library/designs/a24/1/design.json` · `sections-inventory.md:822-826` ·
   `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A24 Post Headers - Spec.md:226`
 reason: Story 5.5's `synthesize` drops a default row whose design the library cannot place on that file and reports
@@ -4691,9 +4961,10 @@ origin: Story 5.5's Create run (2026-09-18). `D5 Canvas Markers and Template Swi
   is a launch deliverable with no surface that can create it". Behaviour is the PRD's to decide and the export's to
   draw (build-sequence standing rule 6), so Story 5.5 builds FR-D6's wording: the row appears when the project's
   linked site reports itself private.
-owner: the story that first puts Ghost's private flag into the `site_settings` snapshot — an Admin read, so Epic 3's
-  snapshot writer — with Story 7.3 owning the matching `private.hbs` emission rule. (It named Story 5.18 until the
-  second amendment below.)
+owner: Story 10.104 (A31 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the story that first puts Ghost's private
+  flag into the `site_settings` snapshot — an Admin read, so Epic 3's snapshot writer — with Story 7.3 owning the
+  matching `private.hbs` emission rule. (It named Story 5.18 until the second amendment below.)")*
 location: `apps/web/lib/editor.ts` (the conditional canvas) · `prd.md:223` · D5b's caption ·
   `sections-inventory.md:787`
 reason: unobservable on "Pilot sections", which links no site (`projects.linked_site_id` is null), so Private is
@@ -4814,9 +5085,11 @@ origin: Story 5.6's Create run (2026-09-18), read in the normative documents. `A
   The invariant the paragraph wants to keep — "the token block and the base stylesheet are the only files in a
   generated theme that mention a mode" — is compatible with a per-instance custom property emitted INTO the
   token block, but no document says that and nothing in the repository emits it.
-owner: Epic 7's theme-assembly story (FR-J3/§7.3, the `default.hbs` token block), which is the first thing that
-  must express a dark override to a visitor — and an AD-30 amendment recording whichever expression it picks.
-  Raise it at that story's Create, not later: by then the library may hold authored overrides.
+owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Epic 7's theme-assembly story (FR-J3/§7.3, the
+  `default.hbs` token block), which is the first thing that must express a dark override to a visitor — and an AD-30
+  amendment recording whichever expression it picks. Raise it at that story's Create, not later: by then the library may
+  hold authored overrides.")*
 location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/ARCHITECTURE-SPINE.md:345`
   and `:347` (AD-30) · `:109` (AD-3's carve-out) · `packages/section-runtime/src/tokens.ts:165-186` ·
   `_bmad-output/implementation-artifacts/spec-5-6-light-and-dark-authoring.md` § Design Notes
@@ -4838,9 +5111,11 @@ origin: Story 5.6's Create run (2026-09-18), executed over the repository: `dark
   vocabulary is unvalidated — a bare `string[]`, so any word passes — and all five pilots plus both fixtures
   declare exactly `["tokens"]`. Story 5.6 needed none of it: the engine keys on each control's own
   `darkOverride` declaration, which is the thing that actually decides whether a control is mode-scoped.
-owner: unowned — needs one. Candidates: Epic 6's Style Pack stories (where "what dark support does this design
-  have" is a pack-facing question), or the first category story that authors a design whose dark support is not
-  just tokens. A reader with a validated vocabulary, or deletion; not a third state.
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. Candidates: Epic 6's
+  Style Pack stories (where "what dark support does this design have" is a pack-facing question), or the first category
+  story that authors a design whose dark support is not just tokens. A reader with a validated vocabulary, or deletion;
+  not a third state.")*
 location: `packages/library/src/registry.ts:136`, `:178`, `:229` · every
   `packages/library/designs/*/*/design.json` · `packages/library/fixtures/*/design.json`
 reason: no story needs it and inventing a consumer for it inside an editor story would be inventing a
@@ -4855,7 +5130,12 @@ plain: Pressing Clear on Theme settings rewrites each page's saved design one af
   writes failed half-way you would be told it did not work while some pages had already been cleared, and if the
   editor were saving the same page at that moment the older copy could win. Neither can happen today, because
   nothing else saves a page before Story 5.8.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed by Story 5.8 — re-read: `settings/actions.ts:95,131-135` reads
+  `revision` on the same query as the greyed-Clear refusal and sends ONE `sync_project_doc` call with `p_base`, one
+  transaction for every cleared doc; the RLS gate (`bash supabase/tests/run-rls-gate.sh`, run today, exit 0) passes "a
+  stale base_revision writes nothing and reports the current revision"; the deployed editor walk's step 53 (b) drives
+  the Clear on production.
 severity: medium
 origin: Story 5.6's Review (2026-09-18), Blind Hunter and Edge Case Hunter, read in
   `clearProjectDarkOverrides`: a `for` over `project_templates` rows, one `update({ doc })` each, returning the
@@ -4880,8 +5160,9 @@ severity: low
 origin: Story 5.6's Review (2026-09-18), Verification Gap: changing `swatches[mode]` to `swatches.light` in
   `pilots/review.tsx` or the editor fails nothing; `run-verify-editor.cjs` step 53 (b) plants one override on
   `home`'s first instance and reads only that back.
-owner: Story 5.8 for the Clear (it makes a multi-canvas stored override reachable without planting rows by hand);
-  the swatch read belongs to the next story that touches `run-verify-pilots.cjs`.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.8 for the Clear (it makes a multi-canvas stored override reachable
+  without planting rows by hand); the swatch read belongs to the next story that touches `run-verify-pilots.cjs`.")*
 location: `tools/probe/run-verify-editor.cjs` step 53 (b) · `tools/probe/run-verify-pilots.cjs` ·
   `apps/web/app/(app)/app/(authed)/pilots/review.tsx`
 reason: Both are coverage, not defects — the behaviour was read correct at Review — and the harness run is already
@@ -4897,7 +5178,9 @@ severity: low
 origin: Story 5.7's Review (2026-09-19), Verification Gap + Acceptance Auditor: `aspect-[1440/900] max-h-full w-full`
   squashes rather than fits when the stage is height-bound (the file's own `ponytail:` note), and reverting the
   skeleton to its pre-R-137 shape fails no step of `run-verify-editor.cjs` (step 9 reads only the sr-only sentence).
-owner: Story 5.9 (the editor's first in-`pnpm check` browser test), or the first story that sees the jump.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.9 (the editor's first in-`pnpm check` browser test), or the first story
+  that sees the jump.")*
 location: apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor-skeleton.tsx · tools/probe/run-verify-editor.cjs step 9
 reason: Correct on the owner's 1440 stage, where Desktop is width-bound; a Suspense fallback has no `ResizeObserver`,
   so the fix is a CSS `min()` on the width and it changes if Question 3 adds bottom padding.
@@ -4918,8 +5201,9 @@ origin: Story 5.8's Dev run (2026-09-19), found by EXECUTION rather than by read
   design, while a local doc naming it could not be painted at all, so the hydrate fell back to the cloud and threw the
   customer's work away. The fix was to hand over every placeable design (five, ~68 KB read from `pilotIds()` on
   2026-09-19), which is also what Story 5.10's "+ Add section" and Story 5.11's design swap will need.
-owner: the first story of Epic 9 that takes the library past a couple of dozen placeable designs — it is the story
-  that makes the payload a problem and the one that can measure it.
+owner: Story 9.6 (A2 — designs #5–8), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: was "the first story of Epic 9 that takes the library past a couple of dozen placeable
+  designs — it is the story that makes the payload a problem and the one that can measure it.")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (the `pilotIds()` loop and its `ponytail:`
   note) · `apps/web/lib/journal.ts` (`vanishedDesign`, the guard that surfaced it) ·
   `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the hydrate's own library check)
@@ -4941,7 +5225,9 @@ severity: low
 origin: Story 5.8's Review (2026-09-19), the Real-infra verifier, on the deployed site: `securitypolicyviolation`
   `script-src` / `eval` at `https://app.inflozo.com/`, source a `_next/static/chunks` file at the offset of zod's
   `try{return Function(""),!0}`. `z.config({ jitless: true })` in `doc-schema.ts` evidently does not reach that chunk.
-owner: the next story that touches the Projects page or the CSP — or Story 5.9, whichever is first.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that touches the Projects page or the CSP — or Story
+  5.9, whichever is first.")*
 location: `packages/section-runtime/src/doc-schema.ts` (the `jitless` call) · whichever module puts zod on `/`
 reason: pre-existing and harmless; finding which import carries a second zod instance onto `/` is its own small hunt.
   `run-verify-editor.cjs` step 70 is now scoped to the editor and canvas exactly as step 14 is, so it no longer trips.
@@ -4957,9 +5243,10 @@ severity: medium
 origin: Story 5.8's Review (2026-09-19), four of five layers. `flush()` sends every non-OK status but 409 to the
   backoff. 401 is the reachable one; 404 and 422 need a bug or a deleted project. B6 has five states and no sixth,
   so an honest answer is a new sentence or a new surface, which is the owner's to draw.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "Story 5.17 (the edit lock), which already adds the editor's "you are no longer the
-  one editing" surface.")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "Story 5.17 (the edit lock), which already adds the
+  editor's "you are no longer the one editing" surface.")*")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`'s `catch`) · `sync/route.ts`
 reason: nothing is lost while it stands — the device holds the work and a retry after sign-in lands — and the fix is
   a piece of interface nobody has drawn (R-74).
@@ -4973,9 +5260,10 @@ status: open
 severity: medium
 origin: Story 5.8's Review (2026-09-19), Blind Hunter and Edge Case Hunter. `local-store.ts` keys rows by
   `<projectId>:<seq>` with no tab identity; nothing deletes `inflozo-doc-<userId>`.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "Story 5.17 for the two tabs (its lock makes the second tab read-only, which removes
-  the writer); the account deletion story for the clean-up.")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "Story 5.17 for the two tabs (its lock makes the second
+  tab read-only, which removes the writer); the account deletion story for the clean-up.")*")*
 location: `apps/web/lib/local-store.ts`
 reason: the lock is the designed answer to two writers and building a second one first would be thrown away.
 
@@ -5004,9 +5292,10 @@ severity: medium
 origin: Story 5.8's Review (2026-09-19): fourteen deployed attempts across `9ad1ac47`, `02cd7f7a` and `9faf014c`,
   two complete; every death a `page.goto` timeout on `/projects/<id>` at a different step. The one stalled `/sync`
   POST in the same session (patched: the 20s limit) is the same symptom on a different request.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "Story 5.9, before its own deployed walk — read Vercel's function logs for the `[id]`
-  route over a walk, and run the walk once from a second network.")*
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27).
+  *(Story 5.23's Create, 2026-09-27: every story this line named is done. Was: "Story 5.9, before its own deployed walk
+  — read Vercel's function logs for the `[id]` route over a walk, and run the walk once from a second network.")*")*
 location: `tools/probe/run-verify-editor.cjs` (`freshLoad`, every `page.goto(editorUrl())`) · the editor route's
   server reads (`(editor)/read.ts`)
 reason: telling the two causes apart needs Vercel's logs and a second vantage point, neither of which a review of
@@ -5026,9 +5315,10 @@ status: open
 severity: low
 origin: Story 5.9's Review (2026-09-19), Edge Case Hunter. `setSaid` is a plain `useState`; React skips an identical
   value. The pattern is every story's since 5.2 — the keyboard map only makes a repeat likelier.
-owner: Story 15.2, whose manual screen-reader pass per surface verifies the live-region announcements (UX-DR12).
-  *(Story 5.23's Create, 2026-09-27: was "Story 5.23's play-loop gate, where the editor is walked with a screen
-  reader"; 5.23 walks nothing with a screen reader.)*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 15.2, whose manual screen-reader pass per surface verifies the live-region
+  announcements (UX-DR12). *(Story 5.23's Create, 2026-09-27: was "Story 5.23's play-loop gate, where the editor is
+  walked with a screen reader"; 5.23 walks nothing with a screen reader.)*")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`setSaid`, every caller)
 reason: the fix is one helper every announcement routes through, and whether a repeat should be re-spoken at all is
   best judged with a screen reader running, not from the code.
@@ -5037,7 +5327,11 @@ reason: the fix is one helper every announcement routes through, and whether a r
 
 plain: The picker always draws four cards across. On a wide screen that is right (your ruling R-153). On the two
   narrower editor layouts the same four columns leave each card about a thumb wide, too small to read.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed by Story 5.22's R-203 — `section-picker.tsx:280` draws four
+  columns at full width, two below 1280 and one where two would cut a card's name; re-run today, the keyboard gate's two
+  R-203 checks pass (`floor.spec.mjs:448`, `journey.spec.mjs:3260`), and the deployed editor walk's step 98 covers
+  production.
 severity: low
 origin: Story 5.10's Review (2026-09-20), Blind Hunter.
 owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27), closes it with its evidence: Story 5.22's R-203
@@ -5056,8 +5350,10 @@ plain: (1) If a section is refused, the sentence saying so stays on screen after
 status: open
 severity: low
 origin: Story 5.10's Review (2026-09-20), Acceptance Auditor and Blind Hunter.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: was "Story
-  5.23's play-loop gate"; these are three visible Section Picker fixes and 5.23 has no screen.)*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: was "Story 5.23's play-loop gate"; these are three visible Section Picker fixes and 5.23 has no
+  screen.)*")*
 location: `apps/web/components/editor/section-picker.tsx`
 reason: each is cosmetic and none blocks a placement; the refusal itself is reachable by one design only (R-37).
 
@@ -5070,7 +5366,8 @@ status: open
 severity: low
 origin: Story 5.10's Review (2026-09-20), Verification Gap and Blind Hunter. The production defect this review
   fixed (an empty build id) was caught by step 83 and by nothing in `pnpm check`.
-owner: the next story that touches `/canvas`.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that touches `/canvas`.")*
 location: `apps/web/app/(app)/app/(authed)/canvas/route.ts`, `apps/web/app/(app)/app/harness/canvas/route.ts`,
   `apps/web/pilots.test.ts`
 reason: the fix is one pure function in `lib/canvas.ts` both routes call, with a unit test — small, but a
@@ -5110,10 +5407,11 @@ fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium thr
 status: open
 severity: medium
 origin: Story 5.11's Review (2026-09-20), Verification Gap reviewer.
-owner: Story 9.1 — A1's designs #1–4 are the first shipped ring, so its deployed walk rewrites step 86 and presses the
-  pill's ◀ ▶ and Shuffle on production. *(Story 5.23's Create, 2026-09-27: was "Story 5.23 (the play-loop gate), or
-  the first Epic 9 story that gives a shipped category a second design"; 5.23's gate runs over the project doc, not
-  the pill.)*
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 — A1's designs #1–4 are the first shipped ring, so its
+  deployed walk rewrites step 86 and presses the pill's ◀ ▶ and Shuffle on production. *(Story 5.23's Create,
+  2026-09-27: was "Story 5.23 (the play-loop gate), or the first Epic 9 story that gives a shipped category a second
+  design"; 5.23's gate runs over the project doc, not the pill.)*")*
 location: `editor.tsx` (`stepDesign(hovered, ±1)`, `onShuffle(hovered)` wired at the `<SectionPill>` mount); `tools/keyboard/journey.spec.mjs`
 plain: The little arrows and the Shuffle button on a section's own pill, in the real editor, are connected to the
   right code — but no automated check ever presses them there. The keyboard journey may not use a mouse, the deployed
@@ -5131,8 +5429,10 @@ reason: `journey.spec.mjs:134` refuses every pointer API, `run-verify-editor.cjs
 status: open
 severity: low
 origin: Story 5.11's Review (2026-09-20), Blind Hunter.
-owner: the first Epic 9 story that ships a `data-items-limit`. *(Story 5.23's Create, 2026-09-27: "Story 5.23, or"
-  dropped; the fix changes a sentence the owner approved, and 5.23 changes no panel words.)*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "the first Epic 9 story that ships a `data-items-limit`. *(Story 5.23's Create,
+  2026-09-27: "Story 5.23, or" dropped; the fix changes a sentence the owner approved, and 5.23 changes no panel
+  words.)*")*
 location: `apps/web/components/controls/item-list.tsx` (the `range` line)
 plain: When a design shows fewer items than the section holds, the list's header says "3 items · 2 shown in this
   design" (the sentence the PRD asks for) INSTEAD of "2–6 · 3 used". The add and remove buttons still stop at 2 and
@@ -5146,7 +5446,9 @@ reason: FR-D13 gives the exact sentence and the owner's test (step 10) accepted 
 status: open
 severity: low
 origin: Story 5.11's Review (2026-09-20), Edge Case Hunter.
-owner: Epic 9's authoring pass, if any design ever binds one array on two elements.
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Epic 9's authoring pass, if any design
+  ever binds one array on two elements.")*
 location: `packages/section-runtime/src/controls.ts` (`itemsShown`); `packages/library/src/validate.ts`
 plain: A design could, in theory, draw the same list twice with two different "show at most N" caps. The panel would
   report the first one's number. No design does this and the shipped library has no cap at all yet.
@@ -5159,9 +5461,10 @@ reason: The honest fix is a validator rule — one `data-items-limit` per path, 
 status: open
 severity: low
 origin: Story 5.11's Review (2026-09-20), Blind Hunter and Verification Gap reviewer.
-owner: Story 9.1 — the first shipped ring, where the owner sees the fade in his own editor. *(Story 5.23's Create,
-  2026-09-27: was "Story 5.23, or the first Epic 9 story that gives a shipped category a second design"; 5.23 draws
-  nothing.)*
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 — the first shipped ring, where the
+  owner sees the fade in his own editor. *(Story 5.23's Create, 2026-09-27: was "Story 5.23, or the first Epic 9 story
+  that gives a shipped category a second design"; 5.23 draws nothing.)*")*
 location: `apps/web/lib/canvas-chrome.css` (`[data-inflozo-swapped]`); `editor.tsx` `markSwapped`; `review.tsx` `paint`
 plain: When a section changes design in the editor it fades in over 180ms. The only page where a design can change
   today is the internal Controls review page, and that page does not draw the fade — so nobody has seen it. The
@@ -5229,7 +5532,8 @@ fix: Story 5.23a (2026-09-27). The harness builds a LONG Home on request (`x-inf
 status: open
 severity: low
 origin: Story 5.12's Review (2026-09-20), Blind Hunter.
-owner: whoever next changes how the die's faces are drawn.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "whoever next changes how the die's faces are drawn.")*
 location: `tools/keyboard/journey.spec.mjs`; `tools/probe/run-verify-controls.cjs`; `tools/probe/run-verify-editor.cjs`
 plain: The check that every dice face really shows a different number of dots exists in three copies. A fix to one
   could miss the others.
@@ -5240,7 +5544,10 @@ reason: The three are an ESM Playwright spec and two standalone CommonJS probes 
 
 ### DW-217: the preview subject is stored per canvas per PROJECT, not per user
 
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — PRD Appendix G's collaboration bullet records it: when team seats ship,
+  `project_template_prefs` becomes per user, a migration pushed as that story's Schema phase (R-99). Nothing in v1 lets
+  a second person open a project.
 severity: low
 origin: Story 5.13's Review (2026-09-21), Blind Hunter, Verification Gap reviewer and the Real-infra verifier (read on production).
 owner: the first story that lets a second person open a project.
@@ -5275,8 +5582,9 @@ reason: Pre-existing — the archive branch inherited both values from the home 
 status: open
 severity: low
 origin: Story 5.13's Review (2026-09-21), Verification Gap reviewer and Acceptance Auditor.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: was "Story
-  5.23, or whoever next extends step 89"; unrelated to the play loop.)*
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27).
+  *(Story 5.23's Create, 2026-09-27: was "Story 5.23, or whoever next extends step 89"; unrelated to the play loop.)*")*
 location: `tools/probe/run-verify-editor.cjs` (step 89); `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/actions.ts`
 plain: The automated walk proves choosing an article works and is saved. It does not try a deliberately bad choice to
   see it refused, and it visits the Post and Tag canvases but not Author or Page, which only unit tests cover.
@@ -5289,9 +5597,10 @@ reason: The refusal guards run inside a server action the harness cannot call wi
 status: open
 severity: low
 origin: Story 5.13's Review (2026-09-21), the deployed walk at `efda9d6c`.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: was "Story
-  5.23, or whoever next touches autosave or the walk"; that trigger fired at 5.13, 5.14 and 5.22 and nobody took it,
-  and it is unrelated to the play loop.)*
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27).
+  *(Story 5.23's Create, 2026-09-27: was "Story 5.23, or whoever next touches autosave or the walk"; that trigger fired
+  at 5.13, 5.14 and 5.22 and nobody took it, and it is unrelated to the play loop.)*")*
 location: `tools/probe/run-verify-editor.cjs` (steps 66b, 66c)
 plain: The automated walk's "save when the tab is hidden" check failed once and passed twice on the same build. Either
   the check is timing-sensitive or the save on tab-hide occasionally does not land; nobody knows which yet.
@@ -5316,7 +5625,10 @@ evidence (Story 5.22's Dev, 2026-09-27): the same stop, word for word — **3 FA
 plain: The requirement behind the new "View as" reminder says it makes your own check of each kind of visitor, at every
   category's sign-off, reliable. But the sign-off itself never asks you to look at a page as a signed-out visitor, a free
   member and a paid member, so the reminder is supporting a step that is not written down anywhere.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), closed on the owner's ruling **R-222** (2026-09-28, 5.24's Create, Question 13),
+  and built: PRD §4's owner check takes the member-state pass — every members-aware design looked at as Logged out user,
+  Free member and Paid member through View as (FR-D16) — and so does every category's owner-gate story in `epics.md`.
 severity: low
 origin: Story 5.14's planning (2026-09-21), recorded at its Dev run — read in `prd.md` §4 and FR-D16's second paragraph.
 owner: the owner's ruling first, then the first category gate that runs it (Epic 9's shell block, whose header category
@@ -5336,9 +5648,10 @@ status: open
 severity: low
 origin: Story 5.14's Dev run (2026-09-21), the deployed walk at `d4d6e266` — and Story 5.9's (2026-09-19), whose spec
   recorded the same failure ("intermittent, Story 5.4's") without a ledger row.
-owner: whoever next touches the section pill or the walk (Story 5.22's responsive pass moves both). *(Story 5.22's
-  Create, 2026-09-27: it adds walk steps 97–100 and re-expects step 14, but it touches neither step 36 nor the pill's
-  placement at full width, so this stays with the next story that does.)*
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "whoever next touches the section pill or the walk (Story 5.22's
+  responsive pass moves both). *(Story 5.22's Create, 2026-09-27: it adds walk steps 97–100 and re-expects step 14, but
+  it touches neither step 36 nor the pill's placement at full width, so this stays with the next story that does.)*")*
 location: `tools/probe/run-verify-editor.cjs` step 36 (`:1722-1777`) · the pill's placement in `editor.tsx`
 plain: One automated check on the little floating toolbar above a section sometimes fails and sometimes passes on the
   same build. Nothing you would see as a customer is known to be wrong; the check's own assumption is the suspect.
@@ -5358,7 +5671,8 @@ reason: At `d4d6e266` one walk failed both of step 36's checks and the next, on 
 status: open
 severity: low
 origin: Story 5.14's code review (2026-09-21), the Real-infra verifier's second walk at `f313b1b0`.
-owner: whoever next touches the editor's server-action writes.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "whoever next touches the editor's server-action writes.")*
 location: `editor.tsx` `recordViewed` → `setViewedStates`, and the `setPreviewSubject` call
 plain: If you pick a preview article and reload the page within a second or two, the old article can come back once.
   The choice is saved; it just arrives a moment late.
@@ -5372,7 +5686,9 @@ reason: Step 89 failed once in two completed walks with nothing else running on 
 status: open
 severity: medium
 origin: Story 5.14's code review (2026-09-21), the Acceptance Auditor, the Blind Hunter and the Edge Case Hunter.
-owner: Epic 6 — the story that emits the token block into `default.hbs` and the one that builds the packs.
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Epic 6 — the story that emits the token
+  block into `default.hbs` and the one that builds the packs.")*
 location: `packages/section-runtime/src/tokens.ts` `LINK_RULES` · `reference-tokens.css`
 plain: Nothing is wrong today. When Style Packs arrive, a pack that turns link underlines off would make a link typed
   on a dark, accent or photo band look like ordinary text; and the rule will also restyle links inside a post's body.
@@ -5386,7 +5702,9 @@ reason: On contrast, accent and image grounds the words take `color: inherit`, s
 status: open
 severity: low
 origin: Story 5.14's code review (2026-09-21), the Edge Case Hunter.
-owner: whoever builds Story 7.18's Pre-flight, which is the record's first reader that matters.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "whoever builds Story 7.18's Pre-flight, which is the record's first reader that
+  matters.")*
 location: `editor.tsx` `recordViewed`
 plain: With the same project open in two tabs, looking at a page in the second tab can bring back "viewed" marks that an
   edit in the first tab had just cleared. One tab is unaffected.
@@ -5402,8 +5720,9 @@ plain: When a header that shrinks as you scroll only does so on phones, the edit
 status: open
 severity: low
 origin: Story 5.15's Dev (2026-09-22) — spec Design Notes, "Known ceilings"
-owner: the first category story that puts a width-declared module that moves by itself on the canvas (R-38's
-  `header-scroll:768` is the likely one)
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "the first category story that puts a width-declared module that moves by itself
+  on the canvas (R-38's `header-scroll:768` is the likely one)")*
 location: apps/web/lib/behaviours.ts `movesByItself` · editor.tsx's chips
 reason: the chip is drawn for every mount `core` held still whose module `movesByItself`, and `core`'s editing rule
   skips a mount before it reads the declaration's width (`core.js:43-47`), so a held-still mount declared
@@ -5414,7 +5733,13 @@ reason: the chip is drawn for every mount `core` held still whose module `movesB
 
 plain: A carousel that turns its slides by itself on your live site will hold still while you design, like every
   carousel, but it will not show the PAUSED tag that tells you it moves.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28) — no design offers a carousel autoplay: swept across the export, every carousel
+  refuses it (A14's and A19 #15's refusals owner-ratified), and the only Interval row any spec draws is A2's rotating
+  bar. The validator holds it: `packages/library/src/validate.ts` refuses a design whose markup declares `carousel` with
+  an autoplay or interval control (`carousel-autoplay`); its `validate.test.ts` case refuses both and passes an interval
+  on a design with no carousel, and fails with the refusal removed. `docs/section-authoring.md` and R-175's dated note
+  in the register say so.
 severity: low
 origin: Story 5.15's Dev (2026-09-22) — R-175's "What it does NOT change"
 owner: the carousel's first category story (research §3.5's autoplay is a per-design option)
@@ -5430,7 +5755,9 @@ plain: Nothing is wrong on your pages today. When a design puts a moving part's 
 status: open
 severity: medium
 origin: Story 5.15's Dev (2026-09-22), read in the source (`packages/section-runtime/src/core.ts:1227-1229`)
-owner: the first design whose root element is itself a module mount with strings (S5's `data-i18n-*`)
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "the first design whose root element is
+  itself a module mount with strings (S5's `data-i18n-*`)")*
 location: packages/section-runtime/src/core.ts `stampControls` · editor.tsx `restampAll` and `onChange`'s control
   fast path
 reason: `stampControls` removes every root `data-*` that is not a directive, and `data-i18n-*` is not one, so a mode
@@ -5446,8 +5773,9 @@ plain: The small grey PAUSED tag is only drawn. Someone using a screen reader wh
 status: open
 severity: low
 origin: Story 5.15's Review (2026-09-22) — Blind Hunter
-owner: the first category story whose design declares a module that is held still and moves by itself (research
-  §2.1 lists `header-scroll` for A1-1 onward, so likely Story 9.1)
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "the first category story whose design declares a module that is held still and
+  moves by itself (research §2.1 lists `header-scroll` for A1-1 onward, so likely Story 9.1)")*
 location: editor.tsx (the chip is `aria-hidden`, as B3a's chrome) · `#editor-said` or the section's panel
 reason: the chip is chrome in the canvas layer, drawn only while a section is pointed at or selected, and `aria-hidden`
   as every other piece of that layer is (the outline, the name tag). The information it carries — "this part holds
@@ -5490,7 +5818,9 @@ status: open
 severity: low
 origin: Story 5.16's Dev (2026-09-22), read in `core/frontend/services/theme-engine/handlebars/utils.js:33-50, :63` on
   both majors (MEASUREMENTS §48 (c)): an item whose path is a prefix of the location gets `nav-current-parent`.
-owner: the first design that styles `.nav-current-parent` (A1's category story, Epic 9)
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first design that styles `.nav-current-parent`
+  (A1's category story, Epic 9)")*
 location: `packages/ghost-shim/src/index.ts` (`navigationItems`, which computes `current` alone)
 reason: nothing reads the class, so the canvas and the theme agree on every pixel today. `_urlParentMatch` also has an
   oddity worth recording before it is copied — it compares ONLY the item's last path part (`parent` is overwritten on
@@ -5506,8 +5836,11 @@ origin: Story 5.16's Create (2026-09-22), read in the documents: `sections-inven
   §4 set "Pagination style = A34 #1 Numbers" on every collection template, while Invariant 1 says defaults reference
   only [Free] designs, and the export's `A34 Pagination Styles - Spec.md:9` makes A34's [Free] designs **#2 Prev and
   Next** and **#9 Cards** — and `prd.md`'s entitlement table (`:1168`) says "A34 #1–#2 are [Free]", a third answer.
-owner: Story 10.112 (A34's first story, which builds the Pagination style control — R-195), with the owner: which Free
-  design an untouched template's pager is. *(Was Story 5.19's until R-195, 2026-09-25.)*
+owner: Story 10.112 (A34 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+  its id: the owner rules which [Free] design an untouched template's pager is before it is built — A34's [Free] pair is
+  now his #2 and #9 (R-212). *(Story 5.24a's Dev, 2026-09-28: was "Story 10.112 (A34's first story, which builds the
+  Pagination style control — R-195), with the owner: which Free design an untouched template's pager is. *(Was Story
+  5.19's until R-195, 2026-09-25.)*")*
 location: `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/sections-inventory.md` §3–§4 · `prd.md:1168`
 reason: a documents disagreement with no code behind it yet — `SYNTHESIS_DEFAULTS` carries no pagination value
   (`synthesize.ts`'s FEED row says why) and no A34 design is authored. Choosing one is the owner's (R-17 chose the Free
@@ -5528,8 +5861,10 @@ origin: Story 5.16's Create (2026-09-22), read in the documents: FR-H2 (`prd.md:
   **Numbered / Load More / Infinite scroll**; D5c and D5d (`D5 Canvas Markers and Template Switcher.dc.html:350, :428`)
   draw **None / Older/Newer / Numbers**; A34's roster is ten designs (Numbers, Prev and Next, Bar, Pill, Counter, …);
   and `sections-inventory.md`'s A34 entry speaks of Numbered, Load More and Infinite as design families.
-owner: Story 10.112 (A34's first story, which builds the Pagination style control — R-195), which must pick one
-  vocabulary before it draws the row above D5d's Preview page row. *(Was Story 5.19's until R-195, 2026-09-25.)*
+owner: Story 10.112 (A34 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+  its id: the owner rules which list names the select's values before it is built. *(Story 5.24a's Dev, 2026-09-28: was
+  "Story 10.112 (A34's first story, which builds the Pagination style control — R-195), which must pick one vocabulary
+  before it draws the row above D5d's Preview page row. *(Was Story 5.19's until R-195, 2026-09-25.)*")*
 location: `prd.md` FR-H2 · `epics.md` Story 5.19 · `sections-inventory.md` A34 · the D5c/D5d frames (never edited, R-74)
 reason: Story 5.16 builds only the Preview page row under that control and draws no Pagination row, so it settles
   none of the four; recording them here keeps Story 5.19 from inheriting a silent choice.
@@ -5551,8 +5886,10 @@ status: open
 severity: medium
 origin: Story 5.16's review (2026-09-22), the Blind Hunter over `pageTwoStack` rule 1 (`synthesize.ts`): a stored page
   2 is returned as it is, whatever it holds, and FR-I1's "never emitted empty" reasons about page 1 only.
-owner: Story 7.3 (the compiler decides — refuse, fall back to the Synthesis Default stack, or compile as designed) with
-  Story 5.19 (the main-feed designation's lifecycle, which may forbid deleting the feed on page 2 as it does elsewhere).
+owner: Story 7.3 (Synthesis Defaults and the emptying rules), whose criteria carry its requirement word for word with
+  its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.3 (the compiler decides — refuse, fall back to the
+  Synthesis Default stack, or compile as designed) with Story 5.19 (the main-feed designation's lifecycle, which may
+  forbid deleting the feed on page 2 as it does elsewhere).")*
 location: `packages/section-runtime/src/synthesize.ts` `pageTwoStack` · `apps/web/lib/page-two.ts` `mainFeedOn` ·
   `epics.md` Story 7.3 and 5.19
 
@@ -5565,8 +5902,9 @@ status: open
 severity: low
 origin: Story 5.16's review (2026-09-22). Pre-existing for every key — `read.ts` has always been the one place the
   `compileTarget` check runs — and this story added three keys to the same pattern.
-owner: Epic 7's compile path, or the first story that makes the route validate placement (a `compilesTo` check against
-  `fileOf(key)` at the write).
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Epic 7's compile path, or the first story that makes the route validate
+  placement (a `compilesTo` check against `fileOf(key)` at the write).")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/sync/route.ts` `TEMPLATE_KEY` · `read.ts` `editorData`
 
 
@@ -5590,8 +5928,10 @@ reason: The cause is a HYPOTHESIS and was not executed (standing rule 1): a scre
   product — one bad frame should be skipped, or retried, rather than ending a ten-minute walk, and the check should
   refuse only if too few frames survive to measure. Diagnosing it inside a story that does not touch the screencast
   would be guessing.
-owner: whoever next touches `film()` or the scroll-filming checks (Story 5.22's responsive pass reaches them).
-  *(Story 5.22's Create, 2026-09-27: it touches neither `film()` nor step 15, so the trigger stands.)*
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "whoever next touches `film()` or the scroll-filming checks (Story
+  5.22's responsive pass reaches them). *(Story 5.22's Create, 2026-09-27: it touches neither `film()` nor step 15, so
+  the trigger stands.)*")*
 location: `tools/probe/run-verify-editor.cjs` step 15's `decoder.evaluate` (`:949`) and `film()`
 
 
@@ -5608,7 +5948,9 @@ origin: Story 5.16a's review (2026-09-23), reading `tools/probe/record-page-numb
   `record-contexts.py`'s pattern exactly, and that recorder never deleted its upload either.
 reason: Deleting is one more Admin API call in the `finally`, after the restore is proved — but it belongs in the shared
   pattern for every recorder, not in one story's probe, and the reset protocol should say so.
-owner: whoever next touches a `record-*.py` probe or `tools/probe/RESET-PROTOCOL.md`.
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "whoever next touches a `record-*.py` probe
+  or `tools/probe/RESET-PROTOCOL.md`.")*
 location: `tools/probe/record-page-number.py` `record()`'s `finally` · `tools/probe/record-contexts.py:342`
 
 ### DW-238: the deploy-and-export take-over (D8g) has no entry point to hang off yet
@@ -5627,8 +5969,9 @@ reason: a take-over prompt for a control that does not exist is unreachable, and
   rule that an unbuilt feature is absent rather than greyed. Story 5.17 builds the component D8g is made of —
   `apps/web/components/editor/lock-takeover.tsx`, whose heading, body and confirm label are props for exactly this —
   so the remaining work is the gate itself, which belongs where deploy and export are written.
-owner: Story 7.18 (the deploy wizard) for Ship it, Story 7.26 (theme zip export) for Export. Each renders
-  `lock-takeover.tsx` with D8g's strings and refuses to start without the lock (AD-15's flush contract).
+owner: Story 7.18 (The deploy wizard), whose criteria carry its requirement word for word with its id (R-195). *(Story
+  5.24a's Dev, 2026-09-28: was "Story 7.18 (the deploy wizard) for Ship it, Story 7.26 (theme zip export) for Export.
+  Each renders `lock-takeover.tsx` with D8g's strings and refuses to start without the lock (AD-15's flush contract).")*
 location: `apps/web/components/editor/lock-takeover.tsx` · `apps/web/lib/keymap.ts:113` ·
   `_bmad-output/planning-artifacts/ux-designs/ux-Inflozo-2026-09-03/EXPERIENCE.md:1053-1056`
 
@@ -5684,9 +6027,10 @@ reason: the gap is from the release landing to the reloaded page's own acquire, 
   browser-initiated reloads is a hypothesis; (b) never release on `pagehide` and rely on staleness — a closed tab then
   holds the lock ~60 s and B5c quotes a count the unload flush may already have sent; (c) a short grace before a free
   lock is taken, which needs somewhere to record "released at" — a column, so a migration.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "unowned; the review of Story 5.17 may take it, and (c) would be a Schema phase of its
-  own (R-99).")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "unowned; the review of Story 5.17 may take it, and (c)
+  would be a Schema phase of its own (R-99).")*")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — the `pagehide` release (`leaving`) and
   the poll's one-extra-call acquire · `tools/probe/run-verify-lock.cjs`'s "Same session reloads" row, which reloads
   with no second session open and so does not exercise this race
@@ -5710,7 +6054,8 @@ origin: Story 5.17's review (2026-09-24). R-192 disables the triggers (the ⋯ b
 reason: the guard underneath is `commit()`'s one early return, so nothing is written; only the surface is stale. Closing
   every open popover on the flip is one call to `closeMenus` plus the two dialogs, and it belongs beside the Reset
   box's own close — a Fix-phase item if the owner meets it, never a data risk.
-owner: unowned
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — `land()`'s holder→reader flip;
   `lib/menu.ts`'s `closeMenus`
 
@@ -5728,7 +6073,8 @@ origin: Story 5.17's review (2026-09-24). `selfMarkScript` marks `<html>` before
 reason: closing it means the server not drawing `ReadOnly` at all for a tab it cannot identify — deciding the fieldset
   client-side after hydration — which reintroduces the one-frame editable shell for a GENUINE reader that `read.ts`'s
   first-paint read exists to prevent. The trade is the owner's to see first (R-80); none of his tests reported it.
-owner: unowned
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/layout.tsx` (the mark) · `apps/web/app/globals.css`
   (the two rules under `html[data-lock-self]`) · `apps/web/components/kit/greyed.ts` (`ReadOnly`)
 
@@ -5745,7 +6091,8 @@ origin: Story 5.17's review (2026-09-24). `edit_locks` carries ONE `nudge_reques
 reason: telling the two apart needs either a second column (a migration, R-99) or the route refusing a nudge over a
   live one, which would make the second device's button silently fail instead. The owner's ruling on transport (R-191)
   already accepts that a third device is not v1's shape; recorded so the choice is made rather than met.
-owner: unowned
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/lib/lock.ts` (`stillAsking`) · `editor.tsx` (`land()`'s `kept` announcement, commented) ·
   `lock/route.ts` (`nudge`)
 
@@ -5762,7 +6109,8 @@ origin: Story 5.17's review (2026-09-24). `visibilitychange` (the unload flush, 
   flush then passes `heldElsewhere` only if nobody acquired in between.
 reason: the same shape as DW-240 (a reload's gap), with the same candidate fixes and the same costs; holding the release
   until the flush answers is not possible on a page that is going. It joins DW-240 rather than a fix of its own.
-owner: unowned; whoever takes DW-240
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned; whoever takes DW-240")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` — the two `leaving` listeners
 
 ### DW-245: `record-edit-lock.py` folds a probe bug into "RUN VOID" and its cleanup can reference an unbound name
@@ -5777,7 +6125,8 @@ origin: Story 5.17's review (2026-09-24), in the Blind Hunter layer.
 reason: tooling, not product; the fix is two `except` clauses and `sb = None` above the `try`. Also the F4 block in
   `RLS-TEST.sql` seeds `lock_generation = 10` as an absolute, which passes today because the block before leaves it at
   6 — a future block that pushes past 10 would fail on the monotonic guard rather than on what it tests; seed relative.
-owner: unowned
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `tools/probe/record-edit-lock.py` (the top-level `except` and `finally`) ·
   `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/RLS-TEST.sql` (F4's seed), then `cp`
 
@@ -5810,7 +6159,8 @@ evidence (Story 5.22's Dev, 2026-09-27): a third place it lands — `check`'s ow
   '@vercel/turbopack-next/internal/font/google/font'" Turbopack error, so `deploy` was skipped. `c34dfbd3` changed only
   the spec and this ledger; the same app tree built and deployed from `9212ecc4` an hour earlier
   (`dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB` READY), and a local `pnpm build` of it exits 0.
-owner: unowned
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh` ·
   `.github/workflows/ci.yml`'s `deploy` (its `vercel build`)
 
@@ -5827,8 +6177,11 @@ origin: Story 5.18's Create (2026-09-24). `packages/ghost-shim/src/index.ts:596-
   carries no member counts, and AD-10 keeps 5.18's reads on the Content API.
 reason: no design in `packages/library/designs/` binds either helper, so the refusal is dormant. The count is an Admin
   read, which belongs in the `site_settings` snapshot Epic 3 refreshes daily (FR-C5), not in a browser read.
-owner: the first design that binds either helper (A4 #2's proof value source, `A4 Heroes - Spec.md:81`, or an A22
-  design), together with Epic 3's snapshot writer.
+owner: Story 10.5 (A4 — designs #15–17 (owner gate)), whose criteria carry its half word for word with its id —
+  R-212's trade moved A4 #2 Flush Left from Story 10.1 to this one, and #2's Value source moved with it; DW-180's half
+  of the triage's sentence stays in Story 10.1. *(Story 5.24a's Dev, 2026-09-28: was "the first design that binds either
+  helper (A4 #2's proof value source, `A4 Heroes - Spec.md:81`, or an A22 design), together with Epic 3's snapshot
+  writer.")*
 location: `packages/ghost-shim/src/index.ts:596-604` · `apps/web/lib/probe-rule.ts` (the snapshot's shape) ·
   `apps/web/lib/live-content.ts` (the live context, Story 5.18)
 
@@ -5845,8 +6198,9 @@ reason: asking Ghost to search (`filter=title:~'…'`) would find any post, but 
   limiter: 99 failures, then at least an hour of 429 for every key from that network, the customer's own site search
   included (read in source on both majors, Story 5.18's Code Map). A server search needs a term grammar that cannot
   fail and its own share of the session's request ceiling; Ghost 6 also caps a page at 100 (MEASUREMENTS §15d).
-owner: unowned — the first customer site with more than 100 posts, or the story that re-validates internal links
-  against the connected site at compile (FR-F6).
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — the first customer site with more than 100 posts, or the story that
+  re-validates internal links against the connected site at compile (FR-F6).")*
 location: `apps/web/lib/live-content.ts` (the list reads) · `apps/web/components/controls/link-picker.tsx` ·
   `apps/web/lib/preview-subject.ts`
 
@@ -5864,8 +6218,9 @@ reason: three answers only a Ghost(Pro) site can give — whether an edge's 429 
   (without it the browser sees "not answering", never a 429), the edge's own limits against 5.18's session ceiling,
   and whether the `*.ghost.io` admin origin Inflozo stores (`sites.url`) serves the Content API with the headers the
   public domain does.
-owner: the Ghost(Pro) Starter trial (VERIFY-AT-BUILD's dated action); Story 5.18's Dev adds these three to its
-  checklist.
+owner: Story 15.7 (The Ghost(Pro) launch gate), whose criteria carry its requirement word for word with its id
+  (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the Ghost(Pro) Starter trial (VERIFY-AT-BUILD's dated action); Story
+  5.18's Dev adds these three to its checklist.")*
 location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/VERIFY-AT-BUILD.md` ·
   `apps/web/lib/live-content.ts`
 
@@ -5885,8 +6240,10 @@ reason: `sitePieces` cannot be asked for the feed before the subject is known on
   the subject), and asking for Home's feed early means special-casing the files whose feed depends on no subject.
   The walk records 7 requests to open the editor and 53 for a whole walk against a ceiling of 500, so the cost is
   latency, not budget. A fix records the subject-free reads in the first round.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "unowned — Story 5.19 (the main feed's lifecycle) touches the same walk.")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "unowned — Story 5.19 (the main feed's lifecycle)
+  touches the same walk.")*")*
 location: `apps/web/lib/canvas.ts` (`sitePage`) · `apps/web/lib/live-content.ts` (`sitePieces`)
 
 ### DW-251: two rows of Story 5.18 are proven at the unit level only — the ring's tiles on the site's content, and the "newest 100 posts" line on a site with more than 100
@@ -5903,8 +6260,9 @@ origin: Story 5.18's code review (2026-09-24, Verification Gap). `run-verify-liv
 reason: a tile is the same `SectionPreview` the card is, handed the same `live`; a positive capped line needs a site
   with more than 100 posts, or a `page.route` rewrite of `meta.pagination.total` named as a simulated condition, as
   the network cut is.
-owner: unowned — the first customer site with more than 100 posts (DW-248's trigger), or the next story that
-  extends the live-content walk.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — the first customer site with more than 100 posts (DW-248's
+  trigger), or the next story that extends the live-content walk.")*
 location: `tools/probe/run-verify-live-content.cjs` · `apps/web/components/editor/design-picker.tsx` ·
   `apps/web/components/controls/link-picker.tsx`
 
@@ -5923,9 +6281,12 @@ origin: Story 5.19's Create (2026-09-25). FR-H2 (`prd.md:312`) sizes the main fe
   `@config.posts_per_page` with a route's `limit` at render (`frontend/services/routing/controllers/collection.js:32-44`,
   `channel.js:33-45`, both majors, read in source). Story 7.16's criteria (`epics.md:3075-3127`) name the per-collection
   limit but neither the canvas reading it nor the channel's designation.
-owner: Story 7.16 (the Routes Manager) — the canvas reads the route's `limit` where the template is reached through a
-  collection that sets one, and a channel or collection template it creates is handed its main feed through Story 5.19's
-  one designation rule (`packages/section-runtime`, AD-27(d)). *(Its criteria say so since R-195's sweep, 2026-09-25.)*
+owner: Story 7.16 (The Routes Manager), whose criteria already carry it with its id: the canvas sizes a main feed by
+  its route's own `limit:`, and a channel or collection template is given its main feed at creation. *(Story 5.24a's
+  Dev, 2026-09-28: was "Story 7.16 (the Routes Manager) — the canvas reads the route's `limit` where the template is
+  reached through a collection that sets one, and a channel or collection template it creates is handed its main feed
+  through Story 5.19's one designation rule (`packages/section-runtime`, AD-27(d)). *(Its criteria say so since R-195's
+  sweep, 2026-09-25.)*")*
 location: `epics.md` Story 7.16 · `packages/section-runtime` (the designation rule) · `apps/web/lib/canvas.ts` and
   `packages/library/src/orbit-weekly.ts` (the page size handed in)
 reason: no route exists, so the value in force is always the project's `posts_per_page`, and no custom collection or
@@ -5944,9 +6305,11 @@ origin: Story 5.19's Create (2026-09-25), swept in `epics.md`: FR-H2 (`prd.md:31
   feed-less `tag.hbs`/`author.hbs`, and "the panel warns per section; the pre-deploy check warns per template" for
   hand-picked lists. No story's criteria name `noindex`, the canonical link, the archive warning or the per-template
   hand-picked warning (Story 7.18's Pre-flight names only FR-D16's member-state row, `epics.md:3158-3196`).
-owner: Story 7.18 (the two Pre-flight warnings) and Story 7.3 (the guard the compiler emits) — their criteria name them
-  since R-195's sweep (owner, 2026-09-25: "no requirement/feature is missed"). The archive's EDITOR warning is Story
-  5.19's own: a note at the head of Layers on a Tag or Author page with no visible feed.
+owner: Stories 7.18 (The deploy wizard) and 7.3 (Synthesis Defaults and the emptying rules), whose criteria already
+  carry it with its id: 7.18's two Pre-flight warnings and 7.3's SEO guard. *(Story 5.24a's Dev, 2026-09-28: was "Story
+  7.18 (the two Pre-flight warnings) and Story 7.3 (the guard the compiler emits) — their criteria name them since
+  R-195's sweep (owner, 2026-09-25: "no requirement/feature is missed"). The archive's EDITOR warning is Story 5.19's
+  own: a note at the head of Layers on a Tag or Author page with no visible feed.")*
 location: `epics.md` Stories 7.3, 7.6 and 7.18 · FR-H2
 reason: all three are compile or deploy facts and nothing compiles yet; Story 5.19 builds the per-SECTION warning (P0·5's
   past-25 sentence) and allows a feed-less paginated template, which is the editor half.
@@ -5961,8 +6324,10 @@ severity: low
 origin: Story 5.19's Create (2026-09-25). D5c (`D5 Canvas Markers and Template Switcher.dc.html:347-348`) draws "This feed is
   sized by your theme's Posts per page. Change it in Theme settings." and "Theme settings ↗"; Theme settings holds only
   D6a's project-mode block and the dark-overrides row (R-131), and Posts per page is Story 7.9's (FR-Q1).
-owner: Story 7.9 (Theme Settings) — the sentence gains "Change it in Theme settings." and the link, FR-Q1's "every
-  surface that mentions posts per page links HERE". *(Its criteria say so since R-195's sweep, 2026-09-25.)*
+owner: Story 7.9 (Theme Settings and the custom-settings builder), whose criteria already carry it with its id: the
+  main feed's greyed Count gains "Change it in Theme settings." and its link. *(Story 5.24a's Dev, 2026-09-28: was
+  "Story 7.9 (Theme Settings) — the sentence gains "Change it in Theme settings." and the link, FR-Q1's "every surface
+  that mentions posts per page links HERE". *(Its criteria say so since R-195's sweep, 2026-09-25.)*")*
 location: `apps/web/components/controls/data-group.tsx` (Story 5.19) · `apps/web/lib/data-group.ts` (the words)
 reason: R-118 — a door arrives with the thing it opens; a link to a page with no Posts per page on it would say
   something untrue.
@@ -6009,7 +6374,9 @@ origin: Story 5.19's Dev (2026-09-25), executed on the harness editor with the r
   (`--tw-inset-shadow`, `--tw-inset-ring-shadow`, `--tw-ring-offset-shadow`, `--tw-ring-shadow`), and a shadow root's
   adopted sheet does not register them. Story 5.19 declared `--tw-border-style:solid` on the host for its MAIN FEED
   chip's border, and the PAUSED chip's and P0-1's pill's hairlines drew from then on; the shadows did not.
-owner: unowned — needs one. The next story that touches the canvas's chrome, or a Fix run on the owner's word.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. The next story that touches the canvas's chrome, or a Fix
+  run on the owner's word.")*
 location: `apps/web/lib/canvas-layer.ts` (`chromeLayers`, the host's style) · `apps/web/components/controls/mark-toolbar.tsx`
   (`CanvasNote`; `P0-1 Inline Text Toolbar.dc.html:142` draws the pill with `box-shadow:0 4px 16px rgba(28,27,26,.10)`)
 reason: outside Story 5.19's surfaces — its chip draws no shadow. The fix is the same kind of line (the shadow variables'
@@ -6028,7 +6395,9 @@ origin: Story 5.19's review (2026-09-25), the Verification Gap layer: `read.ts`'
   `run-verify-editor.cjs` step 94 or `run-verify-live-content.cjs` alone — the keyboard harness has no linked site and
   its Home is flagged from `SYNTHESIS_DEFAULTS`, so `pnpm keyboard` reaches none of them. Deleting `read.ts`'s line
   leaves `pnpm check` and `pnpm keyboard` green.
-owner: unowned — needs one. The next story that touches `read.ts`'s doc assembly or `paint()`'s site branch, or a Fix run.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. The next story that touches `read.ts`'s doc
+  assembly or `paint()`'s site branch, or a Fix run.")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts` (`editorData`'s designate loop) ·
   `editor.tsx` (the hydrate; `paint()`'s `editReads` branch) · `apps/web/app/(app)/app/harness/editor/page.tsx`
 reason: the shape of the fix is a second harness canvas seeded UNFLAGGED plus a `5.19 ·` journey, and a pure
@@ -6047,9 +6416,11 @@ origin: Story 5.19's review (2026-09-25), the Blind Hunter and Edge Case layers.
   and `packages/library/src/vocabulary.ts`'s `GHOST_SLUG_RE` (Story 5.19: `^[a-z0-9_-]+$`, read in `@tryghost/string`'s
   `slugify.js` at both pins). `café` passes one and fails the other; `a--b` the reverse. `live-content.test.ts` asserts
   `café` valid, so unifying them inside 5.19's review would overturn 5.18's tested claim on an unexecuted reading.
-owner: unowned — needs one. The next story that stores or reads a slug (Story 7.16's routes, or Epic 9's first
-  Ghost-sourced design), which EXECUTES it: create a tag whose name is non-ASCII on T1 under the reset protocol and read
-  the slug Ghost gives it, then keep one grammar in the vocabulary and point `slugShaped` at it.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. The next story that stores or reads a slug (Story 7.16's
+  routes, or Epic 9's first Ghost-sourced design), which EXECUTES it: create a tag whose name is non-ASCII on T1 under
+  the reset protocol and read the slug Ghost gives it, then keep one grammar in the vocabulary and point `slugShaped` at
+  it.")*
 location: `apps/web/lib/live-content.ts` (`slugShaped`) · `packages/library/src/vocabulary.ts` (`GHOST_SLUG_RE`) ·
   `apps/web/live-content.test.ts:49-55`
 reason: standing rule 1 — both are hypotheses about Ghost until executed, and the review may not pick one by reading.
@@ -6064,8 +6435,9 @@ severity: low
 origin: Story 5.19's review (2026-09-25), the Blind Hunter layer: `bindingReads` reads the picks as ONE
   `filter=id:[…]` at `LIST_LIMIT` (100), which is also Ghost 6's own `maxLimit` cap for a get, while `feedExprs` emits N
   single-id gets. Past 100 picks the canvas and the theme disagree, and `siteRows` marks the overflow lacking.
-owner: unowned — needs one. The story that first caps a Ghost-sourced Count per design (R-195: 9.5, 9.11, 10.54…) is
-  the natural place, since it decides what a list's ceiling is.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. The story that first caps a Ghost-sourced Count per design
+  (R-195: 9.5, 9.11, 10.54…) is the natural place, since it decides what a list's ceiling is.")*
 location: `apps/web/lib/live-content.ts` (`bindingReads`, the `ids` branch) · `packages/ghost-shim/src/index.ts` (`feedExprs`)
 reason: the fix is either a paged read (several requests, and 5.18's per-key cache keyed per page) or a stated cap on
   picks, and a cap is the owner's — FR-H2 says no hard cap, the panel warns past 25.
@@ -6082,8 +6454,10 @@ origin: Story 5.20's Create (2026-09-26). FR-H6 (`prd.md:336`) — "placing port
   on a site with members disabled warns in the editor, and a pre-deploy check repeats it" — and R-4 (`reconcile-designs-
   decisions.md:307-329`), "warn at connect and pre-deploy". Story 7.18's Pre-flight (`epics.md:3181` onward) names FR-D16's
   member-state row and FR-H2's warnings, never FR-H6's.
-owner: Story 7.18 (the deploy wizard's Pre-flight) — it reads Story 5.20's one record, `sites.site_settings.members`, and
-  lists the same sentences the Sites screen uses (`apps/web/lib/paywall.ts`). Its criteria gain it in Story 5.20's docs task.
+owner: Story 7.18 (The deploy wizard), whose criteria already carry it with its id: Pre-flight repeats FR-H6's
+  member-switch warnings. *(Story 5.24a's Dev, 2026-09-28: was "Story 7.18 (the deploy wizard's Pre-flight) — it reads
+  Story 5.20's one record, `sites.site_settings.members`, and lists the same sentences the Sites screen uses
+  (`apps/web/lib/paywall.ts`). Its criteria gain it in Story 5.20's docs task.")*
 location: `epics.md` Story 7.18 · `apps/web/lib/paywall.ts` (Story 5.20)
 reason: nothing deploys yet; Story 5.20 builds the record and the connect and editor halves, which is everything that
   can run before Epic 7.
@@ -6102,9 +6476,11 @@ origin: Story 5.20's Create (2026-09-26). MEASUREMENTS §15b (executed 2/2 each 
   in source): a theme's override replaces the whole template, so without that line the free preview above the cut
   disappears. It is a triple-stash, which the compile gate otherwise forbids (AD-5), so it is AD-5's second stated
   exception, bounded to that partial's first line.
-owner: Story 7.3 (the conditional-template pattern that already names `partials/content-cta.hbs`, `epics.md:2682-2683`)
-  and Story 7.6 (FR-J5, "the paywall renders via the `content-cta.hbs` partial", `epics.md:2790-2791`). Their criteria gain
-  both rules in Story 5.20's docs task.
+owner: Stories 7.3 (Synthesis Defaults and the emptying rules) and 7.6 (Ghost-correct markup), whose DW-261 criterion
+  now says AD-5's second exception is the owner's to rule before it is built — AD-5 states only `PAGE_NUMBER_HBS`
+  (R-83). *(Story 5.24a's Dev, 2026-09-28: was "Story 7.3 (the conditional-template pattern that already names
+  `partials/content-cta.hbs`, `epics.md:2682-2683`) and Story 7.6 (FR-J5, "the paywall renders via the `content-cta.hbs`
+  partial", `epics.md:2790-2791`). Their criteria gain both rules in Story 5.20's docs task.")*
 location: `epics.md` Stories 7.3 and 7.6 · AD-5 in `ARCHITECTURE-SPINE.md` · the compiler (Epic 7)
 reason: Story 5.20 draws the paywall on the canvas and stores the choice; nothing compiles a theme before Epic 7.
 note (Story 5.20's Dev, 2026-09-26): Stories 7.3 and 7.6 now carry both rules in their criteria (`epics.md`).
@@ -6122,8 +6498,10 @@ origin: Story 5.20's Create (2026-09-26). `A32 Paywall - Spec.md` § Editing, in
   the tier: Ghost 6 previews one holding every active paid tier (`create-paid-member-shim.js` 6:18-41, read in source),
   which is how Story 5.20's `postAccess` models its Paid member. Choosing a design materialises the `paywall` doc; C3a
   draws no control that empties it again (FR-I1's emptying rule would give Ghost's box back).
-owner: Story 10.107 (A32's content model and first designs) — its criteria gain these in Story 5.20's docs task, with the
-  owner's own call on whether "back to Ghost's own box" is a control or undo alone.
+owner: Story 10.107 (A32 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+  its id: the Paywall editor gains A32's own half. *(Story 5.24a's Dev, 2026-09-28: was "Story 10.107 (A32's content
+  model and first designs) — its criteria gain these in Story 5.20's docs task, with the owner's own call on whether
+  "back to Ghost's own box" is a control or undo alone.")*
 location: `epics.md` Story 10.107 · the Paywall canvas (`editor.tsx`, Story 5.20)
 reason: the gate list is the category's declaration (P0·6), and the copy sets are A32's content model; Story 5.20
   previews one Paid-members-only post with View as alone.
@@ -6136,7 +6514,11 @@ note (Story 5.20's Dev, 2026-09-26): Story 10.107's criteria now carry the four 
 plain: The three paywall design stories were written from the common category template, so they talk about "placing" a
   paywall, "composing a page" from them and cycling them with the [ and ] keys. A paywall is chosen in its own screen and
   is never placed on a page.
-status: open
+status: done 2026-09-28 (Story 5.24a)
+resolution: Story 5.24a (2026-09-28), already fixed by Story 5.20's docs task — re-read in `epics.md`: Story 10.107's
+  design line says A32 is "**chosen, never placed**", selected on the Paywall editor and absent from the Section Picker,
+  Layers, Shuffle and Remix, and Story 10.109's gate cycles the ring on the Paywall editor with ◀ ▶, never on a page;
+  `placement.ts`'s `NON_PLACEABLE` holds A32 and its stand-ins, and `placement.test.ts` passes today.
 severity: medium
 origin: Story 5.20's Create (2026-09-26), the planning sweep: `epics.md:7089` ("so a Free user has something
   placeable"), 10.109's owner gate (`:7147-7148`, "cycle it with `[` and `]`", "composes a page from the category's
@@ -6159,8 +6541,10 @@ origin: Story 5.20's Create (2026-09-26). Prices arrive in the smallest currency
   `{{price}}` (`A32 Paywall - Spec.md:217-219`); `packages/ghost-shim/src/index.ts` has no `price`. The tier scope types
   `benefits` as a `list` with no `of` (`packages/library/contexts/matrix.json:522-566`), and a list of plain values opens
   no scope (`contexts.ts:293`), so no design can `data-repeat` over it.
-owner: Story 10.14 (A7's content model and first designs, the first category that prints a tier's price and benefits);
-  A32's 10.107 inherits them. Named in their criteria by Story 5.20's docs task.
+owner: Story 10.14 (A7 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with its
+  id: the first category to print a tier's price and its benefits builds both. *(Story 5.24a's Dev, 2026-09-28: was
+  "Story 10.14 (A7's content model and first designs, the first category that prints a tier's price and benefits); A32's
+  10.107 inherits them. Named in their criteria by Story 5.20's docs task.")*
 location: `packages/ghost-shim/src/index.ts` · `packages/library/contexts/matrix.json` (the tier scope)
 reason: Story 5.20's stand-ins print tier names alone, which proves the live and sample tier reads without either piece.
 note (Story 5.20's Dev, 2026-09-26): Stories 10.14 and 10.107 name them in their criteria (`epics.md`).
@@ -6176,8 +6560,10 @@ origin: Story 5.20's Create (2026-09-26), the planning sweep: `A32 Paywall - Spe
   `:695` ("All, including free") against FR-H6's `type:paid+visibility:public`; `:96` and `:1118` ("greeted by name
   where Ghost has one") against R-28 and AD-38. Story 5.20's `tiers-unfiltered` rule and the existing `@member` refusal
   (`contexts.ts:186-188`) already refuse both at assembly.
-owner: Story 10.107 — it builds A32 without the two options, and its criteria say so (Story 5.20's docs task). The export
-  is never edited (R-74).
+owner: Story 10.107 (A32 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+  its id: A32 is built without the spec's "Tiers: From Ghost, all" option and without greeting a member by name. *(Story
+  5.24a's Dev, 2026-09-28: was "Story 10.107 — it builds A32 without the two options, and its criteria say so (Story
+  5.20's docs task). The export is never edited (R-74).")*
 location: `A32 Paywall - Spec.md` (read-only) · `epics.md` Story 10.107
 reason: the export is the design authority for what a design is built from, and the PRD for what it does; the rules
   already hold, so this records the disagreement rather than leaving A32's author to find it by a failed build.
@@ -6193,7 +6579,9 @@ severity: low
 origin: Story 5.20's Create (2026-09-26): `C Post Body.dc.html:81` (C1a, "Open paywall editor →") and `:1064` (C1d,
   "Open Paywall →"); EXPERIENCE.md:705 names them. Story 5.20 builds the entry the IA settles on — the Template
   switcher's Template surfaces group (EXPERIENCE.md:218-222).
-owner: Story 10.83 (A25's content model and first designs) — its criteria gain it in Story 5.20's docs task.
+owner: Story 10.83 (A25 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+  its id: the Post Content panel's "Open paywall editor →". *(Story 5.24a's Dev, 2026-09-28: was "Story 10.83 (A25's
+  content model and first designs) — its criteria gain it in Story 5.20's docs task.")*
 location: `epics.md` Story 10.83 · `C Post Body.dc.html` C1a, C1d
 reason: R-118 — a door arrives with the panel it sits in; no Post Content design exists before 10.83.
 note (Story 5.20's Dev, 2026-09-26): Story 10.83's criteria now name the link (`epics.md`).
@@ -6207,8 +6595,10 @@ severity: low
 origin: Story 5.20's Create (2026-09-26). `complete_schema.sql:702-712` holds `paywall_design_id text` with no reader or
   writer anywhere, and no column for a design's content or controls. Story 5.20 stores the paywall as the `paywall` doc
   (AD-27's "the doc gains a row per stored state, not a second store"), and amends AD-27(a0) to say so.
-owner: Story 7.13 (the card design module, the first story to write `project_treatments`) — it drops the column in its
-  own Schema phase.
+owner: Story 7.13 (The Ghost card design module and `cards.css`), whose criteria already carry it with its id:
+  `project_treatments.paywall_design_id` is dropped in that story's own Schema phase. *(Story 5.24a's Dev, 2026-09-28:
+  was "Story 7.13 (the card design module, the first story to write `project_treatments`) — it drops the column in its
+  own Schema phase.")*
 location: `supabase/migrations/20260904120000_complete_schema.sql:705` · `SCHEMA.sql` · AD-27(a0)
 reason: dropping a column is a Schema phase of its own (R-99), and Story 5.20's migration only widens a constraint;
   an unwritten column harms nothing until then.
@@ -6223,7 +6613,9 @@ status: open
 severity: low
 origin: Story 5.20's Create (2026-09-26), the planning sweep: `epics.md:7622` against the A32 roster
   (`A32 Paywall - Spec.md:249-264`: #2 is Card). DW-157 covers other starter names, not this one.
-owner: Story 11.11 (the Ledger starter) — its own Create checks the composition against the finished library.
+owner: Story 11.11 (Ledger — business / finance publication), whose criteria carry its requirement word for word with
+  its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 11.11 (the Ledger starter) — its own Create checks the
+  composition against the finished library.")*
 location: `epics.md` Story 11.11
 reason: a starter is composed from the finished library, so the name is settled there, not here.
 
@@ -6253,7 +6645,8 @@ reason: Next 16.3.1's `collect-build-traces.js` applies `outputFileTracingInclud
   it so the editor, `/canvas` and `/pilots` now carry the trace themselves (384 files each in a local build), and
   `style-guide.test.ts` holds the form. The real cure is a story of its own: a post-build check that the functions carry
   `packages/library/designs/**` (the `.vc-config.json` file map says it), or files that do not depend on tracing at all.
-owner: unowned
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/next.config.ts` (`outputFileTracingIncludes`) · `apps/web/lib/style-guide.ts` (`PACKAGES`) ·
   `apps/web/lib/pilots.ts` · `apps/web/lib/controls-review.ts` (both `import.meta.url`, untraced)
 
@@ -6268,9 +6661,10 @@ severity: medium
 origin: Story 5.20's review (2026-09-26). `postAccess` (`packages/library/src/access.ts`) blocks a `tiers` post whose
   `tiers` list is absent; the Content API posts read (`apps/web/lib/live-content.ts:123`, `INCLUDE.posts = 'tags,authors'`)
   requests no `tiers`, so every live `tiers` post arrives without one.
-owner: unowned — a Story 5.x fix or the next live-content story; adding `tiers` to the include is one word, but the shim
-  fixtures were recorded without it and would be re-recorded (`record-shim.py`, T1 and T3), which is why it is not a
-  review patch.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — a Story 5.x fix or the next live-content story; adding `tiers` to the
+  include is one word, but the shim fixtures were recorded without it and would be re-recorded (`record-shim.py`, T1 and
+  T3), which is why it is not a review patch.")*
 location: `apps/web/lib/live-content.ts` (`INCLUDE`) · `packages/library/src/access.ts`
 reason: a claim about the Content API's `include=tiers` on posts is a hypothesis until executed on both majors (standing rule 1).
 
@@ -6282,7 +6676,8 @@ status: open
 severity: low
 origin: Story 5.20's review (2026-09-26). `readMembers` (`apps/web/server/site-probe.ts:204-221`) and `probeSite` both
   select `site_settings`, spread, and update — the shape Story 3.3 set; Story 5.20 adds the second writer.
-owner: unowned
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/server/site-probe.ts`
 reason: a jsonb merge in one statement (`site_settings || $1`) is an RPC or a raw update the PostgREST client does not offer
   directly; the window is milliseconds and a lost `members` key is re-read on the next open of the canvas.
@@ -6299,9 +6694,10 @@ status: open
 severity: medium
 origin: Story 5.20's review (2026-09-26). `apps/web/server-wiring.test.ts:349-362` asserts the index of `.eq('user_id', …)`
   precedes `call({`; the live walk exercises Re-check on the caller's own site only.
-owner: unowned — the next story that touches `site-probe.ts`: either an executing step in `run-verify-live-content.cjs`
-  (a throwaway project pointed at the OTHER major's site row, Re-check refused, that row's `site_settings` unchanged) or
-  the ownership read lifted into an injectable client.
+owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
+  names this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — the next story that touches `site-probe.ts`: either
+  an executing step in `run-verify-live-content.cjs` (a throwaway project pointed at the OTHER major's site row,
+  Re-check refused, that row's `site_settings` unchanged) or the ownership read lifted into an injectable client.")*
 location: `apps/web/server/site-probe.ts` (`readSettings`, 5.20's `readMembers`) · `apps/web/server-wiring.test.ts`
 reason: RLS is not what guards this path (the service role reads), so the executing test is the only pin.
 also: **AMENDED 2026-09-26 by Story 5.21's Dev.** `readMembers` is now `readSettings` (and `recheckMembers` `recheckSite`):
@@ -6317,7 +6713,9 @@ status: open
 severity: low
 origin: Story 5.20's review (2026-09-26). `SURFACE_MAJOR = '6'` (`apps/web/lib/canvas.ts:257`); the editor does not know
   the linked site's major (`EditorSite` carries no version).
-owner: unowned — Epic 7 reads the site's version at connect for the theme; the box can follow it then.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — Epic 7 reads the site's version at connect for the theme; the box can
+  follow it then.")*
 location: `apps/web/lib/canvas.ts` · `packages/ghost-shim/src/contract.test.ts` (the two recordings, node for node equal)
 
 ### DW-274: a placed ask's panel line speaks only for members off
@@ -6328,7 +6726,9 @@ status: open
 severity: low
 origin: Story 5.20's review (2026-09-26). `askLine` (`apps/web/lib/paywall.ts:121`) reads `membersOff`; `membersNotice`
   reads all four facts. The story's I/O matrix binds the panel line to members off, so it is built as specified.
-owner: the owner, if he wants the panel to say the same as the Sites screen — a question for a later story, not this one.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "the owner, if he wants the panel to say the same as the Sites screen — a
+  question for a later story, not this one.")*
 location: `apps/web/lib/paywall.ts`
 
 ### DW-275: the paywall's stylesheet rides in every canvas document, disabled
@@ -6339,7 +6739,8 @@ status: open
 severity: low
 origin: Story 5.20's review (2026-09-26). `apps/web/lib/pilots.ts:132` inlines `surfaceCss()` with `media="not all"` on
   every canvas; the matrix's narrowed documents leave it out.
-owner: unowned
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/lib/pilots.ts` · `apps/web/lib/style-guide.ts` (`surfaceCss`)
 reason: one stylesheet, one document, and the editor never reloads the canvas document to switch surfaces; loading it on
   the first surface paint is the upgrade if the size ever matters.
@@ -6357,8 +6758,10 @@ origin: Story 5.21's Create (2026-09-26). `reconcile-designs.md:2755,2776` (a re
   owner"; `A2 Announcement Bars - Spec.md` gives #11 Toast "bottom right", 24px from both edges, and neither it nor A22
   #14's spec names the button. Portal's box is 98px tall at `bottom: 0; right: 0` (Portal 2.69.339 `frame.jsx`,
   2.51.5 the same), and Story 5.21 records it as MEASUREMENTS §55.
-owner: Story 9.7 (A2 #9–11) and Story 10.78 (A22 #13–16) — each category story decides its corner design's default against
-  the button Story 5.21 draws.
+owner: Stories 9.7 (A2 — designs #9–11) and 10.78 (A22 — designs #13–16 (owner gate)), whose criteria each carry the
+  corner decision word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.7 (A2 #9–11) and
+  Story 10.78 (A22 #13–16) — each category story decides its corner design's default against the button Story 5.21
+  draws.")*
 location: `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A2 Announcement Bars - Spec.md` (the export,
   read-only — the story writes its decision into its own spec) · `apps/web/lib/ghost-surfaces.ts`
 reason: sections-inventory A2's own rule — "No warning is needed once the thing being warned about is on screen" — keeps
@@ -6377,8 +6780,10 @@ origin: Story 5.21's Create (2026-09-26), read in Ghost's source: `default-setti
   migration. T1 and T3 both answer `false` (MEASUREMENTS §39). PRD §1.2 item 2 ("on by default on essentially every site")
   and FR-C2's reason for defaulting the ask to on carry the opposite; Story 5.21's Docs task corrects their wording and
   leaves the ask as ruled.
-owner: the owner, if a Ghost that hides `portal_button` is ever met — the ask's recommended answer and the stored
-  assumption (`portalState`'s `true` with `'default'`) would then become "No, it's off".
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "the owner, if a Ghost that hides `portal_button` is ever met — the ask's
+  recommended answer and the stored assumption (`portalState`'s `true` with `'default'`) would then become "No, it's
+  off".")*
 location: `apps/web/lib/probe-rule.ts` (`portalState`, `PORTAL_COPY`) · `apps/web/app/(app)/app/(authed)/sites/site-notices.tsx`
 
 ### DW-278: the canvas draws Ghost's default icon on the floating button, whichever icon the site chose
@@ -6391,9 +6796,10 @@ severity: low
 origin: Story 5.21's Create (2026-09-26), read in Portal's source (2.69.339 `trigger-button.jsx`, 2.51.5 `TriggerButton.js`):
   `portal_button_icon` null draws `user.svg` (26px beside the label, 34px alone); `icon-1` to `icon-5` are 24px SVGs; any
   other value is an `<img>` at 26×26. The snapshot does not store the icon.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "unowned — a routine call of Story 5.21's planning (ponytail: the choice moves no edge
-  by more than 2px). The five presets and a custom image are the upgrade.")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "unowned — a routine call of Story 5.21's planning
+  (ponytail: the choice moves no edge by more than 2px). The five presets and a custom image are the upgrade.")*")*
 location: `apps/web/lib/ghost-surfaces.ts` · `apps/web/lib/probe-rule.ts`
 
 ### DW-279: a re-read that lands and redraws Ghost's two surfaces is proven only by the hand-run live walk
@@ -6407,8 +6813,10 @@ severity: medium
 origin: Story 5.21's Review (2026-09-26), the Verification Gap layer: deleting the redraw in `recheck()` keeps `pnpm check`
   and `pnpm keyboard` green. The keyboard journey counts the re-read's POST and asserts the stored snapshot stays drawn
   when it is refused; `run-verify-live-content.cjs`'s (B) phase on T1 is the one place a landed answer is observed (R-82).
-owner: the story that next touches the harness's site header — a second harness snapshot handed on the second request, or
-  a harness-only answer for `recheckSite`, so one `pnpm keyboard` journey sees the button appear after a landed re-read.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the story that next touches the harness's site header — a second
+  harness snapshot handed on the second request, or a harness-only answer for `recheckSite`, so one `pnpm keyboard`
+  journey sees the button appear after a landed re-read.")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`recheck`) · `apps/web/app/(app)/app/harness/editor/layout.tsx` · `tools/keyboard/journey.spec.mjs`
 
 ### DW-280: the settings mapping writes the announcement and the brand over the snapshot even when the payload omits them
@@ -6423,8 +6831,9 @@ origin: Story 5.21's Review (2026-09-26), the Blind Hunter: `settingsPatch` writ
   and `brand: brandOf(settings)` unconditionally — `probePatch`'s behaviour since Story 3.3, so pre-existing, but the
   mapping now runs on every open of the editor. `settingsReadable` guards the browse shape, not the presence of each key;
   no Ghost read on T1 or T3 has ever omitted them (MEASUREMENTS §39, §55).
-owner: unowned until a Ghost that omits a public settings key is met; the fix is `membersOf`'s shape for each — leave the
-  previous value standing where the key is absent.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned until a Ghost that omits a public settings key is met; the fix is
+  `membersOf`'s shape for each — leave the previous value standing where the key is absent.")*
 location: `apps/web/lib/probe-rule.ts` (`settingsPatch`, `announcementOf`, `brandOf`)
 
 ## Deferred from: Story 5.22's Create run (2026-09-27)
@@ -6443,10 +6852,11 @@ origin: Story 5.22's Create (2026-09-27).
   - The Kit has one glyph, `LayerThumb` (`apps/web/components/kit/layers-row.tsx:111`). It is Hero's, and every
     Layers row has drawn it since Stories 1.3 and 5.4.
   - The rail reuses it rather than inventing thirty-odd category glyphs the export never drew.
-owner: Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's Create, 2026-09-27: every story
-  this line named is done. Was: "unowned. The owner's test of Story 5.22 decides whether it matters. - Upgrade A: a
-  glyph per category, drawn from the category's own `-0 Category Proof` frame. - Upgrade B: a real miniature, rendered
-  as the Section Picker renders its cards.")*
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24, the deferred-work sweep (R-207, owner, 2026-09-27). *(Story 5.23's
+  Create, 2026-09-27: every story this line named is done. Was: "unowned. The owner's test of Story 5.22 decides whether
+  it matters. - Upgrade A: a glyph per category, drawn from the category's own `-0 Category Proof` frame. - Upgrade B: a
+  real miniature, rendered as the Section Picker renders its cards.")*")*
 location: `apps/web/components/kit/layers-row.tsx` (`LayerThumb`) · the rail in
   `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`
 
@@ -6463,7 +6873,9 @@ origin: Story 5.22's Dev (2026-09-27), found while driving the compact editor in
   PRE-EXISTING by choosing the same section at 1440 on the full layout, which 5.22 does not touch: `sidebar.tsx:458-459`
   keys a prop's row `read-${r.path}` and a control's row `read-${r.name}`, and a22/1 declares a prop and a control of the
   same name (`blurb`), so both rows get `read-blurb`.
-owner: unowned — the fix is a kind prefix in the key (`read-prop-…`, `read-control-…`), which moves nothing on screen.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned — the fix is a kind prefix in the key (`read-prop-…`, `read-control-…`),
+  which moves nothing on screen.")*
 location: `apps/web/components/controls/sidebar.tsx` (the rows' `ReadOnly` keys)
 
 ### DW-283: on the Paywall canvas, a touch tablet narrower than about 628px with members switched off pushes ⋯ off the bar
@@ -6479,8 +6891,9 @@ origin: Story 5.22's Dev (2026-09-27), measured in the harness across widths: th
   never shrink), and ⋯ — with the MEMBERS OFF chip's own padding need about 628px with D8a's 6px spacing (it was about
   654 while the NOT A PAGE SECTION chip still shrank beside the name, re-measured after it was made whole-or-absent).
   Home fits down to 600. The AC's floor is 720, and every width from 720 up passes (`floor.spec.mjs`, the journey at 720).
-owner: unowned until a tablet under 660px wide meets the Paywall; the options are the owner's (R-143 keeps undo and redo
-  in the bar, and "never shrink or relabel" keeps Template and View as whole).
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "unowned until a tablet under 660px wide meets the Paywall; the options are the
+  owner's (R-143 keeps undo and redo in the bar, and "never shrink or relabel" keeps Template and View as whole).")*
 location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (the bar)
 
 ### DW-284: the deployed editor walk's step 90 read the "looked at" record before its own writes had landed
@@ -6496,8 +6909,9 @@ origin: Story 5.22's Dev (2026-09-27), the deployed walk at `9212ecc4` (`dpl_2KB
   ten-second poll, while the session had already recorded all three visitors (its own menu carried no dot), and after the
   reload the menu dotted `free` alone, so Paid's write had landed by then and Free's had not. The runs before and after
   on the same app code passed it (`765cdbde`, and `9212ecc4`'s third run: **0 FAIL, 659 PASS**).
-owner: unowned — whoever next touches the View as record (`recordViewed`'s one write chain, a queue of server actions) or
-  the walk's step 90.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — whoever next touches the View as record (`recordViewed`'s
+  one write chain, a queue of server actions) or the walk's step 90.")*
 location: `tools/probe/run-verify-editor.cjs` (step 90, the `storedViewed90` poll) · `recordViewed` in
   `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx`
 reason: Story 5.22 changes neither the record nor its writes. Telling a slow write from a short poll needs its own look —
@@ -6516,7 +6930,9 @@ severity: low
 origin: Story 5.22's review (2026-09-27). `SmallScreenNotice` draws the avatar from `useShellUser()`, which the shell
   provides on the editor path (`apps/web/components/shell/shell.tsx`); the keyboard harness sits outside the shell, so
   the branch never renders there, and `run-verify-editor.cjs` step 97 is the only assertion.
-owner: unowned — the next story that touches the harness editor layout or the shell.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — the next story that touches the harness editor layout or
+  the shell.")*
 location: `apps/web/components/editor/small-screen-notice.tsx` · `apps/web/components/shell/shell.tsx` ·
   `apps/web/app/(app)/app/harness/editor/layout.tsx`
 reason: closing it means the harness layout handing a fixture user through the same provider, the harness header's
@@ -6536,10 +6952,11 @@ origin: Story 5.23's Dev (2026-09-27), R-205. `clearDarkOverrides` now empties e
   what is in force: the panel row and the `⋯` item read `darkOverridesInForce`, and Theme settings reads D6a's
   `darkOverrideCount`, which counts only what an emitter could use. Executed on production the same day: 0 of 33
   sections hold any record.
-owner: Story 9.1 — A1's designs #1–4 are the first shipped ring, so it is the first story in which a customer can hold
-  a remembered override. It decides whether "Nothing to clear" names them or the count includes them, which is a D6a
-  surface question for the owner in R-83's shape.
-  Confirmed by the owner at Story 5.23's review (option 1, 2026-09-27): Story 9.1 decides.
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 — A1's designs #1–4 are the first
+  shipped ring, so it is the first story in which a customer can hold a remembered override. It decides whether "Nothing
+  to clear" names them or the count includes them, which is a D6a surface question for the owner in R-83's shape.
+  Confirmed by the owner at Story 5.23's review (option 1, 2026-09-27): Story 9.1 decides.")*
 location: `apps/web/components/controls/sidebar.tsx` (`darkOverridesInForce`, the row's "Nothing to clear") ·
   `apps/web/app/(app)/app/(authed)/projects/[id]/settings/theme-settings.tsx` (`n === 0`) ·
   `packages/section-runtime/src/doc-edit.ts` (`darkOverrideCount`, `holdsDarkOverride`)
@@ -6556,7 +6973,9 @@ severity: low
 origin: Story 5.23's Dev (2026-09-27), the walk against `9263b6e3`. Run 1 was a HARNESS ERROR, `page.reload: Timeout
   30000ms exceeded` at `run-verify-controls.cjs:472` (step 18's reload), with 0 FAIL and 85 PASS before it. Run 2 was
   0 FAIL, 114 PASS. The run before the push, at `2973a798`, passed that line.
-owner: Story 5.24 — the sweep (R-207) — or the next story that edits the walk.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24 — the sweep (R-207) — or the next story that edits the
+  walk.")*
 location: `tools/probe/run-verify-controls.cjs` — the `goto` and `reload` calls that pass `waitUntil: 'networkidle'`
   (lines 79, 82, 472 and 513 at `9263b6e3`)
 reason: `networkidle` waits for 500 ms with no request in flight, which a live page does not promise. The two reloads
@@ -6577,8 +6996,10 @@ origin: Story 5.23's review (2026-09-27). `parkedControls` is keyed by design id
   written for every design left (R-205); `isDesigned` and `read.ts` look only at the live `designId`, so a stale key is
   never read and never pruned. Pre-existing since Story 5.11, wider since R-205 because every visited design now leaves
   a record.
-owner: unowned — the first story that retires a design from the library (Epic 9 onward) says whether a stale record is
-  pruned on parse or kept, with a test either way.
+owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
+  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — the first story that retires a
+  design from the library (Epic 9 onward) says whether a stale record is pruned on parse or kept, with a test either
+  way.")*
 location: `packages/section-runtime/src/doc-schema.ts` (`parkedControls`) · `packages/section-runtime/src/read.ts`
 reason: no design has ever left the library, so there is nothing to execute the claim against; a sentence and a test
   belong beside the first removal, not in a review patch.
@@ -6625,8 +7046,10 @@ origin: Story 5.23b's planning (2026-09-28), measured at 4× CPU throttle on a p
   40-section canvas's layout; the rest is `sheetFor` copying every editor rule into the chrome's sheet, and the Controls
   panel's first mount. Story 5.23a's planning had seen it as a 193 ms "first hover" and named Story 5.23b; 5.23b's criteria
   are re-renders and the warm trace, so it is handed on here rather than dropped.
-owner: Story 5.24 (R-207) — prepare the chrome's faces and sheet before the first gesture (the canvas document's own load,
-  or declared with it) and measure the first selection before and after at 4×.
+owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
+  *(Story 5.24a's Dev, 2026-09-28: was "Story 5.24 (R-207) — prepare the chrome's faces and sheet before the first
+  gesture (the canvas document's own load, or declared with it) and measure the first selection before and after at
+  4×.")*
 location: `apps/web/lib/canvas-layer.ts` — `chromeLayers`, `addFonts`, `sheetFor`; `editor.tsx` — the chrome effect that
   calls `chromeLayers` on the first selection or hover (`:3369-3381` at `790b4d6e`)
 reason: not a re-render and outside NFR-1's warm trace, so it is not 5.23b's to fix inside its one goal; it has a cause,
@@ -6646,8 +7069,10 @@ origin: Story 5.23b's review (2026-09-28), the real-infra verifier's walk of `ap
   `1 FAIL, 664 PASS` — step 89, the pill still naming the previous subject after a 600 + 1200 ms wait and a reload, while
   the very next check read `preview_subject.slug` of the new choice from PostgREST. `chooseSubject` is line for line the
   same as at `bc51ecbd` and the story's diff has no mention of `preview_subject`.
-owner: the next story that touches `run-verify-editor.cjs` — step 89 waits for the save to settle (the "Synced" state, or
-  the PostgREST read it already makes) BEFORE the reload, as the walk's other round trips do.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry. *(Story 5.24a's Dev, 2026-09-28: was "the next story that touches `run-verify-editor.cjs` — step 89 waits
+  for the save to settle (the "Synced" state, or the PostgREST read it already makes) BEFORE the reload, as the walk's
+  other round trips do.")*
 location: `tools/probe/run-verify-editor.cjs` — step 89 (`:4295` at `c390a9f4`)
 reason: the write path is untouched by 5.23b and the same line has failed once in two runs (the twice-dying rule of the
   editor-harness note); hardening the walk is not this story's goal, and the finding has a cause, a reproduction and an owner.

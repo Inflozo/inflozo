@@ -332,7 +332,9 @@ limits; `browserslist-config-baseline@0.5.0` at the `2026-08-18` pin resolving t
 
 One further correction: **`size-limit` has no engine of its own** and measures nothing without a
 preset — `@size-limit/file` is required — and its default metric is **brotli**, which is what NFR-2's
-40 KB budget therefore means. And the WebAuthn surface landed in `@supabase/auth-js` **2.75.0**, not
+40 KB budget therefore means. *(Corrected 2026-09-28, Story 5.24a, DW-140: NFR-2 now names its metric and base —
+40,960 bytes, gzip level 9 — and `tools/check-baseline.mjs` runs `size-limit` with `gzip: true`. The measurement above
+stands: brotli is still the tool's default.)* And the WebAuthn surface landed in `@supabase/auth-js` **2.75.0**, not
 2.105.0, so the PRD's floor is a safe over-pin rather than a capability boundary.
 
 

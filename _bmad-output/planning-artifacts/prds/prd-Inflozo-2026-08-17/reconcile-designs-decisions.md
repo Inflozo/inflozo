@@ -3747,6 +3747,10 @@ point at or select, but only on parts that move by themselves, not all sections 
   - B3a's chip itself: its look, its words, and its place on the behaviour rather than in a status bar.
   - A carousel's optional autoplay (research §3.5) is a per-design choice that the module row cannot see, so an
     autoplaying carousel carries no chip. Its first category story may raise it.
+    - *(2026-09-28, Story 5.24a, DW-227)* The case cannot arise: no design offers a carousel autoplay — A14's and A19
+      #15's refusals are owner-ratified and no spec draws an autoplay or interval row on a carousel — and the validator
+      refuses one (`carousel-autoplay`, `packages/library/src/validate.ts`). A design that wants one is the owner's to
+      rule first (`docs/section-authoring.md`).
   - Today's library draws no chip anywhere, because the pilots' `nav-drawer` and `member-form` both wait for a
     press. CI draws one on controls fixture 1, which declares `marquee` for exactly that.
   - The export is untouched (R-74).
@@ -4609,7 +4613,8 @@ closed with its evidence, or given a named later story, and you test whatever it
   - ✅ `sprint-status.yaml`.
   - ✅ `epic-5-context.md`.
   - ✅ the ledger — the sixteen orphaned entries and DW-188, DW-207, DW-219 and DW-220 name Story 5.24.
-  - ⬜ built — Story 5.24.
+  - ⬜ built — Story 5.24, run as Stories 5.24a–e since R-211: ✅ 5.24a (its Dev, 2026-09-28 — every open entry owned by a
+    story that is not done and whose card names it, and the gate refusing an orphan) · ⬜ 5.24b–e.
 - *Since **R-208** (owner, 2026-09-27) put Story 5.23b straight after 5.23a, Story 5.24 runs after 5.23b.*
 
 **R-208 — the 60 fps pass moves to a new Story 5.23b: Story 5.23a ships the canvas, 5.23b makes the editor's panels
@@ -4740,7 +4745,8 @@ speed test passes and Epic 5 closes as you ruled."*
   - ✅ `epics.md` — Story 5.24's card becomes the five cards.
   - ✅ `sprint-status.yaml` — 5.24's key becomes 5.24a's; 5.24b–e added.
   - ✅ `epic-5-context.md`.
-  - ⬜ built — Stories 5.24a–e.
+  - ✅ built — Story 5.24a (its Dev, 2026-09-28): every open entry re-homed, and `story-board.py`'s `orphaned_entries`.
+  - ⬜ built — Stories 5.24b–e.
 
 **R-212 — the free pair is the owner's pick in every category, and the plan follows it.** Story 5.24's Create,
 Question 2, ruled **option 1** (owner, 2026-09-28): *"Your picks, everywhere"*.
@@ -4761,8 +4767,13 @@ Question 2, ruled **option 1** (owner, 2026-09-28): *"Your picks, everywhere"*.
 - Targets:
   - ✅ this entry.
   - ✅ Story 5.24a's spec — Question 2 and its task.
-  - ⬜ built — Story 5.24a: `epics.md`, `prd.md` (FR-G2, the tiering note), `sections-inventory.md` (:12, §3–§4,
-    Invariant 1), `SYNTHESIS_DEFAULTS`, the check.
+  - ✅ built — Story 5.24a's Dev (2026-09-28): `epics.md` (every first story builds the pick, each misplaced design and
+    its criteria trading places with it; every "all of them are Pro" line; FR-G2's summary, Story 11.1, the sizing
+    answer's dated note), `prd.md` (FR-G2, the tiering note, F.1's plan rows), `sections-inventory.md` (:12, §3's four
+    rows, Invariant 1), `SYNTHESIS_DEFAULTS` (`a25/2`, `a28/1`, `a29/1`), and `tools/doc-audit.py`'s `plan_failures`.
+    Two triage verdicts moved with their designs: DW-149 to Story 10.114 (A34 #1 Numbers) and DW-247's half to 10.5
+    (A4 #2 Flush Left). A21's two misplaced designs had one place to free: #2 Cards trades with #11 Rail, #1 Grid stays
+    Pro in the first story (the pair taken in order).
 
 **R-213 — a signed-out editor says so: the save indicator's sixth state.** Story 5.24's Create, Question 3, ruled
 **option 1** (owner, 2026-09-28): *"A sixth state in the same red panel"*.
@@ -4851,7 +4862,8 @@ today"*.
 - **The rule.** Re-check plan and Re-check connection ask the customer's Ghost on every press; the double press stays
   blocked (R-98).
 - **Declined.** Options 2 and 3, a sixty-second wait, shown or silent.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 11 · ⬜ DW-64 closed on this ruling by Story 5.24a.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 11 · ✅ DW-64 closed on this ruling by Story 5.24a's Dev
+  (2026-09-28).
 
 **R-221 — no copying or moving a section across page types at launch; Global sections are future work.** Story 5.24's
 Create, Question 12, ruled **option 1** (owner, 2026-09-28): *"Not at launch - But add a future requirement to mark a
@@ -4865,8 +4877,8 @@ a Global section so that changes are not applied to other Global sections."*
   Global library and can be added to any page; changing one anywhere changes it everywhere; unlinking one makes a copy
   that no longer follows.
 - **Declined.** Option 2, Copy to / Move to now; option 3, a story after Epic 5.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 12 · ✅ `prd.md` Appendix G · ⬜ DW-122 closed on this ruling by
-  Story 5.24a.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 12 · ✅ `prd.md` Appendix G · ✅ DW-122 closed on this ruling by
+  Story 5.24a's Dev (2026-09-28).
 
 **R-222 — every category's owner gate includes the member-state pass.** Story 5.24's Create, Question 13, ruled
 **option 1** (owner, 2026-09-28): *"Add the pass to §4's owner check and to every category's owner-gate story"*.
@@ -4876,8 +4888,8 @@ a Global section so that changes are not applied to other Global sections."*
 - **The rule.** At each category's owner gate the owner looks at every members-aware design as Logged out user, Free
   member and Paid member before approving; PRD §4's owner check and every owner-gate story say so.
 - **Declined.** Option 2, deleting FR-D16's sentence.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 13 · ⬜ built — Story 5.24a: `prd.md` §4 and every
-  owner-gate story in `epics.md`.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 13 · ✅ built — Story 5.24a's Dev (2026-09-28): `prd.md` §4
+  and every owner-gate story in `epics.md`, DW-221 closed on it.
 
 **R-223 — the database refuses a signed-out ticket at once.** Story 5.24's Create, Question 5, ruled **option 3**
 (owner, 2026-09-28): *"Make the database refuse a signed-out ticket at once. It doesn't slow anything down, but it's about

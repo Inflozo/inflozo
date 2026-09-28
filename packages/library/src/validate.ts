@@ -572,6 +572,14 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
   for (const k of keys) out.push(...validateDataBinding(k, dataBindings[k]!))
 
   const schema: ControlDef[] = Array.isArray(d.controlSchema) ? d.controlSchema : []
+  // DW-227 (Story 5.24a, R-175) — NO CAROUSEL MOVES BY ITSELF. `carousel`'s registry row waits for a press
+  // (`movesByItself: false`), so a carousel that turned its own slides would hold still while designing with no PAUSED
+  // chip; and every carousel the export draws refuses autoplay (A14's and A19 #15's refusals are owner-ratified).
+  if (markup !== undefined && /\bdata-module=["']carousel(?::\d+)?["']/.test(markup)) {
+    for (const c of schema.filter((c) => /auto-?play|interval/i.test(`${c.name} ${c.label}`))) {
+      push(out, 'carousel-autoplay', `control "${c.name}" offers a carousel autoplay, and no carousel moves by itself: carousel waits for a press, so an autoplaying one would hold still while designing with no PAUSED chip (R-175, DW-227). Every carousel in the export refuses autoplay — raise it with the owner before building one.`)
+    }
+  }
   const seen = new Set<string>()
   if (schema.length > CONTROL_CAP) {
     push(out, 'control-cap', `controlSchema declares ${schema.length} controls, and one design offers at most ${CONTROL_CAP} of its own (FR-F3). The universal controls and the Data group are not counted; split the design, or drop the controls a reader would least miss.`)

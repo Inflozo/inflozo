@@ -25,7 +25,7 @@ A key is never renamed, never reused for a different meaning, and never deleted 
 
   **Keys are dotted `namespace.name`, not the English string itself** — `^[a-z][a-z0-9]*\.[a-z0-9]+(_[a-z0-9]+)*$`, grouped by function as §3 groups them. Ghost's own theme keys every string on its English text — Casper's `locales/en.json` (read in source, `github.com/TryGhost/Casper`, `main`, at Story 4.9's review) is `"Subscribe": ""`, an English key with an empty value, so `{{t}}` prints the key — and that convention is incompatible with S1 and S2: if the key *is* the English default, then improving the copy renames the key and silently orphans every override — precisely the failure this catalog exists to prevent. **Dotted keys work in Ghost, and this is recorded rather than assumed** (Story 4.9, `MEASUREMENTS.md` §44, T1 6.58.0 and T3 5.130.6): a theme's `{{t}}` looks a dotted key up as **one** key in `locales/<locale>.json` — never as a path into nested objects — and prints the key itself when the file has no entry. S4 guarantees the lookup always hits, so a raw key never reaches a visitor. "Readable" is satisfied by the namespace, which tells a translator where the string appears.
 
-  **The catalog has two copies, held equal by a check.** This file's §3 is the normative table; `packages/library/strings/catalog.json` is the machine copy code reads. `node tools/check-catalog.mjs` (in `pnpm check`) holds them equal in order and in both directions, runs the format rules, renders every default through the `intl-messageformat` both majors bundle, and prints the totals — which is why no heading below carries a count.
+  **The catalog has two copies, held equal by a check.** This file's §3 is the normative table; `packages/library/strings/catalog.json` is the machine copy code reads. `node tools/check-catalog.mjs` (in `pnpm check`) holds them equal in order and in both directions, runs the format rules, renders every default through the `intl-messageformat` both majors bundle, and prints the totals — which is why no heading below carries a count. It also reads **every committed `catalog.json`** from git and fails when a key any of them held is gone now, naming the key and the last commit that held it (DW-143, Story 5.24a) — the two copies can agree with each other and both have lost a key, which only the history shows.
 
 **S2 — The English default may be revised; the meaning may not.**
 A typo fix or a tone pass on a default is a normal library drop: users who never overrode the key get the better copy, users who did keep theirs. But **any change of meaning, of grammatical role, or of the placeholder set is a new key.** The old key is marked `superseded_by` in the catalog, stays in the catalog forever, and ships in the **migration map** (§6), which carries the user's override forward on the next drop and lists the change in FR-J14's confirm step.
@@ -73,6 +73,11 @@ A new chrome string needs a key here **before** the design that uses it is autho
 | **prop** | Also serves as the initial value of an editable text prop; leaves the catalog path once edited (S6). |
 | **locked** | Not overridable, not listed in Translations (S7). |
 | **canvas** | Rendered by the canvas shim only; never emitted into a compiled theme. |
+
+The **Status** column is empty for a live key and takes one of two forms otherwise: **retired** followed by its reason,
+or **superseded by** `key` naming the key that replaced it under S2 (DW-148, Story 5.24a). `tools/check-catalog.mjs`
+compares that second form with `catalog.json`'s `supersededBy` in both directions, so the two copies cannot disagree
+about a superseded key the first time one exists.
 
 ---
 

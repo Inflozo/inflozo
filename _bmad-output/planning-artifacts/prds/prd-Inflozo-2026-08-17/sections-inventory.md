@@ -9,12 +9,13 @@ updated: 2026-08-19
 <!-- totals -->
 **Totals: 33 categories · 466 designs · 66 [Free] · 438 placeable · 28 non-placeable.** Every one of these is **derived from the export** by `tools/inventory-gen.py` and never typed (standing rule 3): the design count is the drawn frames less the deletions ruled at step 4b, `[Free]` is the 2 designs the owner chose for that category (R-17), and the non-placeable count is A32 (12) + A33 (6) + A34 (10). Regenerate with `python3 tools/inventory-gen.py --write`; `--check` fails if this file has drifted from the export.
 <!-- /totals -->
-**[Free] is positional and nothing else.** The first two designs of every category are Free; the two
-historical extras are struck (R-17). **A29 #7's and A31 #10's re-tiers are withdrawn** — A31's private
-gate is drawn by *every* A31 design, so #1 Centred and #2 Split Reason already give `private.hbs` a Free
-pair, and A29's third had no basis in the export, where all fourteen bind either archive. Every spec
-carries the marker on its own roster; the merge does not map it positionally onto a spec that has lost
-or gained a design. Design descriptors define the *structural* identity FR-G5 protects.
+**[Free] is the owner's pick and nothing else.** Each category's two Free designs are the two the owner picked for
+it — the export's `**[Free] designs:**` line, which the rosters below are generated from — never "the first two"
+(R-17 as amended, 2026-08-28; **R-212**, 2026-09-28). The two historical extras are struck (R-17). **A29 #7's and A31
+#10's re-tiers are withdrawn** — A31's private gate is drawn by *every* A31 design, so its two picks already give
+`private.hbs` a Free pair, and A29's third had no basis in the export, where all fourteen bind either archive. Every
+spec carries the marker on its own roster; the merge does not map it positionally onto a spec that has lost or gained
+a design. Design descriptors define the *structural* identity FR-G5 protects.
 
 **Placeable sections vs non-placeable treatments (normative carve-out):** the split itself is in the
 generated totals above and is not restated here. A **placeable** design is one the user drags onto a
@@ -777,7 +778,7 @@ Content: navLabel, newerLabel, olderLabel, moreLabel, endLabel. Controls: Chevro
 
 ## Synthesis Defaults (FR-D6 — normative)
 
-When a template in FR-I1's standard set is **untouched** (the user never edited it), the compiler MUST emit it from the default stacks below, so a home-only design still produces a complete, coherent, gscan-clean theme. Every design referenced here is **[Free]** (design #1 or #2 of its category) — an untouched template MUST always compile all-Free, on any plan.
+When a template in FR-I1's standard set is **untouched** (the user never edited it), the compiler MUST emit it from the default stacks below, so a home-only design still produces a complete, coherent, gscan-clean theme. Every design referenced here is **[Free]** — one of the two its category's owner-picked pair names (R-212) — so an untouched template MUST always compile all-Free, on any plan. The one exception waiting on a ruling is the pager's A34 #1 Numbers (§3–§4), which R-212 makes Pro: which Free design an untouched pager is, is Story 10.112's question for the owner (DW-232).
 
 ### 1. Scope & trigger
 
@@ -814,17 +815,17 @@ Ghost resolves **`home.hbs` for the site root** and **`index.hbs` for `/page/N/`
 | # | Section | Key values |
 |---|---|---|
 | 1 | **A24 #1 Centred** (Post Header) | Binds title, tag, meta, feature image (skips image row when unset). |
-| 2 | **A25 #1 Measured** (Post Content section) | Wraps `{{content}}`. **The synthesized design is #1** — the design picker opens on it, and the values below are #1's own control defaults (FR-F7), not a category-level stack: Measure **Narrow**, TOC **Off**, TOC style Plain, drop cap **Off**, share rail **off**, type scale **Normal**. Card treatment defaults to **A33 #1 Plain** by reference, per §2 — the Post Content section does not carry it (FR-Q7). **No paywall section is synthesized** — A32 is a non-placeable treatment emitted from the project's Paywall Template, and an untouched project has none, so Ghost's own content CTA renders at the members-only cutoff until one is designed. |
+| 2 | **A25 #2 Plain** (Post Content section) | Wraps `{{content}}`. **The synthesized design is #2 Plain**, one of A25's two owner-picked Free designs (R-212; #1 Measured, the default until then, is Pro under the picks) — the design picker opens on it, and its values are #2's own control defaults (FR-F7), never a category-level stack or a second copy of them here: the article on the measure and nothing else, no index and no share mark. Card treatment defaults to **A33 #1 Plain** by reference, per §2 — the Post Content section does not carry it (FR-Q7). **No paywall section is synthesized** — A32 is a non-placeable treatment emitted from the project's Paywall Template, and an untouched project has none, so Ghost's own content CTA renders at the members-only cutoff until one is designed. |
 | 3 | **A26 #1 Author Bio** (Post Footer) | Portrait, bio, more-by link from post authors. |
 | 4 | **A27 #1 Three Up** (Related Posts) | `{{#get}}` by primary tag, fallback latest (built-in), Count **3**. Never paginated. |
-| 5 | **A28 #2 Split Head** (Comments) | `{{comments}}`; #2 over #1 deliberately — bare native output renders nothing when comments are disabled, no orphaned panel chrome. |
+| 5 | **A28 #1 Rule** (Comments) | `{{comments}}` under one hairline, a labelled count and a line of house rules — A28's owner-picked Free default (R-212), where #2 Split Head was until his picks made it Pro. With comments off (`{{#if comments}}` false) its closed notice replaces the block, or the section goes at Hide; it never draws a placeholder comment, an outline or a reserved height (`A28 Comments - Spec.md` §1). |
 
 #### `page.hbs`
 
 | # | Section | Key values |
 |---|---|---|
 | 1 | **A24 #1 Centred** (Post Header) | Meta row (date/author/reading time/tag) **hidden** — pages aren't dated content. Title and feature image are wrapped in `{{#if @page.show_title_and_feature_image}}` (A24's `page.hbs` rule), which is what makes the two synthesized headers **not** byte-identical, so §7.4's hoist keeps them as separate partials. |
-| 2 | **A25 #1 Measured** (Post Content section) | Same design and the same control values as `post.hbs` row 2 — A25 is target-agnostic and binds `post` on both templates (see A25's dual-target rule), so the two synthesize identically and the compiler's byte-identity hoist may legitimately merge them into one shared partial (§7.4). |
+| 2 | **A25 #2 Plain** (Post Content section) | Same design and the same control values as `post.hbs` row 2 — A25 is target-agnostic and binds `post` on both templates (see A25's dual-target rule), so the two synthesize identically and the compiler's byte-identity hoist may legitimately merge them into one shared partial (§7.4). |
 
 No post footer, related, or comments on pages.
 
@@ -839,7 +840,7 @@ No post footer, related, or comments on pages.
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A29 #2 Split Head** (Archive Header) | **The requirement is withdrawn.** A29 is one design over three archives in the export — every one of the fourteen reads whichever object the route provides (`{{#tag}}`, `{{#author}}` or a collection route), so no design is tag-bound and #1 is legal here too. #2 stays the synthesized default because its right column carries a description and a count, which is what an author archive has to say; **#12 Portrait** is the design to reach for when the site wants the author's face. |
+| 1 | **A29 #1 Centred** (Archive Header) | The author's name, bio and post count from `{{#author}}` — the same design `tag.hbs` synthesizes, because A29 is one design over three archives in the export: every one of the fourteen reads whichever object the route provides (`{{#tag}}`, `{{#author}}` or a collection route), so no design is tag-bound. #1 is A29's owner-picked Free default (R-212); #2 Split Head, the default here until then, is Pro under his picks. **#12 Portrait** is the design to reach for when the site wants the author's face. |
 | 2 | **A17 #1 Three Up** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbers**. All meta toggles on. |
 
 #### `error.hbs`
@@ -862,6 +863,6 @@ On every synthesized collection template (**`home.hbs`, `index.hbs`**, `tag.hbs`
 
 ### 5. Invariants
 
-1. Defaults reference only [Free] designs — design #1 of each category, or #2 where the stacks state the reason (A28, A29-on-author). A default stack MUST NOT change without updating this document; it is the single source of truth for FR-D6.
+1. Defaults reference only [Free] designs — for each category one of the two the owner picked (R-17 as amended, R-212), which is what `SYNTHESIS_DEFAULTS` in `packages/section-runtime/src/synthesize.ts` cites. The pager's A34 #1 Numbers is the one default R-212 left Pro, and Story 10.112 rules which Free design replaces it (DW-232). A default stack MUST NOT change without updating this document; it is the single source of truth for FR-D6.
 2. A fully untouched project (nothing designed) compiles to a complete valid theme from the Inheritance and Default-stacks parts above alone: 0 gscan errors, all FR-I1 files present, credits per FR-J15.
 3. Synthesized output goes through the same section registry, partials, and CSS/JS pruning as designed templates (P4, FR-J3/J4) — synthesis chooses stacks, it does not use a separate render path.

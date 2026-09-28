@@ -1268,3 +1268,14 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     open entry owned only by finished stories; (4) DW-267 stays Story 7.13's, so the sweep has no Schema phase.
     The owner ruled the same day (R-211 to R-222): five stories, his free-pair picks everywhere, and the rest as the
     lines above record.
+  - **Story 5.24a's Dev (2026-09-28):** the triage re-derived at HEAD matched the ledger exactly. Every open entry is now
+    owned by one story that is not done and whose card in `epics.md` names it — the four later sweep stories by their
+    lists, and each later story by its requirement pasted word for word with its DW id — and `story-board.py`'s
+    `orphaned_entries` refuses the commit otherwise (red on the ledger as it was: 194 entries). So DW-107 is Story
+    9.8's and DW-122 closed on R-221; DW-290 is Story 5.24e's. R-212's trades moved two triage verdicts with their
+    designs (DW-149 to 10.114, DW-247's half to 10.5). `tools/doc-audit.py` now holds Epics 9–10 to the export (the
+    owner's [Free] pair in each first story, every live roster design in a story, one module-line sentence) and owns
+    `dated()`, the one rule for a generated page's date (DW-132) — whose control caught `open(OUT, 'w')` truncating the
+    page before `dated()` read it in two generators. An owner line is read without its dated `*(… was …)*` note, which
+    keeps the old owner and never owns; and the gate refuses a generator that reads HEAD's date, which a faked day
+    cannot catch.

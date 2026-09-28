@@ -522,6 +522,16 @@ test('a design whose contexts fit NONE of its own targets is refused; one target
   clean(validateDesignJson(design({ bindingContext: ['post'], compileTarget: ['post.hbs', 'index.hbs'] })), 'one reachable target')
 })
 
+test('DW-227 — a design declaring carousel offers no autoplay or interval control, and the rule is the carousel\'s alone', () => {
+  const carousel = root('<div data-module="carousel:768"><ul></ul></div>')
+  for (const c of [toggle({ name: 'autoplay', label: 'Autoplay' }), ctl({ name: 'speed', label: 'Slide interval' })]) {
+    assert.deepEqual(codes(validateDesignJson(design({ controlSchema: [c] }), carousel)), ['carousel-autoplay'], c.name)
+  }
+  clean(validateDesignJson(design({ controlSchema: [toggle({ name: 'arrows', label: 'Arrows' })] }), carousel), 'a carousel with arrows')
+  clean(validateDesignJson(design({ controlSchema: [ctl({ name: 'interval', label: 'Interval' })] }), root('<p data-module="lightbox">x</p>')),
+    "an interval on a design that declares no carousel (A2's rotator is the export's one)")
+})
+
 test('a design declaring pagination cannot list a non-paginated target (R-7)', () => {
   const markup = root('<a data-pagination="next" href="#">Older</a>')
   const f = validateDesignJson(design({ compileTarget: ['index.hbs', 'error.hbs'] }), markup)

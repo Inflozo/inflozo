@@ -658,8 +658,8 @@ export async function recheckPlan(formData: FormData): Promise<void> {
  *
  * NO THROTTLE, DELIBERATELY (DW-64, amended by this story). It is the customer's own site, their
  * own key and their own Ghost, and the control exists precisely so somebody who has just fixed a
- * key does not have to wait a day. A cooldown wants a rule nobody has decided — how long, and what
- * the row says while it waits.
+ * key does not have to wait a day. The owner ruled it so for both Re-check buttons (R-220,
+ * 2026-09-28: "No wait, as today"), which closed DW-64; the double press stays refused (R-98).
  */
 export async function recheckConnection(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 're-check connection')

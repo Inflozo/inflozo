@@ -2,9 +2,10 @@
 title: 'Story 5.24a — The sweep: the ledger and the plan'
 type: 'chore'
 created: '2026-09-28'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: '8dda56747680bb4e189ad73c18f37b3b7845b30b'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -316,54 +317,54 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
 
 ## Tasks & Acceptance
 
-- [ ] `tools/story-board.py` — **the orphan check**: `orphaned_entries()` refuses at exit 2 an open entry whose owner
+- [x] `tools/story-board.py` — **the orphan check**: `orphaned_entries()` refuses at exit 2 an open entry whose owner
   line names no story that is not done in `sprint-status.yaml`, or whose living owners name its DW id neither in their
   `epics.md` block nor in their spec; the message says what to do. `demo()` gains a done-owner fixture and a
   silent-owner fixture that must be refused, and a living, naming owner that must pass. It lands in the same commit as
   the re-homing below, since today's ledger fails it. Stories 5.24b–e already name their entries on their cards.
-- [ ] `epics.md` + `deferred-work.md` — **re-home every entry**: each under *Left open* gets its sentence in its story's
+- [x] `epics.md` + `deferred-work.md` — **re-home every entry**: each under *Left open* gets its sentence in its story's
   criteria word for word and an `owner:` line naming that story, with a dated note keeping the old owner; each entry of
   the other four sweep stories is owned by that story (R-211) — DW-40 by Story 5.24b (R-223).
   Every re-homed entry stays `open`.
-- [ ] `deferred-work.md` — close every entry under *Already fixed* with its evidence re-executed at Dev.
-- [ ] `docs/section-authoring.md` — **DW-111** (:257: read `universals` from the drawn panel, never the spec table),
+- [x] `deferred-work.md` — close every entry under *Already fixed* with its evidence re-executed at Dev.
+- [x] `docs/section-authoring.md` — **DW-111** (:257: read `universals` from the drawn panel, never the spec table),
   **DW-179** (prop types: visible authored text is `richtext` with the four marks unless the spec narrows; a link label
   drops `a`), **DW-227** (:822: no design offers carousel autoplay) with R-175's dated note and a library test that no
   design declaring `carousel` carries an autoplay or interval control (control: a fixture with one fails).
-- [ ] `prd.md` Appendix G — **DW-217**: the collaboration bullet records that `project_template_prefs` becomes per user,
+- [x] `prd.md` Appendix G — **DW-217**: the collaboration bullet records that `project_template_prefs` becomes per user,
   a Schema-phase migration, when seats ship. (R-219's and R-221's two bullets landed at 5.24's Create.)
-- [ ] `tools/design-patch-prompts.py` — **DW-118**: a note beside P0's prompt, outside the copied text, that R-104
+- [x] `tools/design-patch-prompts.py` — **DW-118**: a note beside P0's prompt, outside the copied text, that R-104
   superseded "a curated Tabler set"; the prompt stays as sent.
-- [ ] `tools/doc-audit.py` + `epics.md` — **DW-164** (the library stories' module lines become the sentence naming each
+- [x] `tools/doc-audit.py` + `epics.md` — **DW-164** (the library stories' module lines become the sentence naming each
   design's own Behaviour module line, never `core`; a guard fails a library story whose module line lists modules — red
   on HEAD) and **DW-177** (Stories 9.4, 9.8, 10.5, 10.25 name A1 #16 Reveal, A2 #15 Triple, A4 #18 Overlap Card, A9 #15
   Ledger; a derived check that every live roster design is named in a story of its category — red on HEAD, naming those
   four).
-- [ ] `tools/doc-audit.py`, `build-board.py`, `category-prompts.py`, `story-board.py` — **DW-132**: a page whose content
+- [x] `tools/doc-audit.py`, `build-board.py`, `category-prompts.py`, `story-board.py` — **DW-132**: a page whose content
   is unchanged keeps its on-disk date; only a content change stamps today. Control: a self-check regenerating each page
   with the date faked a day ahead must produce identical bytes (red under the old rule).
-- [ ] `tools/story-board.py` `demo()` — **DW-172**: run `tools/hooks/commit-msg` in a temporary repo: a Dev commit with
+- [x] `tools/story-board.py` `demo()` — **DW-172**: run `tools/hooks/commit-msg` in a temporary repo: a Dev commit with
   one unticked task exits 1 naming it, a Dev commit with no spec exits 1, all ticked exits 0.
-- [ ] `prd.md` NFR-2, `tools/check-baseline.mjs`, `VERIFY-AT-BUILD.md` row 27, Stories 7.5/7.33 — **DW-140**: "< 40 KB
+- [x] `prd.md` NFR-2, `tools/check-baseline.mjs`, `VERIFY-AT-BUILD.md` row 27, Stories 7.5/7.33 — **DW-140**: "< 40 KB
   gzipped (40,960 bytes, gzip level 9)", `size-limit` run with `gzip: true`; the check asserts its size equals
   `zlib.gzipSync(file, {level: 9}).length` and that NFR-2's sentence names what it checks; grep "brotli".
-- [ ] `tools/check-catalog.mjs` + appendix-h1 §2 — **DW-143** (every key of every committed `catalog.json` is still live,
+- [x] `tools/check-catalog.mjs` + appendix-h1 §2 — **DW-143** (every key of every committed `catalog.json` is still live,
   retired or superseded; the failure names the key and its last commit; an in-memory previous catalog with an extra key
   is the control) and **DW-148** (the status form "**superseded by** `key`", compared both ways; a cloned catalog is the
   control).
-- [ ] **R-212** (Question 2) — in `epics.md`, each category's first story trades its misplaced designs for the owner's
+- [x] **R-212** (Question 2) — in `epics.md`, each category's first story trades its misplaced designs for the owner's
   pair (their design-specific criteria move with them) and every "all of them are **Pro**" line becomes true; FR-G2,
   the tiering note, `sections-inventory.md:12` and Invariant 1 name the owner's pick; `SYNTHESIS_DEFAULTS` and §3–§4 take
   A25 #2, A28 #1 and A29 #1 (`synthesize.test.ts` derives its dropped set, so it follows); a doc-audit check that each
   category's first story names the export's `[Free] designs:` pair — red on HEAD.
-- [ ] **R-222** (Question 13) — PRD §4's owner check and every category's owner-gate story in `epics.md` include the
+- [x] **R-222** (Question 13) — PRD §4's owner check and every category's owner-gate story in `epics.md` include the
   member-state pass (every members-aware design as Logged out user, Free member and Paid member); DW-221 closed on it.
-- [ ] **R-220, R-221** — DW-64 and DW-122 closed on the rulings (R-221's Appendix G bullet, and FR-H7 as the rule any
+- [x] **R-220, R-221** — DW-64 and DW-122 closed on the rulings (R-221's Appendix G bullet, and FR-H7 as the rule any
   later move follows).
-- [ ] `deferred-work.md` — **the close itself**: every entry this story closes reads `status: done <date>` with a
+- [x] `deferred-work.md` — **the close itself**: every entry this story closes reads `status: done <date>` with a
   `resolution:` naming Story 5.24a and its evidence; **no entry deleted or renumbered**.
-- [ ] Standing rule 7 — grep for every DW id touched and for "Story 5.24" outside records; fix what it finds.
-- [ ] `python3 tools/doc-audit.py --check` (twice) and `pnpm check` — green, with every new check's control seen red.
+- [x] Standing rule 7 — grep for every DW id touched and for "Story 5.24" outside records; fix what it finds.
+- [x] `python3 tools/doc-audit.py --check` (twice) and `pnpm check` — green, with every new check's control seen red.
 
 **Acceptance Criteria:**
 
@@ -756,7 +757,8 @@ screen. DW-232 (A34's pager) and DW-268 (Ledger's paywall) are the same finding,
 
 ## Questions for the owner
 
-The owner ruled them all on 2026-09-28 — Question 5 after its answer, and Question 8 amended the same day.
+The owner ruled Questions 1 to 15 on 2026-09-28 — Question 5 after its answer, and Question 8 amended the same day.
+Question 16 was raised at Dev (2026-09-28) and waits for him.
 
 ### Question 1 — This sweep is four times the last one. One story, or five in a row?
 
@@ -1009,6 +1011,29 @@ would not notice.
 **Ruled: option 1 (owner, 2026-09-28).** *"Yes — download it and tell me where the file is"*. The file arrived the same day at `supabase/prod-ca-2021.crt` (Supabase Root 2021 CA, valid until 2031-04-26); Story
 5.24b's DW-50 task inlines it.
 
+### Question 16 — Should the Epic 9 and 10 story titles name the designs each story now builds?
+
+*Raised at Dev (2026-09-28): editing a story title is beyond the lines a ruling names, which this spec's Ask First
+reserves for you.*
+
+**In plain English.** Your free picks now sit in each category's first story (R-212), the design they displaced moved to
+the story your pick came from, and the four forgotten designs joined their categories' last stories (DW-177). The
+stories' criteria say exactly which designs each builds, and the checks hold them to the drawings. But the story
+**titles** still carry the old number ranges, so wherever the designs moved, the title on your story board is wrong.
+Nothing reads the titles except you.
+
+**An example.** Story 9.1 is titled "A1 — the content model, the stylesheet and designs #1–4" and now builds #1 Rail,
+#3 Stacked Masthead, #4 Overlay and #13 Centre Nav. Story 9.4 is titled "A1 — designs #13–15 (owner gate)" and now
+builds #2 Split Rail, #14 Icon Utilities, #15 Big Type and #16 Reveal.
+
+1. **Retitle every story whose designs changed so the title names them — "A1 — the content model, the stylesheet and
+   designs #1, #3, #4 and #13" — keeping each story's number and its key in the tracker (RECOMMENDED).**
+2. Retitle them without numbers — "A1 — the content model, the stylesheet and its first four designs", "A1 — the last
+   designs (owner gate)".
+3. Leave the titles as they are; the criteria are what gets built.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 None — this story changes no screen (`owner_test: none`); its Done is written on its Deploy commit (R-80). The sweep's
@@ -1035,6 +1060,75 @@ screen steps go with Stories 5.24b and 5.24e (§ The four stories after this one
 
 **Real services.** GitHub's CI on a day's first push after the Dev commit — the field proof of DW-132 (read with
 `GITHUB_TOKEN`, read-only). Nothing else this story does touches Supabase, Vercel, Resend, Dodo or the Ghost test servers.
+
+**Executed at Dev (2026-09-28).**
+
+- **The triage, re-derived at HEAD** (`8dda5674`, the first command): the open entries matched 5.24's triage exactly —
+  every one in one outcome, none missing, none twice.
+- **Each new check seen red first, then green.**
+  - The orphan check on the ledger as it was: 194 open entries refused (156 naming no story that is not done, 38 owned
+    by a story whose card never named them); after the re-homing, none. `demo()`'s fixtures refuse a done owner and a
+    silent one, and pass a living owner that names the entry (the sweep cards' list form included) and one named only
+    in its spec.
+  - The plan checks on HEAD's `epics.md`: DW-177's named exactly A1 #16 Reveal, A2 #15 Triple, A4 #18 Overlap Card and
+    A9 #15 Ledger; R-212's failed every first story and every later story building a pick; DW-164's failed every
+    library story. After the edits, none.
+  - DW-132: with `dated()` put back to the old rule (the day, written unconditionally), the gate's date-ahead pass failed
+    all four pages; with the new rule every page is byte-identical. The control caught a real defect on its first run:
+    `open(OUT, 'w').write(dated(…, OUT))` truncated the page before `dated()` read its date, in `build-board.py` and
+    `category-prompts.py`; both now compute the page first.
+  - DW-172: with the hook's unticked-task refusal removed, the self-check failed — `[(1, 'no spec matches'), (0, ''),
+    (0, '')]`; restored, it passes.
+  - DW-140: NFR-2's sentence check failed before `prd.md` changed; the size equality failed with `gzip: true` removed
+    (size-limit's brotli default, 2,445 B, against zlib's gzip at level 9, 2,878 B).
+  - DW-143 and DW-148: each control not caught with its check's refusal removed.
+  - DW-227: with the refusal removed, `validate.test.ts`'s DW-227 case failed alone (80 pass, 1 fail); restored, all pass.
+- **Already fixed, re-executed.** DW-101: `orbit-weekly.test.ts` passes. DW-166: `check-snapshots.mjs`'s R-13 control
+  and subject pass. DW-173: the GitHub Actions API (read-only) — all 330 `matrix.yml` runs created from 2026-09-18
+  completed `success`, the nightlies among them; 2026-09-17's three failures of 35 are not the flake (Story 4.11's
+  deliberate `MATRIX_DESIGNS=zz/1` control, run 35187418366, and two jobs GitHub never started, runs 35209869288 and
+  35210157233). DW-175: 150 fresh-connection and 150 keep-alive GETs of `https://app.inflozo.com/sign-in`
+  (2026-09-28T15:22Z), every one 200. DW-197: `settings/actions.ts:95,131-135` read,
+  and `bash supabase/tests/run-rls-gate.sh` exit 0 with "a stale base_revision writes nothing" passing. DW-206: `bash
+  tools/keyboard/run-keyboard-gate.sh --grep R-203` — `floor.spec.mjs:448` and `journey.spec.mjs:3260` pass. DW-263:
+  Stories 10.107 and 10.109 read; `placement.test.ts` passes.
+- **Two triage verdicts moved with their designs** (R-212's "its design-specific criteria moving with it"): DW-149 to
+  Story 10.114, where A34 #1 Numbers now is, and DW-247's half to Story 10.5, with A4 #2 Flush Left; DW-180's half stays
+  in 10.1. A21's two misplaced designs had one place to free: the pair taken in order, #2 Cards trades with #11 Rail and
+  #1 Grid stays in the first story as Pro.
+- `python3 tools/doc-audit.py --check`, twice: PASS, PASS. `python3 tools/story-board.py --check`: current. `pnpm check`
+  (Node 24.18.1): exit 0. No entry deleted or renumbered — the ledger's ids, titles and order are HEAD's — no design
+  file edited, no migration.
+- **Verified again by the orchestrating session, and what it changed (2026-09-28).**
+  - Re-run in a scratch worktree of HEAD carrying this diff: the orphan check on the ledger as it was, against the new
+    `epics.md`, exit 2 with 171 entries refused; `plan_failures` on HEAD's `epics.md`, 186 failures — the four DW-177
+    designs, all 33 first stories, 23 later stories building a pick, all 126 module lines; DW-172 with the hook's
+    refusal removed, `SELF-CHECK FAILED — [(1, 'no spec matches'), (0, ''), (0, '')]`.
+  - **DW-132's control could not see the old rule itself.** A date read from git moves with HEAD, not with a faked day,
+    so the date-ahead pass stays green if HEAD's date comes back. The gate now also refuses a generator that reads it:
+    red with HEAD's own `build-board.py` put back, green without. And a failed date-ahead `--check` rewrites its page,
+    so the pass now puts each page back: after a red run with the day written unconditionally, all three pages were
+    byte-identical to before (`cmp`).
+  - **The plan checks gained standing controls.** `plan_controls()` hands `plan_failures` the real `epics.md` with one
+    thing broken per check — the first story without its pick's words, the last design of a last story dropped, a module
+    line listing modules — on every gate run; each blinded in turn, the control reports "planted, and not caught".
+  - **An owner line is read without its dated note.** The `*(… was "Story 3.3" …)*` notes keep old owners, and while
+    Story 5.24a is not done its own name in every note made any entry pass (its spec names them all). `demo()` gains
+    DW-12, owned by a done story with a living, naming one only in its note — refused; with notes read as owners the
+    self-check fails. The ledger passes both ways, and with 5.24a counted done.
+  - **Standing rule 7's grep found two lines the Dev run missed:** `epics.md`'s pinned stack still said size-limit's
+    brotli "is what NFR-2's 40 KB means", and its NFR-2 summary named no base. Both now say 40,960 bytes at gzip level 9.
+  - **DW-173 corrected** above: "since 2026-09-17" was not true of the 17th itself.
+- **Real services (R-82).**
+  - **GitHub Actions API** (`GITHUB_TOKEN`, read-only): `matrix.yml` runs created since 2026-09-17 — 365, of which 362
+    `success` and 3 `failure`, all three on 2026-09-17 and explained above; since 2026-09-18, 330 of 330 `success`. The
+    failed dispatched run's job log reads `MATRIX_DESIGNS names no design under packages/library/designs/: zz/1`.
+  - **`app.inflozo.com`** (public, signed out): the Dev run's 150 + 150 GETs of `/sign-in` at 15:22Z, and again at
+    2026-09-28T15:53–15:56Z, 100 fresh-connection GETs (all `200`, slowest first byte 1.04 s, three edge addresses) and
+    100 over kept-alive connections (all `200`, slowest first byte 0.49 s, two connections).
+  - Nothing else this story does touches Supabase, Vercel, Resend, Dodo or T1/T3; the RLS gate ran in its local
+    PostgreSQL container. **Owed at Review:** DW-132's field proof, CI's `check` on a day's first push — this Dev push
+    is not one (the day's first was earlier on 2026-09-28).
 
 **Executed at Create (2026-09-28).**
 

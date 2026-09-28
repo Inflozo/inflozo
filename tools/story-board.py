@@ -39,6 +39,8 @@ IMPL_REL = os.path.relpath(IMPL, PLAN)                      # the page links spe
 
 _s = importlib.util.spec_from_file_location('dp1', os.path.join(ROOT, 'tools', 'design-patch-prompts.py'))
 dp1 = importlib.util.module_from_spec(_s); _s.loader.exec_module(dp1)
+_s = importlib.util.spec_from_file_location('doc_audit', os.path.join(ROOT, 'tools', 'doc-audit.py'))
+da = importlib.util.module_from_spec(_s); _s.loader.exec_module(da)      # `dated()`, DW-132's one rule
 
 e = html.escape
 
@@ -639,12 +641,70 @@ def load_deferred(text):
                     # hand-written entries used. Kept APART, never folded: a resolution is not
                     # evidence of closure — see dw_closed.
                     'closed': f.get('closed', ''), 'resolution': f.get('resolution', ''),
+                    'owner': f.get('owner', ''),
                     'story': st.group(1) if st else ''})
     if not out:
         out = [{'id': '', 'title': t, 'status': 'open', 'severity': '', 'reason': '', 'plain': '',
-                'origin': '', 'location': '', 'closed': '', 'resolution': '', 'story': ''}
+                'origin': '', 'location': '', 'closed': '', 'resolution': '', 'owner': '', 'story': ''}
                for t in re.findall(r'^[-*] (.*)$', text, re.M)]
     return out
+
+
+# A DW id, and the list form the sweep's cards use for a group — `DW-14, 25, 27 … 271 and 272` names every number in it.
+# A continuation is a bare number that is not the start of a date or a story number (`DW-165, 9.1`, `DW-7, 2026-09-05`).
+DW_LIST = re.compile(r'\bDW-(\d+)((?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)\d+\b(?![.\-]\d))*)')
+# A story an owner line names: `Story 9.1`, `Stories 7.26 and 15.7`, `Stories 9.1, 9.2 and 7.3`.
+STORY_REFS = re.compile(r'\bStor(?:y|ies)\s+(\d+\.\d+[a-z]?(?:(?:\s*,\s*|\s+and\s+|\s+or\s+)\d+\.\d+[a-z]?)*)')
+
+
+def dw_named(text):
+    """Every DW number a text names, the list form included."""
+    out = set()
+    for m in DW_LIST.finditer(text or ''):
+        out.add(int(m.group(1)))
+        out.update(int(n) for n in re.findall(r'\d+', m.group(2)))
+    return out
+
+
+def story_refs(text):
+    """The story keys an owner line names, in order — `['7.26', '15.7']`."""
+    return [k for m in STORY_REFS.finditer(text or '') for k in re.findall(r'\d+\.\d+[a-z]?', m.group(1))]
+
+
+def story_blocks(text):
+    """{'9.1': its card} from epics.md — a card runs from its heading to the next heading of any level."""
+    heads = [m for m in re.finditer(r'^#{1,4}\s.*$', text, re.M)]
+    out = {}
+    for i, m in enumerate(heads):
+        s = re.match(r'^#{2,4}\s*Story\s+(\d+\.\d+[a-z]?)\b', m.group(0))
+        if s:
+            out[s.group(1)] = text[m.start():heads[i + 1].start() if i + 1 < len(heads) else len(text)]
+    return out
+
+
+def orphaned_entries(entries, status, blocks, specs):
+    """THE LEDGER'S OWNERSHIP RULE, AS A REFUSAL (Story 5.24a, R-207, R-211). An open entry is owned by a story that is
+    not done — `sprint-status.yaml` says which — and that story's card in epics.md, or its spec, names the entry's DW
+    id, because a requirement moved to a story is pasted into it, never only referenced (R-195's lesson). The ledger
+    had only ever grown: at 5.24's Create entries named finished stories, or nobody, or a later story whose own text
+    never mentioned them, so nothing guaranteed they would be built. `specs` is {(epic, story): spec text}.
+    Returns one line per offender, naming the entry and what to do."""
+    bad = []
+    for d in entries:
+        if not d.get('id') or dw_closed(d):
+            continue
+        n = int(d['id'].split('-')[1])
+        # the owner is the line's own words: a dated `*(… was "Story 3.3" …)*` note keeps the OLD owner, and never owns
+        refs = story_refs(re.sub(r'\*\(.*?\)\*', '', d.get('owner', ''), flags=re.S))
+        keyed = [(k, (int(k.split('.')[0]), k.split('.')[1])) for k in refs]
+        living = [(k, t) for k, t in keyed if status.get(t) not in (None, 'done')]
+        if not living:
+            bad.append(f"{d['id']} — its owner line names no story that is not done ({', '.join(refs) or 'none'}): "
+                       f"give it one later story whose card carries it with its id, or close it with its evidence")
+        elif not any(n in dw_named(blocks.get(k, '')) or n in dw_named(specs.get(t, '')) for k, t in living):
+            bad.append(f"{d['id']} — owned by Story {' and '.join(k for k, _ in living)}, whose card in epics.md and "
+                       f"spec never name {d['id']}: paste the requirement into the card with its id (R-195)")
+    return bad
 
 
 DW_WORDS = ('open', 'done', 'closed')    # every status word this board can read; anything else is shown, never guessed
@@ -1727,19 +1787,19 @@ def real():
                 specs.append((os.path.relpath(os.path.join(IMPL, f), ROOT), read(os.path.join(IMPL, f))))
     log = subprocess.run(['git', 'log', '--format=%h%x09%cI%x09%s'], cwd=ROOT,
                          capture_output=True, text=True).stdout.splitlines()
-    # The date only, as the build board stamps — the hashes are in the feed, and a hash here would
-    # make the page stale on every doc-only commit as well as on every story commit.
-    head = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
-                          capture_output=True, text=True).stdout.strip()
     epics = load_epics(epics_md) if epics_md else load_prd_epics(read(PRD))
     keys = {(s['e'], s['s']) for ep in epics for s in ep['stories']}
     return {'epics': epics,
             'have_epics': bool(epics_md), 'have_status': bool(status_md),
             'status': load_status(status_md or ''), 'specs': load_specs(specs),
+            'spec_texts': {(int(m.group(1)), m.group(2)): text for rel, text in specs
+                           for m in [SPEC_RE.match(os.path.basename(rel))] if m},
+            'blocks': story_blocks(epics_md or ''),
             'commits': adopt_split(load_commits(log), keys), 'deferred': load_deferred(deferred_md or ''),
             'deferred_exists': deferred_md is not None,
             'phase_prompts': phase, 'step6': step6, 'step6b': step6b, 'briefs': briefs, 'demo': False,
-            'stamp': f'on {head}' if head else 'outside git'}
+            # the date is the page's last CONTENT change, never HEAD's (DW-132): `main()` hands the page to `dated()`
+            'stamp': f'on {da.STAMP}'}
 
 
 DEMO_EPICS = """# Inflozo - Epic Breakdown
@@ -2474,7 +2534,53 @@ def demo():
     # the briefing extractor: the blockquote right before a fence, and only that one, only that shape
     assert fenced('> **Before you paste it** — one\n> two\n```\nA\n```\n\n> a note\n\n```\nB\n```\n') == \
         [('A', '**Before you paste it** — one\ntwo'), ('B', '')]
+    # ── THE ORPHAN CHECK (Story 5.24a). An open entry owned only by finished stories is refused, and so is one whose
+    #    living owner never names it; a living owner whose card names it — the sweep's list form included — passes.
+    ledger = load_deferred('### DW-7: done owner\nstatus: open\nowner: Story 1.1, which is done.\n\n'
+                           '### DW-8: silent owner\nstatus: open\nowner: Story 3.3.\n\n'
+                           '### DW-9: a living owner that names it\nstatus: open\nowner: Stories 1.1 and 3.3.\n\n'
+                           '### DW-10: closed\nstatus: done 2026-09-28 (Story 5.24a)\nowner: Story 1.1.\n\n'
+                           '### DW-11: named in the spec alone\nstatus: open\nowner: Story 3.2\n\n'
+                           '### DW-12: its old owner in the note\nstatus: open\nowner: Story 1.1. *(Dev, 2026-09-28: was '
+                           '"Story 3.3")*\n')
+    tracked = load_status('development_status:\n  1-1-done-story: done\n  3-2-living: ready-for-dev\n'
+                          '  3-3-living: backlog\n')
+    cards = story_blocks('## Epic 3: E\n\n### Story 3.3: a sweep\n\nGroup C — DW-4, 9 and 12.\n\n### Story 3.2: x\n\nNothing.\n')
+    orphans = orphaned_entries(ledger, tracked, cards, {(3, '2'): 'the spec names DW-11'})
+    assert [o.split(' — ')[0] for o in orphans] == ['DW-7', 'DW-8', 'DW-12'], orphans
+    assert 'names no story that is not done' in orphans[0] and 'never name DW-8' in orphans[1], orphans
+    assert dw_named('DW-14, 25 and 272; DW-165, 9.1; DW-7, 2026-09-05') == {14, 25, 272, 165, 7}
+    assert story_refs('Stories 9.1, 9.2 and 7.3; Story 5.24b') == ['9.1', '9.2', '7.3', '5.24b']
+    # ── DW-172: THE COMMIT-MSG HOOK'S DEV GUARD, RUN FOR REAL. A Dev commit claims every task is ticked, and the hook is
+    #    what holds it to that; nothing ran the hook itself, so a broken guard would wave every such commit through.
+    assert hook_dev_guard() == [(1, 'no spec matches'), (1, '1 unticked task(s)'), (0, '')], hook_dev_guard()
     return out
+
+
+def hook_dev_guard():
+    """`tools/hooks/commit-msg` on three Dev commits in a throwaway repository — no spec, one task unticked, all ticked —
+    as [(exit code, the words it refused with)]. The hook reads the staged spec and imports this file relative to the
+    repository it runs in, so the throwaway one borrows `tools/` by a link and stages its own spec."""
+    import tempfile
+    subjects = []
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(['git', 'init', '-q', tmp], check=True, capture_output=True)
+        os.symlink(os.path.join(ROOT, 'tools'), os.path.join(tmp, 'tools'))
+        impl = os.path.join(tmp, '_bmad-output', 'implementation-artifacts')
+        os.makedirs(impl)
+        msg = os.path.join(tmp, 'MSG')
+        open(msg, 'w', encoding='utf8').write('Story 9.9 - Dev - the guard under test\n')
+        for tasks in (None, '- [x] one\n- [ ] two\n', '- [x] one\n- [x] two\n'):
+            if tasks is not None:
+                rel = '_bmad-output/implementation-artifacts/spec-9-9-demo.md'
+                open(os.path.join(tmp, rel), 'w', encoding='utf8').write(f'---\nstatus: in-progress\n---\n\n## Tasks & Acceptance\n\n{tasks}')
+                subprocess.run(['git', 'add', rel], cwd=tmp, check=True, capture_output=True)
+            r = subprocess.run(['sh', os.path.join(ROOT, 'tools', 'hooks', 'commit-msg'), msg], cwd=tmp,
+                               capture_output=True, text=True)
+            said = r.stdout + r.stderr
+            words = next((w for w in ('no spec matches', '1 unticked task(s)') if w in said), '')
+            subjects.append((r.returncode, words))
+    return subjects
 
 
 def main():
@@ -2527,7 +2633,15 @@ def main():
             print(f'  {line}', file=sys.stderr)
         print(f'story board: UNREADABLE QUESTION — {"; ".join(unread)}', file=sys.stderr)
         return 2
-    out = render(data)
+    # AN OPEN ENTRY WITH NO LIVING OWNER STOPS THE BUILD, the same way (Story 5.24a): the ledger cannot drift back to
+    # entries owned only by finished stories, or by a later story whose own card never names them.
+    orphans = orphaned_entries(data['deferred'], data['status'], data['blocks'], data['spec_texts'])
+    if orphans:
+        for line in orphans:
+            print(f'  {line}', file=sys.stderr)
+        print(f'story board: ORPHANED ENTRY — {"; ".join(orphans)}', file=sys.stderr)
+        return 2
+    out = da.dated(render(data), OUT)
     if '--check' in sys.argv:
         cur = open(OUT, encoding='utf8').read() if os.path.exists(OUT) else ''
         if cur.strip() != out.strip():

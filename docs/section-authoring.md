@@ -261,6 +261,13 @@ inventing and an `Inherit` value are all refused (R-23). In the panel the values
 offer are **greyed inside the live row** with its sentence; a narrowing to one value locks the whole
 row at that value.
 
+**Read a design's narrowing off its drawn panel, never off its spec's table** *(DW-111, Story 5.24a)*. R-74 makes the
+export the design authority, and the drawn panel is its most specific statement of what a design offers; a spec table
+written earlier in the same session can lag it. A22·14's table offers Background role as Background · Surface ·
+Contrast, where `A22-14 Slide-in Card.dc.html` draws the row **locked** — a card that is its own plane (R-103's no-value
+lock) — and the R-103 sweep found the same disagreement in A19, A22, A24, A25 and A31. Where the two disagree the drawing
+wins, the table is not copied, and the export is never edited to agree.
+
 **The no-value lock (R-103).** A design whose look *is* what is behind it — a header drawn over the
 hero, a card that floats over scrolling content — narrows Background role to **`"values": []`** with
 its reason and no default:
@@ -535,6 +542,18 @@ is an id — and each shape has its own rule instead, enforced where the value i
 | `array` | Item List | a list of item objects | `data-items` — one copy per item (§3, row 1) |
 
 `data-prop` takes `text`, `richtext`, `icon` and `date` props; `data-items` takes an `array`.
+
+**Every word a visitor reads that the customer writes is `richtext` with the four marks** *(DW-179, Story 5.24a)*. P0's
+rule is that a text field takes bold, italic, underline and link unless its spec says otherwise, and that *"silence is
+not a narrowing"* (`P0 Editor Primitives - Spec.md:131-149`); every category spec gives its visible authored words the
+P0·1 toolbar. So a category's content model declares a heading, an eyebrow, a standfirst, a button's or a link's words,
+a proof line and every other visible authored string as `richtext` over `strong · em · u · a` — a `text` prop shows no
+toolbar on the canvas and holds no mark — and narrows the list only where its spec narrows it. **A label that is itself a
+link narrows `a` away**, because an `<a>` cannot hold another. `text` stays for words a visitor never reads as prose: an
+image's `alt`, a value written only into an attribute, a label the page never prints. The pilots were written before
+inline editing and declare some visible words `text` (A1 `ctaLabel`; A4 `eyebrow`, `headline` and both action labels;
+A17 `eyebrow`, `linkLabel`; A22 `buttonLabel`, `proofLine`, `subscribedText`, `manageLabel`); each category's own
+content-model story puts its pilot right (AD-35).
 
 **A Text Field is one line; a Text Area takes line breaks** *(Story 5.3)*. A `text` prop's editor is an
 `<input>`, which cannot hold a `\n`, so a line break typed on the canvas would be lost at its next panel
@@ -819,7 +838,12 @@ for a press or a submit (a phone menu, a sign-up form, a carousel's arrows) or r
 (a table of contents). A held-still mount whose module moves by itself carries B3a's PAUSED chip while its section is
 pointed at or selected, and never at rest. **A new module's row takes the value by that one sentence** —
 `registry.json`'s `about` carries it, and the values live there alone: read the file, never a list of names in prose.
-A carousel's autoplay is a per-design choice a row cannot see, so an autoplaying carousel carries no chip.
+**No design offers a carousel autoplay** *(DW-227, Story 5.24a, 2026-09-28 — R-175's one open case, closed)*. `carousel`
+waits for a press, so an autoplaying one would hold still while designing and carry no chip; and no carousel in the
+export offers it — A14's and A19 #15's refusals of autoplay are owner-ratified, and the only Interval row any spec draws
+is A2's rotating bar, which is not a carousel. The validator holds it: a design whose markup declares `carousel` and
+whose `controlSchema` has an autoplay or interval control is refused (`carousel-autoplay`). A design that wants one is
+the owner's to rule first, and brings its own module row with it.
 
 **The motion gate** *(FR-G4)*. `core` holds one `(prefers-reduced-motion: reduce)` query. A module whose
 registry row `animates` is not started while it matches, mounts when the preference clears and stops when

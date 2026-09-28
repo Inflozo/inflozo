@@ -15,7 +15,7 @@ Everything is extracted from the prompt file and from the export. Nothing is ret
 a second copy of a prompt is a second place for it to go stale — which is the defect that produced
 the twelve half-specified categories in the first place.
 """
-import os, re, sys, html, glob, zipfile, subprocess
+import os, re, sys, html, glob, zipfile, importlib.util
 
 ROOT   = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLAN   = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
@@ -23,6 +23,8 @@ DESIGN = os.path.join(PLAN, 'design')
 PROMPT = os.path.join(DESIGN, 'claude-design-prompt-3-library.md')
 EXPORT = os.path.join(DESIGN, 'claude-design-export', 'unpacked')
 OUT    = os.path.join(PLAN, 'CATEGORY-PROMPTS.html')
+_s = importlib.util.spec_from_file_location('doc_audit', os.path.join(ROOT, 'tools', 'doc-audit.py'))
+da = importlib.util.module_from_spec(_s); _s.loader.exec_module(da)      # `dated()`, DW-132's one rule
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Repeating content. Two kinds, and they need OPPOSITE controls — which is why they are
@@ -379,8 +381,6 @@ DELETED_CATEGORIES = {
 def build():
     brief, cats, done = master_brief(), categories(), done_designs()
     e = html.escape
-    date = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
-                          capture_output=True, text=True).stdout.strip()
     rows, n_patch, n_build, n_dead = [], 0, 0, 0
     seq = {cid: i for i, (cid, _) in enumerate(BUILD_ORDER)}
     why = dict(BUILD_ORDER)
@@ -417,7 +417,8 @@ def build():
    f'<details><summary>Show the prompt ({len(body):,} characters)</summary><pre>{e(body)}</pre></details>'}
 </div>''')
 
-    open(OUT, 'w', encoding='utf8').write(f'''<!doctype html>
+    # computed BEFORE the file is opened: `open(OUT, 'w')` truncates it, and `dated()` reads the date on it (DW-132)
+    page = da.dated(f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Inflozo — Category Prompts</title><style>
@@ -500,7 +501,7 @@ footer{{margin-top:44px;padding-top:20px;border-top:1px solid var(--line);color:
 {f'<h2 class="grp">Deleted after the design pass — {n_dead} category, no prompt</h2>' if n_dead else ''}
 {''.join(r for r in rows if 'class="cat dead"' in r)}
 
-<footer>Generated {e(date)} from <code>design/claude-design-prompt-3-library.md</code> and the design
+<footer>Generated {da.STAMP} from <code>design/claude-design-prompt-3-library.md</code> and the design
 export. The master brief inside every build prompt is extracted from that file, never retyped, so
 the two cannot drift. Regenerate with <code>python3 tools/category-prompts.py</code>.</footer>
 </div>
@@ -513,7 +514,8 @@ document.querySelectorAll('button.copy').forEach(b => b.onclick = async () => {{
   const was = b.textContent; b.textContent = 'Copied'; b.classList.add('ok');
   setTimeout(() => {{ b.textContent = was; b.classList.remove('ok'); }}, 1800);
 }});
-</script></body></html>''')
+</script></body></html>''', OUT)
+    open(OUT, 'w', encoding='utf8').write(page)
     return n_patch, n_build, len(cats)
 
 

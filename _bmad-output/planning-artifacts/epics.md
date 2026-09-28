@@ -128,7 +128,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 **FR-G · Section Library**
 
 - **FR-G1** The library ships every category and design inventoried in Appendix A, which **is** the count, generated from the design export. Appendix A is normative and a GA floor; the placeable/non-placeable split is declared there.
-- **FR-G2** Every category ships at least 2 Free-tier designs — exactly the first two of every category — distributed across contexts, with the floor guaranteed for every context reachable from the seven synthesizable templates and `private.hbs`.
+- **FR-G2** Every category ships at least 2 Free-tier designs — exactly the two the owner picked for each category (R-17, R-212) — distributed across contexts, with the floor guaranteed for every context reachable from the seven synthesizable templates and `private.hbs`.
 - **FR-G3** Section registry entry format, with `contentSchema` as the category's union and `controlSchema` per design (`quickControls[]` withdrawn by R-113); `bindingContext` and `compileTarget` as the filter placement and shuffle obey; `ghostCompat` authored with the design; annotated HTML, not Handlebars, as the source; plain CSS consuming Style Pack properties only.
 - **FR-G4** Every design responsive 390 → 1440+ with no horizontal overflow, its collapse behaviour designed against the 15 structural archetypes; WCAG 2.1 AA; token-driven only; functional with JS disabled, with a written no-JS degradation statement per module and two named waivers.
 - **FR-G5** Uniqueness bar: designs within a category differ in layout/structure, asserted mechanically over a **structural descriptor tuple** whose first five slots are closed vocabularies checked by literal match.
@@ -237,7 +237,7 @@ any stated total. Ordered as §5 orders them — by dependency, not alphabetical
 ### NonFunctional Requirements
 
 - **NFR-1 Performance (app)** — editor TTI < 3 s (p75, warm); all canvas interactions hold 60 fps, criterion p95 frame time ≤ 16.7 ms with no long task > 50 ms across a 3-second trace; control-change render < 100 ms; local-first persistence adding no perceptible latency; dashboard LCP < 2 s. **Reference environment:** a mid-tier laptop at 4× CPU throttle; **stress fixture:** a 40-section template. The gate is **manual-only**, run before each release, never on CI.
-- **NFR-2 Performance (output)** — Lighthouse is **not** measured on generated themes. Instead the compiler asserts, in CI and without a Ghost host: correct `srcset`/`sizes`; woff2-only preloaded fonts, subset for latin projects and full-face otherwise; no render-blocking JS; a CSS budget of ≤ 50 KB gzipped over the subset a template actually reaches; no layout shift from unguarded elements, with every emitted guard proven to resolve to a real bound field. **JS budget < 40 KB gzipped for a maximal design**, enforced by `size-limit` as a developer-facing warning, not a build failure. Zero console errors on every template of every compiled fixture theme.
+- **NFR-2 Performance (output)** — Lighthouse is **not** measured on generated themes. Instead the compiler asserts, in CI and without a Ghost host: correct `srcset`/`sizes`; woff2-only preloaded fonts, subset for latin projects and full-face otherwise; no render-blocking JS; a CSS budget of ≤ 50 KB gzipped over the subset a template actually reaches; no layout shift from unguarded elements, with every emitted guard proven to resolve to a real bound field. **JS budget < 40 KB gzipped (40,960 bytes, gzip level 9) for a maximal design**, enforced by `size-limit` as a developer-facing warning, not a build failure. Zero console errors on every template of every compiled fixture theme.
 - **NFR-3 Security** — RLS on every table keyed to `auth.uid()`; credentials in Supabase Vault, server-only; short-lived Admin JWTs per call; deploy and upload rate limits; Dodo webhook signature verification; SVG sanitisation. **No Admin API key ever reaches a Ghost theme.** The canvas renders no untrusted HTML: every Content-API value enters the DOM as a text node, `codeinjection_*` is never read into the canvas, every URL-valued field is scheme-validated, excerpts render text-only. CSP with no `'unsafe-eval'`, `connect-src` composed per session, `frame-ancestors 'self'`.
 - **NFR-4 Reliability** — autosave offline queue with retry/backoff; idempotent deploys with immutable artifacts; background health checks; Supabase spend-cap alarms; PITR enabled with a restore drill exercised before launch.
 - **NFR-5 Accessibility** — axe-core, WCAG 2.1 AA, **zero violations**, pass/fail. Scope: every shipped design **and the Inflozo app itself**, including the fixture renders and the six synthesised templates. An image that is the sole content of a link carries a non-empty `alt`. The app is keyboard-complete, including reorder and focus management across the canvas iframe boundary. The scan stops at the edge of `{{content}}`.
@@ -273,7 +273,7 @@ Next.js, Supabase or Node. Arrows point one way; **a design that needs the shell
 - **AD-37** the build decides the page; the render never re-decides it. **No render-time design substitution** — fourteen categories specified otherwise and all are refused — and **adjacency is a compile-time fact** answered by the compiler.
 - **AD-38** a member's own data is never server-rendered by an Inflozo theme, because `cacheMembersContent` can serve a member-identifying page to a different member on the same tier.
 - **Conventions that bind stories:** design identity `{categoryId}/{n}`, stable forever · kebab-case on disk, with the layer-name → partial slug collision rule stated because determinism is not uniqueness · snake_case plural tables · `{ code, message, detail?, action? }` error shape · one `zod` schema per boundary, with two named boundaries `zod` cannot serve (ICU parsing for translation overrides, DOMPurify with a **named configuration** for SVG, server-side for `suggestion-images`) · mutation only through a server route or action · local-first editor state with IndexedDB as the session source of truth · secrets never in `NEXT_PUBLIC_*` · CSP composed per session in `proxy.ts`, with the no-`unsafe-eval` half **not yet verified and a requirement on E5** · feature flags as rows in `feature_flags`, exactly two in v1.
-- **Pinned stack** (read from the live registry 2026-08-19): Node 24.x · TypeScript 7.0.2 · Next 16.3.1 with `proxy.ts` · React 19.2.8 pinned explicitly as a peer · pnpm 11.22.0 workspaces, no Turborepo until a build is measurably slow · Tailwind 4.x in `apps/web` only · `@supabase/supabase-js` 2.112.3 · Supabase Postgres 17 with Auth, Storage, Vault, Realtime · `jsdom` 30.0.1 server-side only · **`gscan` 6.4.2 pinned** · `handlebars` 4.7.9 **test-only, never shipped** · `zod` 4.4.3 · `@formatjs/icu-messageformat-parser` · `DOMPurify` · `stylelint-plugin-use-baseline` 1.4.6 (1.4.5 until Story 4.8, which found it refusing Widely rows) · `browserslist-config-baseline` 0.5.0 · `eslint-plugin-compat` 7.0.2 · `size-limit` + `@size-limit/file` 13.0.3, **brotli**, which is what NFR-2's 40 KB means · `web-features` 3.35.0 · `resend` 6.20.0 · `dodopayments` 2.47.0 behind a swappable billing adapter · Playwright pinned in one container image with fonts · Vercel Pro, `maxDuration` 300 s / `memory` 2048 MB.
+- **Pinned stack** (read from the live registry 2026-08-19): Node 24.x · TypeScript 7.0.2 · Next 16.3.1 with `proxy.ts` · React 19.2.8 pinned explicitly as a peer · pnpm 11.22.0 workspaces, no Turborepo until a build is measurably slow · Tailwind 4.x in `apps/web` only · `@supabase/supabase-js` 2.112.3 · Supabase Postgres 17 with Auth, Storage, Vault, Realtime · `jsdom` 30.0.1 server-side only · **`gscan` 6.4.2 pinned** · `handlebars` 4.7.9 **test-only, never shipped** · `zod` 4.4.3 · `@formatjs/icu-messageformat-parser` · `DOMPurify` · `stylelint-plugin-use-baseline` 1.4.6 (1.4.5 until Story 4.8, which found it refusing Widely rows) · `browserslist-config-baseline` 0.5.0 · `eslint-plugin-compat` 7.0.2 · `size-limit` + `@size-limit/file` 13.0.3, run with `gzip: true` — NFR-2's 40 KB is 40,960 bytes gzipped at level 9, where the tool's own default is brotli (DW-140) · `web-features` 3.35.0 · `resend` 6.20.0 · `dodopayments` 2.47.0 behind a swappable billing adapter · Playwright pinned in one container image with fonts · Vercel Pro, `maxDuration` 300 s / `memory` 2048 MB.
 - **Two facts for E2, read from the registry rather than the PRD:** the WebAuthn surface landed in `@supabase/auth-js` **2.75.0**, so the PRD's ≥ 2.105.0 floor is a safe over-pin rather than a capability boundary.
 - **The database proof already exists:** `SCHEMA.sql`, `PRELUDE.sql` and `RLS-TEST.sql`, the last a **gate** that aborts on failure. E1's schema story builds against them rather than beside them.
 
@@ -2530,7 +2530,7 @@ the instant after a section operation waits for it to settle, and none checks an
 *Found at this story's planning (2026-09-28): redrawing only what changed took the trace to about 4–5% of refreshes
 dropped, but a design change's one task stayed 0.051–0.064 s at 4× while the panels updated with the canvas, and none
 over 0.050 s once they followed a frame later — hence R-210. The session's first selection, a 0.25 s task at 4× outside
-the warm trace, went to Story 5.24 as DW-290.*
+the warm trace, went to Story 5.24 as DW-290 — Story 5.24e's since R-211.*
 
 **FRs:** FR-D14 (the fps gate), NFR-1. · **Rulings:** R-158, R-206, R-208, R-210. · **Owner test:** none — nothing on screen
 changes; the trace, the keyboard gate and the deployed editor walk hold it. · **Verification:** the development computer
@@ -2714,6 +2714,7 @@ reads the pack's `--link-color` and `--link-decoration` at zero specificity, and
 contrast, accent or image ground. A pack emitted through `referenceTokensCss()` carries it already; one written any
 other way must carry it too. **The first theme that ships the token block proves it on T1 and T3**, on both majors
 **And** sections span the site width by default and stay responsive within it.
+**And** the reference set takes the frames' page geometry as Normal — content 1,296 px, side margins 72 · 40 · 20 px at 1440 · 834 · 390 — with the margin its own Appendix D row beside the 24 px gutter, and the pilots re-baselined (DW-155).
 
 **FRs:** FR-E1. · **Owner test:** none (the engine).
 
@@ -2734,6 +2735,9 @@ because all three determine `@font-face` emission and bundle size
 **And** fonts are **self-hosted in generated themes at compile**, and generated themes make **no third-party font
 requests**
 **And** the roster matches S7a.
+**And** each preset's palette is authored into Appendix D and read from there alone: the export's kit PACKS and the Calibration Set's S7a swatches are calibration only and disagree on Tangerine's and Ink's accents, and Appendix D's Ink ('B/W + one red') is neither — 'matches S7a' means the roster's names, order and layout, and where a drawing and Appendix D disagree on an accent the owner rules before the preset ships (R-83, DW-11).
+**And** `apps/web/lib/style-pack.ts`'s `PRESETS` (Paper alone, read off D4a's pack cell) is regenerated from the authored Appendix D palettes, so the dashboard card's placeholder and D4a's pack cells paint from the values the canvas does (DW-15).
+**And** three of the twelve, picked by the owner (R-83), become the render matrix's reference packs — the only pack files `tools/matrix/cases.mjs` reads — re-baselined as NFR-6(a)'s mass rebaseline (DW-169).
 
 **FRs:** FR-E2 (the presets). · **Frame:** `S7 Style Packs.dc.html` S7a. · **Owner test:** yes.
 
@@ -2799,6 +2803,7 @@ the one mode signal present in the HTML Ghost sends, and it composes with `{{bod
 **And** **sections consume tokens exclusively**: no section stylesheet ever selects on `prefers-color-scheme`, on
 a scheme class or on `data-mode`
 **And** a dark override resolves to a token, and exactly one file selects on mode (AD-30).
+**And** a section's own dark override reaches a visitor as a per-instance custom property emitted into the token block, AD-30 amended to name that expression before Epic 9 authors stylesheets against it (DW-195).
 
 **FRs:** FR-E4. · **Owner test:** none (a theme mechanism, visible through 6.3). · **Verification:** on the
 canvas in all three states, plus a unit assertion over the emitted token block — **not on T1/T3, because the
@@ -2819,6 +2824,7 @@ So that the two features are one action rather than two.
 **Then** the **accent colour and logo are seeded into the active pack**
 **And** the Style panel shows the seeded values as ordinary editable tokens afterwards
 **And** the flow is re-runnable later from the Style panel.
+**And** S2c's project chooser is drawn in the Claude Design project from S2c before this story builds on it (R-74), and its fieldset takes the scroll bound that frame draws (DW-70).
 
 **FRs:** FR-E5. · **Frame:** `S2 Onboarding.dc.html` S2c · `S7 Style Packs.dc.html` S7c. · **Owner test:** yes.
 
@@ -2923,7 +2929,7 @@ is never emitted empty and the defaults are not specification-only
 `author.hbs`, `error.hbs` — and **`home.hbs` is emitted whenever the Home canvas differs from the generic post
 feed**, which is the ordinary case
 **And** `page.hbs` gates its title and feature-image markup on **`{{#if @page.show_title_and_feature_image}}`**,
-and **that is the only property from the `@page.*` namespace the compiler may ever emit**
+and **that is the only property from the `@page.*` namespace the compiler may ever emit** (DW-153)
 **And** **there is no members template family**: a designed membership page compiles to **`custom-{name}.hbs` at
 the theme root** and **emits no route**; Inflozo **never emits `page-{slug}.hbs`**, because that form is matched
 against the live slug, detaches silently on a retitle, and outranks the user's explicit dropdown choice
@@ -2955,7 +2961,10 @@ and their `/page/N/` would repeat page 1 (DW-253)
 only where the `paywall` doc holds a design, and then (1) a template references it explicitly, `{{> "content-cta"}}`, or
 Ghost never uses the override (MEASUREMENTS §15b, executed on both majors — a compile assertion), and (2) the partial's
 first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
-the preview above the cut disappears — AD-5's second stated exception to its no-triple-stash rule, bounded to that line
+the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line, which the owner rules before it is built — AD-5 states only `PAGE_NUMBER_HBS` (R-83, DW-261)
+**And** `default.hbs` carries the `<main>` target the header's skip link lands on (DW-150).
+**And** a page 2 of its own with no visible main feed compiles as designed with FR-H2's SEO guard on its `/page/N/`, as a feed-less `tag.hbs` does (DW-234).
+
 **FRs:** FR-I1, FR-H2 (the SEO guard). · **Frame:** `D5 Canvas Markers and Template Switcher.dc.html` D5f. · **Owner test:** yes (the
 warning).
 
@@ -2991,6 +3000,7 @@ and a project over budget is told **which assets are responsible before it attem
 **And** the CSS budget of ≤ 50 KB gzipped is computed **over the subset a given template reaches**, from the
 compiler's own record of which stylesheets each template pulls in, with the whole-file size reported alongside and
 not the gate.
+**And** a theme that draws any Tabler icon ships Tabler's MIT notice verbatim (`packages/library/icons/LICENSE-tabler.txt`) as a file, and the inline icons' bytes count in the theme-size budget (R-26, DW-108).
 
 **FRs:** FR-J3. · **Frame:** `S8 Deploy.dc.html` S8b — the over-budget message surfaces in Pre-flight. · **Owner test:** yes (the over-budget message). · **Verification:** upload limits probed on
 T1 and T3.
@@ -3009,15 +3019,16 @@ So that the claim is literally true rather than approximately true.
 is emitted when a design that declares it is placed and leaves when that design does — vanilla, no framework,
 `defer`red
 **And** **every module carries its catalog strings as `data-i18n-*` attributes on its mount element; no module
-contains a visitor-facing literal**
+contains a visitor-facing literal** (DW-146)
 **And** `assets/js/cards.js` is **a separate file with a separate origin** — Ghost's own MIT card behaviour,
 vendored because the `card_assets` exclude drops Ghost's JS along with its CSS — emitted **only for designed
 audio, video, gallery and toggle cards**, and **declared as such in the theme README**
 **And** compile CI asserts by inspection of `assets/js/` that `main.js` is **repo-authored code and nothing
 else**, with `cards.js` the single declared exception
-**And** `size-limit` with the **`file` preset** measures the compiled `main.js` against the **40 KB brotli**
+**And** `size-limit` with the **`file` preset** measures the compiled `main.js` against the **40 KB gzipped — 40,960 bytes at gzip level 9** (NFR-2, DW-140)
 budget, as a **developer-facing warning, not a build failure**, and it never appears in the editor — the user has
 no lever to pull in response to it.
+**And** every emitted template is inspected too: no `<script>` but the one `defer` tag for `main.js`, `cards.js`'s where designed, and an inline script only when its bytes are a named repo-authored source compared byte for byte (DW-134); and `cards.js` is no exception: `checkThemeJs` takes the vendored chunks as its source and refuses a `cards.js` that is not their concatenation (DW-135).
 
 **FRs:** FR-J4. · **Owner test:** none.
 
@@ -3052,7 +3063,7 @@ no-preference)` (UX-DR15).
 only where the `paywall` doc holds a design, and then (1) a template references it explicitly, `{{> "content-cta"}}`, or
 Ghost never uses the override (MEASUREMENTS §15b, executed on both majors — a compile assertion), and (2) the partial's
 first line is `{{{html}}}`, the post's free preview, because an override replaces Ghost's whole template and without it
-the preview above the cut disappears — AD-5's second stated exception to its no-triple-stash rule, bounded to that line
+the preview above the cut disappears — AD-5's second exception to its no-triple-stash rule, bounded to that line, which the owner rules before it is built — AD-5 states only `PAGE_NUMBER_HBS` (R-83, DW-261)
 **FRs:** FR-J5. · **Owner test:** none. · **Verification:** rendered on T1 and T3.
 
 ### Story 7.7: The gscan gate
@@ -3108,6 +3119,7 @@ fail on a customer's content
 **And** the gate is a **compile stage and is measured as one** (AD-34)
 **And** an **image that is the sole content of a link carries a non-empty `alt`**, falling back through
 `feature_image_alt` then the post title.
+**And** every emitted element and attribute is held to the FR-G8 pin — one below Widely that `baseline.json` does not name is refused, a named `html` entry held to its Tier-2 condition (DW-137) — and its CSS check refuses a Tier-3 at-rule form, selector or function by name, one probe per web-features family diffed at the pin (DW-139).
 
 **FRs:** FR-J17. · **Frame:** `S8 Deploy.dc.html` S8b. · **Owner test:** yes (a failure message). ·
 **Verification:** run against Casper and Source as the negative control.
@@ -3251,14 +3263,15 @@ string and says that braces mark a placeholder**
 **And** compile **re-validates as a backstop and fails the build** rather than emitting an unparseable catalog —
 because one unbalanced brace escapes ICU's own error handling and returns a **whole-page 500 across the entire
 site**, not a fallback string
-**And** parsing uses `@formatjs/icu-messageformat-parser`, because `zod` cannot parse ICU
-**And** a consequence worth keeping: **`{{t}}` escapes, so an override cannot inject markup** — this input's risk
+**And** validation parses each override with the `intl-messageformat` 5.4.3 both Ghost majors bundle, plus appendix-h1 S3's placeholder rule — never `@formatjs/icu-messageformat-parser`, which accepts `'{'` — and the whole-page 500 is observed on T1 and T3 before the surface promises it (DW-142)
+**And** a consequence worth keeping: **`{{t}}` escapes, so an override cannot inject markup** — except through `{{plural}}`, whose `(t …)` prints unescaped (MEASUREMENTS §44): an override for a key passed to `{{plural}}` is refused if it holds `<` or `&` (DW-141); otherwise this input's risk
 is the 500, not injection
 **And** **the scope limit is stated plainly**: strings inside Portal, native comments and the Sodo search overlay
 belong to Ghost's i18n namespaces and cannot be reached by a theme catalog
 **And** the canvas renders the user's overridden strings via the `{{t}}` shim, and ZIP export includes the locale
 file
 **And** the surface matches B18 as re-specified.
+**And** before this surface is built — and before Epic 9 authors a content model — the owner rules (R-83) what a non-English site shows for a section's untouched English starting words (DW-145).
 
 **FRs:** FR-Q6 (the surface and `locales/` emission halves), FR-Q8. · **Frame:** `B Missing Surfaces.dc.html`
 B18. · **Owner test:** yes.
@@ -3303,6 +3316,8 @@ column they sit in**
 
 **And** *(Story 5.20, DW-267)* **`project_treatments.paywall_design_id` is dropped** in this story's own Schema phase
 (R-99): the paywall is the `paywall` doc since Story 5.20 (AD-27(a0)), and the column has never had a reader or a writer
+**And** the callout panel does not ship S14's 'Background role (Base · Surface · Tint · Accent)' under the section universal's name with other values (R-53, R-170): the owner is asked (R-83) whether the row is renamed as a card treatment or offers the section's roles, and his answer is built (DW-109).
+
 **FRs:** FR-Q7. · **Frame:** `S14 Editor Cards.dc.html` S14a–e. · **Owner test:** yes. · **Depends on E10:** the
 module and its `cards.css` emission are built here; **A33's six treatments arrive in E10** and are delivered
 *against* this module, which §8 requires to land first. *(Declared by the step-6 stress test, finding F3.)*
@@ -3405,6 +3420,7 @@ deleted with it and recoverable via undo, and an editor viewing it switches to H
 **And** with no routing the empty state is S9d's — "Your site uses Ghost's default routing. Nice and simple."
 (UX-DR6) — and a YAML error is S9b's line-numbered error blocking the deploy with the reason on the Ship button
 **And** the surfaces match S9a, S9b, S9d, S9c and S9e as re-specified.
+**And** a custom template reached through a route this flow authors is offered only what that route supplies — appendix B.1 §3's route form, a flat root carrying exactly its `data:` keys — derived from the route, not the matrix's Admin-entry row for `custom-{name}.hbs` (DW-126).
 
 **FRs:** FR-I2, FR-I3. · **Frame:** `S9 Routes.dc.html` S9a · S9b · S9c · S9d · S9e. · **Owner test:** yes.
 
@@ -3482,6 +3498,10 @@ per page, not per section**
 `sites.site_settings.members` (`storedMembers`), and where members are off, or free or paid sign-ups cannot be taken,
 lists the same sentences the Sites screen shows (`membersNotice`, `apps/web/lib/paywall.ts`) beside any placed member
 ask or designed paywall — never for a synthesised instance, and nothing for a site with no record yet (R-4)
+**And** the upload goes through the Admin chokepoint, which sends JSON only today: a `FormData` body passes untouched with no `Content-Type` set by Inflozo, proved by the first real upload to T1 and T3; Story 7.17's `routes_upload` uses the same shape (DW-51).
+**And** once the first allowed Ghost write exists, the chokepoint's refusal is driven live: the harness asks the deploy path for a write outside `ADMIN_WRITES` and reads a `denied` audit row with no request reaching T1, beside the real upload's `admin_write` row (DW-54).
+**And** pressing Ship it in a session reading along first opens D8g's take-over (`lock-takeover.tsx` with D8g's strings), and the wizard never starts without the lock (DW-238).
+
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
 
@@ -3555,6 +3575,7 @@ after a notice and a download offer, and **the purge proceeds on its deadline wh
 taken**; objects before rows, through `drainPrefix`, as `purge-accounts` does
 **And** the gate matches D1d self-hosted, D1d′ with the shortcut ticked and D1e Ghost(Pro); the running and
 degraded snapshot states match B12a and B12b as corrected.
+**And** the purge's 90 days and the Sites card's 'kept for 90 days' have one home: the job takes `ORPHAN_SNAPSHOT_DAYS` rather than a second literal in SQL, and `connect-rule.test.ts`'s agreement test follows it (DW-79).
 
 **FRs:** FR-J13. · **Frame:** `D1 First-Deploy Gates.dc.html` D1d · D1d′ · D1e · `B Missing Surfaces.dc.html`
 B12a · B12b. · **Owner test:** yes. · **Verification:** a real snapshot captured from T1 and restored (R-82).
@@ -3722,6 +3743,7 @@ mirrors deploy gating exactly**
 **or exported**" and that rule needs a fact to test against
 **And** export requires the edit lock, and from a read-only session it first prompts a take-over
 **And** the exported theme includes the `locales/` files.
+**And** B15's Preview-only card gains the frame's **Export theme zip** beside **Re-check plan** and a greyed **Ship it** with its reason, `PREVIEW_COPY.body` regains its export sentence, and `probe-rule.test.ts`'s absence assertion flips in the same change (DW-60).
 
 **FRs:** FR-J12. · **Frame:** `S8 Deploy.dc.html` S8a · S8e (Ship it ▾), and `S8 Deploy.dc.html` S8a′ where the destination is Preview-only and export replaces deploy. · **Owner test:** yes.
 
@@ -3894,7 +3916,7 @@ argument in emitted `.hbs` exists as a key in `image_sizes`**; and that **every 
 bound field**, since a guard on an identifier that does not exist passes a presence check and renders nothing
 **And** it reports **emitted CSS bytes against the bytes reachable from the placed designs' selectors**, and a
 gap is a build warning
-**And** it runs `size-limit` over `assets/js/main.js` at the **40 KB brotli** budget as a **developer-facing
+**And** it runs `size-limit` over `assets/js/main.js` at the **40 KB gzipped — 40,960 bytes at gzip level 9** (NFR-2, DW-140) budget as a **developer-facing
 warning, not a build failure**
 **And** the **FR-J17 quality gate runs in the same lane**, so a category gate has one sheet to read.
 
@@ -4108,7 +4130,10 @@ button, link column, social row, inline newsletter form.
 > **Sizing — ruled by the owner on 2026-09-04: four designs per story, and the first story's four are the two
 > [Free] designs plus two Pro.** Every story in every category therefore carries four designs, except a final
 > story taking the remainder. The Free pair ships in a category's first story, which is what makes a category
-> usable by a Free account the moment its first story lands.
+> usable by a Free account the moment its first story lands. **The pair is the one the owner picked for the
+> category** — the export's `**[Free] designs:**` line — not its #1 and #2 (R-17 as amended, **R-212**): each first
+> story builds it, the pick trading places with the design the plan had put there, and `tools/doc-audit.py` holds
+> every first story to the export.
 >
 > **One imbalance, named rather than smoothed over** *(step-6 stress test, finding F4)*. **A category's first
 > story does strictly more than the others** — the shared content model and the stylesheet *plus* four designs,
@@ -4155,10 +4180,10 @@ So that I can start using Headers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A1 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rail · #2 Split Rail · #3 Stacked Masthead · #4 Overlay are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Rail · #3 Stacked Masthead · #4 Overlay · #13 Centre Nav are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #13), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #13 Centre Nav trades places with #2 Split Rail, which Story 9.4 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A1 Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4168,6 +4193,11 @@ So that I can start using Headers on my own site.
 **And** clicking an **icon slot** on the canvas — a button's icon included — filled or empty, opens the **Icon Picker** anchored to it, the component Story 4.5 built, mounted rather than drawn again, and an empty slot shows as P0-2's dashed placeholder only while its section is selected *(R-121; moved from Story 5.3, DW-115)*
 **And** every header menu renders through **Inflozo's own `partials/navigation.hbs`**, recorded on T1 and T3 before it is built on, carrying both dropdown sources of `A1 Headers - Spec.md` §0·5 — children authored in Inflozo and Ghost's `+`/`-` prefixes — each dropdown a native `<details>` that opens without JavaScript, with the current page marked from Ghost's `current`; no header builds dropdowns on Ghost's default `{{navigation}}` markup *(owner's ruling **R-111**, 2026-09-15; **DW-150**)*
 **And** **FR-C5's compatibility watch is built here** *(moved from Story 3.7 by the owner's ruling, 2026-09-10; **DW-87**)*, because this is the first story in which any design declares `ghostCompat` and therefore the first story in which the broadcast has anything to verify: on each Ghost release, **one broadcast to every account on every plan** — normally a confirmation that the library was verified against it using each design's `ghostCompat`, and where the release does affect shipped designs, a notice naming the affected categories and recommending a redeploy through FR-J14. It is the **one carve-out FR-P2 allows to reach email** and it **rides the "Reconnect needed" channel Story 3.7 already built** — the `notifications` rows, the email shell and the send path all exist, so this story adds a trigger and a template and no mechanism. The rows are the `ghost_compat` kind, which **AD-25 now names E9's** rather than E3's. **If this story overruns its session, this is the piece that moves to Story 9.4** — A1's owner gate — never a design: the epic's own sizing note says to resize the later stories of a run, and this is not a design
+**And** #3 Stacked Masthead's date prints written out in the site's language as its frame draws it ('Thursday, 19 August'), by one rule both emitters share with the site's locale and timezone handed in (AD-1), never the stored YYYY-MM-DD (DW-106).
+**And** #4 Overlay asks whether the section BELOW it carries a loadable image through a below-facing `ADJACENCY_NEEDS` value this story adds, answered by AD-37's compiler from the placement list (R-8, DW-110).
+**And** A1's Nav children is declared on the design's `dataBindings` and drawn as a Data-group row — the first category query setting `dataRows` draws (DW-165).
+**And** before A1's social rows are built, the owner rules (R-83) whether social icons follow the platform Ghost names — the 29 August ruling for footers, library-wide — or are picked per row, and Story 10.50 builds the same answer (DW-178).
+**And** the owner's test includes a design change on A1's ring in his own editor, where he sees the 180 ms settle and approves it (DW-214); the navigation partial's classes are recorded on an archive's page 2 as well, where Ghost adds `nav-current-parent`, and `navigationItems` draws exactly the partial's classes (DW-231); and a dark override a design only remembers (R-205) is counted by the row, the moon and D6a, or named where they say 'Nothing to clear' — asked of the owner first (R-83, DW-286).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1); FR-C5 (the compatibility watch), FR-P2's compatibility carve-out (the one email that watch may send), FR-B7 (the `ghost_compat` rows); FR-F1 (button icons and the Icon Picker's canvas entry, R-121). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html` · `P0-2 Icon Slot and Picker.dc.html` (the icon slot and button icons, as R-104 reshapes the picker). The compatibility notice is a transactional send and an in-app row, not a drawn surface; `S3 Dashboard.dc.html` S3e + `B Missing Surfaces.dc.html` B21 are Story 13.4's reader over it. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82), plus a real Resend send for the broadcast.
 
@@ -4186,14 +4216,16 @@ So that I can choose more widely within Headers on my own site.
 group** (P0·5) — #6 in single-post mode, as Latest Post does — and #7, the library's **first design with several
 queries**, names each by its column so the Data group and the reset confirm can tell them apart (DW-165); where a
 column's count is a picker rather than a named set (R-18, R-30), its cap is declared with its reason (R-195)
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A1 Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A1-<n> <Name>.dc.html` — and the category's `A1-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** #6 Drawer-First's and #8 Utility + Nav's social rows read the site's social `@site` keys, which Ghost ships from 6.36.0 (MEASUREMENTS §41e; `matrix.json`), not the 6.38.0 of A1's spec §0·8, which is the `{{#social_accounts}}` helper's (DW-123).
+**And** #6's takeover and #7's panel are designed in the editor's resting no-JS state, or the owner is asked to pin them open while their contents are selected (DW-150).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4208,9 +4240,9 @@ So that I can choose more widely within Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #10 Contrast Band · #11 Side Rail · #12 Boxed are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A1 Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4229,10 +4261,10 @@ So that I can choose more widely within Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #13 Centre Nav · #14 Icon Utilities · #15 Big Type are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Split Rail · #14 Icon Utilities · #15 Big Type · #16 Reveal are built **against that same model**, each with its own per-design control schema *(#2 Split Rail trades places with the owner's pick #13 Centre Nav, which the first story builds (R-212); #16 Reveal was in no story until DW-177)*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A1 Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4247,6 +4279,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4274,15 +4307,17 @@ in front of Story 5.19's Data group, which Story 5.19 left to the first design t
 panel states the reason** — here the posts source, capped at the six-message cap with A2's own reason; if no earlier
 story has built how a design declares a Count cap and its reason, this one does
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rule · #2 Split · #3 Badge · #4 Two-Line are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Rule · #2 Split · #3 Badge · #4 Two-Line are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #2), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A2 Announcement Bars - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** FR-C4's deferred half lands here: S2c offers the site's stored announcement bar as a seed — its text into a placed A2 design's message, its visibility onto Show to, its colour onto the Background role — and once that bar is deployed, a consented one-click 'turn Ghost's own bar off' makes `announcement_clear`'s first call; declining leaves both bars (DW-66).
+**And** before A2 is built, the owner rules (R-83) which categories carry Member visibility — `prd.md:909` and `:954` name four, `control-groups.json` gives it to ten — and both are corrected to his answer (DW-185).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4297,14 +4332,16 @@ So that I can choose more widely within Announcement Bars on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Capture · #6 Countdown · #7 Dateline · #8 Ticker are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A2 Announcement Bars - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** before `countdown` ships, the owner rules (R-83) how one day and one hour read — the catalog says '1 days' and '1 hours', A2-6's frame draws 'hrs' — and the catalog, appendix-h1 §3.3a and the module's `strings` carry his answer (DW-144).
+**And** the editor stops receiving every placeable design on load: it asks the server for a design a doc names that it has not got, with undo's vanished-design guard and the ring's first paint unchanged, and the payload measured before and after (DW-200).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4319,14 +4356,15 @@ So that I can choose more widely within Announcement Bars on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Rotator · #10 Pill · #11 Toast are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A2 Announcement Bars - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** the corner design's default corner (#11 Toast; #14 Slide-in Card) is decided against Ghost's floating Subscribe button, which the canvas draws bottom-right, or the spec records why it stays — asked in R-83's shape (DW-276).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4340,15 +4378,16 @@ So that I can choose more widely within Announcement Bars on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #12 Takeover · #14 Edge are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #12 Takeover · #14 Edge · #15 Triple are built **against that same model**, each with its own per-design control schema *(#15 Triple was in no story until DW-177)*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A2 Announcement Bars - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A2-<n> <Name>.dc.html` — and the category's `A2-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** #12 Takeover's picture carries P0·9's Image focus in the Image Picker popover, and this story first writes into AD-3 how a per-image focus reaches the page on both emitters — a compiler hint, never an inline style (R-51, DW-107).
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4358,6 +4397,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4380,10 +4420,10 @@ So that I can start using Footers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A3 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Minimal Line · #2 Columns · #3 Two-Tier · #4 Newsletter Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Minimal Line · #3 Two-Tier · #4 Newsletter Band · #16 Mini Bar are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #16), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #16 Mini Bar trades places with #2 Columns, which Story 9.12 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A3 Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4403,14 +4443,15 @@ So that I can choose more widely within Footers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Centred Stack · #7 Big Type · #8 Sitemap are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A3 Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A3-<n> <Name>.dc.html` — and the category's `A3-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** #8 Sitemap's author group, ranked by post count, declares `count.posts` — a `{{#get}}` include and a `count.posts desc` order that `DataBinding`, `validate.ts`, `getExprs` and the offline resolver learn here, executed on T1 and T3 (DW-124).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4428,9 +4469,9 @@ So that I can choose more widely within Footers on my own site.
 **And** #9 Latest Posts takes its posts through Story 5.19's Data group, and *(moved word for word from Story 5.19 by
 **R-195**)* a design may cap its own Count below the global and **the panel states the reason** — its How many posts
 runs two to four (A3 #9)
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A3 Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4449,10 +4490,10 @@ So that I can choose more widely within Footers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #13 Tags · #14 Image Band · #15 Wrap · #16 Mini Bar are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Columns · #13 Tags · #14 Image Band · #15 Wrap are built **against that same model**, each with its own per-design control schema *(#2 Columns trades places with the owner's pick #16 Mini Bar, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A3 Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4467,6 +4508,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4488,7 +4530,8 @@ behind §4's blocking owner gate.
 
 > Same granularity rule, same gate, same sequencing — **one category at a time in inventory order beginning
 > with Heroes**, each behind §4's blocking owner gate, and **no two category stories ever in flight at once**.
-> Four designs per story, the first story's four being the two [Free] plus two Pro (owner, 2026-09-04).
+> Four designs per story, the first story's four being the two [Free] plus two Pro (owner, 2026-09-04) — the two
+> [Free] being the owner's pick for the category (**R-212**).
 >
 > **Two ordering constraints inside this epic, both §8's.** **A25's owner gate cannot open until E7's card design
 > module emits**, because a reading design assessed against Ghost's default card styling is being assessed
@@ -4524,15 +4567,16 @@ So that I can start using Heroes on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A4 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Full Bleed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Centred · #3 Split · #4 Full Bleed · #17 Slim are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #17), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #17 Slim trades places with #2 Flush Left, which Story 10.5 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A4 Heroes - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** a field whose spec advises a length rather than capping it (the headline: 'the editor advises at 90 characters') carries an advisory counter declared beside `maxChars` that turns muted past the advice and never refuses a character (DW-180).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4547,9 +4591,9 @@ So that I can choose more widely within Heroes on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Image Under · #6 Big Type · #7 Masthead · #8 Card are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A4 Heroes - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4569,9 +4613,9 @@ So that I can choose more widely within Heroes on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Contrast Band · #10 Video Poster · #11 Subscribe are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A4 Heroes - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4591,14 +4635,15 @@ So that I can choose more widely within Heroes on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #12 Offset Image · #13 Latest Post · #14 Full Height are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A4 Heroes - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster — #13 Latest Post's included (DW-154)
+**And** #13 Latest Post ships no sample-site link as a default — its secondary action renders nothing until the customer picks a destination (FR-F8) — and the validator refuses a design default on `orbit-weekly.example` (DW-160).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -4612,15 +4657,16 @@ So that I can choose more widely within Heroes on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #16 Pull Quote · #17 Slim are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Flush Left · #16 Pull Quote · #18 Overlap Card are built **against that same model**, each with its own per-design control schema *(#2 Flush Left trades places with the owner's pick #17 Slim, which the first story builds (R-212); #18 Overlap Card was in no story until DW-177)*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A4 Heroes - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** #2's Value source Member count prints `{{total_members}}` on a linked site from member counts the site snapshot stores, executed on T1 and T3 (DW-247).
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -4630,6 +4676,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4652,10 +4699,10 @@ So that I can start using Features on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A5 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Three Up · #3 Four Up · #4 Cards · #6 Rows are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #6), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #6 Rows trades places with #2 Two Up, which Story 10.7 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A5 Features - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4674,10 +4721,10 @@ So that I can choose more widely within Features on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Split Head · #6 Rows · #7 Alternating Media · #8 Media Top are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Two Up · #5 Split Head · #7 Alternating Media · #8 Media Top are built **against that same model**, each with its own per-design control schema *(#2 Two Up trades places with the owner's pick #6 Rows, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A5 Features - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4697,9 +4744,9 @@ So that I can choose more widely within Features on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Bento · #10 Contrast Band · #11 Checklist · #12 Tabs are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A5 Features - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4719,9 +4766,9 @@ So that I can choose more widely within Features on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Spotlight · #14 Scroller · #15 Index · #16 Panel are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A5 Features - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4736,6 +4783,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4758,10 +4806,10 @@ So that I can start using CTA Banners on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A6 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Card are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Centred · #3 Split · #4 Card · #10 Slim are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #10), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #10 Slim trades places with #2 Flush Left, which Story 10.12 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A6 CTA Banners - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4781,9 +4829,9 @@ So that I can choose more widely within CTA Banners on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Inline Form · #7 Full Bleed Image · #8 Image Split are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A6 CTA Banners - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4802,10 +4850,10 @@ So that I can choose more widely within CTA Banners on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Big Type · #10 Slim · #11 Reasons · #12 Pair are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Flush Left · #9 Big Type · #11 Reasons · #12 Pair are built **against that same model**, each with its own per-design control schema *(#2 Flush Left trades places with the owner's pick #10 Slim, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A6 CTA Banners - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4825,9 +4873,9 @@ So that I can choose more widely within CTA Banners on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Overlap · #14 Members · #15 Signature are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A6 CTA Banners - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4842,6 +4890,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4864,10 +4913,10 @@ So that I can start using Pricing and Tiers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A7 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Cards · #2 Table · #3 Stack · #4 Split Head are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Cards · #3 Stack · #4 Split Head · #12 Ledger are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #12), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #12 Ledger trades places with #2 Table, which Story 10.16 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A7 Pricing and Tiers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4890,9 +4939,9 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Single Tier · #7 Highlight · #8 Slim Row are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A7 Pricing and Tiers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4911,10 +4960,10 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Big Price · #10 Tabs · #11 Free and Paid · #12 Ledger are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Table · #9 Big Price · #10 Tabs · #11 Free and Paid are built **against that same model**, each with its own per-design control schema *(#2 Table trades places with the owner's pick #12 Ledger, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A7 Pricing and Tiers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4934,9 +4983,9 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Members · #14 Assurances · #15 Both Prices are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A7 Pricing and Tiers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4951,6 +5000,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -4973,10 +5023,10 @@ So that I can start using Testimonials on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A8 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Single · #2 Three Up · #3 Two Up · #4 Grid are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Single · #2 Three Up · #3 Two Up · #4 Grid are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #2), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A8 Testimonials - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -4996,9 +5046,9 @@ So that I can choose more widely within Testimonials on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Wall · #6 Split Head · #7 Slider · #8 Portrait are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A8 Testimonials - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5018,9 +5068,9 @@ So that I can choose more widely within Testimonials on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Contrast Band · #10 Big Quote · #11 Faces · #12 Rows are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A8 Testimonials - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5040,9 +5090,9 @@ So that I can choose more widely within Testimonials on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Highlight · #14 Slim Line · #15 Overlap are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A8 Testimonials - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5057,6 +5107,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5079,10 +5130,10 @@ So that I can start using FAQ on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A9 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Accordion · #2 Two Column · #3 Open List · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Accordion · #2 Two Column · #3 Open List · #4 Cards are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #3), plus two Pro designs (#2 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A9 FAQ - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5102,9 +5153,9 @@ So that I can choose more widely within FAQ on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Split Head · #6 Grouped · #7 Index · #8 Contrast Band are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A9 FAQ - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5124,9 +5175,9 @@ So that I can choose more widely within FAQ on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Numbered · #10 Image Split · #11 Tabs are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A9 FAQ - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5145,10 +5196,10 @@ So that I can choose more widely within FAQ on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #13 Slim · #14 Ask are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #13 Slim · #14 Ask · #15 Ledger are built **against that same model**, each with its own per-design control schema *(#15 Ledger was in no story until DW-177)*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A9 FAQ - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5163,6 +5214,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5185,10 +5237,10 @@ So that I can start using Stats and Numbers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A10 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Row · #2 Cards · #3 Grid · #4 Single are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Row · #3 Grid · #4 Single · #8 Ledger are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #8), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #8 Ledger trades places with #2 Cards, which Story 10.27 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A10 Stats and Numbers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5207,10 +5259,10 @@ So that I can choose more widely within Stats and Numbers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Lead Stat · #6 Split Head · #7 Contrast Band · #8 Ledger are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Cards · #5 Lead Stat · #6 Split Head · #7 Contrast Band are built **against that same model**, each with its own per-design control schema *(#2 Cards trades places with the owner's pick #8 Ledger, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A10 Stats and Numbers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5230,9 +5282,9 @@ So that I can choose more widely within Stats and Numbers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Bars · #10 Image Split · #11 Inline · #12 Sourced are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A10 Stats and Numbers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5252,9 +5304,9 @@ So that I can choose more widely within Stats and Numbers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Slim · #14 Change · #15 Big Type are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A10 Stats and Numbers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5269,6 +5321,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5291,10 +5344,10 @@ So that I can start using Logo Walls on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A11 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Row · #2 Caption Row · #3 Grid · #4 Boxed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Row · #3 Grid · #4 Boxed · #10 Slim are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #10), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #10 Slim trades places with #2 Caption Row, which Story 10.32 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A11 Logo Walls - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5314,9 +5367,9 @@ So that I can choose more widely within Logo Walls on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Cards · #6 Split Head · #7 Contrast Band · #8 Marquee are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A11 Logo Walls - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5335,10 +5388,10 @@ So that I can choose more widely within Logo Walls on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Rail · #10 Slim · #11 Named · #12 Tiers are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Caption Row · #9 Rail · #11 Named · #12 Tiers are built **against that same model**, each with its own per-design control schema *(#2 Caption Row trades places with the owner's pick #10 Slim, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A11 Logo Walls - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5358,9 +5411,9 @@ So that I can choose more widely within Logo Walls on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Dense · #14 Inline · #15 Big Type are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A11 Logo Walls - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5375,6 +5428,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5397,10 +5451,10 @@ So that I can start using About and Team on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A12 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Grid · #2 Cards · #3 Rows · #4 Story and Team are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Grid · #3 Rows · #4 Story and Team · #10 Directory are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #10), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #10 Directory trades places with #2 Cards, which Story 10.36 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A12 About and Team - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5420,9 +5474,9 @@ So that I can choose more widely within About and Team on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Split Head · #6 Portraits · #7 Contrast Band · #8 Founder are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A12 About and Team - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5441,10 +5495,10 @@ So that I can choose more widely within About and Team on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Faces · #10 Directory · #11 Slim · #12 Big Type are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Cards · #9 Faces · #11 Slim · #12 Big Type are built **against that same model**, each with its own per-design control schema *(#2 Cards trades places with the owner's pick #10 Directory, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A12 About and Team - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5464,9 +5518,9 @@ So that I can choose more widely within About and Team on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Rail · #14 Reveal · #15 Groups are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A12 About and Team - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5481,6 +5535,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5503,10 +5558,10 @@ So that I can start using Process on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A13 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Track · #3 Rows · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Three Up · #2 Track · #3 Rows · #4 Cards are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #3), plus two Pro designs (#2 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A13 Process - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5526,9 +5581,9 @@ So that I can choose more widely within Process on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Split Head · #6 Contrast Band · #7 Alternating Media · #8 Rail are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A13 Process - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5548,9 +5603,9 @@ So that I can choose more widely within Process on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Big Numbers · #10 Panel · #11 Walkthrough · #12 Media Top are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A13 Process - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5570,9 +5625,9 @@ So that I can choose more widely within Process on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Slim Bar · #14 Index · #15 Sticky Rail are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A13 Process - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5587,6 +5642,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5609,10 +5665,10 @@ So that I can start using Galleries on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A14 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Grid · #2 Masonry · #3 Mosaic · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Grid · #3 Mosaic · #4 Panel · #14 Index are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #14), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #14 Index trades places with #2 Masonry, which Story 10.45 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A14 Galleries - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5632,9 +5688,9 @@ So that I can choose more widely within Galleries on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Split Head · #6 Contrast Band · #7 Carousel · #8 Filmstrip are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `lightbox`, `carousel + lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A14 Galleries - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5654,9 +5710,9 @@ So that I can choose more widely within Galleries on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Full Bleed · #10 Lead and Grid · #11 Overlay · #12 Captioned Rows are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A14 Galleries - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5675,10 +5731,10 @@ So that I can choose more widely within Galleries on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #13 Contact Sheet · #14 Index · #15 Boxed are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Masonry · #13 Contact Sheet · #15 Boxed are built **against that same model**, each with its own per-design control schema *(#2 Masonry trades places with the owner's pick #14 Index, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `lightbox` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A14 Galleries - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5693,6 +5749,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5715,10 +5772,10 @@ So that I can start using Video and Embeds on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A15 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Player · #2 Split · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Player · #3 Panel · #4 Contrast Band · #12 Embed Card are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #12), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #12 Embed Card trades places with #2 Split, which Story 10.48 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A15 Video and Embeds - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5738,9 +5795,9 @@ So that I can choose more widely within Video and Embeds on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Full Bleed · #6 Cover · #7 Grid · #8 Lead and Grid are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A15 Video and Embeds - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5759,10 +5816,10 @@ So that I can choose more widely within Video and Embeds on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Carousel · #10 Playlist · #11 Chapters · #12 Embed Card are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Split · #9 Carousel · #10 Playlist · #11 Chapters are built **against that same model**, each with its own per-design control schema *(#2 Split trades places with the owner's pick #12 Embed Card, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `carousel + video-facade`, `tabs + video-facade`, `video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A15 Video and Embeds - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5782,9 +5839,9 @@ So that I can choose more widely within Video and Embeds on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Thumb Rows · #14 Slim Bar · #15 Tabs are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `video-facade`, `tabs + video-facade` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A15 Video and Embeds - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5799,6 +5856,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5821,10 +5879,10 @@ So that I can start using Contact on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A16 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Split · #2 Centred · #3 Card · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #2 Centred · #3 Card · #4 Panel · #9 Slim Bar are built against that model — **the category's two [Free] designs, the owner's picks (#2 and #9), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #9 Slim Bar trades places with #1 Split, which Story 10.52 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A16 Contact - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5844,9 +5902,9 @@ So that I can choose more widely within Contact on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Details Grid · #7 Map Split · #8 Locations are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `contact-form req.`, `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A16 Contact - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5865,10 +5923,10 @@ So that I can choose more widely within Contact on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Slim Bar · #10 Big Type · #11 Enquiry Types · #12 Boxed are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #1 Split · #10 Big Type · #11 Enquiry Types · #12 Boxed are built **against that same model**, each with its own per-design control schema *(#1 Split trades places with the owner's pick #9 Slim Bar, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `none`, `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A16 Contact - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5888,9 +5946,9 @@ So that I can choose more widely within Contact on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Directory · #14 Reasons · #15 Cover are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `none`, `contact-form req.` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A16 Contact - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5905,6 +5963,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -5927,7 +5986,7 @@ So that I can start using Post Grids on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A17 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Three Up · #2 Two Up · #3 Four Up · #4 Cards are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #4), plus two Pro designs (#2 and #3)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** the rebuilt grids draw **no page links of their own** — A34 draws them (A17-0, settlement 4) — so from this
 story until Story 10.112, which runs straight after this category's owner gate (R-196), the main feed shows none; each
 A17 story's owner test says so
@@ -5937,12 +5996,13 @@ and **the panel states the reason** — Three Up's one to twenty-four, Two Up's 
 Spec.md`)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing on this design moves`, `loads o`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; both 636 cells`, `their excerpts and their meta are server-r`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `including the stress frame's short last row.`, `None. Edit-safe: yes — the hover shadow is a CSS transition on the card and does not run while a card is being edited. J` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A17 Post Grids - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A17-<n> <Name>.dc.html` — and the category's `A17-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** a value another control switches off is greyed on its own with its reason — Three Up's 'Three lines' at Four per row — a per-value dependency the whole-control `disabledBy` cannot express (DW-151); and reading time prints as Ghost's own `{{reading_time}}` does — '1 min read' at 0 and 1 minute — through a translatable catalog form recorded on T1 and T3 first (DW-156).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A17). · **Frame:** `A17-<n> <Name>.dc.html` · `A17-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -5957,9 +6017,9 @@ So that I can choose more widely within Post Grids on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Lead and Grid · #6 Split Head · #7 Contrast Band · #8 Overlay are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — the lead is a grid-column placement`, `not a script. JS off: pixel-identical`, `lead cell included.`, `None. Edit-safe: yes — Head sticky is CSS position: sticky`, `not a module. JS off: pixel-identical; the head stays beside`, `None. Edit-safe: yes — the inversion is a token substitution. JS off: pixel-identical`, `band and all.`, `None. Edit-safe: yes — the scrim is a CSS gradient over a server-rendered image. JS off: pixel-identical; title`, `tag and` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A17 Post Grids - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -5979,9 +6039,9 @@ So that I can choose more widely within Post Grids on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Big Type · #10 Ledger · #11 Masonry · #12 Bento are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the design is type and hairlines. typewriter considered an`, `None. Edit-safe: yes — nothing sorts`, `filters or measures. JS off: pixel-identical; every row`, `its tag and its abbreviat`, `None — and this is where that claim is worth most`, `because the layout it imitates normally cannot make it: three server-`, `None. Edit-safe: yes — the composition is grid-template-columns`, `explicit grid-row spans`, `aspect-ratio boxes and a grid-` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A17 Post Grids - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6001,9 +6061,9 @@ So that I can choose more widely within Post Grids on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Thumb Side · #14 Dense · #15 Filtered are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — Thumbnail side Right is row-reverse and nothing else in the row moves. JS off: pixel-identical. l`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; a wall of 196 px cells is markup and one grid rule. The th`, `filter-strip` — its edit-safe value is `registry.json`'s, research §7 (the export's "yes" reads the sense inverted, DW-133), `at every width; the scrollable row below 767 is n` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A17 Post Grids - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6026,9 +6086,9 @@ So that I can choose more widely within Post Grids on my own site.
 **And** *(moved word for word from Story 5.19 by **R-195**)* load-more designs are main-feed-only — #16 Load More is
 only ever the designated main feed, its Source locked at the page's own posts, because a fixed feed has no page 2 to
 load (R-7; `A17 Post Grids - Spec.md` §4)
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `load-more` — its edit-safe value is `registry.json`'s, research §7, `quoted: "Ghost's numbered /page/2/ paginat`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical; the full-bleed band below 767`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the band`, `its zero gutter and its scrim at Text Over are C` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A17 Post Grids - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6043,6 +6103,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6067,10 +6128,10 @@ A34's first story runs between A17's owner gate and this one (R-196)
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A18 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rows · #2 Thumb Rows · #3 Slim · #4 Dated are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Rows · #2 Thumb Rows · #3 Slim · #4 Dated are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #3), plus two Pro designs (#2 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None; core is assumed by the theme and never declared per design. Edit-safe: yes — nothing runs. JS off: pixel-identical`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical (loading="lazy" is HTML`, `not a script). lightbox refused —`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the truncation is CSS. filter-strip considered and not de`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the date column is server-rendered from each post's publis` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A18 Post Lists - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6090,9 +6151,9 @@ So that I can choose more widely within Post Lists on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Grouped · #6 Split Head · #7 Contrast Band · #8 Row Cards are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `group-headings — Ghost cannot tell that the month changed between two posts`, `so the headings are cut in by the browser f`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical. Sticky head refused`, `as in A8`, `6 and A17`, `6.`, `None. Edit-safe: yes — the inversion is a token substitution. JS off: pixel-identical. Print: on white`, `without the band`, `None. Edit-safe: yes — the lift does not run while editing. JS off: pixel-identical — the hover lift is a CSS transition` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A18 Post Lists - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6112,9 +6173,9 @@ So that I can choose more widely within Post Lists on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Big Type · #10 Lead and List · #11 Numbered · #12 Panel are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical. reveal and typewriter both considered and refused.`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the lead and its picture are server-rendered. lightbox not`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — the numerals are rendered into the markup`, `not by a CSS c`, `None. Edit-safe: yes — the panel is a container`, `not a behaviour. JS off: pixel-identical. accordion considered and refu` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A18 Post Lists - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6136,9 +6197,9 @@ So that I can choose more widely within Post Lists on my own site.
 **Then** designs #13 Timeline · #14 Index · #15 Load More are built **against that same model**, each with its own per-design control schema
 **And** *(moved word for word from Story 5.19 by **R-195**)* load-more designs are main-feed-only — #15 Load More is
 only ever the designated main feed, because a fixed feed has no page 2 to load (R-7)
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `None. Edit-safe: yes — nothing runs. JS off: pixel-identical; the rail`, `the markers and the dates are markup and CSS. sc`, `None. Edit-safe: yes — nothing runs. JS off: pixel-identical — and Alphabetical is server-side`, `so it needs none. filter`, `load-more` — its edit-safe value is `registry.json`'s, research §7, `so the edito` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A18 Post Lists - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6153,6 +6214,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6175,10 +6237,10 @@ So that I can start using Featured and Spotlight on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A19 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Split · #2 Full Bleed · #3 Card · #4 Poster are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Split · #3 Card · #4 Poster · #6 Big Type are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #6), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #6 Big Type trades places with #2 Full Bleed, which Story 10.64 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A19 Featured and Spotlight - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6197,10 +6259,10 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Contrast Band · #6 Big Type · #7 Overlap · #8 Lead and Two are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Full Bleed · #5 Contrast Band · #7 Overlap · #8 Lead and Two are built **against that same model**, each with its own per-design control schema *(#2 Full Bleed trades places with the owner's pick #6 Big Type, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A19 Featured and Spotlight - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6220,9 +6282,9 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Alternating · #10 Pair · #11 Lead and Rail · #12 Picks are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A19 Featured and Spotlight - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6242,9 +6304,9 @@ So that I can choose more widely within Featured and Spotlight on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Quote · #14 Slim · #15 Carousel are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A19 Featured and Spotlight - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6259,6 +6321,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6281,10 +6344,10 @@ So that I can start using Tag Collections on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A20 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Chips · #2 Tiles · #3 Cards · #4 Rows are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Chips · #3 Cards · #4 Rows · #14 Slim are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #14), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #14 Slim trades places with #2 Tiles, which Story 10.70 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A20 Tag Collections - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6304,9 +6367,9 @@ So that I can choose more widely within Tag Collections on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Split Head · #6 Contrast Band · #7 Index · #8 Big Type are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `group-headings` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A20 Tag Collections - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6326,9 +6389,9 @@ So that I can choose more widely within Tag Collections on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Rail · #10 Lead and Rest · #11 Ledger · #12 Panel are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A20 Tag Collections - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6347,10 +6410,10 @@ So that I can choose more widely within Tag Collections on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #13 Overlay · #14 Slim · #15 Filter Bar are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Tiles · #13 Overlay · #15 Filter Bar are built **against that same model**, each with its own per-design control schema *(#2 Tiles trades places with the owner's pick #14 Slim, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `filter-strip` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A20 Tag Collections - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6365,6 +6428,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6387,10 +6451,10 @@ So that I can start using Author Showcases on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A21 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Grid · #2 Cards · #3 Rows · #4 Split Head are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Grid · #3 Rows · #4 Split Head · #11 Rail are built against that model — **the category's two [Free] designs, the owner's picks (#3 and #11), plus two Pro designs (#1 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #11 Rail trades places with #2 Cards, which Story 10.73 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A21 Author Showcases - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6410,9 +6474,9 @@ So that I can choose more widely within Author Showcases on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Founder · #7 Panel · #8 Faces are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A21 Author Showcases - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6431,10 +6495,10 @@ So that I can choose more widely within Author Showcases on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #9 Big Type · #10 Directory · #11 Rail · #12 Carousel are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Cards · #9 Big Type · #10 Directory · #12 Carousel are built **against that same model**, each with its own per-design control schema *(#2 Cards trades places with the owner's pick #11 Rail, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `group-headings at On`, `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A21 Author Showcases - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6454,9 +6518,9 @@ So that I can choose more widely within Author Showcases on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Lead and Rest · #14 Image Band · #15 Slim are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A21 Author Showcases - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6471,6 +6535,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6493,15 +6558,16 @@ So that I can start using Newsletter on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A22 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Inline Row · #2 Card · #3 Split · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Inline Row · #3 Split · #4 Contrast Band · #13 Boxed are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #13), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #13 Boxed trades places with #2 Card, which Story 10.78 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A22 Newsletter - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** `{members}` compiles to `{{total_members}}` on the theme and to the site's rounded member count on the canvas, with an agreement row (DW-152).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -6516,9 +6582,9 @@ So that I can choose more widely within Newsletter on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Panel · #6 Image Split · #7 Cover · #8 Big Type are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A22 Newsletter - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6538,9 +6604,9 @@ So that I can choose more widely within Newsletter on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Slim Bar · #10 Choice · #11 Reasons · #12 Issue Preview are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A22 Newsletter - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6559,15 +6625,16 @@ So that I can choose more widely within Newsletter on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #13 Boxed · #14 Slide-in Card · #15 Two Up · #16 Quote are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Card · #14 Slide-in Card · #15 Two Up · #16 Quote are built **against that same model**, each with its own per-design control schema *(#2 Card trades places with the owner's pick #13 Boxed, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `slide-in-card` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A22 Newsletter - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A22-<n> <Name>.dc.html` — and the category's `A22-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** the corner design's default corner (#11 Toast; #14 Slide-in Card) is decided against Ghost's floating Subscribe button, which the canvas draws bottom-right, or the spec records why it stays — asked in R-83's shape (DW-276).
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -6577,6 +6644,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6599,15 +6667,16 @@ So that I can start using Post Headers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A24 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Image Top are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Centred · #2 Flush Left · #3 Split · #4 Image Top are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #2), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A24 Post Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
-**And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** each design **matches its frame** — `A24-<n> <Name>.dc.html` — and the category's `A24-0 Category Proof.dc.html` tokenisation proof, stress frame and roster (DW-153)
+**And** #1 Centred, re-authored from its pilot, compiles to `page.hbs` as well as `post.hbs` under A24's page rule, so `page.hbs`'s default stack keeps its header row (DW-191).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A24). · **Frame:** `A24-<n> <Name>.dc.html` · `A24-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -6622,9 +6691,9 @@ So that I can choose more widely within Post Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Full Bleed · #6 Edge to Edge · #7 Card · #8 Contrast Band are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A24 Post Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6644,9 +6713,9 @@ So that I can choose more widely within Post Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Overlap · #10 Big Type · #11 Dateline · #12 Rail are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A24 Post Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6666,9 +6735,9 @@ So that I can choose more widely within Post Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Sticky · #14 Share Row · #15 Slim · #16 Two Column are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `reading-progress + header-scroll`, `share` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A24 Post Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6683,6 +6752,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6705,10 +6775,10 @@ So that I can start using Post Content Layouts on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A25 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Measured · #2 Plain · #3 Sheet · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #2 Plain · #3 Sheet · #4 Contrast Band · #5 Full Bleed are built against that model — **the category's two [Free] designs, the owner's picks (#2 and #5), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #5 Full Bleed trades places with #1 Measured, which Story 10.84 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `toc`, `heading anchor` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A25 Post Content Layouts - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6718,6 +6788,8 @@ So that I can start using Post Content Layouts on my own site.
 **And** *(Story 5.20, DW-266)* the Post Content panel carries C1a's **"Open paywall editor →"** (`C Post Body.dc.html:81`,
 and C1d's "Open Paywall →" at `:1064`): a navigation to the Paywall canvas Story 5.20 built, the second door beside the
 Template switcher's Template surfaces group
+**And** the render matrix's accessibility scan stops at the post body's edge: each case excludes the element bound to `{{content}}`, derived from the binding, and a case carrying the binding with nothing excluded fails (DW-170).
+
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
 #### Story 10.84: A25 — designs #5–8
@@ -6730,10 +6802,10 @@ So that I can choose more widely within Post Content Layouts on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Full Bleed · #6 Hanging Heads · #7 Sticky Index · #8 Index Top are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #1 Measured · #6 Hanging Heads · #7 Sticky Index · #8 Index Top are built **against that same model**, each with its own per-design control schema *(#1 Measured trades places with the owner's pick #5 Full Bleed, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `lightbox`, `heading anchor`, `toc scroll-spy`, `toc` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A25 Post Content Layouts - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6753,9 +6825,9 @@ So that I can choose more widely within Post Content Layouts on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Share Rail · #10 Marginalia · #11 Ruled · #12 Numbered are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `heading anchor` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A25 Post Content Layouts - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6770,6 +6842,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6792,10 +6865,10 @@ So that I can start using Post Footers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A26 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Author Bio · #2 Rows · #3 Card · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Author Bio · #3 Card · #4 Contrast Band · #6 Slim are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #6), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #6 Slim trades places with #2 Rows, which Story 10.87 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `share`, `share member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A26 Post Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6814,10 +6887,10 @@ So that I can choose more widely within Post Footers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Split · #6 Slim · #7 Next and Prev · #8 Tag Row are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Rows · #5 Split · #7 Next and Prev · #8 Tag Row are built **against that same model**, each with its own per-design control schema *(#2 Rows trades places with the owner's pick #6 Slim, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `share member-form`, `share` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A26 Post Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6837,9 +6910,9 @@ So that I can choose more widely within Post Footers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Share Row · #10 Big Type · #11 Portrait · #12 Subscribe are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `share`, `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A26 Post Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6859,9 +6932,9 @@ So that I can choose more widely within Post Footers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #13 Rail · #14 Ledger · #15 Grid are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `share`, `share member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A26 Post Footers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6876,6 +6949,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6898,10 +6972,10 @@ So that I can start using Related Posts on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A27 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Three Up · #2 Rows · #3 Thumb Rows · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Three Up · #2 Rows · #3 Thumb Rows · #4 Panel are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #2), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A27 Related Posts - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6921,9 +6995,9 @@ So that I can choose more widely within Related Posts on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Lead and List · #7 Rail · #8 Overlay are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A27 Related Posts - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6943,9 +7017,9 @@ So that I can choose more widely within Related Posts on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Big Type · #10 Carousel · #11 Index · #12 Next Up are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `carousel` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A27 Related Posts - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -6960,6 +7034,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -6982,10 +7057,10 @@ So that I can start using Comments on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A28 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Rule · #2 Split Head · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Rule · #3 Panel · #4 Contrast Band · #5 Boxed are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #5), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #5 Boxed trades places with #2 Split Head, which Story 10.94 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A28 Comments - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7004,10 +7079,10 @@ So that I can choose more widely within Comments on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Boxed · #6 Rail · #7 Disclosure are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Split Head · #6 Rail · #7 Disclosure are built **against that same model**, each with its own per-design control schema *(#2 Split Head trades places with the owner's pick #5 Boxed, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `accordion` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A28 Comments - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7027,14 +7102,15 @@ So that I can choose more widely within Comments on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #8 Prompt · #9 Big Count · #10 Slim are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A28 Comments - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A28-<n> <Name>.dc.html` — and the category's `A28-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** #10 Slim's Background role is R-103's no-value lock — `universals.bg` `values: []` with its sentence and no `data-bg` on its root — never the frame's 'None' and never locked at Base (DW-105).
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -7044,6 +7120,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -7066,10 +7143,10 @@ So that I can start using Archive Headers on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A29 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Split Head · #3 Contrast Band · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Centred · #3 Contrast Band · #4 Panel · #8 Bar are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #8), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #8 Bar trades places with #2 Split Head, which Story 10.97 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A29 Archive Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7088,10 +7165,10 @@ So that I can choose more widely within Archive Headers on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Full Bleed · #6 Image Split · #7 Rail · #8 Bar are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Split Head · #5 Full Bleed · #6 Image Split · #7 Rail are built **against that same model**, each with its own per-design control schema *(#2 Split Head trades places with the owner's pick #8 Bar, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A29 Archive Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7111,9 +7188,9 @@ So that I can choose more widely within Archive Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Big Type · #10 Boxed · #11 Filter are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `count-up`, `filter-strip` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A29 Archive Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7133,9 +7210,9 @@ So that I can choose more widely within Archive Headers on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #12 Portrait · #13 Index · #14 Sticky are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — none — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A29 Archive Headers - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7150,6 +7227,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -7172,10 +7250,10 @@ So that I can start using Members Pages on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A30 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Split Pitch · #3 Card · #4 Panel are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Centred · #3 Card · #4 Panel · #10 Boxed are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #10), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #10 Boxed trades places with #2 Split Pitch, which Story 10.102 builds (R-212)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A30 Members Pages - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7195,9 +7273,9 @@ So that I can choose more widely within Members Pages on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Contrast Band · #6 Cover · #7 Image Split are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `member-form` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A30 Members Pages - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7216,10 +7294,10 @@ So that I can choose more widely within Members Pages on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Tiers · #9 Big Type · #10 Boxed are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Split Pitch · #8 Tiers · #9 Big Type are built **against that same model**, each with its own per-design control schema *(#2 Split Pitch trades places with the owner's pick #10 Boxed, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `member-form`, `price-toggle` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A30 Members Pages - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7239,9 +7317,9 @@ So that I can choose more widely within Members Pages on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #11 Rail · #12 Ledger · #13 Steps are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `member-form`, `scroll-spy` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A30 Members Pages - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7256,6 +7334,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -7278,15 +7357,16 @@ So that I can start using Error and Utility on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A31 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Centred · #2 Split Reason · #3 Card · #4 Boxed are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Centred · #2 Split Reason · #3 Card · #4 Boxed are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #4), plus two Pro designs (#2 and #3)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A31 Error and Utility - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A31-<n> <Name>.dc.html` — and the category's `A31-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** the Private canvas becomes reachable: the Admin settings snapshot records Ghost's `is_private` (read in source or on T1/T3 first), the switcher offers Private only for a linked site that reports it, and a refused `/private` still answers the app's 404 synchronously (DW-192).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A31). · **Frame:** `A31-<n> <Name>.dc.html` · `A31-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7301,9 +7381,9 @@ So that I can choose more widely within Error and Utility on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Panel · #6 Contrast Band · #7 Cover are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A31 Error and Utility - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7323,9 +7403,9 @@ So that I can choose more widely within Error and Utility on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #8 Elsewhere · #9 Directory · #10 Display are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A31 Error and Utility - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7340,6 +7420,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -7362,13 +7443,13 @@ So that I can start using Paywall on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A32 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Fade · #2 Card · #3 Panel · #4 Contrast Band are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has a paywall to choose in this category from its very first story — **chosen, never placed**: A32 is a treatment, selected on the **Paywall editor** Story 5.20 built (Template ▾ → Template surfaces → Paywall) and absent from the Section Picker, Layers, Shuffle and Remix (FR-H6; *Story 5.20, DW-263*)
+**And** designs #1 Fade · #3 Panel · #4 Contrast Band · #5 Boxed are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #5), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has a paywall to choose in this category from its very first story — **chosen, never placed**: A32 is a treatment, selected on the **Paywall editor** Story 5.20 built (Template ▾ → Template surfaces → Paywall) and absent from the Section Picker, Layers, Shuffle and Remix (FR-H6; *Story 5.20, DW-263*) — #5 Boxed trades places with #2 Card, which Story 10.108 builds (R-212)
 **And** *(Story 5.20, DW-262)* the Paywall editor gains **A32's own half**: P0·6's gate switcher with the category's declared gates (Free signup · Paid · Upgrade · Named tier), the four per-gate copy sets, the named-tier preview (a Paid member holding the one tier, Ghost 6's preview-member model, `postAccess`), and the owner's call on whether **a way back to Ghost's own box** is a control or ⌘Z alone
 **And** *(Story 5.20, DW-264)* a tier's price prints through Ghost's `{{price}}` (smallest currency unit), and its `benefits` repeat — both built by Story 10.14 first, inherited here
 **And** *(Story 5.20, DW-265)* A32 is built **without** the spec's "Tiers: From Ghost, all" / "All, including free" option and without greeting a member by name: FR-H6's `type:paid+visibility:public` and R-28 / AD-38 forbid both, and `tiers-unfiltered` and the `@member` refusal hold them at assembly
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core`, `member-form at one value` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A32 Paywall - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7387,10 +7468,10 @@ So that I can choose more widely within Paywall on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #5 Boxed · #6 Split Pitch · #7 Tiers · #8 Ledger are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #2 Card · #6 Split Pitch · #7 Tiers · #8 Ledger are built **against that same model**, each with its own per-design control schema *(#2 Card trades places with the owner's pick #5 Boxed, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core`, `member-form at one value`, `price-toggle` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A32 Paywall - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7410,9 +7491,9 @@ So that I can choose more widely within Paywall on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #9 Big Type · #10 Cover · #11 Sticky Bar · #12 Meter are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `core`, `dismiss at one value`, `reading-progress` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A32 Paywall - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7427,6 +7508,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** *(Story 5.20, DW-263 — this category is a treatment, so the two sentences above read differently for it)*: the
 ring is cycled on the **Paywall editor**, with ◀ ▶ in its panel and `[` `]` on its selected box, never on a page; and
 the owner **chooses** a paywall there — he places none — views a members-only post on the live Ghost site as each of
@@ -7453,10 +7535,10 @@ So that I can start using Koenig Card Treatments on my own site.
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A33 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Plain · #2 Card · #3 Panel · #4 Wide are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #1 Plain · #2 Card · #3 Panel · #4 Wide are built against that model — **the category's two [Free] designs, the owner's picks (#1 and #4), plus two Pro designs (#2 and #3)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `accordion`, `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A33 Koenig Card Treatments - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7476,9 +7558,9 @@ So that I can choose more widely within Koenig Card Treatments on my own site.
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
 **Then** designs #5 Full Bleed · #6 Contrast Band are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `accordion`, `core` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A33 Koenig Card Treatments - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7493,6 +7575,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -7517,7 +7600,7 @@ missing only while A17's own stories are built
 **When** this story lands
 **Then** the category's **shared content model** is authored once — the `contentSchema` union every design in A34 remaps against — and it is the domain FR-D19's park-and-restore rule operates over
 **And** the category's **stylesheet** is authored as plain CSS consuming Style Pack custom properties only, outside the app's build pipeline and excluded from Tailwind
-**And** designs #1 Numbers · #2 Prev and Next · #3 Bar · #4 Pill are built against that model — **the category's two [Free] designs (#1 and #2) plus its first two Pro designs (#3 and #4)** (owner, 2026-09-04), so a Free user has something placeable in this category from its very first story
+**And** designs #2 Prev and Next · #3 Bar · #4 Pill · #9 Cards are built against that model — **the category's two [Free] designs, the owner's picks (#2 and #9), plus two Pro designs (#3 and #4)** (owner, 2026-09-04; **R-212**, 2026-09-28), so a Free user has something placeable in this category from its very first story — #9 Cards trades places with #1 Numbers, which Story 10.114 builds (R-212)
 **And** *(moved word for word from Story 5.19 by **R-195**)* the main feed **alone** exposes **Pagination style:
 Numbered / Load More / Infinite scroll**, and the Pagination control above D5d's **Preview page** row applies to page
 2's copy of the main feed as its own section (Story 5.16, R-179)
@@ -7526,12 +7609,12 @@ are A34's designs (A34's reconciliation, note 1); ONE project-level value, `proj
 (AD-27 (a0)), rendered attached beneath the main feed on both emitters; and the same value Theme Settings offers where
 no feed is placed (FR-Q9, Story 7.14)
 **And** before it is built, the owner rules the two choices still open on it: which **[Free]** design an untouched
-template's pager is (DW-232 — the Synthesis Defaults name #1 Numbers, A34's spec names #2 and #9 as [Free], this
-story's line names #1 and #2), and which list names the select's values (DW-233 — FR-H2's three words, D5c's None ·
+template's pager is (DW-232 — the Synthesis Defaults name #1 Numbers, which R-212 makes Pro, and A34's [Free] pair is
+the owner's #2 and #9), and which list names the select's values (DW-233 — FR-H2's three words, D5c's None ·
 Older/Newer · Numbers, A17's four, or the designs themselves)
 **And** each carries its **own per-design control schema**, every control in the accordion its role names — read from `packages/library/control-groups.json` — and drawn as pills only for short choices (R-113, R-114; `docs/section-authoring.md` § 2)
 **And** the category's responsive collapse behaviour follows its **structural archetypes** at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A34 Pagination Styles - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7552,9 +7635,9 @@ So that I can choose more widely within Pagination Styles on my own site.
 A17's owner gate (R-196) — and A33's owner gate passed: this story is back in inventory order
 **When** this story lands
 **Then** designs #5 Counter · #6 Load More · #7 Endless are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `none`, `load-more`, `infinite-scroll` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A34 Pagination Styles - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
@@ -7573,15 +7656,16 @@ So that I can choose more widely within Pagination Styles on my own site.
 
 **Given** the shared content model and stylesheet delivered by this category's first story
 **When** this story lands
-**Then** designs #8 Contrast Band · #9 Cards · #10 Slim are built **against that same model**, each with its own per-design control schema
-**And** all of them are **Pro**, because `[Free]` is exactly the first two designs of the category and nothing else, and both shipped in its first story
+**Then** designs #1 Numbers · #8 Contrast Band · #10 Slim are built **against that same model**, each with its own per-design control schema *(#1 Numbers trades places with the owner's pick #9 Cards, which the first story builds (R-212))*
+**And** all of them are **Pro**, because `[Free]` is exactly the two designs the owner picked for the category (R-17 as amended, **R-212**) and nothing else, and both shipped in its first story
 **And** each design's collapse behaviour follows its archetype at 1440 / 834 / 390, with no horizontal overflow
-**And** the behaviour modules these designs declare — `none` — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
+**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line in `A34 Pagination Styles - Spec.md` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` (research §7) — are **authored beside them in this story**, never deferred to a module project, and **the story is not done while a declared module is missing its no-JS degradation statement**
 **And** every design is **token-driven only**, **functional with JavaScript disabled** — the server-rendered state is the real one — and passes **WCAG 2.1 AA**
 **And** each design declares a **structural descriptor tuple** whose first five slots are closed vocabularies, and **no two designs in this category share one**, asserted by `tools/tuple-check.py`
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A34-<n> <Name>.dc.html` — and the category's `A34-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** #1 Numbers is built in R-109's indicator form — 'Newer posts · 5 / 11 · Older posts' — from a frame redrawn in the Claude Design project before this story opens (DW-149).
 **And** **this story carries the category's owner gate** (§4). §4's automated sheet is green across **every
 design in the category**: the category deployed to a real Ghost target and rendered live; NFR-6(c3)'s
 canvas-vs-real-Ghost comparison green for every design under its stated exclusions; the NFR-5 accessibility scan
@@ -7591,6 +7675,7 @@ design ring** — cycle it with `[` and `]` and confirm no content prop **and no
 **And** **then the owner, by hand, as a user**: composes a page from the category's designs, deploys it with the
 product's own deploy button, views it on the live Ghost site, exercises the controls, confirms the rendered
 result changes as designed, and approves
+**And** **the member-state pass** (**R-222**): before approving, he looks at every members-aware design in the category as **Logged out user**, **Free member** and **Paid member** through View as (FR-D16)
 **And** **the automated sheet is a precondition for the owner's review, never a substitute for it — and his
 review is never a substitute for the sheet**
 **And** **the next category does not begin until this gate passes.**
@@ -7623,8 +7708,8 @@ So that "Free" is a usable plan rather than a tour.
 
 **Given** the finished library
 **When** the Free floor is verified
-**Then** **every category ships at least 2 Free-tier designs, and `[Free]` is exactly the first two of every
-category and nothing else** — so the total is two per category and is **derived, never restated**
+**Then** **every category ships at least 2 Free-tier designs, and `[Free]` is exactly the two the owner picked
+for each category and nothing else** (R-17 as amended, **R-212**) — so the total is two per category and is **derived, never restated**
 **And** where a category's designs split across `compileTarget`s or `bindingContext`s, **the Free options are
 distributed across those contexts rather than clustered in one**
 **And** the floor is **guaranteed for every context reachable from the seven synthesizable templates and for
@@ -7654,8 +7739,9 @@ So that I choose a site rather than a thumbnail.
 **Then** each starter shows a **full-page scrollable preview with a light/dark toggle, before creation**
 **And** all ten are listed, filterable, with a **"Start empty" escape**
 **And** **starters are seeds**: after creation the project is an ordinary project **with no linkage back**
-**And** the chooser is reachable from First Run and from the New Project Sheet — one flow, two entry points
+**And** the chooser is reachable from First Run and from the New Project Sheet — one flow, two entry points — and `STARTER_DOOR.reason` is deleted and the door's 'Ten' is derived from the roster the chooser draws (DW-88)
 **And** the surface matches B23a, whose roster is Appendix E's since 2026-09-04.
+**And** before the chooser is built, every starter's composition in Appendix E is re-read against `tools/export-roster.py`, and each design the 2026-09-04 merge renamed gets the owner's pick of successor — Ledger's among [Free] designs (FR-O4) (DW-157).
 
 **FRs:** FR-O2, FR-O3. · **Frame:** `B Missing Surfaces.dc.html` B23a. · **Owner test:** yes.
 
@@ -7914,6 +8000,7 @@ subscriptions, so T4 can neither create tiers nor gate a post — T4's scope is 
 nothing else
 **And** **it is composed exclusively of [Free] designs end to end**, so a Free account can ship it with **zero swaps** — asserted against the roster, not by inspection (FR-O4)
 **And** the owner tests it on a deployed site.
+**And** its paywall is one of A32's [Free] pair as the finished roster marks it — 'Hard Stop Card' is no A32 design (DW-268).
 
 **FRs:** FR-O1, FR-O4. · **Frame:** the starter's canvases are composed from the library's own
 frames — `<ID>-<n> <Name>.dc.html` per placed design — and it is previewed through `B Missing Surfaces.dc.html`
@@ -8001,7 +8088,7 @@ So that entitlement is never inferred from an event name that does not exist.
 `subscription.updated` **plus a direct read of the subscription**, never inferred from an event name that does
 not exist
 **And** the transitions are `free → pro_active` · `pro_active → pro_past_due` · `pro_past_due → pro_active` ·
-`pro_past_due → free` on grace expiry · `pro_active → free` **at period end** when auto-renew has stopped ·
+`pro_past_due → free` on grace expiry (DW-23) · `pro_active → free` **at period end** when auto-renew has stopped ·
 `pro_active → free` **immediately on a dispute being opened**
 **And** **the reverse edge exists, because disputes are not all fraud**: `free → pro_active` **restored by manual
 support action**, recorded with the reason and the resolving Dodo event, restoring **the remainder of the original
@@ -8137,6 +8224,7 @@ withdrawing capability the moment a card bounces would be the retention dark pat
 **And** the banner states **7 days and what does not happen**, and **`pro_past_due` is never shown as a plan**
 **And** a late payment recovers to `pro_active`; only grace expiry downgrades
 **And** the banner matches B24 as corrected.
+**And** FR-P1's notice to the previous address leaves Supabase's plain default: a branded template beside `supabase/auth/email-change.html`, pushed through `mailer_subjects_email_changed_notification` and `mailer_templates_email_changed_notification_content`, whose 'contact support' names a channel that exists — the owner is asked which (R-83, DW-39).
 
 **FRs:** FR-P1 email (4), the FR-L2 banner. · **Frame:** `B Missing Surfaces.dc.html` B24. · **Owner test:** yes.
 · **Verification:** a real Dodo failed-payment event and a real Resend send (R-82).
@@ -8516,6 +8604,7 @@ billing in Dodo test mode, and quotas**
 in Layers and item lists, and **single-key shortcuts being inert inside a text field** (UX-DR21)
 **And** the two layers that touch a real Ghost are **serialized per target**, because theme activation is
 globally stateful, so concurrent runs queue and never interleave.
+**And** before the suite is trusted, DW-68's stall is diagnosed: the suite signs in against any deployment URL and each 30–60 s stall is matched to its Vercel runtime-log invocation, so a red run names the deployment, the platform or the runner (DW-68).
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 
@@ -8600,6 +8689,7 @@ included quotas
 **And** the autosave offline queue retries with backoff, and deploys are idempotent with immutable artifacts
 **And** Sentry covers app and server, with structured deploy logs carrying per-stage timing and gscan output —
 **and no user content, no Ghost credentials and no `codeinjection_*`, ever**.
+**And** a failed scheduled job reaches a person: the account purge (which answers 500 when an account failed) and the site-health cron report each failure to Sentry as an error with an alert the owner receives, never only a red line in Vercel's log (DW-46).
 
 **Owner test:** none. · **Verification:** a real restore drill on the production project (R-82).
 
@@ -8641,6 +8731,8 @@ successful deploy elsewhere clears it — the clause carried forward from the E4
 **And** **clearing this gate is what releases any marketing aimed at Ghost(Pro) users**, and the docs Hosting
 Requirements page, which may not ship claiming verified Ghost(Pro) behaviour until then
 **And** it is a **blocking gate before public launch**.
+**And** the captured payload decides whether B15 may name the tier ('Ghost(Pro) Starter') or keeps 'this plan' (DW-60).
+**And** on the same Starter site the editor's Content API reads answer VERIFY-AT-BUILD's three questions — whether an edge 429 carries `access-control-allow-origin`, the edge's limits against `REQUEST_CEILING` and the 60 s cache, and whether the `*.ghost.io` admin origin serves the Content API like the public domain (AD-23, DW-249).
 
 **Owner test:** yes. · **Verification:** a real Ghost(Pro) Starter site (T4). · **Note:** the owner already
 holds this as an action item with a trigger — buy the Starter trial when E13 closes and E14 opens.
@@ -8665,6 +8757,7 @@ on test domains — a **costed line item, not a pre-launch expense that ends at 
 **And** from the first customer onward, **all testing runs exclusively against Test; real-user data exists only in
 Live**
 **And** legal pages, including the Refund & Cancellation page, are live.
+**And** Live's key-store connection is born narrow: `SUPABASE_DB_POOLER_URL` connects as a login role holding only the `vault` and `private` grants DW-49 lists, with a migration, a SCHEMA.sql block and an RLS-TEST assertion that it holds nothing else (DW-49).
 
 **Owner test:** yes. · **Verification:** the real cutover (R-82).
 
@@ -8734,6 +8827,11 @@ Appendix F.1, the derived Free count and FR-L3's exit sheet together, and it is 
 **What the ruling improved, and it is not only cosmetic:** the Free pair now ships in a category's **first**
 story rather than being split across the first two, so a Free account has something placeable in that category
 the moment its first story lands.
+
+*(**R-212**, owner, 2026-09-28 — Story 5.24's Create, Question 2, built at Story 5.24a's Dev: R-17 as amended on
+2026-08-28 makes a category's two [Free] designs the owner's pick, not #1 and #2, so "designs #1–4" above no longer
+describes a first story. Each first story builds the owner's pair plus two Pro designs, the pick trading places with the
+design the plan had put there; every later story is still Pro, and `tools/doc-audit.py` holds the plan to the picks.)*
 
 ### 2. Does Dodo already send the annual renewal reminder? — ANSWERED
 

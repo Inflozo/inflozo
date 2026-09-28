@@ -18,7 +18,7 @@ same contract as `RLS-TEST.sql`: it either passes or it exits non-zero, and CI k
 deliberately allowed to be noisy about things it cannot judge — a false alarm costs a minute, and a
 missed propagation costs a round.
 """
-import os, re, sys, subprocess, html, datetime
+import os, re, sys, subprocess, html, datetime, importlib.util
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PLAN = os.path.join(ROOT, '_bmad-output', 'planning-artifacts')
@@ -854,7 +854,8 @@ DOCS = [
   'exist in the design export, and emits one prompt per category. Asserts it parsed EVERY table row '
   'rather than a count — the first version silently matched a third of them because the notes column '
   'is optional, and a later version asserted `len(names) == 31` over the module registry and duly '
-  'broke when the registry moved. Both are derived now.'),
+  "broke when the registry moved. Both are derived now. Its date is the page's last content change, through this "
+  "gate's `dated()` (DW-132)."),
  ('planning-artifacts/HANDOVER.md', 'live', 'Handover for a fresh session',
   'Everything a new chat needs to continue without reading the previous conversation: where the '
   'project stands, the immediate task, the standing rules, and how the owner wants to work. Update '
@@ -865,7 +866,8 @@ DOCS = [
   'deliberately have no copy button — one of them contains an instruction execution disproved.'),
  ('tools/build-board.py', 'tool', 'Build board generator',
   'Reads build-sequence.md and emits BUILD-BOARD.html. Status is declared in the script rather than '
-  'parsed, because "is this step done" is a judgement about the world, not a string in a document.'),
+  'parsed, because "is this step done" is a judgement about the world, not a string in a document. '
+  "Its date is the page's last content change, through this gate's `dated()` (DW-132)."),
  ('tools/svg-check.py', 'tool', 'Diagram geometry checker',
   'The architecture diagrams are hand-written SVG, and a browser will draw text straight through a '
   'box without complaining. Finds text that overflows its frame, text crossing a shape it does not '
@@ -960,7 +962,8 @@ DOCS = [
   'on any browser that disagrees; confirms no browserslist key reaches the root or apps/web; recomputes every '
   'Tier-2 widely date as baseline_low_date + 30 months; runs the matrix\'s Tier 1/2/3, @supports, nesting and '
   "prefix rows and the repository's own stylesheets through stylelint (Ghost's vendored card CSS ignored); and "
-  "measures bundle()'s maximal main.js with size-limit at NFR-2's 40 kB brotli, as a warning. Also covers "
+  "measures bundle()'s maximal main.js with size-limit at NFR-2's budget — 40,960 bytes, gzip level 9 (DW-140) — "
+  "as a warning, its size held equal to zlib's own gzip and NFR-2's sentence held to naming it. Also covers "
   'the pin in the root package.json, packages/library/baseline.json (the Tier-2 allowlist and the plugin\'s named '
   'differences) and the root stylelint.config.mjs (the plugin, max-nesting-depth, the prefix closure and the two '
   'custom rules inflozo/supports-tier-2 and inflozo/prefix-pairs), which the catalogue cannot index. It stores no '
@@ -970,11 +973,13 @@ DOCS = [
   'subject and required to fail naming it: a key removed from catalog.json, a default changed in one copy only, a '
   'key moved out of order with a mark dropped and a retirement lifted, a key written twice in the bytes, an '
   "apostrophe-quoted default, an ICU plural and an ICU-escaped brace (each showing both renders or the throw), and "
-  'an unlocked credit key. Then it holds appendix-h1 §3 and packages/library/strings/catalog.json equal in order '
-  "and in both directions, runs catalog.ts's format rules, renders every default through intl-messageformat 5.4.3 "
-  "(the version both Ghost majors bundle, refused if the installed one differs) against the shim's t(), and prints "
-  'the totals per namespace. Also covers packages/library/strings/catalog.json and src/catalog.ts, which the '
-  'catalogue cannot index (the package BASES gap). It stores no count: it prints them.'),
+  'an unlocked credit key, a supersededBy in one copy only (from either side) and a key an earlier committed catalog '
+  'held. Then it holds appendix-h1 §3 and packages/library/strings/catalog.json equal in order '
+  "and in both directions, the superseded-by form included (DW-148), runs catalog.ts's format rules, renders every "
+  "default through intl-messageformat 5.4.3 (the version both Ghost majors bundle, refused if the installed one "
+  "differs) against the shim's t(), reads every committed catalog.json from git and fails on a key gone since "
+  "(DW-143), and prints the totals per namespace. Also covers packages/library/strings/catalog.json and "
+  'src/catalog.ts, which the catalogue cannot index (the package BASES gap). It stores no count: it prints them.'),
  ('tools/check-snapshots.mjs', 'tool', 'The pilot snapshots, checked by execution',
   "Story 4.10's check of NFR-6(c1), run last by pnpm test and therefore by CI. Controls first, each handed a broken "
   'subject in memory and required to fail naming it: a design with one class changed (naming the file and its first '
@@ -1186,7 +1191,10 @@ DOCS = [
   'means a Deploy commit, nothing else. Matches a spec to a story on exact key segments, so 1-1 never '
   'matches 1-10. Each card shows when its story started — its first commit — and, once Done, the '
   'days:hours:minutes to its Done commit, both read from git (R-224). `--check` regenerates in memory '
-  'and fails on drift; the gate runs it.'),
+  'and fails on drift; the gate runs it. It REFUSES, at exit 2, an open deferred-work entry whose owner line names '
+  'no story that is not done, or whose living owners never name its DW id on their card or in their spec (Story '
+  "5.24a); its self-check runs tools/hooks/commit-msg's Dev guard for real in a throwaway repository (DW-172); and "
+  "its date is the page's last content change, through this gate's `dated()` (DW-132)."),
  ('docs/project-context.md', 'live', 'Project context — the facts every BMAD skill loads',
   'The block bmad-build, bmad-build-auto, bmad-code-review and the planning skills load as persistent '
   'facts on every run (their customize.toml lists `file:{project-root}/**/project-context.md`; the '
@@ -1252,7 +1260,13 @@ DOCS = [
   'verdict, so a record. Absent until step 6b runs; this row waits for it.'),
  ('tools/doc-audit.py', 'tool', 'This gate',
   'Generates the index and checks documentation propagation. Exits non-zero on drift; a stale index is '
-  'regenerated on that first failure, like its sub-tools, so the pre-commit hook\'s one retry passes.'),
+  'regenerated on that first failure, like its sub-tools, so the pre-commit hook\'s one retry passes. '
+  "Holds `dated()`, the one rule every generated page's date follows — its last content change, never HEAD's — and "
+  'regenerates every page with the date a day ahead, failing on any byte that moves (DW-132); and holds Epics 9 and '
+  "10's cards to the export: each first story builds the owner's [Free] pair and no later one does (R-212), every "
+  "live roster design is built by a story of its category (DW-177), and every module line points at each design's "
+  "own Behaviour module line (DW-164) — each check handed epics.md with one thing broken on every run, and required to "
+  'fail naming it.'),
  ('design/claude-design-export/Inflozo/S11e Manage Keys Popup.dc.html', 'record', 'Manage keys — the popup frame (S11e)',
   "Claude Design's frame for Story 3.6's API keys surface, and THE FRAME THAT SURFACE IS BUILT FROM — "
   'the owner’s test finding 2 on 2026-09-10, which asked for the long single column to be redesigned '
@@ -1280,7 +1294,8 @@ GROUPS = [
   'also rejects a "Story E.S - Test - …" subject whose spec would not read `owner_test: issues`, '
   "because that phase word is story-board.py's only signal that the owner's report actually landed, and "
   '— since Story 4.11, 2026-09-17 — a "Story E.S - Dev - …" subject while the spec still has an unticked '
-  "task, counted by story-board.py's own parse_spec, because a Dev commit is read as development finished; "
+  "task, counted by story-board.py's own parse_spec, because a Dev commit is read as development finished — a guard "
+  "story-board.py's self-check runs for real in a throwaway repository since Story 5.24a (DW-172); "
   '`post-commit` regenerates '
   'STORY-BOARD.html in the working tree so the page the owner opens carries the commit just made. '
   'There is no bypass: --no-verify is denied in .claude/settings.json.'),
@@ -1526,6 +1541,36 @@ def check():
             fails.append(f'{tool}: {last or f"exited {r.returncode} with no message"}' if own else
                          f'STALE: {art} does not match {src} — run python3 tools/{tool}')
 
+    # 3b'. DW-132's control: every generated page regenerated with the date a day ahead is byte-identical, because a
+    #     page's date is its last CONTENT change. Under the old rule — HEAD's date, or today's written unconditionally —
+    #     each page moved by its date alone, which is what failed CI on the first push of every day.
+    # The old rule's other half: a date read from git moves with HEAD, not with a faked day, so the pass below cannot
+    # see it come back. No generator reads HEAD's date again (the needle is split so this line is not one).
+    for tool in ('doc-audit.py', 'build-board.py', 'category-prompts.py', 'story-board.py'):
+        if '--format=%' + 'cs' in open(os.path.join(ROOT, 'tools', tool), encoding='utf8').read():
+            fails.append(f"DATE STAMP: tools/{tool} reads HEAD's date again — a page's date is `dated()`'s, its last "
+                         f'content change, or the first push of each day fails CI (DW-132)')
+    if not fails:
+        ahead = (datetime.date.fromisoformat(today()) + datetime.timedelta(days=1)).isoformat()
+        env = {**os.environ, 'INFLOZO_TODAY': ahead}
+        for tool, art in (('build-board.py', 'BUILD-BOARD.html'), ('category-prompts.py', 'CATEGORY-PROMPTS.html'),
+                          ('story-board.py', 'STORY-BOARD.html')):
+            before = open(os.path.join(PLAN, art), encoding='utf8').read()
+            if _sp.run([sys.executable, os.path.join(ROOT, 'tools', tool), '--check'], env=env,
+                       capture_output=True, text=True).returncode != 0:
+                # a failed `--check` rewrites its page — put today's back, or tomorrow's date would outlive the fix
+                open(os.path.join(PLAN, art), 'w', encoding='utf8').write(before)
+                fails.append(f'DATE STAMP: {art} changed when only the date moved a day ahead — a page keeps its date '
+                             f'until its content changes (DW-132, tools/doc-audit.py `dated`)')
+        was = os.environ.get('INFLOZO_TODAY')
+        os.environ['INFLOZO_TODAY'] = ahead
+        try:
+            ahead_md, ahead_html, _n, _t = generate()
+        finally:
+            os.environ.pop('INFLOZO_TODAY') if was is None else os.environ.update(INFLOZO_TODAY=was)
+        if (ahead_md, ahead_html) != (md_txt, html_txt):
+            fails.append('DATE STAMP: INDEX.md or INDEX.html changed when only the date moved a day ahead (DW-132)')
+
     # 3c. the structural tuples must stay unique and in vocabulary (FR-G5)
     if _sp.run([sys.executable, os.path.join(ROOT, 'tools', 'tuple-check.py')],
                capture_output=True).returncode != 0:
@@ -1538,6 +1583,10 @@ def check():
     if r.returncode != 0:
         fails.append('INVENTORY DRIFT: sections-inventory.md no longer matches the design export — '
                      + (r.stdout.strip().splitlines() or ['see tools/inventory-gen.py --check'])[-1])
+
+    # 3f. the library epics' cards against the export (Story 5.24a — R-212, DW-177, DW-164)
+    epics_md = open(os.path.join(PLAN, 'epics.md'), encoding='utf8').read()
+    fails.extend(plan_failures(epics_md) + plan_controls(epics_md))
 
     # 4. dangling MEASUREMENTS section references from the spine
     meas = open(os.path.join(ARCH, 'MEASUREMENTS.md'), encoding='utf8').read()
@@ -1578,6 +1627,119 @@ def check():
     return fails, warns
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# THE PLAN AGAINST THE EXPORT (Story 5.24a). Three facts about Epics 9 and 10 that went stale when they were only
+# written down: which two designs are Free (R-17 as amended: the owner's pick, not the first two), which designs a
+# story builds (a retired number left four live designs in no story), and which modules they declare (the step-6
+# generator cut each spec's Behaviour field into fragments). Each is now derived here from the export, and a card
+# that disagrees fails the gate.
+DESIGN_LINE = re.compile(r'^\*\*(?:And|Then)\*\* designs? (#\d+ .+?) (?:are|is) built', re.M)
+FREE_PAIR = re.compile(r"the category's two \[Free\] designs, the owner's picks \(#(\d+) and #(\d+)\)")
+MODULE_LINE = ("**And** the behaviour modules these designs declare — those each design's own **Behaviour module** line "
+               "in `{spec}` names, never `core` (FR-G7(4)), with each module's edit-safe value read from `registry.json` "
+               "(research §7) — are **authored beside them in this story**, never deferred to a module project, and "
+               "**the story is not done while a declared module is missing its no-JS degradation statement**")
+
+
+def library_runs(epics):
+    """{'A1': [(story key, card)]} — each category's stories in order, under its `### A<n> · Title` heading."""
+    heads = list(re.finditer(r'^#{1,4}\s.*$', epics, re.M))
+    runs, cat = {}, None
+    for i, m in enumerate(heads):
+        c = re.match(r'^### (A\d+) · ', m.group(0))
+        s = re.match(r'^#{2,4}\s*Story\s+(\d+\.\d+[a-z]?):', m.group(0))
+        if c:
+            cat = c.group(1)
+        elif s and cat:
+            runs.setdefault(cat, []).append((s.group(1), epics[m.start():heads[i + 1].start() if i + 1 < len(heads) else len(epics)]))
+        else:
+            cat = None
+    return runs
+
+
+def plan_failures(epics):
+    """R-212: each category's first story builds the owner's [Free] pair, as the export's `**[Free] designs:**` line
+    records it, and no later story builds either (its "all of them are Pro" line would be false). DW-177: every live
+    roster design is built by a story of its category. DW-164: every library story's module line is the one sentence
+    that points at each design's own Behaviour module line, never a list of modules."""
+    _s = importlib.util.spec_from_file_location('inventory_gen', os.path.join(ROOT, 'tools', 'inventory-gen.py'))
+    ig = importlib.util.module_from_spec(_s); _s.loader.exec_module(ig)
+    lib, runs, fails = ig.library(), library_runs(epics), []
+    for cat, v in lib.items():
+        stories = runs.get(cat, [])
+        if not stories:
+            fails.append(f'PLAN: {cat} {v["title"]} has no story in epics.md')
+            continue
+        live = {d['n']: d['name'] for d in v['designs']}
+        builds = {}
+        for k, card in stories:
+            m = DESIGN_LINE.search(card)
+            builds[k] = {int(n): name.strip() for n, name in re.findall(r'#(\d+) ([^·]+)', m.group(1))} if m else {}
+        for n, name in live.items():
+            if not any(builds[k].get(n) == name for k, _ in stories):
+                fails.append(f'PLAN: {cat} #{n} {name} is built by no story of its category (DW-177) — '
+                             f'name it in the design line of the story that builds it')
+        pair = ig.free_choice(cat, v['designs'])
+        said = ' and '.join(f'#{n} {live[n]}' for n in sorted(pair))
+        first, card = stories[0]
+        fp = FREE_PAIR.search(card)
+        if not fp or {int(fp.group(1)), int(fp.group(2))} != pair or any(builds[first].get(n) != live[n] for n in pair):
+            fails.append(f"PLAN: Story {first}, {cat}'s first story, does not build the owner's [Free] pair {said} and "
+                         f"name it as \"the category's two [Free] designs, the owner's picks (#a and #b)\" (R-212)")
+        for k, _ in stories[1:]:
+            for n in sorted(pair & set(builds[k])):
+                fails.append(f"PLAN: Story {k} builds {cat}'s [Free] #{n} {live[n]}, which ships in the first story — "
+                             f"its \"all of them are Pro\" line is false (R-212)")
+        want = MODULE_LINE.format(spec=v['spec'])
+        for k, card in stories:
+            if [l for l in card.split('\n') if 'the behaviour modules these designs declare' in l] != [want]:
+                fails.append(f"PLAN: Story {k}'s module line is not the one sentence pointing at each design's own "
+                             f"Behaviour module line in `{v['spec']}` — it lists modules, or names none (DW-164)")
+    return fails
+
+
+def plan_controls(epics):
+    """Standing rule 2 for the three checks above: each is handed epics.md with one thing broken — the first category's
+    first story without its pick's words, the last design of its last story dropped, a module line listing modules —
+    and must fail naming it, or the check is not one."""
+    cat, stories = next(iter(library_runs(epics).items()))
+    (first, card), (_, last) = stories[0], stories[-1]
+    line = DESIGN_LINE.search(last).group(1)
+    kept, _, dropped = line.rpartition(' · ')
+    module = next((l for l in card.split('\n') if 'the behaviour modules these designs declare' in l), card)
+    cases = (
+        (card, card.replace("the owner's picks (", "the owner's pick of ("),
+         f"PLAN: Story {first}, {cat}'s first story, does not build the owner's [Free] pair"),
+        (last, last.replace(line, kept, 1), f'PLAN: {cat} {dropped} is built by no story of its category'),
+        (card, card.replace(module, '**And** the behaviour modules these designs declare — `nav-drawer` · `dismiss`'),
+         f"PLAN: Story {first}'s module line is not the one sentence"),
+    )
+    return [f'PLAN CONTROL: {cat} planted, and not caught — "{want}"' for was, broken, want in cases
+            if not any(f.startswith(want) for f in plan_failures(epics.replace(was, broken, 1)))]
+
+
+STAMP = '@@STAMP@@'      # where a generated page's date goes, until `dated()` decides which date that is
+
+
+def today():
+    """The wall-clock day. `INFLOZO_TODAY` fakes it — only DW-132's control in `check()` sets it."""
+    return os.environ.get('INFLOZO_TODAY') or datetime.date.today().isoformat()
+
+
+def dated(page, path):
+    """DW-132 (Story 5.24a) — A GENERATED PAGE'S DATE IS ITS LAST CONTENT CHANGE. `page` carries `STAMP` once, where
+    its date goes: the date already on disk is kept when nothing else would change, and today's is written only when
+    the content did. The four generators stamped HEAD's date instead, and a stamp derived from the commit being made
+    cannot survive it — the hook staged yesterday's pages, CI rendered today's, and the first push of every day failed
+    `check` with `deploy` skipped (CI runs 34823025267 and 36341672890). This one function is the rule for all four:
+    this file's INDEX pair, build-board.py, category-prompts.py and story-board.py."""
+    head, _, tail = page.partition(STAMP)
+    old = open(path, encoding='utf8').read() if os.path.exists(path) else ''
+    kept = old[len(head):len(old) - len(tail)]
+    same = old.startswith(head) and old.endswith(tail) and re.fullmatch(r'\d{4}-\d{2}-\d{2}', kept)
+    return head + (kept if same else today()) + tail
+
+
 def generate():
     files = inventory()
     rows = []
@@ -1588,8 +1750,6 @@ def generate():
         status, title, blurb, exact = d
         rows.append((rel, status, title, blurb, exact))
     n_exact = len([r for r in rows if r[4]])
-    today = subprocess.run(['git', 'log', '-1', '--format=%cs'], cwd=ROOT,
-                           capture_output=True, text=True).stdout.strip() or str(datetime.date.today())
 
     order = {'live': 0, 'tool': 1, 'record': 2, 'retired': 3}
     groups = {}
@@ -1603,7 +1763,7 @@ def generate():
     md = [f"""---
 title: Inflozo — Document Index
 generated: by `tools/doc-audit.py --generate` — do not hand-edit
-updated: {today}
+updated: {STAMP}
 ---
 
 # Document index
@@ -1727,10 +1887,11 @@ and its output.</li>
 <li><b>Know what is still unverified</b> — the external-facts register.</li>
 </ul></div>
 {''.join(cards)}
-<footer>Generated {e(today)} · regenerate with <code>python3 tools/doc-audit.py --generate</code> ·
+<footer>Generated {STAMP} · regenerate with <code>python3 tools/doc-audit.py --generate</code> ·
 verify with <code>--check</code>, which exits non-zero on drift.</footer>
 </div></body></html>"""
-    return md_txt, html_txt, n_exact, len(files)
+    return (dated(md_txt, os.path.join(PLAN, 'INDEX.md')), dated(html_txt, os.path.join(PLAN, 'INDEX.html')),
+            n_exact, len(files))
 
 
 def write_index(md_txt, html_txt):

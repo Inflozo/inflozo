@@ -718,6 +718,12 @@ def render():
             flags += '<span class="flag hole">numbering gap — tests the riskiest rule</span>'
         if cat == 'A33':
             flags += '<span class="flag big">biggest redraw in the pass</span>'
+        if cat == 'P0':
+            # DW-118 (Story 5.24a): the prompt is kept exactly as it was sent on 2026-08-25, so the note sits beside it,
+            # outside the <pre> the Copy button reads — the record is not rewritten, and nobody copies a stale rule.
+            flags += ('<p class="note">Kept as sent on 2026-08-25. Its "curated Tabler set" was superseded on '
+                      '2026-09-13 by R-104: the icon picker offers every Tabler icon, outline and filled, grouped by '
+                      'Tabler\'s own categories.</p>')
         return f'''<div class="cat" data-cat="{cat}">
   <div class="chead"><input class="tick" type="checkbox" aria-label="mark {cat} done">
     <span class="step">{step}</span>
