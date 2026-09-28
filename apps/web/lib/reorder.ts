@@ -51,3 +51,27 @@ export function landingAt(layout: Layout, from: number, pointerY: number, startY
   const middle = (tops[from] ?? 0) + (heights[from] ?? 0) / 2 + (pointerY - startY)
   return tops.filter((top, j) => j !== from && top + (heights[j] ?? 0) / 2 < middle).length
 }
+
+/* THE DRAG IN FLIGHT, IN A STORE OF ONE VALUE (Story 5.23b, R-208). A drag changes on every pointer move, and held as the
+   editor's React state it re-rendered the whole editor on each one — 23 commits and 943 Layers row renders for one drag
+   of the pill, measured at planning. Held here, it is read only where it is drawn: the editor's grips write it and read
+   it in their handlers, and Layers alone subscribes (`useSyncExternalStore`), so a move redraws the landing slot and the
+   rows it slides and nothing else. `landing` marks a drop whose move has been handed to React as a transition (R-210):
+   the slot stays until the moved rows land, and Layers lets it go then. */
+export type Store<T> = { get: () => T; set: (next: T) => void; subscribe: (listener: () => void) => () => void }
+
+export function oneValue<T>(value: T): Store<T> {
+  const listeners = new Set<() => void>()
+  return {
+    get: () => value,
+    set: (next) => {
+      if (Object.is(next, value)) return
+      value = next
+      for (const listener of listeners) listener()
+    },
+    subscribe: (listener) => {
+      listeners.add(listener)
+      return () => listeners.delete(listener)
+    },
+  }
+}

@@ -69,7 +69,9 @@ test('a flip RE-STAMPS and never repaints, so the caret, the selection and the s
 test('the control is ABSENT on a Light-only project, never disabled (UX-DR3, R-118)', () => {
   // (Story 5.20 hands it the ink bar's colour variables as a prop — `style={onInk}` — rather than a wrapper, because the
   // deployed walk reads the cluster's order off the bar's own children; the condition is what this holds)
-  assert.match(editor, /\{darkEnabled \? <ModeToggle mode=\{mode\} onMode=\{flip\}(?: style=\{onInk\})? \/> : null\}/)
+  // (Story 5.23b hands it `flip` as `on.flip`, the same handler at a fixed identity, so the memoized button skips a render)
+  assert.match(editor, /\{darkEnabled \? <ModeToggle mode=\{mode\} onMode=\{(?:on\.)?flip\}(?: style=\{onInk\})? \/> : null\}/)
+  assert.match(editor, /\bflip: useStable\(flip\)/, '`on.flip` is `flip` itself')
   // nothing anywhere greys it: a greyed control must carry a reason, and this one could never act here. (`ring` is
   // imported from `kit/greyed`, which is where the app's one focus ring lives — hence the narrow patterns.)
   assert.doesNotMatch(toggle, /aria-disabled|\sdisabled[=}]|greyed=|type Greyed/, 'the mode control has no greyed state at all')

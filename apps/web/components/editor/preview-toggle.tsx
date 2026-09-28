@@ -1,6 +1,6 @@
 'use client'
 
-import type { Ref } from 'react'
+import { memo, type Ref } from 'react'
 import { DeviceSwitch } from '@/components/editor/device-switch'
 import { ring } from '@/components/kit/greyed'
 import { PreviewEye, PreviewEyeOff } from '@/components/kit/icons'
@@ -23,7 +23,9 @@ import { BACK, PREVIEW } from '@/lib/preview'
 
 /** B3a `:645-649` — white, a 1px `line` border, the pill radius, `4px 10px 4px 8px` and a 7px gap: the eye at 13,
  *  "Preview" at 12/600 and the mono `P` cap at 10px. It hovers to `line-strong`. */
-export function PreviewButton({ onPress }: { onPress: () => void }) {
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const PreviewButton = memo(function PreviewButton({ onPress }: { onPress: () => void }) {
   return (
     <button
       id="editor-preview"
@@ -39,7 +41,7 @@ export function PreviewButton({ onPress }: { onPress: () => void }) {
       </span>
     </button>
   )
-}
+})
 
 /** B3b `:700-710` — the one piece of chrome Preview keeps: ink, the pill radius, 5px padding and a 2px gap, holding
  *  Back to editing with its `esc` cap, a divider and the three devices, the current one lit.
@@ -47,7 +49,9 @@ export function PreviewButton({ onPress }: { onPress: () => void }) {
  *  18px FROM THE WINDOW'S BOTTOM-LEFT, not B3b's `left:112px`, which is a place inside a 700px drawing: the left edge
  *  keeps the bar beside a phone-sized page rather than over it, and B3b's caption names 390 as "the main reason to be
  *  in here". */
-export function PreviewBar({ device, onDevice, onBack, back }: { device: Device; onDevice: (next: Device) => void; onBack: () => void; back: Ref<HTMLButtonElement> }) {
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const PreviewBar = memo(function PreviewBar({ device, onDevice, onBack, back }: { device: Device; onDevice: (next: Device) => void; onBack: () => void; back: Ref<HTMLButtonElement> }) {
   return (
     <div
       id="editor-preview-bar"
@@ -75,4 +79,4 @@ export function PreviewBar({ device, onDevice, onBack, back }: { device: Device;
       <DeviceSwitch id="editor-preview-device" tone="ink" device={device} onDevice={onDevice} />
     </div>
   )
-}
+})

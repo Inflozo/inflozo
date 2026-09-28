@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react'
+import { memo, Profiler, startTransition, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type KeyboardEvent, type PointerEvent } from 'react'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring, slimScrollbar } from '@/components/kit/greyed'
@@ -11,7 +11,8 @@ import { MainFeedChip } from '@/components/kit/badge'
 import { LayersRow, SiteWideGroup } from '@/components/kit/layers-row'
 import { Menu } from '@/components/kit/select'
 import { arrowKeys, openMenu } from '@/lib/menu'
-import { captureLayout, landingAt, shift, slotTop, type Layout } from '@/lib/reorder'
+import { captureLayout, landingAt, shift, slotTop, type Layout, type Store } from '@/lib/reorder'
+import { counted, useStable } from '@/lib/renders'
 import { MAKE_MAIN_FEED } from '@/lib/data-group'
 import { GHOST_WORDS, type SurfaceId } from '@/lib/ghost-surfaces'
 import { PAYWALL_WORDS } from '@/lib/paywall'
@@ -38,8 +39,17 @@ import { PAYWALL_WORDS } from '@/lib/paywall'
    NOTHING REORDERS UNTIL THE DROP (EXPERIENCE.md :308, the owner's finding 9 of 2026-09-13). A dashed slot the
    dragged row's height shows where it lands and the rows between are TRANSLATED — nothing moves in the DOM, so the
    grip keeps its pointer capture — and one `moveSection` runs on release. The arithmetic is `lib/reorder.ts`, the
-   same numbers P0-3's item list drags by. The drag STATE lives in `editor.tsx`, because the canvas pill's grip drives
-   the same reorder from the other side of the frame: whichever grip is held, this panel draws the slot.
+   same numbers P0-3's item list drags by. The drag lives in a STORE OF ONE VALUE that `editor.tsx` holds (`lib/reorder.ts`'s
+   `oneValue`), because the canvas pill's grip drives the same reorder from the other side of the frame: whichever grip is
+   held, this panel draws the slot — and since Story 5.23b it is the only thing that subscribes, so a pointer move redraws
+   the slot and the rows it slides and never the editor. A drop that moved is handed to React as a transition (R-210): the
+   slot and the slid rows stay as they are until the moved rows arrive here, and then the drag is let go, so Layers never
+   shows the old order in between.
+
+   EACH ROW REDRAWS ONLY WHAT TOUCHED IT (Story 5.23b, R-208). A row is a module-level `memo` component given its own
+   fields, its selected and hovered flags, its tab stop and its slide — all primitives — and ONE object of actions for the
+   panel's life (`lib/renders.ts`'s `useStable`), so a hover redraws the two rows whose wash changed and not the other
+   forty, each with its closed menu. React's `<Profiler>` inside it counts its renders for the keyboard gate.
 
    EVERY DRAG HAS A KEYBOARD PATH (UX-DR10), and R-126 costs it nothing. The ROW is the one tab stop per section —
    roving tabindex, D8e's ring on the row — and carries the keys: `↑ ↓` move focus (through both groups, in the order
@@ -92,8 +102,9 @@ export type LayerRow = {
 
 /** The drag in flight, over one doc's own rows. Held by `editor.tsx`, because the canvas pill starts one too —
  *  `via` says which grip, because only a row's own drag lifts the row: a pill drag moves the section on the CANVAS,
- *  and this panel shows only where it will land. */
-export type SectionDrag = { doc: string; from: number; to: number; dy: number; via: 'layers' | 'pill' }
+ *  and this panel shows only where it will land. `landing`: dropped, its move handed to React as a transition (R-210) —
+ *  the slot stays until the moved rows arrive, and nothing else may start or move it meanwhile. */
+export type SectionDrag = { doc: string; from: number; to: number; dy: number; via: 'layers' | 'pill'; landing?: true }
 
 /** STORY 5.21's FIX (the owner's finding, 2026-09-26, Question 2 ruled option 1): Ghost's two surfaces on the canvas —
  *  its announcement bar and Portal's button — named as rows under "From your Ghost site", each with a section row's own
@@ -125,8 +136,8 @@ export type LayersProps = {
   /** `{doc}:{instanceId}` — a composite, because `instanceId` is unique per doc and not across them */
   selectedKey: string | null
   hoveredKey: string | null
-  drag: SectionDrag | null
-  onDrag: (next: SectionDrag | null) => void
+  /** the drag in flight, in the editor's store of one value — this panel is its only subscriber (Story 5.23b) */
+  drag: Store<SectionDrag | null>
   /** Story 5.17 — a session reading along: rows select, nothing reorders and the ⋯ menu stays shut (R-192) */
   readOnly?: boolean
   /** the press that selects; a press on a ROW never deselects (R-123) */
@@ -158,7 +169,112 @@ const NAME_FIELD = 'layers-rename-name'
 const HEADING = 'text-helper-caption font-semibold tracking-[0.04em] text-ink-soft uppercase'
 const COUNT = 'font-mono text-helper-caption text-ink-soft'
 
-export function Layers({
+/** What a row does — ONE object for the panel's life (Story 5.23b), each action calling the panel's latest render. */
+type RowActions = {
+  key: (row: LayerRow, event: KeyboardEvent<HTMLDivElement>) => void
+  select: (row: LayerRow) => void
+  toggle: (row: LayerRow) => void
+  lead: (row: LayerRow) => void
+  rename: (row: LayerRow) => void
+  duplicate: (row: LayerRow) => void
+  clearDark: (row: LayerRow) => void
+  remove: (row: LayerRow) => void
+  grab: (row: LayerRow, event: PointerEvent<HTMLSpanElement>) => void
+  drag: (row: LayerRow, event: PointerEvent<HTMLSpanElement>) => void
+  drop: (row: LayerRow) => void
+  cancel: () => void
+}
+
+type RowProps = LayerRow & {
+  selected: boolean
+  hovered: boolean
+  /** the panel's one tab stop (roving tabindex) */
+  tabStop: boolean
+  /** the drag's part in this row — lifted by its own grip, sliding aside, or neither — and how far, in pixels */
+  motion: 'lifted' | 'sliding' | null
+  translate: number
+  readOnly: boolean
+  siteKey: string
+  actions: RowActions
+}
+
+/* ONE ROW — a MODULE-LEVEL `memo` component (Story 5.23b). Declared inside `Layers` it would be a NEW type on every render
+   and remount each row, and a remounted grip loses the pointer capture the drag holds; declared here it keeps its
+   instance, and skips its render whenever its props — every one a primitive but the one actions object — are unchanged. */
+const Row = memo(function Row({ selected, hovered, tabStop, motion, translate, readOnly, siteKey, actions, ...row }: RowProps) {
+  // the doc is part of the id: an `instanceId` is unique inside a doc, not across the two groups
+  const menu = `layers-menu-${row.doc}-${row.instanceId}`
+  return (
+    <Profiler id="layers-row" onRender={counted}>
+      <LayersRow
+        name={row.layerName}
+        shown={!row.hidden}
+        selected={selected}
+        hovered={hovered}
+        data-layer-row={keyOf(row)}
+        tabIndex={tabStop ? 0 : -1}
+        aria-describedby="layers-how"
+        onKeyDown={(event) => actions.key(row, event)}
+        onSelect={() => actions.select(row)}
+        style={motion === null ? undefined : { translate: `0 ${translate}px` }}
+        className={`relative ${motion === 'lifted' ? 'z-10 shadow-lg motion-safe:rotate-2' : motion === 'sliding' ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
+        // Story 5.19 — D5c's Layers chip (:290), after the name and before the `⋯`
+        chip={row.mainFeed ? <MainFeedChip /> : undefined}
+        // R-192: absent, not dead — the Kit's row draws no grab cursor when it is given no grip
+        gripProps={readOnly ? undefined : {
+          onPointerDown: (event) => actions.grab(row, event),
+          onPointerMove: (event) => actions.drag(row, event),
+          onPointerUp: () => actions.drop(row),
+          onPointerCancel: actions.cancel,
+        }}
+        overflow={
+          <>
+            <button
+              type="button"
+              disabled={readOnly}
+              aria-label={`More for ${row.layerName}`}
+              popoverTarget={menu}
+              onClick={(event) => {
+                const el = document.getElementById(menu)
+                if (el) openMenu(el, event.currentTarget, { side: 'down', align: 'right' })
+              }}
+              className={`inline-flex size-[22px] shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold tracking-[1px] text-ink-soft hover:bg-paper hover:text-ink ${ring}`}
+            >
+              …
+            </button>
+            <div id={menu} popover="auto" onKeyDown={arrowKeys} className="border-0 bg-transparent p-0">
+              <Menu
+                label={row.layerName}
+                items={[
+                  // R-126: Hide/Show is a MENU ROW now, not an eye on the row — the row's width belongs to its name.
+                  // It leads, because it is the one a layer list is reached for most.
+                  {
+                    label: row.hidden ? 'Show' : 'Hide',
+                    icon: row.hidden ? <Eye size={13} /> : <EyeOff size={13} />,
+                    onSelect: () => actions.toggle(row),
+                  },
+                  // Story 5.19 — D5c's first item, SECOND here because R-126 keeps Hide/Show first; absent wherever it
+                  // could do nothing (UX-DR3): the main feed itself, a hidden row, a section that is no feed
+                  ...(row.canLead ? [{ label: MAKE_MAIN_FEED, icon: <Star size={13} />, onSelect: () => actions.lead(row) }] : []),
+                  { label: 'Rename', icon: <Pencil size={13} />, onSelect: () => actions.rename(row) },
+                  // FR-D5: a site-wide section is ONE shared instance, so there is nothing to copy — absent, not
+                  // greyed and not a refusal (UX-DR3)
+                  ...(row.doc === siteKey ? [] : [{ label: 'Duplicate', icon: <Copy size={13} />, onSelect: () => actions.duplicate(row) }]),
+                  // R-133's SECOND entry point, absent for the same reason Duplicate is above: a menu item cannot
+                  // explain itself, so a section with nothing to clear simply does not offer it
+                  ...(row.darkOverride ? [{ label: 'Clear dark overrides', icon: <Moon size={13} />, onSelect: () => actions.clearDark(row) }] : []),
+                  { label: 'Delete', danger: true, onSelect: () => actions.remove(row) },
+                ]}
+              />
+            </div>
+          </>
+        }
+      />
+    </Profiler>
+  )
+})
+
+export const Layers = memo(function Layers({
   site,
   page,
   label,
@@ -169,7 +285,6 @@ export function Layers({
   selectedKey,
   hoveredKey,
   drag,
-  onDrag,
   readOnly = false,
   onSelect,
   onGround,
@@ -202,16 +317,21 @@ export function Layers({
   const tabAt = current !== null && all.some((r) => keyOf(r) === current) ? current : (selectedKey ?? (all[0] ? keyOf(all[0]) : null))
   const rowEl = (key: string) => panel.current?.querySelector<HTMLElement>(`[data-layer-row="${CSS.escape(key)}"]`)
 
-  useEffect(() => {
+  // a LAYOUT effect (Story 5.23b): a move reaches these rows as a transition, whose reorder takes the focus off the row it
+  // moves — so it is put back in that same commit, before a second key can arrive at the page instead of the row
+  useLayoutEffect(() => {
     if (focusOn === null) return
     rowEl(focusOn)?.focus()
     setFocusOn(null)
     // `rowEl` reads a ref; the row to focus is the whole dependency
   }, [focusOn])
 
+  // the drag in flight — read here and nowhere else in the editor's tree, so a pointer move redraws this panel's slot
+  // and the rows it slides (Story 5.23b)
+  const inFlight = useSyncExternalStore(drag.subscribe, drag.get, () => null)
   // the layout is read ONCE per drag, from whichever group started it: a slot measured against rows that are already
   // sliding would chase itself, and a drag started by the canvas pill has no layout of its own to hand over
-  const dragDoc = drag?.doc ?? null
+  const dragDoc = inFlight?.doc ?? null
   const [, measured] = useState(0)
   useLayoutEffect(() => {
     if (dragDoc === null) return
@@ -221,6 +341,13 @@ export function Layers({
     measured((n) => n + 1)
     // `drag.to` changes on every pointer move and must not re-measure
   }, [dragDoc, siteKey])
+
+  // R-210: A DROP THAT MOVED IS LET GO WHEN ITS MOVE LANDS — the rows are handed over a frame after the canvas, and until
+  // they are the slot and the slid rows stay as they were, so Layers never shows the old order in between. The rows
+  // arriving is these two props changing; before paint, so the new order and the slot's going are one frame.
+  useLayoutEffect(() => {
+    if (drag.get()?.landing) drag.set(null)
+  }, [site, page, drag])
 
   /** Rename's one action, reached by Save and by Enter in the field. The field is the DOM's, read by its own id. */
   const save = () => {
@@ -233,11 +360,16 @@ export function Layers({
     rename.current?.close()
   }
 
+  /** True when the move landed. The announce is the editor's to read out, so the pill's drop announces through the same
+   *  live region. R-210: the move reaches these rows as a transition, so the row's focus follows in the SAME one — set
+   *  now, it would land before the move and the reorder that follows would take it away. */
   const move = (row: LayerRow, to: number) => {
-    // the announce is the editor's to read out, so the pill's drop announces through the same live region
-    if (onMove(row, to) === null) return
-    setCurrent(keyOf(row))
-    setFocusOn(keyOf(row))
+    if (onMove(row, to) === null) return false
+    startTransition(() => {
+      setCurrent(keyOf(row))
+      setFocusOn(keyOf(row))
+    })
+    return true
   }
 
   const onRowKey = (row: LayerRow, event: KeyboardEvent<HTMLDivElement>) => {
@@ -264,100 +396,61 @@ export function Layers({
     }
   }
 
-  /* Called as plain functions and never mounted as `<Row/>`: a component declared inside a render is a NEW type on
-     every render, which would unmount each row — and a remounted grip loses the pointer capture the drag holds. */
+  /* THE ROWS' ACTIONS, one object for the panel's life: each calls this panel's latest committed render, so a row that
+     did not change keeps every prop it had and skips its render (Story 5.23b). */
+  const rowKey = useStable(onRowKey)
+  const select = useStable((row: LayerRow) => onSelect(row))
+  const toggle = useStable((row: LayerRow) => onToggleHidden(row))
+  const lead = useStable((row: LayerRow) => onMakeMainFeed(row))
+  const duplicate = useStable((row: LayerRow) => onDuplicate(row))
+  const clearDark = useStable((row: LayerRow) => onClearDark(row))
+  const remove = useStable((row: LayerRow) => onRemove(row))
+  const startRename = useStable((row: LayerRow) => {
+    setNameError(null)
+    setRenaming(row)
+    // the dialog's field is rendered on the next frame, and it opens on Cancel
+    requestAnimationFrame(() => openOnCancel(rename.current))
+  })
+  const grab = useStable((row: LayerRow, event: PointerEvent<HTMLSpanElement>) => {
+    if (event.button !== 0 || drag.get() !== null) return // a second pointer never takes over a live drag, or a landing one
+    event.currentTarget.setPointerCapture(event.pointerId)
+    startY.current = event.clientY
+    drag.set({ doc: row.doc, from: row.at, to: row.at, dy: 0, via: 'layers' })
+  })
+  const dragTo = useStable((row: LayerRow, event: PointerEvent<HTMLSpanElement>) => {
+    const now = drag.get()
+    if (now?.doc !== row.doc || now.from !== row.at || now.landing) return
+    drag.set({ doc: row.doc, from: row.at, to: landingAt(layout.current, row.at, event.clientY, startY.current), dy: event.clientY - startY.current, via: 'layers' })
+  })
+  const drop = useStable((row: LayerRow) => {
+    const now = drag.get()
+    if (now?.doc !== row.doc || now.from !== row.at || now.landing) return
+    // R-210: a drop that moved keeps its slot until the moved rows land (the effect above lets it go); one that moved
+    // nothing — or whose move did not land — lets it go now
+    if (now.to !== now.from && move(row, now.to)) drag.set({ ...now, landing: true })
+    else drag.set(null)
+  })
+  const cancel = useStable(() => drag.set(null))
+  const actions = useMemo<RowActions>(
+    () => ({ key: rowKey, select, toggle, lead, rename: startRename, duplicate, clearDark, remove, grab, drag: dragTo, drop, cancel }),
+    [rowKey, select, toggle, lead, startRename, duplicate, clearDark, remove, grab, dragTo, drop, cancel],
+  )
+
   const drawRow = (row: LayerRow) => {
-    // the doc is part of the id: an `instanceId` is unique inside a doc, not across the two groups
-    const menu = `layers-menu-${row.doc}-${row.instanceId}`
-    const lifted = drag?.doc === row.doc && drag.from === row.at && drag.via === 'layers'
-    const sliding = drag?.doc === row.doc
+    const lifted = inFlight?.doc === row.doc && inFlight.from === row.at && inFlight.via === 'layers'
+    const sliding = inFlight?.doc === row.doc
     return (
-      <LayersRow
+      <Row
         key={keyOf(row)}
-        name={row.layerName}
-        shown={!row.hidden}
+        {...row}
         selected={selectedKey === keyOf(row)}
         hovered={hoveredKey === keyOf(row)}
-        data-layer-row={keyOf(row)}
-        tabIndex={tabAt === keyOf(row) ? 0 : -1}
-        aria-describedby="layers-how"
-        onKeyDown={(event) => onRowKey(row, event)}
-        onSelect={() => onSelect(row)}
-        style={lifted ? { translate: `0 ${drag.dy}px` } : sliding ? { translate: `0 ${shift(drag, row.at, layout.current)}px` } : undefined}
-        className={`relative ${lifted ? 'z-10 shadow-lg motion-safe:rotate-2' : sliding ? 'motion-safe:transition-[translate] motion-safe:duration-150' : ''}`}
-        // Story 5.19 — D5c's Layers chip (:290), after the name and before the `⋯`
-        chip={row.mainFeed ? <MainFeedChip /> : undefined}
-        // R-192: absent, not dead — the Kit's row draws no grab cursor when it is given no grip
-        gripProps={readOnly ? undefined : {
-          onPointerDown: (event) => {
-            if (event.button !== 0 || drag !== null) return // a second pointer never takes over a live drag
-            event.currentTarget.setPointerCapture(event.pointerId)
-            startY.current = event.clientY
-            onDrag({ doc: row.doc, from: row.at, to: row.at, dy: 0, via: 'layers' })
-          },
-          onPointerMove: (event) => {
-            if (drag?.doc !== row.doc || drag.from !== row.at) return
-            onDrag({ doc: row.doc, from: row.at, to: landingAt(layout.current, row.at, event.clientY, startY.current), dy: event.clientY - startY.current, via: 'layers' })
-          },
-          onPointerUp: () => {
-            if (drag?.doc !== row.doc || drag.from !== row.at) return
-            const { from, to } = drag
-            onDrag(null)
-            if (to !== from) move(row, to)
-          },
-          onPointerCancel: () => onDrag(null),
-        }}
-        overflow={
-          <>
-            <button
-              type="button"
-              disabled={readOnly}
-              aria-label={`More for ${row.layerName}`}
-              popoverTarget={menu}
-              onClick={(event) => {
-                const el = document.getElementById(menu)
-                if (el) openMenu(el, event.currentTarget, { side: 'down', align: 'right' })
-              }}
-              className={`inline-flex size-[22px] shrink-0 items-center justify-center rounded-[6px] text-[12px] font-bold tracking-[1px] text-ink-soft hover:bg-paper hover:text-ink ${ring}`}
-            >
-              …
-            </button>
-            <div id={menu} popover="auto" onKeyDown={arrowKeys} className="border-0 bg-transparent p-0">
-              <Menu
-                label={row.layerName}
-                items={[
-                  // R-126: Hide/Show is a MENU ROW now, not an eye on the row — the row's width belongs to its name.
-                  // It leads, because it is the one a layer list is reached for most.
-                  {
-                    label: row.hidden ? 'Show' : 'Hide',
-                    icon: row.hidden ? <Eye size={13} /> : <EyeOff size={13} />,
-                    onSelect: () => onToggleHidden(row),
-                  },
-                  // Story 5.19 — D5c's first item, SECOND here because R-126 keeps Hide/Show first; absent wherever it
-                  // could do nothing (UX-DR3): the main feed itself, a hidden row, a section that is no feed
-                  ...(row.canLead ? [{ label: MAKE_MAIN_FEED, icon: <Star size={13} />, onSelect: () => onMakeMainFeed(row) }] : []),
-                  {
-                    label: 'Rename',
-                    icon: <Pencil size={13} />,
-                    onSelect: () => {
-                      setNameError(null)
-                      setRenaming(row)
-                      // the dialog's field is rendered on the next frame, and it opens on Cancel
-                      requestAnimationFrame(() => openOnCancel(rename.current))
-                    },
-                  },
-                  // FR-D5: a site-wide section is ONE shared instance, so there is nothing to copy — absent, not
-                  // greyed and not a refusal (UX-DR3)
-                  ...(row.doc === siteKey ? [] : [{ label: 'Duplicate', icon: <Copy size={13} />, onSelect: () => onDuplicate(row) }]),
-                  // R-133's SECOND entry point, absent for the same reason Duplicate is above: a menu item cannot
-                  // explain itself, so a section with nothing to clear simply does not offer it
-                  ...(row.darkOverride ? [{ label: 'Clear dark overrides', icon: <Moon size={13} />, onSelect: () => onClearDark(row) }] : []),
-                  { label: 'Delete', danger: true, onSelect: () => onRemove(row) },
-                ]}
-              />
-            </div>
-          </>
-        }
+        tabStop={tabAt === keyOf(row)}
+        motion={lifted ? 'lifted' : sliding ? 'sliding' : null}
+        translate={lifted ? inFlight.dy : sliding ? shift(inFlight, row.at, layout.current) : 0}
+        readOnly={readOnly}
+        siteKey={siteKey}
+        actions={actions}
       />
     )
   }
@@ -365,11 +458,11 @@ export function Layers({
   const drawGroup = (rows: readonly LayerRow[], which: 'site' | 'page') => (
     // `relative`: the dashed slot is positioned against this group's own rows
     <div ref={which === 'site' ? siteList : pageList} className="relative flex flex-col gap-[2px]">
-      {drag !== null && (drag.doc === siteKey) === (which === 'site') ? (
+      {inFlight !== null && (inFlight.doc === siteKey) === (which === 'site') ? (
         <div
           aria-hidden
           data-drop-slot
-          style={{ top: slotTop(drag, layout.current), height: layout.current.heights[drag.from] ?? 0 }}
+          style={{ top: slotTop(inFlight, layout.current), height: layout.current.heights[inFlight.from] ?? 0 }}
           className="pointer-events-none absolute inset-x-0 rounded-sm border border-dashed border-line-strong bg-paper-sunk"
         />
       ) : null}
@@ -521,7 +614,7 @@ export function Layers({
       </dialog>
     </div>
   )
-}
+})
 
 /* ─────────────────────────────────────────── Story 5.20 — C3a's "HOW READERS REACH IT" CARD.
 

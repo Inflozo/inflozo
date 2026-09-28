@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { BAR_POPOVER, BarMenuCard, BarMenuRow, TRIGGER_LABEL, TRIGGER_VALUE, triggerClass } from '@/components/editor/bar-menu'
 import { ChevronDown, ChevronUp, Crown, Eye, Person } from '@/components/kit/icons'
 import { arrowKeys, openMenu } from '@/lib/menu'
@@ -42,7 +42,9 @@ import { HEADING, LABEL, NOT_VIEWED, ROWS, VISITORS, unviewed, type Visitor } fr
 /** S4d's three glyphs, each the export's own drawing (`kit/icons.tsx`, R-92). */
 const GLYPH: Readonly<Record<Visitor, typeof Eye>> = { anonymous: Eye, free: Person, paid: Crown }
 
-export function ViewAs({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const ViewAs = memo(function ViewAs({
   visitor,
   viewed,
   onChoose,
@@ -124,4 +126,4 @@ export function ViewAs({
       </div>
     </>
   )
-}
+})

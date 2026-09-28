@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { memo, useRef, useState } from 'react'
 import { Book, Check, ChevronDown, ChevronUp, Image as ImageGlyph, Search } from '@/components/kit/icons'
 import { greyedProps, reason, ring } from '@/components/kit/greyed'
 import { arrowKeys, openMenu } from '@/lib/menu'
@@ -63,7 +63,9 @@ export type SourceSite = {
   onChoose: (next: 'site' | 'sample') => boolean
 }
 
-export function SourcePill({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const SourcePill = memo(function SourcePill({
   subject,
   rows,
   fellBack,
@@ -368,4 +370,4 @@ export function SourcePill({
       </div>
     </>
   )
-}
+})

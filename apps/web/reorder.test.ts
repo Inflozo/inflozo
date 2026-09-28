@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { captureLayout, landingAt, shift, slotTop, type Layout } from './lib/reorder.ts'
+import { captureLayout, landingAt, oneValue, shift, slotTop, type Layout } from './lib/reorder.ts'
 
 // Story 5.4 — the geometry lifted out of `item-list.tsx`, which had none of its own. The owner's finding 9 of
 // 2026-09-13 is what these numbers are: nothing reorders until the drop, so the slot and the slides are arithmetic
@@ -68,4 +68,17 @@ test('landingAt: upwards, and never before the first row', () => {
 test('landingAt: the pointer space is the caller\'s — only the difference is read', () => {
   assert.equal(landingAt(four, 0, 1044, 1000), 1, 'window coordinates')
   assert.equal(landingAt(four, 0, 44, 0), 1, 'and list coordinates give the same answer')
+})
+
+test('oneValue: a set tells every reader once, the same value tells no one, and a reader that left hears nothing', () => {
+  const drag = oneValue<number | null>(null)
+  const heard: string[] = []
+  const leave = drag.subscribe(() => heard.push(`a ${drag.get()}`))
+  drag.subscribe(() => heard.push(`b ${drag.get()}`))
+  drag.set(1)
+  drag.set(1)
+  leave()
+  drag.set(null)
+  assert.deepEqual(heard, ['a 1', 'b 1', 'b null'])
+  assert.equal(drag.get(), null)
 })

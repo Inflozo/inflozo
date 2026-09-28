@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { ring } from '@/components/kit/greyed'
 import { DeviceDesktop, DeviceMobile, DeviceTablet } from '@/components/kit/icons'
 import { choices, radioKeys, tabStop } from '@/components/kit/segmented'
@@ -30,7 +31,9 @@ const GLYPH: Record<DeviceName, typeof DeviceDesktop> = { desktop: DeviceDesktop
    duplicated id — `ModeToggle`'s own reason (R-151). The `ink` tone is B3b's `:707-709`: 34px round buttons, the current
    one on white at .14 and the others hovering to .12 (`surface/14`, `surface/12`); the glyphs stay S4a's, which Story
    5.7 made the editor's, where B3b redraws them at a 1.7 stroke. */
-export function DeviceSwitch({ device, onDevice, id = 'editor-device', tone = 'paper' }: { device: Device; onDevice: (next: Device) => void; id?: string; tone?: 'paper' | 'ink' }) {
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const DeviceSwitch = memo(function DeviceSwitch({ device, onDevice, id = 'editor-device', tone = 'paper' }: { device: Device; onDevice: (next: Device) => void; id?: string; tone?: 'paper' | 'ink' }) {
   const list = choices(DEVICES.map((d) => ({ value: d.name, label: d.label })))
   const stop = tabStop(list, device.name)
   const ink = tone === 'ink'
@@ -76,7 +79,7 @@ export function DeviceSwitch({ device, onDevice, id = 'editor-device', tone = 'p
       })}
     </div>
   )
-}
+})
 
 /** B11's mono chip (`B Missing Surfaces.dc.html:740`), over the canvas ground. It reports and nothing sets it, and it
  *  re-reads whenever the stage does — a fold, a window resize, a device change.

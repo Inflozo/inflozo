@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react'
+import { memo, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState, type ReactNode, type Ref } from 'react'
 import { createPortal } from 'react-dom'
 import type { Link as LinkRecord } from '@inflozo/library'
 import { ring } from '@/components/kit/greyed'
@@ -148,7 +148,9 @@ function MarkToolbar({
 export type InlineToolsHandle = { openLink: () => void; focusBar: () => void; closeLink: () => void }
 
 /** The toolbar and its link panel for one inline editing session, wherever the text is: the canvas or the panel. */
-export function InlineTools({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const InlineTools = memo(function InlineTools({
   id,
   session,
   selection,
@@ -249,7 +251,7 @@ export function InlineTools({
       ) : null}
     </>
   )
-}
+})
 
 /** P0-1's pill (:138-147): never pressable, chrome in the canvas's own layer beside its words. A lock naming Ghost's own
  *  words (R-122), or the limit's sentence when a character was refused. */

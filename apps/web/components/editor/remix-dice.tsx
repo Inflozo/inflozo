@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type RefObject, type TransitionEvent } from 'react'
+import { memo, useEffect, useRef, useState, type RefObject, type TransitionEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
@@ -63,7 +63,9 @@ const TILT = { x: -18, y: 24 }
  *  like, so a key that rolled would skip the confirm entirely. */
 export type RemixHandle = { press: () => void }
 
-export function RemixDice({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const RemixDice = memo(function RemixDice({
   canvas,
   count,
   undoable = false,
@@ -204,4 +206,4 @@ export function RemixDice({
         )}
     </>
   )
-}
+})

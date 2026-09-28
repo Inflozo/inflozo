@@ -1,6 +1,6 @@
 'use client'
 
-import { useId, useRef, useState, type ReactNode } from 'react'
+import { memo, Profiler, useId, useRef, useState, type ReactNode } from 'react'
 import {
   darkOverridesInForce, editText, GROUP_LABELS, resetChanges, resetControl, resetSection, setContent, setControl,
   setData, sidebar,
@@ -28,6 +28,7 @@ import { LinkPicker, type LinkResources } from './link-picker'
 import { PlaceholderMenu } from './placeholder-menu'
 import { RichField } from './rich-field'
 import { limitSentence } from '@/lib/inline'
+import { counted } from '@/lib/renders'
 import { LATER_PAGES, PREVIEW_PAGE, type Page } from '@/lib/page-two'
 import { PREVIEWING, type Visitor } from '@/lib/view-as'
 import { SOURCE_WORDS } from '@/lib/preview-subject'
@@ -252,7 +253,11 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
 // What the canvas is previewing, in words, is `lib/view-as.ts`'s `PREVIEWING` since Story 5.14: this caption and the
 // live region that announces a View-as choice read ONE list.
 
-export function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
+/* STORY 5.23b — `memo`, AND COUNTED (R-208). The editor hands the panel values that keep their identity while unchanged —
+   the section kept by value, every handler of fixed identity — so a hover, a move or another section's edit leaves it
+   alone, and a change to THIS section redraws it in the render that commits it (FR-F4). React's `<Profiler>` inside
+   counts its renders for the keyboard gate (`lib/renders.ts`). */
+export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -433,6 +438,7 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
       : [{ id: 'settings', label: GROUP_LABELS.settings, rows: [], absent: [] }, ...model.groups]
 
   return (
+    <Profiler id="settings" onRender={counted}>
     <div className="flex flex-col gap-3">
       {/* STORY 5.18 — at the head of the panel, directly above Section Settings and R-124's row, where the groups'
           closed accordions cannot hide it. Its button is OUTSIDE every `ReadOnly`: switching the source changes the
@@ -586,5 +592,6 @@ export function Sidebar({ entry, state, onChange, visibility, swatches, timezone
         </div>
       </dialog>
     </div>
+    </Profiler>
   )
-}
+})

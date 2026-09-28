@@ -1025,10 +1025,13 @@ DOCS = [
    'its Style group open — then refuses the run unless an 80 ms busy task on a timer shows as a long task AND as dropped '
    'vsyncs (standing rule 2). The clock is 3 s at --rate x CPU throttle (default 4) for --runs (default 3): a Shuffle '
    'from the pill, two control changes, a pill-grip drag of about 20 moves and a drop, and a ⌥↓ from the Layers row; a '
-   'gesture that cannot be performed fails the run. A rAF interval of n vsyncs drops n − 1, so p95 ≤ 16.7 ms is "at most '
-   '5% of vsyncs dropped"; it prints per run the gestures, vsyncs, dropped and their share, the p95 and the longest task, '
-   'PASS or FAIL against NFR-1, and exits 0 only when every run passes. It restores apps/web/next-env.d.ts and stops its '
-   'own server; never beside pnpm keyboard, since both build into apps/web/.next-harness.')),
+   'gesture that cannot be performed fails the run. A frame is COUNTED in whole refreshes, n = max(1, round(Δ / 16.67)), '
+   'so rAF jitter never fails a smooth run, and since Story 5.23b (DW-289) a run passes only on ALL THREE of NFR-1\'s bars: '
+   'the p95 frame at most one refresh, at most 5% of refreshes dropped (a frame of n drops n − 1 — the bar that weighs a '
+   'long stall), and no long task over 50 ms; it prints per run the gestures, vsyncs, dropped and their share, the p95 in '
+   'refreshes beside its raw milliseconds, and the longest task, PASS or FAIL, and exits 0 only when every run passes. It '
+   'restores apps/web/next-env.d.ts and stops its own server; never beside pnpm keyboard, since both build into '
+   'apps/web/.next-harness.')),
  ('tools/keyboard/run-keyboard-gate.sh', 'tool', 'The keyboard gate — NFR-6(d), on every commit',
   ("Story 5.9's gate (R-146), modelled on tools/matrix/run-matrix-gate.sh and supabase/tests/run-rls-gate.sh: it boots "
    '`next dev` itself on a free port with INFLOZO_HARNESS=1 and no Supabase environment, waits for /app/harness/editor '
@@ -1074,6 +1077,15 @@ DOCS = [
   "the Paywall's own page write each redraw the whole page; and a read that LANDS does too — the linked harness site's "
   "reads answered from the bundled sample through page.route and the page's clock moved past the minute a read stays "
   "fresh, so a background revalidation lands unpainted and the next edit's paint redraws every section and shows it. "
+  "Story 5.23b counts each part's renders on the same long Home — React's <Profiler> in the gate's development build writes "
+  "window.__inflozoRenders by id (apps/web/lib/renders.ts), emptied before a gesture and read after its own end: a hover "
+  "redraws at most the two Layers rows whose wash changed and the chrome, never the Controls panel; a selection the two "
+  "rows whose selection changed, the panel and the chrome; a control change the panel in the same frame (FR-F4) and no row; "
+  "⌥↓ at most the two rows that swapped; `]` the panel and at most its own row; and at 1100 a hover no rail row, a "
+  "selection its two. Then R-210's two guarantees, each driven in ONE task with keys synthesized in the page: a press on the "
+  "settings panel still drawn for the design just replaced writes nothing (the second design carries the value as it "
+  "was), and `]`, a device key whose urgent render lands before the transition, then Space on another row lose neither "
+  "edit — and both doors, `]` and ⌘Z, redraw the canvas in the key's own task while the panel follows a frame later. "
   "Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',

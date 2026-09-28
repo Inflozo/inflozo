@@ -1,6 +1,6 @@
 'use client'
 
-import type { CSSProperties } from 'react'
+import { memo, type CSSProperties } from 'react'
 import type { Mode } from '@inflozo/section-runtime'
 import { ring } from '@/components/kit/greyed'
 import { Moon, Sun } from '@/components/kit/icons'
@@ -31,7 +31,9 @@ export const modeWords = (mode: Mode) => (mode === 'dark' ? 'Back to light mode'
 /* Story 5.10 — `id` is a parameter because R-151 puts a SECOND one of these in the Section Picker's header, and two
    elements carrying `editor-mode` would be one duplicated id: the deployed walk finds the top bar's sun by that id
    (`run-verify-editor.cjs` steps 46-53), and it must keep finding exactly one. */
-export function ModeToggle({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const ModeToggle = memo(function ModeToggle({
   mode,
   onMode,
   id = 'editor-mode',
@@ -61,4 +63,4 @@ export function ModeToggle({
       {dark ? <Moon size={15} /> : <Sun size={15} />}
     </button>
   )
-}
+})

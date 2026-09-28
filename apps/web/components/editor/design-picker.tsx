@@ -1,6 +1,6 @@
 'use client'
 
-import type { CSSProperties, KeyboardEvent } from 'react'
+import { memo, Profiler, type CSSProperties, type KeyboardEvent } from 'react'
 import type { IconLookup, SectionRegistryEntry, orbitWeekly } from '@inflozo/library'
 import type { Mode } from '@inflozo/section-runtime'
 import { SectionPreview, type Live } from '@/components/editor/section-preview'
@@ -8,6 +8,7 @@ import { gridKeys } from '@/components/controls/icon-picker'
 import { ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight } from '@/components/kit/icons'
 import type { DesignRows } from '@/lib/canvas'
+import { counted } from '@/lib/renders'
 import { NEXT_WORDS, ONE_DESIGN, PREVIOUS_WORDS, STRIP_COLUMNS, position, strip } from '@/lib/ring'
 import type { Visitor } from '@/lib/view-as'
 
@@ -96,7 +97,9 @@ function Tile({
   )
 }
 
-export function DesignPicker({
+/* Story 5.23b — `memo` (R-208): the editor hands it one ring per design id and handlers of fixed identity, so it redraws
+   when the section or its design changes and not on a hover or another section's edit. Counted for the keyboard gate. */
+export const DesignPicker = memo(function DesignPicker({
   ring: designs,
   at,
   target,
@@ -159,6 +162,7 @@ export function DesignPicker({
   const preview = { target, pool, icons, mode, src, assets, subject, member, live }
 
   return (
+    <Profiler id="design" onRender={counted}>
     <section
       id="editor-design"
       aria-label="Design"
@@ -250,5 +254,6 @@ export function DesignPicker({
       ) : null}
 
     </section>
+    </Profiler>
   )
-}
+})

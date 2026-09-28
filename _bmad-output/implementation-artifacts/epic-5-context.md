@@ -958,6 +958,20 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     panel right after a section operation waits for it and checks nothing different. DW-289's metric: the trace gates on the share,
     the p95 counted in whole refreshes and the longest task together. The session's first selection (a 248–255 ms task,
     ~100 ms of it the chrome's font faces invalidating the canvas's layout) is DW-290, Story 5.24's.
+  - **Story 5.23b's Dev (2026-09-28): R-208's panels and R-210, built.** Every part beside the canvas is a `memo` part —
+    the Layers rows (a module-level row given primitive props and one object of actions) and the rail's, the Design block,
+    the settings, the bar's controls, `CanvasChrome` and the pill — handed derivations memoized on what they read, the
+    selected and pointed sections kept BY VALUE (their JSON, the paint's own signature) and handlers of fixed identity
+    (`lib/renders.ts`'s `useStable`); the drag is a store of one value (`lib/reorder.ts`'s `oneValue`) that Layers alone
+    subscribes to; React's `<Profiler>` inside each part counts its renders in the keyboard gate (`window.__inflozoRenders`,
+    development only). `apply` and `restore` paint the canvas and move `latest` in the press's task and hand React the rest
+    as a transition, and **`latest` is the handlers'** — a commit writes only what it derives (the canvas, what can be
+    placed, the layout, the page's list and subject), so a render drawn from state a transition has not delivered moves
+    nothing back. `onChange` drops a press on a panel drawn for another design or section; the chrome and the pill are
+    placed from the paint's current roots; a drop's slot stays until its moved rows land; a Layers move is re-based on the
+    newest doc. Measured with only the counters added before the story: a hover redrew 82 Layers rows, a selection 41, a
+    control change 41, ⌥↓ 82, `]` 41, a rail hover 123 rail rows; after it, the matrix's. NFR-1 at 4× passes every bar
+    (2.8% to 4.4% (8, 7 and 5 of 180), the p95 frame ONE refresh in every run, and no long task at all; before, 8.9%, 7.8% and 7.8% of refreshes dropped (16, 14 and 14 of 180), p95 16.8, 33.3 and 16.8 ms, longest tasks 76, 71 and 78 ms).
 
 ## Technical Decisions
 

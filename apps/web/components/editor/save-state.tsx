@@ -1,5 +1,6 @@
 'use client'
 
+import { memo } from 'react'
 import { PersistenceIndicator, type PersistenceState } from '@/components/kit/persistence-indicator'
 import { ring } from '@/components/kit/greyed'
 import { labelOf, panelOpen, type SyncState } from '@/lib/journal'
@@ -41,7 +42,9 @@ import { labelOf, panelOpen, type SyncState } from '@/lib/journal'
 const ATTEMPTS = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth']
 const attemptTitle = (n: number) => (ATTEMPTS[n - 1] ? `Retrying, ${ATTEMPTS[n - 1]} attempt` : `Retrying, attempt ${n}`)
 
-export function SaveState({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const SaveState = memo(function SaveState({
   state,
   onRetry,
   retrying,
@@ -101,4 +104,4 @@ export function SaveState({
       ) : null}
     </span>
   )
-}
+})

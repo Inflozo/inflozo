@@ -4646,7 +4646,13 @@ stays one job, the half-second freezes go sooner, and 5.23b is planned from its 
   - ✅ `run-verify-editor.cjs`'s header and step 60, which named Story 5.23a as the fps gate's.
   - ✅ built — Story 5.23a, the canvas (its Dev, 2026-09-27; R-206's tick has what was measured). The trace still misses
     NFR-1 at 4× — 7.2–9.4% of vsyncs dropped and 71–75 ms tasks — which is the panels' work this ruling gives 5.23b.
-  - ⬜ built — Story 5.23b (the panels and the 60 fps pass).
+  - ✅ built — Story 5.23b's Dev (2026-09-28): the Layers rows and the rail's, the Controls panel's Design block and
+    settings, the bar's controls, the chrome and the pill are `memo` parts handed values that keep their identity and
+    handlers of fixed identity (`lib/renders.ts`), the drag is a store of one value only Layers reads (`lib/reorder.ts`),
+    and React's `<Profiler>` counts each part's renders in the keyboard gate — with only the counters added to the editor
+    before the story, a hover redrew 82 Layers rows and a selection 41; after it, at most the two that changed. NFR-1's
+    trace at 4× on this computer: before, 8.9%, 7.8% and 7.8% of refreshes dropped (16, 14 and 14 of 180), p95 16.8, 33.3 and 16.8 ms, longest tasks 76, 71 and 78 ms; after, 2.8% to 4.4% (8, 7 and 5 of 180), the p95 frame ONE refresh in every run, and no long task at all — every
+    run passing DW-289's three bars — and at 1× 0 of 180 dropped. The 60 fps pass is Epic 5's exit (R-208).
 
 **R-209 — a hover whose section the paint kept stays; one whose section was redrawn is let go.** Story 5.23a's Review,
 Question 2, ruled **option 1** (owner, 2026-09-28): *"Keep it as built. The outline under a resting mouse stays when its
@@ -4701,7 +4707,15 @@ speed test passes and Epic 5 closes as you ruled."*
   - ✅ Story 5.23b's spec — Question 1, its intent, boundaries and matrix.
   - ✅ `epics.md` — Story 5.23b's card.
   - ✅ `epic-5-context.md`.
-  - ⬜ built — Story 5.23b.
+  - ✅ built — Story 5.23b's Dev (2026-09-28): `apply` and `restore` paint the canvas and move `latest` in the press's
+    own task and hand React the rest as ONE transition; a drop's slot stays until its moved rows land (a MutationObserver
+    saw it leave in the reorder's own commit); a control change stays urgent (FR-F4); `latest` is written by the handlers
+    for what they change and by a commit only for what it derives; `onChange` drops a press from a panel drawn for another
+    design or section; the chrome and the pill are placed from the paint's current roots; and a Layers move is re-based on
+    where the section is in the newest doc, so a second ⌥↓ inside the frame moves again rather than journaling a move onto
+    itself. The keyboard gate proves the two guarantees in one task each — a stale press writes nothing, and an urgent
+    render between two edits loses neither — each red with its guard taken away; the journey checks that read a panel in
+    the instant after a section operation now wait for it, and check nothing different.
 
 ## B · Approved decisions superseded by this session
 

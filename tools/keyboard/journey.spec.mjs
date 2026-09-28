@@ -59,6 +59,13 @@ const deviceOf = (page) => page.locator('#editor-device [role="radio"][aria-chec
 
 const said = (page) => page.locator('#editor-said').innerText()
 
+/** R-210 (Story 5.23b): a section operation paints the canvas at once and the panels a frame later, so a check that reads a
+ *  panel in the instant after one first lets the panels settle — two frames and a moment more — and checks nothing
+ *  different; a check that expects the panel to CHANGE polls for it. The 5.23b stops read their render counts after it too,
+ *  so every render a gesture caused is counted. */
+const panelsSettle = (page) =>
+  page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(done, 150)))))
+
 /** The tab stops a region holds, COUNTED OFF THE PAGE: every element Tab would land on that is drawn. A closed
  *  popover's rows are `display:none`, a roving radio group's unchecked radios are `tabindex="-1"`, a hidden pill is
  *  `visibility: hidden`, and Tab passes all three by, so this does too. Nothing here is a number written down. */
@@ -285,18 +292,21 @@ test('⌘D duplicates the SELECTION, and a site-wide section has no Duplicate at
   // nothing selected: nothing happens and nothing is announced
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('ControlOrMeta+d')
+  await panelsSettle(page)
   expect((await rows(page)).all).toHaveLength(before)
   expect(await said(page)).toBe('')
 
   await select(page, own[0])
   await page.keyboard.press('ControlOrMeta+d')
-  expect((await rows(page)).all).toHaveLength(before + 1)
+  // R-210: Layers follows the canvas a frame later — the check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before + 1)
   expect(await said(page)).toMatch(/duplicated/)
 
   // a site-wide section is ONE shared instance: its key does nothing, exactly as its row carries no Duplicate
   await select(page, site[0])
   const held = (await rows(page)).all.length
   await page.keyboard.press('ControlOrMeta+d')
+  await panelsSettle(page)
   expect((await rows(page)).all).toHaveLength(held)
 })
 
@@ -307,20 +317,22 @@ test('Del removes the selection, and a site-wide one asks first with focus on Ca
   await page.locator('section[aria-label="Canvas"]').focus()
   const before = (await rows(page)).all.length
   await page.keyboard.press('Delete')
+  await panelsSettle(page)
   expect((await rows(page)).all, 'nothing selected, nothing removed').toHaveLength(before)
 
   await select(page, own[0])
   await page.keyboard.press('Delete')
-  expect((await rows(page)).all).toHaveLength(before - 1)
+  // R-210: Layers follows the canvas a frame later — each check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before - 1)
   expect(await said(page)).toMatch(/removed/)
   // ⌘Z puts it back exactly, which is Story 5.8's promise and this key's control
   await page.keyboard.press('ControlOrMeta+z')
-  expect((await rows(page)).all).toHaveLength(before)
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before)
   // AC3: ⇧⌘Z is found passing on the same walk — it takes the section away again, and ⌘Z brings it back
   await page.keyboard.press('ControlOrMeta+Shift+z')
-  expect((await rows(page)).all).toHaveLength(before - 1)
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before - 1)
   await page.keyboard.press('ControlOrMeta+z')
-  expect((await rows(page)).all).toHaveLength(before)
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before)
 
   await select(page, site[0])
   await page.keyboard.press('Delete')
@@ -329,6 +341,7 @@ test('Del removes the selection, and a site-wide one asks first with focus on Ca
   await expect(page.locator('dialog[open] [data-cancel]')).toBeFocused()
   await page.keyboard.press('Escape')
   await expect(confirm).toBeHidden()
+  await panelsSettle(page)
   expect((await rows(page)).all, 'Cancel leaves the doc untouched').toHaveLength(before)
 })
 
@@ -557,14 +570,15 @@ test('R-167: an edit brings the other visitors\' dots back, and so does the undo
   const { page: own } = await rows(page)
   await select(page, own[0])
   await page.keyboard.press('Delete')
-  expect(await dotted(page), 'an edit leaves the page viewed only as the visitor on screen').toEqual(['anonymous', 'free'])
+  // R-210: View as's record follows the canvas a frame later — the check waits for it, and checks nothing different
+  await expect.poll(() => dotted(page), { message: 'an edit leaves the page viewed only as the visitor on screen' }).toEqual(['anonymous', 'free'])
   await pick('anonymous')
   await pick('free')
   expect(await dotted(page)).toEqual([])
   // undo is a change too: `restore()` calls `afterChange`, and nothing else checked that it does (review, 2026-09-21)
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('ControlOrMeta+z')
-  expect(await dotted(page), 'an undo is a change').toEqual(['anonymous', 'paid'])
+  await expect.poll(() => dotted(page), { message: 'an undo is a change' }).toEqual(['anonymous', 'paid'])
 })
 
 test('no key binds View as: every single key leaves the visitor where it was (FR-D11 — R-145\'s table gains no row)', async ({ page }) => {
@@ -615,13 +629,14 @@ test('a section added with ⌘K from a selected section lands directly after it,
   await picker(page).locator('[data-cell]:not([aria-label*="Site-wide"])').first().focus()
   await page.keyboard.press('Enter')
   await expect(picker(page)).toHaveCount(0)
+  // R-210: Layers follows the canvas a frame later — the check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).page).toHaveLength(own.length + 1)
   const after = (await rows(page)).page
-  expect(after).toHaveLength(own.length + 1)
   expect(after[0]).toBe(own[0])
   expect(own, 'the new row is the second, directly under the one it was invoked from').not.toContain(after[1])
   expect(after.slice(2)).toEqual(own.slice(1))
   await page.keyboard.press('ControlOrMeta+z')
-  expect((await rows(page)).page).toEqual(own)
+  await expect.poll(async () => (await rows(page)).page).toEqual(own)
 })
 
 test('⌘K opens the Section Picker, the arrows cross the grid, Enter places and Esc returns focus', async ({ page }) => {
@@ -666,12 +681,13 @@ test('⌘K opens the Section Picker, the arrows cross the grid, Enter places and
   // Enter places: one section more, the picker closed behind it, and the placement announced politely
   await page.keyboard.press('Enter')
   await expect(picker(page)).toHaveCount(0)
-  expect((await rows(page)).all).toHaveLength(before + 1)
+  // R-210: Layers follows the canvas a frame later — each check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before + 1)
   expect(await said(page)).toMatch(/added/)
 
   // and one ⌘Z puts it back — one gesture, one edit, one undo step (AD-15, AD-16)
   await page.keyboard.press('ControlOrMeta+z')
-  expect((await rows(page)).all).toHaveLength(before)
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before)
 
   // Esc closes and the platform returns focus to whatever opened it
   await page.locator('section[aria-label="Canvas"]').focus()
@@ -700,12 +716,14 @@ test('R-152: a site-wide card carries the globe, and a second one REPLACES the f
   await card.focus()
   await page.keyboard.press('Enter')
   await expect(picker(page)).toHaveCount(0)
+  // R-210: Layers follows the canvas a frame later — each check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).site).not.toEqual(before.site)
   const after = await rows(page)
   expect(after.site, 'one header replaces the other — the site never gains a second').toHaveLength(before.site.length)
   expect(after.site).not.toEqual(before.site)
   expect(await said(page)).toMatch(/Site-wide group/)
   await page.keyboard.press('ControlOrMeta+z')
-  expect((await rows(page)).site).toEqual(before.site)
+  await expect.poll(async () => (await rows(page)).site).toEqual(before.site)
 })
 
 test('⌘K with the caret in a field does NOT open the picker — it is the link mark there', async ({ page }) => {
@@ -836,11 +854,13 @@ test('the Layers row answers ⌥↑ / ⌥↓, and the move is announced in its o
   expect(own.length, 'the fixture must hold two page sections to move one past the other').toBeGreaterThan(1)
   await page.locator(`[data-layer-row="${own[0]}"]`).focus()
   await page.keyboard.press('Alt+ArrowDown')
-  const after = await rows(page)
-  expect(after.page[1]).toBe(own[0])
+  // R-210: Layers follows the canvas a frame later — each check waits for it, and checks nothing different; the row
+  // takes its focus back in the move's own commit, so the next key finds it
+  await expect.poll(async () => (await rows(page)).page[1]).toBe(own[0])
   expect(await said(page)).toMatch(/\S/)
+  await expect(page.locator(`[data-layer-row="${own[0]}"]`)).toBeFocused()
   await page.keyboard.press('Alt+ArrowUp')
-  expect((await rows(page)).page[0]).toBe(own[0])
+  await expect.poll(async () => (await rows(page)).page[0]).toBe(own[0])
 
   // THE OTHER DRAG SURFACE, the item list's handle, is NOT walked here and cannot be: no section in the harness
   // fixture draws an item list (executed at review, 2026-09-19 — every row selected, every group opened, no
@@ -982,11 +1002,11 @@ test('R-145: `]` moves to the next design and announces its position, `[` comes 
   await expect(counter(page)).toHaveText(/^1 of \d+$/)
   await expect(page.locator('#editor-design-name')).toHaveText(first)
 
-  // UX-DR5: past the last wraps rather than dying — `[` from the first is the same rule backwards
+  // UX-DR5: past the last wraps rather than dying — `[` from the first is the same rule backwards. R-210: the counter is
+  // the panel's, which follows the canvas a frame later — the check waits for it, and checks nothing different
+  const of_ = (await counter(page).innerText()).match(/of (\d+)/)[1]
   await page.keyboard.press('[')
-  await expect(counter(page)).toHaveText(/^\d+ of \d+$/)
-  const [at, of_] = (await counter(page).innerText()).match(/(\d+) of (\d+)/).slice(1)
-  expect(at, 'a dead key at the end of a list reads as broken (UX-DR5)').toBe(of_)
+  await expect(counter(page), 'a dead key at the end of a list reads as broken (UX-DR5)').toHaveText(`${of_} of ${of_}`)
 })
 
 test('FR-D19: a setting only the design you LEAVE has is parked, and comes back exactly', async ({ page }) => {
@@ -1086,7 +1106,10 @@ test('the block carries no Shuffle card and no key chips, and `]` alone still re
   await page.locator('section[aria-label="Canvas"]').focus()
   const seen = new Set([start])
   for (let n = 1; n < length; n++) {
+    const was = await counter(page).innerText()
     await page.keyboard.press(']')
+    // R-210: the counter is the panel's, which follows the canvas a frame later — read once it has moved
+    await expect(counter(page)).not.toHaveText(was)
     seen.add(await counter(page).innerText())
   }
   expect(seen.size, 'every design in the ring is reachable by the key alone').toBe(length)
@@ -1842,8 +1865,9 @@ test('Page 2 follows page 1 until its first change, which stores it; page 1 neve
   // (1) ON PAGE 1, a change: the second section moves down one
   await page.locator(`[data-layer-row="home:${was[1]}"]`).focus()
   await page.keyboard.press('Alt+ArrowDown')
+  // R-210: Layers follows the canvas a frame later — each read below waits for it, and checks nothing different
+  await expect.poll(() => ownIds(page)).not.toEqual(was)
   const one = await ownIds(page)
-  expect(one).not.toEqual(was)
   // …and page 2, which follows, shows it
   await toPageTwo(page)
   expect(await ownIds(page), 'a following page 2 is page 1 as it stands').toEqual(one)
@@ -1852,29 +1876,28 @@ test('Page 2 follows page 1 until its first change, which stores it; page 1 neve
   const gone = one[2]
   await select(page, `index:${gone}`)
   await page.keyboard.press('Delete')
+  await expect.poll(() => ownIds(page)).toEqual(one.filter((id) => id !== gone))
   const two = await ownIds(page)
-  expect(two).toEqual(one.filter((id) => id !== gone))
   await expect(page.locator('#editor-layers [data-auto-generated]')).toHaveCount(0)
   await expect.poll(() => storedKeys(page), { message: 'the first change stores page 2 under its own key' }).toContain('index')
   // (3) PAGE 1 STILL HAS IT (R-178)
   await pagePill(page).getByRole('button', { name: TWO.BACK_TO_PAGE_ONE }).focus()
   await page.keyboard.press('Enter')
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '1')
-  expect(await ownIds(page)).toEqual(one)
+  await expect.poll(() => ownIds(page)).toEqual(one)
   // (4) a later change to page 1 does not reach page 2
   await page.locator(`[data-layer-row="home:${one[one.length - 1]}"]`).focus()
   await page.keyboard.press('Alt+ArrowUp')
-  const oneLater = await ownIds(page)
-  expect(oneLater).not.toEqual(one)
+  await expect.poll(() => ownIds(page)).not.toEqual(one)
   await toPageTwo(page)
-  expect(await ownIds(page), 'page 2 is its own now').toEqual(two)
+  await expect.poll(() => ownIds(page), { message: 'page 2 is its own now' }).toEqual(two)
   // (5) ⌘Z — ONE LIST FOR THE WHOLE PROJECT (Story 5.8): the first takes back page 1's move, the second page 2's
   // first change, and page 2 follows page 1 again, marker and all
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('ControlOrMeta+z')
-  expect(await ownIds(page), 'the first ⌘Z undid page 1\'s move, which page 2 never had').toEqual(two)
+  await expect.poll(() => ownIds(page), { message: 'the first ⌘Z undid page 1\'s move, which page 2 never had' }).toEqual(two)
   await page.keyboard.press('ControlOrMeta+z')
-  expect(await ownIds(page), 'the second undid page 2\'s first change: it follows page 1 again').toEqual(one)
+  await expect.poll(() => ownIds(page), { message: 'the second undid page 2\'s first change: it follows page 1 again' }).toEqual(one)
   await expect(page.locator('#editor-layers [data-auto-generated="page-2"]')).toHaveText(TWO.COPY_MARKER)
   // (6) REMOVING EVERY SECTION FROM PAGE 2 follows again too (AD-22)
   for (let n = 0; n < one.length; n++) {
@@ -1882,9 +1905,11 @@ test('Page 2 follows page 1 until its first change, which stores it; page 1 neve
     if (n > 0 && (await page.locator('#editor-layers [data-auto-generated="page-2"]').count()) > 0) break
     await select(page, left[0])
     await page.keyboard.press('Delete')
+    // R-210: the rows follow a frame later — the next pass reads them once this delete has landed
+    await expect.poll(async () => (await rows(page)).page).not.toEqual(left)
   }
   await expect(page.locator('#editor-layers [data-auto-generated="page-2"]'), 'emptied, page 2 follows page 1 again').toBeVisible()
-  expect(await ownIds(page)).toEqual(one)
+  await expect.poll(() => ownIds(page)).toEqual(one)
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-page', '2')
 })
 
@@ -2146,8 +2171,9 @@ async function placeSecondGrid(page) {
   await picker(page).locator('[data-cell][data-design="a17/1"]').first().focus()
   await page.keyboard.press('Enter')
   await expect(picker(page)).toHaveCount(0)
+  // R-210: Layers follows the canvas a frame later — the check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).page.filter((k) => !own.includes(k)), { message: 'one section placed' }).toHaveLength(1)
   const added = (await rows(page)).page.filter((k) => !own.includes(k))
-  expect(added, 'one section placed').toHaveLength(1)
   return added[0]
 }
 
@@ -2331,6 +2357,8 @@ test('5.19 · the first feed placed on a page with none lands as the MAIN feed, 
   await picker(page).locator('[data-cell][data-design="a17/1"]').first().focus()
   await page.keyboard.press('Enter')
   await expect(picker(page)).toHaveCount(0)
+  // R-210: Layers follows the canvas a frame later — the check waits for it, and checks nothing different
+  await expect.poll(async () => (await rows(page)).page.some((k) => !own.includes(k)), { message: 'one section placed' }).toBe(true)
   const added = (await rows(page)).page.find((k) => !own.includes(k))
   await expect.poll(() => mainKey(page)).toBe(added)
   expect(await said(page)).toBe(WORDS.ADDED_AS_MAIN(await nameOf(page, added)))
@@ -3251,9 +3279,10 @@ test.describe('Story 5.22 — D8b: the compact editor at 720 × 900, a fine poin
     // Enter places, and one ⌘Z takes it back, as at full width
     await page.keyboard.press('Enter')
     await expect(picker(page)).toHaveCount(0)
-    expect((await rows(page)).all).toHaveLength(before + 1)
+    // R-210: Layers follows the canvas a frame later — each check waits for it, and checks nothing different
+    await expect.poll(async () => (await rows(page)).all).toHaveLength(before + 1)
     await page.keyboard.press('ControlOrMeta+z')
-    expect((await rows(page)).all).toHaveLength(before)
+    await expect.poll(async () => (await rows(page)).all).toHaveLength(before)
   })
 
   test('R-192 reading along: the Remix row and the rail\'s + are greyed and skipped, while the rail, the overlays and the views stay live', async ({ page }) => {
@@ -3836,5 +3865,237 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     await page.keyboard.press('Enter')
     await expect(page.locator('#editor-panel-position')).toHaveText(/^1 \/ \d+$/)
     await expect.poll(async () => allNew(await tagsOf(page)), 'the Paywall surface').toBe(true)
+  })
+})
+
+/* ── Story 5.23b — THE PANELS REDRAW ONLY WHAT CHANGED, AND THE CANVAS COMES FIRST (R-208, R-210) ─────────────────────
+   On the long Home each part that redraws only what touched it carries React's own `<Profiler>`, whose callback counts its
+   commits by id in `window.__inflozoRenders` in the gate's development build (`lib/renders.ts`'s `counted`; production
+   never writes). So "a gesture redraws its own parts and no other" is read off the page: the counts are emptied before a
+   gesture and read after its own end — which, since R-210, is a frame after the canvas for any change to a section, so
+   each stop waits for the panel to settle first. The parts: a Layers row (`layers-row`), a rail row (`rail-row`), the
+   Controls panel's Design block (`design`) and its settings (`settings`), the canvas chrome (`chrome`) and the pill
+   (`pill`). A drag is pointer-only, so its counts are the story's scratch pointer probe, never this file's.
+
+   Then R-210's two guarantees, each driven in ONE TASK so no frame can fall between: a press on the settings panel still
+   drawn for the design just replaced writes nothing, and an urgent render landing between two edits loses neither. */
+
+/** Every part's commits since the last `resetRenders`, by its `<Profiler>` id — a part that did not render is absent. */
+const renders = (page) => page.evaluate(() => ({ ...(window.__inflozoRenders ?? {}) }))
+const resetRenders = (page) => page.evaluate(() => { window.__inflozoRenders = {} })
+/** The root at a place among the canvas's sections, as `pointAt` takes it (`:nth-child` is 1-based, the place 0-based). */
+const rootAt = (place) => `#canvas > :nth-child(${place + 1})`
+
+test.describe('Story 5.23b — the panels redraw only what changed, on the long Home', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-home': String(LONG_HOME) })
+  })
+
+  test('a hover redraws at most the two Layers rows whose wash changed, and the chrome — the Controls panel does not', async ({ page }) => {
+    await open(page)
+    const own = (await rows(page)).page
+    expect(own, 'the harness built the long Home').toHaveLength(LONG_HOME)
+    // a section selected, so a Controls panel is drawn that the hover must leave alone
+    await select(page, own[1])
+    const at = await selectedPlace(page)
+    await panelsSettle(page)
+    await resetRenders(page)
+    await pointAt(page, rootAt(at + 1))
+    await expect(page.locator('[data-section-pill]'), 'the control: the section is pointed at').toHaveCount(1)
+    await expect(page.locator('[data-layer-row].bg-coral-wash'), 'and its Layers row carries the wash').toHaveCount(1)
+    await panelsSettle(page)
+    const drawn = await renders(page)
+    expect(drawn['layers-row'] ?? 0, 'at most the two rows whose wash changed').toBeLessThanOrEqual(2)
+    expect(drawn['layers-row'] ?? 0, 'the pointed row itself').toBeGreaterThanOrEqual(1)
+    expect(drawn['chrome'] ?? 0, 'the chrome draws the hover').toBeGreaterThanOrEqual(1)
+    expect(drawn['settings'] ?? 0, 'the Controls panel does not redraw').toBe(0)
+    expect(drawn['design'] ?? 0, 'nor its Design block').toBe(0)
+  })
+
+  test('a selection redraws the two rows whose selection changed, the Controls panel and the chrome', async ({ page }) => {
+    await open(page)
+    const own = (await rows(page)).page
+    await select(page, own[1])
+    await panelsSettle(page)
+    await resetRenders(page)
+    await select(page, own[2])
+    await panelsSettle(page)
+    const drawn = await renders(page)
+    expect(drawn['layers-row'] ?? 0, 'the two rows whose selection changed, and no other').toBeLessThanOrEqual(2)
+    expect(drawn['layers-row'] ?? 0, 'the newly chosen row').toBeGreaterThanOrEqual(1)
+    expect(drawn['settings'] ?? 0, 'the Controls panel draws the new section').toBeGreaterThanOrEqual(1)
+    expect(drawn['chrome'] ?? 0, 'the chrome draws the new selection').toBeGreaterThanOrEqual(1)
+  })
+
+  test('a control change redraws the Controls panel in the same frame (FR-F4) and no Layers row', async ({ page }) => {
+    await open(page)
+    await selectRinged(page)
+    const setting = await styleSetting(page)
+    const was = await setting.checked()
+    await setting.stop.focus()
+    await panelsSettle(page)
+    await resetRenders(page)
+    // the render that commits the change shows it: read after the press with no frame in between, only the microtasks
+    // React flushes a key's own update in
+    const shown = await page.evaluate(async () => {
+      const radio = document.activeElement
+      radio.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }))
+      for (let n = 0; n < 3; n++) await Promise.resolve()
+      return [...radio.closest('[role="radiogroup"]').querySelectorAll('[role="radio"]')].findIndex((r) => r.getAttribute('aria-checked') === 'true')
+    })
+    expect(shown, 'FR-F4: the panel shows the change in the render that commits it').not.toBe(was)
+    await panelsSettle(page)
+    const drawn = await renders(page)
+    expect(drawn['settings'] ?? 0, 'the Controls panel redraws').toBeGreaterThanOrEqual(1)
+    expect(drawn['layers-row'] ?? 0, 'no Layers row').toBe(0)
+  })
+
+  test('⌥↓ on the selected row redraws at most the two rows that swapped — the Controls panel does not', async ({ page }) => {
+    await open(page)
+    const own = (await rows(page)).page
+    const fourth = own[3]
+    await select(page, fourth)
+    await panelsSettle(page)
+    await resetRenders(page)
+    await page.locator(`[data-layer-row="${fourth}"]`).focus()
+    await page.keyboard.press('Alt+ArrowDown')
+    await expect.poll(async () => (await rows(page)).page.indexOf(fourth)).toBe(4)
+    await panelsSettle(page)
+    const drawn = await renders(page)
+    expect(drawn['layers-row'] ?? 0, 'at most the two rows that swapped').toBeLessThanOrEqual(2)
+    expect(drawn['settings'] ?? 0, 'the Controls panel does not redraw').toBe(0)
+    expect(drawn['design'] ?? 0, 'nor its Design block').toBe(0)
+  })
+
+  test('`]` on the ringed section redraws the Controls panel and at most its own row — no other row', async ({ page }) => {
+    await open(page)
+    await selectRinged(page)
+    await panelsSettle(page)
+    await resetRenders(page)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press(']')
+    await expect(counter(page)).toHaveText(/^2 of \d+$/)
+    await panelsSettle(page)
+    const drawn = await renders(page)
+    expect(drawn['settings'] ?? 0, 'the Controls panel draws the new design').toBeGreaterThanOrEqual(1)
+    expect(drawn['layers-row'] ?? 0, 'at most the section\'s own row').toBeLessThanOrEqual(1)
+  })
+
+  test('the rail at 1100: a hover redraws no rail row, and a selection redraws its two', async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 900 })
+    await openCompact(page)
+    const own = (await rows(page)).page
+    await expect(page.locator('[data-icon-rail]'), 'the control: below 1280 the rail stands where Layers did').toBeVisible()
+    // a first selection from the rail, so the second changes two rows; its overlay closed again, the selection kept
+    await page.locator(`[data-rail-row="${own[1]}"]`).focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator(`[data-rail-row="${own[1]}"]`)).toHaveAttribute('aria-current', 'true')
+    await page.keyboard.press('Escape')
+    await expect(page.locator('#editor-controls')).toBeHidden()
+    const at = await selectedPlace(page)
+    await panelsSettle(page)
+    await resetRenders(page)
+    await pointAt(page, rootAt(at + 1))
+    await expect(page.locator('[data-section-pill]'), 'the control: the section is pointed at').toHaveCount(1)
+    await panelsSettle(page)
+    expect((await renders(page))['rail-row'] ?? 0, 'the hover redraws no rail row').toBe(0)
+    await resetRenders(page)
+    await page.locator(`[data-rail-row="${own[2]}"]`).focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator(`[data-rail-row="${own[2]}"]`)).toHaveAttribute('aria-current', 'true')
+    await panelsSettle(page)
+    const drawn = (await renders(page))['rail-row'] ?? 0
+    expect(drawn, 'the selection redraws its two rail rows').toBeLessThanOrEqual(2)
+    expect(drawn, 'the newly chosen one').toBeGreaterThanOrEqual(1)
+  })
+
+  test('R-210: a press on the settings panel still drawn for the design just replaced writes nothing — the section keeps the new design\'s values', async ({ page }) => {
+    await open(page)
+    await selectRinged(page)
+    // Image position: the first design and the second share it, so the second CARRIES the first's value (FR-D19) — a
+    // write from the old panel would carry the pressed value instead
+    const layout = page.locator('#editor-controls button[id$="-group-layout"]')
+    if ((await layout.getAttribute('aria-expanded')) !== 'true') {
+      await layout.focus()
+      await page.keyboard.press('Enter')
+    }
+    await expect(imageRow(page), 'the first design declares Image position').toHaveCount(1)
+    // a value STORED on the first design, so the second carries it (a default is not carried: each design has its own)
+    const initial = await imageValue(page)
+    await imageRow(page).locator('[role="radio"][tabindex="0"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await expect.poll(() => imageValue(page), 'the control: the first press is written').not.toBe(initial)
+    const was = await imageValue(page)
+    await imageRow(page).locator('[role="radio"][tabindex="0"]').focus()
+    // ONE TASK: `]` swaps the design, and the arrow presses the radio the panel still draws for the design just replaced
+    // (a key synthesized in the page: the editor's own listeners hear it exactly as a key, and no pointer is involved)
+    const drawnFor = await page.evaluate(() => {
+      const press = (target, key) => target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+      press(document.querySelector('section[aria-label="Canvas"]'), ']')
+      const shown = document.querySelector('#editor-design-count')?.textContent?.trim()
+      press(document.activeElement, 'ArrowRight')
+      return shown
+    })
+    expect(drawnFor, 'the control: the arrow was pressed on the panel drawn for the first design').toMatch(/^1 of \d+$/)
+    await expect(counter(page)).toHaveText(/^2 of \d+$/)
+    await expect(imageRow(page), 'the second design shares Image position').toHaveCount(1)
+    expect(await imageValue(page), 'nothing was written from the old panel: the second design carries the value as it was').toBe(was)
+    // …and a press on the panel as it is drawn now IS written — the stop can see a write
+    await imageRow(page).locator('[role="radio"][tabindex="0"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await expect.poll(() => imageValue(page), 'the control: a press on the current panel lands').not.toBe(was)
+  })
+
+  test('R-210: an urgent render between two edits loses neither — `]`, a device key, then Space on another row, in one task', async ({ page }) => {
+    await open(page)
+    await selectRinged(page)
+    const other = (await rows(page)).page[1]
+    const n = await tagRoots(page)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    // ONE TASK: the design change is handed to React as a transition; `2`'s device is an URGENT update, rendered in the
+    // microtasks after it, before the transition lands — a render drawn from state the transition has not delivered;
+    // then Space hides another section. The editor must make that second edit against the newest doc.
+    const between = await page.evaluate(async (row) => {
+      const press = (target, key) => target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+      const stage = document.querySelector('section[aria-label="Canvas"]')
+      const canvas = document.querySelector('iframe[title$="canvas"]').contentDocument.getElementById('canvas')
+      const ringed = canvas.querySelector(':scope > [data-inflozo-selected]')
+      press(stage, ']')
+      // CANVAS FIRST: the ringed section's drawing is replaced in the key's own task, before any render
+      const canvasFirst = ringed !== null && !ringed.isConnected && canvas.querySelector(':scope > [data-inflozo-selected]') !== null
+      press(stage, '2')
+      for (let k = 0; k < 3; k++) await Promise.resolve()
+      const seen = {
+        canvasFirst,
+        device: document.querySelector('#editor-device [role="radio"][aria-checked="true"]')?.getAttribute('data-device') ?? null,
+        counter: document.querySelector('#editor-design-count')?.textContent?.trim() ?? null,
+      }
+      press(document.querySelector(`[data-layer-row="${row}"]`), ' ')
+      return seen
+    }, other)
+    expect(between.canvasFirst, 'R-210: `]` redrew the canvas in its own task').toBe(true)
+    expect(between.device, 'the control: the urgent render landed in between').toBe('tablet')
+    expect(between.counter, 'the control: …before the design change had reached the panel (R-210)').toMatch(/^1 of \d+$/)
+    // BOTH edits are in the doc: the ringed section on its second design, and the other section hidden
+    await expect(counter(page), 'the design change was not lost').toHaveText(/^2 of \d+$/)
+    await expect.poll(async () => (await tagsOf(page)).length, 'the hide was not lost').toBe(n - 1)
+    await expect(page.locator(`[data-layer-row="${other}"] [popover] button`).first(), 'its row offers Show').toHaveText('Show')
+    // and one ⌘Z each takes them back in order: the hide, then the design
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect.poll(async () => (await tagsOf(page)).length).toBe(n)
+    // ⌘Z is the other door (`restore`): the canvas takes the design back in the key's own task, and the panel still reads
+    // the design it undoes once the key's own microtasks have run — an urgent update would have drawn it there
+    const undone = await page.evaluate(async () => {
+      const canvas = document.querySelector('iframe[title$="canvas"]').contentDocument.getElementById('canvas')
+      const ringed = canvas.querySelector(':scope > [data-inflozo-selected]')
+      document.querySelector('section[aria-label="Canvas"]').dispatchEvent(new KeyboardEvent('keydown', { key: 'z', ctrlKey: true, bubbles: true, cancelable: true }))
+      const canvasFirst = ringed !== null && !ringed.isConnected
+      for (let k = 0; k < 3; k++) await Promise.resolve()
+      return { canvasFirst, counter: document.querySelector('#editor-design-count')?.textContent?.trim() ?? null }
+    })
+    expect(undone.canvasFirst, 'R-210: ⌘Z redrew the canvas in its own task').toBe(true)
+    expect(undone.counter, 'R-210: …and the panel follows a frame later').toMatch(/^2 of \d+$/)
+    await expect(counter(page)).toHaveText(/^1 of \d+$/)
   })
 })

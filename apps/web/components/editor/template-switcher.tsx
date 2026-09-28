@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { useEffect, useRef, useState, useTransition } from 'react'
+import { memo, useEffect, useRef, useState, useTransition } from 'react'
 import {
   CanvasAuthor, CanvasError, CanvasHome, CanvasMemberHome, CanvasPage, CanvasPaywall, CanvasPost, CanvasPrivate, CanvasSignin,
   CanvasSignup, CanvasTag, ChevronDown, ChevronRight, ChevronUp, CircleOff,
@@ -92,7 +92,9 @@ const Mark = ({ state, word }: { state: 'designed' | 'auto' | 'empty'; word: str
   </span>
 )
 
-export function TemplateSwitcher({
+// Story 5.23b — `memo` (R-208): the editor hands it values that keep their identity while unchanged and handlers of fixed
+// identity, so it redraws when what it shows changes and not on every render of the editor.
+export const TemplateSwitcher = memo(function TemplateSwitcher({
   projectId,
   current,
   canvases,
@@ -267,4 +269,4 @@ export function TemplateSwitcher({
       </div>
     </>
   )
-}
+})

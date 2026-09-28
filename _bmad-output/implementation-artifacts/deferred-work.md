@@ -6591,7 +6591,13 @@ plain: The speed test counts how many screen refreshes were skipped in 3 seconds
   The requirement is written as "95 of 100 frames take no longer than one refresh". Usually those agree, but not always:
   one long stall skipping nine refreshes passes the count and fails the requirement as written. Story 5.23b, which has to
   make the test pass, should say which reading is the bar.
-status: open
+status: closed
+closed: 2026-09-28 — Story 5.23b's Dev: BOTH readings are the bar, with the longest task beside them. `fps-trace.mjs`
+  counts each frame in whole refreshes, `n = max(1, round(Δ/16.67))`, and a run PASSES only when the p95 frame is at most
+  ONE refresh (NFR-1's own words: at most 5% of frames took longer than one), at most 5% of refreshes are dropped (the bar
+  that weighs a long stall: one frame of nine refreshes is one frame in the p95's count and nine in this one) and no task
+  tops 50 ms. Each is printed per run, the raw p95 in milliseconds beside its count, and the header's METRIC paragraph
+  says why. After the story at 4× on this computer every run passed all three — 2.8% to 4.4% (8, 7 and 5 of 180), the p95 frame ONE refresh in every run, and no long task at all.
 severity: low
 origin: Story 5.23a's review (2026-09-28). `tools/perf/fps-trace.mjs` gates on `share <= DROPPED_MAX` and prints the
   raw p95 "for the record"; its header derives the one from the other because headless rAF reads 16.6–16.8 ms on a

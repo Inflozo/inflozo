@@ -2,9 +2,10 @@
 title: 'Story 5.23b — The editor''s panels redraw only what changed, at 60 fps'
 type: 'feature'
 created: '2026-09-28'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
+baseline_commit: 'bc51ecbde01fde458857592f4e3488bd03dc90d2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
@@ -152,17 +153,17 @@ time (DW-289).
 
 **Execution:**
 
-- [ ] `apps/web/lib/renders.ts` (new) -- `useStable(fn)`: a function of fixed identity calling the latest render's `fn`;
+- [x] `apps/web/lib/renders.ts` (new) -- `useStable(fn)`: a function of fixed identity calling the latest render's `fn`;
   `counted`: the `<Profiler>` `onRender` that adds 1 to `window.__inflozoRenders[id]` outside production -- the two tools
   every memoized part needs, once.
-- [ ] `apps/web/lib/reorder.ts` -- a one-value store for the drag in flight (`subscribe`/`get`/`set`), read with
+- [x] `apps/web/lib/reorder.ts` -- a one-value store for the drag in flight (`subscribe`/`get`/`set`), read with
   `useSyncExternalStore` -- a pointer move stops re-rendering the editor.
-- [ ] `apps/web/components/controls/layers.tsx` -- a module-level `memo` row with primitive props (the row's fields,
+- [x] `apps/web/components/controls/layers.tsx` -- a module-level `memo` row with primitive props (the row's fields,
   selected, hovered, tab stop, translate) and one stable handlers object; `Layers` itself `memo`; the drag read from the
   store; a row's `<Profiler id="layers-row">` -- a hover redraws two rows, not 41.
-- [ ] `apps/web/components/controls/{section-pill,sidebar}.tsx`, `apps/web/components/editor/design-picker.tsx` and the
+- [x] `apps/web/components/controls/{section-pill,sidebar}.tsx`, `apps/web/components/editor/design-picker.tsx` and the
   bar's components -- `memo` at the export; the pill's loop keyed on `shown`, its `boxOf` stable and reading refs.
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the derivations memoized (`stack`,
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` -- the derivations memoized (`stack`,
   `templates`, `empty`, `previewing`, `offered`, `canAdd`, one ring per design id, the remix count, the rows, the rail's
   rows, `feedless`, `assets`); `chosen`/`pointed` kept by value; the chrome portals drawn by a module-level `memo` component
   with explicit props, placed from the paint's current roots by a loop keyed on what chrome shows; `IconRail` `memo`; every
@@ -171,14 +172,14 @@ time (DW-289).
   outside a `memo` it would count its parent's renders; per R-210: `apply` and `restore` hand React their state as a
   transition (a drop's end in the same one), and `onChange` drops a change from a panel drawn for another design or
   instance.
-- [ ] `tools/keyboard/journey.spec.mjs` -- a Story 5.23b describe on the long Home: the matrix's render-count rows (counts
+- [x] `tools/keyboard/journey.spec.mjs` -- a Story 5.23b describe on the long Home: the matrix's render-count rows (counts
   reset before a gesture, read after its own end), the rail row at 1100 px, the stale-panel and the urgent-render stops;
   run once against the editor before this story with only the counters added, and record every count stop red -- the
   mechanism's gate.
-- [ ] `tools/perf/fps-trace.mjs` -- PASS only when the share, the p95 in whole refreshes and the longest task all hold;
+- [x] `tools/perf/fps-trace.mjs` -- PASS only when the share, the p95 in whole refreshes and the longest task all hold;
   each printed; the METRIC paragraph says why -- DW-289.
-- [ ] `tools/doc-audit.py` -- the two rows name 5.23b's additions -- the gate walks `tools/`.
-- [ ] `deferred-work.md`, `reconcile-designs-decisions.md`, `epic-5-context.md` -- DW-289 closed; R-208's and R-210's "⬜
+- [x] `tools/doc-audit.py` -- the two rows name 5.23b's additions -- the gate walks `tools/`.
+- [x] `deferred-work.md`, `reconcile-designs-decisions.md`, `epic-5-context.md` -- DW-289 closed; R-208's and R-210's "⬜
   built — Story 5.23b" ticked with what was built and measured -- standing rule 3.
 
 **Acceptance Criteria:**
@@ -201,6 +202,26 @@ time (DW-289).
   no migration exists.
 
 ## Spec Change Log
+
+**Dev (2026-09-28).** Each entry is outside the frozen block and was made where the build met a fact the plan did not
+have; none changes what is drawn, stored, journalled or synced.
+
+1. **`commit`'s two early answers are asked on their own (`heldBack`), and `apply` asks them BEFORE the transition.**
+   R-180's hold opens its dialog on the next frame, so its words must be in state by then, and a session reading along
+   (FR-D18) must hand React nothing. `commit` still asks them first, so no door can skip them.
+2. **A second key inside the frame the panels lag is made against the newest doc.** A Layers ⌥-arrow is re-based on where
+   the section IS (`on.move`: the displacement asked for, from its place in the newest doc), and Space reads the newest
+   doc's hidden flag. Without it, a second ⌥↓ before the rows landed journalled a move onto the place the section already
+   held, and a second Space hid a hidden section again — an edit that changes nothing.
+3. **The moved row takes its focus back in the move's own commit** (a layout effect, its state set in the same transition):
+   a `useEffect` refocus landed after the reorder had taken the focus away, and the next key reached the page.
+4. **Chrome whose root a paint removed is hidden for the frame until the chrome follows**, never placed against it — the
+   Always rule's "never against a root a paint removed", on the chrome's one loop.
+5. **A section operation's announcement stays an urgent update.** `setSaid` after `edit()` renders the editor's shell once
+   in the press's task; every memoized part skips that render (the `]` stop counts it), and the trace passes with it.
+6. **The urgent-render stop also proves "canvas first" at both doors** — the I/O matrix's section-operation row. In the
+   key's own task the ringed section's drawing is replaced by `]` (`apply`) and by ⌘Z (`restore`), and after ⌘Z's own
+   microtasks the panel still reads the design it undoes. Each check is red with its door changed (Verification).
 
 ## Design Notes
 
@@ -256,6 +277,78 @@ Nothing in the repository was edited.**
 - `git diff --stat` from the story's `baseline_commit` to HEAD `-- supabase` -- expected: empty (no Schema phase).
 - A scratch pointer probe on the harness's long Home (not committed, not a gate — the journey takes no pointer, as 5.23a's
   pointer-only doors): one pill-grip drag's render counts -- expected: the slot and the rows it slides, nothing else.
+
+**Recorded at Dev (2026-09-28; this computer, the i5-6600K; Node 24.18.1; Playwright 1.61.1 with Chromium 149):**
+
+- `npx tsc --noEmit -p .` in `apps/web`: no output. ESLint over `apps/web`: clean. The web package's unit tests: none
+  failed — `reorder.test.ts` gains `oneValue`'s check, and `dark-mode.test.ts` reads the sun's handler as `on.flip`, pinned
+  to be `flip` itself.
+- THE COUNT STOPS BEFORE THIS STORY — the editor at `bc51ecbd` with only the `<Profiler>`s added (a scratch edit, reverted
+  and `cmp`-identical to HEAD file by file): every count stop RED. A hover redrew 82 Layers rows (at most 2 allowed), a
+  selection 41, a control change 41 (none allowed), ⌥↓ 82, `]` 41 (at most 1), and at 1100 a hover 123 rail rows (none
+  allowed). The two R-210 stops are NOT taken as results from that run (standing rule 2): the stale-panel stop's first
+  version compared against a value the first design had never stored, so it failed there for that reason and was
+  corrected before the story's code ran against it; and the urgent-render stop's own control cannot hold without a
+  transition (`]` reached the panel in the microtasks of its own key). Their controls are the scratch runs below.
+- AFTER — `pnpm keyboard`: 116 passed, 0 failed, the 5.23b stops among them. Their controls, each a scratch edit on the
+  finished code, reverted and `cmp`-identical: the row's `memo` taken away → the hover stop red (41 rows); `onChange`'s
+  stale-panel guard taken away → the stale-panel stop red (the old panel's "Top" written over the carried "Side"); the
+  render writing `latest` from its own state again → the urgent-render stop red (the design change lost, "1 of 3").
+- R-210's waits: the journey checks that read a panel in the instant after a section operation — ⌘D, Del, the Picker's
+  placement at 1280 and at 720, R-152's replacement, ⌥↑ / ⌥↓, `[` wrapping, FR-D19's loop, R-167's dots, page 2's
+  following and 5.19's placements — now wait for it (`panelsSettle`, `expect.poll`) and check exactly what they checked.
+  The first full run after the change found them (15 failed, 101 passed); the second is the one above. And one real race
+  they exposed is fixed rather than waited for: a Layers ⌥-arrow is re-based on where the section IS in the newest doc
+  (`on.move`), and the moved row takes its focus back in the move's own commit (a layout effect).
+- `fps-trace.mjs` BEFORE (`bc51ecbd`): at 4× — run 1 FAIL 8.9% dropped (16 of 180), p95 16.8 ms, longest task 76 ms;
+  run 2 FAIL 7.8% (14 of 180), p95 33.3 ms, 71 ms; run 3 FAIL 7.8% (14 of 180), p95 16.8 ms, 78 ms. At 1× — PASS, 0.6%
+  (1 of 180), p95 16.8 ms, no long task.
+- `fps-trace.mjs` AFTER, every run's control seen (the 80 ms task read as 80 ms, 3 refreshes dropped): at 4× — run 1 PASS
+  4.4% dropped (8 of 180), p95 1 refresh (16.8 ms), no long task; run 2 PASS 3.9% (7 of 180), p95 1 refresh (16.8 ms), no
+  long task; run 3 PASS 2.8% (5 of 180), p95 1 refresh (16.8 ms), no long task. At 1× — PASS, 0.0% (0 of 180), p95 1
+  refresh (16.7 ms), no long task.
+- The scratch pointer probe (`next dev`, the long Home at 1440 × 900, one pill-grip drag with the real mouse, not
+  committed): the press redrew the dragged group's 40 rows once (each takes the drag's sliding state, as it always did);
+  the twenty moves redrew ONE row and nothing else; the drop 42 rows and the chrome once — 83 row renders for the whole
+  drag, where planning measured 943. A MutationObserver on Layers saw the slot stay until the moved rows arrived and leave
+  in the reorder's own commit (R-210).
+- `git diff --stat bc51ecbd -- supabase`: empty — no Schema phase.
+- `python3 tools/doc-audit.py --check`, twice: the first run exited 1, the second 0 — PASS.
+- `pnpm check`: exit 0.
+
+**Re-run at the hand-back (2026-09-28; the same computer and toolchain), on the final tree with Spec Change Log 6's checks:**
+
+- `tsc --noEmit -p .`: exit 0, no output. Its control, a type error planted in `lib/renders.ts`: `TS2322`, exit 1; removed.
+- `pnpm check`: exit 0 — lint, typecheck, every package's tests with 0 failed (the web package 597 of 597).
+- `pnpm keyboard`: `116 passed (4.3m)`, 0 failed — the eight 5.23b stops among them; `next-env.d.ts` restored by the runner.
+- **Every stop's control, re-run on the final code** — one scratch edit each, one test run each (`pnpm keyboard -g`), every
+  file restored and `cmp`-identical afterwards. All six went red where they should:
+  - (a) `apply`'s paint moved off the key's task (`setTimeout(paint)`): *"R-210: `]` redrew the canvas in its own task"*,
+    received `false`.
+  - (b) `restore` without its transition: *"R-210: …and the panel follows a frame later"*, received `"1 of 3"`.
+  - (c) `restored`'s paint moved off the key's task: *"R-210: ⌘Z redrew the canvas in its own task"*, received `false`.
+  - (d) the row's `memo` taken away: *"at most the two rows whose wash changed"*, received 41.
+  - (e) `onChange`'s stale-panel guard taken away: *"nothing was written from the old panel"*, expected "Side", received
+    "Top".
+  - (f) the render writing `latest` from its own state again: *"the design change was not lost"*, received `"1 of 3"`.
+- **Nothing is drawn differently, read off the page.** A scratch probe (not committed) walked the same states on the
+  harness under `next dev` — at rest, a row selected, a section pointed at, the ringed section selected, `]`, ⌥↓ and ⌘Z at
+  1440 on the default and the long Home; at rest, a rail selection with Controls open, Controls closed and a hover at 1100
+  on the long Home — and kept each state's editor body, canvas document, the chrome's shadow roots (placed positions
+  included), the focused element and the open popovers. Folded only for what differs between two loads of one build (the
+  CSP nonce, React's ids, instance ids): the final tree against itself, 18 of 18 states the same; the baseline's app files
+  (`bc51ecbd`, swapped in and restored `cmp`-identical) against the final tree, **18 of 18 the same**. The snapshots hold
+  the hover box, the selected box, the tag, a PAUSED chip and the pill where the gesture draws them, so the equality is not
+  vacuous.
+- **The drag probe, re-run:** identical to the record above — the press 40 rows, the twenty moves 1 row, the drop 42 rows
+  and the chrome once; the slot stayed until the rows landed and left in the reorder's own commit.
+- **The trace, re-run:** `--rate 4 --runs 3`, exit 0 — run 1 PASS 3.9% dropped (7 of 181), run 2 PASS 4.4% (8 of 181),
+  run 3 PASS 3.3% (6 of 180); the p95 frame 1 refresh (16.8 ms) and no long task in every run; every control seen (the
+  80 ms task read as 80 ms, 3 refreshes dropped). `--rate 1 --runs 1`, exit 0 — PASS, 0.0% (0 of 180), p95 1 refresh
+  (16.7 ms), no long task. **The p95 bar's own control:** a copy with `P95_MAX` at 0 printed `run 1: FAIL` with 0.0%
+  dropped and no long task — the bar gates alone; the copy was deleted.
+- `paint()` is byte-identical to `bc51ecbd`'s, and no file under `packages/`, no `package.json`, the lockfile or
+  `supabase/` changed.
 
 **Real infrastructure (R-82), after CI publishes:**
 

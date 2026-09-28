@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// NFR-1'S 3-SECOND TRACE, RUN BY HAND (Story 5.23a — R-206, R-208). NEVER CI's: NFR-1 is a manual gate on the reference
-// computer at 4× CPU throttle, and CI gates the MECHANISM instead (the keyboard journey's 5.23a stops).
+// NFR-1'S 3-SECOND TRACE, RUN BY HAND (Story 5.23a — R-206, R-208; its three bars Story 5.23b's — DW-289). NEVER CI's: NFR-1
+// is a manual gate on the reference computer at 4× CPU throttle, and CI gates the MECHANISM instead (the keyboard journey's
+// 5.23a stops, and 5.23b's render counts).
 //
 //   node tools/perf/fps-trace.mjs                      4× throttle, 3 runs
 //   node tools/perf/fps-trace.mjs --rate 1 --runs 1    unthrottled, once
@@ -18,10 +19,17 @@
 //   is still on screen where the warm-up put it. A gesture that could not be performed fails the run: a trace missing one
 //   is not a result. Gestures that outrun the 3 s are traced to their end, and the window says so.
 //
-// THE METRIC. rAF intervals in the editor's document: one lasting n vsyncs (n = max(1, round(Δ / 16.67))) dropped n − 1,
-// so NFR-1's "p95 frame time ≤ 16.7 ms" is "at most 5% of the trace's vsyncs dropped" — headless rAF reads 16.6–16.8 ms on
-// a smooth frame, so a frame is COUNTED, never compared to 16.7. "No long task over 50 ms" is the longest `longtask`. The
-// p95 is printed for the record. Exit 0 when every run passes NFR-1, 1 otherwise (a refusal included).
+// THE METRIC — THREE BARS, AND A RUN PASSES ONLY WHEN ALL THREE HOLD (DW-289, Story 5.23b). A rAF interval in the editor's
+// document is a frame, and a frame's time is COUNTED IN WHOLE REFRESHES, n = max(1, round(Δ / 16.67)), never compared to
+// 16.7 ms: headless rAF reads 16.6–16.8 ms on a smooth frame, and timestamp jitter must never fail a smooth run.
+//   1. THE P95 FRAME, NFR-1's own words: the 95th-percentile frame lasts at most ONE refresh — "at most 5% of frames took
+//      longer than one".
+//   2. THE SHARE OF REFRESHES DROPPED: a frame of n refreshes drops n − 1, and at most 5% of the window's refreshes may be
+//      dropped. This is the bar that weighs a LONG stall: one frame that swallows nine refreshes is one frame in the p95's
+//      count and nine in this one, so a trace that passed on the p95 alone could hide it.
+//   3. NO LONG TASK OVER 50 ms: the longest `longtask` in the window.
+// Each is printed per run, the raw p95 in milliseconds beside its count for the record. Exit 0 when every run passes all
+// three, 1 otherwise (a refusal included).
 //
 // It restores apps/web/next-env.d.ts, which `next build` rewrites, and stops its own server. NEVER beside `pnpm keyboard`:
 // both build into apps/web/.next-harness.
@@ -40,7 +48,9 @@ const NEXT_ENV = join(WEB, 'next-env.d.ts')
 
 /** FR-D14's long page and NFR-1's (`prd.md` §5 FR-D14, §6 NFR-1): the section count the trace runs on. */
 const LONG_HOME = 40
-/** NFR-1's two bars: p95 frame ≤ 16.7 ms, counted as the share of vsyncs dropped, and no long task over 50 ms. */
+/** NFR-1's bars (the METRIC above): the p95 frame at most one refresh, at most 5% of refreshes dropped, and no long task
+ *  over 50 ms. */
+const P95_MAX = 1
 const DROPPED_MAX = 0.05
 const TASK_MAX = 50
 const VSYNC = 1000 / 60
@@ -98,12 +108,16 @@ async function measure(page, from, to) {
   const last = frames.findIndex((t) => t > to)
   const shown = first === -1 ? [] : frames.slice(first, last === -1 ? undefined : last + 1)
   const deltas = shown.slice(1).map((t, i) => t - shown[i])
-  const vsyncs = deltas.reduce((sum, d) => sum + Math.max(1, Math.round(d / VSYNC)), 0)
-  const dropped = deltas.reduce((sum, d) => sum + Math.max(1, Math.round(d / VSYNC)) - 1, 0)
-  const sorted = [...deltas].sort((a, b) => a - b)
-  const p95 = sorted.length === 0 ? 0 : sorted[Math.ceil(sorted.length * 0.95) - 1]
+  // each frame in whole refreshes — jitter-proof (the METRIC)
+  const refreshes = deltas.map((d) => Math.max(1, Math.round(d / VSYNC)))
+  const vsyncs = refreshes.reduce((sum, n) => sum + n, 0)
+  const dropped = vsyncs - refreshes.length
+  const p95th = (values) => {
+    const sorted = [...values].sort((a, b) => a - b)
+    return sorted.length === 0 ? 0 : sorted[Math.ceil(sorted.length * 0.95) - 1]
+  }
   const longest = Math.max(0, ...tasks.filter((t) => t.at + t.ms > from && t.at < to).map((t) => t.ms))
-  return { vsyncs, dropped, share: vsyncs === 0 ? 0 : dropped / vsyncs, p95, longest }
+  return { vsyncs, dropped, share: vsyncs === 0 ? 0 : dropped / vsyncs, p95: p95th(refreshes), p95ms: p95th(deltas), longest }
 }
 
 /** The selected section's root and the one after it, on screen: the frame's rect and the fit applied. */
@@ -332,12 +346,14 @@ try {
       failed = true
       continue
     }
-    const pass = r.share <= DROPPED_MAX && r.longest <= TASK_MAX
+    // all three bars, or a FAIL — and each is printed whichever held
+    const pass = r.share <= DROPPED_MAX && r.p95 <= P95_MAX && r.longest <= TASK_MAX
     if (!pass) failed = true
     console.log(
       `run ${r.n}: ${pass ? 'PASS' : 'FAIL'} — ${r.done.length} gestures (${r.done.join(', ')}) in ${Math.round(r.window)} ms` +
         `${r.window > CLOCK_MS + 50 ? ' (the gestures outran the 3 s)' : ''} · ${r.vsyncs} vsyncs, ${r.dropped} dropped (${pct(r.share)}; NFR-1 allows ${pct(DROPPED_MAX)})` +
-        ` · p95 frame ${r.p95.toFixed(1)} ms · longest task ${Math.round(r.longest)} ms (NFR-1 allows ${TASK_MAX})` +
+        ` · p95 frame ${r.p95} refresh${r.p95 === 1 ? '' : 'es'} (${r.p95ms.toFixed(1)} ms; NFR-1 allows ${P95_MAX})` +
+        ` · longest task ${Math.round(r.longest)} ms (NFR-1 allows ${TASK_MAX})` +
         ` · control: ${CONTROL_MS} ms task seen as ${Math.round(r.control.longest)} ms, ${r.control.dropped} vsyncs dropped`,
     )
   }

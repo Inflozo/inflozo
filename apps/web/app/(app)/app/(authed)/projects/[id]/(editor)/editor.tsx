@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes } from 'react'
+import { memo, Profiler, startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, useTransition, type CSSProperties, type HTMLAttributes, type PointerEvent, type RefObject } from 'react'
 import { createPortal } from 'react-dom'
 import { categoryOf, DEFAULT_LIMIT, isPaywallDesign, orbitWeekly, PAGINATED_TARGETS, paywallRing, postAccess, ringFor, type IconLookup, type SectionRegistryEntry } from '@inflozo/library'
 import {
@@ -11,7 +11,7 @@ import {
   renameSection, serializeMarks, setContent, setHidden, setMemberVisibility, stampControls, storedFor, switchDesign,
   withData,
 } from '@inflozo/section-runtime'
-import type { ControlState, DocInstance, FeedRole, MarkNode, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
+import type { ControlState, DocInstance, FeedRole, MarkNode, MemberState, Mode, ProjectDoc, PropValue, RuntimeElement, SynthesisLibrary } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { HowReadersReachIt, Layers, type LayerRow, type SectionDrag } from '@/components/controls/layers'
 import { DesignPicker } from '@/components/editor/design-picker'
@@ -74,7 +74,8 @@ import {
   ownKeyOf, PAGE_TWO_WORDS, pageFileOf, pageInForce, SITE_WIDE_ASK, stackOf, type Page, type Placed,
 } from '@/lib/page-two'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
-import { captureLayout, landingAt, type Layout } from '@/lib/reorder'
+import { captureLayout, landingAt, oneValue, type Layout } from '@/lib/reorder'
+import { counted, useStable } from '@/lib/renders'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
 import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, siteSubjects, subjectOptions } from '@/lib/preview-subject'
 import {
@@ -119,7 +120,24 @@ import type { EditorData } from './read'
    new node under a resting pointer again; a kept node gets no such word from the browser, so a hover whose section was
    kept stays (R-209, the owner's reading of the story's "the hover clears"). The Paywall surface keeps its own page write and no records. The keyboard gate
    proves it on the harness's long Home, node for node against a full repaint; the frame times are NFR-1's manual trace
-   (`tools/perf/fps-trace.mjs`), and the panels beside the canvas still redraw in full — Story 5.23b's (R-208).
+   (`tools/perf/fps-trace.mjs`).
+
+   THE PANELS REDRAW ONLY WHAT CHANGED, AND THE CANVAS COMES FIRST (Story 5.23b — R-208, R-210). Every part beside the canvas
+   is a `memo` part handed values that keep their identity while unchanged: the Layers rows and the rail's, the Controls
+   panel (its Design block and its settings), the bar's controls, the chrome and the pill. The derivations they are drawn
+   from are memoized on what they read, the selected and the pointed sections are kept BY VALUE (a stack rebuilt around them
+   hands the panel the same object), and every handler a part is given is of fixed identity (`lib/renders.ts`'s
+   `useStable`), calling the latest committed render. The drag in flight is a store of one value that Layers alone reads
+   (`lib/reorder.ts`), so a pointer move redraws the slot and the rows it slides and not the editor. React's own
+   `<Profiler>` inside each part counts its renders, and the keyboard gate reads the counts on the long Home.
+   R-210 (owner, 2026-09-28): A SECTION OPERATION — a design change, a move, hide or show, duplicate, delete, a placement,
+   Remix, undo and redo — paints the canvas and moves `latest` in the press's own task, and hands React its state as a
+   TRANSITION (`apply`, `restore`), so the panels follow a frame later and the press's task stays short; a drop's slot
+   stays until its row lands. A control change stays in its own frame (FR-F4). Because a render can now be drawn from state
+   a transition has not delivered, `latest` is written by the HANDLERS for what they change and by a commit only for what
+   it derives, never from a render's own state; the chrome and the pill are placed from the paint's CURRENT roots, never
+   against one a paint removed; and a press on a Controls panel still drawn for a replaced design or section is dropped,
+   never written (`onChange`).
 
    HOVER AND SELECTION (Story 5.2 — S4b and S4c). The editor listens on the canvas document from this one, and marks
    the section root under the pointer `data-inflozo-hover` and the chosen one `data-inflozo-selected` — state marks, which
@@ -324,6 +342,31 @@ function Rail({ fold, label, controls, side, hidden }: { fold: ReturnType<typeof
   )
 }
 
+/** One of the rail's section buttons (Story 5.22), a `memo` part since Story 5.23b: its fields are primitives, so a
+ *  selection redraws the two whose `aria-current` changed and a hover none. Counted for the keyboard gate. */
+type RailItem = { key: string; name: string; hidden: boolean; selected: boolean; doc: string; instanceId: string }
+
+const RAIL_CELL = `inline-flex size-8 shrink-0 items-center justify-center rounded-sm transition-colors ${ring}`
+
+const RailRow = memo(function RailRow({ id, name, hidden, selected, doc, instanceId, onRow }: Omit<RailItem, 'key'> & { id: string; onRow: (pick: Pick) => void }) {
+  const label = hidden ? `${name}, hidden` : name
+  return (
+    <Profiler id="rail-row" onRender={counted}>
+      <button
+        type="button"
+        data-rail-row={id}
+        aria-label={label}
+        title={label}
+        aria-current={selected ? 'true' : undefined}
+        onClick={() => onRow({ doc, instanceId })}
+        className={`${RAIL_CELL} ${selected ? 'bg-coral-tint' : 'hover:bg-paper-sunk'} ${hidden ? 'opacity-40' : ''}`}
+      >
+        <LayerThumb size="h-[19px] w-[26px] coarse:h-6 coarse:w-[34px]" />
+      </button>
+    </Profiler>
+  )
+})
+
 /** STORY 5.22 — D8's ICON RAIL (`D8 Editor Below 1440.dc.html:63-73`, `:193-203`), the Layers panel's left edge: folded
  *  at full width, and always below 1280. One rail, not two — at full width the fold used to be the one Show button.
  *
@@ -333,26 +376,32 @@ function Rail({ fold, label, controls, side, hidden }: { fold: ReturnType<typeof
  *  selected one carries `aria-current` and the coral tint, a hidden one is dimmed and says so. The pointer changes only
  *  target sizes (`D8:33`): 32px rows and 26 × 19 thumbs in a 44px rail on a mouse, 44px rows (the editor's touch rule) and
  *  34 × 24 thumbs in a 56px rail on touch. The Show button sits in a head of its own, 44 wide, so the rail's rule is
- *  drawn over its right edge (`after:`) rather than taking a pixel of it. Hidden in Preview, never unmounted. */
-function IconRail({
-  fold,
+ *  drawn over its right edge (`after:`) rather than taking a pixel of it. Hidden in Preview, never unmounted. `memo` since
+ *  Story 5.23b: a hover leaves it alone. */
+const IconRail = memo(function IconRail({
+  show,
   hidden,
   expanded,
   rows,
   onShow,
   onRow,
-  add,
+  canAdd,
+  addReadOnly,
+  onAdd,
 }: {
-  fold: ReturnType<typeof useFold>
+  /** the fold's Show button — the rail's head, which the fold's focus handoff lands on */
+  show: RefObject<HTMLButtonElement | null>
   hidden: boolean
   /** is the Layers panel open over the canvas right now (the compact overlay) */
   expanded: boolean
-  rows: readonly { key: string; name: string; hidden: boolean; selected: boolean; pick: Pick }[]
+  rows: readonly RailItem[]
   onShow: () => void
   onRow: (pick: Pick) => void
-  add: { readOnly: boolean; onAdd: () => void } | null
+  /** "+" is drawn where anything can be placed on this canvas */
+  canAdd: boolean
+  addReadOnly: boolean
+  onAdd: () => void
 }) {
-  const cell = `inline-flex size-8 shrink-0 items-center justify-center rounded-sm transition-colors ${ring}`
   return (
     <div
       hidden={hidden}
@@ -361,55 +410,41 @@ function IconRail({
     >
       <div className="flex w-full shrink-0 justify-center">
         <button
-          ref={fold.show}
+          ref={show}
           type="button"
           aria-label="Show layers"
           title="Show layers"
           aria-expanded={expanded}
           aria-controls="editor-layers"
           onClick={onShow}
-          className={`${cell} text-ink-soft hover:bg-paper-sunk`}
+          className={`${RAIL_CELL} text-ink-soft hover:bg-paper-sunk`}
         >
           <Panel size={15} />
         </button>
       </div>
       <span aria-hidden className="my-[3px] h-px w-6 shrink-0 bg-line coarse:my-1 coarse:w-8" />
       <div className={`flex min-h-0 w-full flex-1 flex-col items-center gap-[2px] overflow-y-auto py-[2px] ${slimScrollbar}`}>
-        {rows.map((row) => {
-          const name = row.hidden ? `${row.name}, hidden` : row.name
-          return (
-            <button
-              key={row.key}
-              type="button"
-              data-rail-row={row.key}
-              aria-label={name}
-              title={name}
-              aria-current={row.selected ? 'true' : undefined}
-              onClick={() => onRow(row.pick)}
-              className={`${cell} ${row.selected ? 'bg-coral-tint' : 'hover:bg-paper-sunk'} ${row.hidden ? 'opacity-40' : ''}`}
-            >
-              <LayerThumb size="h-[19px] w-[26px] coarse:h-6 coarse:w-[34px]" />
-            </button>
-          )
-        })}
+        {rows.map((row) => (
+          <RailRow key={row.key} id={row.key} name={row.name} hidden={row.hidden} selected={row.selected} doc={row.doc} instanceId={row.instanceId} onRow={onRow} />
+        ))}
       </div>
-      {add === null ? null : (
-        <ReadOnly on={add.readOnly}>
+      {canAdd ? (
+        <ReadOnly on={addReadOnly}>
           <button
             type="button"
             data-rail-add
             aria-label="Add section"
             title="Add section"
-            onClick={add.onAdd}
-            className={`${cell} mt-[2px] border border-dashed border-line-strong text-[15px] text-ink-soft hover:border-coral hover:text-coral-deep disabled:opacity-35 disabled:hover:border-line-strong disabled:hover:text-ink-soft`}
+            onClick={onAdd}
+            className={`${RAIL_CELL} mt-[2px] border border-dashed border-line-strong text-[15px] text-ink-soft hover:border-coral hover:text-coral-deep disabled:opacity-35 disabled:hover:border-line-strong disabled:hover:text-ink-soft`}
           >
             +
           </button>
         </ReadOnly>
-      )}
+      ) : null}
     </div>
   )
-}
+})
 
 /** Story 5.15 — where a behaviour's error goes: LOGGED, NEVER SAID, and its section stays at rest. `lib/behaviours.ts`
  *  names the module in the error, because `core` hands on whatever the module threw. */
@@ -423,6 +458,9 @@ const reportBehaviour = (error: unknown) => console.error('A behaviour on the ca
 type Pick = { doc: string; instanceId: string }
 
 const same = (a: Pick | null | undefined, b: Pick | null | undefined) => !!a && !!b && a.doc === b.doc && a.instanceId === b.instanceId
+
+/** a canvas no visitor has been looked at as yet — one array, so a record with nothing in it keeps its identity */
+const NOT_VIEWED_YET: readonly Visitor[] = []
 
 /** Story 5.16 — what `apply` answers when R-180 HELD the change for its ask: neither landed nor refused, so the caller
  *  announces nothing and shows no refusal. The confirm lands it and repaints. */
@@ -471,6 +509,195 @@ type EditorProps = EditorData & {
    *  own pages (`/app/harness/editor/<key>`), so its walk can switch canvas with no database (R-146). The app passes none. */
   canvasBase?: string
 }
+
+/** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
+type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
+
+/* ─── THE CANVAS CHROME (Stories 5.2 to 5.21 drew it; Story 5.23b made it a part of its own, R-208, R-210) ──────────────
+ *
+ * The boxes, the name tag, R-119's Pro badge, D5c's MAIN FEED chip, P0-1's pill and B3a's PAUSED chips — the editor's own
+ * elements PORTALLED into the chrome hosts on the canvas document's `<body>` (`lib/canvas-layer.ts`), so the compositor
+ * scrolls them with their section in the same frame. A MODULE-LEVEL `memo` part with explicit props: it redraws when what
+ * it shows changes — a hover, a selection, a root a paint replaced — and never for the editor's other renders.
+ *
+ * PLACED FROM THE PAINT'S CURRENT ROOTS, ON ONE LOOP. Position follows LAYOUT, not render — a section that grows, a header
+ * that shrinks, a fold that re-fits the canvas — so a frame loop places every element; it starts when chrome shows and no
+ * render restarts it. Each frame it asks `roots()` for the hovered and the selected section's root AS THE CANVAS DRAWS THEM
+ * NOW — never the roots this render was drawn with, which since R-210 may be a frame behind a paint — and an element whose
+ * root is gone is hidden rather than placed against a root a paint removed. Every render of this part is placed at once too,
+ * before the browser paints it. */
+type ChromeProps = {
+  /** the canvas document's two chrome hosts, or null — nothing is drawn (Preview drops them) */
+  layers: ChromeLayers | null
+  fit: number
+  /** the pointed section's or shim's root as this render found it — which host its chrome is drawn in */
+  hovered: HTMLElement | null
+  /** the hover box: a hovered selection's 1.5px selected box is its only outline (S4c) */
+  outline: boolean
+  /** the name tag's words, or null where nothing is pointed */
+  tag: string | null
+  /** the chosen section's or shim's root as this render found it */
+  selected: HTMLElement | null
+  /** a section or a shim is chosen: the selected box */
+  chosen: boolean
+  /** R-119: a Pro design on a Free plan, selected */
+  pro: boolean
+  /** P0-1's pill, while a SECTION is chosen */
+  note: Note | null
+  /** D5c's chip, on the main feed while it is pointed at or chosen — which of the two, and whether the tag is beside it */
+  chip: 'hovered' | 'selected' | null
+  chipBesideTag: boolean
+  /** B3a's PAUSED chips: the held-still mounts that move by themselves, in the pointed and the chosen roots (R-175) */
+  paused: readonly { el: HTMLElement; root: HTMLElement }[]
+  /** R-119's badge, which the pill also reads (R-125: the pill sits to its left) */
+  badge: RefObject<HTMLDivElement | null>
+  /** which host each root's chrome was drawn in, for the canvas's scroll listener (Story 5.21's stuck test) */
+  pins: RefObject<WeakMap<HTMLElement, boolean>>
+  /** a sticky root stuck or came unstuck: which host its chrome goes in is asked again */
+  pinTick: number
+  /** the paint's CURRENT hovered and selected roots, read every frame */
+  roots: () => { hovered: HTMLElement | null; selected: HTMLElement | null }
+}
+
+const CanvasChrome = memo(function CanvasChrome({ layers, fit, hovered, outline, tag, selected, chosen, pro, note, chip, chipBesideTag, paused, badge, pins, roots }: ChromeProps) {
+  const hoverBox = useRef<HTMLDivElement>(null)
+  const selectedBox = useRef<HTMLDivElement>(null)
+  const tagEl = useRef<HTMLDivElement>(null)
+  const chipEl = useRef<HTMLSpanElement>(null)
+  const noteBox = useRef<HTMLDivElement>(null)
+  /** each PAUSED chip's element, by the mount it marks */
+  const chipEls = useRef(new Map<Element, HTMLElement>())
+  /** Story 5.21 — a sticky root is pinned only while it is STUCK (`pinned`), and the host its chrome is drawn in is recorded
+   *  for the canvas's scroll listener, which re-renders when the root's answer changes. Asked ONCE per root per render. */
+  const layerFor = (root: HTMLElement | null) => {
+    if (!root || !layers) return null
+    const stuck = pinned(root)
+    pins.current.set(root, stuck)
+    return stuck ? layers.view : layers.page
+  }
+  const hoverLayer = layerFor(hovered)
+  const selectedLayer = selected === hovered ? hoverLayer : layerFor(selected)
+  const chipRoot = chip === 'hovered' ? hovered : chip === 'selected' ? selected : null
+  const chipLayer = chip === 'hovered' ? hoverLayer : chip === 'selected' ? selectedLayer : null
+
+  const placeAll = useStable(() => {
+    if (!layers) return
+    const now = roots()
+    const put = (el: HTMLElement | null, root: HTMLElement | null, how: Parameters<typeof place>[3], offset?: { x: number; y: number }) => {
+      if (!el) return
+      if (!root?.isConnected) {
+        if (el.style.visibility !== 'hidden') el.style.visibility = 'hidden'
+        return
+      }
+      place(el, root, fit, how, offset)
+    }
+    put(hoverBox.current, now.hovered, 'fill')
+    put(selectedBox.current, now.selected, 'fill')
+    put(tagEl.current, now.hovered, 'top-left')
+    put(badge.current, now.selected, 'top-right')
+    put(noteBox.current, note?.el ?? null, 'above')
+    // Story 5.15: each PAUSED chip, 8px inside its mount's bottom-left corner
+    for (const { el } of paused) put(chipEls.current.get(el) ?? null, el, 'bottom-left')
+    // Story 5.19 — D5c's chip, in the tag's corner: against the tag's right edge while the tag shows, centred on its
+    // line, so it never covers the name (R-125); the offsets are only how that rule is delivered (R-138's precedent)
+    const c = chipEl.current
+    if (c) {
+      const t = chipBesideTag ? tagEl.current : null
+      put(c, chip === 'hovered' ? now.hovered : chip === 'selected' ? now.selected : null, 'top-left', t ? { x: t.offsetWidth + 4, y: (t.offsetHeight - c.offsetHeight) / 2 } : { x: 6, y: 6 })
+    }
+  })
+  // every render of this part — only when what it shows changes — is placed before the browser paints it…
+  useLayoutEffect(() => placeAll())
+  // …and every frame while chrome shows, by one loop that no render restarts
+  useLayoutEffect(() => {
+    if (!layers) return
+    let id = requestAnimationFrame(function loop() {
+      placeAll()
+      id = requestAnimationFrame(loop)
+    })
+    return () => cancelAnimationFrame(id)
+  }, [layers, placeAll])
+
+  return (
+    <Profiler id="chrome" onRender={counted}>
+      {/* The outlines (R-120): boxes over the root, whose line is an inset box-shadow spread, which paints its exact
+          width where a border or an outline is floored to whole pixels: S4b's 1px (:181) and S4c's 1.5px (:293),
+          `globals.css`. Inside the canvas document since the owner's finding, so they scroll with their section. */}
+      {outline && hoverLayer
+        ? createPortal(<div ref={hoverBox} aria-hidden data-chrome="hover" className="pointer-events-none absolute canvas-outline-hover" style={{ visibility: 'hidden' }} />, hoverLayer)
+        : null}
+      {chosen && selectedLayer
+        ? createPortal(<div ref={selectedBox} aria-hidden data-chrome="selected" className="pointer-events-none absolute canvas-outline-selected" style={{ visibility: 'hidden' }} />, selectedLayer)
+        : null}
+      {/* S4b's name tag (S4 Editor.dc.html:181), drawn at its own 11px in the app's Inter. Never pressed: the pointer
+          passes through to the section. */}
+      {tag !== null && hoverLayer
+        ? createPortal(
+            <div
+              ref={tagEl}
+              aria-hidden
+              data-chrome="tag"
+              className="pointer-events-none absolute whitespace-nowrap rounded-[0_0_6px_0] bg-coral-text px-[9px] py-[3px] text-helper-caption font-semibold text-surface"
+              style={{ visibility: 'hidden' }}
+            >
+              {tag}
+            </div>,
+            hoverLayer,
+          )
+        : null}
+      {/* STORY 5.19 — D5c's MAIN FEED chip (`D5 Canvas Markers and Template Switcher.dc.html:312`), on the main feed's
+          outline while it is hovered or selected and never at rest (AD-37). Chrome in the canvas layer, as the tag is,
+          the pointer passing through. */}
+      {chipRoot && chipLayer
+        ? createPortal(
+            <span ref={chipEl} aria-hidden data-chrome="main-feed" className="pointer-events-none absolute flex" style={{ visibility: 'hidden' }}>
+              <MainFeedChip on="canvas" />
+            </span>,
+            chipLayer,
+          )
+        : null}
+      {/* R-119, B10 (B Missing Surfaces.dc.html:1424-1451): a price tag, not a lock — the Kit's span, never a button */}
+      {pro && selectedLayer
+        ? createPortal(
+            <div ref={badge} data-chrome="pro" className="pointer-events-none absolute flex w-max" style={{ visibility: 'hidden' }}>
+              <ProBadge />
+            </div>,
+            selectedLayer,
+          )
+        : null}
+      {/* P0-1's pill (R-122, and the limit's sentence): chrome in the canvas's own layer, so it scrolls with its words */}
+      {note && selectedLayer ? createPortal(<CanvasNote ref={noteBox} kind={note.kind} words={note.words} />, selectedLayer) : null}
+      {/* STORY 5.15 — B3a's PAUSED chip (`B Missing Surfaces.dc.html:658-661`), R-175's two conditions. Chrome in the canvas
+          layer and not R-120's `::after`: inside the frame its 9.5px words would paint at 5.7px at the 1440 window's 0.6
+          fit, take over a design's own `::after` and need a positioned mount. So it is the name tag's kind — one screen
+          pixel per unit, Inter, the pointer passing through — in `ViewportChip`'s two rounded colours (B3a's fill and
+          hairline, drawn as `paper` and `line-strong` as that chip names them), with the frame's 9px pause glyph,
+          "PAUSED" at 9.5/600 tracked .02em, `2px 8px` and a 5px gap. */}
+      {paused.map(({ el, root }, n) => {
+        const at = root === hovered ? hoverLayer : root === selected ? selectedLayer : layerFor(root)
+        return at
+          ? createPortal(
+              <span
+                ref={(node) => {
+                  if (node) chipEls.current.set(el, node)
+                  else chipEls.current.delete(el)
+                }}
+                aria-hidden
+                data-chrome="paused"
+                className="pointer-events-none absolute flex items-center gap-[5px] whitespace-nowrap rounded-pill border border-line-strong bg-paper px-2 py-[2px] text-[9.5px] font-semibold tracking-[.02em] text-ink-soft-aa"
+                style={{ visibility: 'hidden' }}
+              >
+                <Pause size={9} className="shrink-0" />
+                {PAUSED}
+              </span>,
+              at,
+              `paused-${n}`,
+            )
+          : null
+      })}
+    </Profiler>
+  )
+})
 
 /* ─── STORY 5.22 — THE GATE (R-201, D4f) ─────────────────────────────────────────────────────────────────────────────
  *
@@ -547,7 +774,7 @@ function EditorShell({
   const [auto, setAuto] = useState<ReadonlySet<CanvasKey>>(() => new Set(synthesized))
   /** Story 5.16 — the library as page 2 asks it: R-127's fallback in `pageTwoStack` synthesizes, and that reads the
    *  designs this editor holds. `entries` never changes in a session, so every render's copy reads the same map. */
-  const library: SynthesisLibrary = (designId) => entries[designId]
+  const library = useCallback<SynthesisLibrary>((designId) => entries[designId], [entries])
   /* ─── Story 5.19 — THE MAIN FEED AND THE DATA GROUP (FR-H2, P0·5, D5c) ──────────────────────────────────────────
    *
    * ONE RULE KEEPS EXACTLY ONE MAIN FEED ON EVERY PAGINATED PAGE, and it is the runtime's (`designate`, AD-27(d)). Every
@@ -585,12 +812,17 @@ function EditorShell({
   const page: Page = shownPage.key === key ? shownPage.page : 1
   /** the doc this canvas EDITS on the page in force — page 2's own key on page 2; the preview SUBJECT stays the canvas's */
   const own = ownKeyOf(key, page)
-  const stack = stackOf(docs, key, page, library)
+  // Story 5.23b: every derivation a part is drawn from is memoized on what it reads, so a render that changed none of it
+  // hands the part the same value and the part skips its render (R-208)
+  const stack = useMemo(() => stackOf(docs, key, page, library), [docs, key, page, library])
   /** How many templates a site-wide section really reaches — the Site-wide heading's number and the confirm's. */
-  const templates = templatesOpen(canvases, docs, auto)
+  const templates = useMemo(() => templatesOpen(canvases, docs, auto), [canvases, docs, auto])
   /** D5b's third dot state: a canvas with no default stack — R-129's three and Private — that nothing has designed
    *  yet. Derived from `defaults`, which holds exactly the synthesizable canvases, so it needs no second list. */
-  const empty = new Set(canvases.filter((k) => stacks[templateKeyOf(k)] === undefined && !isDesigned(docs[templateKeyOf(k)] ?? EMPTY_DOC)))
+  const empty = useMemo(
+    () => new Set(canvases.filter((k) => stacks[templateKeyOf(k)] === undefined && !isDesigned(docs[templateKeyOf(k)] ?? EMPTY_DOC))),
+    [canvases, stacks, docs],
+  )
   const [selected, setSelected] = useState<Pick | null>(null)
   const [hovered, setHovered] = useState<Pick | null>(null)
   const [paints, setPaints] = useState(0)
@@ -770,14 +1002,14 @@ function EditorShell({
    *  that window must describe the canvas in force, in its own kind, never the one taken off) */
   const livePage = painted.key === key ? painted.site : null
   /** the subject the canvas renders: the site's where the last paint was the site's, else the sample's own resolution */
-  const previewing = livePage ?? orbitWeekly.resolveSubject(canvas.file, storedSubject)
+  const previewing = useMemo(() => livePage ?? orbitWeekly.resolveSubject(canvas.file, storedSubject), [livePage, canvas.file, storedSubject])
   /** the source the list's pages are counted in — the site's page 1 where it shows, else the bundled publication at the
    *  project's own page size (Story 5.19) */
   const contentSource = livePage?.source ?? sampleSource
   /** Story 5.16 — does this canvas have a page 2 at all (R-176): a main feed on page 1 whose list runs past one page */
-  const offered = offersPageTwo(key, docs, previewing.subject, contentSource)
+  const offered = useMemo(() => offersPageTwo(key, docs, previewing.subject, contentSource), [key, docs, previewing.subject, contentSource])
   /** …and the section whose panel carries D5d's row: page 1's main feed, or on page 2 its copy */
-  const feedHere = offered ? mainFeedOn(docs, key, page, library) : null
+  const feedHere = useMemo(() => (offered ? mainFeedOn(docs, key, page, library) : null), [offered, docs, key, page, library])
   const subjectRows = useMemo(
     () =>
       previewing.subject === null ? []
@@ -948,9 +1180,7 @@ function EditorShell({
   /** the canvas ground: its CONTENT BOX is the room the card is fitted into — the card itself is the answer, so
    *  measuring it would measure the fit rather than the space (Story 5.7; it was the card until R-137) */
   const stage = useRef<HTMLElement>(null)
-  const tag = useRef<HTMLDivElement>(null)
-  const hoverBox = useRef<HTMLDivElement>(null)
-  const selectedBox = useRef<HTMLDivElement>(null)
+  /** R-119's Pro badge, drawn by the chrome (`CanvasChrome`) and read by the pill, which sits to its left (R-125) */
   const badge = useRef<HTMLDivElement>(null)
   const icons = useRef<IconLookup | null>(null)
   /** index-aligned with the stack last painted; null where a section rendered nothing */
@@ -958,8 +1188,6 @@ function EditorShell({
   /** Story 5.15 — `core`'s handle for the canvas painted last: `stop()` before the next paint, and `paused`, the mounts
    *  it held still, which the PAUSED chips read (R-175). Null before the first paint. */
   const behaviours = useRef<ReturnType<typeof startBehaviours> | null>(null)
-  /** each PAUSED chip's element, by the mount it marks — placed by the chrome loop */
-  const chipEls = useRef(new Map<Element, HTMLElement>())
   /** B3b's Back to editing, which takes focus on the way in, and where focus was before it (Story 5.15) */
   const backButton = useRef<HTMLButtonElement>(null)
   const cameFrom = useRef<HTMLElement | null>(null)
@@ -981,14 +1209,14 @@ function EditorShell({
   const [session, setSession] = useState<Inline | null>(null)
   const [inlineAt, setInlineAt] = useState<ScreenSelection | null>(null)
   const [scrolling, setScrolling] = useState(false)
-  // Story 5.4 — the one reorder, held here because EITHER grip starts it: a Layers row's or the canvas pill's
-  const [drag, setDrag] = useState<SectionDrag | null>(null)
+  // Story 5.4 — the one reorder, held here because EITHER grip starts it: a Layers row's or the canvas pill's. Story 5.23b:
+  // in a store of one value that Layers alone subscribes to, so a pointer move never re-renders the editor (R-208)
+  const [dragStore] = useState(() => oneValue<SectionDrag | null>(null))
   /** the pill drag's own start: the pointer's Y and the dragged doc's sections as they sat ON SCREEN */
   const pillDrag = useRef<{ y: number; layout: Layout }>({ y: 0, layout: { tops: [], heights: [], gap: 0 } })
   const pill = useRef<HTMLDivElement | null>(null)
   /** what a completed move says, politely — `moveSection`'s own words, announced from here so both grips announce */
   const [said, setSaid] = useState('')
-  type Note = { el: HTMLElement; kind: 'lock' | 'limit'; words: string }
   const [note, setNote] = useState<Note | null>(null)
   // the pill as the canvas document's handlers see it, in the same task it was set — paint reads it before React has
   // rendered the state
@@ -999,7 +1227,6 @@ function EditorShell({
   }
   /** the elements a paint stamped with this lock's name, in document order — the same order on every paint of the same docs */
   const sameLock = (words: string) => [...stamps.current].filter(([, s]) => 'ghost' in s && `${s.ghost} — set in Ghost` === words).map(([el]) => el)
-  const noteBox = useRef<HTMLDivElement>(null)
   const tools = useRef<InlineToolsHandle>(null)
   /** a press on the canvas is under way: a repaint it causes waits for its click, which must still find its target */
   const press = useRef({ on: false, repaint: false })
@@ -1010,23 +1237,40 @@ function EditorShell({
   /** STORY 5.10 — can anything be placed on THIS canvas at all? One query (`offeredOn`), and the hairline, the
    *  "+ Add section" pill and the Layers footer's button are all readers of it: where nothing can be placed there
    *  is no affordance, rather than an affordance that opens an empty picker (UX-DR3). */
-  const canAdd = !surface && offeredHere(entries, canvas.file, SITE.file).length > 0
+  const canAdd = useMemo(() => !surface && offeredHere(entries, canvas.file, SITE.file).length > 0, [surface, entries, canvas.file])
   /** What this section may become, from the library and nowhere else (`ringFor` sits beside `offeredOn`). The
    *  design it IS is always in it; a design the library no longer holds gives an empty ring, which reads as one
-   *  design with nowhere to go — the same answer every category gives today. */
+   *  design with nowhere to go — the same answer every category gives today. Story 5.23b: ONE RING PER DESIGN ID, kept
+   *  for the session — `entries` never changes in one, and a ring scanned the library per call (40 sections a render for
+   *  the dice's count), while the Design block, handed the same array, skips its render. */
+  const rings = useMemo(() => new Map<string, SectionRegistryEntry[]>(), [entries])
   const ringOf = (designId: string): SectionRegistryEntry[] => {
+    const kept = rings.get(designId)
+    if (kept !== undefined) return kept
     const entry_ = entries[designId]
     // Story 5.20 — a paywall is a treatment, so `ringFor` (placeable designs) never holds one: its ring is every paywall
     // design this editor holds (A32's from Story 10.107; the harness's two stand-ins, R-158)
-    if (entry_ !== undefined && isPaywallDesign(entry_)) return paywallRing(Object.values(entries))
-    return entry_ === undefined ? [] : ringFor(Object.values(entries), entry_)
+    const ring = entry_ === undefined ? [] : isPaywallDesign(entry_) ? paywallRing(Object.values(entries)) : ringFor(Object.values(entries), entry_)
+    rings.set(designId, ring)
+    return ring
   }
   // the canvas document's handlers and paint read the latest values through here
   // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
   const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet })
-  latest.current = { key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet }
+  /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation now reaches React as a transition, so a
+     render can be drawn from state the transition has not delivered — an urgent one in between, for a hover or a device —
+     and a render that wrote `latest` from its own state would put an OLDER doc back: the next edit would be made against it,
+     and an edit would be lost. So the HANDLERS are the only writers of what they change — the docs, the stack, `auto`, the
+     journal, the selection, the hover, the page, the mode, the device, the visitor, the looked-at record, Preview, the
+     source, the lock and the sheet — and a COMMIT writes only what it derives and no handler writes: the canvas in force
+     (the URL's), what can be placed on it, the layout, the list its pages are counted in, and its subject (which
+     `chooseSubject` also writes, for the paint in its own task — from state no transition carries). In a layout effect, so
+     a render React throws away writes nothing, and before this component's other layout effects, which read it. */
+  useLayoutEffect(() => {
+    latest.current = { ...latest.current, key, canAdd, compact, contentSource, subject: previewing.subject, stored: storedSubject }
+  })
   /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
    *  every change of page, so a section asks again the next time page 2 is shown. */
   const asked = useRef(new Set<string>())
@@ -1104,22 +1348,8 @@ function EditorShell({
    *  to following. And R-180's ask sits HERE, the one door every change passes: on page 2 the first change to each
    *  site-wide section is HELD, and FR-D5's dialog asks before it lands (`about` names the section). Null means held. */
   const commit = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: About): boolean | null => {
+    if (heldBack(written, touched, about)) return null
     const now = latest.current
-    // STORY 5.17 — FR-D18'S READ-ONLY GUARD, AND IT IS ONE EARLY RETURN. This is the one door every change passes,
-    // which is why the rule cannot be forgotten at a call site: a session that does not hold the lock writes nothing
-    // to the docs, nothing to the journal and nothing to the device. The control that was pressed is CONTROLLED by
-    // the value in force, so it never moves — not even for a frame (B5a). Typing on the canvas is stopped a step
-    // earlier, in `startEditing`, because a `contenteditable` element has already changed by the time it gets here.
-    //
-    // IT ANSWERS `null`, WHICH ALREADY MEANS "NOTHING HAPPENED — SAY NOTHING, REPAINT NOTHING" (R-180's hold, the
-    // `HELD` symbol below). That is not a shortcut, it is the only answer that reaches every caller: `false` is a
-    // SUCCESS that merely had no round trip, so `onChange` would go on to stamp the canvas root with the refused
-    // value and `edit()` would announce "X duplicated" over a change that never landed.
-    if (!now.lock.holder) return null
-    if (now.page === 2 && touched === SITE.key && about !== undefined && !asked.current.has(about.instanceId)) {
-      holdChange(written, touched, about)
-      return null
-    }
     // STORY 5.8: the touched doc either side of the transaction — the journal's whole record, taken HERE because this
     // is the only place that knows both (`addendum.md` §AD4). `before` is the SETTLED doc, so restoring it and running
     // `committed()` over it again is a no-op on the round trip rather than a second decision. For a page 2 that follows
@@ -1137,6 +1367,30 @@ function EditorShell({
     // 5.16: the page on screen is the page in force, and a page 2 that follows the doc changed has changed with it.
     recordViewed(afterChange(latest.current.viewed, touched, ownKeyOf(now.key, now.page), now.viewAs, followersOf(next.docs, touched)))
     return next.back
+  }
+
+  /** `commit`'s two early answers, asked on their own so `apply` can ask them BEFORE it hands anything to React as a
+   *  transition (Story 5.23b, R-210): R-180's dialog opens on the next frame, and its words must be in by then. True when
+   *  the change does not land — nothing happened, say nothing, repaint nothing.
+   *
+   *  STORY 5.17 — FR-D18'S READ-ONLY GUARD, AND IT IS ONE EARLY RETURN. This is the one door every change passes,
+   *  which is why the rule cannot be forgotten at a call site: a session that does not hold the lock writes nothing
+   *  to the docs, nothing to the journal and nothing to the device. The control that was pressed is CONTROLLED by
+   *  the value in force, so it never moves — not even for a frame (B5a). Typing on the canvas is stopped a step
+   *  earlier, in `startEditing`, because a `contenteditable` element has already changed by the time it gets here.
+   *
+   *  `commit` then ANSWERS `null`, WHICH ALREADY MEANS "NOTHING HAPPENED — SAY NOTHING, REPAINT NOTHING" (R-180's hold,
+   *  the `HELD` symbol below). That is not a shortcut, it is the only answer that reaches every caller: `false` is a
+   *  SUCCESS that merely had no round trip, so `onChange` would go on to stamp the canvas root with the refused
+   *  value and `edit()` would announce "X duplicated" over a change that never landed. */
+  const heldBack = (written: Readonly<Record<string, ProjectDoc>>, touched: string, about?: About): boolean => {
+    const now = latest.current
+    if (!now.lock.holder) return true
+    if (now.page === 2 && touched === SITE.key && about !== undefined && !asked.current.has(about.instanceId)) {
+      holdChange(written, touched, about)
+      return true
+    }
+    return false
   }
 
   /** The doc the editor EDITS under a stored key — a page 2 that follows is edited as its copy of page 1, so its first
@@ -1213,6 +1467,9 @@ function EditorShell({
    *
    * AD-22's round trip is decided by `committed()`, exactly as a forward edit decides it: taking the last section off a
    * synthesizable canvas and then undoing it moves the marker back and forth through the one rule.
+   *
+   * R-210 (Story 5.23b): UNDO AND REDO ARE SECTION OPERATIONS — the canvas is painted and `latest` moves in this task, and
+   * every state update below reaches React as one transition, so the panels follow a frame later.
    */
   const restore = (r: Restore | null) => {
     if (!r) return
@@ -1221,6 +1478,9 @@ function EditorShell({
       setSaid(`That change cannot be undone: the ${missing} design is no longer in the library.`)
       return
     }
+    startTransition(() => restored(r))
+  }
+  const restored = (r: Restore) => {
     const now = latest.current
     // Story 5.19 — an undo is a door too: a journal written before the main-feed rule may hold a doc it would repair
     const next = committed({ ...now.docs, [r.docKey]: designated(r.docKey, r.doc) }, r.docKey, stacks, now.auto)
@@ -1770,8 +2030,10 @@ function EditorShell({
    *  inline caret and the canvas scroll all survive it. The top bar never deselects (R-123). */
   const pickDevice = (next: Device) => {
     // `latest`, not `device`: Story 5.9 binds `1` `2` `3` on the window ONCE, at mount, so the render's own value
-    // would be Desktop for ever and every later press would be swallowed as "already showing"
+    // would be Desktop for ever and every later press would be swallowed as "already showing" — and since Story 5.23b
+    // the handler writes it, as every handler writes what it changes (R-210's Always)
     if (next.name === latest.current.device.name) return
+    latest.current = { ...latest.current, device: next }
     setDevice(next)
     setSaid(deviceShown(next))
   }
@@ -3227,8 +3489,10 @@ function EditorShell({
     if (document.activeElement !== there) document.getElementById('editor-preview')?.focus()
   }, [preview])
 
+  /** A section's root AS THE CANVAS DRAWS IT NOW: the paint's own roots, found through `latest`'s stack, which every paint
+   *  is aligned with — never the render's stack, which since R-210 can be a frame behind the canvas (Story 5.23b). */
   const rootOf = (pick: Pick | null) => {
-    const n = pick ? stack.findIndex((i) => same(i, pick)) : -1
+    const n = pick ? latest.current.stack.findIndex((i) => same(i, pick)) : -1
     return n === -1 ? null : (roots.current[n] ?? null)
   }
   /** THE CANVAS SCROLLS TO A SECTION CHOSEN IN LAYERS (the owner's ruling of 2026-09-20). Only from Layers: a press
@@ -3254,18 +3518,30 @@ function EditorShell({
     win.scrollTo({ top: Math.max(0, root.getBoundingClientRect().top + win.scrollY - REVEAL_GAP), behavior: still ? 'auto' : 'smooth' })
   }
 
-  const chosen = selected ? stack.find((i) => same(i, selected)) : undefined
-  const pointed = hovered ? stack.find((i) => same(i, hovered)) : undefined
+  /* The selected and the pointed section, KEPT BY VALUE (Story 5.23b, R-208): `stackOf` builds every entry anew on each
+     change, so a move elsewhere on the page would otherwise hand the Controls panel a "new" section and redraw it whole.
+     Keyed on the paint's own signature for an entry (Story 5.23a) — equal JSON is equal plain data. */
+  const chosenNow = selected ? stack.find((i) => same(i, selected)) : undefined
+  const chosenSig = chosenNow === undefined ? '' : JSON.stringify(chosenNow)
+  const chosen = useMemo(() => chosenNow, [chosenSig])
+  const pointedNow = hovered ? stack.find((i) => same(i, hovered)) : undefined
+  const pointedSig = pointedNow === undefined ? '' : JSON.stringify(pointedNow)
+  const pointed = useMemo(() => pointedNow, [pointedSig])
   const entry = chosen ? entries[chosen.designId] : undefined
   /* STORY 5.19 — THE PANEL'S DATA GROUP for the selected section: its part in the page's feeds (the MAIN feed's Count is
      the page size in force, greyed — D5c; a SECONDARY feed's rows are the engine's over `data.posts` and its base
      query), its queries' rows as the canvas shows them, and the lists its tag, writer and post pickers search — the
      source in force's own, since a value belongs to the source it was chosen from. */
-  const role: FeedRole | undefined =
-    chosen === undefined || !isFeed(entry) || !PAGINATED_TARGETS.has(chosen.target) ? undefined
-    : chosen.isMainFeed ? { kind: 'main', postsPerPage }
-    : { kind: 'secondary', base: feedBase(postsPerPage) }
-  const chosenRows = ((): Readonly<Record<string, readonly unknown[]>> => {
+  const role = useMemo<FeedRole | undefined>(
+    () =>
+      chosen === undefined || !isFeed(entry) || !PAGINATED_TARGETS.has(chosen.target) ? undefined
+      : chosen.isMainFeed ? { kind: 'main', postsPerPage }
+      : { kind: 'secondary', base: feedBase(postsPerPage) },
+    [chosen, entry, postsPerPage],
+  )
+  /** the panel's design, with its part in the page's feeds where it has one — one object per section and role */
+  const panelEntry = useMemo(() => (entry === undefined || role === undefined ? entry : { ...entry, feed: role }), [entry, role])
+  const chosenRows = useMemo((): Readonly<Record<string, readonly unknown[]>> => {
     if (chosen === undefined || entry === undefined) return {}
     const queries = queriesOf(chosen)
     const own = livePage !== null ? livePage.rows[queryKey(chosen)] : sampleRows(queries)
@@ -3274,7 +3550,7 @@ function EditorShell({
     if (own === undefined) return {}
     const feed = queries[FEED_KEY]
     return { ...shownRows(entry, chosen, own), ...(feed === undefined ? {} : { [FEED_KEY]: rowsFor(feed, own?.[FEED_KEY]) }) }
-  })()
+  }, [chosen, entry, livePage])
   const dataLists = useMemo(() => {
     const s = reads.current
     if (livePage === null || s === null) {
@@ -3309,18 +3585,21 @@ function EditorShell({
   /* STORY 5.18 — D5e's SITE ROW: greyed with its reason where choosing it could do nothing — a site that cannot be read,
      a refused key (never retried) or the ceiling (a reload starts over) — and otherwise pressable, carrying the
      sentence of the failure that put the sample on the canvas, which choosing it tries again. */
-  const readingNow = reads.current?.reading() ?? null
-  const siteRow: { greyed: string | null; sentence: string | null } =
-    site === null ? { greyed: null, sentence: null }
-    : 'unreadable' in site ? { greyed: LIVE_WORDS.unreadable(site.unreadable, siteName), sentence: null }
-    : readingNow !== null && readingNow.stopped !== null && !retriable(readingNow.stopped) ? { greyed: LIVE_WORDS.sentence(readingNow.stopped, siteName), sentence: null }
-    : { greyed: null, sentence: painted.shown.cause === null ? null : LIVE_WORDS.sentence(painted.shown.cause, siteName) }
+  const stopped = reads.current?.reading().stopped ?? null
+  const siteRow = useMemo(
+    (): { greyed: string | null; sentence: string | null } =>
+      site === null ? { greyed: null, sentence: null }
+      : 'unreadable' in site ? { greyed: LIVE_WORDS.unreadable(site.unreadable, siteName), sentence: null }
+      : stopped !== null && !retriable(stopped) ? { greyed: LIVE_WORDS.sentence(stopped, siteName), sentence: null }
+      : { greyed: null, sentence: painted.shown.cause === null ? null : LIVE_WORDS.sentence(painted.shown.cause, siteName) },
+    [site, siteName, stopped, painted.shown.cause],
+  )
 
   /* STORY 5.18 — THE PANEL'S NOTE for the selected section, while the SITE's content shows: its main feed where the whole
      list fits one page and does not fill it (a short page 2 is ordinary pagination), and each `{{#get}}` the site cannot
      fill to the limit the section asked for — zero included, which is never back-filled (R-36). R-194 puts the sample
      one press away beside it. */
-  const shortfall = (() => {
+  const shortfall = useMemo(() => {
     if (livePage === null || chosen === undefined || entry === undefined || reads.current === null) return null
     const r = reader(reads.current.peek)
     const notes: string[] = []
@@ -3343,16 +3622,16 @@ function EditorShell({
       if (note !== null) notes.push(note)
     }
     return notes.length === 0 ? null : notes.join(' ')
-  })()
+  }, [livePage, chosen, entry, liveTick, canvas.file, postsPerPage])
   /** Story 5.19 — the Layers note's sentence while THIS page is a Tag or Author page with no visible feed, else null */
-  const feedless = feedlessArchive(editedDoc(docs, own, library) ?? EMPTY_DOC, pageFileOf(key, page), library)
-    ? FEEDLESS(canvas.file === 'author.hbs' ? 'Author' : 'Tag')
-    : null
+  const feedless = useMemo(
+    () => (feedlessArchive(editedDoc(docs, own, library) ?? EMPTY_DOC, pageFileOf(key, page), library) ? FEEDLESS(canvas.file === 'author.hbs' ? 'Author' : 'Tag') : null),
+    [docs, own, library, key, page, canvas.file],
+  )
   /** Story 5.19 — the chip's section on the canvas: the main feed, while it is hovered or selected (AD-37: never at rest) */
-  const chipRoot = pointed?.isMainFeed === true ? rootOf(hovered) : chosen?.isMainFeed === true ? rootOf(selected) : null
+  const chipOn = pointed?.isMainFeed === true ? 'hovered' : chosen?.isMainFeed === true ? 'selected' : null
   /** …and whether the name tag is drawn beside it, which the chip then sits against rather than over (R-125) */
   const chipBesideTag = pointed?.isMainFeed === true
-  const chip = useRef<HTMLSpanElement>(null)
   const pointedRing = pointed ? ringOf(pointed.designId) : []
   // on a hovered selection the selected box's 1.5px is the only outline (S4c)
   // Story 5.21's Fix: a pointed or chosen Ghost row's chrome is drawn on its shim, in the tag's and the outline's own shape
@@ -3361,7 +3640,8 @@ function EditorShell({
   const selectedRoot = chosen ? rootOf(selected) : ghostEl(ghostChosen)
 
   // THE CHROME LAYER (the owner's finding, 2026-09-17): the boxes, the tag and the badge are portalled into the canvas
-  // document, so the compositor scrolls them with their section in the same frame (`lib/canvas-layer.ts`)
+  // document, so the compositor scrolls them with their section in the same frame (`lib/canvas-layer.ts`) — drawn and
+  // placed by `CanvasChrome` since Story 5.23b; the two hosts are made and dropped here
   const [chrome, setChrome] = useState<ChromeLayers | null>(null)
   // Story 5.15: in Preview the layer is dropped, so no outline, tag, badge, lock pill or chip can exist — while the
   // selection itself stays in state and is drawn again on the way back
@@ -3383,57 +3663,34 @@ function EditorShell({
    *  STUCK (`pinned`), so the canvas's scroll listener compares the root's answer now with this one and re-renders on a
    *  change (`setPinTick`) — the one switch, as the root sticks or comes unstuck */
   const drawnPinned = useRef(new WeakMap<HTMLElement, boolean>())
-  const [, setPinTick] = useState(0)
-  const layerFor = (root: HTMLElement | null) => {
-    if (preview || !root || !chrome) return null
-    const stuck = pinned(root)
-    drawnPinned.current.set(root, stuck)
-    return stuck ? chrome.view : chrome.page
-  }
+  const [pinTick, setPinTick] = useState(0)
+  /** the hovered and the selected root AS THE CANVAS DRAWS THEM NOW, for the chrome's loop — every frame, never a render's */
+  const chromeRoots = useStable(() => {
+    const now = latest.current
+    return {
+      hovered: now.hovered ? rootOf(now.hovered) : ghostEl(ghostHoverNow.current),
+      selected: now.selected ? rootOf(now.selected) : ghostEl(ghostChosenNow.current),
+    }
+  })
 
   /* STORY 5.15 — B3a's PAUSED CHIPS (R-175). One for each mount `core` held still whose part MOVES BY ITSELF — on a
      timer or as the page scrolls, with nothing pressed (the registry's `movesByItself`) — inside the hovered root and
      inside the selected one, and none in Preview. The list is `core`'s own (`paused`), never a second one kept here,
      so a part that waits for a press — a phone menu, a sign-up form — never carries one. */
-  const chips = preview
-    ? []
-    : [...new Set([hoveredRoot, selectedRoot])].flatMap((root) =>
-        !root
-          ? []
-          : (behaviours.current?.paused ?? [])
-              .filter((el) => root.contains(el) && movesByItself(el.getAttribute('data-module') ?? ''))
-              .map((el) => ({ el: el as HTMLElement, root })),
-      )
-
-  // positions follow layout, not scroll: a section that grows, a header that shrinks, a fold that re-fits the canvas
-  useLayoutEffect(() => {
-    if (!chrome) return
-    const all: [HTMLElement | null, HTMLElement | null, Parameters<typeof place>[3]][] = [
-      [hoverBox.current, hoveredRoot, 'fill'],
-      [selectedBox.current, selectedRoot, 'fill'],
-      [tag.current, hoveredRoot, 'top-left'],
-      [badge.current, selectedRoot, 'top-right'],
-      [noteBox.current, note?.el ?? null, 'above'],
-      // Story 5.15: each PAUSED chip, 8px inside its mount's bottom-left corner
-      ...chips.map(({ el }): [HTMLElement | null, HTMLElement, 'bottom-left'] => [chipEls.current.get(el) ?? null, el, 'bottom-left']),
-    ]
-    const tick = () => {
-      for (const [el, root, how] of all) if (el && root) place(el, root, scale, how)
-      // Story 5.19 — D5c's chip, in the tag's corner: against the tag's right edge while the tag shows, centred on its
-      // line, so it never covers the name (R-125); the offsets are only how that rule is delivered (R-138's precedent)
-      const c = chip.current
-      if (c && chipRoot) {
-        const t = chipBesideTag ? tag.current : null
-        place(c, chipRoot, scale, 'top-left', t ? { x: t.offsetWidth + 4, y: (t.offsetHeight - c.offsetHeight) / 2 } : { x: 6, y: 6 })
-      }
-    }
-    tick()
-    let id = requestAnimationFrame(function loop() {
-      tick()
-      id = requestAnimationFrame(loop)
-    })
-    return () => cancelAnimationFrame(id)
-  })
+  const chips = useMemo(
+    () =>
+      preview
+        ? []
+        : [...new Set([hoveredRoot, selectedRoot])].flatMap((root) =>
+            !root
+              ? []
+              : (behaviours.current?.paused ?? [])
+                  .filter((el) => root.contains(el) && movesByItself(el.getAttribute('data-module') ?? ''))
+                  .map((el) => ({ el: el as HTMLElement, root })),
+          ),
+    // `core`'s handle is replaced by every paint, which `paints` counts
+    [preview, hoveredRoot, selectedRoot, paints],
+  )
 
   // ─── Story 5.4 — every section operation, through `doc-edit.ts`, and the two surfaces that ask for one ───
 
@@ -3459,6 +3716,10 @@ function EditorShell({
       canLead: paginated && !i.isMainFeed && !i.hidden && isFeed(entries[i.designId]),
     }))
   }
+  /** Story 5.23b — the two groups' rows, derived again only when a doc changes: every field a row is drawn from is a
+   *  primitive, so the rows whose fields did not change skip their render (`controls/layers.tsx`) */
+  const siteRows = useMemo(() => rowsOf(SITE.key), [docs, library, entries, darkEnabled])
+  const pageRows = useMemo(() => rowsOf(own), [docs, own, library, entries, darkEnabled])
 
   /** One operation over one template's doc: the session's next `docs`, painted once. Answers the refusal, or null.
    *  `about` names the section a site-wide change is about, for R-180's ask; it is the pick's own section by default. */
@@ -3473,18 +3734,27 @@ function EditorShell({
     // STORY 5.19 — THE MAIN-FEED RULE IS PART OF EVERY EDIT: a placement that designates, a delete or a hide that hands
     // the flag on, a duplicate that must not carry it — decided in the same `commit`, so one `⌘Z` undoes both
     const next = designated(pick.doc, done, doc)
-    const now = latest.current
-    const back = commit({ [pick.doc]: next }, pick.doc, about ?? { instanceId: pick.instanceId, name: layerNameOf(pick) })
-    // R-180: held for its ask — nothing has changed yet, so there is nothing to repaint and nothing refused
-    if (back === null) return HELD
-    // a selection cannot outlive the section it was on — and neither can it (or a hover) outlive a canvas returning to
-    // untouched. `back` is asked, not the ids: synthesis DERIVES them (`auto-tag-1`), so the default stack that returns
-    // can repeat the id of the very section just removed, and a test by id would keep the panel open on a new instance
-    // (review, 2026-09-18). A page 2 that follows page 1 again is the same case: its copy repeats page 1's ids.
-    const gone = !docOf(pick.doc)?.instances.some((i) => i.instanceId === pick.instanceId)
-    if (back && now.hovered?.doc === pick.doc) point(null)
-    if (now.selected?.doc === pick.doc && (back || (same(now.selected, pick) && gone))) choose(null)
-    paint()
+    const asking = about ?? { instanceId: pick.instanceId, name: layerNameOf(pick) }
+    // R-180: held for its ask (or a session reading along) — nothing has changed yet, so there is nothing to repaint and
+    // nothing refused. Asked BEFORE the transition below, so the ask's dialog opens on the next frame with its words in
+    if (heldBack({ [pick.doc]: next }, pick.doc, asking)) return HELD
+    /* R-210 — CANVAS FIRST, THE PANELS A FRAME LATER (Story 5.23b). Inside the transition `commit` moves `latest` and the
+       journal, and `paint()` redraws the canvas, in THIS task exactly as before; what React is handed — the docs, the
+       journal, the selection, the hover, what the paint drew — arrives as ONE transition, rendered once the press's task
+       has ended, so the panels follow a frame later and the press stays short. A render drawn in between is drawn from the
+       older state and moves nothing back: `latest` is the handlers' alone. */
+    startTransition(() => {
+      const now = latest.current
+      const back = commit({ [pick.doc]: next }, pick.doc, asking)
+      // a selection cannot outlive the section it was on — and neither can it (or a hover) outlive a canvas returning to
+      // untouched. `back` is asked, not the ids: synthesis DERIVES them (`auto-tag-1`), so the default stack that returns
+      // can repeat the id of the very section just removed, and a test by id would keep the panel open on a new instance
+      // (review, 2026-09-18). A page 2 that follows page 1 again is the same case: its copy repeats page 1's ids.
+      const gone = !docOf(pick.doc)?.instances.some((i) => i.instanceId === pick.instanceId)
+      if (back && now.hovered?.doc === pick.doc) point(null)
+      if (now.selected?.doc === pick.doc && (back || (same(now.selected, pick) && gone))) choose(null)
+      paint()
+    })
     return null
   }
 
@@ -3576,8 +3846,11 @@ function EditorShell({
     }
     if (!edit({ doc: docKey, instanceId: instance.instanceId }, (doc) => insertSection(doc, 0, instance))) return
     const ring = ringOf(designId)
-    setSaid(announce(ring.findIndex((e) => e.id === designId), ring.length, design.name))
-    choose({ doc: docKey, instanceId: instance.instanceId })
+    // with the choice's own transition (R-210), so the panel opens on the instance in the render that first holds it
+    startTransition(() => {
+      setSaid(announce(ring.findIndex((e) => e.id === designId), ring.length, design.name))
+      choose({ doc: docKey, instanceId: instance.instanceId })
+    })
   }
 
   const onDesign = (pick: Pick, to: string) => {
@@ -3717,9 +3990,12 @@ function EditorShell({
     if (edit(row, (doc) => removeSection(doc, row.instanceId))) setSaid(withTransfer(`${row.layerName} removed`, handedTo(row.doc, before)) ?? '')
   }
   const onToggleHidden = (row: LayerRow) => {
-    if (row.doc === SITE.key && !row.hidden) return askFirst('hide', row)
+    // the section as the NEWEST doc holds it: the row pressed can be a frame behind the canvas (R-210), and a second Space
+    // inside that frame must show what the first hid rather than hide it again
+    const hidden = docOf(row.doc)?.instances.find((i) => i.instanceId === row.instanceId)?.hidden ?? row.hidden
+    if (row.doc === SITE.key && !hidden) return askFirst('hide', row)
     const before = mainFeedOf(docOf(row.doc))
-    if (!edit(row, (doc) => setHidden(doc, row.instanceId, !row.hidden))) return
+    if (!edit(row, (doc) => setHidden(doc, row.instanceId, !hidden))) return
     // Hide says nothing of its own; where it handed the flag on, that is said
     const said = withTransfer(null, handedTo(row.doc, before))
     if (said !== null) setSaid(said)
@@ -3827,21 +4103,26 @@ function EditorShell({
   }
 
   /** S4b's pill, read from outside the frame every frame: the hovered section's rect on screen, the card's own box to
-   *  stay inside, and — R-125 — R-119's Pro tag's left edge while the tag is drawn on THIS section. */
-  const pillBox = (): PillBox | null => {
+   *  stay inside, and — R-125 — R-119's Pro tag's left edge while the tag is drawn on THIS section. Story 5.23b: of fixed
+   *  identity, and read from the paint's CURRENT roots through refs — the pill's one loop calls it every frame, and in the
+   *  frame before the editor follows a paint (R-210) the render's root may be one the paint removed. */
+  const pillBox = useStable((): PillBox | null => {
     const f = frame.current
-    if (!f || !hoveredRoot) return null
+    const now = latest.current
+    const root = rootOf(now.hovered)
+    if (!f || !root) return null
     const fr = f.getBoundingClientRect()
     const k = fitOf(f, fr)
-    const r = hoveredRoot.getBoundingClientRect()
-    // the badge is placed on the SELECTED root: only a hovered selection puts the two in the same corner
-    const b = pro && same(hovered, selected) ? badge.current?.getBoundingClientRect() : undefined
+    const r = root.getBoundingClientRect()
+    // the badge is placed on the SELECTED root, and drawn only for a Pro design on a Free plan: only a hovered selection
+    // puts the two in the same corner
+    const b = same(now.hovered, now.selected) && badge.current?.isConnected ? badge.current.getBoundingClientRect() : undefined
     return {
       rect: { left: fr.left + r.left * k, top: fr.top + r.top * k, right: fr.left + r.right * k, bottom: fr.top + r.bottom * k },
       bounds: { left: fr.left, top: fr.top, right: fr.right, bottom: fr.bottom },
       badgeLeft: b && b.width > 0 ? fr.left + b.left * k : null,
     }
-  }
+  })
 
   /** DW-209, EXECUTED (2026-09-20, Chromium through this repository's own Playwright, standing rule 1): a wheel
    *  dispatched over `[data-add-section]` scrolled the canvas document 0px and the identical wheel over the iframe
@@ -3849,64 +4130,77 @@ function EditorShell({
    *  pointer rests on a pill — which a customer feels, and which is also why the deployed walk's sticky-scroll
    *  check failed most runs: it wheels at x=700, the "+ Add section" pill's own place on a 1440 editor. The pills
    *  forward their wheel here, to the document the pointer looks like it is over. */
-  const wheelToCanvas = (deltaX: number, deltaY: number, deltaMode: number) =>
-    wheelToFrame(frame.current?.contentWindow, deltaX, deltaY, deltaMode)
+  const wheelToCanvas = useStable((deltaX: number, deltaY: number, deltaMode: number) =>
+    wheelToFrame(frame.current?.contentWindow, deltaX, deltaY, deltaMode))
 
   /** The pill's grip: the SAME reorder as a Layers row's, read against the sections as they sit on the canvas,
-   *  because that is where the pointer is. Layers draws the dashed slot either way. */
-  const pillGrip: HTMLAttributes<HTMLSpanElement> = {
-    onPointerDown: (event) => {
-      const pick = latest.current.hovered
-      if (event.button !== 0 || drag !== null || !pick) return
-      const from = (docOf(pick.doc)?.instances ?? []).findIndex((i) => i.instanceId === pick.instanceId)
-      if (from === -1) return
-      event.currentTarget.setPointerCapture(event.pointerId)
-      pillDrag.current = { y: event.clientY, layout: captureLayout(screenRows(pick.doc)) }
-      setDrag({ doc: pick.doc, from, to: from, dy: 0, via: 'pill' })
-    },
-    onPointerMove: (event) => {
-      if (!drag) return
-      // dy stays 0: the row in Layers is not the thing being dragged, so only the slot follows the pointer
-      setDrag({ ...drag, to: landingAt(pillDrag.current.layout, drag.from, event.clientY, pillDrag.current.y) })
-    },
-    onPointerUp: () => {
-      if (!drag) return
-      const { doc, from, to } = drag
-      setDrag(null)
-      const moved = docOf(doc)?.instances[from]
-      if (to !== from && moved) moveTo({ doc, instanceId: moved.instanceId }, to)
-    },
-    onPointerCancel: () => setDrag(null),
-  }
-
-  if (failure) throw failure
+   *  because that is where the pointer is. Layers draws the dashed slot either way. Story 5.23b: the drag is the store's
+   *  (`dragStore`), which Layers alone subscribes to, and a move that does not change the landing writes nothing. */
+  const gripDown = useStable((event: PointerEvent<HTMLSpanElement>) => {
+    const pick = latest.current.hovered
+    if (event.button !== 0 || dragStore.get() !== null || !pick) return
+    const from = (docOf(pick.doc)?.instances ?? []).findIndex((i) => i.instanceId === pick.instanceId)
+    if (from === -1) return
+    event.currentTarget.setPointerCapture(event.pointerId)
+    pillDrag.current = { y: event.clientY, layout: captureLayout(screenRows(pick.doc)) }
+    dragStore.set({ doc: pick.doc, from, to: from, dy: 0, via: 'pill' })
+  })
+  const gripMove = useStable((event: PointerEvent<HTMLSpanElement>) => {
+    const now = dragStore.get()
+    if (!now || now.landing) return
+    // dy stays 0: the row in Layers is not the thing being dragged, so only the slot follows the pointer
+    const to = landingAt(pillDrag.current.layout, now.from, event.clientY, pillDrag.current.y)
+    if (to !== now.to) dragStore.set({ ...now, to })
+  })
+  const gripUp = useStable(() => {
+    const now = dragStore.get()
+    if (!now || now.landing) return
+    const moved = docOf(now.doc)?.instances[now.from]
+    // R-210: a drop that moved keeps its slot until its row lands in Layers, which lets it go; any other lets it go now
+    if (now.to !== now.from && moved && moveTo({ doc: now.doc, instanceId: moved.instanceId }, now.to) !== null) dragStore.set({ ...now, landing: true })
+    else dragStore.set(null)
+  })
+  const gripCancel = useStable(() => dragStore.set(null))
+  const pillGrip = useMemo<HTMLAttributes<HTMLSpanElement>>(
+    () => ({ onPointerDown: gripDown, onPointerMove: gripMove, onPointerUp: gripUp, onPointerCancel: gripCancel }),
+    [gripDown, gripMove, gripUp, gripCancel],
+  )
 
   /** STORY 5.17 — is a request waiting on THIS session? Derived, never stored twice: the row's own nudge columns,
    *  minus the one this holder has already answered or let expire. */
   const askedBy = lock.holder ? (lock.row?.nudgeRequestedBy ?? null) : null
   const nudged = askedBy !== null && askedBy !== tabId.current && (lock.row?.request ?? null) !== dismissed
 
-  const onChange = (next: ControlState, kind: Edit) => {
+  /** THE PANEL'S WRITE — urgent, so the panel shows a control change in the render that commits it (FR-F4).
+   *
+   *  R-210 (Story 5.23b): A PRESS ON A PANEL STILL DRAWN FOR ANOTHER DESIGN OR SECTION IS DROPPED, NEVER WRITTEN. The panel
+   *  follows the canvas a frame after a section operation, and what it hands up is its OWN drawn state with one value
+   *  changed — which `withState` writes whole over the instance, every stored value and never the design — so a press in
+   *  that frame on a panel drawn for the design just replaced would write that design's values over the new one's.
+   *  `drawnFor` is the section the panel was drawn for; the section as the canvas holds it now must be the same one, on
+   *  the same design, or nothing is written and nothing is said. */
+  const onChange = (next: ControlState, kind: Edit, drawnFor: Placed | undefined) => {
     const now = latest.current
     // Story 5.20 — on the Paywall canvas the panel is its one instance's, selected or not (`choose`)
     const only = isSurface(now.key) ? now.stack[0] : undefined
     const pick = now.selected ?? (only === undefined ? null : { doc: only.doc, instanceId: only.instanceId })
     if (!pick) return
+    const n = now.stack.findIndex((i) => same(i, pick))
+    const placed = now.stack[n]
+    if (placed === undefined || drawnFor === undefined || !same(placed, drawnFor) || placed.designId !== drawnFor.designId) return
     // Story 5.16: the doc as edited (page 2's copy while it follows), and held for R-180's ask on page 2 — then nothing
     // is stamped: the panel still shows the value in force until the change lands
     if (commit(withState(editable(pick.doc), pick.doc, pick.instanceId, next), pick.doc, { instanceId: pick.instanceId, name: layerNameOf(pick) }) === null) return
-    const n = now.stack.findIndex((i) => same(i, pick))
     const root = roots.current[n]
-    const design = entries[now.stack[n]?.designId ?? '']
+    const design = entries[placed.designId]
     // a control changes only the root's attributes, so it is stamped in place (`/pilots`' fast path); no root means
     // the section is gated away, and anything else needs a render
-    const placed = now.stack[n]
-    const input = kind === 'control' && placed ? slice(placed, next) : undefined
+    const input = kind === 'control' ? slice(placed, next) : undefined
     if (input && root && design) {
       stampControls(root as unknown as RuntimeElement, input)
       // Story 5.23a: stamped in place, so the root is no longer what its record says was drawn — an undo back to the
       // stored value would otherwise match the record and keep this stamp
-      if (placed) drawn.current.delete(queryKey(placed))
+      drawn.current.delete(queryKey(placed))
       mark()
     } else paint()
   }
@@ -3915,7 +4209,7 @@ function EditorShell({
   /** does the visitor View as previews read the paid post whole (Ghost's own rule) — S4d's indicator — or meet the cut? */
   const whole = postAccess({ visibility: 'paid' }, viewAs)
   /** the paywall designs this editor holds (A32 from Story 10.107; the harness's stand-ins), and where the chosen one is */
-  const paywalls = surface ? paywallRing(Object.values(entries)) : []
+  const paywalls = useMemo(() => (surface ? paywallRing(Object.values(entries)) : []), [surface, entries])
   const paywallAt = surface && stack[0] !== undefined ? paywalls.findIndex((e) => e.id === stack[0]?.designId) : -1
   /** C3b's card: members switched off by the record, while the canvas is chosen to show the site's content (`cardUp`, the
    *  one rule a re-read's voice reads too) */
@@ -3929,9 +4223,13 @@ function EditorShell({
   /** the ink surround's words and hovers, for the controls that sit straight on the bar (C3a :1368-1386): the Kit's own
    *  utilities read these variables, so they are re-pointed for the bar's plain controls and for nothing else — never
    *  for a menu, whose card stays paper */
-  const onInk = surface
-    ? ({ '--color-ink-soft': 'var(--color-ink-deep-soft)', '--color-ink': 'var(--color-ink-deep-text)', '--color-paper-sunk': 'var(--color-ink-hover)' } as CSSProperties)
-    : undefined
+  const onInk = useMemo(
+    () =>
+      surface
+        ? ({ '--color-ink-soft': 'var(--color-ink-deep-soft)', '--color-ink': 'var(--color-ink-deep-text)', '--color-paper-sunk': 'var(--color-ink-hover)' } as CSSProperties)
+        : undefined,
+    [surface],
+  )
 
   /* STORY 5.22 — THE ⋯ MENU (D8a's "one overflow menu", `D8 Editor Below 1440.dc.html:283-293`): below 1280 the bar's
      right-hand cluster moves into it WHOLE, in the cluster's order, and the cluster itself stays MOUNTED and hidden, so
@@ -3956,15 +4254,151 @@ function EditorShell({
     ...(surface ? [{ label: PAYWALL_WORDS.back, icon: noGlyph, href: pathOf('post') }] : []),
   ]
   /** the rail's rows: the stack the page paints, in its order — none on a template surface, whose Layers holds no rows */
-  const railRows = (surface ? [] : stack).map((i) => ({
-    key: keyOf(i),
-    name: i.layerName,
-    hidden: i.hidden,
-    selected: same(i, selected),
-    pick: { doc: i.doc, instanceId: i.instanceId },
-  }))
+  const railRows = useMemo(
+    (): RailItem[] =>
+      (surface ? [] : stack).map((i) => ({ key: keyOf(i), name: i.layerName, hidden: i.hidden, selected: same(i, selected), doc: i.doc, instanceId: i.instanceId })),
+    [surface, stack, selected],
+  )
   /** Controls is drawn: docked unless folded at full width, and only while it is the sheet below 1280 */
   const controlsShown = !preview && (compact ? sheet === 'controls' : !controls.folded)
+
+  /* ─── STORY 5.23b — EVERY HANDLER A `memo` PART IS HANDED, OF FIXED IDENTITY (R-208) ───────────────────────────────
+   *
+   * Each calls this component's latest committed render, so a part handed one never redraws because the editor did. What
+   * a handler needs to be NEWEST — the docs, the selection, the hover — it reads through `latest`; what it takes from its
+   * render is only what the part on screen was drawn for (the Controls panel's `chosen`, which `onChange` compares with the
+   * section as the canvas holds it now, R-210). The pill's are read off the paint's current hover, never the render's. */
+  const on = {
+    selectRow: useStable((pick: Pick) => {
+      choose(pick)
+      reveal(pick)
+      // Story 5.22: below 1280 the row's press hands the overlay to Controls — the row goes with its panel, so focus goes
+      // to Controls' close — and it does so for the section already selected too
+      openSheet('controls', true)
+    }),
+    ground: useStable(() => choose(null)),
+    toggleHidden: useStable(onToggleHidden),
+    rename: useStable(onRename),
+    duplicate: useStable(onDuplicate),
+    remove: useStable(onRemove),
+    clearDark: useStable(askClearDark),
+    makeMainFeed: useStable(onMakeMainFeed),
+    // R-210: a row's `at` is where Layers DREW it, which can be a frame behind the doc — a second ⌥↓ in that frame would
+    // otherwise move the section onto the place it already holds (a journal entry that moves nothing). The move is made
+    // from where the section IS: the displacement asked for, re-based on the newest doc (a drop's `at` is its drag's own)
+    move: useStable((row: LayerRow, to: number) => {
+      const at = docOf(row.doc)?.instances.findIndex((i) => i.instanceId === row.instanceId) ?? -1
+      return moveTo(row, at === -1 ? to : to + (at - row.at))
+    }),
+    chooseGhost: useStable(chooseGhost),
+    toggleGhostHidden: useStable(toggleGhostHidden),
+    railShow: useStable(() => (latest.current.compact ? toggleLayers() : layers.toggle(false))),
+    // a rail item chooses and reveals exactly as a Layers row does, and below 1280 it (re-)opens Controls
+    railRow: useStable((pick: Pick) => {
+      choose(pick)
+      reveal(pick)
+      openSheet('controls')
+    }),
+    addAtEnd: useStable(() => openPicker(null)),
+    change: useStable((next: ControlState, kind: Edit) => onChange(next, kind, chosen)),
+    clearDarkChosen: useStable(() => {
+      if (chosen) askClearDark(chosen)
+    }),
+    choosePage: useStable(choosePage),
+    toSample: useStable(() => {
+      chooseSource('sample')
+      document.getElementById('editor-source')?.focus()
+    }),
+    visibility: useStable((value: MemberState) => {
+      if (chosen) edit(chosen, (doc) => setMemberVisibility(doc, chosen.instanceId, value))
+    }),
+    designChosen: useStable((to: string) => {
+      if (chosen) onDesign(chosen, to)
+    }),
+    stepChosen: useStable((by: number) => stepDesign(chosen ?? null, by)),
+    choosePaywall: useStable(choosePaywall),
+    stepPaywall: useStable((by: number) => stepDesign(null, by)),
+    pathOf: useStable(pathOf),
+    chooseVisitor: useStable(chooseVisitor),
+    retryNow: useStable(retryNow),
+    remix: useStable(onRemix),
+    flip: useStable(flip),
+    pickDevice: useStable(pickDevice),
+    enterPreview: useStable(enterPreview),
+    leavePreview: useStable(leavePreview),
+    chooseSubject: useStable(chooseSubject),
+    chooseSource: useStable(chooseSource),
+    pillPrev: useStable(() => stepDesign(latest.current.hovered, -1)),
+    pillNext: useStable(() => stepDesign(latest.current.hovered, 1)),
+    pillShuffle: useStable(() => onShuffle(latest.current.hovered)),
+    pillDuplicate: useStable(() => {
+      const pick = latest.current.hovered
+      if (pick) onDuplicate(pick)
+    }),
+    pillDelete: useStable(() => {
+      const pick = latest.current.hovered
+      if (pick) onRemove({ ...pick, layerName: layerNameOf(pick) })
+    }),
+    // S4b's "+ Add section", on the gap under the hovered section: the picker opens at THAT gap
+    pillAdd: useStable(() => {
+      const pick = latest.current.hovered
+      openPicker(pick ? latest.current.stack.findIndex((i) => same(i, pick)) : null)
+    }),
+    pillLeave: useStable((e: { clientX: number; clientY: number }) => {
+      // leaving the pill for the canvas is the canvas document's own `pointerover`; leaving it for a panel or the bar
+      // reaches neither document, so the hover is let go here. Never mid-drag, which holds the pointer.
+      const f = frame.current?.getBoundingClientRect()
+      if (dragStore.get() || !f) return
+      if (e.clientX < f.left || e.clientX > f.right || e.clientY < f.top || e.clientY > f.bottom) point(null)
+    }),
+  }
+
+  /* …and every value a `memo` part is handed, keeping its identity while unchanged (Story 5.23b) */
+  /** this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's dot */
+  const viewedHere = useMemo(() => seen(viewed[own] ?? NOT_VIEWED_YET, viewAs), [viewed, own, viewAs])
+  /** THE DICE'S COUNT IS THIS CANVAS'S OWN DOC (R-161), derived from the rings, never written down (standing rule 4) */
+  const remixCount = useMemo(() => remixable(editedDoc(docs, own, library)?.instances ?? [], ringOf), [docs, own, library])
+  const assets = useMemo(() => pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` })), [pool, src])
+  /** Story 5.16 — D5d's row, on the main feed of a page that has a page 2 (R-176): a plain callback, never an edit */
+  const pageRow = useMemo(
+    () => (feedHere !== null && chosen !== undefined && same(chosen, feedHere) ? { value: page, onChange: on.choosePage } : undefined),
+    [feedHere, chosen, page, on.choosePage],
+  )
+  const shortfallNote = useMemo(() => (shortfall === null ? undefined : { words: shortfall, onSample: on.toSample }), [shortfall, on.toSample])
+  const visibilityRow = useMemo(
+    () => (chosen !== undefined && memberVisibility[chosen.designId] === true ? { value: chosen.memberVisibility, previews: viewAs, onChange: on.visibility } : undefined),
+    [chosen, memberVisibility, viewAs, on.visibility],
+  )
+  const ghostRows = useMemo(
+    () =>
+      shimsOn(key, site)
+        ? {
+            rows: GHOST_ROWS.map((r) => ({ ...r, hidden: ghostHidden.includes(r.id) })),
+            selectedId: ghostChosen,
+            hoveredId: ghostHover,
+            onSelect: on.chooseGhost,
+            onToggleHidden: on.toggleGhostHidden,
+          }
+        : undefined,
+    [key, site, ghostHidden, ghostChosen, ghostHover, on.chooseGhost, on.toggleGhostHidden],
+  )
+  const sourceSite = useMemo(
+    () =>
+      site === null
+        ? null
+        : {
+            name: siteName,
+            shown: painted.shown.source,
+            cause: painted.shown.cause === null ? null : LIVE_WORDS.cause(painted.shown.cause, siteName),
+            row: siteRow,
+            nothing: painted.shown.nothing === null ? null : LIVE_WORDS.nothing(painted.shown.nothing, siteName),
+            capped: livePage !== null && previewing.subject?.kind === 'post' && reads.current !== null ? cappedPosts(reads.current.peek) : null,
+            onChoose: on.chooseSource,
+          },
+    [site, siteName, painted.shown, siteRow, livePage, previewing.subject?.kind, liveTick, on.chooseSource],
+  )
+
+  if (failure) throw failure
 
   return (
     // Story 5.22: `data-editor` is the 44px touch rule's scope (`globals.css`), and where the dice's confirm is portalled
@@ -4036,7 +4470,7 @@ function EditorShell({
         <span id="editor-save-state" className="shrink-0">
           {/* nothing is claimed before the device has answered: the initial state is green "Synced", and a reload with
               edits owed must never show that for the moment IndexedDB takes (the review) */}
-          {hydrated ? <SaveState state={sync} onRetry={retryNow} retrying={pressingRetry} held={!fellBack.current} /> : null}
+          {hydrated ? <SaveState state={sync} onRetry={on.retryNow} retrying={pressingRetry} held={!fellBack.current} /> : null}
         </span>
         {/* R-143 (owner, 2026-09-19): THE PAIR SITS HERE, immediately after the indicator, and no longer in S4a's
             right-hand cluster where `S4 Editor.dc.html:41-43` draws it. His reason is the one the frame could not
@@ -4078,10 +4512,10 @@ function EditorShell({
             not the switcher alone. Since Story 5.22 it is the grid's middle column rather than absolutely centred, and
             Template and View as keep their size and their words at every width (D8). */}
         <div id="editor-centre" className="flex w-max items-center gap-2">
-          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : pathOf} />
+          <TemplateSwitcher projectId={project.id} current={key} canvases={canvases} auto={auto} empty={empty} pathOf={canvasBase === undefined ? undefined : on.pathOf} />
           {/* this canvas's record, with the visitor on screen already in it: the row in force never carries R-169's
               dot, because the page you are looking at is being looked at */}
-          <ViewAs visitor={viewAs} viewed={seen(viewed[own] ?? [], viewAs)} onChoose={chooseVisitor} />
+          <ViewAs visitor={viewAs} viewed={viewedHere} onChoose={on.chooseVisitor} />
         </div>
         {/* S4a's RIGHT-HAND CLUSTER (:35-40). R-132's one button leads it and S4a's device track sits IMMEDIATELY
             RIGHT OF IT, as the frame draws them; Ship it (7.18) lands beside them later (R-118). Undo and redo left
@@ -4115,9 +4549,9 @@ function EditorShell({
             <ReadOnly on={!lock.holder}>
             <RemixDice
               canvas={canvas.label}
-              count={remixable(editedDoc(docs, own, library)?.instances ?? [], ringOf)}
+              count={remixCount}
               undoable
-              onRemix={onRemix}
+              onRemix={on.remix}
               handle={remixDice}
             />
             </ReadOnly>
@@ -4125,8 +4559,8 @@ function EditorShell({
           {/* the sun sits straight on the bar, so on the ink surround its glyph takes the surround's words (`onInk`) —
               on the button itself, never a wrapper: R-132's cluster is read as the bar's own children (the deployed
               walk's steps 46 and 54), dice, sun, device track */}
-          {darkEnabled ? <ModeToggle mode={mode} onMode={flip} style={onInk} /> : null}
-          <DeviceSwitch device={device} onDevice={pickDevice} />
+          {darkEnabled ? <ModeToggle mode={mode} onMode={on.flip} style={onInk} /> : null}
+          <DeviceSwitch device={device} onDevice={on.pickDevice} />
           {/* R-131's screen, reached from the editor and from nowhere else — it is the project's, not the account's,
               so it is never a shell-nav destination (`EXPERIENCE.md:172`). Words, not a glyph: the export draws no
               icon for it, and R-92 forbids inventing one here. */}
@@ -4141,7 +4575,7 @@ function EditorShell({
           {/* STORY 5.15 — B3a's Preview pill (`B Missing Surfaces.dc.html:645-649`), LAST in the cluster: B3a draws it
               immediately left of the ship button, and Story 7.18 places "Ship it" to its right. */}
           {/* Story 5.20 — a template surface is no page of the site, so it has no Preview (`enterPreview`) */}
-          {surface ? null : <PreviewButton onPress={enterPreview} />}
+          {surface ? null : <PreviewButton onPress={on.enterPreview} />}
           {/* C3a :1385 — the way back to the canvas the paywall is part of: a navigation, never an edit, so it is live
               reading along (R-192). A link, as Theme settings is, so the editor stays mounted across it. */}
           {surface ? (
@@ -4223,8 +4657,8 @@ function EditorShell({
           {surface ? <HowReadersReachIt tiers={tiersShown} tiersHref={tiersHref} /> : (
           <Layers
             readOnly={!lock.holder}
-            site={rowsOf(SITE.key)}
-            page={rowsOf(own)}
+            site={siteRows}
+            page={pageRows}
             // Story 5.16: on page 2 the group heads "This page · Home · Page 2", over page 2's own rows
             label={page === 2 ? `${canvas.label} · ${PAGE_TWO_WORDS}` : canvas.label}
             siteKey={SITE.key}
@@ -4238,32 +4672,19 @@ function EditorShell({
             feedless={feedless}
             selectedKey={selected ? keyOf(selected) : null}
             hoveredKey={hovered ? keyOf(hovered) : null}
-            drag={drag}
-            onDrag={setDrag}
-            // the owner's ruling of 2026-09-20: choosing a row brings its section into view, with a little air above it.
-            // Story 5.22: below 1280 the row's press hands the overlay to Controls — the row goes with its panel, so focus
-            // goes to Controls' close — and it does so for the section already selected too
-            onSelect={(pick) => {
-              choose(pick)
-              reveal(pick)
-              openSheet('controls', true)
-            }}
-            onGround={() => choose(null)}
-            onToggleHidden={onToggleHidden}
-            onRename={onRename}
-            onDuplicate={onDuplicate}
-            onRemove={onRemove}
-            onClearDark={askClearDark}
-            onMakeMainFeed={onMakeMainFeed}
-            onMove={moveTo}
+            drag={dragStore}
+            // the owner's ruling of 2026-09-20: choosing a row brings its section into view, with a little air above it
+            onSelect={on.selectRow}
+            onGround={on.ground}
+            onToggleHidden={on.toggleHidden}
+            onRename={on.rename}
+            onDuplicate={on.duplicate}
+            onRemove={on.remove}
+            onClearDark={on.clearDark}
+            onMakeMainFeed={on.makeMainFeed}
+            onMove={on.move}
             // Story 5.21's Fix — the two rows, where the canvas draws the shims (never on a surface, never unlinked)
-            ghost={shimsOn(key, site) ? {
-              rows: GHOST_ROWS.map((r) => ({ ...r, hidden: ghostHidden.includes(r.id) })),
-              selectedId: ghostChosen,
-              hoveredId: ghostHover,
-              onSelect: chooseGhost,
-              onToggleHidden: toggleGhostHidden,
-            } : undefined}
+            ghost={ghostRows}
           />
           )}
           {/* S4 Editor.dc.html:172 — the Layers footer's full-width dashed button, redrawn identically at 834 and 720
@@ -4274,7 +4695,7 @@ function EditorShell({
           {canAdd ? (
             <div className="border-t border-line p-[10px]">
               <ReadOnly on={!lock.holder}>
-                <AddButton id="editor-add-section" onClick={() => openPicker(null)}>
+                <AddButton id="editor-add-section" onClick={on.addAtEnd}>
                   + Add section
                 </AddButton>
               </ReadOnly>
@@ -4284,18 +4705,15 @@ function EditorShell({
         {/* STORY 5.22 — D8's icon rail: where Layers is folded at full width, and always below 1280 */}
         {compact || layers.folded ? (
           <IconRail
-            fold={layers}
+            show={layers.show}
             hidden={preview}
             expanded={compact && sheet === 'layers'}
             rows={railRows}
-            onShow={() => (compact ? toggleLayers() : layers.toggle(false))}
-            // a rail item chooses and reveals exactly as a Layers row does, and below 1280 it (re-)opens Controls
-            onRow={(pick) => {
-              choose(pick)
-              reveal(pick)
-              openSheet('controls')
-            }}
-            add={canAdd ? { readOnly: !lock.holder, onAdd: () => openPicker(null) } : null}
+            onShow={on.railShow}
+            onRow={on.railRow}
+            canAdd={canAdd}
+            addReadOnly={!lock.holder}
+            onAdd={on.addAtEnd}
           />
         ) : null}
 
@@ -4397,80 +4815,26 @@ function EditorShell({
                 <Skeleton />
               </div>
             ) : null}
-            {/* The outlines (R-120): boxes over the root, whose line is an inset box-shadow spread, which paints its exact
-                width where a border or an outline is floored to whole pixels: S4b's 1px (:181) and S4c's 1.5px (:293),
-                `globals.css`. Inside the canvas document since the owner's finding, so they scroll with their section. */}
-            {hoverOutline && layerFor(hoveredRoot)
-              ? createPortal(<div ref={hoverBox} aria-hidden data-chrome="hover" className="pointer-events-none absolute canvas-outline-hover" style={{ visibility: 'hidden' }} />, layerFor(hoveredRoot) as ShadowRoot)
-              : null}
-            {(chosen || ghostChosen !== null) && layerFor(selectedRoot)
-              ? createPortal(<div ref={selectedBox} aria-hidden data-chrome="selected" className="pointer-events-none absolute canvas-outline-selected" style={{ visibility: 'hidden' }} />, layerFor(selectedRoot) as ShadowRoot)
-              : null}
-            {/* S4b's name tag (S4 Editor.dc.html:181), drawn at its own 11px in the app's Inter. Never pressed: the pointer
-                passes through to the section. */}
-            {(pointed || ghostHover !== null) && layerFor(hoveredRoot)
-              ? createPortal(
-                  <div
-                    ref={tag}
-                    aria-hidden
-                    data-chrome="tag"
-                    className="pointer-events-none absolute whitespace-nowrap rounded-[0_0_6px_0] bg-coral-text px-[9px] py-[3px] text-helper-caption font-semibold text-surface"
-                    style={{ visibility: 'hidden' }}
-                  >
-                    {pointed ? pointed.layerName : GHOST_WORDS.tag(ghostName(ghostHover))}
-                  </div>,
-                  layerFor(hoveredRoot) as ShadowRoot,
-                )
-              : null}
-            {/* STORY 5.19 — D5c's MAIN FEED chip (`D5 Canvas Markers and Template Switcher.dc.html:312`), on the main feed's
-                outline while it is hovered or selected and never at rest (AD-37). Chrome in the canvas layer, as the tag is,
-                the pointer passing through. */}
-            {chipRoot && layerFor(chipRoot)
-              ? createPortal(
-                  <span ref={chip} aria-hidden data-chrome="main-feed" className="pointer-events-none absolute flex" style={{ visibility: 'hidden' }}>
-                    <MainFeedChip on="canvas" />
-                  </span>,
-                  layerFor(chipRoot) as ShadowRoot,
-                )
-              : null}
-            {/* R-119, B10 (B Missing Surfaces.dc.html:1424-1451): a price tag, not a lock — the Kit's span, never a button */}
-            {pro && layerFor(selectedRoot)
-              ? createPortal(
-                  <div ref={badge} data-chrome="pro" className="pointer-events-none absolute flex w-max" style={{ visibility: 'hidden' }}>
-                    <ProBadge />
-                  </div>,
-                  layerFor(selectedRoot) as ShadowRoot,
-                )
-              : null}
-            {/* P0-1's pill (R-122, and the limit's sentence): chrome in the canvas's own layer, so it scrolls with its words */}
-            {note && chosen && layerFor(selectedRoot) ? createPortal(<CanvasNote ref={noteBox} kind={note.kind} words={note.words} />, layerFor(selectedRoot) as ShadowRoot) : null}
-            {/* STORY 5.15 — B3a's PAUSED chip (`B Missing Surfaces.dc.html:658-661`), R-175's two conditions above. Chrome
-                in the canvas layer and not R-120's `::after`: inside the frame its 9.5px words would paint at 5.7px at
-                the 1440 window's 0.6 fit, take over a design's own `::after` and need a positioned mount. So it is the
-                name tag's kind — one screen pixel per unit, Inter, the pointer passing through — in `ViewportChip`'s two
-                rounded colours (B3a's fill and hairline, drawn as `paper` and `line-strong` as that chip names them),
-                with the frame's 9px pause glyph, "PAUSED" at 9.5/600 tracked .02em, `2px 8px` and a 5px gap. */}
-            {chips.map(({ el, root }, n) =>
-              layerFor(root)
-                ? createPortal(
-                    <span
-                      ref={(node) => {
-                        if (node) chipEls.current.set(el, node)
-                        else chipEls.current.delete(el)
-                      }}
-                      aria-hidden
-                      data-chrome="paused"
-                      className="pointer-events-none absolute flex items-center gap-[5px] whitespace-nowrap rounded-pill border border-line-strong bg-paper px-2 py-[2px] text-[9.5px] font-semibold tracking-[.02em] text-ink-soft-aa"
-                      style={{ visibility: 'hidden' }}
-                    >
-                      <Pause size={9} className="shrink-0" />
-                      {PAUSED}
-                    </span>,
-                    layerFor(root) as ShadowRoot,
-                    `paused-${n}`,
-                  )
-                : null,
-            )}
+            {/* THE CANVAS CHROME — the outlines, the name tag, the badge, the MAIN FEED chip, P0-1's pill and the PAUSED chips,
+                portalled into the canvas document and placed from the paint's current roots (`CanvasChrome`, above) */}
+            <CanvasChrome
+              layers={preview ? null : chrome}
+              fit={scale}
+              hovered={hoveredRoot}
+              outline={hoverOutline}
+              tag={pointed ? pointed.layerName : ghostHover !== null ? GHOST_WORDS.tag(ghostName(ghostHover)) : null}
+              selected={selectedRoot}
+              chosen={chosen !== undefined || ghostChosen !== null}
+              pro={pro}
+              note={chosen ? note : null}
+              chip={chipOn}
+              chipBesideTag={chipBesideTag}
+              paused={chips}
+              badge={badge}
+              pins={drawnPinned}
+              pinTick={pinTick}
+              roots={chromeRoots}
+            />
           </div>
           {/* Story 5.15: B11's chip and B9's pill are hidden in Preview, never unmounted — `contents`, so the wrapper
               draws no box of its own, and both stay positioned against this ground */}
@@ -4502,23 +4866,11 @@ function EditorShell({
               rows={subjectRows}
               fellBack={previewing.fellBack}
               refusal={subjectRefusal}
-              onChoose={chooseSubject}
+              onChoose={on.chooseSubject}
               busy={busy}
               // STORY 5.18 — B9's connected look and D5e's SOURCE group, wherever a site is linked (Home becomes
               // pressable then, and only then). Every word is `lib/live-content.ts`'s, and the site has one name.
-              site={
-                site === null
-                  ? null
-                  : {
-                      name: siteName,
-                      shown: painted.shown.source,
-                      cause: painted.shown.cause === null ? null : LIVE_WORDS.cause(painted.shown.cause, siteName),
-                      row: siteRow,
-                      nothing: painted.shown.nothing === null ? null : LIVE_WORDS.nothing(painted.shown.nothing, siteName),
-                      capped: livePage !== null && previewing.subject?.kind === 'post' && reads.current !== null ? cappedPosts(reads.current.peek) : null,
-                      onChoose: chooseSource,
-                    }
-              }
+              site={sourceSite}
             />
           </div>
           {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
@@ -4536,24 +4888,17 @@ function EditorShell({
             // S4b + S6's ring, on the section itself (B1b's claim). Null — so the arrows, the counter and
             // Shuffle are all absent — wherever the hovered section's category holds one design.
             ringCount={pointedRing.length > 1 ? pillPosition(pointedRing.findIndex((e) => e.id === pointed?.designId), pointedRing.length) : null}
-            onPrevDesign={() => stepDesign(hovered, -1)}
-            onNextDesign={() => stepDesign(hovered, 1)}
-            onShuffle={() => onShuffle(hovered)}
+            onPrevDesign={on.pillPrev}
+            onNextDesign={on.pillNext}
+            onShuffle={on.pillShuffle}
             name={pointed?.layerName ?? ''}
             pillRef={pill}
-            onDuplicate={() => pointed && onDuplicate(pointed)}
-            onDelete={() => pointed && onRemove(pointed)}
-            // S4b's "+ Add section", on the gap under the hovered section: the picker opens at THAT gap
-            onAdd={() => openPicker(hovered ? stack.findIndex((i) => same(i, hovered)) : null)}
+            onDuplicate={on.pillDuplicate}
+            onDelete={on.pillDelete}
+            onAdd={on.pillAdd}
             gripProps={pillGrip}
             onWheel={wheelToCanvas}
-            onPointerLeave={(e) => {
-              // leaving the pill for the canvas is the canvas document's own `pointerover`; leaving it for a panel or
-              // the bar reaches neither document, so the hover is let go here. Never mid-drag, which holds the pointer.
-              const f = frame.current?.getBoundingClientRect()
-              if (drag || !f) return
-              if (e.clientX < f.left || e.clientX > f.right || e.clientY < f.top || e.clientY > f.bottom) point(null)
-            }}
+            onPointerLeave={on.pillLeave}
           />
         </section>
         </div>
@@ -4651,8 +4996,8 @@ function EditorShell({
                     subject={null}
                     member={viewAs}
                     live={cardLive}
-                    onDesign={choosePaywall}
-                    onStep={(by) => stepDesign(null, by)}
+                    onDesign={on.choosePaywall}
+                    onStep={on.stepPaywall}
                   />
                 </ReadOnly>
               ) : null}
@@ -4681,8 +5026,8 @@ function EditorShell({
               member={viewAs}
               // Story 5.18 — and with the canvas's own content, one source per tile
               live={cardLive}
-              onDesign={(to) => onDesign(chosen, to)}
-              onStep={(by) => stepDesign(chosen, by)}
+              onDesign={on.designChosen}
+              onStep={on.stepChosen}
             />
             </ReadOnly>
             {/* R-113's panel, mounted and not redrawn, fed what `/pilots` feeds it */}
@@ -4691,17 +5036,18 @@ function EditorShell({
               // Story 5.16: keyed ACROSS THE PAGE SWITCH — page 2's copy of a section is that section — so the panel stays
               // mounted, its open groups stay open, and focus stays on D5d's row when the row was pressed
               key={acrossPages(chosen)}
-              entry={role === undefined ? entry : { ...entry, feed: role }}
+              entry={panelEntry ?? entry}
               state={chosen}
-              onChange={onChange}
+              // R-210: a press on this panel while it is still drawn for a replaced design or section is dropped
+              onChange={on.change}
               // Story 5.6 — the mode's own swatch values, so the Background-role dots are the colours the canvas
               // is actually painting; the mode itself scopes every resolution, write and reset in the panel
               swatches={swatches[mode]}
               mode={mode}
               // R-135: absent on a Light-only project — `sidebar.tsx` draws no row at all without this
-              onClearDark={darkEnabled ? () => askClearDark(chosen) : undefined}
+              onClearDark={darkEnabled ? on.clearDarkChosen : undefined}
               // Story 5.16 — D5d's row, on the main feed of a page that has a page 2 (R-176): a plain callback, never an edit
-              page={feedHere !== null && same(chosen, feedHere) ? { value: page, onChange: choosePage } : undefined}
+              page={pageRow}
               // Story 5.16a — WHERE THE PANEL IS, which is all R-186 and R-187 need before a field offers
               // `{page_number}`: the page on screen (the same `page` the pill and the address read, threaded rather
               // than derived a second way, because the panel is keyed ACROSS the switch) and whether this section is
@@ -4713,34 +5059,16 @@ function EditorShell({
               // STORY 5.18 — the panel's note where a list the section shows is not full on the site's content (P0:488-490
               // puts the zero note here, not on the canvas), and R-194's door beside it: the pill's own Sample content
               // row, which then takes the focus. OUTSIDE the panel's `ReadOnly`: a source is a view (R-192).
-              note={
-                shortfall === null
-                  ? undefined
-                  : {
-                      words: shortfall,
-                      onSample: () => {
-                        chooseSource('sample')
-                        document.getElementById('editor-source')?.focus()
-                      },
-                    }
-              }
-              assets={pool.map((a) => ({ id: a.id, src: `${src}?image=${a.id}`, meta: `${Math.max(1, Math.round(a.bytes / 1024))} KB · SVG` }))}
+              note={shortfallNote}
+              assets={assets}
               sourceRows={chosenRows}
               // Story 5.19 — what P0·5's tag, writer and post pickers offer: the source in force's own rows
               lists={dataLists}
               // R-124: the FIRST ROW of Section Settings, for a section whose category carries it — never in Layers.
               // The value is the instance's own and reaches both emitters as `RenderInput.visibility`, so there is no
               // design control to declare (DW-186); `carriesMemberVisibility` reads R-113's register (DW-185).
-              visibility={
-                memberVisibility[chosen.designId] === true
-                  ? {
-                      value: chosen.memberVisibility,
-                      // Story 5.14: R-124's caption follows View as — R-168's "left out, and the panel says for whom"
-                      previews: viewAs,
-                      onChange: (value) => edit(chosen, (doc) => setMemberVisibility(doc, chosen.instanceId, value)),
-                    }
-                  : undefined
-              }
+              // Story 5.14: R-124's caption follows View as — R-168's "left out, and the panel says for whom"
+              visibility={visibilityRow}
             />
             </>
           ) : (
@@ -4753,7 +5081,7 @@ function EditorShell({
       {/* STORY 5.15 — B3b's floating bar (`B Missing Surfaces.dc.html:700-710`), the one piece of chrome Preview keeps:
           the way back and the three devices, the current one lit. Its devices are the top bar's own control and
           handler (`pickDevice`, R-141), so a device chosen here is the device you come back to. */}
-      {preview ? <PreviewBar device={device} onDevice={pickDevice} onBack={leavePreview} back={backButton} /> : null}
+      {preview ? <PreviewBar device={device} onDevice={on.pickDevice} onBack={on.leavePreview} back={backButton} /> : null}
 
       {/* A completed move, announced politely in `moveSection`'s own words — from here, so a drop on either grip
           (a Layers row's or the canvas pill's) reads out through one live region (UX-DR12) */}

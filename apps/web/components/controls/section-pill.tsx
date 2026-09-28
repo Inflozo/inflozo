@@ -1,9 +1,10 @@
 'use client'
 
-import { useLayoutEffect, useRef, type HTMLAttributes, type Ref, type WheelEvent } from 'react'
+import { memo, Profiler, useLayoutEffect, useRef, type HTMLAttributes, type Ref, type WheelEvent } from 'react'
 import { createPortal } from 'react-dom'
 import { ReadOnly, ring } from '@/components/kit/greyed'
 import { ChevronLeft, ChevronRight, Copy, Grip, Refresh, Trash } from '@/components/kit/icons'
+import { counted } from '@/lib/renders'
 import { NEXT_WORDS, PREVIOUS_WORDS, SHUFFLE_WORDS } from '@/lib/ring'
 
 /* S4b's QUICK-ACTION PILL (`S4 Editor.dc.html`:181, the `top:10px;right:10px` group) — Story 5.4.
@@ -62,7 +63,7 @@ const target = `inline-flex size-[26px] items-center justify-center rounded-full
  *  and the Pro tag's left edge when it is drawn on THIS section (R-125). Null when there is nothing to anchor to. */
 export type PillBox = { rect: Box; bounds: Box; badgeLeft: number | null }
 
-export function SectionPill({
+export const SectionPill = memo(function SectionPill({
   /** Story 5.11 — S6's mono `{n} / {m}` for the HOVERED section, or null where its ring holds one design: the
    *  arrows, the counter and Shuffle are then all absent (UX-DR3) */
   ringCount,
@@ -123,8 +124,10 @@ export function SectionPill({
   const forward = onWheel === undefined ? undefined : (e: WheelEvent<HTMLElement>) => onWheel(e.deltaX, e.deltaY, e.deltaMode)
 
   /* Placed on its own frame loop, as the in-canvas chrome is (`lib/canvas-layer.ts`): position follows LAYOUT, not
-     just render — a fold re-fits the canvas, a section grows as its words are typed. The loop runs after every
-     render, so it always reads this render's `boxOf`. Writes only on change, so a resting pill costs no style
+     just render — a fold re-fits the canvas, a section grows as its words are typed. ONE LOOP WHILE THE PILL SHOWS
+     (Story 5.23b): it starts with `shown` and no render restarts it, because `boxOf` is of fixed identity and reads the
+     paint's CURRENT roots each frame — so it never places the pill against a root a paint has removed, even in the frame
+     before the editor's panels follow the canvas (R-210). Writes only on change, so a resting pill costs no style
      recalculation. */
   useLayoutEffect(() => {
     if (!shown) return
@@ -160,10 +163,11 @@ export function SectionPill({
       id = requestAnimationFrame(loop)
     })
     return () => cancelAnimationFrame(id)
-  })
+  }, [shown, boxOf])
 
   if (!shown) return null
-  return createPortal(
+  // Story 5.23b: the keyboard gate counts the pill's renders — inside the `memo`, so it counts the pill's and not the editor's
+  return <Profiler id="pill" onRender={counted}>{createPortal(
     <ReadOnly on={readOnly}>
     <div
       ref={(el) => {
@@ -236,5 +240,5 @@ export function SectionPill({
     ) : null}
     </ReadOnly>,
     document.body,
-  )
-}
+  )}</Profiler>
+})
