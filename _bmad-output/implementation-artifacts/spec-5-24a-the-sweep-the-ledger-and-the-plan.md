@@ -365,6 +365,11 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
   `resolution:` naming Story 5.24a and its evidence; **no entry deleted or renumbered**.
 - [x] Standing rule 7 — grep for every DW id touched and for "Story 5.24" outside records; fix what it finds.
 - [x] `python3 tools/doc-audit.py --check` (twice) and `pnpm check` — green, with every new check's control seen red.
+- [x] **R-225** (Question 16) — in `epics.md`, every Epic 9 or 10 story whose designs changed is retitled to name them
+  ("A1 — the content model, the stylesheet and designs #1, #3, #4 and #13"), its number and its `sprint-status.yaml` key
+  unchanged; the ledger's owner lines quoting those titles follow, their dated notes left as written; and
+  `plan_failures` holds every library story's title to the designs it builds — red on the Dev commit's `epics.md`, with a
+  planted control in `plan_controls`.
 
 **Acceptance Criteria:**
 
@@ -757,8 +762,8 @@ screen. DW-232 (A34's pager) and DW-268 (Ledger's paywall) are the same finding,
 
 ## Questions for the owner
 
-The owner ruled Questions 1 to 15 on 2026-09-28 — Question 5 after its answer, and Question 8 amended the same day.
-Question 16 was raised at Dev (2026-09-28) and waits for him.
+The owner ruled them all on 2026-09-28 — Question 5 after its answer, Question 8 amended the same day, and Question 16
+raised at Dev and ruled the same day.
 
 ### Question 1 — This sweep is four times the last one. One story, or five in a row?
 
@@ -1032,7 +1037,9 @@ builds #2 Split Rail, #14 Icon Utilities, #15 Big Type and #16 Reveal.
    designs (owner gate)".
 3. Leave the titles as they are; the criteria are what gets built.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Retitle every story whose designs changed so the title names them — "A1 — the
+content model, the stylesheet and designs #1, #3, #4 and #13" — keeping each story's number and its key in the
+tracker"*. Recorded as **R-225**.
 
 ## Owner's manual test
 
@@ -1119,6 +1126,13 @@ screen steps go with Stories 5.24b and 5.24e (§ The four stories after this one
   - **Standing rule 7's grep found two lines the Dev run missed:** `epics.md`'s pinned stack still said size-limit's
     brotli "is what NFR-2's 40 KB means", and its NFR-2 summary named no base. Both now say 40,960 bytes at gzip level 9.
   - **DW-173 corrected** above: "since 2026-09-17" was not true of the 17th itself.
+- **R-225, after the owner's answer to Question 16 (2026-09-28).** The title check on the Dev commit's `epics.md` failed
+  exactly the stories whose designs changed — each named with what its title says and what it builds, e.g. "Story 9.1's
+  title names A1 #1, #2, #3, #4 but the story builds #1, #3, #4, #13" — and none of the others: a range counts only its
+  live numbers, so "designs #9–12" over a retired #9 stands. After the retitle, none; its planted control — the first
+  story's title naming a design the last story builds — is caught, and reported "planted, and not caught" with the check
+  blinded. The ledger's owner lines quoting an old title were rewritten outside their dated notes; the two notes that
+  quote one keep it as history. No `sprint-status.yaml` key changed.
 - **Real services (R-82).**
   - **GitHub Actions API** (`GITHUB_TOKEN`, read-only): `matrix.yml` runs created since 2026-09-17 — 365, of which 362
     `success` and 3 `failure`, all three on 2026-09-17 and explained above; since 2026-09-18, 330 of 330 `success`. The

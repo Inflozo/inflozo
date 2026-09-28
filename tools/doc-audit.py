@@ -1264,9 +1264,9 @@ DOCS = [
   "Holds `dated()`, the one rule every generated page's date follows — its last content change, never HEAD's — and "
   'regenerates every page with the date a day ahead, failing on any byte that moves (DW-132); and holds Epics 9 and '
   "10's cards to the export: each first story builds the owner's [Free] pair and no later one does (R-212), every "
-  "live roster design is built by a story of its category (DW-177), and every module line points at each design's "
-  "own Behaviour module line (DW-164) — each check handed epics.md with one thing broken on every run, and required to "
-  'fail naming it.'),
+  "live roster design is built by a story of its category (DW-177), every module line points at each design's own "
+  "Behaviour module line (DW-164), and every title names the designs its story builds (R-225) — each check handed "
+  'epics.md with one thing broken on every run, and required to fail naming it.'),
  ('design/claude-design-export/Inflozo/S11e Manage Keys Popup.dc.html', 'record', 'Manage keys — the popup frame (S11e)',
   "Claude Design's frame for Story 3.6's API keys surface, and THE FRAME THAT SURFACE IS BUILT FROM — "
   'the owner’s test finding 2 on 2026-09-10, which asked for the long single column to be redesigned '
@@ -1690,6 +1690,15 @@ def plan_failures(epics):
             for n in sorted(pair & set(builds[k])):
                 fails.append(f"PLAN: Story {k} builds {cat}'s [Free] #{n} {live[n]}, which ships in the first story — "
                              f"its \"all of them are Pro\" line is false (R-212)")
+        for k, card in stories:
+            # R-225: a title names the designs its story builds — a range counts its live numbers only (a retired one
+            # leaves a gap the title need not show), and a list names each one
+            said = set()
+            for a, b in re.findall(r'#(\d+)(?:–(\d+))?', card.split('\n', 1)[0].split(' — ', 1)[-1]):
+                said |= set(range(int(a), int(b or a) + 1))
+            if said & set(live) != set(builds[k]):
+                fails.append(f"PLAN: Story {k}'s title names {cat} #{', #'.join(map(str, sorted(said & set(live))))} but "
+                             f"the story builds #{', #'.join(map(str, sorted(builds[k])))} — retitle it (R-225)")
         want = MODULE_LINE.format(spec=v['spec'])
         for k, card in stories:
             if [l for l in card.split('\n') if 'the behaviour modules these designs declare' in l] != [want]:
@@ -1699,20 +1708,22 @@ def plan_failures(epics):
 
 
 def plan_controls(epics):
-    """Standing rule 2 for the three checks above: each is handed epics.md with one thing broken — the first category's
-    first story without its pick's words, the last design of its last story dropped, a module line listing modules —
-    and must fail naming it, or the check is not one."""
+    """Standing rule 2 for the checks above: each is handed epics.md with one thing broken — the first category's first
+    story without its pick's words, the last design of its last story dropped, a module line listing modules, a title
+    naming a design its story does not build — and must fail naming it, or the check is not one."""
     cat, stories = next(iter(library_runs(epics).items()))
     (first, card), (_, last) = stories[0], stories[-1]
     line = DESIGN_LINE.search(last).group(1)
     kept, _, dropped = line.rpartition(' · ')
     module = next((l for l in card.split('\n') if 'the behaviour modules these designs declare' in l), card)
+    other = re.search(r'#\d+', line).group(0)          # a design the last story builds, which the first one does not
     cases = (
         (card, card.replace("the owner's picks (", "the owner's pick of ("),
          f"PLAN: Story {first}, {cat}'s first story, does not build the owner's [Free] pair"),
         (last, last.replace(line, kept, 1), f'PLAN: {cat} {dropped} is built by no story of its category'),
         (card, card.replace(module, '**And** the behaviour modules these designs declare — `nav-drawer` · `dismiss`'),
          f"PLAN: Story {first}'s module line is not the one sentence"),
+        (card, card.replace(' — ', f' — {other} ', 1), f"PLAN: Story {first}'s title names"),
     )
     return [f'PLAN CONTROL: {cat} planted, and not caught — "{want}"' for was, broken, want in cases
             if not any(f.startswith(want) for f in plan_failures(epics.replace(was, broken, 1)))]

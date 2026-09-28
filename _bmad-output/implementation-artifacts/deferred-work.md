@@ -2573,7 +2573,7 @@ amendment: Story 4.10 (2026-09-15) — the library now holds its first five desi
   shipped to broadcast about; owner unchanged.
 severity: medium
 origin: Story 3.7 Create (2026-09-10) — the owner's ruling at Question 1, option 1
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with its
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria already carry it with its
   id: "FR-C5's compatibility watch is built here". *(Story 5.24a's Dev, 2026-09-28: was "**Story 9.1** — A1 Headers'
   content model, stylesheet and designs #1-4, the first story that ships designs to customers and the first in which any
   design declares `ghostCompat`. Epic 7's redeploy path (FR-J14) exists by then, so the notice has somewhere to send
@@ -3040,7 +3040,7 @@ plain: A date a customer picks — "next issue on 1 October" — shows on the pa
 status: open
 severity: low
 origin: Story 4.5 Create (2026-09-13) — Design Notes, "A date is the site's wall-clock day, stored unconverted".
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
   for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first story that prints a written-out authored
   date — A2's Story 9.6 (6 Countdown, whose `countdown` module reads the Date Picker's value, `prd.md:952`), unless an
   Epic 7 compiler story reaches a formatted authored date first.")*
@@ -3060,7 +3060,7 @@ status: open
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — the controls sample's absent note uses P0-9's own sentence, which
   made the gap visible.
-owner: Story 9.8 (A2 — designs #12–14 (owner gate)), whose criteria carry its requirement word for word with its id
+owner: Story 9.8 (A2 — designs #12, #14 and #15 (owner gate)), whose criteria carry its requirement word for word with its id
   (R-195). *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. No story in Epic 5 or Epic 8 (Asset Library) names
   focus; the architecture must decide the emission first, then the first category story with a cropping design (A13, per
   R-51's ⬜) cannot build its panel without it.")*
@@ -3120,7 +3120,7 @@ plain: The header design that sits transparently over a hero picture has to know
 status: open
 severity: medium
 origin: Story 4.5 Create (2026-09-13) — the R-103 sweep through A1·4.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
   for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A1's category story that builds 4 Overlay — Story
   9.1 (A1 — the content model, the stylesheet and designs #1–4).")*
 location: A1 Headers - Spec.md:183 ("A1·4 must know whether the section below it has a loadable image") and
@@ -3241,7 +3241,7 @@ origin: Story 4.5 owner's question (2026-09-13) — "we are yet to build the ico
   canvas … I assume these are part of later stories?" Checked against `epics.md`: selection and click-to-edit
   text are Story 5.2's, inline editing, the four-mark toolbar and the link picker Story 5.3's; the icon slot
   appears in neither, nor anywhere else.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with its
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria already carry it with its
   id: R-121's icon slot, which opens the Icon Picker. *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1 — the content
   model, the stylesheet and designs #1–4) — moved there from Story 5.3 by the owner's ruling R-121 (2026-09-17), because
   none of the pilot sections carries an icon to click and Story 9.1's designs are the first whose buttons carry one
@@ -3932,7 +3932,7 @@ plain: One of the drawn pagination styles shows "← 1 2 3 … 11 →". The owne
 status: open
 severity: low
 origin: R-109 (owner, 2026-09-15), Story 4.10's Q2
-owner: Story 10.114 (A34 — designs #8–10 (owner gate)), whose criteria carry it word for word with its id — R-212's
+owner: Story 10.114 (A34 — designs #1, #8 and #10 (owner gate)), whose criteria carry it word for word with its id — R-212's
   trade moved A34 #1 Numbers from the first story, Story 10.112, to this one, and its design-specific criterion moved
   with it. *(Story 5.24a's Dev, 2026-09-28: was "A34's category story (Epic 10) — redraw A34 #1 Numbers to the indicator
   form in the Claude Design project")*
@@ -3947,7 +3947,7 @@ plain: The Rail header on the pilots page is the resting header with its member-
 status: open
 severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: Stories 9.1 (A1 — the content model, the stylesheet and designs #1–4), 9.2 (A1 — designs #5–8) and 7.3
+owner: Stories 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), 9.2 (A1 — designs #5–8) and 7.3
   (Synthesis Defaults and the emptying rules), 9.1's criteria already carry R-111's navigation partial with its id, and
   9.2 (the resting no-JS takeover and panel) and 7.3 (`default.hbs`'s `<main>` target) carry their halves word for word
   with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A1's category story (Story 9.1 onward)")*
@@ -4015,7 +4015,7 @@ plain: The newsletter row on the pilots page shows the sign-up form, and "Signed
 status: open
 severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: Story 10.75 (A22 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+owner: Story 10.75 (A22 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement
   word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "A22's category story (Epic 10); the
   `{members}` theme form to the story that first ships a design with Social proof on (the runtime owns it:
   `packages/section-runtime/src/marks.ts` `substituteTokens`)")*
@@ -4286,7 +4286,7 @@ severity: low
 origin: Story 4.10's Fix review (sweep 2, edge-case hunter) — `dataRows()` in
   `packages/section-runtime/src/controls.ts` titles every query's rows alike; `tools/check-snapshots.mjs` refuses such a
   panel under R-13, so it cannot ship unnoticed
-owner: Stories 9.2 (A1 — designs #5–8) and 9.1 (A1 — the content model, the stylesheet and designs #1–4), 9.2's
+owner: Stories 9.2 (A1 — designs #5–8) and 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), 9.2's
   criteria already carry the naming of two queries with its id, and 9.1's carry A1's Nav children as a Data-group row
   word for word; the halves already settled stay recorded — the Data group's rows are titled Count and Order (R-170,
   Story 5.19), and R-36 leaves "When nothing matches" undrawn. *(Story 5.24a's Dev, 2026-09-28: was "Story 9.2 names two
@@ -4431,7 +4431,7 @@ severity: medium
 origin: Story 4.11's review (2026-09-17) — Acceptance Auditor and Blind Hunter: epic-4-context.md says "the scan stops
   at the edge of the post body"; `tools/matrix/matrix.spec.mjs` scans all of `#canvas` with a `ponytail:` comment
   deferring the exclusion
-owner: Story 10.83 (A25 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+owner: Story 10.83 (A25 — the content model, the stylesheet and designs #2, #3, #4 and #5), whose criteria carry its requirement
   word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first story whose design binds
   `{{content}}` (A32/A33's category)")*
 location: tools/matrix/matrix.spec.mjs — the `axe.run(document.getElementById('canvas'), …)` calls
@@ -4633,7 +4633,7 @@ origin: Story 5.3's Create run (2026-09-17), the icon sweep over every category 
     it is Ghost": the theme ships a glyph per platform, and the glyphs "are no longer picked per row".
   - `A10 Stats and Numbers - Spec.md:43` offers "Icons: None (default) · Shown" with "the slot above the value", and the
     shared field list at `:49` names no icon field.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
   for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1's content model: whether A1's social
   glyphs are slots, asked in R-83's shape if the 29 August ruling does not already settle it), Story 10.50 (A16's
   content model, the same question), Story 10.26 (A10's content model: the icon field's name and type)")*
@@ -4681,7 +4681,7 @@ severity: low
 origin: Story 5.3 (2026-09-18), which built FR-D4's hard limit (`PropDef.maxChars`, refused at `beforeinput` and clamped
   in `replaceRange`). Found in `A10 Stats and Numbers - Spec.md:43` and again at :1093 — "the editor's character counters
   advise rather than truncate".
-owner: Story 10.1 (A4 — the content model, the stylesheet and designs #1–4), whose criteria carry its half word for
+owner: Story 10.1 (A4 — the content model, the stylesheet and designs #1, #3, #4 and #17), whose criteria carry its half word for
   word with its id — the triage wrote it with DW-247's, which moved to Story 10.5 with A4 #2 Flush Left (R-212). *(Story
   5.24a's Dev, 2026-09-28: was "Story 10.26 (A10 — the content model, the stylesheet and designs #1–4), the first
   category story whose spec asks for one")*
@@ -5461,7 +5461,7 @@ reason: The honest fix is a validator rule — one `data-items-limit` per path, 
 status: open
 severity: low
 origin: Story 5.11's Review (2026-09-20), Blind Hunter and Verification Gap reviewer.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
   for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 — the first shipped ring, where the
   owner sees the fade in his own editor. *(Story 5.23's Create, 2026-09-27: was "Story 5.23, or the first Epic 9 story
   that gives a shipped category a second design"; 5.23 draws nothing.)*")*
@@ -5818,7 +5818,7 @@ status: open
 severity: low
 origin: Story 5.16's Dev (2026-09-22), read in `core/frontend/services/theme-engine/handlebars/utils.js:33-50, :63` on
   both majors (MEASUREMENTS §48 (c)): an item whose path is a prefix of the location gets `nav-current-parent`.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
   for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "the first design that styles `.nav-current-parent`
   (A1's category story, Epic 9)")*
 location: `packages/ghost-shim/src/index.ts` (`navigationItems`, which computes `current` alone)
@@ -5836,7 +5836,7 @@ origin: Story 5.16's Create (2026-09-22), read in the documents: `sections-inven
   §4 set "Pagination style = A34 #1 Numbers" on every collection template, while Invariant 1 says defaults reference
   only [Free] designs, and the export's `A34 Pagination Styles - Spec.md:9` makes A34's [Free] designs **#2 Prev and
   Next** and **#9 Cards** — and `prd.md`'s entitlement table (`:1168`) says "A34 #1–#2 are [Free]", a third answer.
-owner: Story 10.112 (A34 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+owner: Story 10.112 (A34 — the content model, the stylesheet and designs #2, #3, #4 and #9), whose criteria already carry it with
   its id: the owner rules which [Free] design an untouched template's pager is before it is built — A34's [Free] pair is
   now his #2 and #9 (R-212). *(Story 5.24a's Dev, 2026-09-28: was "Story 10.112 (A34's first story, which builds the
   Pagination style control — R-195), with the owner: which Free design an untouched template's pager is. *(Was Story
@@ -5861,7 +5861,7 @@ origin: Story 5.16's Create (2026-09-22), read in the documents: FR-H2 (`prd.md:
   **Numbered / Load More / Infinite scroll**; D5c and D5d (`D5 Canvas Markers and Template Switcher.dc.html:350, :428`)
   draw **None / Older/Newer / Numbers**; A34's roster is ten designs (Numbers, Prev and Next, Bar, Pill, Counter, …);
   and `sections-inventory.md`'s A34 entry speaks of Numbered, Load More and Infinite as design families.
-owner: Story 10.112 (A34 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+owner: Story 10.112 (A34 — the content model, the stylesheet and designs #2, #3, #4 and #9), whose criteria already carry it with
   its id: the owner rules which list names the select's values before it is built. *(Story 5.24a's Dev, 2026-09-28: was
   "Story 10.112 (A34's first story, which builds the Pagination style control — R-195), which must pick one vocabulary
   before it draws the row above D5d's Preview page row. *(Was Story 5.19's until R-195, 2026-09-25.)*")*
@@ -6177,7 +6177,7 @@ origin: Story 5.18's Create (2026-09-24). `packages/ghost-shim/src/index.ts:596-
   carries no member counts, and AD-10 keeps 5.18's reads on the Content API.
 reason: no design in `packages/library/designs/` binds either helper, so the refusal is dormant. The count is an Admin
   read, which belongs in the `site_settings` snapshot Epic 3 refreshes daily (FR-C5), not in a browser read.
-owner: Story 10.5 (A4 — designs #15–17 (owner gate)), whose criteria carry its half word for word with its id —
+owner: Story 10.5 (A4 — designs #2, #16 and #18 (owner gate)), whose criteria carry its half word for word with its id —
   R-212's trade moved A4 #2 Flush Left from Story 10.1 to this one, and #2's Value source moved with it; DW-180's half
   of the triage's sentence stays in Story 10.1. *(Story 5.24a's Dev, 2026-09-28: was "the first design that binds either
   helper (A4 #2's proof value source, `A4 Heroes - Spec.md:81`, or an A22 design), together with Epic 3's snapshot
@@ -6498,7 +6498,7 @@ origin: Story 5.20's Create (2026-09-26). `A32 Paywall - Spec.md` § Editing, in
   the tier: Ghost 6 previews one holding every active paid tier (`create-paid-member-shim.js` 6:18-41, read in source),
   which is how Story 5.20's `postAccess` models its Paid member. Choosing a design materialises the `paywall` doc; C3a
   draws no control that empties it again (FR-I1's emptying rule would give Ghost's box back).
-owner: Story 10.107 (A32 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+owner: Story 10.107 (A32 — the content model, the stylesheet and designs #1, #3, #4 and #5), whose criteria already carry it with
   its id: the Paywall editor gains A32's own half. *(Story 5.24a's Dev, 2026-09-28: was "Story 10.107 (A32's content
   model and first designs) — its criteria gain these in Story 5.20's docs task, with the owner's own call on whether
   "back to Ghost's own box" is a control or undo alone.")*
@@ -6541,7 +6541,7 @@ origin: Story 5.20's Create (2026-09-26). Prices arrive in the smallest currency
   `{{price}}` (`A32 Paywall - Spec.md:217-219`); `packages/ghost-shim/src/index.ts` has no `price`. The tier scope types
   `benefits` as a `list` with no `of` (`packages/library/contexts/matrix.json:522-566`), and a list of plain values opens
   no scope (`contexts.ts:293`), so no design can `data-repeat` over it.
-owner: Story 10.14 (A7 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with its
+owner: Story 10.14 (A7 — the content model, the stylesheet and designs #1, #3, #4 and #12), whose criteria already carry it with its
   id: the first category to print a tier's price and its benefits builds both. *(Story 5.24a's Dev, 2026-09-28: was
   "Story 10.14 (A7's content model and first designs, the first category that prints a tier's price and benefits); A32's
   10.107 inherits them. Named in their criteria by Story 5.20's docs task.")*
@@ -6560,7 +6560,7 @@ origin: Story 5.20's Create (2026-09-26), the planning sweep: `A32 Paywall - Spe
   `:695` ("All, including free") against FR-H6's `type:paid+visibility:public`; `:96` and `:1118` ("greeted by name
   where Ghost has one") against R-28 and AD-38. Story 5.20's `tiers-unfiltered` rule and the existing `@member` refusal
   (`contexts.ts:186-188`) already refuse both at assembly.
-owner: Story 10.107 (A32 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+owner: Story 10.107 (A32 — the content model, the stylesheet and designs #1, #3, #4 and #5), whose criteria already carry it with
   its id: A32 is built without the spec's "Tiers: From Ghost, all" option and without greeting a member by name. *(Story
   5.24a's Dev, 2026-09-28: was "Story 10.107 — it builds A32 without the two options, and its criteria say so (Story
   5.20's docs task). The export is never edited (R-74).")*
@@ -6579,7 +6579,7 @@ severity: low
 origin: Story 5.20's Create (2026-09-26): `C Post Body.dc.html:81` (C1a, "Open paywall editor →") and `:1064` (C1d,
   "Open Paywall →"); EXPERIENCE.md:705 names them. Story 5.20 builds the entry the IA settles on — the Template
   switcher's Template surfaces group (EXPERIENCE.md:218-222).
-owner: Story 10.83 (A25 — the content model, the stylesheet and designs #1–4), whose criteria already carry it with
+owner: Story 10.83 (A25 — the content model, the stylesheet and designs #2, #3, #4 and #5), whose criteria already carry it with
   its id: the Post Content panel's "Open paywall editor →". *(Story 5.24a's Dev, 2026-09-28: was "Story 10.83 (A25's
   content model and first designs) — its criteria gain it in Story 5.20's docs task.")*
 location: `epics.md` Story 10.83 · `C Post Body.dc.html` C1a, C1d
@@ -6758,7 +6758,7 @@ origin: Story 5.21's Create (2026-09-26). `reconcile-designs.md:2755,2776` (a re
   owner"; `A2 Announcement Bars - Spec.md` gives #11 Toast "bottom right", 24px from both edges, and neither it nor A22
   #14's spec names the button. Portal's box is 98px tall at `bottom: 0; right: 0` (Portal 2.69.339 `frame.jsx`,
   2.51.5 the same), and Story 5.21 records it as MEASUREMENTS §55.
-owner: Stories 9.7 (A2 — designs #9–11) and 10.78 (A22 — designs #13–16 (owner gate)), whose criteria each carry the
+owner: Stories 9.7 (A2 — designs #9–11) and 10.78 (A22 — designs #2, #14, #15 and #16 (owner gate)), whose criteria each carry the
   corner decision word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.7 (A2 #9–11) and
   Story 10.78 (A22 #13–16) — each category story decides its corner design's default against the button Story 5.21
   draws.")*
@@ -6952,7 +6952,7 @@ origin: Story 5.23's Dev (2026-09-27), R-205. `clearDarkOverrides` now empties e
   what is in force: the panel row and the `⋯` item read `darkOverridesInForce`, and Theme settings reads D6a's
   `darkOverrideCount`, which counts only what an emitter could use. Executed on production the same day: 0 of 33
   sections hold any record.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement word
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
   for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 — A1's designs #1–4 are the first
   shipped ring, so it is the first story in which a customer can hold a remembered override. It decides whether "Nothing
   to clear" names them or the count includes them, which is a D6a surface question for the owner in R-83's shape.

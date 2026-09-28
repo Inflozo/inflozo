@@ -4927,6 +4927,22 @@ itself. Just show the time it started and total time it took."*
 - Targets: ✅ this entry · ✅ `tools/story-board.py` — `when`, `took`, `adopt_split`, the card, and the self-check with
   its controls · ✅ its catalogue row in `tools/doc-audit.py` · ✅ `docs/project-context.md`'s story-board line.
 
+**R-225 — a library story's title names the designs it builds.** Story 5.24a's Dev, Question 16, ruled **option 1**
+(owner, 2026-09-28): *"Retitle every story whose designs changed so the title names them — "A1 — the content model, the
+stylesheet and designs #1, #3, #4 and #13" — keeping each story's number and its key in the tracker"*.
+
+- **Why it was a question.** R-212's trades moved designs between stories — each pick into its category's first story,
+  the displaced design to the story the pick came from — and DW-177 put four forgotten designs in their categories' last
+  stories, so the old number ranges in those stories' titles went wrong. 5.24a's Ask First reserves an Epic 9 or 10 edit
+  beyond the lines a ruling names for the owner.
+- **The rule.** Every Epic 9 or 10 story whose designs changed names them in its title — "A1 — designs #2, #14, #15 and
+  #16 (owner gate)" — and keeps its story number and its `sprint-status.yaml` key. A title whose range still holds stays
+  a range; a range counts only live numbers, so "designs #9–12" over a retired #9 stands. `tools/doc-audit.py`'s
+  `plan_failures` holds every library story's title to the designs its story builds.
+- **Declined.** Option 2, titles without numbers; option 3, the old titles.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 16 and its task · ✅ built — Story 5.24a's Dev (2026-09-28):
+  `epics.md`'s titles, the ledger's owner lines that quote them, and `plan_failures` with its planted control.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

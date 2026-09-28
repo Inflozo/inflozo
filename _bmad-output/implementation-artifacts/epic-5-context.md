@@ -1278,4 +1278,5 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `dated()`, the one rule for a generated page's date (DW-132) — whose control caught `open(OUT, 'w')` truncating the
     page before `dated()` read it in two generators. An owner line is read without its dated `*(… was …)*` note, which
     keeps the old owner and never owns; and the gate refuses a generator that reads HEAD's date, which a faked day
-    cannot catch.
+    cannot catch. **R-225** (owner, 2026-09-28, 5.24a's Question 16): every Epic 9 or 10 story whose designs moved names
+    them in its title, keys unchanged, and `plan_failures` holds each title to its story's designs.

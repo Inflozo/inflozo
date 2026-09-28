@@ -4168,7 +4168,7 @@ button, link column, social row, inline newsletter form.
 
 *Per-design specs: `A1 Headers - Spec.md` in the export. Frames: `A1-<n> <Name>.dc.html` and `A1-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 9.1: A1 — the content model, the stylesheet and designs #1–4
+#### Story 9.1: A1 — the content model, the stylesheet and designs #1, #3, #4 and #13
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4251,7 +4251,7 @@ So that I can choose more widely within Headers on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A1). · **Frame:** `A1-<n> <Name>.dc.html` · `A1-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.4: A1 — designs #13–15 (owner gate)
+#### Story 9.4: A1 — designs #2, #14, #15 and #16 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4368,7 +4368,7 @@ So that I can choose more widely within Announcement Bars on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A2). · **Frame:** `A2-<n> <Name>.dc.html` · `A2-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.8: A2 — designs #12–14 (owner gate)
+#### Story 9.8: A2 — designs #12, #14 and #15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4408,7 +4408,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A3 Footers - Spec.md` in the export. Frames: `A3-<n> <Name>.dc.html` and `A3-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 9.9: A3 — the content model, the stylesheet and designs #1–4
+#### Story 9.9: A3 — the content model, the stylesheet and designs #1, #3, #4 and #16
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4480,7 +4480,7 @@ runs two to four (A3 #9)
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A3). · **Frame:** `A3-<n> <Name>.dc.html` · `A3-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 9.12: A3 — designs #13–16 (owner gate)
+#### Story 9.12: A3 — designs #2, #13, #14 and #15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4555,7 +4555,7 @@ behind §4's blocking owner gate.
 
 *Per-design specs: `A4 Heroes - Spec.md` in the export. Frames: `A4-<n> <Name>.dc.html` and `A4-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.1: A4 — the content model, the stylesheet and designs #1–4
+#### Story 10.1: A4 — the content model, the stylesheet and designs #1, #3, #4 and #17
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4647,7 +4647,7 @@ So that I can choose more widely within Heroes on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.5: A4 — designs #15–17 (owner gate)
+#### Story 10.5: A4 — designs #2, #16 and #18 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4687,7 +4687,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A5 Features - Spec.md` in the export. Frames: `A5-<n> <Name>.dc.html` and `A5-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.6: A5 — the content model, the stylesheet and designs #1–4
+#### Story 10.6: A5 — the content model, the stylesheet and designs #1, #3, #4 and #6
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4711,7 +4711,7 @@ So that I can start using Features on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A5). · **Frame:** `A5-<n> <Name>.dc.html` · `A5-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.7: A5 — designs #5–8
+#### Story 10.7: A5 — designs #2, #5, #7 and #8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4794,7 +4794,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A6 CTA Banners - Spec.md` in the export. Frames: `A6-<n> <Name>.dc.html` and `A6-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.10: A6 — the content model, the stylesheet and designs #1–4
+#### Story 10.10: A6 — the content model, the stylesheet and designs #1, #3, #4 and #10
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4840,7 +4840,7 @@ So that I can choose more widely within CTA Banners on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A6). · **Frame:** `A6-<n> <Name>.dc.html` · `A6-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.12: A6 — designs #9–12
+#### Story 10.12: A6 — designs #2, #9, #11 and #12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -4901,7 +4901,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A7 Pricing and Tiers - Spec.md` in the export. Frames: `A7-<n> <Name>.dc.html` and `A7-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.14: A7 — the content model, the stylesheet and designs #1–4
+#### Story 10.14: A7 — the content model, the stylesheet and designs #1, #3, #4 and #12
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -4950,7 +4950,7 @@ So that I can choose more widely within Pricing and Tiers on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A7). · **Frame:** `A7-<n> <Name>.dc.html` · `A7-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.16: A7 — designs #9–12
+#### Story 10.16: A7 — designs #2, #9, #10 and #11
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5186,7 +5186,7 @@ So that I can choose more widely within FAQ on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A9). · **Frame:** `A9-<n> <Name>.dc.html` · `A9-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.25: A9 — designs #12–14 (owner gate)
+#### Story 10.25: A9 — designs #13, #14 and #15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5225,7 +5225,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A10 Stats and Numbers - Spec.md` in the export. Frames: `A10-<n> <Name>.dc.html` and `A10-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.26: A10 — the content model, the stylesheet and designs #1–4
+#### Story 10.26: A10 — the content model, the stylesheet and designs #1, #3, #4 and #8
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5249,7 +5249,7 @@ So that I can start using Stats and Numbers on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A10). · **Frame:** `A10-<n> <Name>.dc.html` · `A10-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.27: A10 — designs #5–8
+#### Story 10.27: A10 — designs #2, #5, #6 and #7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5332,7 +5332,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A11 Logo Walls - Spec.md` in the export. Frames: `A11-<n> <Name>.dc.html` and `A11-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.30: A11 — the content model, the stylesheet and designs #1–4
+#### Story 10.30: A11 — the content model, the stylesheet and designs #1, #3, #4 and #10
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5378,7 +5378,7 @@ So that I can choose more widely within Logo Walls on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A11). · **Frame:** `A11-<n> <Name>.dc.html` · `A11-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.32: A11 — designs #9–12
+#### Story 10.32: A11 — designs #2, #9, #11 and #12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5439,7 +5439,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A12 About and Team - Spec.md` in the export. Frames: `A12-<n> <Name>.dc.html` and `A12-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.34: A12 — the content model, the stylesheet and designs #1–4
+#### Story 10.34: A12 — the content model, the stylesheet and designs #1, #3, #4 and #10
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5485,7 +5485,7 @@ So that I can choose more widely within About and Team on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A12). · **Frame:** `A12-<n> <Name>.dc.html` · `A12-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.36: A12 — designs #9–12
+#### Story 10.36: A12 — designs #2, #9, #11 and #12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5653,7 +5653,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A14 Galleries - Spec.md` in the export. Frames: `A14-<n> <Name>.dc.html` and `A14-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.42: A14 — the content model, the stylesheet and designs #1–4
+#### Story 10.42: A14 — the content model, the stylesheet and designs #1, #3, #4 and #14
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5721,7 +5721,7 @@ So that I can choose more widely within Galleries on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A14). · **Frame:** `A14-<n> <Name>.dc.html` · `A14-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.45: A14 — designs #13–15 (owner gate)
+#### Story 10.45: A14 — designs #2, #13 and #15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5760,7 +5760,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A15 Video and Embeds - Spec.md` in the export. Frames: `A15-<n> <Name>.dc.html` and `A15-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.46: A15 — the content model, the stylesheet and designs #1–4
+#### Story 10.46: A15 — the content model, the stylesheet and designs #1, #3, #4 and #12
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5806,7 +5806,7 @@ So that I can choose more widely within Video and Embeds on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A15). · **Frame:** `A15-<n> <Name>.dc.html` · `A15-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.48: A15 — designs #9–12
+#### Story 10.48: A15 — designs #2, #9, #10 and #11
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -5867,7 +5867,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A16 Contact - Spec.md` in the export. Frames: `A16-<n> <Name>.dc.html` and `A16-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.50: A16 — the content model, the stylesheet and designs #1–4
+#### Story 10.50: A16 — the content model, the stylesheet and designs #2, #3, #4 and #9
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -5913,7 +5913,7 @@ So that I can choose more widely within Contact on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A16). · **Frame:** `A16-<n> <Name>.dc.html` · `A16-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.52: A16 — designs #9–12
+#### Story 10.52: A16 — designs #1, #10, #11 and #12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6225,7 +6225,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A19 Featured and Spotlight - Spec.md` in the export. Frames: `A19-<n> <Name>.dc.html` and `A19-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.63: A19 — the content model, the stylesheet and designs #1–4
+#### Story 10.63: A19 — the content model, the stylesheet and designs #1, #3, #4 and #6
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6249,7 +6249,7 @@ So that I can start using Featured and Spotlight on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A19). · **Frame:** `A19-<n> <Name>.dc.html` · `A19-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.64: A19 — designs #5–8
+#### Story 10.64: A19 — designs #2, #5, #7 and #8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6332,7 +6332,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A20 Tag Collections - Spec.md` in the export. Frames: `A20-<n> <Name>.dc.html` and `A20-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.67: A20 — the content model, the stylesheet and designs #1–4
+#### Story 10.67: A20 — the content model, the stylesheet and designs #1, #3, #4 and #14
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6400,7 +6400,7 @@ So that I can choose more widely within Tag Collections on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A20). · **Frame:** `A20-<n> <Name>.dc.html` · `A20-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.70: A20 — designs #13–15 (owner gate)
+#### Story 10.70: A20 — designs #2, #13 and #15 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6439,7 +6439,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A21 Author Showcases - Spec.md` in the export. Frames: `A21-<n> <Name>.dc.html` and `A21-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.71: A21 — the content model, the stylesheet and designs #1–4
+#### Story 10.71: A21 — the content model, the stylesheet and designs #1, #3, #4 and #11
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6485,7 +6485,7 @@ So that I can choose more widely within Author Showcases on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A21). · **Frame:** `A21-<n> <Name>.dc.html` · `A21-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.73: A21 — designs #9–12
+#### Story 10.73: A21 — designs #2, #9, #10 and #12
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6546,7 +6546,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A22 Newsletter - Spec.md` in the export. Frames: `A22-<n> <Name>.dc.html` and `A22-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.75: A22 — the content model, the stylesheet and designs #1–4
+#### Story 10.75: A22 — the content model, the stylesheet and designs #1, #3, #4 and #13
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6615,7 +6615,7 @@ So that I can choose more widely within Newsletter on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A22). · **Frame:** `A22-<n> <Name>.dc.html` · `A22-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.78: A22 — designs #13–16 (owner gate)
+#### Story 10.78: A22 — designs #2, #14, #15 and #16 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6763,7 +6763,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A25 Post Content Layouts - Spec.md` in the export. Frames: `A25-<n> <Name>.dc.html` and `A25-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.83: A25 — the content model, the stylesheet and designs #1–4
+#### Story 10.83: A25 — the content model, the stylesheet and designs #2, #3, #4 and #5
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6792,7 +6792,7 @@ Template switcher's Template surfaces group
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.84: A25 — designs #5–8
+#### Story 10.84: A25 — designs #1, #6, #7 and #8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -6853,7 +6853,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A26 Post Footers - Spec.md` in the export. Frames: `A26-<n> <Name>.dc.html` and `A26-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.86: A26 — the content model, the stylesheet and designs #1–4
+#### Story 10.86: A26 — the content model, the stylesheet and designs #1, #3, #4 and #6
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -6877,7 +6877,7 @@ So that I can start using Post Footers on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A26). · **Frame:** `A26-<n> <Name>.dc.html` · `A26-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.87: A26 — designs #5–8
+#### Story 10.87: A26 — designs #2, #5, #7 and #8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -7045,7 +7045,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A28 Comments - Spec.md` in the export. Frames: `A28-<n> <Name>.dc.html` and `A28-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.93: A28 — the content model, the stylesheet and designs #1–4
+#### Story 10.93: A28 — the content model, the stylesheet and designs #1, #3, #4 and #5
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -7069,7 +7069,7 @@ So that I can start using Comments on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A28). · **Frame:** `A28-<n> <Name>.dc.html` · `A28-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.94: A28 — designs #5–7
+#### Story 10.94: A28 — designs #2, #6 and #7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -7131,7 +7131,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A29 Archive Headers - Spec.md` in the export. Frames: `A29-<n> <Name>.dc.html` and `A29-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.96: A29 — the content model, the stylesheet and designs #1–4
+#### Story 10.96: A29 — the content model, the stylesheet and designs #1, #3, #4 and #8
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -7155,7 +7155,7 @@ So that I can start using Archive Headers on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A29). · **Frame:** `A29-<n> <Name>.dc.html` · `A29-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.97: A29 — designs #5–8
+#### Story 10.97: A29 — designs #2, #5, #6 and #7
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -7238,7 +7238,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A30 Members Pages - Spec.md` in the export. Frames: `A30-<n> <Name>.dc.html` and `A30-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.100: A30 — the content model, the stylesheet and designs #1–4
+#### Story 10.100: A30 — the content model, the stylesheet and designs #1, #3, #4 and #10
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -7284,7 +7284,7 @@ So that I can choose more widely within Members Pages on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A30). · **Frame:** `A30-<n> <Name>.dc.html` · `A30-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.102: A30 — designs #8–10
+#### Story 10.102: A30 — designs #2, #8 and #9
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -7431,7 +7431,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A32 Paywall - Spec.md` in the export. Frames: `A32-<n> <Name>.dc.html` and `A32-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.107: A32 — the content model, the stylesheet and designs #1–4
+#### Story 10.107: A32 — the content model, the stylesheet and designs #1, #3, #4 and #5
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -7458,7 +7458,7 @@ So that I can start using Paywall on my own site.
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A32). · **Frame:** `A32-<n> <Name>.dc.html` · `A32-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.108: A32 — designs #5–8
+#### Story 10.108: A32 — designs #2, #6, #7 and #8
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
@@ -7586,7 +7586,7 @@ review is never a substitute for the sheet**
 
 *Per-design specs: `A34 Pagination Styles - Spec.md` in the export. Frames: `A34-<n> <Name>.dc.html` and `A34-0 Category Proof.dc.html`. The category's story run opens only once `python3 tools/inventory-gen.py --check` prints "current" for it.*
 
-#### Story 10.112: A34 — the content model, the stylesheet and designs #1–4
+#### Story 10.112: A34 — the content model, the stylesheet and designs #2, #3, #4 and #9
 
 As a user choosing how this part of my site looks,
 I want this category to exist with its first designs,
@@ -7646,7 +7646,7 @@ A17's owner gate (R-196) — and A33's owner gate passed: this story is back in 
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A34). · **Frame:** `A34-<n> <Name>.dc.html` · `A34-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
-#### Story 10.114: A34 — designs #8–10 (owner gate)
+#### Story 10.114: A34 — designs #1, #8 and #10 (owner gate)
 
 As a user choosing how this part of my site looks,
 I want the next designs in this category,
