@@ -2536,31 +2536,142 @@ the warm trace, went to Story 5.24 as DW-290.*
 changes; the trace, the keyboard gate and the deployed editor walk hold it. · **Verification:** the development computer
 at 4× CPU throttle, manual-only — a CI number would be noise presented as a gate.
 
-### Story 5.24: The deferred-work sweep at the end of Epic 5
+### Story 5.24a: The sweep: the ledger and the plan
 
 *Added 2026-09-27 by the owner — **R-207** (Story 5.23's Question 3, option 1, widened): "A sweep story, 5.24, like 3.9
 at the end of Epic 3 … It runs after 5.23a. — Do a complete sweep across all deferred items and close whatever we can
-now." Since **R-208** put Story 5.23b straight after 5.23a, it runs after 5.23b.*
+now." Since **R-208** put Story 5.23b straight after 5.23a, it runs after 5.23b. **R-211** (owner, 2026-09-28, 5.24's
+Create, Question 1): "Five stories, one after another, each about the size of 3.9" — this is the first; 5.24b, 5.24c,
+5.24d and 5.24e follow in that order. The triage of every open entry, derived at 5.24's Create, is in this story's spec
+(§ The triage), and each later story's Create re-derives its own group from the ledger.*
 
 As the owner watching a ledger that has only ever grown,
-I want every deferred item that can be finished now to be finished now, across the whole ledger,
-So that the list left open is the list that is genuinely blocked, and every item on it has a living owner.
+I want every entry to have a living owner and the plan to carry what its later stories must build,
+So that the list left open is only what genuinely waits, and no entry can be orphaned again.
 
 **Acceptance Criteria:**
 
 **Given** the deferred-work ledger after Story 5.23b
 **When** every open entry is triaged — in every epic, not only Epic 5's
-**Then** each one is closed by a change that makes its claim false, closed with its evidence where it is already fixed,
-or left open with a named later story that will really build it — and **no entry is deleted or renumbered**
-**And** no open entry is left owned only by a finished story — Epic 5's included
-**And** the checks the ledger says are missing exist, each with a control that fails when the thing it protects is
-reverted (standing rule 2)
-**And** whatever it changes on screen, the owner tests on the deployed site (R-80)
-**And** `pnpm check`, `pnpm keyboard`, the RLS gate and the documentation gate are all green.
+**Then** each one is closed with its evidence where it is already fixed, owned by the one of Stories 5.24b–e that closes
+it, closed on the owner's ruling, or re-homed to one named later story whose acceptance criteria gain it word for word
+with its DW id — and **no entry is deleted or renumbered**
+**And** the gate refuses an open entry whose only owners are finished stories, or whose living owner's text never names
+it
+**And** each category's first story in Epics 9 and 10 builds the two [Free] designs the owner picked (**R-212**, R-17 as
+amended); FR-G2, the tiering note and the inventory say so; the untouched post and page body, comments and author
+archive header use free picks; and a check keeps the plan from drifting from the picks
+**And** every category's owner-gate story and PRD §4 include the member-state pass (**R-222**)
+**And** the rules the ledger holds are written where they govern, and the plan's own checks the ledger names exist — every
+roster design named in a story, the library stories' module lines, the documentation date stamp, the commit-msg guard,
+the catalog's history — each with a control that fails when it is reverted
+**And** the documentation gate is green.
 
-**FRs:** none new — it closes debt against FRs other stories own. · **Frame:** each fix names the frame of the surface
-it touches (R-74). · **Rulings:** R-207. · **Owner test:** yes (the screens its fixes touch). · **Verification:** each
-closure's evidence on the real services it concerns (R-82).
+**FRs:** none new. · **Frame:** none — no screen. · **Rulings:** R-207, R-211, R-212, R-219, R-220, R-221, R-222. ·
+**Owner test:** none — no screen. · **Verification:** `python3 tools/doc-audit.py --check` and the story board's
+self-check, with each new check's control; CI's `check` job on a day's first push (DW-132).
+
+### Story 5.24b: The sweep: accounts, sites and connections
+
+*R-211's second story, after 5.24a: Group B of 5.24a's triage — DW-14, 25, 27, 29, 32, 41, 47, 50, 52, 55, 57, 58, 59,
+65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271 and 272.*
+
+As a customer signing in and connecting my Ghost sites,
+I want the small faults in sign-in, Projects, Sites and connect fixed,
+So that each screen says what is true and nothing I do is lost or misreported.
+
+**Acceptance Criteria:**
+
+**Given** Group B of the sweep's triage, re-derived from the ledger at this story's Create
+**When** each entry is built
+**Then** it is closed by a change that makes its claim false, with a control that fails when the change is reverted
+(standing rule 2)
+**And** a search that finds nothing offers **Clear search**, and closing a window over a searched Sites list keeps the
+search
+**And** an address with a path is refused with *"Inflozo connects a Ghost site at the root of its address — /blog isn't
+supported yet."* (**R-219**)
+**And** the app checks the database's certificate (DW-50), from the file the owner downloads
+**And** every touched surface matches its frame, with zero axe violations at 1440, 834 and 390
+**And** the owner tests it on the deployed site (R-80), and `pnpm check`, the RLS gate and the documentation gate are
+green.
+
+**FRs:** none new. · **Frame:** `S3 Dashboard.dc.html` S3a · `S11 Sites.dc.html` S11a · `S11e Manage Keys Popup.dc.html`
+· `S2 Onboarding.dc.html` S2c and S2b·2 (R-74). · **Rulings:** R-207, R-211, R-219. · **Owner test:** yes. ·
+**Verification:** `app.inflozo.com`, Supabase, T1, public DNS and the GitHub API, read-only where the entry says (R-82).
+
+### Story 5.24c: The sweep: the section runtime, the library and the recordings
+
+*R-211's third story, after 5.24b: Group C of 5.24a's triage — DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159,
+161, 168, 171, 186, 196, 213, 224, 228, 237 and 288.*
+
+As the builder of every design still to come,
+I want the runtime, the validator and the test-site recordings to refuse what they should and record what is real,
+So that Epics 9 and 10 build on rules that hold.
+
+**Acceptance Criteria:**
+
+**Given** Group C of the sweep's triage, re-derived from the ledger at this story's Create
+**When** each entry is built
+**Then** it is closed by a change that makes its claim false, with a control that fails when the change is reverted
+**And** every write to T1 or T3 follows `tools/probe/RESET-PROTOCOL.md`: the owner sees the list before test content is
+added or a leftover probe theme deleted (5.24's Question 14, ruled yes to all three)
+**And** a render-matrix re-baseline waits for the owner's approval (R-116)
+**And** `pnpm check`, the stress theme's gscan (0 errors, 0 warnings on both majors) and the documentation gate are
+green.
+
+**FRs:** none new. · **Frame:** none — no screen. · **Rulings:** R-207, R-211. · **Owner test:** none — no screen. ·
+**Verification:** T1 and T3 through the recorders, under the reset protocol (R-82); the render matrix's container.
+
+### Story 5.24d: The sweep: the checks and the walks
+
+*R-211's fourth story, after 5.24c: Group D of 5.24a's triage — DW-117, 162, 174, 182, 183, 201, 204, 208, 211, 216,
+219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287 and 291.*
+
+As the owner relying on the automatic checks,
+I want the flaky walks steadied and the missing checks built,
+So that a red check means a real fault and a green one means the thing works.
+
+**Acceptance Criteria:**
+
+**Given** Group D of the sweep's triage, re-derived from the ledger at this story's Create
+**When** each entry is built
+**Then** each flaky step waits for the condition it means, and each missing check exists with a control that fails when
+the thing it protects is reverted
+**And** the app's fonts are served from Inflozo itself (DW-246) and every screen is unchanged — held by a screenshot
+comparison, not by eye
+**And** `pnpm check`, `pnpm keyboard` and the deployed walks pass.
+
+**FRs:** none new. · **Frame:** none — nothing on screen changes. · **Rulings:** R-207, R-211. · **Owner test:** none. ·
+**Verification:** the deployed walks on `app.inflozo.com`, Vercel's deployment logs (DW-204), CI's `check` job (DW-269).
+
+### Story 5.24e: The sweep: the editor
+
+*R-211's fifth and last story, after 5.24d: Group E of 5.24a's triage — DW-102, 181, 187, 188, 189, 198, 199, 202, 203,
+205, 207, 212, 223, 225, 226, 229, 235, 240, 241, 242, 243, 244, 248, 250, 256, 258, 259, 270, 273, 274, 275, 277, 278,
+280, 281, 282, 283 and 290.*
+
+As a user building a page,
+I want the editor's small faults fixed,
+So that it shows what is true and keeps what I did.
+
+**Acceptance Criteria:**
+
+**Given** Group E of the sweep's triage, re-derived from the ledger at this story's Create
+**When** each entry is built
+**Then** it is closed by a change that makes its claim false, with a control that fails when the change is reverted
+**And** the owner's rulings of 2026-09-28 are built: the signed-out save state (**R-213**); the browser's copy erased at
+sign-out after sending what is owed (**R-214**); Ghost's floating Subscribe button assumed off when unreadable, and a
+Ghost surface listed in Layers only when the site shows it (**R-215**); a sign-up section's settings saying when the site
+cannot take its sign-up (**R-216**); a Layers row's pointer outlining its section and bringing it into view (**R-217**);
+a capped list's header keeping its range (**R-218**)
+**And** every touched surface matches its frame, with zero axe violations at 1440, 834 and 390
+**And** the owner tests it on the deployed site (R-80), and `pnpm check`, `pnpm keyboard` and the deployed walks pass.
+
+**FRs:** FR-D10, FR-C2, FR-H6 and FR-D13, amended by R-213, R-215, R-216 and R-218. · **Frame:** `S4 Editor.dc.html`
+S4a–c · `D8 Editor Below 1440.dc.html` · B7 · `S5 Section Picker.dc.html` S5a · B6 · B5a–c · B9 and D5e · `C Post
+Body.dc.html` C3a and C4 · `P0-1 Inline Text Toolbar.dc.html` · P0-3 (R-74). · **Rulings:** R-207, R-211, R-213–R-218. ·
+**Owner test:** yes. · **Verification:** the editor, lock and live-content walks on `app.inflozo.com`, T1 and T3,
+Supabase (R-82).
 
 *Exit:* the play-loop gate green (Story 5.23), and the full editing loop on the five pilot sections at 60 fps on NFR-1's
 reference environment and fixture (Stories 5.23a and 5.23b, R-206, R-208).

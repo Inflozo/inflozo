@@ -112,7 +112,11 @@ development_status:
   5-23-the-play-loop-gate: done
   5-23a-the-canvas-redraws-only-what-changed: done
   5-23b-the-editor-s-panels-redraw-only-what-changed-at-60-fps: done
-  5-24-the-deferred-work-sweep-at-the-end-of-epic-5: ready-for-dev
+  5-24a-the-sweep-the-ledger-and-the-plan: ready-for-dev  # R-211: Story 5.24 split into five, run in order
+  5-24b-the-sweep-accounts-sites-and-connections: backlog
+  5-24c-the-sweep-the-section-runtime-the-library-and-the-recordings: backlog
+  5-24d-the-sweep-the-checks-and-the-walks: backlog
+  5-24e-the-sweep-the-editor: backlog
   epic-5-retrospective: optional
 
   epic-6: backlog

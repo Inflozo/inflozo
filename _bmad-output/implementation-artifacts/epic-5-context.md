@@ -38,8 +38,15 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
   - R-209 (owner, 2026-09-28, 5.23a's Review Q2): a hover whose section the keyed paint kept stays; one whose section was redrawn is let go — the frozen "the hover clears" read as "behave as a full repaint looked".
 - Story 5.23b: The editor's panels redraw only what changed, at 60 fps (R-208)
   - R-210 (owner, 2026-09-28, 5.23b's Create Q1): canvas first, panels a frame later for every change to a section; a control change stays in its frame (FR-F4); a press on a stale settings panel is ignored.
-- Story 5.24: The deferred-work sweep at the end of Epic 5 (R-207)
-  - Story 5.24's Create (2026-09-28): the whole ledger triaged at `6bf7c4e0` — already fixed, closable now in five area groups, or re-homed to one named later story whose text gains it; Question 1 asks the owner to run the groups as five stories (5.24a–e), Question 2 whether the free pair is his R-17 pick or "the first two" (the plan disagrees with his picks).
+- Story 5.24a: The sweep: the ledger and the plan (R-207, R-211)
+  - R-211 (owner, 2026-09-28, 5.24's Create Q1): the sweep runs as five stories in order — 5.24a the ledger and the plan, 5.24b accounts, sites and connections, 5.24c the section runtime, the library and the recordings, 5.24d the checks and the walks, 5.24e the editor; 5.24a's spec holds the triage of every open entry (at `6bf7c4e0`).
+  - R-212 (Q2): the free pair is the owner's R-17 pick in every category — each first story trades its misplaced designs for the pick, and the untouched body, comments and author header move to A25 #2, A28 #1, A29 #1.
+  - R-219–R-222 (Q10–Q13): a Ghost under a path is refused and said so, support is future work (PRD Appendix G); Re-check keeps no wait; no copy or move across page types at launch, Global sections are future work (Appendix G); every owner gate includes the member-state pass. Q5 (DW-40) awaits the owner.
+- Story 5.24b: The sweep: accounts, sites and connections (R-211)
+- Story 5.24c: The sweep: the section runtime, the library and the recordings (R-211)
+- Story 5.24d: The sweep: the checks and the walks (R-211)
+- Story 5.24e: The sweep: the editor (R-211)
+  - R-213–R-218 (owner, 2026-09-28, 5.24's Create Q3, Q4, Q6–Q9): the signed-out save state (B6's sixth); sign-out erases the browser copy after sending; Ghost's floating button assumed off when unreadable, and a Ghost surface's Layers row only when the site has it on; a sign-up section's settings say when the site cannot take its sign-up; a Layers row's pointer outlines and scrolls to its section; a capped list's header keeps its range.
 
 ## Requirements & Constraints
 
@@ -1259,3 +1266,5 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     `SYNTHESIS_DEFAULTS` rows Pro (`a25/1`, `a28/2`, `a29/2`) — Question 2; (2) many "later" owners are stories whose own
     text never names the entry, so each gains the sentence with its DW id; (3) a gate check is planned that refuses an
     open entry owned only by finished stories; (4) DW-267 stays Story 7.13's, so the sweep has no Schema phase.
+    The owner ruled the same day (R-211 to R-222): five stories, his free-pair picks everywhere, and the rest as the
+    lines above record.

@@ -4722,6 +4722,161 @@ speed test passes and Epic 5 closes as you ruled."*
     never holds the panels — each red with its guard taken away; the journey checks that read a panel in the instant after
     a section operation now wait for it, and check nothing different.
 
+**R-211 — the deferred-work sweep runs as five stories, one after another.** Story 5.24's Create, Question 1, ruled
+**option 1** (owner, 2026-09-28): *"Five stories, one after another, each about the size of 3.9"*.
+
+- **Why it was a question.** R-207 made the sweep one story. Its triage, derived at 5.24's Create, closes about four
+  times what Story 3.9 closed, plus the plan's own edits; a Dev commit needs every task ticked, so one story meant one
+  uncommitted build, one review of a very large change and one long test.
+- **The rule.** Story 5.24 becomes **5.24a** *The sweep: the ledger and the plan* (every entry re-homed, the plan's own
+  corrections, the gate that refuses an orphaned entry), then **5.24b** *accounts, sites and connections*, **5.24c** *the
+  section runtime, the library and the recordings*, **5.24d** *the checks and the walks*, **5.24e** *the editor*, in that
+  order. 5.24a's spec holds the triage for all five; each later story's Create re-derives its own group from the ledger.
+  Epic 6 starts after 5.24e. Epic 5's exit is unchanged (R-208).
+- **Declined.** Option 2, one story; option 3, three stories.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.24's spec — Question 1, renamed and re-scoped to 5.24a.
+  - ✅ `epics.md` — Story 5.24's card becomes the five cards.
+  - ✅ `sprint-status.yaml` — 5.24's key becomes 5.24a's; 5.24b–e added.
+  - ✅ `epic-5-context.md`.
+  - ⬜ built — Stories 5.24a–e.
+
+**R-212 — the free pair is the owner's pick in every category, and the plan follows it.** Story 5.24's Create,
+Question 2, ruled **option 1** (owner, 2026-09-28): *"Your picks, everywhere"*.
+
+- **Why it was a question.** R-17 as amended (2026-08-28) makes each category's two [Free] designs the owner's pick,
+  recorded as the export's `**[Free] designs:**` line, and `inventory-gen.py` already publishes the picks. But
+  `epics.md`'s E9/E10 lists, FR-G2, the tiering note and `sections-inventory.md:12` still say "the first two", and in
+  all but four categories the picks are not #1 and #2; three `SYNTHESIS_DEFAULTS` rows (`a25/1`, `a28/2`, `a29/2`) are
+  Pro under the picks, which Invariant 1 forbids.
+- **The rule.**
+  - Each category's first story builds the two designs the owner picked plus two Pro designs (the owner's 2026-09-04
+    sizing): the pick trades places with the design the plan had put there, its design-specific criteria moving with it.
+  - The untouched pages use a free pick: the post and page body **A25 #2 Plain**, comments **A28 #1 Rule**, the author
+    archive's header **A29 #1 Centred**. A34's pager stays Story 10.112's question (DW-232).
+  - FR-G2, the tiering note, `sections-inventory.md` and Invariant 1 name the owner's pick; a gate check fails a
+    category whose first story does not name its pair.
+- **Declined.** Option 2, the first two.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.24a's spec — Question 2 and its task.
+  - ⬜ built — Story 5.24a: `epics.md`, `prd.md` (FR-G2, the tiering note), `sections-inventory.md` (:12, §3–§4,
+    Invariant 1), `SYNTHESIS_DEFAULTS`, the check.
+
+**R-213 — a signed-out editor says so: the save indicator's sixth state.** Story 5.24's Create, Question 3, ruled
+**option 1** (owner, 2026-09-28): *"A sixth state in the same red panel"*.
+
+- **Why it was a question.** A save refused because the sign-in has run out (401) was retried as if the connection had
+  dropped, under "we will send it when the connection returns" (DW-202). B6 draws five states and R-142 names them.
+- **The rule.** In B6's red panel: *"You've been signed out. Your work is safe on this device — sign in again and it will
+  be sent."*, with a **Sign in** button that opens a new tab so this one keeps its work; once signed in, the owed work is
+  sent. Only a refusal that signing in cures takes this state; a dropped connection keeps Retrying.
+- **Declined.** Option 2, Retrying with a new sentence; option 3, sending the tab to the sign-in page.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 3 · ⬜ built — Story 5.24e, with FR-D10's states and
+  EXPERIENCE's persistence indicator row.
+
+**R-214 — signing out erases this browser's copy of the work, after sending what is owed.** Story 5.24's Create,
+Question 4, ruled **option 1** (owner, 2026-09-28): *"Erase it at sign-out, after first sending anything not yet sent;
+if it cannot be sent, ask before signing out"*.
+
+- **Why it was a question.** The local database (`inflozo-doc-<user>`) outlives sign-out (DW-203) — a privacy posture on
+  a shared computer, traded against work not yet sent.
+- **The rule.** Sign out sends what is owed, then deletes the browser's copy; when it cannot send, it asks before signing
+  out, and signing out anyway erases. The two-tab half of DW-203 was already closed by the edit lock (Story 5.17).
+- **Declined.** Option 2, always erase; option 3, keep it.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 4 · ⬜ built — Story 5.24e.
+
+**R-215 — the floating Subscribe button is assumed off when it cannot be read, and Layers lists a Ghost surface only
+when the site shows it.** Story 5.24's Create, Question 6, ruled **option 1** (owner, 2026-09-28): *"Assume off, Ghost's
+own default. And also if it is off by default - do not show it on layers sidebar panel."*
+
+- **Why it was a question.** `portalState`'s unreadable branch assumed on, while Ghost's own default is off on both
+  majors (DW-277); FR-C2 named the default as the owner's.
+- **The rule.**
+  - Unreadable means off; the Sites screen still asks, as today.
+  - A row under Layers' *From your Ghost site* appears only when the site has that surface on — the Subscribe button when
+    `portal_button` is on, and, by the same reading, the Announcement bar when the site has an announcement to show. The
+    row follows the site's setting, not the window's width or View as.
+- **Declined.** Option 2, assume on.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 6 · ⬜ built — Story 5.24e, with FR-C2's sentence, the
+  Layers group (Story 5.21's ruling of 2026-09-26) and EXPERIENCE's Ghost's Own Surfaces row.
+
+**R-216 — a sign-up section's settings say when the site cannot take its sign-up.** Story 5.24's Create, Question 7,
+ruled **option 1** (owner, 2026-09-28): *"The settings say it too, in the Sites screen's own sentence, matched to what
+the section asks for"*.
+
+- **Why it was a question.** The panel line spoke only for members off (DW-274), while the Sites screen also names
+  invite-only, paid-only and paid sign-up without Stripe; FR-H6 binds the line to members disabled.
+- **The rule.** The line follows the ask: a free sign-up on an invite-only or paid-only site, a paid one with Stripe
+  off, each in the Sites screen's own sentence (R-170).
+- **Declined.** Option 2, members off only.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 7 · ⬜ built — Story 5.24e, with FR-H6's sentence.
+
+**R-217 — pointing at a Layers row outlines its section and brings it into view.** Story 5.24's Create, Question 8,
+ruled **option 2** (owner, 2026-09-28): *"Outline it and scroll it into view."*
+
+- **Why it was a question.** The hover worked one way only (DW-188); no frame or ruling asked for the other.
+- **The rule.** Pointing at a row gives its section the hover outline and scrolls it into view the way choosing a row
+  does (R-156, a sticky section exempt). A routine call beside it, stated to the owner: the scroll waits until the
+  pointer rests on the row for a moment, so sweeping down the list does not make the page jump.
+- **Declined.** Option 1, outline without scrolling (the recommendation); option 3, as it was.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 8 · ⬜ built — Story 5.24e, with EXPERIENCE's Layers row.
+
+**R-218 — a capped list's header keeps its range.** Story 5.24's Create, Question 9, ruled **option 2** (owner,
+2026-09-28): *"Both on one line: "3 items · 2 shown in this design · 2–6""*.
+
+- **Why it was a question.** FR-D13's "shown in this design" sentence, approved at Story 5.11, replaced P0-3's range
+  (DW-212).
+- **The rule.** The header reads *"{n} items · {shown} shown in this design · {min}–{max}"*.
+- **Declined.** Option 1, as it was; option 3, the range on hover.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 9 · ⬜ built — Story 5.24e.
+
+**R-219 — a Ghost under a path is refused and said so; supporting it is future work.** Story 5.24's Create, Question
+10, ruled **option 1** (owner, 2026-09-28): *"Not supported yet, and say so: "Inflozo connects a Ghost site at the root
+of its address — /blog isn't supported yet." - But add it as a future work which needs to be supported."*
+
+- **Why it was a question.** Connect dropped a path and blamed Ghost with a 404 (DW-55).
+- **The rule.** Connect refuses an address with a path in that sentence, the path derived from what was typed. Support
+  is recorded in PRD Appendix G, the list of what v1 defers, so it is not lost.
+- **Declined.** Option 2, support now; option 3, as it was.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 10 · ✅ `prd.md` Appendix G · ⬜ built — Story 5.24b.
+
+**R-220 — Re-check has no wait.** Story 5.24's Create, Question 11, ruled **option 1** (owner, 2026-09-28): *"No wait, as
+today"*.
+
+- **Why it was a question.** Story 3.7 left the cooldown's figure to the owner (DW-64).
+- **The rule.** Re-check plan and Re-check connection ask the customer's Ghost on every press; the double press stays
+  blocked (R-98).
+- **Declined.** Options 2 and 3, a sixty-second wait, shown or silent.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 11 · ⬜ DW-64 closed on this ruling by Story 5.24a.
+
+**R-221 — no copying or moving a section across page types at launch; Global sections are future work.** Story 5.24's
+Create, Question 12, ruled **option 1** (owner, 2026-09-28): *"Not at launch - But add a future requirement to mark a
+section as Global and Global sections are added in a separate Global library from which these Globasl sections can be
+added on any page. If we modify a Global section anywhere, it will update that Global section everywhere. We can unlink
+a Global section so that changes are not applied to other Global sections."*
+
+- **Why it was a question.** No story offered moving or copying a section onto another template (DW-122).
+- **The rule.** v1 builds neither; FR-H7's sentence stays the rule any later move follows. **Global sections** are
+  recorded in PRD Appendix G in the owner's terms: any section can be marked Global; Global sections live in a separate
+  Global library and can be added to any page; changing one anywhere changes it everywhere; unlinking one makes a copy
+  that no longer follows.
+- **Declined.** Option 2, Copy to / Move to now; option 3, a story after Epic 5.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 12 · ✅ `prd.md` Appendix G · ⬜ DW-122 closed on this ruling by
+  Story 5.24a.
+
+**R-222 — every category's owner gate includes the member-state pass.** Story 5.24's Create, Question 13, ruled
+**option 1** (owner, 2026-09-28): *"Add the pass to §4's owner check and to every category's owner-gate story"*.
+
+- **Why it was a question.** FR-D16 leaned on "the owner's manual member-state pass at each category gate", and no gate
+  had one (DW-221).
+- **The rule.** At each category's owner gate the owner looks at every members-aware design as Logged out user, Free
+  member and Paid member before approving; PRD §4's owner check and every owner-gate story say so.
+- **Declined.** Option 2, deleting FR-D16's sentence.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 13 · ⬜ built — Story 5.24a: `prd.md` §4 and every
+  owner-gate story in `epics.md`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

@@ -1,107 +1,94 @@
 ---
-title: 'Story 5.24 — The deferred-work sweep at the end of Epic 5'
+title: 'Story 5.24a — The sweep: the ledger and the plan'
 type: 'chore'
 created: '2026-09-28'
 status: 'ready-for-dev'
-owner_test: pending
+owner_test: none
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
 
 ## In plain English
 
-Every item set aside during the build so far — in every epic, not only this one — is fixed, shown to be already
-fixed, or written into the later story that will really build it, so the list that stays open is only what has to wait.
-On screen you will see small fixes: a **Clear search** link when a search finds nothing, a Sites search that survives
-closing a window, bold and italic kept when you paste from a Google Doc, a different small picture for each kind of
-section in Layers, the sample article's players playing, Ghost's floating Subscribe button wearing your site's own
-icon, and editing passing to your other window a few seconds after you close the tab that had it. Behind the scenes,
-flaky or missing checks are fixed or added, and the plan for the later epics is corrected — including which designs are
-free, where it still disagrees with your ruling of 28 August (Question 2).
+The first of the five sweep stories you ruled for (R-211) gives every item on the list of set-aside work a living owner:
+each is closed with its proof, handed to the one of the next four sweep stories that fixes it, or written word for word
+into the later story that will build it — and a new check stops an item ever again being left with only finished
+stories to build it. It also carries your rulings into the plan: your free-design picks in every category of Epics 9 and
+10 (R-212), the look as each kind of visitor at every category's sign-off (R-222), and Ghost-under-a-path support and
+Global sections written into the PRD as future work (R-219, R-221). Nothing in the product changes; you will see it on
+the story board, where every open item names its owner and each later story shows the lines it gained.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
 ## Intent
 
 **Problem:** the deferred-work ledger is the one list of real findings that were not their story's to fix, and it has
-only ever grown. Derived at this Create from `deferred-work.md` at `6bf7c4e0` (the command is under Verification), it
+only ever grown. Derived at 5.24's Create from `deferred-work.md` at `6bf7c4e0` (the command is under Verification), it
 holds entries from every epic; many name a story that is already done, or no one ("whoever next touches…",
 "unowned"); several are already fixed while the ledger lags; and some carry an owner that is a later story whose own
 text never mentions them — so nothing guarantees they will ever be built. R-207 (owner, 2026-09-27): *"Do a complete
 sweep across all deferred items and close whatever we can now."*
 
-**Approach:** triage every open entry, in every epic, to exactly one of four outcomes, and act on it:
+**Approach:** 5.24's Create triaged every open entry, in every epic, to one outcome — already fixed, closable now,
+genuinely later, or the owner's — and **R-211** runs the closures as five stories, one after another. This one owns the
+ledger and the plan:
 
-1. **Already fixed** → closed with its evidence, re-executed at Dev.
-2. **Closable now** — nothing a later epic builds is needed → closed by the change its entry names, with a control that
-   fails when the change is reverted (standing rule 2).
-3. **Genuinely later** → one concrete later story is named, and that story's text in `epics.md` gains the requirement
-   word for word with its DW id, so it will really build it.
-4. **The owner's** → asked under *Questions for the owner* (R-83), and built or closed as he rules.
-
-The closures are grouped by area, not by entry number, because several entries close on one change. And one new check
-makes the rule structural: **the gate refuses an open entry whose only owners are finished stories**, so the ledger
-cannot drift back to where it is today.
+1. **Every entry is re-homed** — to the one of Stories 5.24b–e that closes it, or to the one later story that builds it,
+   whose acceptance criteria gain the requirement word for word with its DW id.
+2. **The already-fixed are closed with their evidence**, and the entries the owner closed by ruling are closed on it.
+3. **The plan's corrections land** — the owner's free pair in every category (R-212), the member-state pass at every
+   owner gate (R-222) — with the rules and plan checks the ledger names.
+4. **One new check makes it structural:** the gate refuses an open entry whose only owners are finished stories, so the
+   ledger cannot drift back to where it is today.
 
 ## Boundaries & Constraints
 
 **Always:**
 
-- **The ledger is the source.** The triage below was derived at Create and is re-derived at Dev from the ledger at
-  HEAD; an entry added since is triaged the same way, and a verdict that no longer holds is re-made, never forced.
-- **An entry closes only on evidence** — a change whose control was seen to fail with the change reverted, a fixed
-  claim re-executed, or the owner's signed ruling. A `resolution:` line says which, and the comment beside the code
-  it governs is updated with it (standing rule 3).
+- **The ledger is the source.** The triage below was derived at 5.24's Create and is re-derived at Dev from the ledger
+  at HEAD; an entry added since is triaged the same way, and a verdict that no longer holds is re-made, never forced.
+- **An entry closes only on evidence** — a fixed claim re-executed, a change whose control was seen to fail with the
+  change reverted, or the owner's signed ruling. A `resolution:` line says which (standing rule 3).
 - **A later owner is one named story that is not done**, and its text in `epics.md` carries the requirement with the
   DW id (R-195's lesson: a moved requirement is pasted into the receiving story, never only referenced).
-- **Counts are derived, never written** (standing rule 4) — in code, in copy and in these documents.
-- **The export is never edited** (R-74); every surface a fix touches names its frame, and any departure is recorded
-  beside the code.
-- **Every pressed control says so and every route keeps its own skeleton** (R-98); zero axe violations on every
-  touched surface at 1440, 834 and 390.
-- **Real infrastructure for every closure that concerns it** (R-82): Supabase, Vercel, T1 `ghost6.inflozo.com`, T3
-  `ghost5.inflozo.com`; a write to T1 or T3 follows `tools/probe/RESET-PROTOCOL.md` (inventory → the owner looks →
-  he confirms → act).
+- **The orphan check lands in the same commit as the re-homing**, so `main` never carries a red gate.
+- **Counts are derived, never written** (standing rule 4). The export is never edited (R-74).
 - **Every vocabulary change ends with a grep for the old name** (standing rule 7).
 
 **Ask First:**
 
-- **Every question below is open until the owner rules it, and Dev stops at each one** it reaches unruled.
-- **A closure that turns out bigger than its triage says** stops, and the entry is re-homed to a named story instead of
-  growing this one.
-- **Any render-matrix re-baseline** (R-116 — the owner approves a re-baseline; DW-171 swaps baselines).
-- **Any T1 or T3 change beyond a probe's own restored fixture** (Question 14).
+- **Question 5 is open until the owner rules it**, and the task it decides waits for him.
+- **A closure bigger than its triage says** stops, and the entry is re-homed to a named story instead.
+- **Any edit to an Epic 9 or 10 story beyond the lines a ruling or an entry names.**
 
 **Never:**
 
 - **No entry is deleted and no id is renumbered** (the ledger's own format).
-- **No design file is edited** (AD-35): a pilot's defect goes to its category story.
-- **No migration and no Schema phase**: the one entry that wants one (DW-267) stays with Story 7.13, which already
-  carries it.
-- **No new runtime dependency**; no BMAD update (R-91); no refactor an entry does not name.
+- **No design file is edited** (AD-35), and no migration.
+- **No product change** beyond `SYNTHESIS_DEFAULTS`' three rows (R-212), which draws nothing today because no A25, A28
+  or A29 design exists; no BMAD update (R-91).
 
 ## I/O & Edge-Case Matrix
 
 | Scenario | Input / State | Expected Output / Behavior | Error Handling |
 |---|---|---|---|
-| An orphaned entry | an open entry whose only owners are done stories | the gate refuses the commit and names the entry and what to do | exit 2, like `dup_dw_ids` |
-| A later owner whose text is silent | an open entry naming Story N, whose card in `epics.md` never names its DW id | refused the same way, unless N's spec names it | exit 2 |
-| Two `site_settings` writers race | a daily check lands between the editor's re-read and its write | both keys survive | the loser re-reads and re-patches, three tries |
-| A search finds nothing | Projects or Sites, `?q=zzzz` | the sentence ends with **Clear search**, back to the unfiltered page | none |
-| A window closes over a searched list | Sites `?q=ghost5`, Manage keys opened then closed | still `?q=ghost5`, still filtered | none |
-| Paste from a Google Doc | a bold and an italic word into a rich field | both marks kept; Docs' `<b style="font-weight:normal">` wrapper adds none | marks outside the field's allowed set dropped |
-| A tab holding editing closes | two windows, A editing, A closed | B can edit a few seconds later; a reload of A keeps A editing | a late release matches nothing |
-| A misplaced doc is saved | `a24/1` posted under `home` | 422 before the RPC; nothing stored | the editor opens as before |
-| A connect to a private address | `https://127.0.0.1.nip.io` | refused with the existing unreachable sentence and a `blocked` audit row | T1 still connects |
-| Ghost busy at connect | a 429 or a 5xx | "…just now. Try again in a moment." (not "check the keys") | a 404 stays an address problem |
-| A hand-picked list past 100 | `LIST_LIMIT + 1` picks | every pick, in picked order | one read per 100 |
+| An orphaned entry | an open entry whose only owners are done stories | the gate refuses the commit, naming the entry and what to do | exit 2, like `dup_dw_ids` |
+| A later owner whose text is silent | an open entry naming Story N, whose card never names its DW id | refused the same way, unless N's spec names it | exit 2 |
+| An entry owned by a sweep story | owner "Story 5.24c" | passes while 5.24c is not done, because 5.24c's card names it | none |
+| A first story without its free pair | a category's first story names a design the owner did not pick | the check fails, naming the category and its pair | the check's message |
+| A roster design named by no story | a live design missing from every story of its category | the check fails, naming it | the check's message |
+| A module line that lists modules | a library story naming modules instead of pointing at its designs' own lines | the check fails, naming the story | the check's message |
+| An unchanged page, regenerated the next day | a generator run with the date a day ahead | identical bytes | none |
+| A Dev commit with an unticked task | `tools/hooks/commit-msg` on a staged spec | refused, naming the count | the board's self-check runs the hook |
+| A catalog key dropped between drops | a key in an earlier committed catalog, gone now | `check-catalog` fails, naming the key and its last commit | none |
 
 </frozen-after-approval>
 
 ## The triage
 
-Derived at Create from the ledger at `6bf7c4e0`, each entry read in full and checked in the code at that commit.
-**Re-derive it at Dev** (Verification's first command) and re-triage anything new.
+Derived at 5.24's Create from the ledger at `6bf7c4e0`, each entry read in full and checked in the code at that commit.
+**Re-derive it at Dev** (Verification's first command) and re-triage anything new. It is the triage for all five sweep
+stories; each later story's Create takes its own group from here.
 
 ### Already fixed — closed with their evidence
 
@@ -115,15 +102,15 @@ Derived at Create from the ledger at `6bf7c4e0`, each entry read in full and che
 | DW-206 | `section-picker.tsx:280` (R-203); `floor.spec.mjs:447`, `journey.spec.mjs:3260`, walk step 98 |
 | DW-263 | `epics.md` Story 10.107 ("chosen, never placed") and 10.109; `placement.ts:33` `NON_PLACEABLE` |
 
-### Closed by this story — by group
+### Closed by the sweep — by story
 
-| Group | Entries |
+| Story | Entries |
 |---|---|
-| **A — the ledger and the plan** | DW-111, 118, 132, 140, 143, 148, 164, 172, 177, 179, 217, 227 · the new orphan check · Questions 2, 5, 11, 12, 13 |
-| **B — accounts, sites and connections** | DW-14, 25, 27, 29, 32, 41, 47, 50, 52, 57, 58, 59, 65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271, 272 · Questions 10, 15 |
-| **C — the section runtime, the library and the recordings** | DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159, 161, 168, 171, 186, 196, 213, 224, 228, 237, 288 · Question 14 |
-| **D — the checks and the walks** | DW-117, 162, 174, 182, 183, 201, 204, 208, 211, 216, 219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287, 291 |
-| **E — the editor** | DW-102, 181, 187, 189, 198, 199, 205, 207, 223, 225, 226, 229, 235, 240, 241, 242, 243, 244, 248, 250, 256, 258, 259, 270, 273, 275, 278, 280, 281, 282, 283, 290 · Questions 3, 4, 6, 7, 8, 9 |
+| **5.24a — this story** | DW-111, 118, 132, 140, 143, 148, 164, 172, 177, 179, 217, 227 · the orphan check · R-212's plan correction · and, on the owner's rulings, DW-64 (R-220), DW-122 (R-221), DW-221 (R-222), and DW-40 as Question 5 is ruled |
+| **5.24b — accounts, sites and connections** | DW-14, 25, 27, 29, 32, 41, 47, 50, 52, 57, 58, 59, 65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271, 272 · DW-55 (R-219) |
+| **5.24c — the section runtime, the library and the recordings** | DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159, 161, 168, 171, 186, 196, 213, 224, 228, 237, 288 |
+| **5.24d — the checks and the walks** | DW-117, 162, 174, 182, 183, 201, 204, 208, 211, 216, 219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287, 291 |
+| **5.24e — the editor** | DW-102, 181, 187, 189, 198, 199, 205, 207, 223, 225, 226, 229, 235, 240, 241, 242, 243, 244, 248, 250, 256, 258, 259, 270, 273, 275, 278, 280, 281, 282, 283, 290 · DW-188 (R-217), 202 (R-213), 203 (R-214), 212 (R-218), 274 (R-216), 277 (R-215) |
 
 ### Left open, and by whom
 
@@ -148,8 +135,7 @@ gain the sentence, with its DW id; **"carried"** means its text already says it 
   never only a red line in Vercel's log (DW-46)."
 - **DW-49** → 15.8 · add: "And Live's key-store connection is born narrow: `SUPABASE_DB_POOLER_URL` connects as a
   login role holding only the `vault` and `private` grants DW-49 lists, with a migration, a SCHEMA.sql block and an
-  RLS-TEST assertion that it holds nothing else (DW-49)." — and **DW-50** joins it here if Question 15 is ruled
-  option 2.
+  RLS-TEST assertion that it holds nothing else (DW-49)."
 - **DW-51** → 7.18 · add: "And the upload goes through the Admin chokepoint, which sends JSON only today: a `FormData`
   body passes untouched with no `Content-Type` set by Inflozo, proved by the first real upload to T1 and T3; Story
   7.17's `routes_upload` uses the same shape (DW-51)."
@@ -303,7 +289,8 @@ gain the sentence, with its DW id; **"carried"** means its text already says it 
 
 ### The owner's
 
-Questions 2–15 below. Each closes, is built, or moves to the story it names as he rules.
+Every question below is ruled except Question 5 (DW-40), which stays with this story until he rules it: options 1 and
+2 close DW-40 here; option 3 moves it to Story 5.24b, which then gains a Schema phase (R-99).
 
 ## Code Map
 
@@ -315,7 +302,7 @@ Questions 2–15 below. Each closes, is built, or moves to the story it names as
   runs, where its controls go.
 - `_bmad-output/implementation-artifacts/sprint-status.yaml` — which stories are done; `epics.md` `### Story N.M:` blocks.
 
-**Group A — the ledger and the plan.** `_bmad-output/planning-artifacts/epics.md` (E9 preamble :3977-4000, each
+**This story.** `_bmad-output/planning-artifacts/epics.md` (E9 preamble :3977-4000, each
 category's first story "(#1 and #2)" lines e.g. :4043, every later story's "all of them are **Pro**" line, the library
 stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :4490, 10.25 :5023) ·
 `prds/prd-Inflozo-2026-08-17/prd.md` (FR-G2 :281, the tiering note :858, NFR-2 :474, Appendix G) ·
@@ -328,7 +315,151 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
 `prds/…/reconcile-designs-decisions.md` (R-175) · `tools/design-patch-prompts.py:522` ·
 `architecture/…/VERIFY-AT-BUILD.md` (row 27) · `docs/project-context.md` (Question 5).
 
-**Group B — accounts, sites and connections.** `apps/web/server/site-probe.ts` (`probeSite` :71-146, `readSettings`
+## Tasks & Acceptance
+
+- [ ] `tools/story-board.py` — **the orphan check**: `orphaned_entries()` refuses at exit 2 an open entry whose owner
+  line names no story that is not done in `sprint-status.yaml`, or whose living owners name its DW id neither in their
+  `epics.md` block nor in their spec; the message says what to do. `demo()` gains a done-owner fixture and a
+  silent-owner fixture that must be refused, and a living, naming owner that must pass. It lands in the same commit as
+  the re-homing below, since today's ledger fails it. Stories 5.24b–e already name their entries on their cards.
+- [ ] `epics.md` + `deferred-work.md` — **re-home every entry**: each under *Left open* gets its sentence in its story's
+  criteria word for word and an `owner:` line naming that story, with a dated note keeping the old owner; each entry of
+  the other four sweep stories is owned by that story (R-211); DW-40 is owned by Story 5.24a (Question 5) until ruled.
+  Every re-homed entry stays `open`.
+- [ ] `deferred-work.md` — close every entry under *Already fixed* with its evidence re-executed at Dev.
+- [ ] `docs/section-authoring.md` — **DW-111** (:257: read `universals` from the drawn panel, never the spec table),
+  **DW-179** (prop types: visible authored text is `richtext` with the four marks unless the spec narrows; a link label
+  drops `a`), **DW-227** (:822: no design offers carousel autoplay) with R-175's dated note and a library test that no
+  design declaring `carousel` carries an autoplay or interval control (control: a fixture with one fails).
+- [ ] `prd.md` Appendix G — **DW-217**: the collaboration bullet records that `project_template_prefs` becomes per user,
+  a Schema-phase migration, when seats ship. (R-219's and R-221's two bullets landed at 5.24's Create.)
+- [ ] `tools/design-patch-prompts.py` — **DW-118**: a note beside P0's prompt, outside the copied text, that R-104
+  superseded "a curated Tabler set"; the prompt stays as sent.
+- [ ] `tools/doc-audit.py` + `epics.md` — **DW-164** (the library stories' module lines become the sentence naming each
+  design's own Behaviour module line, never `core`; a guard fails a library story whose module line lists modules — red
+  on HEAD) and **DW-177** (Stories 9.4, 9.8, 10.5, 10.25 name A1 #16 Reveal, A2 #15 Triple, A4 #18 Overlap Card, A9 #15
+  Ledger; a derived check that every live roster design is named in a story of its category — red on HEAD, naming those
+  four).
+- [ ] `tools/doc-audit.py`, `build-board.py`, `category-prompts.py`, `story-board.py` — **DW-132**: a page whose content
+  is unchanged keeps its on-disk date; only a content change stamps today. Control: a self-check regenerating each page
+  with the date faked a day ahead must produce identical bytes (red under the old rule).
+- [ ] `tools/story-board.py` `demo()` — **DW-172**: run `tools/hooks/commit-msg` in a temporary repo: a Dev commit with
+  one unticked task exits 1 naming it, a Dev commit with no spec exits 1, all ticked exits 0.
+- [ ] `prd.md` NFR-2, `tools/check-baseline.mjs`, `VERIFY-AT-BUILD.md` row 27, Stories 7.5/7.33 — **DW-140**: "< 40 KB
+  gzipped (40,960 bytes, gzip level 9)", `size-limit` run with `gzip: true`; the check asserts its size equals
+  `zlib.gzipSync(file, {level: 9}).length` and that NFR-2's sentence names what it checks; grep "brotli".
+- [ ] `tools/check-catalog.mjs` + appendix-h1 §2 — **DW-143** (every key of every committed `catalog.json` is still live,
+  retired or superseded; the failure names the key and its last commit; an in-memory previous catalog with an extra key
+  is the control) and **DW-148** (the status form "**superseded by** `key`", compared both ways; a cloned catalog is the
+  control).
+- [ ] **R-212** (Question 2) — in `epics.md`, each category's first story trades its misplaced designs for the owner's
+  pair (their design-specific criteria move with them) and every "all of them are **Pro**" line becomes true; FR-G2,
+  the tiering note, `sections-inventory.md:12` and Invariant 1 name the owner's pick; `SYNTHESIS_DEFAULTS` and §3–§4 take
+  A25 #2, A28 #1 and A29 #1 (`synthesize.test.ts` derives its dropped set, so it follows); a doc-audit check that each
+  category's first story names the export's `[Free] designs:` pair — red on HEAD.
+- [ ] **R-222** (Question 13) — PRD §4's owner check and every category's owner-gate story in `epics.md` include the
+  member-state pass (every members-aware design as Logged out user, Free member and Paid member); DW-221 closed on it.
+- [ ] **R-220, R-221** — DW-64 and DW-122 closed on the rulings (R-221's Appendix G bullet, and FR-H7 as the rule any
+  later move follows). **Question 5** as ruled: option 1 — the one-hour limit written into `docs/project-context.md`'s
+  security rules and DW-40 closed; option 2 — `jwt_exp` set to ten minutes in Supabase's auth settings and DW-40 closed with the
+  sign-out harness's `jwt-exp` reading; option 3 — DW-40 re-homed to Story 5.24b, whose card gains it with a Schema
+  phase (R-99).
+- [ ] `deferred-work.md` — **the close itself**: every entry this story closes reads `status: done <date>` with a
+  `resolution:` naming Story 5.24a and its evidence; **no entry deleted or renumbered**.
+- [ ] Standing rule 7 — grep for every DW id touched and for "Story 5.24" outside records; fix what it finds.
+- [ ] `python3 tools/doc-audit.py --check` (twice) and `pnpm check` — green, with every new check's control seen red.
+
+**Acceptance Criteria:**
+
+- Given the ledger after Story 5.23b, when this story is done, then every open entry is closed with its evidence or on
+  the owner's ruling, owned by the sweep story that closes it, or open with a named story that is not done and whose
+  text carries it — and the gate refuses a commit that leaves an entry owned only by finished stories.
+- Given the plan, when the checks run, then each category's first story names the owner's free pair, every live roster
+  design is named in a story of its category, and no library story lists modules in place of its designs' own lines.
+- Given each check this story adds, when the thing it protects is reverted, then the check has been seen to fail, and
+  the run is recorded under Verification.
+- Given `python3 tools/doc-audit.py --check` and `pnpm check`, then both are green; no entry was deleted or renumbered,
+  no design file edited, and no migration shipped.
+
+## The four stories after this one
+
+R-211 runs them in order — 5.24b, 5.24c, 5.24d, 5.24e — after this one. Each one's Create re-derives its group from the
+ledger and starts from the plan below: its tasks, its code map, its owner-test rows and its verification. **None of it
+is a task of Story 5.24a.**
+
+### Story 5.24b — accounts, sites and connections
+
+- `apps/web/server/site-probe.ts` — **DW-65, DW-271**: one helper every `site_settings` writer goes through
+  (`probeSite`, `readSettings`, `answerPortal`, `answerPlan`, and the Content save — **DW-84**'s second half): it reads
+  `site_settings, updated_at`, patches, updates `.eq('updated_at', …)`, and on no row re-reads and re-patches, three
+  tries. **DW-272**: `readSettings`' body moves to `server/settings-reread.ts` (relative imports) taking `{admin, call}`.
+  Controls: a node test lands a second writer between read and write (both keys survive; drop the `eq` → red); a fake
+  admin whose owned-row read is null never calls `call` (reorder → red); `server-wiring.test.ts`: no `.update({…site_settings`
+  outside the helper.
+- `sites/brand/layout.tsx` (new) — **DW-67**: the site read, `hasBrand` and `notFound()` move into the segment's
+  layout, which sits above its own `loading.tsx` boundary; the address stays `/sites/brand?site=…` (the layout reads it
+  through `SEARCH_HEADER`, as `(dashboard)/layout.tsx` does); the skeleton stays. Control: `brand-none` asserts HTTP
+  404 (inside the boundary it answers 200).
+- `apps/web/lib/probe-rule.ts` — **DW-71**: `Brand`/`brandOf` drop icon, cover and description; `hasBrand` checks
+  every field `Brand` promises; the harness's `BRAND_KEYS` follows. Control: `probe-rule.test.ts` pins the keys and
+  refuses `{accent: 42}`.
+- `server/ghost-admin/index.ts` + `sites/actions.ts` — **DW-77**: `remove(kinds[])` clears both in one transaction;
+  `disconnectSite` makes one call. Control: `server-wiring.test.ts` counts one `remove(` with both kinds.
+- `lib/connect-rule.ts` + `sites/actions.ts` — **DW-81**: `oneCredential()` refuses a post carrying more than one
+  credential field before anything is stored. Control: its test, and a harness `keys-forged` post that changes no row.
+- `sites/*` — **DW-82**: one helper builds `/sites` with the current `q`; the popup paths, the modal's close, both
+  panels' ✕ and Cancel and every action's landing use it. Control: a harness step searches, opens and closes each
+  window by ✕, Esc and a save, and `?q=` survives.
+- `sites/panel-modal.tsx` — **DW-84**: while a Kit `Submit` inside is busy, Escape and the backdrop do nothing and ✕
+  and Cancel are `aria-disabled` (R-98). Control: a harness step holds the save's POST, presses Escape, releases it, and
+  the window neither closes nor reopens.
+- `tools/probe/run-verify-ghost-admin.py` — **DW-92**: `--only <step,…>` runs the named blocks and their seedings,
+  refuses an unknown name, and streams the child's output. Then **DW-74, DW-83, DW-85**: run `brand-ownership` and
+  `moved-domains` with it and record them. Controls: `--only no-such-step` exits non-zero; DW-83's select without its
+  first order term, run read-only over the pooler, picks the disconnected record.
+- `lib/connect-rule.ts` — **DW-86**: both Ghost Admin paths read in Ghost's own admin source at 5.130.6 and 6.58.0
+  (npm tarballs) and cited beside their sentences; a word that differs is corrected; `connect-rule.test.ts` pins them.
+- `tools/probe/check-access.py` — **DW-90**: a read-only GitHub check reading `github-authentication-token-expiration`
+  and warning inside 30 days; the register row names the tool. Control: an answer without the header FAILs; a threshold
+  self-check.
+- **DW-91**: a harness-only throwing page (404 unless `INFLOZO_HARNESS`) and a `pnpm keyboard` test for the tab title
+  "Something went wrong · Inflozo"; a `run-verify-passkeys.py` step holding the ceremony pending that asserts `inert`,
+  `aria-hidden` and that Tab cannot enter. Controls: delete `error.tsx:56` or the `inert` line → red.
+- `(dashboard)/page.tsx`, `lib/connect-rule.ts` — **DW-27**: both no-match sentences end with **Clear search**, a link
+  to the page without `q`, in the icon picker's style; the field keeps no ×. Control: a `run-verify-dashboard.py` step
+  on `/` and `/sites`.
+- `lib/entitlement.ts` — **DW-29**: `readEntitlement(client, id)` beside `planFor`; `plan.test.ts` points a real
+  supabase-js client at a local server: a 500 gives `free`, `pro_active` gives `pro`.
+- `tools/probe/run-verify-passkeys.py` — **DW-32**: `kill-mid-ceremony` (hold the finish POST, switch passkeys off,
+  release, expect the switched-off sentence and no session, restore in `finally`) and `named-aaguid` (an init script
+  writes a listed AAGUID; the new row carries its name). Controls: the switch-on round trip; the unshimmed step's
+  "Passkey".
+- `sign-in/actions.ts`, `account/actions.ts` — **DW-41**: `signOutEverywhere` signs out `others` then `local`;
+  `signOut` lands by the cookies left; both comments corrected; `signed-out.test.ts` follows. Control: a node test
+  against a local server answering 500 on logout; `run-verify-sign-out-everywhere.py`.
+- `app/api/cron/purge-accounts/route.ts` + `lib/purge-rule.ts` — **DW-47**: the run excludes failed ids and loops
+  within a time budget under 300 s (`ponytail:` names the ceiling and the `purge_attempts` upgrade). Control: 25
+  always-failing accounts before one good one — the good one is purged in the same run.
+- `apps/web/server/db.ts` — **DW-50** (Question 15, ruled yes — the owner's certificate file, awaited): `ssl: { ca, rejectUnauthorized: true }` with Supabase's CA
+  inlined as a constant (a file read would meet DW-269's tracing trap). Control: a harness step connects with the pinned
+  CA (passes) and a self-made CA (fails); the deployed Sites page still reads the key store.
+- `lib/admin-rule.ts` + `lib/connect-rule.ts` — **DW-52**: `ghost_unavailable` for 429 and ≥500, with the sentence
+  "Ghost didn't answer just now. Try again in a moment."; 404 and 403 stay `ghost_refused`.
+- `server/ghost-admin/index.ts` + `lib/admin-rule.ts` — **DW-58**: before the fetch, a DNS lookup refuses a
+  loopback, private, link-local, CGNAT, unique-local, unspecified or v4-mapped answer with `detail.blocked` and the
+  unreachable sentence (`ponytail:` names DNS rebinding). Controls: unit vectors both ways; a harness connect to
+  `https://127.0.0.1.nip.io` refused while T1 connects.
+- `lib/connect-rule.ts` + `sites/actions.ts` — **DW-59**: `storeOrUndo` and `siteWrite` lifted and run by
+  `connect-rule.test.ts` (swapping the branches or dropping a kept column goes red).
+- `tools/probe/configure-supabase-auth.py` — **DW-14**: the Pro-only idle-timeout row and its 402 retry go, replaced
+  by one comment; `--check` exits 0, `--expect mailer_otp_exp=901` still exits 1.
+- `(dashboard)/loading.tsx`, `sites/(list)/page.tsx` — **DW-25, DW-57**: the rules themselves stated in the header
+  comments (the first byte waits on the guard by rule; the Sites card's layout is the owner's).
+- `lib/connect-rule.ts` — **DW-55, R-219**: `normaliseSiteUrl`'s caller refuses a path with "Inflozo connects a Ghost
+  site at the root of its address — /blog isn't supported yet." (the path derived from what was typed), and a test;
+  DW-55 closes citing R-219 and PRD Appendix G, where support is recorded as future work.
+
+**Its code.** `apps/web/server/site-probe.ts` (`probeSite` :71-146, `readSettings`
 :216-231) · `apps/web/app/(app)/app/(authed)/sites/actions.ts` (`answerPortal` :563-582, `answerPlan` :590-615,
 `connectSite`'s store catch :379-404 and site write :346-367, `disconnectSite` :1069-1071, `saveKeys` :1260-, the Content
 save :1398) · `apps/web/server/ghost-admin/index.ts` (`remove` :214-259, `fetchWithKey` :375-386,
@@ -346,7 +477,58 @@ and `sites/brand/loading.tsx` · `sites/panel-modal.tsx:91` · `sites/brand-pane
 `tools/probe/run-verify-dashboard.py` · `tools/probe/check-access.py` · `tools/probe/configure-supabase-auth.py`
 (:23-24, :137-141, :243-251, :294-299) · `eslint.config.js:88,148-151`.
 
-**Group C — the runtime, the library and the recordings.** `packages/section-runtime/src/core.ts` (`RenderInput` :125,
+**Its owner's test**, on the real site after its Deploy:
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|-----|--------|------------|------------|---------------------|
+| 1 | `https://app.inflozo.com/` | Projects | Type in the search box. Then click **Clear search**. | `zzzz` | "No projects match "zzzz". **Clear search**". The click empties the search and your projects are back. |
+| 2 | `https://app.inflozo.com/sites` | Sites | The same. | `zzzz` | "No sites match "zzzz". **Clear search**"; the click brings every site back. |
+| 3 | `https://app.inflozo.com/sites` | Sites | Type part of one site's name so only it shows. Open its **⋯ → Manage API keys**, close with ✕. Open it again, close with Esc. | `ghost5` | After each close the list is still filtered and the box still says `ghost5`. |
+| 4 | `https://app.inflozo.com/sites/connect` | Connect a site | Type an address with a path. | `https://example.com/blog` | "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." |
+
+**Its real services:** `app.inflozo.com` (the dashboard, sign-out, passkeys and ghost-admin harnesses), Supabase through
+`SUPABASE_DB_POOLER_URL` and GoTrue (throwaway accounts, deleted afterwards), T1 `ghost6.inflozo.com` for connect and
+disconnect, public DNS for DW-58, and the GitHub API read-only for DW-90.
+
+### Story 5.24c — the section runtime, the library and the recordings
+
+- `eslint.config.js` — **DW-4**: `toString` refused only with no argument; `noInlineConfig` in the core block.
+  Control: three `lintText` rows (a Date refused, `n.toString(16)` clean, a disable comment plus `.localeCompare()` still
+  refused).
+- `section-runtime/src/core.ts` — **DW-96** (an attribute's value collapses line breaks to one space on both
+  emitters), **DW-159** (`renderTree` drops the design's comment nodes before any token is put), **DW-228**
+  (`stampControls` keeps `data-i18n-*`), **DW-168** (`RenderInput.version` reaches `bindingRefusals`;
+  `check-snapshots.mjs` passes `ghostCompat.minVersion`; a `mustFail` row: a22/1 at 5.61.0). Controls: an
+  `agreement.test.ts` vector each, and the `mustFail` row.
+- `library/src/vocabulary.ts` + `contexts/matrix.json` — **DW-99**: `total_paid_members` and `content_api_url` join
+  `BARE_HELPERS` with matrix rows, re-recorded by `record-contexts.py`; a comment beside `taxonomyItems`. **DW-129**:
+  the two code-injection keys move to `neverOffer` (appendix-b1 §6 too). Controls: an agreement case; a contexts test.
+- `library/src/validate.ts` — **DW-104** (a top-level `,` and an unbundled seed refused; one `PREVIEW_SEEDS` list),
+  **DW-161** (a members field outside its form refused), **DW-186** (a control titled "Member visibility" refused),
+  **DW-196** (`darkCapabilities` a closed word list: `tokens`, and `image-swap` only where a control swaps an image; the
+  words defined in `docs/section-authoring.md`), **DW-213** (a second `data-items-limit` on one path refused). Controls:
+  a `validate.test.ts` case each, red on HEAD.
+- `library/icons/tabler.d.json.ts` + `tsconfig.base.json` — **DW-113**: a declaration and `allowArbitraryExtensions`.
+  Control: `tsc --listFilesOnly` does not load the JSON.
+- `tools/stress/sections.js` + `compile.js` — **DW-125**: `@site.navigation` and a declared tiers query; each
+  archetype rendered with its target in `test-vocabulary.mjs`; gscan 0/0 on both majors.
+- `tools/matrix/cases.mjs` + `(authed)/pilots/` — **DW-171**: the show-to arms from `carriesMemberVisibility`; the
+  baseline swap is the owner's approval (Ask First). Control: a `cases.test.mjs` assertion, red on HEAD.
+- `section-runtime/src/tokens.ts` — **DW-224**: rule 2 forces the underline; all three rules select
+  `:where(a:not([class]), a[class=""])`; `reference-tokens.css` regenerated; the R-173 test extended.
+- `section-runtime/src/doc-schema.ts:68` — **DW-288**: the rule as a comment (kept, never drawn, never pruned) and a
+  test that an unknown design id survives parse and swap.
+- `tools/probe/record-shim.py` — **DW-147, DW-237**: `restore_and_delete()` re-activates, then deletes and reads back
+  even if the re-activation raised; `record-shim.py`, `run-verify-core.py`, `record-contexts.py` and
+  `record-page-number.py` call it; the rule joins `RESET-PROTOCOL.md`; an offline `--self-check` joins `pnpm test`.
+  **Question 14** (ruled yes to all three): the leftover probe themes deleted after the owner has seen the list.
+- `tools/probe/record-cards.py` — **DW-103** (Question 14, ruled yes): the defaults read through a recorder-owned pair of posts
+  and tags; both majors re-recorded; `orbit-weekly.test.ts` asserts every defaults row is the recorder's.
+- `tools/probe/record-contexts.py` + `contexts/matrix.json` — **DW-127** (Question 14, ruled yes): the empty fields seeded on T1
+  and T3 after the inventory, private mode switched on and back, re-recorded, `unverified` markers dropped where a
+  recording now shows; `contexts.test` requires every scope row recorded or reasoned.
+
+**Its code.** `packages/section-runtime/src/core.ts` (`RenderInput` :125,
 `bindingRefusals` :717, `BARE_HELPERS` handling :930-972, `stampControls` :1312, `data-i18n-*` :1507-1524, `renderTree`
 used :1832 :1852, tidy :1824 :1853) · `src/marks.ts:266-268` · `src/tokens.ts:184-188` (`LINK_RULES`) ·
 `src/doc-schema.ts:68` · `src/agreement.test.ts` · `packages/library/src/vocabulary.ts` (:401 `BARE_HELPERS`, :450
@@ -357,7 +539,46 @@ used :1832 :1852, tidy :1824 :1853) · `src/marks.ts:266-268` · `src/tokens.ts:
 `record-contexts.py:342` · `record-page-number.py:260` · `record-shim.py:585-596` · `run-verify-core.py:295-306` ·
 `tools/probe/RESET-PROTOCOL.md` § Ghost.
 
-**Group D — the checks and the walks.** `tools/probe/run-verify-editor.cjs` (`steady` :373, decoders :731 :977 :1049,
+**Its real services:** T1 and T3 (`ghost5.inflozo.com`) for the recordings under the reset protocol, gscan on both
+majors (`cd tools/stress && npm install && node build.js && node gate.js theme` — 0 errors, 0 warnings), and the render
+matrix's container (`bash tools/matrix/run-matrix-gate.sh`, green once the owner approves DW-171's baselines).
+
+### Story 5.24d — the checks and the walks
+
+- `apps/web/*.test.ts` — **DW-117, DW-162**: one executed test loads the three frame routes' handlers with stubbed
+  `next/server` and Supabase and asserts 303 to `/sign-in` signed out and 200 signed in, replacing the three text tests;
+  the editor walk's signed-out loop gains `/controls/frame` and `/style-guide/frame`.
+- `apps/web/lib/zod.ts` — **DW-174, DW-201**: `z.config({ jitless: true })` and re-exports `z`; every app zod import
+  uses it; `no-restricted-imports` keeps it so. Control: importing `lib/style-pack.ts` with `Function` trapped fires no
+  probe; one signed-in load of `/` counts no `securitypolicyviolation`.
+- `tools/keyboard/journey.spec.mjs` — **DW-182** (typing past the fixture heading's 40 raises "Heading holds 40
+  characters." and drops the 41st; with `top.document.hasFocus` false, blurring keeps the session), **DW-211** (in
+  `floor.spec.mjs`: the pill's ◀ ▶ and Shuffle pressed on the fixture ring, then ⌘Z).
+- `tools/probe/run-verify-editor.cjs` — **DW-183, DW-204** (the signed-in GETs retried once on a timeout; one walk
+  read beside `npx vercel logs` and each stall recorded as client or product), **DW-219** (step 89 on Author and Page,
+  and a forged request refused), **DW-220** (66b waits on the sync POST for the budget `lib/journal.ts` exports),
+  **DW-222** (step 36 measures against the hovered root after the pill's tick), **DW-236** (a bad frame is skipped and
+  counted), **DW-284** (step 90 waits until no server action is in flight), **DW-291** (step 89 polls the saved subject
+  before reloading). Each carries its control as the triage names it.
+- `tools/probe/die-pips.cjs` — **DW-216**: the one measurement the journey and both walks import.
+- `apps/web/lib/canvas.ts` — **DW-208**: `canvasCaching()` both canvas routes call; the text regex goes; a unit test.
+- `tools/probe/record-edit-lock.py` + `RLS-TEST.sql` — **DW-245**: a probe error is not "RUN VOID"; the fixture user
+  is cleaned up once created; F4 seeds relative to the current generation; `supabase/tests/rls.sql` copied.
+- `apps/web/app/layout.tsx` + `app/fonts/` — **DW-246**: the three faces self-hosted through `next/font/local` (OFL
+  files and licences committed); a `tokens.test.ts` row forbids `next/font/google`; an offline `pnpm build` passes; a
+  screenshot of Projects and of the editor is identical before and after — nothing on screen changes.
+- `tools/probe/run-verify-live-content.cjs` — **DW-251**: a ring tile shows the site's newest title; under a
+  simulated total past `LIST_LIMIT` both capped lines read.
+- `apps/web/lib/` + the harness — **DW-257**: `designateAll()` shared by `read.ts` and the harness; an unflagged
+  harness Home journey; `unasked()` with a node test. **DW-279**: a harness-only re-read and a journey stop that sees the
+  floating button arrive. **DW-285**: `ShellUserContext` exported; the harness gives the notice its avatar.
+- `tools/check-traces.mjs` + `ci.yml` — **DW-269**: after `pnpm build`, the editor, `/canvas` and `/pilots` traces must
+  list every tracked file under `packages/library/designs`. Control: a scratch build with `PACKAGES` built from
+  `import.meta.url` goes red.
+- `run-verify-controls.cjs`, `run-verify-pilots.cjs` — **DW-287**: `load` instead of `networkidle`, with the landmark
+  waits that already follow.
+
+**Its code.** `tools/probe/run-verify-editor.cjs` (`steady` :373, decoders :731 :977 :1049,
 step 36 :1926-1981, 66b :3187, die pips :3986-4009, step 89 :4069-4354 with the reload :4291-4297, step 90 :4603-4612,
 the signed-out loop :5998-6002, step 79 :5856, step 9 :6661-6678) · `run-verify-controls.cjs` (:79 :82 :472 :513,
 :700-720) · `run-verify-pilots.cjs:89,92` · `run-verify-live-content.cjs:550` · `run-verify-lock.cjs` ·
@@ -369,7 +590,73 @@ ring, :1277-1300 pips) · `floor.spec.mjs` (:4 pointer rule, :60-79 phone stop) 
 · `(editor)/read.ts:290` · `components/shell/shell.tsx:46-47` · `components/editor/small-screen-notice.tsx:31,43-47` ·
 `apps/web/lib/journal.ts:259` · `.github/workflows/ci.yml` · `supabase/tests/rls.sql` ⇐ `architecture/…/RLS-TEST.sql:846`.
 
-**Group E — the editor.** `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`useHanded` :1222,
+**Its real services:** `app.inflozo.com` through the editor, controls, pilots and live-content walks, Vercel's
+deployment logs (`npx vercel logs`) for DW-204, and CI's `check` job for DW-269; `pnpm keyboard` with every new stop.
+
+### Story 5.24e — the editor
+
+- `packages/library/orbit-weekly/media/` + `lib/style-guide.ts` + `lib/canvas.ts` — **DW-102**: a few seconds of
+  in-house audio and video served same-origin in place of the sample host. Control: no sample-host media survives; the
+  walk's CSP read.
+- `section-runtime/src/marks.ts` — **DW-181**: pasted inline weight, style and decoration read as the field's allowed
+  marks. Control: `marks.test.ts` cases from clipboard HTML recorded by pasting from Google Docs, Word Online and Apple
+  Notes; the `font-weight:normal` wrapper alone stays unmarked.
+- `lib/editor.ts` + `lib/reorder.ts` + `layers.tsx` — **DW-187, DW-189**: one pure helper keeps a site-wide drag
+  inside its group (headers above footers), used by Layers' Site-wide card and the pill's grip. Control: a unit test with
+  made-up ids.
+- `components/controls/sidebar.tsx` + `section-runtime/src/doc-edit.ts` — **DW-198**: the sidebar picks the swatches
+  for both surfaces from one place; `clearProject()` beside `clearDarkOverrides`. Controls: a journey compares each dot
+  with the canvas in light and dark; a two-canvas clear test.
+- `(editor)/editor-skeleton.tsx` — **DW-199**: the card holds 16:10 in a short, wide window. Control: a
+  `floor.spec.mjs` stop compares its box with the real card's.
+- `editor.tsx` — **DW-205** (a repeated sentence is spoken again; a journey counts the live region's changes),
+  **DW-229** (the PAUSED chip's sentence for screen readers, EXPERIENCE's words), **DW-241** (becoming read-only closes
+  the menus and dialogs), **DW-290** (`prepareChrome()` in idle time after the first paint; `fps-trace.mjs` measures the
+  first selection at 4×, manual).
+- `components/editor/section-picker.tsx` — **DW-207**: browsing clears the refusal (a Post Content stand-in fixture
+  that never ships); a search shows "All sections" chosen; ⌘K inside the picker focuses the search. Three journey stops.
+- `lib/preview-subject.ts` — **DW-223**: a pick waits in `sessionStorage` until its action answers and wins at the next
+  open. Control: walk step 89 holds every action, picks, reloads at once, and sees the pick.
+- `editor.tsx` + `lib/lock.ts` + `lock/route.ts` — **DW-225** (a reader's View as picks are not stored), **DW-240,
+  DW-244** (the release backdates the heartbeat inside a short grace instead of deleting, filtered on this session's last
+  beat), **DW-242** (the holder's reload paints no greyed frame), **DW-243** ("kept editing" only when the holder
+  cleared the request). Controls: `lock.test.ts` cases and `run-verify-lock.cjs` stops, each as the triage names it.
+- `projects/[id]/sync/route.ts` + `read.ts` — **DW-235**: `docRefusal()` shared; the route answers 422 before the RPC.
+  Control: an `editor.test.ts` case and a walk 66c post.
+- `apps/web/lib/live-content.ts` + `lib/canvas.ts` — **DW-248** (a capped search asks Ghost by title through a closed
+  grammar executed on both majors), **DW-250** (a stored Tag or Author subject paints after one round), **DW-258** (one
+  slug grammar, executed on T1 and T3 first), **DW-259** (hand-picked ids read in chunks), **DW-270** (`tiers` included on
+  every post and page read and kept by the whitelist; shim fixtures re-recorded). Controls: a `live-content.test.ts` row
+  each; the live-content walk.
+- `lib/canvas.ts`, `lib/probe-rule.ts`, `lib/ghost-surfaces.ts`, `lib/pilots.ts` — **DW-273** (the paywall box follows
+  the site's major), **DW-275** (the paywall stylesheet served on its own route and loaded on the first Paywall paint),
+  **DW-278** (`portal_button_icon` stored and drawn: the five presets, a custom image, else the person icon), **DW-280**
+  (an absent announcement or brand key leaves the stored value standing). Controls: a test each, as the triage names it.
+- `lib/canvas-layer.ts` — **DW-256**: the host declares Tailwind's four shadow variables. Control: a keyboard stop
+  reads the note's computed shadow.
+- `components/kit/layers-row.tsx` + `editor.tsx` — **DW-281**: `LayerThumb` draws the frames' glyph per category (the
+  Hero glyph where no frame draws one); Epic 9's and 10's preamble gains "a category's first story adds its Layers glyph,
+  extrapolated from S4/D8's five (R-74)". Control: a journey stop at 1024 and 1440.
+- `components/controls/sidebar.tsx:464-465` — **DW-282**: `read-prop-…` and `read-control-…`. Control: a journey stop
+  fails on React's duplicate-key warning.
+- `editor.tsx:4552` — **DW-283**: the MEMBERS OFF chip is whole or absent. Control: `floor.spec.mjs` at 600 × 960 touch.
+- `lib/behaviours.ts` — **DW-226**: `movesByItself` honours the declaration's own width. Control: `behaviours.test.ts`.
+- **The owner's rulings of 2026-09-28**, each with a journey stop that fails with its line removed:
+  - **R-213** (DW-202): a save refused because the sign-in has run out takes B6's sixth state — *"You've been signed out.
+    Your work is safe on this device — sign in again and it will be sent."* — with a **Sign in** button opening a new
+    tab; once signed in, the owed work is sent; a dropped connection keeps Retrying. FR-D10 and EXPERIENCE follow.
+  - **R-214** (DW-203): Sign out sends what is owed, then deletes `inflozo-doc-<user>`; when it cannot send, it asks
+    first, and signing out anyway erases.
+  - **R-215** (DW-277): unreadable means off (`portalState`), and FR-C2's sentence follows; a row under *From your
+    Ghost site* appears only when the site has that surface on — the Subscribe button when `portal_button` is on, the
+    Announcement bar when the site has an announcement — following the site's setting, not the width or View as.
+  - **R-216** (DW-274): the sign-up section's settings line follows its ask, in the Sites screen's own sentence
+    (`membersNotice`, R-170); FR-H6's sentence follows.
+  - **R-217** (DW-188): pointing at a Layers row gives its section the hover outline and, once the pointer rests on the
+    row for a moment, brings it into view the way choosing a row does (R-156, a sticky section exempt).
+  - **R-218** (DW-212): the capped list's header reads "{n} items · {shown} shown in this design · {min}–{max}".
+
+**Its code.** `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`useHanded` :1222,
 `recordViewed` :1321-1337, `flush` :1601 :1638 :1652, `land` :1710-1760, lock release :1939-1943, `chooseSubject`
 :2251-2283, `point` :2388, `paint`'s edit reads :2546-2550, the chips :3696-3709, compact flip :3449-3455, picker :4029
 :4031 :5295, pill `hidden` :4904, grip :4170, the chip `data-members-off-chip` :4552, `#editor-said` :5108) · `read.ts`
@@ -384,7 +671,35 @@ ring, :1277-1300 pips) · `floor.spec.mjs` (:4 pointer rule, :60-79 phone stop) 
 `greyed.ts:67-69` · `packages/section-runtime/src/marks.ts:597-660` · `packages/library/orbit-weekly/` (corpus media) ·
 `app/api/…/lock/route.ts:122` · `tools/perf/fps-trace.mjs`.
 
-**Surfaces this story touches, and their frames (R-74).** Projects' no-match — `S3 Dashboard.dc.html` S3a with P0's
+**Its owner's test**, on the real site after its Deploy:
+
+| # | URL | Screen | What to do | Dummy data | What you should see |
+|---|-----|--------|------------|------------|---------------------|
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Pilot sections, Home | Look at the small pictures at the start of each Layers row. | — | Each kind of section has its own: the header, hero, post grid and newsletter pictures differ. Before, all were the same. |
+| 2 | same | Pilot sections, window narrower than about 1280 | Look at the tile strip. | — | The tiles show the same per-kind pictures. |
+| 3 | same | Pilot sections, full width | Scroll the page to the top. Point at the **Newsletter** row in Layers and hold still for a moment (don't click). | — | The Newsletter section gets its thin outline and the page brings it into view. |
+| 4 | same | Pilot sections | Select the Newsletter section, click into its description on the page, and paste a line copied from a Google Doc. Undo afterwards (⌘Z). | a Google Doc line with one **bold** and one *italic* word | The bold word stays bold and the italic word stays italic. |
+| 5 | same | Section Picker | Press ⌘K. Click a category in the left rail, then type in the search. Then click a card and press ⌘K again. | `grid` | While you search, **All sections** is the one marked in the rail. The second ⌘K puts the cursor back in the search with your text selected. |
+| 6 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f/post` | Ghost 5 Project, Post | Open the **Previewing with** pill at the foot, choose a different article, and reload at once (⌘R). | — | After the reload the page still shows the article you just chose. |
+| 7 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Ghost 5 Project, Home | Look at the **From your Ghost site** group at the foot of Layers while Ghost's floating button is off. | — | No **Subscribe button** row — your site does not show one. |
+| 8 | `https://ghost5.inflozo.com/ghost/`, then the Ghost 5 Project's Home | Ghost admin, then the editor | In Ghost admin's Portal settings, switch the floating button on and choose a different icon; save. Reopen the Ghost 5 Project's Home. Afterwards put Ghost's settings back. | — | The **Subscribe button** row is back in Layers, and the floating button, bottom right of the page, wears the icon you chose, not the plain person. |
+| 9 | `https://ghost5.inflozo.com/ghost/`, then the Ghost 5 Project's Home | Ghost admin, then the editor | In Ghost admin's membership settings, make sign-up invite-only; save. In the editor, select a sign-up section (add the Newsletter section from ⌘K if the page has none). Afterwards put Ghost's setting back. | — | The section's settings say what the Sites screen says about invite-only. |
+| 10 | `https://app.inflozo.com/style-guide` | Style guide | Scroll to the audio and video cards; press play on each. | — | Each plays a few seconds, where before nothing played. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` in two windows side by side | Editor | Window A is editing, B reads along. Close A's tab. | — | Within a few seconds B can edit. |
+| 12 | same | Editor | With A editing again, open A's **⋯** menu. In B, take over editing. | — | A's menu closes by itself as A becomes read-only. |
+| 13 | same | Editor | With A editing, reload A. | — | A keeps editing; B keeps reading along. |
+| 14 | same | Editor | In a second tab, sign out (account menu → Sign out). Back in the editor tab, type one word into a heading. Then press **Sign in**. | one word | "You've been signed out. Your work is safe on this device — sign in again and it will be sent." After you sign in, the word is sent. |
+| 15 | same | Editor | Turn your Wi-Fi off. Type one word into a heading. Open the account menu → **Sign out**. Choose to stay, then turn Wi-Fi back on. | one word | Inflozo asks before signing you out, because the word has not reached the server yet. Once Wi-Fi is back, the word is sent. |
+| 16 | `https://app.inflozo.com/controls` | Controls | Find the list whose design shows fewer items than it holds. | — | Its header reads "3 items · 2 shown in this design · 2–6". |
+| 17 | Pilot sections → **Template ▾ → Template surfaces → Paywall** | Paywall canvas | Open it. | — | Ghost's own box looks exactly as before. |
+
+**Its real services:** `app.inflozo.com` through the editor, lock and live-content walks, T1 and T3 for DW-248,
+DW-258, DW-270 and DW-278, and Supabase for the lock and View as rows; `node tools/perf/fps-trace.mjs` at 4× by hand
+for DW-290 (never CI).
+
+### The frames these stories touch (R-74)
+
+Projects' no-match — `S3 Dashboard.dc.html` S3a with P0's
 no-match rule (`P0 Editor Primitives - Spec.md:236`) · Sites' no-match and its windows — `S11 Sites.dc.html` S11a,
 `S11e Manage Keys Popup.dc.html`, `S2 Onboarding.dc.html` S2c · Connect's sentences — S2b·2 / S11b · Layers' pictures
 — `S4 Editor.dc.html:54-58` (rows) and `D8 Editor Below 1440.dc.html:66-70` (rail) · the Layers hover — S4b · the
@@ -394,320 +709,50 @@ Body.dc.html` C3a · the style-guide article — C4 · the capped list's header 
 `P0-1 Inline Text Toolbar.dc.html:142` · the skeleton — S4a's card · Ghost's floating button — Ghost's own look
 (`MEASUREMENTS.md` §55; no frame draws it).
 
-## Tasks & Acceptance
-
-**If Question 1 is ruled option 1, each group below becomes its own story (A → 5.24a … E → 5.24e) and takes its tasks,
-its owner-test rows and its verification lines with it; this spec keeps the triage and becomes 5.24a.**
-
-### Group A — the ledger and the plan
-
-- [ ] `tools/story-board.py` — **the orphan check**: `orphaned_entries()` refuses at exit 2 an open entry whose owner
-  line names no story that is not done in `sprint-status.yaml`, or whose living owners neither name its DW id in their
-  `epics.md` block nor in their spec; the message says what to do. `demo()` gains a done-owner fixture and a silent-owner
-  fixture that must be refused and a living, naming owner that must pass. It lands in the same commit as the re-homing
-  below, since today's ledger fails it; if Question 1 splits the sweep, each sub-story's card lists the entries it owns.
-- [ ] `epics.md` + `deferred-work.md` — **re-home every entry under *Left open***: add each sentence to its story's
-  criteria word for word; rewrite each entry's `owner:` to that story with a dated note keeping the old owner; the
-  entry stays `open`.
-- [ ] `deferred-work.md` — close every entry under *Already fixed* with its evidence re-executed at Dev.
-- [ ] `docs/section-authoring.md` — **DW-111** (:257: read `universals` from the drawn panel, never the spec table),
-  **DW-179** (prop types: visible authored text is `richtext` with the four marks unless the spec narrows; a link label
-  drops `a`), **DW-227** (:822: no design offers carousel autoplay) with R-175's dated note and a library test that no
-  design declaring `carousel` carries an autoplay or interval control (control: a fixture with one fails).
-- [ ] `prd.md` Appendix G — **DW-217**: the collaboration bullet records that `project_template_prefs` becomes per user,
-  a Schema-phase migration, when seats ship.
-- [ ] `tools/design-patch-prompts.py` — **DW-118**: a note beside P0's prompt, outside the copied text, that R-104
-  superseded "a curated Tabler set"; the prompt stays as sent.
-- [ ] `tools/doc-audit.py` + `epics.md` — **DW-164** (the library stories' module lines become the sentence naming each
-  design's own Behaviour module line, never `core`; a guard fails a library story whose module line lists modules — red
-  on HEAD) and **DW-177** (Stories 9.4, 9.8, 10.5, 10.25 name A1 #16 Reveal, A2 #15 Triple, A4 #18 Overlap Card, A9 #15
-  Ledger; a derived check that every live roster design is named in a story of its category — red on HEAD naming those
-  four).
-- [ ] `tools/doc-audit.py`, `build-board.py`, `category-prompts.py`, `story-board.py` — **DW-132**: a page whose content
-  is unchanged keeps its on-disk date; only a content change stamps today. Control: a self-check regenerating each page
-  with the date faked a day ahead must produce identical bytes (red under the old rule).
-- [ ] `tools/story-board.py` `demo()` — **DW-172**: run `tools/hooks/commit-msg` in a temporary repo: a Dev commit with
-  one unticked task exits 1 naming it, a Dev commit with no spec exits 1, all ticked exits 0.
-- [ ] `prd.md` NFR-2, `tools/check-baseline.mjs`, `VERIFY-AT-BUILD.md` row 27, Stories 7.5/7.33 — **DW-140**: "< 40 KB
-  gzipped (40,960 bytes, gzip level 9)", `size-limit` run with `gzip: true`; the check asserts its size equals
-  `zlib.gzipSync(file, {level: 9}).length` and that NFR-2's sentence names what it checks; grep "brotli".
-- [ ] `tools/check-catalog.mjs` + appendix-h1 §2 — **DW-143** (every key of every committed `catalog.json` is still live,
-  retired or superseded; failure names the key and its last commit; an in-memory previous catalog with an extra key is
-  the control) and **DW-148** (the status form "**superseded by** `key`", compared both ways; a cloned catalog is the
-  control).
-- [ ] **Question 2** as ruled — option 1: in `epics.md` each category's first story trades its misplaced designs for the
-  owner's pair (their design-specific criteria move with them) and every "all of them are Pro" line becomes true;
-  FR-G2, the tiering note, `sections-inventory.md:12` and Invariant 1 name the owner's pick; `SYNTHESIS_DEFAULTS` and
-  §3–§4 take A25 #2, A28 #1 and A29 #1 (`synthesize.test.ts` derives its dropped set, so it follows); a doc-audit check
-  that each category's first story names its `[Free] designs:` pair from the export — red on HEAD.
-- [ ] **Questions 5, 11, 12, 13** as ruled — Q5 option 1: the one-hour limit written into `docs/project-context.md`'s
-  security rules and DW-40 closed on the ruling; Q11 option 1: DW-64 closed on the ruling; Q12 option 1: FR-H7's
-  sentence stated as the rule any later move follows, DW-122 closed; Q13 option 1: the member-state pass added to §4's
-  owner check and to every category's owner-gate story, DW-221 closed.
-
-### Group B — accounts, sites and connections
-
-- [ ] `apps/web/server/site-probe.ts` — **DW-65, DW-271**: one helper every `site_settings` writer goes through
-  (`probeSite`, `readSettings`, `answerPortal`, `answerPlan`, and the Content save — **DW-84**'s second half): it reads
-  `site_settings, updated_at`, patches, updates `.eq('updated_at', …)`, and on no row re-reads and re-patches, three
-  tries. **DW-272**: `readSettings`' body moves to `server/settings-reread.ts` (relative imports) taking `{admin, call}`.
-  Controls: a node test lands a second writer between read and write (both keys survive; drop the `eq` → red); a fake
-  admin whose owned-row read is null never calls `call` (reorder → red); `server-wiring.test.ts`: no `.update({…site_settings`
-  outside the helper.
-- [ ] `sites/brand/layout.tsx` (new) — **DW-67**: the site read, `hasBrand` and `notFound()` move into the segment's
-  layout, which sits above its own `loading.tsx` boundary; the address stays `/sites/brand?site=…` (the layout reads it
-  through `SEARCH_HEADER`, as `(dashboard)/layout.tsx` does); the skeleton stays. Control: `brand-none` asserts HTTP
-  404 (inside the boundary it answers 200).
-- [ ] `apps/web/lib/probe-rule.ts` — **DW-71**: `Brand`/`brandOf` drop icon, cover and description; `hasBrand` checks
-  every field `Brand` promises; the harness's `BRAND_KEYS` follows. Control: `probe-rule.test.ts` pins the keys and
-  refuses `{accent: 42}`.
-- [ ] `server/ghost-admin/index.ts` + `sites/actions.ts` — **DW-77**: `remove(kinds[])` clears both in one transaction;
-  `disconnectSite` makes one call. Control: `server-wiring.test.ts` counts one `remove(` with both kinds.
-- [ ] `lib/connect-rule.ts` + `sites/actions.ts` — **DW-81**: `oneCredential()` refuses a post carrying more than one
-  credential field before anything is stored. Control: its test, and a harness `keys-forged` post that changes no row.
-- [ ] `sites/*` — **DW-82**: one helper builds `/sites` with the current `q`; the popup paths, the modal's close, both
-  panels' ✕ and Cancel and every action's landing use it. Control: a harness step searches, opens and closes each
-  window by ✕, Esc and a save, and `?q=` survives.
-- [ ] `sites/panel-modal.tsx` — **DW-84**: while a Kit `Submit` inside is busy, Escape and the backdrop do nothing and ✕
-  and Cancel are `aria-disabled` (R-98). Control: a harness step holds the save's POST, presses Escape, releases it, and
-  the window neither closes nor reopens.
-- [ ] `tools/probe/run-verify-ghost-admin.py` — **DW-92**: `--only <step,…>` runs the named blocks and their seedings,
-  refuses an unknown name, and streams the child's output. Then **DW-74, DW-83, DW-85**: run `brand-ownership` and
-  `moved-domains` with it and record them. Controls: `--only no-such-step` exits non-zero; DW-83's select without its
-  first order term, run read-only over the pooler, picks the disconnected record.
-- [ ] `lib/connect-rule.ts` — **DW-86**: both Ghost Admin paths read in Ghost's own admin source at 5.130.6 and 6.58.0
-  (npm tarballs) and cited beside their sentences; a word that differs is corrected; `connect-rule.test.ts` pins them.
-- [ ] `tools/probe/check-access.py` — **DW-90**: a read-only GitHub check reading `github-authentication-token-expiration`
-  and warning inside 30 days; the register row names the tool. Control: an answer without the header FAILs; a threshold
-  self-check.
-- [ ] **DW-91**: a harness-only throwing page (404 unless `INFLOZO_HARNESS`) and a `pnpm keyboard` test for the tab title
-  "Something went wrong · Inflozo"; a `run-verify-passkeys.py` step holding the ceremony pending that asserts `inert`,
-  `aria-hidden` and that Tab cannot enter. Controls: delete `error.tsx:56` or the `inert` line → red.
-- [ ] `(dashboard)/page.tsx`, `lib/connect-rule.ts` — **DW-27**: both no-match sentences end with **Clear search**, a link
-  to the page without `q`, in the icon picker's style; the field keeps no ×. Control: a `run-verify-dashboard.py` step
-  on `/` and `/sites`.
-- [ ] `lib/entitlement.ts` — **DW-29**: `readEntitlement(client, id)` beside `planFor`; `plan.test.ts` points a real
-  supabase-js client at a local server: a 500 gives `free`, `pro_active` gives `pro`.
-- [ ] `tools/probe/run-verify-passkeys.py` — **DW-32**: `kill-mid-ceremony` (hold the finish POST, switch passkeys off,
-  release, expect the switched-off sentence and no session, restore in `finally`) and `named-aaguid` (an init script
-  writes a listed AAGUID; the new row carries its name). Controls: the switch-on round trip; the unshimmed step's
-  "Passkey".
-- [ ] `sign-in/actions.ts`, `account/actions.ts` — **DW-41**: `signOutEverywhere` signs out `others` then `local`;
-  `signOut` lands by the cookies left; both comments corrected; `signed-out.test.ts` follows. Control: a node test
-  against a local server answering 500 on logout; `run-verify-sign-out-everywhere.py`.
-- [ ] `app/api/cron/purge-accounts/route.ts` + `lib/purge-rule.ts` — **DW-47**: the run excludes failed ids and loops
-  within a time budget under 300 s (`ponytail:` names the ceiling and the `purge_attempts` upgrade). Control: 25
-  always-failing accounts before one good one — the good one is purged in the same run.
-- [ ] `apps/web/server/db.ts` — **DW-50** (Question 15): `ssl: { ca, rejectUnauthorized: true }` with Supabase's CA
-  inlined as a constant (a file read would meet DW-269's tracing trap). Control: a harness step connects with the pinned
-  CA (passes) and a self-made CA (fails); the deployed Sites page still reads the key store.
-- [ ] `lib/admin-rule.ts` + `lib/connect-rule.ts` — **DW-52**: `ghost_unavailable` for 429 and ≥500, with the sentence
-  "Ghost didn't answer just now. Try again in a moment."; 404 and 403 stay `ghost_refused`.
-- [ ] `server/ghost-admin/index.ts` + `lib/admin-rule.ts` — **DW-58**: before the fetch, a DNS lookup refuses a
-  loopback, private, link-local, CGNAT, unique-local, unspecified or v4-mapped answer with `detail.blocked` and the
-  unreachable sentence (`ponytail:` names DNS rebinding). Controls: unit vectors both ways; a harness connect to
-  `https://127.0.0.1.nip.io` refused while T1 connects.
-- [ ] `lib/connect-rule.ts` + `sites/actions.ts` — **DW-59**: `storeOrUndo` and `siteWrite` lifted and run by
-  `connect-rule.test.ts` (swapping the branches or dropping a kept column goes red).
-- [ ] `tools/probe/configure-supabase-auth.py` — **DW-14**: the Pro-only idle-timeout row and its 402 retry go, replaced
-  by one comment; `--check` exits 0, `--expect mailer_otp_exp=901` still exits 1.
-- [ ] `(dashboard)/loading.tsx`, `sites/(list)/page.tsx` — **DW-25, DW-57**: the rules themselves stated in the header
-  comments (the first byte waits on the guard by rule; the Sites card's layout is the owner's).
-- [ ] **Question 10** as ruled — option 1: `normaliseSiteUrl`'s caller refuses a path with "Inflozo connects a Ghost site
-  at the root of its address — /blog isn't supported yet." (the path derived), and a test.
-
-### Group C — the section runtime, the library and the recordings
-
-- [ ] `eslint.config.js` — **DW-4**: `toString` refused only with no argument; `noInlineConfig` in the core block.
-  Control: three `lintText` rows (a Date refused, `n.toString(16)` clean, a disable comment plus `.localeCompare()` still
-  refused).
-- [ ] `section-runtime/src/core.ts` — **DW-96** (an attribute's value collapses line breaks to one space on both
-  emitters), **DW-159** (`renderTree` drops the design's comment nodes before any token is put), **DW-228**
-  (`stampControls` keeps `data-i18n-*`), **DW-168** (`RenderInput.version` reaches `bindingRefusals`;
-  `check-snapshots.mjs` passes `ghostCompat.minVersion`; a `mustFail` row: a22/1 at 5.61.0). Controls: an
-  `agreement.test.ts` vector each, and the `mustFail` row.
-- [ ] `library/src/vocabulary.ts` + `contexts/matrix.json` — **DW-99**: `total_paid_members` and `content_api_url` join
-  `BARE_HELPERS` with matrix rows, re-recorded by `record-contexts.py`; a comment beside `taxonomyItems`. **DW-129**:
-  the two code-injection keys move to `neverOffer` (appendix-b1 §6 too). Controls: an agreement case; a contexts test.
-- [ ] `library/src/validate.ts` — **DW-104** (a top-level `,` and an unbundled seed refused; one `PREVIEW_SEEDS` list),
-  **DW-161** (a members field outside its form refused), **DW-186** (a control titled "Member visibility" refused),
-  **DW-196** (`darkCapabilities` a closed word list: `tokens`, and `image-swap` only where a control swaps an image; the
-  words defined in `docs/section-authoring.md`), **DW-213** (a second `data-items-limit` on one path refused). Controls:
-  a `validate.test.ts` case each, red on HEAD.
-- [ ] `library/icons/tabler.d.json.ts` + `tsconfig.base.json` — **DW-113**: a declaration and `allowArbitraryExtensions`.
-  Control: `tsc --listFilesOnly` does not load the JSON.
-- [ ] `tools/stress/sections.js` + `compile.js` — **DW-125**: `@site.navigation` and a declared tiers query; each
-  archetype rendered with its target in `test-vocabulary.mjs`; gscan 0/0 on both majors.
-- [ ] `tools/matrix/cases.mjs` + `(authed)/pilots/` — **DW-171**: the show-to arms from `carriesMemberVisibility`; the
-  baseline swap is the owner's approval (Ask First). Control: a `cases.test.mjs` assertion, red on HEAD.
-- [ ] `section-runtime/src/tokens.ts` — **DW-224**: rule 2 forces the underline; all three rules select
-  `:where(a:not([class]), a[class=""])`; `reference-tokens.css` regenerated; the R-173 test extended.
-- [ ] `section-runtime/src/doc-schema.ts:68` — **DW-288**: the rule as a comment (kept, never drawn, never pruned) and a
-  test that an unknown design id survives parse and swap.
-- [ ] `tools/probe/record-shim.py` — **DW-147, DW-237**: `restore_and_delete()` re-activates, then deletes and reads back
-  even if the re-activation raised; `record-shim.py`, `run-verify-core.py`, `record-contexts.py` and
-  `record-page-number.py` call it; the rule joins `RESET-PROTOCOL.md`; an offline `--self-check` joins `pnpm test`.
-  **Question 14**: the leftover probe themes deleted after the owner has seen the list.
-- [ ] `tools/probe/record-cards.py` — **DW-103** (Question 14): the defaults read through a recorder-owned pair of posts
-  and tags; both majors re-recorded; `orbit-weekly.test.ts` asserts every defaults row is the recorder's.
-- [ ] `tools/probe/record-contexts.py` + `contexts/matrix.json` — **DW-127** (Question 14): the empty fields seeded on T1
-  and T3 after the inventory, private mode switched on and back, re-recorded, `unverified` markers dropped where a
-  recording now shows; `contexts.test` requires every scope row recorded or reasoned.
-
-### Group D — the checks and the walks
-
-- [ ] `apps/web/*.test.ts` — **DW-117, DW-162**: one executed test loads the three frame routes' handlers with stubbed
-  `next/server` and Supabase and asserts 303 to `/sign-in` signed out and 200 signed in, replacing the three text tests;
-  the editor walk's signed-out loop gains `/controls/frame` and `/style-guide/frame`.
-- [ ] `apps/web/lib/zod.ts` — **DW-174, DW-201**: `z.config({ jitless: true })` and re-exports `z`; every app zod import
-  uses it; `no-restricted-imports` keeps it so. Control: importing `lib/style-pack.ts` with `Function` trapped fires no
-  probe; one signed-in load of `/` counts no `securitypolicyviolation`.
-- [ ] `tools/keyboard/journey.spec.mjs` — **DW-182** (typing past the fixture heading's 40 raises "Heading holds 40
-  characters." and drops the 41st; with `top.document.hasFocus` false, blurring keeps the session), **DW-211** (in
-  `floor.spec.mjs`: the pill's ◀ ▶ and Shuffle pressed on the fixture ring, then ⌘Z).
-- [ ] `tools/probe/run-verify-editor.cjs` — **DW-183, DW-204** (the signed-in GETs retried once on a timeout; one walk
-  read beside `npx vercel logs` and each stall recorded as client or product), **DW-219** (step 89 on Author and Page,
-  and a forged request refused), **DW-220** (66b waits on the sync POST for the budget `lib/journal.ts` exports),
-  **DW-222** (step 36 measures against the hovered root after the pill's tick), **DW-236** (a bad frame is skipped and
-  counted), **DW-284** (step 90 waits until no server action is in flight), **DW-291** (step 89 polls the saved subject
-  before reloading). Each carries its control as the triage names it.
-- [ ] `tools/probe/die-pips.cjs` — **DW-216**: the one measurement the journey and both walks import.
-- [ ] `apps/web/lib/canvas.ts` — **DW-208**: `canvasCaching()` both canvas routes call; the text regex goes; a unit test.
-- [ ] `tools/probe/record-edit-lock.py` + `RLS-TEST.sql` — **DW-245**: a probe error is not "RUN VOID"; the fixture user
-  is cleaned up once created; F4 seeds relative to the current generation; `supabase/tests/rls.sql` copied.
-- [ ] `apps/web/app/layout.tsx` + `app/fonts/` — **DW-246**: the three faces self-hosted through `next/font/local` (OFL
-  files and licences committed); a `tokens.test.ts` row forbids `next/font/google`; an offline `pnpm build` passes.
-- [ ] `tools/probe/run-verify-live-content.cjs` — **DW-251**: a ring tile shows the site's newest title; under a
-  simulated total past `LIST_LIMIT` both capped lines read.
-- [ ] `apps/web/lib/` + the harness — **DW-257**: `designateAll()` shared by `read.ts` and the harness; an unflagged
-  harness Home journey; `unasked()` with a node test. **DW-279**: a harness-only re-read and a journey stop that sees the
-  floating button arrive. **DW-285**: `ShellUserContext` exported; the harness gives the notice its avatar.
-- [ ] `tools/check-traces.mjs` + `ci.yml` — **DW-269**: after `pnpm build`, the editor, `/canvas` and `/pilots` traces must
-  list every tracked file under `packages/library/designs`. Control: a scratch build with `PACKAGES` built from
-  `import.meta.url` goes red.
-- [ ] `run-verify-controls.cjs`, `run-verify-pilots.cjs` — **DW-287**: `load` instead of `networkidle`, with the landmark
-  waits that already follow.
-
-### Group E — the editor
-
-- [ ] `packages/library/orbit-weekly/media/` + `lib/style-guide.ts` + `lib/canvas.ts` — **DW-102**: a few seconds of
-  in-house audio and video served same-origin in place of the sample host. Control: no sample-host media survives; the
-  walk's CSP read.
-- [ ] `section-runtime/src/marks.ts` — **DW-181**: pasted inline weight, style and decoration read as the field's allowed
-  marks. Control: `marks.test.ts` cases from clipboard HTML recorded by pasting from Google Docs, Word Online and Apple
-  Notes; the `font-weight:normal` wrapper alone stays unmarked.
-- [ ] `lib/editor.ts` + `lib/reorder.ts` + `layers.tsx` — **DW-187, DW-189**: one pure helper keeps a site-wide drag
-  inside its group (headers above footers), used by Layers' Site-wide card and the pill's grip. Control: a unit test with
-  made-up ids.
-- [ ] `components/controls/sidebar.tsx` + `section-runtime/src/doc-edit.ts` — **DW-198**: the sidebar picks the swatches
-  for both surfaces from one place; `clearProject()` beside `clearDarkOverrides`. Controls: a journey compares each dot
-  with the canvas in light and dark; a two-canvas clear test.
-- [ ] `(editor)/editor-skeleton.tsx` — **DW-199**: the card holds 16:10 in a short, wide window. Control: a
-  `floor.spec.mjs` stop compares its box with the real card's.
-- [ ] `editor.tsx` — **DW-205** (a repeated sentence is spoken again; a journey counts the live region's changes),
-  **DW-229** (the PAUSED chip's sentence for screen readers, EXPERIENCE's words), **DW-241** (becoming read-only closes
-  the menus and dialogs), **DW-290** (`prepareChrome()` in idle time after the first paint; `fps-trace.mjs` measures the
-  first selection at 4×, manual).
-- [ ] `components/editor/section-picker.tsx` — **DW-207**: browsing clears the refusal (a Post Content stand-in fixture
-  that never ships); a search shows "All sections" chosen; ⌘K inside the picker focuses the search. Three journey stops.
-- [ ] `lib/preview-subject.ts` — **DW-223**: a pick waits in `sessionStorage` until its action answers and wins at the next
-  open. Control: walk step 89 holds every action, picks, reloads at once, and sees the pick.
-- [ ] `editor.tsx` + `lib/lock.ts` + `lock/route.ts` — **DW-225** (a reader's View as picks are not stored), **DW-240,
-  DW-244** (the release backdates the heartbeat inside a short grace instead of deleting, filtered on this session's last
-  beat), **DW-242** (the holder's reload paints no greyed frame), **DW-243** ("kept editing" only when the holder
-  cleared the request). Controls: `lock.test.ts` cases and `run-verify-lock.cjs` stops, each as the triage names it.
-- [ ] `projects/[id]/sync/route.ts` + `read.ts` — **DW-235**: `docRefusal()` shared; the route answers 422 before the RPC.
-  Control: an `editor.test.ts` case and a walk 66c post.
-- [ ] `apps/web/lib/live-content.ts` + `lib/canvas.ts` — **DW-248** (a capped search asks Ghost by title through a closed
-  grammar executed on both majors), **DW-250** (a stored Tag or Author subject paints after one round), **DW-258** (one
-  slug grammar, executed on T1 and T3 first), **DW-259** (hand-picked ids read in chunks), **DW-270** (`tiers` included on
-  every post and page read and kept by the whitelist; shim fixtures re-recorded). Controls: a `live-content.test.ts` row
-  each; the live-content walk.
-- [ ] `lib/canvas.ts`, `lib/probe-rule.ts`, `lib/ghost-surfaces.ts`, `lib/pilots.ts` — **DW-273** (the paywall box follows
-  the site's major), **DW-275** (the paywall stylesheet served on its own route and loaded on the first Paywall paint),
-  **DW-278** (`portal_button_icon` stored and drawn: the five presets, a custom image, else the person icon), **DW-280**
-  (an absent announcement or brand key leaves the stored value standing). Controls: a test each, as the triage names it.
-- [ ] `lib/canvas-layer.ts` — **DW-256**: the host declares Tailwind's four shadow variables. Control: a keyboard stop
-  reads the note's computed shadow.
-- [ ] `components/kit/layers-row.tsx` + `editor.tsx` — **DW-281**: `LayerThumb` draws the frames' glyph per category (the
-  Hero glyph where no frame draws one); Epic 9's and 10's preamble gains "a category's first story adds its Layers glyph,
-  extrapolated from S4/D8's five (R-74)". Control: a journey stop at 1024 and 1440.
-- [ ] `components/controls/sidebar.tsx:464-465` — **DW-282**: `read-prop-…` and `read-control-…`. Control: a journey stop
-  fails on React's duplicate-key warning.
-- [ ] `editor.tsx:4552` — **DW-283**: the MEMBERS OFF chip is whole or absent. Control: `floor.spec.mjs` at 600 × 960 touch.
-- [ ] `lib/behaviours.ts` — **DW-226**: `movesByItself` honours the declaration's own width. Control: `behaviours.test.ts`.
-- [ ] **Questions 3, 4, 6, 7, 8, 9** as ruled — at their recommended options: the signed-out save state (B6's red panel,
-  its sentence and a Sign in button in a new tab); the browser copy erased at sign-out after sending, asking first when
-  it cannot send; the floating button assumed off when unreadable (FR-C2's sentence follows); the Paywall panel's line
-  in the Sites screen's own sentence per ask; a Layers row's hover outlines its section without scrolling; the capped
-  header adds its range. Each with a journey stop that fails with its line removed.
-
-### The close itself
-
-- [ ] `deferred-work.md` — every closed entry: `status: done <date>` and a `resolution:` naming this story and its
-  evidence; re-homed entries: the new owner line; **no entry deleted or renumbered**.
-- [ ] Standing rule 7 — grep for every DW id touched and every string replaced; fix what it finds.
-- [ ] `pnpm check`, `pnpm keyboard`, `bash supabase/tests/run-rls-gate.sh`, `python3 tools/doc-audit.py --check` — all
-  green, and the deployed walks pass.
-
-**Acceptance Criteria:**
-
-- Given the ledger after Story 5.23b, when this story is done, then every open entry is closed by a change, closed
-  with its evidence, closed on the owner's ruling, or open with a named story that is not done and whose text carries
-  it — and the gate refuses a commit that leaves an entry owned only by finished stories.
-- Given the checks the ledger said were missing, when each is added, then its control has been seen to fail with the
-  thing it protects reverted, and the run is recorded under Verification.
-- Given each surface a fix touches, when it is compared with the frame named in the Code Map, then it matches the frame,
-  and every departure is recorded beside the code (R-74).
-- Given every touched surface, when axe runs at 1440, 834 and 390, then it reports zero violations.
-- Given the owner, when he follows *Owner's manual test* on the deployed site, then he sees each row's result (R-80).
-- Given `pnpm check`, `pnpm keyboard`, the RLS gate and the documentation gate, then all four are green; no entry was
-  deleted or renumbered, no design file edited, and no migration shipped.
-
 ## Spec Change Log
 
 *Empty until the first review loop.*
 
 ## Design Notes
 
-**How the triage was made.** Nine read-only passes, each entry read in full and checked in the code at `6bf7c4e0`;
-nothing was written to the repo or to a real service except read-only public GETs and the GitHub Actions API. Each
-verdict is a claim the Dev run re-executes before acting on it.
+**How the triage was made.** Nine read-only passes at 5.24's Create, each entry read in full and checked in the code at
+`6bf7c4e0`; nothing was written to the repo or to a real service except read-only public GETs, the GitHub Actions API and
+one read-only timing on the production database (Question 5). Each verdict is a claim the Dev run re-executes before
+acting on it.
 
-**Why five stories are recommended (Question 1).** Story 3.9 closed 29 entries and took a day across its phases; this
-sweep closes about four times that, plus the plan edits. A Dev commit must have every task ticked
-(`tools/hooks/commit-msg`), so one story means one uncommitted working copy for the whole build, one review of a very
-large change, and one long test. The five groups touch different files and can land one after another; A first, so the
-ledger is honest and guarded before any code moves; D before E, so the walks E leans on are steady first.
+**Why five stories (R-211).** Story 3.9 closed 29 entries; this sweep closes about four times that, plus the plan's
+corrections. A Dev commit must have every task ticked (`tools/hooks/commit-msg`), so one story meant one uncommitted
+build for the whole of it. This story goes first so the ledger is honest and guarded before any code moves; 5.24d goes
+before 5.24e so the walks the editor's story leans on are steady first. The spec was renamed from Story 5.24's at the
+ruling, as Story 5.23a's was at R-208.
 
 **Routine calls made here, each stated to the owner in one line.**
 
-1. **DW-267 stays Story 7.13's.** Dropping an unused column now would be this story's only migration — a Schema phase
-   and a hand-applied production change (R-99) for a column nothing reads; 7.13 already carries it.
-2. **DW-187 closes with DW-189.** One rule — a site-wide drag stays inside its group, headers above footers — answers
-   both, and a unit test with made-up ids proves it before any footer design exists.
-3. **Five owner questions move to the stories they shape** (DW-144 → 9.6, DW-145 → 7.12, DW-178 → 9.1, DW-185 → 9.5,
-   DW-261 → 7.3/7.6), each written into that story's text as a question it asks first. Asking them now would decide
-   category work before its designs are in front of him.
-4. **DW-240's grace.** A closed tab frees editing a few seconds later instead of at once — the lock's timings tune and
-   its comparisons do not (epic 5's context), and the grace is what stops a reload handing editing away.
-5. **DW-225.** A window reading along clears its own View as dots for the session but stores nothing, because the page
-   it looks at may be behind the editing window's.
-6. **Two new sentences in the established voice:** DW-52's "Ghost didn't answer just now. Try again in a moment." and
-   DW-229's "PAUSED — this part moves by itself on your site; it holds still while you design, and Preview runs it"
-   (EXPERIENCE's own words, R-170).
+1. **DW-267 stays Story 7.13's.** Dropping an unused column now would be the sweep's only migration — a Schema phase and
+   a hand-applied production change (R-99) for a column nothing reads; 7.13 already carries it.
+2. **DW-187 closes with DW-189** (5.24e): one rule — a site-wide drag stays inside its group, headers above footers —
+   answers both, proved with made-up ids before any footer design exists.
+3. **Five owner questions moved to the stories they shape** (DW-144 → 9.6, DW-145 → 7.12, DW-178 → 9.1, DW-185 → 9.5,
+   DW-261 → 7.3/7.6), each written into that story's text as a question it asks first.
+4. **DW-240's grace** (5.24e): a closed tab frees editing a few seconds later instead of at once; the lock's timings tune
+   and its comparisons do not (epic 5's context), and the grace is what stops a reload handing editing away.
+5. **DW-225** (5.24e): a window reading along clears its own View as dots for the session but stores nothing.
+6. **Two new sentences in the established voice** (5.24b, 5.24e): DW-52's "Ghost didn't answer just now. Try again in a
+   moment." and DW-229's "PAUSED — this part moves by itself on your site; it holds still while you design, and Preview
+   runs it" (EXPERIENCE's own words, R-170).
+7. **Two readings of the owner's rulings**, stated in the register: R-215's Layers row rule applies to the Announcement
+   bar as well as the Subscribe button; R-217's scroll waits for the pointer to rest on the row.
 
-**The Free-pair finding (Question 2).** R-17 was amended on 2026-08-28 and the picks were made category by category on
-29–30 August; `epics.md` was written on 2026-09-04 from the positional rule, and neither it, FR-G2, the tiering note
-nor `sections-inventory.md:12` was updated. The generated roster already marks the picks (`inventory-gen.py` reads the
-export's line), so only the hand-written text disagrees. Derive the categories affected with the command under
-Verification; the three default rows are `SYNTHESIS_DEFAULTS`' `a25/1`, `a28/2` and `a29/2`, each dropped today because
-no A25, A28 or A29 design exists, so correcting them changes nothing on screen. DW-232 (A34's pager) and DW-268
-(Ledger's paywall) are the same finding already owned.
+**The free-pair finding (R-212).** R-17 was amended on 2026-08-28 and the picks were made category by category on 29–30
+August; `epics.md` was written on 2026-09-04 from the positional rule, and neither it, FR-G2, the tiering note nor
+`sections-inventory.md:12` was updated. The generated roster already marks the picks (`inventory-gen.py` reads the
+export's line), so only the hand-written text disagrees. The three default rows are `SYNTHESIS_DEFAULTS`' `a25/1`,
+`a28/2` and `a29/2`, each dropped today because no A25, A28 or A29 design exists, so correcting them changes nothing on
+screen. DW-232 (A34's pager) and DW-268 (Ledger's paywall) are the same finding, already owned.
 
 ## Questions for the owner
 
-Most are one line to answer — reply `1: 1, 2: 1, …`, or `all as recommended`.
+The owner ruled them on 2026-09-28, all but Question 5, which he asked about first; its answer is under it.
 
 ### Question 1 — This sweep is four times the last one. One story, or five in a row?
 
@@ -730,7 +775,7 @@ is done — and the next session starts from a half-finished copy.
 2. **One story, as R-207 has it.** The same work, one build, one review, one test.
 3. **Three stories:** the ledger and the plan; all the code that changes no screen (b, c and d above); the editor.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Five stories, one after another, each about the size of 3.9"*. Recorded as **R-211**; this spec is 5.24a.
 
 ### Question 2 — Which designs are free: your picks, or "the first two"?
 
@@ -753,7 +798,7 @@ pick, and never Centre Nav, which you did. And an untouched post page would open
 2. **The first two, as the plan says.** Your picks are set aside. The drawings keep your picks' Free badges, because
    the export is never edited, so drawings and product would disagree.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Your picks, everywhere"*. Recorded as **R-212**.
 
 ### Question 3 — If you are signed out while the editor is open, what should the save message say? (DW-202)
 
@@ -769,7 +814,7 @@ fixes it; signing in does.
 2. Keep "Retrying" and change only its sentence for this case.
 3. Send the tab straight to the sign-in page; the device keeps the work and sends it after you sign in.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"A sixth state in the same red panel"*. Recorded as **R-213** (Story 5.24e).
 
 ### Question 4 — When you sign out, should Inflozo erase the copy of your work it keeps in this browser? (DW-203)
 
@@ -785,7 +830,7 @@ browser's storage.
 2. Always erase it at sign-out, even work not yet sent.
 3. Keep it, as today.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Erase it at sign-out, after first sending anything not yet sent; if it cannot be sent, ask before signing out"*. Recorded as **R-214** (Story 5.24e).
 
 ### Question 5 — After "Sign out everywhere", a stolen sign-in ticket still reads your data for up to an hour. Keep the hour? (DW-40)
 
@@ -794,6 +839,17 @@ But a ticket someone had already stolen from your browser can still read your ow
 it expires, up to an hour later — Supabase's default.
 
 **An example.** A ticket copied at 10:00 could still list your projects through the database at 10:50.
+
+**Your question (2026-09-28): would option 3 slow the canvas or editing?** No — and it was measured. Designing on
+the canvas never asks the database anything; it all runs in your browser. The database is asked only when your
+work is saved (in batches), when the edit lock checks in (about every 15 seconds) and when a setting is stored,
+and option 3 adds one look-up of your sign-in record to each of those. On your production database (read-only,
+2026-09-28) that look-up took **under a tenth of a millisecond**, and a round trip from the development computer
+took a median **140.2 ms without it and 140.5 ms with it** — the difference is lost in the trip. What option 3 does
+cost: about a day's work; one database change pushed on its own first (R-99), so DW-40 would move to Story 5.24b
+with a Schema phase; and a change to how every table decides who may read it, which the RLS gate re-proves. It
+would be measured again on a real save and a real lock check-in before it ships. So the choice is cost, not speed:
+the hour only matters to someone who has already stolen a cookie no script on the page can read.
 
 1. **Keep the hour, and write it into the project's security rules so it is a decision, not an accident (RECOMMENDED).**
    The ticket sits in a cookie no script on the page can read, and the sign-out check re-tests the hour on every run.
@@ -814,7 +870,7 @@ site probably does not.
 1. **Assume off, Ghost's own default (RECOMMENDED).**
 2. Keep assuming on, as the PRD says today.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Assume off, Ghost's own default. And also if it is off by default - do not show it on layers sidebar panel."* Recorded as **R-215** (Story 5.24e): read the same way for the Announcement bar — a Ghost surface's Layers row appears only when the site has it on.
 
 ### Question 7 — Should a sign-up section's settings say when your site cannot take the sign-up? (DW-274)
 
@@ -828,7 +884,7 @@ site the form does nothing for visitors.
 1. **The settings say it too, in the Sites screen's own sentence, matched to what the section asks for (RECOMMENDED).**
 2. Only "members off", as today.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"The settings say it too, in the Sites screen's own sentence, matched to what the section asks for"*. Recorded as **R-216** (Story 5.24e).
 
 ### Question 8 — When you point at a section's row in Layers, should the page outline that section? (DW-188)
 
@@ -841,7 +897,7 @@ outline it gets when you point at it there.
 2. Outline it and scroll it into view.
 3. Leave it as it is.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-28).** *"Outline it and scroll it into view."* Recorded as **R-217** (Story 5.24e): it scrolls once the pointer rests on the row for a moment, so sweeping down the list does not make the page jump.
 
 ### Question 9 — When a design shows only some of a list's items, should the list's header keep its allowed range? (DW-212)
 
@@ -856,7 +912,7 @@ disappears, though + and − still stop at 2 and 6.
    explains itself.
 3. Show the range only when you point at the header.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-28).** *"Both on one line: "3 items · 2 shown in this design · 2–6""*. Recorded as **R-218** (Story 5.24e).
 
 ### Question 10 — Should Inflozo say so when you give it a Ghost site that lives under a path? (DW-55)
 
@@ -870,7 +926,7 @@ at `https://example.com`, then says "Ghost refused the connection (HTTP 404)" �
 2. Support it: the path kept in every address Inflozo builds, proved on a new test Ghost installed under a path. Large.
 3. Leave it as it is.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Not supported yet, and say so: "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." - But add it as a future work which needs to be supported."* Recorded as **R-219**; the future work is PRD Appendix G's (added at this Create), the sentence Story 5.24b's.
 
 ### Question 11 — Should the two Re-check buttons make you wait between presses? (DW-64)
 
@@ -883,7 +939,7 @@ a double press is already blocked.
 2. A 60-second wait: the button greys with "Checked just now — check again in a minute".
 3. No visible change: presses within 60 seconds quietly reuse the last answer.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"No wait, as today"*. Recorded as **R-220**; DW-64 closes on it.
 
 ### Question 12 — Should you be able to copy or move a section to another kind of page? (DW-122)
 
@@ -897,7 +953,7 @@ there from the Section Picker.
 2. Build "Copy to…" and "Move to…" in the Layers row menu now — a day or more, and you test it.
 3. Yes, as its own story after Epic 5, named on the board.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Not at launch - But add a future requirement to mark a section as Global and Global sections are added in a separate Global library from which these Globasl sections can be added on any page. If we modify a Global section anywhere, it will update that Global section everywhere. We can unlink a Global section so that changes are not applied to other Global sections."* Recorded as **R-221**; Global sections are in PRD Appendix G (added at this Create) and DW-122 closes on it.
 
 ### Question 13 — When you sign off a category, should your check include looking as each kind of visitor? (DW-221)
 
@@ -911,7 +967,7 @@ appear, then to Logged out user and see it gone.
    it.
 2. Keep the gates as they are and delete FR-D16's sentence about them.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Add the pass to §4's owner check and to every category's owner-gate story"*. Recorded as **R-222**.
 
 ### Question 14 — May the sweep add test content to your two test Ghost sites and delete leftover probe themes there?
 
@@ -927,7 +983,7 @@ runs left installed. The reset rule is: I list first, you look, you confirm, the
 3. Neither — the three fixes move to the first stories that need the fields (A21's Story 10.71, A29's Story 10.96) and
    the themes stay.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Yes to all three, after you have seen the list"*. Story 5.24c shows him the list first, as the reset protocol requires.
 
 ### Question 15 — Can you download Supabase's certificate, so the app checks it is talking to your real database? (DW-50)
 
@@ -941,38 +997,16 @@ would not notice.
 1. **Yes — download it and tell me where the file is (RECOMMENDED).**
 2. Not now — DW-50 moves to Story 15.8 with DW-49, where the connection is made anew for the live site.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Yes — download it and tell me where the file is"*. The file is awaited; Story 5.24b's DW-50 task waits for it.
 
 ## Owner's manual test
 
-Do this on the real site after Deploy. It follows the recommended options; the rows move to their own stories if you
-rule Question 1 option 1, and change where you rule another option.
-
-| # | URL | Screen | What to do | Dummy data | What you should see |
-|---|-----|--------|------------|------------|---------------------|
-| 1 | `https://app.inflozo.com/` | Projects | Type in the search box. Then click **Clear search**. | `zzzz` | "No projects match "zzzz". **Clear search**". The click empties the search and your projects are back. |
-| 2 | `https://app.inflozo.com/sites` | Sites | The same. | `zzzz` | "No sites match "zzzz". **Clear search**"; the click brings every site back. |
-| 3 | `https://app.inflozo.com/sites` | Sites | Type part of one site's name so only it shows. Open its **⋯ → Manage API keys**, close with ✕. Open it again, close with Esc. | `ghost5` | After each close the list is still filtered and the box still says `ghost5`. |
-| 4 | `https://app.inflozo.com/sites/connect` | Connect a site | Type an address with a path. | `https://example.com/blog` | "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." |
-| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Pilot sections, Home | Look at the small pictures at the start of each Layers row. | — | Each kind of section has its own: the header, hero, post grid and newsletter pictures differ. Before, all were the same. |
-| 6 | same | Pilot sections, window narrower than about 1280 | Look at the tile strip. | — | The tiles show the same per-kind pictures. |
-| 7 | same | Pilot sections, full width | Point at the **Newsletter** row in Layers (don't click). | — | The Newsletter section on the page gets its thin outline; the page does not scroll. |
-| 8 | same | Pilot sections | Select the Newsletter section, click into its description on the page, and paste a line copied from a Google Doc. Undo afterwards (⌘Z). | a Google Doc line with one **bold** and one *italic* word | The bold word stays bold and the italic word stays italic. |
-| 9 | same | Section Picker | Press ⌘K. Click a category in the left rail, then type in the search. Then click a card and press ⌘K again. | `grid` | While you search, **All sections** is the one marked in the rail. The second ⌘K puts the cursor back in the search with your text selected. |
-| 10 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f/post` | Ghost 5 Project, Post | Open the **Previewing with** pill at the foot, choose a different article, and reload at once (⌘R). | — | After the reload the page still shows the article you just chose. |
-| 11 | `https://ghost5.inflozo.com/ghost/`, then the Ghost 5 Project's Home | Ghost admin, then the editor | In Ghost admin's Portal settings, switch the floating button on and choose a different icon; save. Open the Ghost 5 Project's Home. Afterwards put Ghost's settings back. | — | The floating Subscribe button, bottom right of the page, wears the icon you chose, not the plain person. |
-| 12 | `https://app.inflozo.com/style-guide` | Style guide | Scroll to the audio and video cards; press play on each. | — | Each plays a few seconds, where before nothing played. |
-| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` in two windows side by side | Editor | Window A is editing, B reads along. Close A's tab. | — | Within a few seconds B can edit. |
-| 14 | same | Editor | With A editing again, open A's **⋯** menu. In B, take over editing. | — | A's menu closes by itself as A becomes read-only. |
-| 15 | same | Editor | With A editing, reload A. | — | A keeps editing; B keeps reading along. |
-| 16 | same | Editor | In a second tab, sign out (account menu → Sign out). Back in the editor tab, type one word into a heading. Then press **Sign in**. | one word | "You've been signed out. Your work is safe on this device — sign in again and it will be sent." After you sign in, the word is sent. |
-| 17 | `https://app.inflozo.com/controls` | Controls | Find the list whose design shows fewer items than it holds. | — | Its header reads "3 items · 2 shown in this design · 2–6". |
-| 18 | Pilot sections → **Template ▾ → Template surfaces → Paywall** | Paywall canvas | Open it. | — | Ghost's own box looks exactly as before. |
-| 19 | any app screen | Projects and the editor | Look at the lettering. | — | Unchanged — the fonts now come from Inflozo itself rather than Google. |
+None — this story changes no screen (`owner_test: none`); its Done is written on its Deploy commit (R-80). The sweep's
+screen steps go with Stories 5.24b and 5.24e (§ The four stories after this one).
 
 ## Verification
 
-*Filled by the Dev and Review runs (R-82). Named here is what each group must hit.*
+*Filled by the Dev and Review runs (R-82).*
 
 **Commands:**
 
@@ -980,25 +1014,23 @@ rule Question 1 option 1, and change where you rule another option.
   — expected: the ledger's open entries at HEAD, which Dev compares with this spec's triage and re-triages where they
   differ.
 - `for f in _bmad-output/planning-artifacts/design/claude-design-export/Inflozo/A*Spec.md; do grep -m1 -H '^\*\*\[Free\] designs:\*\*' "$f"; done`
-  — the owner's picks, read against each category's first story in `epics.md`; expected at Create: all but four
-  categories disagree; after Question 2's work, none (the new doc-audit check says so).
-- `pnpm check` — expected: green, the new tests and self-checks inside it.
-- `pnpm keyboard` — expected: every journey passes, the new stops included.
-- `bash supabase/tests/run-rls-gate.sh` — expected: green, with DW-245's relative F4.
-- `python3 tools/doc-audit.py --check` (twice) — expected: green, with the orphan, Free-pair, roster and module-line checks.
-- `cd tools/stress && npm install && node build.js && node gate.js theme` — expected: 0 errors, 0 warnings on both majors
-  (DW-125).
-- `bash tools/matrix/run-matrix-gate.sh` — expected: green after the owner approves DW-171's baselines.
-- `node tools/perf/fps-trace.mjs` at 4× — manual, never CI: the first selection before and after DW-290.
+  — the owner's picks, read against each category's first story in `epics.md`; expected at 5.24's Create: all but four
+  categories disagree; after R-212's work, none (the new check says so).
+- `python3 tools/doc-audit.py --check` (twice) — expected: green, with the orphan, free-pair, roster and module-line
+  checks, each seen red on its control first.
+- `python3 tools/story-board.py --check` — expected: current, `demo()` passing with the hook's and the orphan check's
+  controls.
+- `pnpm check` — expected: green (`check-catalog.mjs`, `check-baseline.mjs`, `synthesize.test.ts` and the library's
+  carousel test inside it).
 
-**The real services each group hits:**
+**Real services.** GitHub's CI on a day's first push after the Dev commit — the field proof of DW-132 (read with
+`GITHUB_TOKEN`, read-only). Nothing else this story does touches Supabase, Vercel, Resend, Dodo or the Ghost test servers.
 
-- **A** — none but GitHub's CI on the next day's first push (DW-132's field proof).
-- **B** — `app.inflozo.com` (the dashboard, sign-out, passkeys and ghost-admin harnesses), Supabase through
-  `SUPABASE_DB_POOLER_URL` and GoTrue (throwaway accounts, deleted afterwards), T1 `ghost6.inflozo.com` for connect and
-  disconnect, public DNS for DW-58, and the GitHub API read-only for DW-90.
-- **C** — T1 and T3 (`ghost5.inflozo.com`) for the recordings under the reset protocol, and gscan on both majors.
-- **D** — `app.inflozo.com` through the editor, controls, pilots and live-content walks, Vercel's deployment logs
-  (`npx vercel logs`) for DW-204, and CI's `check` job for DW-269.
-- **E** — `app.inflozo.com` through the editor, lock and live-content walks, T1 and T3 for DW-248, DW-258, DW-270 and
-  DW-278, and Supabase for the lock and View as rows.
+**Executed at Create (2026-09-28).**
+
+- The triage: every open entry at `6bf7c4e0` in exactly one outcome — checked by parsing this spec's triage against the
+  ledger (no entry missing, none twice).
+- Question 5's timing, read-only on the production database through `SUPABASE_DB_POOLER_URL`: one look-up of a sign-in
+  record — `explain analyze select exists (select 1 from auth.sessions where id = gen_random_uuid())` — Execution Time
+  0.077 ms; twenty round trips each from the development computer, median 140.2 ms for `select 1` and 140.5 ms with the
+  look-up.
