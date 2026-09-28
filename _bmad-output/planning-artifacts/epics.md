@@ -2575,7 +2575,8 @@ self-check, with each new check's control; CI's `check` job on a day's first pus
 
 *R-211's second story, after 5.24a: Group B of 5.24a's triage — DW-14, 25, 27, 29, 32, 40, 41, 47, 50, 52, 55, 57, 58,
 59, 65, 67, 71, 74, 77, 81, 82, 83, 84, 85, 86, 90, 91, 92, 271 and 272. DW-40 (**R-223**) gives it a Schema phase, pushed
-first and on its own (R-99).*
+first and on its own (R-99) — and DW-293, found at this story's Create, rides in it: a signed-in user could still create
+a site record straight through the database, skipping connect.*
 
 As a customer signing in and connecting my Ghost sites,
 I want the small faults in sign-in, Projects, Sites and connect fixed,
@@ -2629,7 +2630,8 @@ green.
 
 *R-211's fourth story, after 5.24c: Group D of 5.24a's triage — DW-117, 162, 174, 182, 183, 201, 204, 208, 211, 216,
 219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287 and 291 — and DW-292, found after the triage on
-5.24a's second Dev push: a keyboard-gate stop that counted a redraw on CI it never counts locally.*
+5.24a's second Dev push: a keyboard-gate stop that counted a redraw on CI it never counts locally — and DW-294, found at
+5.24b's Create: the gate's "private is not exposed" assertion reads a setting that is empty wherever it runs.*
 
 As the owner relying on the automatic checks,
 I want the flaky walks steadied and the missing checks built,

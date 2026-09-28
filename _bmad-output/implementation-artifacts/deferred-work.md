@@ -7111,3 +7111,46 @@ location: `tools/keyboard/journey.spec.mjs` at `4784b1a4` — the stop at `:3953
 reason: not reproduced, so the cause is a hypothesis: the settle before `resetRenders` is a fixed wait, and a render
   the selection caused could land after it on a slower runner and be counted as the ⌥↓'s. The stop should wait for the
   condition it means — no render pending — rather than a fixed moment, which is Story 5.24d's goal.
+
+## Deferred from: Story 5.24b's Create (2026-09-29)
+
+### DW-293: a signed-in user can still create a site record straight through the database, skipping connect
+
+plain: Connecting a site checks the address, counts your sites against your plan and asks Ghost before anything is
+  saved. But the database still lets a signed-in person add a site record directly, with any address, by calling it
+  with their own sign-in ticket — a door left from before connecting moved onto the server. Nothing in the app uses it;
+  it should be shut.
+status: open
+severity: medium
+origin: Story 5.24b's Create (2026-09-29), found while tracing DW-58 — read in `SCHEMA.sql` and the app, not executed:
+  §11 grants `authenticated` INSERT on `sites (id, user_id, url, title, favicon_url)` (`:1108`) and the `sites_owner`
+  policy admits any row carrying the caller's own `user_id`, while the app inserts `sites` only through
+  `supabaseAdmin()` (`sites/actions.ts:318-331` at `0b00f5d9`) and every harness seeds through the service role.
+owner: Story 5.24b (The sweep: accounts, sites and connections), whose Schema phase revokes the grant and whose card
+  names this entry.
+location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-2026-08-19/SCHEMA.sql` §11 (`:1108`, "the
+  client supplies the connection and its presentation") · `supabase/migrations/20260904120000_complete_schema.sql` ·
+  `supabase/tests/rls.sql` (F3's `sites` block, `:793-798`)
+reason: the grant predates Epic 3, which moved connect to a server action writing through the secret key. A row made
+  through it skips `normaliseSiteUrl`, the Free plan's one-site limit (counted only inside `connectSite`) and connect's
+  Ghost checks; whether Manage keys would then credential such a row is unexecuted, and revoking the grant closes it
+  either way. DW-58's check inside `fetchWithKey` stops such an address being fetched regardless.
+
+### DW-294: the gate's "private is not exposed" assertion reads a setting that is empty everywhere it runs
+
+plain: One safety check in the database gate is meant to fail if the private tables ever became reachable over the
+  internet. It looks for the answer in a place that is empty both in the test container and on the live database, so
+  it always passes and never actually checks anything.
+status: open
+severity: low
+origin: Story 5.24b's Create (2026-09-29), read-only on production: `current_setting('pgrst.db_schemas', true)` is NULL
+  there and `pg_db_role_setting` carries no `pgrst.db_schemas` for `authenticator` — hosted Supabase sets the exposed
+  schemas outside the database — and nothing sets it in the gate's container.
+owner: Story 5.24d (The sweep: the checks and the walks), whose card names this entry.
+location: `supabase/tests/rls.sql:984-995` and `RLS-TEST.sql`, its original — the block that prints "PASS: storage is
+  not PostgREST-exposed (db_schemas = unset locally)"
+reason: `SCHEMA.sql` §0b says `private` must never be exposed and that RLS-TEST asserts it "because this control is a
+  configuration value and configuration drifts"; the assertion passes on both targets without looking at anything.
+  `private` is still covered over the wire — `run-verify-ghost-admin.py --check`'s `vault-off-rest` reads its table as a
+  404 through PostgREST — but `storage` has no such check. The fix is a probe that reads the exposed schemas where they
+  live, with a control, and a SQL block that says what it can and cannot see.
