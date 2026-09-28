@@ -1214,7 +1214,7 @@ function EditorShell({
   const [scrolling, setScrolling] = useHanded(false)
   // Story 5.4 — the one reorder, held here because EITHER grip starts it: a Layers row's or the canvas pill's. Story 5.23b:
   // in a store of one value that Layers alone subscribes to, so a pointer move never re-renders the editor (R-208)
-  const [dragStore] = useHanded(() => oneValue<SectionDrag | null>(null))
+  const [dragStore] = useState(() => oneValue<SectionDrag | null>(null))
   /** the pill drag's own start: the pointer's Y and the dragged doc's sections as they sat ON SCREEN */
   const pillDrag = useRef<{ y: number; layout: Layout }>({ y: 0, layout: { tops: [], heights: [], gap: 0 } })
   const pill = useRef<HTMLDivElement | null>(null)
@@ -3225,14 +3225,18 @@ function EditorShell({
   }
 
   // a change of canvas is a soft navigation: the iframe keeps its document and is repainted, and nothing stays chosen
+  // Story 5.23b (review, 2026-09-28): `latest`'s selection, page and stack move with the key IN THE SAME LAYOUT EFFECT
+  // PASS as the key itself — a passive effect runs after paint, and the chrome's frame loop reads `latest.stack` before
+  // it would have; derived from `latest.docs`, never from a render's state, so it cannot go back (the Always).
+  useLayoutEffect(() => {
+    latest.current = { ...latest.current, selected: null, page: 1, stack: stackOf(latest.current.docs, key, 1, library) }
+  }, [key])
   useEffect(() => {
-    latest.current.selected = null
     setSelected(null)
     // Story 5.13: a refusal belongs to the canvas it was refused on, and each canvas holds its own subject
     setSubjectRefusal(null)
     // Story 5.16: a change of canvas is page 1 — the render already shows it (`shownPage` is keyed to its canvas), and
     // this makes it stick, so the canvas left on page 2 opens on page 1 on the way back too
-    latest.current = { ...latest.current, page: 1, stack: stackOf(latest.current.docs, key, 1, library) }
     setShownPage({ key, page: 1 })
     asked.current.clear()
     // Story 5.18: opening the editor and a canvas are reads the customer asked for — on the site's content they are
@@ -4189,7 +4193,9 @@ function EditorShell({
    *  changed — which `withState` writes whole over the instance, every stored value and never the design — so a press in
    *  that frame on a panel drawn for the design just replaced would write that design's values over the new one's.
    *  `drawnFor` is the section the panel was drawn for; the section as the canvas holds it now must be the same one, on
-   *  the same design, or nothing is written and nothing is said. */
+   *  the same design — AND HOLDING THE SAME VALUES (review, 2026-09-28): an undo or a Remix changes a control value on the
+   *  same design, and a press in that frame on the panel still showing the old values would write them all back — or
+   *  nothing is written and nothing is said. The paint's own signature is the equality (`chosenSig`). */
   const onChange = (next: ControlState, kind: Edit, drawnFor: Placed | undefined) => {
     const now = latest.current
     // Story 5.20 — on the Paywall canvas the panel is its one instance's, selected or not (`choose`)
@@ -4198,7 +4204,7 @@ function EditorShell({
     if (!pick) return
     const n = now.stack.findIndex((i) => same(i, pick))
     const placed = now.stack[n]
-    if (placed === undefined || drawnFor === undefined || !same(placed, drawnFor) || placed.designId !== drawnFor.designId) return
+    if (placed === undefined || drawnFor === undefined || !same(placed, drawnFor) || JSON.stringify(placed) !== JSON.stringify(drawnFor)) return
     // Story 5.16: the doc as edited (page 2's copy while it follows), and held for R-180's ask on page 2 — then nothing
     // is stamped: the panel still shows the value in force until the change lands
     if (commit(withState(editable(pick.doc), pick.doc, pick.instanceId, next), pick.doc, { instanceId: pick.instanceId, name: layerNameOf(pick) }) === null) return

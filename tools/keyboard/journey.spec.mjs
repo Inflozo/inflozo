@@ -4106,6 +4106,78 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     await expect(counter(page)).toHaveText(/^1 of \d+$/)
   })
 
+  test('R-210: a press on the settings panel still drawn with the values an undo took back writes nothing — the undo stands', async ({ page }) => {
+    // The same section on the same design, but the panel a frame behind holds the values ⌘Z just undid; a press there
+    // hands up the OLD state whole with one value changed, and writing it would put the undone value back. The guard
+    // compares what the panel drew with what the canvas holds (review, 2026-09-28). Background has five values, so the
+    // stale press lands on a THIRD one — with two, the arrow from the undone value would wrap back to the value in force.
+    await open(page)
+    await selectRinged(page)
+    const style = page.locator('#editor-controls button[id$="-group-style"]')
+    if ((await style.getAttribute('aria-expanded')) !== 'true') {
+      await style.focus()
+      await page.keyboard.press('Enter')
+    }
+    const bg = page.locator('#editor-controls [id$="-control-bg"]')
+    const bgValue = () => bg.locator('[role="radio"][aria-checked="true"]').innerText()
+    await expect(bg).toHaveCount(1)
+    const initial = await bgValue()
+    await bg.locator('[role="radio"][tabindex="0"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await expect.poll(bgValue, 'the control: the first press is written').not.toBe(initial)
+    const second = await bgValue()
+    await bg.locator('[role="radio"][tabindex="0"]').focus()
+    // ONE TASK: ⌘Z takes the value back on the canvas, and the arrow presses the radio the panel still draws with the
+    // value just undone
+    const undone = await page.evaluate(async () => {
+      const press = (target, key, init = {}) => target.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }))
+      const radio = document.activeElement
+      press(document.querySelector('section[aria-label="Canvas"]'), 'z', { ctrlKey: true })
+      for (let k = 0; k < 3; k++) await Promise.resolve()
+      const shown = document.querySelector('#editor-controls [id$="-control-bg"] [role="radio"][aria-checked="true"]')?.textContent?.trim()
+      press(radio, 'ArrowRight')
+      return shown
+    })
+    expect(undone, 'the control: the arrow was pressed on the panel still showing the value undone').toBe(second)
+    await panelsSettle(page)
+    await expect.poll(bgValue, 'nothing was written from the old panel: the undo stands').toBe(initial)
+    // …and a press on the panel as it is drawn now IS written
+    await bg.locator('[role="radio"][tabindex="0"]').focus()
+    await page.keyboard.press('ArrowRight')
+    await expect.poll(bgValue, 'the control: a press on the current panel lands').toBe(second)
+  })
+
+  test('R-210: a second key on a row still a frame behind is made against the newest doc — two ⌥↓ move two places, two Space show again', async ({ page }) => {
+    // The Layers rows follow a section operation a task later (the hand-over), so a row's `at` and `hidden` can be a
+    // frame behind the doc when the next key lands — a key repeat, or a quick double press. `on.move` re-bases the
+    // displacement on where the section IS, and `onToggleHidden` reads `hidden` from the newest doc; each key here is
+    // dispatched in one task with only microtasks between, before any row could land (review, 2026-09-28).
+    await open(page)
+    const own = (await rows(page)).page
+    const fourth = own[3]
+    const n = await tagRoots(page)
+    await select(page, fourth)
+    await panelsSettle(page)
+    await page.evaluate(async (row) => {
+      const press = (key, init = {}) => document.querySelector(`[data-layer-row="${row}"]`).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true, ...init }))
+      const settle = async () => { for (let k = 0; k < 3; k++) await Promise.resolve() }
+      press('ArrowDown', { altKey: true })
+      await settle()
+      press('ArrowDown', { altKey: true })
+    }, fourth)
+    await expect.poll(async () => (await rows(page)).page.indexOf(fourth), 'two ⌥↓ in one task move the section two places, not one').toBe(5)
+    await panelsSettle(page)
+    await page.evaluate(async (row) => {
+      const press = (key) => document.querySelector(`[data-layer-row="${row}"]`).dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true }))
+      press(' ')
+      for (let k = 0; k < 3; k++) await Promise.resolve()
+      press(' ')
+    }, fourth)
+    await panelsSettle(page)
+    await expect.poll(async () => (await tagsOf(page)).length, 'the second Space shows what the first hid').toBe(n)
+    await expect(page.locator(`[data-layer-row="${fourth}"] [popover] button`).first(), 'its row offers Hide again').toHaveText('Hide')
+  })
+
   test('R-210: a server call in flight never holds the panels — the rows land while the site is still being re-read, and while the looked-at record is still being written', async ({ page }) => {
     // Next's server actions are router transitions, and React renders every pending transition together: a section
     // operation handed to React as one waited for whatever server call was in flight (the deployed walk's step 94 found it;

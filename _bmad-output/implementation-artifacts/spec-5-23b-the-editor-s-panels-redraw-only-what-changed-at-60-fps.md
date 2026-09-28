@@ -2,9 +2,9 @@
 title: 'Story 5.23b — The editor''s panels redraw only what changed, at 60 fps'
 type: 'feature'
 created: '2026-09-28'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: 'bc51ecbde01fde458857592f4e3488bd03dc90d2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -258,6 +258,28 @@ have; none changes what is drawn, stored, journalled or synced.
    the rows land while the opening re-read is held, and while the write a Delete sent is held. It is red on the code as
    pushed at `f4d054d1`.
 
+**Review (2026-09-28).** Five layers over the diff from `bc51ecbd` (a blind hunter, an edge-case hunter, a verification-gap
+reviewer, an acceptance auditor and the real-infra verifier); what was a patch is patched here, one thing is the owner's
+(Question 2). None changes what is drawn, stored, journalled or synced.
+
+9. **The stale-press guard compares the panel's whole drawn state, not only its design.** `onChange` dropped a press from a
+   panel drawn for another section or another design (entry 8's guard); a panel a frame behind can also hold the values an
+   undo or a Remix just took back on the SAME design, and `withState` writes the panel's state whole — so a press there wrote
+   the undone values back. The guard now requires the section as the canvas holds it to equal what the panel drew (the
+   paint's own JSON signature, `chosenSig`'s). A new stop drives it: ⌘Z on a Background change, then an arrow on the panel
+   still showing the undone value, in one task — the undo stands; red with the guard narrowed back (received "Contrast").
+10. **The two same-frame guards of entry 2 have a stop.** `on.move`'s re-basing and `onToggleHidden`'s read of the newest doc
+    were exercised by no test — every ⌥-arrow in the journey polls the rows before the next key. Two ⌥↓ dispatched in one
+    task now move the section two places (red without the re-basing: 4, not 5), and two Space in one task show what the first
+    hid (red reading `row.hidden`: 41 roots, not 40).
+11. **A canvas switch moves `latest`'s stack, page and selection in a layout effect keyed on the canvas**, beside the commit
+    effect that moves the key — they were written in the passive effect, after paint, so for that frame `latest` held the new
+    key with the old canvas's stack while the chrome loop read it. Derived from `latest.docs`, never a render's state, so the
+    Always ("`latest` never goes back") holds.
+12. **`counted`'s silence in production is executed**, not asserted (`renders.test.ts`): under `NODE_ENV=production` the
+    callback writes nothing, and otherwise one count per commit by id. And the drag store is plain `useState`, not `useHanded`
+    — a constant, never set through React.
+
 ## Design Notes
 
 **Executed at planning (2026-09-28; this computer, an Intel Core i5-6600K; Node 24.18.1; Playwright 1.61.1 with Chromium
@@ -459,6 +481,37 @@ Nothing in the repository was edited.**
   bills nothing (the harness's linked site in the keyboard gate is a stand-in that answers nothing).
 - **No migration:** `git diff --stat bc51ecbd HEAD -- supabase` is empty, so there is no Schema phase.
 
+**Review (2026-09-28; this computer, Node 24.18.1, Playwright 1.61.1 with Chromium 149; every count is a run's own output).**
+
+- **Real infrastructure, re-executed by the review's own verifier** (R-82; keys by variable name only):
+  - **GitHub Actions** (`GITHUB_TOKEN`): HEAD `c390a9f4` CI run 36403235444 — `rls`, `check`, `deploy` success; Render
+    matrix run 36403235442 success. Negative control: a run id that does not exist → HTTP 404.
+  - **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): `dpl_2gehzsrgQWhuGfNVv7Vmuwe9cmh7` READY, production,
+    built from `c390a9f4`, aliases `inflozo.com`, `app.inflozo.com`, `www.inflozo.com`; a wrong bearer → HTTP 403.
+    `https://app.inflozo.com/` → 307 to `/sign-in`, served by Vercel.
+  - **The deployed walk**, `run-verify-editor.cjs` against `https://app.inflozo.com` at `c390a9f4`, twice: run 1 `0 FAIL,
+    582 PASS` then a harness timeout on step 79's third `GET /harness/canvas` (the known mid-run Playwright timeout; the
+    same URL answered 404 in 0.4 s when curled after); run 2, from a clean worktree of `c390a9f4`, complete — `1 FAIL,
+    664 PASS`: every step-60 check on the planted 40-section Home passed, axe and the phone, tablet and zoom steps passed,
+    and the one FAIL is step 89's reload racing the preview subject's save, which passed in run 1 minutes earlier and
+    whose write path this story does not touch — **DW-291**, a walk-hardening row, not this story's defect. Supabase
+    (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`): the throwaway accounts deleted after each run, users 13 → 13 both times.
+  - **No migration** (`git diff --stat bc51ecbd HEAD -- supabase` empty); Ghost T1/T3, Resend and Dodo untouched — the
+    code diff carries no fetch, no Ghost API and no email or billing call.
+- **Findings of the five layers, triaged** — 32 raised, 5 patched (Spec Change Log 9–12), 1 the owner's (Question 2),
+  1 deferred (DW-291), the rest dismissed on reading the code (a refusal `on.move` cannot reach, a throw a React setter
+  never makes, a trace window the control already refuses, the background-tab ceiling the `ponytail:` comment names,
+  hook-lint and stringify nits with the trace green).
+- **The review's own stops, executed both ways** (`pnpm keyboard -g`, one scratch edit each, every file restored and
+  `cmp`-identical): the undo-guard stop `1 passed`; with the guard narrowed back to the design id, `1 failed` — expected
+  "Base", received "Contrast". The same-frame stop `1 passed`; with `on.move`'s re-basing removed, `1 failed` — expected 5,
+  received 4; with `onToggleHidden` reading `row.hidden`, `1 failed` — expected 41 roots, received 40.
+- `tsc --noEmit -p .`: exit 0. `renders.test.ts`: 3 passed (the production-silence check among them). `pnpm check`: exit 0.
+- **The whole keyboard gate on the reviewed tree:** `pnpm keyboard` printed `120 passed (4.4m)`, 0 failed — the two review
+  stops among them; `next-env.d.ts` restored by the runner.
+- `python3 tools/doc-audit.py --check` twice: PASS on both, after `tools/story-board.py` regenerated the board with
+  Question 2 open.
+
 ## Questions for the owner
 
 ### Question 1 — To reach the speed bar, may the side panels catch up one frame after the canvas when a section changes?
@@ -497,3 +550,23 @@ so nothing you set can land on the wrong design, and a check on every change we 
 automatic checks that read a panel in the same instant as a key press learn to wait for it; what they check does not
 change. The speed test passes and Epic 5 closes as you ruled."* Recorded as **R-210**; the spec was written for this
 option, so its intent, boundaries and matrix now cite the ruling, and `epics.md`'s card carries it as a criterion.
+
+### Question 2 — The plan's frozen text says the panels follow "as a transition"; the build does it another way. May the wording be updated?
+
+Your ruling R-210 says what the customer sees: the canvas changes at once and the panels catch up a frame later. The plan's
+frozen paragraph also named HOW — a React "transition". Building it that way, the deployed test found the panels could wait
+seconds, not a frame, whenever the editor was also talking to the server (a save, a re-read of your site), because React
+holds every transition behind a pending server call. So the build hands the panels over in the next slice of time instead
+(Spec Change Log 8), which keeps your ruling in every case. Nothing you see is different; the review flags it only because
+the frozen paragraph is yours to change, not ours.
+
+**An example.** You delete a section while the editor is saving your last change. Built as a transition, the Layers list
+kept the deleted row for about two seconds on the harness. Built as it is now, the row goes within a frame, saving or not.
+
+1. **(RECOMMENDED) Update the wording** — the frozen sentence becomes "hands React its state in the next task, so the
+   panels follow a frame later"; R-210 itself is unchanged.
+2. **Keep the wording as it is** — the plan and the build then disagree on paper, with the change log as the only record.
+3. **Rebuild it as a transition** — matches the wording, but the panels lag behind every server call (measured 2 to 4
+   seconds on the harness) and your ruling's "too short to see" would not hold.
+
+**Ruled:** _(awaiting the owner)_

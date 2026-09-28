@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { canvasFirst, handed } from './lib/renders.ts'
+import { canvasFirst, counted, handed } from './lib/renders.ts'
 
 // Story 5.23b — R-210's hand-over (`lib/renders.ts`): what a section operation hands React is held in the press's task,
 // in order, and paid in the next — and nothing set later may land before it.
@@ -40,4 +40,26 @@ test('canvasFirst: its own task pays what is owed, and outside a hand-over a set
   canvasFirst(() => {})
   await nextTask()
   assert.deepEqual(seen, ['held', 'now'])
+})
+
+test('counted: writes nothing in a production build, and one commit per id otherwise', () => {
+  const w = globalThis as { window?: unknown }
+  const env = process.env as Record<string, string | undefined>
+  const had = w.window
+  const was = env.NODE_ENV
+  const win: { __inflozoRenders?: Record<string, number> } = {}
+  w.window = win
+  try {
+    env.NODE_ENV = 'production'
+    counted('layers-row', 'update', 1, 1, 0, 1)
+    assert.equal(win.__inflozoRenders, undefined, 'the production build (the trace and every customer) never writes')
+    env.NODE_ENV = 'development'
+    counted('layers-row', 'update', 1, 1, 0, 1)
+    counted('layers-row', 'update', 1, 1, 0, 1)
+    counted('chrome', 'update', 1, 1, 0, 1)
+    assert.deepEqual(win.__inflozoRenders, { 'layers-row': 2, chrome: 1 })
+  } finally {
+    env.NODE_ENV = was
+    w.window = had
+  }
 })

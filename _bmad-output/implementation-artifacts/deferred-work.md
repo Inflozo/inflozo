@@ -6631,3 +6631,23 @@ location: `apps/web/lib/canvas-layer.ts` — `chromeLayers`, `addFonts`, `sheetF
   calls `chromeLayers` on the first selection or hover (`:3369-3381` at `790b4d6e`)
 reason: not a re-render and outside NFR-1's warm trace, so it is not 5.23b's to fix inside its one goal; it has a cause,
   a number and a named owner.
+
+### DW-291: the deployed walk's step 89 reloads on a fixed wait and can race the save of the preview subject
+
+plain: One check in the automatic test of the live site picks a different article to preview, waits a fixed moment,
+  reloads the page and expects the pick to have stuck. On one run of two it reloaded before the save had reached the
+  database, so it reported the old article — although the save itself landed a moment later and the next check read it
+  from the database. A test that waits a fixed time instead of waiting for "Saved" can fail when the live site is slower
+  than usual.
+status: open
+severity: low
+origin: Story 5.23b's review (2026-09-28), the real-infra verifier's walk of `app.inflozo.com` at `c390a9f4`
+  (`dpl_2gehzsrgQWhuGfNVv7Vmuwe9cmh7`): run 1 passed step 89 (then died on a harness timeout at step 79), run 2 printed
+  `1 FAIL, 664 PASS` — step 89, the pill still naming the previous subject after a 600 + 1200 ms wait and a reload, while
+  the very next check read `preview_subject.slug` of the new choice from PostgREST. `chooseSubject` is line for line the
+  same as at `bc51ecbd` and the story's diff has no mention of `preview_subject`.
+owner: the next story that touches `run-verify-editor.cjs` — step 89 waits for the save to settle (the "Synced" state, or
+  the PostgREST read it already makes) BEFORE the reload, as the walk's other round trips do.
+location: `tools/probe/run-verify-editor.cjs` — step 89 (`:4295` at `c390a9f4`)
+reason: the write path is untouched by 5.23b and the same line has failed once in two runs (the twice-dying rule of the
+  editor-harness note); hardening the walk is not this story's goal, and the finding has a cause, a reproduction and an owner.
