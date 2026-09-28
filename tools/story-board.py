@@ -653,8 +653,12 @@ def load_deferred(text):
 # A DW id, and the list form the sweep's cards use for a group — `DW-14, 25, 27 … 271 and 272` names every number in it.
 # A continuation is a bare number that is not the start of a date or a story number (`DW-165, 9.1`, `DW-7, 2026-09-05`).
 DW_LIST = re.compile(r'\bDW-(\d+)((?:(?:\s*,\s*(?:and\s+)?|\s+and\s+)\d+\b(?![.\-]\d))*)')
-# A story an owner line names: `Story 9.1`, `Stories 7.26 and 15.7`, `Stories 9.1, 9.2 and 7.3`.
-STORY_REFS = re.compile(r'\bStor(?:y|ies)\s+(\d+\.\d+[a-z]?(?:(?:\s*,\s*|\s+and\s+|\s+or\s+)\d+\.\d+[a-z]?)*)')
+# A story an owner line names: `Story 9.1`, `Stories 7.26 and 15.7`, `Stories 9.1, 9.2 and 7.3` — and the form the
+# ledger writes, each key followed by its title in parentheses: `Stories 7.26 (Theme ZIP export) and 15.7 (…)`. The
+# review of Story 5.24a found the list ending at the first title, so the second owner was never read (a title may itself
+# hold parentheses — "Ghost(Pro)" — so a title runs to `)` followed by the list's own separator or its end).
+STORY_REFS = re.compile(r'\bStor(?:y|ies)\s+(\d+\.\d+[a-z]?(?:\s*\((?:[^()]|\([^()]*\))*\))?'
+                        r'(?:(?:\s*,\s*|\s+and\s+|\s+or\s+)\d+\.\d+[a-z]?(?:\s*\((?:[^()]|\([^()]*\))*\))?)*)')
 
 
 def dw_named(text):
@@ -668,7 +672,8 @@ def dw_named(text):
 
 def story_refs(text):
     """The story keys an owner line names, in order — `['7.26', '15.7']`."""
-    return [k for m in STORY_REFS.finditer(text or '') for k in re.findall(r'\d+\.\d+[a-z]?', m.group(1))]
+    return [k for m in STORY_REFS.finditer(text or '')
+            for k in re.findall(r'\d+\.\d+[a-z]?', re.sub(r'\((?:[^()]|\([^()]*\))*\)', '', m.group(1)))]
 
 
 def story_blocks(text):
@@ -2551,6 +2556,11 @@ def demo():
     assert 'names no story that is not done' in orphans[0] and 'never name DW-8' in orphans[1], orphans
     assert dw_named('DW-14, 25 and 272; DW-165, 9.1; DW-7, 2026-09-05') == {14, 25, 272, 165, 7}
     assert story_refs('Stories 9.1, 9.2 and 7.3; Story 5.24b') == ['9.1', '9.2', '7.3', '5.24b']
+    # the ledger's own form — a title after each key, one of them holding parentheses of its own (Story 5.24a's review)
+    assert story_refs('Stories 7.26 (Theme ZIP export) and 15.7 (The Ghost(Pro) launch gate), whose criteria each carry '
+                      'their half') == ['7.26', '15.7'], story_refs('Stories 7.26 (Theme ZIP export) and 15.7 (The Ghost(Pro) launch gate)')
+    assert story_refs('Stories 9.1 (A1 — designs #1, #3, #4 and #13), 9.2 (A1 — designs #5–8) and 7.3 (Synthesis '
+                      'Defaults)') == ['9.1', '9.2', '7.3']
     # ── DW-172: THE COMMIT-MSG HOOK'S DEV GUARD, RUN FOR REAL. A Dev commit claims every task is ticked, and the hook is
     #    what holds it to that; nothing ran the hook itself, so a broken guard would wave every such commit through.
     assert hook_dev_guard() == [(1, 'no spec matches'), (1, '1 unticked task(s)'), (0, '')], hook_dev_guard()
@@ -2563,6 +2573,13 @@ def hook_dev_guard():
     repository it runs in, so the throwaway one borrows `tools/` by a link and stages its own spec."""
     import tempfile
     subjects = []
+    try:
+        return _hook_dev_guard(tempfile, subjects)
+    except (OSError, subprocess.CalledProcessError) as exc:      # no git, no symlinks: name it, never a false regression
+        return [(-1, f'hook could not be run: {exc}')]
+
+
+def _hook_dev_guard(tempfile, subjects):
     with tempfile.TemporaryDirectory() as tmp:
         subprocess.run(['git', 'init', '-q', tmp], check=True, capture_output=True)
         os.symlink(os.path.join(ROOT, 'tools'), os.path.join(tmp, 'tools'))

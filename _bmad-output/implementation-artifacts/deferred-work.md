@@ -672,7 +672,7 @@ plain: If someone's card fails, we keep them on Pro for a grace period so their 
   now, and Epic 12 (billing) is where the clock gets connected.
 status: open
 owner: Story 12.2 (Webhooks and the entitlement state machine), whose criteria already say it — "`pro_past_due → free`
-  on grace expiry" — and name this entry beside those words since Story 5.24a. *(Story 5.24a's Dev, 2026-09-28: it had
+  on grace expiry" — and name this entry beside those words since the sweep's Dev (5.24a). *(Story 5.24a's Dev, 2026-09-28: it had
   no owner line.)*
 severity: medium
 origin: Story 1.5 fifth review (2026-09-06), Blind Hunter layer
@@ -3585,8 +3585,9 @@ resolution: Story 5.24a (2026-09-28) — one rule for the four generators, `tool
   ahead (`INFLOZO_TODAY`) and fails on any byte that moves — red with the old rule put back (the day written
   unconditionally), green with the new — and puts each page back when it fails, so tomorrow's date never outlives the
   fix. A date read from git moves with HEAD rather than with the faked day, so the gate also refuses a generator that
-  reads HEAD's date again: red with HEAD's own `build-board.py` put back. The field proof, CI on a day's first push, is
-  read at the story's Review.
+  reads HEAD's date again: red with HEAD's own `build-board.py` put back. The field proof, CI on a day's first push,
+  was read at the story's Review (2026-09-28, GitHub Actions API, `GITHUB_TOKEN`): the day's first push to main,
+  `ce85188e` at 03:18 UTC, CI run 36373188891, `check` success; of the day's 21 pushes none failed the doc gate.
 severity: high
 origin: Story 4.6 review (2026-09-14) — executed: run 34823025267 (the Dev push, 08:29 UTC) failed `check` with `STALE — regenerated INDEX.md and INDEX.html`, `STALE: BUILD-BOARD.html`, `STALE: CATEGORY-PROMPTS.html`; `deploy` skipped. The Review commit's own diff of those files is `updated: 2026-09-13 → 2026-09-14` and nothing else; run 34825820806 (the Review push) passed and deployed.
 owner: Story 5.24, the deferred-work sweep (R-207 triages every open entry). *(Story 5.23a's Dev, 2026-09-28: was
@@ -3883,7 +3884,7 @@ origin: Story 4.9's review — `moduleStringsRefusals` checks that every declare
   cannot be derived today because the js keys of modules not yet written map to no row (namespaces are by function,
   not by module).
 owner: Story 7.5 (JS bundling — two files, two origins), whose criteria already say it — "no module contains a
-  visitor-facing literal" — and name this entry beside those words since Story 5.24a. *(Story 5.24a's Dev, 2026-09-28:
+  visitor-facing literal" — and name this entry beside those words since the sweep's Dev (5.24a). *(Story 5.24a's Dev, 2026-09-28:
   was "each category story that writes a module (Story 4.7's rule), and 7.12's Translations surface as the backstop")*
 location: packages/library/src/modules.ts `moduleStringsRefusals` · modules/registry.json `strings`
 reason: the inverse needs a way to know which module a js key belongs to — a per-key `module` in appendix-h1, or a
@@ -3933,7 +3934,7 @@ status: open
 severity: low
 origin: R-109 (owner, 2026-09-15), Story 4.10's Q2
 owner: Story 10.114 (A34 — designs #1, #8 and #10 (owner gate)), whose criteria carry it word for word with its id — R-212's
-  trade moved A34 #1 Numbers from the first story, Story 10.112, to this one, and its design-specific criterion moved
+  trade moved A34 #1 Numbers from A34's first story (10.112) to this one, and its design-specific criterion moved
   with it. *(Story 5.24a's Dev, 2026-09-28: was "A34's category story (Epic 10) — redraw A34 #1 Numbers to the indicator
   form in the Claude Design project")*
 location: design export `A34-1 Numbers.dc.html` (never edited here, R-74) · `docs/section-authoring.md` § 3
@@ -3984,8 +3985,10 @@ plain: The Three Up grid on the pilots page shows real feed pages. Choosing whic
 status: open
 severity: medium
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
-owner: Story 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
-  word for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Source, Count and the main-feed
+owner: Stories 10.54 (A17 — the content model, the stylesheet and designs #1–4), whose criteria carry its requirement
+  word for word with its id (R-195), and 10.112 (A34 — the content model, the stylesheet and designs #2, #3, #4 and #9),
+  which carries the Pagination style select (R-195, the note below) and names this entry beside it since Story 5.24a's
+  review. *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Source, Count and the main-feed
   designation) · A34's category story (the Pagination style select) · DW-107 (Image focus) · A17's category story (Epic
   10) for the rest")*
 location: packages/library/designs/a17/1/ · packages/section-runtime/src/controls.ts (`disabledBy` greys a whole control)
@@ -4040,7 +4043,7 @@ severity: low
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
 owner: Stories 10.79 (A24 — the content model, the stylesheet and designs #1–4) and 7.3 (Synthesis Defaults and the
   emptying rules), whose criteria already say it — 10.79's "each design matches its frame" and 7.3's
-  `show_title_and_feature_image` gate — and name this entry beside those words since Story 5.24a. *(Story 5.24a's Dev,
+  `show_title_and_feature_image` gate — and name this entry beside those words since the sweep's Dev (5.24a). *(Story 5.24a's Dev,
   2026-09-28: was "A24's category story (Epic 10), with E7's page wrapper · DW-107 (Image focus)")*
 location: packages/library/designs/a24/1/ (target `post.hbs` only)
 reason: `page.hbs` and `@page.show_title_and_feature_image` need `data-target`; all tags, and several authors with
@@ -4057,8 +4060,9 @@ status: open
 severity: low
 origin: Story 4.10's pilot table, "Left" cell, confirmed and amended by the Dev run
 owner: Story 10.4 (A4 — designs #12–14), whose criteria already say it — "each design matches its frame", #13 Latest
-  Post's included — and name this entry beside those words since Story 5.24a; Story 5.4's half is done
-  (`carriesMemberVisibility`, `memberVisibility`). *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Which post) · Story
+  Post's included — and name this entry beside those words since the sweep's Dev (5.24a); Story 5.4's half is done
+  (`carriesMemberVisibility`, `memberVisibility`), and so are 5.19's "Which post" and 5.20's Portal-destination gate
+  (the two notes below). *(Story 5.24a's Dev, 2026-09-28: was "Story 5.19 (Which post) · Story
   5.4 (Member visibility) · Story 5.20 (gating an action by its Portal destination) · A4's category story (Epic 10) for
   the rest")*
 location: packages/library/designs/a4/13/
@@ -4126,7 +4130,9 @@ status: open
 severity: low
 origin: Story 4.10's propagation grep for `A4 #2` and `Split Editorial` (standing rule 7) — outside R-108, which is the
   pilot row only
-owner: Story 11.2 (The starter chooser), whose criteria carry its requirement word for word with its id (R-195).
+owner: Story 11.2 (The starter chooser), whose criteria carry its requirement word for word with its id (R-195), and
+  since Story 5.24a's review (2026-09-28) the same re-read covers a design the owner's Free picks (R-212) made Pro —
+  Quiet's A25 #1 Measured, where A25's Free pair is #2 Plain and #5 Full Bleed — so FR-O4's all-Free starters hold.
   *(Story 5.24a's Dev, 2026-09-28: was "the starters' story (Epic 11, Story 11.2 the starter chooser, or the story that
   authors `starters/`)")*
 location: prd.md Appendix E (Signal and Ledger, `:1127`, `:1133`) · epics.md (`:7103`, `:7272`)
@@ -4633,8 +4639,11 @@ origin: Story 5.3's Create run (2026-09-17), the icon sweep over every category 
     it is Ghost": the theme ships a glyph per platform, and the glyphs "are no longer picked per row".
   - `A10 Stats and Numbers - Spec.md:43` offers "Icons: None (default) · Shown" with "the slot above the value", and the
     shared field list at `:49` names no icon field.
-owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry its requirement word
-  for word with its id (R-195). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1's content model: whether A1's social
+owner: Stories 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose criteria carry A1's half word
+  for word with its id (R-195), 10.50 (A16 — the content model, the stylesheet and designs #2, #3, #4 and #9), whose
+  criteria build the same answer for A16's `socials[]`, and 10.26 (A10 — the content model, the stylesheet and designs
+  #1, #3, #4 and #8), whose criteria carry A10's icon field (Story 5.24a's review, 2026-09-28: the Dev line named 9.1
+  alone and dropped the two halves). *(Story 5.24a's Dev, 2026-09-28: was "Story 9.1 (A1's content model: whether A1's social
   glyphs are slots, asked in R-83's shape if the 29 August ruling does not already settle it), Story 10.50 (A16's
   content model, the same question), Story 10.26 (A10's content model: the icon field's name and type)")*
 location: the four spec lines above, in `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/`
@@ -5305,6 +5314,8 @@ reason: telling the two causes apart needs Vercel's logs and a second vantage po
   magic link now gets one retry (`steady`), which is a way round it and not its cause — the diagnosis above is still owed. On `7874dd5b` two walks
   completed: one had step 66's ⌘S stuck on Syncing with the revision unmoved (the stalled `/sync` again, this time
   past the 20s give-up within the step's wait), the next had 0 FAIL. A customer pressing ⌘S would see the same.
+note (Story 5.24a's review, 2026-09-28): this entry now carries DW-175's signed-in half — the editor's stalls after the
+  magic link, which DW-175's close (300 signed-out GETs of `/sign-in`, every one 200) did not measure.
 
 ### DW-205: the same announcement twice in a row is silent to a screen reader
 
@@ -6178,8 +6189,8 @@ origin: Story 5.18's Create (2026-09-24). `packages/ghost-shim/src/index.ts:596-
 reason: no design in `packages/library/designs/` binds either helper, so the refusal is dormant. The count is an Admin
   read, which belongs in the `site_settings` snapshot Epic 3 refreshes daily (FR-C5), not in a browser read.
 owner: Story 10.5 (A4 — designs #2, #16 and #18 (owner gate)), whose criteria carry its half word for word with its id —
-  R-212's trade moved A4 #2 Flush Left from Story 10.1 to this one, and #2's Value source moved with it; DW-180's half
-  of the triage's sentence stays in Story 10.1. *(Story 5.24a's Dev, 2026-09-28: was "the first design that binds either
+  R-212's trade moved A4 #2 Flush Left from A4's first story (10.1) to this one, and #2's Value source moved with it; DW-180's half
+  of the triage's sentence stays in 10.1. *(Story 5.24a's Dev, 2026-09-28: was "the first design that binds either
   helper (A4 #2's proof value source, `A4 Heroes - Spec.md:81`, or an A22 design), together with Epic 3's snapshot
   writer.")*
 location: `packages/ghost-shim/src/index.ts:596-604` · `apps/web/lib/probe-rule.ts` (the snapshot's shape) ·
@@ -7091,11 +7102,12 @@ origin: Story 5.24a's second Dev push, `3ddf52e4` (2026-09-28): CI run 364499728
   rows that swapped — the Controls panel does not", `drawn['design']` 1 where 0 is expected (`:3967`) — and `deploy`
   was skipped. That push changed no app or package code, only documents and `tools/doc-audit.py`; the push before it,
   `fe8ce5ef`, carries the same app code and passed the gate in CI run 36447808855. On this machine the stop passed 12 of
-  12 (`--repeat-each 12`) and the whole gate 120 of 120.
+  12 (`--repeat-each 12`) and the whole gate 120 of 120. A second sighting the same day, read at 5.24a's review: the
+  Hotfix push `1f89f648` (no app change) failed `check` at `pnpm keyboard` too, CI run 36435981407.
 owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
   this entry.
-location: `tools/keyboard/journey.spec.mjs` — the stop at `:3953-3968`; `panelsSettle` (`:66`, two frames and 150 ms)
-  and `resetRenders` (`:3885`)
+location: `tools/keyboard/journey.spec.mjs` at `4784b1a4` — the stop at `:3953-3968`; `panelsSettle` (`:66`, two frames
+  and 150 ms) and `resetRenders` (`:3885`)
 reason: not reproduced, so the cause is a hypothesis: the settle before `resetRenders` is a fixed wait, and a render
   the selection caused could land after it on a slower runner and be counted as the ⌥↓'s. The stop should wait for the
   condition it means — no render pending — rather than a fixed moment, which is Story 5.24d's goal.

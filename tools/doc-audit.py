@@ -1546,8 +1546,11 @@ def check():
     #     each page moved by its date alone, which is what failed CI on the first push of every day.
     # The old rule's other half: a date read from git moves with HEAD, not with a faked day, so the pass below cannot
     # see it come back. No generator reads HEAD's date again (the needle is split so this line is not one).
+    # Any of git's date placeholders counts (`%cs`, `%cd`, `%ci`, `%cI`, `%as` …), not one spelling: story-board's commit
+    # feed reads `%cI` inside a hash-and-subject format and is the one allowed use, named here rather than matched.
     for tool in ('doc-audit.py', 'build-board.py', 'category-prompts.py', 'story-board.py'):
-        if '--format=%' + 'cs' in open(os.path.join(ROOT, 'tools', tool), encoding='utf8').read():
+        src = open(os.path.join(ROOT, 'tools', tool), encoding='utf8').read().replace('%h%x09%cI%x09%s', '')
+        if re.search('--format=%' + r'[ca][sdiI]\b|' + '--date' + '=', src):     # split, so this line is not a match
             fails.append(f"DATE STAMP: tools/{tool} reads HEAD's date again — a page's date is `dated()`'s, its last "
                          f'content change, or the first push of each day fails CI (DW-132)')
     if not fails:
@@ -1586,7 +1589,7 @@ def check():
 
     # 3f. the library epics' cards against the export (Story 5.24a — R-212, DW-177, DW-164)
     epics_md = open(os.path.join(PLAN, 'epics.md'), encoding='utf8').read()
-    fails.extend(plan_failures(epics_md) + plan_controls(epics_md))
+    fails.extend(plan_failures(epics_md) + plan_controls(epics_md) + synthesis_failures() + synthesis_control())
 
     # 4. dangling MEASUREMENTS section references from the spine
     meas = open(os.path.join(ARCH, 'MEASUREMENTS.md'), encoding='utf8').read()
@@ -1694,7 +1697,7 @@ def plan_failures(epics):
             # R-225: a title names the designs its story builds — a range counts its live numbers only (a retired one
             # leaves a gap the title need not show), and a list names each one
             said = set()
-            for a, b in re.findall(r'#(\d+)(?:–(\d+))?', card.split('\n', 1)[0].split(' — ', 1)[-1]):
+            for a, b in re.findall(r'#(\d+)(?:\s*[–—-]\s*(\d+))?', card.split('\n', 1)[0].split(' — ', 1)[-1]):
                 said |= set(range(int(a), int(b or a) + 1))
             if said & set(live) != set(builds[k]):
                 fails.append(f"PLAN: Story {k}'s title names {cat} #{', #'.join(map(str, sorted(said & set(live))))} but "
@@ -1705,6 +1708,40 @@ def plan_failures(epics):
                 fails.append(f"PLAN: Story {k}'s module line is not the one sentence pointing at each design's own "
                              f"Behaviour module line in `{v['spec']}` — it lists modules, or names none (DW-164)")
     return fails
+
+
+SYNTH = os.path.join(ROOT, 'packages', 'section-runtime', 'src', 'synthesize.ts')
+
+
+def synthesis_failures(src=None):
+    """Invariant 1 (sections-inventory.md), R-212: every row of `SYNTHESIS_DEFAULTS` names one of its category's two [Free]
+    designs — the owner's picks, as the export's `**[Free] designs:**` line records them — so an untouched template
+    compiles all-Free on any plan. The table's own tests derive their expectations from the table, so nothing else
+    held a row to the picks (Story 5.24a's review)."""
+    _s = importlib.util.spec_from_file_location('inventory_gen', os.path.join(ROOT, 'tools', 'inventory-gen.py'))
+    ig = importlib.util.module_from_spec(_s); _s.loader.exec_module(ig)
+    lib = ig.library()
+    src = open(SYNTH, encoding='utf8').read() if src is None else src
+    table = src[src.index('SYNTHESIS_DEFAULTS'):]
+    table = table[:table.index('\n}\n')]
+    fails = []
+    for cat, n in re.findall(r"designId: '(a\d+)/(\d+)'", table):
+        cat, n = cat.upper(), int(n)
+        pair = ig.free_choice(cat, lib[cat]['designs']) if cat in lib else set()
+        if n not in pair:
+            fails.append(f'SYNTHESIS: `SYNTHESIS_DEFAULTS` names {cat} #{n}, which is not one of {cat}\'s two [Free] designs '
+                         f'({" and ".join(f"#{k}" for k in sorted(pair)) or "none found"}) — an untouched template would '
+                         f'compile a Pro design (Invariant 1, R-212)')
+    return fails
+
+
+def synthesis_control():
+    """Standing rule 2: the table with one row pointed at a Pro design must be refused."""
+    src = open(SYNTH, encoding='utf8').read()
+    planted = src.replace("designId: 'a25/2'", "designId: 'a25/1'", 1)
+    assert planted != src, 'the control could not plant its row'
+    return [] if any(f.startswith('SYNTHESIS: `SYNTHESIS_DEFAULTS` names A25 #1') for f in synthesis_failures(planted)) \
+        else ['SYNTHESIS CONTROL: A25 #1 planted, and not caught']
 
 
 def plan_controls(epics):
@@ -1744,6 +1781,7 @@ def dated(page, path):
     cannot survive it — the hook staged yesterday's pages, CI rendered today's, and the first push of every day failed
     `check` with `deploy` skipped (CI runs 34823025267 and 36341672890). This one function is the rule for all four:
     this file's INDEX pair, build-board.py, category-prompts.py and story-board.py."""
+    assert page.count(STAMP) == 1, f'{path}: the page must carry {STAMP} exactly once, it carries {page.count(STAMP)}'
     head, _, tail = page.partition(STAMP)
     old = open(path, encoding='utf8').read() if os.path.exists(path) else ''
     kept = old[len(head):len(old) - len(tail)]

@@ -1126,7 +1126,7 @@ Full projects: Home + Post + Page + Tag + Author + 404 designed; pack pre-select
 2. **Gazette** — magazine (Ink): Magazine Cover hero, Magazine Mixed grid, Topic Tabs, masthead authors, serif post templates.
 3. **Signal** — tech blog (Orbit): Split Editorial hero, Bento grid, TOC-right posts, command-palette search, stats band.
 4. **Foundry** — startup blog + marketing home (Slate): Center Stage hero, Features Bento, Logo Wall, Pricing Toggle Cards, CTA band.
-5. **Quiet** — ultra-minimal writer (Quiet): Center Stage hero (A4 #1), Editorial Rules list (A18 #1), Narrow Classic reading (A25 #1), Author Bio Card close (A26 #1) — all [Free] (FR-O4).
+5. **Quiet** — ultra-minimal writer (Quiet): Center Stage hero (A4 #1), Editorial Rules list (A18 #1), Narrow Classic reading (A25 #1 — Pro under R-212's picks; its Free successor is the owner's at Story 11.2, DW-157), Author Bio Card close (A26 #1) — all [Free] (FR-O4).
 6. **Pulse** — podcast (Neon): Poster Modal hero, Episode List, platform CTA band, guest (author) showcases.
 7. **Bloom** — lifestyle/food (Meadow): Collage hero, Photo Square grid, Galleries Masonry, recipe-friendly Docs-style posts.
 8. **Chapter** — author/book site (Berry): Portrait Intro hero, book (page) spotlight, testimonial wall, mailing-list close.

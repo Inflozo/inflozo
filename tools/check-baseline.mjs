@@ -422,7 +422,9 @@ try {
 
   await check(`NFR-2 names what this checks: "${NFR2_WORDS}"`, () => {
     const prd = readFileSync(join(REPO, '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md'), 'utf8')
-    const nfr2 = prd.slice(prd.indexOf('**NFR-2 '), prd.indexOf('**NFR-3 '))
+    const a = prd.indexOf('**NFR-2 '), b = prd.indexOf('**NFR-3 ')
+    if (a < 0 || b < a) return fail(`prd.md no longer carries "**NFR-2 " followed by "**NFR-3 " — the sentence check cannot find NFR-2`)
+    const nfr2 = prd.slice(a, b)
     if (!nfr2.includes(`< 40 KB gzipped (${NFR2_WORDS})`)) fail(`prd.md NFR-2 does not say "< 40 KB gzipped (${NFR2_WORDS})", which is what size-limit is run at here`)
   })
 

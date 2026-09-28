@@ -2,7 +2,7 @@
 title: 'Story 5.24a — The sweep: the ledger and the plan'
 type: 'chore'
 created: '2026-09-28'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '8dda56747680bb4e189ad73c18f37b3b7845b30b'
@@ -208,7 +208,7 @@ gain the sentence, with its DW id; **"carried"** means its text already says it 
 - **DW-145** → 7.12 · add: "And before this surface is built — and before Epic 9 authors a content model — the owner
   rules (R-83) what a non-English site shows for a section's untouched English starting words (DW-145)."
 - **DW-146** → 7.5 · carried ("no module contains a visitor-facing literal").
-- **DW-149** → 10.112 · add: "And #1 Numbers is built in R-109's indicator form — 'Newer posts · 5 / 11 · Older posts' —
+- **DW-149** → 10.114 *(10.112 at Create; A34 #1 Numbers moved to the owner gate with R-212's trade)* · add: "And #1 Numbers is built in R-109's indicator form — 'Newer posts · 5 / 11 · Older posts' —
   from a frame redrawn in the Claude Design project before this story opens (DW-149)."
 - **DW-150** → 9.1 · carried (R-111's navigation partial) · 9.2 · add: "And #6's takeover and #7's panel are designed in
   the editor's resting no-JS state, or the owner is asked to pin them open while their contents are selected (DW-150)."
@@ -244,7 +244,7 @@ gain the sentence, with its DW id; **"carried"** means its text already says it 
 - **DW-178** → 9.1 · add: "And before A1's social rows are built, the owner rules (R-83) whether social icons follow the
   platform Ghost names — the 29 August ruling for footers, library-wide — or are picked per row, and Story 10.50 builds
   the same answer (DW-178)."
-- **DW-180, DW-247** → 10.1 · add: "And a field whose spec advises a length rather than capping it (the headline: 'the
+- **DW-180, DW-247** → 10.1, and DW-247's half to 10.5 *(A4 #2 Flush Left moved there with R-212's trade)* · add: "And a field whose spec advises a length rather than capping it (the headline: 'the
   editor advises at 90 characters') carries an advisory counter declared beside `maxChars` that turns muted past the
   advice and never refuses a character (DW-180); and #2's Value source Member count prints `{{total_members}}` on a
   linked site from member counts the site snapshot stores, executed on T1 and T3 (DW-247)."
@@ -382,6 +382,49 @@ stories' module lines :4046 :5825 :7169, Stories 9.4 :4107, 9.8 :4218, 10.5 :449
   the run is recorded under Verification.
 - Given `python3 tools/doc-audit.py --check` and `pnpm check`, then both are green; no entry was deleted or renumbered,
   no design file edited, and no migration shipped.
+
+### Review Findings
+
+*Code review, 2026-09-28 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier); every patch applied in the Review commit.*
+
+- [x] [Review][Patch] The orphan check read only the first story of an owner line written `Stories 7.26 (title) and
+  15.7 (title)` — the ledger's own form, on seven open entries — so a second owner was never held to naming the entry,
+  and the first owner's Done would have falsely refused the entry [tools/story-board.py:657] — `STORY_REFS` skips a
+  parenthesised title (one holding parentheses of its own included), `demo()` asserts the ledger's form.
+- [x] [Review][Patch] Four owner lines said "since Story 5.24a" outside their dated note, making this story a nominal
+  living owner whose spec names every id [deferred-work.md DW-23, 146, 153, 154] — reworded so no story key is parsed;
+  DW-149's and DW-247's body text likewise.
+- [x] [Review][Patch] DW-178 lost two of its three halves (A16's `socials[]`, A10's icon field) and DW-151 its
+  Pagination-style half when the owner lines were rewritten — Stories 10.50, 10.26 and 10.112 now carry them with the
+  id and the owner lines name them [deferred-work.md; epics.md].
+- [x] [Review][Patch] `SYNTHESIS_DEFAULTS`' all-Free claim (Invariant 1) was pinned by no check: its tests derive from
+  the table [packages/section-runtime/src/synthesize.ts] — `tools/doc-audit.py`'s `synthesis_failures` holds every row
+  to its category's `[Free] designs:` pair, with a planted-Pro control in the gate.
+- [x] [Review][Patch] Quiet's composition still names A25 #1, Pro under R-212's picks, as "all [Free]" [prd.md
+  Appendix E; epics.md Story 11.7] — the successor is the owner's, so DW-157's re-read at Story 11.2 now covers a design
+  the picks made Pro, and both lines say so.
+- [x] [Review][Patch] The A29 #1 author-page rows claimed a post count from `{{#author}}` that the matrix's author scope
+  does not offer (DW-124, open) [sections-inventory.md §4; synthesize.ts] — softened to name DW-124.
+- [x] [Review][Patch] DW-132 closed with its field proof "read at Review" still owed — read now: the day's first push,
+  CI run 36373188891, `check` success [deferred-work.md DW-132; Verification].
+- [x] [Review][Patch] The git-date needle matched one spelling (`%cs`); any of git's date placeholders now trips it
+  [tools/doc-audit.py `check` 3b'] · `dated()` refuses a page carrying its stamp other than exactly once (it appended
+  the date to a stamp-less page silently) · a title range written with a hyphen or em dash is read (R-225).
+- [x] [Review][Patch] `check-catalog.mjs`'s history read threw a raw git error outside a checkout and crashed on a
+  historical catalog without `keys`; `check-baseline.mjs`'s NFR-2 sentence check sliced blind when a marker was
+  missing; `hook_dev_guard` raised an unnamed exception where git or symlinks are unavailable — each now a named failure.
+- [x] [Review][Patch] DW-292's location carried no commit; DW-64's ruling reached one of the two Re-check actions;
+  DW-175's signed-in half was recorded only inside the closed entry (now a note on DW-204); DW-154's owner line
+  dropped 5.19's and 5.20's done halves.
+- Dismissed (11): the nested `")*")*` notes (unreadable, but executed: the strip reads the same owners either way);
+  the DW-227 rule as validator code rather than a test alone (a library-authoring refusal that fires on no design
+  today, kept — noted here as the judgement call); DW-261's replacement interleaved with the original clause (meaning
+  kept); `library_runs` resetting on an intermediate heading, `plan_controls` on a card without a design line,
+  `INFLOZO_TODAY` non-ISO, `DW_LIST`'s bare-number continuation, `catalog.json` renamed without `--follow`, the
+  INDEX pair dated separately, the 3b' restore misreporting a non-date failure, the carousel regex over raw markup —
+  none reachable with the repository's data; the A28 row's dropped comments-off reason (the row still says no
+  placeholder, outline or reserved height).
 
 ## The four stories after this one
 
@@ -1155,6 +1198,27 @@ screen steps go with Stories 5.24b and 5.24e (§ The four stories after this one
   - Nothing else this story does touches Supabase, Vercel, Resend, Dodo or T1/T3; the RLS gate ran in its local
     PostgreSQL container. **Owed at Review:** DW-132's field proof, CI's `check` on a day's first push — this Dev push
     is not one (the day's first was earlier on 2026-09-28).
+
+**Executed at Review (2026-09-28) — real services (R-82), every key read into a command's environment only.**
+
+- **GitHub Actions API** (`GITHUB_TOKEN`, read-only). The Dev push `4784b1a4`: CI run 36451772646 — `rls`, `check`,
+  `deploy` success; matrix run 36451772635 success. **DW-132's field proof, owed above, held:** the day's first push to
+  main, `ce85188e` at 03:18 UTC, CI run 36373188891, `check` success; all 21 pushes of the day enumerated, none failed
+  the doc gate (the two red `check` jobs, `1f89f648` and `3ddf52e4`, both failed at `pnpm keyboard` — DW-292, whose
+  origin now records the earlier sighting). DW-173 re-counted: `matrix.yml` runs since 2026-09-18, 333 of 333 success.
+  Negative control: `GET /actions/runs/1` → 404.
+- **Vercel API** (`VERCEL_*`, read-only): production `dpl_HFMTPhop1ZcVAEUwDA34TT9gPUks` READY at `4784b1a4`; no
+  deployment for `3ddf52e4` (its `deploy` was skipped). Control: a made-up project id → 404.
+- **`app.inflozo.com`** (public): five fresh GETs of `/sign-in`, all 200. **An unknown path under `app.` answers 307 to
+  `/sign-in`, never 404** — `proxy.ts`'s signed-out guard — so the 404 control is `inflozo.com/<no-such-path>` → 404.
+- **No migration in the diff** (`git diff --stat 8dda5674 HEAD -- supabase/` is empty), so no R-99 schema read.
+- **The new and widened checks, each seen red first:** `orphaned_entries` on a ledger copy carrying an open entry owned
+  by a done story → refused, exit 2; `story_refs` on the ledger's titled form → the second owner read (it was dropped
+  before the patch: DW-60 → `['7.26']`); `synthesis_failures` with `a28/1` planted as `a28/2` → refused, and its
+  control runs in the gate; the git-date needle on `--format=%cd`, `%as` and `--date=short` → caught, on the commit
+  feed's `%h%x09%cI%x09%s` → not.
+- `python3 tools/doc-audit.py --check` twice: PASS, PASS. `python3 tools/story-board.py --check`: current. `pnpm check`
+  (Node 24.18.1): exit 0 — `check-catalog: PASS`, `check-baseline: PASS`, every package test passing.
 
 **Executed at Create (2026-09-28).**
 

@@ -85,8 +85,9 @@ export const SYNTHESIS_DEFAULTS: Readonly<Record<string, readonly DefaultRow[]>>
     { designId: 'a25/2', layerName: 'Page content' },
   ],
   'tag.hbs': [{ designId: 'a29/1', layerName: 'Archive header' }, ...FEED],
-  // A29 is one design over three archives, so the tag archive's #1 Centred serves the author's too — his name, bio and
-  // post count from `{{#author}}` (R-212; #2 Split Head, the old default here, is Pro under the owner's picks).
+  // A29 is one design over three archives, so the tag archive's #1 Centred serves the author's too — his name and bio
+  // from `{{#author}}`, and the post count once one is bindable (DW-124: the matrix's author scope offers none today)
+  // (R-212; #2 Split Head, the old default here, is Pro under the owner's picks).
   'author.hbs': [{ designId: 'a29/1', layerName: 'Archive header' }, ...FEED],
   'error.hbs': [{ designId: 'a31/1', layerName: 'Error message' }],
 }

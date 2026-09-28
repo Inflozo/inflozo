@@ -619,7 +619,8 @@ export async function answerPlan(formData: FormData): Promise<void> {
 /**
  * B15's **Re-check plan**: the SAME probe, re-run. A site that has since been upgraded clears
  * itself to `full` with no support ticket; a probe that cannot reach Ghost leaves the card exactly
- * as it was and says so under the button (`?recheck=failed`, read by the page).
+ * as it was and says so under the button (`?recheck=failed`, read by the page). No throttle, as
+ * for Re-check connection below: the owner ruled it for both buttons (R-220, DW-64).
  */
 export async function recheckPlan(formData: FormData): Promise<void> {
   const at = await siteOf(formData)

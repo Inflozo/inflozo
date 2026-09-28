@@ -5247,6 +5247,7 @@ So that I can start using Stats and Numbers on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A10-<n> <Name>.dc.html` — and the category's `A10-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** A10's icon field — its name and type, which `A10 Stats and Numbers - Spec.md:43` offers and `:49` never names — is settled by the owner before #1's content model is authored (R-83, DW-178).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A10). · **Frame:** `A10-<n> <Name>.dc.html` · `A10-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -5889,6 +5890,7 @@ So that I can start using Contact on my own site.
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A16-<n> <Name>.dc.html` — and the category's `A16-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** A16's `socials[]` rows follow the answer Story 9.1 asks of the owner for A1's social glyphs — the platform Ghost names, or picked per row — the same question, not a second one (R-83, DW-178).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A16). · **Frame:** `A16-<n> <Name>.dc.html` · `A16-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7621,6 +7623,7 @@ Older/Newer · Numbers, A17's four, or the designs themselves)
 **And** each design declares its `bindingContext`, `compileTarget`, `ghostCompat`, `darkCapabilities` and `previewSeed`, and `compileTarget` is a **refusal, not a hint**
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A34-<n> <Name>.dc.html` — and the category's `A34-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
+**And** the Pagination style select above is DW-151's half of that entry (R-195); the per-value greying it also names is Story 10.54's (DW-151).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A34). · **Frame:** `A34-<n> <Name>.dc.html` · `A34-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -7742,7 +7745,7 @@ So that I choose a site rather than a thumbnail.
 **And** **starters are seeds**: after creation the project is an ordinary project **with no linkage back**
 **And** the chooser is reachable from First Run and from the New Project Sheet — one flow, two entry points — and `STARTER_DOOR.reason` is deleted and the door's 'Ten' is derived from the roster the chooser draws (DW-88)
 **And** the surface matches B23a, whose roster is Appendix E's since 2026-09-04.
-**And** before the chooser is built, every starter's composition in Appendix E is re-read against `tools/export-roster.py`, and each design the 2026-09-04 merge renamed gets the owner's pick of successor — Ledger's among [Free] designs (FR-O4) (DW-157).
+**And** before the chooser is built, every starter's composition in Appendix E is re-read against `tools/export-roster.py`, and each design the 2026-09-04 merge renamed, and each one the owner's Free picks made Pro (R-212: Quiet's A25 #1 Measured), gets the owner's pick of successor — Quiet's and Ledger's among [Free] designs (FR-O4) (DW-157).
 
 **FRs:** FR-O2, FR-O3. · **Frame:** `B Missing Surfaces.dc.html` B23a. · **Owner test:** yes.
 
@@ -7876,7 +7879,7 @@ So that I begin from a finished site rather than an empty canvas.
 **When** **Quiet** is composed
 **Then** all standard templates are designed — Home, Post, Page, Tag, Author and 404 — its Style Pack **Quiet**
 is pre-selected, and Orbit Weekly is mapped onto it
-**And** its composition is Center Stage hero (A4 #1), Editorial Rules list (A18 #1), Narrow Classic reading (A25 #1), Author Bio Card close (A26 #1)
+**And** its composition is Center Stage hero (A4 #1), Editorial Rules list (A18 #1), Narrow Classic reading (A25 #1 — Pro under R-212's picks; its Free successor is the owner's at Story 11.2, DW-157), Author Bio Card close (A26 #1)
 **And** **it ships no membership template at all — not even an undesigned one** — so Ghost's native Portal serves
 those flows, **no `routes.yaml` is emitted**, and its **first deploy needs no step in Ghost Admin beyond the theme
 upload itself**: the user is never sent into Ghost's page editor for a page they did not ask for, and **the

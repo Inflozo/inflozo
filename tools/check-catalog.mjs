@@ -116,9 +116,22 @@ function droppedFailures(previous, current) {
 }
 
 /** Every committed catalog.json, newest first. A shallow clone sees only what it holds; CI's check job is full. */
-const committedCatalogs = () => execFileSync('git', ['log', '--format=%h', '--', CATALOG_PATH], { cwd: REPO, encoding: 'utf8' })
-  .split('\n').filter(Boolean)
-  .map((commit) => ({ commit, keys: Object.keys(JSON.parse(execFileSync('git', ['show', `${commit}:${CATALOG_PATH}`], { cwd: REPO, encoding: 'utf8' })).keys) }))
+const committedCatalogs = () => {
+  let commits
+  try {
+    commits = execFileSync('git', ['log', '--format=%h', '--', CATALOG_PATH], { cwd: REPO, encoding: 'utf8' }).split('\n').filter(Boolean)
+  } catch (err) {
+    throw new Error(`git history unreadable (${err.message.split('\n')[0]}) — the never-removed check needs a checkout with history`)
+  }
+  // a depth-1 checkout (Vercel's build runs this too) sees one commit and proves nothing; CI's check job fetches depth 0
+  return commits.map((commit) => {
+    let text
+    try { text = execFileSync('git', ['show', `${commit}:${CATALOG_PATH}`], { cwd: REPO, encoding: 'utf8' }) } catch { return null }
+    let keys = {}
+    try { keys = JSON.parse(text).keys ?? {} } catch { /* an unparseable historical catalog holds no key to keep */ }
+    return { commit, keys: Object.keys(keys) }
+  }).filter(Boolean)
+}
 
 /** 4 — Ghost's render against the shim's, per key, with a sample value per placeholder. */
 function agreementFailures(catalog) {

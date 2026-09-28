@@ -840,7 +840,7 @@ No post footer, related, or comments on pages.
 
 | # | Section | Key values |
 |---|---|---|
-| 1 | **A29 #1 Centred** (Archive Header) | The author's name, bio and post count from `{{#author}}` — the same design `tag.hbs` synthesizes, because A29 is one design over three archives in the export: every one of the fourteen reads whichever object the route provides (`{{#tag}}`, `{{#author}}` or a collection route), so no design is tag-bound. #1 is A29's owner-picked Free default (R-212); #2 Split Head, the default here until then, is Pro under his picks. **#12 Portrait** is the design to reach for when the site wants the author's face. |
+| 1 | **A29 #1 Centred** (Archive Header) | The author's name and bio from `{{#author}}` — and its post count once one is bindable, which `matrix.json`'s author scope does not offer today (DW-124, Story 9.10) — the same design `tag.hbs` synthesizes, because A29 is one design over three archives in the export: every one of the fourteen reads whichever object the route provides (`{{#tag}}`, `{{#author}}` or a collection route), so no design is tag-bound. #1 is A29's owner-picked Free default (R-212); #2 Split Head, the default here until then, is Pro under his picks. **#12 Portrait** is the design to reach for when the site wants the author's face. |
 | 2 | **A17 #1 Three Up** (Post Grids) | **Main feed** (see "Main-feed rule" below). Pagination style = **A34 #1 Numbers**. All meta toggles on. |
 
 #### `error.hbs`
