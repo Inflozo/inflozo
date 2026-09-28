@@ -2,7 +2,7 @@
 title: 'Story 5.23b — The editor''s panels redraw only what changed, at 60 fps'
 type: 'feature'
 created: '2026-09-28'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: 'bc51ecbde01fde458857592f4e3488bd03dc90d2'
@@ -512,6 +512,19 @@ Nothing in the repository was edited.**
   stops among them; `next-env.d.ts` restored by the runner.
 - `python3 tools/doc-audit.py --check` twice: PASS on both, after `tools/story-board.py` regenerated the board with
   Question 2 open.
+
+### Results — Deploy, 2026-09-28
+
+Deployment: `dpl_8o5BUNVvohzv7zkpjqSTGYdH8CFo` — READY, target production, built from `c3990471` (HEAD). GitHub Actions
+(`GITHUB_TOKEN`) for `c3990471`: CI run 36416169012 — `check`, `rls`, `deploy` all `success`; render matrix run
+36416168672 `success`; negative control, a commit sha of all zeros on the same endpoint → HTTP 422. Read with
+`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`: the deployment's own `alias` list is `inflozo.com`,
+`app.inflozo.com`, `www.inflozo.com` and two `*.vercel.app` aliases; negative control, a wrong bearer on the same
+endpoint → HTTP 403. `https://app.inflozo.com/` answers 307 (to `/sign-in`). No migration in this story
+(`git diff --stat bc51ecbd HEAD -- supabase` empty, confirmed again at Deploy), so there is no Schema phase and nothing
+to read back on production. This story has no screen (`owner_test: none` — "nothing is drawn differently" is the
+story's own claim) so there is no Owner's manual test to fill in; the story is marked `done` in `sprint-status.yaml`
+instead, per R-80's no-screen path.
 
 ## Questions for the owner
 
