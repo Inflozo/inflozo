@@ -587,6 +587,9 @@ matrix's container (`bash tools/matrix/run-matrix-gate.sh`, green once the owner
   `import.meta.url` goes red.
 - `run-verify-controls.cjs`, `run-verify-pilots.cjs` — **DW-287**: `load` instead of `networkidle`, with the landmark
   waits that already follow.
+- `tools/keyboard/journey.spec.mjs` — **DW-292** (found after the triage, on 5.24a's second Dev push): the 5.23b stops
+  read their render counts after a settle that waits for no render pending, not two frames and 150 ms. Control: the ⌥↓
+  stop red with a render planted after the old settle, green with the new one.
 
 **Its code.** `tools/probe/run-verify-editor.cjs` (`steady` :373, decoders :731 :977 :1049,
 step 36 :1926-1981, 66b :3187, die pips :3986-4009, step 89 :4069-4354 with the reload :4291-4297, step 90 :4603-4612,
@@ -1133,6 +1136,15 @@ screen steps go with Stories 5.24b and 5.24e (§ The four stories after this one
   story's title naming a design the last story builds — is caught, and reported "planted, and not caught" with the check
   blinded. The ledger's owner lines quoting an old title were rewritten outside their dated notes; the two notes that
   quote one keep it as history. No `sprint-status.yaml` key changed.
+- **CI on the two Dev pushes** (GitHub Actions API, `GITHUB_TOKEN`, read-only; Vercel API, `VERCEL_*`, read-only).
+  - `fe8ce5ef`: CI run 36447808855 — `rls`, `check` and `deploy` success — and the render matrix, run 36447808876,
+    success; production `dpl_67zd7xGXLyucwaZtm7bMNdsDGU8e` READY.
+  - `3ddf52e4` (R-225): the render matrix, run 36449972668, success; CI run 36449972851 — `rls` success, `check` failure
+    at `pnpm keyboard` (119 passed, 1 failed: `journey.spec.mjs:3953`, the 5.23b ⌥↓ stop, `drawn['design']` 1 where 0
+    is expected), so `deploy` skipped. That push changed no app or package code, and `fe8ce5ef`'s identical app code
+    passed the same gate; on this machine the stop passed 12 of 12 (`--repeat-each 12`) and the whole gate 120 of 120.
+    Recorded as **DW-292**, owned by Story 5.24d, whose card and plan above name it; the push that records it re-runs
+    CI.
 - **Real services (R-82).**
   - **GitHub Actions API** (`GITHUB_TOKEN`, read-only): `matrix.yml` runs created since 2026-09-17 — 365, of which 362
     `success` and 3 `failure`, all three on 2026-09-17 and explained above; since 2026-09-18, 330 of 330 `success`. The

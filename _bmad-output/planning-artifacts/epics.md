@@ -2628,7 +2628,8 @@ green.
 ### Story 5.24d: The sweep: the checks and the walks
 
 *R-211's fourth story, after 5.24c: Group D of 5.24a's triage — DW-117, 162, 174, 182, 183, 201, 204, 208, 211, 216,
-219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287 and 291.*
+219, 220, 222, 236, 245, 246, 251, 257, 269, 279, 284, 285, 287 and 291 — and DW-292, found after the triage on
+5.24a's second Dev push: a keyboard-gate stop that counted a redraw on CI it never counts locally.*
 
 As the owner relying on the automatic checks,
 I want the flaky walks steadied and the missing checks built,

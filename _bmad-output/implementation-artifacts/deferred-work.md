@@ -7076,3 +7076,26 @@ owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's fiv
 location: `tools/probe/run-verify-editor.cjs` — step 89 (`:4295` at `c390a9f4`)
 reason: the write path is untouched by 5.23b and the same line has failed once in two runs (the twice-dying rule of the
   editor-harness note); hardening the walk is not this story's goal, and the finding has a cause, a reproduction and an owner.
+
+## Deferred from: Story 5.24a's Dev push (2026-09-28)
+
+### DW-292: the keyboard gate's 5.23b ⌥↓ stop counted a Design-block redraw on CI that it never counts here
+
+plain: One of the automatic keyboard checks moves a section down in Layers and then counts which parts of the editor
+  redrew. On one CI run it counted the settings panel's Design block once, although nothing in it changed — and the same
+  check passes every time on this machine. That one red check stopped a push from publishing; the next push re-ran it.
+status: open
+severity: low
+origin: Story 5.24a's second Dev push, `3ddf52e4` (2026-09-28): CI run 36449972851's `check` failed at `pnpm keyboard`,
+  119 passed and 1 failed — `tools/keyboard/journey.spec.mjs:3953`, "⌥↓ on the selected row redraws at most the two
+  rows that swapped — the Controls panel does not", `drawn['design']` 1 where 0 is expected (`:3967`) — and `deploy`
+  was skipped. That push changed no app or package code, only documents and `tools/doc-audit.py`; the push before it,
+  `fe8ce5ef`, carries the same app code and passed the gate in CI run 36447808855. On this machine the stop passed 12 of
+  12 (`--repeat-each 12`) and the whole gate 120 of 120.
+owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
+  this entry.
+location: `tools/keyboard/journey.spec.mjs` — the stop at `:3953-3968`; `panelsSettle` (`:66`, two frames and 150 ms)
+  and `resetRenders` (`:3885`)
+reason: not reproduced, so the cause is a hypothesis: the settle before `resetRenders` is a fixed wait, and a render
+  the selection caused could land after it on a slower runner and be counted as the ⌥↓'s. The stop should wait for the
+  condition it means — no render pending — rather than a fixed moment, which is Story 5.24d's goal.
