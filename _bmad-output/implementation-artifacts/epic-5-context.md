@@ -37,6 +37,7 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
 - Story 5.23a: The canvas redraws only what changed (R-206, R-208)
   - R-209 (owner, 2026-09-28, 5.23a's Review Q2): a hover whose section the keyed paint kept stays; one whose section was redrawn is let go — the frozen "the hover clears" read as "behave as a full repaint looked".
 - Story 5.23b: The editor's panels redraw only what changed, at 60 fps (R-208)
+  - R-210 (owner, 2026-09-28, 5.23b's Create Q1): canvas first, panels a frame later for every change to a section; a control change stays in its frame (FR-F4); a press on a stale settings panel is ignored.
 - Story 5.24: The deferred-work sweep at the end of Epic 5 (R-207)
 
 ## Requirements & Constraints
@@ -950,8 +951,11 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     inside it) and the browser's own style, layout and paint. Handing React a section operation's update as a transition
     left no task over 50 ms (2.8–5.0% dropped). **`latest` is re-assigned from state on every render**, so under a
     transition a render drawn from older state would move it back and the next edit would be made against an older doc:
-    handlers must become the only writers of what they change. Put to the owner as 5.23b's Question 1 (canvas first,
-    panels a frame later — recommended); the spec is written for option 1. DW-289's metric: the trace gates on the share,
+    handlers must become the only writers of what they change. **Ruled at 5.23b's Question 1 as R-210** (owner,
+    2026-09-28): every section operation — a design change, a move, hide or show, duplicate, delete, add, Remix, undo and
+    redo — paints the canvas at once and the panels a frame later; a control change stays in its own frame (FR-F4); a press
+    on the settings panel in that frame is ignored rather than applied to the design just replaced; a check that reads a
+    panel right after a section operation waits for it and checks nothing different. DW-289's metric: the trace gates on the share,
     the p95 counted in whole refreshes and the longest task together. The session's first selection (a 248–255 ms task,
     ~100 ms of it the chrome's font faces invalidating the canvas's layout) is DW-290, Story 5.24's.
 

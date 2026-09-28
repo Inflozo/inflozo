@@ -13,9 +13,9 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.m
 On a long page the editor stops redrawing its side panels in full every time you point at, pick or change something:
 only the part that changed is redrawn — one Layers row when you point at a section, the settings panel when you pick
 one, the moved rows when you move one. Nothing looks different; the editor stops stuttering, and the slowed-down speed
-test on a 40-section home page passes, which is what closes Epic 5 (R-208). One choice is yours before the build
-(Question 1): whether the side panels may catch up one frame after the canvas when a section changes, because that
-single step otherwise stays just over the limit.
+test on a 40-section home page passes, which is what closes Epic 5 (R-208). As you ruled (R-210), after any change to
+a section the canvas changes at once and the side panels catch up one frame later — a sixtieth of a second, too short to
+see — which is what lets the one step that stayed just over the limit pass.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
 
@@ -37,7 +37,7 @@ time (DW-289).
   one-value store only Layers' slot and rows read.
 - **Counted, not asserted.** React's own `<Profiler>` counts each part's renders in the keyboard gate's dev build (a no-op
   in production); journey stops on the long Home require each gesture to redraw its own parts and no other.
-- **Canvas first** (Question 1, option 1 recommended): a section operation paints the canvas at once and hands React its
+- **Canvas first** (**R-210**, Question 1 ruled option 1): a section operation paints the canvas at once and hands React its
   state as a transition, so the panels follow a frame later; a control change stays in the same frame (FR-F4); a panel
   change made from a panel still drawn for a replaced design or instance is dropped, never written.
 - **The trace gates on every reading** (DW-289): at most 5% of refreshes dropped, the p95 frame counted in whole
@@ -49,7 +49,7 @@ time (DW-289).
 
 - **Nothing is drawn differently.** Every element, attribute and word at rest and after each gesture is what Stories
   5.1–5.23a drew; 5.23a's node-for-node canvas agreement stands. The keyboard journeys and the deployed walk pass — a check
-  that reads a panel in the instant after a section operation may wait for the panel to settle (Question 1); none checks
+  that reads a panel in the instant after a section operation may wait for the panel to settle (R-210); none checks
   anything different.
 - **No stale closure.** A memoized part gets values that keep their identity while unchanged and handlers of fixed
   identity that call the latest render's function.
@@ -87,9 +87,9 @@ time (DW-289).
 | Move | ⌥↓ on the selected row | at most the two rows that swapped; the Controls panel does not | N/A |
 | Design change | `]` on the ringed section | the Controls panel and its row at most; no other row | N/A |
 | Drag move | a grip held and moved | Layers' slot and the rows it slides; nothing else (a scratch pointer probe — the journey takes no pointer) | N/A |
-| Section operation (Question 1) | a design change, move, hide/show, duplicate, delete, place, Remix, ⌘Z/⇧⌘Z | canvas at once, panels a frame later; a drop's slot stays until its row lands | N/A |
-| Stale panel (Question 1) | a design change and a control change on the still-drawn panel, in one task | nothing is written from the old panel; the stored instance keeps the new design's values | dropped silently |
-| An urgent render between two edits (Question 1) | `]`, a discrete urgent update, then Space on another row, in one task | the doc holds both edits | a lost edit fails the stop |
+| Section operation (R-210) | a design change, move, hide/show, duplicate, delete, place, Remix, ⌘Z/⇧⌘Z | canvas at once, panels a frame later; a drop's slot stays until its row lands | N/A |
+| Stale panel (R-210) | a design change and a control change on the still-drawn panel, in one task | nothing is written from the old panel; the stored instance keeps the new design's values | dropped silently |
+| An urgent render between two edits (R-210) | `]`, a discrete urgent update, then Space on another row, in one task | the doc holds both edits | a lost edit fails the stop |
 | The rail | 1100 px wide, a hover then a selection | the hover redraws no rail row; the selection redraws its two | N/A |
 | Trace | `fps-trace.mjs` at 4× | per run: share, p95 in whole refreshes, longest task; PASS only when all three hold | its control unseen → REFUSED |
 
@@ -141,7 +141,7 @@ time (DW-289).
 - `tools/perf/fps-trace.mjs` — `DROPPED_MAX` :44, `measure()` :95, the pass :335, THE METRIC :21.
 - `tools/keyboard/journey.spec.mjs` — the pointer rule :8-17 (synthesized `pointerover` allowed, no mouse API), `open`
   :44, the 5.23a describe :3464 (`LONG_HOME`, `selectRinged`, `counter`); the FR-D19 loop :1088-1091 reads the counter
-  right after each `]` — the kind of read that waits under Question 1.
+  right after each `]` — the kind of read that waits under R-210.
 - `tools/keyboard/run-keyboard-gate.sh` — boots `next dev`, so `<Profiler>` callbacks fire there.
 - `tools/probe/run-verify-editor.cjs` — step 60 on production's planted 40-section Home.
 - `tools/doc-audit.py` — rows for `fps-trace.mjs` :1020 and `journey.spec.mjs` :1044.
@@ -168,7 +168,7 @@ time (DW-289).
   with explicit props, placed from the paint's current roots by a loop keyed on what chrome shows; `IconRail` `memo`; every
   handler a memoized part gets through `useStable`; `latest` written by handlers alone for what they change; a `<Profiler>`
   INSIDE each memoized part's own boundary (a Layers row, the Design block, the settings, the rail, the chrome, the pill) —
-  outside a `memo` it would count its parent's renders; per Question 1: `apply` and `restore` hand React their state as a
+  outside a `memo` it would count its parent's renders; per R-210: `apply` and `restore` hand React their state as a
   transition (a drop's end in the same one), and `onChange` drops a change from a panel drawn for another design or
   instance.
 - [ ] `tools/keyboard/journey.spec.mjs` -- a Story 5.23b describe on the long Home: the matrix's render-count rows (counts
@@ -178,8 +178,8 @@ time (DW-289).
 - [ ] `tools/perf/fps-trace.mjs` -- PASS only when the share, the p95 in whole refreshes and the longest task all hold;
   each printed; the METRIC paragraph says why -- DW-289.
 - [ ] `tools/doc-audit.py` -- the two rows name 5.23b's additions -- the gate walks `tools/`.
-- [ ] `deferred-work.md`, `reconcile-designs-decisions.md`, `epic-5-context.md` -- DW-289 closed; R-208's "⬜ built — Story
-  5.23b" ticked with what was built and measured; the ruling on Question 1 recorded -- standing rule 3.
+- [ ] `deferred-work.md`, `reconcile-designs-decisions.md`, `epic-5-context.md` -- DW-289 closed; R-208's and R-210's "⬜
+  built — Story 5.23b" ticked with what was built and measured -- standing rule 3.
 
 **Acceptance Criteria:**
 
@@ -234,7 +234,7 @@ Nothing in the repository was edited.**
   ≈7 of it), and the browser's style, layout and paint ≈20 ms — all in the press's task. Only moving React's whole update
   out of it cleared the bar; deferring the panels alone did not. Because `latest` is re-assigned from state on every
   render, a render drawn from state a transition has not delivered would move it back, and the next edit would be made
-  against an older doc — hence the Always rule and the urgent-render stop.
+  against an older doc — hence the Always rule and the urgent-render stop. Ruled R-210 (Question 1, option 1).
 - **The metric (DW-289).** A frame's time is counted in whole refreshes, `n = max(1, round(Δ/16.67))`, so timestamp jitter
   (16.6–16.8 ms on a smooth frame) never fails it; p95 ≤ 1 refresh is "at most 5% of frames took longer than one"; the
   share of refreshes dropped weighs a long stall more; the trace passes only when both do and no task tops 50 ms.
@@ -296,4 +296,10 @@ seconds, too short to see. With option 2 both change together, after about 0.055
 3. **Build the panel work first and decide on the real numbers.** The same as 2 until then; the rough version says the gap
    will very likely remain, so this most likely comes back to you as the same question after the build.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-28).** *"Canvas first, panels one frame later — for any change to a section: a new
+design, a move, hide or show, duplicate, delete, add, Remix, undo and redo. Changing a setting still shows at once, as it
+must (FR-F4). A press on the settings panel in that one frame is ignored rather than applied to the design just replaced,
+so nothing you set can land on the wrong design, and a check on every change we push proves no edit is lost. A few
+automatic checks that read a panel in the same instant as a key press learn to wait for it; what they check does not
+change. The speed test passes and Epic 5 closes as you ruled."* Recorded as **R-210**; the spec was written for this
+option, so its intent, boundaries and matrix now cite the ruling, and `epics.md`'s card carries it as a criterion.

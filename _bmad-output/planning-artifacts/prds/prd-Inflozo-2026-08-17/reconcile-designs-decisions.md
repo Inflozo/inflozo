@@ -4668,6 +4668,41 @@ promised. The frozen sentence is read as 'behave as a full repaint looked', and 
   - ✅ `editor.tsx`'s paint header names the ruling beside the kept hover.
   - ✅ `epic-5-context.md` — 5.23a's line.
 
+**R-210 — canvas first, panels a frame later, for any change to a section.** Story 5.23b's Create, Question 1, ruled
+**option 1** (owner, 2026-09-28): *"Canvas first, panels one frame later — for any change to a section: a new design, a
+move, hide or show, duplicate, delete, add, Remix, undo and redo. Changing a setting still shows at once, as it must
+(FR-F4). A press on the settings panel in that one frame is ignored rather than applied to the design just replaced, so
+nothing you set can land on the wrong design, and a check on every change we push proves no edit is lost. A few automatic
+checks that read a panel in the same instant as a key press learn to wait for it; what they check does not change. The
+speed test passes and Epic 5 closes as you ruled."*
+
+- **Why it was a question.** Measured at 5.23b's planning (4× CPU throttle on the development computer, prototypes on
+  scratch copies of `790b4d6e`): making the Layers rows, the Controls panel, the rail and the chrome redraw only what
+  changed takes NFR-1's trace from 7.8–8.3% of refreshes dropped to about 4–5%, but a design change's one task stayed
+  0.051–0.064 s in every variant that updates everything together (the bar is 0.050 s) — that task holds the canvas paint,
+  React's whole update and the browser's own rendering. Handing React the update as a transition, the panels a frame after
+  the canvas, left no task over 0.050 s. The editor had always shown a change in the canvas's own frame, so when its
+  panels show one was the owner's to say.
+- **The rule.**
+  - Every section operation — a design change (◀ ▶, `[` `]`, Shuffle, a thumbnail), a move (a drag, `⌥↑` / `⌥↓`), hide
+    or show, duplicate, delete, add, Remix, undo and redo — paints the canvas at once and gives the editor's panels their
+    update a frame later. A drag's end lands with its move, so Layers never shows the old order in between.
+  - A control change stays in its own frame (FR-F4).
+  - A press on the Controls panel while it is still drawn for a replaced design or a removed section is ignored: nothing
+    is written from it.
+  - No edit is made against an older doc: the editor's handlers are the only writers of what they change, and a
+    keyboard-gate stop proves that no edit is lost when a render falls between two.
+  - A journey or walk check that reads a panel in the instant after a section operation waits for it to settle; what it
+    checks does not change.
+- **Declined.** Option 2, everything changing together (a design change stays just over the limit and Epic 5 does not
+  close on the test); option 3, building first and deciding on the measured numbers.
+- Targets:
+  - ✅ this entry.
+  - ✅ Story 5.23b's spec — Question 1, its intent, boundaries and matrix.
+  - ✅ `epics.md` — Story 5.23b's card.
+  - ✅ `epic-5-context.md`.
+  - ⬜ built — Story 5.23b.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

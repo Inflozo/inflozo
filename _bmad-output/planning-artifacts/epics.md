@@ -2519,10 +2519,20 @@ So that the editor stays smooth however many sections the page holds.
 **no long task over 50 ms** across a 3-second trace of drag, reorder, Variant Shuffle and control changes, run by Story
 5.23a's trace script — Shuffle traced on the harness's fixture ring (R-158), frame time counted in dropped frames rather
 than in timestamp jitter
-**And** nothing on screen changes: every keyboard journey and the deployed editor walk pass unchanged
+**And** **the canvas comes first** (**R-210**, owner, 2026-09-28, Question 1): every change to a section — a new design,
+a move, hide or show, duplicate, delete, add, Remix, undo and redo — paints the canvas at once and the panels a frame
+later, while a control change still shows in its own frame (FR-F4); a press on the settings panel in that frame is
+ignored rather than applied to the design just replaced, and a check on every push proves no edit is lost
+**And** nothing on screen changes: every keyboard journey and the deployed editor walk pass — a check that reads a panel in
+the instant after a section operation waits for it to settle, and none checks anything different (R-210)
 **And** the trace is a manual script, never a CI gate (NFR-1); Story 15.4 still runs the release gate.
 
-**FRs:** FR-D14 (the fps gate), NFR-1. · **Rulings:** R-158, R-206, R-208. · **Owner test:** none — nothing on screen
+*Found at this story's planning (2026-09-28): redrawing only what changed took the trace to about 4–5% of refreshes
+dropped, but a design change's one task stayed 0.051–0.064 s at 4× while the panels updated with the canvas, and none
+over 0.050 s once they followed a frame later — hence R-210. The session's first selection, a 0.25 s task at 4× outside
+the warm trace, went to Story 5.24 as DW-290.*
+
+**FRs:** FR-D14 (the fps gate), NFR-1. · **Rulings:** R-158, R-206, R-208, R-210. · **Owner test:** none — nothing on screen
 changes; the trace, the keyboard gate and the deployed editor walk hold it. · **Verification:** the development computer
 at 4× CPU throttle, manual-only — a CI number would be noise presented as a gate.
 
