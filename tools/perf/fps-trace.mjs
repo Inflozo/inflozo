@@ -270,7 +270,10 @@ async function run(browser, base, n) {
     const t1 = await page.evaluate(() => performance.now())
     // two more frames, so the frame that ends the window is on record
     await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
-    return { n, control, done, window: t1 - t0, ...(await measure(page, t0, t1)) }
+    const clock = await measure(page, t0, t1)
+    // a window the recorder saw no frame in reads as 0 dropped of 0 — a refusal, never a PASS (standing rule 2)
+    if (clock.vsyncs === 0) return { n, refused: 'no frame was recorded inside the 3 s window' }
+    return { n, control, done, window: t1 - t0, ...clock }
   } catch (error) {
     return { n, failed: `${step} — ${error instanceof Error ? error.message.split('\n')[0] : String(error)}` }
   } finally {
@@ -288,7 +291,7 @@ const stop = () => {
   }
   if (!readFileSync(NEXT_ENV).equals(kept)) writeFileSync(NEXT_ENV, kept)
 }
-process.on('SIGINT', () => {
+for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => {
   stop()
   process.exit(130)
 })

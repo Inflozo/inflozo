@@ -6582,3 +6582,23 @@ owner: unowned — the first story that retires a design from the library (Epic 
 location: `packages/section-runtime/src/doc-schema.ts` (`parkedControls`) · `packages/section-runtime/src/read.ts`
 reason: no design has ever left the library, so there is nothing to execute the claim against; a sentence and a test
   belong beside the first removal, not in a review patch.
+
+## Deferred from: code review of spec-5-23a-the-canvas-redraws-only-what-changed.md (2026-09-28)
+
+### DW-289: the 3-second trace passes or fails on the share of frames dropped, while NFR-1 is worded as a p95 frame time
+
+plain: The speed test counts how many screen refreshes were skipped in 3 seconds and passes if 5 in 100 or fewer were.
+  The requirement is written as "95 of 100 frames take no longer than one refresh". Usually those agree, but not always:
+  one long stall skipping nine refreshes passes the count and fails the requirement as written. Story 5.23b, which has to
+  make the test pass, should say which reading is the bar.
+status: open
+severity: low
+origin: Story 5.23a's review (2026-09-28). `tools/perf/fps-trace.mjs` gates on `share <= DROPPED_MAX` and prints the
+  raw p95 "for the record"; its header derives the one from the other because headless rAF reads 16.6–16.8 ms on a
+  smooth frame, so a raw p95 compared to 16.7 would flap. The Design Notes of 5.23a's spec state the mapping.
+owner: Story 5.23b (R-208) — it carries NFR-1's pass, so it says whether the trace gates on the dropped share (with the
+  reason recorded in NFR-1's row) or on the raw p95 with a stated tolerance, and prints both either way.
+location: `tools/perf/fps-trace.mjs` — `DROPPED_MAX`, `measure()`, the header's "THE METRIC" paragraph
+reason: the pass is not this story's (R-208), and the trace already prints both figures, so nothing is lost by deciding
+  it where the pass is owed.
+

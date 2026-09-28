@@ -3650,6 +3650,7 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     await open(page)
     await selectRinged(page)
     const ringed = await selectedPlace(page)
+    expect(ringed, 'a section above the ringed one to point at (`:nth-child` is 1-based, the place 0-based)').toBeGreaterThan(0)
     await pointAt(page, `#canvas > :nth-child(${ringed})`)
     const hoveredAt = () => canvasFrame(page).locator('#canvas').evaluate((c) => [...c.children].findIndex((el) => el.hasAttribute('data-inflozo-hover')))
     await expect.poll(hoveredAt, 'the control: the section above the ringed one is pointed at').toBe(ringed - 1)
@@ -3669,6 +3670,34 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     await expect(counter(page)).toHaveText(/^1 of \d+$/)
     expect(await hoveredAt(), 'the pointed section was redrawn: its hover is let go').toBe(-1)
     await expect(page.locator('[data-section-pill]')).toHaveCount(0)
+  })
+
+  test('an inline editing session that changes nothing still has its section drawn fresh when it ends — every other root kept', async ({ page }) => {
+    // THE SESSION WRITES ITS SECTION'S DOM ITSELF (`lib/inline.ts`), so its drawing is dropped when it starts, and the paint
+    // that ends it draws the section fresh — even when the words are as they were, when the record's signature would still
+    // match. Pinned here because the production walk was the only place it was read (review, 2026-09-28): without the drop
+    // in `startEditing`, every automated gate stayed green. The session starts as the pointer starts it — a primary press on
+    // a stamped element, the canvas document's own `pointerdown` and `mousedown` synthesized as R-175's hover is, never a
+    // pointer API — and Esc's first rung ends it.
+    await open(page)
+    await selectRinged(page)
+    const ringed = await selectedPlace(page)
+    const n = await tagRoots(page)
+    const started = await canvasFrame(page).locator('#canvas').evaluate((c, at) => {
+      const root = c.children[at]
+      for (const el of root.querySelectorAll('h1, h2, h3, h4, p, a, span, li')) {
+        el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse' }))
+        el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }))
+        // …and the press is released, or the editor holds every repaint for a click that never comes
+        el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0 }))
+        if (el.hasAttribute('data-inflozo-editing')) return el.tagName.toLowerCase()
+      }
+      return null
+    }, ringed)
+    expect(started, 'the control: a press on a stamped element of the ringed section starts a session').not.toBeNull()
+    await page.keyboard.press('Escape')
+    await expect(canvasFrame(page).locator('[data-inflozo-editing]'), 'Esc ends the session').toHaveCount(0)
+    await expect.poll(async () => await tagsOf(page), 'the section the session wrote is drawn fresh; every other root is kept').toEqual(kept(n).toSpliced(ringed, 1, null))
   })
 
   test('DW-215: Remix re-rolls several sections, and ONE ⌘Z restores every one of them exactly — no other root is replaced', async ({ page }) => {

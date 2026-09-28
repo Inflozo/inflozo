@@ -2,9 +2,9 @@
 title: 'Story 5.23a — The canvas redraws only what changed'
 type: 'feature'
 created: '2026-09-27'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '1a55920de16816a4403dda48dcba1173ea5bc684'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -200,6 +200,38 @@ re-runs on every render and restarts its rAF loop; `lib/canvas-layer.ts`'s `plac
   (R-208).
 - Given the change, when the gates run, then `pnpm check`, `pnpm keyboard` and the doc gate are green, CI publishes, and
   no migration exists.
+
+### Review Findings
+
+Review 1 (2026-09-28; five layers: Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). Every patch applied the same day; the one decision is Question 2 below, open.
+
+- [ ] [Review][Decision] The frozen block says *"the hover clears"* after every paint; Spec Change Log 6 keeps the hover
+  when the hovered section's drawing was kept [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:2404],
+  reading the sentence as "behave as after a full repaint", and the frozen text was not renegotiated — Question 2.
+- [x] [Review][Patch] The record drop when an inline session starts was pinned only by the hand-run production walk:
+  deleting the line left `pnpm check` and `pnpm keyboard` green [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:2558]
+  — a 5.23a journey stop starts a session as the pointer does (a synthesized primary press on a stamped element, R-175's
+  precedent, released as a real one is), ends it with Esc and requires that section fresh and every other root kept
+  [tools/keyboard/journey.spec.mjs:3675]; red with the drop removed, green with it.
+- [x] [Review][Patch] A 3 s window the recorder saw no frame in read as 0 dropped of 0 and printed PASS
+  [tools/perf/fps-trace.mjs:275] — a run with no frame in its window is REFUSED (standing rule 2); SIGTERM now stops the
+  trace's own server and restores `next-env.d.ts` as SIGINT did [tools/perf/fps-trace.mjs:294].
+- [x] [Review][Patch] `x-inflozo-harness-home` took any positive integer, so one header could have the harness build
+  millions of instances, and an empty design list would have thrown far from its cause
+  [apps/web/app/(app)/app/harness/editor/layout.tsx:177] — a ceiling on the request, named once with its reason, and the
+  cycle only over a non-empty list.
+- [x] [Review][Patch] Step 60's typing check required the titled section's place to be above 0, which a titled section
+  first on the canvas would fail for no reason [tools/probe/run-verify-editor.cjs:2952] — `>= 0`; and its ⌘S re-derived the
+  modifier by platform where the journey spells `ControlOrMeta+s` [tools/probe/run-verify-editor.cjs:2984].
+- [x] [Review][Patch] The pointed-at stop pointed at `:nth-child(ringed)` — the section above the ringed one — with
+  nothing naming that a ringed section first on the page would match no element [tools/keyboard/journey.spec.mjs:3653] —
+  one expectation names the assumption.
+- [x] [Review][Defer] The trace gates on the share of vsyncs dropped and prints the raw p95 "for the record"; NFR-1's
+  words are a p95 frame time, and the two bars are not the same (nine vsyncs dropped in one stall pass the share and fail
+  the p95) [tools/perf/fps-trace.mjs:45] — deferred to Story 5.23b, which carries the pass; DW-289.
+- [x] [Review][Defer] Step 60's 5.23a block waits on eight fixed sleeps where the journey waits on the observable end
+  [tools/probe/run-verify-editor.cjs:2919] — deferred, the walk's pre-existing shape (DW-204's family, Story 5.24's sweep).
 
 ## Spec Change Log
 
@@ -506,6 +538,32 @@ at 1440 × 900 with a REAL pointer, three runs per build, `editor.tsx` swapped i
   Home, the run prints 0 FAIL, its throwaway accounts are deleted and the user count is unchanged. Supabase is hit through
   the walk's service key (the plant, the restore, the accounts); Ghost T1/T3, Resend and Dodo are not touched.
 
+**Review (2026-09-28; this computer, Node 24.18.1, Playwright 1.61.1 with Chromium 149; every count is a run's own output).**
+
+- **Real infrastructure, re-executed by the review's own verifier** (R-82; keys by variable name only):
+  - **GitHub Actions** (`GITHUB_TOKEN`): HEAD `2bbb0809` CI run 36349358473 — `check`, `rls`, `deploy` success; Render
+    matrix runs 36349358475 and 36360116756 success. Negative control: a wrong bearer → HTTP 401.
+  - **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): `dpl_4NsKJLdvuLJzyM8bpDQWoC69yxfb` READY, production,
+    built from `2bbb0809`; the spec's `dpl_43RX…` (`e7b4b169`, the walked deployment) and `dpl_3XMF…` behind it, READY.
+    Negative control: a wrong bearer → HTTP 403.
+  - **The app**: `https://app.inflozo.com/` → 307 to `/sign-in`, which answers 200; `/harness/editor` → 404 on production
+    (the harness is `INFLOZO_HARNESS` only), the negative control.
+  - **No migration**: `git diff --stat 1a55920d HEAD -- supabase` empty; the last commit under `supabase/migrations` is
+    before this story. Ghost T1/T3, Resend and Dodo: not touched, as the story claims.
+  - Not re-run by the review: the deployed walk (it plants production data and takes half an hour); its five runs at Dev
+    stand, and the next one follows this push.
+- **The review's own stop, executed both ways.** `pnpm keyboard -g 'inline editing session that changes nothing'`: `1 passed`
+  on this tree. Its control — `editor.tsx` with the `startEditing` drop removed, restored and compared byte for byte
+  afterwards: `1 failed` at *"the section the session wrote is drawn fresh; every other root is kept"*, the ringed root
+  kept. The first draft of the stop pressed and never released, and the editor held its repaint for a click that never
+  came — so the stop releases the press as a pointer does.
+- `tsc --noEmit -p .`: exit 0. `node --check` on the three edited tools: clean.
+- **The whole keyboard gate on the reviewed tree:** `pnpm keyboard` printed `108 passed (4.0m)`, 0 failed — the review's stop among them; `next-env.d.ts` restored by the runner.
+- `python3 tools/doc-audit.py --check` twice: PASS on both runs, after `tools/story-board.py` regenerated the board with Question 2 open.
+- **Noted, not a finding:** the GitHub repository answers unauthenticated reads (`private: false`), so `GITHUB_TOKEN` is
+  not needed to read CI — `tools/probe/.env.example` describes it as for a private repo; and `tools/probe/.env`'s
+  `RESEND_FROM` value is unquoted, so `source`-ing the file stops there (the `env $(grep …)` pattern is unaffected).
+
 ## Questions for the owner
 
 ### Question 1 — The canvas fix works, but the editor still stutters a little on the slowed-down computer. Where should the last piece of speed work go?
@@ -538,3 +596,25 @@ changed* (its spec file and sprint-status key with it); Story 5.23b, *The editor
 fps*, joins `epics.md` and `sprint-status.yaml` straight after it, carrying the 60 fps criterion; the PRD's Epic 5 exit,
 the register (R-206 and R-207 noted), `epic-5-context.md` and `run-verify-editor.cjs`'s notes follow; and Story 5.24 runs
 after 5.23b, since nothing may come between 5.23a and 5.23b.
+
+### Question 2 — When one section is redrawn, should the outline under your resting mouse stay, or blink off and back?
+
+The approved rules for this story say that after every redraw "the hover clears" — the outline and the small toolbar
+under your mouse go away, the way they always did when the whole page was redrawn. But when the whole page was redrawn,
+the browser noticed a brand-new section under your mouse and put the outline straight back, so you never saw it go. Now
+that only one section is redrawn, the section under your mouse is usually the SAME one, the browser says nothing, and
+clearing the hover would leave you looking at a section with no outline and no toolbar until you moved the mouse. The
+build kept the outline in that case (Spec Change Log 6), and a check on every push proves it. The review flags this
+because it reads a frozen sentence differently from its words, and that reading is yours to confirm.
+
+**An example.** Your mouse rests on the hero at the top of a long page. You press `]` to change the design of a section
+further down. With the build as it is, the hero keeps its outline and toolbar, exactly as before this story. With the
+sentence taken literally, the hero's outline and toolbar would vanish and come back only when you nudged the mouse.
+
+1. **(RECOMMENDED) Keep it as built.** The outline under a resting mouse stays when its section was not redrawn, and goes
+   when it was. Nothing on screen changes from before this story, which is what the story promised. The frozen sentence is
+   read as "behave as a full repaint looked", and this ruling records that reading.
+2. **Take the sentence literally.** Every redraw clears the hover, even under a resting mouse. Simpler rule, but the
+   outline blinks off on a section you did not touch, which the deployed walk saw as a failure.
+
+**Ruled:** _(awaiting the owner)_

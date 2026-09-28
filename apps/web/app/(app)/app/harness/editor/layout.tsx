@@ -84,6 +84,8 @@ const HARNESS_PROJECT = { id: '00000000-0000-4000-8000-000000000009', name: 'Pil
  *  own Home has none until Story 5.19. The Home design the Synthesis Defaults designate as the feed (the post grid) is
  *  marked here, DERIVED from that table rather than named, so `pnpm keyboard` walks page 2 on every commit. */
 const MAIN_FEED = SYNTHESIS_DEFAULTS['home.hbs']?.find((row) => row.isMainFeed === true)?.designId
+/** the most sections `x-inflozo-harness-home` may ask for — a ceiling on a request, not a count anything is measured on */
+const LONG_HOME_MAX = 400
 
 const instanceOf = (entry: SectionRegistryEntry, mainFeed: boolean) => ({
   instanceId: randomUUID(),
@@ -169,8 +171,11 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   // the three and the journey has a section whose `[` and `]` really move
   const home = compiling(CANVASES.home.file).filter((e) => !ring.slice(1).some((r) => r.id === e.id))
   // Story 5.23a — the long Home, when asked for: n sections cycling the same designs in the same order
+  // bounded (review, 2026-09-28): a header is a request, and one asking for millions of sections would have this process
+  // build them — ten long Homes is more than any gate asks for, and a bigger figure is a mistake, refused
   const cycled = Number(asked.get('x-inflozo-harness-home'))
-  const homeShown = Number.isInteger(cycled) && cycled > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
+  if (Number.isFinite(cycled) && cycled > LONG_HOME_MAX) throw new Error(`x-inflozo-harness-home asks for ${cycled} sections; the harness builds at most ${LONG_HOME_MAX}`)
+  const homeShown = Number.isInteger(cycled) && cycled > 0 && home.length > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
 
   const docs: Record<string, ProjectDoc> = {
     [SITE.key]: docOf(SITE.key, compiling(SITE.file)),

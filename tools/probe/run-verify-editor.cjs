@@ -2949,7 +2949,7 @@ async function main() {
     await page.keyboard.press('Escape')
     await page.waitForTimeout(800)
     const back60 = await wordsOf(grid60, TITLE)
-    check('step 60 — Story 5.23a: a word typed into a planted heading on the canvas lands, and taken back the heading reads as it did', grid60 > 0 && typed60?.endsWith(' Summer') && back60 === title60, `${JSON.stringify(title60)} → ${JSON.stringify(typed60)} → ${JSON.stringify(back60)}`)
+    check('step 60 — Story 5.23a: a word typed into a planted heading on the canvas lands, and taken back the heading reads as it did', grid60 >= 0 && typed60?.endsWith(' Summer') && back60 === title60, `${JSON.stringify(title60)} → ${JSON.stringify(typed60)} → ${JSON.stringify(back60)}`)
     // THE SESSION'S SECTION IS DRAWN FRESH at the repaint that ends it — never kept, though its words came back as they
     // were drawn: the session wrote its DOM. Nothing else paints between the tags above and that repaint (a first press
     // only selects, typing never repaints), so every other root still carries its tag. Executed at 5.23a's Dev: without
@@ -2981,7 +2981,7 @@ async function main() {
     // owes nothing, leaves the departing page nothing to send.
     const SYNCED60 = (await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href)).labelOf({ kind: 'rest', owed: false })
     await page.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
-    await page.keyboard.press(`${process.platform === 'darwin' ? 'Meta' : 'Control'}+s`)
+    await page.keyboard.press('ControlOrMeta+s')
     const sent60 = await page.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED60, { timeout: 20000 }).then(() => true, () => false)
     check('step 60 — the typing\'s owed work is sent and heard before the editor goes (⌘S, the indicator resting on Synced), so no departing flush can land behind the restore', sent60,
       await page.evaluate(() => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') ?? 'no indicator'))
