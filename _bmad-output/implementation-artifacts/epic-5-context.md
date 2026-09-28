@@ -939,6 +939,21 @@ Build the editor a user designs in — the shell around a same-origin canvas tha
     before and 71–75 ms after. At 1×: 13.3% and 172 ms before, and a PASS after. **For 5.23b:** the misses left at 4× are
     the panels' (R-208). Every mount still restarts on each paint, because `core` has no per-root scope; the `ponytail:`
     in `paint()` says so, and a change to `core.js` is Ask First.
+  - **Story 5.23b's planning (2026-09-28, the same computer; production harness builds of `790b4d6e` on scratch copies,
+    the repository untouched):** at 4× the trace drops 7.8–8.3% of refreshes with 76–78 ms tasks, because every state
+    change re-renders `EditorShell` whole — measured with React's `<Profiler>`: 17–24 ms of render per commit, Layers
+    5–12 ms of it (41 rows, each with a closed menu), and a drag is 23 commits and 943 row renders. **Memoizing the parts is
+    necessary and not sufficient:** prototyped (rows, the Controls panel and the bar's controls `memo`'d, the body's
+    derivations memoized), a hover redrew one row and a drag 81 row renders, and the trace fell to 3.9–5.6% — but a design
+    change's one task stayed 51–64 ms in every synchronous variant, a bound with the bar and dialogs never redrawn
+    included (52–55), because the press's task holds `paint()`, React's whole update (the chrome placement's forced layout
+    inside it) and the browser's own style, layout and paint. Handing React a section operation's update as a transition
+    left no task over 50 ms (2.8–5.0% dropped). **`latest` is re-assigned from state on every render**, so under a
+    transition a render drawn from older state would move it back and the next edit would be made against an older doc:
+    handlers must become the only writers of what they change. Put to the owner as 5.23b's Question 1 (canvas first,
+    panels a frame later — recommended); the spec is written for option 1. DW-289's metric: the trace gates on the share,
+    the p95 counted in whole refreshes and the longest task together. The session's first selection (a 248–255 ms task,
+    ~100 ms of it the chrome's font faces invalidating the canvas's layout) is DW-290, Story 5.24's.
 
 ## Technical Decisions
 

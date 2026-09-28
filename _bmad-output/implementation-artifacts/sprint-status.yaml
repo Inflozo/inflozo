@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-09-27
+last_updated: 2026-09-28
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -111,7 +111,7 @@ development_status:
   5-22-the-editor-s-responsive-floor: done
   5-23-the-play-loop-gate: done
   5-23a-the-canvas-redraws-only-what-changed: done
-  5-23b-the-editor-s-panels-redraw-only-what-changed-at-60-fps: backlog
+  5-23b-the-editor-s-panels-redraw-only-what-changed-at-60-fps: ready-for-dev
   5-24-the-deferred-work-sweep-at-the-end-of-epic-5: backlog
   epic-5-retrospective: optional
 

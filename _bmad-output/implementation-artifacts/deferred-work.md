@@ -6602,3 +6602,26 @@ location: `tools/perf/fps-trace.mjs` — `DROPPED_MAX`, `measure()`, the header'
 reason: the pass is not this story's (R-208), and the trace already prints both figures, so nothing is lost by deciding
   it where the pass is owed.
 
+
+## Deferred from: planning of spec-5-23b-the-editor-s-panels-redraw-only-what-changed-at-60-fps.md (2026-09-28)
+
+### DW-290: the first section picked in a session stalls the editor for a quarter of a second on the slowed test
+
+plain: The first time you pick or point at a section after opening a page, the editor prepares the outlines and name
+  tags it draws on the canvas, and that preparation freezes it for about 0.25 seconds on the slowed-down test computer
+  (about 0.06 seconds at normal speed). It happens once per page opened, before the speed test's clock starts, so the test
+  never sees it.
+status: open
+severity: low
+origin: Story 5.23b's planning (2026-09-28), measured at 4× CPU throttle on a production harness build of `790b4d6e`: the
+  session's first selection is a 248–255 ms long task; with the chrome's font faces left out (`addFonts` in
+  `chromeLayers`, a scratch edit) 141–149 ms. Adding faces to the canvas document's `FontFaceSet` invalidates the whole
+  40-section canvas's layout; the rest is `sheetFor` copying every editor rule into the chrome's sheet, and the Controls
+  panel's first mount. Story 5.23a's planning had seen it as a 193 ms "first hover" and named Story 5.23b; 5.23b's criteria
+  are re-renders and the warm trace, so it is handed on here rather than dropped.
+owner: Story 5.24 (R-207) — prepare the chrome's faces and sheet before the first gesture (the canvas document's own load,
+  or declared with it) and measure the first selection before and after at 4×.
+location: `apps/web/lib/canvas-layer.ts` — `chromeLayers`, `addFonts`, `sheetFor`; `editor.tsx` — the chrome effect that
+  calls `chromeLayers` on the first selection or hover (`:3369-3381` at `790b4d6e`)
+reason: not a re-render and outside NFR-1's warm trace, so it is not 5.23b's to fix inside its one goal; it has a cause,
+  a number and a named owner.
