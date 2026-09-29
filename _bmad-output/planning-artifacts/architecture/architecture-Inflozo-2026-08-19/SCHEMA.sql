@@ -1103,9 +1103,14 @@ begin
   end loop;
 end $$;
 
--- sites: the client supplies the connection and its presentation. The SERVER asserts capability,
--- health, credential presence, the routes verification result and the rate-limit exemption.
-grant insert (id, user_id, url, title, favicon_url) on public.sites to authenticated;
+-- sites: NO client INSERT, since Story 5.24b (2026-09-29, DW-293). This line used to grant
+-- `insert (id, user_id, url, title, favicon_url)`, from when the client supplied the connection. Connect
+-- has since moved onto the server and writes `sites` through the secret key only (`sites/actions.ts`),
+-- and every harness seeds through the service role, so the grant had no user left — while it let a
+-- signed-in user create a row holding any `url` over `/rest/v1`, skipping connect and every check it
+-- makes (a private address among them, DW-58). Revoked on production by
+-- `20260929120000_session_guard.sql`; the revoke stays here so the absence reads as deliberate.
+revoke insert on public.sites from authenticated;
 
 -- projects: `revision` is AD-15's lineage marker and starts at 0 by default -- a client that chose
 -- its opening value could start above any revision a legitimate sync would produce.
@@ -1777,3 +1782,73 @@ end $$;
 -- (42501) rather than the first.
 revoke execute on function public.sync_project_doc(uuid, jsonb, bigint) from public, anon;
 grant  execute on function public.sync_project_doc(uuid, jsonb, bigint) to authenticated;
+
+-- ============================================================================
+-- 15. Story 5.24b — R-223: a ticket whose sign-in session has ended is refused at once
+-- ============================================================================
+--
+-- THE HOLE (DW-40). After Sign out everywhere, GoTrue refuses the old access token at `/auth/v1/user`
+-- at once, but `/rest/v1` answered it until the token's own `exp` (3,600 s): PostgREST checks a JWT's
+-- signature and expiry and never the session row behind it. The owner ruled that the database refuse
+-- it itself, on every read and write (R-223, 2026-09-28).
+--
+-- THE MECHANISM, chosen from PostgREST 14.5's source (production's version) and run locally against it
+-- with Supabase's own Postgres image: the PRE-REQUEST function. PostgREST calls it inside every
+-- request's transaction, after the role and the claims are set, so it covers every read, write, HEAD
+-- and `/rpc` call — the `security definer` RPCs included, which a check in the row policies would miss
+-- (the editor's save, `sync_project_doc`, is one). It is one index-only lookup on `auth.sessions`'
+-- primary key per request, where a policy term would run once per row on every table.
+--
+-- ONLY `authenticated` IS JUDGED: `anon` and `service_role` carry no session and pass at once. A user's
+-- ticket passes when its `session_id` claim is a uuid with a row in `auth.sessions`, the row GoTrue
+-- deletes on every sign-out; missing, malformed and ended are all refused with GoTrue's own code.
+--
+-- WHY `public`. PostgREST calls the guard as the REQUEST's role, so anon, authenticated and service_role
+-- need EXECUTE and USAGE on its schema. In `private` that would undo §0b — and there, locally, it failed
+-- on some requests and not others. It can be called as `/rpc/session_guard`, which does nothing.
+--
+-- WHY A DEFINER THAT BYPASSES RLS. `auth.sessions` has RLS on and no policy (read on production), so the
+-- lookup must run as an owner that bypasses it: `postgres` does. `set search_path = ''` for every
+-- definer's reason, and the one table it reads is schema-qualified.
+--
+-- THE `PGRST121` TRAP. PostgREST 14.5 answers a `PGRST` raise whose message lacks `code`, or whose
+-- detail lacks `status` or `headers`, with `500 PGRST121` — and the examples on Supabase's own page lack
+-- them. This pair answers `401`, `WWW-Authenticate: Bearer error="invalid_token"`, code
+-- `session_not_found`, executed locally and on production (MEASUREMENTS §56).
+--
+-- IT COMES OFF IN ONE STATEMENT, the runbook if a live session's read ever fails because of it:
+--     alter role authenticator reset pgrst.db_pre_request; notify pgrst, 'reload config';
+--
+-- WHAT IT DOES NOT COVER: Storage and Realtime, which are not PostgREST. This app reaches Storage only
+-- through the service role and has no Realtime at all (R-191). And the wiring is a ROLE setting, not an
+-- object in `public`, so the RLS gate's schema diff cannot see it: RLS-TEST.sql asserts it from
+-- `pg_db_role_setting`, and `run-verify-sign-out-everywhere.py`'s `rest-refused` re-executes it on
+-- production on every run (VERIFY-AT-BUILD.md — a platform reset of `authenticator` would reopen DW-40
+-- silently).
+--
+-- Mirrors `supabase/migrations/20260929120000_session_guard.sql`; the body is byte-identical to it,
+-- because pg_dump emits bodies verbatim and the gate diffs the two databases.
+create or replace function public.session_guard() returns void
+language plpgsql security definer set search_path = '' as $$
+declare
+  claims jsonb = nullif(current_setting('request.jwt.claims', true), '')::jsonb;
+  sid text = claims ->> 'session_id';
+begin
+  if claims ->> 'role' is distinct from 'authenticated' then
+    return;
+  end if;
+  if pg_input_is_valid(sid, 'uuid') then
+    if exists (select 1 from auth.sessions where id = sid::uuid) then
+      return;
+    end if;
+  end if;
+  raise sqlstate 'PGRST' using
+    message = '{"code":"session_not_found","message":"Session from session_id claim in JWT does not exist"}',
+    detail = '{"status":401,"headers":{"WWW-Authenticate":"Bearer error=\"invalid_token\""}}';
+end $$;
+
+revoke execute on function public.session_guard() from public;
+grant  execute on function public.session_guard() to anon, authenticated, service_role;
+
+alter role authenticator set pgrst.db_pre_request = 'public.session_guard';
+notify pgrst, 'reload config';

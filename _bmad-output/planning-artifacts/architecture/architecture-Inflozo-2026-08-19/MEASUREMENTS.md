@@ -3814,3 +3814,39 @@ Every load: the iframe's inline style is `z-index: 3999998; position: fixed; bot
 - **The anchors the canvas marks for NFR-6(c3)** are Ghost's own live roots, `#announcement-bar-root` and `#ghost-portal-root` — the shim roots carry those ids AND `data-ghost-surface`, and on the live site both FLOAT relative to whatever a theme renders (VERIFY-AT-BUILD item 51), so no theme may depend on their markup.
 
 **What this does NOT say.** Nothing here records a signed-in member's page: Portal's member look — a 60px label-less circle with a 4px `rgba(255,255,255,.15)` halo and the person icon at 34px — is read in Portal's source (2.69.339 `trigger-button.jsx` :54-60, :188; 2.51.5 the same), and the bar's audience per member status is §46(c), read in source. A chosen icon (`icon-1`…`icon-5`, or an uploaded image) was not recorded — the snapshot does not store it, and the canvas draws the default person icon (DW-278). Ghost's own default `portal_button` of `"false"` is read in `default-settings.json` on both majors, not observed on a fresh site (both test servers have it off). The recording is Casper's page; another theme's CSS meets the bar and not Portal's iframe.
+
+## 56. R-223's session guard on production — a ticket whose sign-in has ended is refused at `/rest/v1`, the 401 as it arrives through Supabase's gateway, and what it costs · 2026-09-29
+
+**Why.** DW-40: after Sign out everywhere, GoTrue refused the old access token at once (`403 session_not_found` at `/auth/v1/user`), but PostgREST checked only the JWT's signature and `exp`, so the same token read and wrote at `/rest/v1` for the rest of `jwt_exp` (3,600 s) — executed at Story 2.4 and re-executed on every run of `run-verify-sign-out-everywhere.py`. The owner ruled that the database refuse it itself (R-223). Story 5.24b's Create chose PostgREST's pre-request function from PostgREST 14.5's source and ran it locally against Supabase's own `postgres:17.6.1.140` and `postgrest:v14.5` images (the spec's § Executed at Create); this section is the same guard on production. Every key below reached its command through the environment only, by name: `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_DB_POOLER_URL`, `SUPABASE_ACCESS_TOKEN`.
+
+**(a) Before — the control.** `python3 tools/probe/run-verify-sign-out-everywhere.py` with `rest-refused` already an assertion: after Sign out everywhere, A1's and A2's former tokens answered `GET /rest/v1/profiles` **200** and a no-op `PATCH` of their own `profiles` row **204**, and the row's `updated_at` moved — the step **FAILED**, as it had to. The catalogue, read through the pooler: `authenticator`'s `setconfig` held `session_preload_libraries=supautils, safeupdate`, `statement_timeout=8s` and `lock_timeout=8s` and no `pgrst.db_pre_request`; `public.session_guard` did not exist; `authenticated` held a column INSERT on `sites` (DW-293).
+
+**(b) The apply.** `supabase/migrations/20260929120000_session_guard.sql`, applied on 2026-09-29 **by the owner through Supabase's SQL editor** (Story 5.24b's Question 2, option 2) after this machine's permission check refused the pooler apply. Read back through `SUPABASE_DB_POOLER_URL`: `authenticator`'s `setconfig` gained `pgrst.db_pre_request=public.session_guard` and kept its three other settings; `session_guard` is `prosecdef`, `proconfig` `search_path=""`, owned by `postgres` (BYPASSRLS, not a superuser), ACL `{postgres=X, anon=X, authenticated=X, service_role=X}`, and its `prosrc` is byte-identical to the migration's body (604 characters); `authenticated` holds no INSERT on `sites` at the table or any column.
+
+**(c) After — one throwaway account, two sign-ins made by `generate_link` + `verifyOtp`, the second ended with `signOut({ scope: 'local' })`, the account deleted afterwards (13 accounts before and after):**
+
+| Request | Live sign-in | Ended sign-in |
+|---|---|---|
+| `GET /rest/v1/profiles?user_id=eq.<own>` | **200**, the account's own row | **401** |
+| `HEAD` the same | — | **401** |
+| `PATCH` the own row, `autosave_enabled` to its value | **204** | **401** |
+| `POST /rest/v1/rpc/sync_project_doc` (a `security definer` RPC) | — | **401** |
+| `POST /rest/v1/rpc/session_guard` | **204**, nothing done | — |
+| `POST /rest/v1/sites` with its own `user_id` (DW-293) | **403 `42501`**, no row | — |
+
+The 401 **as it arrives through Supabase's gateway**, unaltered: body `{"code":"session_not_found","details":null,"hint":null,"message":"Session from session_id claim in JWT does not exist"}`, header `WWW-Authenticate: Bearer error="invalid_token"`. The secret key reads the same row (**200**); the publishable key alone (`anon`) reads `suggestions_public` (**200**). The app itself: a session held the way the app holds one (`@supabase/ssr`'s cookies, written by `verifyOtp` through `setAll`) opens `https://app.inflozo.com/` — **200**, listing the account's project.
+
+The harness after the apply: `rest-refused` **PASSES** — A1's token read its own row just before the press (200), A2's live token, the secret key and anon read after `control-local` (200 each), and after the press A1's and A2's former tokens each answered **401 `session_not_found`** on the read and on the write, with `WWW-Authenticate` naming `invalid_token`, and `profiles.updated_at` unchanged. Every other step passed. **The first three runs after the apply did not reach it:** each stopped on Playwright's 60 s page-load timeout at a different navigation of A1's page — the re-sign-in link, the first `/account`, the `/account` after re-signing in — while the production deployment of `4e3fc60d` (this story's Blocked push) went live at 06:53:20 IST. None was a refusal: every page that answered rendered. A fresh sign-in in a separate browser loaded `/auth/confirm`, `/account` and `/account` in 2.1, 0.8 and 0.7 s; the signed-in pages answered in 0.46–1.0 s without a browser; and the next two runs — one with request logging patched into a copy, one unpatched — passed every step. The guard cannot hold a page for a minute: it is below, and `authenticator` stops any statement at 8 s.
+
+**(d) What it costs.** Thirty sequential lock check-ins (`askLock`'s `beat`) and thirty saves (`editor.tsx`'s flush body to `/projects/<id>/sync`) on a throwaway account seeded by `tools/probe/seed-editor-project.mjs`, timed from the development machine to `app.inflozo.com`, two runs each side:
+
+| | Before the guard | After the guard |
+|---|---|---|
+| Lock check-in, median | 442.1 · 422.6 ms | 414.9 · 411.9 ms |
+| Lock check-in, p95 | 568.7 · 595.1 ms | 584.0 · 733.0 ms |
+| Save, median | 568.5 · 467.0 ms | 526.2 · 535.5 ms |
+| Save, p95 | 661.3 · 573.7 ms | 566.1 · 575.7 ms |
+
+The medians after sit inside the medians before; the difference between runs is the network. `pg_stat_statements` on production: `select "public"."session_guard"()` — **mean 0.283 ms** over 518 calls (max 7.544 ms) and **0.268 ms** over 72 (max 3.277 ms), the two entries `pg_stat_statements` keeps for it — against the lock beat's 3.836 ms and the save RPC's 4.743 ms (cumulative means since 2026-09-04). One index lookup per request, as the Create planned.
+
+**(e) What it does not cover, and where it could quietly stop.** Storage and Realtime are not PostgREST: this app reaches Storage only through the service role and has no Realtime (R-191). And the wiring is a ROLE setting, not an object in any schema: the RLS gate's schema diff cannot see it, no schema dump carries it (`RESTORE-RUNBOOK.md` step 3b re-wires it), and a platform reset of `authenticator`'s settings would reopen DW-40 **silently**. `VERIFY-AT-BUILD.md` item 59 holds that; `rest-refused` re-executes it on production on every run, and `RLS-TEST.sql` asserts it from `pg_db_role_setting` in the container.

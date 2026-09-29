@@ -45,13 +45,18 @@ list gone stale — review, 2026-09-07):
                  A1's cookies are gone, A1's FORMER token and A2's token BOTH answer
                  `session_not_found` at `GET /auth/v1/user`, and A2's next `/account` lands on
                  `/sign-in` with the bouncing response carrying the session cookies' deletion
-  rest-residual  RECORD: A1's revoked token presented DIRECTLY to `GET /rest/v1/profiles` — DW-40's
-                 back half, executed on every run rather than asserted: PostgREST checks the
-                 signature and `exp`, never the session row, so it still answers 200 until `exp`
-  jwt-exp        RECORD: the project's `jwt_exp` off the Management API. DW-40 names the window in
-                 which a captured access token would still satisfy PostgREST's signature check, and
-                 that number belongs in the ledger as a fact rather than a guess. A RECORD compares
-                 with nothing: the ledger's copy is stale the day this prints a different number
+  rest-refused   R-223 (Story 5.24b, DW-40): the database itself refuses a ticket whose session has
+                 ended. Its CONTROL is read first — A1's token reads A1's own `profiles` row (200,
+                 A's user id) just before the press, and after `control-local` A2's live token, the
+                 secret key and the publishable key alone all still read. After the press A1's AND
+                 A2's former tokens must each answer `401 session_not_found` directly at
+                 `/rest/v1`, on a read and on a write (a no-op PATCH of their own `profiles` row),
+                 with `WWW-Authenticate` naming `invalid_token`, and the row's `updated_at`, read
+                 through the secret key, unchanged. Before Story 5.24b's Schema phase this FAILED
+                 with a 200 — PostgREST checked the signature and `exp`, never the session row
+  jwt-exp        RECORD: the project's `jwt_exp` off the Management API — how long a ticket lives on
+                 its own. Since R-223 a signed-out ticket no longer lives that long at `/rest/v1`,
+                 so it is a fact about the project, recorded, not a window left open
   magic-link-after  a fresh magic link for A, redeemed at `/auth/confirm`: it signs in to A's OWN
                  user id — a global sign-out ends sessions, never the account — and the response
                  that lands it carries `Max-Age=2592000`, FR-A6's thirty days
@@ -180,6 +185,27 @@ const whoami = async (token) => {
            id: (body && body.id) || null }
 }
 
+/* WHAT POSTGREST SAYS TO A TICKET (R-223), on the caller's OWN `profiles` row — which is also the row the secret
+   key reads, so the three answers are about one row. The write is a no-op by value: `autosave_enabled` to what a
+   fresh account holds (`SCHEMA.sql`'s default, and a column the owner may update), so the control run before the
+   guard changed nothing a later step reads. `code` is PostgREST's own error code; `rows` is the list on a 200. */
+const NO_OP = { autosave_enabled: true }
+const rest = async (token, key, patch) => {
+  const r = await fetch(`${SB}/rest/v1/profiles?user_id=eq.${USER_ID}&select=user_id,updated_at`, {
+    method: patch ? 'PATCH' : 'GET',
+    headers: { apikey: key, Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+    ...(patch ? { body: JSON.stringify(patch) } : {}),
+  })
+  const body = await r.json().catch(() => null)
+  return { status: r.status, code: (body && !Array.isArray(body) && body.code) || null,
+           rows: Array.isArray(body) ? body : null, auth: r.headers.get('www-authenticate') }
+}
+/* The publishable key alone is `anon`, and `suggestions_public` is the one table it may read (SCHEMA.sql §11a). */
+const restAnon = async () =>
+  (await fetch(`${SB}/rest/v1/suggestions_public?select=id&limit=1`, {
+    headers: { apikey: PUBLISHABLE },
+  })).status
+
 /* THE SESSION OUT OF A BROWSER CONTEXT'S OWN COOKIE JAR. `@supabase/ssr` writes the session as
    `sb-<ref>-auth-token`, chunked into `.0`, `.1`… when it is long, each value a `base64-`-prefixed
    JSON blob; the app writes them `httpOnly` (`lib/supabase/cookies.ts`), which script cannot read
@@ -296,6 +322,12 @@ const openConfirm = async (page) => {
       `A2 GET /user -> ${a2After.status} (${JSON.stringify(a2After.code)}), ` +
       `A2 /account -> ${a2Still.status()} at ${second.url()}`)
 
+    // ── R-223's other half: whatever still HAS a session is answered as before the guard. A2's ticket is live
+    //    (the control just proved it at GoTrue), and the secret and publishable keys carry no session at all.
+    const liveA2 = await rest(a2Token, PUBLISHABLE)
+    const liveSecret = await rest(SECRET, SECRET)
+    const liveAnon = { status: await restAnon() }
+
     // ── A1 signs back in for the rest of the run.
     const again = await magicLink()
     await page.goto(again.url, { waitUntil: 'load' })
@@ -372,6 +404,8 @@ const openConfirm = async (page) => {
     // ── EVERYWHERE. A1's own token is read BEFORE it is revoked: afterwards the cookies are gone
     //    and there would be nothing left to ask GoTrue about.
     const a1Token = await accessTokenOf(a1, 'A1')
+    // rest-refused's CONTROL: the same ticket reads its own row now, so a 401 after the press is the press's doing.
+    const a1Before = await rest(a1Token, PUBLISHABLE)
     const bounced = []
     second.on('response', (r) => bounced.push(r))
     await openConfirm(page)
@@ -400,30 +434,45 @@ const openConfirm = async (page) => {
       `A2 /account -> ${a2Bounced && a2Bounced.status()} at ${second.url()}, ` +
       `${cleared.length} session cookie deletion(s) on the way`)
 
-    // ── DW-40's BACK half, executed rather than asserted: PostgREST checks the signature and `exp`
-    //    and never the session row, so the token GoTrue just refused should still be good at
-    //    `/rest/v1` until `exp`. A RECORD — the day this answers 401 the residual is closed.
-    const rest = await fetch(`${SB}/rest/v1/profiles?select=user_id&limit=1`, {
-      headers: { apikey: PUBLISHABLE, Authorization: `Bearer ${a1Token}` },
-    })
-    record('rest-residual', `A1's revoked token at GET /rest/v1/profiles -> HTTP ${rest.status}` +
-      (rest.status === 200 ? ' — still accepted until its exp; DW-40 stands' : ' — refused; DW-40 can close'))
+    // ── R-223 (DW-40's back half), ASSERTED: the database refuses both former tickets itself, at once — on a read
+    //    and on a write — and not only GoTrue. Until Story 5.24b's Schema phase PostgREST checked the signature and
+    //    `exp` and never the session row, so these answered 200 for the rest of the hour.
+    const stampBefore = (await rest(SECRET, SECRET)).rows?.[0]?.updated_at ?? null
+    const refused = {
+      'A1 read': await rest(a1Token, PUBLISHABLE),
+      'A1 write': await rest(a1Token, PUBLISHABLE, NO_OP),
+      'A2 read': await rest(a2Token, PUBLISHABLE),
+      'A2 write': await rest(a2Token, PUBLISHABLE, NO_OP),
+    }
+    const stampAfter = (await rest(SECRET, SECRET)).rows?.[0]?.updated_at ?? null
+    const reads = (r) => r.status === 200 && r.rows?.[0]?.user_id === USER_ID
+    step('rest-refused',
+      reads(a1Before) && reads(liveA2) && reads(liveSecret) && liveAnon.status === 200 &&
+      Object.values(refused).every((r) => r.status === 401 && r.code === 'session_not_found' &&
+                                          /invalid_token/.test(r.auth || '')) &&
+      stampBefore !== null && stampBefore === stampAfter,
+      `control: A1 before the press -> ${a1Before.status}${reads(a1Before) ? ' (A)' : ''}; after control-local ` +
+      `A2 -> ${liveA2.status}${reads(liveA2) ? ' (A)' : ''}, secret key -> ${liveSecret.status}, anon -> ` +
+      `${liveAnon.status}. After the press: ` +
+      Object.entries(refused).map(([k, r]) => `${k} -> ${r.status} ${JSON.stringify(r.code)}`).join(', ') +
+      `; WWW-Authenticate ${JSON.stringify(refused['A1 read'].auth)}; profiles.updated_at ` +
+      (stampBefore !== null && stampBefore === stampAfter ? 'unchanged' : `${stampBefore} -> ${stampAfter}`))
 
     await axeAt(page, 'signed-out-all')
 
-    // ── DW-40's number, read rather than guessed: how long a captured token would still satisfy
-    //    a signature check at PostgREST, which never asks GoTrue whether the session exists. The
-    //    `User-Agent` is load-bearing: api.supabase.com sits behind Cloudflare and answers
-    //    `403 error code: 1010` to a library's default one — `configure-supabase-auth.py`'s
-    //    executed pitfall — so curl's is sent, as there. A 200 whose body carries no integer
-    //    `jwt_exp` is SAID, not printed as `undefined seconds` (review, 2026-09-07).
+    // ── the project's `jwt_exp`, read rather than guessed: how long a ticket lives on its own. Since R-223 a
+    //    signed-out ticket is refused at `/rest/v1` long before it (`rest-refused`), so this is a fact about the
+    //    project, recorded, and no longer DW-40's window. The `User-Agent` is load-bearing: api.supabase.com sits
+    //    behind Cloudflare and answers `403 error code: 1010` to a library's default one —
+    //    `configure-supabase-auth.py`'s executed pitfall — so curl's is sent, as there. A 200 whose body carries no
+    //    integer `jwt_exp` is SAID, not printed as `undefined seconds` (review, 2026-09-07).
     const config = await fetch(`https://api.supabase.com/v1/projects/${REF}/config/auth`, {
       headers: { Authorization: `Bearer ${MGMT}`, 'User-Agent': 'curl/8.5.0' },
     })
     const auth = await config.json().catch(() => null)
     const jwtExp = config.status === 200 && auth && Number.isInteger(auth.jwt_exp) ? auth.jwt_exp : null
     record('jwt-exp', jwtExp !== null
-      ? `jwt_exp = ${jwtExp} seconds (${Math.round(jwtExp / 60)} minutes) — DW-40's window`
+      ? `jwt_exp = ${jwtExp} seconds (${Math.round(jwtExp / 60)} minutes) — a ticket's own lifetime`
       : `jwt_exp NOT read: the Management API answered HTTP ${config.status}` +
         (config.status === 200 ? ' with no integer jwt_exp in the body' : ''))
 
@@ -491,7 +540,7 @@ def main():
     args = ap.parse_args()
 
     env = load_env()
-    # The fourth is the Management API's, for the ONE read that fills DW-40's `jwt_exp`.
+    # The fourth is the Management API's, for the ONE read of the project's `jwt_exp`.
     needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ACCESS_TOKEN']
     missing = [k for k in needed if not env.get(k)]
     if missing:

@@ -366,7 +366,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 **Execution — the Schema phase, first and pushed alone (R-99, R-223):**
 
-- [ ] `supabase/migrations/20260929120000_session_guard.sql` — **new**, one transaction:
+- [x] `supabase/migrations/20260929120000_session_guard.sql` — **new**, one transaction:
   - **`public.session_guard()`.**
     - Shape: `returns void`, `language plpgsql`, `security definer`, `set search_path = ''`, owned by `postgres`.
     - It returns at once when `request.jwt.claims`' `role` is not `authenticated`, or when its `session_id` is a uuid with a row in `auth.sessions`.
@@ -377,7 +377,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **Grants.** `revoke execute … from public; grant execute … to anon, authenticated, service_role`. PostgREST calls the guard as the request's own role.
   - **Wiring.** `alter role authenticator set pgrst.db_pre_request = 'public.session_guard'; notify pgrst, 'reload config';`, after the function is created. `NOTIFY` is delivered at commit.
   - **DW-293.** `revoke insert on public.sites from authenticated`. Connect writes `sites` through the secret key only (`sites/actions.ts:318-331`), and every harness seeds through the service role.
-- [ ] `SCHEMA.sql`:
+- [x] `SCHEMA.sql`:
   - Add the guard as a new section, with its reasons:
     - why `public`;
     - why a definer that bypasses RLS;
@@ -385,10 +385,10 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - the one-statement removal;
     - what it does not cover: Storage and Realtime, which this app reaches only through the service role or not at all.
   - Replace §11's `sites` insert grant (`:1108`) with the revoke, and add a dated note.
-- [ ] `PRELUDE.sql` and `supabase/tests/prelude.sql`, byte-identical:
+- [x] `PRELUDE.sql` and `supabase/tests/prelude.sql`, byte-identical:
   - an idempotent `authenticator` role;
   - an `auth.sessions (id uuid primary key, user_id uuid not null references auth.users on delete cascade)` stub, with RLS enabled and no policy, as on hosted.
-- [ ] `RLS-TEST.sql` and `supabase/tests/rls.sql`, byte-identical, gain a Story 5.24b block:
+- [x] `RLS-TEST.sql` and `supabase/tests/rls.sql`, byte-identical, gain a Story 5.24b block:
   - **Claims.** With `request.jwt.claims` set:
     - a live `session_id` passes;
     - a deleted, a missing and a malformed one each raise `PGRST`, whose message parses to `code = session_not_found` and whose detail parses to `status = 401` with a `headers` object;
@@ -400,12 +400,12 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - anon, authenticated and service_role have EXECUTE.
   - **DW-293.** A tenant's `insert into public.sites(user_id, url)` is refused with `42501`.
   - **Control:** with the migration withheld, the gate aborts at this block.
-- [ ] `tools/probe/run-verify-sign-out-everywhere.py` — `rest-residual` becomes **`rest-refused`**, an assertion:
+- [x] `tools/probe/run-verify-sign-out-everywhere.py` — `rest-residual` becomes **`rest-refused`**, an assertion:
   - **Before the press (the control):** A1's token reads A1's own `profiles` row (`200`, A1's `user_id`).
   - **After Sign out everywhere:** A1's and A2's old tokens both answer `401` with code `session_not_found`, on a read and on a write (a no-op `PATCH` of their own `profiles` row).
   - **After `control-local`:** A2's live token still reads, and the secret key still reads.
   - **Text that follows:** `jwt-exp` stays a record and no longer calls the hour "DW-40's window". The docstring (`:48-54`), the comments (`:403-405`, `:414-419`) and the catalogue row (`tools/doc-audit.py:411-426`) are updated.
-- [ ] **Apply and prove it on production, in this order:**
+- [x] **Apply and prove it on production, in this order:**
   1. **Before.**
      - Run the harness. `rest-refused` must FAIL with a `200`: that is its control.
      - Time 30 sequential lock check-ins and 30 saves on a throwaway account, and record the median and p95. Setup:
@@ -420,11 +420,35 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
      - `bash supabase/tests/run-rls-gate.sh` is green.
      - A throwaway session's direct `POST /rest/v1/sites` is refused.
      - The throwaway account is deleted, and the account count is the same as before.
-- [ ] **Registers, then the push:**
+- [x] **Registers, then the push:**
   - `MEASUREMENTS.md` §56: the guard on production — before and after, the timings, and the 401's body and headers as they arrive through Supabase's gateway.
   - `VERIFY-AT-BUILD.md`: a row saying that hosted PostgREST honours `authenticator`'s `pgrst.db_pre_request`, and that a platform reset would reopen DW-40 silently. `rest-refused` re-executes it on every run.
   - R-223's "built" target is ticked.
   - Commit and push `Story 5.24b - Schema - …` **on its own**.
+  - **Done (2026-09-29), on production (PostgreSQL 17.6, PostgREST 14.5).**
+    - **The gate.** `bash supabase/tests/run-rls-gate.sh` exits 0 with the block's four PASS notices. Three controls,
+      each the same gate over a scratch copy: the migration withheld with HEAD's `SCHEMA.sql` aborts at the block's
+      first assertion (`rls.sql:1717`, exit 3); the DW-293 revoke withheld from both files fails at `FAIL (DW-293)`;
+      a raise whose detail lacks `headers` (PostgREST's `PGRST121` shape) fails the parse check.
+    - **Before.** The harness's `rest-refused` FAILED with 200 (read) and 204 (write), `updated_at` moved. The timings
+      (two runs of 30): lock check-in median 442.1 · 422.6 ms, save 568.5 · 467.0 ms.
+    - **The apply was refused** for this machine by its permission check, so it stopped and asked (Question 2). The owner
+      applied the migration through Supabase's SQL editor. Read back through the pooler: the setting, the definer's
+      shape and ACL as the migration writes them, `prosrc` byte-identical to the file, `sites` INSERT gone.
+    - **At once, on a throwaway account.** A live sign-in reads (200) and writes (204); an ended one is refused on GET,
+      HEAD, PATCH and `POST /rpc/sync_project_doc` with 401 `session_not_found` and `WWW-Authenticate: Bearer
+      error="invalid_token"`, intact through the gateway; the secret key and anon read; a direct `POST /rest/v1/sites`
+      is 403 `42501` with no row; `https://app.inflozo.com/` signs in and lists the account's project. 13 accounts
+      before and after.
+    - **The harness after.** `rest-refused` PASSES, with every other step. The first three runs after the apply each
+      stopped on a 60 s page-load timeout at a different navigation, around the deployment of `4e3fc60d` going live;
+      a separate browser loaded the same pages in 0.7–2.1 s and the next two runs passed every step (§56 records all
+      of it).
+    - **After.** Lock check-in median 414.9 · 411.9 ms, save 526.2 · 535.5 ms — inside the spread before.
+      `pg_stat_statements`: the guard's mean is 0.283 ms (518 calls) and 0.268 ms (72).
+    - **Registers.** `MEASUREMENTS.md` §56; `VERIFY-AT-BUILD.md` item 59; R-223's built target ticked; DW-40 and DW-293
+      closed; and, propagated beyond the task list, `RESTORE-RUNBOOK.md` step 3b — no schema dump carries a role
+      setting, so a restore re-wires the guard, or the RLS proof refuses it.
 
 **Execution — Dev, the harness filter first (DW-92, DW-83):**
 
@@ -741,7 +765,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 ## Questions for the owner
 
-The owner ruled Question 1 on 2026-09-29 (R-226). **Question 2 is open**, asked at Dev on 2026-09-29.
+The owner ruled Question 1 on 2026-09-29 (R-226) and Question 2 the same day. No question is open.
 
 ### Question 2 — May the database change be put on the live database? (R-99, R-223)
 
@@ -765,7 +789,8 @@ before fitting it to the real one. If the real door then sticks, one line puts t
 3. **Leave the database change out of this story.** Nothing changes on the live database. The ticket rule (R-223) and
    the site-record fix (DW-293) move to a later story, and this story carries on without them.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-29).** *"2. Applied"* — he applied the migration himself through Supabase's SQL
+editor. It was read back and proved on production before any code (the Schema tasks below, `MEASUREMENTS.md` §56).
 
 ### Question 1 — When someone types the address of a page on their site, should Connect still work? (R-219, DW-55)
 

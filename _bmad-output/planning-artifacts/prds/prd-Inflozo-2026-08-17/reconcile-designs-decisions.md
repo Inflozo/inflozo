@@ -4907,8 +4907,10 @@ a day's work and a database change."*
   (standing rule 1) — for example PostgREST's pre-request function, or a check in the row policies — and it ships as a
   migration pushed first, on its own (R-99). A save and a lock check-in are timed before and after on production.
 - **Declined.** Option 1, keeping the hour (the recommendation); option 2, ten minutes.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 5 · ✅ `epics.md` — Story 5.24b's card · ⬜ built — Story 5.24b
-  (its Schema phase, SCHEMA.sql, an RLS-TEST assertion, and `rest-residual` turned from a record into a refusal).
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 5 · ✅ `epics.md` — Story 5.24b's card · ✅ built — Story 5.24b's
+  Schema phase (2026-09-29): PostgREST's pre-request function `public.session_guard()`
+  (`20260929120000_session_guard.sql`, applied on production by the owner and read back), `SCHEMA.sql` §15, `RLS-TEST.sql`'s
+  Story 5.24b block, and `rest-residual` turned into the asserted `rest-refused`; the two timings in `MEASUREMENTS.md` §56.
 
 **R-224 — every story card shows when the story started and how long it took to Done.** The owner, 2026-09-28:
 *"Can we make it mandatory to add the start timestamp for each story in DD-MMM-YYYY HH:MM AM/PM format and then total time

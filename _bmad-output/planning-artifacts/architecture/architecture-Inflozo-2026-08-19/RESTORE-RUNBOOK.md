@@ -32,6 +32,7 @@ psql "$TARGET" -c "do \$\$ begin
   if not exists (select 1 from pg_roles where rolname='authenticated')       then create role authenticated;               end if;
   if not exists (select 1 from pg_roles where rolname='service_role')        then create role service_role bypassrls;      end if;
   if not exists (select 1 from pg_roles where rolname='supabase_auth_admin') then create role supabase_auth_admin;         end if;
+  if not exists (select 1 from pg_roles where rolname='authenticator')       then create role authenticator noinherit;     end if;
 end \$\$;"
 
 # 2. BACK UP — all three schemas. `auth` is not optional; see defect 1.
@@ -41,6 +42,11 @@ pg_dump "$SOURCE" \
 
 # 3. RESTORE — --no-owner only. NOT --no-privileges; see defect 2.
 pg_restore --no-owner -d "$TARGET" backup.dump
+
+# 3b. RE-WIRE R-223's session guard (Story 5.24b). It is a ROLE setting, and no schema dump carries
+#     one: without this every restored request answers a signed-out ticket as if DW-40 were open, and
+#     step 5's Story 5.24b block refuses the restore — which is that block doing its job.
+psql "$TARGET" -c "alter role authenticator set pgrst.db_pre_request = 'public.session_guard'; notify pgrst, 'reload config';"
 
 # 4. Storage is NOT in the dump. Re-create the four buckets and their three policies
 #    (SCHEMA.sql §12), then re-upload objects from whatever holds them — see register item 38,

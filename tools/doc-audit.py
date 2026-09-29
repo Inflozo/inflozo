@@ -417,8 +417,10 @@ DOCS = [
   'runs FIRST and is the ordinary avatar-menu Sign out: device A signs out and device B must STILL '
   'be signed in — a run where B is signed out has found the pre-2.4 defect (auth-js defaults '
   "signOut() to scope=global) still in place and fails, because signing every device out is also "
-  'what the broken build did. Records the project jwt_exp off the Management API and the revoked '
-  "token's answer at /rest/v1 for DW-40, and "
+  'what the broken build did. rest-refused asserts R-223 (Story 5.24b, DW-40): both former tokens '
+  'answer 401 session_not_found directly at /rest/v1 on a read and on a write and the row is '
+  'unchanged, while a live ticket, the secret key and anon still read — its control the same ticket '
+  'reading its own row just before the press. Records the project jwt_exp off the Management API, and '
   'proves a magic link after a global sign-out still signs in with the 30-day cookie — a global '
   'sign-out ends sessions, never the account. Plus axe-core at WCAG 2.1 AA over /account closed '
   'and with the confirm open, and over /sign-in?signed-out=all, each at 1440 and 390. Creates one '

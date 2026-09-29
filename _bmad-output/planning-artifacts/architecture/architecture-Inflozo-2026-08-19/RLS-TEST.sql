@@ -1663,3 +1663,119 @@ end $$;
 reset role;
 
 delete from auth.users where id = '99999999-5520-0000-0000-000000000009';
+
+-- ── STORY 5.24b — R-223: a ticket whose sign-in session has ended is refused; and DW-293 ─────────────
+--
+-- BEHAVIOURAL, for 5.8's reason, and over the catalogue beside it. The guard is PostgREST's pre-request function
+-- (SCHEMA.sql §15), so it is called here exactly as PostgREST calls it: as the request's role, with
+-- `request.jwt.claims` set. A live `session_id` passes; an ended, a missing and a malformed one each raise `PGRST`
+-- whose message and detail PostgREST can parse into `401 session_not_found` — a raise missing either half is
+-- PostgREST's `500 PGRST121`, so the halves are parsed, not matched as text. `anon` and `service_role` pass with no
+-- session at all: a guard that refused them would take the publishable and secret keys down with it.
+--
+-- THE WIRING IS A ROLE SETTING the schema diff cannot see, so it is read from `pg_db_role_setting` here; and the
+-- definer's shape — prosecdef, a pinned search_path, an owner that bypasses `auth.sessions`' RLS, EXECUTE for the
+-- three request roles — is the rest of what makes the call above mean what it says on hosted.
+--
+-- Its control: the same gate with `20260929120000_session_guard.sql` withheld and HEAD's SCHEMA.sql aborts here.
+
+reset role;
+
+delete from auth.users where id = '99999999-5524-0000-0000-00000000000b';
+insert into auth.users(id) values ('99999999-5524-0000-0000-00000000000b');
+insert into auth.sessions(id, user_id) values
+  ('aaaaaaaa-5524-0000-0000-000000000001', '99999999-5524-0000-0000-00000000000b'),
+  ('aaaaaaaa-5524-0000-0000-000000000002', '99999999-5524-0000-0000-00000000000b');
+-- the second sign-in ends, as GoTrue ends one: its row is deleted
+delete from auth.sessions where id = 'aaaaaaaa-5524-0000-0000-000000000002';
+
+do $$
+declare n int;
+begin
+  select count(*) into n from pg_db_role_setting s join pg_roles r on r.oid = s.setrole
+   where r.rolname = 'authenticator' and s.setdatabase = 0
+     and 'pgrst.db_pre_request=public.session_guard' = any(s.setconfig);
+  if n <> 1 then
+    raise exception 'FAIL (5.24b): authenticator does not carry pgrst.db_pre_request=public.session_guard';
+  end if;
+
+  select count(*) into n from pg_proc p join pg_roles o on o.oid = p.proowner
+   where p.oid = 'public.session_guard()'::regprocedure
+     and p.prosecdef
+     and exists (select 1 from unnest(p.proconfig) c where c like 'search_path=%')
+     and (o.rolbypassrls or o.rolsuper);
+  if n <> 1 then
+    raise exception 'FAIL (5.24b): session_guard() is not a security definer with a pinned search_path, owned by a role that bypasses RLS';
+  end if;
+
+  if not (has_function_privilege('anon', 'public.session_guard()', 'EXECUTE')
+      and has_function_privilege('authenticated', 'public.session_guard()', 'EXECUTE')
+      and has_function_privilege('service_role', 'public.session_guard()', 'EXECUTE')) then
+    raise exception 'FAIL (5.24b): anon, authenticated and service_role must each be able to execute session_guard()';
+  end if;
+  raise notice 'PASS (5.24b): authenticator runs public.session_guard before every request; a definer the three request roles can call';
+end $$;
+
+set role authenticated;
+set request.jwt.claim.sub = '99999999-5524-0000-0000-00000000000b';
+
+do $$
+declare
+  claims text;
+  m text;
+  d text;
+begin
+  perform set_config('request.jwt.claims',
+    '{"role":"authenticated","session_id":"aaaaaaaa-5524-0000-0000-000000000001"}', true);
+  perform public.session_guard();
+  raise notice 'PASS (5.24b): a live session_id passes the guard';
+
+  foreach claims in array array[
+    '{"role":"authenticated","session_id":"aaaaaaaa-5524-0000-0000-000000000002"}',  -- ended
+    '{"role":"authenticated"}',                                                    -- missing
+    '{"role":"authenticated","session_id":"not-a-session"}'                        -- malformed
+  ] loop
+    perform set_config('request.jwt.claims', claims, true);
+    begin
+      perform public.session_guard();
+      raise exception 'FAIL (5.24b): the guard let % through', claims;
+    exception when sqlstate 'PGRST' then
+      get stacked diagnostics m = message_text, d = pg_exception_detail;
+      if (m::jsonb ->> 'code') is distinct from 'session_not_found'
+         or (d::jsonb ->> 'status') is distinct from '401'
+         or jsonb_typeof(d::jsonb -> 'headers') is distinct from 'object' then
+        raise exception 'FAIL (5.24b): the guard refused % with a raise PostgREST cannot turn into 401 session_not_found: % / %', claims, m, d;
+      end if;
+    end;
+  end loop;
+  raise notice 'PASS (5.24b): an ended, a missing and a malformed session_id each raise PGRST -> 401 session_not_found';
+
+  -- DW-293: the tenant creates no `sites` row of its own; connect writes them on the server.
+  begin
+    insert into public.sites(user_id, url)
+      values ('99999999-5524-0000-0000-00000000000b', 'https://dw-293.example');
+    raise exception 'FAIL (DW-293): a signed-in user inserted a sites row directly, skipping connect';
+  exception when insufficient_privilege then
+    raise notice 'PASS (DW-293): a tenant cannot insert into public.sites (%)', sqlstate;
+  end;
+end $$;
+
+reset role;
+set request.jwt.claim.sub = '';
+
+set role anon;
+do $$ begin
+  perform set_config('request.jwt.claims', '{"role":"anon"}', true);
+  perform public.session_guard();
+end $$;
+reset role;
+
+set role service_role;
+do $$ begin
+  perform set_config('request.jwt.claims', '{"role":"service_role"}', true);
+  perform public.session_guard();
+  raise notice 'PASS (5.24b): anon and service_role pass the guard with no session_id';
+end $$;
+reset role;
+
+delete from auth.users where id = '99999999-5524-0000-0000-00000000000b';

@@ -1103,7 +1103,18 @@ plain: When you sign out everywhere, Inflozo refuses the old sign-in on every pa
   ticket with an expiry — would still be accepted by Supabase's own data API if someone had copied it
   out of a stolen cookie, until the ticket's own expiry passes. Nothing in the app ever hands that
   ticket to a browser script, so the cookie has to be stolen first.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Schema phase (2026-09-29), R-223 — the database now refuses the ticket itself. PostgREST's
+  pre-request function `public.session_guard()`, wired as `authenticator`'s `pgrst.db_pre_request`
+  (`supabase/migrations/20260929120000_session_guard.sql`, `SCHEMA.sql` §15), applied on production by the owner and
+  read back. Executed on production: `run-verify-sign-out-everywhere.py`'s `rest-refused` FAILED before the apply (both
+  former tokens 200 on a read, 204 on a write — its control) and PASSES after (401 `session_not_found` on both, with
+  `WWW-Authenticate: Bearer error="invalid_token"`, the row unchanged, a live ticket, the secret key and anon still
+  reading); a throwaway account's ended sign-in was refused on GET, HEAD, PATCH and a `security definer` RPC. The
+  harness asserts it on every run; `RLS-TEST.sql`'s Story 5.24b block asserts the wiring and the definer's shape, its
+  control (the migration withheld) aborting at the block. `MEASUREMENTS.md` §56 (with the cost: 0.28 ms a request,
+  the save and the lock check-in unchanged within their spread); `VERIFY-AT-BUILD.md` item 59, because a role setting
+  can be reset under us.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry and carries the Schema phase R-223 gave this entry, pushed first and alone (R-99). *(Story 5.24a's
   Dev, 2026-09-28: it had no owner line.)*
@@ -7120,7 +7131,13 @@ plain: Connecting a site checks the address, counts your sites against your plan
   saved. But the database still lets a signed-in person add a site record directly, with any address, by calling it
   with their own sign-in ticket — a door left from before connecting moved onto the server. Nothing in the app uses it;
   it should be shut.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Schema phase (2026-09-29) — `revoke insert on public.sites from authenticated` in
+  `supabase/migrations/20260929120000_session_guard.sql`, and `SCHEMA.sql` §11a's grant replaced by the same revoke with
+  a dated note. Executed on production after the apply: a live session's direct `POST /rest/v1/sites` with its own
+  `user_id` → 403 `42501` and no row, while connect keeps writing through the secret key. `RLS-TEST.sql`'s Story 5.24b
+  block refuses a tenant's insert with `42501`; its control (the revoke withheld from both files) fails at
+  `FAIL (DW-293)`. `MEASUREMENTS.md` §56.
 severity: medium
 origin: Story 5.24b's Create (2026-09-29), found while tracing DW-58 — read in `SCHEMA.sql` and the app, not executed:
   §11 grants `authenticated` INSERT on `sites (id, user_id, url, title, favicon_url)` (`:1108`) and the `sites_owner`

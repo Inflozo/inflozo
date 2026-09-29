@@ -2,6 +2,11 @@
 -- RLS proof can be applied to a bare PostgreSQL container. Supabase provides all of these for real.
 create schema if not exists auth;
 create table auth.users (id uuid primary key);
+-- Story 5.24b: R-223's guard reads `auth.sessions`, the row GoTrue keeps per sign-in and deletes on every sign-out.
+-- The stand-in is the two columns the guard and its proof touch; as on hosted, RLS is ON with no policy, so only an
+-- owner that bypasses RLS can read it — which is the half of the guard's shape RLS-TEST.sql asserts.
+create table auth.sessions (id uuid primary key, user_id uuid not null references auth.users on delete cascade);
+alter table auth.sessions enable row level security;
 create or replace function auth.uid() returns uuid language sql stable as $$ select null::uuid $$;
 -- Roles are CLUSTER-wide, not per-database, so a second run against the same container would abort
 -- here under ON_ERROR_STOP and leave the storage stand-ins below uncreated. Idempotent so the proof
@@ -19,6 +24,9 @@ do $$ begin
   if not exists (select 1 from pg_roles where rolname = 'service_role') then
     create role service_role bypassrls;
   end if;
+  -- Story 5.24b: PostgREST's own login role. R-223's guard is wired onto it (`pgrst.db_pre_request`), so the
+  -- migration's `alter role authenticator` needs it to exist; hosted Supabase provides it, NOINHERIT as here.
+  if not exists (select 1 from pg_roles where rolname = 'authenticator') then create role authenticator noinherit; end if;
 end $$;
 -- Schema usage is still granted; table privileges are NOT. [R2-3, corrected 2026-08-19]
 --
