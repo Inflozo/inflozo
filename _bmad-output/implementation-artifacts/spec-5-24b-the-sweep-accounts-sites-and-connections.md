@@ -1162,3 +1162,13 @@ name; nothing written to T1 or T3; users 13 → 13 on every run.
 - **The gates after the patches:** `pnpm check` (Node 24) exit 0; `bash supabase/tests/run-rls-gate.sh` exit 0 with the
   Story 5.24b and DW-293 PASS lines; `pnpm keyboard` exit 0 (`next-env.d.ts` restored after it); `python3 tools/doc-audit.py
   --check` PASS twice; the story board regenerated. Every entry of Group B is closed: the spec's first command lists none.
+
+**Executed at Deploy (2026-09-29).** App code only; the Schema phase was already applied and proved on production above,
+and this story has no tooling-only change.
+
+- **CI, for the Review commit `c019b24c`** (GitHub API, `GITHUB_TOKEN` by name): `check`, `rls`, `matrix` and `deploy`
+  all `completed`/`success`.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): the deployment for
+  that sha, `dpl_5CaxMMnPvXZQr1HrLoCZt9Zq12pc`, is `READY`, target `production`, aliased to `inflozo.com`,
+  `app.inflozo.com` and `www.inflozo.com`.
+- **Deployment: `dpl_5CaxMMnPvXZQr1HrLoCZt9Zq12pc` (https://app.inflozo.com/).**
