@@ -4852,6 +4852,8 @@ of its address — /blog isn't supported yet." - But add it as a future work whi
 - **Why it was a question.** Connect dropped a path and blamed Ghost with a 404 (DW-55).
 - **The rule.** Connect refuses an address with a path in that sentence, the path derived from what was typed. Support
   is recorded in PRD Appendix G, the list of what v1 defers, so it is not lost.
+- **Refined by R-226** (owner, 2026-09-29): the path is judged at the root first, so the address of a page on a site at
+  the root still connects; the sentence answers when no Ghost answers at the root.
 - **Declined.** Option 2, support now; option 3, as it was.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 10 · ✅ `prd.md` Appendix G · ⬜ built — Story 5.24b.
 
@@ -4942,6 +4944,20 @@ stylesheet and designs #1, #3, #4 and #13" — keeping each story's number and i
 - **Declined.** Option 2, titles without numbers; option 3, the old titles.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 16 and its task · ✅ built — Story 5.24a's Dev (2026-09-28):
   `epics.md`'s titles, the ledger's owner lines that quote them, and `plan_failures` with its planted control.
+
+**R-226 — a path typed at connect is judged at the root first.** Story 5.24b's Create, Question 1, ruled **option 1**
+(owner, 2026-09-29): *"1. Look at the root first"*.
+
+- **Why it was a question.** R-219 refuses an address with a path, and was ruled for a Ghost installed under one. But
+  the address of a post carries a path too, and today Connect drops it and connects the site (DW-55); read word for
+  word, R-219 would have refused it.
+- **The rule.** When a path is typed — a trailing `/ghost…` segment, a query and a hash set aside — Connect asks the
+  root's Admin API first, before the plan's one-site limit is counted. A Ghost that answers there carries on exactly as
+  today, so the address of a page on a site at the root still connects; a `404` there is R-219's sentence with the path
+  that was typed, and nobody is asked to upgrade for an address that could not connect.
+- **Declined.** Option 2, refusing every address with a path at once.
+- Targets: ✅ this entry · ✅ R-219's entry · ✅ Story 5.24b's spec — Question 1 and the DW-55 task · ✅ `epics.md` — Story
+  5.24b's card · ✅ `prd.md` Appendix G · ⬜ built — Story 5.24b.
 
 ## B · Approved decisions superseded by this session
 

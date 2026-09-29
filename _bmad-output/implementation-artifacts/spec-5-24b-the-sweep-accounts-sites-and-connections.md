@@ -14,7 +14,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.m
 After this story:
 - A search on Projects or Sites that finds nothing offers a **Clear search** link.
 - A search on Sites stays in place while you open and close a site's windows.
-- An address with a path, such as `https://example.com/blog`, gets your sentence (R-219): "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." It no longer blames Ghost.
+- An address with a path whose root holds no Ghost, such as `https://example.com/blog`, gets your sentence (R-219): "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." It no longer blames Ghost. The address of a page on a site at the root still connects, as you ruled (R-226).
 
 Out of sight:
 - A sign-in ticket stops working the moment you sign out everywhere (R-223).
@@ -85,7 +85,8 @@ On screen you will see only four things: the Clear search links, the kept search
 | A live ticket, the secret key, anon | the same requests | answered exactly as before the guard | — |
 | Two writers on one site | the daily check and a Re-check land between each other's read and write | both writers' keys are in the row | three tries, then that write changes nothing and is logged |
 | A Content save racing Disconnect | `saveKeys`' Content branch on a row whose `disconnected_at` was just set | refused; the disconnected row gains no key | `keys_failed` |
-| A path typed at connect | `https://example.com/blog/`, `example.com/blog`, `https://example.com/blog/ghost/#/site` | "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." under API URL; nothing stored — when, per Question 1 | — |
+| A path typed at connect, no Ghost at the root | `https://example.com/blog/`, `example.com/blog`, `https://example.com/blog/ghost/#/site` | "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." under API URL, before the plan's limit is counted; nothing stored (R-219, R-226) | — |
+| A page's address on a site at the root | `https://ghost5.inflozo.com/welcome/` | the root is judged, as today: connected, or "ghost5.inflozo.com is already connected." (R-226) | — |
 | No path | `https://example.com/`, `https://example.com/ghost/#/dashboard`, `https://example.com/?ref=x` | connects the root, as today | — |
 | A private address | a name resolving to, or a `sites.url` holding, 127/8, 10/8, 172.16/12, 192.168/16, 169.254/16, 100.64/10, 0.0.0.0/8, `::`, `::1`, fc00::/7, fe80::/10, or `::ffff:` with any of those | refused before any request, with `ghost_unreachable`'s sentence and an audit row whose `detail.blocked` is true | — |
 | A busy or down Ghost | 429 or ≥ 500 on any Admin call | "Ghost didn't answer just now. Try again in a moment." | 403, 404 and 422 stay `ghost_refused` |
@@ -116,7 +117,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 | DW-77 | both keys removed in one transaction | Dev |
 | DW-81 | a multi-field keys post refused before anything is stored | Dev and Review |
 | DW-52 | `ghost_unavailable` for 429 and ≥ 500 | Dev |
-| DW-55 | R-219's sentence, as Question 1 rules | Dev and Review |
+| DW-55 | R-219's sentence when no Ghost answers at the root (R-226) | Dev and Review |
 | DW-58 | private addresses refused inside `fetchWithKey` | Dev and Review |
 | DW-86 | both paths read in Ghost's admin source; the roll hint gains **Custom** | Dev |
 | DW-50 | the database connection pinned to Supabase's own CA | Dev and Review |
@@ -511,17 +512,18 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - `ghost-admin-rule.test.ts` vectors, blocked: `127.0.0.1`, `10.0.0.1`, `169.254.169.254`, `100.64.0.1`, `0.0.0.0`, `::1`, `fc00::1`, `fe80::1`, `::ffff:127.0.0.1`;
     - allowed: `8.8.8.8`, `::ffff:8.8.8.8`, `2606:4700::1111`;
     - a harness connect to `https://127.0.0.1.nip.io`, whose audit row carries `detail.blocked`, while T1 connects. HEAD already fails that connect as unreachable, so the sentence alone proves nothing.
-- [ ] **DW-55 (R-219), as Question 1 rules:**
+- [ ] **DW-55 (R-219, R-226 — the owner's Question 1, option 1):**
   - **`pathOf(typed)`,** new in `lib/connect-rule.ts`, returns the typed path with any trailing `/ghost…` segment, query and hash dropped, or `''` when there is no path.
   - **The new code `path_unsupported`,** shown under API URL: `(path) => \`Inflozo connects a Ghost site at the root of its address — ${path} isn't supported yet.\``.
-  - **When it fires:**
-    - **Option 1:** when a path was typed, the root's `config/` is asked before the plan's limit is counted. A `404` there becomes `path_unsupported`; any other answer carries on as today.
-    - **Option 2:** it is refused right after `normaliseSiteUrl`, before any read.
+  - **When it fires (R-226).** After `already_connected`, and when a path was typed, the root's `config/` is asked before the plan's limit is counted. A `404` there becomes `path_unsupported`; any other answer carries on exactly as today, so a page's address on a site at the root still connects. Without a path, nothing changes.
+  - **The decision is pure,** beside `pathOf`: a typed path with a `404` at the root gives `path_unsupported`; a `200`, any other answer, or no path carries on.
   - `normaliseSiteUrl` itself is unchanged; it also serves `hostOf`, `content-check.ts` and the editor's `read.ts`.
   - **Tests:**
     - `pathOf` vectors: `/blog`, `/blog/`, `example.com/blog` and `/blog/ghost/#/site` → `/blog`; `/`, `/ghost`, `/ghost/#/x` and `?ref=x` → `''`;
+    - the decision both ways;
     - `:287-327` holds the new code's sentence.
-  - DW-55 closes citing R-219 and PRD Appendix G.
+  - **Harness** (Review, on the deployed site): a connect to `https://example.com/blog` answers the sentence and stores no row; a connect to T1 by a page's address (`https://ghost6.inflozo.com/<a post's slug>/`) connects T1's root — the positive control.
+  - DW-55 closes citing R-219, R-226 and PRD Appendix G.
 - [ ] **DW-86:**
   - The two wayfinding sentences are read against Ghost's own admin at 5.130.6 and 6.58.0:
     - `KEYS.staff.ask` is right on both majors;
@@ -660,7 +662,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - DW-293 and DW-294 are written at this Create.
   - At Dev, every entry whose evidence exists closes.
   - The entries whose proof is a run on the deployed site get an `amended:` line and close at Review, when their run completes. These are DW-27, 32, 58, 67, 74, 81, 82, 83, 84, 85 and 92, plus the harness halves of DW-41 and DW-91.
-- [ ] **The registers.** R-219's "built" target is ticked, and `epic-5-context.md` gains a sub-bullet for this story's Dev.
+- [ ] **The registers.** R-219's and R-226's "built" targets are ticked, and `epic-5-context.md` gains a sub-bullet for this story's Dev.
 - [ ] **Standing rule 7.** Grep for:
   - `rest-residual`;
   - any direct caller of `readSettings(`;
@@ -739,6 +741,8 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 ## Questions for the owner
 
+The owner ruled Question 1 on 2026-09-29 (R-226). No question is open.
+
 ### Question 1 — When someone types the address of a page on their site, should Connect still work? (R-219, DW-55)
 
 **In plain English.** Your ruling R-219 says that an address with a path is refused, with your sentence: "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." That ruling was about a Ghost that lives under a path.
@@ -755,11 +759,13 @@ But you also get a path when you copy the address of a post. Today, Connect quie
    - Ghost's own admin address (`…/ghost/`) still connects.
    - Someone who pasted a post address retypes just the site's address.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-29).** *"1. Look at the root first"*. Recorded as **R-226**: a path typed at
+connect is judged at the root first, so a page's address on a site at the root still connects, and R-219's sentence
+answers when no Ghost answers at the root.
 
 ## Owner's manual test
 
-Do this on the real site after Deploy, in a desktop browser about 1440 wide, signed in as yourself. At this Create (read-only), your account was Free with one connected site, ghost5, and three projects. The steps are written for that account, and for Question 1's option 1. If you rule option 2, step 7 changes as it says there.
+Do this on the real site after Deploy, in a desktop browser about 1440 wide, signed in as yourself. At this Create (read-only), your account was Free with one connected site, ghost5, and three projects. The steps are written for that account, and for your ruling on Question 1 (R-226).
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|---|---|---|---|---|
@@ -769,7 +775,7 @@ Do this on the real site after Deploy, in a desktop browser about 1440 wide, sig
 | 4 | same | Manage API keys window | Open it once more. Read the grey hint near the bottom. Press **Test connection**. | — | The hint reads "To roll keys: Ghost Admin → Settings → Integrations → **Custom** → Inflozo → Regenerate. Old keys stop working the moment you regenerate." The button reads "Testing…", then "Inflozo reached your Ghost site." appears. |
 | 5 | same | Sites, then the brand window | Close the window. Open **⋯ → Use this site’s brand**, then close it with **✕**. | — | Back on the list, still filtered, with `ghost5` in the box. |
 | 6 | `https://app.inflozo.com/sites/connect?step=keys` | Connect a site — the keys step | Fill in the three boxes and press **Connect**. | API URL `https://example.com/blog` · Admin API key `aaaaaaaaaaaaaaaaaaaaaaaa:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb` · Content API key `cccccccccccccccccccccccccc` | The button reads "Connecting…", then this appears in red under API URL: "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet." Nothing is added to Sites, and you are not asked to upgrade. |
-| 7 | same | the keys step | Change API URL. Replace the Content API key with ghost5's real one: it is in ghost5's Ghost Admin → Settings → Integrations → Custom → Inflozo. Your browser checks that key with ghost5 before it sends anything, so the made-up one would stop you here. Leave the made-up Admin API key as it is. Press **Connect**. | `https://ghost5.inflozo.com/welcome/` | "ghost5.inflozo.com is already connected." The post's path was set aside and your site recognised. Nothing was sent to Ghost and nothing changed. *(If you rule option 2: "Inflozo connects a Ghost site at the root of its address — /welcome isn't supported yet.")* |
+| 7 | same | the keys step | Change API URL. Replace the Content API key with ghost5's real one: it is in ghost5's Ghost Admin → Settings → Integrations → Custom → Inflozo. Your browser checks that key with ghost5 before it sends anything, so the made-up one would stop you here. Leave the made-up Admin API key as it is. Press **Connect**. | `https://ghost5.inflozo.com/welcome/` | "ghost5.inflozo.com is already connected." The post's path was set aside and your site recognised, as you ruled (R-226). Nothing was sent to Ghost and nothing changed. |
 | 8 | same | the keys step | Change only API URL, then press **Connect** again. | `https://ghost5.inflozo.com/ghost/` | "ghost5.inflozo.com is already connected." Ghost's own admin address is never refused. |
 | 9 | `https://app.inflozo.com/` | Projects → your avatar menu | Click **Sign out**. Then sign in again with a magic link. | your email | "Signing out…", then the sign-in page with the green "You’ve been signed out." After signing in you are back on Projects. Only this browser was signed out. |
 

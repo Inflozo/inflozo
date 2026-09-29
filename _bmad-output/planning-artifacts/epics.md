@@ -2590,8 +2590,9 @@ So that each screen says what is true and nothing I do is lost or misreported.
 (standing rule 2)
 **And** a search that finds nothing offers **Clear search**, and closing a window over a searched Sites list keeps the
 search
-**And** an address with a path is refused with *"Inflozo connects a Ghost site at the root of its address — /blog isn't
-supported yet."* (**R-219**)
+**And** an address with a path whose root holds no Ghost is refused with *"Inflozo connects a Ghost site at the root of
+its address — /blog isn't supported yet."* (**R-219**), while the address of a page on a site at the root still
+connects — the root is asked first, before the plan's limit (**R-226**)
 **And** the app checks the database's certificate (DW-50), from the file the owner downloads
 **And** the database itself refuses a ticket whose sign-in session has ended, on every read and write (**R-223**,
 DW-40) — its migration pushed first, alone (R-99), a save and a lock check-in timed before and after on production
@@ -2600,7 +2601,7 @@ DW-40) — its migration pushed first, alone (R-99), a save and a lock check-in 
 green.
 
 **FRs:** none new. · **Frame:** `S3 Dashboard.dc.html` S3a · `S11 Sites.dc.html` S11a · `S11e Manage Keys Popup.dc.html`
-· `S2 Onboarding.dc.html` S2c and S2b·2 (R-74). · **Rulings:** R-207, R-211, R-219, R-223. · **Owner test:** yes. ·
+· `S2 Onboarding.dc.html` S2c and S2b·2 (R-74). · **Rulings:** R-207, R-211, R-219, R-223, R-226. · **Owner test:** yes. ·
 **Verification:** `app.inflozo.com`, Supabase, T1, public DNS and the GitHub API, read-only where the entry says (R-82).
 
 ### Story 5.24c: The sweep: the section runtime, the library and the recordings
