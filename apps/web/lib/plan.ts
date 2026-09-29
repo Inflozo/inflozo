@@ -8,9 +8,13 @@
  * during the 7-day grace window a past-due customer keeps EVERY Pro capability, so
  * `pro_past_due` resolves to Pro with no per-row exception.
  *
- * Pure on purpose — `entitlement.ts` next door does the reading, this file does the deciding,
- * split exactly as `server.ts` is split from `cookies.ts` so `node --test` can reach it.
+ * No Next import on purpose — `entitlement.ts` next door makes the client and caches the answer,
+ * this file does the deciding, split exactly as `server.ts` is split from `cookies.ts` so
+ * `node --test` can reach it. Since Story 5.24b it holds the read as well (`readEntitlement`, over
+ * a client it is handed), because the degradation rule was the one decision the split left
+ * unexecuted (DW-29).
  */
+import type { SupabaseClient } from '@supabase/supabase-js'
 
 /** `public.entitlement_state` (schema :534). An absent row is `undefined` here and means Free. */
 export type EntitlementState = 'free' | 'pro_active' | 'pro_past_due'
@@ -37,6 +41,31 @@ export const PRICE = { monthly: 15, yearly: 150 }
 
 export const planFor = (state?: EntitlementState | null): PlanId =>
   state === 'pro_active' || state === 'pro_past_due' ? 'pro' : 'free'
+
+/**
+ * THE USER'S OWN `entitlements` ROW, READ, AND AD-28's DEGRADATION WITH IT: a failed read is Free
+ * and one log line, never a throw (`entitlement.ts` says why). `resolveEntitlement` hands in the
+ * user-scoped client, so RLS scopes the read.
+ *
+ * IT MOVED HERE FROM `entitlement.ts` (DW-29, Story 5.24b), which imports `next/headers`, so no
+ * test could load it. `planFor(undefined)` was held; that the read HANDS it `undefined` on a
+ * failure, rather than throwing, was a `?.` nothing executed. `plan.test.ts` now runs this against
+ * a real `createClient` and a local server answering 500.
+ */
+export async function readEntitlement(
+  client: SupabaseClient,
+  userId: string,
+  log: Pick<Console, 'error'> = console,
+): Promise<PlanId> {
+  const { data, error } = await client
+    .from('entitlements')
+    .select('state')
+    .eq('user_id', userId)
+    .maybeSingle<{ state: EntitlementState }>()
+  // Logged without the id: logs carry no user content (spine, Security floor).
+  if (error) log.error('entitlement: read failed', { code: error.code })
+  return planFor(data?.state)
+}
 
 /**
  * FR-B4's comparison, in ONE place. It used to be written out at three call sites — the two

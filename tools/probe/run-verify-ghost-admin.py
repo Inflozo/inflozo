@@ -5,6 +5,7 @@
     python3 tools/probe/run-verify-ghost-admin.py           # the whole round trip, T1 and T3
     python3 tools/probe/run-verify-ghost-admin.py --url https://app.inflozo.com
     python3 tools/probe/run-verify-ghost-admin.py --shots /tmp/shots   # + screenshots at 1440/834/390
+    python3 tools/probe/run-verify-ghost-admin.py --only brand-none,moved-domains   # named blocks alone
 
 WHY IT EXISTS, AND WHY IT CHANGED. Story 3.1 drove a bearer-gated verify route, because the Admin
 chokepoint had no product caller and R-82 wants the Vault write, the decryption and both real
@@ -39,11 +40,16 @@ list gone stale — the sibling harness's own note):
                  token, a credential the product does not hold until Epic 7, so this had to be
                  executed rather than inherited (§39)
   brand-keys     STORY 3.4, printed in both modes: the keys `BRAND_KEYS` names — FR-C4's brand
-                 reader takes them off the SAME payload — `accent_color`, `logo`, `icon`,
-                 `cover_image`, `navigation`, `title`, `description` — are really in the integration key's own
-                 `GET /admin/settings/` on both majors, and the CONTAINER of each is recorded.
-                 `navigation` is a JSON *string*, as `announcement_visibility` is (§40); the
-                 reader admits an array too, and this is what says which branch is live
+                 reader takes them off the SAME payload — `accent_color`, `logo` and `navigation`
+                 (three since Story 5.24b, DW-71: the fields something reads) — are really in the
+                 integration key's own `GET /admin/settings/` on both majors, and the CONTAINER of
+                 each is recorded. `navigation` is a JSON *string*, as `announcement_visibility` is
+                 (§40); the reader admits an array too, and this is what says which branch is live
+  pinned-ca      STORY 5.24b (DW-50), printed in both modes: the pooler reached with the app's own
+                 driver and the root CA PINNED in `server/ghost-admin/db.ts`, read out of that
+                 file, connects; with `tls.rootCertificates[0]` in its place it is refused
+                 `SELF_SIGNED_CERT_IN_CHAIN` — the pin verifies, and it is not verifying nothing
+                 (MEASUREMENTS §57)
   then, in the browser, as one throwaway account that starts on the Free plan:
   first-run      `/sites` with nothing connected is an EMPTY SCREEN — the owner's finding 7: his
                  own title and subtitle (read from the app, not retyped), a drawing, and TWO
@@ -96,8 +102,19 @@ list gone stale — the sibling harness's own note):
                  sentence under the field (§37 — a regenerated key, never an "expired" one), no row
   content-wrong-key  the Content API key with one character changed: the browser's own check (§38b)
                  answers 401 and the submit NEVER LEAVES THE PAGE — counted, not assumed
-  connect        T1's real keys, its address typed as a BARE HOST (the matrix's "Bare host typed"
-                 row — the row stores the https origin): the wire shows the row with
+  path-refused   STORY 5.24b (DW-55, R-219 with R-226's order): `https://example.com/blog`, whose
+                 root answers `config/` 404 — the owner's own sentence under API URL, naming the
+                 path typed, and no row
+  address-blocked  STORY 5.24b (DW-58): `https://127.0.0.1.nip.io`, a public name that resolves
+                 to loopback — `ghost_unreachable`'s sentence, no row, and the ONE audit row the
+                 attempt left says `detail.blocked`: refused before any request
+  path-page      STORY 5.24b (R-226's positive control; `--only connect-paths` alone): T1 by a
+                 POST'S address — the root answers, and it connects the root, landing on S2c. In
+                 the full sequence `connect` below is this step
+  connect        T1's real keys, its address typed as a BARE HOST WITH A POST'S PATH (the matrix's
+                 "Bare host typed" row, and since Story 5.24b R-226's "a page's address on a site
+                 at the root" row — the root is judged first and carries on — the row stores the
+                 https origin): the wire shows the row with
                  `ghost_version`, `content_key`, the title and `site_settings.public_url` as
                  `GET /admin/site/` answers them with no key (§38a), and
                  `credentials_present {content,admin} = true, staff = false`; the pooler shows a
@@ -241,12 +258,11 @@ list gone stale — the sibling harness's own note):
                  AND a menu), the card draws no offer link and `/sites/brand?site=…` renders the
                  NOT-FOUND page — as does a `?site=` naming a row NO ACCOUNT carries. (The
                  stranger's row is a different question and `brand-ownership` asks it.) The
-                 brand is restored in a `finally`. The assertion is the page the
-                 customer SEES, because the HTTP status on these routes is 200: `/sites/brand`
-                 has its OWN `loading.tsx` since R-98 — the group-wide `(authed)/loading.tsx` is
-                 gone — so the shell has streamed and the status is committed before `notFound()`
-                 throws. The reason changed with the route groups and the status did not;
-                 measured, not excused — DW-67, amended. The brand is put back afterwards
+                 brand is restored in a `finally`. BOTH ANSWER A REAL 404 SINCE STORY 5.24b
+                 (DW-67): `sites/brand/layout.tsx` decides it ABOVE the route's own `loading.tsx`,
+                 where before the shell had streamed and the status was committed as 200 before
+                 `notFound()` threw — so the page the customer sees and the status are asserted
+                 together. The brand is put back afterwards
   dialog         S11a's "Connect site" is a LINK to /sites/connect that JavaScript turns into S11b:
                  the sheet opens with its title pair and the handshake, Escape closes it, and no
                  POST left the page (Cancel, Escape and the backdrop all send nothing)
@@ -453,6 +469,10 @@ list gone stale — the sibling harness's own note):
                  popover cannot survive a resize (`axeAt`'s own note)
   axe-keys-route   axe-core over the same panel as the FULL page, at both widths
   keys-malformed  `hello` into the Admin field: refused UNDER THAT FIELD, and nothing written
+  keys-two-fields  STORY 5.24b (DW-81): the Admin row's form CLONED with a Content key field
+                 added — the crafted post no form sends — lands on `?keys=keys_failed` with that
+                 sentence, and the `sites` row, the credential row and the `credential_change`
+                 log are each as they were: refused whole, before anything was read or written
   keys-foreign-key  T3's Admin key pasted into T1's screen: T1 never issued it, so T1 answers 401
                  `Unknown Admin API Key` at `GET /admin/config/` and the refusal fires there —
                  under the Admin field, with GHOST'S sentence, nothing written. The `site/`
@@ -493,11 +513,25 @@ list gone stale — the sibling harness's own note):
                  (FR-C2) and a service-role write — `sites.content_key` and
                  `credentials_present.content` moved in ONE update, the admin flag untouched, the
                  row masked with the key's first characters
-  keys-test-refused  the result card's failure shape by a typed URL: `?test=ghost_refused&status=429`
-                 draws Ghost's refusal with the number; a non-digit status and an unnamed code
-                 draw NO sentence rather than a save's
+  keys-test-refused  the result card's failure shape by a typed URL: `?test=ghost_refused&status=403`
+                 draws Ghost's refusal with the number, and `?test=ghost_unavailable` the busy-Ghost
+                 sentence (a 429 or a 5xx since Story 5.24b, DW-52); a non-digit status and an
+                 unnamed code draw NO sentence rather than a save's
+  search-kept    STORY 5.24b (DW-82): over `/sites?q=…`, both windows open with the search in their
+                 address, and every way out — ✕, Escape, Cancel, a save, a refusal, and the brand
+                 window's ✕ — lands back on `/sites?q=…` with the box still saying it
+  keys-escape    STORY 5.24b (DW-84): with the save's POST HELD, the ✕ and Cancel are
+                 `aria-disabled`; Escape does not close the window; and the answer, released, lands
+                 in the SAME `<dialog>`, which never fired `close` — it used to close on Escape and
+                 open again with the result
   keys-phone     at 390 the two columns are one: the address ABOVE the first key row, the rail's
                  Test connection BELOW the last, the window inside the viewport with no overflow
+  moved-order-term  DW-83's CONTROL (Story 5.24b), printed from inside `moved-domains` while its
+                 two-record seeding exists: `findSiteByAdminKeyId`'s own query, read out of
+                 `server/ghost-admin/index.ts` rather than retyped and run read-only on the pooler,
+                 must pick the NEWER, disconnected record WITHOUT its first `order by` term and the
+                 OLDER, live decoy WITH it. Anything else means the seeding cannot tell the term
+                 from its absence, so the hint `moved-domains` then asserts would prove nothing
   moved-domains  FR-C8's hint on the new card, naming 90 days; and the same connect against a
                  record whose `admin_key_id` is null showing NO hint. ⛔ The old record is seeded
                  through the pooler because neither test Ghost has a second reachable address —
@@ -566,6 +600,37 @@ Story 3.3's `b15` and Story 3.4's `s2c`) —
 the frame comparison the spec's Review owes, re-takeable at Deploy — and asserts nothing extra. The
 empty screen has no frame: it is the owner's finding 7, extrapolated from S3b (R-74).
 
+--only BLOCK[,BLOCK…] RUNS THE NAMED BLOCKS ALONE (DW-92, Story 5.24b), because this run is one
+browser session and a story that changed one step used to pay for all of them — and a run killed at
+its ceiling printed nothing. `BLOCKS` in the browser half is the registry: each entry names the
+seeds its block needs and the ONE function the full sequence also calls where those steps always
+ran, so both paths run the same code. The first five were brand-none, brand-ownership,
+manage-keys (keys-screen to keys-forged), moved-domains (with moved-order-term) and keys-content
+(keys-content and keys-test-refused — the Manage keys steps the full sequence runs after
+moved-domains); Story 5.24b added connect-paths (path-refused, address-blocked and, alone,
+path-page), search-kept and keys-escape, and changed brand-none, manage-keys (keys-two-fields)
+and keys-content. A name that is not in `BLOCKS` is refused with the registry's own list. `--only`
+runs the named blocks in the registry's order, which is the full sequence's, whatever order they
+are typed in.
+  THE SEEDS are made from the empty fixture account, each at most once and in this order, and
+  since Story 5.24b each block's seeds just before that block — `connect-paths` needs the account
+  EMPTY, and a connect seed ADOPTS a site a block before it already connected:
+  sign-in   the fixture's own session, from the generated magic link
+  Pro       `entitlements.state` pro_active through the service role, as `pro-connect-t3` flips it
+  T1, T3    connected the way a customer's first connect goes — the full-page keys step, `fill`,
+            `submit`, S2c, `skipS2c` — never through `pro-connect-t3`'s sheet, which waits for a
+            card an empty account has not got. T1 sets `t1SiteId`, `pub1` and `brandRead`; T3 sets
+            `t3SiteId`; each leaves the page on /sites
+  stranger  `strangerSite()`'s row under OTHER_USER_ID, which sets `foreignId`
+  ADDING A BLOCK is one function beside the others, reading only those five names and never
+  another block's consts; one `BLOCKS` line naming its seeds; and its call in the full sequence
+  where its steps belong. The Python half reads the names out of `BLOCKS`, so an unknown one exits
+  2 while the arguments are parsed, before any key is read. An `--only` run never runs
+  `injection-live`, so it writes nothing to T1 or T3; it prints a `seeds` RECORD before its blocks'
+  steps; and its fixture users are deleted and counted exactly as a full run's are. In both modes
+  every step is printed THE MOMENT IT LANDS: the parent reads the child line by line under a kill
+  timer, where it used to hold all of it until the child exited.
+
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
 (argv is world-readable in `ps`), and every command is recorded by the key's variable NAME.
 
@@ -583,7 +648,7 @@ Playwright and axe-core are resolved from the machine, and the helpers that do i
 `run-verify-passkeys.py` through the sibling `_sibling` pattern rather than copied, so a fix to
 any lands on all of them (propagate, never localise).
 """
-import argparse, importlib.util, json, os, re, subprocess, sys, tempfile, time
+import argparse, importlib.util, json, os, re, subprocess, sys, tempfile, threading, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 APP = 'https://app.inflozo.com'
@@ -597,6 +662,7 @@ CONNECT_RULE = os.path.join(WEB, 'lib', 'connect-rule.ts')
 PROBE_RULE = os.path.join(WEB, 'lib', 'probe-rule.ts')
 PLAN = os.path.join(WEB, 'lib', 'plan.ts')
 NOT_FOUND_COPY = os.path.join(WEB, 'lib', 'not-found.ts')
+GHOST_ADMIN = os.path.join(WEB, 'server', 'ghost-admin', 'index.ts')
 PG_DIR = os.path.join(WEB, 'node_modules', 'postgres')
 
 
@@ -624,6 +690,69 @@ def audit_route():
     if not found:
         sys.exit('  FAIL  sites/actions.ts no longer declares its audit `route` name')
     return found.group(1)
+
+
+def moved_queries():
+    """DW-83's control runs `findSiteByAdminKeyId`'s OWN query, read out of the chokepoint rather
+    than retyped (Story 5.24b): WHOLE, and WITHOUT the first term of its `order by`. Its three
+    `${args.…}` holes become `$1`-`$3` in the order the browser half passes them — the caller, the
+    key id, and the record being connected. A query that no longer has this shape stops the run
+    here, loudly, rather than handing the control something it cannot mean."""
+    src = open(GHOST_ADMIN, encoding='utf-8').read()
+    found = re.search(r'export async function findSiteByAdminKeyId\(.*?`(.*?)`', src, re.S)
+    query = found.group(1) if found else ''
+    for n, name in enumerate(('userId', 'kid', 'exceptSiteId'), 1):
+        query = query.replace('${args.%s}' % name, f'${n}')
+    order = re.search(r'order by (.*)', query)
+    terms = [t.strip() for t in order.group(1).split(',')] if order else []
+    if '${' in query or len(terms) < 2:
+        sys.exit('  FAIL  findSiteByAdminKeyId in server/ghost-admin/index.ts no longer reads as one query '
+                 'with three ${args.…} holes and an order by of two terms or more; DW-83\'s control has '
+                 'nothing to drop')
+    return {'with': query, 'without': query.replace(order.group(1), ', '.join(terms[1:])),
+            'dropped': terms[0]}
+
+
+def pinned_handshake(env):
+    """DW-50's control (Story 5.24b): connect with the app's own driver and the PEM `db.ts` pins, then with Node's first
+    bundled root in its place. `select 1` and nothing else; the URL reaches node through its environment only. Answers
+    `connected` or the driver's error code for each."""
+    script = r"""
+const postgres = require(process.env.PG_DIR)
+const tls = require('tls')
+const found = /const SUPABASE_ROOT_CA = `([^`]+)`/.exec(require('fs').readFileSync(process.env.DB_TS, 'utf8'))
+const attempt = async (ca) => {
+  const sql = postgres(process.env.PG_URL, { max: 1, prepare: false, ssl: { ca, rejectUnauthorized: true }, connect_timeout: 10, idle_timeout: 1 })
+  try { await sql`select 1`; return 'connected' } catch (e) { return e.code || e.name } finally { await sql.end({ timeout: 1 }).catch(() => {}) }
+}
+;(async () => {
+  console.log(JSON.stringify({ pinned: found ? await attempt(found[1]) : 'no SUPABASE_ROOT_CA in db.ts', wrong: await attempt(tls.rootCertificates[0]) }))
+})()
+"""
+    if not os.path.isdir(PG_DIR):
+        return {'pinned': 'the postgres driver is not installed', 'wrong': None}
+    child = dict(os.environ, PG_DIR=os.path.abspath(PG_DIR), PG_URL=env.get('SUPABASE_DB_POOLER_URL', ''),
+                 DB_TS=os.path.join(WEB, 'server', 'ghost-admin', 'db.ts'))
+    try:
+        proc = subprocess.run(['node', '-e', script], env=child, capture_output=True, text=True, timeout=60)
+    except (FileNotFoundError, subprocess.TimeoutExpired) as e:
+        return {'pinned': type(e).__name__, 'wrong': None}
+    lines = [l for l in proc.stdout.splitlines() if l.startswith('{')]
+    return json.loads(lines[-1]) if lines else {'pinned': f'node exited {proc.returncode}', 'wrong': None}
+
+
+def only_blocks(value):
+    """`--only`'s argparse type. Every name must be a block the browser half's `BLOCKS` registry
+    holds, read out of BROWSER_JS itself so there is no second list to drift (DW-92). An unknown
+    name makes argparse exit 2 WHILE THE ARGUMENTS ARE PARSED — before `load_env()` has read a key."""
+    known = re.findall(r"^\s+'([a-z0-9-]+)': \{ seeds:", BROWSER_JS, re.M)
+    names = [n for n in value.split(',') if n]
+    unknown = [n for n in names if n not in known]
+    if unknown or not names:
+        raise argparse.ArgumentTypeError(
+            f'no block named {", ".join(unknown) or "(none given)"}; the blocks that run alone are '
+            f'{", ".join(known)}')
+    return names
 
 
 def app_text():
@@ -729,6 +858,10 @@ def app_text():
         " keys_malformed: connectMessage('credential_malformed'),"
         " keys_empty_admin: connectMessage('credential_empty'),"
         " keys_ghost_refused: connectMessage('ghost_refused', '%s'),"
+        # STORY 5.24b: DW-52's busy-Ghost sentence, R-219's path sentence and DW-81's refusal — the app's own words.
+        " ghost_unavailable: connectMessage('ghost_unavailable'),"
+        " path_unsupported: connectMessage('path_unsupported', '%s'),"
+        " keys_failed: connectMessage('keys_failed'),"
         " keys_moved: KEYS.movedDomains(ORPHAN_SNAPSHOT_DAYS),"
         # STORY 3.9, DW-85 (1): the OTHER hint — the matched record is still CONNECTED, so
         # there is no 90-day clock to promise and the snapshot clause is dropped.
@@ -817,6 +950,12 @@ const SAY = JSON.parse(process.env.SENTENCES)
    It is here so the no-payload-leak sweep can look for the exact string. */
 const MARK = process.env.INJECTION_MARK
 
+/* `--only` (DW-92, Story 5.24b): the blocks this run was asked for — empty for the full sequence —
+   and DW-83's control's two queries: `findSiteByAdminKeyId`'s own, read out of the chokepoint by
+   the Python half, whole and without its first `order by` term. */
+const ONLY = (process.env.ONLY || '').split(',').filter(Boolean)
+const MOVED = JSON.parse(process.env.MOVED_QUERY)
+
 /* `load`, NOT `networkidle`, AND A MINUTE TO DO IT IN — the sibling harness's own finding: the
    FIRST authed render on a cold deployment took longer than Playwright's 30s default, and Deploy
    always meets a fresh deployment. Every step asserts through a locator that waits on its own. */
@@ -829,9 +968,13 @@ const NAV_TIMEOUT = 60000
    matches; the freshness is not the claim either of them is making. */
 const CHECKED = /Checked (just now|\d+ (minute|hour)s? ago)/
 
-const steps = []
-const step = (name, ok, detail) => { steps.push({ name, ok, detail }); return ok }
-const record = (name, detail) => steps.push({ name, ok: null, detail })
+/* EVERY STEP IS PRINTED THE MOMENT IT LANDS (DW-92, Story 5.24b), as one `@@STEP@@` line the
+   Python half streams. They used to wait in an array for a single result line at the very end, so
+   a run killed at its ceiling printed nothing of what it had proved — Story 3.9's four attempts
+   said only "node did not finish". */
+const say = (s) => console.log('@@STEP@@' + JSON.stringify(s))
+const step = (name, ok, detail) => { say({ name, ok, detail }); return ok }
+const record = (name, detail) => say({ name, ok: null, detail })
 
 /* THE POOLER, READ-ONLY. `vault` and `private` answer 404 over PostgREST (§21j), so this is the
    only way to see either — the same connection shape the app itself opens (`server/ghost-admin/
@@ -879,6 +1022,13 @@ const insert = async (path, body) => {
   return { status: r.status, body: await r.json().catch(() => null) }
 }
 const rowsOf = async (select = 'id') => (await wire(`/sites?user_id=eq.${USER_ID}&select=${select}`)).body || []
+/* THE STRANGER'S ROW: a site OTHER_USER_ID owns, inserted by the service role because no UI can
+   make one. It is `ownership`'s own row, HOISTED at Story 5.24b so `brand-ownership` can seed it
+   when it runs alone (DW-92). PostgREST's body: an array of the one row. */
+const strangerSite = async () => (await insert('/sites', {
+  user_id: OTHER_USER_ID, url: 'https://foreign.inflozo.com', title: 'Foreign',
+  capability: 'preview_only', capability_source: 'user_declared',
+})).body
 /* STORY 3.4: the projects "Use your brand" writes, in the dashboard's own order. Read through the
    SERVICE ROLE, like every other wire read here — what a USER may do is still only ever driven
    through that user's own session, in the browser. */
@@ -1021,6 +1171,9 @@ const skipS2c = async (page) => {
   return landed
 }
 const same = (a, b) => Math.abs(a - b) < 0.5
+/* An Admin API key's PUBLIC id half, `kid:secret` -> `kid`. Hoisted to the module at Story 5.24b
+   (DW-92): the Manage keys block and `moved-domains` both read it, and each now runs alone. */
+const kidOf = (key) => String(key).split(':')[0]
 
 /* `--shots`: each surface at the three widths the spec names, for the frame comparison. Assertion-free. */
 const SHOTS = process.env.SHOTS_DIR || ''
@@ -1107,6 +1260,14 @@ const shoot = async (page, name) => {
       await page.waitForTimeout(300)
     }
   }
+  /* HYDRATED BEFORE A HIDDEN FIELD IS FORGED (Story 5.24b). A value written into a form React has not yet attached to
+     is written BACK to the rendered one by hydration, and the press then posts the caller's OWN id — a legitimate press,
+     which a "nothing was written" assertion reads as a refusal, or which really writes. Seen under `next dev`, where
+     hydration is slow: `keys-forged` landed two presses on the fixture's own site and `brand-ownership`'s forged "Use
+     your brand" made a project. Every React-rendered form carries React's own keys once attached; the harness's own
+     clones (`data-harness-clone`) never do and are not waited on. */
+  const hydrated = () => page.waitForFunction(() => [...document.querySelectorAll('form:not([data-harness-clone])')]
+    .every((f) => Object.keys(f).some((k) => k.startsWith('__react'))), null, { timeout: 30000 }).catch(() => {})
 
   const [T1, T3] = GHOSTS
   const short = (v) => v.split('.').slice(0, 2).join('.')
@@ -1114,7 +1275,1405 @@ const shoot = async (page, name) => {
   let t3SiteId = null
   const refs = []
 
+  /* ── WHAT THE BLOCKS BELOW READ OF THE RUN'S HISTORY, AND WHO WRITES IT (DW-92, Story 5.24b).
+     Beside `t1SiteId` and `t3SiteId`, three more names a block may read: the full sequence assigns
+     each where it always did, and an `--only` run's SEEDS assign the same names from an empty
+     account. A block reads these and never another block's consts, which is what lets it run
+     alone and assert the same thing either way. */
+  let pub1 = null       // what T1's `GET /admin/site/` answers with no key (§38a): title, public url
+  let brandRead = null  // T1's `site_settings.brand`, as the connect's own probe stored it
+  let foreignId = null  // the stranger's row: a site OTHER_USER_ID owns (`strangerSite`)
+
+  /* HOISTED OUT OF THE FULL SEQUENCE (Story 5.24b, DW-92): `cardOf`, `rendered`, `keysUrl` and
+     `openKeys` are called by blocks that now run alone, and an `--only` run never reaches the
+     consts of the `try` below. It is the rule that first put `rendered` outside `brand-none`'s own
+     try — a `const` inside that try was scoped to it, which is how the review's first run threw
+     `rendered is not defined` after 48 steps. `node --check` cannot see this class — it is valid
+     syntax — so the rule is the placement, not a check. */
+  const cardOf = (title) => page.locator('article', { hasText: title })
+  /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders INFLOZO'S OWN 404
+     since Story 3.9 — `(authed)/not-found.tsx`, inside the shell — where it rendered Next's
+     unstyled default before, which is why every `saw` locator here now waits for
+     `SAY.not_found_title` (evaluated from `lib/not-found.ts`) instead of Next's string `could
+     not be found`. DW-67's `note:` said this change would break three steps silently if it were
+     made anywhere else; it is made here, in the same commit.
+     The HTTP status beside it is MEASURED rather than excused or predicted: a route
+     whose segment has a `loading.tsx` streams its shell first, so the status line is committed
+     before the page component ever runs and `notFound()` lands in an already-successful
+     response. Until R-98 that was true of EVERY page in `(authed)`, because one boundary sat
+     over the whole group; the route-group split (`(dashboard)/`, `sites/(list)/`) means it is
+     now true per route. `/sites/brand` has its own boundary, and since Story 5.24b its LAYOUT
+     decides the 404 above it (DW-67), so `brand-none` asserts the status as well as the page. */
+  const rendered = async (url) => {
+    const r = await page.goto(url, { waitUntil: 'load' })
+    // A LOCATOR THAT WAITS ON ITSELF, never `innerText` the instant `load` fires — the same
+    // Suspense boundary that commits the 200 means the SKELETON is what is on screen at `load`,
+    // and run 4 read the skeleton and reported "not the not-found page" about a page that had
+    // not rendered yet. Racing the two possible outcomes also makes a failure say which it saw.
+    const saw = await Promise.race([
+      page.getByText(SAY.not_found_title, { exact: true }).first()
+        .waitFor({ timeout: 20000 }).then(() => 'not-found').catch(() => null),
+      s2cHeading(page).waitFor({ timeout: 20000 }).then(() => 'S2c').catch(() => null),
+    ])
+    return { status: r ? r.status() : 0, saw }
+  }
+
+  /* The Manage keys screen by its own URL, HOISTED (DW-92): `manage-keys` and `keys-content` both
+     open it, and the full sequence runs `moved-domains` between the two. */
+  const keysUrl = (id) => `${APP}/sites/keys?site=${id}`
+  const openKeys = async (id) => {
+    await page.goto(keysUrl(id), { waitUntil: 'load' })
+    // The URL row's reason is on this screen and on no other, and it carries no `%s` hole.
+    await page.getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
+  }
+
+  /* ═══════════ THE BLOCKS THAT RUN ALONE (DW-92, Story 5.24b). Each is ONE function, called by the
+     full sequence where its steps always ran and by `--only` through `BLOCKS` below: the same code
+     either way, reading only the names above. ═══════════ */
+
+  // ── brand-none (seeds: sign-in, T1).
+  const brandNone = async () => {
+    const offerHref = `/sites/brand?site=${t1SiteId}`
+    // ── A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3), and the route that would draw it 404s.
+    //    No Ghost here can produce a site with no accent, no logo and no menu, so the state is
+    //    seeded on the fixture's OWN row through the service role and then put back — the same
+    //    idiom as the Portal and plan questions below.
+    const brandKept = brandRead
+    // RESTORED IN A `finally`, WHICH IS THIS FILE'S OWN IDIOM (`injection-live` restores exactly
+    // what it found, passing or failing). A throw between the strip and the restore left the row
+    // stripped for every step after it — and every one of them reaches S2c (review, 2026-09-08).
+    let stripped, offerGone, direct, forgedSite
+    try {
+      stripped = await patchSettings(t1SiteId, { brand: undefined })
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await page.waitForSelector('text=Connected')
+      offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
+      direct = await rendered(`${APP}${offerHref}`)
+      // A site id NO ROW ANYWHERE CARRIES. It is not the cross-account question — that one needs a
+      // row a DIFFERENT account really owns, and it is asked in `brand-ownership` below, where the
+      // fixture for it exists (review, 2026-09-08: this step used to claim the stranger's row and
+      // forge a nonexistent uuid, which RLS never had to refuse).
+      forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
+    } finally {
+      await patchSettings(t1SiteId, { brand: brandKept })
+    }
+    /* A REAL 404 SINCE STORY 5.24b (DW-67): `sites/brand/layout.tsx` decides it ABOVE the route's skeleton, so the
+       status is asserted beside the page the customer sees — and both are the control, because until that layout the
+       same two loads answered 200 with the not-found page streamed into them. */
+    step('brand-none',
+      stripped.status === 200 && offerGone === 0
+      && direct.saw === 'not-found' && forgedSite.saw === 'not-found'
+      && direct.status === 404 && forgedSite.status === 404,
+      `with the brand taken off the row (HTTP ${stripped.status}) the card draws ${offerGone} offer ` +
+      `link(s), and ${offerHref} rendered ${JSON.stringify(direct.saw)}; a ?site= naming a row that ` +
+      `does not exist rendered ${JSON.stringify(forgedSite.saw)} (the STRANGER'S row is ` +
+      `brand-ownership's). Both answer HTTP ${direct.status}/${forgedSite.status} — 404 wanted: the route's ` +
+      `layout decides it above sites/brand/loading.tsx, so the status is not committed before notFound() ` +
+      `(DW-67). The brand was put back afterwards`)
+  }
+
+  // ── brand-ownership (seeds: sign-in, T1, the stranger's row).
+  const brandOwnership = async () => {
+    const offerHref = `/sites/brand?site=${t1SiteId}`
+    // ── THE SAME QUESTION, ASKED OF STORY 3.4's TWO ACTIONS, because its acceptance criterion
+    //    says "when the page is opened OR EITHER ACTION IS POSTED" and only the page had ever
+    //    been asked — with a uuid no row anywhere carries, which RLS never had to refuse
+    //    (review, 2026-09-08). These two write `projects` through the CALLER'S OWN session, so
+    //    the guard is RLS itself rather than an `.eq()`: a stranger's site id reads back no row
+    //    and `useBrand` throws `notFound()` before it can decide anything.
+    const foreignPage = await rendered(`${APP}/sites/brand?site=${foreignId}`)
+    /* THE SAME ID IN THE POPUP'S ADDRESS. `brand-screen.tsx`'s `gone()` 404s on the full page and
+       redirects to `/sites` in the window — because a `notFound()` inside the list's own
+       `<Suspense>` would take the whole Sites list with it. Nothing had driven that branch
+       (review 7, 2026-09-10): the list must be there, and no window. */
+    await page.goto(`${APP}/sites?brand=${foreignId}`, { waitUntil: 'load' })
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'), { timeout: NAV_TIMEOUT })
+      .catch(() => {})
+    await page.waitForSelector('text=Connected').catch(() => {})
+    const foreignPopup = await page.evaluate(() => ({
+      brandParam: new URL(location.href).searchParams.get('brand'),
+      dialogInDom: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"]'),
+      cards: document.querySelectorAll('article').length,
+    }))
+    const foreignPopupClosed = !foreignPopup.brandParam && !foreignPopup.dialogInDom && foreignPopup.cards > 0
+    const projectsBefore = await projectsOf()
+    // The forge is made on S2c ITSELF — the fixture's own, legitimately on screen — so both hidden
+    // fields and React's `$ACTION_*` are the real ones and only the site id is a stranger's.
+    const forgeBrand = async (label) => {
+      await page.goto(`${APP}${offerHref}`, { waitUntil: 'load' })
+      await s2cHeading(page).waitFor()
+      await hydrated()
+      return page.evaluate(([id, name]) => {
+        // `innerText`, not `textContent`: `BusyLabel` keeps BOTH labels in the button and hides
+        // one with `visibility: hidden`, which `innerText` omits and `textContent` concatenates —
+        // so this found no button, pressed nothing, and the byte-identical re-read passed for the
+        // wrong reason (review 7, 2026-09-10 — the run's own FAIL).
+        const button = [...document.querySelectorAll('button[type="submit"]')]
+          .find((b) => b.innerText.trim() === name)
+        if (!button) return false
+        button.form.querySelector('input[name="site_id"]').value = id
+        button.click()
+        return true
+      }, [foreignId, label])
+    }
+    // A NEGATIVE ASSERTION NEEDS A POSITIVE CONTROL (standing rule 2). `forgeBrand` returns true
+    // because it FOUND the button and called click() — not because the server ever saw the post —
+    // and `networkidle` is swallowed with `.catch(() => {})`, so a press that had not landed yet
+    // satisfied "the projects are byte-identical" for the wrong reason. Both actions have an
+    // observable server answer and this now waits for it: the forged **Use your brand** reaches
+    // `useBrand`, whose site read returns no row through RLS, so it calls `notFound()` and the
+    // not-found page renders; the forged **Skip** redirects to `/sites`. Either one proves the
+    // round trip completed before the rows are re-read (review 5, 2026-09-09).
+    /* ── DW-85 (3), STORY 3.9: THE ACTION'S POPUP BRANCH, which this step had never driven. The
+       forge below is made on the FULL PAGE, where `useBrand`'s vanished-row answer is `notFound()`.
+       From inside the WINDOW the answer is deliberately different — `formData.get('popup') === '1'`
+       redirects to `/sites` instead, because a `notFound()` raised inside the list's own
+       `<Suspense>` would replace the Sites list with the 404 page. Only the READ half of that
+       branch had a driver (`foreignPopup` above); the WRITE half had none, so the popup line could
+       have been deleted with every step here still green. Same forge, same stranger's id, opened
+       through `?brand=` on the fixture's OWN site so the window is really a window. */
+    await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
+    const popupOpen = await page.locator('dialog[aria-labelledby="brand-panel-title"]')
+      .waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false)
+    if (popupOpen) await hydrated()
+    const forgedPopup = popupOpen && await page.evaluate((id) => {
+      const form = [...document.querySelectorAll('dialog[open] form')]
+        .find((f) => f.querySelector('input[name="site_id"]') && f.querySelector('input[name="popup"]'))
+      if (!form) return false
+      form.querySelector('input[name="site_id"]').value = id
+      form.querySelector('button[type="submit"]').click()
+      return true
+    }, foreignId)
+    const popupLanded = forgedPopup && await page
+      .waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'), { timeout: NAV_TIMEOUT })
+      .then(() => true).catch(() => false)
+    const popupCards = await page.locator('article').count()
+    const afterPopup = await projectsOf()
+
+    const forgedUse = await forgeBrand(SAY.brand_use)
+    /* THE POST HAS TWO OBSERVABLE LANDINGS AND THE CONTROL TAKES EITHER, because what it is here
+       to prove is that the press REACHED the server — not which branch the server then chose.
+       `useBrand`'s site read is `.maybeSingle()`: a stranger's row comes back as no row and no
+       error and it calls `notFound()`, but a read that ERRORS redirects to `&failed=1` instead,
+       deliberately ("one transient PostgREST failure is not a stranger's row", review 4). Waiting
+       only for the not-found page therefore reported "the press never arrived" about a press that
+       had arrived and been refused the other way — twice in five runs, while the security claim
+       beneath it (no row written, nothing linked to the stranger's site) passed every time.
+       Which landing happened is RECORDED, so a run says which branch it exercised rather than
+       hiding the difference (executed 2026-09-09, runs 2 and 5). */
+    const sawNotFound = await page.getByText(SAY.not_found_title, { exact: true }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    /* AND WHERE IT ACTUALLY WENT, read after the wait rather than waited on: `page.waitForURL` is
+       wrapped by the DW-68 retry, so racing one against the locator spent a second 20s and two
+       navRetries on a step that had already answered. */
+    const forgedUseUrl = page.url()
+    const forgedUseSaw = (await page.locator('main').evaluate((el) => el.textContent).catch(() => ''))
+      .replace(/\s+/g, ' ').trim().slice(0, 140)
+    /* DW-74's OWN DATUM, NOW ASSERTED RATHER THAN RECORDED. The eighth run established that the
+       press DID land — on `/sites/brand?site=<the stranger's id>` with `<main>` EMPTY, because
+       Next's default not-found page REPLACES the route instead of filling the landmark. So the
+       sentence this control waits for lived outside the landmark it was read from, and "what
+       varies is when it appears, not which branch was taken". Story 3.9's `(authed)/not-found.tsx`
+       renders INSIDE the shell, so the sentence is now in `<main>` where the control reads — which
+       is the half of DW-74 that is a fix and not a measurement. Only asserted on the not-found
+       branch: a `failed-redirect` lands on S2c and correctly carries no such sentence. */
+    const notFoundInMain = forgedUseSaw.includes(SAY.not_found_title)
+    const forgedUseLanded = sawNotFound ? 'not-found'
+      : (new URL(forgedUseUrl).searchParams.get('failed') === '1' ? 'failed-redirect' : null)
+    const afterUse = await projectsOf()
+    const forgedSkip = await forgeBrand(SAY.brand_skip)
+    const forgedSkipLanded = await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
+      .then(() => true).catch(() => false)
+    const afterForgedSkip = await projectsOf()
+    // NOT A RE-READ COMPARED WITH ITSELF: nothing may now be LINKED to the stranger's site, which
+    // is the one row `useBrand` could have written if RLS had let it through.
+    const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
+    step('brand-ownership',
+      foreignPage.saw === 'not-found' && foreignPopupClosed && forgedUse && forgedSkip
+      && Boolean(forgedUseLanded) && (!sawNotFound || notFoundInMain) && forgedSkipLanded
+      && forgedPopup && popupLanded && popupCards > 0
+      && projectsById(afterPopup) === projectsById(projectsBefore)
+      && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
+      && projectsById(afterUse) === projectsById(projectsBefore)
+      && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
+      `/sites/brand?site= a row a DIFFERENT account owns rendered ${JSON.stringify(foreignPage.saw)} — ` +
+      `and as /sites?brand= the WINDOW closed onto the list (brand param ` +
+      `${JSON.stringify(foreignPopup.brandParam)}, dialog ${foreignPopup.dialogInDom}, ` +
+      `${foreignPopup.cards} cards), never the 404 over the list — ` +
+      `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
+      `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
+      `submitted from the fixture's session — and EACH POST WAS SEEN TO LAND before the rows were ` +
+      `re-read (the forged Use reached useBrand and was refused, landing on ` +
+      `${JSON.stringify(forgedUseLanded)} — "not-found" is its site read coming back EMPTY through ` +
+      `RLS and "failed-redirect" is that read erroring, and both are the server answering this ` +
+      `press. It ended on ${JSON.stringify(forgedUseUrl)} showing ${JSON.stringify(forgedUseSaw)}, ` +
+      `with the not-found sentence INSIDE <main> = ${notFoundInMain} — DW-74's eighth run found ` +
+      `that landmark empty, which is the whole reason this control was unreliable; ` +
+      `and the same id forged into the WINDOW'S own form (popup=1, opened = ${forgedPopup}) landed ` +
+      `back on the LIST rather than on the 404 = ${popupLanded} with ${popupCards} card(s) still ` +
+      `drawn and nothing written, which is DW-85 (3) — the write half of the popup branch, whose ` +
+      `read half alone had a driver. ` +
+      `The forged Skip redirected to /sites = ` +
+      `${forgedSkipLanded}, because a byte-identical re-read proves nothing about a press that ` +
+      `never arrived. The caller still has ${afterUse.length} project, ` +
+      `byte-identical to the ${projectsBefore.length} it had before ` +
+      `(${projectsById(afterUse) === projectsById(projectsBefore)}` +
+      // A DIFFERENCE NAMES ITSELF. A boolean here cost the review a run it could not explain.
+      `${projectsById(afterUse) === projectsById(projectsBefore) ? '' :
+         `; before=${projectsById(projectsBefore)} afterUse=${projectsById(afterUse)} ` +
+         `afterSkip=${projectsById(afterForgedSkip)}`}), and ${linkedToForeign} of them ` +
+      `is linked to the stranger's site — the one row a press could have written. These two write ` +
+      `through the caller's OWN session, so RLS is the guard and not an .eq() — the acceptance ` +
+      `criterion's "or either action is posted", executed`)
+  }
+
+  // ── manage-keys: keys-screen to keys-forged (seeds: sign-in, T1). T3 need not be connected:
+  //    `keys-foreign-key` pastes T3's KEY into T1's screen, and it is T1's Ghost that answers.
+  const manageKeys = async () => {
+    /* THE SAME PANEL BY THE DOOR THE CUSTOMER USES. `openKeys` above is a document load, which is
+       the FULL page (`sites/keys/page.tsx`); this is the ⋯ row's own click, which soft-navigates to
+       `/sites?manage=<id>` — the SAME route, with the panel drawn in a `<dialog>` over the cards.
+       Both draw `keys-screen.tsx`, so a step that does not care which door it came through may use
+       either. The two ADDRESSES differ, which they did not before the owner's test of 2026-09-10:
+       the popup used to be an intercepted route at the full page's own URL, and every answer from
+       inside it was then a navigation the interception did not survive. */
+    const openKeysPopup = async (id, name) => {
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await page.waitForSelector('text=Connected')
+      await cardOf(name).first().getByRole('button', { name: /^Options for / }).first().click()
+      const menu = page.locator(`#site-menu-${id}`)
+      await menu.waitFor({ state: 'visible' })
+      await menu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
+      await page.locator('dialog[open]').getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
+    }
+    /* What the screen looks like from outside: is it a window over the list, or a page instead of
+       it? Read off the DOM and not off the URL — a URL says which door was used and not what is on
+       screen, and every one of the owner's findings was about what was on screen.
+
+       `topBar` IS HIS FINDING 1 ON BOTH POPUPS, made checkable: the search field and **Connect
+       site** are drawn by the SHELL from a table keyed on the exact path, so while the panel was a
+       route of its own they simply were not rendered. */
+    const keysShape = async () => await page.evaluate(() => ({
+      dialogOpen: !!document.querySelector('dialog[open]'),
+      dialogInDom: !!document.querySelector('dialog[aria-labelledby="keys-panel-title"]'),
+      panelMounted: !!document.querySelector('#keys-panel-title'),
+      // The Sites cards are <article>s (`(list)/page.tsx`), and the panel contains none — so
+      // "the list is still there" and "the panel is drawn instead of it" are distinguishable.
+      cardsBehind: document.querySelectorAll('article').length,
+      topBar: !!document.querySelector('input[name="q"]')
+        && [...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/sites/connect'),
+    }))
+    /* The credential row for a site, read READ-ONLY through the pooler — `private` answers 404 over
+       PostgREST by design (§21j), so this is the only way to see what the chokepoint wrote. */
+    const credsOf = async (siteId) => (await sql`
+      select admin_key_id, admin_key_rotated_at, staff_token_vault_ref, staff_token_rotated_at,
+             admin_key_vault_ref
+        from private.site_credentials where site_id = ${siteId}
+    `)[0] || {}
+    const changesFor = async (siteId) => (await sql`
+      select route, detail from private.credential_audit
+       where site_id = ${siteId} and action = 'credential_change' order by occurred_at, id
+    `)
+
+    // ── keys-screen: the ⋯ row goes somewhere, and what it goes to is S11e's wide popup around B20.
+    const t1Name = pub1.title || 'Ghost6'
+    await openKeysPopup(t1SiteId, t1Name)
+    await page.waitForURL((u) => u.pathname === '/sites' && u.searchParams.get('manage') === t1SiteId)
+    await shoot(page, 's11e')
+    const openedAs = await keysShape()
+    const screen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
+    const named = [SAY.keys_admin_name, SAY.keys_content_name, SAY.keys_staff_name].every((n) => screen.includes(n))
+    const enabled = [SAY.keys_admin_enables, SAY.keys_content_enables, SAY.keys_staff_enables]
+      .every((n) => screen.includes(n.replace(/\s+/g, ' ')))
+    const tokenAbsent = screen.includes(SAY.keys_absent)
+    // THE URL IS TEXT. Not a field, not a disabled field, not a readonly one (A9 item 17): the
+    // assertion is that no input anywhere on this screen carries the site's address as its value.
+    const urlIsText = screen.includes(SAY.keys_url_reason) && screen.includes(pub1.url || T1.url)
+    const urlFields = await page.locator('dialog[open] input').evaluateAll((all, address) =>
+      all.filter((i) => (i.value || '').includes(address) || i.name === 'url').length, T1.url)
+    // AND NOTHING OFFERS TO REVEAL A KEY — B20 draws an eye and this screen deliberately has none.
+    const reveals = await page.evaluate(() =>
+      [...document.querySelectorAll('button, a, [title], svg title')]
+        .filter((el) => /\b(show|reveal|unmask|hide)\b/i.test(`${el.textContent || ''} ${el.getAttribute('title') || ''} ${el.getAttribute('aria-label') || ''}`)).length)
+    const noRevealSaid = screen.includes(SAY.keys_no_reveal)
+    const t1Kid = kidOf(T1.adminKey)
+    const maskDrawn = screen.includes(t1Kid)
+    step('keys-screen',
+      named && enabled && tokenAbsent && urlIsText && urlFields === 0 && reveals === 0
+      && noRevealSaid && maskDrawn && screen.includes(SAY.keys_roll_hint)
+      && openedAs.dialogOpen && openedAs.panelMounted && openedAs.cardsBehind > 0,
+      `the ⋯ row opened S11e's popup at /sites?manage=<id> — an OPEN <dialog> = ` +
+      `${openedAs.dialogOpen} with ${openedAs.cardsBehind} Sites cards still behind it, which is ` +
+      `the owner's finding 1. All three credentials named = ${named}, each with ` +
+      `the app's own one line on what it enables = ${enabled}, the token reading ` +
+      `${JSON.stringify(SAY.keys_absent)} = ${tokenAbsent}. The address is TEXT with its reason ` +
+      `= ${urlIsText} and there are ${urlFields} inputs carrying it — no field and no disabled field ` +
+      `(A9 item 17). ${reveals} elements offer to show a key (B20's eye cannot exist: the secret half ` +
+      `never leaves the chokepoint) and the screen says so itself = ${noRevealSaid}; the Admin row is ` +
+      `masked with the key's PUBLIC id half = ${maskDrawn}. The roll-keys hint is the app's own = ` +
+      `${screen.includes(SAY.keys_roll_hint)}`)
+
+    await axeAt(page, 'keys-screen', async () => { await openKeysPopup(t1SiteId, t1Name) })
+    await axeAt(page, 'keys-route', async () => { await openKeys(t1SiteId) })
+
+    // ── keys-phone: ON A PHONE THE TWO COLUMNS BECOME ONE, THE ADDRESS STAYING AT THE TOP — the
+    //    acceptance criterion S11e's collapse added, read off the geometry rather than assumed
+    //    (review, 2026-09-10). The `axe` pass at 390 above sees accessibility and not order.
+    await page.setViewportSize({ width: 390, height: 844 })
+    await openKeysPopup(t1SiteId, t1Name)
+    const phone = await page.evaluate((label) => {
+      const dialog = document.querySelector('dialog[open]')
+      const visible = (el) => el && el.getClientRects().length > 0
+      const address = [...dialog.querySelectorAll('span')].find((s) => s.textContent === label && visible(s))
+      const rows = [...dialog.querySelectorAll('section')].filter(visible)
+      const test = [...dialog.querySelectorAll('button')].find((b) => visible(b) && b.closest('aside'))
+      const top = (el) => (el ? el.getBoundingClientRect().top : NaN)
+      return {
+        addressTop: top(address), firstRowTop: top(rows[0]), lastRowBottom: rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : NaN,
+        testTop: top(test), width: dialog.getBoundingClientRect().width, viewport: window.innerWidth,
+        overflow: document.documentElement.scrollWidth > window.innerWidth,
+      }
+    }, SAY.keys_url_label)
+    await page.keyboard.press('Escape')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    step('keys-phone',
+      phone.addressTop < phone.firstRowTop && phone.testTop > phone.lastRowBottom
+      && phone.width <= phone.viewport && !phone.overflow,
+      `at 390 the address sits ABOVE the first key row (${Math.round(phone.addressTop)} < ` +
+      `${Math.round(phone.firstRowTop)}), the rail's Test connection sits BELOW the last row ` +
+      `(${Math.round(phone.testTop)} > ${Math.round(phone.lastRowBottom)}), the window is ` +
+      `${Math.round(phone.width)}px in a ${phone.viewport}px viewport and nothing runs off the edge = ${!phone.overflow}`)
+
+    /* ── keys-popup: THE POPUP'S OWN BEHAVIOUR, and every claim here is one of the owner's four
+       findings of 2026-09-10 made checkable. He walked this screen and reported that the top bar
+       vanished when the window opened, that pressing the row twice landed the window on a blank
+       screen, that Test connection "opens a new popup in the background with Test results" on a
+       blank screen, and that an empty Save said nothing at all — "Overall the user experience is
+       not good and is very buggy. There should be only one perfect popup and that only should be
+       source of truth."
+
+       THE FIRST THREE WERE ONE CAUSE: the popup was an INTERCEPTED ROUTE, so opening it moved the
+       URL off `/sites` — which is where the shell reads its top bar from — and every answer from
+       inside it was a navigation Next did not intercept, so the full page loaded behind the still
+       open window and took the list with it. It is `/sites?manage=<id>` now, a parameter on the
+       list, and the route never changes at all.
+
+       A REFUSAL IS THE WRITE THIS STEP USES because it writes nothing: `hello` is refused by
+       `parseCredential` before Vault is reached, so the step's own subject is the CHROME. */
+    await openKeysPopup(t1SiteId, t1Name)
+    const onOpen = await keysShape()
+    await page.fill('#keys-admin', 'hello')
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.getByText(SAY.credential_malformed).first().waitFor()
+    const afterRefusal = await keysShape()
+    // HIS FINDING 4: an EMPTY save. It used to redirect in silence — "a press with nothing to do
+    // says nothing about it" — which is R-98 broken by a decision rather than by an omission.
+    await page.fill('#keys-admin', '')
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_empty', { timeout: 20000 }).catch(() => {})
+    const emptySaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const afterEmpty = await keysShape()
+    // BACK AFTER A REFUSAL IS THE LIST, not the panel as it stood before the save: the three actions
+    // redirect with `RedirectType.replace` (Change Log 10), which until this step was measured on a
+    // throwaway control and asserted nowhere live (review, 2026-09-10). Two answers have landed in
+    // this window by now — the refusal and the empty press — and one Back must leave it.
+    await page.goBack({ waitUntil: 'load' }).catch(() => {})
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'), { timeout: 20000 }).catch(() => {})
+    // The address moves on the popstate and the tree follows it: wait for the window to LEAVE
+    // rather than read the document the instant the URL is right (run 8, 2026-09-10, read it
+    // still there). A window that never leaves fails the assertion below either way.
+    await page.locator('dialog[open]').waitFor({ state: 'detached', timeout: 20000 }).catch(() => {})
+    const afterKeysBack = await keysShape()
+    const backUrl = new URL(page.url())
+    await openKeysPopup(t1SiteId, t1Name)
+    // Cancel: the footer control — a `<Link href="/sites" replace>` in both chromes (Change Log 14).
+    await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).last().click()
+    // `!manage`: the pathname is already `/sites` inside the popup (review 7 of 3.4, 2026-09-10).
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
+    const afterCancel = await keysShape()
+    // AND THE ROW OPENS IT AGAIN. This is the regression the whole step exists for: with the panel
+    // left mounted, the second press changed the URL and drew nothing at all.
+    await openKeysPopup(t1SiteId, t1Name)
+    const secondOpen = await keysShape()
+    await page.keyboard.press('Escape')
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
+    const afterEscape = await keysShape()
+    // …AND THE ✕ IN THE HEADER, S11e's own, which shares the footer's word as its accessible name
+    // and was driven for the brand window only (review, 2026-09-10).
+    await openKeysPopup(t1SiteId, t1Name)
+    await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).first().click()
+    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
+    const afterX = await keysShape()
+    // …and a typed URL is still the FULL page, which is the half that has to keep working with no
+    // script at all (`keys-js-off` reads its markup).
+    await openKeys(t1SiteId)
+    const typedUrl = await keysShape()
+    step('keys-popup',
+      onOpen.dialogOpen && onOpen.topBar && onOpen.cardsBehind > 0
+      && afterRefusal.dialogOpen && afterRefusal.topBar && afterRefusal.cardsBehind > 0
+      && emptySaid.includes(SAY.keys_empty_admin) && afterEmpty.dialogOpen && afterEmpty.cardsBehind > 0
+      && !afterCancel.panelMounted && !afterCancel.dialogInDom && afterCancel.cardsBehind > 0
+      && secondOpen.dialogOpen && secondOpen.panelMounted
+      && !afterEscape.panelMounted && !afterEscape.dialogInDom && afterEscape.cardsBehind > 0
+      && !afterX.panelMounted && !afterX.dialogInDom && afterX.cardsBehind > 0
+      && !afterKeysBack.panelMounted && !afterKeysBack.dialogInDom && backUrl.pathname === '/sites' && !backUrl.searchParams.get('manage')
+      && typedUrl.panelMounted && !typedUrl.dialogInDom && typedUrl.cardsBehind === 0,
+      `THE TOP BAR IS STILL THERE while the window is open = ${onOpen.topBar} — his finding 1, and ` +
+      `it holds because /sites?manage= never leaves the route the shell draws that bar for. ` +
+      `A refusal keeps the window OPEN with the sentence under its own field = ` +
+      `${afterRefusal.dialogOpen}, the bar still drawn = ${afterRefusal.topBar} and ` +
+      `${afterRefusal.cardsBehind} cards still behind it — which is his finding 3 by the door a ` +
+      `refusal uses (the three actions redirect with RedirectType.replace, so there is one ` +
+      `history entry for the panel however many keys are saved). An EMPTY Save now says which box ` +
+      `is empty = ${JSON.stringify(emptySaid)} with the window still open = ${afterEmpty.dialogOpen} ` +
+      `— his finding 4, which used to redirect in silence. Cancel returns to the list with the ` +
+      `panel UNMOUNTED = ${!afterCancel.panelMounted} and no dialog left in the DOM = ` +
+      `${!afterCancel.dialogInDom}; the ⋯ row opens it A SECOND time = ${secondOpen.dialogOpen}; ` +
+      `Escape does the same as Cancel = ${!afterEscape.panelMounted}, and so does the header's ✕ ` +
+      `= ${!afterX.panelMounted}. ONE Back after two answers had landed in the window is the LIST ` +
+      `(${JSON.stringify(backUrl.pathname + backUrl.search)}, panel gone = ${!afterKeysBack.panelMounted}) ` +
+      `— the actions redirect by replace, so the window never leaves an entry behind; and a typed URL is the FULL ` +
+      `page — panel drawn = ${typedUrl.panelMounted}, no dialog = ${!typedUrl.dialogInDom}, ` +
+      `${typedUrl.cardsBehind} Sites cards on it`)
+
+    // ── keys-malformed: refused UNDER THE ADMIN FIELD, and nothing written.
+    await openKeys(t1SiteId)
+    const keysBeforeBad = await credsOf(t1SiteId)
+    await page.fill('#keys-admin', 'hello')
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_malformed', { timeout: 20000 }).catch(() => {})
+    const malformedSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const keysAfterBad = await credsOf(t1SiteId)
+    step('keys-malformed',
+      malformedSaid.includes(SAY.keys_malformed)
+      && keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref
+      && String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at),
+      `"hello" in the Admin API key field: refused UNDER THAT FIELD with the app's own sentence ` +
+      `(${JSON.stringify(malformedSaid.slice(0, 90))}) — refused before Vault and before the network — ` +
+      `and the credential row is untouched: same vault ref = ` +
+      `${keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref}, same rotation ` +
+      `stamp = ${String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at)}`)
+
+    /* ── keys-two-fields: DW-81 (Story 5.24b) — A POST CARRYING TWO CREDENTIALS IS REFUSED WHOLE, BEFORE ANYTHING IS
+       READ OR WRITTEN. No form sends one — each credential row is its own form with one field (`keys-js-off`) — so this
+       is the crafted post: the Admin row's form CLONED, which carries every hidden field React put there and none of its
+       listeners, with a Content key field added, submitted natively. It lands on `?keys=keys_failed` with that code's
+       sentence ("Nothing changed"), and it is true: the `sites` row, the credential row and the `credential_change` log
+       are each as they were. The URL is the positive control — only the server can have answered it. */
+    await openKeys(t1SiteId)
+    const rowBefore2 = (await rowsOf('id,content_key,credentials_present,updated_at')).find((r) => r.id === t1SiteId) || {}
+    const credsBefore2 = await credsOf(t1SiteId)
+    const changesBefore2 = (await changesFor(t1SiteId)).length
+    const posted2 = await page.evaluate(({ adminKey, contentKey }) => {
+      const form = document.querySelector('form:has(#keys-admin)')
+      if (!form) return false
+      const clone = form.cloneNode(true)
+      clone.style.display = 'none'
+      clone.dataset.harnessClone = '1'
+      clone.querySelector('#keys-admin').value = adminKey
+      const second = document.createElement('input')
+      second.name = 'content_key'
+      second.value = contentKey
+      clone.appendChild(second)
+      document.body.appendChild(clone)
+      clone.requestSubmit()
+      return true
+    }, { adminKey: T1.adminKey, contentKey: T1.contentKey })
+    const refusedTwo = await page.waitForURL((u) => u.searchParams.get('keys') === 'keys_failed', { timeout: 30000 })
+      .then(() => true).catch(() => false)
+    const saidTwo = refusedTwo && await says(page, SAY.keys_failed)
+    const rowAfter2 = (await rowsOf('id,content_key,credentials_present,updated_at')).find((r) => r.id === t1SiteId) || {}
+    const credsAfter2 = await credsOf(t1SiteId)
+    const changesAfter2 = (await changesFor(t1SiteId)).length
+    const rowSame = JSON.stringify(rowAfter2) === JSON.stringify(rowBefore2)
+    const credsSame = ['admin_key_vault_ref', 'admin_key_id', 'admin_key_rotated_at', 'staff_token_vault_ref']
+      .every((k) => String(credsAfter2[k]) === String(credsBefore2[k]))
+    step('keys-two-fields',
+      posted2 && refusedTwo && saidTwo && rowSame && credsSame && changesAfter2 === changesBefore2,
+      `the Admin row's form, cloned with a Content key field added and posted: landed on ?keys=keys_failed = ` +
+      `${refusedTwo} saying ${JSON.stringify(SAY.keys_failed)} = ${saidTwo}; the sites row unchanged = ${rowSame}, the ` +
+      `credential row unchanged = ${credsSame}, credential_change rows ${changesBefore2} -> ${changesAfter2} (DW-81)`)
+
+    // ── keys-foreign-key: T3's REAL Admin key, valid on its own Ghost, pasted into T1's screen.
+    //    IT WAS CALLED `keys-other-site` AND ASSERTED OUR OWN SENTENCE, and that was wrong — the
+    //    owner ruled it R-100 (2026-09-09). The key is sent to T1's Ghost, which never issued it,
+    //    so T1 answers 401 `Unknown Admin API Key` at `config/` and the `site/` comparison is never
+    //    reached. Ghost decides "is this key mine" by one lookup in `api_keys`, a table with no
+    //    domain or install column (MEASUREMENTS §37), so it gives the same 401 to a wrong key and
+    //    to another site's key and Inflozo may not claim to tell them apart. The customer is
+    //    protected either way: refused under the field, nothing written.
+    //    NO `.catch(() => {})` ON THE WAIT: a wrong prediction here used to cost a silent 30-second
+    //    timeout and then a red assertion, which reads as a product failure rather than a stale test.
+    await openKeys(t1SiteId)
+    const beforeOther = await credsOf(t1SiteId)
+    await page.fill('#keys-admin', T3.adminKey)
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'ghost_unknown_key', { timeout: 30000 })
+    const otherSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const afterOther = await credsOf(t1SiteId)
+    step('keys-foreign-key',
+      otherSaid.includes(SAY.ghost_unknown_key)
+      && afterOther.admin_key_vault_ref === beforeOther.admin_key_vault_ref
+      && afterOther.admin_key_id === beforeOther.admin_key_id,
+      `T3's own Admin API key — valid, and valid on the WRONG Ghost — pasted into T1's screen: ` +
+      `REFUSED under the Admin field with GHOST'S OWN answer ` +
+      `(${JSON.stringify(otherSaid.slice(0, 120))}), and NOTHING was written — same vault ref and ` +
+      `admin_key_id still ${JSON.stringify(afterOther.admin_key_id)}. T1 answered 401 Unknown Admin ` +
+      `API Key at GET config/ — it never issued this key — so the refusal fires before GET site/ is ` +
+      `called at all. R-100: Inflozo cannot tell "another site's key" from "wrong key" and does not ` +
+      `pretend to; the domain-move sentence belongs to the step below, which is where it is earned`)
+
+    // ── keys-other-site: THE GUARD R-100 KEEPS, and the only step that executes it. It fires when
+    //    THIS Ghost reports a public address different from the one recorded at connect — a domain
+    //    move, which is FR-C8's edit-URL-in-place hazard reaching the record through the key field.
+    //    ⛔ THE BASELINE IS SEEDED, not the answer: neither test Ghost can be given a second
+    //    address, so the RECORD's `site_settings.public_url` is moved instead and T1's own valid key
+    //    is pasted. `config/` 200 (own key, own Ghost), `site/` 200 with T1's real url, the hosts
+    //    differ, the guard fires. The comparison, the refusal, the sentence and the untouched
+    //    credential row are all the product's — the same shape `moved-domains` declares below.
+    //    AND IT PROVES THE FIX OF 2026-09-09 TOO: the guard now compares Ghost's recorded answer
+    //    with Ghost's current one, so the restore at the end puts the record back to a state where
+    //    a legitimate rotation is NOT refused.
+    await patchSettings(t1SiteId, { public_url: 'https://moved.example.com/' })
+    await openKeys(t1SiteId)
+    const beforeMoved = await credsOf(t1SiteId)
+    await page.fill('#keys-admin', T1.adminKey)
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    await page.waitForURL((u) => u.searchParams.get('keys') === 'keys_other_site', { timeout: 30000 })
+    const movedSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
+    const afterMoved = await credsOf(t1SiteId)
+    await patchSettings(t1SiteId, { public_url: pub1.url })
+    step('keys-other-site',
+      movedSaid.includes(SAY.keys_other_site)
+      && afterMoved.admin_key_vault_ref === beforeMoved.admin_key_vault_ref
+      && afterMoved.admin_key_id === beforeMoved.admin_key_id,
+      `the record's recorded public address moved to a host T1's Ghost will never report, then T1's ` +
+      `OWN valid key pasted into T1's own screen: REFUSED under the field with the app's own ` +
+      `sentence, which names the fix (${JSON.stringify(movedSaid.slice(0, 120))}), and NOTHING was ` +
+      `written — same vault ref, admin_key_id still ${JSON.stringify(afterMoved.admin_key_id)}. The ` +
+      `key is valid and config/ passed; it is GET site/'s url, whose host differs from the recorded ` +
+      `site_settings.public_url, that stops it. ⛔ The BASELINE is seeded because neither test Ghost ` +
+      `has a second address; everything after it is the product's. The record is restored to ` +
+      `${JSON.stringify(pub1.url)} afterwards, so later steps rotate against a truthful baseline`)
+
+    // ── keys-rotate: THE ROTATION, live. ⛔ The key is RE-PASTED rather than regenerated in Ghost
+    //    Admin: regenerating T1's integration key would invalidate `GHOST6_ADMIN_API_KEY` for every
+    //    other run and every other probe in `tools/probe/`. What the product does is identical
+    //    either way — `store()` mints a NEW vault secret, DW-44's trigger drops the one behind the
+    //    ref it replaces, `admin_key_rotated_at` moves and `admin_key_id` is rewritten — and the
+    //    assertion is on the SECRET's identity, not on the key's, so a re-paste proves the whole
+    //    path (the same argument `re-adopt` makes for DW-44's replace path).
+    await openKeys(t1SiteId)
+    const beforeRotate = await credsOf(t1SiteId)
+    const changesBeforeRotate = (await changesFor(t1SiteId)).length
+    await page.fill('#keys-admin', T1.adminKey)
+    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
+    // POLLED ON THE DATABASE, NOT ON THE URL: a save that succeeds redirects to the very URL it was
+    // posted from, so `waitForURL` on the absence of `?keys=` resolves against the STARTING url and
+    // waits for nothing at all — the assertion would then read the row before the write landed.
+    const afterRotate = (await until(async () => {
+      const row = await credsOf(t1SiteId)
+      return row.admin_key_vault_ref && row.admin_key_vault_ref !== beforeRotate.admin_key_vault_ref ? row : null
+    })) || {}
+    const oldGone = (await secretsBehind(beforeRotate.admin_key_vault_ref)) === 0
+    const newHeld = (await secretsBehind(afterRotate.admin_key_vault_ref)) === 1
+    const rotateChanges = await changesFor(t1SiteId)
+    const rotateRow = rotateChanges[rotateChanges.length - 1] || {}
+    step('keys-rotate',
+      afterRotate.admin_key_vault_ref !== beforeRotate.admin_key_vault_ref && oldGone && newHeld
+      && new Date(afterRotate.admin_key_rotated_at) > new Date(beforeRotate.admin_key_rotated_at)
+      && afterRotate.admin_key_id === t1Kid
+      && rotateChanges.length === changesBeforeRotate + 1
+      && rotateRow.route === 'sites/keys' && (rotateRow.detail || {}).kind === 'admin'
+      && (rotateRow.detail || {}).direction === 'in',
+      `a key saved from Manage keys on T1: the vault ref MOVED, the secret behind the old ref is ` +
+      `gone = ${oldGone} (DW-44's trigger, on the product's own rotation path) and there is exactly ` +
+      `one behind the new = ${newHeld}; admin_key_rotated_at advanced to ` +
+      `${JSON.stringify(afterRotate.admin_key_rotated_at)}; admin_key_id is the key's public id half ` +
+      `= ${afterRotate.admin_key_id === t1Kid}; and DW-76 wrote exactly ` +
+      `${rotateChanges.length - changesBeforeRotate} new credential_change row, stamped ` +
+      `${JSON.stringify(rotateRow.route)} — THIS screen's route and not the connect's — with detail ` +
+      `${JSON.stringify(rotateRow.detail)}. ⛔ The key is re-pasted, not regenerated: regenerating ` +
+      `T1's integration key would invalidate GHOST6_ADMIN_API_KEY for every probe in this repo. The ` +
+      `SECRET's identity is what is asserted, so the path is the same one a real rotation takes`)
+
+    // ── keys-token: DW-54's `staff-removed`, DRIVEN LIVE FOR THE FIRST TIME. Nothing in the product
+    //    had ever stored or removed a Staff Access Token — Epic 7 asks for one at first deploy, and
+    //    FR-C8 has always said it can be added and taken away at any time. This is that screen.
+    //    AND IT IS WRAPPED, because between the store and the removal a real Staff Access Token —
+    //    a full-Administrator credential — is sitting in the product's Vault. An abort in that
+    //    window (a timeout, a failed selector, a killed run) used to leave it there until the
+    //    throwaway account was purged. The `finally` nulls the ref through the pooler so DW-44's
+    //    trigger drops the secret behind it whatever happens (review, 2026-09-09); `injection-live`
+    //    carries the same shape one story up.
+    let tokenStored = false
+    try {
+    await openKeys(t1SiteId)
+    const credsBeforeToken = await credsOf(t1SiteId)
+    const changesBeforeToken = (await changesFor(t1SiteId)).length
+    await page.fill('#keys-staff', STAFF_TOKEN)
+    await page.locator('form:has(#keys-staff) button[type="submit"]').click()
+    const withToken = (await until(async () => {
+      const row = await credsOf(t1SiteId)
+      return row.staff_token_vault_ref ? row : null
+    })) || {}
+    // FROM THIS LINE THERE IS A LIVE TOKEN IN VAULT, so the `finally` knows it from here — not from
+    // after the removal, where an abort between the two left it believing there was none (review,
+    // 2026-09-10). It is cleared again below only once the product's own removal is seen.
+    tokenStored = Boolean(withToken.staff_token_vault_ref)
+    await page.getByText(SAY.keys_staff_remove).first().waitFor({ timeout: 20000 }).catch(() => {})
+    const tokenSecret = await secretsBehind(withToken.staff_token_vault_ref)
+    const presentAfterAdd = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
+    const tokenScreen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
+    const removeOffered = tokenScreen.includes(SAY.keys_staff_remove)
+    // …AND OUT AGAIN. The site must still be Connected through both — removing degrades, never
+    // disconnects, which is the whole of "a partially credentialed site is an ordinary state".
+    await page.getByRole('button', { name: SAY.keys_staff_remove, exact: true }).click()
+    const withoutToken = (await until(async () => {
+      const row = await credsOf(t1SiteId)
+      return row.staff_token_vault_ref === null ? row : null
+    })) || {}
+    const secretAfterRemove = withToken.staff_token_vault_ref
+      ? await secretsBehind(withToken.staff_token_vault_ref) : -1
+    const presentAfterRemove = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
+    const tokenChanges = (await changesFor(t1SiteId)).slice(changesBeforeToken)
+    const staffRows = tokenChanges.filter((r) => (r.detail || {}).kind === 'staff')
+    step('keys-token',
+      Boolean(withToken.staff_token_vault_ref) && tokenSecret === 1
+      && (presentAfterAdd.credentials_present || {}).staff === true && removeOffered
+      && withoutToken.staff_token_vault_ref === null && secretAfterRemove === 0
+      && (presentAfterRemove.credentials_present || {}).staff === false
+      && presentAfterRemove.disconnected_at === null
+      && staffRows.length === 2
+      && JSON.stringify(staffRows.map((r) => (r.detail || {}).direction)) === JSON.stringify(['in', 'out'])
+      && staffRows[0].route === 'sites/keys' && staffRows[1].route === 'sites/keys/remove-token'
+      // THE ADMIN KEY'S ID HALF IS UNTOUCHED BY BOTH: `store('staff')` upserts the same row with
+      // `coalesce(excluded.admin_key_id, …)`, and a plain `excluded.admin_key_id` would blank the
+      // Admin mask and the moved-domains hint the moment a token was added (review, 2026-09-10).
+      && withToken.admin_key_id === credsBeforeToken.admin_key_id
+      && withoutToken.admin_key_id === credsBeforeToken.admin_key_id,
+      `DW-54's staff-removed, live at last — the product had no way in for the token until this ` +
+      `screen. ADDED: a vault secret behind staff_token_vault_ref = ${tokenSecret === 1}, ` +
+      `credentials_present.staff true = ${(presentAfterAdd.credentials_present || {}).staff === true}, ` +
+      `and the row then offers its removal = ${removeOffered} (it is drawn only where it could act, ` +
+      `UX-DR3). REMOVED: the ref nulled, the secret behind it GONE = ${secretAfterRemove === 0} ` +
+      `(read from vault.secrets through the pooler, not from a log line), credentials_present.staff ` +
+      `false, and the site STILL CONNECTED — disconnected_at ` +
+      `${JSON.stringify(presentAfterRemove.disconnected_at)}. Removing degrades, never disconnects. ` +
+      `DW-76 wrote ${staffRows.length} credential_change rows for it, ` +
+      `${JSON.stringify(staffRows.map((r) => `${r.route} ${(r.detail || {}).direction}`))} — each ` +
+      `stamped with the control that pressed it. And admin_key_id was the same before, with and ` +
+      `after the token = ${withToken.admin_key_id === credsBeforeToken.admin_key_id && withoutToken.admin_key_id === credsBeforeToken.admin_key_id}`)
+    tokenStored = withoutToken.staff_token_vault_ref !== null
+    } finally {
+      // Only if the product's own removal did NOT run to completion. It is a no-op on the happy
+      // path, and on any other it is the difference between a dropped secret and a live one.
+      if (tokenStored) {
+        await sql`update private.site_credentials set staff_token_vault_ref = null
+                   where site_id = ${t1SiteId} and staff_token_vault_ref is not null`
+        console.log('  NOTE  keys-token: the run left a staff token behind; the ref was nulled by the harness')
+      }
+    }
+
+    /* ── keys-test: ONE `GET config/` on the STORED key, and NOTHING is written — the negative
+       control that this story did not step on Story 3.7's state machine.
+
+       AND IT IS PRESSED IN THE WINDOW, which is the owner's finding 3 (2026-09-10) executed by its
+       own door: "When I click Test Connection in the Pop up, It tests it but opens a new popup in
+       the background with Test results. Then both these popup appear on a blank screen." It did:
+       `testConnection` redirects onto the panel's own address, an intercepted route did not
+       intercept a server action's redirect, and the full page loaded behind the still-open window
+       and took the Sites list with it. `openKeys` (a document load onto the full page) would prove
+       the CALL and nothing about the chrome — so this step opens the window. */
+    await openKeysPopup(t1SiteId, t1Name)
+    const healthBefore = ((await rowsOf('id,health,last_checked_at')).find((r) => r.id === t1SiteId) || {})
+    const readsBefore = (await sql`
+      select count(*)::int as n from private.credential_audit
+       where site_id = ${t1SiteId} and action = 'admin_read'`)[0].n
+    await page.getByRole('button', { name: SAY.keys_test, exact: true }).click()
+    await page.waitForURL((u) => u.searchParams.get('test') !== null, { timeout: 30000 }).catch(() => {})
+    // THE URL LANDS BEFORE THE PANEL DOES: the answer re-renders the window's server component
+    // behind its own skeleton, so the result is waited for and not read the instant the address
+    // changes (the first live run on the two-column window read the skeleton, 2026-09-10).
+    await page.locator('dialog[open]').getByText(SAY.keys_test_passed).first().waitFor({ timeout: 20000 }).catch(() => {})
+    const tested = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
+    // WHERE THE RESULT LANDED, and how many windows there are to read it in.
+    const afterTest = await keysShape()
+    const windows = await page.locator('dialog[aria-labelledby="keys-panel-title"]').count()
+    const panels = await page.locator('#keys-panel-title').count()
+    const testRows = (await sql`
+      select route, detail from private.credential_audit
+       where site_id = ${t1SiteId} and action = 'admin_read' order by occurred_at, id`).slice(readsBefore)
+    const healthAfter = ((await rowsOf('id,health,last_checked_at')).find((r) => r.id === t1SiteId) || {})
+    step('keys-test',
+      tested.includes(SAY.keys_test_passed) && tested.includes(SAY.keys_test_needs_token)
+      && testRows.length === 1 && testRows[0].route === 'sites/keys/test'
+      && healthAfter.health === healthBefore.health
+      && String(healthAfter.last_checked_at) === String(healthBefore.last_checked_at)
+      && afterTest.dialogOpen && afterTest.topBar && afterTest.cardsBehind > 0
+      && windows === 1 && panels === 1,
+      `PRESSED IN THE WINDOW, and the result landed IN IT: ${windows} window and ${panels} panel ` +
+      `in the document, still open = ${afterTest.dialogOpen}, ${afterTest.cardsBehind} Sites cards ` +
+      `still behind it and the top bar still drawn = ${afterTest.topBar} — the owner's finding 3, ` +
+      `where the answer used to load the full page behind the window and take the list with it. ` +
+      `The result is DRAWN — ` +
+      `${JSON.stringify(SAY.keys_test_passed)} = ${tested.includes(SAY.keys_test_passed)} — and it ` +
+      `says what still needs the token the customer has not added = ` +
+      `${tested.includes(SAY.keys_test_needs_token)}. It made exactly ${testRows.length} Admin call, ` +
+      `stamped ${JSON.stringify((testRows[0] || {}).route)}. AND IT WROTE NOTHING: sites.health is ` +
+      `still ${JSON.stringify(healthAfter.health)} and last_checked_at still ` +
+      `${JSON.stringify(healthAfter.last_checked_at)} — both are Story 3.7's state machine, and a ` +
+      `manual press that wrote either would fire its transition semantics from outside it`)
+
+    // ── keys-js-off: the ⋯ row has a DESTINATION and the route's three forms are wired, both read
+    //    off SERVED markup — React emits method=post and the encoded $ACTION_* fields only when it
+    //    renders on the server, so a form reached by a client transition carries neither.
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.waitForSelector('text=Connected')
+    // BY ITS TEXT and not by position — `disconnect-js-off` reads its row the same way, and DOM order
+    // is not the claim (review, 2026-09-10).
+    const keysHref = await page.locator(`#site-menu-${t1SiteId} a`, { hasText: SAY.keys_menu }).first().getAttribute('href')
+    await page.goto(keysUrl(t1SiteId), { waitUntil: 'load' })
+    const keysForms = await page.locator('form').evaluateAll((forms) =>
+      forms.filter((f) => f.querySelector('input[name="site_id"]')).map((f) => ({
+        method: (f.getAttribute('method') || '').toLowerCase(),
+        action: f.getAttribute('action') !== null,
+        encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
+        site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
+        field: [...f.querySelectorAll('input:not([type="hidden"])')].map((i) => i.name).join(','),
+        submits: f.querySelectorAll('button[type="submit"]').length,
+      })))
+    const wiredKeys = keysForms.filter((f) => f.method === 'post' && f.action && f.encoded > 0
+                                              && f.site === 1 && f.submits === 1)
+    const keysFields = keysForms.map((f) => f.field).sort()
+    // DERIVED, NOT COUNTED: the FIELD LIST is what pins the screen's shape — the three credentials
+    // plus Test connection, which types nothing — and "every form served is wired" is the claim
+    // worth making. A hand-typed 4 said neither, and silently depended on `keys-token` having
+    // removed the token first (with one present, the staff form has no typed field and the list
+    // changes shape). Review, 2026-09-09.
+    const EXPECTED_KEYS_FIELDS = ['', 'admin_key', 'content_key', 'staff_token']
+    step('keys-js-off',
+      keysHref === `/sites/keys?site=${t1SiteId}`
+      && keysForms.length > 0 && wiredKeys.length === keysForms.length
+      && JSON.stringify(keysFields) === JSON.stringify(EXPECTED_KEYS_FIELDS),
+      `the ⋯ row is an <a href> with a real destination (${JSON.stringify(keysHref)}), so it is a ` +
+      `navigation and not a control that does nothing without a script; and the route it lands on ` +
+      `serves ${keysForms.length} forms, ${wiredKeys.length} of them progressively enhanced — ` +
+      `method=post, an action attribute, React's encoded $ACTION_* fields, one hidden site_id and ` +
+      `one submit each: ${JSON.stringify(keysForms)}. Their typed fields are ${JSON.stringify(keysFields)} ` +
+      `— the three credentials plus Test connection, which has none. So paste a key, add the token, ` +
+      `remove it and test the connection all work with JavaScript off`)
+
+    // ── keys-forged: A SECOND ACCOUNT'S SITE ID, in the URL and in each of the three forms. The
+    //    page reads under the caller's OWN session, so RLS is the whole guard; each action reads
+    //    the same way before it writes. A negative assertion needs a positive control (standing
+    //    rule 2): every press is WATCHED LANDING before anything is re-read.
+    const victim = ((await insert('/sites', {
+      user_id: OTHER_USER_ID, url: 'https://victim.inflozo.com', title: 'Victim',
+    })).body || [])[0] || {}
+    const victimBefore = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
+    await page.goto(keysUrl(victim.id), { waitUntil: 'load' }).catch(() => {})
+    const pageRefused = await page.getByText(SAY.not_found_title, { exact: true }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    const landings = []
+    for (const which of ['#keys-admin', '#keys-content', '#keys-staff', null]) {
+      await openKeys(t1SiteId)
+      // The Content form checks the key in the browser before it posts, so it is filled with a key
+      // T1 accepts and the forged id is what the SERVER has to refuse (review, 2026-09-10).
+      if (which === '#keys-content') await page.fill('#keys-content', T1.contentKey)
+      await hydrated()
+      const forged = await page.evaluate(({ id, field }) => {
+        const form = field
+          ? document.querySelector(field).closest('form')
+          : [...document.querySelectorAll('form')].find((f) =>
+              f.querySelector('input[name="site_id"]') && f.querySelectorAll('input:not([type="hidden"])').length === 0)
+        if (!form) return false
+        form.querySelector('input[name="site_id"]').value = id
+        form.querySelector('button[type="submit"]').click()
+        return true
+      }, { id: victim.id, field: which })
+      landings.push(forged && await page.getByText(SAY.not_found_title, { exact: true }).first()
+        .waitFor({ timeout: 20000 }).then(() => true).catch(() => false))
+    }
+    const victimAfter = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
+    const victimCreds = (await sql`select * from private.site_credentials where site_id = ${victim.id}`).length
+    step('keys-forged',
+      Boolean(victim.id) && pageRefused && landings.every(Boolean) && victimAfter === victimBefore
+      && victimCreds === 0,
+      `a site id owned by a DIFFERENT account: /sites/keys?site=<id> is the not-found page = ` +
+      `${pageRefused}, and forged into the Admin form, the Content form, the token form and the Test connection form ` +
+      `and submitted from the fixture's own session, every press was seen to LAND on the not-found ` +
+      `page = ${JSON.stringify(landings)} — its ownership read came back empty through RLS. The ` +
+      `stranger's row is byte-identical afterwards = ${victimAfter === victimBefore} and it has ` +
+      `${victimCreds} credential rows`)
+  }
+
+  // ── moved-domains (seeds: sign-in, Pro, T3). PRO because the seeding makes a LIVE decoy beside
+  //    T3, and T3's reconnect is then a second active site, which Free's cap of one refuses.
+  const movedDomains = async () => {
+    // ── moved-domains: FR-C8's hint. ⛔ THE OLD RECORD IS SEEDED and the rest is the product's:
+    //    there is no SECOND reachable address for either test Ghost, so a genuine domain move
+    //    cannot be performed here — what can be, and is, is the state a domain move leaves behind:
+    //    a record the caller already has whose `admin_key_id` is the key being connected with. The
+    //    connect, the lookup, the redirect and the hint are all live.
+    const decoy = ((await insert('/sites', {
+      user_id: USER_ID, url: 'https://old-address.inflozo.com', title: 'Old address',
+      disconnected_at: new Date().toISOString(),
+    })).body || [])[0] || {}
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${decoy.id}, ${USER_ID}, ${kidOf(T3.adminKey)})
+    `
+    const movedAgain = async () => {
+      // T3 out through the product's own ⋯, then back in through the sheet: a connect is what
+      // carries the hint, and re-adoption is a connect.
+      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+      await page.waitForSelector('text=Connected')
+      // BY THE SITE ID, not the title: a `hasText` substring match on T3's title is a needless
+      // second way for this click to miss when a precise id is already in hand. `popovertarget`
+      // carries `t3SiteId` itself, same as the menu it opens.
+      await page.locator(`button[popovertarget="site-menu-${t3SiteId}"]`).click()
+      const menu3 = page.locator(`#site-menu-${t3SiteId}`)
+      await menu3.waitFor({ state: 'visible' })
+      await menu3.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
+      await page.waitForSelector('dialog[open]')
+      await sheet(page).getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
+      await page.waitForURL((u) => u.pathname === '/sites', { timeout: 30000 })
+      /* THE DISCONNECT HAS LANDED ONLY WHEN THE LIST HAS BEEN DRAWN AGAIN (Story 5.24b). The address is `/sites`
+         before the press and after it, so the wait above proves nothing: the redirect re-renders the list through
+         its skeleton, and `ConnectSiteDialog` is keyed on the number of sites. An opener pressed in between either
+         finds no sheet and goes to the full page `/sites/connect`, or opens a sheet the new list then remounts —
+         both seen on a local production build, where `moved-domains` failed twice waiting for the sheet's step
+         link. So: T3's card gone (a disconnected record is not listed), no confirm still open, the skeleton gone,
+         and the sheet's element present. */
+      await page.waitForFunction((id) => !document.querySelector(`button[popovertarget="site-menu-${id}"]`)
+        && !document.querySelector('dialog[open]') && !document.querySelector('main [aria-busy="true"]')
+        && Boolean(document.getElementById('connect-site-sheet')), t3SiteId, { timeout: 30000 })
+      await opener(page).first().click()
+      await page.waitForSelector('dialog[open] a[href="?step=keys"]')
+      await sheet(page).locator('a[href="?step=keys"]').click()
+      const contentField = page.locator('dialog[open] #s2b-content-key')
+      await contentField.waitFor()
+      await fill(page, T3.url, T3.adminKey, T3.contentKey)
+      await submit(page)
+      // NOT `waitForURL(pathname === '/sites')`: A FAILED SUBMIT LEAVES THE DIALOG OPEN ON TOP OF
+      // THE SAME `/sites` THE FLOW WAS ALREADY ON, so that predicate is already true before the
+      // submit even lands and proves nothing (found live, 2026-09-09 — it read a failed reconnect
+      // as a success and the run only surfaced the lie two steps later, as a T3 that had silently
+      // stayed disconnected). A real success is a real navigation: `redirect()` tears down this
+      // exact dialog instance, so waiting for THIS element to be gone is the same signal
+      // `s2cHeading(page).waitFor()` gives the FIRST connect, spelled for a dialog that has no
+      // heading of its own to wait on.
+      const reconnected = await contentField.waitFor({ state: 'detached', timeout: 60000 })
+        .then(() => true).catch(() => false)
+      if (!reconnected) {
+        const shown = (await page.locator('dialog[open]').innerText().catch(() => '')).replace(/\s+/g, ' ')
+        throw new Error(`moved-domains: T3's reconnect did not navigate away — the dialog is still ` +
+          `open ${shown ? 'saying ' + JSON.stringify(shown) : 'with nothing readable in it'}`)
+      }
+      if (page.url().includes('/sites/brand')) await skipS2c(page)
+      await page.waitForSelector('text=Connected')
+      return page.url()
+    }
+    const movedTo = await movedAgain()
+    const hinted = await says(page, SAY.keys_moved)
+    const onOneCard = await page.locator('article', { hasText: SAY.keys_moved.slice(0, 24) }).count()
+    /* ── DW-85 (1), STORY 3.9: THE OTHER HINT, `?old=live`. The decoy above is DISCONNECTED, so
+       the hint promises the 90-day snapshot. A matched record that is STILL CONNECTED has no clock
+       at all — `disconnected_at` is what the clock is derived from (DW-43) — so the sentence drops
+       the snapshot clause and says the other site is still connected instead. That branch had never
+       been drawn by any run. Same decoy, `disconnected_at` nulled. */
+    await sql`update public.sites set disconnected_at = null where id = ${decoy.id}`
+    const movedLiveTo = await movedAgain()
+    const hintedLive = await says(page, SAY.keys_moved_live)
+    const hintedLiveWrong = await says(page, SAY.keys_moved)
+
+    /* ── DW-83, ITS OWN SEEDING (review of Story 3.9, 2026-09-11). Every seeding above puts ONE
+       matching record in front of `findSiteByAdminKeyId`, and with one candidate any `order by`
+       returns it — so `(s.disconnected_at is null) desc` could be reverted with every step here
+       still green. This is the one arrangement where the old order and the new disagree: the
+       LIVE decoy is the OLDER record (it is the one seeded first, above, still with
+       `disconnected_at` null) and a SECOND, NEWER decoy is DISCONNECTED, both carrying the same
+       Admin key id under the same caller. `created_at desc` alone returns the newer, disconnected
+       one and hints about a 90-day clock that is not running; the order the entry asked for
+       returns the live one. */
+    const newer = ((await insert('/sites', {
+      user_id: USER_ID, url: 'https://older-address.inflozo.com', title: 'Older address',
+      disconnected_at: new Date().toISOString(),
+    })).body || [])[0] || {}
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${newer.id}, ${USER_ID}, ${kidOf(T3.adminKey)})
+    `
+    /* ── DW-83's OWN CONTROL (Story 5.24b), taken while the seeding above exists. The hint below
+       proves the order term only if THIS arrangement is one the term decides, and nothing had
+       shown that it is. So `findSiteByAdminKeyId`'s own query — read out of
+       `server/ghost-admin/index.ts` by the Python half, never retyped here — is run read-only on
+       this run's pooler connection, for this caller and T3's key id with T3's own record excepted,
+       as the connect calls it: WITHOUT its first `order by` term it must pick the NEWER,
+       disconnected record, and WHOLE it must pick the OLDER, live decoy. If the query without the
+       term picks anything else, the seeding cannot tell the term from its absence and the hint
+       proves nothing — a FAIL, not a pass (standing rule 2). */
+    const pickedBy = async (query) =>
+      ((await sql.unsafe(query, [USER_ID, kidOf(T3.adminKey), t3SiteId]))[0] || {}).site_id || null
+    const pickedWithout = await pickedBy(MOVED.without)
+    const pickedWith = await pickedBy(MOVED.with)
+    const which = (id) => (id === newer.id ? 'the NEWER, disconnected record'
+      : id === decoy.id ? 'the OLDER, live decoy' : JSON.stringify(id))
+    step('moved-order-term',
+      pickedWithout === newer.id && pickedWith === decoy.id,
+      `findSiteByAdminKeyId's own query over this seeding, read-only: WITHOUT its first order term ` +
+      `(${JSON.stringify(MOVED.dropped)}) it picked ${which(pickedWithout)}, and WITH it ` +
+      `${which(pickedWith)} — so the seeding is one where the term decides, and the hint below ` +
+      `proves DW-83's order rather than passing on any order at all`)
+    await movedAgain()
+    const hintedOrdered = await says(page, SAY.keys_moved_live)
+    const hintedOrderedWrong = await says(page, SAY.keys_moved)
+    await sql`delete from private.site_credentials where site_id = ${newer.id}`
+    await sql`delete from public.sites where id = ${newer.id}`
+    await sql`update public.sites set disconnected_at = now() where id = ${decoy.id}`
+
+    /* ── DW-85 (2): THE CROSS-ACCOUNT CONTROL for `findSiteByAdminKeyId`'s `user_id` clause. A
+       decoy under a DIFFERENT account carrying the SAME Admin key id must produce NO hint — two
+       customers connecting the same Ghost is not a domain move and is none of either's business.
+       Nothing had ever executed that clause: every decoy before this one was the caller's own, so
+       deleting `and c.user_id = …` would have left every step here green.
+       IT IS ALSO DW-83's PROOF, which is why the two entries closed together: with the caller's own
+       decoy gone and only the stranger's left, a lookup that ignored `user_id` would find the
+       stranger's row and hint about a site the caller cannot see. */
+    await sql`delete from private.site_credentials where site_id = ${decoy.id}`
+    const foreignDecoy = ((await insert('/sites', {
+      user_id: OTHER_USER_ID, url: 'https://another-account.inflozo.com', title: 'Another account',
+      disconnected_at: new Date().toISOString(),
+    })).body || [])[0] || {}
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${foreignDecoy.id}, ${OTHER_USER_ID}, ${kidOf(T3.adminKey)})
+    `
+    await movedAgain()
+    const hintedAcross = await says(page, SAY.keys_moved) || await says(page, SAY.keys_moved_live)
+    // The credential row goes now; the `sites` row goes with `OTHER_USER_ID` itself, which the
+    // Python half deletes in its `finally` — the same cleanup every other foreign fixture rides on.
+    await sql`delete from private.site_credentials where site_id = ${foreignDecoy.id}`
+
+    // …AND THE NEGATIVE CONTROL. A record whose `admin_key_id` is null NEVER matches — which is
+    // every record connected before this story's migration — so the same connect prints no hint.
+    await sql`
+      insert into private.site_credentials (site_id, user_id, admin_key_id)
+      values (${decoy.id}, ${USER_ID}, null)
+      on conflict (site_id) do update set admin_key_id = null
+    `
+    await movedAgain()
+    const hintedAgain = await says(page, SAY.keys_moved)
+    await sql`delete from private.site_credentials where site_id = ${decoy.id}`
+    step('moved-domains',
+      Boolean(decoy.id) && hinted && onOneCard === 1 && !hintedAgain
+      && hintedLive && !hintedLiveWrong && Boolean(foreignDecoy.id) && !hintedAcross
+      && Boolean(newer.id) && hintedOrdered && !hintedOrderedWrong,
+      `a connect whose Admin key id matches ANOTHER record this caller holds: the redirect carried ` +
+      `?moved= (${JSON.stringify(new URL(movedTo).search)}) and FR-C8's hint is on that ONE card ` +
+      `(${onOneCard} of them) reading the app's own ${JSON.stringify(SAY.keys_moved)} — the 90 days ` +
+      `derived from ORPHAN_SNAPSHOT_DAYS, not typed into the sentence. THE CONTROL: with the same ` +
+      `record's admin_key_id set to NULL — which is every record connected before this story's ` +
+      `migration — the identical connect printed NO hint = ${!hintedAgain}, because a null never ` +
+      `matches and a missing hint is not a wrong one. STORY 3.9 ADDED TWO MORE SEEDINGS (DW-85): ` +
+      `with the SAME record still CONNECTED the hint is the other one — ` +
+      `${JSON.stringify(SAY.keys_moved_live)} = ${hintedLive}, and the snapshot wording did NOT ` +
+      `also appear = ${!hintedLiveWrong}, because a record that was never let go has no 90-day ` +
+      `clock to promise (the redirect carried ${JSON.stringify(new URL(movedLiveTo).search)}); and ` +
+      `a decoy carrying the same Admin key id under a DIFFERENT ACCOUNT produced NO hint at all = ` +
+      `${!hintedAcross}, which is the first execution of findSiteByAdminKeyId's user_id clause — ` +
+      `two customers connecting the same Ghost is not a domain move. AND DW-83'S OWN PROOF, added ` +
+      `at the review: with the LIVE decoy left as the OLDER record and a NEWER, DISCONNECTED twin ` +
+      `seeded beside it, the hint was the live one = ${hintedOrdered} and NOT the snapshot one = ` +
+      `${!hintedOrderedWrong} — the one arrangement where created_at alone answers the wrong row. ` +
+      `⛔ The OLD record is seeded through the pooler: ` +
+      `neither test Ghost has a second reachable address, so a real domain move cannot be performed ` +
+      `here. The connect, the lookup, the redirect and the hint are all the product's`)
+  }
+
+  // ── keys-content: keys-content and keys-test-refused (seeds: sign-in, T1) — the two Manage keys
+  //    steps the full sequence runs AFTER `moved-domains`, which is why they are a block of their own.
+  const keysContent = async () => {
+    // ── keys-content: THE CONTENT KEY'S SAVE, the one row whose Save has a browser half (FR-C2's
+    //    check against the customer's own Ghost) and a service-role write behind it — and until
+    //    this step the only save on the screen no live run pressed (review, 2026-09-10). Re-pasted
+    //    rather than regenerated, for `keys-rotate`'s reason.
+    await openKeys(t1SiteId)
+    const contentBefore = (await rowsOf('id,content_key,credentials_present')).find((r) => r.id === t1SiteId) || {}
+    await page.fill('#keys-content', T1.contentKey)
+    await page.locator('form:has(#keys-content) button[type="submit"]').click()
+    const contentAfter = (await until(async () => {
+      const row = (await rowsOf('id,content_key,credentials_present')).find((r) => r.id === t1SiteId) || {}
+      return row.content_key === T1.contentKey && (row.credentials_present || {}).content === true ? row : null
+    })) || {}
+    // THE PRESS HAS LANDED ONLY WHEN THE SAVE STOPS BEING BUSY. The row changes before the action's own redirect has
+    // arrived, and the form stays `aria-busy` until it does (`keys-content-form.tsx`), so a navigation made the moment
+    // the row changed raced that redirect and was aborted (Story 5.24b, seen under `next dev`, where the redirect is slow).
+    await page.waitForFunction(() => !document.querySelector('form:has(#keys-content) [aria-busy="true"]'), null, { timeout: 30000 })
+      .catch(() => {})
+    const contentMask = await page.getByText(T1.contentKey.slice(0, 10), { exact: false }).first()
+      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
+    step('keys-content',
+      contentAfter.content_key === T1.contentKey && (contentAfter.credentials_present || {}).content === true
+      && (contentAfter.credentials_present || {}).admin === (contentBefore.credentials_present || {}).admin
+      && contentMask,
+      `the Content API key pasted and saved: sites.content_key is the pasted key = ` +
+      `${contentAfter.content_key === T1.contentKey}, credentials_present.content true = ` +
+      `${(contentAfter.credentials_present || {}).content === true} in the SAME update (the mirror ` +
+      `cannot lag the key), the admin flag beside it untouched = ` +
+      `${(contentAfter.credentials_present || {}).admin === (contentBefore.credentials_present || {}).admin}, ` +
+      `and the row draws the key's first characters = ${contentMask}`)
+
+    // ── keys-test-refused: THE RESULT CARD'S FAILURE SHAPE, by a typed URL — `?test=` and `?status=`
+    //    are whoever holds the URL's, so the guard on them is read-only to drive: a three-digit
+    //    status draws Ghost's refusal with that number, and anything else draws NO sentence at all
+    //    (review, 2026-09-10 — the fallback used to be "We couldn't save that just now").
+    //    A 403 AND NOT A 429 SINCE STORY 5.24b (DW-52): a 429 or a 5xx is `ghost_unavailable` now —
+    //    Ghost failing to answer, not Ghost refusing — with its own sentence and no status in it.
+    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_refused&status=403`, { waitUntil: 'load' })
+    const refusedSaid = await says(page, SAY.keys_ghost_refused.replace('%s', '403'))
+    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_unavailable`, { waitUntil: 'load' })
+    const unavailableSaid = await says(page, SAY.ghost_unavailable)
+    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_refused&status=abc`, { waitUntil: 'load' })
+    const refusedBlank = !(await says(page, SAY.keys_ghost_refused.split('%s')[0]))
+    await page.goto(`${keysUrl(t1SiteId)}&test=not-a-code`, { waitUntil: 'load' })
+    const unknownBlank = !(await says(page, 'just now'))
+    step('keys-test-refused',
+      refusedSaid && unavailableSaid && refusedBlank && unknownBlank,
+      `?test=ghost_refused&status=403 draws ${JSON.stringify(SAY.keys_ghost_refused.replace('%s', '403'))} ` +
+      `= ${refusedSaid}; ?test=ghost_unavailable draws ${JSON.stringify(SAY.ghost_unavailable)} = ${unavailableSaid} ` +
+      `(DW-52); with status=abc it draws no "(HTTP )" sentence = ${refusedBlank}; and a code ` +
+      `the table does not name draws nothing rather than a save's sentence = ${unknownBlank}`)
+  }
+
+  /* ═══════════ STORY 5.24b's BLOCKS — each a function the full sequence calls and `--only` names. ═══════════ */
+
+  /* A POST'S OWN ADDRESS ON T1, for R-226's positive control: the path of a real post, read from the Content API with the
+     key the harness already holds (read-only), so the address is one a customer would really copy out of the browser. Any
+     path proves the rule — only the ROOT is judged — so a Content API that does not answer falls back to one. */
+  const t1Post = async () => {
+    const slug = await fetch(`${T1.url}/ghost/api/content/posts/?key=${T1.contentKey}&limit=1&fields=slug`)
+      .then((r) => r.json()).then((j) => j.posts[0].slug).catch(() => 'welcome')
+    return `/${slug}/`
+  }
+
+  // ── connect-paths (seeds: sign-in) — STORY 5.24b: R-219 with R-226's order (DW-55), and the private-address refusal
+  //    (DW-58). Both refusals store nothing. `positive` is the block's third step, T1 connected by a POST's address; the full
+  //    sequence passes false because its own `connect`, next, is that step (a bare host with a post's path), and a second
+  //    connect of T1 there would only be told it is already connected.
+  const connectPaths = async (positive = true) => {
+    const keysStep = async () => {
+      await page.goto(`${APP}/sites/connect?step=keys`, { waitUntil: 'load' })
+      await page.waitForSelector('#s2b-api-url')
+    }
+    // A made-up Content key: the browser's own check meets no Ghost at either address and lets the submit through, as it
+    // does for any address it cannot reach, so the SERVER's answer is what each step reads (the owner's steps 6 and 7).
+    const madeUp = 'c'.repeat(26)
+
+    /* ── path-refused: THE OWNER'S SENTENCE (R-219) for an address whose ROOT holds no Ghost. `example.com` answers
+       `/ghost/api/admin/config/` with a 404 (executed at the Create), so the root is asked — with the typed key, which is
+       never a real one here — and the sentence names the path that was typed, under API URL; nothing is stored. */
+    const before = (await rowsOf()).length
+    await keysStep()
+    await fill(page, 'https://example.com/blog', BOGUS, madeUp)
+    await submit(page)
+    const pathSentence = SAY.path_unsupported.replace('%s', '/blog')
+    const pathSaid = await errorAt(page, 'api-url').filter({ hasText: pathSentence }).first()
+      .waitFor({ timeout: 45000 }).then(() => true).catch(() => false)
+    const afterPath = (await rowsOf()).length
+    step('path-refused', pathSaid && afterPath === before,
+      `https://example.com/blog: ${JSON.stringify(pathSentence)} under API URL = ${pathSaid} (R-219's own words, the path ` +
+      `from what was typed), and ${afterPath - before} sites rows were written — the root was asked and answered 404 ` +
+      `(DW-55, R-226)`)
+
+    /* ── address-blocked: A PUBLIC NAME THAT RESOLVES TO LOOPBACK. `127.0.0.1.nip.io` answers 127.0.0.1 from any public
+       resolver (executed at the Create), and `normaliseSiteUrl` — a shape check — lets it through; `fetchWithKey` resolves
+       it and refuses before any request (DW-58). The customer hears `ghost_unreachable`'s sentence; the audit row, the one
+       record kept to be trusted, says WHY: `detail.blocked`. */
+    const auditBefore = (await readAudit()).length
+    await keysStep()
+    await fill(page, 'https://127.0.0.1.nip.io', BOGUS, madeUp)
+    await submit(page)
+    const blockedSentence = SAY.ghost_unreachable.replace('%s', '127.0.0.1.nip.io')
+    const blockedSaid = await page.getByText(blockedSentence, { exact: false }).first()
+      .waitFor({ timeout: 45000 }).then(() => true).catch(() => false)
+    const afterBlocked = (await rowsOf()).length
+    const [newest] = await sql`
+      select detail from private.credential_audit where user_id = ${USER_ID} order by occurred_at desc, id desc limit 1`
+    const auditAfter = (await readAudit()).length
+    step('address-blocked',
+      blockedSaid && afterBlocked === before && auditAfter === auditBefore + 1 && Boolean(newest && newest.detail && newest.detail.blocked === true),
+      `https://127.0.0.1.nip.io: ${JSON.stringify(blockedSentence)} = ${blockedSaid}, ${afterBlocked - before} sites rows ` +
+      `written, and the ONE audit row the attempt left carries detail ${JSON.stringify(newest && newest.detail)} — ` +
+      `blocked = ${Boolean(newest && newest.detail && newest.detail.blocked === true)} (DW-58)`)
+
+    /* ── path-page: THE POSITIVE CONTROL, and R-226's whole point — the address of a PAGE on a site at the root connects
+       the site. The root answers `config/` 200, which carries on as the validation itself: the row stores the ORIGIN, and
+       the connect lands on S2c exactly as a bare host's does. */
+    if (!positive) return
+    const post = await t1Post()
+    pub1 = await publicSite(T1)
+    await keysStep()
+    await fill(page, `${T1.url}${post}`, T1.adminKey, T1.contentKey)
+    await submit(page)
+    const landed = await s2cHeading(page).waitFor({ timeout: NAV_TIMEOUT }).then(() => true).catch(() => false)
+    const row = (await rowsOf('*')).find((r) => r.url === T1.url && !r.disconnected_at)
+    if (row) {
+      t1SiteId = row.id
+      brandRead = (row.site_settings || {}).brand || {}
+    }
+    step('path-page', landed && Boolean(row) && (await rowsOf()).length === before + 1,
+      `${T1.url}${post} — a post's own address — connected T1's ROOT: a row with url ${row && row.url} = ` +
+      `${Boolean(row)}, landed on S2c = ${landed} (R-226: the root is judged first, and a Ghost there carries on)`)
+  }
+
+  /* ── search-kept (seeds: sign-in, T1) — STORY 5.24b, DW-82: A WINDOW OVER A FILTERED LIST KEEPS THE FILTER. Every way
+     into the two windows and every way out of them — ✕, Escape, Cancel, a save and a refusal — lands back on
+     `/sites?q=…` with the box still saying it. The windows used to open over the whole list and close onto it. */
+  const searchKept = async () => {
+    const q = new URL(T1.url).hostname.split('.')[0]
+    const want = `/sites?q=${q}`
+    const results = []
+    // CLOSED MEANS THE ADDRESS NO LONGER NAMES A WINDOW. Escape shuts the native `<dialog>` at once and the router's
+    // `replace` lands a moment later, so waiting on the dialog alone read the address before it had moved.
+    const where = async () => {
+      await page.waitForFunction(() => !document.querySelector('dialog[open]'), null, { timeout: 20000 }).catch(() => {})
+      await page.waitForURL((u) => !u.searchParams.has('manage') && !u.searchParams.has('brand'), { timeout: 20000 }).catch(() => {})
+      const u = new URL(page.url())
+      const box = await page.locator('input[type="search"][name="q"]').first().inputValue().catch(() => null)
+      return { url: u.pathname + u.search, box }
+    }
+    // OPEN MEANS THE WINDOW'S OWN WORDS ARE ON SCREEN AND THE ROW'S NAVIGATION HAS SETTLED. `showModal()` dismisses the ⋯
+    // popover the moment the window appears, before the row's push has landed, and an Escape pressed inside that gap
+    // closes the window only for the landing push to open it again (a race as old as the window). The row wears
+    // `aria-busy` until its navigation settles (`PanelLink`), so that is what is waited on.
+    const open = async (row) => {
+      await page.goto(`${APP}${want}`, { waitUntil: 'load' })
+      await page.locator(`button[popovertarget="site-menu-${t1SiteId}"]`).click()
+      await page.locator(`#site-menu-${t1SiteId}`).getByRole('link', { name: row, exact: true }).click()
+      const words = row === SAY.keys_menu ? SAY.keys_url_reason : SAY.brand_title
+      const opened = await page.locator('dialog[open]').getByText(words).filter({ visible: true }).first()
+        .waitFor({ timeout: 30000 }).then(() => true).catch(() => false)
+      await page.waitForFunction(() => !document.querySelector('[popover]:popover-open'), null, { timeout: 10000 }).catch(() => {})
+      await page.waitForFunction(() => !document.querySelector('a[aria-busy="true"]'), null, { timeout: 30000 }).catch(() => {})
+      // …and the keyboard is IN the window, which is where a customer's Escape lands (`showModal()` puts it there).
+      await page.waitForFunction(() => {
+        const d = document.querySelector('dialog[open]')
+        return Boolean(d && d.contains(document.activeElement))
+      }, null, { timeout: 10000 }).catch(() => {})
+      const u = new URL(page.url())
+      return { opened, url: u.pathname + u.search }
+    }
+    const note = (how, opened, after, extra = {}) => {
+      const kept = opened.opened && opened.url.startsWith(`${want}&`) && after.url === want && after.box === q
+      results.push({ how, opened: opened.url, closed: after.url, box: after.box, ...extra, kept })
+    }
+    const x = () => page.locator(`dialog[open] a[aria-label="${SAY.keys_cancel}"]`).first()
+    const cancel = () => page.locator('dialog[open] a:not([aria-label])', { hasText: SAY.keys_cancel }).first()
+
+    let o = await open(SAY.keys_menu)
+    await x().click()
+    note('keys ✕', o, await where())
+
+    o = await open(SAY.keys_menu)
+    await page.keyboard.press('Escape')
+    note('keys Escape', o, await where())
+
+    o = await open(SAY.keys_menu)
+    await cancel().click()
+    note('keys Cancel', o, await where())
+
+    // A SAVE: Test connection answers INTO the window, and that answer's own address keeps the search.
+    o = await open(SAY.keys_menu)
+    await page.locator('dialog[open] button', { hasText: SAY.keys_test }).first().click()
+    const tested = await page.locator('dialog[open]').getByText(SAY.keys_test_passed).first()
+      .waitFor({ timeout: 45000 }).then(() => new URL(page.url())).catch(() => null)
+    await x().click()
+    note('keys save, then ✕', o, await where(), { answer: tested && tested.pathname + tested.search })
+
+    // A REFUSAL: an empty Admin key box is refused under it, and the refusal's address keeps the search.
+    o = await open(SAY.keys_menu)
+    await page.locator('dialog[open] form:has(#keys-admin) button[type="submit"]').click()
+    const refused = await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_empty', { timeout: 30000 })
+      .then(() => new URL(page.url())).catch(() => null)
+    await x().click()
+    note('keys refusal, then ✕', o, await where(), { answer: refused && refused.pathname + refused.search })
+
+    // The brand window, by its own ✕.
+    o = await open(SAY.brand_offer)
+    await page.locator(`dialog[open] a[aria-label="${SAY.brand_close}"]`).first().click()
+    note('brand ✕', o, await where())
+
+    const answersKept = results.filter((r) => 'answer' in r).every((r) => r.answer && r.answer.startsWith(`${want}&`))
+    step('search-kept', results.every((r) => r.kept) && answersKept,
+      `over ${want}, each window opened with the search in its address and every way out landed back on ${want} with ` +
+      `the box still saying ${JSON.stringify(q)}; the save's and the refusal's own answers kept it too = ${answersKept}: ` +
+      JSON.stringify(results))
+  }
+
+  /* ── keys-escape (seeds: sign-in, T1) — STORY 5.24b, DW-84: ESCAPE DURING A SAVE NEITHER CLOSES THE WINDOW NOR OPENS
+     IT AGAIN. The save's POST is HELD — the next-action request, which only a server action sends — while Escape is
+     pressed, and released after. While it is held the ✕ and Cancel are `aria-disabled`, and Escape leaves the SAME
+     `<dialog>` open (a mark set on it survives, no `close` fired, the address still names the window); released, the
+     answer is drawn in an open window. The old behaviour was the window closing on Escape and the answer's redirect
+     opening it again with the result the customer had walked away from.
+     THE ELEMENT AFTER THE ANSWER IS RECORDED, NOT ASSERTED: Next keys a page segment by its search params, so every
+     answer's new address remounts the page's client components — the window included — on this screen since Story
+     3.6's Fix, with or without Escape. What the customer sees is an open window with the answer, never a close. */
+  const keysEscape = async () => {
+    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
+    await page.locator(`button[popovertarget="site-menu-${t1SiteId}"]`).click()
+    await page.locator(`#site-menu-${t1SiteId}`).getByRole('link', { name: SAY.keys_menu, exact: true }).click()
+    await page.locator('dialog[open]').getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
+    // The row's own navigation settled (its `aria-busy` gone) — `search-kept`'s reason: a window still landing is re-opened.
+    await page.waitForFunction(() => !document.querySelector('a[aria-busy="true"]'), null, { timeout: 30000 }).catch(() => {})
+    await page.evaluate(() => {
+      const d = document.querySelector('dialog[open]')
+      d.dataset.harnessMark = 'keys-escape'
+      window.__closes = 0
+      d.addEventListener('close', () => { window.__closes += 1 })
+    })
+    let release
+    const gate = new Promise((resolve) => { release = resolve })
+    let held = false
+    const hold = async (route) => {
+      const request = route.request()
+      if (request.method() === 'POST' && request.headers()['next-action']) {
+        held = true
+        await gate
+      }
+      await route.continue().catch(() => {})
+    }
+    await page.route('**/*', hold)
+    const state = () => page.evaluate(() => {
+      const d = document.querySelector('dialog[open]')
+      const exits = [...document.querySelectorAll('dialog[open] a[href]')]
+        .filter((a) => /Cancel/.test(a.getAttribute('aria-label') || a.textContent || ''))
+        .map((a) => a.getAttribute('aria-disabled'))
+      return {
+        open: Boolean(d), same: Boolean(d && d.dataset.harnessMark === 'keys-escape'), closes: window.__closes, exits,
+        manage: new URL(location.href).searchParams.has('manage'),
+      }
+    })
+    let whileHeld = null
+    let afterEscape = null
+    let answered = false
+    let after = null
+    try {
+      await page.locator('dialog[open] button', { hasText: SAY.keys_test }).first().click()
+      await until(async () => held)
+      whileHeld = await state()
+      await page.keyboard.press('Escape')
+      await page.waitForTimeout(800)
+      afterEscape = await state()
+    } finally {
+      release()
+    }
+    answered = await page.getByText(SAY.keys_test_passed).first()
+      .waitFor({ timeout: 45000 }).then(() => true).catch(() => false)
+    await page.waitForTimeout(500)
+    after = await state()
+    await page.unroute('**/*', hold)
+    step('keys-escape',
+      held && Boolean(whileHeld && afterEscape && after)
+      && whileHeld.exits.length > 0 && whileHeld.exits.every((v) => v === 'true')
+      && afterEscape.open && afterEscape.same && afterEscape.closes === 0 && afterEscape.manage
+      && answered && after.open && after.manage,
+      `the save's POST was held = ${held}; while it was in flight the ✕ and Cancel were aria-disabled ` +
+      `${JSON.stringify(whileHeld && whileHeld.exits)}; Escape pressed then left ${JSON.stringify(afterEscape)} — the ` +
+      `same window, open, never closed, its address unchanged; the answer, released, arrived = ${answered} in an open ` +
+      `window ${JSON.stringify(after)} (the element after the answer is recorded: a new address remounts it)`)
+  }
+
+  /* ── THE SEEDS: what an `--only` run makes from the empty account the Python half created,
+     before any block runs. Each runs at most once, in this order — `Pro` before either connect,
+     because a second site on Free is refused at the cap — and the comment on each names what it
+     leaves behind. A connect seed goes the way a customer's first connect goes, through the
+     full-page keys step: `fill`, `submit`, S2c's heading and `skipS2c`, which writes nothing.
+     Never through `pro-connect-t3`'s sheet, which waits for a card an empty account does not have. */
+  const seedConnect = async (ghost) => {
+    await page.goto(`${APP}/sites/connect?step=keys`, { waitUntil: 'load' })
+    await fill(page, ghost.url, ghost.adminKey, ghost.contentKey)
+    await submit(page)
+    // A SEED THAT FAILS NAMES ITSELF: a refused connect stays on the keys step with its sentence,
+    // and one still in flight says "Connecting…" — both are in the form's TAIL, beside its button,
+    // which is what this reads (the page's first 200 characters are the step's own heading).
+    if (!(await s2cHeading(page).waitFor({ timeout: NAV_TIMEOUT }).then(() => true).catch(() => false))) {
+      const said = (await page.locator(WIZARD).innerText().catch(() => '')).replace(/\s+/g, ' ').slice(-300)
+      throw new Error(`seed ${ghost.label}: the connect never reached S2c in ${NAV_TIMEOUT / 1000}s; ` +
+        `the form ends ${JSON.stringify(said)} at ${page.url()}`)
+    }
+    await skipS2c(page)
+    const row = (await rowsOf('*')).find((r) => r.url === ghost.url)
+    if (!row) throw new Error(`seed ${ghost.label}: the connect landed and no sites row carries ${ghost.url}`)
+    return row
+  }
+  const connectedRow = async (ghost) => (await rowsOf('*')).find((r) => r.url === ghost.url && !r.disconnected_at) || null
+  const SEEDS = {
+    // the fixture's own session, from the magic link the Python half generated
+    'sign-in': async () => { await page.goto(CONFIRM, { waitUntil: 'load' }) },
+    // `entitlements.state` = pro_active through the service role, as `pro-connect-t3` flips it
+    Pro: async () => {
+      const pro = await patch(`/entitlements?user_id=eq.${USER_ID}`, { state: 'pro_active' })
+      if (pro.status !== 200 || !(pro.body || []).length) throw new Error(`seed Pro: the flip answered HTTP ${pro.status}`)
+    },
+    // T1 connected: `t1SiteId`, `pub1` and `brandRead` set, and the page on /sites. ADOPTED rather than connected again
+    // when a block before it already connected T1 — `connect-paths` does, by a post's address (Story 5.24b).
+    T1: async () => {
+      pub1 = await publicSite(T1)
+      const row = (await connectedRow(T1)) || await seedConnect(T1)
+      t1SiteId = row.id
+      brandRead = (row.site_settings || {}).brand || {}
+    },
+    // T3 connected: `t3SiteId` set, and the page on /sites (adopted the same way)
+    T3: async () => { t3SiteId = ((await connectedRow(T3)) || await seedConnect(T3)).id },
+    // `foreignId`: a site row OTHER_USER_ID owns, which no UI can make
+    stranger: async () => {
+      const body = await strangerSite()
+      foreignId = (body && body[0] && body[0].id) || null
+      if (!foreignId) throw new Error("seed stranger: the service role could not insert the stranger's row")
+    },
+  }
+  /* ── THE REGISTRY. ADDING A BLOCK IS ONE FUNCTION ABOVE AND ONE LINE HERE — its name, the seeds it
+     needs and the function — plus its call in the full sequence where its steps belong. The Python
+     half reads the names out of this object to refuse an unknown one before a key is read, so
+     there is no second list to keep in step — which is why each entry keeps this one-line shape,
+     `'name': { seeds: [...], run: fn }`: it is the shape `only_blocks()` reads. `--only` runs the
+     named blocks in THIS order, which is the full sequence's, whatever order they were typed in. */
+  const BLOCKS = {
+    'connect-paths': { seeds: ['sign-in'], run: connectPaths },
+    'brand-none': { seeds: ['sign-in', 'T1'], run: brandNone },
+    'brand-ownership': { seeds: ['sign-in', 'T1', 'stranger'], run: brandOwnership },
+    'manage-keys': { seeds: ['sign-in', 'T1'], run: manageKeys },
+    'moved-domains': { seeds: ['sign-in', 'Pro', 'T3'], run: movedDomains },
+    'keys-content': { seeds: ['sign-in', 'T1'], run: keysContent },
+    'search-kept': { seeds: ['sign-in', 'T1'], run: searchKept },
+    'keys-escape': { seeds: ['sign-in', 'T1'], run: keysEscape },
+  }
+  /* EACH BLOCK'S SEEDS ARE MADE JUST BEFORE IT, not all at the start (Story 5.24b): `connect-paths` needs an EMPTY
+     account — its refusals must not meet the Free cap — and it runs first, so a later block's T1 has to wait for it. A
+     seed still runs at most once, in `SEEDS`' own order within each block. */
+  const runOnly = async () => {
+    const blocks = Object.keys(BLOCKS).filter((name) => ONLY.includes(name))
+    const needed = new Set(blocks.flatMap((name) => BLOCKS[name].seeds))
+    const unknown = [...needed].filter((name) => !SEEDS[name])
+    if (unknown.length) throw new Error(`BLOCKS names seeds SEEDS does not make: ${unknown.join(', ')}`)
+    const made = []
+    for (const name of blocks) {
+      for (const seed of Object.keys(SEEDS).filter((s) => BLOCKS[name].seeds.includes(s) && !made.includes(s))) {
+        await SEEDS[seed]()
+        made.push(seed)
+      }
+      record('seeds', `before ${name}, --only has made ${made.join(', ')} from an empty account: ` +
+        `t1SiteId ${t1SiteId}, t3SiteId ${t3SiteId}, the stranger's row ${foreignId}`)
+      await BLOCKS[name].run()
+    }
+  }
+
   try {
+    // `--only` (DW-92): the seeds its blocks name, then those blocks, then the `finally` as ever.
+    if (ONLY.length) return await runOnly()
     await page.goto(CONFIRM, { waitUntil: 'load' })
 
     // ── `/sites` WITH NOTHING CONNECTED IS AN EMPTY SCREEN — the owner's finding 7 (2026-09-08),
@@ -1359,12 +2918,19 @@ const shoot = async (page, name) => {
       `Ghost's 401 on the Content API is shown under the field, and ${posted} POSTs left the page ` +
       '— the server action was never called')
 
+    // ── connect-paths' two refusals (`connectPaths`, above; Story 5.24b, DW-55 and DW-58): the account is still empty
+    //    and on Free, which is what they need. Its positive step is the `connect` just below.
+    await connectPaths(false)
+
     // ── T1, for real. The card's title and address are what `GET /admin/site/` answers (§38a),
     //    the address is a link to the PUBLIC url, and "Checked just now" is stamped by that read.
-    const pub1 = await publicSite(T1)
+    pub1 = await publicSite(T1)
     // Typed as a BARE HOST — the matrix's "Bare host typed" row: normalised to the https origin
     // before anything is called, and that origin is what the row stores (review 2, 2026-09-08).
-    await fill(page, T1.url.replace(/^https:\/\//, ''), T1.adminKey, T1.contentKey)
+    // AND WITH A POST'S PATH SINCE STORY 5.24b — R-226's "a page's address on a site at the root" row, the positive
+    // control `connect-paths` owes: the path makes connect ask the ROOT first, the root answers, and it connects.
+    const typedT1 = `${T1.url.replace(/^https:\/\//, '')}${await t1Post()}`
+    await fill(page, typedT1, T1.adminKey, T1.contentKey)
     await submit(page)
     // STORY 3.4: THE CONNECT NOW LANDS ON S2c, because T1's settings carry an accent and a menu.
     await s2cHeading(page).waitFor()
@@ -1374,7 +2940,6 @@ const shoot = async (page, name) => {
     t1SiteId = row.id || null
     const ref1 = t1SiteId ? await refOf(t1SiteId) : null
     const present = row.credentials_present || {}
-    const cardOf = (title) => page.locator('article', { hasText: title })
     step('connect',
       rows.length === 1 && row.url === T1.url && row.ghost_version === T1.version && Boolean(row.content_key)
       && row.title === pub1.title && (row.site_settings || {}).public_url === pub1.url
@@ -1382,7 +2947,7 @@ const shoot = async (page, name) => {
       && present.staff === false && Boolean(ref1) && (await secretsBehind(ref1)) === 1
       && landedOn.replace(/\?.*$/, '') === `${APP}/sites/brand`
       && landedOn.includes(`site=${t1SiteId}`),
-      `${rows.length} row: url ${row.url} from a bare host, ghost_version ${row.ghost_version}, content_key stored = ${Boolean(row.content_key)}, ` +
+      `${rows.length} row: url ${row.url} from a bare host with a post's path (${typedT1}), ghost_version ${row.ghost_version}, content_key stored = ${Boolean(row.content_key)}, ` +
       `title ${JSON.stringify(row.title)} and site_settings.public_url ${(row.site_settings || {}).public_url} ` +
       `both as GET /admin/site/ answers them, ` +
       `settings_read_at set = ${Boolean(row.settings_read_at)}, credentials_present ${JSON.stringify(present)}, ` +
@@ -1391,7 +2956,7 @@ const shoot = async (page, name) => {
 
     // ── S2c ON THE DEPLOYED SITE (`S2 Onboarding.dc.html:150-196`), read against the ROW the probe
     //    just wrote — so "the screen shows what we stored" is one assertion and not two beliefs.
-    const brandRead = (row.site_settings || {}).brand || {}
+    brandRead = (row.site_settings || {}).brand || {}
     const s2c = await page.locator('main').innerText().catch(() => '')
     const saidOn = (text) => s2c.toLowerCase().includes(String(text).toLowerCase())
     // The swatch's caption is THE HEX, not a colour name: the frame prints "Burnt orange" and
@@ -1684,7 +3249,12 @@ const shoot = async (page, name) => {
        every read of `offer()` after a press below still sees it (review, 2026-09-10). */
     const press = async () => {
       await page.locator(`button[popovertarget="site-menu-${t1SiteId}"]`).click()
-      await press()
+      // THE ROW, NOT `press()` AGAIN. Story 3.7's review wrote `await press()` on this line, so the
+      // helper called itself and every full run since 2026-09-10 opened and shut the ⋯ at
+      // `brand-popup` until it was killed — which fits every run recorded since, all timed out with
+      // nothing printed (Story 3.7's three at 1200s, Story 3.9's at 1200s and 2700s). Found by
+      // reading at Story 5.24b (DW-92); the full run that executes it is owed.
+      await offer().click()
     }
     await press()
     await s2cHeading(page).waitFor()
@@ -2131,6 +3701,7 @@ const shoot = async (page, name) => {
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await press()
     await s2cHeading(page).waitFor()
+    await hydrated()
     await page.evaluate((id) => {
       const f = document.querySelector('input[type="hidden"][name="project_id"]')
       // `if (f)` SKIPPED SILENTLY and the forgery never happened: the press then wrote the real
@@ -2154,75 +3725,9 @@ const shoot = async (page, name) => {
       `at the Free cap, so the count is the paywall's proof as much as the guard's`)
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
 
-    // ── A CARD THAT OFFERS NOTHING IS NOT DRAWN (UX-DR3), and the route that would draw it 404s.
-    //    No Ghost here can produce a site with no accent, no logo and no menu, so the state is
-    //    seeded on the fixture's OWN row through the service role and then put back — the same
-    //    idiom as the Portal and plan questions below.
-    const brandKept = brandRead
-    // RESTORED IN A `finally`, WHICH IS THIS FILE'S OWN IDIOM (`injection-live` restores exactly
-    // what it found, passing or failing). A throw between the strip and the restore left the row
-    // stripped for every step after it — and every one of them reaches S2c (review, 2026-09-08).
-    /* DECLARED OUTSIDE THE `try` BELOW ON PURPOSE: `brand-ownership` asks the same question of a
-       row a DIFFERENT account owns, hundreds of lines further down, and a `const` inside that try
-       is scoped to it — which is how the review's own first run threw `rendered is not defined`
-       after 48 steps. Same family as the `const same` shadowing Dev hit: a helper lives at the
-       level every step that needs it can see. `node --check` cannot see this one — it is valid
-       syntax — so the rule is the placement, not a check. */
-    /* WHAT THE CUSTOMER GETS, not only what the wire says. `notFound()` renders INFLOZO'S OWN 404
-       since Story 3.9 — `(authed)/not-found.tsx`, inside the shell — where it rendered Next's
-       unstyled default before, which is why every `saw` locator here now waits for
-       `SAY.not_found_title` (evaluated from `lib/not-found.ts`) instead of Next's string `could
-       not be found`. DW-67's `note:` said this change would break three steps silently if it were
-       made anywhere else; it is made here, in the same commit.
-       The HTTP status beside it is MEASURED rather than excused or predicted: a route
-       whose segment has a `loading.tsx` streams its shell first, so the status line is committed
-       before the page component ever runs and `notFound()` lands in an already-successful
-       response. Until R-98 that was true of EVERY page in `(authed)`, because one boundary sat
-       over the whole group; the route-group split (`(dashboard)/`, `sites/(list)/`) means it is
-       now true per route — `/sites/brand` has its own boundary and so should still answer 200,
-       while `/kit` and `/sites/connect` have none at all. The assertion stays the page the
-       customer sees and the status stays RECORDED beside it, so this run reports what changed
-       rather than this comment predicting it (DW-67). */
-    const rendered = async (url) => {
-      const r = await page.goto(url, { waitUntil: 'load' })
-      // A LOCATOR THAT WAITS ON ITSELF, never `innerText` the instant `load` fires — the same
-      // Suspense boundary that commits the 200 means the SKELETON is what is on screen at `load`,
-      // and run 4 read the skeleton and reported "not the not-found page" about a page that had
-      // not rendered yet. Racing the two possible outcomes also makes a failure say which it saw.
-      const saw = await Promise.race([
-        page.getByText(SAY.not_found_title, { exact: true }).first()
-          .waitFor({ timeout: 20000 }).then(() => 'not-found').catch(() => null),
-        s2cHeading(page).waitFor({ timeout: 20000 }).then(() => 'S2c').catch(() => null),
-      ])
-      return { status: r ? r.status() : 0, saw }
-    }
-
-    let stripped, offerGone, direct, forgedSite
-    try {
-      stripped = await patchSettings(t1SiteId, { brand: undefined })
-      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-      await page.waitForSelector('text=Connected')
-      offerGone = await page.locator(`article a[href="${offerHref}"]`).count()
-      direct = await rendered(`${APP}${offerHref}`)
-      // A site id NO ROW ANYWHERE CARRIES. It is not the cross-account question — that one needs a
-      // row a DIFFERENT account really owns, and it is asked in `brand-ownership` below, where the
-      // fixture for it exists (review, 2026-09-08: this step used to claim the stranger's row and
-      // forge a nonexistent uuid, which RLS never had to refuse).
-      forgedSite = await rendered(`${APP}/sites/brand?site=00000000-0000-4000-8000-000000000000`)
-    } finally {
-      await patchSettings(t1SiteId, { brand: brandKept })
-    }
-    step('brand-none',
-      stripped.status === 200 && offerGone === 0
-      && direct.saw === 'not-found' && forgedSite.saw === 'not-found',
-      `with the brand taken off the row (HTTP ${stripped.status}) the card draws ${offerGone} offer ` +
-      `link(s), and ${offerHref} rendered ${JSON.stringify(direct.saw)}; a ?site= naming a row that ` +
-      `does not exist rendered ${JSON.stringify(forgedSite.saw)} (the STRANGER'S row is ` +
-      `brand-ownership's). Both answer HTTP ${direct.status}/${forgedSite.status} rather than ` +
-      `404: /sites/brand has its own Suspense boundary (sites/brand/loading.tsx), so the shell ` +
-      `has streamed and the status is committed before notFound() throws. Since R-98 that is a ` +
-      `property of THIS ROUTE rather than of the whole group — the group-wide boundary is gone ` +
-      `(DW-67). The brand was put back afterwards`)
+    // ── brand-none: a card that offers nothing is not drawn, and its route renders the not-found
+    //    page (`brandNone`, above the `try`, which `--only` runs too).
+    await brandNone()
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.waitForSelector('text=Connected')
 
@@ -2479,6 +3984,7 @@ const shoot = async (page, name) => {
       credentials_present: stranger.credentials_present,
     })
     await openConfirm()
+    await hydrated()
     const forgedDisconnect = await page.evaluate((id) => {
       const field = document.querySelector('dialog[open] form input[name="site_id"]')
       if (!field) return false
@@ -2727,6 +4233,7 @@ const shoot = async (page, name) => {
     await t3Menu.waitFor({ state: 'visible' })
     await t3Menu.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
     await page.waitForSelector('dialog[open]')
+    await hydrated()
     await page.evaluate((id) => {
       const field = document.querySelector('dialog[open] form input[name="site_id"]')
       field.value = id
@@ -3144,11 +4651,8 @@ const shoot = async (page, name) => {
     //    call an action and this harness only ever ran as a single user (review, 2026-09-08,
     //    Verification Gap). So: a row belonging to SOMEBODY ELSE, forged into a form the fixture
     //    legitimately has on screen, submitted from the fixture's own session.
-    const foreign = (await insert('/sites', {
-      user_id: OTHER_USER_ID, url: 'https://foreign.inflozo.com', title: 'Foreign',
-      capability: 'preview_only', capability_source: 'user_declared',
-    })).body
-    const foreignId = (foreign && foreign[0] && foreign[0].id) || null
+    const foreign = await strangerSite()
+    foreignId = (foreign && foreign[0] && foreign[0].id) || null
     // `disconnected_at` AND `credentials_present` ARE IN THE COMPARISON SINCE STORY 3.5: the page
     // now carries a form that writes exactly those two, so a post that reached the wrong form must
     // be able to fail this step rather than pass it by being compared on the wrong columns.
@@ -3160,6 +4664,7 @@ const shoot = async (page, name) => {
     const foreignBefore = foreignFields(foreign && foreign[0])
     // Swap the hidden id in the FIRST notice form and submit it — the same POST a hand-rolled
     // curl would make, made through the page so the action sees a real session.
+    await hydrated()
     const forged = await page.evaluate((id) => {
       // A NOTICE form, never the ⋯ confirm — see the selector note at `notices-js-off`.
       const field = document.querySelector('article form:not(dialog form) input[name="site_id"]')
@@ -3178,154 +4683,8 @@ const shoot = async (page, name) => {
       `${foreignAfter === foreignBefore} (${foreignAfter}). The service role bypasses RLS, so ` +
       `.eq('user_id') in the action is the only thing that refused it.`)
 
-    // ── THE SAME QUESTION, ASKED OF STORY 3.4's TWO ACTIONS, because its acceptance criterion
-    //    says "when the page is opened OR EITHER ACTION IS POSTED" and only the page had ever
-    //    been asked — with a uuid no row anywhere carries, which RLS never had to refuse
-    //    (review, 2026-09-08). These two write `projects` through the CALLER'S OWN session, so
-    //    the guard is RLS itself rather than an `.eq()`: a stranger's site id reads back no row
-    //    and `useBrand` throws `notFound()` before it can decide anything.
-    const foreignPage = await rendered(`${APP}/sites/brand?site=${foreignId}`)
-    /* THE SAME ID IN THE POPUP'S ADDRESS. `brand-screen.tsx`'s `gone()` 404s on the full page and
-       redirects to `/sites` in the window — because a `notFound()` inside the list's own
-       `<Suspense>` would take the whole Sites list with it. Nothing had driven that branch
-       (review 7, 2026-09-10): the list must be there, and no window. */
-    await page.goto(`${APP}/sites?brand=${foreignId}`, { waitUntil: 'load' })
-    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'), { timeout: NAV_TIMEOUT })
-      .catch(() => {})
-    await page.waitForSelector('text=Connected').catch(() => {})
-    const foreignPopup = await page.evaluate(() => ({
-      brandParam: new URL(location.href).searchParams.get('brand'),
-      dialogInDom: !!document.querySelector('dialog[aria-labelledby="brand-panel-title"]'),
-      cards: document.querySelectorAll('article').length,
-    }))
-    const foreignPopupClosed = !foreignPopup.brandParam && !foreignPopup.dialogInDom && foreignPopup.cards > 0
-    const projectsBefore = await projectsOf()
-    // The forge is made on S2c ITSELF — the fixture's own, legitimately on screen — so both hidden
-    // fields and React's `$ACTION_*` are the real ones and only the site id is a stranger's.
-    const forgeBrand = async (label) => {
-      await page.goto(`${APP}${offerHref}`, { waitUntil: 'load' })
-      await s2cHeading(page).waitFor()
-      return page.evaluate(([id, name]) => {
-        // `innerText`, not `textContent`: `BusyLabel` keeps BOTH labels in the button and hides
-        // one with `visibility: hidden`, which `innerText` omits and `textContent` concatenates —
-        // so this found no button, pressed nothing, and the byte-identical re-read passed for the
-        // wrong reason (review 7, 2026-09-10 — the run's own FAIL).
-        const button = [...document.querySelectorAll('button[type="submit"]')]
-          .find((b) => b.innerText.trim() === name)
-        if (!button) return false
-        button.form.querySelector('input[name="site_id"]').value = id
-        button.click()
-        return true
-      }, [foreignId, label])
-    }
-    // A NEGATIVE ASSERTION NEEDS A POSITIVE CONTROL (standing rule 2). `forgeBrand` returns true
-    // because it FOUND the button and called click() — not because the server ever saw the post —
-    // and `networkidle` is swallowed with `.catch(() => {})`, so a press that had not landed yet
-    // satisfied "the projects are byte-identical" for the wrong reason. Both actions have an
-    // observable server answer and this now waits for it: the forged **Use your brand** reaches
-    // `useBrand`, whose site read returns no row through RLS, so it calls `notFound()` and the
-    // not-found page renders; the forged **Skip** redirects to `/sites`. Either one proves the
-    // round trip completed before the rows are re-read (review 5, 2026-09-09).
-    /* ── DW-85 (3), STORY 3.9: THE ACTION'S POPUP BRANCH, which this step had never driven. The
-       forge below is made on the FULL PAGE, where `useBrand`'s vanished-row answer is `notFound()`.
-       From inside the WINDOW the answer is deliberately different — `formData.get('popup') === '1'`
-       redirects to `/sites` instead, because a `notFound()` raised inside the list's own
-       `<Suspense>` would replace the Sites list with the 404 page. Only the READ half of that
-       branch had a driver (`foreignPopup` above); the WRITE half had none, so the popup line could
-       have been deleted with every step here still green. Same forge, same stranger's id, opened
-       through `?brand=` on the fixture's OWN site so the window is really a window. */
-    await page.goto(`${APP}/sites?brand=${t1SiteId}`, { waitUntil: 'load' })
-    const popupOpen = await page.locator('dialog[aria-labelledby="brand-panel-title"]')
-      .waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false)
-    const forgedPopup = popupOpen && await page.evaluate((id) => {
-      const form = [...document.querySelectorAll('dialog[open] form')]
-        .find((f) => f.querySelector('input[name="site_id"]') && f.querySelector('input[name="popup"]'))
-      if (!form) return false
-      form.querySelector('input[name="site_id"]').value = id
-      form.querySelector('button[type="submit"]').click()
-      return true
-    }, foreignId)
-    const popupLanded = forgedPopup && await page
-      .waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'), { timeout: NAV_TIMEOUT })
-      .then(() => true).catch(() => false)
-    const popupCards = await page.locator('article').count()
-    const afterPopup = await projectsOf()
-
-    const forgedUse = await forgeBrand(SAY.brand_use)
-    /* THE POST HAS TWO OBSERVABLE LANDINGS AND THE CONTROL TAKES EITHER, because what it is here
-       to prove is that the press REACHED the server — not which branch the server then chose.
-       `useBrand`'s site read is `.maybeSingle()`: a stranger's row comes back as no row and no
-       error and it calls `notFound()`, but a read that ERRORS redirects to `&failed=1` instead,
-       deliberately ("one transient PostgREST failure is not a stranger's row", review 4). Waiting
-       only for the not-found page therefore reported "the press never arrived" about a press that
-       had arrived and been refused the other way — twice in five runs, while the security claim
-       beneath it (no row written, nothing linked to the stranger's site) passed every time.
-       Which landing happened is RECORDED, so a run says which branch it exercised rather than
-       hiding the difference (executed 2026-09-09, runs 2 and 5). */
-    const sawNotFound = await page.getByText(SAY.not_found_title, { exact: true }).first()
-      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
-    /* AND WHERE IT ACTUALLY WENT, read after the wait rather than waited on: `page.waitForURL` is
-       wrapped by the DW-68 retry, so racing one against the locator spent a second 20s and two
-       navRetries on a step that had already answered. */
-    const forgedUseUrl = page.url()
-    const forgedUseSaw = (await page.locator('main').evaluate((el) => el.textContent).catch(() => ''))
-      .replace(/\s+/g, ' ').trim().slice(0, 140)
-    /* DW-74's OWN DATUM, NOW ASSERTED RATHER THAN RECORDED. The eighth run established that the
-       press DID land — on `/sites/brand?site=<the stranger's id>` with `<main>` EMPTY, because
-       Next's default not-found page REPLACES the route instead of filling the landmark. So the
-       sentence this control waits for lived outside the landmark it was read from, and "what
-       varies is when it appears, not which branch was taken". Story 3.9's `(authed)/not-found.tsx`
-       renders INSIDE the shell, so the sentence is now in `<main>` where the control reads — which
-       is the half of DW-74 that is a fix and not a measurement. Only asserted on the not-found
-       branch: a `failed-redirect` lands on S2c and correctly carries no such sentence. */
-    const notFoundInMain = forgedUseSaw.includes(SAY.not_found_title)
-    const forgedUseLanded = sawNotFound ? 'not-found'
-      : (new URL(forgedUseUrl).searchParams.get('failed') === '1' ? 'failed-redirect' : null)
-    const afterUse = await projectsOf()
-    const forgedSkip = await forgeBrand(SAY.brand_skip)
-    const forgedSkipLanded = await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('brand'))
-      .then(() => true).catch(() => false)
-    const afterForgedSkip = await projectsOf()
-    // NOT A RE-READ COMPARED WITH ITSELF: nothing may now be LINKED to the stranger's site, which
-    // is the one row `useBrand` could have written if RLS had let it through.
-    const linkedToForeign = afterForgedSkip.filter((row) => row.linked_site_id === foreignId).length
-    step('brand-ownership',
-      foreignPage.saw === 'not-found' && foreignPopupClosed && forgedUse && forgedSkip
-      && Boolean(forgedUseLanded) && (!sawNotFound || notFoundInMain) && forgedSkipLanded
-      && forgedPopup && popupLanded && popupCards > 0
-      && projectsById(afterPopup) === projectsById(projectsBefore)
-      && afterUse.length === projectsBefore.length && afterForgedSkip.length === projectsBefore.length
-      && projectsById(afterUse) === projectsById(projectsBefore)
-      && projectsById(afterForgedSkip) === projectsById(projectsBefore) && linkedToForeign === 0,
-      `/sites/brand?site= a row a DIFFERENT account owns rendered ${JSON.stringify(foreignPage.saw)} — ` +
-      `and as /sites?brand= the WINDOW closed onto the list (brand param ` +
-      `${JSON.stringify(foreignPopup.brandParam)}, dialog ${foreignPopup.dialogInDom}, ` +
-      `${foreignPopup.cards} cards), never the 404 over the list — ` +
-      `RLS returns no row and no row is not found; then that same id was forged into S2c's OWN ` +
-      `"${SAY.brand_use}" form (${forgedUse}) and its "${SAY.brand_skip}" form (${forgedSkip}) and ` +
-      `submitted from the fixture's session — and EACH POST WAS SEEN TO LAND before the rows were ` +
-      `re-read (the forged Use reached useBrand and was refused, landing on ` +
-      `${JSON.stringify(forgedUseLanded)} — "not-found" is its site read coming back EMPTY through ` +
-      `RLS and "failed-redirect" is that read erroring, and both are the server answering this ` +
-      `press. It ended on ${JSON.stringify(forgedUseUrl)} showing ${JSON.stringify(forgedUseSaw)}, ` +
-      `with the not-found sentence INSIDE <main> = ${notFoundInMain} — DW-74's eighth run found ` +
-      `that landmark empty, which is the whole reason this control was unreliable; ` +
-      `and the same id forged into the WINDOW'S own form (popup=1, opened = ${forgedPopup}) landed ` +
-      `back on the LIST rather than on the 404 = ${popupLanded} with ${popupCards} card(s) still ` +
-      `drawn and nothing written, which is DW-85 (3) — the write half of the popup branch, whose ` +
-      `read half alone had a driver. ` +
-      `The forged Skip redirected to /sites = ` +
-      `${forgedSkipLanded}, because a byte-identical re-read proves nothing about a press that ` +
-      `never arrived. The caller still has ${afterUse.length} project, ` +
-      `byte-identical to the ${projectsBefore.length} it had before ` +
-      `(${projectsById(afterUse) === projectsById(projectsBefore)}` +
-      // A DIFFERENCE NAMES ITSELF. A boolean here cost the review a run it could not explain.
-      `${projectsById(afterUse) === projectsById(projectsBefore) ? '' :
-         `; before=${projectsById(projectsBefore)} afterUse=${projectsById(afterUse)} ` +
-         `afterSkip=${projectsById(afterForgedSkip)}`}), and ${linkedToForeign} of them ` +
-      `is linked to the stranger's site — the one row a press could have written. These two write ` +
-      `through the caller's OWN session, so RLS is the guard and not an .eq() — the acceptance ` +
-      `criterion's "or either action is posted", executed`)
+    // ── brand-ownership: the same question of Story 3.4's two ACTIONS (`brandOwnership`, above).
+    await brandOwnership()
 
     // ── B15, THE PREVIEW-ONLY NOTICE (`B Missing Surfaces.dc.html:1188-1225`), on the deployed
     //    card at the three widths the spec names — and then its own Re-check plan, which is the
@@ -3524,740 +4883,21 @@ const shoot = async (page, name) => {
        to `private.site_credentials` and to the audit log, and `audit` above derives its counts from
        the connects and probes that came before. Putting these after it keeps that derivation honest
        and lets each step here assert its OWN delta instead. The account is on PRO here with T1 and
-       T3 connected, which is what `keys-foreign-key` needs — two real Ghosts, one screen. */
+       T3 connected; `keys-foreign-key` needs only T3's KEY, which is why `--only manage-keys` seeds
+       T1 alone (DW-92). */
 
-    const keysUrl = (id) => `${APP}/sites/keys?site=${id}`
-    const openKeys = async (id) => {
-      await page.goto(keysUrl(id), { waitUntil: 'load' })
-      // The URL row's reason is on this screen and on no other, and it carries no `%s` hole.
-      await page.getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
-    }
-    /* THE SAME PANEL BY THE DOOR THE CUSTOMER USES. `openKeys` above is a document load, which is
-       the FULL page (`sites/keys/page.tsx`); this is the ⋯ row's own click, which soft-navigates to
-       `/sites?manage=<id>` — the SAME route, with the panel drawn in a `<dialog>` over the cards.
-       Both draw `keys-screen.tsx`, so a step that does not care which door it came through may use
-       either. The two ADDRESSES differ, which they did not before the owner's test of 2026-09-10:
-       the popup used to be an intercepted route at the full page's own URL, and every answer from
-       inside it was then a navigation the interception did not survive. */
-    const openKeysPopup = async (id, name) => {
-      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-      await page.waitForSelector('text=Connected')
-      await cardOf(name).first().getByRole('button', { name: /^Options for / }).first().click()
-      const menu = page.locator(`#site-menu-${id}`)
-      await menu.waitFor({ state: 'visible' })
-      await menu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
-      await page.locator('dialog[open]').getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
-    }
-    /* What the screen looks like from outside: is it a window over the list, or a page instead of
-       it? Read off the DOM and not off the URL — a URL says which door was used and not what is on
-       screen, and every one of the owner's findings was about what was on screen.
+    // ── manage-keys: keys-screen to keys-forged (`manageKeys`, above).
+    await manageKeys()
 
-       `topBar` IS HIS FINDING 1 ON BOTH POPUPS, made checkable: the search field and **Connect
-       site** are drawn by the SHELL from a table keyed on the exact path, so while the panel was a
-       route of its own they simply were not rendered. */
-    const keysShape = async () => await page.evaluate(() => ({
-      dialogOpen: !!document.querySelector('dialog[open]'),
-      dialogInDom: !!document.querySelector('dialog[aria-labelledby="keys-panel-title"]'),
-      panelMounted: !!document.querySelector('#keys-panel-title'),
-      // The Sites cards are <article>s (`(list)/page.tsx`), and the panel contains none — so
-      // "the list is still there" and "the panel is drawn instead of it" are distinguishable.
-      cardsBehind: document.querySelectorAll('article').length,
-      topBar: !!document.querySelector('input[name="q"]')
-        && [...document.querySelectorAll('a')].some((a) => a.getAttribute('href') === '/sites/connect'),
-    }))
-    /* The credential row for a site, read READ-ONLY through the pooler — `private` answers 404 over
-       PostgREST by design (§21j), so this is the only way to see what the chokepoint wrote. */
-    const credsOf = async (siteId) => (await sql`
-      select admin_key_id, admin_key_rotated_at, staff_token_vault_ref, staff_token_rotated_at,
-             admin_key_vault_ref
-        from private.site_credentials where site_id = ${siteId}
-    `)[0] || {}
-    const changesFor = async (siteId) => (await sql`
-      select route, detail from private.credential_audit
-       where site_id = ${siteId} and action = 'credential_change' order by occurred_at, id
-    `)
-    const kidOf = (key) => String(key).split(':')[0]
+    // ── moved-domains, with DW-83's order-term control inside it (`movedDomains`, above).
+    await movedDomains()
 
-    // ── keys-screen: the ⋯ row goes somewhere, and what it goes to is S11e's wide popup around B20.
-    const t1Name = pub1.title || 'Ghost6'
-    await openKeysPopup(t1SiteId, t1Name)
-    await page.waitForURL((u) => u.pathname === '/sites' && u.searchParams.get('manage') === t1SiteId)
-    await shoot(page, 's11e')
-    const openedAs = await keysShape()
-    const screen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
-    const named = [SAY.keys_admin_name, SAY.keys_content_name, SAY.keys_staff_name].every((n) => screen.includes(n))
-    const enabled = [SAY.keys_admin_enables, SAY.keys_content_enables, SAY.keys_staff_enables]
-      .every((n) => screen.includes(n.replace(/\s+/g, ' ')))
-    const tokenAbsent = screen.includes(SAY.keys_absent)
-    // THE URL IS TEXT. Not a field, not a disabled field, not a readonly one (A9 item 17): the
-    // assertion is that no input anywhere on this screen carries the site's address as its value.
-    const urlIsText = screen.includes(SAY.keys_url_reason) && screen.includes(pub1.url || T1.url)
-    const urlFields = await page.locator('dialog[open] input').evaluateAll((all, address) =>
-      all.filter((i) => (i.value || '').includes(address) || i.name === 'url').length, T1.url)
-    // AND NOTHING OFFERS TO REVEAL A KEY — B20 draws an eye and this screen deliberately has none.
-    const reveals = await page.evaluate(() =>
-      [...document.querySelectorAll('button, a, [title], svg title')]
-        .filter((el) => /\b(show|reveal|unmask|hide)\b/i.test(`${el.textContent || ''} ${el.getAttribute('title') || ''} ${el.getAttribute('aria-label') || ''}`)).length)
-    const noRevealSaid = screen.includes(SAY.keys_no_reveal)
-    const t1Kid = kidOf(T1.adminKey)
-    const maskDrawn = screen.includes(t1Kid)
-    step('keys-screen',
-      named && enabled && tokenAbsent && urlIsText && urlFields === 0 && reveals === 0
-      && noRevealSaid && maskDrawn && screen.includes(SAY.keys_roll_hint)
-      && openedAs.dialogOpen && openedAs.panelMounted && openedAs.cardsBehind > 0,
-      `the ⋯ row opened S11e's popup at /sites?manage=<id> — an OPEN <dialog> = ` +
-      `${openedAs.dialogOpen} with ${openedAs.cardsBehind} Sites cards still behind it, which is ` +
-      `the owner's finding 1. All three credentials named = ${named}, each with ` +
-      `the app's own one line on what it enables = ${enabled}, the token reading ` +
-      `${JSON.stringify(SAY.keys_absent)} = ${tokenAbsent}. The address is TEXT with its reason ` +
-      `= ${urlIsText} and there are ${urlFields} inputs carrying it — no field and no disabled field ` +
-      `(A9 item 17). ${reveals} elements offer to show a key (B20's eye cannot exist: the secret half ` +
-      `never leaves the chokepoint) and the screen says so itself = ${noRevealSaid}; the Admin row is ` +
-      `masked with the key's PUBLIC id half = ${maskDrawn}. The roll-keys hint is the app's own = ` +
-      `${screen.includes(SAY.keys_roll_hint)}`)
+    // ── keys-content and keys-test-refused (`keysContent`, above).
+    await keysContent()
 
-    await axeAt(page, 'keys-screen', async () => { await openKeysPopup(t1SiteId, t1Name) })
-    await axeAt(page, 'keys-route', async () => { await openKeys(t1SiteId) })
-
-    // ── keys-phone: ON A PHONE THE TWO COLUMNS BECOME ONE, THE ADDRESS STAYING AT THE TOP — the
-    //    acceptance criterion S11e's collapse added, read off the geometry rather than assumed
-    //    (review, 2026-09-10). The `axe` pass at 390 above sees accessibility and not order.
-    await page.setViewportSize({ width: 390, height: 844 })
-    await openKeysPopup(t1SiteId, t1Name)
-    const phone = await page.evaluate((label) => {
-      const dialog = document.querySelector('dialog[open]')
-      const visible = (el) => el && el.getClientRects().length > 0
-      const address = [...dialog.querySelectorAll('span')].find((s) => s.textContent === label && visible(s))
-      const rows = [...dialog.querySelectorAll('section')].filter(visible)
-      const test = [...dialog.querySelectorAll('button')].find((b) => visible(b) && b.closest('aside'))
-      const top = (el) => (el ? el.getBoundingClientRect().top : NaN)
-      return {
-        addressTop: top(address), firstRowTop: top(rows[0]), lastRowBottom: rows.length ? rows[rows.length - 1].getBoundingClientRect().bottom : NaN,
-        testTop: top(test), width: dialog.getBoundingClientRect().width, viewport: window.innerWidth,
-        overflow: document.documentElement.scrollWidth > window.innerWidth,
-      }
-    }, SAY.keys_url_label)
-    await page.keyboard.press('Escape')
-    await page.setViewportSize({ width: 1440, height: 900 })
-    step('keys-phone',
-      phone.addressTop < phone.firstRowTop && phone.testTop > phone.lastRowBottom
-      && phone.width <= phone.viewport && !phone.overflow,
-      `at 390 the address sits ABOVE the first key row (${Math.round(phone.addressTop)} < ` +
-      `${Math.round(phone.firstRowTop)}), the rail's Test connection sits BELOW the last row ` +
-      `(${Math.round(phone.testTop)} > ${Math.round(phone.lastRowBottom)}), the window is ` +
-      `${Math.round(phone.width)}px in a ${phone.viewport}px viewport and nothing runs off the edge = ${!phone.overflow}`)
-
-    /* ── keys-popup: THE POPUP'S OWN BEHAVIOUR, and every claim here is one of the owner's four
-       findings of 2026-09-10 made checkable. He walked this screen and reported that the top bar
-       vanished when the window opened, that pressing the row twice landed the window on a blank
-       screen, that Test connection "opens a new popup in the background with Test results" on a
-       blank screen, and that an empty Save said nothing at all — "Overall the user experience is
-       not good and is very buggy. There should be only one perfect popup and that only should be
-       source of truth."
-
-       THE FIRST THREE WERE ONE CAUSE: the popup was an INTERCEPTED ROUTE, so opening it moved the
-       URL off `/sites` — which is where the shell reads its top bar from — and every answer from
-       inside it was a navigation Next did not intercept, so the full page loaded behind the still
-       open window and took the list with it. It is `/sites?manage=<id>` now, a parameter on the
-       list, and the route never changes at all.
-
-       A REFUSAL IS THE WRITE THIS STEP USES because it writes nothing: `hello` is refused by
-       `parseCredential` before Vault is reached, so the step's own subject is the CHROME. */
-    await openKeysPopup(t1SiteId, t1Name)
-    const onOpen = await keysShape()
-    await page.fill('#keys-admin', 'hello')
-    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    await page.getByText(SAY.credential_malformed).first().waitFor()
-    const afterRefusal = await keysShape()
-    // HIS FINDING 4: an EMPTY save. It used to redirect in silence — "a press with nothing to do
-    // says nothing about it" — which is R-98 broken by a decision rather than by an omission.
-    await page.fill('#keys-admin', '')
-    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_empty', { timeout: 20000 }).catch(() => {})
-    const emptySaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
-    const afterEmpty = await keysShape()
-    // BACK AFTER A REFUSAL IS THE LIST, not the panel as it stood before the save: the three actions
-    // redirect with `RedirectType.replace` (Change Log 10), which until this step was measured on a
-    // throwaway control and asserted nowhere live (review, 2026-09-10). Two answers have landed in
-    // this window by now — the refusal and the empty press — and one Back must leave it.
-    await page.goBack({ waitUntil: 'load' }).catch(() => {})
-    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'), { timeout: 20000 }).catch(() => {})
-    // The address moves on the popstate and the tree follows it: wait for the window to LEAVE
-    // rather than read the document the instant the URL is right (run 8, 2026-09-10, read it
-    // still there). A window that never leaves fails the assertion below either way.
-    await page.locator('dialog[open]').waitFor({ state: 'detached', timeout: 20000 }).catch(() => {})
-    const afterKeysBack = await keysShape()
-    const backUrl = new URL(page.url())
-    await openKeysPopup(t1SiteId, t1Name)
-    // Cancel: the footer control — a `<Link href="/sites" replace>` in both chromes (Change Log 14).
-    await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).last().click()
-    // `!manage`: the pathname is already `/sites` inside the popup (review 7 of 3.4, 2026-09-10).
-    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
-    const afterCancel = await keysShape()
-    // AND THE ROW OPENS IT AGAIN. This is the regression the whole step exists for: with the panel
-    // left mounted, the second press changed the URL and drew nothing at all.
-    await openKeysPopup(t1SiteId, t1Name)
-    const secondOpen = await keysShape()
-    await page.keyboard.press('Escape')
-    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
-    const afterEscape = await keysShape()
-    // …AND THE ✕ IN THE HEADER, S11e's own, which shares the footer's word as its accessible name
-    // and was driven for the brand window only (review, 2026-09-10).
-    await openKeysPopup(t1SiteId, t1Name)
-    await page.locator('dialog[open]').getByRole('link', { name: SAY.keys_cancel, exact: true }).first().click()
-    await page.waitForURL((u) => u.pathname === '/sites' && !u.searchParams.get('manage'))
-    const afterX = await keysShape()
-    // …and a typed URL is still the FULL page, which is the half that has to keep working with no
-    // script at all (`keys-js-off` reads its markup).
-    await openKeys(t1SiteId)
-    const typedUrl = await keysShape()
-    step('keys-popup',
-      onOpen.dialogOpen && onOpen.topBar && onOpen.cardsBehind > 0
-      && afterRefusal.dialogOpen && afterRefusal.topBar && afterRefusal.cardsBehind > 0
-      && emptySaid.includes(SAY.keys_empty_admin) && afterEmpty.dialogOpen && afterEmpty.cardsBehind > 0
-      && !afterCancel.panelMounted && !afterCancel.dialogInDom && afterCancel.cardsBehind > 0
-      && secondOpen.dialogOpen && secondOpen.panelMounted
-      && !afterEscape.panelMounted && !afterEscape.dialogInDom && afterEscape.cardsBehind > 0
-      && !afterX.panelMounted && !afterX.dialogInDom && afterX.cardsBehind > 0
-      && !afterKeysBack.panelMounted && !afterKeysBack.dialogInDom && backUrl.pathname === '/sites' && !backUrl.searchParams.get('manage')
-      && typedUrl.panelMounted && !typedUrl.dialogInDom && typedUrl.cardsBehind === 0,
-      `THE TOP BAR IS STILL THERE while the window is open = ${onOpen.topBar} — his finding 1, and ` +
-      `it holds because /sites?manage= never leaves the route the shell draws that bar for. ` +
-      `A refusal keeps the window OPEN with the sentence under its own field = ` +
-      `${afterRefusal.dialogOpen}, the bar still drawn = ${afterRefusal.topBar} and ` +
-      `${afterRefusal.cardsBehind} cards still behind it — which is his finding 3 by the door a ` +
-      `refusal uses (the three actions redirect with RedirectType.replace, so there is one ` +
-      `history entry for the panel however many keys are saved). An EMPTY Save now says which box ` +
-      `is empty = ${JSON.stringify(emptySaid)} with the window still open = ${afterEmpty.dialogOpen} ` +
-      `— his finding 4, which used to redirect in silence. Cancel returns to the list with the ` +
-      `panel UNMOUNTED = ${!afterCancel.panelMounted} and no dialog left in the DOM = ` +
-      `${!afterCancel.dialogInDom}; the ⋯ row opens it A SECOND time = ${secondOpen.dialogOpen}; ` +
-      `Escape does the same as Cancel = ${!afterEscape.panelMounted}, and so does the header's ✕ ` +
-      `= ${!afterX.panelMounted}. ONE Back after two answers had landed in the window is the LIST ` +
-      `(${JSON.stringify(backUrl.pathname + backUrl.search)}, panel gone = ${!afterKeysBack.panelMounted}) ` +
-      `— the actions redirect by replace, so the window never leaves an entry behind; and a typed URL is the FULL ` +
-      `page — panel drawn = ${typedUrl.panelMounted}, no dialog = ${!typedUrl.dialogInDom}, ` +
-      `${typedUrl.cardsBehind} Sites cards on it`)
-
-    // ── keys-malformed: refused UNDER THE ADMIN FIELD, and nothing written.
-    await openKeys(t1SiteId)
-    const keysBeforeBad = await credsOf(t1SiteId)
-    await page.fill('#keys-admin', 'hello')
-    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    await page.waitForURL((u) => u.searchParams.get('keys') === 'credential_malformed', { timeout: 20000 }).catch(() => {})
-    const malformedSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
-    const keysAfterBad = await credsOf(t1SiteId)
-    step('keys-malformed',
-      malformedSaid.includes(SAY.keys_malformed)
-      && keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref
-      && String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at),
-      `"hello" in the Admin API key field: refused UNDER THAT FIELD with the app's own sentence ` +
-      `(${JSON.stringify(malformedSaid.slice(0, 90))}) — refused before Vault and before the network — ` +
-      `and the credential row is untouched: same vault ref = ` +
-      `${keysAfterBad.admin_key_vault_ref === keysBeforeBad.admin_key_vault_ref}, same rotation ` +
-      `stamp = ${String(keysAfterBad.admin_key_rotated_at) === String(keysBeforeBad.admin_key_rotated_at)}`)
-
-    // ── keys-foreign-key: T3's REAL Admin key, valid on its own Ghost, pasted into T1's screen.
-    //    IT WAS CALLED `keys-other-site` AND ASSERTED OUR OWN SENTENCE, and that was wrong — the
-    //    owner ruled it R-100 (2026-09-09). The key is sent to T1's Ghost, which never issued it,
-    //    so T1 answers 401 `Unknown Admin API Key` at `config/` and the `site/` comparison is never
-    //    reached. Ghost decides "is this key mine" by one lookup in `api_keys`, a table with no
-    //    domain or install column (MEASUREMENTS §37), so it gives the same 401 to a wrong key and
-    //    to another site's key and Inflozo may not claim to tell them apart. The customer is
-    //    protected either way: refused under the field, nothing written.
-    //    NO `.catch(() => {})` ON THE WAIT: a wrong prediction here used to cost a silent 30-second
-    //    timeout and then a red assertion, which reads as a product failure rather than a stale test.
-    await openKeys(t1SiteId)
-    const beforeOther = await credsOf(t1SiteId)
-    await page.fill('#keys-admin', T3.adminKey)
-    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    await page.waitForURL((u) => u.searchParams.get('keys') === 'ghost_unknown_key', { timeout: 30000 })
-    const otherSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
-    const afterOther = await credsOf(t1SiteId)
-    step('keys-foreign-key',
-      otherSaid.includes(SAY.ghost_unknown_key)
-      && afterOther.admin_key_vault_ref === beforeOther.admin_key_vault_ref
-      && afterOther.admin_key_id === beforeOther.admin_key_id,
-      `T3's own Admin API key — valid, and valid on the WRONG Ghost — pasted into T1's screen: ` +
-      `REFUSED under the Admin field with GHOST'S OWN answer ` +
-      `(${JSON.stringify(otherSaid.slice(0, 120))}), and NOTHING was written — same vault ref and ` +
-      `admin_key_id still ${JSON.stringify(afterOther.admin_key_id)}. T1 answered 401 Unknown Admin ` +
-      `API Key at GET config/ — it never issued this key — so the refusal fires before GET site/ is ` +
-      `called at all. R-100: Inflozo cannot tell "another site's key" from "wrong key" and does not ` +
-      `pretend to; the domain-move sentence belongs to the step below, which is where it is earned`)
-
-    // ── keys-other-site: THE GUARD R-100 KEEPS, and the only step that executes it. It fires when
-    //    THIS Ghost reports a public address different from the one recorded at connect — a domain
-    //    move, which is FR-C8's edit-URL-in-place hazard reaching the record through the key field.
-    //    ⛔ THE BASELINE IS SEEDED, not the answer: neither test Ghost can be given a second
-    //    address, so the RECORD's `site_settings.public_url` is moved instead and T1's own valid key
-    //    is pasted. `config/` 200 (own key, own Ghost), `site/` 200 with T1's real url, the hosts
-    //    differ, the guard fires. The comparison, the refusal, the sentence and the untouched
-    //    credential row are all the product's — the same shape `moved-domains` declares below.
-    //    AND IT PROVES THE FIX OF 2026-09-09 TOO: the guard now compares Ghost's recorded answer
-    //    with Ghost's current one, so the restore at the end puts the record back to a state where
-    //    a legitimate rotation is NOT refused.
-    await patchSettings(t1SiteId, { public_url: 'https://moved.example.com/' })
-    await openKeys(t1SiteId)
-    const beforeMoved = await credsOf(t1SiteId)
-    await page.fill('#keys-admin', T1.adminKey)
-    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    await page.waitForURL((u) => u.searchParams.get('keys') === 'keys_other_site', { timeout: 30000 })
-    const movedSaid = await page.locator('#keys-admin-error').innerText().catch(() => '')
-    const afterMoved = await credsOf(t1SiteId)
-    await patchSettings(t1SiteId, { public_url: pub1.url })
-    step('keys-other-site',
-      movedSaid.includes(SAY.keys_other_site)
-      && afterMoved.admin_key_vault_ref === beforeMoved.admin_key_vault_ref
-      && afterMoved.admin_key_id === beforeMoved.admin_key_id,
-      `the record's recorded public address moved to a host T1's Ghost will never report, then T1's ` +
-      `OWN valid key pasted into T1's own screen: REFUSED under the field with the app's own ` +
-      `sentence, which names the fix (${JSON.stringify(movedSaid.slice(0, 120))}), and NOTHING was ` +
-      `written — same vault ref, admin_key_id still ${JSON.stringify(afterMoved.admin_key_id)}. The ` +
-      `key is valid and config/ passed; it is GET site/'s url, whose host differs from the recorded ` +
-      `site_settings.public_url, that stops it. ⛔ The BASELINE is seeded because neither test Ghost ` +
-      `has a second address; everything after it is the product's. The record is restored to ` +
-      `${JSON.stringify(pub1.url)} afterwards, so later steps rotate against a truthful baseline`)
-
-    // ── keys-rotate: THE ROTATION, live. ⛔ The key is RE-PASTED rather than regenerated in Ghost
-    //    Admin: regenerating T1's integration key would invalidate `GHOST6_ADMIN_API_KEY` for every
-    //    other run and every other probe in `tools/probe/`. What the product does is identical
-    //    either way — `store()` mints a NEW vault secret, DW-44's trigger drops the one behind the
-    //    ref it replaces, `admin_key_rotated_at` moves and `admin_key_id` is rewritten — and the
-    //    assertion is on the SECRET's identity, not on the key's, so a re-paste proves the whole
-    //    path (the same argument `re-adopt` makes for DW-44's replace path).
-    await openKeys(t1SiteId)
-    const beforeRotate = await credsOf(t1SiteId)
-    const changesBeforeRotate = (await changesFor(t1SiteId)).length
-    await page.fill('#keys-admin', T1.adminKey)
-    await page.locator('form:has(#keys-admin) button[type="submit"]').click()
-    // POLLED ON THE DATABASE, NOT ON THE URL: a save that succeeds redirects to the very URL it was
-    // posted from, so `waitForURL` on the absence of `?keys=` resolves against the STARTING url and
-    // waits for nothing at all — the assertion would then read the row before the write landed.
-    const afterRotate = (await until(async () => {
-      const row = await credsOf(t1SiteId)
-      return row.admin_key_vault_ref && row.admin_key_vault_ref !== beforeRotate.admin_key_vault_ref ? row : null
-    })) || {}
-    const oldGone = (await secretsBehind(beforeRotate.admin_key_vault_ref)) === 0
-    const newHeld = (await secretsBehind(afterRotate.admin_key_vault_ref)) === 1
-    const rotateChanges = await changesFor(t1SiteId)
-    const rotateRow = rotateChanges[rotateChanges.length - 1] || {}
-    step('keys-rotate',
-      afterRotate.admin_key_vault_ref !== beforeRotate.admin_key_vault_ref && oldGone && newHeld
-      && new Date(afterRotate.admin_key_rotated_at) > new Date(beforeRotate.admin_key_rotated_at)
-      && afterRotate.admin_key_id === t1Kid
-      && rotateChanges.length === changesBeforeRotate + 1
-      && rotateRow.route === 'sites/keys' && (rotateRow.detail || {}).kind === 'admin'
-      && (rotateRow.detail || {}).direction === 'in',
-      `a key saved from Manage keys on T1: the vault ref MOVED, the secret behind the old ref is ` +
-      `gone = ${oldGone} (DW-44's trigger, on the product's own rotation path) and there is exactly ` +
-      `one behind the new = ${newHeld}; admin_key_rotated_at advanced to ` +
-      `${JSON.stringify(afterRotate.admin_key_rotated_at)}; admin_key_id is the key's public id half ` +
-      `= ${afterRotate.admin_key_id === t1Kid}; and DW-76 wrote exactly ` +
-      `${rotateChanges.length - changesBeforeRotate} new credential_change row, stamped ` +
-      `${JSON.stringify(rotateRow.route)} — THIS screen's route and not the connect's — with detail ` +
-      `${JSON.stringify(rotateRow.detail)}. ⛔ The key is re-pasted, not regenerated: regenerating ` +
-      `T1's integration key would invalidate GHOST6_ADMIN_API_KEY for every probe in this repo. The ` +
-      `SECRET's identity is what is asserted, so the path is the same one a real rotation takes`)
-
-    // ── keys-token: DW-54's `staff-removed`, DRIVEN LIVE FOR THE FIRST TIME. Nothing in the product
-    //    had ever stored or removed a Staff Access Token — Epic 7 asks for one at first deploy, and
-    //    FR-C8 has always said it can be added and taken away at any time. This is that screen.
-    //    AND IT IS WRAPPED, because between the store and the removal a real Staff Access Token —
-    //    a full-Administrator credential — is sitting in the product's Vault. An abort in that
-    //    window (a timeout, a failed selector, a killed run) used to leave it there until the
-    //    throwaway account was purged. The `finally` nulls the ref through the pooler so DW-44's
-    //    trigger drops the secret behind it whatever happens (review, 2026-09-09); `injection-live`
-    //    carries the same shape one story up.
-    let tokenStored = false
-    try {
-    await openKeys(t1SiteId)
-    const credsBeforeToken = await credsOf(t1SiteId)
-    const changesBeforeToken = (await changesFor(t1SiteId)).length
-    await page.fill('#keys-staff', STAFF_TOKEN)
-    await page.locator('form:has(#keys-staff) button[type="submit"]').click()
-    const withToken = (await until(async () => {
-      const row = await credsOf(t1SiteId)
-      return row.staff_token_vault_ref ? row : null
-    })) || {}
-    // FROM THIS LINE THERE IS A LIVE TOKEN IN VAULT, so the `finally` knows it from here — not from
-    // after the removal, where an abort between the two left it believing there was none (review,
-    // 2026-09-10). It is cleared again below only once the product's own removal is seen.
-    tokenStored = Boolean(withToken.staff_token_vault_ref)
-    await page.getByText(SAY.keys_staff_remove).first().waitFor({ timeout: 20000 }).catch(() => {})
-    const tokenSecret = await secretsBehind(withToken.staff_token_vault_ref)
-    const presentAfterAdd = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
-    const tokenScreen = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
-    const removeOffered = tokenScreen.includes(SAY.keys_staff_remove)
-    // …AND OUT AGAIN. The site must still be Connected through both — removing degrades, never
-    // disconnects, which is the whole of "a partially credentialed site is an ordinary state".
-    await page.getByRole('button', { name: SAY.keys_staff_remove, exact: true }).click()
-    const withoutToken = (await until(async () => {
-      const row = await credsOf(t1SiteId)
-      return row.staff_token_vault_ref === null ? row : null
-    })) || {}
-    const secretAfterRemove = withToken.staff_token_vault_ref
-      ? await secretsBehind(withToken.staff_token_vault_ref) : -1
-    const presentAfterRemove = ((await rowsOf('id,credentials_present,disconnected_at')).find((r) => r.id === t1SiteId) || {})
-    const tokenChanges = (await changesFor(t1SiteId)).slice(changesBeforeToken)
-    const staffRows = tokenChanges.filter((r) => (r.detail || {}).kind === 'staff')
-    step('keys-token',
-      Boolean(withToken.staff_token_vault_ref) && tokenSecret === 1
-      && (presentAfterAdd.credentials_present || {}).staff === true && removeOffered
-      && withoutToken.staff_token_vault_ref === null && secretAfterRemove === 0
-      && (presentAfterRemove.credentials_present || {}).staff === false
-      && presentAfterRemove.disconnected_at === null
-      && staffRows.length === 2
-      && JSON.stringify(staffRows.map((r) => (r.detail || {}).direction)) === JSON.stringify(['in', 'out'])
-      && staffRows[0].route === 'sites/keys' && staffRows[1].route === 'sites/keys/remove-token'
-      // THE ADMIN KEY'S ID HALF IS UNTOUCHED BY BOTH: `store('staff')` upserts the same row with
-      // `coalesce(excluded.admin_key_id, …)`, and a plain `excluded.admin_key_id` would blank the
-      // Admin mask and the moved-domains hint the moment a token was added (review, 2026-09-10).
-      && withToken.admin_key_id === credsBeforeToken.admin_key_id
-      && withoutToken.admin_key_id === credsBeforeToken.admin_key_id,
-      `DW-54's staff-removed, live at last — the product had no way in for the token until this ` +
-      `screen. ADDED: a vault secret behind staff_token_vault_ref = ${tokenSecret === 1}, ` +
-      `credentials_present.staff true = ${(presentAfterAdd.credentials_present || {}).staff === true}, ` +
-      `and the row then offers its removal = ${removeOffered} (it is drawn only where it could act, ` +
-      `UX-DR3). REMOVED: the ref nulled, the secret behind it GONE = ${secretAfterRemove === 0} ` +
-      `(read from vault.secrets through the pooler, not from a log line), credentials_present.staff ` +
-      `false, and the site STILL CONNECTED — disconnected_at ` +
-      `${JSON.stringify(presentAfterRemove.disconnected_at)}. Removing degrades, never disconnects. ` +
-      `DW-76 wrote ${staffRows.length} credential_change rows for it, ` +
-      `${JSON.stringify(staffRows.map((r) => `${r.route} ${(r.detail || {}).direction}`))} — each ` +
-      `stamped with the control that pressed it. And admin_key_id was the same before, with and ` +
-      `after the token = ${withToken.admin_key_id === credsBeforeToken.admin_key_id && withoutToken.admin_key_id === credsBeforeToken.admin_key_id}`)
-    tokenStored = withoutToken.staff_token_vault_ref !== null
-    } finally {
-      // Only if the product's own removal did NOT run to completion. It is a no-op on the happy
-      // path, and on any other it is the difference between a dropped secret and a live one.
-      if (tokenStored) {
-        await sql`update private.site_credentials set staff_token_vault_ref = null
-                   where site_id = ${t1SiteId} and staff_token_vault_ref is not null`
-        console.log('  NOTE  keys-token: the run left a staff token behind; the ref was nulled by the harness')
-      }
-    }
-
-    /* ── keys-test: ONE `GET config/` on the STORED key, and NOTHING is written — the negative
-       control that this story did not step on Story 3.7's state machine.
-
-       AND IT IS PRESSED IN THE WINDOW, which is the owner's finding 3 (2026-09-10) executed by its
-       own door: "When I click Test Connection in the Pop up, It tests it but opens a new popup in
-       the background with Test results. Then both these popup appear on a blank screen." It did:
-       `testConnection` redirects onto the panel's own address, an intercepted route did not
-       intercept a server action's redirect, and the full page loaded behind the still-open window
-       and took the Sites list with it. `openKeys` (a document load onto the full page) would prove
-       the CALL and nothing about the chrome — so this step opens the window. */
-    await openKeysPopup(t1SiteId, t1Name)
-    const healthBefore = ((await rowsOf('id,health,last_checked_at')).find((r) => r.id === t1SiteId) || {})
-    const readsBefore = (await sql`
-      select count(*)::int as n from private.credential_audit
-       where site_id = ${t1SiteId} and action = 'admin_read'`)[0].n
-    await page.getByRole('button', { name: SAY.keys_test, exact: true }).click()
-    await page.waitForURL((u) => u.searchParams.get('test') !== null, { timeout: 30000 }).catch(() => {})
-    // THE URL LANDS BEFORE THE PANEL DOES: the answer re-renders the window's server component
-    // behind its own skeleton, so the result is waited for and not read the instant the address
-    // changes (the first live run on the two-column window read the skeleton, 2026-09-10).
-    await page.locator('dialog[open]').getByText(SAY.keys_test_passed).first().waitFor({ timeout: 20000 }).catch(() => {})
-    const tested = (await page.locator('main').innerText().catch(() => '')).replace(/\s+/g, ' ')
-    // WHERE THE RESULT LANDED, and how many windows there are to read it in.
-    const afterTest = await keysShape()
-    const windows = await page.locator('dialog[aria-labelledby="keys-panel-title"]').count()
-    const panels = await page.locator('#keys-panel-title').count()
-    const testRows = (await sql`
-      select route, detail from private.credential_audit
-       where site_id = ${t1SiteId} and action = 'admin_read' order by occurred_at, id`).slice(readsBefore)
-    const healthAfter = ((await rowsOf('id,health,last_checked_at')).find((r) => r.id === t1SiteId) || {})
-    step('keys-test',
-      tested.includes(SAY.keys_test_passed) && tested.includes(SAY.keys_test_needs_token)
-      && testRows.length === 1 && testRows[0].route === 'sites/keys/test'
-      && healthAfter.health === healthBefore.health
-      && String(healthAfter.last_checked_at) === String(healthBefore.last_checked_at)
-      && afterTest.dialogOpen && afterTest.topBar && afterTest.cardsBehind > 0
-      && windows === 1 && panels === 1,
-      `PRESSED IN THE WINDOW, and the result landed IN IT: ${windows} window and ${panels} panel ` +
-      `in the document, still open = ${afterTest.dialogOpen}, ${afterTest.cardsBehind} Sites cards ` +
-      `still behind it and the top bar still drawn = ${afterTest.topBar} — the owner's finding 3, ` +
-      `where the answer used to load the full page behind the window and take the list with it. ` +
-      `The result is DRAWN — ` +
-      `${JSON.stringify(SAY.keys_test_passed)} = ${tested.includes(SAY.keys_test_passed)} — and it ` +
-      `says what still needs the token the customer has not added = ` +
-      `${tested.includes(SAY.keys_test_needs_token)}. It made exactly ${testRows.length} Admin call, ` +
-      `stamped ${JSON.stringify((testRows[0] || {}).route)}. AND IT WROTE NOTHING: sites.health is ` +
-      `still ${JSON.stringify(healthAfter.health)} and last_checked_at still ` +
-      `${JSON.stringify(healthAfter.last_checked_at)} — both are Story 3.7's state machine, and a ` +
-      `manual press that wrote either would fire its transition semantics from outside it`)
-
-    // ── keys-js-off: the ⋯ row has a DESTINATION and the route's three forms are wired, both read
-    //    off SERVED markup — React emits method=post and the encoded $ACTION_* fields only when it
-    //    renders on the server, so a form reached by a client transition carries neither.
-    await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-    await page.waitForSelector('text=Connected')
-    // BY ITS TEXT and not by position — `disconnect-js-off` reads its row the same way, and DOM order
-    // is not the claim (review, 2026-09-10).
-    const keysHref = await page.locator(`#site-menu-${t1SiteId} a`, { hasText: SAY.keys_menu }).first().getAttribute('href')
-    await page.goto(keysUrl(t1SiteId), { waitUntil: 'load' })
-    const keysForms = await page.locator('form').evaluateAll((forms) =>
-      forms.filter((f) => f.querySelector('input[name="site_id"]')).map((f) => ({
-        method: (f.getAttribute('method') || '').toLowerCase(),
-        action: f.getAttribute('action') !== null,
-        encoded: f.querySelectorAll('input[type="hidden"][name^="$ACTION"]').length,
-        site: f.querySelectorAll('input[type="hidden"][name="site_id"]').length,
-        field: [...f.querySelectorAll('input:not([type="hidden"])')].map((i) => i.name).join(','),
-        submits: f.querySelectorAll('button[type="submit"]').length,
-      })))
-    const wiredKeys = keysForms.filter((f) => f.method === 'post' && f.action && f.encoded > 0
-                                              && f.site === 1 && f.submits === 1)
-    const keysFields = keysForms.map((f) => f.field).sort()
-    // DERIVED, NOT COUNTED: the FIELD LIST is what pins the screen's shape — the three credentials
-    // plus Test connection, which types nothing — and "every form served is wired" is the claim
-    // worth making. A hand-typed 4 said neither, and silently depended on `keys-token` having
-    // removed the token first (with one present, the staff form has no typed field and the list
-    // changes shape). Review, 2026-09-09.
-    const EXPECTED_KEYS_FIELDS = ['', 'admin_key', 'content_key', 'staff_token']
-    step('keys-js-off',
-      keysHref === `/sites/keys?site=${t1SiteId}`
-      && keysForms.length > 0 && wiredKeys.length === keysForms.length
-      && JSON.stringify(keysFields) === JSON.stringify(EXPECTED_KEYS_FIELDS),
-      `the ⋯ row is an <a href> with a real destination (${JSON.stringify(keysHref)}), so it is a ` +
-      `navigation and not a control that does nothing without a script; and the route it lands on ` +
-      `serves ${keysForms.length} forms, ${wiredKeys.length} of them progressively enhanced — ` +
-      `method=post, an action attribute, React's encoded $ACTION_* fields, one hidden site_id and ` +
-      `one submit each: ${JSON.stringify(keysForms)}. Their typed fields are ${JSON.stringify(keysFields)} ` +
-      `— the three credentials plus Test connection, which has none. So paste a key, add the token, ` +
-      `remove it and test the connection all work with JavaScript off`)
-
-    // ── keys-forged: A SECOND ACCOUNT'S SITE ID, in the URL and in each of the three forms. The
-    //    page reads under the caller's OWN session, so RLS is the whole guard; each action reads
-    //    the same way before it writes. A negative assertion needs a positive control (standing
-    //    rule 2): every press is WATCHED LANDING before anything is re-read.
-    const victim = ((await insert('/sites', {
-      user_id: OTHER_USER_ID, url: 'https://victim.inflozo.com', title: 'Victim',
-    })).body || [])[0] || {}
-    const victimBefore = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
-    await page.goto(keysUrl(victim.id), { waitUntil: 'load' }).catch(() => {})
-    const pageRefused = await page.getByText(SAY.not_found_title, { exact: true }).first()
-      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
-    const landings = []
-    for (const which of ['#keys-admin', '#keys-content', '#keys-staff', null]) {
-      await openKeys(t1SiteId)
-      // The Content form checks the key in the browser before it posts, so it is filled with a key
-      // T1 accepts and the forged id is what the SERVER has to refuse (review, 2026-09-10).
-      if (which === '#keys-content') await page.fill('#keys-content', T1.contentKey)
-      const forged = await page.evaluate(({ id, field }) => {
-        const form = field
-          ? document.querySelector(field).closest('form')
-          : [...document.querySelectorAll('form')].find((f) =>
-              f.querySelector('input[name="site_id"]') && f.querySelectorAll('input:not([type="hidden"])').length === 0)
-        if (!form) return false
-        form.querySelector('input[name="site_id"]').value = id
-        form.querySelector('button[type="submit"]').click()
-        return true
-      }, { id: victim.id, field: which })
-      landings.push(forged && await page.getByText(SAY.not_found_title, { exact: true }).first()
-        .waitFor({ timeout: 20000 }).then(() => true).catch(() => false))
-    }
-    const victimAfter = JSON.stringify((await wire(`/sites?id=eq.${victim.id}&select=*`)).body || [])
-    const victimCreds = (await sql`select * from private.site_credentials where site_id = ${victim.id}`).length
-    step('keys-forged',
-      Boolean(victim.id) && pageRefused && landings.every(Boolean) && victimAfter === victimBefore
-      && victimCreds === 0,
-      `a site id owned by a DIFFERENT account: /sites/keys?site=<id> is the not-found page = ` +
-      `${pageRefused}, and forged into the Admin form, the Content form, the token form and the Test connection form ` +
-      `and submitted from the fixture's own session, every press was seen to LAND on the not-found ` +
-      `page = ${JSON.stringify(landings)} — its ownership read came back empty through RLS. The ` +
-      `stranger's row is byte-identical afterwards = ${victimAfter === victimBefore} and it has ` +
-      `${victimCreds} credential rows`)
-
-    // ── moved-domains: FR-C8's hint. ⛔ THE OLD RECORD IS SEEDED and the rest is the product's:
-    //    there is no SECOND reachable address for either test Ghost, so a genuine domain move
-    //    cannot be performed here — what can be, and is, is the state a domain move leaves behind:
-    //    a record the caller already has whose `admin_key_id` is the key being connected with. The
-    //    connect, the lookup, the redirect and the hint are all live.
-    const decoy = ((await insert('/sites', {
-      user_id: USER_ID, url: 'https://old-address.inflozo.com', title: 'Old address',
-      disconnected_at: new Date().toISOString(),
-    })).body || [])[0] || {}
-    await sql`
-      insert into private.site_credentials (site_id, user_id, admin_key_id)
-      values (${decoy.id}, ${USER_ID}, ${kidOf(T3.adminKey)})
-    `
-    const movedAgain = async () => {
-      // T3 out through the product's own ⋯, then back in through the sheet: a connect is what
-      // carries the hint, and re-adoption is a connect.
-      await page.goto(`${APP}/sites`, { waitUntil: 'load' })
-      await page.waitForSelector('text=Connected')
-      // BY THE SITE ID, not the title: a `hasText` substring match on T3's title is a needless
-      // second way for this click to miss when a precise id is already in hand. `popovertarget`
-      // carries `t3SiteId` itself, same as the menu it opens.
-      await page.locator(`button[popovertarget="site-menu-${t3SiteId}"]`).click()
-      const menu3 = page.locator(`#site-menu-${t3SiteId}`)
-      await menu3.waitFor({ state: 'visible' })
-      await menu3.getByRole('link', { name: SAY.disconnect_menu, exact: true }).click()
-      await page.waitForSelector('dialog[open]')
-      await sheet(page).getByRole('button', { name: SAY.disconnect_menu, exact: true }).click()
-      await page.waitForURL((u) => u.pathname === '/sites', { timeout: 30000 })
-      await opener(page).first().click()
-      await page.waitForSelector('dialog[open] a[href="?step=keys"]')
-      await sheet(page).locator('a[href="?step=keys"]').click()
-      const contentField = page.locator('dialog[open] #s2b-content-key')
-      await contentField.waitFor()
-      await fill(page, T3.url, T3.adminKey, T3.contentKey)
-      await submit(page)
-      // NOT `waitForURL(pathname === '/sites')`: A FAILED SUBMIT LEAVES THE DIALOG OPEN ON TOP OF
-      // THE SAME `/sites` THE FLOW WAS ALREADY ON, so that predicate is already true before the
-      // submit even lands and proves nothing (found live, 2026-09-09 — it read a failed reconnect
-      // as a success and the run only surfaced the lie two steps later, as a T3 that had silently
-      // stayed disconnected). A real success is a real navigation: `redirect()` tears down this
-      // exact dialog instance, so waiting for THIS element to be gone is the same signal
-      // `s2cHeading(page).waitFor()` gives the FIRST connect, spelled for a dialog that has no
-      // heading of its own to wait on.
-      const reconnected = await contentField.waitFor({ state: 'detached', timeout: 60000 })
-        .then(() => true).catch(() => false)
-      if (!reconnected) {
-        const shown = (await page.locator('dialog[open]').innerText().catch(() => '')).replace(/\s+/g, ' ')
-        throw new Error(`moved-domains: T3's reconnect did not navigate away — the dialog is still ` +
-          `open ${shown ? 'saying ' + JSON.stringify(shown) : 'with nothing readable in it'}`)
-      }
-      if (page.url().includes('/sites/brand')) await skipS2c(page)
-      await page.waitForSelector('text=Connected')
-      return page.url()
-    }
-    const movedTo = await movedAgain()
-    const hinted = await says(page, SAY.keys_moved)
-    const onOneCard = await page.locator('article', { hasText: SAY.keys_moved.slice(0, 24) }).count()
-    /* ── DW-85 (1), STORY 3.9: THE OTHER HINT, `?old=live`. The decoy above is DISCONNECTED, so
-       the hint promises the 90-day snapshot. A matched record that is STILL CONNECTED has no clock
-       at all — `disconnected_at` is what the clock is derived from (DW-43) — so the sentence drops
-       the snapshot clause and says the other site is still connected instead. That branch had never
-       been drawn by any run. Same decoy, `disconnected_at` nulled. */
-    await sql`update public.sites set disconnected_at = null where id = ${decoy.id}`
-    const movedLiveTo = await movedAgain()
-    const hintedLive = await says(page, SAY.keys_moved_live)
-    const hintedLiveWrong = await says(page, SAY.keys_moved)
-
-    /* ── DW-83, ITS OWN SEEDING (review of Story 3.9, 2026-09-11). Every seeding above puts ONE
-       matching record in front of `findSiteByAdminKeyId`, and with one candidate any `order by`
-       returns it — so `(s.disconnected_at is null) desc` could be reverted with every step here
-       still green. This is the one arrangement where the old order and the new disagree: the
-       LIVE decoy is the OLDER record (it is the one seeded first, above, still with
-       `disconnected_at` null) and a SECOND, NEWER decoy is DISCONNECTED, both carrying the same
-       Admin key id under the same caller. `created_at desc` alone returns the newer, disconnected
-       one and hints about a 90-day clock that is not running; the order the entry asked for
-       returns the live one. */
-    const newer = ((await insert('/sites', {
-      user_id: USER_ID, url: 'https://older-address.inflozo.com', title: 'Older address',
-      disconnected_at: new Date().toISOString(),
-    })).body || [])[0] || {}
-    await sql`
-      insert into private.site_credentials (site_id, user_id, admin_key_id)
-      values (${newer.id}, ${USER_ID}, ${kidOf(T3.adminKey)})
-    `
-    await movedAgain()
-    const hintedOrdered = await says(page, SAY.keys_moved_live)
-    const hintedOrderedWrong = await says(page, SAY.keys_moved)
-    await sql`delete from private.site_credentials where site_id = ${newer.id}`
-    await sql`delete from public.sites where id = ${newer.id}`
-    await sql`update public.sites set disconnected_at = now() where id = ${decoy.id}`
-
-    /* ── DW-85 (2): THE CROSS-ACCOUNT CONTROL for `findSiteByAdminKeyId`'s `user_id` clause. A
-       decoy under a DIFFERENT account carrying the SAME Admin key id must produce NO hint — two
-       customers connecting the same Ghost is not a domain move and is none of either's business.
-       Nothing had ever executed that clause: every decoy before this one was the caller's own, so
-       deleting `and c.user_id = …` would have left every step here green.
-       IT IS ALSO DW-83's PROOF, which is why the two entries closed together: with the caller's own
-       decoy gone and only the stranger's left, a lookup that ignored `user_id` would find the
-       stranger's row and hint about a site the caller cannot see. */
-    await sql`delete from private.site_credentials where site_id = ${decoy.id}`
-    const foreignDecoy = ((await insert('/sites', {
-      user_id: OTHER_USER_ID, url: 'https://another-account.inflozo.com', title: 'Another account',
-      disconnected_at: new Date().toISOString(),
-    })).body || [])[0] || {}
-    await sql`
-      insert into private.site_credentials (site_id, user_id, admin_key_id)
-      values (${foreignDecoy.id}, ${OTHER_USER_ID}, ${kidOf(T3.adminKey)})
-    `
-    await movedAgain()
-    const hintedAcross = await says(page, SAY.keys_moved) || await says(page, SAY.keys_moved_live)
-    // The credential row goes now; the `sites` row goes with `OTHER_USER_ID` itself, which the
-    // Python half deletes in its `finally` — the same cleanup every other foreign fixture rides on.
-    await sql`delete from private.site_credentials where site_id = ${foreignDecoy.id}`
-
-    // …AND THE NEGATIVE CONTROL. A record whose `admin_key_id` is null NEVER matches — which is
-    // every record connected before this story's migration — so the same connect prints no hint.
-    await sql`
-      insert into private.site_credentials (site_id, user_id, admin_key_id)
-      values (${decoy.id}, ${USER_ID}, null)
-      on conflict (site_id) do update set admin_key_id = null
-    `
-    await movedAgain()
-    const hintedAgain = await says(page, SAY.keys_moved)
-    await sql`delete from private.site_credentials where site_id = ${decoy.id}`
-    step('moved-domains',
-      Boolean(decoy.id) && hinted && onOneCard === 1 && !hintedAgain
-      && hintedLive && !hintedLiveWrong && Boolean(foreignDecoy.id) && !hintedAcross
-      && Boolean(newer.id) && hintedOrdered && !hintedOrderedWrong,
-      `a connect whose Admin key id matches ANOTHER record this caller holds: the redirect carried ` +
-      `?moved= (${JSON.stringify(new URL(movedTo).search)}) and FR-C8's hint is on that ONE card ` +
-      `(${onOneCard} of them) reading the app's own ${JSON.stringify(SAY.keys_moved)} — the 90 days ` +
-      `derived from ORPHAN_SNAPSHOT_DAYS, not typed into the sentence. THE CONTROL: with the same ` +
-      `record's admin_key_id set to NULL — which is every record connected before this story's ` +
-      `migration — the identical connect printed NO hint = ${!hintedAgain}, because a null never ` +
-      `matches and a missing hint is not a wrong one. STORY 3.9 ADDED TWO MORE SEEDINGS (DW-85): ` +
-      `with the SAME record still CONNECTED the hint is the other one — ` +
-      `${JSON.stringify(SAY.keys_moved_live)} = ${hintedLive}, and the snapshot wording did NOT ` +
-      `also appear = ${!hintedLiveWrong}, because a record that was never let go has no 90-day ` +
-      `clock to promise (the redirect carried ${JSON.stringify(new URL(movedLiveTo).search)}); and ` +
-      `a decoy carrying the same Admin key id under a DIFFERENT ACCOUNT produced NO hint at all = ` +
-      `${!hintedAcross}, which is the first execution of findSiteByAdminKeyId's user_id clause — ` +
-      `two customers connecting the same Ghost is not a domain move. AND DW-83'S OWN PROOF, added ` +
-      `at the review: with the LIVE decoy left as the OLDER record and a NEWER, DISCONNECTED twin ` +
-      `seeded beside it, the hint was the live one = ${hintedOrdered} and NOT the snapshot one = ` +
-      `${!hintedOrderedWrong} — the one arrangement where created_at alone answers the wrong row. ` +
-      `⛔ The OLD record is seeded through the pooler: ` +
-      `neither test Ghost has a second reachable address, so a real domain move cannot be performed ` +
-      `here. The connect, the lookup, the redirect and the hint are all the product's`)
-
-    // ── keys-content: THE CONTENT KEY'S SAVE, the one row whose Save has a browser half (FR-C2's
-    //    check against the customer's own Ghost) and a service-role write behind it — and until
-    //    this step the only save on the screen no live run pressed (review, 2026-09-10). Re-pasted
-    //    rather than regenerated, for `keys-rotate`'s reason.
-    await openKeys(t1SiteId)
-    const contentBefore = (await rowsOf('id,content_key,credentials_present')).find((r) => r.id === t1SiteId) || {}
-    await page.fill('#keys-content', T1.contentKey)
-    await page.locator('form:has(#keys-content) button[type="submit"]').click()
-    const contentAfter = (await until(async () => {
-      const row = (await rowsOf('id,content_key,credentials_present')).find((r) => r.id === t1SiteId) || {}
-      return row.content_key === T1.contentKey && (row.credentials_present || {}).content === true ? row : null
-    })) || {}
-    const contentMask = await page.getByText(T1.contentKey.slice(0, 10), { exact: false }).first()
-      .waitFor({ timeout: 20000 }).then(() => true).catch(() => false)
-    step('keys-content',
-      contentAfter.content_key === T1.contentKey && (contentAfter.credentials_present || {}).content === true
-      && (contentAfter.credentials_present || {}).admin === (contentBefore.credentials_present || {}).admin
-      && contentMask,
-      `the Content API key pasted and saved: sites.content_key is the pasted key = ` +
-      `${contentAfter.content_key === T1.contentKey}, credentials_present.content true = ` +
-      `${(contentAfter.credentials_present || {}).content === true} in the SAME update (the mirror ` +
-      `cannot lag the key), the admin flag beside it untouched = ` +
-      `${(contentAfter.credentials_present || {}).admin === (contentBefore.credentials_present || {}).admin}, ` +
-      `and the row draws the key's first characters = ${contentMask}`)
-
-    // ── keys-test-refused: THE RESULT CARD'S FAILURE SHAPE, by a typed URL — `?test=` and `?status=`
-    //    are whoever holds the URL's, so the guard on them is read-only to drive: a three-digit
-    //    status draws Ghost's refusal with that number, and anything else draws NO sentence at all
-    //    (review, 2026-09-10 — the fallback used to be "We couldn't save that just now").
-    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_refused&status=429`, { waitUntil: 'load' })
-    const refusedSaid = await says(page, SAY.keys_ghost_refused.replace('%s', '429'))
-    await page.goto(`${keysUrl(t1SiteId)}&test=ghost_refused&status=abc`, { waitUntil: 'load' })
-    const refusedBlank = !(await says(page, SAY.keys_ghost_refused.split('%s')[0]))
-    await page.goto(`${keysUrl(t1SiteId)}&test=not-a-code`, { waitUntil: 'load' })
-    const unknownBlank = !(await says(page, 'just now'))
-    step('keys-test-refused',
-      refusedSaid && refusedBlank && unknownBlank,
-      `?test=ghost_refused&status=429 draws ${JSON.stringify(SAY.keys_ghost_refused.replace('%s', '429'))} ` +
-      `= ${refusedSaid}; with status=abc it draws no "(HTTP )" sentence = ${refusedBlank}; and a code ` +
-      `the table does not name draws nothing rather than a save's sentence = ${unknownBlank}`)
+    // ── Story 5.24b: the Sites search kept through both windows (DW-82), and Escape during a save (DW-84).
+    await searchKept()
+    await keysEscape()
     // Back on the list: the axe sweep below audits `/sites` and reads its top bar, and it used to
     // inherit the list from `moved-domains` (a run on 2026-09-10 audited the keys page as "sites").
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
@@ -4313,21 +4953,33 @@ const shoot = async (page, name) => {
     console.log(`  note: navigation retries this run: ${navRetries}`)
     await sql.end({ timeout: 5 }).catch(() => {})
     await browser.close()
-    process.stdout.write('\n@@RESULT@@' + JSON.stringify(steps) + '\n')
+    console.log('@@DONE@@')
   }
 })()
 '''
 
 
+def report(s):
+    """One step's line — PASS, FAIL or RECORD — printed and flushed the moment it is known."""
+    mark = 'RECORD' if s['ok'] is None else ('PASS' if s['ok'] else 'FAIL')
+    print(f'  {mark:6} {s["name"]}: {s["detail"]}', flush=True)
+    return s
+
+
 def run_browser(cfg):
+    """The browser half, STREAMED (DW-92, Story 5.24b): every `@@STEP@@` line the child writes is
+    printed as it lands and every other line it writes — the `note:` retry counts, keys-token's
+    NOTE — is printed as it comes, where `capture_output` used to hold all of it until the child
+    exited and a run killed at the ceiling printed nothing it had proved. Node's own stderr is not
+    piped at all, so a crash reaches the terminal as it happens. Returns every step it printed."""
     pw = playwright_dir()
     if not pw:
         print('  FAIL  playwright is not on this machine. Set PLAYWRIGHT_DIR to a playwright')
         print('        package directory, or install one; see memory `headless-browser-tooling`.')
-        return [{'name': 'browser', 'ok': False, 'detail': 'playwright not resolvable'}]
+        return [report({'name': 'browser', 'ok': False, 'detail': 'playwright not resolvable'})]
     if not os.path.isdir(PG_DIR):
-        return [{'name': 'browser', 'ok': False,
-                 'detail': f'the postgres driver is not at {os.path.relpath(PG_DIR)}; run pnpm install'}]
+        return [report({'name': 'browser', 'ok': False,
+                        'detail': f'the postgres driver is not at {os.path.relpath(PG_DIR)}; run pnpm install'})]
 
     with tempfile.TemporaryDirectory() as work:
         script = os.path.join(work, 'connect-wizard.js')
@@ -4335,51 +4987,45 @@ def run_browser(cfg):
         # SECRETS GO IN THE ENVIRONMENT, never in argv: argv is world-readable in `ps`.
         child = dict(os.environ, PW_DIR=pw, PG_DIR=os.path.abspath(PG_DIR),
                      AXE_PATH=axe_path() or '', **cfg)
+        # 2700s SINCE STORY 3.9, AND THE INCREASE IS A COST THAT WAS PAID FOR, not a hang being
+        # tolerated. DW-85's two new seedings each need their OWN connect to carry their own
+        # answer — the still-connected decoy must draw `movedStillConnected`, and the
+        # cross-account decoy must draw NOTHING — so `moved-domains` now runs `movedAgain()`
+        # five times instead of two (the review added DW-83's own two-record seeding), and each is a real disconnect-and-reconnect through the
+        # product's own UI. The first run after they landed hit the old 1200s ceiling with the
+        # browser half still working (2026-09-11), which is the measurement behind this number.
+        # DW-68's hang problem is a DIFFERENT thing and this does not paper over it: a hang
+        # still ends here, still prints the notes the child had written, and still fails.
+        # AND THAT MEASUREMENT WAS OF A LOOP (Story 5.24b, DW-92): `press()` had called itself since
+        # 2026-09-10, so no full run could pass `brand-popup` whatever the ceiling — see the note
+        # there. The number stays until a full run measures the real length.
+        limit = 2700
         try:
-            # 2700s SINCE STORY 3.9, AND THE INCREASE IS A COST THAT WAS PAID FOR, not a hang being
-            # tolerated. DW-85's two new seedings each need their OWN connect to carry their own
-            # answer — the still-connected decoy must draw `movedStillConnected`, and the
-            # cross-account decoy must draw NOTHING — so `moved-domains` now runs `movedAgain()`
-            # five times instead of two (the review added DW-83's own two-record seeding), and each is a real disconnect-and-reconnect through the
-            # product's own UI. The first run after they landed hit the old 1200s ceiling with the
-            # browser half still working (2026-09-11), which is the measurement behind this number.
-            # DW-68's hang problem is a DIFFERENT thing and this does not paper over it: a hang
-            # still ends here, still prints the notes the child had written, and still fails.
-            limit = 2700
-            proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=limit)
-        except subprocess.TimeoutExpired as timed_out:
-            # THE NOTES SURVIVE THE HANG. `TimeoutExpired` carries what the child had already
-            # written, and this is the ONE case the retry count exists for — a run that hung —
-            # so discarding it here threw away the number DW-68 is measured with
-            # (review 3, 2026-09-08).
-            #
-            # AND IT CARRIES THEM AS BYTES, `text=True` NOTWITHSTANDING: on POSIX the exception
-            # `run()` re-raises is the one `communicate()` built from its raw accumulator, before
-            # the decode. So `line.startswith('note:')` raised TypeError and killed the report
-            # this block exists to print — executed, 2026-09-09, and the whole reason it is
-            # written down: the only path that reaches here is a run nobody was watching.
-            hung = timed_out.stdout or ''
-            if isinstance(hung, bytes):
-                hung = hung.decode('utf-8', 'replace')
-            for line in hung.splitlines():
-                if line.lstrip().startswith('note:'):
-                    print(f'  {line.strip()}')
-            return [{'name': 'browser', 'ok': False, 'detail': f'node did not finish inside {limit}s'}]
+            proc = subprocess.Popen(['node', script], env=child, stdout=subprocess.PIPE, text=True)
         except FileNotFoundError:
-            return [{'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'}]
-    # THE BROWSER'S OWN NOTES REACH THE OUTPUT ON A PASSING RUN TOO. Everything but the result
-    # line used to be discarded unless the run failed, so the navigation-retry count added on
-    # 2026-09-08 was invisible in exactly the case that matters — a run that passed only because
-    # it retried. A retry that is not reported is a retry that hides a hang (DW-68).
-    for line in proc.stdout.splitlines():
-        if line.lstrip().startswith('note:'):
-            print(f'  {line.strip()}')
-    for line in proc.stdout.splitlines():
-        if line.startswith('@@RESULT@@'):
-            return json.loads(line[len('@@RESULT@@'):])
-    print(proc.stdout[-2000:])
-    print(proc.stderr[-2000:], file=sys.stderr)
-    return [{'name': 'browser', 'ok': False, 'detail': f'node exited {proc.returncode} with no result'}]
+            return [report({'name': 'browser', 'ok': False, 'detail': 'node is not on PATH; Playwright is Node'})]
+        killed = []
+        timer = threading.Timer(limit, lambda: (killed.append(True), proc.kill()))
+        timer.start()
+        steps, done = [], False
+        try:
+            for line in proc.stdout:
+                if line.startswith('@@STEP@@'):
+                    steps.append(report(json.loads(line[len('@@STEP@@'):])))
+                elif line.startswith('@@DONE@@'):
+                    done = True
+                elif line.strip():
+                    # THE BROWSER'S OWN NOTES, on a passing run too: a retry that is not reported
+                    # is a retry that hides a hang (DW-68).
+                    print(f'  {line.strip()}', flush=True)
+            proc.wait()
+        finally:
+            timer.cancel()
+    if not done:
+        steps.append(report({'name': 'browser', 'ok': False, 'detail':
+                             f'node did not finish inside {limit}s' if killed
+                             else f'node exited {proc.returncode} with no result'}))
+    return steps
 
 
 def main():
@@ -4394,6 +5040,10 @@ def main():
     ap.add_argument('--shots', default='',
                     help='a directory to save each surface into at 1440, 834 and 390 — the frame '
                          'comparison. Created if missing; asserts nothing.')
+    ap.add_argument('--only', type=only_blocks, default=[], metavar='BLOCK[,BLOCK…]',
+                    help='run the named blocks alone, each on the seeds it names, and never '
+                         'injection-live — so nothing is written to T1 or T3. An unknown name exits 2 '
+                         'before any key is read (DW-92).')
     args = ap.parse_args()
 
     env = load_env()
@@ -4480,7 +5130,9 @@ def main():
     #    `navigation`'s container a real question rather than a pedantic one — and it is a string
     #    too. Recorded key by key so a major that changes its mind is caught here rather than on a
     #    customer's screen (standing rule: cite or execute, never assert).
-    BRAND_KEYS = ('accent_color', 'logo', 'icon', 'cover_image', 'navigation', 'title', 'description')
+    # THREE SINCE STORY 5.24b (DW-71): the brand keeps the three fields something reads — the accent, the logo and the
+    # menu. The icon, the cover, the title and the description were stored for no reader and are no longer read at all.
+    BRAND_KEYS = ('accent_color', 'logo', 'navigation')
     brand_seen = {}
     for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
         try:
@@ -4503,6 +5155,17 @@ def main():
           f'GET /admin/settings/ payload, read with GHOST6_ADMIN_API_KEY and GHOST5_ADMIN_API_KEY — '
           f'{json.dumps(brand_seen)}; wanted: {", ".join(BRAND_KEYS)} (MEASUREMENTS §40)')
 
+    # ── §57, RE-EXECUTED EVERY RUN (DW-50, Story 5.24b): the app's one direct Postgres connection verifies the pooler
+    #    against the root CA PINNED IN `server/ghost-admin/db.ts` — read out of that file, never retyped — and a real
+    #    root that is the WRONG one is refused. Both halves, because a pin that also accepted Node's own bundle would be
+    #    verifying nothing (standing rule 2).
+    ca = pinned_handshake(env)
+    ca_ok = ca.get('pinned') == 'connected' and ca.get('wrong') == 'SELF_SIGNED_CERT_IN_CHAIN'
+    failed = failed or not ca_ok
+    print(f'  {"PASS" if ca_ok else "FAIL"}  pinned-ca: the pooler over SUPABASE_DB_POOLER_URL with the PEM read out of '
+          f'db.ts -> {ca.get("pinned")}; with tls.rootCertificates[0] instead -> {ca.get("wrong")} '
+          f'(SELF_SIGNED_CERT_IN_CHAIN wanted; MEASUREMENTS §57)')
+
     if args.check:
         pw, axe = playwright_dir(), axe_path()
         print(f'  playwright: {"resolved" if pw else "NOT FOUND"}')
@@ -4510,6 +5173,7 @@ def main():
         print(f'  postgres driver: {"resolved" if os.path.isdir(PG_DIR) else "NOT FOUND"} '
               f'({os.path.relpath(PG_DIR)})')
         print(f'  the audit route the app stamps: {audit_route()}')
+        print(f'  the order term DW-83\'s control drops from findSiteByAdminKeyId: {moved_queries()["dropped"]!r}')
         for code, text in app_text().items():
             print(f'  the app\'s own text, evaluated — {code}: {text!r}')
         print('  --check: the plumbing alone — no browser, no user, nothing connected')
@@ -4535,9 +5199,11 @@ def main():
     #    harmless line in the Site-footer code-injection box BEFORE the browser starts, so the very
     #    first connect meets a site that really has code injection set. The value found is kept
     #    here and put back in the `finally` below — passing, failing or interrupted.
+    #    `--only` SKIPS IT, and that is its safety (DW-92): no block it runs needs the box set, so an
+    #    `--only` run writes nothing to T1 or T3 at all.
     injection = {}
     try:
-        for label, prefix in (('T1', 'GHOST6'), ('T3', 'GHOST5')):
+        for label, prefix in () if args.only else (('T1', 'GHOST6'), ('T3', 'GHOST5')):
             state = {'label': label, 'prefix': prefix}
             injection[prefix] = state
             ghost = ghost_for(env, prefix, f'{prefix}_STAFF_ACCESS_TOKEN')
@@ -4617,12 +5283,11 @@ def main():
             'BOGUS_KEY': bogus,
             'INJECTION_MARK': INJECTION_MARK,
             'SENTENCES': json.dumps(says),
+            'ONLY': ','.join(args.only),
+            'MOVED_QUERY': json.dumps(moved_queries()),
         })
-        for s in steps:
-            mark = 'RECORD' if s['ok'] is None else ('PASS' if s['ok'] else 'FAIL')
-            print(f'  {mark:6} {s["name"]}: {s["detail"]}')
-            if s['ok'] is False:
-                failed = True
+        # Printed as they landed, by `run_browser`; here they only decide the result.
+        failed = failed or any(s['ok'] is False for s in steps)
         # The browser half deleted the user itself (`user-gone`); a second DELETE below would only
         # answer 404 and mask a step that made a user it should not have.
         if any(s['name'] == 'user-gone' and s['ok'] for s in steps):

@@ -247,7 +247,11 @@ DOCS = [
   'tools/stress is CommonJS and the packages are ESM.'),
  ('tools/probe/check-access.py', 'tool', 'Credential check',
   'Verifies every live credential works. Prints verdicts only — it has no code path that can reach '
-  'a secret, written that way after two keys leaked into a transcript.'),
+  'a secret, written that way after two keys leaked into a transcript. Since Story 5.24b (DW-90) it '
+  'reads the read-only GitHub token\'s expiry off GitHub\'s own github-authentication-token-expiration '
+  'header on GET /rate_limit and prints the date — warn inside 30 days, FAIL on anything but a 200 '
+  'carrying that header — and exits 1 on any FAIL. Its Resend line sends one real email, so '
+  '--self-check holds the GitHub verdict both ways with no network and no email.'),
  ('tools/probe/RESET-supabase.sql', 'tool', 'Supabase reset',
   'Clears the probe project for a clean schema apply. Deletes storage files through the dashboard '
   'first, because a SQL cascade removes the row and leaves the bytes billed.'),
@@ -380,7 +384,8 @@ DOCS = [
   'address\'s link alone lands it, and the changed-notice ON so the OLD address is told (R-95) '
   '— and PROVES each one by reading it back; --expect breaks one expectation on '
   'purpose so a green run can be told from a run that checks nothing. Never prints smtp_pass. '
-  'Stories 1.4, 2.1, 2.3.'),
+  'Since Story 5.24b (DW-14) it asks for nothing the plan cannot hold: the paid idle-timeout field, '
+  'its 402 retry and its stated-not-applied line are gone. Stories 1.4, 2.1, 2.3.'),
  ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
  ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
  ('tools/probe/run-verify-a33-cards.py', 'tool', 'Register probe · Koenig card selectors',
@@ -420,7 +425,9 @@ DOCS = [
   'what the broken build did. rest-refused asserts R-223 (Story 5.24b, DW-40): both former tokens '
   'answer 401 session_not_found directly at /rest/v1 on a read and on a write and the row is '
   'unchanged, while a live ticket, the secret key and anon still read — its control the same ticket '
-  'reading its own row just before the press. Records the project jwt_exp off the Management API, and '
+  'reading its own row just before the press. Since Story 5.24b (DW-41) the press sends scope=others '
+  'and then scope=local rather than one scope=global, so a failed first call leaves this device '
+  'signed in. Records the project jwt_exp off the Management API, and '
   'proves a magic link after a global sign-out still signs in with the 30-day cookie — a global '
   'sign-out ends sessions, never the account. Plus axe-core at WCAG 2.1 AA over /account closed '
   'and with the confirm open, and over /sign-in?signed-out=all, each at 1440 and 390. Creates one '
@@ -679,8 +686,13 @@ DOCS = [
    'RECORDED beside it (DW-67) and the blocked-script count asserted zero (DW-18\'s app half: the '
    'catch-all is dynamic and carries the nonce, where the prerendered root not-found had every '
    'script on it blocked). axe-core at WCAG 2.1 AA at 1440, 834 and 390.',
+   "STORY 5.24b's DW-27: clear-search — once cap has left one project, /?q=zzzz and /sites?q=zzzz "
+   "(a sites row seeded through the service role, so the no-match line and not the empty screen is "
+   "what is tested) each say the app's own sentence ending in its Clear search link, and the click "
+   'lands on the page without ?q=, the field empty and the card back — the card coming back is the '
+   'control. axe-core at WCAG 2.1 AA over both no-match lines at 1440, 834 and 390.',
    '--check is the plumbing alone — keys present, playwright, axe and the postgres driver '
-   "resolvable, the app's own sentences evaluated out of lib/{projects,plan,not-found}.ts, and one "
+   "resolvable, the app's own sentences evaluated out of lib/{projects,plan,not-found,connect-rule}.ts, and one "
    'real admin create-read-delete — so it runs before the story is deployed. No key is ever '
    'printed, and both fixture accounts are deleted in a finally with the Admin-API user count read '
    'before and after, so a leak is loud.',
@@ -764,10 +776,10 @@ DOCS = [
     'about it moves), brand-rerun presses the offer a SECOND time on Pro — the one state in the '
     'run with room to spare, and until the review of 2026-09-08 the one that made a second '
     'project for the same site — and brand-none proves a site with nothing to offer draws no link '
-    'and renders the NOT-FOUND page, as does a ?site= naming a row no account carries (the HTTP '
-    'status is 200 because /sites/brand has its OWN loading.tsx since R-98 and the shell has '
-    'streamed before notFound() throws — the group-wide (authed)/loading.tsx that used to be the '
-    'reason is gone; measured rather than excused, DW-67 amended).',
+    'and renders the NOT-FOUND page, as does a ?site= naming a row no account carries — both a '
+    'real HTTP 404 since Story 5.24b, because sites/brand/layout.tsx decides above the segment\'s '
+    'own loading.tsx, before anything streams (DW-67; until then the status was 200, the shell '
+    'having streamed before notFound() threw, measured rather than excused).',
     "brand-picker drives the owner's Question 3 ruling — with more than one project the second "
     "press ASKS instead of telling and draws a card per project carrying that project's own 64x44 "
     "wireframe in its own Style-Pack colours (FR-B1's placeholder, no preview claimed), the card "
@@ -814,6 +826,30 @@ DOCS = [
     "and proves nothing is written — the !picked half of useBrand's guard, which every step that "
     'presses a real button walks past, and with the clause gone the post makes a project past the '
     'Free cap.',
+    'STORY 5.24b GAVE IT --only BLOCK[,BLOCK…] (DW-92), so a story that changes one step no longer '
+    "pays for the whole run: the blocks the browser half registers in BLOCKS run alone, each on the "
+    "seeds it names — sign-in, Pro, T1 or T3 connected from the empty account through the full-page "
+    "keys step, the stranger's row — and the full sequence calls the same functions. An unknown name "
+    'exits 2 before any key is read; an --only run never runs injection-live, so it writes nothing '
+    'to T1 or T3; and in both modes every step prints as it lands, the parent reading the child line '
+    "by line under a kill timer. moved-domains gained DW-83's control, moved-order-term: "
+    "findSiteByAdminKeyId's own query, read out of server/ghost-admin/index.ts and run read-only, "
+    'picks the newer disconnected record without its first order term and the older live decoy '
+    "with it. And the full run's own hang was found by reading: from Story 3.7's review press() "
+    'called itself, so no full run could pass brand-popup; it is fixed, and a full run is owed. '
+    "The story's own steps are blocks too. connect-paths: path-refused types https://example.com/blog "
+    "and reads R-219's sentence under API URL with no row written, the root asked and answering 404; "
+    "path-page connects T1 by a post's own address and gets T1's root, the positive control (R-226); "
+    'address-blocked types https://127.0.0.1.nip.io and reads the audit row\'s detail.blocked (DW-58). '
+    'keys-two-fields, inside manage-keys, posts two credential fields to Manage keys and lands on '
+    'keys_failed with the row, the credential and the audit count unchanged (DW-81). search-kept '
+    'opens both windows over /sites?q= and closes each by ✕, Escape, Cancel, a save and a refusal, '
+    'the filter kept every time (DW-82); keys-escape holds the save\'s POST and presses Escape — the ✕ '
+    'and Cancel aria-disabled, the window neither closed nor reopened (DW-84). keys-screen reads the '
+    'roll hint through Custom (DW-86); keys-test-refused types a 403 and a ghost_unavailable (DW-52). '
+    '--check gains pinned-ca: the pooler over SUPABASE_DB_POOLER_URL with the PEM read out of '
+    'server/ghost-admin/db.ts connects, and with tls.rootCertificates[0] it is refused '
+    'SELF_SIGNED_CERT_IN_CHAIN (DW-50); brand-keys reads the three keys the brand reader keeps (DW-71).',
     'Note that --check is no longer plumbing alone — it re-executes settings-keys and brand-keys '
     'against both live Ghosts, so it needs every key the full run does, the two staff tokens '
     'included; it still starts no browser and creates nothing. Stories 3.2, 3.3 and 3.4.',
@@ -829,6 +865,18 @@ DOCS = [
   'against Supabase — and needs no browser and no deployment. Also records whether GoTrue '
   'rate-limits /passkeys/authentication/options under a burst wider than its window. Closed DW-32 (3) '
   'at Dev and DW-32 (4) and DW-33 (1) on the Deploy run of 2026-09-07, whose answers the ledger records. '
+  'Story 5.24b adds DW-32 (1) and (2) and DW-91\'s card half: auto-name ASSERTS the fallback Passkey '
+  '(the virtual authenticator sends an AAGUID the list does not carry), which is the control for '
+  'named-aaguid — a second registration whose getAuthenticatorData() comes back as a copy of the real buffer with '
+  'bytes 37-52 set to the first AAGUID in lib/passkey-aaguids.ts, the row then carrying that entry\'s name; then '
+  'kill-mid-ceremony signs in with that passkey holding only the finish POST, switches the passkeys row off over the '
+  'pooler and lets it go — S1\'s switched-off sentence (read out of sign-in/actions.ts) in the red banner, still on '
+  '/sign-in, no sb-*-auth-token cookie — with switch-on, the same press signing in once the row is back, as its '
+  'control; inside the hold the card is inert and aria-hidden and neither focus() nor Tab reaches it, and after '
+  'the release both do (inert-held, inert-released). PASSKEYS ARE OFF ON PRODUCTION FOR A FEW SECONDS: the row is '
+  'read before anything is created and that value is put back three times — at once, in the browser half\'s '
+  'finally and in this file\'s, which reads it back and fails the run if it is not as found. --check also reads '
+  'the row (never writes it) and needs SUPABASE_DB_POOLER_URL. '
   'Playwright is resolved from the machine, not this repository; PLAYWRIGHT_DIR '
   'overrides. Story 2.2.'),
  ('tools/probe/report-template.html', 'tool', 'Decision-sheet template',
@@ -1098,6 +1146,8 @@ DOCS = [
   "the deployed walk's step 94, where a React transition had waited for them. "
   "And the chrome, a part of its own, still moves its layer when a control restamps a root in place: On scroll → Static "
   "takes the stuck header's selected box from the fixed layer to the scrolling one (the deployed walk's step 12). "
+  "Story 5.24b (DW-91) opens /app/harness/error, a harness-only page that throws on purpose, and reads the app error "
+  "boundary's tab title, \"Something went wrong · Inflozo\", over its heading — red with error.tsx's title line deleted. "
   "Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',

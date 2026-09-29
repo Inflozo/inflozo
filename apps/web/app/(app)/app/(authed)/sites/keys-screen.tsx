@@ -1,5 +1,5 @@
 import { notFound, redirect } from 'next/navigation'
-import { hostOf } from '@/lib/connect-rule'
+import { hostOf, sitesPath } from '@/lib/connect-rule'
 import { supabaseServer } from '@/lib/supabase/server'
 import { credentialsOf } from '@/server/ghost-admin'
 import { KeysPanel } from './keys-panel'
@@ -44,6 +44,8 @@ export type KeysSearchParams = {
   keys?: string | string[]
   status?: string | string[]
   test?: string | string[]
+  /** THE LIST'S OWN SEARCH, when this is the window over it (DW-82): every way out lands back on it. */
+  q?: string | string[]
 }
 
 type Row = {
@@ -67,8 +69,11 @@ export async function KeysScreen({
       from and travels into every form so the actions answer onto this chrome (`keysBase`). */
   popup?: boolean
 }) {
-  const { site, manage, keys, status, test } = await searchParams
+  const { site, manage, keys, status, test, q } = await searchParams
   const siteId = first(popup ? manage : site)
+  /* WHERE EVERY WAY OUT OF THE WINDOW LANDS: the list, with its own search kept (DW-82). The full page came from no list,
+     and its ✕ and Cancel go to the bare one. */
+  const back = sitesPath(popup ? first(q) : undefined)
   /* A SITE THIS SCREEN CANNOT DRAW IS THE FULL PAGE'S 404 AND THE WINDOW'S "no window", and that
      difference matters now that the window is rendered by the Sites list: `notFound()` inside the
      list's own `<Suspense>` takes THE LIST to the not-found page, so a stale or forged `?manage=`
@@ -79,7 +84,7 @@ export async function KeysScreen({
      file over: TypeScript only lets a never-returning CALL end a code path when the callee is
      declared that way, so the arrow form left every read below "possibly null". */
   function gone(): never {
-    if (popup) redirect('/sites')
+    if (popup) redirect(back)
     notFound()
   }
   if (!siteId) gone()
@@ -98,11 +103,11 @@ export async function KeysScreen({
     // failure would replace the whole list with "something went wrong" over a site that is fine.
     // The window closes instead and the ⋯ row is still there to press again — `brand-screen.tsx`'s
     // `readFailed` takes the same line (review, 2026-09-10). The full page keeps the error screen.
-    if (popup) redirect('/sites')
+    if (popup) redirect(back)
     throw new Error('sites/keys: site read failed')
   }
   if (!row) gone()
-  if (row.disconnected_at) redirect('/sites')
+  if (row.disconnected_at) redirect(back)
 
   // The user id is needed to scope the credential read, and the row above already proves the site
   // is this caller's — RLS answered nothing otherwise. `credentialsOf` carries its own `user_id`
@@ -144,6 +149,7 @@ export async function KeysScreen({
       status={/^\d{3}$/.test(first(status) ?? '') ? (first(status) as string) : null}
       tested={first(test) ?? null}
       popup={popup}
+      back={back}
     />
   )
 }

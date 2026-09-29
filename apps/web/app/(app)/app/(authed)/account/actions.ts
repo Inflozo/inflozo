@@ -22,7 +22,7 @@ import {
 } from './deletion-rule.ts'
 import { FIELD_REFUSALS, IN_USE, newEmailFor, SEND_FAILED } from './email-change-rule.ts'
 import { NUDGE_DONE } from './nudge.ts'
-import { SIGNED_OUT_EVERYWHERE_PATH } from '../../sign-in/signed-out.ts'
+import { SIGNED_OUT_EVERYWHERE_PATH, signOutFailed } from '../../sign-in/signed-out.ts'
 import { PASSKEY_NAME_HINT, passkeyIdSchema, passkeyNameSchema } from './passkey-name-rule.ts'
 
 /**
@@ -85,7 +85,7 @@ const MESSAGES: Record<Code, string> = {
   too_soon: tooSoon(SEND_INTERVAL),
   send_failed: SEND_FAILED,
   // FR-A6's one failure, in the confirm's own Banner. It says the attempt failed and claims
-  // nothing about the other devices, because nothing happened to them.
+  // nothing about the other devices: when `others` fails, nothing happened to them (DW-41).
   sign_out_failed: "We couldn't sign you out everywhere just now. Try again in a moment.",
   // FR-A5's four, all from `deletion-rule.ts` so the dialog, the restore page and this map cannot
   // each keep their own copy of a sentence about the one irreversible thing in the product.
@@ -384,24 +384,28 @@ export async function changeEmail(
 /**
  * FR-A6's OTHER HALF: end every session, including this device's — S12a's Sessions card.
  *
- * `{ scope: 'global' }` IS WRITTEN OUT AND IT IS NOT DECORATION. `auth-js` 2.115.0 defaults
- * `signOut()` to exactly this scope (`GoTrueClient.js:3405`, `POST /logout?scope=global` at
+ * `['others', 'local']` IS WRITTEN OUT AND IT IS NOT DECORATION. `auth-js` 2.115.0 defaults
+ * `signOut()` to `{ scope: 'global' }` (`GoTrueClient.js:3405`, `POST /logout?scope=global` at
  * `GoTrueAdminApi.js:67-77`), which is how the avatar menu's ordinary Sign out came to end every
- * session everywhere for three stories. Both scopes are now explicit and `signed-out.test.ts`
- * reads them out of these two files, so neither can be dropped in a tidy-up.
+ * session everywhere for three stories. Every scope is explicit, and `signed-out.test.ts` reads
+ * them out of these two files, so none can be dropped in a tidy-up.
+ *
+ * TWO CALLS, NOT `global` (DW-41, Story 5.24b). A failed `global` REMOVES this device's session
+ * before it returns the error (`_signOut`, `GoTrueClient.js:3431-3437`): the cookies were gone,
+ * the dialog said "try again", and the retry landed on `/sign-in` through `signedIn()` with
+ * nothing said. `others` never touches this device's session (`:3434`, `:3441`), so it goes first:
+ * if it fails, `signOutFailed` stops, this device is still signed in, and "try again" is true.
+ * Then `local` ends this device. The landing is read off the session actually left, never off the
+ * error, and `sign-out-landing.test.ts` executes each path against a local server.
  *
  * NOTHING OF OURS TRACKS SESSIONS. GoTrue owns them, the user's own cookie-backed client ends the
  * user's own — no `supabaseAdmin()`, no table, no list. The other devices are not told: the guard
  * cannot tell a revoked session from an absent one, so they simply arrive at `/sign-in`.
  *
  * A FAILURE IS SAID, NEVER CLAIMED. The redirect is OUTSIDE the try — `redirect()` throws by
- * design and a catch would swallow it — so a `/logout` that failed leaves the dialog open with
- * one red sentence and no navigation OF OURS, and the other devices, which were not signed out,
- * are not described as though they had been. What the LIBRARY did to THIS device on the way is
- * DW-41's: `_signOut` (`GoTrueClient.js:3427-3438`) removes the current session before it returns
- * any error but a 401/403/404, so the cookies may already be gone and the retry lands on
- * `/sign-in` through `signedIn()` with nothing said. Read in the client, not executed — the same
- * shape as the ordinary Sign out's, and the same fix when the owner wants one (review, 2026-09-07).
+ * design and a catch would swallow it — so a sign-out that failed leaves the dialog open with one
+ * red sentence and no navigation OF OURS, and the other devices, which were not signed out, are
+ * not described as though they had been.
  */
 export async function signOutEverywhere(
   _previous: ActionResult | null,
@@ -411,11 +415,7 @@ export async function signOutEverywhere(
 
   try {
     const supabase = await supabaseServer()
-    const { error } = await supabase.auth.signOut({ scope: 'global' })
-    if (error) {
-      console.error('sign-out everywhere: failed', { status: error.status, code: error.code })
-      return fail('sign_out_failed')
-    }
+    if (await signOutFailed(supabase, ['others', 'local'])) return fail('sign_out_failed')
   } catch (error) {
     // `renamePasskey`'s reason: a Server Function that throws takes `/account` to the error
     // boundary instead of leaving the dialog open with one sentence.

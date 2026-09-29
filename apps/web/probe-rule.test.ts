@@ -6,7 +6,6 @@ import {
   BRAND_COPY,
   brandOf,
   brandPath,
-  brandPopupPath,
   brandRetry,
   brandTarget,
   capabilityOf,
@@ -28,6 +27,7 @@ import {
   THEME_PREFIX,
 } from './lib/probe-rule.ts'
 import { readFileSync } from 'node:fs'
+import { brandPopupPath } from './lib/connect-rule.ts'
 import { join } from 'node:path'
 
 /* Story 3.3 — the connect-time probes' pure half, and the I/O matrix's rows that are a PARSING
@@ -332,16 +332,13 @@ test('the brand is read off the payload T1 and T3 really answered', () => {
   assert.equal(read.accent, '#FF1A75')
   // An empty string is Ghost's "unset" — never an <img src="">.
   assert.equal(read.logo, null)
-  assert.equal(read.icon, null)
-  assert.equal(read.cover, 'https://static.ghost.org/v5.0.0/images/publication-cover.jpg')
   assert.deepEqual(read.nav, [
     { label: 'Home', url: '/' },
     { label: 'About', url: '/about/' },
   ])
-  assert.equal(read.title, 'Ghost6')
-  // T1 answers null here and T3 a string; absence is a fact, not a hole.
-  assert.equal(read.description, null)
-  assert.equal(brand({ description: 'Thoughts, stories and ideas.' }).description, 'Thoughts, stories and ideas.')
+  // DW-71, STORY 5.24b: THREE KEYS, THE THREE WITH A READER. The payload carries the icon, the cover, the title and
+  // the description too (BRAND_LIKE does), and none of them is stored: nothing read them.
+  assert.deepEqual(Object.keys(read).sort(), ['accent', 'logo', 'nav'])
 })
 
 test('navigation is admitted as the JSON STRING Ghost sends AND as an already-parsed array', () => {
@@ -390,10 +387,7 @@ test('a hostile logo never reaches an <img src> — https only, because img-src 
     null,
     42,
   ]) {
-    const read = brand({ logo: hostile, icon: hostile, cover_image: hostile })
-    assert.equal(read.logo, null, `${JSON.stringify(hostile)} is not an image URL`)
-    assert.equal(read.icon, null)
-    assert.equal(read.cover, null)
+    assert.equal(brand({ logo: hostile }).logo, null, `${JSON.stringify(hostile)} is not an image URL`)
   }
   assert.equal(brand({ logo: 'https://ghost6.inflozo.com/content/images/logo.png' }).logo,
     'https://ghost6.inflozo.com/content/images/logo.png')
@@ -415,7 +409,12 @@ test('a card that offers nothing is not drawn — a TITLE is not a brand', () =>
     assert.equal(hasBrand(junk), false, `${JSON.stringify(junk)} offers nothing`)
   }
   assert.equal(hasBrand({ accent: '#fff' }), false, 'no nav array: S2c would throw on brand.nav')
-  assert.equal(hasBrand({ accent: '#fff', nav: [] }), true, 'an accent with the array present')
+  assert.equal(hasBrand({ accent: '#fff', logo: null, nav: [] }), true, 'an accent with the other two what brandOf writes')
+  // DW-71, STORY 5.24b: EVERY FIELD `Brand` PROMISES IS CHECKED, NOT ONE OF THEM. Each of these three answered TRUE
+  // before — a good field vouched for a bad one — and each bad field reaches S2c's render.
+  assert.equal(hasBrand({ accent: '#fff', logo: 'javascript:alert(1)', nav: [] }), false, 'a good accent does not vouch for a hostile logo')
+  assert.equal(hasBrand({ accent: 42, logo: 'https://x.example/l.png', nav: [] }), false, 'a good logo does not vouch for a hostile accent')
+  assert.equal(hasBrand({ accent: '#fff', logo: null, nav: [{ label: 42, url: '/' }] }), false, 'a good accent does not vouch for a broken menu')
   assert.equal(
     hasBrand({ accent: null, logo: 'javascript:alert(1)', nav: [] }),
     false,
@@ -523,6 +522,8 @@ test('S2c reads its every sentence from the app, and the swatch is captioned wit
   // THE POPUP'S ADDRESS is a parameter on the Sites list — the path never leaves the one the
   // shell's top bar belongs to (the owner's finding 1 of 2026-09-10).
   assert.equal(brandPopupPath('abc'), '/sites?brand=abc')
+  // …and over a filtered list it keeps the list's search (DW-82, Story 5.24b; `sitesPath` builds both windows).
+  assert.equal(brandPopupPath('abc', 'ghost5'), '/sites?q=ghost5&brand=abc')
   // The two words this story's Fix added: the ✕ says what it does, and the offer says it is
   // working while the window loads (R-98) — an ellipsis, as every busy label in the app ends.
   assert.equal(BRAND_COPY.close, 'Close')

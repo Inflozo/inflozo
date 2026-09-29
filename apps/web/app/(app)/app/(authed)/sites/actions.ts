@@ -1,34 +1,46 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { notFound, redirect, RedirectType } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { z } from 'zod'
 import {
+  brandPopupPath,
   CONNECT_MAX,
   CONNECT_MESSAGES,
+  CONNECT_READ,
   connectMessage,
   hostOf,
   isHttpUrl,
   keysPath,
   keysPopupPath,
   normaliseSiteUrl,
+  oneCredential,
+  pathOf,
+  pathRefused,
+  sitesPath,
+  siteWrite,
+  storeOrUndo,
   versionVerdict,
   type ConnectCode,
+  type ConnectRow,
   type ConnectField,
   type ConnectResult,
   type MessageCode,
 } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap, atSiteCap, siteCapSentence } from '@/lib/plan'
-import { brandPath, brandPopupPath, brandRetry, brandTarget, hasBrand } from '@/lib/probe-rule'
+import { brandPath, brandRetry, brandTarget, hasBrand } from '@/lib/probe-rule'
 import { freeName, NAME_MAX, nextUntitled, slugAttempts, slugify } from '@/lib/projects'
 import { DEFAULT_PRESET, defaultStylePack } from '@/lib/style-pack'
 import { signedIn, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
-import { call, fetchWithKey, findSiteByAdminKeyId, remove, store } from '@/server/ghost-admin'
+import { call, fetchWithKey, findSiteByAdminKeyId, remove, store, type CallResult } from '@/server/ghost-admin'
 import { AdminError, parseCredential } from '@/server/ghost-admin/admin-rule'
 import { isRedirect } from '@/lib/action-redirect'
+import { SEARCH_HEADER } from '@/routing'
 import { checkSite } from '@/server/site-health'
 import { probeSite } from '@/server/site-probe'
+import { contentKeyPatch, patchSite } from '@/server/site-settings'
 
 /**
  * FR-C1 · FR-C2 · AD-7 — CONNECT, AND IT IS THE CHOKEPOINT'S FIRST PRODUCT CALLER.
@@ -89,9 +101,18 @@ const DASHBOARD = '/app'
 
 /* THE BROWSER's paths, not the two above — those are `revalidatePath`'s route-group paths and are
    not URLs. B15's banner is about ONE card, so its redirect names it; S2c is about one site, so
-   its route does too. */
-const SITES_URL = '/sites'
-const RECHECK = (siteId: string) => `${SITES_URL}?recheck=${siteId}`
+   its route does too.
+
+   DW-82, STORY 5.24b: EVERY LANDING ON THE LIST KEEPS THE LIST'S OWN SEARCH. They are all built by
+   `sitesPath` (`lib/connect-rule.ts`), and the search is read off the ACTION'S OWN REQUEST — a form
+   posts to the page it was pressed on, and `proxy.ts` hands every request its query string as
+   `SEARCH_HEADER` — so a save, a refusal, a re-check or a disconnect made over `/sites?q=ghost5`
+   lands back on `/sites?q=ghost5`. Connect's landing is the one exception, on purpose: the card it
+   just made could be filtered out of sight. */
+async function listQuery(): Promise<string | undefined> {
+  return new URLSearchParams((await headers()).get(SEARCH_HEADER) ?? '').get('q') ?? undefined
+}
+const RECHECK = (siteId: string, q?: string) => sitesPath(q, { recheck: siteId })
 /** FR-C4's S2c, on its own route so the connect wizard's redirect has somewhere to land. ONE
     definition, in `probe-rule.ts` beside the sentence the card's link prints: the Sites card wrote
     the same address out a second time, and one rename would have drifted them apart with nothing
@@ -107,15 +128,15 @@ const BRAND_FAILED = (base: string) => `${base}&failed=1`
    Question 7 (option 1, 2026-09-10) that the moment straight after a connect stays a full screen,
    so `connectSite`'s final `redirect` keeps `BRAND(siteId)` and nothing about that hand-over
    changed. */
-const brandBase = (formData: FormData, siteId: string) =>
-  formData.get('popup') === '1' ? brandPopupPath(siteId) : brandPath(siteId)
+const brandBase = (formData: FormData, siteId: string, q?: string) =>
+  formData.get('popup') === '1' ? brandPopupPath(siteId, q) : brandPath(siteId)
 /* STORY 3.5, and the same shape one row up: the card that could not be disconnected is the one
    that says so, named in the URL, so no other card claims a failure that was not its own. */
-const DISCONNECT_FAILED = (siteId: string) => `${SITES_URL}?disconnect=${siteId}`
+const DISCONNECT_FAILED = (siteId: string, q?: string) => sitesPath(q, { disconnect: siteId })
 /* STORY 3.7, and the same shape again: a check that could not be FINISHED — not one that answered
    "Ghost refused this key", which is a badge and not a failure — names the card it belongs to, so
    `?health=` reads exactly as `?recheck=`, `?disconnect=` and `?moved=` already do. */
-const HEALTH_FAILED = (siteId: string) => `${SITES_URL}?health=${siteId}`
+const HEALTH_FAILED = (siteId: string, q?: string) => sitesPath(q, { health: siteId })
 /* STORY 3.6. Manage keys is a SERVER-RENDERED screen with no `useActionState` to answer — that is
    what makes every control on it work with JavaScript off — so its three actions speak the way
    `recheckPlan` and `disconnectSite` already do: they redirect to the screen, and the screen reads
@@ -135,13 +156,14 @@ const HEALTH_FAILED = (siteId: string) => `${SITES_URL}?health=${siteId}`
    `/sites/keys?site=…`, which is where a scripts-off post came from and where it must answer.
    `keysSite` takes it as an argument for the same reason: a helper that redirects has to know
    which screen it is redirecting to. */
-const keysBase = (formData: FormData, siteId: string) =>
-  formData.get('popup') === '1' ? keysPopupPath(siteId) : keysPath(siteId)
+const keysBase = (formData: FormData, siteId: string, q?: string) =>
+  formData.get('popup') === '1' ? keysPopupPath(siteId, q) : keysPath(siteId)
 /* `status` TRAVELS BESIDE THE CODE, and only a code that needs one uses it. `ghost_refused`'s
    sentence is `(status) => 'Ghost refused the connection (HTTP ${status})'` — the wizard passes
-   `String(config.status)` into it and this screen passed the SITE'S NAME, so a 403 or a 429 read
-   "Ghost refused the connection (HTTP My Blog)" (review, 2026-09-09). It is a number and the panel
-   re-checks that it is one: everything in this URL is typed by whoever holds it. */
+   `String(config.status)` into it and this screen passed the SITE'S NAME, so a 403 read "Ghost
+   refused the connection (HTTP My Blog)" (review, 2026-09-09). It is a number and the panel
+   re-checks that it is one: everything in this URL is typed by whoever holds it. (A 429 or a 5xx
+   is `ghost_unavailable` since Story 5.24b, DW-52, and its sentence takes no status.) */
 const KEYS_REFUSED = (base: string, code: string, status?: number) =>
   `${base}&keys=${code}${status ? `&status=${status}` : ''}`
 const KEYS_TESTED = (base: string, result: string, status?: number) =>
@@ -151,7 +173,7 @@ const KEYS_TESTED = (base: string, result: string, status?: number) =>
    the 90-day clock is DERIVED from `sites.disconnected_at` (DW-43), so a matched record that is
    still connected has no clock, and the hint that named one was promising a deadline that is not
    running (review, 2026-09-09). */
-const MOVED = (siteId: string, old: 'orphan' | 'live') => `${SITES_URL}?moved=${siteId}&old=${old}`
+const MOVED = (siteId: string, old: 'orphan' | 'live') => sitesPath(undefined, { moved: siteId, old })
 
 const fail = (code: ConnectCode, message: string, field?: ConnectField): ConnectResult => ({
   error: { code, message, ...(field ? { field } : {}) },
@@ -180,6 +202,8 @@ const Fields = z.object({
 /** Which field a code belongs under; everything else is the form's banner. */
 const FIELD_OF: Partial<Record<ConnectCode, ConnectField>> = {
   url_invalid: 'url',
+  // R-219's sentence sits where `url_invalid` does: under API URL, in the Kit field's error slot.
+  path_unsupported: 'url',
   credential_malformed: 'admin_key',
   content_key_malformed: 'content_key',
   ghost_unknown_key: 'admin_key',
@@ -234,11 +258,10 @@ export async function connectSite(
   // whether this address is one of them already.
   const supabase = await supabaseServer()
   const [{ data: rows, error: readError }, { plan }] = await Promise.all([
-    // Every column the two writes below touch is read here, so a store that fails on a RE-ADOPTED
-    // record can put the whole record back as it was (review, 2026-09-08).
-    supabase
-      .from('sites')
-      .select('id, url, title, favicon_url, ghost_version, content_key, site_settings, credentials_present, settings_read_at, disconnected_at'),
+    // Every column the two writes below touch is read here — `CONNECT_READ` is built from `KEPT`,
+    // the one list of them (DW-59) — so a store that fails on a RE-ADOPTED record can put the whole
+    // record back as it was (review, 2026-09-08).
+    supabase.from('sites').select(CONNECT_READ).overrideTypes<ConnectRow[], { merge: false }>(),
     resolveEntitlement(user.id),
   ])
   if (readError || !rows) return logged('read', readError?.code)
@@ -246,6 +269,35 @@ export async function connectSite(
   const existing = rows.find((row) => row.url === url)
   if (existing && !existing.disconnected_at) {
     return fail('already_connected', connectMessage('already_connected', host))
+  }
+
+  // ── The Admin key, against the real Ghost. `siteId` is null: there is no row yet, and the
+  //    audit row is still written (AD-10 F10 — the log is the only control here that detects).
+  const validate = () =>
+    fetchWithKey({ credential: adminKey, siteUrl: url, path: 'config/', route: ROUTE, siteId: null, userId: user.id })
+  // One answer for a validation that THREW, wherever it was made: a Ghost that did not answer is
+  // the chokepoint's code; anything else is ours, logged, and answered with the generic sentence.
+  const threw = (thrown: unknown) =>
+    thrown instanceof AdminError ? refused(thrown.code, host) : logged('validate', (thrown as { name?: string })?.name)
+
+  // ── R-219 WITH R-226's ORDER (DW-55, Story 5.24b): A TYPED PATH IS JUDGED AT THE ROOT FIRST, and
+  //    BEFORE the plan's limit is counted, so nobody is asked to upgrade for an address that could
+  //    not connect. `normaliseSiteUrl` kept only the origin; `pathOf` is the rest of what was typed,
+  //    a trailing `/ghost…`, the query and the hash set aside. The root's `config/` is asked with
+  //    the typed key: a `404` there — no Ghost at the root — is the owner's sentence under API URL
+  //    and nothing is stored; any other answer carries on exactly as before, and it IS the
+  //    validation below rather than a second call, so the address of a page on a site at the root
+  //    connects as it always did (the owner's Question 1 ruling, 2026-09-29). Without a path,
+  //    nothing here runs at all.
+  const path = pathOf(typed)
+  let config: CallResult | undefined
+  if (path) {
+    try {
+      config = await validate()
+    } catch (thrown) {
+      return threw(thrown)
+    }
+    if (pathRefused(path, config.status)) return fail('path_unsupported', connectMessage('path_unsupported', path), 'url')
   }
   // THE CAP IS ENFORCED HERE, server-side, and re-adopting counts: a disconnected record coming
   // back is a site becoming active. S11c's ghost slot is Story 3.5's; the sentence is F.1's.
@@ -255,27 +307,17 @@ export async function connectSite(
   // inside one round trip can land two on Free — a trigger reading entitlements is the upgrade if
   // it ever does.
 
-  // ── The Admin key, against the real Ghost. `siteId` is null: there is no row yet, and the
-  //    audit row is still written (AD-10 F10 — the log is the only control here that detects).
-  let version: string | undefined
+  // The validation, unless the root was already asked above — one `config/` per connect either way.
   try {
-    const config = await fetchWithKey({
-      credential: adminKey,
-      siteUrl: url,
-      path: 'config/',
-      route: ROUTE,
-      siteId: null,
-      userId: user.id,
-    })
-    if (!config.ok) return refused(config.code ?? 'ghost_refused', String(config.status))
-    // A string or nothing: a body whose `version` is some other shape is refused as no version at
-    // all rather than thrown on (`.trim()` on a number, outside every catch — review, 2026-09-08).
-    const raw = (config.body as { config?: { version?: unknown } })?.config?.version
-    version = typeof raw === 'string' ? raw : undefined
+    config ??= await validate()
   } catch (thrown) {
-    if (thrown instanceof AdminError) return refused(thrown.code, host)
-    return logged('validate', (thrown as { name?: string })?.name)
+    return threw(thrown)
   }
+  if (!config.ok) return refused(config.code ?? 'ghost_refused', String(config.status))
+  // A string or nothing: a body whose `version` is some other shape is refused as no version at
+  // all rather than thrown on (`.trim()` on a number, outside every catch — review, 2026-09-08).
+  const raw = (config.body as { config?: { version?: unknown } })?.config?.version
+  const version = typeof raw === 'string' ? raw : undefined
 
   const verdict = versionVerdict(version)
   if (!verdict.ok) {
@@ -289,17 +331,10 @@ export async function connectSite(
   //    as soon as the key has passed — which is also what puts the two Admin calls on either side
   //    of it in the audit trail: `config/` leaves an `admin_read` row with a NULL `site_id`
   //    because there was no row to name, and `site/` leaves one carrying the new id.
-  const previousSettings = (existing?.site_settings ?? {}) as Record<string, unknown>
+  //    BOTH WRITES ARE BUILT BY `siteWrite` IN `lib/connect-rule.ts` (DW-59), where a test checks
+  //    that every column they touch is one a failed store puts back.
   const present = (existing?.credentials_present ?? {}) as { staff?: boolean }
-  const connection = {
-    ghost_version: version ?? null,
-    content_key: contentKey || null,
-    // THE CLIENT'S MIRROR of what is stored (AD-7), and `admin` is FALSE here on purpose: `store()`
-    // flips it, in the same transaction that puts the key in Vault, so the flag can never claim a
-    // key the site has not got. `staff` is carried forward untouched — it is Epic 7's to write.
-    credentials_present: { content: Boolean(contentKey), admin: false, staff: present.staff === true },
-    disconnected_at: null,
-  }
+  const { connection, cosmetic } = siteWrite({ url, host, version, contentKey, staff: present.staff === true })
 
   const admin = supabaseAdmin()
   let siteId: string
@@ -333,7 +368,9 @@ export async function connectSite(
   // ── The public url, the title and the icon, read through the same door with the site named.
   //    NOT fatal: a site whose key has just passed `config/` is connected, and a cosmetic read
   //    that failed leaves the card falling back to the typed address until Story 3.7's daily
-  //    check. `site_settings` is the jsonb 3.3 fills, so a re-adopted record keeps what it had.
+  //    check. `site_settings` is the jsonb 3.3 fills, so a re-adopted record keeps what it had —
+  //    merged onto the row AS IT STANDS AT THE WRITE, through the one compare-and-set every writer
+  //    of that column uses (DW-65).
   try {
     const site = await fetchWithKey({
       credential: adminKey,
@@ -346,23 +383,11 @@ export async function connectSite(
     })
     const read = (site.body as { site?: { url?: unknown; title?: unknown; icon?: unknown } })?.site
     if (site.ok && read) {
-      const { error: cosmetic } = await admin
-        .from('sites')
-        .update({
-          title: typeof read.title === 'string' && read.title ? read.title : host,
-          // CHECKED BEFORE EITHER BECOMES A LINK OR AN <img>: Ghost's answer is not a URL because
-          // Ghost sent it (review, 2026-09-08). The public url is kept as sent, slash and all (§38a).
-          favicon_url: isHttpUrl(read.icon) ? read.icon : null,
-          site_settings: { ...previousSettings, public_url: isHttpUrl(read.url) ? read.url : url },
-          // Stamped WITH the read it names, so the card can only say "Checked just now" about a
-          // read that happened; a read that failed leaves it as it was (review, 2026-09-08).
-          settings_read_at: new Date().toISOString(),
-        })
-        .eq('id', siteId)
-        .eq('user_id', user.id)
+      const readAt = new Date().toISOString()
+      const written = await patchSite(admin, { siteId, userId: user.id }, (row) => cosmetic(read, row.site_settings, readAt))
       // Not fatal either, but not silent: a card saying "Not checked yet" after a read that
       // happened needs a line to be found from (review, 2026-09-08).
-      if (cosmetic) console.error('sites: connect site-write failed', { code: cosmetic.code })
+      if (!written.ok) console.error('sites: connect site-write failed', { code: written.code })
     }
   } catch (thrown) {
     console.error('sites: connect site-read failed', {
@@ -371,37 +396,26 @@ export async function connectSite(
   }
 
   // ── The key into Vault. `store()` needs a `site_id` and checks the row is the caller's
-  //    (`index.ts:118-125`), so the row has to exist first; the pair is not one transaction —
-  //    `store` owns its own `begin` and the row above was written over PostgREST — so a failure
-  //    here UNDOES the row and the answer is "Nothing was connected".
-  // ponytail: insert then store with a compensating delete; one transaction inside
-  // server/ghost-admin if credential_audit ever shows the pair half-done.
-  try {
-    await store({ siteId, userId: user.id, kind: 'admin', secret: adminKey, route: ROUTE })
-  } catch (thrown) {
-    if (existing) {
-      // A record Inflozo KEPT (FR-C6) is put back AS IT WAS — every column the two writes above
-      // touched, not only the disconnect stamp (review, 2026-09-08) — and never deleted.
-      const kept = {
-        title: existing.title,
-        favicon_url: existing.favicon_url,
-        ghost_version: existing.ghost_version,
-        content_key: existing.content_key,
-        credentials_present: existing.credentials_present,
-        site_settings: existing.site_settings,
-        settings_read_at: existing.settings_read_at,
-        disconnected_at: existing.disconnected_at,
-      }
+  //    (`index.ts:118-125`), so the row has to exist first; a failure UNDOES the row — a kept
+  //    record put back as it was, a new one deleted — and the answer is "Nothing was connected".
+  //    The sequence is `storeOrUndo`'s (DW-59), which `connect-rule.test.ts` runs with a store
+  //    that fails; these three are only the doors it opens.
+  const stored = await storeOrUndo(existing, {
+    store: () => store({ siteId, userId: user.id, kind: 'admin', secret: adminKey, route: ROUTE }),
+    restore: async (kept) => {
       const { error: undo } = await admin.from('sites').update(kept).eq('id', siteId).eq('user_id', user.id)
       if (undo) console.error('sites: connect undo failed', { code: undo.code })
-    } else {
+    },
+    remove: async () => {
       const { error: undo } = await admin.from('sites').delete().eq('id', siteId).eq('user_id', user.id)
       // Logged, because a row this could not remove renders "Connected" with no key behind it and
       // answers `already_connected` to every retry (review, 2026-09-08).
       if (undo) console.error('sites: connect undo failed', { code: undo.code })
-    }
-    if (thrown instanceof AdminError) return refused(thrown.code, host)
-    return logged('store', (thrown as { name?: string })?.name)
+    },
+  })
+  if (!stored.ok) {
+    if (stored.thrown instanceof AdminError) return refused(stored.thrown.code, host)
+    return logged('store', (stored.thrown as { name?: string })?.name)
   }
 
   // ── FR-C2's FOUR PROBES, on the key that has just gone into Vault (Story 3.3). It runs on the
@@ -471,7 +485,9 @@ export async function connectSite(
   // card that never retires (`brand-skip` proves it), so a customer sent to the list with the
   // "Moved domains?" hint can still take the brand from the same card afterwards. The reverse
   // order would have shown S2c and swallowed the hint entirely — there is no second chance at it.
-  redirect(moved ? MOVED(siteId, moved) : hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : SITES_URL)
+  // AND NONE OF THE THREE CARRIES THE LIST'S SEARCH, deliberately (DW-82): the card this connect
+  // just made could be filtered out of sight by it.
+  redirect(moved ? MOVED(siteId, moved) : hasBrand(probed?.site_settings?.brand) ? BRAND(siteId) : sitesPath())
 }
 
 /* ───────── STORY 3.3's FOUR ANSWERS, and they live in THIS file because a `'use server'` module
@@ -479,7 +495,8 @@ export async function connectSite(
    header above records. Each is a `<form action={…}>` target in `site-notices.tsx`, so every one
    works with JavaScript off; each takes the site id from the form and scopes its write with
    `.eq('user_id', user.id)`, because a form field is a caller's input and `supabaseAdmin()`
-   bypasses RLS by construction.
+   bypasses RLS by construction — the two that write `site_settings` do it inside `patchSite`,
+   the one compare-and-set every writer of that column goes through (DW-65, Story 5.24b).
 
    NONE OF THEM ANSWERS THE CALLER. A server action that returns nothing re-renders the page it
    revalidated, which is the whole of the feedback here: the notice is gone, or the chip changed.
@@ -505,7 +522,8 @@ async function siteOf(
   return { userId: user.id, siteId: parsed.data.site_id }
 }
 
-/** The write every answer below makes, with its own log code. */
+/** The notice dismissal's write, with its own log code. It writes `code_injection_notice_shown_at` and nothing a
+    concurrent writer shares — the two answers below write `site_settings` and so go through `patchSite` (DW-65). */
 async function writeSite(
   where: string,
   at: { userId: string; siteId: string },
@@ -524,24 +542,6 @@ async function writeSite(
   if (error) console.error(`sites: ${where} failed`, { code: error.code })
   else if (!data?.length) console.error(`sites: ${where} failed`, { code: 'no_such_site' })
   revalidatePath(SITES)
-}
-
-/** The row an answer needs before it may act, or null with a code logged. */
-async function rowFor(
-  where: string,
-  at: { userId: string; siteId: string },
-): Promise<{ site_settings: Record<string, unknown>; capability_source: string | null } | null> {
-  const { data, error } = await supabaseAdmin()
-    .from('sites')
-    .select('site_settings, capability_source')
-    .eq('id', at.siteId)
-    .eq('user_id', at.userId)
-    .maybeSingle<{ site_settings: Record<string, unknown> | null; capability_source: string | null }>()
-  if (error || !data) {
-    console.error(`sites: ${where} refused`, { code: error?.code ?? 'no_such_site' })
-    return null
-  }
-  return { site_settings: data.site_settings ?? {}, capability_source: data.capability_source }
 }
 
 /**
@@ -563,22 +563,19 @@ export async function dismissInjectionNotice(formData: FormData): Promise<void> 
 export async function answerPortal(formData: FormData): Promise<void> {
   const at = await siteOf(formData)
   if (!at) return
-  const row = await rowFor('portal answer', at)
-  if (!row) return
-  // AN ANSWER TO A QUESTION THAT WAS NOT ASKED IS NOT AN ANSWER. The block renders only while the
-  // source is `'default'`, so anything else here is a stale or replayed POST, and honouring it
-  // would stamp `'declared'` over a real reading (review, 2026-09-08).
-  if (row.site_settings.portal_button_source !== 'default') {
-    console.error('sites: portal answer refused', { code: 'not_asked' })
-    return
-  }
-  await writeSite('portal answer', at, {
-    site_settings: {
-      ...row.site_settings,
-      portal_button: formData.get('portal_button') === 'yes',
-      portal_button_source: 'declared',
-    },
+  const answer = formData.get('portal_button') === 'yes'
+  // THROUGH THE ONE COMPARE-AND-SET (DW-65), so the answer lands on the row as it stands at the
+  // write and the precondition is re-checked THERE, not on a read another writer has since moved.
+  const written = await patchSite(supabaseAdmin(), at, (row) => {
+    const settings = row.site_settings ?? {}
+    // AN ANSWER TO A QUESTION THAT WAS NOT ASKED IS NOT AN ANSWER. The block renders only while the
+    // source is `'default'`, so anything else here is a stale or replayed POST, and honouring it
+    // would stamp `'declared'` over a real reading (review, 2026-09-08).
+    if (settings.portal_button_source !== 'default') return null
+    return { site_settings: { ...settings, portal_button: answer, portal_button_source: 'declared' } }
   })
+  if (!written.ok) console.error('sites: portal answer refused', { code: written.code === 'refused' ? 'not_asked' : written.code })
+  revalidatePath(SITES)
 }
 
 /**
@@ -598,22 +595,19 @@ export async function answerPlan(formData: FormData): Promise<void> {
     console.error('sites: plan answer refused', { code: 'capability_invalid' })
     return
   }
-  const row = await rowFor('plan answer', at)
-  if (!row) return
-  // `plan_ask` IS THE QUESTION'S OWN PRECONDITION, and the only thing that sets it is a probe
-  // that ran with `ghostpro_preview_probe` ON. Requiring it here is therefore how the flag gates
-  // this write too: with the flag off nothing can ever have asked, so nothing can be answered,
-  // and `capability` — a server-asserted column (AD-7) — cannot be set from a form (review).
-  if (row.site_settings.plan_ask !== true) {
-    console.error('sites: plan answer refused', { code: 'not_asked' })
-    return
-  }
-  const { plan_ask: _asked, ...kept } = row.site_settings
-  await writeSite('plan answer', at, {
-    capability: answer,
-    capability_source: 'user_declared',
-    site_settings: kept,
+  const written = await patchSite(supabaseAdmin(), at, (row) => {
+    const settings = row.site_settings ?? {}
+    // `plan_ask` IS THE QUESTION'S OWN PRECONDITION, and the only thing that sets it is a probe
+    // that ran with `ghostpro_preview_probe` ON. Requiring it here is therefore how the flag gates
+    // this write too: with the flag off nothing can ever have asked, so nothing can be answered,
+    // and `capability` — a server-asserted column (AD-7) — cannot be set from a form (review).
+    // Re-checked inside the compare-and-set (DW-65), on the row as it stands at the write.
+    if (settings.plan_ask !== true) return null
+    const { plan_ask: _asked, ...kept } = settings
+    return { capability: answer, capability_source: 'user_declared', site_settings: kept }
   })
+  if (!written.ok) console.error('sites: plan answer refused', { code: written.code === 'refused' ? 'not_asked' : written.code })
+  revalidatePath(SITES)
 }
 
 /**
@@ -626,13 +620,14 @@ export async function recheckPlan(formData: FormData): Promise<void> {
   const at = await siteOf(formData)
   if (!at) return
   const summary = await probeSite({ siteId: at.siteId, userId: at.userId, route: ROUTE })
+  const q = await listQuery()
   revalidatePath(SITES)
   // BOTH WAYS OUT REDIRECT, and the failure names the site. A form posts to the URL it is on, so
   // returning quietly on success left a page still at `?recheck=…` showing the failure line above
   // a card that had just re-checked cleanly; and the old `?recheck=failed` carried no id, so one
   // site's failure printed the banner under EVERY Preview-only card (review, 2026-09-08 — five
   // layers, and the matrix row says "THE CARD is unchanged and a banner says to try again").
-  redirect(summary.ok ? SITES_URL : RECHECK(at.siteId))
+  redirect(summary.ok ? sitesPath(q) : RECHECK(at.siteId, q))
 }
 
 /**
@@ -651,11 +646,12 @@ export async function recheckPlan(formData: FormData): Promise<void> {
  * redirects to `/sites` like any other answer. `checkSite` answers `health: null` only when the
  * check could not be made at all, and that is the one thing this line reads.
  *
- * SOMEBODY ELSE'S SITE DOES NOTHING AND WRITES NOTHING: `siteOf` reads through the caller's own
- * session, so a forged `site_id` answers null and this returns quietly before `checkSite` is ever
- * reached — the matrix's "nothing happens", the way the four actions beside it do it. `checkSite`
- * scopes every read and write with the same `user_id` besides, so the floor holds even for a
- * caller that skipped `siteOf`.
+ * SOMEBODY ELSE'S SITE DOES NOTHING AND WRITES NOTHING, and it is `checkSite` that says so. `siteOf`
+ * only parses the form's `site_id` as a uuid and pairs it with the signed-in user — it reads
+ * nothing (Story 5.24b corrected this line, which claimed it read through the caller's own
+ * session). `checkSite` then reads the site by id AND `user_id` before it asks Ghost anything
+ * (`server/site-health.ts`), so a forged id answers no row, no key is decrypted and nothing is
+ * written — the matrix's "nothing happens", the floor every writer here keeps beside its write.
  *
  * NO THROTTLE, DELIBERATELY (DW-64, amended by this story). It is the customer's own site, their
  * own key and their own Ghost, and the control exists precisely so somebody who has just fixed a
@@ -681,7 +677,8 @@ export async function recheckConnection(formData: FormData): Promise<void> {
     })
   }
   revalidatePath(SITES)
-  redirect(finished ? SITES_URL : HEALTH_FAILED(at.siteId))
+  const q = await listQuery()
+  redirect(finished ? sitesPath(q) : HEALTH_FAILED(at.siteId, q))
 }
 
 /* ───────── STORY 3.4 — FR-C4's TWO ANSWERS, and they live in this file for the same reason the
@@ -737,7 +734,8 @@ export async function useBrand(formData: FormData): Promise<void> {
   // Recorded because the comment beside `BRAND_FAILED` says every failure branch speaks, and a
   // reader counting them would otherwise find this one mute (review 5, 2026-09-09).
   if (!at) return
-  const base = brandBase(formData, at.siteId)
+  const q = await listQuery()
+  const base = brandBase(formData, at.siteId, q)
   // The screen's own decision: a project id, or empty for "make one". A field that is not there
   // at all is a crafted post, not a press.
   const chosen = formData.get('project_id')
@@ -781,12 +779,12 @@ export async function useBrand(formData: FormData): Promise<void> {
   // here would swap the list for the 404 page on a site disconnected in another tab. The full
   // page still 404s, which is what `brand-ownership` executes (review 7, 2026-09-10).
   if (!site) {
-    if (formData.get('popup') === '1') brandRedirect(SITES_URL)
+    if (formData.get('popup') === '1') brandRedirect(sitesPath(q))
     notFound()
   }
   const brand = site.site_settings?.brand
   // Nothing to offer is nothing to seed: the page 404s for this site too, so this is a stale post.
-  if (!hasBrand(brand)) brandRedirect(SITES_URL)
+  if (!hasBrand(brand)) brandRedirect(sitesPath(q))
   if (projectsError || !projects) {
     console.error('sites: use brand read failed', { code: projectsError?.code })
     brandRedirect(BRAND_FAILED(base))
@@ -943,7 +941,7 @@ export async function useBrand(formData: FormData): Promise<void> {
 
   revalidatePath(SITES)
   revalidatePath(DASHBOARD)
-  brandRedirect(SITES_URL)
+  brandRedirect(sitesPath(q))
 }
 
 /**
@@ -973,7 +971,7 @@ function brandRedirect(url: string): never {
  */
 export async function skipBrand(formData: FormData): Promise<void> {
   await siteOf(formData, 'skip brand')
-  brandRedirect(SITES_URL)
+  brandRedirect(sitesPath(await listQuery()))
 }
 
 /**
@@ -1034,6 +1032,7 @@ export async function disconnectSite(formData: FormData): Promise<void> {
   // A `site_id` that is absent or not a uuid is a crafted post, not a press — every ⋯ menu carries
   // the hidden field. `siteOf` has already logged it, naming this action.
   if (!at) notFound()
+  const q = await listQuery()
 
   // OWNERSHIP THROUGH RLS, AND THE ROW'S CURRENT STATE IN THE SAME READ. A site id the caller does
   // not own simply is not in this list, which is the matrix's "nothing written, nothing disclosed".
@@ -1048,74 +1047,67 @@ export async function disconnectSite(formData: FormData): Promise<void> {
   // the customer his own site is gone; the card's own failure line is the honest answer.
   if (error) {
     console.error('sites: disconnect read failed', { code: error.code })
-    redirect(DISCONNECT_FAILED(at.siteId))
+    redirect(DISCONNECT_FAILED(at.siteId, q))
   }
   if (!site) notFound()
   // The same id posted twice: the second press has nothing to do and nothing to say about it.
-  if (site.disconnected_at) redirect(SITES_URL)
+  if (site.disconnected_at) redirect(sitesPath(q))
 
-  // ── THE CREDENTIALS, FIRST. Both kinds unconditionally: `remove()` matches on a ref that is
-  //    NOT NULL, so a kind that was never stored matches no row and the call is a true no-op —
-  //    and `staff` is exactly that today, because nothing stores one until Epic 7. (Until the
-  //    review of 2026-09-09 that `is not null` was missing and this comment was WRONG: the call
-  //    stamped `staff_rotated_at` for a token that had never existed, which Story 3.6's Manage
-  //    keys renders as "Key removed 15 Aug". The guard is in `remove()` so every future caller
-  //    inherits it.) SO THIS IS NOT DW-54's `staff-removed` PROOF and must not be recorded as
-  //    one: removing a token that was never there exercises the call and says nothing about the
-  //    secret it would have dropped. It is here so the day Epic 7 stores one, disconnecting
-  //    already takes it out. The trigger deletes the Vault secret behind each ref it nulls (DW-44).
+  // ── THE CREDENTIALS, FIRST, BOTH KINDS IN ONE CALL AND SO IN ONE TRANSACTION (DW-77, Story
+  //    5.24b). They were two calls with a transaction each, and a store that stopped answering
+  //    between them left the card saying **Connected** with the Admin key already gone; now either
+  //    both come out or neither does. Both kinds unconditionally: `remove()` matches on a ref that
+  //    is NOT NULL, so a kind that was never stored matches no row and is a true no-op — `staff`
+  //    is that on most sites, because only Manage keys' Add token stores one until Epic 7. (Until
+  //    the review of 2026-09-09 that `is not null` was missing: the call stamped
+  //    `staff_rotated_at` for a token that had never existed. The guard is in `remove()` so every
+  //    caller inherits it.) The trigger deletes the Vault secret behind each ref it nulls (DW-44).
   //    `userId` IS PASSED because ownership belongs beside the write, not in the caller's memory:
   //    the RLS read above is this action's proof, and `remove()`'s own `and user_id =` clause is
   //    the floor under it, the same one `store()` has always had.
   try {
-    await remove({ siteId: site.id, userId: at.userId, kind: 'admin', route: DISCONNECT_ROUTE })
-    await remove({ siteId: site.id, userId: at.userId, kind: 'staff', route: DISCONNECT_ROUTE })
+    await remove({ siteId: site.id, userId: at.userId, kinds: ['admin', 'staff'], route: DISCONNECT_ROUTE })
   } catch (thrown) {
     // Logged with a code and no value, and the site is STILL CONNECTED: nothing below has run.
     // `redirect` throws NEXT_REDIRECT and this catch is not inside another `try`, so it leaves.
     console.error('sites: disconnect remove failed', {
       code: thrown instanceof AdminError ? thrown.code : (thrown as { name?: string })?.name,
     })
-    redirect(DISCONNECT_FAILED(site.id))
+    redirect(DISCONNECT_FAILED(site.id, q))
   }
 
-  // ── ...AND ONLY THEN THE STAMP. One update, three server-asserted columns, and `.select('id')`
-  //    so a write that matched no row is not silence — PostgREST answers an update that hit
-  //    nothing with no error and no rows (`writeSite`'s own finding).
-  //    `.is('disconnected_at', null)` SO THE CLOCK IS WRITTEN ONCE. FR-C6's 90-day orphan
-  //    deadline is DERIVED from this column (DW-43), so a second press that re-stamped it would
-  //    silently restart the countdown on a site that had been let go weeks earlier. The read above
-  //    already redirects an already-disconnected site, but two presses can pass it together — two
-  //    tabs, or a scripts-off double post — and only the write can settle a race (review,
-  //    2026-09-09).
-  const { data, error: stamped } = await supabaseAdmin()
-    .from('sites')
-    .update({
-      disconnected_at: new Date().toISOString(),
-      content_key: null,
-      credentials_present: { content: false, admin: false, staff: false },
-    })
-    .eq('id', site.id)
-    .eq('user_id', at.userId)
-    .is('disconnected_at', null)
-    .select('id')
-  if (stamped) {
-    console.error('sites: disconnect stamp failed', { code: stamped.code })
-    redirect(DISCONNECT_FAILED(site.id))
-  }
-  // MATCHING NO ROW IS NOT A FAILURE HERE, and that is the whole of the `.is()` above: the row was
-  // read under this caller's own session moments ago, so the only way it is gone is that the other
-  // press won. The credentials are out either way and the site is disconnected — which is what
-  // `/sites` is about to show. The matrix's "the same id posted twice → idempotent".
-  if (!data?.length) {
+  // ── ...AND ONLY THEN THE STAMP. One write, three server-asserted columns, through the one
+  //    compare-and-set every writer of `credentials_present` uses (DW-65, Story 5.24b): the patch
+  //    is decided from the row as it stands AT THE WRITE, and a write that lost its race re-reads.
+  //    THE CLOCK IS WRITTEN ONCE. FR-C6's 90-day orphan deadline is DERIVED from this column
+  //    (DW-43), so a second press that re-stamped it would silently restart the countdown on a site
+  //    that had been let go weeks earlier. The read above already redirects an already-disconnected
+  //    site, but two presses can pass it together — two tabs, or a scripts-off double post — and
+  //    only the write can settle a race: the patch refuses a row already stamped, which is what
+  //    `.is('disconnected_at', null)` used to say on the write itself (review, 2026-09-09).
+  const stampedAt = new Date().toISOString()
+  const stamped = await patchSite(supabaseAdmin(), { siteId: site.id, userId: at.userId }, (row) =>
+    row.disconnected_at
+      ? null
+      : { disconnected_at: stampedAt, content_key: null, credentials_present: { content: false, admin: false, staff: false } },
+  )
+  // REFUSED IS NOT A FAILURE HERE: the row was read under this caller's own session moments ago,
+  // so the only way it is already stamped is that the other press won. The credentials are out
+  // either way and the site is disconnected — which is what `/sites` is about to show. The
+  // matrix's "the same id posted twice → idempotent".
+  if (!stamped.ok && stamped.code === 'refused') {
     console.error('sites: disconnect stamp matched nothing', { code: 'already_disconnected' })
-    redirect(SITES_URL)
+    redirect(sitesPath(q))
+  }
+  if (!stamped.ok) {
+    console.error('sites: disconnect stamp failed', { code: stamped.code })
+    redirect(DISCONNECT_FAILED(site.id, q))
   }
 
   // The card leaves the list, and the dashboard's own tally of connected sites moves with it.
   revalidatePath(SITES)
   revalidatePath(DASHBOARD)
-  redirect(SITES_URL)
+  redirect(sitesPath(q))
 }
 
 /* ───────── STORY 3.6 — MANAGE KEYS' THREE WRITERS, and they live in THIS file for the reason the
@@ -1165,8 +1157,8 @@ function keysRedirect(url: string): never {
    whole Sites list with the not-found page over a site that was disconnected in another tab or a
    forged id; going back to `/sites` discloses exactly the same and leaves the customer his list.
    The full page still 404s, and `keys-forged` drives it there. */
-function keysGone(formData: FormData): never {
-  if (formData.get('popup') === '1') keysRedirect(SITES_URL)
+function keysGone(formData: FormData, q?: string): never {
+  if (formData.get('popup') === '1') keysRedirect(sitesPath(q))
   notFound()
 }
 
@@ -1175,6 +1167,7 @@ async function keysSite(
   at: { userId: string; siteId: string },
   base: string,
   formData: FormData,
+  q?: string,
 ): Promise<{
   id: string
   url: string
@@ -1203,13 +1196,13 @@ async function keysSite(
   // is the honest answer; an ACTION that cannot read it has a screen to go back to, and saying
   // "nothing changed" on it beats replacing the customer's work with a boundary. The comment that
   // claimed the two were identical is what a later reader would have trusted (review, 2026-09-09).
-  if (error?.code === '22P02') keysGone(formData)
+  if (error?.code === '22P02') keysGone(formData, q)
   if (error) {
     console.error('sites: keys read failed', { code: error.code })
     keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
   }
-  if (!site) keysGone(formData)
-  if (site.disconnected_at) keysRedirect(SITES_URL)
+  if (!site) keysGone(formData, q)
+  if (site.disconnected_at) keysRedirect(sitesPath(q))
   return site
 }
 
@@ -1260,8 +1253,16 @@ const KeyFields = z.object({
  */
 export async function saveKeys(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'save keys')
-  if (!at) keysGone(formData)
-  const base = keysBase(formData, at.siteId)
+  const q = await listQuery()
+  if (!at) keysGone(formData, q)
+  const base = keysBase(formData, at.siteId, q)
+  // DW-81: ONE CREDENTIAL PER POST, refused whole BEFORE anything is read or written — so the
+  // sentence it answers with, "Nothing changed", is true. Only a crafted post carries two: each
+  // credential row is its own form with one field (`oneCredential` in `lib/connect-rule.ts`).
+  if (!oneCredential(formData)) {
+    console.error('sites: save keys refused', { code: 'several_credentials' })
+    keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
+  }
   const parsed = KeyFields.safeParse({
     admin_key: formData.get('admin_key') ?? '',
     content_key: formData.get('content_key') ?? '',
@@ -1286,7 +1287,7 @@ export async function saveKeys(formData: FormData): Promise<void> {
      lands under the box that was empty and never on a neighbour (the frozen Boundaries' rule). */
   if (!adminKey && !contentKey && !staffToken) keysRedirect(KEYS_REFUSED(base, emptyKeyCode(formData)))
 
-  const site = await keysSite(at, base, formData)
+  const site = await keysSite(at, base, formData, q)
 
   if (adminKey) {
     let belongsHere: string | undefined
@@ -1382,28 +1383,16 @@ export async function saveKeys(formData: FormData): Promise<void> {
   if (contentKey) {
     // `sites.content_key` IS SERVER-ASSERTED (AD-7) — `authenticated` may update only title,
     // favicon_url and updated_at (schema :1198) — so this is `supabaseAdmin()`'s, scoped by the
-    // `.eq('user_id')` that stands in for the RLS this client bypasses. `credentials_present` is
-    // read-modify-written as one object because it is the client's MIRROR of what is stored, and
-    // the two Vault kinds on it are `store()`'s to move.
-    // ONE UPDATE CARRYING BOTH COLUMNS. It was two, and the second one's failure was only
-    // `console.error`'d before the action redirected as a success — so a mirror that would not
-    // land left the key STORED while the row still drew **Not added** with no mask, which is the
-    // "the row claims a state nobody wrote" hazard this file argues against one screen over
-    // (review, 2026-09-09). `credentials_present` comes from `keysSite`'s read above, taken before
-    // any `store()` on this request, and `.select('id')` is what makes a write that matched no row
-    // an answer rather than silence (`writeSite`'s own rule).
-    const { data, error } = await supabaseAdmin()
-      .from('sites')
-      .update({
-        content_key: contentKey,
-        credentials_present: { ...(site.credentials_present ?? {}), content: true },
-      })
-      .eq('id', site.id)
-      .eq('user_id', at.userId)
-      .select('id')
-      .maybeSingle<{ id: string }>()
-    if (error || !data) {
-      console.error('sites: keys content write failed', { code: error?.code ?? 'no_such_site' })
+    // `user_id` that stands in for the RLS this client bypasses. ONE WRITE CARRYING BOTH COLUMNS:
+    // it was two, and a mirror that would not land left the key STORED while the row still drew
+    // **Not added** (review, 2026-09-09).
+    // THROUGH THE ONE COMPARE-AND-SET (Story 5.24b — DW-65 and DW-84's second half). The mirror is
+    // patched from the row AS IT STANDS AT THE WRITE, so a key `store()` put in from another tab
+    // since this screen was drawn survives; and `contentKeyPatch` REFUSES a record disconnected
+    // since, so a save racing Disconnect never hands a key back to a record that holds none.
+    const written = await patchSite(supabaseAdmin(), { siteId: site.id, userId: at.userId }, contentKeyPatch(contentKey))
+    if (!written.ok) {
+      console.error('sites: keys content write failed', { code: written.code })
       keysRedirect(KEYS_REFUSED(base, 'keys_failed'))
     }
   }
@@ -1424,11 +1413,12 @@ export async function saveKeys(formData: FormData): Promise<void> {
  */
 export async function removeToken(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'remove token')
-  if (!at) keysGone(formData)
-  const base = keysBase(formData, at.siteId)
-  const site = await keysSite(at, base, formData)
+  const q = await listQuery()
+  if (!at) keysGone(formData, q)
+  const base = keysBase(formData, at.siteId, q)
+  const site = await keysSite(at, base, formData, q)
   try {
-    await remove({ siteId: site.id, userId: at.userId, kind: 'staff', route: REMOVE_TOKEN_ROUTE })
+    await remove({ siteId: site.id, userId: at.userId, kinds: ['staff'], route: REMOVE_TOKEN_ROUTE })
   } catch (thrown) {
     // The store could not be reached, so NOTHING changed — `remove()` owns its own transaction —
     // and the screen says so rather than showing a row that claims a state nobody wrote.
@@ -1455,9 +1445,10 @@ export async function removeToken(formData: FormData): Promise<void> {
  */
 export async function testConnection(formData: FormData): Promise<void> {
   const at = await siteOf(formData, 'test connection')
-  if (!at) keysGone(formData)
-  const base = keysBase(formData, at.siteId)
-  const site = await keysSite(at, base, formData)
+  const q = await listQuery()
+  if (!at) keysGone(formData, q)
+  const base = keysBase(formData, at.siteId, q)
+  const site = await keysSite(at, base, formData, q)
   let result: string
   let status: number | undefined
   try {

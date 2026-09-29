@@ -38,6 +38,13 @@ WHAT IT PROVES, each step PASS, FAIL or RECORD, and it exits non-zero if any ste
   cap            DW-20: a SECOND project on Free is refused, and `public.projects` still holds one
                  row for that account when the pooler is asked. The count is the assertion; the
                  sentence on screen is the detail
+  clear-search   STORY 5.24b, DW-27: a search that finds nothing on Projects (`/?q=zzzz`) and on
+                 Sites (`/sites?q=zzzz`, a `sites` row seeded through the service role so the list
+                 is a list and not the empty screen) says the app's own sentence and ends with
+                 the app's own **Clear search** link; the click lands on the page WITHOUT `?q=`, the
+                 field is empty and the card is back. Its control is the card being back: a link
+                 that went nowhere, or back to the filter, fails it
+  axe-no-match   axe-core at WCAG 2.1 AA over both no-match lines at 1440, 834 and 390
   delete-typed   DW-20: Delete with the WRONG name typed is refused and the row survives; then the
                  right name deletes it. Both halves, because "the delete was refused" is satisfied
                  by a delete that never ran
@@ -72,6 +79,7 @@ PG_DIR = os.path.join(WEB, 'node_modules', 'postgres')
 PROJECTS = os.path.join(WEB, 'lib', 'projects.ts')
 PLAN = os.path.join(WEB, 'lib', 'plan.ts')
 NOT_FOUND = os.path.join(WEB, 'lib', 'not-found.ts')
+CONNECT_RULE = os.path.join(WEB, 'lib', 'connect-rule.ts')
 FIRST_RUN = os.path.join(WEB, 'lib', 'first-run.ts')
 
 # `load_env`, `Admin`, `playwright_dir` and `axe_path` are the passkeys harness's, imported rather
@@ -93,7 +101,8 @@ def app_text():
     harness's idiom exactly. Node strips the types; none of these modules imports anything that
     needs a resolver, so a wording change moves this run with it."""
     script = (
-        f"import {{ NAME_MAX, UNTITLED }} from 'file://{PROJECTS}';"
+        f"import {{ CLEAR_SEARCH, NAME_MAX, noProjectsMatch, UNTITLED }} from 'file://{PROJECTS}';"
+        f"import {{ SITES_EMPTY }} from 'file://{CONNECT_RULE}';"
         f"import {{ capSentence }} from 'file://{PLAN}';"
         f"import {{ NOT_FOUND }} from 'file://{NOT_FOUND}';"
         f"import {{ BLANK_DOOR }} from 'file://{FIRST_RUN}';"
@@ -104,12 +113,15 @@ def app_text():
         " not_found_title: NOT_FOUND.title,"
         " not_found_sub: NOT_FOUND.sub,"
         " not_found_home: NOT_FOUND.home,"
-        " blank_door: BLANK_DOOR.title }))")
+        " blank_door: BLANK_DOOR.title,"
+        " clear_search: CLEAR_SEARCH,"
+        " no_projects: noProjectsMatch('zzzz'),"
+        " no_sites: SITES_EMPTY.noMatch('zzzz') }))")
     proc = subprocess.run(['node', '--experimental-strip-types', '--input-type=module', '-e', script],
                           capture_output=True, text=True, timeout=60)
     lines = [l for l in proc.stdout.splitlines() if l.startswith('{')]
     if proc.returncode != 0 or not lines:
-        sys.exit("  FAIL  the app's sentences could not be evaluated from lib/{projects,plan,not-found}.ts: "
+        sys.exit("  FAIL  the app's sentences could not be evaluated from lib/{projects,plan,not-found,connect-rule}.ts: "
                  + proc.stderr.strip()[-400:])
     return json.loads(lines[-1])
 
@@ -352,6 +364,54 @@ const axeOver = async (page, label, width) => {
            `project row(s) — which is createProject's own atCap, the half the sheet hides`)
     }
 
+    /* ── clear-search: DW-27 (Story 5.24b). Both no-match lines end with the app's own "Clear search",
+       a link to the page WITHOUT `?q=` — the field draws no × (S3's frame draws none). Projects has
+       the one project the cap left; Sites gets one row seeded through the service role, because an
+       account with no site draws the empty screen and would test nothing (the spec's own note).
+       Each line's words are the app's (`noProjectsMatch`, `SITES_EMPTY.noMatch`, `CLEAR_SEARCH`),
+       evaluated, never retyped. The CONTROL is the card coming back after the click. */
+    {
+      const [seeded] = await sql`
+        insert into public.sites (user_id, url, title)
+        values (${USER_ID}, ${'https://clear-search-' + Date.now() + '.invalid'}, 'Clear search fixture')
+        returning id, title`
+      const cleared = []
+      for (const [path, sentence, card] of [
+        ['/', SAY.no_projects, made[0].name],
+        ['/sites', SAY.no_sites, seeded.title],
+      ]) {
+        await page.setViewportSize({ width: 1440, height: 900 })
+        // A MINUTE, as the sibling harness gives a first authed render (`NAV_TIMEOUT`): the default 30s ran out once here.
+        await page.goto(`${APP}${path}?q=zzzz`, { waitUntil: 'load', timeout: 60000 })
+        // A route with a `loading.tsx` can finish `load` while its rows still sit in the hidden
+        // stream holder — wait for the words to be VISIBLE (memory: harness-next-forms-gotchas).
+        const said = await page.getByText(sentence, { exact: false }).first()
+          .waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false)
+        const link = page.locator('main a', { hasText: SAY.clear_search }).first()
+        const href = await link.getAttribute('href').catch(() => null)
+        // axe over the no-match line at the three widths, before the click moves the page on.
+        for (const width of [1440, 834, 390]) {
+          await page.setViewportSize({ width, height: width === 390 ? 800 : 900 })
+          await page.waitForTimeout(300)
+          await axeOver(page, `no-match${path === '/' ? '-projects' : '-sites'}`, width)
+        }
+        await page.setViewportSize({ width: 1440, height: 900 })
+        // No link is the defect (HEAD before 5.24b drew none): recorded as a FAIL below, never a throw that skips the rest.
+        if (href !== null) await link.click({ timeout: 10000 }).catch(() => {})
+        await page.waitForURL((u) => !u.search.includes('q='), { timeout: 20000 }).catch(() => {})
+        const back = await page.getByText(card, { exact: false }).first()
+          .waitFor({ state: 'visible', timeout: 20000 }).then(() => true).catch(() => false)
+        const box = await page.locator('input[type="search"][name="q"]').first().inputValue().catch(() => null)
+        const url = new URL(page.url())
+        cleared.push({ path, said, href, landed: url.pathname + url.search, box, back })
+      }
+      step('clear-search', cleared.every((c) => c.said && c.href === c.path && c.landed === c.path && c.box === '' && c.back),
+           `each no-match line says the app's own sentence and ends with ${JSON.stringify(SAY.clear_search)}; ` +
+           `the link is the page without ?q=, the click lands there with the field empty and the card back: ` +
+           JSON.stringify(cleared))
+      await sql`delete from public.sites where id = ${seeded.id}`
+    }
+
     // ── cross-rename / cross-delete: a SECOND account's row, forged into this account's forms.
     const [stranger] = await sql`
       insert into public.projects (user_id, name, slug, style_pack)
@@ -458,7 +518,8 @@ const axeOver = async (page, label, width) => {
     // ASSERTED, NOT RECORDED: every landing here is the catch-all's, and the catch-all has no
     // skeleton, so a 200 would mean a Suspense boundary came back above it — a re-added
     // group-level loading.tsx puts every notFound() back at 200 and nothing else goes red
-    // (review, 2026-09-11). `/sites/brand`'s 200 is DW-67's remaining half and is not read here.
+    // (review, 2026-09-11). `/sites/brand` answers a real 404 too since Story 5.24b (its layout decides
+    // above the skeleton, DW-67); that is `run-verify-ghost-admin.py`'s `brand-none`, not read here.
     step('not-found-status', landings.every((l) => l.status === 404),
       'DW-67: the catch-all carries no skeleton, so it answers a real 404 — ' +
       JSON.stringify(landings.map((l) => ({ path: l.path, status: l.status }))))

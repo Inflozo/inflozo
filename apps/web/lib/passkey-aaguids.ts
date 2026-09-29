@@ -9,8 +9,12 @@
  *
  * The all-zero AAGUID is dropped deliberately: an authenticator that declines to identify itself
  * is not "the zero authenticator", it is unknown, and `nameFor` already answers that with
- * `Passkey`. A virtual authenticator (the Playwright control in this story's Verification)
- * reports exactly that, which is why the fallback is the path the automated proof exercises.
+ * `Passkey`. A virtual authenticator (the Playwright control in this story's Verification) does
+ * NOT report the all-zero AAGUID, as this sentence once said: Chromium's sends
+ * 01020304-0506-0708-0102-030405060708 (read off its buffer at Story 5.24b's Dev), which the list
+ * does not carry either — so the fallback is still the path it exercises, and
+ * `tools/probe/run-verify-passkeys.py` writes a listed AAGUID into the page's copy of the buffer
+ * (`named-aaguid`) to prove the rest (DW-32 (2)).
  *
  * Membership is never asserted anywhere — the list is as long as the source was (standing rule:
  * counts are derived, never restated). An entry that is missing costs one row the fallback name.

@@ -452,7 +452,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 **Execution — Dev, the harness filter first (DW-92, DW-83):**
 
-- [ ] `tools/probe/run-verify-ghost-admin.py` — **`--only <block,…>`**:
+- [x] `tools/probe/run-verify-ghost-admin.py` — **`--only <block,…>`**:
   - **A registry of the blocks that can run alone,** each naming its seeds:
     - `brand-none`: sign-in and T1;
     - `brand-ownership`: sign-in, T1 and the stranger's row;
@@ -464,20 +464,20 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **Safety.** An unknown name exits `2` before any key is read. `--only` never runs `injection-live`, so it writes nothing to T1 or T3.
   - **The catalogue row** (`tools/doc-audit.py:686-818`) gains the `--only` line.
   - **Control:** `--only no-such-step` exits non-zero.
-- [ ] **DW-83:** its control goes inside `moved-domains`, while the seeding exists (after `:4155`):
+- [x] **DW-83:** its control goes inside `moved-domains`, while the seeding exists (after `:4155`):
   - it runs the product's query (`index.ts:463-471`) without its first order term, read-only, on the harness's `sql`;
   - it must return the NEWER disconnected record, and with the term, the older live decoy.
 
 **Execution — Dev, the site record's writers (DW-65, DW-271, DW-272, DW-84's second half):**
 
-- [ ] `apps/web/server/site-settings.ts` — **new**, with relative imports and `import type` only, so that `node --test` can load it:
+- [x] `apps/web/server/site-settings.ts` — **new**, with relative imports and `import type` only, so that `node --test` can load it:
   - **`patchSite(admin, siteId, patch)`:**
     - It reads the row's `site_settings, credentials_present, capability_source, disconnected_at, updated_at`.
     - It calls `patch(row)`, which may return `null` to refuse.
     - It updates with `.eq('updated_at', row.updated_at).select('id')`. If no row matches, it re-reads and re-patches: three tries in all, then it changes nothing and logs `{code}`.
     - `updated_at` is `sites_touch`'s per-transaction `now()`, bumped by every write. No new column is needed.
   - **`rereadSettings({ admin, call }, userId, siteId)`** is `readSettings`' body, moved: the owned read with `.eq('user_id', …)` first, then `call`, then the write through `patchSite`.
-- [ ] **Every writer goes through `patchSite`:**
+- [x] **Every writer goes through `patchSite`:**
   - `probeSite`, keeping its owned read before the Ghost calls; it is `recheckPlan`'s only ownership gate.
   - `readSettings`, now a wrapper passing `supabaseAdmin()` and `call`.
   - `answerPortal` and `answerPlan`, whose preconditions are re-checked inside `patch`.
@@ -485,19 +485,19 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - The Content save's `credentials_present` (`:1395-1404`), whose `patch` refuses a disconnected row.
   - **Named exceptions:** connect's whole-record restore (`:385-396`) and its insert or re-adopt write whole records by design.
   - **The false comment** at `:654-658` is corrected.
-- [ ] `apps/web/site-settings.test.ts` — **new**. Its fake admin evaluates `.eq` filters against one stored row owned by user A:
+- [x] `apps/web/site-settings.test.ts` — **new**. Its fake admin evaluates `.eq` filters against one stored row owned by user A:
   - a second writer lands between read and write → both keys survive; with the `updated_at` filter dropped → red;
   - three contended tries → it gives up having written nothing;
   - the Content patch on a disconnected row → refused;
   - `rereadSettings` for user B never calls `call`; with the owned read placed after `call`, or its `.eq('user_id')` dropped → red.
-- [ ] `apps/web/server-wiring.test.ts`:
+- [x] `apps/web/server-wiring.test.ts`:
   - the `readSettings` slice (`:353-374`) retargets `site-settings.ts`;
   - the chokepoint importer rule (`:376-427`) matches relative specifiers too;
   - **a new rule:** no write of `site_settings` or `credentials_present` outside `site-settings.ts`, except the named exceptions. It matches on value-position keys, `writeSite(…)`, `.update(kept)`, `.update(connection)` and `.insert({…connection})`, with a planted control that fires on HEAD's `sites/actions.ts`.
 
 **Execution — Dev, connect and Manage keys:**
 
-- [ ] **DW-59:**
+- [x] **DW-59:**
   - **New in `lib/connect-rule.ts`:**
     - `KEPT`, from which the select at `sites/actions.ts:241` is built;
     - `siteWrite(…)`, which builds `connection` and the cosmetic patch, with the `isHttpUrl` guards and `settings_read_at`;
@@ -506,18 +506,18 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **Tests.** `connect-rule.test.ts:451-479` becomes executing tests: swapped branches → red; a key `siteWrite` emits that is not in `KEPT` → red. `:433-449` stays.
   - **The Sites list's `unread` banner** takes its decision from a pure function, tested the way `showsFirstRun` is.
   - Do this together with DW-65, which changes the same write.
-- [ ] **DW-77:**
+- [x] **DW-77:**
   - `remove(siteId, kinds)` clears every named kind inside ONE `sql().begin`, keeping the `ref is not null` guard and the per-kind conditional audit row (`audit(…, tx)`).
   - `disconnectSite` makes one call with both kinds; `removeToken` makes one with `staff`.
   - The comments at `index.ts:238-245` and `actions.ts:1057-1069` follow.
   - **Control** (`server-wiring.test.ts`): one `remove(` in `disconnectSite` naming both kinds, and one `begin(` in `remove`'s body around the loop. Moving it inside the loop → red.
-- [ ] **DW-81:**
+- [x] **DW-81:**
   - `oneCredential(form)` counts the credential fields present.
   - `saveKeys` refuses more than one with `keys_failed`, before the empty check (`:1287`) and before any read or write.
   - **Controls:**
     - `connect-rule.test.ts`, using Node's `FormData`: every single field passes, and any two are refused;
     - a harness step on the caller's own T1 row posts two fields and lands on `?keys=…` with the sentence; the `sites` row, `private.site_credentials` and `credential_change` are unchanged.
-- [ ] **DW-52:**
+- [x] **DW-52:**
   - `ghostCode`: `429` and `≥ 500` become `ghost_unavailable`; every other non-401 status stays `ghost_refused`.
   - `CONNECT_MESSAGES.ghost_unavailable: () => "Ghost didn't answer just now. Try again in a moment."`, shown under whatever field `ghost_refused` uses today (`FIELD_OF`, `keysFieldOf`).
   - `HEALTH_REASONS` is unchanged, so the daily check stays undecided on it.
@@ -525,7 +525,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **Propagation:**
     - `keys-test-refused` types a 403, plus a new `ghost_unavailable` vector;
     - the comments naming 429 under `ghost_refused` are corrected: `actions.ts:140-144`, `keys-panel.tsx:269-270`, `connect-rule.ts:513-515`.
-- [ ] **DW-58:**
+- [x] **DW-58:**
   - **`blockedAddress(ip)`** in `admin-rule.ts` is pure, over `node:net`'s `BlockList`. It blocks the I/O matrix's ranges, and judges an `::ffff:` address by its IPv4.
   - **In `fetchWithKey`**, before the fetch:
     - it looks the host up with `dns.lookup(host, { all: true })`, bounded by `TIMEOUT_MS` through `lib/with-timeout.ts`;
@@ -536,7 +536,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - `ghost-admin-rule.test.ts` vectors, blocked: `127.0.0.1`, `10.0.0.1`, `169.254.169.254`, `100.64.0.1`, `0.0.0.0`, `::1`, `fc00::1`, `fe80::1`, `::ffff:127.0.0.1`;
     - allowed: `8.8.8.8`, `::ffff:8.8.8.8`, `2606:4700::1111`;
     - a harness connect to `https://127.0.0.1.nip.io`, whose audit row carries `detail.blocked`, while T1 connects. HEAD already fails that connect as unreachable, so the sentence alone proves nothing.
-- [ ] **DW-55 (R-219, R-226 — the owner's Question 1, option 1):**
+- [x] **DW-55 (R-219, R-226 — the owner's Question 1, option 1):**
   - **`pathOf(typed)`,** new in `lib/connect-rule.ts`, returns the typed path with any trailing `/ghost…` segment, query and hash dropped, or `''` when there is no path.
   - **The new code `path_unsupported`,** shown under API URL: `(path) => \`Inflozo connects a Ghost site at the root of its address — ${path} isn't supported yet.\``.
   - **When it fires (R-226).** After `already_connected`, and when a path was typed, the root's `config/` is asked before the plan's limit is counted. A `404` there becomes `path_unsupported`; any other answer carries on exactly as today, so a page's address on a site at the root still connects. Without a path, nothing changes.
@@ -548,7 +548,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - `:287-327` holds the new code's sentence.
   - **Harness** (Review, on the deployed site): a connect to `https://example.com/blog` answers the sentence and stores no row; a connect to T1 by a page's address (`https://ghost6.inflozo.com/<a post's slug>/`) connects T1's root — the positive control.
   - DW-55 closes citing R-219, R-226 and PRD Appendix G.
-- [ ] **DW-86:**
+- [x] **DW-86:**
   - The two wayfinding sentences are read against Ghost's own admin at 5.130.6 and 6.58.0:
     - `KEYS.staff.ask` is right on both majors;
     - `KEYS.rollHint` becomes "To roll keys: Ghost Admin → Settings → Integrations → Custom → Inflozo → Regenerate. Old keys stop working the moment you regenerate."
@@ -556,7 +556,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - The departures header records a third departure, from `S11 Sites.dc.html` (S11d `:232`) and `S11e`.
   - `MEASUREMENTS.md` §58 records the labels on both majors.
   - `connect-rule.test.ts` pins both sentences.
-- [ ] **DW-50:**
+- [x] **DW-50:**
   - **The change.** `ssl: { ca: SUPABASE_ROOT_CA, rejectUnauthorized: true }`.
     - The PEM is inlined from the owner's `supabase/prod-ca-2021.crt`: Supabase Root 2021 CA, valid until 2031-04-26.
     - The file is committed as the constant's provenance. A runtime read would not ship (DW-269).
@@ -565,14 +565,14 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **Controls:**
     - `run-verify-ghost-admin.py --check` connects with the PEM read out of `db.ts` (passes), and with `tls.rootCertificates[0]` (refused, `SELF_SIGNED_CERT_IN_CHAIN`);
     - the deployed half is Test connection on a connected site (Review, and the owner's step 4).
-- [ ] **DW-71:**
+- [x] **DW-71:**
   - **`Brand` and `brandOf` keep `accent`, `logo` and `nav`.** `icon`, `cover`, `description` and `title` have no reader: the project's name is `sites.title`.
   - `hasBrand` checks every field `Brand` promises.
   - `BRAND_KEYS` becomes `accent_color, logo, navigation`.
   - `style-pack.ts:21` says who reads what.
   - **Tests.** `probe-rule.test.ts:330-345`, `:381-400` and `:402-426` follow, plus three vectors, each seen `true` at HEAD and `false` after. `{accent: 42}` is already false at HEAD, so it is no control.
   - Rows already stored keep the old keys until their next brand read. Nothing reads them.
-- [ ] **DW-67:**
+- [x] **DW-67:**
   - **`sites/brand/layout.tsx`** is new and sits above the segment's `loading.tsx`. It reads `site` from `SEARCH_HEADER`, and **only when one is there**:
     - reads the row through a `cache()`'d reader it shares with `BrandScreen`;
     - calls `notFound()` for no row or no brand: a real `404`.
@@ -583,7 +583,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 **Execution — Dev, Projects, the Sites list and its windows:**
 
-- [ ] **DW-27:**
+- [x] **DW-27:**
   - Both no-match lines end with a **Clear search** link to the page without `q`: `<Link href="/">` and `<Link href="/sites">`, in the icon picker's link classes.
   - The Projects sentence moves into `lib/projects.ts`, beside `filterProjects`.
   - There is one `CLEAR_SEARCH` word, also used by `icon-picker.tsx:311` (R-170).
@@ -592,7 +592,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - `/?q=zzzz`, after `cap` makes a project;
     - `/sites?q=zzzz`, with a `sites` row seeded through the service role (without it, the step tests the empty screen);
     - then `axeOver` at 1440, 834 and 390.
-- [ ] **DW-82:**
+- [x] **DW-82:**
   - **`sitesPath(q?, extra?)`,** new in `lib/connect-rule.ts` and built with `URLSearchParams`, is the one way to `/sites`. It is used by:
     - `brandPopupPath` and `keysPopupPath`, which carry `q`;
     - `PanelLink` and `PanelModal`, through `useSearchParams()`;
@@ -601,7 +601,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - every action landing, through one `listQuery()` that reads `q` from the action's own request (`SEARCH_HEADER`).
   - **The exception is Connect's landing** (`:474`): the new card could be filtered out.
   - **Control:** a harness block searches, opens each window, closes it by ✕, Escape, Cancel and a save, and checks that `?q=` survives each close.
-- [ ] **DW-84:**
+- [x] **DW-84:**
   - While any `[aria-busy="true"]` is inside the dialog:
     - `onCancel` prevents the close;
     - the backdrop does nothing;
@@ -609,14 +609,14 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - One fix covers the keys and brand windows.
   - A `ponytail:` comment names the ceiling: Chromium cancels one Escape per user activation.
   - **Control:** a harness step holds the save's POST, presses Escape and releases; the window neither closes nor reopens. **Run it on HEAD first.**
-- [ ] **DW-57:** the header of `sites/(list)/page.tsx` opens with the rule itself:
+- [x] **DW-57:** the header of `sites/(list)/page.tsx` opens with the rule itself:
   - the pills' line carries metadata only;
   - the state line carries the state, its timestamp and the Preview-only chip, and sits beside Connected only where the card can hold it, never on a wider grid (the owner, Story 3.3 Question 2);
   - the ⋯ at the header row's top right is the one place the card's actions live;
   - a story adds to this layout and never restores the frame's.
 
   The "OBEYED DW-57" pointers aim at the rule, and DW-57 closes citing it.
-- [ ] **DW-25:** `(dashboard)/loading.tsx:1-5` is made to say what is true:
+- [x] **DW-25:** `(dashboard)/loading.tsx:1-5` is made to say what is true:
   - it covers soft navigations;
   - on a cold load, nothing is sent until the guards above it answer;
   - that is the rule, because a redirect decided above the first flush is a 307 (R-98's second effect).
@@ -625,7 +625,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 **Execution — Dev, accounts and sign-in:**
 
-- [ ] **DW-41:**
+- [x] **DW-41:**
   - **One new function in `sign-in/signed-out.ts`** takes the client (`import type` only), makes the calls, and answers from `auth.getSession()` afterwards.
   - **`signOut`** lands by the session left: none → signed out; one → the red line.
   - **`signOutEverywhere`** signs out `others` first (a failure there leaves this device signed in, so "try again" is true), then `local`, then lands by the session left.
@@ -635,11 +635,11 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
     - `others` 200, then `local` 500;
     - `local` 500 alone;
     - an expired token whose refresh answers 500.
-- [ ] **DW-29:**
+- [x] **DW-29:**
   - `readEntitlement(client, userId)`, new in `lib/plan.ts` with `import type { SupabaseClient }`, takes over the read and its log line.
   - `resolveEntitlement` calls it.
   - **Control:** in `plan.test.ts`, a real `createClient` against `node:http`: a `500` gives `free`; `[{ state: 'pro_active' }]` gives `pro`. With the read made to throw on an error → red.
-- [ ] **DW-47:**
+- [x] **DW-47:**
   - **`PurgeDeps`** gains `due(excluding, limit)`.
   - **`runPurge`** takes batches until the queue is empty or a 240 s budget is spent (`now` injected), excluding every id already attempted in the run.
   - **The route** uses `.not('user_id', 'in', …)` when the list is non-empty, and exports `maxDuration = 300`.
@@ -647,7 +647,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **Controls** (`purge.test.ts`):
     - 25 always-failing ids before a good one → `{ purged: 1, failed: 25 }` in one run;
     - the clock stops the loop.
-- [ ] **DW-32** — `run-verify-passkeys.py`:
+- [x] **DW-32** — `run-verify-passkeys.py`:
   - **`named-aaguid`,** after `revoke` and `magic-link`:
     - just before **Add a passkey**, `page.evaluate` overwrites bytes 37–52 of the real `getAuthenticatorData()` buffer with an AAGUID from `lib/passkey-aaguids.ts`, read and never retyped;
     - the new row carries that entry's name;
@@ -659,13 +659,13 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - **The restore** puts back the value found, in both the child's and the parent's `finally`. The same press then signs in: the switch-on control.
   - **Passkeys are off on production for a few seconds**, as at Story 2.1.
   - The catalogue row follows.
-- [ ] **DW-91:**
+- [x] **DW-91:**
   - **The error page.** `app/(app)/app/harness/error/page.tsx` throws, and 404s unless `INFLOZO_HARNESS` is set.
     - It joins `HARNESS_ONLY`, `NO_SKELETON` and step 79's list.
     - A `journey.spec.mjs` test reads the tab title "Something went wrong · Inflozo" and checks the error heading is on screen.
     - **Control:** with `error.tsx:56` deleted → red.
   - **The sign-in card.** Inside `kill-mid-ceremony`'s held POST, the form is `inert` and `aria-hidden`, no control takes focus, and Tab never lands inside. After the release they are reachable again. That pair is the control, because this harness runs against production only.
-- [ ] **DW-90** — `check-access.py`:
+- [x] **DW-90** — `check-access.py`:
   - `http()` can return headers.
   - A GitHub block reads `/rate_limit` with `GITHUB_TOKEN`.
   - A pure verdict decides the line:
@@ -675,19 +675,19 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - Any FAIL exits 1.
   - `--self-check` asserts the verdict in both directions, with no network and no email.
   - `VERIFY-AT-BUILD.md:51` names the tool, and the catalogue row follows.
-- [ ] **DW-14** — `configure-supabase-auth.py`:
+- [x] **DW-14** — `configure-supabase-auth.py`:
   - the `SOFT` idle-timeout row and its 402 retry go, with every use of them;
   - one comment replaces them.
   - **Control:** `--check --expect sessions_inactivity_timeout=720` now exits `1` (it exits `0` at HEAD); `--check` still exits `0`, with no `----` line.
 
 **Execution — the close:**
 
-- [ ] **`deferred-work.md`.**
+- [x] **`deferred-work.md`.**
   - DW-293 and DW-294 are written at this Create.
   - At Dev, every entry whose evidence exists closes.
   - The entries whose proof is a run on the deployed site get an `amended:` line and close at Review, when their run completes. These are DW-27, 32, 58, 67, 74, 81, 82, 83, 84, 85 and 92, plus the harness halves of DW-41 and DW-91.
-- [ ] **The registers.** R-219's and R-226's "built" targets are ticked, and `epic-5-context.md` gains a sub-bullet for this story's Dev.
-- [ ] **Standing rule 7.** Grep for:
+- [x] **The registers.** R-219's and R-226's "built" targets are ticked, and `epic-5-context.md` gains a sub-bullet for this story's Dev.
+- [x] **Standing rule 7.** Grep for:
   - `rest-residual`;
   - any direct caller of `readSettings(`;
   - `ghost_refused&status=429`;
@@ -696,7 +696,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - `brand.icon`, `cover`, `description` and `title`;
   - the old `SITES_URL` landings;
   - every DW id this story touched.
-- [ ] **The gates.** `pnpm check` (Node 24), `bash supabase/tests/run-rls-gate.sh`, `pnpm keyboard`, and `python3 tools/doc-audit.py --check` twice. All green, each new check seen red on its control first.
+- [x] **The gates.** `pnpm check` (Node 24), `bash supabase/tests/run-rls-gate.sh`, `pnpm keyboard`, and `python3 tools/doc-audit.py --check` twice. All green, each new check seen red on its control first.
 
 **Acceptance Criteria:**
 
@@ -910,3 +910,144 @@ Do this on the real site after Deploy, in a desktop browser about 1440 wide, sig
   - No spec after Story 3.9 has run its browser half.
 - **The owner's account**, read for the manual test: Free, one active site, three projects.
 - **Tests at HEAD.** The seven app test files this story extends pass 100 of 100 (Node 24).
+
+**Executed at Dev (2026-09-29).** Every key was read into a command's environment only. Each new check was seen red on
+its control first, then restored byte-identical and green.
+
+- **The group at HEAD** (the first command, at `2450daea`): exactly § The triage's list, less DW-40 and DW-293, which the
+  Schema phase closed. After this phase the same command lists only the entries whose proof is a run on the deployed
+  site — DW-27, 32, 41, 58, 67, 74, 81, 82, 83, 84, 85, 91 and 92 — each carrying an `amended:` line; every other entry
+  is `done 2026-09-29 (Story 5.24b)` with a `resolution:` naming its evidence. None was deleted or renumbered.
+- **DW-65, DW-271, DW-272, DW-84's second half — `site-settings.test.ts`** (a client over one row owned by user A that
+  evaluates every `.eq`): green. Each control red, then restored: the `updated_at` filter dropped → the second-writer
+  test, the contention test and the Content race go red; the owned read moved after `call` → DW-272's test red; the
+  owned read's `.eq('user_id')` dropped → red; `contentKeyPatch` ignoring `disconnected_at` → red.
+- **The wiring rules — `server-wiring.test.ts`.** HEAD's `sites/actions.ts` and `site-probe.ts` swapped in → the DW-65
+  rule names all seven writers this story moved (the cosmetic `site/` write, both answers, the disconnect stamp, the
+  Content save, the probe's write and the re-read's), and the DW-77 rule and the re-read order rule go red; a relative
+  `./ghost-admin/index.ts` import planted in `site-settings.ts` → both chokepoint rules red; `disconnectSite` back to
+  two `remove()` calls → red; `remove()`'s `begin()` moved inside the loop → red.
+- **DW-59, 55, 52, 81, 86, 82 — `connect-rule.test.ts`.** Eight mutations, each red: `storeOrUndo`'s branches swapped;
+  a column `siteWrite` writes that `KEPT` does not name; `pathOf` keeping `/ghost`; `pathRefused` refusing every path;
+  `oneCredential` admitting two; `sitesScreen` letting an unread list be the first run; the roll hint back to the
+  frame's words; `ghost_unavailable` reworded.
+- **DW-52, DW-58 — `ghost-admin-rule.test.ts` and `health-rule.test.ts`.** Red with a 5xx left a refusal, with every
+  4xx made unavailable, with the branch removed (HEAD), and with carrier-grade NAT dropped from the list.
+  `blockedAddress` also refuses the hex-form mapped `::ffff:7f00:1` and allows `::ffff:808:808`.
+- **DW-71 — `probe-rule.test.ts`.** The three new vectors, each evaluated on HEAD's own `probe-rule.ts`: `true` at
+  HEAD, `false` now (`{accent: 42}` is `false` at both, as the Create said). Red with HEAD's `hasBrand` body, and with
+  `brandOf` storing a fourth key.
+- **DW-41 — `sign-out-landing.test.ts`** (new: the app's own `createServerClient`, ssr 0.12.6 and auth-js 2.115.0,
+  against a `node:http` GoTrue, cookie `sb-127-auth-token`): `others` 500 keeps the cookie and says "try again";
+  `others` 200 then `local` 500 lands on the everywhere sentence; `local` 500 alone lands on `/sign-in?signed-out=1`
+  (HEAD sent the dashboard's red line); an expired ticket whose refresh answers 500 keeps the cookie and lands on
+  `/?sign-out-failed=1`. Red with the landing decided by the error (HEAD's rule), with no stop after `others`, with
+  `getSession()`'s error ignored, with the scope dropped, with `['global']`, `['others']` or the list reversed, and
+  with the failure branch removed. The deployed half is Review's (`run-verify-sign-out-everywhere.py`).
+- **DW-29 — `plan.test.ts`** (a real `createClient` against `node:http`): a 500 gives Free and one
+  `entitlement: read failed {code}` line with no user id; `pro_active` gives Pro. Red with the read made to throw on an
+  error, and with `data?.state` made `data!.state`.
+- **DW-47 — `purge.test.ts`.** BATCH always-failing accounts before a good one → `{ purged: 1, failed: BATCH }` in one
+  run; red as `{ purged: 0, failed: 25 }` with HEAD's one batch and `{ purged: 0, failed: 240 }` with the exclusion
+  dropped. The injected clock stops the loop at 24 of 100 on a 10 s step; red at 25 without the per-account check and
+  at 100 without the budget; the route's exclusion, its `maxDuration` and a budget at the ceiling each fail the source
+  test. **On production, read-only** (supabase-js with `SUPABASE_SECRET_KEY` by name): the route's own `due` chain
+  answers PostgREST without error with and without an exclusion, and the same `not.in.(…)` over `profiles` drops exactly
+  the three ids listed (15 → 12). The production Vercel project is Pro with Fluid compute (read-only API), so
+  `maxDuration = 300` is within its limit.
+- **DW-50 — the handshake, from the app's own driver** (`SUPABASE_DB_POOLER_URL` by name, `select 1` only): the PEM
+  read out of `db.ts` → connected; `tls.rootCertificates[0]` → refused `SELF_SIGNED_CERT_IN_CHAIN`; HEAD's
+  `ssl: 'require'` → connected (it verifies nothing). The chain, read with `openssl s_client -starttls postgres`: leaf
+  to 2030-03-11 ← intermediate to 2033-10-21 ← root to 2031-04-26. `MEASUREMENTS.md` §57; `VERIFY-AT-BUILD.md` item 60.
+  `run-verify-ghost-admin.py --check`: exit 0, with `pinned-ca` PASS and `brand-keys` reading the three keys on T1 and T3.
+- **DW-86 — Ghost's admin, read in the npm tarballs** of 5.130.6 and 6.58.0 (`registry.npmjs.org`, read-only): the
+  labels and files as in the Code Map; both majors open Integrations on `built-in` (`useState`). `MEASUREMENTS.md` §58.
+- **DW-67 — the hypothesis, read in source:** Next 16.3.1's `createRedirectRenderResult` re-fetches an app-relative
+  redirect target with `getForwardedHeaders(req, res)` — the POST's own headers — so the layout acts only when a `site`
+  is in the header. Executed: every connect in both local runs below landed on S2c.
+- **DW-14.** `configure-supabase-auth.py --check --expect sessions_inactivity_timeout=720` exited 0 at HEAD and exits 1
+  now ("not a field this tool sets"); `--check` exits 0 with no `----` line; `--expect mailer_otp_exp=901` still exits 1.
+- **DW-90.** `check-access.py --self-check`: exit 0, eight verdicts; red under each of three mutations (the window made
+  exclusive, a missing header let through, a 401 let through). One full run (the tool's usual test email sent): exit 0,
+  `GitHub token -> /rate_limit, and its expiry  HTTP 200 — expires 2027-09-05, in 341 day(s)`.
+- **DW-91's error page — `pnpm keyboard -g DW-91`:** green; with `error.tsx:56` deleted, red (`Received: ""`);
+  `app-routes.test.ts` and `busy.test.ts` red with the new page withheld from `HARNESS_ONLY` and `NO_SKELETON`.
+- **DW-32 and DW-91's card half** are built into `run-verify-passkeys.py`, whose run switches passkeys off on
+  production for a few seconds, so it is Review's. `--check`: exit 0, the flag read and never written, users 13 → 13.
+  The harness's own code, cut out and run on the same Playwright Chromium against a local page, held 10 of 10 checks on
+  three runs; the flag's read, write and restore ran against a throwaway PostgreSQL 17 with TLS, 8 of 8. Found there:
+  the virtual authenticator's AAGUID is `01020304-0506-0708-0102-030405060708`, not all-zero (corrected beside the code
+  in `lib/passkey-aaguids.ts`), and bytes written into `getAuthenticatorData()`'s buffer in place reach `toJSON()`, so
+  the harness hands back a copy.
+- **DW-92, DW-83, DW-74, DW-85 — `--only`, against HEAD's deployment.** `--only no-such-step` exits 2 with
+  `tools/probe/.env` absent, while a known name reaches the key check. Every registered block completed alone, users
+  13 → 13, nothing written to T1 or T3: `brand-none`; `brand-ownership` passed all five runs that reached the step (of
+  seven: one died on this machine's network, one in the T1 seed); `manage-keys`; `moved-domains` on its third attempt
+  (the first two died on DW-68-class waits), `moved-order-term` passing in both attempts that reached it — without the
+  term the newer disconnected record, with it the older live decoy; `keys-content`. Found by reading: `press()` had
+  called itself since `03d3d4af` (Story 3.7's review), so no full run could pass `brand-popup`; fixed, and a full run is
+  owed.
+- **This story's harness steps on HEAD's deployment first — each red, as the controls must be:** `path-refused`
+  (no sentence); `address-blocked` (the sentence was already true, but the audit row carried `{"ms":168}` and no
+  `blocked`); `brand-none` (`200/200`); `keys-screen` (the frame's roll hint); `keys-two-fields` (the post STORED one
+  credential, `credential_change` 1 → 2); `keys-test-refused` (no `ghost_unavailable` sentence); `search-kept` (the
+  first window opened without `q`); `keys-escape` (✕ and Cancel not disabled, one close). `path-page` and every older
+  step passed there. `run-verify-dashboard.py`'s `clear-search` FAILED on HEAD (`href: null` on both pages, the box
+  still `zzzz`, the card not back) with every other step green, users 13 → 13 — the fourth attempt: the first two
+  stopped at `cap` (its re-post not seen reaching the server) and then on a 60 s page load, while HEAD's own copy of
+  the harness passed every step between them; the third reached the new step and threw on the missing link's click,
+  which the step now records as its FAIL instead of throwing.
+- **This story's code, run locally through the product's own pages** — Chromium mapping `app.inflozo.com` to a TLS
+  proxy in front of the app on this machine, with the production database, T1 and T3 (users 13 → 13 every run):
+  - under `next dev`, all eight blocks together (`--only connect-paths,brand-none,brand-ownership,manage-keys,
+    moved-domains,keys-content,search-kept,keys-escape`): every step PASS, 5 m 37 s;
+  - under a production build (`next build` + `next start`): the same eight blocks, every step PASS, 4 m 43 s —
+    after the harness race below was waited out; before it, `moved-domains` failed there twice waiting for the
+    connect sheet's step link;
+  - `run-verify-dashboard.py` under the production build: every step PASS — `clear-search` on both pages (the link
+    the page without `q`, the click landing there with the box empty and the card back) and axe-core at WCAG 2.1 AA
+    over both no-match lines at 1440, 834 and 390, zero violations.
+  Two local-only accommodations, both reverted and neither in the product: `next start` 308s the rewritten `/app/` to
+  `/app`, which `proxy.ts` sends back to `/` — a loop Vercel does not have — so the local build ran with
+  `skipTrailingSlashRedirect`; and under `next dev` React's StrictMode leaves `connect-wizard.tsx`'s `alive` ref false
+  after its double-run effect (`useEffect(() => () => { alive.current = false }, [])` never sets it back), so the
+  wizard sits on "Connecting…" in development only — the dev run used `reactStrictMode: false`. The second is a real
+  defect in development builds, outside this group; it is reported to the dispatching session to be given an owner.
+- **The harness itself, hardened by those runs:** a hidden id forged before React has attached to its form is written
+  back by hydration, so every forge now waits for `hydrated()`; the Content save's navigation waits for the form's
+  `aria-busy` to clear; `search-kept` waits for the window's words, the popover's close and focus inside the dialog
+  before its Escape; and `moved-domains`' reconnect waits for the disconnect's landing to redraw the list — T3's card
+  gone, no dialog open, the skeleton gone, the sheet's element present — because the address is `/sites` before and
+  after the press, and an opener pressed in between found no sheet (it went to the full page `/sites/connect`) or
+  opened one the new list remounted (`ConnectSiteDialog` is keyed on the number of sites). Diagnosed on the local
+  production build with the dialogs and the address read at each moment; with the wait, the block passed there.
+  `keys-escape` holds Test connection's POST — a Kit `Submit` in the window that writes nothing — and asserts that the
+  window stays open with no close event and its address unchanged through the hold, the ✕ and Cancel `aria-disabled`,
+  and the released answer drawn in an open window. Whether React re-creates the `<dialog>` element when the answer's
+  redirect changes the query is RECORDED, not asserted: the page segment is keyed by its search params.
+- **Departure from the Tasks' wording:** `patchSite(admin, { siteId, userId }, patch)`, not `(admin, siteId, patch)` —
+  the user id rides beside the site id because every writer it replaced carried `.eq('user_id')` on its own write, and
+  ownership belongs beside the write (`remove()`'s rule in the chokepoint).
+- **Standing rule 7.** `rest-residual` survives only in dated records; no caller of `readSettings(` bypasses the
+  wrapper (the editor's action calls it); no `ghost_refused&status=429`; the `SOFT` row is gone from the tool, and
+  `sessions_inactivity_timeout` is named only in its docstring and its new comment; `BRAND_KEYS` is the three keys; no
+  reader of `brand.icon`, `cover`, `description` or `title`; `SITES_URL` is gone and every action landing is
+  `sitesPath`. Two literal `/sites` links stay on purpose: the scripts-off disconnect page's (a page reached with no
+  search to keep) and the connect wizard's Back (Connect drops the search, as its landing does). Propagated from the
+  sweep: the catalogue rows of
+  the ghost-admin, dashboard, sign-out-everywhere and Supabase-auth tools, the shell's comment on clearing `?q`, and
+  `VERIFY-AT-BUILD.md`'s GitHub-token section.
+- **The Matrix Test Audit, at the dispatching session's check.** Every row of the I/O matrix maps to a test that ran and
+  passed in this phase — the RLS gate, `pnpm check`, `pnpm keyboard`, `rest-refused` on production, or the harness runs
+  above — with one gap, found and closed: the path row's "before the plan's limit is counted" had no test that fails when
+  the order is swapped, because `path-refused` runs below the cap. `server-wiring.test.ts` gained "R-226: connect says
+  already connected, then judges a typed path at the root, and only then counts the plan", seen red with the cap moved
+  above the path check in `sites/actions.ts`, then restored byte-identical. The owner's step 6 walks the same row at the
+  cap, on the deployed site. `pnpm check` re-run on the final tree: exit 0, `apps/web` 623 of 623 before the rule and the
+  wiring file 19 of 19 after it, with `tsc` and eslint clean.
+- **DW-295, new, and routine:** the development-only "Connecting…" hang is in the ledger, owned by Story 5.24d, whose card
+  names it — its walks are the ones a development build carries, and no check this story runs can walk Connect in one.
+- **The gates.** `pnpm check` (Node 24): exit 0 — lint, typecheck and every package's tests, none failing.
+  `bash supabase/tests/run-rls-gate.sh`: exit 0, with the Story 5.24b block's PASS lines and DW-293's.
+  `pnpm keyboard`: exit 0, the DW-91 test among the passes. `python3 tools/doc-audit.py --check`: the first run regenerated
+  `INDEX.md` and `INDEX.html` from the new catalogue rows (STALE, as the gate does), then PASS twice with no warning.

@@ -93,7 +93,8 @@
 // caret placed by a press — the state the harness cannot reach, because the canvas has no keyboard path into inline
 // editing (FR-D1); the Esc ladder's three rungs with that same caret, each announcement read from `#editor-said`;
 // R-147's card measured against `Editor Sidebar Kit.dc.html:274-280` and listing exactly the keys that work (R-145);
-// every deferred key inert; `/harness/editor` and `/harness/canvas` 404 in production; and S3d's account-menu row
+// every deferred key inert; `/harness/editor` and `/harness/canvas` 404 in production (and, since Story 5.24b,
+// `/harness/error`); and S3d's account-menu row
 // opening the SAME card, row for row. Step 8's axe runs once more with the card open.
 // Story 5.10 adds steps 81-85, inside the same session: S5a's picker measured where it is drawn (the 22px inset, the
 // 240px rail on 16/12 with its right rule, R-154's `All sections` row over `CATEGORIES`, each count derived, `Find a section…` and its ⌘K chip, the
@@ -5864,8 +5865,9 @@ async function main() {
       surfacesSeen.paints > 0 && surfacesSeen.found.length === 0 && probe96.at === 0 && !probe96.sheet && probe96.first === 'canvas', JSON.stringify({ ...surfacesSeen, ...probe96 }))
 
     // ── step 79 — the harness does NOT exist in production (R-146) ──
-    // Story 5.20 made the harness a layout with a page per canvas, so a canvas's page is refused too
-    for (const path of ['/harness/editor', '/harness/editor/paywall', '/harness/canvas']) {
+    // Story 5.20 made the harness a layout with a page per canvas, so a canvas's page is refused too; Story 5.24b (DW-91)
+    // added the page that throws on purpose for the gate's error-title test
+    for (const path of ['/harness/editor', '/harness/editor/paywall', '/harness/canvas', '/harness/error']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
       check(`step 79 — R-146: ${path} answers 404 on the deployed site — the keyboard harness is the gate's alone`, r.status() === 404, `HTTP ${r.status()}`)
     }

@@ -6,6 +6,7 @@ import {
   ADMIN_KEY_CONSENT,
   checkedLabel,
   CONNECT_MESSAGES,
+  CONNECT_READ,
   connectMessage,
   DISCONNECT,
   HEALTH,
@@ -17,13 +18,23 @@ import {
   HTTP_WARNING,
   isHttpUrl,
   isPlainHttp,
+  KEPT,
+  KEY_FIELDS,
   KEYS,
   keysFieldOf,
   MIN_GHOST_MAJOR,
   ORPHAN_SNAPSHOT_DAYS,
+  keysPopupPath,
   normaliseSiteUrl,
+  oneCredential,
+  pathOf,
+  pathRefused,
   SITES_EMPTY,
+  sitesPath,
+  sitesScreen,
+  siteWrite,
   stepOf,
+  storeOrUndo,
   versionVerdict,
   type MessageCode,
 } from './lib/connect-rule.ts'
@@ -128,6 +139,14 @@ test('every code the wizard can answer with has a sentence, and none of them say
     "We couldn't save your key just now. Nothing was connected — try again in a moment.",
   )
   assert.match(connectMessage('ghost_refused', '403'), /HTTP 403/)
+  // DW-52, Story 5.24b: a busy or down Ghost is not one that refused — its own sentence, and no
+  // status in it (a 429 is not a thing the customer can act on).
+  assert.equal(connectMessage('ghost_unavailable'), "Ghost didn't answer just now. Try again in a moment.")
+  // R-219, THE OWNER'S OWN WORDS, with the path that was typed (DW-55, R-226).
+  assert.equal(
+    connectMessage('path_unsupported', '/blog'),
+    "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet.",
+  )
   // The two standing sentences the frames carry.
   assert.match(HTTP_WARNING, /^Most Ghost sites use https:\/\//)
   // FR-C3's honesty rule names what the key reads AND what Inflozo writes, in one breath.
@@ -196,6 +215,15 @@ test('KEYS holds every word Manage keys shows, and names no number', () => {
   // to the customer rather than only in a comment (the departure from B20's eye).
   assert.match(KEYS.urlReason, /disconnecting and connecting again/)
   assert.match(KEYS.noReveal, /cannot read the rest back/)
+
+  // DW-86, STORY 5.24b: THE TWO WAYFINDING SENTENCES, READ AGAINST GHOST'S OWN ADMIN ON BOTH MAJORS
+  // (MEASUREMENTS §58). The token's path was right as written; the roll hint gained **Custom** — the
+  // tab a customer's own integration sits under — which is the recorded third departure from S11d.
+  assert.equal(KEYS.staff.ask, 'Ghost Admin → your avatar → Your profile → Staff Access Token.')
+  assert.equal(
+    KEYS.rollHint,
+    'To roll keys: Ghost Admin → Settings → Integrations → Custom → Inflozo → Regenerate. Old keys stop working the moment you regenerate.',
+  )
 
   // COUNTS ARE DERIVED (standing rule 4) — the same assertion `DISCONNECT` carries, and for the
   // same reason: the one number this screen's copy needs is the orphan clock's, and it belongs to
@@ -282,6 +310,8 @@ test('the three Manage-keys codes are in the one table, and each lands under its
   for (const code of ['ghost_unreachable', 'ghost_redirected', 'ghost_refused', 'ghost_bad_signature']) {
     assert.equal(keysFieldOf(code), null, `${code} answers under a field on a screen with no address`)
   }
+  // DW-52: A BUSY OR DOWN GHOST is the banner's too, as `ghost_refused` is — nothing under a field.
+  assert.equal(keysFieldOf('ghost_unavailable'), null)
 })
 
 test('every code Manage keys can answer with has a sentence of its own', () => {
@@ -307,6 +337,9 @@ test('every code Manage keys can answer with has a sentence of its own', () => {
     'token_malformed',
     'credential_malformed',
     'ghost_refused',
+    // DW-52, Story 5.24b: a 429 or a 5xx from `config/` reaches `KEYS_REFUSED` and `KEYS_TESTED` as
+    // `config.code`, the same variable route `ghost_refused` takes.
+    'ghost_unavailable',
     'ghost_unknown_key',
     'ghost_unauthorized',
     'ghost_unreachable',
@@ -426,9 +459,10 @@ test('the browser check calls the Content API the way §38b executed it, and nev
 })
 
 /*
- * TWO CONTRACTS IN THE ACTION THAT A GREEN GATE CANNOT SEE, in `server-wiring.test.ts`'s idiom —
- * both are read out of the file they govern rather than restated here. Neither can be reached by
- * `node --test` any other way: the action needs a session, a pooler and a real Ghost.
+ * A CONTRACT IN THE ACTION THAT A GREEN GATE CANNOT SEE, in `server-wiring.test.ts`'s idiom — read
+ * out of the file it governs rather than restated here, because the action needs a session, a
+ * pooler and a real Ghost. (Its twin, "a store that fails undoes the row", is EXECUTED below since
+ * Story 5.24b: DW-59 lifted the sequence into `storeOrUndo`.)
  */
 test('config/ is the validator and site/ is read only after it has passed', () => {
   const source = readFileSync(ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
@@ -448,32 +482,165 @@ test('config/ is the validator and site/ is read only after it has passed', () =
   assert.deepEqual(paths, ['config/', 'site/'], `${ACTIONS} calls Admin paths beyond config/ and site/`)
 })
 
-test('a store that fails undoes the row it just made, so no site is half-connected', () => {
-  const source = readFileSync(ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
-  const from = source.indexOf('await store(')
-  assert.ok(from >= 0, `${ACTIONS}: nothing stores the Admin key`)
-  const compensation = source.slice(from, source.indexOf('revalidatePath', from))
-  // A NEW row is deleted; a record Inflozo KEPT (FR-C6) is put back as it was, never deleted.
-  assert.match(compensation, /\.delete\(\)/, `${ACTIONS}: a failed store leaves the row it just inserted behind`)
-  assert.match(compensation, /disconnected_at: existing\.disconnected_at/,
-    `${ACTIONS}: a failed store on a RE-ADOPTED record must restore it, not delete a kept record`)
-  // "AS IT WAS" MEANS EVERY COLUMN the connect writes before `store()` runs, not the stamp alone
-  // (review, 2026-09-08): the columns are read out of the two writes above the store, so a column
-  // added to either without a line in the restore fails here.
-  const before = source.slice(0, from)
-  // The columns are the schema's server-asserted set plus the three the client may write; the
-  // set is one list, and what the action writes must be exactly it (review 2, 2026-09-08).
-  const COLUMNS = ['title', 'favicon_url', 'ghost_version', 'content_key', 'credentials_present', 'site_settings', 'settings_read_at', 'disconnected_at']
-  const written = new Set(
-    [...before.matchAll(new RegExp(`^\\s+(${COLUMNS.join('|')}):`, 'gm'))].map((m) => m[1]),
-  )
-  assert.deepEqual([...written].sort(), [...COLUMNS].sort(), `${ACTIONS}: the connect writes a different set of sites columns before store() than the restore knows`)
-  for (const column of written) {
-    assert.match(compensation, new RegExp(`${column}: existing\\.${column}`),
-      `${ACTIONS}: a failed store on a RE-ADOPTED record must put \`${column}\` back`)
+/* ───────── DW-59, STORY 5.24b — CONNECT'S FAILURE BRANCHES, EXECUTED. They were pinned by reading the action's SOURCE
+   for the right words, which caught a column dropped from the restore and not the branches swapped. The sequence now
+   lives in `lib/connect-rule.ts` and runs here with a store that fails. */
+
+test('a store that fails undoes the row it just made: a kept record is put back, a new one deleted', async () => {
+  const kept = {
+    id: 'site',
+    url: 'https://ghost6.inflozo.com',
+    title: 'Old title',
+    favicon_url: null,
+    ghost_version: '6.1.0',
+    content_key: 'old',
+    credentials_present: { content: true, admin: false, staff: false },
+    site_settings: { public_url: 'https://ghost6.inflozo.com/', brand: { accent: '#ff5a1f' } },
+    settings_read_at: '2026-09-01T00:00:00Z',
+    disconnected_at: '2026-09-02T00:00:00Z',
   }
-  // And the undo's own failure is not silent: a row it could not remove says Connected with no key.
-  assert.match(compensation, /undo failed/, `${ACTIONS}: a compensating write that fails must be logged`)
+  const fails = () => Promise.reject(new Error('vault down'))
+  const journal = () => {
+    const done: string[] = []
+    let restored: unknown
+    return {
+      done,
+      restored: () => restored,
+      io: (store: () => Promise<unknown>) => ({
+        store,
+        restore: async (row: unknown) => {
+          done.push('restore')
+          restored = row
+        },
+        remove: async () => {
+          done.push('remove')
+        },
+      }),
+    }
+  }
+
+  // A RE-ADOPTED record (FR-C6): put back AS IT WAS — every KEPT column, and never deleted.
+  const a = journal()
+  const readopted = await storeOrUndo(kept, a.io(fails))
+  assert.equal(readopted.ok, false)
+  assert.deepEqual(a.done, ['restore'])
+  assert.deepEqual(a.restored(), Object.fromEntries(KEPT.map((column) => [column, kept[column]])))
+  assert.equal((readopted as { thrown: Error }).thrown.message, 'vault down', 'the thrown value comes back for the sentence')
+
+  // A row this connect made: deleted, and nothing restored.
+  const b = journal()
+  assert.equal((await storeOrUndo(undefined, b.io(fails))).ok, false)
+  assert.deepEqual(b.done, ['remove'])
+
+  // A store that lands undoes nothing.
+  const c = journal()
+  assert.deepEqual(await storeOrUndo(kept, c.io(() => Promise.resolve({ ref: 'x' }))), { ok: true })
+  assert.deepEqual(c.done, [])
+})
+
+test('every column connect writes before the store is one a failed store puts back', () => {
+  const { connection, cosmetic } = siteWrite({
+    url: 'https://ghost6.inflozo.com',
+    host: 'ghost6.inflozo.com',
+    version: '6.58.0',
+    contentKey: 'abc',
+    staff: true,
+  })
+  const written = cosmetic({ url: 'https://ghost6.inflozo.com/', title: 'Ghost 6', icon: 'https://x/i.png' }, { brand: 1 }, 'now')
+  // "AS IT WAS" MEANS EVERY COLUMN (review, 2026-09-08): a column added to either write without
+  // joining `KEPT` would come back from a failed store changed.
+  assert.deepEqual([...Object.keys(connection), ...Object.keys(written)].sort(), [...KEPT].sort())
+  // …and the read `connectSite` opens with is BUILT from the same list, so it holds every column the restore needs.
+  assert.deepEqual(CONNECT_READ.split(', '), ['id', 'url', ...KEPT])
+
+  // `admin` is false until `store()` flips it in the transaction that holds the key; `staff` carried forward.
+  assert.deepEqual(connection.credentials_present, { content: true, admin: false, staff: true })
+  assert.equal(connection.disconnected_at, null)
+  // The cosmetic write MERGES onto the row as it stands, and Ghost's answer is checked before it becomes a link.
+  assert.deepEqual(written.site_settings, { brand: 1, public_url: 'https://ghost6.inflozo.com/' })
+  const hostile = cosmetic({ url: 'javascript:alert(1)', title: '', icon: 'data:image/svg+xml,x' }, null, 'now')
+  assert.equal(hostile.title, 'ghost6.inflozo.com')
+  assert.equal(hostile.favicon_url, null)
+  assert.deepEqual(hostile.site_settings, { public_url: 'https://ghost6.inflozo.com' })
+  assert.equal(hostile.settings_read_at, 'now', 'stamped with the read it names')
+})
+
+test('the Sites list: an unread list is the banner, never the first-run drawing', () => {
+  // The dashboard's own scar one table across: a failed read is not an empty account.
+  assert.equal(sitesScreen({ unread: true, sites: 0, shown: 0 }), 'unread')
+  assert.equal(sitesScreen({ unread: true, sites: 3, shown: 3 }), 'unread')
+  assert.equal(sitesScreen({ unread: false, sites: 0, shown: 0 }), 'empty')
+  // A search that matched nothing is not the first-run screen either.
+  assert.equal(sitesScreen({ unread: false, sites: 2, shown: 0 }), 'noMatch')
+  assert.equal(sitesScreen({ unread: false, sites: 2, shown: 1 }), 'list')
+})
+
+/* ───────── DW-82, STORY 5.24b — THE ONE WAY TO /sites, AND IT KEEPS THE LIST'S SEARCH. */
+
+test('every address on the Sites list is built by sitesPath, and carries the search when there is one', () => {
+  assert.equal(sitesPath(), '/sites')
+  assert.equal(sitesPath(''), '/sites', 'an empty search is no search')
+  assert.equal(sitesPath('ghost5'), '/sites?q=ghost5')
+  assert.equal(sitesPath(undefined, { recheck: 'id' }), '/sites?recheck=id')
+  assert.equal(sitesPath('ghost5', { disconnect: 'id' }), '/sites?q=ghost5&disconnect=id')
+  // The two windows: the popup keeps the search it was opened over, and without one is what it always was.
+  assert.equal(keysPopupPath('id'), '/sites?manage=id')
+  assert.equal(keysPopupPath('id', 'ghost5'), '/sites?q=ghost5&manage=id')
+  // A search is TYPED, so it is encoded, and it comes back as it was typed.
+  const typed = 'orbit weekly & co?'
+  assert.equal(new URL(sitesPath(typed), 'https://x').searchParams.get('q'), typed)
+})
+
+/* ───────── DW-55, STORY 5.24b — R-219 WITH R-226's ORDER. */
+
+test('the path that was typed, with Ghost’s own admin, the query and the hash set aside', () => {
+  for (const typed of ['https://example.com/blog', 'https://example.com/blog/', 'example.com/blog', 'https://example.com/blog/ghost/#/site']) {
+    assert.equal(pathOf(typed), '/blog', typed)
+  }
+  for (const typed of ['https://example.com/', 'https://example.com', 'https://example.com/ghost', 'https://example.com/ghost/#/x', 'https://example.com/?ref=x', 'example.com', '']) {
+    assert.equal(pathOf(typed), '', typed)
+  }
+  // A page's address has a path too — it is judged at the root, not refused on sight (R-226).
+  assert.equal(pathOf('https://ghost5.inflozo.com/welcome/'), '/welcome')
+  // Only a WHOLE `ghost` segment is Ghost's admin.
+  assert.equal(pathOf('https://example.com/ghostwriter'), '/ghostwriter')
+  // `normaliseSiteUrl` is unchanged by any of it: every one of these is the same origin.
+  assert.equal(normaliseSiteUrl('https://example.com/blog/ghost/#/site'), 'https://example.com')
+})
+
+test('a typed path is refused only when no Ghost answers at the root', () => {
+  assert.equal(pathRefused('/blog', 404), true)
+  // A Ghost at the root carries on exactly as before — a page's address connects the site.
+  assert.equal(pathRefused('/welcome', 200), false)
+  // Any other answer carries on too, and is answered as it always was (a wrong key's 401, a 403).
+  for (const status of [401, 403, 429, 500, undefined]) assert.equal(pathRefused('/blog', status), false, String(status))
+  // No path, nothing to judge.
+  assert.equal(pathRefused('', 404), false)
+})
+
+/* ───────── DW-81, STORY 5.24b — ONE CREDENTIAL PER POST. */
+
+test('Manage keys takes one credential per post, and a post carrying two is refused whole', () => {
+  const form = (...fields: string[]) => {
+    const data = new FormData()
+    data.set('site_id', 'x')
+    data.set('popup', '1')
+    for (const field of fields) data.set(field, 'value')
+    return data
+  }
+  // Every single field passes — each credential row's own form.
+  for (const field of KEY_FIELDS) assert.equal(oneCredential(form(field)), true, field)
+  // A post with none is the empty check's (`emptyKeyCode`), not this one's.
+  assert.equal(oneCredential(form()), true)
+  // Any two, and all three, are refused.
+  for (const [x, y] of [['admin_key', 'content_key'], ['admin_key', 'staff_token'], ['content_key', 'staff_token']]) {
+    assert.equal(oneCredential(form(x, y)), false, `${x}+${y}`)
+  }
+  assert.equal(oneCredential(form(...KEY_FIELDS)), false)
+  // PRESENT counts, empty or not: an empty second field is still a second field.
+  const empty = form('admin_key')
+  empty.set('content_key', '')
+  assert.equal(oneCredential(empty), false)
 })
 
 /* The owner's findings 5 and 7 (2026-09-08): the Sites search, and the empty screen's own words. */

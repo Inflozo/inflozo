@@ -73,6 +73,9 @@ test('EVERYTHING ELSE IS UNDECIDED — never a badge, and never an email (FR-P2)
   for (const code of [
     'ghost_unreachable',
     'ghost_refused',
+    // DW-52, Story 5.24b: a busy or down Ghost (429, 5xx) has its own code now, and it is exactly the
+    // "briefly offline, rate-limited, or answering 500" this test is about — undecided, never a badge.
+    'ghost_unavailable',
     'ghost_bad_signature',
     'settings_unreadable',
     'credential_store_unavailable',

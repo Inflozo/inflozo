@@ -1,8 +1,11 @@
+import { lookup } from 'node:dns/promises'
+import { withTimeout } from '../../lib/with-timeout.ts'
 import {
   AdminError,
   type AllowlistItem,
   type AuditDetail,
   adminUrl,
+  blockedAddress,
   ghostCode,
   ghostError,
   headers,
@@ -60,6 +63,30 @@ export interface CallResult {
 }
 
 const TIMEOUT_MS = 15_000
+
+/**
+ * DW-58, STORY 5.24b — WHERE THE NAME POINTS, DECIDED BEFORE ANY REQUEST. A customer types the address and may own the
+ * DNS behind it, so a real-looking name can resolve to loopback, a private range or the cloud's metadata address, and
+ * the server would fetch it on the customer's word. Every answer is checked (`blockedAddress`), and one blocked answer
+ * refuses the call. It lives HERE, not in `normaliseSiteUrl`, because every Admin call passes through `fetchWithKey` —
+ * connect, Manage keys, Test connection, the probes and the daily check — and a `sites.url` can reach it without ever
+ * passing the wizard's shape check.
+ * ponytail: `fetch` resolves the name AGAIN, so a record that answers public here and private a moment later (DNS
+ * rebinding) still gets through; the upgrade is `https.request({ lookup })` pinned to the address checked here.
+ * A resolver that does not answer inside `TIMEOUT_MS` is `unresolved` — the same "your Ghost did not answer" as a fetch
+ * that fails, one sentence for both.
+ */
+async function whereTo(url: string): Promise<'public' | 'blocked' | 'unresolved'> {
+  // `URL` keeps an IPv6 literal's brackets in `hostname`; the resolver wants the address alone.
+  const host = new URL(url).hostname.replace(/^\[|\]$/g, '')
+  try {
+    const answers = await withTimeout(lookup(host, { all: true }), TIMEOUT_MS)
+    if (!answers?.length) return 'unresolved'
+    return answers.some((answer) => blockedAddress(answer.address)) ? 'blocked' : 'public'
+  } catch {
+    return 'unresolved'
+  }
+}
 
 /**
  * ANY FAILURE OF THE STORE IS ONE CODE, and it is never a 200. A refused pooler connection, a
@@ -189,9 +216,15 @@ export async function store(args: {
 }
 
 /**
- * A KEY COMES OUT. The ref is nulled and the trigger deletes the secret behind it; the rotation
+ * KEYS COME OUT. Each ref is nulled and the trigger deletes the secret behind it; the rotation
  * stamp records WHEN. The row itself survives — FR-C6, the connection record outlives its
  * credentials.
+ *
+ * EVERY KIND NAMED COMES OUT IN ONE TRANSACTION (DW-77, Story 5.24b). Disconnect removes both kinds,
+ * and it used to be two calls with a `begin()` each: a store that stopped answering between them
+ * left a site that read **Connected** while the Admin key it needed was already gone. Now one
+ * `begin()` is around the loop, so either every named kind comes out or none does, and pressing
+ * again finishes nothing half-done. `server-wiring.test.ts` holds the `begin()` outside the loop.
  *
  * NOTHING RENDERS THAT STAMP YET, and two comments in this file used to say Story 3.6's Manage
  * keys draws it as "Key removed 15 Aug". It does not: the screen states present or absent and
@@ -207,54 +240,56 @@ export async function store(args: {
  *
  * AND `${column.rotated}` IS STAMPED ONLY WHEN A KEY ACTUALLY CAME OUT. The update matches on the
  * row, not on the kind, so without `is not null` removing a kind that was never stored stamped a
- * removal date for a credential that never existed. With it, such a call matches no row and is
+ * removal date for a credential that never existed. With it, such a kind matches no row and is
  * the no-op two comments already claimed it was (review, 2026-09-09) — and it is also what makes
  * DW-76's audit row conditional, one screen down.
  */
 export async function remove(args: {
   siteId: string
   userId: string
-  kind: CredentialKind
+  kinds: readonly CredentialKind[]
   route: string
 }): Promise<void> {
-  const column = COLUMNS[args.kind]
   await withStore(args.route, async () => {
     await sql().begin(async (tx) => {
-      const dropped = await tx`
-        update private.site_credentials
-           set ${tx(column.ref)} = null, ${tx(column.rotated)} = now()
-         where site_id = ${args.siteId} and user_id = ${args.userId}
-           and ${tx(column.ref)} is not null
-        returning site_id
-      `
-      await tx`
-        update public.sites
-           set credentials_present = credentials_present || jsonb_build_object(${args.kind}::text, false)
-         where id = ${args.siteId} and user_id = ${args.userId}
-      `
-      // DW-76's OTHER HALF, and the one the owner ruled into this story: a key coming out leaves a
-      // line too. INSIDE the transaction, so a removal that rolled back claims nothing.
-      //
-      // AND ONLY WHEN ONE ACTUALLY CAME OUT. The update above matches on a ref that is NOT NULL --
-      // the guard the review of 2026-09-09 added, because removing a kind that was never stored
-      // stamped a removal date for a credential that never existed. An audit row is the same
-      // mistake one layer up and worse: `disconnectSite` removes BOTH kinds on every press and
-      // most sites hold no staff token (only Manage keys' own Add token stores one, and Epic 7
-      // asks for it at first deploy), so an unconditional row would write a false "the staff
-      // credential came out" line into the one record that exists to be trusted, on every
-      // disconnect, for ever. That is DW-76's own argument against `vault_decrypt`, one table over.
-      if (dropped.count > 0) {
-        await audit(
-          {
-            action: 'credential_change',
-            userId: args.userId,
-            siteId: args.siteId,
-            route: args.route,
-            outcome: 'ok',
-            detail: { kind: args.kind, direction: 'out' },
-          },
-          tx,
-        )
+      for (const kind of args.kinds) {
+        const column = COLUMNS[kind]
+        const dropped = await tx`
+          update private.site_credentials
+             set ${tx(column.ref)} = null, ${tx(column.rotated)} = now()
+           where site_id = ${args.siteId} and user_id = ${args.userId}
+             and ${tx(column.ref)} is not null
+          returning site_id
+        `
+        await tx`
+          update public.sites
+             set credentials_present = credentials_present || jsonb_build_object(${kind}::text, false)
+           where id = ${args.siteId} and user_id = ${args.userId}
+        `
+        // DW-76's OTHER HALF, and the one the owner ruled into Story 3.6: a key coming out leaves a
+        // line too. INSIDE the transaction, so a removal that rolled back claims nothing.
+        //
+        // AND ONLY WHEN ONE ACTUALLY CAME OUT. The update above matches on a ref that is NOT NULL --
+        // the guard the review of 2026-09-09 added, because removing a kind that was never stored
+        // stamped a removal date for a credential that never existed. An audit row is the same
+        // mistake one layer up and worse: `disconnectSite` names BOTH kinds on every press and
+        // most sites hold no staff token (only Manage keys' own Add token stores one, and Epic 7
+        // asks for it at first deploy), so an unconditional row would write a false "the staff
+        // credential came out" line into the one record that exists to be trusted, on every
+        // disconnect, for ever. That is DW-76's own argument against `vault_decrypt`, one table over.
+        if (dropped.count > 0) {
+          await audit(
+            {
+              action: 'credential_change',
+              userId: args.userId,
+              siteId: args.siteId,
+              route: args.route,
+              outcome: 'ok',
+              detail: { kind, direction: 'out' },
+            },
+            tx,
+          )
+        }
       }
     })
   })
@@ -377,6 +412,28 @@ export async function fetchWithKey(args: {
   let status = 0
   let body: unknown
   let text = ''
+
+  // DW-58: A BLOCKED ADDRESS IS REFUSED BEFORE ANY REQUEST, and it says so in the one record kept to
+  // be trusted — `detail.blocked` — while the customer hears the same sentence as a Ghost that did
+  // not answer: nothing about the network behind Inflozo is disclosed by the refusal.
+  const where = await whereTo(url)
+  if (where !== 'public') {
+    if (where === 'blocked') console.error('ghost-admin: ghost address refused', { code: 'address_blocked' })
+    else console.error('ghost-admin: ghost unreachable', { code: 'address_unresolved' })
+    await withStore(args.route, () =>
+      audit({
+        ...common,
+        action,
+        outcome: 'error',
+        detail: { ms: Date.now() - started, ...(where === 'blocked' ? { blocked: true as const } : {}) },
+      }),
+    )
+    throw new AdminError({
+      code: 'ghost_unreachable',
+      message: 'Your Ghost site did not answer.',
+      action: 'Check the site is online and try again.',
+    })
+  }
 
   try {
     const response = await fetch(url, {

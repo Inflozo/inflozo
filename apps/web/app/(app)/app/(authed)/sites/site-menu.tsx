@@ -6,9 +6,9 @@ import { closeOnBackdrop, openOnCancel, sheet } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Key, LinkOff, Refresh, Swatch } from '@/components/kit/icons'
 import { useSubmitting } from '@/components/kit/submit'
-import { DISCONNECT, HEALTH, KEYS, keysPath, keysPopupPath } from '@/lib/connect-rule'
+import { brandPopupPath, DISCONNECT, HEALTH, KEYS, keysPath, keysPopupPath } from '@/lib/connect-rule'
 import { arrowKeys, item as row, openMenu } from '@/lib/menu'
-import { BRAND_COPY, brandPath, brandPopupPath } from '@/lib/probe-rule'
+import { BRAND_COPY, brandPath } from '@/lib/probe-rule'
 import { recheckConnection } from './actions'
 import { DisconnectConfirm } from './disconnect-confirm'
 import { PanelLink } from './panel-link'
@@ -23,7 +23,8 @@ import { PanelLink } from './panel-link'
    S3c's 160, and the broken-link glyph the frame draws on its Disconnect row (`:82`), which is the
    Kit's `LinkOff`.
 
-   STORY 3.7 FILLED IT, AND OBEYED DW-57: IT ADDED INTO THIS MENU RATHER THAN BUILDING A SECOND
+   STORY 3.7 FILLED IT, AND OBEYED DW-57 (the rule at the top of `(list)/page.tsx`: the ⋯ is the
+   one place the card's actions live): IT ADDED INTO THIS MENU RATHER THAN BUILDING A SECOND
    ONE. The frame draws four rows — Re-check connection, Reconnect, Manage API keys, Disconnect;
    3.5 built the last, 3.6 the third, and 3.7 adds **Re-check connection** (the frame's own first
    row, `:78`, with the frame's own refresh glyph) and **Use this site's brand**, which is the

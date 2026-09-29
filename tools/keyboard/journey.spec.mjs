@@ -4271,3 +4271,15 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     await expect.poll(hostOfSelected, 'Sticky moves it back to the fixed layer').toBe('view')
   })
 })
+
+// ── Story 5.24b (DW-91): the app's error page, on a screen ─────────────────────────────────────────────────────────
+
+test('Story 5.24b (DW-91) — the app\'s error page names its tab "Something went wrong · Inflozo", over its own heading', async ({ page }) => {
+  // `/app/harness/error` throws on purpose and exists only under INFLOZO_HARNESS=1 (R-146), so what draws is
+  // `app/(app)/app/error.tsx`, the boundary for the whole `/app` segment. The boundary REPLACES the document and no
+  // `metadata` export runs for it, so the tab's words are the boundary's own effect: delete that line and this is red
+  // (executed at 5.24b's Dev). Story 3.9 fixed the title and checked it once, by hand, on a build nobody starts.
+  await page.goto('/app/harness/error')
+  await expect(page.getByRole('heading', { level: 1, name: 'We couldn’t show that just now.' })).toBeVisible()
+  await expect(page).toHaveTitle('Something went wrong · Inflozo')
+})

@@ -2,13 +2,16 @@
  * THE SIGN-OUT URL CONTRACT, both halves, in one module: the keys `signOut` puts on the URL and
  * the pages that read them. Shared so a rename on either side fails `tsc` rather than silently
  * losing a sentence the owner asked for (his third test, finding 2; his ruling at question 8).
- * A plain module: the `'use server'` file may export only async functions.
+ * A plain module: the `'use server'` file may export only async functions — and it imports no
+ * Next, so `node --test` loads it, which is why `signOutFailed` below lives here too (DW-41).
  *
  * THE KEY WAS SHARED AND THE VALUE WAS NOT: `?signed-out=1` was written here and compared to a
  * literal `'1'` on the page, so changing one to `=true` left `tsc` and every test green and the
  * owner's sentence gone (review, 2026-09-06). Both halves therefore export a VALUE and a READER,
  * and `signed-out.test.ts` walks each real round trip.
  */
+import type { SupabaseClient } from '@supabase/supabase-js'
+
 export const SIGNED_OUT = 'signed-out'
 export const SIGNED_OUT_VALUE = '1'
 export const SIGNED_OUT_PATH = `/sign-in?${SIGNED_OUT}=${SIGNED_OUT_VALUE}`
@@ -62,3 +65,42 @@ export const isSignOutFailed = (value: string | string[] | undefined) =>
  * is therefore `/app`.
  */
 export const signOutPathFor = (failed: boolean) => (failed ? SIGN_OUT_FAILED_PATH : SIGNED_OUT_PATH)
+
+/**
+ * WHETHER A SIGN-OUT FAILED, DECIDED BY THE SESSION IT LEFT ON THIS DEVICE — never by whether
+ * `/logout` answered an error (DW-41, Story 5.24b). Both actions call it: the avatar menu's Sign out
+ * with `['local']`, Sign out everywhere with `['others', 'local']`.
+ *
+ * WHAT THE INSTALLED CLIENT DOES, which is why the error alone cannot decide it. `@supabase/auth-js`
+ * 2.115.0's `_signOut` (`GoTrueClient.js:3415-3445`):
+ * - `/logout` failing with anything but a 401, 403 or 404 REMOVES this device's session before it
+ *   returns the error, for every scope but `others` (`:3431-3437`): `@supabase/ssr` deletes the
+ *   cookie through `setAll`. So the error said "still signed in" while the device was signed out,
+ *   and the dashboard's guard bounced the user to `/sign-in` with nothing said.
+ * - `others` never touches this device's session (`:3434`, `:3441`).
+ * - An EXPIRED access token whose refresh fails returns that error before any `/logout` at all
+ *   (`:3421-3423`). A 500-504, a 520-530 or no answer at all is retryable (`lib/fetch.js:29-54`,
+ *   `:125-131`), a retryable refresh failure keeps the session (`:4281-4300`), and `getSession()`
+ *   then answers the refresh's error instead of a session (`:2561-2582`) while the cookie stays.
+ *   That device is still signed in.
+ * `sign-out-landing.test.ts` executes each path against a local server.
+ *
+ * So the calls are made in order and the first failure stops them. A failure before the last call
+ * is a failure whatever is left, because the calls after it were never made. That is why `others`
+ * goes first: its failure leaves this device signed in, so "try again" is true. After the last
+ * call, `getSession()` decides: a session, or an error loading the one still stored, means still
+ * signed in.
+ */
+export async function signOutFailed(
+  client: Pick<SupabaseClient, 'auth'>,
+  scopes: readonly ('others' | 'local')[],
+): Promise<boolean> {
+  for (const [index, scope] of scopes.entries()) {
+    const { error } = await client.auth.signOut({ scope })
+    if (!error) continue
+    console.error('sign-out: failed', { scope, status: error.status, code: error.code })
+    if (index < scopes.length - 1) return true
+  }
+  const { data, error } = await client.auth.getSession()
+  return Boolean(data.session || error)
+}

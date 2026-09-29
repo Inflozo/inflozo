@@ -1,5 +1,6 @@
+import { cache } from 'react'
 import { notFound, redirect } from 'next/navigation'
-import { hostOf } from '@/lib/connect-rule'
+import { hostOf, sitesPath } from '@/lib/connect-rule'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap } from '@/lib/plan'
 import { BRAND_COPY, brandTarget, hasBrand, imageUrl, isAccent, navOf } from '@/lib/probe-rule'
@@ -21,6 +22,8 @@ export type BrandSearchParams = {
   /** THE POPUP'S — `/sites?brand=…`, a parameter on the Sites list (`brandPopupPath`). */
   brand?: string | string[]
   failed?: string | string[]
+  /** THE LIST'S OWN SEARCH, when this is the window over it (DW-82): every way out lands back on it. */
+  q?: string | string[]
 }
 
 type Row = {
@@ -31,6 +34,23 @@ type Row = {
 }
 
 /**
+ * THE SITE THE OFFER IS ABOUT, READ ONCE PER REQUEST (DW-67, Story 5.24b). `brand/layout.tsx` asks it ABOVE the route's
+ * skeleton, so a site with nothing to offer is a real `404` rather than a not-found page streamed after a `200`; this
+ * screen asks it again below, and `cache()` makes the two one query — `projectOf` in the editor's `read.ts` is the
+ * precedent. THE CALLER'S OWN SESSION: a stranger's id, a malformed one and a disconnected record all read no row
+ * through RLS, which is the point. The error is handed back, never thrown here — each reader decides what a failed read
+ * means for it.
+ */
+export const brandSiteOf = cache(async (siteId: string) =>
+  (await supabaseServer())
+    .from('sites')
+    .select('id, title, url, site_settings')
+    .eq('id', siteId)
+    .is('disconnected_at', null)
+    .maybeSingle<Row>(),
+)
+
+/**
  * `app/error.tsx` is the screen for a page that cannot answer, and this is how it gets there.
  *
  * NOT `throw postgrestError`: it is a plain object rather than an `Error`, and it carries `details`
@@ -38,7 +58,7 @@ type Row = {
  * digest, against the epic's "never log" rule, which is about content and not only credentials.
  * Every other reader in this epic logs `{ code }` and nothing else (review 4, 2026-09-09).
  */
-function readFailed(what: string, code: string | undefined, popup: boolean): never {
+function readFailed(what: string, code: string | undefined, popup: boolean, back: string): never {
   console.error('sites/brand: read failed', { what, code })
   // IN THE WINDOW THE THROW WOULD COST THE LIST: the popup sits inside the Sites page's own
   // `<Suspense>` with no error boundary between it and `app/error.tsx`, so a transient read
@@ -46,7 +66,7 @@ function readFailed(what: string, code: string | undefined, popup: boolean): nev
   // The window closes instead and the offer is still on the card to press again — the same line
   // `gone()` below takes, and for the same cost (review 7, 2026-09-10). The full page keeps the
   // error screen, where a retry is the right answer and nothing else is on it.
-  if (popup) redirect('/sites')
+  if (popup) redirect(back)
   throw new Error(`sites/brand: ${what} read failed`)
 }
 
@@ -61,18 +81,20 @@ export async function BrandScreen({
 }) {
   // A repeated key (`?site=a&site=b`) arrives as an ARRAY; every other page in this epic takes
   // the first, and so does this one.
-  const [{ site, brand: fromList, failed }, user] = await Promise.all([searchParams, currentUser()])
+  const [{ site, brand: fromList, failed, q }, user] = await Promise.all([searchParams, currentUser()])
   // The layout's guard has already redirected anyone without one; this is the type narrowing.
   if (!user) return null
   const named = popup ? fromList : site
   const siteId = Array.isArray(named) ? named[0] : named
+  /* WHERE EVERY WAY OUT OF THE WINDOW LANDS: the list, with its own search kept (DW-82). */
+  const back = sitesPath(popup ? (Array.isArray(q) ? q[0] : q) : undefined)
   /** `keys-screen.tsx` carries the argument: in the window this is rendered by the SITES LIST, and
       a `notFound()` there costs the customer the list itself. Both answers disclose the same. */
   /* A `function` DECLARATION AND NOT A `const` ARROW, which is `keysRedirect`'s own lesson one
      file over: TypeScript only lets a never-returning CALL end a code path when the callee is
      declared that way, so the arrow form left every read below "possibly null". */
   function gone(): never {
-    if (popup) redirect('/sites')
+    if (popup) redirect(back)
     notFound()
   }
   if (!siteId) gone()
@@ -81,13 +103,9 @@ export async function BrandScreen({
   const [{ data: row, error: rowError }, { data: projects, error: projectsError }, { plan }] = await Promise.all([
     // THE CALLER'S OWN SESSION. A `?site=` naming a stranger's row returns no row through RLS —
     // and a malformed id returns none either, because PostgREST refuses the filter. Both are the
-    // same 404, which is the point. A DISCONNECTED record is not a site (FR-C6).
-    supabase
-      .from('sites')
-      .select('id, title, url, site_settings')
-      .eq('id', siteId)
-      .is('disconnected_at', null)
-      .maybeSingle<Row>(),
+    // same 404, which is the point. A DISCONNECTED record is not a site (FR-C6). The same cached
+    // read `brand/layout.tsx` made above the skeleton (DW-67), so it is one query per request.
+    brandSiteOf(siteId),
     // `updated_at desc` is the dashboard's own order, so "the project you most recently worked
     // on" means the same thing on both screens — and `id` breaks the tie, because two projects
     // saved in the same millisecond let this page and `useBrand` name different rows and the
@@ -116,14 +134,14 @@ export async function BrandScreen({
   // simply names nothing. There is no row it could be, which is what `notFound()` says
   // (review, 2026-09-09).
   if (rowError?.code === '22P02') gone()
-  if (rowError) readFailed('site', rowError.code, popup)
+  if (rowError) readFailed('site', rowError.code, popup, back)
   if (!row || !hasBrand(brand)) gone()
 
   // A COUNT THAT COULD NOT BE READ IS NOT A COUNT OF ZERO. Falling back to `[]` printed "we'll
   // make a project" and then `useBrand` — whose own read succeeded — refused the stale decision
   // and sent the customer straight back here (review, 2026-09-08). `app/error.tsx` is the screen
   // for a page that cannot answer.
-  if (projectsError) readFailed('projects', projectsError.code, popup)
+  if (projectsError) readFailed('projects', projectsError.code, popup, back)
   const rows = projects ?? []
   // THE PROJECT FOR THIS SITE WINS ON BOTH SIDES OF THE CAP (the owner's Question 4 ruling,
   // 2026-09-08); only where this site has no project do the two sides differ — at the cap the
@@ -186,6 +204,7 @@ export async function BrandScreen({
       targetId={target?.id ?? null}
       choosing={choosing}
       popup={popup}
+      back={back}
     />
   )
 }

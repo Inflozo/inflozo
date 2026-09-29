@@ -1,16 +1,30 @@
 #!/usr/bin/env python3
 """Verify every credential actually works. Prints VERDICTS ONLY — never a value.
 
-    python3 tools/probe/check-access.py
+    python3 tools/probe/check-access.py                # every check — and Resend's sends one real email
+    python3 tools/probe/check-access.py --self-check   # the GitHub verdict, both ways: no network, no email
 
 Written after two credential leaks in one session, both caused by masking with a
 blacklist of known prefixes. This file has no print path that can reach a secret:
 values are read, used, and only booleans and server responses come back out.
+
+It exits 1 when any line is a FAIL (a `warn` is not one), so a script can act on it.
+
+THE GITHUB TOKEN ANNOUNCES ITS OWN EXPIRY (DW-90, Story 5.24b). GitHub stamps its answers to a
+fine-grained token with `github-authentication-token-expiration`, so the line reads the date off
+`GET /rate_limit` — a call that spends none of the token's rate — and the register's date
+(VERIFY-AT-BUILD.md, "The read-only GitHub token expires") becomes the second copy, not the
+first. `warn` inside 30 days; FAIL when GitHub answers anything but 200 or sends no date: an
+expired token answers 401 exactly as a wrong one does, and a missing date is a check that did
+not run (standing rule 2). The verdict is `github_verdict()`, pure, and `--self-check` holds it.
 """
-import os, re, sys, json, subprocess, urllib.request, urllib.error
+import argparse, os, re, sys, json, subprocess, urllib.request, urllib.error
+from datetime import datetime, timezone
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-OK, BAD, SKIP = '  ok  ', ' FAIL ', ' skip '
+OK, BAD, SKIP, WARN = '  ok  ', ' FAIL ', ' skip ', ' warn '
+WARN_DAYS = 30
+FAILED = []   # every FAIL line's label, filled by say(), so main() can exit 1 on any of them
 
 
 def env():
@@ -30,6 +44,8 @@ def say(tag, label, detail=''):
     if tag == OK and re.search(r'\bHTTP 0\b', detail):
         tag = BAD
         detail += '  <- request never reached the server; this check did NOT run'
+    if tag == BAD:
+        FAILED.append(label)
     print(f'[{tag}] {label:<46} {detail}')
 
 
@@ -41,27 +57,70 @@ def psql(url, sql):
     return r.returncode == 0, (r.stdout or r.stderr).strip().splitlines()[:1]
 
 
-def http(url, headers=None, method='GET', data=None, timeout=30):
+def http(url, headers=None, method='GET', data=None, timeout=30, with_headers=False):
     # Resend sits behind Cloudflare bot protection that rejects urllib's default
     # User-Agent with 403 / "error code: 1010". Any real UA passes. Set one
     # everywhere so a transport quirk is never mistaken for an auth failure.
+    # `with_headers` adds the answer's headers as a third value (DW-90 reads one).
     headers = dict(headers or {})
     headers.setdefault('User-Agent', 'inflozo-probe/1.0')
     req = urllib.request.Request(url, data=data, method=method, headers=headers)
     try:
         with urllib.request.urlopen(req, timeout=timeout) as r:
-            body = r.read()
-            try: return r.status, json.loads(body)
-            except Exception: return r.status, body[:300].decode('utf8', 'replace')
+            st, raw, got = r.status, r.read(), r.headers
     except urllib.error.HTTPError as e:
-        body = e.read(2000)
-        try: return e.code, json.loads(body)
-        except Exception: return e.code, body[:300].decode('utf8', 'replace')
+        st, raw, got = e.code, e.read(2000), e.headers
     except Exception as e:
-        return 0, f'{type(e).__name__}: {e}'
+        st, raw, got = 0, f'{type(e).__name__}: {e}'.encode(), {}
+    try: body = json.loads(raw)
+    except Exception: body = raw[:300].decode('utf8', 'replace')
+    return (st, body, got) if with_headers else (st, body)
+
+
+def github_verdict(status, expiry, now):
+    """The GitHub line from what GitHub answered and nothing else: `expiry` is the
+    `github-authentication-token-expiration` header's raw value or None, `now` an aware UTC time.
+    Pure, so `--self-check` holds every branch with no network."""
+    if status != 200:
+        return BAD, f'HTTP {status} — refused or unanswered; an expired token answers 401 like a wrong one'
+    if not expiry:
+        return BAD, 'HTTP 200 and no github-authentication-token-expiration header — the expiry was not read'
+    try:
+        # `2027-09-05 16:19:00 UTC`, as GitHub sent it at 5.24b's Create; a numeric offset reads too
+        when = datetime.strptime(expiry.replace('UTC', '+0000'), '%Y-%m-%d %H:%M:%S %z')
+    except ValueError:
+        return BAD, f'HTTP 200 and an expiry that does not parse: {expiry!r}'
+    days = (when - now).days
+    return (WARN if days <= WARN_DAYS else OK), f'HTTP 200 — expires {when:%Y-%m-%d}, in {days} day(s)'
+
+
+def self_check():
+    """Every branch of `github_verdict()` both ways, on fixed inputs: no network, no key, no email."""
+    now = datetime(2027, 8, 1, tzinfo=timezone.utc)
+    cases = [
+        (200, '2027-09-05 16:19:00 UTC', OK),       # the Create's own header, 35 days out
+        (200, '2027-09-01 00:00:00 UTC', OK),       # 31 days: the first day that is no warning
+        (200, '2027-08-31 23:59:59 UTC', WARN),     # 30 days and change: inside the window
+        (200, '2027-08-02 00:00:00 +0000', WARN),   # a numeric offset parses
+        (401, '2027-09-05 16:19:00 UTC', BAD),      # refused, whatever date it carries
+        (0, None, BAD),                             # never reached GitHub
+        (200, None, BAD),                           # no date: a check that did not run
+        (200, 'soon', BAD),                         # a date that does not parse
+    ]
+    for status, expiry, want in cases:
+        got, detail = github_verdict(status, expiry, now)
+        assert got == want, f'github_verdict({status}, {expiry!r}) is {got!r}, not {want!r}: {detail}'
+    assert '2027-09-05' in github_verdict(200, cases[0][1], now)[1], 'the ok line does not carry the date'
+    print(f'self-check: all {len(cases)} verdicts held — no network, no email')
 
 
 def main():
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument('--self-check', action='store_true',
+                    help='assert the GitHub verdict both ways, with no network and no email')
+    if ap.parse_args().self_check:
+        self_check()
+        return 0
     e = env()
     print('=' * 74)
     print('ACCESS CHECK — verdicts only, no values are printed')
@@ -117,6 +176,15 @@ def main():
         else:
             say(BAD, 'Vercel projects', f'HTTP {st}')
 
+    # ---------------------------------------------------------------- GitHub (DW-90, the docstring)
+    gt = e.get('GITHUB_TOKEN')
+    if gt:
+        st, _, got = http('https://api.github.com/rate_limit', {'Authorization': f'Bearer {gt}'}, with_headers=True)
+        tag, detail = github_verdict(st, got.get('github-authentication-token-expiration'), datetime.now(timezone.utc))
+        say(tag, 'GitHub token -> /rate_limit, and its expiry', detail)
+    else:
+        say(SKIP, 'GitHub token', 'GITHUB_TOKEN unset — CI runs cannot be read')
+
     # ---------------------------------------------------------------- Resend
     rk = e.get('RESEND_API_KEY')
     if rk:
@@ -162,7 +230,8 @@ def main():
         say(OK if st == 200 else BAD, f'Ghost {M} content API', f'HTTP {st}')
 
     print('=' * 74)
+    return 1 if FAILED else 0
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

@@ -139,6 +139,23 @@ export function filterProjects<T extends { name: string }>(
 }
 
 /**
+ * THE PROJECTS GRID'S ANSWER TO A SEARCH THAT FOUND NOTHING, beside the filter that decides it — `SITES_EMPTY.noMatch` in
+ * `connect-rule.ts` is its twin on Sites. It moved here from the page (DW-27, Story 5.24b) so the deployed-site harness
+ * reads the app's own sentence rather than retyping it.
+ */
+export const noProjectsMatch = (query: string) => `No projects match “${query}”.`
+
+/**
+ * DW-27, STORY 5.24b — THE ONE WORD FOR EMPTYING A SEARCH, and it is the app's own: the icon picker has said "Clear
+ * search" since Story 5.10. Both no-match lines now end with it as a link to the page without `?q=`, because the field
+ * draws no × (S3's frame draws none, and the native one is hidden on purpose) and on a computer the only other way back
+ * was to select the text, delete it and press Enter. No frame draws a no-match state; P0's rule is the nearest — "a
+ * sentence … + clear-search link, never a bare empty grid" (`P0 Editor Primitives - Spec.md:236`, `P0-2 Icon Slot and
+ * Picker.dc.html:137`) — so the lines are extrapolated from it (R-74). One name for one act wherever it is shown (R-170).
+ */
+export const CLEAR_SEARCH = 'Clear search'
+
+/**
  * D4d's format: "Updated today", "Updated Aug 19", and the year when it is not this one.
  *
  * ponytail: server UTC; the viewer's zone if "today" ever reads wrong at midnight.

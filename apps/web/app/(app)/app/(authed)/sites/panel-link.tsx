@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useTransition, type MouseEvent, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { sitesPath } from '@/lib/connect-rule'
 
 /* ────────────────────────────── THE ONE CONTROL THAT OPENS A PANEL OVER THE SITES LIST — S11a's
    ⋯ "Manage API keys" and the card's "Use this site's brand" offer, which used to be two
@@ -35,7 +36,13 @@ import { useRouter } from 'next/navigation'
    one centred grid cell so a BUTTON cannot change width mid-press (the owner's ask of 2026-09-10),
    and both of this control's callers are left-aligned rows whose width is set by something else —
    the ⋯ menu is 196px by the frame (`S11 Sites.dc.html:77`) and the card's offer is a block in a
-   grid column. Centring their text to protect a width nothing can change would be the shift. */
+   grid column. Centring their text to protect a width nothing can change would be the shift.
+
+   AND IT KEEPS THE LIST'S SEARCH (DW-82, Story 5.24b). `panel` is built on the server with no
+   search in it — the card does not know what the field says — so the window's address is re-made
+   HERE, by `sitesPath`, from the panel's own parameters and the `?q=` the list is showing now.
+   Opening Manage keys over `/sites?q=ghost5` opens `/sites?q=ghost5&manage=…`, and every way out
+   of it lands back on the filtered list. */
 
 export function PanelLink({
   href,
@@ -57,6 +64,7 @@ export function PanelLink({
   children: ReactNode
 }) {
   const router = useRouter()
+  const listed = useSearchParams().get('q')
   const [pending, start] = useTransition()
   /** Set on the press, so `onOpened` fires for a navigation this control started and no other. */
   const opening = useRef(false)
@@ -85,7 +93,8 @@ export function PanelLink({
         // flight this does nothing, so there is no second navigation to land in the wrong place.
         if (pending) return
         opening.current = true
-        start(() => router.push(panel))
+        const opened = new URL(panel, 'https://inflozo.invalid')
+        start(() => router.push(sitesPath(listed, Object.fromEntries(opened.searchParams))))
       }}
       className={className}
     >

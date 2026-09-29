@@ -405,7 +405,14 @@ reason: `createServerClient(url, key, { cookieOptions: { maxAge } })` reads like
 plain: One session setting we asked Supabase for needs their paid plan, so it was not applied. Nothing
   about the thirty-day sign-in depends on it — it is only worth revisiting if a later story wants
   sessions to expire after a period of doing nothing, and that would be a decision about money.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — `configure-supabase-auth.py` no longer writes, reads or reports
+  `sessions_inactivity_timeout`: the `SOFT` row, its 402 retry, its `--expect` branch and its `----` report line are
+  gone, and one comment under `settings()` says why — a paid-plan field FR-A6's thirty rolling days never needed, and
+  a SHORTER idle timeout would be a new decision about money, the owner's. Control against the live Management API
+  (read-only): `--check --expect sessions_inactivity_timeout=720` exited 0 at HEAD and exits 1 after ("not a field
+  this tool sets"); `--check` exits 0 with no `----` line; the existing `--expect mailer_otp_exp=901` control still
+  exits 1. Re-run on the merged tree the same day: the same three answers.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -720,7 +727,13 @@ reason: `uniqueSlug` reads the taken slugs and then inserts, which is a read-the
 plain: When you open the dashboard fresh, there is a moment where the page is blank instead of showing
   the grey outline of the cards. The outline only appears when you move around inside the app, not on
   the first load. Cosmetic, and only on a slow connection.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — the rule written where it governs, as the triage ruled.
+  `(dashboard)/loading.tsx`'s header now says what is true: the skeleton covers a SOFT navigation; on a cold load
+  nothing is sent until the guards above it answer (`(authed)/layout.tsx`'s `currentUser()`, profile read and
+  `resolveEntitlement`, and First Run's counts in `(dashboard)/layout.tsx`), and that is the rule rather than a gap,
+  because a redirect decided above the first flush is a real `307` and one decided below it streams as a `200` (R-98's
+  second effect, measured at Story 3.8). Nothing about the shell's render shape changed.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -771,6 +784,15 @@ reason: The native cancel button is hidden deliberately — S3's frame draws no 
   and Enter on an empty field clears it. Adding a × would depart from the frame (R-74), and a "Clear
   search" link in the no-match line is a copy decision, which makes it the owner's rather than a
   reviewer's. Worth raising with him when a later story touches the dashboard's empty states.
+amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the run on the deployed site is Review's. Both no-match
+  lines end with a **Clear search** link to the page without `q` — `noProjectsMatch` (moved into `lib/projects.ts`
+  beside `filterProjects`) and `SITES_EMPTY.noMatch`, in the icon picker's link classes — and `CLEAR_SEARCH` is the
+  one word, the icon picker's included (R-170). The field keeps no ×. Extrapolated from P0's no-match rule (`P0 Editor
+  Primitives - Spec.md:236`, R-74). The control is `run-verify-dashboard.py`'s new `clear-search` step (both lines
+  clicked through, the card back, the field empty) with axe at 1440, 834 and 390; it closes when that run passes on
+  the deployed site. Run against HEAD's deployment first (2026-09-29): `clear-search` FAILED as it should — no link on
+  either page (`href: null`, the box still `zzzz`, the card not back) — with every other step green, the axe runs over
+  both no-match lines included, users 13 → 13.
 
 ### DW-28: `duplicateProject`'s column list is hand-maintained against the schema
 
@@ -798,7 +820,14 @@ reason: The select list is spread straight into the insert, so a column added by
 
 plain: If the billing lookup fails, the app is meant to treat you as being on the Free plan rather than
   guessing. That rule is one character of code and nothing checks it.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — `readEntitlement(client, userId)` in `lib/plan.ts` (`import type` only)
+  now makes the entitlements read and its one log line, and `resolveEntitlement` calls it with the user-scoped client.
+  `plan.test.ts` runs it through a real `createClient` (supabase-js 2.115.0) against a local server: a 500 gives Free
+  and exactly one `entitlement: read failed {code}` line with no user id, the request reaching
+  `/rest/v1/entitlements?select=state&user_id=eq.<id>`; `[{ state: 'pro_active' }]` gives Pro, the control. Seen red
+  with the read made to throw on an error and with the `?.` removed, green after. No fake client: the shipped library
+  builds, sends and parses the query.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -910,6 +939,16 @@ partly closed: Story 2.2 Dev (2026-09-07). **(3) is CLOSED**: `tools/probe/run-v
   Deploy list. (2) — the named-AAGUID path — needs a REAL `getAuthenticatorData()` buffer as a fixture,
   because a virtual authenticator reports the all-zero AAGUID and can only ever prove the `Passkey`
   fallback; the harness RECORDS the name the row is born with, which is that fallback, and says so.
+amended: Story 5.24b's Dev (2026-09-29) — (1) and (2) are BUILT into `run-verify-passkeys.py` and close on its full
+  run at Review (passkeys are off on production for a few seconds during it). `auto-name` now asserts "Passkey" and is
+  the control for `named-aaguid`, whose page-side `getAuthenticatorData()` returns a COPY of the real buffer with
+  bytes 37–52 set to the first AAGUID in `lib/passkey-aaguids.ts`, read and never retyped; the new row must carry that
+  entry's name. `kill-mid-ceremony` holds only the finish POST, switches the `passkeys` row off over the pooler and
+  releases it: S1's switched-off sentence in the red banner, still `/sign-in`, no session cookie; `switch-on` is its
+  control. The value found is put back at once, in the browser half's `finally` and in the parent's, and read back.
+  Executed locally on the harness's Chromium: the virtual authenticator sends `01020304-0506-0708-0102-030405060708`,
+  NOT all-zero as reason (2) says (corrected beside the code, in `passkey-aaguids.ts`), and bytes written into the
+  buffer in place reach `toJSON()`, hence the copy. `--check` green, users 13 → 13.
 
 ### DW-33: two passkey paths lean on the platform to backstop them, and neither leaning has been executed
 
@@ -1169,6 +1208,18 @@ reason: `_signOut` (`GoTrueClient.js:3415-3445`): when `/logout` fails with anyt
   gone, so the retry lands on `/sign-in` through `signedIn()` with nothing said. Its comment now says so and
   cites this row; the fix, when the owner wants one, is the same for both call sites. Still unexecuted: it
   needs GoTrue to fail from the live site, which no real-infrastructure step can produce.
+amended: Story 5.24b's Dev (2026-09-29) — BUILT, ITS LOCAL HALF EXECUTED; it closes at Review when
+  `run-verify-sign-out-everywhere.py` passes on the deployed site. `signOutFailed(client, scopes)`
+  (`sign-in/signed-out.ts`, `import type` only) makes the calls in order, stops at the first failure and answers from
+  `auth.getSession()` afterwards. `signOut` lands by it; `signOutEverywhere` now calls `['others', 'local']` instead
+  of one `global`, so a failed first call leaves this device signed in and "try again" is true. Both comments state
+  what auth-js 2.115.0 does. `sign-out-landing.test.ts` runs the app's `createServerClient` (ssr 0.12.6) against a
+  local GoTrue: `others` 500 keeps the cookie; `local` 500, alone or after `others`, has the client delete it, landing
+  on the signed-out and everywhere sentences; an expired ticket whose refresh answers 500 keeps the cookie and lands
+  on the red line. Each control seen red with its change reverted (landing by the error, no stop after `others`,
+  `getSession`'s error ignored, the scope dropped, `['global']`/`['others']`/reversed lists, the failure branch
+  removed). Owed at Review: the harness's `everywhere` and `rest-refused` steps, which now send `scope=others` then
+  `scope=local` to the real GoTrue.
 
 ### DW-42: FR-A5's two Dodo calls — stop auto-renew on a deletion request, offer resume on restore — are owed by Epic 12
 
@@ -1309,7 +1360,19 @@ reason: Vercel neither retries a failed cron invocation nor alerts on one (docs,
 plain: The daily clean-up takes the 25 accounts whose deadline passed longest ago and retries a failed one
   the next day. If 25 accounts ever fail every single day — a systemic fault, not a normal one — the accounts
   behind them are never reached, and every day's run is red. Today that is only a red log line (DW-46).
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — `PurgeDeps` gained `due(excluding, limit)`; `runPurge` takes batches of
+  `BATCH` until nothing is due or `BUDGET_MS` (240 s, under the route's new `export const maxDuration = 300`) is
+  spent, starts no account after it, and excludes every id it already tried. The route's due query adds
+  `.not('user_id', 'in', …)` only for a non-empty list, and a `ponytail:` comment names the ceilings (an account that
+  fails slowly still spends the budget; the exclusion list rides in the URL) and the upgrade (a `purge_attempts`
+  column). `purge.test.ts`: `BATCH` always-failing accounts before a good one give `{ purged: 1, failed: BATCH }` in
+  one run, red as `{ purged: 0, failed: 25 }` with HEAD's one batch and as `{ purged: 0, failed: 240 }` with the
+  exclusion dropped; the injected clock stops the loop at 24 of 100 accounts on a 10 s step, red at 25 without the
+  per-account check and at 100 without the budget; the route's exclusion, its `maxDuration` and a budget at the
+  ceiling each fail the source test. Executed on production, read-only: the route's own `due` chain answers PostgREST
+  without error with and without an exclusion, and the same `not.in.(…)` over `profiles` drops exactly the three ids
+  listed (15 → 12); the production Vercel project is Pro with Fluid compute, so 300 s is within its limit.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
@@ -1376,7 +1439,16 @@ reason: The connection string in Vercel is the one secret that can decrypt every
 plain: The server's connection to the key store is scrambled, but the server does not check that the far end
   is really Supabase's; checking needs Supabase's own certificate bundled into the app, and that belongs
   with the next password rotation, alongside the narrower database account.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — the far end is verified. `server/ghost-admin/db.ts` connects with `ssl: {
+  ca: SUPABASE_ROOT_CA, rejectUnauthorized: true }`, the PEM inlined from the owner's `supabase/prod-ca-2021.crt`
+  (Supabase Root 2021 CA, `CA:TRUE`, valid to 2031-04-26; committed as the constant's provenance, because a runtime
+  read would not ship — DW-269). postgres.js 3.4.9 hands `tls.connect` the host as `servername`, so the chain and the
+  host name are both checked. Executed from the app's own driver against the pooler (`MEASUREMENTS.md` §57): the PEM
+  read out of `db.ts` connects; `tls.rootCertificates[0]` is refused `SELF_SIGNED_CERT_IN_CHAIN`; HEAD's `ssl:
+  'require'` connects to anything, which was the finding. `run-verify-ghost-admin.py --check` re-executes the pair
+  every run; `VERIFY-AT-BUILD.md` item 60 carries the expiry. The deployed half — Test connection through the pinned
+  line — is Review's and the owner's step 4.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
@@ -1411,7 +1483,15 @@ reason: `fetchWithKey` serialises every body with `JSON.stringify` and sends `Co
 plain: When a Ghost site is down for maintenance or is rate-limiting, Inflozo would currently tell the user
   that Ghost refused it, which is the wrong story; the stories that make the real reads and writes will
   see those answers and can name them properly.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — a busy or down Ghost has its own code and sentence. `ghostCode` answers
+  `ghost_unavailable` for a `429` and every `≥ 500`; `403`, `404` and `422` stay `ghost_refused`.
+  `CONNECT_MESSAGES.ghost_unavailable` is "Ghost didn't answer just now. Try again in a moment.", the banner's as
+  `ghost_refused` is; `HEALTH_REASONS` does not name it, so the daily check stays undecided on it. Tests in both
+  directions (`ghost-admin-rule.test.ts`, `connect-rule.test.ts`, `health-rule.test.ts`) — red with the 5xx branch
+  removed, with every 4xx made unavailable, and with the branch gone. The three comments that named 429 under
+  `ghost_refused` are corrected; `keys-test-refused` in `run-verify-ghost-admin.py` types a 403 and a new vector types
+  `ghost_unavailable` (run at Review).
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1528,6 +1608,24 @@ reason: The refusal of IP literals was added at Review 1 with the comment "keeps
   resolver check, together, when the product runs somewhere with an internal network worth protecting
   (a self-hosted deploy, or Vercel's private networking if it is ever attached). Until then the comment says
   what the rule is — a shape check — and this entry says what it is not.
+amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the deployed-site proof is Review's. `blockedAddress(ip)`
+  (`admin-rule.ts`, over `node:net`'s `BlockList`) refuses 127/8, 10/8, 172.16/12, 192.168/16, 169.254/16, 100.64/10,
+  0.0.0.0/8, `::`, `::1`, fc00::/7, fe80::/10 and an `::ffff:` address by its IPv4; `fetchWithKey` resolves the host
+  (`dns.lookup`, all answers, bounded by `TIMEOUT_MS`) before any request and refuses on any blocked answer with
+  `ghost_unreachable`, an audit row whose `detail.blocked` is true, and a `{code}` log line — in `fetchWithKey`
+  because every Admin call passes through it and a `sites.url` can reach it without the wizard's shape check.
+  `normaliseSiteUrl`'s comment no longer overclaims; a `ponytail:` names the ceiling (the fetch resolves again — DNS
+  rebinding) and the upgrade (`https.request({ lookup })` pinned to the checked address). The paired rate limit is not
+  built: with private addresses refused, Inflozo fetches only what the caller could fetch. Vectors in
+  `ghost-admin-rule.test.ts`, red with a range dropped. Closes when the harness's connect to
+  `https://127.0.0.1.nip.io` shows `detail.blocked` on the deployed site while T1 connects. The harness's
+  `connect-paths` block holds it: on HEAD `address-blocked` FAILED — the sentence was already true (HEAD cannot reach
+  127.0.0.1 either, the spec's point) but the audit row carried `{"ms":168}` and no `blocked` — and on this story's
+  code it PASSED, `{"ms":12,"blocked":true}`, with `path-page` connecting T1 in the same run. Against HEAD's
+  deployment (`2450daea`) first, through `--only`, the step went red; on this story's code, run locally through the
+  product's own pages (Chromium mapping app.inflozo.com to a TLS proxy in front of the app on this machine, with the
+  production database, T1 and T3), all eight blocks passed together under `next dev` and again under a production
+  build (`next build` + `next start`), users 13 → 13 each time.
 
 ### DW-59: the connect action's failure branches are pinned by source text, not executed
 
@@ -1537,7 +1635,16 @@ plain: The code that undoes a half-made connection (the key could not be stored,
   for the right words. Nothing runs them with a failure injected, because the file cannot be loaded outside
   Next. Extracting the sequence into a plain function that takes its collaborators as arguments — the shape
   Story 2.6's purge used — would let a test run it with a store that fails.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — connect's failure branches are EXECUTED, not read as source text.
+  `lib/connect-rule.ts` gained `KEPT` (every column connect writes before the store, from which the opening read
+  `CONNECT_READ` is built), `siteWrite` (the connection and the cosmetic `site/` patch, with the `isHttpUrl` guards
+  and `settings_read_at`) and `storeOrUndo` (the store, and the undo when it fails — a kept record put back as it was,
+  a new one deleted); `connectSite` calls all three, and the Sites list's unread banner takes its screen from
+  `sitesScreen`, a pure decision. `connect-rule.test.ts:451-479`'s source-text test is replaced by tests that run the
+  sequence with a store that fails: swapping the two branches, and a column `siteWrite` writes that `KEPT` does not
+  name, each went red (and `sitesScreen` letting an unread list be the first-run screen), and green restored. Done
+  together with DW-65, which changed the same write.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1593,7 +1700,16 @@ plain: Ghost can live at an address like `https://example.com/blog` rather than 
   connect wizard keeps only the root part of whatever is typed — the approved rule, so that the same site typed
   three ways is one record — so such a site would be looked for at `https://example.com` and refused with
   "Ghost refused the connection (HTTP 404)". Nobody has asked for one yet.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — closed on R-219, R-226 and PRD Appendix G (support for a Ghost under a
+  path is recorded there as future work). `pathOf` (`lib/connect-rule.ts`) is the typed path with a trailing
+  `/ghost…`, the query and the hash set aside; `connectSite` asks the ROOT's `config/` with the typed key when a path
+  was typed — after `already_connected`, BEFORE the plan's limit — and only a `404` there answers R-219's sentence,
+  "Inflozo connects a Ghost site at the root of its address — /blog isn't supported yet.", under API URL, with nothing
+  stored; any other answer carries on as before and IS the validation (one `config/` per connect), so a page's address
+  on a site at the root still connects. `pathRefused` is the pure decision. Tests: `pathOf`'s vectors both ways, the
+  decision both ways, the sentence verbatim — each red on its mutation. The harness's `example.com/blog` refusal and
+  its positive control, T1 connected by a post's address, run on the deployed site at Review.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1615,7 +1731,13 @@ plain: The card on the Sites page no longer looks like the drawing it came from.
   "Checked 5 minutes ago"; and those two sit closer together than anything else on the card. He asked for it
   "for all site cards" — one component draws every card, so that is already true. What this entry exists for is
   the stories that add MORE to this card: they must add to what is there now, not put back what the frame draws.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — the rule is written where it governs. The header of
+  `sites/(list)/page.tsx` now OPENS with it: the pills' line carries metadata only; the state line carries the state,
+  its timestamp and the Preview-only chip, beside Connected only where the card can hold it and never on a wider grid
+  (the owner, Story 3.3 Question 2); the ⋯ at the header row's top right is the one place the card's actions live; a
+  story adds to this layout and never restores the frame's. Every "OBEYED DW-57" pointer in that header,
+  `site-menu.tsx` and `site-notices.tsx` now aims at that rule rather than at this ledger.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: medium
@@ -1810,7 +1932,19 @@ plain: Four things now write to the same box of settings on a site's record — 
   buttons and **Re-check plan**. Each reads the box, changes one thing and writes the whole box back, so if
   two happened at the same instant the second would erase the first's change. It needs two things to
   happen within the same fraction of a second on one site.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — one compare-and-set for every writer. `server/site-settings.ts`'s
+  `patchSite` reads the row's `site_settings, credentials_present, capability_source, disconnected_at, updated_at`,
+  asks the writer's `patch(row)`, and writes only while `updated_at` (`sites_touch`'s per-transaction `now()`) is
+  still the one it read; a lost race re-reads and re-patches, three tries, then writes nothing and logs `contended`.
+  Every writer goes through it: `probeSite`, the editor's re-read (`rereadSettings`), `answerPortal` and `answerPlan`
+  (their preconditions re-checked inside the patch), connect's cosmetic `site/` write, the Content save and the
+  disconnect stamp; connect's insert, re-adopt and whole-record restore are the named exceptions.
+  `site-settings.test.ts` executes it over a client that evaluates every `.eq`: a second writer landing between read
+  and write loses nothing, and three lost races write nothing — both red with the `updated_at` filter dropped.
+  `server-wiring.test.ts` holds the rule: no `site_settings` or `credentials_present` write outside `site-settings.ts`
+  but the named exceptions — run on HEAD's `sites/actions.ts` and `site-probe.ts` it names all seven writers this
+  story moved.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1926,6 +2060,19 @@ reason: `loading.tsx` puts a Suspense boundary over EVERY page in `(authed)`, so
   by asserting Next's own string rather than any sentence the app owns. The same story takes both:
   they are one route-group question, and a real `not-found.tsx` is the thing that makes the status
   assertion worth writing.
+amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the status is asserted at Review. `sites/brand/layout.tsx`
+  sits above the segment's `loading.tsx` and, only when the request's `SEARCH_HEADER` names a `site`, reads the row
+  through `brandSiteOf` — a `cache()`'d reader it shares with `BrandScreen` — and calls `notFound()` for no row or no
+  brand: a real `404`. `BrandScreen` keeps its own guard (the popup never passes through the layout). Read in Next
+  16.3.1's source: a server action's `redirect()` is rendered by an internal fetch carrying the POST's own headers
+  (`action-handler.js`, `createRedirectRenderResult`), which is why the layout acts only when there is a `site` to
+  judge. `brand-none` now asserts `404` for the direct load and for the forged `?site=`, and every connect landing on
+  S2c is the positive control; this closes when that run passes. On HEAD `brand-none` FAILED (`200/200`); on this
+  story's code it PASSED (`404/404`), every connect in the run landing on S2c. Against HEAD's deployment (`2450daea`)
+  first, through `--only`, the step went red; on this story's code, run locally through the product's own pages
+  (Chromium mapping app.inflozo.com to a TLS proxy in front of the app on this machine, with the production database,
+  T1 and T3), all eight blocks passed together under `next dev` and again under a production build (`next build` +
+  `next start`), users 13 → 13 each time.
 
 ### DW-68: an authed page on the deployed site occasionally sends no response for 60 seconds
 
@@ -2112,7 +2259,15 @@ plain: When Inflozo reads your brand off your Ghost site it keeps seven things. 
   for it. The other three (your site icon, your cover picture and your description) are saved and
   nothing reads them. That is fine if some later part
   of the product wants them, but nothing has said which part, so they could sit there for ever.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — `Brand` and `brandOf` keep the three fields with a reader: `accent`,
+  `logo` and `nav` (S2c draws all three, `placeholderFor` and the canvas's surfaces read the accent, the project's
+  name is `sites.title`). `icon`, `cover`, `description` and `title` are no longer stored; rows already stored keep
+  them until their next brand read, and nothing reads them. `hasBrand` now checks EVERY field `Brand` promises — three
+  vectors, each `true` at HEAD and `false` after (a good accent beside a `javascript:` logo, a good logo beside a
+  non-colour accent, a good accent beside a broken menu item; `{accent: 42}` was already false and is no control).
+  `BRAND_KEYS` in `run-verify-ghost-admin.py --check` is `accent_color, logo, navigation`; `style-pack.ts` says who
+  reads what.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -2234,6 +2389,12 @@ reason: The fifth review (2026-09-09) added a positive control to this step, bec
   Two of the five runs that reached the step passed. Related: DW-68, the harness's wider
   intermittent-wait problem — three of the same eight runs died early on an unrelated locator wait,
   each at a different point.
+amended: Story 5.24b's Dev (2026-09-29) — `brand-ownership` runs alone now (`--only brand-ownership`, DW-92). Against
+  HEAD's deployment it passed all five runs that reached the step, each landing on not-found with the sentence inside
+  `<main>` and the popup forge landing on the list (seven attempts: one died on this machine's network,
+  `net::ERR_NETWORK_CHANGED`, and one in the T1 seed before the step); it passed again in both local runs of this
+  story's code, where DW-67's layout now answers the forged full page above the segment's `loading.tsx`. Closes at
+  Review, when it passes five of five against this story's deployment.
 
 
 ## Deferred from: spec-3-5-my-sites-their-caps-and-disconnecting-one (2026-09-09)
@@ -2334,7 +2495,13 @@ plain: Disconnecting takes two keys out, one after the other. If the first comes
   is already gone. Nothing is lost and nothing is wrong on the customer's Ghost; pressing Disconnect again
   finishes the job, and the site's own key list already says the key is not there. But between the two
   presses the card says one thing and the truth is another.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — one transaction for both keys. `remove({ siteId, userId, kinds, route })`
+  clears every named kind inside ONE `sql().begin`, keeping the `ref is not null` guard and the per-kind conditional
+  `credential_change` audit row (written inside the transaction); `disconnectSite` makes one call naming `['admin',
+  'staff']` and `removeToken` one naming `['staff']`. `server-wiring.test.ts` holds it: one `remove(` in
+  `disconnectSite` naming both kinds, and one `begin(` in `remove`'s body around the loop — red with the two calls
+  restored, and red with the `begin()` moved inside the loop.
 severity: low
 origin: Story 3.5 code review (2026-09-09) — the Edge Case Hunter and the Blind Hunter both reached it from
   `disconnectSite`'s two sequential `remove()` calls
@@ -2447,6 +2614,19 @@ reason: Unreachable from the product. `keys-panel.tsx` renders three `<form>`s a
   branch, and no other account is reachable. The fix — one transaction across all three, or a refusal of
   multi-field posts — is worth making only if the screen ever grows a combined Save, and it would be that
   change's to make.
+amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the deployed-site proof is Review's. `oneCredential(form)`
+  (`lib/connect-rule.ts`) counts the credential fields present, and `saveKeys` refuses more than one with
+  `keys_failed` — "We couldn't save that just now. Nothing changed" — BEFORE the empty check and before any read or
+  write, so the sentence is true. `connect-rule.test.ts` with Node's `FormData`: every single field passes, any two
+  and all three are refused (red with two admitted). Closes when the harness's two-field post on the caller's own T1
+  row lands on `?keys=keys_failed` with the sentence and the `sites` row, `private.site_credentials` and
+  `credential_change` unchanged. The harness step is `keys-two-fields` (`manage-keys`): on HEAD it FAILED the way the
+  entry said — the two-field post STORED one credential (`credential_change` 1 → 2) and did not land on the sentence —
+  and on this story's code it PASSED, the row, the credential and the audit count unchanged. Against HEAD's deployment
+  (`2450daea`) first, through `--only`, the step went red; on this story's code, run locally through the product's own
+  pages (Chromium mapping app.inflozo.com to a TLS proxy in front of the app on this machine, with the production
+  database, T1 and T3), all eight blocks passed together under `next dev` and again under a production build (`next
+  build` + `next start`), users 13 → 13 each time.
 
 ## Deferred from: code review of spec-3-4-take-my-brand-from-my-site-in-one-click (2026-09-10)
 
@@ -2470,6 +2650,19 @@ reason: The mechanism is shared by both windows and was built in Story 3.6's Fix
   every one of those six landings composes its URL from the current search params instead of a constant,
   which is one more thing each of them can get wrong, for a filter that a single keystroke restores. Worth
   doing when the list has more than a handful of cards for anyone, which today it does not.
+amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the deployed-site proof is Review's. `sitesPath(q?,
+  extra?)` (`lib/connect-rule.ts`, `URLSearchParams`) is the one way to `/sites`: `keysPopupPath` and `brandPopupPath`
+  (moved beside it) carry `q`; `PanelLink` and `PanelModal` read the list's own `q` through `useSearchParams()`; both
+  panels' ✕ and Cancel and the popup screens' render-time exits take `back`; and every action's landing goes through
+  `listQuery()`, which reads `q` off the action's own request (`SEARCH_HEADER`). Connect's landing drops it on purpose
+  — the new card could be filtered out. Tests in `connect-rule.test.ts`. Closes when the harness block that searches,
+  opens each window and closes it by ✕, Escape, Cancel and a save finds `?q=` kept. The harness block is `search-kept`
+  (✕, Escape and Cancel on both windows, a save and a refusal): on HEAD it FAILED at the first window, which opened
+  without `q`; on this story's code it PASSED. Against HEAD's deployment (`2450daea`) first, through `--only`, the
+  step went red; on this story's code, run locally through the product's own pages (Chromium mapping app.inflozo.com
+  to a TLS proxy in front of the app on this machine, with the production database, T1 and T3), all eight blocks
+  passed together under `next dev` and again under a production build (`next build` + `next start`), users 13 → 13
+  each time.
 
 ## Deferred from: code review of spec-3-6-manage-keys-and-the-partially-credentialed-site (2026-09-10, third pass)
 
@@ -2501,6 +2694,12 @@ location: `apps/web/server/ghost-admin/index.ts` (`findSiteByAdminKeyId`, `order
 reason: needs a third record carrying the same Admin key id under one account, which nobody has today;
   the fix is an `order by (s.disconnected_at is null) desc` or returning every match, and either wants
   the harness seeding two decoys.
+amended: Story 5.24b's Dev (2026-09-29) — THE CONTROL THE 3.9 REVIEW ASKED FOR IS BUILT AND EXECUTED, inside
+  `moved-domains` while its seeding exists: `moved-order-term` runs `findSiteByAdminKeyId`'s own query, read out of
+  `index.ts`, read-only on the harness's `sql` — WITHOUT its first order term it picks the NEWER disconnected record,
+  WITH it the OLDER live decoy — so the seeding is one where the term decides. PASS in both attempts that reached it
+  against HEAD's deployment, `moved-domains` then drawing the live hint and not the snapshot one, and again in both
+  local runs of this story's code. Closes at Review with the run against this story's deployment.
 
 ### DW-84: closing the keys window while a save is still in flight can re-open it with the answer
 
@@ -2517,6 +2716,21 @@ reason: a race a customer has to work to reach — the panel's own saves answer 
   and the answer that arrives is a true one; tracking an in-flight submit across a navigation is more
   state than the window has today. The cross-tab twin (`credentials_present` read-modify-written by the
   Content save while another tab stores a key) is the same family and the same reason.
+amended: Story 5.24b's Dev (2026-09-29) — THE SECOND HALF IS CLOSED; the first is Review's. THE CROSS-TAB TWIN: the
+  Content save writes `credentials_present` through `patchSite`'s compare-and-set with `contentKeyPatch`, patched from
+  the row as it stands AT THE WRITE — a key `store()` put in from another tab survives — and refused on a record
+  disconnected since; `site-settings.test.ts` executes both (red with the guard removed). THE WINDOW: `PanelModal`
+  refuses Escape and the backdrop while anything inside is `aria-busy="true"`, and a `MutationObserver` greys the ✕
+  and Cancel (`data-panel-exit`, `aria-disabled`, never `disabled`) and refuses their clicks; one fix covers the keys
+  and brand windows, and a `ponytail:` names the ceiling (Chromium honours one cancelled Escape per user activation).
+  Closes when the harness step that holds the save's POST, presses Escape and releases finds the window neither closed
+  nor reopened on the deployed site (and red on HEAD, run first). The step is `keys-escape`: on HEAD it FAILED (the ✕
+  and Cancel not disabled, one close, the answer arriving into no window); on this story's code it PASSED — both
+  `aria-disabled`, Escape leaving the same window open, no close, and the released answer drawn in it. Against HEAD's
+  deployment (`2450daea`) first, through `--only`, the step went red; on this story's code, run locally through the
+  product's own pages (Chromium mapping app.inflozo.com to a TLS proxy in front of the app on this machine, with the
+  production database, T1 and T3), all eight blocks passed together under `next dev` and again under a production
+  build (`next build` + `next start`), users 13 → 13 each time.
 
 ### DW-85: three live-harness controls Manage keys still owes
 
@@ -2545,12 +2759,24 @@ reason: (1) the `?old=live` hint — a matched record that is STILL connected dr
   `user_id` clause; (3) `useBrand`'s popup branch on a vanished row (`brand-ownership` forges on the full
   page only). The review added `keys-content`, `keys-test-refused`, `keys-phone`, the ✕, Back and
   `admin_key_id` conjuncts instead; these three are the remainder, each a seeding rather than a fix.
+amended: Story 5.24b's Dev (2026-09-29) — ALL THREE SEEDINGS EXECUTED for the first time, through `--only` against
+  HEAD's deployment: (1) the still-connected decoy drew `KEYS.movedStillConnected` and not the snapshot wording; (2)
+  the cross-account decoy drew no hint (`moved-domains` PASS); (3) the forged popup post landed on the list
+  (`brand-ownership` PASS in each of the five runs that reached it). Closes at Review, with the same runs against this
+  story's deployment.
 
 ### DW-86: two Ghost Admin navigation paths in the copy are asserted, not cited
 
 plain: The API keys screen tells you where in Ghost Admin to find your Staff Access Token and where to
   regenerate keys. Both paths were written from memory of Ghost's screens, not checked against them.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — both sentences read in Ghost's own admin, 5.130.6 and 6.58.0 (the npm
+  tarballs, `MEASUREMENTS.md` §58). `KEYS.staff.ask` is right on both majors. `KEYS.rollHint` was not: both open
+  Settings → Integrations on the **Built-in** tab (`useState("built-in")`) and a customer's own integration is under
+  **Custom**, so it now reads "To roll keys: Ghost Admin → Settings → Integrations → Custom → Inflozo → Regenerate.
+  Old keys stop working the moment you regenerate." Each sentence cites its tarball files beside it; the departure
+  from S11d `:232` and S11e is the third recorded beside `KEYS` (R-74); `connect-rule.test.ts` pins both sentences
+  (red with the frame's words restored).
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Blind Hunter
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
@@ -2677,7 +2903,15 @@ reason: DW-56 said the authed SHELL hid its content without JavaScript. It does 
 plain: The date the read-only GitHub key stops working is now written in the right place, but nothing
   will ever read that place on the day. GitHub itself tells a caller when a key expires, on every
   answer — the access-check tool could read that and warn a month ahead, so the date is never typed.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — `check-access.py` reads the expiry from GitHub's own
+  `github-authentication-token-expiration` header on `GET /rate_limit`, through a pure `github_verdict()`: FAIL unless
+  a 200 carries a parseable date, `warn` at 30 days or fewer, `ok` with the date otherwise; any FAIL line now exits 1,
+  and the tool takes its arguments through argparse, so `--help` no longer runs every check and sends the email.
+  `--self-check` holds eight verdicts both ways with no network and no email, and went red under each of three
+  mutations (the window made exclusive, a missing header let through, a 401 let through). One full run the same day:
+  exit 0, `GitHub token -> /rate_limit, and its expiry HTTP 200 — expires 2027-09-05, in 341 day(s)`, the register's
+  date. `VERIFY-AT-BUILD.md`'s GitHub-token row names the tool.
 severity: low
 origin: Story 3.9 review (2026-09-11), on DW-5's closure
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
@@ -2710,6 +2944,13 @@ reason: `document.title` in the error boundary and `inert`/`aria-hidden` on the 
   ceremony pending — presence simulation off — and running the dashboard harness's focus probe plus axe
   over the card is the repeatable form; a throwing route for the error page exists only on a local
   build, which no harness starts today.
+amended: Story 5.24b's Dev (2026-09-29) — THE ERROR PAGE'S HALF HAS ITS CONTROL; the card's closes at Review.
+  `app/(app)/app/harness/error/page.tsx` throws, and 404s unless `INFLOZO_HARNESS` is set; it sits in `HARNESS_ONLY`,
+  `NO_SKELETON` and the editor walk's step 79. `journey.spec.mjs`'s test reads the tab title "Something went wrong ·
+  Inflozo" and the error heading on screen: red with `error.tsx:56` deleted (`Received: ""`), green restored, and
+  green inside `pnpm keyboard`. The card's half is `inert-held` / `inert-released` inside `run-verify-passkeys.py`'s
+  `kill-mid-ceremony`: while the finish POST is held the form is `inert` and `aria-hidden`, no control takes focus and
+  Tab never lands inside, and after the release they are reachable — the pair is the control, and it runs at Review.
 
 ### DW-92: the Ghost-admin harness can no longer finish a run, so its own newest controls have never executed
 
@@ -2737,6 +2978,19 @@ reason: `moved-domains` drives a real disconnect-and-reconnect through the produ
   its own catalogue row and this story is a sweep: a `--only <step>` argument that runs the named steps
   and their seedings, the way `--check` already selects a subset. Then a story that changes one step
   pays for one step. Until it exists, every closure resting on this harness is owed a full run.
+amended: Story 5.24b's Dev (2026-09-29) — `--only BLOCK[,BLOCK…]` BUILT. The `BLOCKS` registry names each block's
+  seeds (`sign-in`, `Pro`, `T1`, `T3`, `stranger`), made from the empty fixture through `/sites/connect?step=keys` and
+  never through `pro-connect-t3`; the blocks are the same functions the full sequence calls; steps stream as they land
+  under a kill timer; `injection-live` is never run, so an `--only` run writes nothing to T1 or T3. This story's own
+  steps are blocks too: `connect-paths`, `search-kept`, `keys-escape`, and `keys-two-fields` inside `manage-keys`.
+  Control: `--only no-such-step` exits 2 with `.env` absent, while a known name reaches the key check. FOUND BY
+  READING: Story 3.7's review (`03d3d4af`) turned `await offer().click()` into a `press()` whose body called
+  `press()`, so every full run since would loop at `brand-popup` until killed — the likely cause of every full-run
+  timeout this entry records; fixed to `offer().click()`, and a full run is still owed. Every registered block
+  completed alone against HEAD's deployment (users 13 → 13), and all eight passed together in local runs of this
+  story's code, under `next dev` and under a production build — where `moved-domains` first failed twice on the
+  harness's own race (the opener pressed before the disconnect's landing had redrawn the list, so the sheet was never
+  there to open), now waited out. Closes at Review, when every block passes alone against this story's deployment.
 
 ### DW-93: the stress harness never removes `data-empty` from a prop-attribute-only element, and implements no `hide` for it
 
@@ -6694,7 +6948,11 @@ reason: a claim about the Content API's `include=tiers` on posts is a hypothesis
 
 plain: The daily check and the Paywall screen's Re-check both rewrite the same stored record of your site's settings. If
   they land at the same moment, one can overwrite the other's part.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — closed with DW-65, by the same change: the daily check (`probeSite`) and
+  the editor's re-read (`rereadSettings`) both write `site_settings` through `patchSite`'s compare-and-set, so neither
+  can overwrite the other's keys; `site-settings.test.ts`'s second-writer test is this entry's collision, executed,
+  and it went red with the `updated_at` filter dropped.
 severity: low
 origin: Story 5.20's review (2026-09-26). `readMembers` (`apps/web/server/site-probe.ts:204-221`) and `probeSite` both
   select `site_settings`, spread, and update — the shape Story 3.3 set; Story 5.20 adds the second writer.
@@ -6712,7 +6970,13 @@ also: **AMENDED 2026-09-26 by Story 5.21's Create.** The Paywall's re-read is wi
 
 plain: The rule that Re-check refuses to look at a site that is not yours is checked by reading the code's text, not by
   running it.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Dev (2026-09-29) — the ownership refusal EXECUTES. The re-read's body moved into
+  `server/site-settings.ts` as `rereadSettings({ admin, call, route }, userId, siteId)` — `readSettings` in
+  `site-probe.ts` is now the wrapper that hands in `supabaseAdmin()` and the real `call` — so `node --test` loads it:
+  for user B holding user A's site id, `call` is never reached, no write is attempted and the row is unchanged, with
+  the owner's own re-read as the positive control. Red with the owned read moved after `call`, and red with its
+  `.eq('user_id')` dropped. `server-wiring.test.ts`'s source-text order check follows it to `site-settings.ts`.
 severity: medium
 origin: Story 5.20's review (2026-09-26). `apps/web/server-wiring.test.ts:349-362` asserts the index of `.eq('user_id', …)`
   precedes `call({`; the live walk exercises Re-check on the caller's own site only.
@@ -7171,3 +7435,25 @@ reason: `SCHEMA.sql` §0b says `private` must never be exposed and that RLS-TEST
   `private` is still covered over the wire — `run-verify-ghost-admin.py --check`'s `vault-off-rest` reads its table as a
   404 through PostgREST — but `storage` has no such check. The fix is a probe that reads the exposed schemas where they
   live, with a control, and a SQL block that says what it can and cannot see.
+
+### DW-295: under `next dev`, the connect wizard never leaves "Connecting…" — StrictMode leaves its `alive` ref false
+
+plain: When the app runs on a developer's own computer, pressing **Connect** in the connect wizard shows "Connecting…"
+  and then nothing ever happens. The live site is not affected — it is a development-only fault — but it stops anyone
+  walking Connect on their own machine, and this story's local runs had to switch React's safety mode off to get past it.
+status: open
+severity: low
+origin: Story 5.24b's Dev (2026-09-29), found while running `run-verify-ghost-admin.py`'s blocks against this story's
+  code under `next dev`: the wizard sat on "Connecting…" until the run used `reactStrictMode: false` (reverted afterwards).
+  Read in the code, and the cause is exact: React 19's StrictMode runs every effect as mount, unmount, mount in
+  development, and this effect's body sets nothing, so the unmount's cleanup leaves the ref `false` for good.
+owner: Story 5.24d (The sweep: the checks and the walks), whose card names this entry — its walks are the ones a
+  development build has to carry.
+location: `apps/web/app/(app)/app/(authed)/sites/connect-wizard.tsx` — `useEffect(() => () => { alive.current = false },
+  [])`, and `onSubmit`'s `if (!alive.current) return` after the browser's Content-key check
+reason: the ref guards a real case — Escape closing the sheet while the browser check is still awaited must not dispatch
+  a connect — and production builds run each effect once, so the live site connects. The fix is to set the ref `true`
+  in the effect's body as well as `false` in its cleanup; its control is a connect walked under `next dev` with
+  StrictMode on, which stays on "Connecting…" without the fix. Not fixed in 5.24b because no check it runs can walk
+  Connect in a development build: `pnpm keyboard` runs `next dev` but has no database or Ghost to connect with, and the
+  harnesses walk the deployed production build.

@@ -5,6 +5,7 @@ import { join } from 'node:path'
 import {
   BATCH,
   BUCKETS,
+  BUDGET_MS,
   CRON_PATH,
   prefixesFor,
   runPurge,
@@ -168,16 +169,35 @@ test('a listing that never empties stops, rather than spinning for the whole fun
   assert.equal(rounds, MAX_ROUNDS)
 })
 
-/** The loop's dependencies as a recorder: every call in order, and a failure where asked. */
-function stubDeps(failAt: { userId: string; step: 'projects' | 'objects' | 'suggestions' | 'user' } | null) {
+/**
+ * The loop's dependencies as a recorder: every call in order, and a failure where asked. `due`
+ * serves the queue it is given the way the route's query does, oldest first, `limit` at a time,
+ * without the ids it is told to exclude, and without an account once it is deleted.
+ *
+ * AND A CLOCK, which moves `stepMs` each time an account is started. Every loop test runs on it
+ * (DW-47): a loop that stops excluding what it tried meets the same failed account until its budget
+ * is spent, and on the real clock that stalled this file for three minutes before it failed at all
+ * (its control, Story 5.24b's Dev) instead of failing red at once.
+ */
+function stubDeps(
+  failAt: { userId: string; step: 'projects' | 'objects' | 'suggestions' | 'user' } | null,
+  queue: readonly string[] = [],
+  stepMs = 1_000,
+) {
   const calls: string[] = []
+  const deleted = new Set<string>()
+  let at = 0
   const refuse = (userId: string, step: string) => {
     if (failAt && failAt.userId === userId && failAt.step === step) {
       throw Object.assign(new Error(`${step} refused`), { step, code: 'Refused' })
     }
   }
   const deps: PurgeDeps = {
+    async due(excluding, limit) {
+      return queue.filter((id) => !excluding.includes(id) && !deleted.has(id)).slice(0, limit)
+    },
     async projectIds(userId) {
+      at += stepMs
       calls.push(`projects:${userId}`)
       refuse(userId, 'projects')
       return userId === 'u2' ? ['p2'] : []
@@ -194,9 +214,10 @@ function stubDeps(failAt: { userId: string; step: 'projects' | 'objects' | 'sugg
     async deleteUser(userId) {
       calls.push(`delete:${userId}`)
       refuse(userId, 'user')
+      deleted.add(userId)
     },
   }
-  return { deps, calls }
+  return { deps, calls, now: () => at }
 }
 
 /** A log that records rather than prints. */
@@ -207,9 +228,9 @@ function recorder() {
 }
 
 test('one account is objects → suggestions → user, every prefix drained before any row moves', async () => {
-  const { deps, calls } = stubDeps(null)
+  const { deps, calls, now } = stubDeps(null, ['u2'])
   const { log, infos } = recorder()
-  assert.deepEqual(await runPurge(deps, ['u2'], log), { purged: 1, failed: 0 })
+  assert.deepEqual(await runPurge(deps, log, now), { purged: 1, failed: 0 })
   assert.deepEqual(calls, [
     'projects:u2',
     'drain:assets:u2/',
@@ -225,9 +246,9 @@ test('one account is objects → suggestions → user, every prefix drained befo
 test('one failed account never stops the rest, and the run counts it', async () => {
   // The matrix's `deleteUser fails` row: the second of three is refused, the third is still
   // reached in the SAME run, and the counts say so — the route turns `failed > 0` into a 500.
-  const { deps, calls } = stubDeps({ userId: 'u2', step: 'user' })
+  const { deps, calls, now } = stubDeps({ userId: 'u2', step: 'user' }, ['u1', 'u2', 'u3'])
   const { log, errors } = recorder()
-  assert.deepEqual(await runPurge(deps, ['u1', 'u2', 'u3'], log), { purged: 2, failed: 1 })
+  assert.deepEqual(await runPurge(deps, log, now), { purged: 2, failed: 1 })
   assert.deepEqual(calls.filter((c) => c.startsWith('delete:')), ['delete:u1', 'delete:u2', 'delete:u3'])
   assert.equal(errors.length, 1)
   const [line, logged] = errors[0] as [string, Record<string, unknown>]
@@ -241,9 +262,9 @@ test('one failed account never stops the rest, and the run counts it', async () 
 test('a refused drain leaves the rows alone, and the log names the bucket', async () => {
   // The matrix's `Storage refuses a removal` row: the walker throws `{ step: "objects" }` without
   // knowing its bucket; the loop attaches it. Nothing of that account's rows is touched.
-  const { deps, calls } = stubDeps({ userId: 'u1', step: 'objects' })
+  const { deps, calls, now } = stubDeps({ userId: 'u1', step: 'objects' }, ['u1'])
   const { log, errors } = recorder()
-  assert.deepEqual(await runPurge(deps, ['u1'], log), { purged: 0, failed: 1 })
+  assert.deepEqual(await runPurge(deps, log, now), { purged: 0, failed: 1 })
   assert.ok(!calls.includes('anonymise:u1') && !calls.includes('delete:u1'), 'rows kept for tomorrow')
   const [, logged] = errors[0] as [string, Record<string, unknown>]
   assert.equal(logged.step, 'objects')
@@ -251,9 +272,45 @@ test('a refused drain leaves the rows alone, and the log names the bucket', asyn
 })
 
 test('nothing due is a run of nothing, not an error', async () => {
-  const { deps, calls } = stubDeps(null)
-  assert.deepEqual(await runPurge(deps, [], recorder().log), { purged: 0, failed: 0 })
+  const { deps, calls, now } = stubDeps(null)
+  assert.deepEqual(await runPurge(deps, recorder().log, now), { purged: 0, failed: 0 })
   assert.deepEqual(calls, [])
+})
+
+/* DW-47 (Story 5.24b): A STARVED QUEUE. The run took one batch of the oldest deadlines, and a failed
+   account stays at the head of that queue by construction, so BATCH accounts that always failed
+   kept every account behind them from ever being reached, every day. */
+
+test('BATCH always-failing accounts ahead of a good one no longer starve it: purged in the same run', async () => {
+  const failing = Array.from({ length: BATCH }, (_, i) => `f${i}`)
+  const { deps, now } = stubDeps(null, [...failing, 'good'])
+  const projectIds = deps.projectIds
+  deps.projectIds = async (userId) => {
+    const ids = await projectIds(userId)
+    if (userId !== 'good') throw Object.assign(new Error('always refused'), { step: 'projects', code: 'Refused' })
+    return ids
+  }
+  const asked: number[] = []
+  const due = deps.due
+  deps.due = async (excluding, limit) => {
+    assert.equal(limit, BATCH, 'each query takes BATCH, no more')
+    asked.push(excluding.length)
+    return due(excluding, limit)
+  }
+  const { log, errors } = recorder()
+  assert.deepEqual(await runPurge(deps, log, now), { purged: 1, failed: BATCH })
+  assert.equal(errors.length, BATCH, 'every failed account is still logged, as before')
+  assert.deepEqual(asked, [0, BATCH, BATCH + 1], 'each query excludes every id the run tried, until nothing is due')
+})
+
+test('the clock stops the loop: no account is started once BUDGET_MS is spent', async () => {
+  const STEP = 10_000
+  const queue = Array.from({ length: 4 * BATCH }, (_, i) => `u${i}`)
+  const { deps, calls, now } = stubDeps(null, queue, STEP)
+  const reached = Math.ceil(BUDGET_MS / STEP)
+  assert.ok(reached < queue.length, 'the queue outlasts the budget, or this proves nothing')
+  assert.deepEqual(await runPurge(deps, recorder().log, now), { purged: reached, failed: 0 })
+  assert.equal(calls.filter((call) => call.startsWith('delete:')).length, reached)
 })
 
 /* EVERY SCHEDULED JOB, DERIVED FROM THE FILE — never a count, and never a list retyped here
@@ -314,18 +371,28 @@ test('nothing in the purge sends mail — FR-A5 says so in its last sentence', (
   }
 })
 
-test('the run is a batch of the oldest deadlines, and a failed account makes the run red', () => {
-  // Two promises only the ROUTE's source makes, and no stub can reach: the due query is bounded
-  // and ordered (a missing `.order()` purges an arbitrary 25 of 40 and the rest wait a day for
-  // no reason), and a run with a failed account answers 500 — Vercel neither retries nor alerts
-  // (DW-46), so the red line is the alarm. "Each account is its own try" is no longer read off
-  // the source: `runPurge` is executed above.
+test('each batch is the oldest deadlines not yet tried, and a failed account makes the run red', () => {
+  // Promises only the ROUTE's source makes, and no stub can reach: the due query is bounded and
+  // ordered (a missing `.order()` purges an arbitrary 25 of 40 and the rest wait a day for no
+  // reason), it leaves out the ids `runPurge` hands it (without that, the loop above meets the same
+  // failing accounts until the budget is spent — DW-47), the ceiling the budget sits under is
+  // stated, and a run with a failed account answers 500 — Vercel neither retries nor alerts
+  // (DW-46), so the red line is the alarm. "Each account is its own try" is no longer read off the
+  // source: `runPurge` is executed above.
   const flat = readFileSync(`${ROUTE_DIR}/route.ts`, 'utf8')
     .replace(/\/\*[^]*?\*\/|\/\/[^\n]*/g, ' ')
     .replace(/\s+/g, ' ')
   assert.match(flat, /\.order\('purge_after'\)/, 'the oldest deadline must be purged first')
-  assert.match(flat, /\.limit\(BATCH\)/, 'the run is bounded by BATCH, not by whatever is due')
-  assert.match(flat, /runPurge\(deps,/, 'the route must run the loop that is tested above')
+  assert.match(flat, /\.limit\(limit\)/, 'each query is bounded by the limit runPurge hands it, not by whatever is due')
+  assert.match(
+    flat,
+    /const untried = excluding\.length \? profiles\.not\('user_id', 'in', `\(\$\{excluding\.join\(','\)\}\)`\) : profiles const \{ data, error \} = await untried \./,
+    'the due query must leave out every id this run already tried (DW-47)',
+  )
+  const ceiling = /export const maxDuration = (\d+)/.exec(flat)
+  assert.ok(ceiling, 'the route must state its maxDuration rather than assume the platform default')
+  assert.ok(BUDGET_MS < Number(ceiling[1]) * 1000, 'the budget must end before the platform kills the run')
+  assert.match(flat, /runPurge\(deps\)/, 'the route must run the loop that is tested above')
   assert.match(
     flat,
     /status: failed \? 500 : 200/,

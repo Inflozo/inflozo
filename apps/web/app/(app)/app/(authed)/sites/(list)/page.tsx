@@ -9,6 +9,8 @@ import {
   checkedLabel,
   connectMessage,
   filterSites,
+  sitesPath,
+  sitesScreen,
   ghostLabel,
   HEALTH,
   hostOf,
@@ -24,6 +26,7 @@ import { resolveEntitlement } from '@/lib/entitlement'
 import { openHealthNotices, reasonSentence } from '@/lib/health-rule'
 import { atSiteCap, goProLabel, siteCapSentence } from '@/lib/plan'
 import { hasBrand, PREVIEW_COPY } from '@/lib/probe-rule'
+import { CLEAR_SEARCH } from '@/lib/projects'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { deadlineLabel } from '../../account/deletion-rule'
 import { BRAND_TITLE_ID } from '../brand-panel'
@@ -39,6 +42,20 @@ import { SiteMenu } from '../site-menu'
 import { SiteNotices, type NoticeSite } from '../site-notices'
 
 /* ───────── S11 Sites.dc.html — S11a, its top bar, and the empty screen the export does not draw.
+
+   THE CARD'S LAYOUT IS THE OWNER'S, NOT THE FRAME'S, AND THIS IS ITS RULE (DW-57 — his test of
+   Story 3.2, findings 4 and 6, and his Story 3.3 Question 2 ruling). Every story that adds to a
+   Sites card follows it, and none restores what the frame draws (`S11 Sites.dc.html:61-76`):
+     · THE PILLS' LINE carries metadata about the site and nothing else — the Ghost version and the
+       projects tally.
+     · THE STATE LINE carries the connection's state, its timestamp just under it, and the
+       Preview-only chip; the chip sits beside **Connected** only where the card can hold it and
+       wraps under it where it cannot, and the grid is never widened to make it fit ("Leave it —
+       the tag wraps on a tablet and nowhere else").
+     · THE ⋯ AT THE HEADER ROW'S TOP RIGHT is the one place the card's actions live; a new action
+       is a row in that menu, never a second control on the card.
+     · A story ADDS to this layout; it never puts back the frame's.
+   The notes below that say "OBEYED DW-57" are stories that followed this rule.
 
    THE OWNER'S TEST WROTE THIS FILE'S SHAPE (2026-09-08, R-80 as amended), and two of its three
    departures are from the frame itself, recorded here so a later story does not "correct" them
@@ -58,14 +75,14 @@ import { SiteNotices, type NoticeSite } from '../site-notices'
       the frame draws it (`:70-75`), and the two sit closer together than the card's other rows.
       One component draws every card, so "finalise this for all site cards" is satisfied by
       changing it once — and the later stories that add to this card inherit THIS layout, not the
-      frame's (deferred-work.md, DW-57).
+      frame's (DW-57's rule, at the top of this file).
 
    The sites are read through the USER'S OWN SESSION, so RLS scopes the list rather than a
    `where user_id =` being trusted to; `(user_id) where disconnected_at is null` is the index the
    filter is the shape of (schema :174). A DISCONNECTED record is a record Inflozo kept (FR-C6)
    and is not a site — it does not appear here and it does not count against the plan.
 
-   STORY 3.3 ADDED TWO THINGS TO THE CARD AND OBEYED DW-57 IN WHERE IT PUT THEM. The sky
+   STORY 3.3 ADDED TWO THINGS TO THE CARD AND OBEYED DW-57 (the rule above) IN WHERE IT PUT THEM. The sky
    **Preview-only** chip is on the STATE LINE beside "Connected", not on the pills' line, because
    it is a property of the CONNECTION and the pills are metadata about the site — so 3.5's ⋯ menu
    and 3.7's health badges now add to the state line the owner made, rather than reading the frame
@@ -238,8 +255,11 @@ export default async function Sites({
 
   // One clock for the whole render, so two cards a millisecond apart never disagree.
   const now = new Date()
+  // WHICH OF THE FOUR SCREENS, DECIDED IN ONE PURE PLACE (DW-59): `sitesScreen` in `lib/connect-rule.ts`,
+  // where `node --test` holds "a failed read is not an empty account" as `showsFirstRun` holds the dashboard's.
+  const screen = sitesScreen({ unread, sites: sites.length, shown: shown.length })
 
-  if (unread) {
+  if (screen === 'unread') {
     return (
       <div className="flex flex-col gap-4 p-[16px_20px] tablet:p-6">
         <h1 className="sr-only">Sites</h1>
@@ -250,7 +270,7 @@ export default async function Sites({
 
   return (
     <>
-      {sites.length === 0 ? (
+      {screen === 'empty' ? (
         /* The first-run state, and neither a search that matched nothing nor a read that failed
            is it — the drawing would be telling someone with a site that they have none. */
         <div className="flex flex-1 flex-col items-center justify-center gap-6 p-6 text-center">
@@ -306,8 +326,15 @@ export default async function Sites({
             <ConnectSiteButton look="mobile" />
           </div>
 
-          {shown.length === 0 ? (
-            <p className="text-ui-dense text-ink-soft">{SITES_EMPTY.noMatch(query)}</p>
+          {screen === 'noMatch' ? (
+            /* DW-27: THE SENTENCE AND A WAY BACK — P0's no-match rule, in the grid's own slot (R-74).
+               The link is the list without `?q=` (`sitesPath`), a route with its own skeleton (R-98). */
+            <p className="text-ui-dense text-ink-soft">
+              {SITES_EMPTY.noMatch(query)}{' '}
+              <Link href={sitesPath()} className={`font-medium text-coral-text underline ${ring}`}>
+                {CLEAR_SEARCH}
+              </Link>
+            </p>
           ) : (
             <div className="grid grid-cols-1 gap-[14px] tablet:grid-cols-3 tablet:gap-5">
               {shown.map((site) => {

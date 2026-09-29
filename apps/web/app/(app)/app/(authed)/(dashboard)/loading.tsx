@@ -4,6 +4,16 @@
  * that is coming, which is why this is not `components/kit/loading.tsx`'s `Skeleton`: that one is
  * the Layers row's shape, for a 280px sidebar.
  *
+ * WHAT IT COVERS, SAID EXACTLY (DW-25, Story 5.24b). This skeleton is drawn on a SOFT navigation to
+ * Projects. On a COLD load nothing is sent until the guards above it have answered — `(authed)/
+ * layout.tsx` awaits `currentUser()`, the profile read and `resolveEntitlement`, and
+ * `(dashboard)/layout.tsx` First Run's counts — and only then does the document stream, this
+ * skeleton first. THAT IS THE RULE, NOT A GAP: a redirect decided above the first flush is a real
+ * `307` (to `/sign-in`, to `/restore`, to `/start`), and one decided below it would stream as a
+ * `200` and arrive as a client navigation after the wrong skeleton had shown (R-98's second effect,
+ * measured at Story 3.8). So the guards stay above, and the blank moment before a cold load's first
+ * byte is the price of an honest status.
+ *
  * Three, because three is a row of the grid at 1440 and enough of one at 390.
  *
  * THIS FILE IS THE DASHBOARD'S AND ONLY THE DASHBOARD'S, and it took the owner's test of Story

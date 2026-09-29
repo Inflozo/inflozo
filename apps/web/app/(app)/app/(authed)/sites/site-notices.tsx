@@ -36,7 +36,8 @@ import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from '.
    and E7). `PREVIEW_COPY` in `lib/probe-rule.ts` holds every sentence, so the harness reads the
    app's own words rather than retyping them.
 
-   DW-57 BINDS THE CHIP, NOT THIS FILE: the sky "Preview-only" chip is on the card's STATE LINE
+   DW-57 BINDS THE CHIP, NOT THIS FILE (its rule is at the top of `(list)/page.tsx`): the sky
+   "Preview-only" chip is on the card's STATE LINE
    beside "Connected" (`page.tsx`), because it is the connection's state and the pills line is
    metadata. These blocks are the card's last child.
 

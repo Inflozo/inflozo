@@ -20,8 +20,8 @@ The fields it writes are the sign-in flow's (site URL, the allow list, the 15-mi
 as the SMTP sender, the three templates and their subjects, the two rate limits, no passwords
 anywhere); since Story 2.1, the four that turn Supabase's own passkey switch on: `passkey_enabled`
 and the three `webauthn_rp_*`; and since Story 2.3, the email-change template and the two switches
-that decide how many emails an email change sends and to whom. `sessions_inactivity_timeout` is
-written with them and reported apart.
+that decide how many emails an email change sends and to whom. `sessions_inactivity_timeout` is not
+among them, on purpose (DW-14; the comment under `settings()` says why).
 
 `smtp_pass` is `$RESEND_API_KEY` and is NEVER printed, compared or read back — the API returns it
 masked, so it is written and then left alone. Every other field is compared by value.
@@ -134,11 +134,14 @@ def settings(template: str, email_change_template: str, sender: str) -> dict:
     }
 
 
-# Written with everything else but reported separately: it is a paid-plan field on some plans and
-# a miss here is a fact about the plan, not a failure of the story. The unit is HOURS — the API
-# describes it as "Session inactivity timeout in hours" (api.supabase.com/api/v1-json, read
-# 2026-09-05) — so 720 is thirty days, FR-A6's own number, and never twelve minutes.
-SOFT = {'sessions_inactivity_timeout': 720}
+# `sessions_inactivity_timeout` IS NOT WRITTEN AND NOT READ (DW-14, closed by Story 5.24b). It is a paid-plan
+# field — the PATCH answered `402 "User sessions can only be configured on Pro Plans and up."` on 2026-09-05 —
+# and FR-A6's thirty days ROLLING never needed it: that is the cookie's `Max-Age` plus the refresh in
+# `proxy.ts`, and the 720 hours this tool asked for were the same thirty days (the unit is hours,
+# api.supabase.com/api/v1-json), so a plan upgrade applying it would have changed nothing. Until 5.24b it was
+# written with the rest, retried away on the 402 and printed as a `----` on every run, for a setting this
+# project has never had. An idle timeout SHORTER than thirty days is a different thing — a decision about
+# money, and the owner's — and it starts from a new ruling, not from a row kept here in case.
 
 
 def project_ref(url: str) -> str:
@@ -238,18 +241,8 @@ def main() -> int:
             print(f'  If that is genuinely intended, say so: --expect webauthn_rp_id={want["webauthn_rp_id"]}')
             return 1
 
-        payload = {**want, **SOFT, 'smtp_pass': env('RESEND_API_KEY')}
+        payload = {**want, 'smtp_pass': env('RESEND_API_KEY')}
         status, body = api('PATCH', ref, token, payload)
-        if status == 402:
-            # 402 is the ONE status `sessions_inactivity_timeout` produces — "User sessions can
-            # only be configured on Pro Plans and up", executed 2026-09-05. Retrying on ANY
-            # non-200 made a 401, or a template the API rejected, print "retrying without the
-            # plan-dependent field…" and then fail identically a second time, which says nothing
-            # true about what was wrong (review, 2026-09-05).
-            print(f'PATCH {status}: {json.dumps(body)[:400]}')
-            print('retrying without the plan-dependent field…')
-            payload.pop('sessions_inactivity_timeout', None)
-            status, body = api('PATCH', ref, token, payload)
         if status != 200:
             print(f'PATCH {status}: {json.dumps(body)[:400]}')
             return 1
@@ -263,24 +256,22 @@ def main() -> int:
 
     for override in args.expect:
         key, sep, value = override.partition('=')
-        # a SOFT field stays soft — putting it in `want` would make the control fail on the plan,
-        # not on the expectation; and `bool('0')` is True, so booleans are read by word
-        target = want if key in want else SOFT if key in SOFT else None
-        if target is None:
+        if key not in want:
             sys.exit(f'--expect {key}: not a field this tool sets')
         if not sep:
             sys.exit(f'--expect {key}: give key=value')
-        current = target[key]
+        current = want[key]
+        # `bool('0')` is True, so booleans are read by word
         if isinstance(current, bool):        # bool before int — bool IS an int in Python
-            target[key] = value.lower() in ('true', '1')
+            want[key] = value.lower() in ('true', '1')
         elif isinstance(current, int):
             # its sibling misuses exit with a sentence; this one exited with a traceback
             if not re.fullmatch(r'-?\d+', value):
                 sys.exit(f'--expect {key}: {value!r} is not a number')
-            target[key] = int(value)
+            want[key] = int(value)
         else:
-            target[key] = value
-        print(f'  (--expect override: {key} = {target[key]!r})')
+            want[key] = value
+        print(f'  (--expect override: {key} = {want[key]!r})')
 
     fails = 0
     for key, expected in want.items():
@@ -290,13 +281,6 @@ def main() -> int:
         shown = f'{len(expected)} chars' if isinstance(expected, str) and len(expected) > 60 else repr(expected)
         detail = '' if ok else f'  (live: {repr(actual)[:80]})'
         print(f'  {"PASS" if ok else "FAIL"}  {key} = {shown}{detail}')
-
-    for key, expected in SOFT.items():
-        actual = live.get(key)
-        if str(actual) == str(expected):
-            print(f'  PASS  {key} = {expected!r}')
-        else:
-            print(f'  ----  {key}: asked for {expected!r}, project reports {actual!r} — not on this plan, stated not swallowed')
 
     print(f'\n{"OK" if not fails else f"{fails} FAILED"}')
     return 1 if fails else 0

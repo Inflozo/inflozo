@@ -1,7 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import type { AddressInfo } from 'node:net'
 import { join } from 'node:path'
+import { createClient } from '@supabase/supabase-js'
 import {
   atCap,
   atSiteCap,
@@ -13,6 +16,7 @@ import {
   PRICE,
   planFor,
   planName,
+  readEntitlement,
   siteCapSentence,
 } from './lib/plan.ts'
 
@@ -27,6 +31,40 @@ test('planFor: free, absent and unknown resolve to Free; both Pro states to Pro'
   // The grace window keeps EVERY Pro capability (F.1's third column) — the one row that has
   // gone wrong in this project before.
   assert.equal(planFor('pro_past_due'), 'pro')
+})
+
+/**
+ * AD-28's DEGRADATION, EXECUTED (DW-29, Story 5.24b): the read `resolveEntitlement` makes, through
+ * a real `createClient` (`@supabase/supabase-js` 2.115.0) against a local PostgREST stand-in. Not a
+ * fake client: the query is built, sent and parsed by the library the app ships. Each answer is
+ * checked to have reached the server, so a Free that came from a refused connection instead of the
+ * 500 cannot pass for the rule.
+ */
+test('readEntitlement: a 500 is Free and one log line, a pro_active row is Pro', async (t) => {
+  const USER = '11111111-1111-1111-1111-111111111111'
+  let answer: { status: number; body: unknown } = { status: 200, body: [] }
+  const seen: string[] = []
+  const server = createServer((request, response) => {
+    seen.push(request.url ?? '')
+    response.writeHead(answer.status, { 'content-type': 'application/json' })
+    response.end(JSON.stringify(answer.body))
+  })
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => server.close())
+  const client = createClient(`http://127.0.0.1:${(server.address() as AddressInfo).port}`, 'publishable', {
+    auth: { persistSession: false, autoRefreshToken: false },
+  })
+  const errors: unknown[][] = []
+  const log = { error: (...line: unknown[]) => errors.push(line) }
+
+  answer = { status: 500, body: { code: 'XX000', details: null, hint: null, message: 'down' } }
+  assert.equal(await readEntitlement(client, USER, log), 'free', 'a failed read is Free, never a throw')
+  assert.deepEqual(errors, [['entitlement: read failed', { code: 'XX000' }]], 'one line, and no user id in it')
+  assert.deepEqual(seen, [`/rest/v1/entitlements?select=state&user_id=eq.${USER}`], 'the 500 is what was answered')
+
+  answer = { status: 200, body: [{ state: 'pro_active' }] }
+  assert.equal(await readEntitlement(client, USER, log), 'pro', 'the control: the same read of a Pro row is Pro')
+  assert.equal(errors.length, 1, 'a read that worked logs nothing')
 })
 
 test('planName is the badge’s word', () => {

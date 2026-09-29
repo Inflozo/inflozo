@@ -1,8 +1,9 @@
 'use client'
 
 import { useEffect, useRef, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { closeOnBackdrop, panelSheet } from '@/components/kit/dialog'
+import { sitesPath } from '@/lib/connect-rule'
 
 /* ────────────────────────────── THE `<dialog>` A PANEL IS DRAWN IN OVER THE SITES LIST — Manage
    keys' (`?manage=`) and the brand offer's (`?brand=`). ONE dialog for both, so a change to how a
@@ -42,9 +43,24 @@ import { closeOnBackdrop, panelSheet } from '@/components/kit/dialog'
 
    ESCAPE AND THE BACKDROP HAVE TO MOVE THE URL, because the native element closes without
    navigating and would leave the address bar naming a panel that is not on screen. They go where
-   the ✕ and **Cancel** go — `/sites`, ONE way out for every gesture — and by `replace`, so the
-   panel leaves no entry behind however many keys were saved in it. `back()` would have been the
-   other choice and is not: a typed `/sites?manage=…` has nothing behind it to go back to.
+   the ✕ and **Cancel** go — the list, ONE way out for every gesture, with the list's own search
+   kept (`sitesPath`, DW-82) — and by `replace`, so the panel leaves no entry behind however many
+   keys were saved in it. `back()` would have been the other choice and is not: a typed
+   `/sites?manage=…` has nothing behind it to go back to.
+
+   ───────── AND NO WAY OUT WHILE A SAVE IN THE WINDOW IS STILL ON ITS WAY (DW-84, Story 5.24b).
+
+   Escape during a save used to close the window, and the save's own redirect then arrived and
+   opened it again with the answer the customer had walked away from. So while anything inside is
+   `aria-busy="true"` — the Kit's `Submit` wears it for exactly as long as its action is in flight,
+   and the Content key's own form does the same — Escape is cancelled, the backdrop does nothing,
+   and the ✕ and Cancel (`data-panel-exit`) go `aria-disabled` and refuse their clicks (R-98:
+   `aria-disabled`, never `disabled`). The save lands in the window that is still open. A
+   `MutationObserver` watches the one attribute, so this needs nothing from either panel beyond the
+   marker on its exits, and one fix covers the keys window and the brand window alike.
+   ponytail: Chromium's close watcher honours a cancelled Escape once per user activation — a
+   SECOND Escape with no click or key in between closes anyway. A save lands in well under a second,
+   so the ceiling is two Escapes inside that; an `inert` window is the upgrade if it is ever met.
 
    THE PANEL ITSELF IS A SERVER COMPONENT AND STAYS ONE. It arrives as `children`, inside the
    list's own `<Suspense>`, so every read, every `<form action={serverAction}>` dispatch and every
@@ -55,6 +71,9 @@ import { closeOnBackdrop, panelSheet } from '@/components/kit/dialog'
    remount between them — the window would open, close and open again while the panel loaded.
    Here it opens once and the skeleton inside it is swapped for the panel. */
 
+/** DW-84: is a save inside this window still on its way? */
+const busy = (el: Element | null) => Boolean(el?.querySelector('[aria-busy="true"]'))
+
 export function PanelModal({
   labelledBy,
   children,
@@ -64,6 +83,7 @@ export function PanelModal({
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const router = useRouter()
+  const listed = useSearchParams().get('q')
 
   useEffect(() => {
     const el = dialog.current
@@ -79,7 +99,29 @@ export function PanelModal({
     const popover = active?.closest('[popover]')
     const opener = popover?.id ? document.querySelector(`[popovertarget="${popover.id}"]`) ?? active : active
     if (el && !el.open) el.showModal()
+
+    // DW-84: THE WAYS OUT GREY WHILE A SAVE IS IN FLIGHT, and refuse the click — capture phase, so
+    // `next/link` sees `defaultPrevented` and never navigates.
+    const exits = () => el?.querySelectorAll<HTMLElement>('[data-panel-exit]') ?? []
+    const sync = () => {
+      const held = busy(el)
+      for (const exit of exits()) {
+        if (held) exit.setAttribute('aria-disabled', 'true')
+        else exit.removeAttribute('aria-disabled')
+      }
+    }
+    const observer = new MutationObserver(sync)
+    if (el) observer.observe(el, { subtree: true, attributeFilter: ['aria-busy'] })
+    const refuse = (event: globalThis.MouseEvent) => {
+      if ((event.target as Element | null)?.closest('[data-panel-exit][aria-disabled="true"]')) {
+        event.preventDefault()
+        event.stopPropagation()
+      }
+    }
+    el?.addEventListener('click', refuse, true)
     return () => {
+      observer.disconnect()
+      el?.removeEventListener('click', refuse, true)
       if (opener instanceof HTMLElement && opener.isConnected) opener.focus({ preventScroll: true })
     }
   }, [])
@@ -87,8 +129,14 @@ export function PanelModal({
   return (
     <dialog
       ref={dialog}
-      onClick={closeOnBackdrop}
-      onClose={() => router.replace('/sites')}
+      // DW-84: a busy window refuses Escape and the backdrop; the save lands in it instead.
+      onCancel={(event) => {
+        if (busy(dialog.current)) event.preventDefault()
+      }}
+      onClick={(event) => {
+        if (!busy(dialog.current)) closeOnBackdrop(event)
+      }}
+      onClose={() => router.replace(sitesPath(listed))}
       aria-labelledby={labelledBy}
       className={panelSheet}
     >

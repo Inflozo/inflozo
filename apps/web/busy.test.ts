@@ -178,6 +178,10 @@ const NO_SKELETON: Record<string, string> = {
     'Story 5.20: the same harness on another canvas, and the same reason — the editor is the harness layout\'s, so this ' +
     'page renders nothing, and it refuses a segment the scheme does not know with notFound(), which a boundary above ' +
     'it would turn into a committed 200',
+  [join(APP, 'app', 'harness', 'error')]:
+    'Story 5.24b (DW-91): the keyboard gate\'s page that throws on purpose, so the app\'s error boundary is drawn and ' +
+    'its tab title read — no user reaches it, it answers notFound() unless INFLOZO_HARNESS=1, and a loading.tsx ' +
+    'would commit the 200 before that notFound() ran (DW-67)',
   [join(AUTHED, 'projects', '[id]', '(editor)')]:
     'Story 5.1\'s editor, and a loading.tsx here would be a defect: both editor pages render nothing, and the ' +
     'editor\'s skeleton — its own shape, bar, both panels and the page card — is the Suspense fallback inside ' +

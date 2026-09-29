@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { supabaseServer } from './supabase/server.ts'
-import { PLANS, planFor, type Caps, type EntitlementState, type PlanId } from './plan.ts'
+import { PLANS, readEntitlement, type Caps, type PlanId } from './plan.ts'
 
 /**
  * THE SPINE'S SINGLE RESOLVER (AD-28). Plan state comes from one server-side
@@ -34,16 +34,7 @@ export type Entitlement = { plan: PlanId; caps: Caps; reasons: string[] }
 export const resolveEntitlement = cache(async function resolveEntitlement(
   userId: string,
 ): Promise<Entitlement> {
-  const supabase = await supabaseServer()
-  const { data, error } = await supabase
-    .from('entitlements')
-    .select('state')
-    .eq('user_id', userId)
-    .maybeSingle<{ state: EntitlementState }>()
-
-  // Logged without the id: logs carry no user content (spine, Security floor).
-  if (error) console.error('entitlement: read failed', { code: error.code })
-
-  const plan = planFor(data?.state)
+  // The read and its degradation are `plan.ts`'s, where `node --test` executes them (DW-29).
+  const plan = await readEntitlement(await supabaseServer(), userId)
   return { plan, caps: PLANS[plan], reasons: [] }
 })

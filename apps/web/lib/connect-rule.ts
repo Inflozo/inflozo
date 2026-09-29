@@ -46,14 +46,49 @@ export function normaliseSiteUrl(input: string | null | undefined): string | nul
   // browser's Content-key check could reach is not one Vercel's function can.
   if (!url.hostname.includes('.')) return null
   // AN IP LITERAL IS NOT A SITE ADDRESS EITHER. `10.0.0.1`, `127.0.0.1`, `169.254.169.254` and
-  // `[::1]` all pass the dot test; refusing them keeps the function's fetch off a bare address, for
-  // the same reason `localhost` is refused, and loses nothing — a Ghost on a bare IP has no
-  // certificate the browser's own Content-key check would trust (review, 2026-09-08). A public
-  // NAME that resolves to a private range still passes — this is a shape check, not a resolver —
-  // and DW-58 records what that is worth on Vercel's function (review 2, 2026-09-08).
+  // `[::1]` all pass the dot test, and a Ghost on a bare IP has no certificate the browser's own
+  // Content-key check would trust (review, 2026-09-08) — so they are refused as typos. THIS IS A
+  // SHAPE CHECK AND NOTHING MORE: a public NAME that resolves to a private range passes it
+  // (`127.0.0.1.nip.io`, executed). What keeps the server's fetch off private addresses is
+  // `fetchWithKey`'s resolver check (DW-58, Story 5.24b), which every Admin call passes through —
+  // including one whose `sites.url` never came through here.
   if (/^\d{1,3}(\.\d{1,3}){3}$/.test(url.hostname) || url.hostname.startsWith('[')) return null
   return `${url.protocol}//${url.host.toLowerCase()}`
 }
+
+/**
+ * THE PATH THAT WAS TYPED, FOR R-219's SENTENCE (DW-55, Story 5.24b) — or `''` when there is none. `normaliseSiteUrl`
+ * keeps only the origin, on purpose (one record per site, however it is spelled), and it is unchanged: it also serves
+ * `hostOf`, the browser's Content-key check and the editor's `read.ts`. This is the other half of what was typed.
+ *
+ * WHAT IS SET ASIDE IS NOT A PATH: `URL` has already taken the query and the hash off, and a trailing `/ghost…` segment
+ * is Ghost's own admin — `https://example.com/ghost/#/dashboard` is how a customer copies the address, and it connects
+ * at the root as it always has. Only a WHOLE `ghost` segment: `/ghostwriter` is a path. A trailing slash is dropped so
+ * `/blog` and `/blog/` read the same in the sentence.
+ */
+export function pathOf(input: string | null | undefined): string {
+  const typed = (input ?? '').trim()
+  let url: URL
+  try {
+    url = new URL(/^[a-z][a-z0-9+.-]*:\/\//i.test(typed) ? typed : `https://${typed}`)
+  } catch {
+    return ''
+  }
+  const path = url.pathname.replace(/\/ghost(\/.*)?$/i, '').replace(/\/+$/, '')
+  try {
+    return decodeURI(path)
+  } catch {
+    return path
+  }
+}
+
+/**
+ * R-226 — A TYPED PATH IS JUDGED AT THE ROOT FIRST. `connectSite` asks the root's `config/` before the plan's limit is
+ * counted, and only a `404` there — no Ghost at the root — is R-219's refusal. A `200`, any other answer, or no path at
+ * all carries on exactly as it did, so the address of a page on a site at the root still connects (the owner's Question
+ * 1 ruling, 2026-09-29) and nobody is asked to upgrade for an address that could not connect.
+ */
+export const pathRefused = (path: string, rootStatus: number | undefined): boolean => path !== '' && rootStatus === 404
 
 /** The warning's condition, read off what was TYPED — the field says so before Connect is pressed. */
 export const isPlainHttp = (input: string | null | undefined): boolean =>
@@ -185,6 +220,17 @@ export const SITES_EMPTY = {
 } as const
 
 /**
+ * WHICH OF S11a's FOUR SCREENS THE LIST DRAWS (DW-59, Story 5.24b) — decided here so `node --test` holds it, the way
+ * `showsFirstRun` holds the dashboard's. A FAILED READ IS NOT AN EMPTY ACCOUNT: `data ?? []` would show someone with a
+ * connected site the first-run drawing, so an unread list is the error banner and nothing else (the dashboard's own
+ * scar, review 2026-09-05). And a search that matched nothing is not the first-run screen either: that drawing would be
+ * telling someone with a site that they have none.
+ */
+export type SitesScreen = 'unread' | 'empty' | 'noMatch' | 'list'
+export const sitesScreen = (state: { unread: boolean; sites: number; shown: number }): SitesScreen =>
+  state.unread ? 'unread' : state.sites === 0 ? 'empty' : state.shown === 0 ? 'noMatch' : 'list'
+
+/**
  * STORY 3.5 — DISCONNECT'S EVERY WORD, AND THEY LIVE HERE AND NOWHERE ELSE. `site-menu.tsx` draws
  * them and `run-verify-ghost-admin.py` reads them out of this file, so the screen and the harness
  * cannot disagree about what the customer was shown (`PREVIEW_COPY` and `BRAND_COPY` in
@@ -243,7 +289,7 @@ export const ORPHAN_SNAPSHOT_DAYS = 90
  * `DISCONNECT`: the orphan clock's figure is `ORPHAN_SNAPSHOT_DAYS`'s, and nothing else on this
  * screen counts anything. `movedDomains` takes the days rather than spelling them.
  *
- * TWO DEPARTURES FROM THE FRAMES, BOTH RECORDED RATHER THAN SILENT (R-74; the precedent is Story
+ * THREE DEPARTURES FROM THE FRAMES, ALL RECORDED RATHER THAN SILENT (R-74; the precedent is Story
  * 3.4's hex-instead-of-colour-name):
  *
  *   1. NO REVEAL, AND NO TRAILING CHARACTERS. B20 masks each key with its first AND last
@@ -258,6 +304,12 @@ export const ORPHAN_SNAPSHOT_DAYS = 90
  *      screen says what it KNOWS (a key is held, or it is not) and offers **Test connection** for
  *      the rest. This is also the acceptance criterion "present or absent, and never an error
  *      badge".
+ *   3. THE ROLL HINT NAMES GHOST'S **Custom** TAB (DW-86, Story 5.24b). S11d's hint (`S11 Sites.dc.html`
+ *      :232) and S11e's say "Settings → Integrations → Inflozo → Regenerate", and on both majors a
+ *      customer's own integration is not on the Integrations screen's first view: Ghost Admin opens
+ *      it on the **Built-in** tab, and "Inflozo" is under **Custom** (read in the admin bundles of
+ *      5.130.6 and 6.58.0, MEASUREMENTS §58). A wayfinding sentence that skips a click is the
+ *      sentence the customer cannot follow, so the word is added and the frames stay as drawn.
  */
 export const KEYS = {
   /** S11a's ⋯ menu item, the frame's own third row (`S11 Sites.dc.html:80`). */
@@ -315,6 +367,10 @@ export const KEYS = {
     addBusy: 'Adding\u2026',
     remove: 'Remove token',
     removeBusy: 'Removing\u2026',
+    /* READ IN GHOST'S OWN ADMIN, BOTH MAJORS (DW-86, MEASUREMENTS §58): the avatar menu's "Your
+       profile" and the profile's "Staff access token" — `ghost-060c0f303364be7ed22510336af44764.js`
+       and `admin-x-settings/modals-B5dtfzsB.mjs` in the 5.130.6 tarball; `index-BOJzlYiz.js` and
+       `user-detail-modal-595z1N5r.js` in 6.58.0's. Right as written on both. */
     ask: 'Ghost Admin → your avatar → Your profile → Staff Access Token.',
   },
 
@@ -322,9 +378,13 @@ export const KEYS = {
   noReveal:
     'Only the start of each key is shown. Inflozo cannot read the rest back either — your Ghost keeps it.',
 
-  /** S11d's hint block (`:232`). */
+  /* S11d's hint block (`:232`), WITH THE THIRD DEPARTURE ABOVE: **Custom**, which the frame
+     leaves out. Read in Ghost's own admin, both majors (DW-86, MEASUREMENTS §58): Settings →
+     Advanced → Integrations with its **Built-in** and **Custom** tabs, and the custom integration's
+     Regenerate — `admin-x-settings/index-BVxh86CD.mjs` in the 5.130.6 tarball; `settings-KSWWQanQ.js`,
+     `custom-integration-modal-CrGOI8IB.js` and `api-keys-Df6uv1dT.js` in 6.58.0's. */
   rollHint:
-    'To roll keys: Ghost Admin → Settings → Integrations → Inflozo → Regenerate. Old keys stop working the moment you regenerate.',
+    'To roll keys: Ghost Admin → Settings → Integrations → Custom → Inflozo → Regenerate. Old keys stop working the moment you regenerate.',
 
   /** S11d's footer (`:238`) — Cancel only: each credential row carries its own save. */
   cancel: 'Cancel',
@@ -470,7 +530,33 @@ export const CONNECT_SITE_DIALOG = 'connect-site-sheet'
  * are on this list.
  */
 export const keysPath = (siteId: string) => `/sites/keys?site=${siteId}`
-export const keysPopupPath = (siteId: string) => `/sites?manage=${siteId}`
+
+/**
+ * DW-82, STORY 5.24b — THE ONE WAY TO `/sites`, AND IT CARRIES THE LIST'S OWN SEARCH. The two windows are parameters on
+ * the list, so opening one over a filtered list used to drop `?q=` — the window opened over every card and closed onto
+ * every card — because each of the six ways in and out spelled `/sites` for itself. Every address on the list is now
+ * built here: the two windows, their ✕ and Cancel, Escape and the backdrop (`panel-modal.tsx`), the popup screens' own
+ * exits, and every action's landing (`listQuery()` in `sites/actions.ts`, off the action's own request). ONE EXCEPTION,
+ * ON PURPOSE: connect's landing drops the search, because the card it just made could be filtered out of sight.
+ * `URLSearchParams` builds it, so a search with a space or an ampersand in it survives the trip.
+ */
+export function sitesPath(q?: string | null, extra: Record<string, string> = {}): string {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  for (const [key, value] of Object.entries(extra)) params.set(key, value)
+  const search = params.toString()
+  return search ? `/sites?${search}` : '/sites'
+}
+
+export const keysPopupPath = (siteId: string, q?: string | null) => sitesPath(q, { manage: siteId })
+
+/**
+ * …and S2c as the same kind of window, which is `?brand=` on the list (`brandPath` in `probe-rule.ts` is its full page).
+ * It moved here from `probe-rule.ts` beside its twin at Story 5.24b, so both windows are built by `sitesPath` and that
+ * module keeps importing nothing. `connectSite` still lands on `brandPath`: the owner ruled at Question 7 (option 1,
+ * 2026-09-10) that the moment straight after a connect stays a full screen.
+ */
+export const brandPopupPath = (siteId: string, q?: string | null) => sitesPath(q, { brand: siteId })
 
 /**
  * THE CODES → SENTENCES TABLE, AND IT LIVES HERE AND NOWHERE ELSE. The action answers a code and
@@ -510,11 +596,23 @@ export const CONNECT_MESSAGES = {
     'Your site sent us somewhere else. Connect with the address your site actually uses.',
   ghost_too_old: (version: string) =>
     `Your site runs Ghost ${version}. Inflozo needs Ghost ${MIN_GHOST_MAJOR} or newer — please update Ghost, then connect.`,
-  // DW-52: every Ghost answer the map above does not name — a 403, a 429, a 5xx. (Plain http is
-  // NOT one of them: Ghost answers it with a 301, which is `ghost_redirected` — §38c as corrected
-  // at Review.) The status is in the sentence so a support reply has something to work from.
+  // Every Ghost answer the map above does not name and that is a refusal — a 403, a 404, a 422.
+  // (Plain http is NOT one of them: Ghost answers it with a 301, which is `ghost_redirected` —
+  // §38c as corrected at Review. And since Story 5.24b a 429 or a 5xx is not either: that is
+  // `ghost_unavailable`, below, DW-52.) The status is in the sentence so a support reply has
+  // something to work from.
   ghost_refused: (status: string) =>
     `Ghost refused the connection (HTTP ${status}). Check the address and the keys.`,
+  /* DW-52, STORY 5.24b: A BUSY OR DOWN GHOST IS NOT A GHOST THAT SAID NO. A 429 or any 5xx is
+     Ghost failing to answer, and "refused… check the address and the keys" sent the customer to fix
+     keys that were fine. It is the banner's, as `ghost_refused` is (no field in `FIELD_OF` or
+     `keysFieldOf`), and `HEALTH_REASONS` does not name it, so the daily check stays UNDECIDED on it
+     rather than calling a busy site broken. */
+  ghost_unavailable: () => "Ghost didn't answer just now. Try again in a moment.",
+  /* R-219, AS THE OWNER WORDED IT, WITH R-226's ORDER (DW-55, Story 5.24b): an address with a path
+     whose ROOT holds no Ghost. The path is what was typed (`pathOf`), and it sits under API URL in
+     the Kit field's error slot, where `url_invalid` already shows. */
+  path_unsupported: (path: string) => `Inflozo connects a Ghost site at the root of its address — ${path} isn't supported yet.`,
   already_connected: (host: string) => `${host} is already connected.`,
   credential_store_unavailable: () =>
     "We couldn't save your key just now. Nothing was connected — try again in a moment.",
@@ -583,6 +681,18 @@ export type ConnectCode = MessageCode | 'at_cap'
  */
 export type ConnectField = 'url' | 'admin_key' | 'content_key' | 'staff_token'
 
+/** Manage keys' three credential fields. Each credential row's form posts exactly one of them (`keys-js-off`). */
+export const KEY_FIELDS = ['admin_key', 'content_key', 'staff_token'] as const
+
+/**
+ * DW-81, STORY 5.24b — ONE CREDENTIAL PER POST, OR NONE OF IT. `saveKeys` handles the three in sequence, so a crafted
+ * post carrying two could store the first, be refused on the second, and then tell the customer "Nothing changed" about
+ * a key it had just saved. No form in the product sends two — each row is its own `<form>` with one field — so a post
+ * that does is refused whole with `keys_failed`, BEFORE anything is read or written, and that sentence is then true.
+ * A field counts when it is PRESENT, empty or not: presence is what the three forms differ by.
+ */
+export const oneCredential = (form: FormData): boolean => KEY_FIELDS.filter((field) => form.has(field)).length <= 1
+
 /**
  * WHICH FIELD A MANAGE-KEYS CODE BELONGS UNDER, DERIVED IN ONE PLACE. `saveKeys` cannot answer its
  * caller — it redirects, so the screen works with JavaScript off — so the code travels back in the
@@ -618,6 +728,89 @@ export const keysFieldOf = (code: string): ConnectField | null =>
 export type ConnectResult =
   | { ok: true }
   | { error: { code: ConnectCode; message: string; field?: ConnectField } }
+
+/**
+ * DW-59, STORY 5.24b — CONNECT'S WRITES AND ITS UNDO, LIFTED OUT OF THE ACTION SO THEY EXECUTE. `connectSite` is a
+ * `'use server'` module that needs a session, a pooler and a real Ghost, so its failure branches — the store that fails
+ * and must undo the row it just made — were pinned by tests that read its SOURCE for the right words. They caught a
+ * column dropped from the restore and not the branches swapped. Now the action calls these and `connect-rule.test.ts`
+ * runs them with a store that fails.
+ *
+ * `KEPT` IS EVERY COLUMN CONNECT WRITES BEFORE `store()` RUNS, and therefore what a failed store puts back on a record
+ * Inflozo kept (FR-C6) — "as it was" means all of them, not the disconnect stamp alone (review, 2026-09-08). The opening
+ * read is BUILT from it (`CONNECT_READ`), so the read, the two writes and the restore are one list.
+ */
+export const KEPT = [
+  'title',
+  'favicon_url',
+  'ghost_version',
+  'content_key',
+  'credentials_present',
+  'site_settings',
+  'settings_read_at',
+  'disconnected_at',
+] as const
+export type Kept = (typeof KEPT)[number]
+
+/** What `connectSite` reads before it writes: the row's identity, and everything a failed store would put back. */
+export const CONNECT_READ = ['id', 'url', ...KEPT].join(', ')
+/** …and its row. A select built at run time is not a literal postgrest-js can parse, so the action names this type. */
+export type ConnectRow = Record<'id' | 'url', string> & Record<Kept, unknown>
+
+/**
+ * THE TWO WRITES CONNECT MAKES BEFORE THE KEY GOES INTO VAULT. `connection` is the whole connection a new row is
+ * inserted with and a disconnected record is re-adopted with; `cosmetic` is what `GET /admin/site/` answered, merged
+ * onto the row as it stands at the write (`patchSite`, DW-65).
+ *
+ * `credentials_present.admin` IS FALSE HERE ON PURPOSE: `store()` flips it in the same transaction that puts the key in
+ * Vault, so the mirror can never claim a key the site has not got (AD-7). `staff` is carried forward untouched.
+ *
+ * GHOST'S ANSWER IS CHECKED BEFORE IT BECOMES A LINK OR AN <img> — it is not a URL because Ghost sent it (review,
+ * 2026-09-08) — and the public url is kept as sent, slash and all (§38a). `readAt` is stamped WITH the read it names, so
+ * the card can only say "Checked just now" about a read that happened.
+ */
+export function siteWrite(args: { url: string; host: string; version: string | undefined; contentKey: string; staff: boolean }) {
+  return {
+    connection: {
+      ghost_version: args.version ?? null,
+      content_key: args.contentKey || null,
+      credentials_present: { content: Boolean(args.contentKey), admin: false, staff: args.staff },
+      disconnected_at: null,
+    },
+    cosmetic: (
+      read: { url?: unknown; title?: unknown; icon?: unknown },
+      previous: Record<string, unknown> | null,
+      readAt: string,
+    ): Record<string, unknown> => ({
+      title: typeof read.title === 'string' && read.title ? read.title : args.host,
+      favicon_url: isHttpUrl(read.icon) ? read.icon : null,
+      site_settings: { ...(previous ?? {}), public_url: isHttpUrl(read.url) ? read.url : args.url },
+      settings_read_at: readAt,
+    }),
+  }
+}
+
+/**
+ * THE KEY INTO VAULT, AND THE UNDO IF IT DOES NOT GO. `store()` owns its own transaction and the row above it was
+ * written over PostgREST, so the pair is not one transaction: a failure UNDOES the row and the answer is "Nothing was
+ * connected". A record Inflozo KEPT is put back AS IT WAS — every `KEPT` column — and never deleted; a row this connect
+ * made is deleted. The thrown value comes back for the action to turn into a sentence.
+ * ponytail: insert then store with a compensating write; one transaction inside server/ghost-admin if credential_audit
+ * ever shows the pair half-done.
+ */
+export async function storeOrUndo<Row extends Record<Kept, unknown>>(
+  existing: Row | undefined,
+  io: { store: () => Promise<unknown>; restore: (kept: Pick<Row, Kept>) => Promise<void>; remove: () => Promise<void> },
+): Promise<{ ok: true } | { ok: false; thrown: unknown }> {
+  try {
+    await io.store()
+    return { ok: true }
+  } catch (thrown) {
+    if (existing) await io.restore(Object.fromEntries(KEPT.map((column) => [column, existing[column]])) as Pick<Row, Kept>)
+    else await io.remove()
+    return { ok: false, thrown }
+  }
+}
 
 /**
  * The ceiling on each of the three fields, and it is the field's own `maxLength` so the form

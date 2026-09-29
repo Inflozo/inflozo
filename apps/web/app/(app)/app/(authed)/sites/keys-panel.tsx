@@ -37,11 +37,12 @@ import { removeToken, saveKeys, testConnection } from './actions'
    THE TWO IT IS TRAVELS INTO EVERY FORM as a hidden field (`popup`), so each action redirects onto
    the chrome the press came from — the owner's findings 3 and 5 of 2026-09-10.
 
-   AND THE WAY OUT IS THE SAME IN BOTH, WHICH IS WHY IT IS NOT A PROP HERE THE WAY
-   `disconnect-confirm.tsx`'s `cancel` is: the ✕ and Cancel are `<Link href="/sites" replace>`. On
-   the page that is a navigation back to the list; in the popup the same navigation takes
-   `?manage=` off the list's URL, and the list stops rendering the `<dialog>` because of it — one
-   rule for every way out there is, rather than a special control on each of them.
+   AND THE WAY OUT IS THE SAME IN BOTH: the ✕ and Cancel are `<Link href={back} replace>`, where
+   `back` is the list — `sitesPath`, carrying the list's own search in the window (DW-82, Story
+   5.24b) and the bare list on the full page. On the page that is a navigation back to the list; in
+   the popup the same navigation takes `?manage=` off the list's URL, and the list stops rendering
+   the `<dialog>` because of it — one rule for every way out there is, rather than a special
+   control on each of them.
 
    NO `'use client'`. Every control here is a real `<form action={serverAction}>` and the ⋯ row
    that reaches it is an `<a href>` with a destination, so the whole surface works with JavaScript
@@ -244,6 +245,7 @@ export function KeysPanel({
   status,
   tested,
   popup,
+  back,
 }: {
   site: KeysSite
   /** TRUE when this panel is the window over the Sites list (`/sites?manage=…`) rather than the
@@ -258,6 +260,8 @@ export function KeysPanel({
   status: string | null
   /** `?test=ok` or `?test=<code>` — what the last press of Test connection proved. */
   tested: string | null
+  /** Where the ✕ and Cancel go: the list, with its own search kept in the window (DW-82, `sitesPath`). */
+  back: string
 }) {
   /** The hidden field every form on this panel carries — see `popup` above. */
   const chrome = popup ? <input type="hidden" name="popup" value="1" /> : null
@@ -267,8 +271,9 @@ export function KeysPanel({
   // than putting a stranger's text on the customer's screen.
   // WHICH SUBJECT A SENTENCE TAKES IS THE SENTENCE'S, NOT THE SCREEN'S. Every code was handed
   // `site.name`, and `ghost_refused` is `(status) => 'Ghost refused the connection (HTTP ${status})'`
-  // — so a 403 or a 429 from the customer's Ghost read "(HTTP My Blog)" (review, 2026-09-09). The
-  // status travels beside the code and the screen has already refused anything that is not digits.
+  // — so a 403 from the customer's Ghost read "(HTTP My Blog)" (review, 2026-09-09). The status
+  // travels beside the code and the screen has already refused anything that is not digits. (A 429
+  // or a 5xx is `ghost_unavailable` since Story 5.24b, DW-52, and takes no subject at all.)
   const subjectFor = (code: string) => (code === 'ghost_refused' ? (status ?? '') : site.name)
   // …and `ghost_refused` without its status is unnamed too: "(HTTP )" is not a sentence.
   const said =
@@ -284,8 +289,9 @@ export function KeysPanel({
   const wayOut = (className: string, children: ReactNode, label?: string) => (
     // `replace`: Escape, the backdrop and every action leave by replace, so the window never
     // leaves an entry for Back to re-open (review 7 of Story 3.4, 2026-09-10 — the brand ✕ is
-    // this markup lifted, and it had the same push).
-    <Link href="/sites" replace aria-label={label} className={className}>
+    // this markup lifted, and it had the same push). `back` keeps the list's search (DW-82), and
+    // `data-panel-exit` is what `PanelModal` greys while a save in this window is busy (DW-84).
+    <Link href={back} replace aria-label={label} className={className} data-panel-exit>
       {children}
     </Link>
   )

@@ -7,6 +7,7 @@ import { ChevronDown } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { Segmented } from '@/components/kit/segmented'
 import { Select, openPopover } from '@/components/kit/select'
+import { CLEAR_SEARCH } from '@/lib/projects'
 
 /* The Icon Picker (FR-F1), as `P0-2 Icon Slot and Picker.dc.html:56-173` draws it and R-104 reshapes it:
    every Tabler icon, outline and filled, under Tabler's own categories. The drawn picker's parts stay —
@@ -308,7 +309,7 @@ export function IconPicker({
             <p className="text-[11.5px] leading-[1.5] text-ink-soft">
               Nothing for '{query.trim()}'{' '}
               <button type="button" onClick={() => setQuery('')} className={`font-medium text-coral-text underline ${ring}`}>
-                Clear search
+                {CLEAR_SEARCH}
               </button>
             </p>
           ) : (

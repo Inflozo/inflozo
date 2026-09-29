@@ -5,7 +5,7 @@ import { NewProjectButton } from '@/components/shell/shell'
 import { ring } from '@/components/kit/greyed'
 import { resolveEntitlement } from '@/lib/entitlement'
 import { atCap as overCap, capSentence, goProLabel } from '@/lib/plan'
-import { filterProjects } from '@/lib/projects'
+import { CLEAR_SEARCH, filterProjects, noProjectsMatch } from '@/lib/projects'
 import { passkeysEnabled } from '@/lib/flags'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 import { isSignOutFailed, SIGN_OUT_FAILED } from '../../sign-in/signed-out'
@@ -162,7 +162,14 @@ export default async function Dashboard({
           </div>
 
           {shown.length === 0 ? (
-            <p className="text-ui-dense text-ink-soft">No projects match &ldquo;{query}&rdquo;.</p>
+            /* DW-27: THE SENTENCE AND A WAY BACK — P0's no-match rule, in the grid's own slot. The link
+               is the page without `?q=`, a route with its own skeleton (R-98). */
+            <p className="text-ui-dense text-ink-soft">
+              {noProjectsMatch(query)}{' '}
+              <Link href="/" className={`font-medium text-coral-text underline ${ring}`}>
+                {CLEAR_SEARCH}
+              </Link>
+            </p>
           ) : (
             <DuplicateScope>
               <div className="grid grid-cols-1 gap-[14px] tablet:grid-cols-3 tablet:gap-5">

@@ -18,10 +18,14 @@ import { isAccent } from './probe-rule.ts'
  * that lands.
  *
  * STORY 3.4 PUT A `brand` KEY IN THIS COLUMN AND E6 STILL OWNS IT (DW-66). FR-C4's "Use your
- * brand" copies the customer's own Ghost accent, logo, icon, cover and menu out of
- * `sites.site_settings.brand` (`probe-rule.ts`'s `brandOf`) into `projects.style_pack.brand`, and
- * the only thing that READS it today is `placeholderFor` below — the dashboard card wears the
- * site's colour instead of the preset's. Every other field is stored for the epic that uses it.
+ * brand" copies the customer's own Ghost accent, logo and menu out of `sites.site_settings.brand`
+ * (`probe-rule.ts`'s `brandOf`) into `projects.style_pack.brand`. WHO READS WHAT (DW-71, Story
+ * 5.24b): here, `placeholderFor` below reads the ACCENT — the dashboard card wears the site's
+ * colour instead of the preset's; off the site's own record, S2c draws all three and the canvas's
+ * surfaces read the accent (`storedSurfaces`). The logo and the menu wait here for E6's Style Pack
+ * editor, which claims them or drops them. The four keys nothing read — icon, cover, title and
+ * description — are no longer stored at all; a pack seeded before Story 5.24b still holds them,
+ * and nothing reads them.
  */
 
 /**

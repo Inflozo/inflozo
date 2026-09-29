@@ -3,20 +3,27 @@
 revoked credential does at sign-in — driven through the real UI on the deployed site.
 
     python3 tools/probe/run-verify-passkeys.py --check   # plumbing only: no browser, no UI
-    python3 tools/probe/run-verify-passkeys.py           # the whole round trip (Deploy run)
+    python3 tools/probe/run-verify-passkeys.py           # the whole round trip (Deploy run) — it
+                                                         # turns production's passkeys OFF for seconds
 
 WHY IT EXISTS. DW-32 (3) and (4): the round trip and the duplicate refusal were proved by an
 improvised harness that lives in no file, so Story 2.2 — which edits the two files carrying the
 ceremony — could break either with every check green. DW-33 (1): whether GoTrue rate-limits its
 own `/passkeys/authentication/*` is a claim about an external platform, and standing rule 1 says
-a claim is a hypothesis until executed.
+a claim is a hypothesis until executed. DW-32 (1) and (2), added by Story 5.24b: the kill switch
+stopping a sign-in already half-way through, and the AAGUID's name reaching the row, were each
+proved once by hand; and DW-91's half, the sign-in card refusing the keyboard while it waits.
 
 WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
 
   register       Add a passkey through the UI; the admin API lists exactly one for the user
-  auto-name      what `friendly_name` the row is BORN with (recorded, not asserted — a virtual
-                 authenticator reports the all-zero AAGUID, so `Passkey` is the honest answer
-                 and DW-32 (2) stays open for a real one)
+  auto-name      the row is BORN `Passkey`: Chromium's virtual authenticator sends the AAGUID
+                 01020304-0506-0708-0102-030405060708 — NOT the all-zero one this file and the
+                 list's header once said; read off its buffer on a local page at 5.24b's Dev, and
+                 `named-aaguid` prints it from production — and the list does not carry it, so the
+                 fallback is the one right answer. An ASSERTION since Story 5.24b, and
+                 `named-aaguid`'s control — a naming path that took the name from anywhere but the
+                 AAGUID would fail here and pass there
   rename         the pencil, a new name, ENTER in the field; the new name read back OFF THE WIRE.
                  The keyboard on purpose: an implicit submission is a click at (0,0) on Save, which
                  the backdrop handler once read as outside the sheet and closed the dialog on
@@ -41,6 +48,23 @@ WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
                  then, not up front: GoTrue keeps ONE such token per user, so minting two at the
                  start invalidated the first (executed 2026-09-07 — the deployed confirm route
                  answered `/sign-in?error=link` for it)
+  named-aaguid   DW-32 (2): Add a passkey with the page's `getAuthenticatorData()` wrapped, so the
+                 REAL buffer comes back — as a copy — with bytes 37-52 set to an AAGUID READ out of
+                 `lib/passkey-aaguids.ts` (its first entry, never retyped); the row off the wire
+                 carries that entry's name. What GoTrue receives is untouched: written in place,
+                 the bytes reached `toJSON()`'s `authenticatorData` too (executed at 5.24b's Dev),
+                 so the wrapper writes a copy. The revoked credential is cleared from the
+                 authenticator first, so the sign-in below can only present this one
+  kill-mid-ceremony  DW-32 (1): that passkey signs in with ONLY the finish POST held in the browser
+                 (its body carries the credential; the challenge before it goes through), the
+                 `passkeys` row is switched off over the pooler, and the POST is let go: S1's
+                 switched-off sentence (read out of `sign-in/actions.ts`) in the red banner, still
+                 on /sign-in, and no `sb-*-auth-token` cookie. The switch goes back at once
+  switch-on      its control: the same press, with the switch back on, signs in
+  inert-held     DW-91: inside that hold the card is `inert` and `aria-hidden`, no control in it
+                 takes focus, and Tab — pressed once more than the page has stops — never lands in it
+  inert-released its control: after the release the same probe finds the controls reachable again.
+                 The pair is the whole proof, because this harness runs against production only
   axe-*          axe-core 4.12.1 at WCAG 2.1 AA over /account in three states — the card closed,
                  the rename dialog open, the revoke confirm open. THEY LIVE HERE and not in a
                  scratch script because the two dialog states need a passkey row, a row needs a
@@ -53,6 +77,14 @@ WHAT IT PROVES, each step PASS or FAIL, and it exits non-zero if any step fails:
                  saw 429 on call 12, the next saw thirty 200s and a 60-call burst straight after
                  saw 429 on call 4 (second review, 2026-09-07). Recorded, never asserted
 
+PASSKEYS ARE OFF ON PRODUCTION FOR A FEW SECONDS, from the flip to the restore inside
+`kill-mid-ceremony` — the same few seconds Story 2.1's Deploy spent. The row is written over the
+pooler (`SUPABASE_DB_POOLER_URL`, the app's own `postgres` driver), because `service_role` may only
+SELECT it. The value is READ before anything is created, and that found value is what goes back:
+at once inside the step, again in the browser half's `finally`, and again in this file's
+`finally`, which reads it back and FAILS the run, printing the one line that fixes it, if it is not
+as found. A run that cannot read the row stops before it creates a user.
+
 NO KEY IS EVER PRINTED. Keys reach the browser half through its environment, never through argv
 (argv is visible in `ps`), and every command is recorded by the key's variable NAME.
 
@@ -64,7 +96,8 @@ first. Cleanup runs even when a step fails.
 THE FRAME'S VALUES ARE DERIVED, NOT RETYPED: the hover fills and glyph colours the `frame` step
 asserts are read out of `apps/web/app/globals.css` (the token layer, Story 1.3; `DESIGN.md:51`
 records `danger-tint` as #FDECEC where S12 draws #FDEBEC — both export values, the token rules),
-and the name ceiling out of `account/passkey-name-rule.ts`.
+the name ceiling out of `account/passkey-name-rule.ts`, the AAGUID and its name out of
+`lib/passkey-aaguids.ts`, and the switched-off sentence out of `sign-in/actions.ts`.
 
 Playwright is not a dependency of this repository — it is resolved from the machine (see
 PLAYWRIGHT_DIR below), because this is a Deploy-run tool and not a CI gate.
@@ -73,6 +106,8 @@ import argparse, glob, json, os, re, subprocess, sys, tempfile, time, urllib.err
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 APP = 'https://app.inflozo.com'
+WEB = os.path.join(HERE, '..', '..', 'apps', 'web')
+PG_DIR = os.path.abspath(os.path.join(WEB, 'node_modules', 'postgres'))
 
 # Where Playwright lives. Overridable, because it is outside this repository by construction.
 # pnpm hoists nothing, so the real package sits under `.pnpm/<name>@<version>/node_modules/`.
@@ -190,6 +225,23 @@ const CONFIRM_1 = process.env.CONFIRM_URL_1
 const TOKENS = JSON.parse(process.env.TOKENS_RGB)   // { paper, dangerTint, inkSoft, danger } as rgb()
 const NAME_MAX = Number(process.env.NAME_MAX)
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+// Story 5.24b's steps, each value read by the Python half out of the app's own files (the docstring)
+const AAGUID = process.env.AAGUID
+const AAGUID_NAME = process.env.AAGUID_NAME
+const OFF_SENTENCE = process.env.OFF_SENTENCE
+const FOUND = process.env.PASSKEYS_FOUND === 'true'   // the switch as the parent found it, and what goes back
+// The session cookie, whole or in @supabase/ssr's chunks (`.0`, `.1`) — and nothing longer, such as a PKCE
+// `-code-verifier`, which is not a session
+const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/
+
+/* THE SWITCH, over the pooler: `service_role` may only SELECT `feature_flags`, so PostgREST cannot flip it. The same
+   connection shape the sibling harnesses open (`run-verify-dashboard.py`) — transaction pooler, one connection, no
+   prepared statements — through the app's own installed `postgres`. */
+const sql = require(process.env.PG_DIR)(process.env.PG_URL, {
+  max: 1, prepare: false, ssl: 'require', connect_timeout: 10, idle_timeout: 20,
+})
+const setPasskeys = async (on) =>
+  ((await sql`update public.feature_flags set enabled = ${on} where key = 'passkeys' returning enabled`)[0] || {}).enabled
 
 const steps = []
 const step = (name, ok, detail) => { steps.push({ name, ok, detail }); return ok }
@@ -246,6 +298,39 @@ const names = (page) =>
     els.map((e) => e.getAttribute('aria-label').replace(/^Rename /, '').replace(/, added .*$/, '')),
   )
 
+/* DW-91: CAN THE KEYBOARD REACH THE SIGN-IN CARD. The dashboard harness's focus probe (`overlayState`), asked of S1a's
+   <form>: whether focus is inside it at all, then each control in it focused in turn — from a blurred start, so a
+   control that merely still HOLDS focus is not counted as taking it — and counted when it takes the focus; then Tab
+   is pressed once more than the page has stops, and every landing inside the form is counted. `inert` and
+   `aria-hidden` are read off the form itself. It reads after two frames: Chromium moves focus off an element made
+   inert at its next rendering, not in the task that made it so — probed in that same task, the pressed button still
+   held focus, and counted as taking it (executed at 5.24b's Dev on a local page; hence the blur before each try). */
+const cardReach = async (page) => {
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
+  const state = await page.evaluate(() => {
+    const form = document.getElementById('email') && document.getElementById('email').form
+    if (!form) return null
+    const all = 'a[href],button,input,select,textarea,[tabindex]'
+    const focusedInside = form.contains(document.activeElement)
+    let reachable = 0
+    for (const c of form.querySelectorAll(all)) {
+      if (document.activeElement) document.activeElement.blur()
+      c.focus()
+      if (document.activeElement === c) reachable += 1
+    }
+    if (document.activeElement) document.activeElement.blur()
+    return { inert: form.inert, hidden: form.getAttribute('aria-hidden'), focusedInside, reachable,
+             stops: document.querySelectorAll(all).length }
+  })
+  if (!state) return { missing: true }
+  let landed = 0
+  for (let i = 0; i < state.stops + 2; i++) {
+    await page.keyboard.press('Tab')
+    landed += await page.evaluate(() => (document.getElementById('email').form.contains(document.activeElement) ? 1 : 0))
+  }
+  return { ...state, landed }
+}
+
 ;(async () => {
   const browser = await chromium.launch()
   const context = await browser.newContext()
@@ -256,7 +341,7 @@ const names = (page) =>
   // credential the server no longer knows.
   const cdp = await context.newCDPSession(page)
   await cdp.send('WebAuthn.enable')
-  await cdp.send('WebAuthn.addVirtualAuthenticator', {
+  const { authenticatorId } = await cdp.send('WebAuthn.addVirtualAuthenticator', {
     options: {
       protocol: 'ctap2',
       transport: 'internal',
@@ -283,7 +368,10 @@ const names = (page) =>
     // on the claim that GoTrue mints UUIDs — a claim about a platform, executed here.
     step('register', wire.status === 200 && wire.list.length === 1 && UUID.test(String(id)),
          `GET /admin/users/{id}/passkeys -> ${wire.status}, ${wire.list.length} passkey(s), id is a UUID=${UUID.test(String(id))}`)
-    record('auto-name', `born as friendly_name=${JSON.stringify(wire.list[0] && wire.list[0].friendly_name)}`)
+    // An assertion since Story 5.24b, and `named-aaguid`'s control (the docstring)
+    const born = wire.list[0] && wire.list[0].friendly_name
+    step('auto-name', born === 'Passkey',
+         `born as friendly_name=${JSON.stringify(born)} — the fallback for an AAGUID the list does not carry`)
 
     // ── the frame, MEASURED. `S12 Billing.dc.html:90-91` draws a 28x28 box at radius 8 with a
     //    13px glyph, the pencil in ink-soft over a `paper` hover and the bin in danger over a
@@ -455,14 +543,139 @@ const names = (page) =>
     const back = await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
     step('magic-link', back.status() === 200 && !page.url().includes('/sign-in'),
          `magic link landed on ${page.url()} (${back.status()})`)
+
+    // ── named-aaguid (DW-32 (2)): the naming path on the authenticator's REAL buffer with only its AAGUID changed —
+    //    what a virtual authenticator cannot show, because the AAGUID it sends is one the list does not carry. The
+    //    wrapper keeps what it replaced, so the step also says what the authenticator itself sent. It returns a COPY:
+    //    `getAuthenticatorData()` hands back the response's own buffer, and bytes written into it in place reach
+    //    `toJSON()`'s `authenticatorData` too (executed at 5.24b's Dev on this Chromium), which GoTrue would then
+    //    receive beside an attestation that disagrees with it. The revoked credential is cleared first, so the sign-in
+    //    below can only present this one.
+    await cdp.send('WebAuthn.clearCredentials', { authenticatorId })
+    await page.evaluate((hex) => {
+      const real = AuthenticatorAttestationResponse.prototype.getAuthenticatorData
+      AuthenticatorAttestationResponse.prototype.getAuthenticatorData = function () {
+        const bytes = new Uint8Array(real.call(this).slice(0))
+        window.__sent = { at: (bytes[32] & 0x40) !== 0,
+                          aaguid: [...bytes.slice(37, 53)].map((b) => b.toString(16).padStart(2, '0')).join('') }
+        for (let i = 0; i < 16; i++) bytes[37 + i] = parseInt(hex.slice(2 * i, 2 * i + 2), 16)
+        return bytes.buffer
+      }
+    }, AAGUID.replace(/-/g, ''))
+    await page.getByRole('button', { name: 'Add a passkey' }).click()
+    await page.waitForSelector('[aria-label^="Rename "]', { timeout: 20000 })
+    wire = await passkeys()
+    const named = wire.list[0] && wire.list[0].friendly_name
+    step('named-aaguid', wire.status === 200 && wire.list.length === 1 && named === AAGUID_NAME,
+         `the authenticator sent ${JSON.stringify(await page.evaluate(() => window.__sent || null))}; with ${AAGUID} ` +
+         `at offset 37 the row off the wire is ${JSON.stringify(named)}, the list's name ${JSON.stringify(AAGUID_NAME)}; ` +
+         `${wire.list.length} passkey(s)`)
+
+    // ── kill-mid-ceremony (DW-32 (1)) and the card's `inert` (DW-91). A stale sign-in tab can reach the finish
+    //    action after the row is switched off, and the action must refuse it — so THAT passkey signs in with the
+    //    finish POST held in the browser, the row goes off, and the POST is let go. Only the finish is held: its body
+    //    carries the credential, and the challenge before it goes through. The matcher and the handler are kept,
+    //    because `page.unroute` matches them BY REFERENCE (`run-verify-ghost-admin.py`'s `holding`).
+    await context.clearCookies()
+    await page.goto(`${APP}/sign-in`, { waitUntil: 'networkidle' })
+    let heard, letGo
+    const held = new Promise((r) => { heard = r })
+    const released = new Promise((r) => { letGo = r })
+    const anyApp = (u) => u.href.startsWith(APP)
+    const holdFinish = async (route) => {
+      const r = route.request()
+      if (r.method() !== 'POST' || !r.headers()['next-action'] || !(r.postData() || '').includes('"credential"')) {
+        return route.continue()
+      }
+      heard()
+      await released
+      // `.catch`: a request aborted during the hold makes `continue()` throw outside any step (the same reference)
+      return route.continue().catch(() => {})
+    }
+    await page.route(anyApp, holdFinish)
+    await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
+    const holding = await Promise.race([held.then(() => true), new Promise((r) => setTimeout(() => r(false), 20000))])
+
+    // DW-91, inside the hold: nothing in the card can be reached, by focus or by Tab
+    const inside = holding ? await cardReach(page) : { held: false }
+    step('inert-held',
+         inside.inert === true && inside.hidden === 'true' && inside.focusedInside === false && inside.reachable === 0 &&
+         inside.landed === 0,
+         `the finish POST held=${holding}; the card ${JSON.stringify(inside)}`)
+
+    // PASSKEYS ARE OFF ON PRODUCTION from here to the restore a few lines down (the docstring)
+    // Names in this stretch carry their own prefixes: the one `try` above already declares `said`, `look`,
+    // `back` and `after`, and a redeclaration is a SyntaxError that stops the run before its first step.
+    const offAt = Date.now()
+    const off = holding ? await setPasskeys(false) : null
+    letGo()
+    const offBanner = page.locator('[role="alert"]', { hasText: OFF_SENTENCE }).first()
+    await offBanner.waitFor({ timeout: 15000 }).catch(() => null)
+    const offLook = await offBanner.count() > 0
+      ? await offBanner.evaluate((el) => ({ bg: getComputedStyle(el).backgroundColor, icon: !!el.querySelector('svg') }))
+      : { bg: null, icon: false }
+    const offRed = offLook.bg === TOKENS.dangerTint && offLook.icon
+    const offUrl = page.url()
+    const offTokens = (await context.cookies()).map((c) => c.name).filter((n) => SESSION_COOKIE.test(n))
+    const putBack = await setPasskeys(FOUND)
+    step('kill-mid-ceremony',
+         off === false && offRed && offUrl.includes('/sign-in') && offTokens.length === 0 && putBack === FOUND,
+         `switched off=${off === false}; S1's switched-off sentence in the red banner=${offRed} ` +
+         `${JSON.stringify(offLook)}; still on ${offUrl}; sb-*-auth-token cookies=${JSON.stringify(offTokens)}; ` +
+         `put back to ${putBack} after ${Date.now() - offAt} ms`)
+
+    // DW-91's control: after the release the same probe reaches the card again
+    await page.waitForFunction(() => !document.getElementById('email').form.inert, null, { timeout: 5000 }).catch(() => null)
+    const releasedCard = await cardReach(page)
+    step('inert-released',
+         releasedCard.inert === false && releasedCard.hidden === null && releasedCard.reachable > 0 &&
+         releasedCard.landed > 0,
+         `after the release, the card ${JSON.stringify(releasedCard)}`)
+
+    // DW-32 (1)'s control: the same press, with the switch back on, signs in
+    await page.unroute(anyApp, holdFinish)
+    await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
+    await page.waitForURL((u) => !u.pathname.startsWith('/sign-in'), { timeout: 20000 }).catch(() => null)
+    const signedInAgain = (await context.cookies()).some((c) => SESSION_COOKIE.test(c.name))
+    step('switch-on', !page.url().includes('/sign-in') && signedInAgain,
+         `the same press with the switch back on landed on ${page.url()}; an sb-*-auth-token cookie=${signedInAgain}`)
   } catch (error) {
     step('threw', false, String((error && error.message) || error).slice(0, 400))
   } finally {
+    // THE CHILD'S HALF OF THE RESTORE; the parent's `finally` is the other (the docstring)
+    const restored = await setPasskeys(FOUND).catch((e) => e.code || e.name)
+    if (restored !== FOUND) step('switch-restored', false, `the browser half could not put passkeys back to ${FOUND}: ${restored}`)
+    await sql.end({ timeout: 5 }).catch(() => {})
     await browser.close()
     process.stdout.write('\n@@RESULT@@' + JSON.stringify(steps) + '\n')
   }
 })()
 '''
+
+# THE SWITCH, READ AND PUT BACK FROM THIS SIDE — the parent's half of the restore, and the read that finds the value
+# both halves restore. `SET` empty reads; 'true' or 'false' writes and reads back. It prints the value, or the error's
+# code: never the connection string.
+FLAG_JS = r'''
+const sql = require(process.env.PG_DIR)(process.env.PG_URL, { max: 1, prepare: false, ssl: 'require', connect_timeout: 10 })
+;(async () => {
+  const rows = process.env.SET
+    ? await sql`update public.feature_flags set enabled = ${process.env.SET === 'true'} where key = 'passkeys' returning enabled`
+    : await sql`select enabled from public.feature_flags where key = 'passkeys'`
+  process.stdout.write(JSON.stringify(rows.length ? rows[0].enabled : null))
+})().catch((e) => process.stdout.write(JSON.stringify({ error: e.code || e.name })))
+  .finally(() => sql.end({ timeout: 5 }))
+'''
+
+
+def passkeys_flag(pg_url, value=None):
+    """The `passkeys` row's `enabled` — read, or written to `value` and read back. None if it could not be."""
+    child = dict(os.environ, PG_DIR=PG_DIR, PG_URL=pg_url, SET='' if value is None else str(value).lower())
+    try:
+        got = json.loads(subprocess.run(['node', '-e', FLAG_JS], env=child, capture_output=True, text=True,
+                                        timeout=60).stdout)
+    except (subprocess.TimeoutExpired, ValueError):
+        return None
+    return got if isinstance(got, bool) else None
 
 
 def run_browser(cfg):
@@ -476,7 +689,7 @@ def run_browser(cfg):
         script = os.path.join(work, 'passkeys.js')
         open(script, 'w').write(BROWSER_JS)
         # SECRETS GO IN THE ENVIRONMENT, never in argv: argv is world-readable in `ps`.
-        child = dict(os.environ, PW_DIR=pw, APP_URL=APP, AXE_PATH=axe_path() or '', **cfg)
+        child = dict(os.environ, PW_DIR=pw, APP_URL=APP, AXE_PATH=axe_path() or '', PG_DIR=PG_DIR, **cfg)
         try:
             proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=600)
         except subprocess.TimeoutExpired:
@@ -546,20 +759,53 @@ def name_max():
     return int(re.search(r'PASSKEY_NAME_MAX = (\d+)', rule).group(1))
 
 
+def named_aaguid():
+    """`named-aaguid`'s authenticator: the FIRST entry of `lib/passkey-aaguids.ts`, as (aaguid, name). Which entry is
+    not the point — only that the name comes out of the list the product itself reads, never retyped here."""
+    listed = open(os.path.join(WEB, 'lib', 'passkey-aaguids.ts'), encoding='utf-8').read()
+    found = re.search(r"'([0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12})': (\"[^\"]+\")", listed)
+    if not found:
+        sys.exit('  FAIL  lib/passkey-aaguids.ts carries no entry this harness can read')
+    return found.group(1), json.loads(found.group(2))
+
+
+def off_sentence():
+    """What a sign-in says with the switch off — `sign-in/actions.ts`'s `passkeys_off`, read, never retyped."""
+    actions = open(os.path.join(WEB, 'app', '(app)', 'app', 'sign-in', 'actions.ts'), encoding='utf-8').read()
+    found = re.search(r"passkeys_off: '([^']+)'", actions)
+    if not found:
+        sys.exit('  FAIL  sign-in/actions.ts no longer declares the passkeys_off sentence')
+    return found.group(1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true',
                     help='plumbing only: keys present, playwright resolvable, the admin API '
-                         'answers a real create-read-delete. No browser and no UI, so it runs '
-                         'before the story is deployed.')
+                         'answers a real create-read-delete, and the passkeys row is READ over the '
+                         'pooler (never written). No browser and no UI, so it runs before the story '
+                         'is deployed.')
     args = ap.parse_args()
 
     env = load_env()
-    needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_PUBLISHABLE_KEY']
+    needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_DB_POOLER_URL']
     missing = [k for k in needed if not env.get(k)]
     if missing:
         print(f'  FAIL  tools/probe/.env is missing: {", ".join(missing)}')
         return 1
+
+    # THE SWITCH, READ BEFORE ANYTHING IS CREATED: `kill-mid-ceremony` turns it off, and this is the value both
+    # `finally`s put back (the docstring). Read in `--check` too, which writes nothing to it.
+    pooler = env['SUPABASE_DB_POOLER_URL']
+    found = passkeys_flag(pooler)
+    print(f'  passkeys flag found: {found}')
+    if found is None:
+        print('  FAIL  the passkeys row could not be read over the pooler (postgres driver at '
+              f'{os.path.relpath(PG_DIR)}: {"resolved" if os.path.isdir(PG_DIR) else "NOT FOUND"}), so nothing '
+              'could put it back — nothing was created and nothing was switched.')
+        return 1
+    aaguid, aaguid_name = named_aaguid()
+    refusal = off_sentence()
 
     admin = Admin(env['SUPABASE_URL'], env['SUPABASE_SECRET_KEY'])
     email = f'passkey-harness-{int(time.time())}@inflozo.com'
@@ -592,6 +838,8 @@ def main():
             status, wire = admin.call('GET', f'/admin/users/{user_id}/passkeys')
             print(f'  {"PASS" if status == 200 else "FAIL"}  '
                   f'GET /admin/users/{{id}}/passkeys answers {status} (empty for a new user)')
+            print(f'  named-aaguid will register {aaguid} as {aaguid_name!r}, read out of lib/passkey-aaguids.ts')
+            print(f'  kill-mid-ceremony expects {refusal!r}, read out of sign-in/actions.ts')
             failed = not ok or status != 200 or not pw or not axe
         else:
             # ONE link here. The second is minted by the browser half right before it is used:
@@ -610,6 +858,11 @@ def main():
                 'CONFIRM_URL_1': f'{APP}/auth/confirm?token_hash={link["hashed_token"]}&type=magiclink',
                 'TOKENS_RGB': json.dumps(tokens_rgb()),
                 'NAME_MAX': str(name_max()),
+                'PG_URL': pooler,
+                'PASSKEYS_FOUND': 'true' if found else 'false',
+                'AAGUID': aaguid,
+                'AAGUID_NAME': aaguid_name,
+                'OFF_SENTENCE': refusal,
             })
             for s in steps:
                 mark = 'RECORD' if s['ok'] is None else ('PASS' if s['ok'] else 'FAIL')
@@ -623,6 +876,14 @@ def main():
                 if hit else 'every answered call was 200 — GoTrue did NOT rate-limit this burst')
                 + (f'; {errors} call(s) raised a network error and are not statuses' if errors else ''))
     finally:
+        if not args.check:
+            # THE PARENT'S HALF OF THE RESTORE: it runs even when the browser half was killed at its ceiling
+            back = passkeys_flag(pooler, found)
+            print(f'  passkeys flag put back to {found}; read back {back}')
+            if back != found:
+                print('  FAIL  the passkeys row is NOT as it was found. Put it back over the pooler: '
+                      f"update public.feature_flags set enabled = {str(found).lower()} where key = 'passkeys'")
+                failed = True
         status, _ = admin.call('DELETE', f'/admin/users/{user_id}', {})
         after = admin.user_count()
         print(f'  fixture user deleted (HTTP {status}); users after: {after}')

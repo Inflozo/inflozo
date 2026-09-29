@@ -50,8 +50,13 @@ const SELF_GUARDED = [join('restore', 'page.tsx')]
 // `INFLOZO_HARNESS=1`, which nothing in production sets. The test below is the promise that it
 // does, and the deployed walk asserts the 404 on the real stack (`run-verify-editor.cjs`).
 // Story 5.20: the harness became a LAYOUT holding the editor with two pages under it, Home and every other canvas —
-// each page and the layout guard themselves, so no one file's guard is what keeps the mount out of production
-const HARNESS_ONLY = [join('harness', 'editor', 'page.tsx'), join('harness', 'editor', '[template]', 'page.tsx')]
+// each page and the layout guard themselves, so no one file's guard is what keeps the mount out of production.
+// Story 5.24b (DW-91): and the page that throws on purpose, so the gate can read the error boundary's tab title
+const HARNESS_ONLY = [
+  join('harness', 'editor', 'page.tsx'),
+  join('harness', 'editor', '[template]', 'page.tsx'),
+  join('harness', 'error', 'page.tsx'),
+]
 
 test('every page under /app is inside the (authed) group, or named as public here', () => {
   const found = pages()

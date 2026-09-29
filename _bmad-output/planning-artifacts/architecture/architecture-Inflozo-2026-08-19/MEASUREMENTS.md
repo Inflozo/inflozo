@@ -3850,3 +3850,37 @@ The harness after the apply: `rest-refused` **PASSES** — A1's token read its o
 The medians after sit inside the medians before; the difference between runs is the network. `pg_stat_statements` on production: `select "public"."session_guard"()` — **mean 0.283 ms** over 518 calls (max 7.544 ms) and **0.268 ms** over 72 (max 3.277 ms), the two entries `pg_stat_statements` keeps for it — against the lock beat's 3.836 ms and the save RPC's 4.743 ms (cumulative means since 2026-09-04). One index lookup per request, as the Create planned.
 
 **(e) What it does not cover, and where it could quietly stop.** Storage and Realtime are not PostgREST: this app reaches Storage only through the service role and has no Realtime (R-191). And the wiring is a ROLE setting, not an object in any schema: the RLS gate's schema diff cannot see it, no schema dump carries it (`RESTORE-RUNBOOK.md` step 3b re-wires it), and a platform reset of `authenticator`'s settings would reopen DW-40 **silently**. `VERIFY-AT-BUILD.md` item 59 holds that; `rest-refused` re-executes it on production on every run, and `RLS-TEST.sql` asserts it from `pg_db_role_setting` in the container.
+
+## 57. The app's line to the key store verified against Supabase's own root — the pinned CA connects, anything else is refused · 2026-09-29
+
+**Why.** DW-50: `server/ghost-admin/db.ts` opened its one direct Postgres connection — the only path that can decrypt a Ghost key — with `ssl: 'require'`, and postgres.js 3.4.9 sets `rejectUnauthorized: false` for that (`src/connection.js:283-284`), so the line was encrypted and the far end was never checked. Story 5.24b pins the certificate the owner downloaded from the dashboard's database settings (`supabase/prod-ca-2021.crt`) and turns verification on. Every connection below was made from the app's own driver with `SUPABASE_DB_POOLER_URL` reaching the command through the environment only, by name, and ran `select 1` and nothing else.
+
+**(a) The chain the pooler presents** (`openssl s_client -starttls postgres` against `aws-0-eu-central-1.pooler.supabase.com:6543`, host only, no credential): leaf `*.pooler.supabase.com`, to **2030-03-11** ← `Supabase Intermediate 2021 CA`, to 2033-10-21 ← `Supabase Root 2021 CA`, self-signed, `CA:TRUE`, **2021-04-28 to 2031-04-26**, SHA-256 `80:70:25:AD:…:72:E6:CA:FA`. The root is not in Node's bundle, which is why `'verify-full'` failed at Story 3.1 (§21j).
+
+**(b) Executed at the story's Create**, a scratch script with the app's driver: the pinned root with `rejectUnauthorized: true` **connected**; a self-made CA was **refused `SELF_SIGNED_CERT_IN_CHAIN`**; Node's own bundle was **refused `SELF_SIGNED_CERT_IN_CHAIN`**; the pinned root with a wrong `servername` was **refused `ERR_TLS_CERT_ALTNAME_INVALID`** — so the chain AND the host name are checked (postgres.js hands `tls.connect` the host as `servername`, `src/connection.js:274-278`).
+
+**(c) Executed at Dev**, the PEM read OUT OF `db.ts` rather than out of the file, which is what the deployed function holds:
+
+| `ssl` | Result |
+|---|---|
+| `{ ca: SUPABASE_ROOT_CA, rejectUnauthorized: true }` — the code as shipped | **connected**, `select 1` → 1 |
+| `{ ca: tls.rootCertificates[0], rejectUnauthorized: true }` — a real root, the wrong one | **refused, `SELF_SIGNED_CERT_IN_CHAIN`** |
+| `'require'` — the code before this story | connected: it verifies nothing, which is the finding |
+
+`run-verify-ghost-admin.py --check` re-executes the first two rows on every run. The deployed half — the function on Vercel decrypting through the pinned line — is **Test connection** on a connected site, run at Review and in the owner's manual test.
+
+**(d) Where it could stop.** The pin is the root, not the leaf, so Supabase re-issuing the pooler's leaf under the same intermediate changes nothing. A new ROOT — before the pinned one expires on 2031-04-26, or at it — makes every decryption fail loudly as `credential_store_unavailable`, never trust silently. `VERIFY-AT-BUILD.md` item 60 carries the date.
+
+## 58. Ghost Admin's own labels for the two paths Manage keys names — read in the admin bundles of 5.130.6 and 6.58.0 · 2026-09-29
+
+**Why.** DW-86: Manage keys tells the customer where in Ghost Admin to find a Staff Access Token (`KEYS.staff.ask`) and where to regenerate keys (`KEYS.rollHint`), and both sentences had been written from memory of Ghost's screens. Read in Ghost's own admin source — the release tarballs `ghost-5.130.6.tgz` and `ghost-6.58.0.tgz` from the npm registry, read-only, `package/core/built/admin/assets/` (the method of memory `ghost-source-from-npm-tarball`) — which counts as read in source under standing rule 1.
+
+| Label | 5.130.6 | 6.58.0 |
+|---|---|---|
+| the avatar menu's **Your profile** | `ghost-060c0f303364be7ed22510336af44764.js` | `index-BOJzlYiz.js` |
+| the profile's **Staff access token** | `admin-x-settings/modals-B5dtfzsB.mjs` | `user-detail-modal-595z1N5r.js` |
+| Settings → Advanced → **Integrations**, its tabs **Built-in** and **Custom** | `admin-x-settings/index-BVxh86CD.mjs` | `settings-KSWWQanQ.js` |
+| the tab it OPENS on | `useState("built-in")` | `useState(\`built-in\`)` |
+| the custom integration's **Regenerate** (Admin and Content keys) | `admin-x-settings/modals-B5dtfzsB.mjs` | `custom-integration-modal-CrGOI8IB.js`, `api-keys-Df6uv1dT.js` |
+
+**What it settles.** `KEYS.staff.ask` — "Ghost Admin → your avatar → Your profile → Staff Access Token." — is right on both majors as written. `KEYS.rollHint` was not: both majors open the Integrations screen on **Built-in**, and a customer's own "Inflozo" integration is under **Custom**, a click the frames' sentence (`S11 Sites.dc.html` S11d `:232`, and S11e) never says. The hint is now "To roll keys: Ghost Admin → Settings → Integrations → Custom → Inflozo → Regenerate. Old keys stop working the moment you regenerate." — recorded as the third departure beside `KEYS` (R-74; the export is not edited), and `connect-rule.test.ts` pins both sentences.

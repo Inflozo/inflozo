@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { dirname, join, normalize } from 'node:path'
 
 // CONTRACTS A FULLY GREEN GATE CANNOT SEE, in `app-routes.test.ts`'s idiom: each is READ out of
 // the files it governs rather than restated here, so none can drift into a lie. The first three
@@ -18,6 +18,7 @@ const SNAPSHOT_ROUTE = join('app', '(app)', 'app', 'snapshots', '[id]', 'downloa
 const PURGE_ROUTE = join('app', 'api', 'cron', 'purge-accounts', 'route.ts')
 const HEALTH_ROUTE = join('app', 'api', 'cron', 'site-health', 'route.ts')
 const SITE_PROBE = join('server', 'site-probe.ts')
+const SITE_SETTINGS = join('server', 'site-settings.ts')
 const SITE_HEALTH = join('server', 'site-health.ts')
 const KEYS_SCREEN = join('app', '(app)', 'app', '(authed)', 'sites', 'keys-screen.tsx')
 const MIGRATIONS = '../../supabase/migrations'
@@ -215,16 +216,18 @@ test('the way out of every device does not hang on a way in', () => {
       'conditionally. A way OUT of every device must not disappear with the switch that offers a way in.',
   )
 
+  // The calls to /logout are `signOutFailed`'s since DW-41 (Story 5.24b), so the guard is read
+  // before that call.
   const actions = readFileSync(ACCOUNT_ACTIONS, 'utf8').replace(/\s+/g, ' ')
   const body = actions.slice(actions.indexOf('function signOutEverywhere'))
   assert.match(
     body,
-    /await signedIn\(\)[^]*auth\.signOut/,
+    /await signedIn\(\)[^]*signOutFailed\(/,
     `${ACCOUNT_ACTIONS}: signOutEverywhere must guard on signedIn() — the session alone — before ` +
       'it calls /logout. A session that ended between the render and the click is the sign-in page.',
   )
   assert.doesNotMatch(
-    body.slice(0, body.indexOf('auth.signOut')),
+    body.slice(0, body.indexOf('signOutFailed(')),
     /await ready\(\)/,
     `${ACCOUNT_ACTIONS}: signOutEverywhere guards on ready(), whose passkey flag would refuse it.`,
   )
@@ -352,25 +355,60 @@ test('Story 5.20: no source file names a Stripe setting — the member record is
 
 test('Story 5.20: the editor\'s re-read reads the site as the caller\'s before it asks Ghost anything', () => {
   // `call()` decrypts whatever site id it is handed, and the re-read's id is `projects.linked_site_id` — a column the
-  // client may write, whose foreign key checks only that the site exists. So `readSettings` (Story 5.21's name for 5.20's
-  // `readMembers`, widened) must refuse a site that is not the caller's BEFORE the chokepoint runs: an owned-row read
-  // (`user_id`) ahead of the first `call(`. Since 5.21 it runs on every open of the editor, not only on a press.
+  // client may write, whose foreign key checks only that the site exists. So the re-read must refuse a site that is not
+  // the caller's BEFORE the chokepoint runs: an owned-row read (`user_id`) ahead of the first `call(`. Since Story 5.24b
+  // its body is `rereadSettings` in `server/site-settings.ts`, where `site-settings.test.ts` EXECUTES the refusal
+  // (DW-272); this reads the order out of the source as well, so the two fail on different edits.
   const ownedFirst = (body: string) => {
-    const owned = body.indexOf(".eq('user_id', args.userId)")
-    const asked = body.indexOf('call({')
+    const owned = body.indexOf(".eq('user_id', userId)")
+    const asked = body.indexOf('io.call({')
     return owned > 0 && asked > 0 && owned < asked
   }
-  const source = readFileSync(SITE_PROBE, 'utf8')
-  const start = source.indexOf('export async function readSettings')
-  assert.ok(start >= 0, 'readSettings is not in site-probe.ts — this test is pointed at nothing')
+  const source = readFileSync(SITE_SETTINGS, 'utf8')
+  const start = source.indexOf('export async function rereadSettings')
+  assert.ok(start >= 0, 'rereadSettings is not in site-settings.ts — this test is pointed at nothing')
   const next = source.indexOf('\nexport ', start + 1)
   const body = source.slice(start, next < 0 ? undefined : next)
-  assert.ok(ownedFirst(body), 'readSettings asks Ghost before it has checked the site is the caller\'s')
+  assert.ok(ownedFirst(body), 'rereadSettings asks Ghost before it has checked the site is the caller\'s')
   // the control: the OLD ORDER — the chokepoint asked first, the owned row read after — fails the same check
-  const call = body.slice(body.indexOf('    const response = await call({'), body.indexOf('\n', body.indexOf('    const response = await call({')) + 1)
-  const oldOrder = body.replace(call, '').replace('    const admin = supabaseAdmin()\n', `    const admin = supabaseAdmin()\n${call}`)
-  assert.ok(oldOrder !== body && oldOrder.indexOf('call({') < oldOrder.indexOf(".eq('user_id', args.userId)"), 'control: the old order was built')
+  const line = '    const response = await io.call({'
+  const call = body.slice(body.indexOf(line), body.indexOf('\n', body.indexOf(line)) + 1)
+  const oldOrder = body.replace(call, '').replace('  try {\n', `  try {\n${call}`)
+  assert.ok(oldOrder !== body && oldOrder.indexOf('io.call({') < oldOrder.indexOf(".eq('user_id', userId)"), 'control: the old order was built')
   assert.equal(ownedFirst(oldOrder), false, 'control: a body that asks Ghost before the ownership read is caught')
+  // …and `site-probe.ts` keeps no second copy of the body: its `readSettings` is the wrapper and nothing else.
+  const probe = readFileSync(SITE_PROBE, 'utf8')
+  assert.doesNotMatch(probe.slice(probe.indexOf('export async function readSettings')), /settingsPatch\(|\.update\(/,
+    `${SITE_PROBE}: readSettings writes on its own again — its body is rereadSettings's (DW-272)`)
+})
+
+/**
+ * DOES THIS FILE IMPORT ANYTHING UNDER `server/ghost-admin/`, BY ANY SPELLING. The rule used to match the `@/` alias alone,
+ * so `import { call } from './ghost-admin'` from `server/`, or `'../../server/ghost-admin/db.ts'` from a route, walked
+ * past it (Story 5.24b's Create). Every specifier — `from '…'`, `import('…')` and `import type` alike — is RESOLVED against
+ * the importing file, and only the resolved path is judged.
+ */
+function reachesChokepoint(file: string): boolean {
+  const text = readFileSync(file, 'utf8')
+  return [...text.matchAll(/(?:from\s*|import\(\s*)['"]([^'"]+)['"]/g)].some(([, spec]) => {
+    const resolved = spec.startsWith('@/') ? normalize(spec.slice(2)) : spec.startsWith('.') ? normalize(join(dirname(file), spec)) : ''
+    return resolved === GHOST_ADMIN || resolved.startsWith(GHOST_ADMIN + '/')
+  })
+}
+
+test('the chokepoint rule sees a relative import as well as the alias', () => {
+  // THE CONTROL the rule was missing: the three spellings a file can use, judged from where each file sits.
+  const judged = (file: string, spec: string) => {
+    const resolved = spec.startsWith('@/') ? normalize(spec.slice(2)) : normalize(join(dirname(file), spec))
+    return resolved === GHOST_ADMIN || resolved.startsWith(GHOST_ADMIN + '/')
+  }
+  assert.equal(judged(join('server', 'site-settings.ts'), './ghost-admin'), true)
+  assert.equal(judged(join('app', 'api', 'x', 'route.ts'), '../../../server/ghost-admin/db.ts'), true)
+  assert.equal(judged(join('lib', 'x.ts'), '@/server/ghost-admin'), true)
+  assert.equal(judged(join('server', 'site-probe.ts'), './site-settings'), false)
+  // …and the real tree: `site-settings.ts` reaches no part of the chokepoint — `call` is handed in.
+  assert.equal(reachesChokepoint(SITE_SETTINGS), false, `${SITE_SETTINGS} imports the chokepoint; its call() is handed in`)
+  assert.equal(reachesChokepoint(SITE_PROBE), true, 'control: site-probe.ts imports the chokepoint by the alias')
 })
 
 test('the Admin chokepoint is imported by the routes named here and by nothing else', () => {
@@ -415,7 +453,7 @@ test('the Admin chokepoint is imported by the routes named here and by nothing e
   const allowed = [CONNECT_ACTIONS, SITE_PROBE, SITE_HEALTH, KEYS_SCREEN]
   const importers = sources()
     .map((p) => p.replace(/^\.\//, ''))
-    .filter((p) => /from\s*['"][^'"]*server\/ghost-admin(\/[a-z-]+(\.ts)?)?['"]/.test(readFileSync(p, 'utf8')))
+    .filter((p) => reachesChokepoint(p))
     .filter((p) => !p.startsWith(GHOST_ADMIN + '/'))
     .filter((p) => !allowed.includes(p))
   assert.deepEqual(
@@ -464,4 +502,120 @@ test('the credential kinds are the two Vault holds, and content is not one of th
     `${GHOST_ADMIN_INDEX}: CredentialKind is ${union[1].trim()}. Vault holds the Admin key and the Staff token; ` +
       'the Content API key is a plain column and never a secret.',
   )
+})
+
+/* ───────── STORY 5.24b — DW-65: ONE WRITER FOR THE TWO READ-MODIFY-WRITTEN COLUMNS.
+
+   `site_settings` and `credentials_present` are jsonb that several writers read, change and write back, and PostgREST
+   has no `||` — so every such write goes through `patchSite` in `server/site-settings.ts`, the one compare-and-set.
+   A new writer that spreads a row it read an hour ago into `.update()` is green in every other check; this sees it.
+
+   WHAT COUNTS AS A WRITE: the ARGUMENTS of `.update(`, `.insert(`, `.upsert(` and `writeSite(`, and inside them a key in
+   VALUE position (`site_settings:`, a shorthand `site_settings,` or `site_settings }`) — so a `.select('…')` string, a
+   type annotation and a comment are not writes. THE NAMED EXCEPTIONS, and only in `sites/actions.ts`: connect's insert
+   (`.insert({ …connection })`) and re-adopt (`.update(connection)`) write a whole connection, and a failed store puts a
+   kept record back whole (`.update(kept)`) — each a whole record by design, never a merge. `store()`/`remove()` write
+   `credentials_present` as one SQL statement (`credentials_present || …`), atomic, and are not `.update(` calls. */
+
+function argumentsOf(source: string, open: number): string {
+  let depth = 0
+  for (let at = open; at < source.length; at++) {
+    if (source[at] === '(') depth++
+    else if (source[at] === ')' && --depth === 0) return source.slice(open + 1, at)
+  }
+  return source.slice(open + 1)
+}
+
+const WHOLE_RECORD = [/^\s*connection\s*$/, /^\s*kept\s*$/, /^\s*\{[^}]*\.\.\.connection\s*\}\s*$/]
+
+function jsonbWrites(source: string): { call: string; args: string; whole: boolean }[] {
+  const code = source.replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  return [...code.matchAll(/(\.update|\.insert|\.upsert|\bwriteSite)\(/g)].flatMap((m) => {
+    const args = argumentsOf(code, m.index! + m[0].length - 1)
+    const whole = WHOLE_RECORD.some((shape) => shape.test(args))
+    const touches = /\b(site_settings|credentials_present)\b\s*[:,}]/.test(args)
+    return whole || touches ? [{ call: m[1], args: args.replace(/\s+/g, ' ').trim(), whole }] : []
+  })
+}
+
+test('DW-65: every site_settings and credentials_present write goes through the one compare-and-set', () => {
+  const offenders = sources()
+    .map((p) => p.replace(/^\.\//, ''))
+    .filter((p) => p !== SITE_SETTINGS)
+    .flatMap((p) =>
+      jsonbWrites(readFileSync(p, 'utf8'))
+        .filter((w) => !(w.whole && p === CONNECT_ACTIONS))
+        .map((w) => `${p}: ${w.call}(${w.args.slice(0, 90)})`),
+    )
+  assert.deepEqual(
+    offenders,
+    [],
+    'these write site_settings or credentials_present around patchSite — a read-then-write that loses a concurrent ' +
+      'writer\'s keys (DW-65). Route them through patchSite in server/site-settings.ts.',
+  )
+  // THE NAMED EXCEPTIONS ARE STILL THERE AND STILL WHOLE — or the list above is looking at nothing.
+  const whole = jsonbWrites(readFileSync(CONNECT_ACTIONS, 'utf8')).filter((w) => w.whole).map((w) => `${w.call}(${w.args})`)
+  assert.deepEqual(whole.sort(), ['.insert({ user_id: user.id, url, title: host, ...connection })', '.update(connection)', '.update(kept)'].sort())
+  // …and `site-settings.ts` really is the writer: its conditional update is the one `.update(` the rule exempts.
+  assert.match(readFileSync(SITE_SETTINGS, 'utf8'), /\.update\(next\)[^;]*\.eq\('updated_at', row\.updated_at\)/)
+
+  // THE PLANTED CONTROL: the writes as `sites/actions.ts` made them at 0b00f5d9, before this story — each must fire.
+  const head = [
+    "await writeSite('portal answer', at, { site_settings: { ...row.site_settings, portal_button: true } })",
+    ".update({ content_key: contentKey, credentials_present: { ...(site.credentials_present ?? {}), content: true } })",
+    ".update({ disconnected_at: now, content_key: null, credentials_present: { content: false, admin: false, staff: false } })",
+    ".update({ ...(version ? { ghost_version: version } : {}), site_settings, settings_read_at: now })",
+    ".update({ site_settings })",
+  ]
+  for (const line of head) {
+    assert.equal(jsonbWrites(line).filter((w) => !w.whole).length, 1, `control: the rule does not fire on ${line}`)
+  }
+  // …and does not fire on a read, a type, or a write of another column.
+  for (const line of [".select('site_settings, credentials_present')", 'maybeSingle<{ site_settings: Record<string, unknown> }>()', ".update({ code_injection_notice_shown_at: now })"]) {
+    assert.deepEqual(jsonbWrites(line), [], `control: the rule fires on ${line}`)
+  }
+})
+
+test('R-226: connect says already connected, then judges a typed path at the root, and only then counts the plan', () => {
+  // The owner's Question 1 ruling (2026-09-29): nobody is asked to upgrade for an address that could not connect. The
+  // decision executes in `connect-rule.test.ts` (`pathOf`, `pathRefused`); `connectSite` needs a session, a pooler and a
+  // real Ghost, so its ORDER is read out of the source — the harness's `path-refused` runs below the cap and cannot see it.
+  const actions = readFileSync(CONNECT_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  const from = actions.indexOf('export async function connectSite')
+  const body = actions.slice(from, actions.indexOf('\nexport ', from + 1))
+  const ordered = (text: string) => {
+    const known = text.indexOf("fail('already_connected'")
+    const path = text.indexOf('pathRefused(')
+    const cap = text.indexOf('atSiteCap(')
+    return known > 0 && path > known && cap > path
+  }
+  assert.ok(ordered(body), `${CONNECT_ACTIONS}: connectSite must answer already_connected, then judge a typed path, then count the plan (R-226)`)
+  // the control: the plan counted first — the order R-226 declined — fails the same check
+  const cap = body.slice(body.indexOf('  const active = rows'), body.indexOf('\n', body.indexOf("fail('at_cap'")) + 1)
+  const swapped = body.replace(cap, '').replace('  const path = pathOf(typed)', `${cap}  const path = pathOf(typed)`)
+  assert.notEqual(swapped, body, 'control: the swapped body was built')
+  assert.equal(ordered(swapped), false, 'control: a plan counted before the path is judged is caught')
+})
+
+test('DW-77: disconnect takes both keys out in ONE transaction, with the begin() around the loop', () => {
+  const actions = readFileSync(CONNECT_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  const disconnect = actions.slice(actions.indexOf('export async function disconnectSite'), actions.indexOf('\nexport ', actions.indexOf('export async function disconnectSite') + 1))
+  const removes = [...disconnect.matchAll(/\bremove\(/g)]
+  assert.equal(removes.length, 1, `disconnectSite calls remove() ${removes.length} times — two calls are two transactions (DW-77)`)
+  const call = argumentsOf(disconnect, removes[0].index! + 'remove'.length)
+  assert.match(call, /kinds: \['admin', 'staff'\]/, 'disconnectSite must name both kinds in its one call')
+
+  const index = readFileSync(GHOST_ADMIN_INDEX, 'utf8')
+  const from = index.indexOf('export async function remove(')
+  const body = index.slice(from, index.indexOf('\nexport ', from + 1))
+  const inLoop = (text: string) => {
+    const begins = [...text.matchAll(/\.begin\(/g)]
+    const loop = text.indexOf('for (const kind of args.kinds)')
+    return begins.length === 1 && loop > begins[0].index!
+  }
+  assert.ok(inLoop(body), `${GHOST_ADMIN_INDEX}: remove() must open ONE begin() and loop over the kinds inside it`)
+  // the control: the begin() moved inside the loop — one transaction per kind again — fails the same check
+  const moved = body.replace('    await sql().begin(async (tx) => {\n      for (const kind of args.kinds) {', '    for (const kind of args.kinds) {\n      await sql().begin(async (tx) => {')
+  assert.notEqual(moved, body, 'control: the moved body was built')
+  assert.equal(inLoop(moved), false, 'control: a begin() inside the loop is caught')
 })

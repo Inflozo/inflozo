@@ -1,10 +1,9 @@
 import { versionVerdict } from '@/lib/connect-rule'
 import { ghostProPreviewProbe } from '@/lib/flags'
-import {
-  capabilityOf, probePatch, settingsOf, settingsPatch, settingsReadable, storedMembers, storedSurfaces, type Members, type Surfaces,
-} from '@/lib/probe-rule'
+import { capabilityOf, probePatch, settingsOf, settingsReadable, type Members, type Surfaces } from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
+import { patchSite, rereadSettings } from '@/server/site-settings'
 
 /**
  * FR-C2's FOUR PROBES, ON THE WIRE — Story 3.3, and the Admin chokepoint's first caller that uses
@@ -64,22 +63,17 @@ export async function probeSite(args: {
 }): Promise<ProbeSummary> {
   try {
     const admin = supabaseAdmin()
-    // THE MERGE IS READ-THEN-WRITE, so `public_url` — which Story 3.2 wrote and nothing here
-    // knows — survives. supabase-js speaks PostgREST and PostgREST has no `||` for jsonb.
-    // ponytail: a read and a write; one `update … set site_settings = site_settings || …` inside
-    // server/ghost-admin if the pair ever races something other than its own caller.
-    const { data: before, error: readError } = await admin
+    // THE SITE MUST BE THE CALLER'S BEFORE GHOST IS ASKED, and this read is the only thing that says so on B15's
+    // **Re-check plan**: `recheckPlan` hands in a form field, `call()` decrypts whatever id it is handed, and the service
+    // role reads past RLS. The write itself goes through `patchSite` (Story 5.24b, DW-65), which reads the row again
+    // and merges onto it as it stands AT THE WRITE — so a Re-check and the daily check landing together lose nothing.
+    const { data: owned, error: readError } = await admin
       .from('sites')
-      // `capability_source` comes back with it because `probePatch` needs to know whether the user
-      // has already ANSWERED the plan question, so a re-probe does not ask it again (review).
-      .select('site_settings, capability_source')
+      .select('id')
       .eq('id', args.siteId)
       .eq('user_id', args.userId)
-      .maybeSingle<{
-        site_settings: Record<string, unknown> | null
-        capability_source: string | null
-      }>()
-    if (readError || !before) {
+      .maybeSingle()
+    if (readError || !owned) {
       console.error('sites: probe read failed', { code: readError?.code ?? 'site_not_found' })
       return { ok: false, code: readError?.code ?? 'site_not_found' }
     }
@@ -118,40 +112,34 @@ export async function probeSite(args: {
 
     // THE WHOLE MAPPING IS PURE AND LIVES IN `probe-rule.ts`, where `node --test` can reach the
     // two verdicts no live Ghost can produce. `site_settings` GAINS keys and loses none:
-    // `public_url` and anything a later story put here is spread through untouched.
-    const previous = (before.site_settings ?? {}) as Record<string, unknown>
-    const patch = probePatch({
-      previous,
-      previousSource: before.capability_source,
-      settings: settingsOf(settingsResponse.body),
-      verdict,
-    })
-    const { site_settings } = patch
-    const injection = site_settings.code_injection === true
-
+    // `public_url` and anything a later story put here is spread through untouched — FROM THE ROW
+    // AS IT STANDS AT THE WRITE, which `patchSite` hands in and hands in again if another writer
+    // moved it first (DW-65). `capability_source` comes with it because `probePatch` needs to know
+    // whether the user has already ANSWERED the plan question, so a re-probe does not ask it again.
+    const settings = settingsOf(settingsResponse.body)
     // DW-63: THE FLOOR DECIDES WHETHER THE VERSION IS STORED, and it is connect's own.
     const floor = versionVerdict(version)
-    const { error: writeError } = await admin
-      .from('sites')
-      .update({
+    // Stamped WITH the read it names: "Checked just now" may only be said about a read that
+    // happened (Story 3.2's own finding).
+    const readAt = new Date().toISOString()
+    const written = await patchSite(admin, { siteId: args.siteId, userId: args.userId }, (row) => {
+      const patch = probePatch({ previous: row.site_settings ?? {}, previousSource: row.capability_source, settings, verdict })
+      return {
         ...(version && floor.ok ? { ghost_version: version } : {}),
         ...(patch.capability ? { capability: patch.capability, capability_source: patch.capability_source } : {}),
-        site_settings,
-        // Stamped WITH the read it names: "Checked just now" may only be said about a read that
-        // happened (Story 3.2's own finding).
-        settings_read_at: new Date().toISOString(),
-      })
-      .eq('id', args.siteId)
-      .eq('user_id', args.userId)
-    if (writeError) {
-      console.error('sites: probe write failed', { code: writeError.code })
-      return { ok: false, code: writeError.code }
+        site_settings: patch.site_settings,
+        settings_read_at: readAt,
+      }
+    })
+    if (!written.ok) {
+      console.error('sites: probe write failed', { code: written.code })
+      return { ok: false, code: written.code }
     }
 
     return {
       ok: true,
-      capability: patch.capability ?? 'unchanged',
-      code_injection: injection,
+      capability: (written.written.capability as string | undefined) ?? 'unchanged',
+      code_injection: (written.written.site_settings as Record<string, unknown>).code_injection === true,
       ...(version ? { version } : {}),
     }
   } catch (thrown) {
@@ -171,73 +159,18 @@ export async function probeSite(args: {
  * re-check on entry and C3b's **Re-check**.
  *
  * ONE MAPPING, SO THE THREE WRITERS AGREE: connect and the daily check (`probeSite`, via `probePatch`) and this re-read all
- * write the settings payload's keys through `settingsPatch`, so no key can be written two ways — a declared Portal answer
- * is kept over an assumption here exactly as there, and `plan_ask` (config's) is left alone here.
+ * write the settings payload's keys through `settingsPatch`, so no key can be written two ways.
  *
  * WHY NOT `probeSite`: that is also a `config/` read — the version and the plan — stamped `settings_read_at` as a whole
- * ("Checked just now", FR-C5). This reads the one payload, merges what it decides into what is there (the same
- * read-then-write `probeSite` makes, for the same PostgREST reason — DW-271, which this makes a third writer) and leaves
- * the stamp alone. AD-10 holds: an Admin read on the server, never a Content read through a route.
+ * ("Checked just now", FR-C5). This reads the one payload, merges what it decides into what is there and leaves the stamp
+ * alone. AD-10 holds: an Admin read on the server, never a Content read through a route.
  *
- * Null for every way it can fail — the site not the caller's, Ghost refused or did not answer, a payload that is not the
- * browse shape, a read or a write that failed — and a code is logged with no value, as `probeSite` logs. Nothing is
- * written then: the snapshot stays what the last reading made it. A browse that does not carry the member pair still
- * writes the rest and leaves the previous members record standing (`settingsPatch`'s rule), never an assumption.
- *
- * THE SITE MUST BE THE CALLER'S BEFORE GHOST IS ASKED. `call()` decrypts whatever site id it is handed, and the id comes
- * from `projects.linked_site_id`, which `authenticated` may write and whose foreign key checks only that the site exists
- * — so the row is read by id AND `user_id` first, and a site that is not this user's is refused with no key decrypted
- * and no request made.
+ * THE BODY IS `rereadSettings` IN `server/site-settings.ts` SINCE STORY 5.24b, and this is only the wrapper that hands it
+ * the service role and the real chokepoint. It moved so its ownership refusal — the site must be the caller's before
+ * Ghost is asked, because `call()` decrypts whatever id it is handed and this id is `projects.linked_site_id`, which the
+ * client may write — is EXECUTED by `site-settings.test.ts` rather than read as text (DW-272), and so its write is the
+ * one compare-and-set every other writer of the column uses (DW-65, DW-271).
  */
 export async function readSettings(args: { siteId: string; userId: string; route: string }): Promise<{ members: Members | null; surfaces: Surfaces } | null> {
-  try {
-    const admin = supabaseAdmin()
-    const { data: owned, error: ownError } = await admin
-      .from('sites')
-      .select('id')
-      .eq('id', args.siteId)
-      .eq('user_id', args.userId)
-      .maybeSingle()
-    if (ownError || !owned) {
-      console.error('sites: settings re-read refused a site', { code: ownError?.code ?? 'site_not_found' })
-      return null
-    }
-    const response = await call({ siteId: args.siteId, path: PATHS.settings, route: args.route })
-    if (!response.ok) {
-      console.error('sites: settings re-read refused', { code: response.code })
-      return null
-    }
-    // A 200 THAT IS NOT THE BROWSE SHAPE IS NOT A READ (`probeSite`'s rule): it would flatten to `{}` and the mapping
-    // would then write every key's "could not read" over the snapshot
-    if (!settingsReadable(response.body)) {
-      console.error('sites: settings re-read unreadable', { code: 'settings_unreadable' })
-      return null
-    }
-    const { data: before, error: readError } = await admin
-      .from('sites')
-      .select('site_settings')
-      .eq('id', args.siteId)
-      .eq('user_id', args.userId)
-      .maybeSingle<{ site_settings: Record<string, unknown> | null }>()
-    if (readError || !before) {
-      console.error('sites: settings re-read read failed', { code: readError?.code ?? 'site_not_found' })
-      return null
-    }
-    const site_settings = settingsPatch((before.site_settings ?? {}) as Record<string, unknown>, settingsOf(response.body))
-    const { error: writeError } = await admin
-      .from('sites')
-      .update({ site_settings })
-      .eq('id', args.siteId)
-      .eq('user_id', args.userId)
-    if (writeError) {
-      console.error('sites: settings re-read write failed', { code: writeError.code })
-      return null
-    }
-    // AS STORED: the same re-checks `read.ts` makes on the way out, so the editor draws what the next open would
-    return { members: storedMembers(site_settings), surfaces: storedSurfaces(site_settings) }
-  } catch (thrown) {
-    const e = (thrown ?? {}) as { code?: string; name?: string }
-    console.error('sites: settings re-read threw', { code: e.code ?? e.name })
-    return null
-  }
+  return rereadSettings({ admin: supabaseAdmin(), call, route: args.route }, args.userId, args.siteId)
 }

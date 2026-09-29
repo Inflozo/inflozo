@@ -97,6 +97,7 @@ export function BrandPanel({
   targetId,
   choosing,
   popup,
+  back,
 }: {
   site: BrandSite
   caption: string
@@ -113,6 +114,8 @@ export function BrandPanel({
       refused **Use your brand** redirects onto the chrome the press came from — `keys-panel.tsx`
       carries the argument, and this is the same defect on the other popup (standing rule 3). */
   popup: boolean
+  /** Where the ✕ goes: the list, with its own search kept in the window (DW-82, `sitesPath`). */
+  back: string
 }) {
   /** The hidden field both forms on this panel carry — see `popup` above. */
   const chrome = popup ? <input type="hidden" name="popup" value="1" /> : null
@@ -124,7 +127,8 @@ export function BrandPanel({
           NO FRAME DRAWS IT, so it is extrapolated from the nearest one that does (R-74): S2c is a
           PAGE in the export and a page has no ✕; S11e is the export's popup and this is its ✕,
           markup for markup — the same 28px hit area, the same `X` at 14/1.8, the same
-          `<Link href="/sites">` destination its footer Cancel has.
+          destination its footer Cancel has — the list, `back`, which keeps the list's own search in the
+          window (DW-82, Story 5.24b).
 
           `replace`, BECAUSE EVERY OTHER WAY OUT REPLACES. Escape and the backdrop leave by
           `router.replace` (`panel-modal.tsx`) and both presses by `RedirectType.replace`
@@ -144,8 +148,9 @@ export function BrandPanel({
           <p className="text-ui-dense leading-[1.55] text-ink-soft">{BRAND_COPY.sub(site.host)}</p>
         </div>
         <Link
-          href="/sites"
+          href={back}
           replace
+          data-panel-exit
           aria-label={BRAND_COPY.close}
           className={`flex size-7 shrink-0 items-center justify-center rounded-thumb text-ink-soft transition-colors hover:bg-paper-sunk ${ring}`}
         >

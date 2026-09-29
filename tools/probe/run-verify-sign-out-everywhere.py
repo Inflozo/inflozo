@@ -6,7 +6,8 @@
 
 WHY IT EXISTS. Story 2.4 rests entirely on claims about GoTrue, and CLAUDE.md's first standing rule
 — cite or execute, never assert — makes each one a hypothesis until it is run: that `scope=local`
-ends only the calling session; that `scope=global` ends every one; that a JWT whose session row is
+ends only the calling session; that `scope=others` then `scope=local` end every one (Story 5.24b,
+DW-41: the press made one `scope=global` call until then); that a JWT whose session row is
 gone is refused AT ONCE with `session_not_found` rather than living until its `exp`; that the
 response bouncing such a device carries the cookie deletions; that a magic link still signs in
 afterwards, with the 30-day cookie. Each is executed here, against `app.inflozo.com` and the real

@@ -1,7 +1,7 @@
 import { authorized } from '@/lib/cron-auth'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { drainPrefix } from '@/lib/storage-drain'
-import { BATCH, runPurge, type PurgeDeps } from './purge-rule'
+import { runPurge, type PurgeDeps } from './purge-rule'
 
 /**
  * FR-A5's LAST SENTENCE, once a day (Epic 2, Story 2.6): the account whose fourteen days ran out
@@ -38,12 +38,15 @@ import { BATCH, runPurge, type PurgeDeps } from './purge-rule'
  * `node --test` rather than read off this file; this route only builds the deps and answers.
  *
  * ponytail: no lock and no claim column — an overlapping run meets empty listings, an idempotent
- * update and a 404; a claim column the day two runs are observed to cost something (DW-47 names
- * the day BATCH permanently failing accounts would starve the rest).
+ * update and a 404; a claim column the day two runs are observed to cost something. Accounts that
+ * fail every day no longer starve the rest: the run excludes what it tried (DW-47, `runPurge`).
  */
 
 /** A cached cron response is skipped and never logged (Vercel docs) — a purge that did not run. */
 export const dynamic = 'force-dynamic'
+
+/** The platform's ceiling, stated rather than assumed; `BUDGET_MS` stops taking accounts under it. */
+export const maxDuration = 300
 
 const NO_STORE = { 'Cache-Control': 'no-store' }
 
@@ -61,22 +64,23 @@ export async function GET(request: Request) {
   }
 
   const admin = supabaseAdmin()
-  // The index the schema draws for exactly this query: `profiles (purge_after) where deleted_at
-  // is not null` (`:125`). A restored account has both columns null (`restore_account()`, Story
-  // 2.5) and is invisible here by construction, never by a check.
-  const { data: due, error: dueError } = await admin
-    .from('profiles')
-    .select('user_id')
-    .not('deleted_at', 'is', null)
-    .lte('purge_after', new Date().toISOString())
-    .order('purge_after')
-    .limit(BATCH)
-  if (dueError) {
-    console.error('purge: failed', { step: 'due', code: dueError.code, message: dueError.message })
-    return Response.json({ purged: 0, failed: 1 }, { status: 500, headers: NO_STORE })
-  }
-
   const deps: PurgeDeps = {
+    // The index the schema draws for exactly this query: `profiles (purge_after) where deleted_at
+    // is not null` (`:125`). A restored account has both columns null (`restore_account()`, Story
+    // 2.5) and is invisible here by construction, never by a check. A failed read throws, and
+    // `runPurge` ends the run red with `step: 'due'`.
+    async due(excluding, limit) {
+      const profiles = admin.from('profiles').select('user_id')
+      // Every id this run already tried, so accounts that fail cannot hold the rest back (DW-47).
+      const untried = excluding.length ? profiles.not('user_id', 'in', `(${excluding.join(',')})`) : profiles
+      const { data, error } = await untried
+        .not('deleted_at', 'is', null)
+        .lte('purge_after', new Date().toISOString())
+        .order('purge_after')
+        .limit(limit)
+      if (error) throw failure('due', error)
+      return (data ?? []).map((row) => row.user_id)
+    },
     async projectIds(userId) {
       const { data, error } = await admin.from('projects').select('id').eq('user_id', userId)
       if (error) throw failure('projects', error)
@@ -101,6 +105,6 @@ export async function GET(request: Request) {
     },
   }
 
-  const { purged, failed } = await runPurge(deps, (due ?? []).map((row) => row.user_id))
+  const { purged, failed } = await runPurge(deps)
   return Response.json({ purged, failed }, { status: failed ? 500 : 200, headers: NO_STORE })
 }

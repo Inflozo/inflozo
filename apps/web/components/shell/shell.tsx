@@ -259,7 +259,8 @@ export function Shell({
   // The surface's own bar, or none. Sites got one on the owner's finding 5 (Story 3.2).
   const bar = BARS[path]
   const drawer = useRef<HTMLDialogElement>(null)
-  // The phone's field is the ONLY way to see or clear `?q`, and closing it used to unmount the
+  // The phone's field is the ONLY way to see `?q`, and to clear it on any grid that still shows a
+  // card (a no-match line has its own Clear search since Story 5.24b, DW-27), and closing it used to unmount the
   // field and leave the filter running: a grid showing "No projects match" — or a subset of the
   // user's own work — with nothing on screen to explain it and no way back but the browser's
   // Back button (review, 2026-09-06). Closing the search closes the search: the filter goes with

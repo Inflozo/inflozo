@@ -122,21 +122,26 @@ export function announcementOf(settings: Record<string, unknown>): {
  * `GET /admin/settings/` on T1 6.58.0 and T3 5.130.6, 2026-09-08 (MEASUREMENTS §40):
  *
  *   accent_color   a hex STRING on both majors
- *   logo · icon    a STRING, and EMPTY on both test servers at rest — which is why an empty
+ *   logo           a STRING, and EMPTY on both test servers at rest — which is why an empty
  *                  string has to mean "no logo" rather than a src of ""
- *   cover_image    an https URL string on both
  *   navigation     a JSON **STRING**, exactly as `announcement_visibility` is (§39) — never an
  *                  array. The array container is admitted anyway, because one major changing its
  *                  mind is cheaper to absorb here than to discover on a customer's screen
- *   title          a string on both
- *   description    a string on T3 and **null** on T1 — absence is a real answer, not a hole
+ *
+ * THREE KEYS, BECAUSE THREE HAVE A READER (DW-71, Story 5.24b). It kept seven — `icon`, `cover`,
+ * `description` and `title` besides — and nothing anywhere read those four: S2c draws the accent,
+ * the logo and the menu, `placeholderFor` and the canvas's surfaces read the accent, and the
+ * project a brand makes is named from `sites.title`, never from here. A stored value with no
+ * claimant is how a column quietly becomes undeletable, so they are no longer stored; the epic
+ * that wants a cover for a hero or an icon for a favicon reads it then, off the same payload.
+ * Rows already stored keep the old keys until their next brand read, and nothing reads them.
  *
  * EVERY VALUE IS VALIDATED AT THIS BOUNDARY, because each one crosses into an attribute:
  *
  *   the accent is painted as an inline `style` (`placeholderFor`, and S2c's own swatch), so a
  *   string Ghost sent that is not a colour is a CSS injection into Inflozo's chrome;
  *
- *   the three images become `<img src>`, and `img-src` admits `data:` (`csp.ts:60`) — a `data:`
+ *   the logo becomes an `<img src>`, and `img-src` admits `data:` (`csp.ts:60`) — a `data:`
  *   SVG is script — so only an `https:` URL survives. Ghost's own are absolute https;
  *
  *   nav entries keep their `url` for the epic that turns a menu into a section, but S2c renders
@@ -147,11 +152,7 @@ export type NavItem = { label: string; url: string }
 export type Brand = {
   accent: string | null
   logo: string | null
-  icon: string | null
-  cover: string | null
   nav: NavItem[]
-  title: string | null
-  description: string | null
 }
 
 /**
@@ -207,17 +208,11 @@ export function navOf(value: unknown): NavItem[] {
 }
 
 export function brandOf(settings: Record<string, unknown>): Brand {
-  // An empty string is Ghost's own "unset" for every one of these (executed, §40), so it is not
-  // a title and not a description either.
-  const text = (value: unknown) => (typeof value === 'string' && value.trim() !== '' ? value : null)
+  // An empty string is Ghost's own "unset" for the logo (executed, §40): `imageUrl` makes it null.
   return {
     accent: isAccent(settings.accent_color) ? settings.accent_color : null,
     logo: imageUrl(settings.logo),
-    icon: imageUrl(settings.icon),
-    cover: imageUrl(settings.cover_image),
     nav: navOf(settings.navigation),
-    title: text(settings.title),
-    description: text(settings.description),
   }
 }
 
@@ -230,14 +225,20 @@ export function brandOf(settings: Record<string, unknown>): Brand {
  * It takes `unknown` because the other two read it back out of a jsonb column.
  */
 export function hasBrand(brand: unknown): brand is Brand {
-  // IT NARROWS TO `Brand`, SO IT CHECKS WHAT `Brand` PROMISES. Two things it used not to, and
-  // both reach an attribute on S2c (review, 2026-09-08): `nav` must be the array the page maps
-  // over — an accent on its own satisfied the predicate and then threw on `brand.nav.length` —
-  // and `logo` must be an `https:` URL, not merely a string, because the page puts it straight
-  // into an `<img src>`. `brandOf` is the column's only author today and always writes both, so
-  // this is the boundary holding rather than a bug being fixed; the boundary is the point.
+  // IT NARROWS TO `Brand`, SO IT CHECKS EVERY FIELD `Brand` PROMISES — all three, each exactly
+  // (DW-71, Story 5.24b). It used to check the `nav` array and then OR the three together, so a
+  // record admitted on a good accent carried an unchecked logo and an unchecked menu past it — a
+  // valid accent beside a `javascript:` logo answered true. Each field reaches an
+  // attribute or a render on S2c — the accent an inline `style`, the logo an `<img src>`, the menu
+  // a list of text pills — so each is what `brandOf` would have written or the record is not a
+  // brand. `brandOf` is the column's only author and always writes all three; the boundary is the
+  // point. AND THEN SOMETHING TO OFFER: a record of three empties is not a card (UX-DR3).
   if (!isRecord(brand) || !Array.isArray(brand.nav)) return false
-  return isAccent(brand.accent) || imageUrl(brand.logo) !== null || navOf(brand.nav).length > 0
+  const accent = brand.accent === null || isAccent(brand.accent)
+  const logo = brand.logo === null || imageUrl(brand.logo) !== null
+  const nav = navOf(brand.nav).length === brand.nav.length
+  if (!accent || !logo || !nav) return false
+  return isAccent(brand.accent) || imageUrl(brand.logo) !== null || brand.nav.length > 0
 }
 
 /**
@@ -356,12 +357,9 @@ export const BRAND_COPY = {
  * anywhere (review 5, 2026-09-09; standing rule 7 — the coupling is invisible from that end).
  */
 export const brandPath = (siteId: string) => `/sites/brand?site=${siteId}`
-/** …and S2c as a window over the Sites list, which is a QUERY PARAMETER on `/sites` and not a
-    route of its own — `keysPopupPath` in `lib/connect-rule.ts` carries the whole argument, and
-    the two popups in this app are deliberately the same shape. `connectSite` still redirects to
-    `brandPath`: the owner ruled at Question 7 (option 1, 2026-09-10) that the moment straight
-    after a connect stays a full screen. */
-export const brandPopupPath = (siteId: string) => `/sites?brand=${siteId}`
+/* …and S2c as a window over the Sites list is `brandPopupPath`, in `lib/connect-rule.ts` beside
+   `keysPopupPath` since Story 5.24b: both windows are built by `sitesPath`, which carries the list's
+   own search through them (DW-82), and this module keeps importing nothing. */
 
 /**
  * WHICH PROJECT WEARS THE BRAND — one rule, because S2c prints it in the caption and `useBrand`

@@ -4,6 +4,7 @@ import { createHmac } from 'node:crypto'
 import { readFileSync } from 'node:fs'
 import {
   ADMIN_WRITES,
+  blockedAddress,
   AdminError,
   adminUrl,
   ghostCode,
@@ -152,6 +153,10 @@ test('a 401 is told apart by its cause, and "expired" is not one of them', () =>
   assert.equal(ghostCode(401, ghostError(invalid)), 'ghost_bad_signature')
   assert.equal(ghostCode(401, undefined), 'ghost_unauthorized')
   assert.equal(ghostCode(403, ghostError({ errors: [{ type: 'NoPermissionError' }] })), 'ghost_refused')
+  // DW-52, Story 5.24b, BOTH DIRECTIONS: a Ghost that is busy or down did not refuse anything, and
+  // a Ghost that refused is not busy. 404 and 422 stay refusals — the I/O matrix's own row.
+  for (const status of [429, 500, 502, 503, 504]) assert.equal(ghostCode(status, undefined), 'ghost_unavailable', String(status))
+  for (const status of [400, 403, 404, 422]) assert.equal(ghostCode(status, undefined), 'ghost_refused', String(status))
   // A redirect is answered, never followed: an http:// site's upgrade must not read as a refusal.
   assert.equal(ghostCode(301, undefined), 'ghost_redirected')
   assert.equal(ghostError({}), undefined)
@@ -163,4 +168,18 @@ test('a 401 is told apart by its cause, and "expired" is not one of them', () =>
     /expire/i,
     'Admin API keys have no expiry (§37): a code or message saying so describes a failure Ghost cannot produce.',
   )
+})
+
+test('DW-58: the addresses the server will not fetch, whoever’s DNS points there', () => {
+  // The I/O matrix's ranges — loopback, the private three, link-local (the metadata address), carrier-grade NAT,
+  // "this network", and IPv6's unspecified, loopback, unique-local and link-local — and a mapped IPv4 judged as one.
+  for (const ip of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '100.64.0.1', '0.0.0.0', '172.16.0.1', '192.168.1.1', '::', '::1', 'fc00::1', 'fe80::1', '::ffff:127.0.0.1']) {
+    assert.equal(blockedAddress(ip), true, `${ip} must be refused`)
+  }
+  // …and the public internet is not: the control that the list is not simply "everything".
+  for (const ip of ['8.8.8.8', '::ffff:8.8.8.8', '2606:4700::1111', '1.1.1.1', '100.128.0.1', '172.32.0.1']) {
+    assert.equal(blockedAddress(ip), false, `${ip} must be allowed`)
+  }
+  // A resolver answer that is not an address at all is not one to connect to.
+  assert.equal(blockedAddress('not-an-address'), true)
 })

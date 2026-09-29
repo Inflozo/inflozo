@@ -119,60 +119,74 @@ test('an ordinary sign-out and an everywhere sign-out never read as each other',
  * is how the avatar menu's ordinary Sign out came to end every session everywhere — Story 2.4's
  * founding defect, and it was invisible: the option is optional, so dropping it again is green
  * under eslint, `tsc --noEmit`, `node --test` and `next build`, and it silently makes signing out
- * on the laptop throw the phone off too. Neither scope may be implicit, so neither is inferred
- * here — each is read out of the file that has to carry it.
+ * on the laptop throw the phone off too. No scope may be implicit, so none is inferred here —
+ * each is read out of the file that has to carry it.
+ *
+ * EVERY CALL, NOT THE FIRST (DW-41, Story 5.24b). Sign out everywhere is now two calls, `others`
+ * then `local`, handed to `signOutFailed` as a list — and a reader that stopped at the first call
+ * would pass with the second dropped, which leaves this device signed in behind a sentence saying
+ * every device was signed out. So both shapes are read, in order: a direct `auth.signOut(…)`, whose
+ * missing scope reads as the library's default, and every list handed to `signOutFailed`. The
+ * helper's own call passes the scope through, and `sign-out-landing.test.ts` reads the scopes that
+ * reach the server.
  */
 const scopeOf = (path: string, fn: string) => {
-  const source = readFileSync(new URL(path, import.meta.url), 'utf8').replace(/\s+/g, ' ')
-  const at = source.indexOf(`function ${fn}`)
-  assert.ok(at >= 0, `${path}: ${fn} is gone`)
-  return /auth\.signOut\(\s*\{[^}]*scope:\s*'(\w+)'/.exec(source.slice(at))?.[1] ?? null
+  const source = readFileSync(new URL(path, import.meta.url), 'utf8')
+  // The function alone (`email-change-rule.test.ts`'s slice), whitespace collapsed.
+  const body = new RegExp(`export async function ${fn}\\([\\s\\S]*?\\n}\\n`).exec(source)
+  assert.ok(body, `${path}: ${fn} is gone`)
+  const calls = body[0].replace(/\s+/g, ' ').matchAll(/auth\.signOut\(([^)]*)\)|signOutFailed\(\s*\w+\s*,\s*\[([^\]]*)\]/g)
+  return [...calls].flatMap(([, options, list]) =>
+    list === undefined
+      ? [/scope:\s*'(\w+)'/.exec(options)?.[1] ?? 'global']
+      : [...list.matchAll(/'(\w+)'/g)].map(([, scope]) => scope),
+  )
 }
 
 test("the avatar menu's Sign out is explicitly this device only", () => {
-  assert.equal(
+  assert.deepEqual(
     scopeOf('./app/(app)/app/sign-in/actions.ts', 'signOut'),
-    'local',
-    "signOut() must pass { scope: 'local' }: the library's default is 'global', so an option " +
-      'dropped in a tidy-up signs every device out again — the defect Story 2.4 found.',
+    ['local'],
+    "signOut() must sign out of ['local'] and nothing else: the library's default is 'global', so " +
+      'an option dropped in a tidy-up signs every device out again — the defect Story 2.4 found.',
   )
 })
 
-test('Sign out everywhere is explicitly every device', () => {
-  assert.equal(
+test('Sign out everywhere is explicitly every device, the other devices first', () => {
+  assert.deepEqual(
     scopeOf('./app/(app)/app/(authed)/account/actions.ts', 'signOutEverywhere'),
-    'global',
-    "signOutEverywhere() must pass { scope: 'global' }: it is the whole action, and a scope " +
-      'swapped with the ordinary one would leave every other device signed in.',
+    ['others', 'local'],
+    "signOutEverywhere() must sign out of ['others', 'local'], in that order: without 'others' " +
+      "every other device stays signed in, without 'local' this one does, and 'global' removes this " +
+      "device's session when it fails, so the dialog's \"try again\" would be false (DW-41).",
   )
 })
 
 /**
- * THE FAILURE BRANCH IS PINNED THE SAME WAY. Delete `if (error) return fail('sign_out_failed')` and
- * a `/logout` that answered 5xx falls through to the redirect: the sign-in card says every device
- * was signed out while every other device is still signed in — with eslint, tsc, the build and the
- * whole harness green, because none of them can make the real GoTrue fail (review, 2026-09-07).
+ * THE FAILURE BRANCH IS PINNED THE SAME WAY. Delete the `return fail('sign_out_failed')` and a
+ * sign-out that failed falls through to the redirect: the sign-in card says every device was signed
+ * out while every other device is still signed in — with eslint, tsc, the build and the whole
+ * harness green, because none of them can make the real GoTrue fail (review, 2026-09-07). Since
+ * DW-41 the decision is `signOutFailed`'s, executed in `sign-out-landing.test.ts`; what only this
+ * file can see is that the action obeys it.
  */
-test('a /logout that fails is said, never claimed', () => {
+test('a sign-out that fails is said, never claimed', () => {
   const source = readFileSync(new URL('./app/(app)/app/(authed)/account/actions.ts', import.meta.url), 'utf8')
   // The function alone (`email-change-rule.test.ts`'s slice), whitespace collapsed.
   const fn = /export async function signOutEverywhere\([\s\S]*?\n}\n/.exec(source)
   assert.ok(fn, 'signOutEverywhere was not found in actions.ts')
   const body = fn[0].replace(/\s+/g, ' ')
-  // THE `if (error)` BRANCH ITSELF, not any `fail('sign_out_failed')` in the function: the catch
-  // block returns the same sentence for a throw, and a first version of this test was satisfied by
-  // that one alone with the error branch deleted (its own control, review, 2026-09-07).
-  const call = /const \{ error \} = await supabase\.auth\.signOut\(/.exec(body)
-  assert.ok(call, 'signOutEverywhere must read `error` off auth.signOut')
-  const after = body.slice(call.index)
-  const branch = /if \(error\) \{[^]*?return fail\('sign_out_failed'\)/.exec(after)
+  // THE BRANCH ON `signOutFailed` ITSELF, not any `fail('sign_out_failed')` in the function: the
+  // catch block returns the same sentence for a throw, and a first version of this test was
+  // satisfied by that one alone with the error branch deleted (its own control, review, 2026-09-07).
+  const branch = /if \(await signOutFailed\([^)]*\)\) return fail\('sign_out_failed'\)/.exec(body)
   assert.ok(
     branch,
-    "signOutEverywhere must `return fail('sign_out_failed')` when auth.signOut answers an error: a " +
-      '/logout that failed leaves the dialog open with the sentence and never lands on the everywhere one.',
+    "signOutEverywhere must `return fail('sign_out_failed')` when signOutFailed answers true: a " +
+      'sign-out that failed leaves the dialog open with the sentence and never lands on the everywhere one.',
   )
   assert.ok(
-    after.indexOf('redirect(') > branch.index,
+    body.indexOf('redirect(', branch.index) > branch.index,
     'the redirect must stand after the failure branch, never before it',
   )
 })

@@ -1,4 +1,5 @@
 import { createHmac } from 'node:crypto'
+import { BlockList, isIP } from 'node:net'
 
 /**
  * THE ADMIN CHOKEPOINT'S PURE HALF — the mint, the write allowlist, the URL builder and the
@@ -55,6 +56,8 @@ export type AuditDetail =
       ms: number
       ghost_type?: string
       reason?: 'missing' // written by the decrypt CTE in SQL for a site with no key, and by nothing else
+      /** DW-58: the host resolved to an address `blockedAddress` refuses, so no request was made. */
+      blocked?: true
       kind?: never
       direction?: never
     }
@@ -227,6 +230,11 @@ export function ghostCode(status: number, error?: { type?: string; code?: string
   // A redirect is answered, never followed (`redirect: 'manual'` in `fetchWithKey`): an `http://`
   // site upgrading to https would have dropped the bearer and read as Ghost refusing the key.
   if (status >= 300 && status < 400) return 'ghost_redirected'
+  // DW-52, Story 5.24b: A BUSY OR DOWN GHOST DID NOT REFUSE ANYTHING. A 429 is Ghost asking us to
+  // wait and a 5xx is Ghost failing, and both used to read "Ghost refused the connection… check the
+  // address and the keys" — sending the customer to fix keys that were fine. Every other non-401
+  // (403, 404, 422) is still a refusal.
+  if (status === 429 || status >= 500) return 'ghost_unavailable'
   if (status !== 401) return 'ghost_refused'
   if (error?.code === 'UNKNOWN_ADMIN_API_KEY' || /unknown admin api key/i.test(error?.message ?? '')) {
     return 'ghost_unknown_key'
@@ -242,4 +250,39 @@ export function ghostCode(status: number, error?: { type?: string; code?: string
 export function ghostError(body: unknown): { type?: string; code?: string; message?: string } | undefined {
   const errors = (body as { errors?: unknown })?.errors
   return Array.isArray(errors) ? (errors[0] as { type?: string; code?: string; message?: string }) : undefined
+}
+
+/**
+ * DW-58, STORY 5.24b — THE ADDRESSES INFLOZO'S SERVER WILL NOT FETCH, whoever's word the name came on. Loopback,
+ * the private ranges, link-local (the cloud metadata address is `169.254.169.254`), carrier-grade NAT, "this network",
+ * the unspecified and loopback IPv6 addresses, unique-local and link-local IPv6. `fetchWithKey` resolves the host and
+ * refuses the call if ANY answer is one of these, because a customer-controlled DNS record can point a real-looking
+ * name at any of them (`127.0.0.1.nip.io`, executed) and `normaliseSiteUrl` is only a shape check.
+ *
+ * AN `::ffff:` ADDRESS IS JUDGED BY ITS IPv4: `::ffff:127.0.0.1` is loopback wearing IPv6's clothes. Anything that is
+ * not an address at all is refused too — a resolver answer this cannot read is not one to connect to.
+ */
+const PRIVATE = new BlockList()
+for (const [network, prefix] of [
+  ['0.0.0.0', 8],
+  ['10.0.0.0', 8],
+  ['100.64.0.0', 10],
+  ['127.0.0.0', 8],
+  ['169.254.0.0', 16],
+  ['172.16.0.0', 12],
+  ['192.168.0.0', 16],
+] as const) {
+  PRIVATE.addSubnet(network, prefix, 'ipv4')
+}
+PRIVATE.addAddress('::', 'ipv6')
+PRIVATE.addAddress('::1', 'ipv6')
+PRIVATE.addSubnet('fc00::', 7, 'ipv6')
+PRIVATE.addSubnet('fe80::', 10, 'ipv6')
+
+export function blockedAddress(ip: string): boolean {
+  const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip)
+  const address = mapped ? mapped[1] : ip
+  const family = isIP(address)
+  if (family === 0) return true
+  return PRIVATE.check(address, family === 4 ? 'ipv4' : 'ipv6')
 }

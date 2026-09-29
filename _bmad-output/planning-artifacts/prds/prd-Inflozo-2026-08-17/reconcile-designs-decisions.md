@@ -4855,7 +4855,9 @@ of its address — /blog isn't supported yet." - But add it as a future work whi
 - **Refined by R-226** (owner, 2026-09-29): the path is judged at the root first, so the address of a page on a site at
   the root still connects; the sentence answers when no Ghost answers at the root.
 - **Declined.** Option 2, support now; option 3, as it was.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 10 · ✅ `prd.md` Appendix G · ⬜ built — Story 5.24b.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 10 · ✅ `prd.md` Appendix G · ✅ built — Story 5.24b's Dev
+  (2026-09-29): `CONNECT_MESSAGES.path_unsupported` in `lib/connect-rule.ts`, the sentence verbatim, under API URL; the
+  path from `pathOf`, and judged at the root first as R-226 refines it (DW-55 closed).
 
 **R-220 — Re-check has no wait.** Story 5.24's Create, Question 11, ruled **option 1** (owner, 2026-09-28): *"No wait, as
 today"*.
@@ -4959,7 +4961,9 @@ stylesheet and designs #1, #3, #4 and #13" — keeping each story's number and i
   that was typed, and nobody is asked to upgrade for an address that could not connect.
 - **Declined.** Option 2, refusing every address with a path at once.
 - Targets: ✅ this entry · ✅ R-219's entry · ✅ Story 5.24b's spec — Question 1 and the DW-55 task · ✅ `epics.md` — Story
-  5.24b's card · ✅ `prd.md` Appendix G · ⬜ built — Story 5.24b.
+  5.24b's card · ✅ `prd.md` Appendix G · ✅ built — Story 5.24b's Dev (2026-09-29): `connectSite` asks the root's
+  `config/` when a path was typed, after `already_connected` and before the plan's limit; only a `404` there refuses
+  (`pathRefused`, pure and tested both ways), and any other answer is the validation itself.
 
 ## B · Approved decisions superseded by this session
 

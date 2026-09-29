@@ -6,7 +6,7 @@ import { passkeysEnabled } from '@/lib/flags'
 import { supabaseServer } from '@/lib/supabase/server'
 import { BAD_EMAIL, parseEmail } from './email.ts'
 import { SEND_INTERVAL, sentStateFor } from './resend-timer.ts'
-import { signOutPathFor } from './signed-out.ts'
+import { signOutFailed, signOutPathFor } from './signed-out.ts'
 
 /**
  * Sending the link is a POST that runs entirely on the server: the publishable key, the
@@ -79,12 +79,15 @@ export async function sendMagicLink(_prev: SendState, formData: FormData): Promi
  * project setting, not a line in this repository; the spec's Verification holds the control
  * (`x-vercel-id`). Keep the await: signing out has to be true before the redirect says so.
  *
- * GoTrue unreachable is the one way this fails: `signOut()` then KEEPS the cookies and returns
- * the error, so the flag is withheld — the sign-in page would only bounce a still-signed-in
- * user back to the dashboard, and the card must not say it happened when it did not.
- * (READ WITH DW-41: the installed client REMOVES the cookies before returning most failures, so
- * the paragraph above holds only for an expired token whose refresh fails. Not executed; the
- * branch is 1.4/1.5's and Story 2.4 changed this call's scope alone.)
+ * THE LANDING FOLLOWS THE SESSION ACTUALLY LEFT, read by `signOutFailed` after the call (DW-41,
+ * Story 5.24b). What the installed client does, executed in `sign-out-landing.test.ts`: a `/logout`
+ * that fails with anything but a 401, 403 or 404 still DELETES this device's cookies before it
+ * returns the error. That user is signed out and lands on the sign-in card with its sentence. This
+ * used to take the error at its word and send them to the dashboard, whose guard bounced them to
+ * `/sign-in` with nothing said. The failure that KEEPS the cookies is an expired ticket whose
+ * refresh GoTrue cannot answer (a 500-504, a 520-530, or no answer): no `/logout` is made and the
+ * flag is withheld. The sign-in page would only bounce a still-signed-in user back to the dashboard, and
+ * the card must not say it happened when it did not.
  *
  * IT USED TO SAY NOTHING AT ALL in that branch: the user watched `Signing out…`, landed back on
  * the dashboard still signed in, and was told nothing — the one branch of his own question 6
@@ -100,10 +103,8 @@ export async function signOut() {
   // the user has — so from Story 1.4 until Story 2.4 signing out on the laptop signed the phone
   // out too, and FR-A6's "ordinary sessions persist" was not true. Ending every session is a
   // separate, confirmed action (`account/actions.ts`'s `signOutEverywhere`), never this one.
-  // `signed-out.test.ts` reads both scopes out of the source so neither can go implicit again.
-  const { error } = await supabase.auth.signOut({ scope: 'local' })
-  if (error) console.error('sign-out: failed', { code: error.code })
-  redirect(signOutPathFor(Boolean(error)))
+  // `signed-out.test.ts` reads every scope out of both actions so none can go implicit again.
+  redirect(signOutPathFor(await signOutFailed(supabase, ['local'])))
 }
 
 /* ─────────────────────────────────────────────────────── S1a's passkey button — FR-A2
