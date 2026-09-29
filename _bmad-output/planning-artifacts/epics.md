@@ -2607,7 +2607,8 @@ green.
 ### Story 5.24c: The sweep: the section runtime, the library and the recordings
 
 *R-211's third story, after 5.24b: Group C of 5.24a's triage — DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159,
-161, 168, 171, 186, 196, 213, 224, 228, 237 and 288.*
+161, 168, 171, 186, 196, 213, 224, 228, 237 and 288. At this story's Create (2026-09-29) DW-224's post-body half moved to
+Story 6.1, and two findings went to the stories that own them: DW-296 to Story 7.35, DW-297 to Story 7.18.*
 
 As the builder of every design still to come,
 I want the runtime, the validator and the test-site recordings to refuse what they should and record what is real,
@@ -2719,6 +2720,10 @@ spacing labels**), button style, shadow level and link style
 reads the pack's `--link-color` and `--link-decoration` at zero specificity, and keeps its ground's words on a
 contrast, accent or image ground. A pack emitted through `referenceTokensCss()` carries it already; one written any
 other way must carry it too. **The first theme that ships the token block proves it on T1 and T3**, on both majors
+**And** before the first theme ships the token block, **the owner rules (R-83) whether R-173's link look also reaches
+the links inside a post's body** — the unscoped `:where(a:not([class]), a[class=""])` restyles every plain link
+`{{content}}` prints, those on a coloured Koenig card included, while R-173 speaks only of a link typed into a section's
+text — and the ruling is built and proved on T1 and T3 with the rest (DW-224)
 **And** sections span the site width by default and stay responsive within it.
 **And** the reference set takes the frames' page geometry as Normal — content 1,296 px, side margins 72 · 40 · 20 px at 1440 · 834 · 390 — with the margin its own Appendix D row beside the 24 px gutter, and the pilots re-baselined (DW-155).
 
@@ -3504,6 +3509,9 @@ per page, not per section**
 `sites.site_settings.members` (`storedMembers`), and where members are off, or free or paid sign-ups cannot be taken,
 lists the same sentences the Sites screen shows (`membersNotice`, `apps/web/lib/paywall.ts`) beside any placed member
 ask or designed paywall — never for a synthesised instance, and nothing for a site with no record yet (R-4)
+**And** a free member ask compiled for a site whose Ghost is older than 5.62 — where `@site.allow_self_signup` does not
+exist, so R-4's guard hides every free ask — is named in Pre-flight, and this story's Create asks the owner (R-83)
+whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** the upload goes through the Admin chokepoint, which sends JSON only today: a `FormData` body passes untouched with no `Content-Type` set by Inflozo, proved by the first real upload to T1 and T3; Story 7.17's `routes_upload` uses the same shape (DW-51).
 **And** once the first allowed Ghost write exists, the chokepoint's refusal is driven live: the harness asks the deploy path for a write outside `ADMIN_WRITES` and reads a `denied` audit row with no request reaching T1, beside the real upload's `admin_write` row (DW-54).
 **And** pressing Ship it in a session reading along first opens D8g's take-over (`lock-takeover.tsx` with D8g's strings), and the wizard never starts without the lock (DW-238).
@@ -3985,6 +3993,9 @@ So that "canvas and shipped output agree" is verified rather than assumed on eac
 **And** **the T4 clause is deferred with T4 itself and is not an exit condition for either epic**: a deploy
 attempt against T4 failing with the friendly Starter message and setting Preview-only is **carried forward to §4's
 pre-launch Ghost(Pro) gate**, owned by E15
+**And** the gscan stress harness (`tools/stress/build.js`) **names every template's target and stacks on each only what
+its scope allows** — no feed on post, page or error, and its 40-section static-route template modelled as a target — so
+the scale proof compiles what the compiler itself would ship (DW-296)
 **And** **neither E4 nor E7 exits until this gate is green.**
 
 **FRs:** the joint exit proof. · **Frame:** no new surface — the gate is walked through `S8 Deploy.dc.html` S8a–e and the five pilots' own frames. · **Owner test:** yes. · **Verification:** T1 (6.58.0) and T3 (5.130.6), real

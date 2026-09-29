@@ -5975,9 +5975,17 @@ reason: Step 89 failed once in two completed walks with nothing else running on 
 status: open
 severity: medium
 origin: Story 5.14's code review (2026-09-21), the Acceptance Auditor, the Blind Hunter and the Edge Case Hunter.
-owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
-  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "Epic 6 — the story that emits the token
-  block into `default.hbs` and the one that builds the packs.")*
+owner: Stories 5.24c (The sweep: the section runtime, the library and the recordings) and 6.1 (The token engine —
+  computed or authored, and nothing in between), whose cards name this entry: 5.24c builds the underline on a coloured
+  ground and the empty `class`; 6.1 asks the owner whether the rule reaches a post's body, and proves the answer on T1
+  and T3. *(Story 5.24c's Create, 2026-09-29: was "Story 5.24c …, one of the sweep's five stories (R-211)"; Story
+  5.24a's Dev, 2026-09-28: was "Epic 6 — the story that emits the token block into `default.hbs` and the one that builds
+  the packs.")*
+note (Story 5.24c's Create, 2026-09-29): split, not dropped. The underline and `class=""` halves are built by 5.24c,
+  with controls. The post-body half is a behaviour decision: R-173 (`reconcile-designs-decisions.md:3678`) covers "a link
+  typed into a section's text" and says nothing about `{{content}}`, and the post-body frame (`C Post Body.dc.html`)
+  draws no inline link look. It becomes observable only once a theme ships the token block, which is Story 6.1, so the
+  question is asked there. When 5.24c's half lands, this entry stays open, owned by Story 6.1 alone.
 location: `packages/section-runtime/src/tokens.ts` `LINK_RULES` · `reference-tokens.css`
 plain: Nothing is wrong today. When Style Packs arrive, a pack that turns link underlines off would make a link typed
   on a dark, accent or photo band look like ordinary text; and the rule will also restyle links inside a post's body.
@@ -7470,3 +7478,45 @@ reason: the ref guards a real case — Escape closing the sheet while the browse
   StrictMode on, which stays on "Connecting…" without the fix. Not fixed in 5.24b because no check it runs can walk
   Connect in a development build: `pnpm keyboard` runs `next dev` but has no database or Ghost to connect with, and the
   harnesses walk the deployed production build.
+
+## Deferred from: Story 5.24c's Create (2026-09-29)
+
+### DW-296: the gscan stress harness stacks sections where their scope refuses them, so it can never name its targets
+
+plain: The big test theme that proves Ghost accepts Inflozo's output at scale puts some sections on pages where they
+  cannot work — a list of posts on a single post's page, for example. Ghost still accepts the theme, so nothing is
+  broken, but the test proves less than it could, and it cannot yet be checked the way a customer's theme is.
+status: open
+severity: low
+origin: Story 5.24c's Create (2026-09-29), executed read-only in a scratch copy of `tools/stress/`: rendering the stack
+  with each template named refuses the feed on post, page and error (`"posts" is not a field of the post scope`), and
+  `custom-stress.hbs` is a routes.yaml static route whose sections sit outside any `{{#post}}` (`tools/stress/build.js:179`,
+  `:255`), which no row of the binding matrix models. DW-125 (Story 5.24c) fixes each archetype so it renders at its
+  own target; this is what is left.
+owner: Story 7.35 (The E4/E7 joint compile gate — E7's closing story), whose card names this entry.
+location: `tools/stress/build.js` (`TEMPLATES`, the stack's render at `:86-89`) · `tools/stress/sections.js`
+  (`stressStack`) · `packages/library/contexts/matrix.json` (`targets`)
+reason: naming every template's target in the stack means a stack per template that its scope allows, and a matrix
+  target for a static route's template. That is the compiler's placement rule, and Story 7.35's joint gate is where the
+  harness becomes the compiler's. Doing it in a sweep story would re-shape the AD-11 fixture for a rule the compiler has
+  not written yet.
+
+### DW-297: a free member ask is hidden on every Ghost older than 5.62, whose `@site` has no `allow_self_signup`
+
+plain: A "Sign up" link or button on a customer's site shows only when their Ghost says it takes sign-ups. Ghost
+  started saying so in version 5.62, but Inflozo connects any Ghost 5. So on a site running 5.0 to 5.61, every sign-up
+  ask Inflozo ships would stay hidden, and nothing would tell the customer why.
+status: open
+severity: medium
+origin: Story 5.24c's Create (2026-09-29), found while checking DW-168, read in source and not executed (no Ghost older
+  than 5.130.6 is reachable): R-4 (Story 5.20) wraps every free ask in `{{#if @site.allow_self_signup}}`
+  (`packages/library/src/vocabulary.ts:319-322`, `ASK_FLAGS`); that field arrived in Ghost 5.62.0, bisected in the npm
+  releases (MEASUREMENTS §41, `packages/library/contexts/matrix.json:123-126`); and connect accepts any Ghost 5
+  (`apps/web/lib/connect-rule.ts:14`, `MIN_GHOST_MAJOR`).
+owner: Story 7.18 (The deploy wizard), whose card names this entry.
+location: `packages/library/src/vocabulary.ts` `ASK_FLAGS` · the compiler's emission of a member ask · Story 7.18's
+  Pre-flight
+reason: a design's own `ghostCompat.minVersion` cannot see it — the ask is a customer's link, not a field a design
+  reads — so DW-168's check does not reach it. What a site below 5.62 should get (the ask kept, dropped, or the deploy
+  warned) is the owner's decision, and Pre-flight is where a deploy already meets the site's version and its
+  member-switch warnings (DW-260).
