@@ -3,7 +3,7 @@ import { ghostProPreviewProbe } from '@/lib/flags'
 import { capabilityOf, probePatch, settingsOf, settingsReadable, type Members, type Surfaces } from '@/lib/probe-rule'
 import { supabaseAdmin } from '@/lib/supabase/server'
 import { call } from '@/server/ghost-admin'
-import { patchSite, rereadSettings } from '@/server/site-settings'
+import { ADMIN_PATHS as PATHS, patchSite, rereadSettings } from '@/server/site-settings'
 
 /**
  * FR-C2's FOUR PROBES, ON THE WIRE — Story 3.3, and the Admin chokepoint's first caller that uses
@@ -37,9 +37,6 @@ import { patchSite, rereadSettings } from '@/server/site-settings'
  * are all server-asserted by AD-7 — so this file joins the `supabaseAdmin()` importer list in
  * `server-wiring.test.ts` as well as the chokepoint's.
  */
-
-/** What each probe reads. `settings/` is a browse over ~100 rows; both are GETs, so no allowlist. */
-const PATHS = { config: 'config/', settings: 'settings/' } as const
 
 export interface ProbeSummary {
   ok: boolean

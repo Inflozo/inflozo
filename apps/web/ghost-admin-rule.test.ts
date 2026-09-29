@@ -173,7 +173,9 @@ test('a 401 is told apart by its cause, and "expired" is not one of them', () =>
 test('DW-58: the addresses the server will not fetch, whoever’s DNS points there', () => {
   // The I/O matrix's ranges — loopback, the private three, link-local (the metadata address), carrier-grade NAT,
   // "this network", and IPv6's unspecified, loopback, unique-local and link-local — and a mapped IPv4 judged as one.
-  for (const ip of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '100.64.0.1', '0.0.0.0', '172.16.0.1', '192.168.1.1', '::', '::1', 'fc00::1', 'fe80::1', '::ffff:127.0.0.1']) {
+  for (const ip of ['127.0.0.1', '10.0.0.1', '169.254.169.254', '100.64.0.1', '0.0.0.0', '172.16.0.1', '192.168.1.1', '::', '::1', 'fc00::1', 'fe80::1', '::ffff:127.0.0.1',
+    // review, 2026-09-29: protocol assignments, benchmarking, multicast, reserved, broadcast; NAT64, 6to4, site-local
+    '192.0.0.1', '198.18.0.1', '224.0.0.1', '240.0.0.1', '255.255.255.255', '64:ff9b::7f00:1', '2002:7f00:1::', 'fec0::1']) {
     assert.equal(blockedAddress(ip), true, `${ip} must be refused`)
   }
   // …and the public internet is not: the control that the list is not simply "everything".

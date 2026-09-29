@@ -271,6 +271,12 @@ for (const [network, prefix] of [
   ['169.254.0.0', 16],
   ['172.16.0.0', 12],
   ['192.168.0.0', 16],
+  // …and the rest of the ranges no public site is served from (review, 2026-09-29): IETF protocol
+  // assignments, the benchmarking range, multicast, the reserved block and broadcast.
+  ['192.0.0.0', 24],
+  ['198.18.0.0', 15],
+  ['224.0.0.0', 4],
+  ['240.0.0.0', 4],
 ] as const) {
   PRIVATE.addSubnet(network, prefix, 'ipv4')
 }
@@ -278,6 +284,11 @@ PRIVATE.addAddress('::', 'ipv6')
 PRIVATE.addAddress('::1', 'ipv6')
 PRIVATE.addSubnet('fc00::', 7, 'ipv6')
 PRIVATE.addSubnet('fe80::', 10, 'ipv6')
+// The two IPv6 forms that carry an IPv4 address inside them — NAT64 (`64:ff9b::7f00:1` is loopback
+// again) and 6to4 — and the deprecated site-local range (review, 2026-09-29).
+PRIVATE.addSubnet('64:ff9b::', 96, 'ipv6')
+PRIVATE.addSubnet('2002::', 16, 'ipv6')
+PRIVATE.addSubnet('fec0::', 10, 'ipv6')
 
 export function blockedAddress(ip: string): boolean {
   const mapped = /^::ffff:(\d{1,3}(?:\.\d{1,3}){3})$/i.exec(ip)

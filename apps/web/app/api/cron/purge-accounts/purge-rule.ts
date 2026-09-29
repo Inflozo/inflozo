@@ -115,6 +115,10 @@ export async function runPurge(
       log.error('purge: failed', { step: 'due', code: e.code, message: e.message })
       return { purged, failed: failed + 1 }
     }
+    // A due read that hands back an id this run already tried — an exclusion dropped, or an account whose
+    // profile outlived its user — would otherwise be met again every batch until the budget was spent
+    // (review, 2026-09-29): what is tried once in a run is tried once.
+    batch = batch.filter((userId) => !tried.includes(userId))
     if (batch.length === 0) break
     for (const userId of batch) {
       if (spent()) break

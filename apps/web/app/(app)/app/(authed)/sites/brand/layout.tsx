@@ -26,7 +26,10 @@ import { brandSiteOf } from '../brand-screen'
  */
 export default async function BrandLayout({ children }: { children: ReactNode }) {
   const siteId = new URLSearchParams((await headers()).get(SEARCH_HEADER) ?? '').get('site')
-  if (siteId) {
+  // `?site=` with nothing after it is still a site named — and no row (review, 2026-09-29): left to the
+  // screen, it would have been the 200-then-not-found this layout exists to prevent.
+  if (siteId !== null) {
+    if (!siteId.trim()) notFound()
     const { data, error } = await brandSiteOf(siteId)
     if (error?.code === '22P02' || (!error && !hasBrand(data?.site_settings?.brand))) notFound()
   }

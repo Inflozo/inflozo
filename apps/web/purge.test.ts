@@ -271,6 +271,25 @@ test('a refused drain leaves the rows alone, and the log names the bucket', asyn
   assert.equal(logged.bucket, 'site-snapshots')
 })
 
+test('a due read that fails ends the run red, with what was purged so far kept (review, 2026-09-29)', async () => {
+  const errors: unknown[][] = []
+  const log = { log() {}, error: (...args: unknown[]) => errors.push(args) }
+  const refused = async () => {
+    throw Object.assign(new Error('due refused'), { step: 'due', code: 'Refused' })
+  }
+  // Refused at once: nothing purged, one failure, and the line names the step.
+  const { deps } = stubDeps(null, [])
+  deps.due = refused
+  assert.deepEqual(await runPurge(deps, log), { purged: 0, failed: 1 })
+  assert.deepEqual(errors.at(-1)?.[1], { step: 'due', code: 'Refused', message: 'due refused' })
+  // Refused on the SECOND read: the first batch's purges are kept in the count, and one failure is added.
+  const second = stubDeps(null, ['u1'])
+  const firstDue = second.deps.due
+  let reads = 0
+  second.deps.due = async (excluding, limit) => (reads++ === 0 ? firstDue(excluding, limit) : refused())
+  assert.deepEqual(await runPurge(second.deps, log), { purged: 1, failed: 1 })
+})
+
 test('nothing due is a run of nothing, not an error', async () => {
   const { deps, calls, now } = stubDeps(null)
   assert.deepEqual(await runPurge(deps, recorder().log, now), { purged: 0, failed: 0 })

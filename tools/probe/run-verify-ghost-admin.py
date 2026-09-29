@@ -713,6 +713,15 @@ def moved_queries():
             'dropped': terms[0]}
 
 
+def pinned_ca():
+    """The Supabase root the app pins (`db.ts`, DW-50), read out of the source: the browser half's pooler connection
+    verifies the pooler as the app does, not `ssl: 'require'` (review, 2026-09-29). Fails loudly if the constant moved."""
+    found = re.search(r'const SUPABASE_ROOT_CA = `([^`]+)`', open(os.path.join(WEB, 'server', 'ghost-admin', 'db.ts')).read())
+    if not found:
+        sys.exit('no SUPABASE_ROOT_CA in apps/web/server/ghost-admin/db.ts')
+    return found.group(1)
+
+
 def pinned_handshake(env):
     """DW-50's control (Story 5.24b): connect with the app's own driver and the PEM `db.ts` pins, then with Node's first
     bundled root in its place. `select 1` and nothing else; the URL reaches node through its environment only. Answers
@@ -984,7 +993,8 @@ const record = (name, detail) => say({ name, ok: null, detail })
    day the first of them landed (review, 2026-09-09). Fixture writes only, on the throwaway user's
    own rows; nothing here writes anything a customer owns. */
 const sql = postgres(process.env.PG_URL, {
-  max: 1, prepare: false, ssl: 'require', connect_timeout: 10, idle_timeout: 20,
+  // The CA the app pins (DW-50), so the harness verifies the pooler as the app does (review, 2026-09-29).
+  max: 1, prepare: false, ssl: { ca: process.env.DB_CA, rejectUnauthorized: true }, connect_timeout: 10, idle_timeout: 20,
 })
 const secretsBehind = async (ref) =>
   ref ? (await sql`select count(*)::int as n from vault.secrets where id = ${ref}`)[0].n : -1
@@ -1543,7 +1553,15 @@ const shoot = async (page, name) => {
       await cardOf(name).first().getByRole('button', { name: /^Options for / }).first().click()
       const menu = page.locator(`#site-menu-${id}`)
       await menu.waitFor({ state: 'visible' })
-      await menu.getByRole('link', { name: SAY.keys_menu, exact: true }).click()
+      /* CLICKED ONLY ONCE REACT HOLDS THE ROW (review, 2026-09-29). The row is a `PanelLink`: its `href` is the FULL
+         page for a scripts-off browser, and its `onClick` is what opens the window instead. A click that lands before
+         hydration is the browser's own, and it goes to `/sites/keys` — no `<dialog>` ever, and the wait below timed out
+         on the deployed site twice at this story's Review (the same line, in two runs: the signal, not a flake). The
+         forges already wait the same way (`hydrated()`, for forms); this waits for the anchor itself. */
+      const row = menu.getByRole('link', { name: SAY.keys_menu, exact: true })
+      await page.waitForFunction((a) => Boolean(a) && Object.keys(a).some((k) => k.startsWith('__react')),
+        await row.elementHandle(), { timeout: 30000 }).catch(() => {})
+      await row.click()
       await page.locator('dialog[open]').getByText(SAY.keys_url_reason).filter({ visible: true }).first().waitFor()
     }
     /* What the screen looks like from outside: is it a window over the list, or a page instead of
@@ -5011,7 +5029,11 @@ def run_browser(cfg):
         try:
             for line in proc.stdout:
                 if line.startswith('@@STEP@@'):
-                    steps.append(report(json.loads(line[len('@@STEP@@'):])))
+                    try:
+                        steps.append(report(json.loads(line[len('@@STEP@@'):])))
+                    except ValueError:
+                        # The kill timer landed mid-write: the half line is shown, not raised (review, 2026-09-29).
+                        print(f'  {line.strip()}', flush=True)
                 elif line.startswith('@@DONE@@'):
                     done = True
                 elif line.strip():
@@ -5270,6 +5292,7 @@ def main():
             'SB_URL': sb,
             'SB_SECRET': secret,
             'PG_URL': env['SUPABASE_DB_POOLER_URL'],
+            'DB_CA': pinned_ca(),
             'USER_ID': user_id,
             'OTHER_USER_ID': other_id,
             'CONFIRM_URL': f'{args.url.rstrip("/")}/auth/confirm?token_hash={link["hashed_token"]}&type=magiclink',

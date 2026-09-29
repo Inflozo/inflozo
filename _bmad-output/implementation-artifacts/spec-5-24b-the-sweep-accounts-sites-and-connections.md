@@ -2,9 +2,9 @@
 title: 'Story 5.24b — The sweep: accounts, sites and connections'
 type: 'chore'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '0b00f5d9476d6c4c79ce9898da67f92cf1d33f40'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
 ---
@@ -471,7 +471,7 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 **Execution — Dev, the site record's writers (DW-65, DW-271, DW-272, DW-84's second half):**
 
 - [x] `apps/web/server/site-settings.ts` — **new**, with relative imports and `import type` only, so that `node --test` can load it:
-  - **`patchSite(admin, siteId, patch)`:**
+  - **`patchSite(admin, { siteId, userId }, patch)`** *(the Review of 2026-09-29 corrected this line to what Dev built; the departure is recorded under Verification)*:
     - It reads the row's `site_settings, credentials_present, capability_source, disconnected_at, updated_at`.
     - It calls `patch(row)`, which may return `null` to refuse.
     - It updates with `.eq('updated_at', row.updated_at).select('id')`. If no row matches, it re-reads and re-patches: three tries in all, then it changes nothing and logs `{code}`.
@@ -731,6 +731,76 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
   - *Given* `pnpm check`, `bash supabase/tests/run-rls-gate.sh`, `pnpm keyboard` and `python3 tools/doc-audit.py --check`,
   - *then* all are green, and every new check was seen red on its control first.
 
+### Review Findings
+
+*Code review, 2026-09-29 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier on the deployed site); every patch applied in the Review commit, each new check seen red on its control first.
+No question is the owner's.*
+
+- [x] [Review][Patch] `site-settings.test.ts`'s fake handed back the WHOLE row whatever `patchSite` asked for, so a column
+  dropped from its `READ` left every compare-and-set test green while `contentKeyPatch` and the disconnect stamp read
+  `undefined` [apps/web/site-settings.test.ts:48] — the fake honours its `select(columns)`; with `disconnected_at` dropped
+  from `READ` the DW-84 test is red.
+- [x] [Review][Patch] `runPurge`'s new "the due read failed" branch — the run ending red with `step: 'due'` — executed under no
+  test [apps/web/purge.test.ts:274] — two cases: refused at once → `{ purged: 0, failed: 1 }` with the step named; refused
+  on the second read → the first batch's purges kept, one failure added. Red with the catch returning `failed` unchanged.
+- [x] [Review][Patch] The purge's loop would meet an id the due read handed back twice — an exclusion dropped, or a profile
+  outliving its user — every batch until the budget was spent [apps/web/app/api/cron/purge-accounts/purge-rule.ts:118] —
+  a batch is filtered against what the run already tried.
+- [x] [Review][Patch] DW-84's ✕ and Cancel gained `aria-disabled` and nothing drew it (`globals.css`'s rule is for buttons; the
+  exits are links), against R-192's "visibly disabled"; and the exits were synced only on a mutation, so a window remounted
+  while its save was still busy showed them live [apps/web/app/(app)/app/(authed)/sites/panel-modal.tsx:112;
+  apps/web/app/globals.css:369] — one rule greys `[data-panel-exit][aria-disabled='true']`, and `sync()` runs once on mount.
+- [x] [Review][Patch] `/sites/brand?site=` with nothing after it slipped past the new layout (`if (siteId)`) to the page's
+  `notFound()`, the 200-then-not-found DW-67 exists to prevent [apps/web/app/(app)/app/(authed)/sites/brand/layout.tsx:30] —
+  a `site` that is present and empty is judged: 404 above the boundary.
+- [x] [Review][Patch] The block list omitted the IETF protocol-assignments block, the benchmarking range, multicast, the
+  reserved block and broadcast, and the two IPv6 forms that carry an IPv4 inside them (NAT64 `64:ff9b::/96`, 6to4
+  `2002::/16`) plus site-local `fec0::/10` [apps/web/server/ghost-admin/admin-rule.ts:277] — added, with a vector for each;
+  red with NAT64 dropped.
+- [x] [Review][Patch] The resolver's wait and the fetch's each got the full `TIMEOUT_MS`, so one Admin call could take twice the
+  ceiling every caller was derived from (connect's three calls, the daily check's budget)
+  [apps/web/server/ghost-admin/index.ts:419] — one deadline: the fetch gets what the resolver left.
+- [x] [Review][Patch] `rereadSettings` spelled the Admin path `'settings/'` as a literal beside `site-probe.ts`'s `PATHS`
+  [apps/web/server/site-settings.ts:50] — `ADMIN_PATHS` is exported once and `site-probe.ts` imports it.
+- [x] [Review][Patch] The lifted `storeOrUndo` test could no longer see that a failed undo is LOGGED (the log lines live in
+  `connectSite`'s closures) [apps/web/server-wiring.test.ts] — a source rule holds both `'sites: connect undo failed'` lines;
+  red with one renamed.
+- [x] [Review][Patch] DW-82's "every action landing keeps the search" was proved for the two windows' exits only; Re-check,
+  Disconnect, Use brand, Skip and the notice answers were asserted nowhere [apps/web/server-wiring.test.ts] — a source rule:
+  every `redirect(` in `sites/actions.ts` outside `connectSite` carries `q` (or the computed `url`), and no literal `/sites`
+  landing exists; red with the disconnect landing's `q` dropped.
+- [x] [Review][Patch] A `@@STEP@@` line cut short by the kill timer reached `json.loads` and raised out of the streaming loop
+  [tools/probe/run-verify-ghost-admin.py:5014] — a half line is printed as a note.
+- [x] [Review][Patch] `run-verify-passkeys.py` — new in this story, and it WRITES a production feature flag — opened the pooler
+  with `ssl: 'require'`, the unverified line DW-50 removed from `db.ts`; the ghost-admin and dashboard harnesses' browser
+  halves did the same [tools/probe/run-verify-passkeys.py:241; tools/probe/run-verify-ghost-admin.py:987;
+  tools/probe/run-verify-dashboard.py:144] — each reads the PEM out of `db.ts` (`pinned_ca()`) and pins it with
+  `rejectUnauthorized: true`. Re-run on production after the change: passkeys `--check`, `--only brand-none` and the
+  dashboard harness (Verification § Executed at Review).
+- [x] [Review][Patch] **The Real-infra verifier's finding:** `--only manage-keys` could not complete on the deployed site — the
+  same wait died in both permitted runs, at `openKeysPopup`'s `dialog[open]` (the SAME line twice: a signal, not a flake)
+  [tools/probe/run-verify-ghost-admin.py:1547] — the cause was the harness clicking the ⋯ row's link before React held it:
+  a `PanelLink`'s `href` is the FULL page for a scripts-off browser and its `onClick` opens the window, so a pre-hydration
+  click was the browser's own and went to `/sites/keys`, where no `<dialog>` ever opens. Production hydrates later than the
+  local build Dev ran against. The row is now clicked only once it carries React's own keys (the forges' `hydrated()` rule,
+  for the anchor). Re-run: `--only manage-keys` on production, every step PASS, users 13 → 13. The product is unchanged.
+- [x] [Review][Patch] `## Verification`'s Real services list omitted Resend (`check-access.py`'s full run) and the Vercel API
+  (DW-47's plan read, and Review's deployment read-back); the DW-65 task line still gave `patchSite`'s pre-Dev signature; and
+  "`rest-residual` survives only in dated records" was not true of R-223's "why it was a question" [this spec] — all three
+  corrected.
+
+Dismissed as noise or by-design after reading the code (seventeen), the ones worth a line: the sign-out landing when
+`others` succeeds and `local` fails answers for THIS device, which holds no cookie afterwards, and the failure is logged
+with its scope; a signed-out `GET /sites/brand?site=…` was EXECUTED on production and answers `307` to `/sign-in`, so the
+parent layout's redirect wins over the child's `notFound()`; a row deleted between `patchSite`'s read and write is
+`no_such_site` on the re-read, never `contended`; a disconnect whose stamp fails after `remove()` lands on "Try again", and
+the next press completes it (`remove()` is a no-op on nulled refs, the stamp lands); `pathOf` reading `/ghost/blog` as a
+root address is right, because Ghost reserves `/ghost` and no site lives under it; DNS rebinding is the `ponytail:` ceiling
+recorded beside `whereTo`, with its upgrade; a `check-access.py` FAIL on a token without an expiry header is what the spec
+asked for; the guard judging the request by the `role` claim is what PostgREST itself does; the base migration keeping its
+`grant` with the later migration's `revoke` is ordinary migration history.
+
 ## Spec Change Log
 
 ## Design Notes
@@ -862,6 +932,8 @@ Do this on the real site after Deploy, in a desktop browser about 1440 wide, sig
   - T3 `ghost5.inflozo.com`: moved domains.
 - Public DNS, for `127.0.0.1.nip.io`.
 - The GitHub API, read-only.
+- Resend, for `check-access.py`'s one full run (its usual test email).
+- The Vercel API, read-only: DW-47's plan and compute read, and Review's deployment read-back.
 - The npm registry, for Ghost's admin source.
 
 **Executed at Create (2026-09-29), read-only.** Recorded so that Dev starts from evidence.
@@ -1028,7 +1100,7 @@ its control first, then restored byte-identical and green.
 - **Departure from the Tasks' wording:** `patchSite(admin, { siteId, userId }, patch)`, not `(admin, siteId, patch)` —
   the user id rides beside the site id because every writer it replaced carried `.eq('user_id')` on its own write, and
   ownership belongs beside the write (`remove()`'s rule in the chokepoint).
-- **Standing rule 7.** `rest-residual` survives only in dated records; no caller of `readSettings(` bypasses the
+- **Standing rule 7.** `rest-residual` survives only in dated records and in R-223's own "why it was a question" (the register, describing what was executed before this story; the built target beside it names `rest-refused`); no caller of `readSettings(` bypasses the
   wrapper (the editor's action calls it); no `ghost_refused&status=429`; the `SOFT` row is gone from the tool, and
   `sessions_inactivity_timeout` is named only in its docstring and its new comment; `BRAND_KEYS` is the three keys; no
   reader of `brand.icon`, `cover`, `description` or `title`; `SITES_URL` is gone and every action landing is
@@ -1051,3 +1123,42 @@ its control first, then restored byte-identical and green.
   `bash supabase/tests/run-rls-gate.sh`: exit 0, with the Story 5.24b block's PASS lines and DW-293's.
   `pnpm keyboard`: exit 0, the DW-91 test among the passes. `python3 tools/doc-audit.py --check`: the first run regenerated
   `INDEX.md` and `INDEX.html` from the new catalogue rows (STALE, as the gate does), then PASS twice with no warning.
+
+**Executed at Review (2026-09-29), on the real infrastructure (R-82), against HEAD `9a7b446a` deployed.** Every key by
+name; nothing written to T1 or T3; users 13 → 13 on every run.
+
+- **HEAD deployed.** CI run for `9a7b446a`: `rls`, `check`, `deploy` all success (deploy at 04:44:49Z), the render matrix
+  success; Vercel production deployment for that sha `READY`.
+- **The schema is at least as new as the code (R-99),** read over `SUPABASE_DB_POOLER_URL`: `public.session_guard` present,
+  `prosecdef`, owner `postgres`, `search_path=""`; `authenticator` carries `pgrst.db_pre_request=public.session_guard`;
+  `has_table_privilege('authenticated','public.sites','INSERT')` is false, SELECT and the column UPDATEs unchanged.
+  **Negative control, rolled back:** `set local role authenticated; insert into public.sites …` → `42501`.
+- **The guard, live:** `run-verify-sign-out-everywhere.py` exit 0, `rest-refused` PASS — A1's live ticket 200 before the
+  press; after Sign out everywhere both old tickets 401 `session_not_found` on a read and a write with
+  `WWW-Authenticate: Bearer error="invalid_token"`, `profiles.updated_at` unchanged; A2's live ticket, the secret key and
+  anon still 200. `jwt-exp` RECORD 3600 s.
+- **`--only no-such-step`:** exit 2 naming the registry, before any key is read. **`--check`:** exit 0, `pinned-ca` PASS.
+- **The eight blocks on production.** `connect-paths` (`path-refused`, `address-blocked` with `{"ms":24,"blocked":true}`,
+  `path-page` connecting T1's root from a post's address — R-226), `brand-none` (404/404), `brand-ownership` (five runs of
+  five, six of six with the run above), `moved-domains` with `moved-order-term` (the newer record without the term, the
+  live decoy with it), `keys-content` with `keys-test-refused` (`ghost_refused&status=403` and `ghost_unavailable`),
+  `search-kept`, `keys-escape`: every step PASS. **`manage-keys` FAILED twice at the same wait** (`openKeysPopup`'s
+  `dialog[open]`, runs "eight" and "five") — diagnosed as the harness clicking the ⋯ row's `PanelLink` before hydration,
+  which follows its scripts-off `href` to the full page; fixed in the harness (the row is clicked once React holds it) and
+  re-run: every step of `manage-keys` PASS (`keys-screen` … `keys-forged`), exit 0. The product is unchanged by it.
+- **`run-verify-dashboard.py`:** exit 0 — `clear-search` PASS on both pages, axe zero violations at 1440, 834 and 390.
+  Run again after the review pinned the harness's pooler connection to the app's CA: exit 0, all steps PASS.
+- **`run-verify-passkeys.py`:** exit 0 — `named-aaguid`, `kill-mid-ceremony` (off for 2767 ms), `switch-on`, `inert-held`,
+  `inert-released` PASS; the `passkeys` row read back identical before and after. `--check` again after the CA pin: exit 0,
+  the flag read and never written.
+- **`--only brand-none` again after the CA pin:** exit 0, PASS.
+- **Read-only premises:** `https://example.com/ghost/api/admin/config/` → 404; `127.0.0.1.nip.io` → `127.0.0.1` at 1.1.1.1;
+  a signed-out `GET https://app.inflozo.com/sites/brand?site=<uuid>` and `?site=` → 307 to `/sign-in` (the parent
+  layout's redirect precedes the brand layout's 404 — a claim about Next's ordering, executed).
+- **The review's own patches, each seen red on its control:** the fake's `select(columns)` (`READ` without
+  `disconnected_at` → the DW-84 test red); the purge's due-failure tests (the catch returning `failed` unchanged → red);
+  the widened block list (NAT64 dropped → red); the undo-log rule (one line renamed → red); the DW-82 landing rule (the
+  disconnect landing's `q` dropped → red). `node --test` over the touched files green after each restore, byte-identical.
+- **The gates after the patches:** `pnpm check` (Node 24) exit 0; `bash supabase/tests/run-rls-gate.sh` exit 0 with the
+  Story 5.24b and DW-293 PASS lines; `pnpm keyboard` exit 0 (`next-env.d.ts` restored after it); `python3 tools/doc-audit.py
+  --check` PASS twice; the story board regenerated. Every entry of Group B is closed: the spec's first command lists none.

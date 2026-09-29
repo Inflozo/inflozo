@@ -366,6 +366,15 @@
     cursor: pointer;
   }
 
+  /* DW-84 (Story 5.24b, review 2026-09-29): a window's ways out — the ✕ and Cancel, which are LINKS —
+     are greyed by `panel-modal.tsx` with `aria-disabled` while a save inside is busy. The attribute
+     alone drew nothing (the rule above is for buttons), and R-192 says disabled is VISIBLY disabled:
+     one rule here, for both windows, rather than a class on each link. */
+  [data-panel-exit][aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
   /* STORY 5.22 — D8a's 44px, AS ONE RULE: "the only thing this width changes about the controls themselves"
      (`D8 Editor Below 1440.dc.html:167`), so a pass per component would miss the next control. Scoped to the editor
      (`[data-editor]`) and to a touch screen, never a fine pointer (D8b keeps 28–32px). `:where()` and `@layer base`,

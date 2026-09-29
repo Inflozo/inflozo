@@ -39,17 +39,27 @@ function fakeAdmin(row: Stored, between?: (row: Stored, write: number) => void) 
   }
   const chain = (values?: Record<string, unknown>) => {
     const filters: [string, unknown][] = []
-    const matches = () => filters.every(([column, value]) => (row as Record<string, unknown>)[column] === value)
+    const matches = () => filters.filter(([column]) => column !== '__select').every(([column, value]) => (row as Record<string, unknown>)[column] === value)
     const self = {
       eq(column: string, value: unknown) {
         filters.push([column, value])
         return self
       },
-      select() {
+      // THE COLUMN LIST IS HONOURED, as PostgREST honours it (review, 2026-09-29): `patchSite` decides every
+      // patch from the columns it asked for, so a column dropped from its `READ` must reach the patch as
+      // `undefined` here too — `contentKeyPatch` and the disconnect stamp read `disconnected_at`, the probe
+      // reads `capability_source` — instead of the whole row quietly standing in for it.
+      select(columns?: string) {
+        if (columns) filters.push(['__select', columns])
         return self
       },
       maybeSingle() {
-        return Promise.resolve({ data: matches() ? structuredClone(row) : null, error: null })
+        const asked = filters.find(([column]) => column === '__select')?.[1] as string | undefined
+        const matched = filters.filter(([column]) => column !== '__select').every(([column, value]) => (row as Record<string, unknown>)[column] === value)
+        if (!matched) return Promise.resolve({ data: null, error: null })
+        const whole = structuredClone(row) as Record<string, unknown>
+        const data = asked ? Object.fromEntries(asked.split(',').map((c) => c.trim()).filter((c) => c in whole).map((c) => [c, whole[c]])) : whole
+        return Promise.resolve({ data, error: null })
       },
       // An UPDATE is awaited straight off the chain (`.update(…).eq(…).select('id')`).
       then(resolve: (v: unknown) => unknown, reject: (e: unknown) => unknown) {
@@ -65,7 +75,7 @@ function fakeAdmin(row: Stored, between?: (row: Stored, write: number) => void) 
     }
     return self
   }
-  const admin = { from: () => ({ select: () => chain(), update: (values: Record<string, unknown>) => chain(values) }) }
+  const admin = { from: () => ({ select: (columns?: string) => chain().select(columns), update: (values: Record<string, unknown>) => chain(values) }) }
   return { admin: admin as unknown as SupabaseClient, writes }
 }
 

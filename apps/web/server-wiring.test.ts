@@ -619,3 +619,20 @@ test('DW-77: disconnect takes both keys out in ONE transaction, with the begin()
   assert.notEqual(moved, body, 'control: the moved body was built')
   assert.equal(inLoop(moved), false, 'control: a begin() inside the loop is caught')
 })
+
+test('DW-59: a failed undo is logged, twice — once for the restore and once for the delete (review, 2026-09-29)', () => {
+  const actions = readFileSync(CONNECT_ACTIONS, 'utf8')
+  const logged = actions.match(/console\.error\('sites: connect undo failed'/g) ?? []
+  assert.equal(logged.length, 2, `connectSite must log a failed undo on both of storeOrUndo's ways back, found ${logged.length}`)
+})
+
+test('DW-82: every landing in sites/actions.ts keeps the list’s search, except Connect’s (review, 2026-09-29)', () => {
+  const actions = readFileSync(CONNECT_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+  const connect = [actions.indexOf('export async function connectSite'), actions.indexOf('\nexport ', actions.indexOf('export async function connectSite') + 1)]
+  const landings = [...actions.matchAll(/\bredirect\(([^\n]*)/g)].filter((m) => m.index! < connect[0] || m.index! > connect[1])
+  assert.ok(landings.length >= 8, `expected the sites actions to land somewhere, found ${landings.length}`)
+  for (const landing of landings) {
+    assert.match(landing[1], /\bq\b|\burl\b/, `a landing without the list's search: redirect(${landing[1].trim()}`)
+  }
+  assert.doesNotMatch(actions, /redirect\(['"`]\/sites/, 'a literal /sites landing drops the search (DW-82)')
+})

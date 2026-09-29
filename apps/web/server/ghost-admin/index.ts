@@ -76,11 +76,11 @@ const TIMEOUT_MS = 15_000
  * A resolver that does not answer inside `TIMEOUT_MS` is `unresolved` — the same "your Ghost did not answer" as a fetch
  * that fails, one sentence for both.
  */
-async function whereTo(url: string): Promise<'public' | 'blocked' | 'unresolved'> {
+async function whereTo(url: string, budgetMs: number): Promise<'public' | 'blocked' | 'unresolved'> {
   // `URL` keeps an IPv6 literal's brackets in `hostname`; the resolver wants the address alone.
   const host = new URL(url).hostname.replace(/^\[|\]$/g, '')
   try {
-    const answers = await withTimeout(lookup(host, { all: true }), TIMEOUT_MS)
+    const answers = await withTimeout(lookup(host, { all: true }), budgetMs)
     if (!answers?.length) return 'unresolved'
     return answers.some((answer) => blockedAddress(answer.address)) ? 'blocked' : 'public'
   } catch {
@@ -416,7 +416,11 @@ export async function fetchWithKey(args: {
   // DW-58: A BLOCKED ADDRESS IS REFUSED BEFORE ANY REQUEST, and it says so in the one record kept to
   // be trusted — `detail.blocked` — while the customer hears the same sentence as a Ghost that did
   // not answer: nothing about the network behind Inflozo is disclosed by the refusal.
-  const where = await whereTo(url)
+  // ONE `TIMEOUT_MS` FOR THE WHOLE CALL, the resolver's share taken out of the fetch's (review,
+  // 2026-09-29): two full timeouts in a row would have let one Admin call sit for twice the ceiling
+  // every caller — connect's three calls, the daily check's budget — was derived from.
+  const deadline = started + TIMEOUT_MS
+  const where = await whereTo(url, TIMEOUT_MS)
   if (where !== 'public') {
     if (where === 'blocked') console.error('ghost-admin: ghost address refused', { code: 'address_blocked' })
     else console.error('ghost-admin: ghost unreachable', { code: 'address_unresolved' })
@@ -444,7 +448,7 @@ export async function fetchWithKey(args: {
       },
       body: payload,
       redirect: 'manual',
-      signal: AbortSignal.timeout(TIMEOUT_MS),
+      signal: AbortSignal.timeout(Math.max(1, deadline - Date.now())),
     })
     status = response.status
     text = await response.text()

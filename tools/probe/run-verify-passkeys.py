@@ -238,7 +238,8 @@ const SESSION_COOKIE = /^sb-.+-auth-token(\.\d+)?$/
    connection shape the sibling harnesses open (`run-verify-dashboard.py`) — transaction pooler, one connection, no
    prepared statements — through the app's own installed `postgres`. */
 const sql = require(process.env.PG_DIR)(process.env.PG_URL, {
-  max: 1, prepare: false, ssl: 'require', connect_timeout: 10, idle_timeout: 20,
+  // The CA the app pins (DW-50): a harness that WRITES a production flag verifies who it is talking to (review, 2026-09-29).
+  max: 1, prepare: false, ssl: { ca: process.env.DB_CA, rejectUnauthorized: true }, connect_timeout: 10, idle_timeout: 20,
 })
 const setPasskeys = async (on) =>
   ((await sql`update public.feature_flags set enabled = ${on} where key = 'passkeys' returning enabled`)[0] || {}).enabled
@@ -656,7 +657,7 @@ const cardReach = async (page) => {
 # both halves restore. `SET` empty reads; 'true' or 'false' writes and reads back. It prints the value, or the error's
 # code: never the connection string.
 FLAG_JS = r'''
-const sql = require(process.env.PG_DIR)(process.env.PG_URL, { max: 1, prepare: false, ssl: 'require', connect_timeout: 10 })
+const sql = require(process.env.PG_DIR)(process.env.PG_URL, { max: 1, prepare: false, ssl: { ca: process.env.DB_CA, rejectUnauthorized: true }, connect_timeout: 10 })
 ;(async () => {
   const rows = process.env.SET
     ? await sql`update public.feature_flags set enabled = ${process.env.SET === 'true'} where key = 'passkeys' returning enabled`
@@ -667,9 +668,19 @@ const sql = require(process.env.PG_DIR)(process.env.PG_URL, { max: 1, prepare: f
 '''
 
 
+def pinned_ca():
+    """The Supabase root the app pins (`db.ts`, DW-50), read out of the source so the harness and the app verify the
+    pooler the same way; a harness that writes a production flag over an unverified connection would be the one
+    `ssl: 'require'` line DW-50 removed (review, 2026-09-29). Fails loudly if the constant moved."""
+    found = re.search(r'const SUPABASE_ROOT_CA = `([^`]+)`', open(os.path.join(WEB, 'server', 'ghost-admin', 'db.ts')).read())
+    if not found:
+        sys.exit('no SUPABASE_ROOT_CA in apps/web/server/ghost-admin/db.ts')
+    return found.group(1)
+
+
 def passkeys_flag(pg_url, value=None):
     """The `passkeys` row's `enabled` — read, or written to `value` and read back. None if it could not be."""
-    child = dict(os.environ, PG_DIR=PG_DIR, PG_URL=pg_url, SET='' if value is None else str(value).lower())
+    child = dict(os.environ, PG_DIR=PG_DIR, PG_URL=pg_url, DB_CA=pinned_ca(), SET='' if value is None else str(value).lower())
     try:
         got = json.loads(subprocess.run(['node', '-e', FLAG_JS], env=child, capture_output=True, text=True,
                                         timeout=60).stdout)
@@ -689,7 +700,7 @@ def run_browser(cfg):
         script = os.path.join(work, 'passkeys.js')
         open(script, 'w').write(BROWSER_JS)
         # SECRETS GO IN THE ENVIRONMENT, never in argv: argv is world-readable in `ps`.
-        child = dict(os.environ, PW_DIR=pw, APP_URL=APP, AXE_PATH=axe_path() or '', PG_DIR=PG_DIR, **cfg)
+        child = dict(os.environ, PW_DIR=pw, APP_URL=APP, AXE_PATH=axe_path() or '', PG_DIR=PG_DIR, DB_CA=pinned_ca(), **cfg)
         try:
             proc = subprocess.run(['node', script], env=child, capture_output=True, text=True, timeout=600)
         except subprocess.TimeoutExpired:

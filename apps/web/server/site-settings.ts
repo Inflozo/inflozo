@@ -46,6 +46,9 @@ export type Patched = { ok: true; written: Record<string, unknown> } | { ok: fal
 
 const READ = 'site_settings, credentials_present, capability_source, disconnected_at, updated_at'
 
+/** What each probe reads, spelled once for both files (review, 2026-09-29). `settings/` is a browse over ~100 rows; both are GETs, so no allowlist. */
+export const ADMIN_PATHS = { config: 'config/', settings: 'settings/' } as const
+
 /** Three tries in all: a writer that loses three times running is not racing one other writer, it is starved. */
 export const TRIES = 3
 
@@ -131,7 +134,7 @@ export async function rereadSettings(
       console.error('sites: settings re-read refused a site', { code: ownError?.code ?? 'site_not_found' })
       return null
     }
-    const response = await io.call({ siteId, path: 'settings/', route: io.route })
+    const response = await io.call({ siteId, path: ADMIN_PATHS.settings, route: io.route })
     if (!response.ok) {
       console.error('sites: settings re-read refused', { code: response.code })
       return null

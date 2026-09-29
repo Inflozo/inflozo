@@ -771,7 +771,8 @@ reason: The owner accepted the 404s explicitly — the spec's plain English says
 
 plain: On a computer, once you have typed in the project search there is no × to clear it — you have to
   select the text, delete it and press Enter. The phone has a close button that does clear it.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the run on the deployed site: `run-verify-dashboard.py`'s `clear-search` PASS on `/` and `/sites` (the link is the page without `?q=`, the click lands there with the box empty and the card back), axe zero violations at 1440, 834 and 390 over both no-match lines; run twice on production (once by the verifier, once after the harness's pooler connection was pinned to the app's CA), users 13 → 13 both times.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -892,7 +893,8 @@ reason: The export's frames and the kit built from them (Story 1.3) draw the wor
 ### DW-32: the passkey ceremony has no repeatable control — the kill switch, the auto-name, the round trip and the duplicate refusal are all proved by hand
 
 plain: Four things about passkeys could only be checked by a person. Story 2.2 built a harness that checks the whole add-rename-revoke-sign-in journey by itself, and that one is done. It also asked the second-passkey question — is adding a second passkey on a device that already has one refused? — and on the deployed site, yes, it is. The last two are still by hand: that turning the switch off really stops a sign-in that was already half-way through, and that a passkey on your Mac is born with the name "Apple Passwords" rather than the plain "Passkey".
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — `run-verify-passkeys.py` on production: `named-aaguid` PASS (the virtual authenticator's `getAuthenticatorData()` rewritten at offset 37 with Windows Hello's AAGUID, the new row named "Windows Hello"; `auto-name` asserting "Passkey" is its control), `kill-mid-ceremony` PASS (the finish POST held, the `passkeys` row switched off over the pooler, released: S1's red sentence, still `/sign-in`, no `sb-*-auth-token` cookie), the switch put back after 2767 ms and read back byte-identical (`t`, its original `updated_at`); users 13 → 13.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1187,7 +1189,8 @@ plain: The ordinary Sign out has a note saying that if Supabase cannot be reache
   had already expired; in the common case the library clears your sign-in AND reports the failure, so
   the red line's page would bounce you to the sign-in page with nothing said. Not yet executed — it
   needs Supabase to be unreachable from the live site.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — its deployed half: `run-verify-sign-out-everywhere.py` on production, exit 0, every step PASS — `everywhere` lands on the sentence, `magic-link-after` signs in again, `rest-refused` PASS on both old tickets — beside the local `sign-out-landing.test.ts` from Dev.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -1593,7 +1596,8 @@ plain: The connect screen refuses obvious non-addresses — a bare word, `localh
   rule cannot tell, so Inflozo's server would then try to reach that internal address on the customer's word.
   On Vercel's functions there is little behind such an address to reach, which is why this is recorded and
   not fixed today.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the deployed proof: `--only connect-paths` on production — `address-blocked` PASS, a connect to `https://127.0.0.1.nip.io` refused with `ghost_unreachable`'s sentence and an audit row whose detail is `{"ms":24,"blocked":true}`, while T1 connects (`path-page`). The review widened the list (IETF protocol assignments, benchmarking, multicast, reserved, broadcast, NAT64, 6to4, site-local) with a vector for each.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -2009,7 +2013,8 @@ plain: When you open a link to something that is not yours or no longer exists �
   a site whose brand has gone — Inflozo shows you the "not found" page, which is right. But the invisible
   status code the browser receives says 200 (success) rather than 404. A person sees the correct page;
   a search engine, a monitor or a script would be told the page was fine.
-status: open — amended by Story 3.9 (2026-09-11); the PAGE half is closed
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the status half: `--only brand-none` on production, PASS — the direct load of `/sites/brand?site=<a site with no brand>` and the forged `?site=` both answer HTTP `404` (the layout above the boundary), run twice (the second after the harness's pooler connection was pinned). The review made an empty `?site=` a 404 too. Every connect in the run still landed on S2c: the forwarded-header hypothesis, executed.
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
   names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 resolution: Story 3.9 (2026-09-11) — THE PAGE HALF CLOSES.
@@ -2350,7 +2355,8 @@ reason: Both are append-only by construction — every story adds its findings t
 plain: A safety test that proves nobody can put your brand on someone else's site still passes every
   time. What is flaky is only the part that checks the button press reached the server at all, so the
   test sometimes goes red without anything being wrong. It costs nothing on the live site.
-status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — `--only brand-ownership` on production, five runs out of five PASS (six of six counting the pass inside the eight-block run), each exit 0, users 13 → 13 — the reliability Story 3.9's review asked for, seen.
   `run-verify-ghost-admin.py` did not complete a run in four attempts (the spec's `## Verification`,
   Executed at Review, with the control: the site answered 200 on both hosts and two other browser
   harnesses passed against the same deployment). So the change below is IN the harness and has never
@@ -2600,7 +2606,8 @@ reason: The RLS gate is the natural home — it already brings a PostgreSQL 17 c
 plain: The API keys screen has three separate save buttons, one per credential, and each sends only its own
   box. Someone hand-crafting a request could send two at once — and if the first is saved and the second is
   refused, the screen says "Nothing changed", which would not be true of the first.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the deployed proof: `--only manage-keys` on production — `keys-two-fields` PASS: the Admin row's form cloned with a Content key field added and posted landed on `?keys=keys_failed` with the sentence, and the `sites` row, `private.site_credentials` and `credential_change` were unchanged.
 severity: low
 origin: Story 3.6 code review (2026-09-09) — the Edge Case Hunter
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
@@ -2635,7 +2642,8 @@ amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the deployed-site p
 plain: If you have typed something into the Sites search box and then open "Use this site's brand" or
   "Manage API keys" on a card, the search is forgotten — the window opens over the full list, and when
   it closes you are on the full list too.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the deployed proof: `--only search-kept` on production, PASS — over `/sites?q=ghost6`, both windows opened with the search in their address and every way out (✕, Escape, Cancel, a save, a refusal) landed back on `/sites?q=ghost6` with the box still filled. The review added a source rule that every landing in `sites/actions.ts` outside Connect's carries `q`.
 severity: low
 origin: Story 3.4 code review, seventh review (2026-09-10) — the Blind Hunter and the Edge Case Hunter
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
@@ -2671,7 +2679,8 @@ amended: Story 5.24b's Dev (2026-09-29) — THE CODE LANDED; the deployed-site p
 plain: If you have connected the same Ghost site at three addresses and one of them is still connected,
   the "Moved domains?" note on the newest card may talk about the 90-day safety-net copy (an old,
   disconnected one) when a live twin exists — or the other way round.
-status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — `moved-order-term` inside `--only moved-domains` on production, PASS in both runs that reached it: without the first order term the product's query picked the NEWER disconnected record; with it, the older live decoy.
   `run-verify-ghost-admin.py` did not complete a run in four attempts (the spec's `## Verification`,
   Executed at Review, with the control: the site answered 200 on both hosts and two other browser
   harnesses passed against the same deployment). So the change below is IN the harness and has never
@@ -2705,7 +2714,8 @@ amended: Story 5.24b's Dev (2026-09-29) — THE CONTROL THE 3.9 REVIEW ASKED FOR
 
 plain: If you press Save and then Escape before the answer arrives, the window closes and then comes
   back with the result you had already walked away from.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — its first half: `--only keys-escape` on production, PASS — Test connection's POST held, Escape pressed: the window stayed open with no close event and its address unchanged, ✕ and Cancel `aria-disabled`, and the released answer drawn in the open window. The review made the greying VISIBLE (one CSS rule; R-192) and synced the exits on mount.
 severity: low
 origin: Story 3.6 code review, third pass (2026-09-10) — the Edge Case Hunter
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
@@ -2735,7 +2745,8 @@ amended: Story 5.24b's Dev (2026-09-29) — THE SECOND HALF IS CLOSED; the first
 ### DW-85: three live-harness controls Manage keys still owes
 
 plain: Three things the API keys screen does right are not yet proved on the live site every run.
-status: open — amended by Story 3.9 (2026-09-11); THE CODE LANDED, THE PROOF IS OWED.
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — `--only moved-domains` on production, exit 0, PASS — the moved hint on one card (`?moved=<id>&old=orphan`), the decoy seeding and the five `movedAgain()` presses, with `moved-order-term` inside it; users 13 → 13, nothing written to T3.
   `run-verify-ghost-admin.py` did not complete a run in four attempts (the spec's `## Verification`,
   Executed at Review, with the control: the site answered 200 on both hosts and two other browser
   harnesses passed against the same deployment). So the change below is IN the harness and has never
@@ -2929,7 +2940,8 @@ reason: GitHub answers a fine-grained token's requests with a `github-authentica
 plain: Two small fixes were checked by hand once and nothing checks them again: the tab title on the
   "something went wrong" page, and the sign-in card refusing clicks and the keyboard while the
   passkey sheet is up. Either could quietly come undone.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the card's half: `run-verify-passkeys.py` on production — `inert-held` and `inert-released` PASS: inside the held finish POST the sign-in form is `inert` and `aria-hidden`, no control takes focus and Tab never lands inside; after the release they are reachable again. The error-page half was Dev's (`pnpm keyboard`'s DW-91 test).
 severity: low
 origin: Story 3.9 review (2026-09-11), verification-gap layer, on DW-34 and DW-37
 owner: Story 5.24b (The sweep: accounts, sites and connections), one of the sweep's five stories (R-211), whose card
@@ -2957,7 +2969,8 @@ amended: Story 5.24b's Dev (2026-09-29) — THE ERROR PAGE'S HALF HAS ITS CONTRO
 plain: The big automated check that drives a real browser against the live site has grown long enough
   that it runs out of time before it finishes — four tries in a row. Everything it newly checks is
   therefore written down but never actually run. It needs a way to run one section on its own.
-status: open
+status: done 2026-09-29 (Story 5.24b)
+resolution: Story 5.24b's Review (2026-09-29) — the runs: every registered block completed alone on the deployed site — `connect-paths`, `brand-none`, `brand-ownership` (×5), `manage-keys`, `moved-domains`, `keys-content`, `search-kept`, `keys-escape` — nothing written to T1 or T3, users 13 → 13 on every run. Found by the runs: `manage-keys` died at the same wait twice (the ⋯ row clicked before hydration went to the full page); the row is now clicked once React holds it, and the block passed after. `--only no-such-step` exits 2 before any key is read.
 severity: medium
 origin: Story 3.9 review (2026-09-11) — four consecutive attempts, one network death and three 2700s
   timeouts, with the site answering 200 on both hosts throughout and two sibling harnesses passing

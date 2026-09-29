@@ -112,6 +112,9 @@ export function PanelModal({
     }
     const observer = new MutationObserver(sync)
     if (el) observer.observe(el, { subtree: true, attributeFilter: ['aria-busy'] })
+    // …and once on mount: a window remounted while its save is still in flight is already busy, and an
+    // observer sees only what changes after it looks (review, 2026-09-29).
+    sync()
     const refuse = (event: globalThis.MouseEvent) => {
       if ((event.target as Element | null)?.closest('[data-panel-exit][aria-disabled="true"]')) {
         event.preventDefault()

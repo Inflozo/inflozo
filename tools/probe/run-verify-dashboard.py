@@ -70,7 +70,7 @@ must not be able to touch. Nothing a customer owns is read or written.
 NO KEY IS EVER PRINTED. Values reach a subprocess environment and nothing else.
 """
 
-import argparse, json, os, subprocess, sys, tempfile, time, urllib.error, urllib.request
+import argparse, json, os, re, subprocess, sys, tempfile, time, urllib.error, urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 APP = 'https://app.inflozo.com'
@@ -141,7 +141,8 @@ const USER_ID = process.env.USER_ID
 const OTHER_USER_ID = process.env.OTHER_USER_ID
 
 const sql = postgres(process.env.PG_URL, {
-  max: 1, prepare: false, ssl: 'require', connect_timeout: 10, idle_timeout: 20,
+  // The CA the app pins (DW-50), so the harness verifies the pooler as the app does (review, 2026-09-29).
+  max: 1, prepare: false, ssl: { ca: process.env.DB_CA, rejectUnauthorized: true }, connect_timeout: 10, idle_timeout: 20,
 })
 
 const steps = []
@@ -547,6 +548,15 @@ const axeOver = async (page, label, width) => {
 '''
 
 
+def pinned_ca():
+    """The Supabase root the app pins (`db.ts`, DW-50), read out of the source, so the browser half verifies the pooler
+    as the app does, not `ssl: 'require'` (review, 2026-09-29). Fails loudly if the constant moved."""
+    found = re.search(r'const SUPABASE_ROOT_CA = `([^`]+)`', open(os.path.join(WEB, 'server', 'ghost-admin', 'db.ts')).read())
+    if not found:
+        sys.exit('no SUPABASE_ROOT_CA in apps/web/server/ghost-admin/db.ts')
+    return found.group(1)
+
+
 def run_browser(cfg):
     pw = playwright_dir()
     if not pw:
@@ -690,6 +700,7 @@ def main():
             steps = run_browser({
                 'APP_URL': args.url.rstrip('/'),
                 'PG_URL': env['SUPABASE_DB_POOLER_URL'],
+                'DB_CA': pinned_ca(),
                 'USER_ID': made[0],
                 'OTHER_USER_ID': made[1],
                 'CONFIRM_URL': f'{args.url.rstrip("/")}/auth/confirm?'
