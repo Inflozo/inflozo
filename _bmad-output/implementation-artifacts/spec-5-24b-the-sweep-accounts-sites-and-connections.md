@@ -2,8 +2,8 @@
 title: 'Story 5.24b — The sweep: accounts, sites and connections'
 type: 'chore'
 created: '2026-09-29'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '0b00f5d9476d6c4c79ce9898da67f92cf1d33f40'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-3-context.md']
