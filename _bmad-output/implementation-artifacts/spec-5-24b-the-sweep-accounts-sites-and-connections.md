@@ -2,7 +2,7 @@
 title: 'Story 5.24b — The sweep: accounts, sites and connections'
 type: 'chore'
 created: '2026-09-29'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '0b00f5d9476d6c4c79ce9898da67f92cf1d33f40'
@@ -741,7 +741,31 @@ Derived at this Create from the ledger at `0b00f5d9`. Each entry was read in ful
 
 ## Questions for the owner
 
-The owner ruled Question 1 on 2026-09-29 (R-226). No question is open.
+The owner ruled Question 1 on 2026-09-29 (R-226). **Question 2 is open**, asked at Dev on 2026-09-29.
+
+### Question 2 — May the database change be put on the live database? (R-99, R-223)
+
+**In plain English.** This story makes two small changes to the live database:
+- a sign-in ticket stops working the moment that sign-in ends (your ruling R-223);
+- a signed-in person can no longer add a site record directly, skipping Connect (DW-293).
+
+Both are written and pass every check on a copy of the database, including the checks that must fail when the
+change is missing, and do. Your rule R-99 puts a database change on the live database first, on its own, before any
+code. When I tried, this computer's safety check refused to let me change the live database. **Nothing on the live
+database has changed.**
+
+**An example.** It is like a locksmith who has fitted and tested a new lock on a copy of your door, and needs your nod
+before fitting it to the real one. If the real door then sticks, one line puts the old lock back.
+
+1. **Let me apply it (RECOMMENDED).** Reply "Apply 5.24b's database change". I apply it in one step and check at once
+   that signed-in people still work. If they don't, I take it back off by myself in one line. Then I finish the story.
+2. **Apply it yourself.** In Supabase, open your project → **SQL Editor** → **New query**. Paste the whole of
+   `supabase/migrations/20260929120000_session_guard.sql` and press **Run**. Then reply "Applied", and I check it on
+   the live site and finish the story.
+3. **Leave the database change out of this story.** Nothing changes on the live database. The ticket rule (R-223) and
+   the site-record fix (DW-293) move to a later story, and this story carries on without them.
+
+**Ruled:** _(awaiting the owner)_
 
 ### Question 1 — When someone types the address of a page on their site, should Connect still work? (R-219, DW-55)
 

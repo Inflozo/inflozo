@@ -32,7 +32,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-04-2026 18:14
-last_updated: 2026-09-28
+last_updated: 2026-09-29
 project: Inflozo
 project_key: NOKEY
 tracking_system: file-system
@@ -113,7 +113,7 @@ development_status:
   5-23a-the-canvas-redraws-only-what-changed: done
   5-23b-the-editor-s-panels-redraw-only-what-changed-at-60-fps: done
   5-24a-the-sweep-the-ledger-and-the-plan: done  # R-211: Story 5.24 split into five, run in order
-  5-24b-the-sweep-accounts-sites-and-connections: ready-for-dev
+  5-24b-the-sweep-accounts-sites-and-connections: in-progress
   5-24c-the-sweep-the-section-runtime-the-library-and-the-recordings: backlog
   5-24d-the-sweep-the-checks-and-the-walks: backlog
   5-24e-the-sweep-the-editor: backlog
