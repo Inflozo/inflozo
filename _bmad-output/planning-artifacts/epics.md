@@ -2608,7 +2608,8 @@ green.
 
 *R-211's third story, after 5.24b: Group C of 5.24a's triage — DW-4, 96, 99, 103, 104, 113, 125, 127, 129, 147, 159,
 161, 168, 171, 186, 196, 213, 224, 228, 237 and 288. At this story's Create (2026-09-29) DW-224's post-body half moved to
-Story 6.1, and two findings went to the stories that own them: DW-296 to Story 7.35, DW-297 to Story 7.18.*
+Story 6.1, and so did DW-196 on the owner's ruling (Question 3: keep `darkCapabilities`, and give it a job later); two
+findings went to the stories that own them: DW-296 to Story 7.35, DW-297 to Story 7.18.*
 
 As the builder of every design still to come,
 I want the runtime, the validator and the test-site recordings to refuse what they should and record what is real,
@@ -2724,6 +2725,11 @@ other way must carry it too. **The first theme that ships the token block proves
 the links inside a post's body** — the unscoped `:where(a:not([class]), a[class=""])` restyles every plain link
 `{{content}}` prints, those on a coloured Koenig card included, while R-173 speaks only of a link typed into a section's
 text — and the ruling is built and proved on T1 and T3 with the rest (DW-224)
+**And** **`darkCapabilities` is given its job here**: every design declares it and nothing reads it, and the owner kept it
+(Story 5.24c's Question 3, 2026-09-29: *"Keep it, and give it a job later"*), so this story decides what it says about
+a design and builds the reader that holds each declaration true — a validated vocabulary, whose words the PRD already
+has in FR-F7's per-control dark overrides and FR-D7's per-mode swaps; until then it is a field nothing can falsify
+(DW-196)
 **And** sections span the site width by default and stay responsive within it.
 **And** the reference set takes the frames' page geometry as Normal — content 1,296 px, side margins 72 · 40 · 20 px at 1440 · 834 · 390 — with the margin its own Appendix D row beside the 24 px gutter, and the pilots re-baselined (DW-155).
 

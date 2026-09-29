@@ -5398,11 +5398,17 @@ origin: Story 5.6's Create run (2026-09-18), executed over the repository: `dark
   vocabulary is unvalidated — a bare `string[]`, so any word passes — and all five pilots plus both fixtures
   declare exactly `["tokens"]`. Story 5.6 needed none of it: the engine keys on each control's own
   `darkOverride` declaration, which is the thing that actually decides whether a control is mode-scoped.
-owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
-  (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — needs one. Candidates: Epic 6's
-  Style Pack stories (where "what dark support does this design have" is a pack-facing question), or the first category
-  story that authors a design whose dark support is not just tokens. A reader with a validated vocabulary, or deletion;
-  not a third state.")*
+owner: Story 6.1 (The token engine — computed or authored, and nothing in between), whose card names this entry: it
+  decides what `darkCapabilities` says about a design and builds what reads it. *(Story 5.24c's Create, 2026-09-29, on
+  the owner's ruling: was "Story 5.24c (The sweep: …), one of the sweep's five stories (R-211)"; Story 5.24a's Dev,
+  2026-09-28: was "unowned — needs one. Candidates: Epic 6's Style Pack stories (where "what dark support does this
+  design have" is a pack-facing question), or the first category story that authors a design whose dark support is not
+  just tokens. A reader with a validated vocabulary, or deletion; not a third state.")*
+ruling (owner, 2026-09-29, Story 5.24c's Create, Question 3, option 2): *"Keep it, and give it a job later."* Deletion was
+  recommended — nothing reads the field, `image-swap` (5.24a's plan) is grounded nowhere, and `fixtures/controls/1`
+  already says `["tokens"]` beside a `darkOverride` control — and the owner chose to keep it. So the field stays in
+  FR-G3, AD-2, `registry.ts` and every `design.json` as it is, authors keep filling it in, and Story 6.1 gives it a
+  meaning and a reader. Until then it is still the declaration nothing can falsify that this entry names.
 location: `packages/library/src/registry.ts:136`, `:178`, `:229` · every
   `packages/library/designs/*/*/design.json` · `packages/library/fixtures/*/design.json`
 reason: no story needs it and inventing a consumer for it inside an editor story would be inventing a

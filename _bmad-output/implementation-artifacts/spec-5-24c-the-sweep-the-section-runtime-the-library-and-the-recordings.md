@@ -14,7 +14,7 @@ context: ['{project-root}/_bmad-output/implementation-artifacts/epic-4-context.m
 After this story, the machinery every future section is built on refuses the mistakes it used to let through — a
 sign-up box outside its form, two different limits on one list, a section claiming an older Ghost than the fields it
 reads — and the editor and your live site agree in the few places they could still differ. The recorders that learn
-what your two test Ghost sites really print tidy up after themselves and, once you approve the list in Question 1,
+what your two test Ghost sites really print tidy up after themselves and, with the list you approved in Question 1,
 fill the empty fields, so what was only read in Ghost's code is now seen on a real site. Nothing on your screens
 changes: you will see it on the story board, where each item closes with its proof, and on your two test sites, where
 the old probe themes are gone and a tag, an author, a tier and a newsletter have their details filled in.
@@ -35,12 +35,12 @@ reverted (standing rule 2), or by the recording its proof is owed. Four read-onl
 against HEAD; where it was wrong, the task below is the corrected one (Design Notes list the corrections). The order
 follows the dependencies:
 1. **the code, offline** — runtime, validator, lint, types, stress harness, matrix cases, the recorders' cleanup;
-2. **the test sites** — Question 1's list, then the two re-recordings;
-3. **the matrix's baselines**, as Question 2 rules;
-4. **DW-196**, as Question 3 rules;
-5. **the close.**
+2. **the test sites** — Question 1's approved list, then the two re-recordings;
+3. **the matrix's baselines**, as Question 2 approved;
+4. **the close.**
 
-Dev starts once the three questions are ruled.
+The owner ruled the three questions on 2026-09-29: the list approved whole, the Show-to frames swapped, and
+`darkCapabilities` kept — DW-196 moved to Story 6.1, so this story builds nothing for it.
 
 ## Boundaries & Constraints
 
@@ -54,7 +54,7 @@ Dev starts once the three questions are ruled.
   on the inventory it names: Dev re-reads the inventory first, reports any difference and acts on nothing it does not
   name. Every setting switched is put back in a `finally` and read back; every write is recorded verbatim in
   `MEASUREMENTS.md`. Keys by variable name only (`docs/project-context.md`).
-- **A render-matrix baseline changes only as Question 2 rules** — exactly the blank Show-to frames it names. Any other
+- **A render-matrix baseline changes only as Question 2 approved** — exactly the blank Show-to frames it names. Any other
   photograph that moves stops the run for the owner's sampled review (`docs/render-matrix.md`, R-116).
 - **Canvas and theme stay in agreement** (§7.3, `agreement.test.ts`); a sink change keeps AD-36's pair — the vector
   inert and the legitimate case still working.
@@ -67,7 +67,7 @@ Dev starts once the three questions are ruled.
 - **Any write to T1 or T3 not on Question 1's approved list**, any theme not named there included.
 - **Any render-matrix photograph that moves** beyond Question 2's frames — including after a re-recording (A24 #1
   renders the recorded article).
-- **Any design file** beyond what Question 3's ruling names (AD-35).
+- **Any design file** (AD-35): Question 3 kept `darkCapabilities`, so this story edits none.
 
 **Never:**
 
@@ -123,7 +123,7 @@ checked against the code at HEAD by four read-only passes that executed a vector
 | DW-168 | a design's `minVersion` held to the fields it reads | Dev |
 | DW-171 | the matrix's Show-to arms from the editor's own rule | Dev, with Question 2's baselines |
 | DW-186 | Member visibility refused as a control | Dev |
-| DW-196 | Question 3 | Dev |
+| DW-196 | moved to Story 6.1 on the owner's ruling (Question 3, option 2): kept, and given its job there | this Create |
 | DW-213 | two different caps on one list refused | Dev |
 | DW-224 | the underline forced on a coloured ground, and `class=""` covered; **the post-body half moves to Story 6.1** | Dev; Story 6.1 |
 | DW-228 | `stampControls` keeps `data-i18n-*` | Dev |
@@ -340,8 +340,7 @@ All anchors are at `e350c124`.
   - **Controls:** an agreement case per helper (HEAD throws "must be one of"); in `contexts.test.ts`,
     `bindable('total_paid_members', { target: 'index.hbs', scope: [], use: 'helper' }) === null` (HEAD refuses).
   - **The rows land before the record-contexts run**, which prints both; `contexts.test.ts:339-354` is red until it
-    lands. If Question 1 is ruled without that run, both are exempted beside `content_api_key` (`:344`), citing
-    `contract.test.ts:453` and `:494-499`.
+    lands, so both land in the one Dev commit.
 - [ ] `contexts/matrix.json:75-80`, `:207`, `contexts/labels.json:17-18`,
   `prds/prd-Inflozo-2026-08-17/appendix-b1-template-contexts.md` §6 — **DW-129:**
   - Both code-injection keys move to `neverOffer` with their reason; appendix-b1 §6 gains a "Raw code — never offer"
@@ -413,14 +412,12 @@ All anchors are at `e350c124`.
   - `packages/library/control-groups.json` joins `matrix.yml`'s shared inputs and `render-matrix.md`'s list.
   - **Control** (`cases.test.mjs`, rewritten): for every pilot,
     `rows(id).some((r) => r.visibility !== undefined) === carriesMemberVisibility(id)`. HEAD fails for a1/1 and a4/13.
-- [ ] **The baselines, as Question 2 rules:**
+- [ ] **The baselines** (Question 2, approved):
   - Run `MATRIX_DESIGNS="a1/1 a4/13" bash tools/matrix/run-matrix-gate.sh --update` in the pinned image.
   - `git status` must show exactly the frames Question 2 names — deleted under `a1/1/`, added under `a4/13/` — and
     nothing modified. Any modified file stops the run for the owner's sampled review (Ask First).
   - Then the gate without `--update` is green. The baselines go in the same push as the code: without them,
     `matrix.yml` goes red on the orphans and the missing frames.
-  - **Option 2 instead:** no baseline moves and `cases.mjs` keeps `data-members`; DW-171's owner line becomes Story 9.1,
-    the Rail header's own story, whose card gains the sentence with DW-171.
 
 **Execution — Dev, the recorders' cleanup (DW-147, DW-237):**
 
@@ -453,7 +450,7 @@ All anchors are at `e350c124`.
   run refuses to start on a probe theme. The docstrings (`record-contexts.py:30-31`, `record-page-number.py:40-41`) and
   catalogue rows (`doc-audit.py:263`, `:279`, `:289`, `:344`, `:358`) follow. Grep for "restores the previous theme".
 
-**Execution — Dev, the recorders' recordings (after Question 1):**
+**Execution — Dev, the recorders' recordings (Question 1's list, approved):**
 
 - [ ] `tools/probe/record-cards.py:271-282`, `:316-328`, `orbit-weekly.test.ts:134-146` — **DW-103:**
   - Two recorder-owned posts, each carrying one of two recorder-owned tags, drafts between runs. During a run they are
@@ -471,50 +468,37 @@ All anchors are at `e350c124`.
 - [ ] `tools/probe/record-contexts.py`, `contexts/matrix.json`, `contexts.test.ts` — **DW-127:**
   - `choose()` adds a post that carries a `custom_excerpt` (eleven published posts on each site do). The post the other
     frames render is left alone, since `contract.test.ts:381` pins its excerpt at null.
-  - **The private page, as Question 1 rules:** `private.hbs` joins `Probe.files`; last in the run, `is_private` and a
-    throwaway `password` are switched on, `/private/` is recorded and so is a wrong password's error, and both settings
-    go back in a `finally` and are read back. If Question 1 is ruled without it (option 2), the two private rows keep
-    `unverified`, with the reason citing Ghost's `router.js` and `middleware.js` lines.
+  - **The private page** (Question 1's item 7, approved): `private.hbs` joins `Probe.files`; last in the run,
+    `is_private` and a throwaway `password` are switched on, `/private/` is recorded and so is a wrong password's error,
+    and both settings go back to what they were in a `finally` and are read back.
   - `errorDetails`' reason cites Ghost's source in both releases.
   - **The version half:** the Content API's resource fields are diffed between the 5.0.0 and 5.130.6 releases (npm
     tarballs). Each matrix field absent at 5.0.0 is bisected to the release that added it and gains `since`. The author
     social handles are the known case: a 5.117 migration, against P0·2's 5.118.0. If more than a handful need it, stop
     and re-home the rest (Ask First).
   - `contexts.test.ts` gains the reverse rule: an `unverified` row that both recordings now prove fails.
-- [ ] **The test sites, as Question 1 rules, in this order:**
+- [ ] **The test sites, as Question 1 approved, in this order:**
   1. Re-read the inventory (Verification § Executed at Create's GETs); report any difference, act on none.
   2. Delete the approved leftover themes through the helper's DELETE and read-back.
   3. Fill the approved fields through Admin API PUTs with the staff token, the images from `seed-ghost.py:74-76`.
   4. Run `python3 tools/probe/record-cards.py`, which creates the recorder's pair on its first run, then
      `python3 tools/probe/record-contexts.py`. Both run on both majors.
   5. `git diff`: `capture.json` changes in `content_api_defaults` (and its date); the contexts fixtures gain the seeded
-     fields, both helpers and, as ruled, the private page; `unverified` drops where both majors print. Anything else
-     that moves is explained, or stops the run (Ask First).
+     fields, both helpers and the private page; `unverified` drops where both majors print. Anything else that moves is
+     explained, or stops the run (Ask First).
   6. The theme list after each run shows no `inflozo-probe-*`. Every write is recorded verbatim in `MEASUREMENTS.md`'s
      next free section, and each recorder updates its own section.
 
-**Execution — Dev, DW-196 (as Question 3 rules):**
-
-- [ ] **Option 1** — the field leaves the format:
-  - `registry.ts:155`, `:203`, `:255`; every `design.json` and fixture that carries it; `validate.test.ts:475`;
-    `apps/web/picker.test.ts:31`; `docs/section-authoring.md:57`, `:66`, `:154`; PRD FR-G3 (`prd.md:282`); spine AD-2
-    (`ARCHITECTURE-SPINE.md:102`); `epics.md`'s FR-G3 line and every story card that lists it. A done story's card is
-    annotated "withdrawn", as `quickControls[]` was; a card not yet built drops the word.
-  - `validateDesignJson` refuses the key as withdrawn, beside `quickControls` (`:494-496`).
-  - The ruling is recorded in the register with its propagation ledger.
-  - **Control:** a `design.json` carrying `darkCapabilities` is refused. HEAD passes it.
-- [ ] **Option 2** — no code: the entry's owner line becomes Story 6.1, whose card gains the sentence with DW-196: the
-  story decides what `darkCapabilities` means and what reads it, or deletes it.
-
 **Execution — the close:**
 
-- [ ] **`deferred-work.md`.** DW-296 and DW-297 are written at this Create, and DW-224's owner line names Stories 5.24c
-  and 6.1. At Dev every entry whose evidence exists closes; DW-224 stays open, owned by Story 6.1.
+- [ ] **`deferred-work.md`.** Written at this Create: DW-296 and DW-297; DW-224's owner line naming Stories 5.24c and
+  6.1; and DW-196 moved to Story 6.1 on the owner's ruling (Question 3), 6.1's card carrying it. At Dev every entry
+  whose evidence exists closes; DW-224 stays open, owned by Story 6.1 alone.
 - [ ] **The registers.** `MEASUREMENTS.md` gains the test-site writes and the version-half reading.
   `epic-4-context.md` gains a sub-bullet per requirement this story settles, and `epic-5-context.md` one for this
   story's Dev.
 - [ ] **Standing rule 7.** Grep for `DRAWS_SHOW_TO`, `'toString'`, `data-repeat="navigation"`, `data-repeat="tiers"`,
-  "restores the previous theme", `darkCapabilities` (option 1), and every DW id this story touched.
+  "restores the previous theme", and every DW id this story touched.
 - [ ] **The gates.** `pnpm check` (Node 24), `node tools/stress/test-vocabulary.mjs`, the stress gscan,
   `bash tools/matrix/run-matrix-gate.sh`, and `python3 tools/doc-audit.py --check` twice: all green, and every new
   check seen red on its control first.
@@ -526,8 +510,8 @@ All anchors are at `e350c124`.
   - *when* this story is done,
   - *then* every entry is closed by a change whose control was seen red with the change reverted, or by its recording,
     and its `resolution:` names that evidence;
-  - *and* DW-224 stays open for Story 6.1's half, DW-296 and DW-297 are owned by Stories 7.35 and 7.18 whose cards name
-    them, and no entry was deleted or renumbered.
+  - *and* DW-224 stays open for Story 6.1's half, DW-196 is Story 6.1's on the owner's ruling, DW-296 and DW-297 are
+    owned by Stories 7.35 and 7.18, each owner's card naming its entry, and no entry was deleted or renumbered.
 - **The test sites.**
   - *Given* Question 1's ruling,
   - *when* T1 and T3 are written,
@@ -550,10 +534,10 @@ All anchors are at `e350c124`.
 
 ## Design Notes
 
-**Why the questions come now.** Question 1 is the reset protocol's own step: the owner confirms against the list the
-inventory shows, and taking it at Create saves Dev a stop in the middle of its phase. Question 2 deletes committed
-photographs Claude did not take in this session, and R-116 gives a re-baseline to the owner. Question 3 removes a field
-the PRD and the architecture both name.
+**Why the questions came at Create.** Question 1 is the reset protocol's own step: the owner confirms against the list
+the inventory shows, and taking it at Create saves Dev a stop in the middle of its phase. Question 2 deletes committed
+photographs Claude did not take in this session, and R-116 gives a re-baseline to the owner. Question 3 would have
+removed a field the PRD and the architecture both name; the owner kept it.
 
 **Routine calls made here, each stated to the owner in one line.**
 
@@ -598,7 +582,7 @@ that next runs it re-reads any contract row that pins them empty.
 
 ## Questions for the owner
 
-Three questions, all open. Dev starts once they are ruled.
+The owner ruled all three on 2026-09-29. No question is open.
 
 ### Question 1 — May I make these changes to your two test Ghost sites? (5.24's Question 14)
 
@@ -628,7 +612,8 @@ library, and a colour, and keeps them for later tests.
 2. **Yes to 1–6, not the private page (7).** Ghost's password page stays marked "read in Ghost's code" rather than seen
    on a site.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-29).** *"Go ahead with 5.24c's list"* — all seven, the private page included. Dev
+re-reads the inventory before the first write and acts on nothing the list does not name.
 
 ### Question 2 — May the photo check swap its blank "Show to" photos from one sample section to another? (DW-171, R-116)
 
@@ -647,7 +632,8 @@ hidden section draws nothing. No other photo changes.
    sample first, as your re-baseline rule says.
 2. **No.** The check keeps its own rule, and DW-171 moves to Story 9.1, the Rail header's own story.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-09-29).** *"Yes, swap them"*. Only the blank Show-to frames move; any other photograph
+that changes stops the run for his sampled review.
 
 ### Question 3 — Delete a setting every section design fills in and nothing ever reads? (DW-196)
 
@@ -665,14 +651,18 @@ says exactly the same, and nothing notices.
 2. **Keep it, and give it a job later.** It moves to Story 6.1, the first Style Pack story, which decides what it means
    and what reads it. Until then, authors keep filling it in.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-09-29).** *"Keep it, and give it a job later."* `darkCapabilities` stays in the format,
+the designs and the PRD as it is; DW-196 is Story 6.1's, whose card now carries it with its id, and this story builds
+nothing for it.
 
 ## Verification
 
 **Commands** (Node 24: `export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH`):
 
-- The group, re-derived at HEAD. Expected: exactly § The triage's list.
-  `python3 -c "import importlib.util as u; s=u.spec_from_file_location('b','tools/story-board.py'); b=u.module_from_spec(s); s.loader.exec_module(b); d=b.load_deferred(open('_bmad-output/implementation-artifacts/deferred-work.md').read()); print(sorted((x['id'] for x in d if not b.dw_closed(x) and '5.24c' in (x.get('owner') or '')), key=lambda i: int(i[3:])))"`
+- The group, re-derived at HEAD from each entry's living owners (a dated `*(…)*` note never owns). Expected: § The
+  triage's list less DW-196, which is Story 6.1's — at this Create's ruling it printed DW-4, 96, 99, 103, 104, 113, 125,
+  127, 129, 147, 159, 161, 168, 171, 186, 213, 224, 228, 237 and 288.
+  `python3 -c "import re, importlib.util as u; s=u.spec_from_file_location('b','tools/story-board.py'); b=u.module_from_spec(s); s.loader.exec_module(b); d=b.load_deferred(open('_bmad-output/implementation-artifacts/deferred-work.md').read()); print(sorted((x['id'] for x in d if not b.dw_closed(x) and '5.24c' in b.story_refs(re.sub(r'\*\(.*?\)\*', '', x.get('owner') or '', flags=re.S))), key=lambda i: int(i[3:])))"`
 - `pnpm --filter @inflozo/section-runtime test` and `pnpm --filter @inflozo/library test` — expected: pass; each new
   vector seen red at HEAD first.
 - `node tools/check-snapshots.mjs` — expected: pass, the new `mustFail` row included; at HEAD that row fails.
