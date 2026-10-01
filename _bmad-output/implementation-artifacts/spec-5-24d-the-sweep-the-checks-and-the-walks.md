@@ -826,4 +826,9 @@ before any patch touched the tree. Keys by variable name only.
   the design on both majors (GETs only; a made-up key 401). No migration in the diff, so R-99 has nothing to compare.
 - **The gates on the Review tree:** `pnpm check` exit 0; `node tools/check-traces.mjs` PASS on every route, the
   style-guide's among them; both recorders' `--self-check` exit 0; `python3 tools/doc-audit.py --check` twice.
-- **Owed after the Review push:** the two repaired walks, clean, on the build that push deploys.
+- **After the Review push `201beb6b`:** `ci.yml` run 36900905852 — `check`, `rls` and `deploy` success; `matrix.yml` run
+  36900905732 success; `dpl_2cHnLaFRLuaJjeqNu4FMPk38xvqV` READY on `app.inflozo.com`, built from `201beb6b`. Then the
+  two repaired walks, clean and committed, on that build: `run-verify-controls.cjs` 0 FAIL, 115 PASS; `NO_429=1
+  run-verify-live-content.cjs` **0 FAIL, 157 PASS** on both majors, the subject read-back PASS on T3 and T1, and both
+  sites put back and read back (`signup_access` `all`, `paid_enabled` true; `portal_button` false,
+  `announcement_visibility` `["visitors"]`). The story stays in review: Deploy and the owner's word follow (R-80).
