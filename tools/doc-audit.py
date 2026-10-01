@@ -258,8 +258,12 @@ DOCS = [
  ('tools/probe/RESET-PROTOCOL.md', 'live', 'Reset protocol',
   'Inventory, owner confirms, then clear — in that order, every time. Since Story 5.24c (DW-237) its § Ghost '
   'binds every T1/T3 theme uploader to record-shim.py\'s one restore-and-delete, read back, and to a refusal '
-  'to start while a probe theme is active; run-verify-ghostpro.py is the one exception.'),
- ('tools/probe/seed-ghost.py', 'tool', 'Ghost fixture seeder', 'Seeds both Ghosts identically.'),
+  'to start while a probe theme is active; run-verify-ghostpro.py is the one exception. Since Story 5.24d (DW-299) '
+  'it names the owner\'s hand changes on T3 — kept, recorded in ghost5.json — and that Ghost\'s actions log records '
+  'an edit made in Ghost Admin and never a staff-token write (MEASUREMENTS §61).'),
+ ('tools/probe/seed-ghost.py', 'tool', 'Ghost fixture seeder',
+  'Seeds both Ghosts identically. --check (Story 5.24d, DW-298) HEADs every image address it seeds and exits 1 naming '
+  'any that does not answer 200; read-only, no key.'),
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts; its probe theme is restored, deleted and read back whatever fails, and it refuses to start on a probe theme (DW-237).'),
  ('tools/probe/record-shim.py', 'tool', 'Ghost helper-shim recorder',
@@ -292,7 +296,10 @@ DOCS = [
   'date, command, Ghost and renderer versions and the Content API default order and limit the Source '
   'resolver is asserted against, plus variations.html and a generated index.ts; vendors Ghost\'s card '
   'CSS and JS chunks verbatim from T1 over SSH. The control (the four documented root classes on both '
-  'majors) and every per-block check void the run and write nothing. Also covers '
+  'majors) and every per-block check void the run and write nothing. Since Story 5.24d (DW-301) its own rows are '
+  'published FIRST and each is checked to be the row it designed — a tag\'s name before any post is published, each '
+  'owned post\'s published_at and first tag in Ghost\'s answer to the write — a mismatch voiding the run naming the '
+  'slug, the post still drafted; --self-check holds all three. Also covers '
   'packages/library/src/orbit-weekly.test.ts, which the catalogue cannot index under packages/.'),
  ('tools/probe/record-contexts.py', 'tool', 'Template context recorder',
   "AD-23's recorder for Story 4.6's Template Context Matrix (FR-H7). Generates a probe theme FROM "
@@ -325,7 +332,9 @@ DOCS = [
   'Supabase Realtime BROADCAST channel per project, public and private, with the round trip measured and another '
   "project's channel as the isolation control. One throwaway account and its own projects, deleted in a finally with "
   'the Admin-API user count read before and after. Writes MEASUREMENTS.md §50 and nothing else. Its verdict decided '
-  'that the story has NO Schema phase.'),
+  'that the story has NO Schema phase. Since Story 5.24d (DW-245) fixture() deletes the account it made if anything '
+  'after it fails, and a void run and a probe bug are told apart: Void, SubprocessError and OSError are RUN VOID (exit '
+  '1), anything else PROBE ERROR with its traceback (exit 2); --self-check, offline and in pnpm test, holds both.'),
  ('tools/probe/record-content-api.py', 'tool', 'Content API recorder',
   "Story 5.18's recorder (standing rule 1, R-82): the Content API facts the editor's live reads rest on, executed "
   'read-only on T3 and then T1 before a line of the read layer was written, every request carrying the editor\'s own '
@@ -575,14 +584,17 @@ DOCS = [
   'the account deleted with the user count read before and after. Committed at Review so the deployed '
   "checks that re-verified the owner's nine findings can be re-run from a clone. Since Story 5.11 it also walks "
   "the design ring over the controls fixture's designs (R-158), and since Story 5.23 the ring's long way round "
-  'carries Image position — a setting the next design shares — back exactly as it was left (R-205), besides Card tint.'),
+  'carries Image position — a setting the next design shares — back exactly as it was left (R-205), besides Card tint. '
+  "Since Story 5.24d it takes the repository's own Playwright and axe, measures the dice's pips through "
+  "tools/probe/die-pips.cjs (DW-216), and waits for `load` and each page's landmark, never `networkidle` (DW-287)."),
  ('tools/probe/run-verify-pilots.cjs', 'tool', 'Pilots review page harness',
   "Story 4.10's deployed walk of /pilots and the live Supabase (R-82): a throwaway account signed in through the "
   'Auth Admin API, then every pilot at Light and Dark, Desktop 1440, Tablet 834 and Phone 390, and each View as, '
   'switched in the canvas chrome and screenshotted for comparison by eye against the frames, with axe-core at WCAG '
   '2.1 AA inside each canvas (a positive control first), the member arms and Show to read back off the canvas, '
   "Latest Post's panel checked for no number of posts, and Three Up's four feed pages; the account deleted with the "
-  'user count read before and after.'),
+  'user count read before and after. Since Story 5.24d (DW-287) every load waits for `load` and its own landmark, never '
+  '`networkidle`.'),
  ('tools/probe/run-verify-editor.cjs', 'tool', 'Editor shell harness',
   "Story 5.1's deployed walk of the editor at /projects/{id} and the live Supabase (R-82): two throwaway accounts through "
   'the Auth Admin API, A seeded with seed-editor-project.mjs and B given one bare project; the card opens the editor and '
@@ -608,7 +620,14 @@ DOCS = [
   "repaint that ends the session drawing that section fresh and keeping every other root; and Preview in and out, whose "
   "full repaint must equal the canvas node for node — then, since the step now edits the plant, it sends the owed work "
   "with ⌘S and waits for Synced before leaving the editor and putting Home back, so no departing flush lands behind the "
-  "restore."),
+  "restore. Story 5.24d makes its waits the conditions they mean: every idempotent signed-in load — page loads, reloads "
+  "and the contexts' own GETs — is retried once with a `stall` note carrying its ISO time, method and path, and a magic "
+  "link and goBack never are (DW-183), a HARNESS ERROR carries its time (DW-204); a server action in flight is waited out "
+  "before step 89's reload and step 90's read-back (DW-291, DW-284); step 89 replays the captured subject save, valid and "
+  "then forged seven ways, and walks Author and Page (DW-219); 66b waits the app's own sync budget (DW-220); step 36 "
+  "measures against the section hovered when the scroll settles (DW-222); the screencast decoders skip and count a frame "
+  "that will not decode (DW-236); step 6 asks both frame routes signed out (DW-117); the CSP reads no longer leave "
+  "Projects out (DW-174); and step 88's pips are tools/probe/die-pips.cjs (DW-216)."),
  ('tools/probe/run-verify-saving.cjs', 'tool', 'Autosave toggle harness',
   "Story 5.8: FR-D10's autosave toggle on /account against the real services (R-82) — the one surface of that story "
   'run-verify-editor.cjs cannot reach, because it is not in the editor. Its own throwaway account through the Auth '
@@ -665,8 +684,18 @@ DOCS = [
   "neither), then from T1 itself — its Admin key through Manage keys, the re-read on open writing T1's own settings, T1's "
   "button switched ON and its bar's audience emptied with the staff token for about a minute, the canvas compared with "
   "T1's own home page at the same device (the bar within 1px, the button's box within 2px), both put back and read back "
-  "in a finally. Refuses a dirty tree or a deployment that is not HEAD; takes APP_ORIGIN/"
+  "in a finally. Since Story 5.24d (DW-251), before T1's 429 step, a simulated condition named as such: the list's own "
+  "answer with `meta.pagination.total` raised past LIST_LIMIT, so D5e's capped line on the Post canvas and the Link "
+  "Picker's are read for lib/live-content.ts's words, with the same session unrouted as the control. Refuses a dirty tree "
+  "or a deployment that is not HEAD; takes APP_ORIGIN/"
   'APP_PREFIX for a local build, MAJORS=5|6 for one major and NO_429=1 to leave out the step that costs T1 an hour.'),
+ ('tools/probe/die-pips.cjs', 'tool', "The die's pips, measured once",
+  "Story 5.24d (DW-216): the one measurement of where Site Remix's die draws its pips, which had been written three "
+  "times. A self-contained function each gate hands to Playwright's evaluateAll over the six .remix-dice__face elements "
+  "— the keyboard journey imports it, the editor walk (step 88) and the controls walk require it — returning per face "
+  "how many pips it declares, how many different places they land in and its box. It computes each pip's centre from "
+  "the face's box and the layer's size rather than reading background-size back, so R-164's regression "
+  "(background-size: auto) collapses every face to one place and the journey's stop goes red naming the face."),
  ('tools/probe/seed-editor-project.mjs', 'tool', 'Pilot sections project seeder',
   'Story 5.1: seed({ email, name }) adds one "Pilot sections" project to an account — the slug and style pack made the '
   "way createProject makes them, and site, home and post project_templates rows holding the pilots at their default "
@@ -865,6 +894,9 @@ DOCS = [
     '--check gains pinned-ca: the pooler over SUPABASE_DB_POOLER_URL with the PEM read out of '
     'server/ghost-admin/db.ts connects, and with tls.rootCertificates[0] it is refused '
     'SELF_SIGNED_CERT_IN_CHAIN (DW-50); brand-keys reads the three keys the brand reader keeps (DW-71).',
+    'STORY 5.24d GAVE --check schemas-off-rest (DW-294): GET /rest/v1/ on a table that does not exist, with the '
+    'publishable key and Accept-Profile private, storage and vault, answers 406 PGRST106 each, its hint printed; '
+    'public and graphql_public not 406, the control (MEASUREMENTS §60) — the half RLS-TEST.sql cannot see.',
     'Note that --check is no longer plumbing alone — it re-executes settings-keys and brand-keys '
     'against both live Ghosts, so it needs every key the full run does, the two staff tokens '
     'included; it still starts no browser and creates nothing. Stories 3.2, 3.3 and 3.4.',
@@ -893,7 +925,8 @@ DOCS = [
   'finally and in this file\'s, which reads it back and fails the run if it is not as found. --check also reads '
   'the row (never writes it) and needs SUPABASE_DB_POOLER_URL. '
   'Playwright is resolved from the machine, not this repository; PLAYWRIGHT_DIR '
-  'overrides. Story 2.2.'),
+  'overrides. Since Story 5.24d (DW-287) every load waits for `load` and then for the App Router to have hydrated (its '
+  'route announcer), never `networkidle`. Story 2.2.'),
  ('tools/probe/report-template.html', 'tool', 'Decision-sheet template',
   'Copy it, replace the findings array, change nothing else.'),
  ('planning-artifacts/INDEX.md', 'live', 'Document index (for AI)',
@@ -1060,6 +1093,17 @@ DOCS = [
   "and holds A17 #1's no-param post-card partial and four feed pages and A4 #13's one fixed post. --update rewrites "
   'the snapshots; CI never passes it. Also covers the designs and the snapshots, which the catalogue cannot index '
   '(the package BASES gap: a snapshot is generated output, DW-94). It stores no count: it prints them.'),
+ ('tools/check-traces.mjs', 'tool', 'The deployed functions carry their files, checked after the build',
+  "Story 5.24d's check of DW-269, run by CI's check job straight after pnpm build (never inside pnpm check, which runs "
+  "before any build). The app reads designs, pictures and stylesheets off disk, and Vercel ships a function with only the "
+  "files its build traced; outputFileTracingIncludes never applied under Turbopack, so the files arrive through "
+  "lib/style-guide.ts's PACKAGES, the one finder every reader imports. It reads every tracked file under the directories "
+  "the canvas reads (git ls-files: the designs, the controls and paywall fixtures, Orbit Weekly's images and vendored "
+  "cards, the reference tokens, the control register, canvas-chrome.css), resolves each route's .nft.json against its "
+  "own directory, and exits 1 naming the route and the files it lacks: /canvas, /pilots and both editor pages must carry "
+  "the whole set, /controls and its frame the designs and the controls fixtures. Exits 2 with no build or no git "
+  "listing. Its control is PACKAGES resolved from import.meta.url: the build still passes and every route fails. "
+  'It stores no count: it prints them.'),
  ('tools/matrix/run-matrix-gate.sh', 'tool', 'The render matrix gate — NFR-6(a) and NFR-5 in one run',
   ("Story 4.11's gate, modelled on supabase/tests/run-rls-gate.sh: builds tools/matrix/Dockerfile (the Playwright image "
    'pinned by tag and digest, plus Inter from apt and Gelasio from google/fonts checked by sha256sum -c, with fc-match '

@@ -42,8 +42,10 @@ import type { ShellUser } from '@/lib/shell-user'
 
 /** STORY 5.22 — THE USER, FOR A SURFACE THE SHELL DRAWS NO CHROME AROUND. On an editor path the shell is `<main>` alone,
  *  so the Small Screen Notice has no account row to read the user off; D4f draws their avatar in its bar, and this is
- *  how it reaches it. Null where there is no shell at all (the keyboard harness), and the notice then draws none. */
-const ShellUserContext = createContext<ShellUser | null>(null)
+ *  how it reaches it. Null where nothing provides it, and the notice then draws none. EXPORTED for the keyboard harness
+ *  (DW-285), which sits outside the shell and hands its fixture user through this same provider, so `pnpm keyboard`
+ *  reads the avatar the deployed walk reads. */
+export const ShellUserContext = createContext<ShellUser | null>(null)
 export const useShellUser = () => useContext(ShellUserContext)
 
 const NAV = [

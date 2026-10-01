@@ -55,7 +55,7 @@ import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/pay
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
   flushDecision, hydrationFor, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn,
-  unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
+  SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
 } from '@/lib/journal'
 import {
   HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, SELF_MARK, stillAsking, type LockRow,
@@ -509,6 +509,10 @@ type EditorProps = EditorData & {
   /** Story 5.20 — where this editor's canvases live when it is not the app's `/projects/<id>`: the keyboard harness's
    *  own pages (`/app/harness/editor/<key>`), so its walk can switch canvas with no database (R-146). The app passes none. */
   canvasBase?: string
+  /** DW-279 — the linked site's re-read, `recheckSite` unless named. The keyboard harness names its own, which answers
+   *  one fixture site with a snapshot, so a database-less journey sees a re-read that LANDS redraw Ghost's two surfaces.
+   *  The app passes none. */
+  reread?: typeof recheckSite
 }
 
 /** P0-1's pill on the selected section (R-122, and the limit's sentence) — the element it is placed over, and its words. */
@@ -755,6 +759,7 @@ function EditorShell({
   site,
   canvasSrc: canvasPath,
   canvasBase,
+  reread = recheckSite,
 }: EditorProps) {
   const pathname = usePathname()
   /** the canvas document's address — and, since Story 5.19, where the sample's pictures are served for the panel too */
@@ -962,7 +967,7 @@ function EditorShell({
     setRecheckRefusal(null)
     startRecheck(async () => {
       // a thrown call (the network dropped, the session is gone) is the same refusal as a returned one
-      const answer = await recheckSite(project.id).catch(() => ({ refused: true as const }))
+      const answer = await reread(project.id).catch(() => ({ refused: true as const }))
       const name = siteNameOf()
       // the press speaks; a re-read nobody pressed speaks only where C3b's card is up to say it about
       const speaks = pressed || cardUp(latest.current.key, membersNow.current, latest.current.source)
@@ -1598,7 +1603,7 @@ function EditorShell({
         // "Syncing" for good, and with `inFlight` held every later flush was refused too). A stall is a failure like
         // any other: it lands in the `catch`, the indicator says Retrying, and the backoff takes it from there. If
         // the write DID land, the route's "already there" answer makes the retry a plain 200.
-        signal: AbortSignal.timeout(20_000),
+        signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
       })
       if (answer.status === 409) {
         // ANOTHER SESSION WROTE. Nothing was written and nothing of ours is lost — the local doc is untouched.

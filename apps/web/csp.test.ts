@@ -118,7 +118,7 @@ test('the two request headers travel together, and marketing gets neither', () =
 test('the two most-weakened directives are held by value, not left to drift wider', () => {
   for (const csp of [policy(APP, N), policy(MARKETING, '')]) {
     const d = directives(csp)
-    // 'unsafe-inline' is here because next/font and React inline critical CSS; it is the widest
+    // 'unsafe-inline' is here because React inlines critical CSS; it is the widest
     // thing in either policy and the one most likely to be copied into script-src by accident.
     assert.equal(d['style-src'], `'self' 'unsafe-inline'`)
     assert.equal(d['img-src'], `'self' data: https:`)

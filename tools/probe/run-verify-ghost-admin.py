@@ -32,7 +32,13 @@ list gone stale — the sibling harness's own note):
   vault-off-rest THE BOUND THE DESIGN RESTS ON, re-executed every run rather than remembered
                  (§21j): `GET /rest/v1/{decrypted_secrets,secrets,site_credentials}` with the
                  secret key -> 404 all three, `/rest/v1/sites` -> 200 as the positive control. A
-                 leaked API key yields references, not keys
+                 leaked API key yields references, not keys. It sends no Accept-Profile, so it
+                 asks `public` alone — the next step asks the others
+  schemas-off-rest STORY 5.24d (DW-294), printed in both modes: the schemas PostgREST exposes,
+                 read over the wire because hosted Supabase keeps them outside the database
+                 (RLS-TEST.sql cannot see them): `Accept-Profile` `private`, `storage` and
+                 `vault` with the publishable key -> 406 PGRST106 each, its hint printed;
+                 `public` and `graphql_public` not 406, the control (MEASUREMENTS §60)
   settings-keys  STORY 3.3, printed in both modes: the six settings keys the probes read are
                  really in the INTEGRATION key's own `GET /admin/settings/` payload on both
                  majors — `portal_button`, the two `codeinjection_*` and the three
@@ -5054,7 +5060,8 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--check', action='store_true',
                     help='the plumbing alone: every key present by name, playwright, axe and the '
-                         'postgres driver resolvable, and §21j re-executed over PostgREST. No '
+                         'postgres driver resolvable, and §21j and the exposed schemas re-executed '
+                         'over PostgREST. No '
                          'browser and no user, so it runs before the story is deployed.')
     ap.add_argument('--url', default=APP,
                     help='where the app lives. app.inflozo.com by default; a Review run may point '
@@ -5069,7 +5076,7 @@ def main():
     args = ap.parse_args()
 
     env = load_env()
-    needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_DB_POOLER_URL',
+    needed = ['SUPABASE_URL', 'SUPABASE_SECRET_KEY', 'SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_DB_POOLER_URL',
               'GHOST6_URL', 'GHOST6_ADMIN_API_KEY', 'GHOST6_CONTENT_API_KEY', 'GHOST6_VERSION',
               'GHOST5_URL', 'GHOST5_ADMIN_API_KEY', 'GHOST5_CONTENT_API_KEY', 'GHOST5_VERSION',
               # Story 3.3's `injection-live`, and only that: the HARNESS's own credential for the
@@ -5120,6 +5127,28 @@ def main():
     print(f'  {"PASS" if ok else "FAIL"}  vault-off-rest: '
           f'GET /rest/v1/{{decrypted_secrets,secrets,site_credentials}} -> {json.dumps(off_api)}; '
           f'the positive control /rest/v1/sites -> {st_sites}')
+
+    # ── DW-294 (Story 5.24d): WHICH SCHEMAS POSTGREST EXPOSES, read where hosted Supabase keeps them — over the wire.
+    #    RLS-TEST.sql sees only a database-level `pgrst.db_schemas`, unset on production and in the gate's container;
+    #    and vault-off-rest sends no Accept-Profile, so it only ever asked `public`. A schema PostgREST does not expose
+    #    answers 406 PGRST106 before any table is looked up, its hint naming the ones it does; the two it exposes answer
+    #    anything else — the control. The table does not exist, so no row is read either way (MEASUREMENTS §60).
+    unexposed, exposed = ('private', 'storage', 'vault'), ('public', 'graphql_public')
+    profiles = {}
+    for schema in unexposed + exposed:
+        st, body = _deletion._request('GET', f'{sb.rstrip("/")}/rest/v1/inflozo_no_such_table?limit=0',
+                                      env['SUPABASE_PUBLISHABLE_KEY'], extra={'Accept-Profile': schema})
+        profiles[schema] = (st, body if isinstance(body, dict) else {})
+    wrong = ([s for s in unexposed if (profiles[s][0], profiles[s][1].get('code')) != (406, 'PGRST106')]
+             + [s for s in exposed if profiles[s][0] in (0, 406)])
+    failed = failed or bool(wrong)
+    hints = sorted({b['hint'] for _, b in profiles.values() if b.get('hint')})
+    print(f'  {"PASS" if not wrong else "FAIL"}  schemas-off-rest: GET /rest/v1/inflozo_no_such_table with '
+          f'SUPABASE_PUBLISHABLE_KEY, Accept-Profile -> '
+          + ', '.join(f'{s} {st} {b.get("code")}' for s, (st, b) in profiles.items())
+          + f' (406 PGRST106 wanted for {", ".join(unexposed)}; not 406 for {", ".join(exposed)}); '
+          f'PostgREST\'s hint: {" | ".join(hints) or "none"}'
+          + (f'; WRONG: {", ".join(wrong)}' if wrong else ''))
 
     # ── §39, RE-EXECUTED EVERY RUN: the six settings keys FR-C2's probes read are really in the
     #    INTEGRATION key's own `GET /admin/settings/` payload, on both majors. §15h item 21 measured

@@ -3581,7 +3581,14 @@ reason: the rule now lives in EXPERIENCE.md, which every UI story reads, but nei
 plain: The test that says "the picture frame refuses a signed-out visitor" checks that the right words appear in
   the file in the right order, not that a visitor is actually turned away. The deployed check does turn one
   away, but only when someone runs it by hand.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): the three frame routes are CALLED, not read. `apps/web/frame-guard.test.ts` maps
+  `next/server` to its `server.js` and `@/` to the app with `registerHooks` (the one test that does, and it says why),
+  points `@/lib/supabase/server` at itself, and asks each `GET` with a real `NextRequest`: signed out 303 to /sign-in,
+  signed in 200 text/html, style-guide's variations view 200 and a request with no nonce 500. The source-text tests of
+  `controls.test.ts`, `style-guide.test.ts` and `pilots.test.ts` and their `ROUTE` constants are gone. Control, seen red
+  with the guard line deleted from the canvas route: "/app/canvas answered 200 to a stranger". The deployed walk's step
+  6 asks `/controls/frame` and `/style-guide/frame` signed out too, each 303 (DW-162, the same change).
 severity: low
 origin: Story 4.5 code review (2026-09-13) — Verification Gap
 owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
@@ -4514,7 +4521,11 @@ reason: the validator carries no ancestor stack today; adding one for two attrib
 plain: The test that says "strangers are turned away from the sample-sections page" reads the code as text and looks
   for the right words in the right order; it does not actually knock on the door. The same is true of the two older
   internal pages.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01), with DW-117: `apps/web/frame-guard.test.ts` calls the canvas route (the pilots page's
+  frame since Story 5.1) and the two older frame routes with a real `NextRequest` — 303 to /sign-in signed out, 200
+  signed in — and the text tests are deleted. Control: the guard deleted from the canvas route, the test red
+  ("/app/canvas answered 200 to a stranger").
 severity: low
 origin: Story 4.10's review — `apps/web/pilots.test.ts` asserts `await currentUser()` precedes the body calls and
   `/303/` appears; `run-verify-pilots.cjs` signs in first and never fetches the frame signed out. Pre-existing
@@ -4812,7 +4823,16 @@ reason: not reproducible in five further runs, so not patchable blind. On the ne
 plain: Every time Projects opens, the browser quietly notes that a piece of our code tried something the security rules
   forbid. Nothing breaks and nothing is at risk, but a real warning would be lost in that noise, and the security check we
   run on the editor would fail if it looked at Projects.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): the cause was LOAD ORDER, not a second copy of zod (one copy, 4.4.3): `/` builds
+  `lib/style-pack.ts`'s object schema through `new-project-sheet.tsx`'s `PRESETS`, and `doc-schema.ts`'s `jitless` never
+  loads there. `apps/web/lib/zod.ts` sets `jitless` before handing `z` out, the eight app importers take it through that
+  module, and a new `apps/web/**` ESLint block refuses a direct `zod` import. Control: `apps/web/zod-jitless.test.ts`
+  (its own file, the process's first zod evaluation with `Function` trapped) imports `lib/style-pack.ts` and counts 0
+  probes; with style-pack's import reverted to `zod` it counts 1 and ESLint fails `no-restricted-imports`. On production
+  before the push Projects reported 3 `script-src eval` refusals from zod's chunk on a throwaway account's three loads
+  (2026-10-01, 10:11 UTC). The deployed walk's four CSP reads (steps 5, 70, 14, 97) no longer leave Projects out, so
+  after the deploy the walk itself says whether `/` is clean (DW-201, the same change).
 severity: low
 origin: Story 5.1's Dev run (2026-09-17) — `tools/probe/run-verify-editor.cjs` against a local production build: a
   `script-src` `eval` violation from zod's core chunk on `/` (Projects) at every load, and the same on the editor until
@@ -5026,7 +5046,13 @@ plain: Two things the story builds cannot be checked automatically on your pilot
   40 characters" when you type past a limit on the page (no pilot section has a limit — only the review page's sample
   does, and that page has no canvas typing), and the rule that switching to another window keeps your cursor where it
   was (the test browser cannot pretend to lose the window). Both work by reading; both are checked by hand.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): both rules reached by the keyboard gate. The fixture ring's heading carries `maxChars:
+  40`, and the journey's DW-182 stop starts a canvas session on it with the canvas document's own synthesized press (the
+  journey header's third), focuses it and types past the limit: the pill reads "Heading holds 40 characters." and the
+  words stay 40; with the top page's `document.hasFocus` answering false a blur keeps the session, and restored, a blur
+  ends it. Controls, each red: `onRefused` cut in `editor.tsx` ("the limit's pill"), and `inline.ts`'s `hasFocus` guard
+  cut ("the window was lost, not the field: the session stays").
 severity: low
 origin: Story 5.3's code review (2026-09-18, verification-gap layer): `editor.tsx`'s `onRefused` → `CanvasNote` with
   `kind: 'limit'`, and `inline.ts`'s `onFocusOut` guard `win.top?.document.hasFocus() === false`.
@@ -5046,7 +5072,19 @@ plain: The automatic check of the editor runs on the live site with a throwaway 
   takes longer than the check's thirty-second patience to answer one page that needs you to be signed in, and the whole
   check stops there — with nothing wrong found and the throwaway account cleaned up. Running it again goes through. It
   costs time, not correctness, but it can hide a real failure behind a stall.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): the retry this entry left on the table, built the way it said. `steady`
+  retries a signed-in `goto` or `reload` once (the reload as a `goto` of the same address) and never `/auth/confirm?…`
+  or `goBack`; `steadyRequests` gives `context.request.get` and `streamContext.request.get` the same one retry; every
+  page the walk opens is wrapped at creation; each first failure is a `stall` NOTE with its ISO start, the method and
+  the pathname alone (never the query, where a magic link's token rides), and `main().catch`'s HARNESS ERROR carries its
+  time. Controls, LOCAL RUNs against production with each plant reverted after: step 79's first GET planted `{ timeout:
+  1 }` gives a stall note and step 79 PASS, and HEAD's walk under the same plant dies, `HARNESS ERROR
+  apiRequestContext.get: Timeout 1ms exceeded`; the editor's document held 35 s once gives a stall note and the step
+  PASS; the phone context's `/auth/confirm` held 35 s kills the walk (`HARNESS ERROR 2026-10-01T11:36:14.924Z page.goto:
+  Timeout 30000ms exceeded`), the single-use link never asked twice, users 13 → 13. Step 5's CSP control passed in every
+  walk, and every real stall in the story's walks was retried and the walk went on (classified under DW-204). The retry
+  and step 5's control sit in separate hunks of the diff, for the separate commits this entry asks for.
 severity: low
 origin: Story 5.3's second code review (2026-09-18, real-infra layer): runs 1 and 2 of `run-verify-editor.cjs` against
   `https://app.inflozo.com` stalled on step 6's signed-in `request.get` and step 7's `page.goBack` respectively, each a
@@ -5535,7 +5573,12 @@ note (2026-09-20, Story 5.10's Fix, R-155): the SECTION PICKER's half of this is
 plain: One of the code libraries the app uses quietly tests, once, whether the browser lets it build code on the fly.
   Our security policy says no — correctly — and the library carries on the slow, safe way. Nothing breaks and nothing
   is exposed, but the browser writes a "blocked" note each time the Projects page loads, which muddies our own checks.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01), with DW-174: no second zod instance — the probe on `/` was `lib/style-pack.ts`'s
+  schema built before anything set `jitless`. `apps/web/lib/zod.ts` sets it first for every app import, ESLint keeps it
+  so, and `apps/web/zod-jitless.test.ts` is the control (0 probes; 1 with the import reverted, ESLint red too).
+  Production's `/` reported 3 eval refusals before the push; the editor walk's dashboard filters are gone, so a report
+  there fails it.
 severity: low
 origin: Story 5.8's Review (2026-09-19), the Real-infra verifier, on the deployed site: `securitypolicyviolation`
   `script-src` / `eval` at `https://app.inflozo.com/`, source a `_next/static/chunks` file at the offset of zod's
@@ -5602,7 +5645,27 @@ plain: Our automated walk of the live site opens the editor dozens of times. On 
   twenty never finished loading within 30 seconds, which stops the walk. Ordinary pages on the same site answer in a
   third of a second, and the same walk on a local copy never stalls. We do not yet know whether the slow part is this
   computer's connection or the live editor page itself — if it is the page, a customer would see it too.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): classified from Vercel's request rows, and it is not the product. The editor
+  walk now notes every first failure of a signed-in load with its ISO start (DW-183), and the rows were read at each:
+  the CLI's `--json` lines and, for durations, the rows behind them (`vercel.com/api/logs/request-logs`, the endpoint
+  the CLI reads, which carries `requestDurationMs`, each function's `durationMs`, start type and region, and the
+  client's user agent). The story's walks (LOCAL RUNs against production, 2026-10-01 10:55–12:50 UTC) noted thirteen
+  real stalls, all on `GET /projects/<id>` or one of its canvases, and every one read has the same shape (all but
+  12:30:17.644Z, whose window the log API would not serve): NO row for the first attempt; for the page loads, not one
+  row from the whole walk inside its 30 s (11:27:10.874Z, 11:53:16.168Z, 11:55:13.753Z, 12:03:25.250Z, 12:05:53.261Z,
+  12:08:04.742Z, 12:40:34.627Z, 12:42:52.844Z, 12:44:03.129Z; 11:10:33.498Z read by hand; 11:54:03.589Z with two of the
+  walk's other requests answered inside it); and the retry's row a 200 at +40.1–40.2 s from the first attempt's start —
+  ten seconds after the retry left, every time — answered in 0.6–1.8 s with the middleware hot in bom1 and the function
+  hot in fra1. The one stall on Playwright's own HTTP stack (`request.get`, 11:34:11.518Z) had the page's lock POST
+  answered beside it, and its retry answered at once. One more, outside the walk (a throwaway account photographing
+  Projects, 10:10 UTC), is the only one with a row: its document 200 in 864 ms, the function 263 ms hot, while `load`
+  waited on something the request log does not carry (`/_next/static` is not in it). So, by the spec's rule: the client
+  or the network, never the editor's function, and nothing whose remedy costs money (the Ask First did not fire). The
+  constant ten seconds points at a timeout on this machine's side (a resolver's, or a connect fallback's) — a
+  hypothesis, not executed. 2026-09-19's curl (TLS up, then no first byte) is the one observation this cannot tell from
+  Vercel's edge. The walk survives each by its one retry; reopen if a deployed walk's stall ever has a row that is slow
+  or a 5xx.
 severity: medium
 origin: Story 5.8's Review (2026-09-19): fourteen deployed attempts across `9ad1ac47`, `02cd7f7a` and `9faf014c`,
   two complete; every death a `page.goto` timeout on `/projects/<id>` at a different step. The one stalled `/sync`
@@ -5679,7 +5742,12 @@ reason: each is cosmetic and none blocks a placement; the refusal itself is reac
 plain: The rule that decides whether a browser may keep the preview page is written twice — once for the real
   editor, once for the test harness — and the only automated test reads the first file's words instead of asking
   the page. The deployed walk's step 83 is the one check that really asks.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `canvasCaching(v, live = NODE_ENV === 'production')` beside `V` in `lib/canvas.ts` is
+  the one rule both canvas routes call (one comment left); unit rows in `pilots.test.ts` replace the regex, and
+  `frame-guard.test.ts` asks `/canvas?v=abc123` in production and out of it — a unit handed `live` cannot see the
+  default the routes rely on. Controls, each red: `v !== 'dev'` dropped (the unit row), and the default flipped (the
+  route test).
 severity: low
 origin: Story 5.10's Review (2026-09-20), Verification Gap and Blind Hunter. The production defect this review
   fixed (an empty build id) was caught by step 83 and by nothing in `pnpm check`.
@@ -5721,7 +5789,11 @@ fix: EXECUTED at Story 5.11's Dev (2026-09-20, standing rule 1), in Chromium thr
 
 ### DW-211: the editor's own pill ◀ ▶ and Shuffle are wired but never pressed by any gate
 
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `tools/keyboard/floor.spec.mjs` gains a describe at 1280 × 720 that presses the
+  section pill WITH A MOUSE on the ringed section (the floor's header now says a pointer is allowed there): Next → "2 of
+  3" and "Design 2 of 3 — …", Previous → "1 of 3", Shuffle → another design, ⌘Z → "1 of 3". Controls, each red: the
+  pill's arrows swapped, and Shuffle cut.
 severity: medium
 origin: Story 5.11's Review (2026-09-20), Verification Gap reviewer.
 owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
@@ -5847,7 +5919,14 @@ fix: Story 5.23a (2026-09-27). The harness builds a LONG Home on request (`x-inf
 
 ### DW-216: the die's pip-centre measurement is written three times
 
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): one module, `tools/probe/die-pips.cjs` — `diePips(faces)` returning each
+  face's `{layers, distinct, box}`, computed from the face's box and each layer's size (never the rule read back),
+  self-contained because `evaluateAll` runs it in the page. The keyboard journey imports it (`import diePips from
+  '../probe/die-pips.cjs'`), the editor walk's step 88 and the controls walk require it; the three copies are gone.
+  Control, seen red with R-164's fault planted (`background-size: auto`): the journey's "face 2's pips must land in 2
+  different places". Through it, on production: the editor walk's step 88 and the controls walk's remix check both read
+  [1,2,3,4,5,6].
 severity: low
 origin: Story 5.12's Review (2026-09-20), Blind Hunter.
 owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
@@ -5897,7 +5976,14 @@ reason: Pre-existing — the archive branch inherited both values from the home 
 
 ### DW-219: the preview subject's refusals, and the Author and Page canvases, are not on the deployed walk
 
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): step 89 captures the subject save (`page.waitForRequest` on its
+  `next-action` POST) and replays it from the signed-in page, first with another valid slug — `{"ok":true}` and the row
+  moves, the replay's own control — then forged once per refusal in the I/O matrix: a project id that is not a uuid, a
+  key of `nonsense`, an empty slug, a 192-character slug, a `kind` of `page`, a `source` of `ghost`, and B's project.
+  Each answered with the product's refusal, A's row stayed byte-identical and B's `project_template_prefs` stayed `[]`.
+  The Author canvas names its fixture writer, another is chosen and its row read back; the Page canvas names its one
+  subject and its menu holds exactly that row. All PASS on production (LOCAL RUN).
 severity: low
 origin: Story 5.13's Review (2026-09-21), Verification Gap reviewer and Acceptance Auditor.
 owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
@@ -5912,7 +5998,14 @@ reason: The refusal guards run inside a server action the harness cannot call wi
 
 ### DW-220: the deployed editor walk's step 66b/66c failed once in three runs on unchanged code
 
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): the check read too soon, executed both ways. `lib/journal.ts` exports
+  `SYNC_TIMEOUT_MS` (20 000 — the unload flush's `AbortSignal.timeout`, the editor's own budget, written once), and 66b
+  polls `revisionNow58()` until it moves for `SYNC_TIMEOUT_MS + BACKOFF_S[0] × 1000` and a 5 s margin, then reads the
+  state and notes a Retrying it saw. Control, LOCAL RUNs against production with the hide flush's keepalive POST held 17
+  s (`page.route` first confirmed to see it): the new wait PASSES ("revision 11 → 12 within 30000 ms · states seen
+  [Syncing, Synced]") and HEAD's walk under the same hold FAILS 66b with this entry's own line, "Saved on this device →
+  synced false · revision 11 → 11". A flush that never lands still fails the new wait.
 severity: low
 origin: Story 5.13's Review (2026-09-21), the deployed walk at `efda9d6c`.
 owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
@@ -5962,7 +6055,19 @@ reason: FR-D16 names that pass as the thing its nudge makes reliable, and §4 de
 
 ### DW-222: the deployed editor walk's step 36 fails intermittently — the hover follows the section a scroll moves under a still pointer
 
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): step 36 asks the pill to sit on the section hovered when the scroll settles,
+  read two frames later (`hoveredOnScreen()`), and the per-frame sampler skips — and counts — a frame whose hovered root
+  changed, from the root hovered as sampling starts. Executed first: the spec's 1 px `mouse.move` after the 300 px wheel
+  cannot cross a section on today's seed — the grid fills the reachable window, and even a 1066 px wheel left it under
+  the pointer — so HEAD stayed green under it. The control that does cross: a wheel up to the top, then the pointer onto
+  the sticky header, the grid's top 444 below the header's bottom 250 — HEAD FAILS the settled check (the pill on the
+  header, measured against the grid) and the new walk PASSES it ("hovered root #0"). `[data-section-pill]{translate:40px
+  0}`, off its section, stays red on both checks ("worst 30.0px"); the spec's `translate:0 40px` stays inside the tall
+  grid and is no control. The sampler's skip is exercised ("1 skipped as the hover moved", PASS), but its old red was
+  not reproduced: a pointer-driven re-hover re-places the pill in the same frame, so HEAD's sampler stayed green under
+  it, and the one-frame lag behind the original 126 px came from a scroll-driven re-hover this harness cannot force.
+  Reopen if the per-frame check fails on a real run.
 severity: low
 origin: Story 5.14's Dev run (2026-09-21), the deployed walk at `d4d6e266` — and Story 5.9's (2026-09-19), whose spec
   recorded the same failure ("intermittent, Story 5.4's") without a ledger row.
@@ -6245,7 +6350,17 @@ plain: The long automated walk of the editor on the live site sometimes stops ha
   decoded", part-way through the checks that film the canvas scrolling. Nothing a customer would see is known to be
   wrong — the same walk, re-run on the same build, passed every check — but the run is lost and has to be started again
   from the beginning, which takes about ten minutes.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): one bad frame no longer ends the walk. Both decoders — `drift` and the
+  sticky film's — catch `img.decode()`'s refusal, skip the frame and count it in the check's detail; the floors stay (at
+  least five frames measured), so a broken film is never a pass. Executed first: a frame cut short is NOT a decode
+  failure — Chromium decodes a PNG truncated anywhere past its header (half, a tenth, 64 characters: each 1440×900), the
+  lost rows measuring nothing — so the spec's "truncated" control could not go red, and the control spoils the header
+  instead, which `decode()` refuses with this entry's own `EncodingError`. Controls (LOCAL RUNs against production): one
+  frame of 60 undecodable gives "59 frames · 1 skipped", PASS; one of the sticky film's 58 gives "57 frames · 1
+  skipped", PASS; every one of 61 gives "0 frames · 61 skipped" and the floor FAILS; HEAD's walk with one frame
+  undecodable dies, `HARNESS ERROR page.evaluate: EncodingError: The source image cannot be decoded.` — this entry's
+  line. The bad frame's own cause is still unknown.
 severity: low
 origin: Story 5.16a's Dev run (2026-09-23) against `app.inflozo.com`. The first walk threw
   `page.evaluate: EncodingError: The source image cannot be decoded` out of step 15's decoder page after 172 PASS and
@@ -6450,7 +6565,16 @@ plain: The script that proved the lock's four database facts reports "the run wa
   real control failing, and the script itself hitting a shape it did not expect — and if it fails before it has
   signed in, its cleanup line names a variable that was never set. It ran clean on 2026-09-23; this only matters on a
   re-run that fails.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `record-edit-lock.py`'s `fixture()` deletes the account it made if anything after it
+  fails, then re-raises; `Void`, `SubprocessError` and `OSError` stay RUN VOID (exit 1) and anything else is PROBE ERROR
+  with its traceback (exit 2); an offline `--self-check` (handled before the help branch, in `pnpm test`) asserts a
+  failed project POST and a `KeyError` each send the user's DELETE, a fixture that is built sends none, and the
+  classifier's two exits — HEAD's `fixture()` failed it (no DELETE), and `KeyError` folded back into RUN VOID failed it.
+  RLS-TEST's F4 seeds both halves RELATIVE (`g = lock_generation + 1`, the CAS g → g + 1, asserting g + 1), copied to
+  `supabase/tests/rls.sql`: `lock_generation = 40` planted before F4 was red at HEAD (`monotonic (40 -> 10)` before its
+  second half, `40 -> 5` before its first) and green relative; the clean gate exits 0. Never run live (it writes to
+  production).
 severity: low
 origin: Story 5.17's review (2026-09-24), in the Blind Hunter layer.
 reason: tooling, not product; the fix is two `except` clauses and `sb = None` above the `try`. Also the F4 block in
@@ -6494,6 +6618,18 @@ owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's fiv
   this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh` ·
   `.github/workflows/ci.yml`'s `deploy` (its `vercel build`)
+amended: Story 5.24d's Dev (2026-10-01) — THE CODE LANDED; it closes on the deployed Projects pair. The three faces are the
+  app's own: `apps/web/app/fonts/` holds the 16 files Google serves for today's options (fetched with next's own
+  User-Agent, each equal by sha256 to HEAD's build output) beside the three OFL licences; `fonts.css` is Google's rules
+  word for word with local addresses, next/font's three `… Fallback` faces copied from HEAD's built CSS and the three
+  variables on `:root`; `layout.tsx` drops next/font and preloads the three latin files. `tokens.test.ts` holds
+  fonts.css (every variable the theme reads declared, every file there) and refuses a next/font import — three controls
+  red. The built CSS's 39 `@font-face` rules equal HEAD's by descriptors and file hash, in order; seven screens (home
+  and sign-in at 1440 and 390, the harness editor at 1440 and 390, an editor hover) byte-identical between production
+  harness builds of HEAD and the fix (one re-run: HEAD's own editor-1440 varied 13 pixels between its runs, the fix's
+  did not), and red on five with Inter's 600 rewritten as 500; `pnpm build` inside `unshare -rn` fails at HEAD on three
+  fonts.googleapis.com requests and passes fixed. Projects on app.inflozo.com was photographed with a throwaway account
+  at 1440 and 390 before the push; after the deploy the same photograph must be identical.
 
 ### DW-247: a section that prints your member count would stop drawing while the editor shows your own site
 
@@ -6591,16 +6727,28 @@ origin: Story 5.18's code review (2026-09-24, Verification Gap). `run-verify-liv
 reason: a tile is the same `SectionPreview` the card is, handed the same `live`; a positive capped line needs a site
   with more than 100 posts, or a `page.route` rewrite of `meta.pagination.total` named as a simulated condition, as
   the network cut is.
-owner: Stories 5.24d (The sweep: the checks and the walks) and 9.1 (A1 — the content model, the stylesheet and designs
-  #1, #3, #4 and #13), whose cards name this entry: 5.24d reads the capped lines on the live-content walk under a
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose card names this entry:
+  the first story to ship a ring of more than one design, it has the walk read a ring tile drawing the linked site's
+  newest post on production. *(Story 5.24d's Dev, 2026-10-01: the capped half ran and passed, so the entry is 9.1's
+  alone. Was "Stories 5.24d (The sweep: the checks and the walks) and 9.1 (A1 — the content model, the stylesheet and
+  designs #1, #3, #4 and #13), whose cards name this entry: 5.24d reads the capped lines on the live-content walk under a
   simulated total past the limit; 9.1, the first story to ship a ring of more than one design, has the walk read a ring
-  tile drawing the linked site's newest post on production. *(Story 5.24d's Create, 2026-10-01: every shipped category
+  tile drawing the linked site's newest post on production"; Story 5.24d's Create, 2026-10-01: every shipped category
   holds one design, so production draws no ring strip and the tile half cannot run before 9.1. Was "Story 5.24d (The
   sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names this entry"; Story 5.24a's
   Dev, 2026-09-28: was "unowned — the first customer site with more than 100 posts (DW-248's trigger), or the next story
   that extends the live-content walk.")*
 location: `tools/probe/run-verify-live-content.cjs` · `apps/web/components/editor/design-picker.tsx` ·
   `apps/web/components/controls/link-picker.tsx`
+amended: Story 5.24d's Dev (2026-10-01) — THE CAPPED HALF IS DONE; the ring tile is all that is left. Before T1's 429 step,
+  `run-verify-live-content.cjs` opens a session (simulated: page.route) in which the unfiltered `limit=LIST_LIMIT` posts
+  read keeps every row Ghost's and has `meta.pagination.total` raised to LIST_LIMIT + 1, and reads D5e's capped line under
+  the Post canvas's subjects and the Link Picker's for `LIVE_WORDS`' words; the control is the same session unrouted. The
+  header names its simulated conditions without a count. Run in the main session on the owner's go in that session
+  (LOCAL RUNs on app.inflozo.com, `NO_429=1`, both majors), twice: on T3 "Showing your newest 100 posts." under the
+  subjects and "Showing your newest 100 posts. Paste an older post's address to link it." in the Link Picker, and the
+  unrouted control `null` in both, PASS each time; the second run 0 FAIL, 157 PASS, users 13 → 13, T3's Subscription
+  access and T1's button and bar put back and read back.
 
 ## Deferred from: Story 5.19's Create run (2026-09-25)
 
@@ -6724,7 +6872,17 @@ plain: Three small pieces of the main-feed story — the repair of an old page a
   editor reloads from its own saved copy, and the way an edit that needs new posts from the site asks for them — are
   checked by the walks run by hand against the real site, not by the tests that run on every commit. They passed there.
   A future change could break one and every commit-time test would stay green.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): all three doors reach `pnpm keyboard`. The server door is ONE function, `designateAll`
+  in `(editor)/read.ts`, which `editorData` and the keyboard harness both call — the harness's own `MAIN_FEED` and feed
+  index are gone, so its Home's main feed is the rule's choice (and its stale CSP comment is corrected). NOT in
+  `lib/editor.ts`, where the plan put it: that module is the client Shell's too, and the runtime it would import took
+  the Projects page's client script from 384,773 to 922,553 bytes on a production build. Two journeys: the local hydrate
+  (the editor's own IndexedDB record stripped of every Home flag and a row renamed, reloaded: the renamed row and
+  exactly one main-feed chip) and the edit read (a secondary feed's Source set to By tag on the answering harness site:
+  each tag read the edit needs asked exactly once, the page still drawn from the site). Controls, each red: `designated`
+  removed from the hydrate; a pass-through `designateAll` (the 5.19 main-feed journeys); the paint's `editReads` branch
+  cut.
 severity: low
 origin: Story 5.19's review (2026-09-25), the Verification Gap layer: `read.ts`'s `docs[key] = designate(…)`, the
   hydrate's `designated(k, d)` and `paint()`'s "an edit needs a read no press made" branch (`editReads`) are each held by
@@ -6962,7 +7120,16 @@ plain: The live app reads its section designs, pictures and a few stylesheets fr
   the build tool we use, so the files only arrive because one page's code happens to point at them in a way the tool
   notices. On 2026-09-26 a harmless-looking change to that one line published a site where no editor could open, for
   about an hour, until the line was put back and a test now holds it.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `tools/check-traces.mjs` reads git's list of every file the canvas reads (the designs,
+  the controls and paywall fixtures, Orbit Weekly's images and vendored cards, the reference tokens, the control
+  register, `canvas-chrome.css`), resolves each route's `.nft.json` against its own directory and exits 1 naming route
+  and file: /canvas, /pilots and both editor pages must carry the whole set, /controls and its frame the designs and the
+  controls fixtures. CI's `check` runs it straight after `pnpm build`. `style-guide.ts` exports `PACKAGES` and
+  `controls-review.ts` and `pilots.ts` import it — one finder — so /controls now carries its own files (none at HEAD).
+  The inert `outputFileTracingIncludes` lists and the three text tests that held them are deleted; a catalogue row.
+  Control: `PACKAGES` from `import.meta.url` → `pnpm build` exit 0 and the check exit 1 on all six routes ("100 of the
+  101 files it reads are not in …"); restored, PASS on all six.
 severity: high
 origin: Story 5.20's Dev (2026-09-26), executed on production and on local builds. At `3a64da0b` and `d0c9ecda` every
   editor on app.inflozo.com threw `"a4/13" is not a design in packages/library/designs/` (Vercel's runtime log, read with
@@ -7154,7 +7321,13 @@ plain: When the editor opens it asks the linked Ghost site for its settings agai
   the floating button from the answer. The automatic tests that run on every commit never see that answer — the keyboard
   harness has no database, so every one of its re-reads is refused and the tests can only check that the old drawing
   stays. Only the live walk on ghost6, run by hand for each story, sees a real answer redraw them.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `Editor` gains one prop, `reread` (`recheckSite` unless named), and the keyboard
+  harness names its own `'use server'` `harnessReread` (`harness/editor/actions.ts`): refused outside the harness, it
+  answers `{ members: null, surfaces }` only for the harness project under `x-inflozo-harness-site: surfaces-later` — a
+  linked site whose stored snapshot is empty — and it reads `projectId`, which the journey finds the re-read by; the
+  site fixtures moved to `sites.ts`. The journey's DW-279 stop holds the re-read until the empty snapshot has painted no
+  shim, releases it, and polls for both shims drawn. Control, red: the re-read's `drawShims(doc)` cut.
 severity: medium
 origin: Story 5.21's Review (2026-09-26), the Verification Gap layer: deleting the redraw in `recheck()` keeps `pnpm check`
   and `pnpm keyboard` green. The keyboard journey counts the re-read's POST and asserts the stored snapshot stays drawn
@@ -7248,7 +7421,13 @@ plain: One automated check of View as — "the database remembers which visitors
   passed on the next run of the same build. The record was behind by more than ten seconds, then caught up: the check
   waited for it and gave up too soon, or the save was slow that once. Nothing a customer does is affected: a record that
   arrives late, or not at all, only brings back a reminder dot, which is the design.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): step 90 reads the record only once no server action of the page is in flight
+  — `actionsSettle(30000)` (a Set of `next-action` POSTs, quiet for 500 ms, naming any still in flight at its deadline)
+  — then polls. Control (LOCAL RUNs against production): each `"states"` POST held 12 s — HEAD FAILS with this entry's
+  own shape (`member_states_viewed` `["anonymous","paid"]`, Free's write still queued) and the new walk PASSES with
+  `stillInFlight []`. Held 4 s and 6 s, HEAD's ten-second poll still caught the writes, so the spec's 4 s was lengthened
+  until the old wait failed.
 severity: low
 origin: Story 5.22's Dev (2026-09-27), the deployed walk at `9212ecc4` (`dpl_2KBTPyRQXjqA3jL5CCND6o61EzYB`), its second run
   there: **2 FAIL, 657 PASS** — `project_template_prefs.member_states_viewed` still `["anonymous"]` after the walk's
@@ -7271,7 +7450,10 @@ reason: Story 5.22 changes neither the record nor its writes. Telling a slow wri
 plain: The small card a phone shows carries the user's initial in a circle at the top right. Whether it is still there is
   checked only when someone runs the deployed editor walk by hand; the automated gates cannot see it, because their
   editor has no signed-in user.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `ShellUserContext` is exported, the keyboard harness wraps `<Editor>` in it with a
+  fixture user (`harness@example.com`, no display name), and the floor's phone stop asserts D4f's avatar reads "H" at 32
+  × 32. Control, red: the provider removed.
 severity: low
 origin: Story 5.22's review (2026-09-27). `SmallScreenNotice` draws the avatar from `useShellUser()`, which the shell
   provides on the editor path (`apps/web/components/shell/shell.tsx`); the keyboard harness sits outside the shell, so
@@ -7314,7 +7496,16 @@ reason: Story 5.23 draws nothing differently (its Boundaries: "No surface change
 plain: The automatic check that walks the Controls review page on the live site stopped once, part-way, because a page
   reload waited 30 seconds for the network to go completely quiet. Nothing was wrong with the page. The same walk passed
   in full when run again, so the only cost is a re-run.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): no walk waits for a quiet network. The controls walk's four `networkidle`s
+  and the pilots walk's two are `load`, each already followed by its own landmark wait; the passkeys walk's seven go
+  through `land()` — `load`, then Next's `next-route-announcer`, which the App Router appends from an effect, so it
+  marks hydration (the handlers the presses after it need). Control, LOCAL RUNs against production with one request held
+  open on every page so the network never goes quiet: HEAD's controls and pilots walks each die at their first load
+  (`page.goto: Timeout 30000ms exceeded … waiting until "networkidle"`), and the new ones pass whole — controls 0 FAIL /
+  115 PASS, pilots 0 FAIL / 152 PASS; `land()` against `networkidle` on `/sign-in`: 586 ms with the passkey button
+  drawn, against a TimeoutError at 30 s. The passkeys walk itself flips production's passkeys flag, so it runs whole at
+  Verification.
 severity: low
 origin: Story 5.23's Dev (2026-09-27), the walk against `9263b6e3`. Run 1 was a HARNESS ERROR, `page.reload: Timeout
   30000ms exceeded` at `run-verify-controls.cjs:472` (step 18's reload), with 0 FAIL and 85 PASS before it. Run 2 was
@@ -7409,7 +7600,12 @@ plain: One check in the automatic test of the live site picks a different articl
   database, so it reported the old article — although the save itself landed a moment later and the next check read it
   from the database. A test that waits a fixed time instead of waiting for "Saved" can fail when the live site is slower
   than usual.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): step 89 waits for the condition its reload means — `actionsSettle(30000)`,
+  then a poll of the stored row until its slug matches — and only then reloads. Control (LOCAL RUNs against production):
+  the subject save held 12 s — HEAD FAILS ("the choice survives a reload" reads the previous article and the row still
+  holds its slug) and the new walk PASSES with `inFlight []`. The spec's 4 s hold did not turn HEAD red (the checks
+  between its click and its reload outlast it), so it was lengthened.
 severity: low
 origin: Story 5.23b's review (2026-09-28), the real-infra verifier's walk of `app.inflozo.com` at `c390a9f4`
   (`dpl_2gehzsrgQWhuGfNVv7Vmuwe9cmh7`): run 1 passed step 89 (then died on a harness timeout at step 79), run 2 printed
@@ -7431,7 +7627,14 @@ reason: the write path is untouched by 5.23b and the same line has failed once i
 plain: One of the automatic keyboard checks moves a section down in Layers and then counts which parts of the editor
   redrew. On one CI run it counted the settings panel's Design block once, although nothing in it changed — and the same
   check passes every time on this machine. That one red check stopped a push from publishing; the next push re-ran it.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): the cause, measured — after a selection the Design block's three tiles draw 320–420 ms
+  later, each commit counted under `<Profiler id="design">`, and `panelsSettle` (two frames and 150 ms) ends about 370
+  ms after the press: a race. `rendersSettle` (every on-screen tile's frame drawn, then the counts still for three
+  frame-plus-50 ms ticks) replaces it in the six render-count stops; R-210's stops keep theirs. Control: with the tile
+  previews slowed 800 ms (a slower runner), the old settle failed 4 of 4 with CI's own message ("nor its Design block")
+  and the new one passed 4 of 4; the whole 5.23b describe passed 48 of 48 on `--repeat-each 4`, and the full gate 126 of
+  126.
 severity: low
 origin: Story 5.24a's second Dev push, `3ddf52e4` (2026-09-28): CI run 36449972851's `check` failed at `pnpm keyboard`,
   119 passed and 1 failed — `tools/keyboard/journey.spec.mjs:3953`, "⌥↓ on the selected row redraws at most the two
@@ -7483,7 +7686,18 @@ reason: the grant predates Epic 3, which moved connect to a server action writin
 plain: One safety check in the database gate is meant to fail if the private tables ever became reachable over the
   internet. It looks for the answer in a place that is empty both in the test container and on the live database, so
   it always passes and never actually checks anything.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): the exposed schemas are read WHERE THEY LIVE. `run-verify-ghost-admin.py --check`
+  gains `schemas-off-rest`: `GET /rest/v1/<a table that does not exist>` with the publishable key and `Accept-Profile`
+  `private`, `storage` and `vault` answers 406 PGRST106 each (hint: "Only the following schemas are exposed: public,
+  graphql_public"), and `public` and `graphql_public` 404 PGRST205 — the control; a FAIL names the schema. Read on
+  production 2026-10-01: PASS; the Management API's `db_schema` is `public,graphql_public`. RLS-TEST's exposure block
+  keeps its FAIL branches for a database-level `pgrst.db_schemas` and, unset, prints NOT ASSERTED HERE naming the
+  `--check` step (copied to `supabase/tests/rls.sql`). Controls, each red: `graphql_public` planted in the
+  must-be-unexposed list (FAIL, exit 1); a session-level `pgrst.db_schemas` holding `storage` in the gate's container
+  (FAIL storage, exit 3). MEASUREMENTS §60 records the reading and corrects §16b, §23b and this entry's "`private` is
+  still covered over the wire": `vault-off-rest` sends no `Accept-Profile`, so it only ever asked `public`. The spine
+  (AD-7), SCHEMA.sql §0b and RESET-supabase.sql now name the `--check` step as the assertion.
 severity: low
 origin: Story 5.24b's Create (2026-09-29), read-only on production: `current_setting('pgrst.db_schemas', true)` is NULL
   there and `pg_db_role_setting` carries no `pgrst.db_schemas` for `authenticator` — hosted Supabase sets the exposed
@@ -7502,7 +7716,7 @@ reason: `SCHEMA.sql` §0b says `private` must never be exposed and that RLS-TEST
 plain: When the app runs on a developer's own computer, pressing **Connect** in the connect wizard shows "Connecting…"
   and then nothing ever happens. The live site is not affected — it is a development-only fault — but it stops anyone
   walking Connect on their own machine, and this story's local runs had to switch React's safety mode off to get past it.
-status: open
+status: done 2026-10-01 (Story 5.24d)
 severity: low
 origin: Story 5.24b's Dev (2026-09-29), found while running `run-verify-ghost-admin.py`'s blocks against this story's
   code under `next dev`: the wizard sat on "Connecting…" until the run used `reactStrictMode: false` (reverted afterwards).
@@ -7518,6 +7732,18 @@ reason: the ref guards a real case — Escape closing the sheet while the browse
   StrictMode on, which stays on "Connecting…" without the fix. Not fixed in 5.24b because no check it runs can walk
   Connect in a development build: `pnpm keyboard` runs `next dev` but has no database or Ghost to connect with, and the
   harnesses walk the deployed production build.
+resolution: Story 5.24d's Dev (2026-10-01): the wizard's `alive` ref is set `true` in the effect's body and `false` in its
+  cleanup, the editor's own shape (`editor.tsx`'s `gone`), so StrictMode's mount → unmount → mount leaves it true.
+  Control, in the main session, against `next dev` with StrictMode on (its default) and production's database, T1 and a
+  throwaway account, users 13 → 13 every run: `run-verify-ghost-admin.py --only brand-none`, whose T1 seed is a connect
+  walked through the wizard's keys step (`seedConnect` — the harness has no block named `connect`), reached as
+  `http://app.inflozo.com:3000` with Chromium mapping that host to this machine. HEAD's wizard: "seed T1: the connect
+  never reached S2c in 60s; the form ends … Back Connecting…", and the dev server logged the keys step's GET and no POST.
+  The fix: `POST /sites/connect?step=keys 200`, S2c reached, `brand-none` PASS, "RESULT: all steps passed". The FIRST
+  attempt was a broken control, caught in the dev server's log: Next 16's `next dev` refuses its own chunks to any host
+  but localhost unless `allowedDevOrigins` names it, so the page never hydrated, the progressively enhanced form posted
+  natively, and HEAD connected. The two local accommodations — `allowedDevOrigins` and the harness copy's one launch
+  line, in the scratchpad — were reverted; neither is in the product.
 
 ## Deferred from: Story 5.24c's Create (2026-09-29)
 
@@ -7567,7 +7793,14 @@ reason: a design's own `ghostCompat.minVersion` cannot see it — the ask is a c
 
 plain: The script that fills a test Ghost site with sample content points one picture at an address on Ghost's own
   image library that no longer exists, so a fresh test site would get a broken picture there.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `seed-ghost.py`'s third image is
+  `https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png` (200) and the `ponytail:` note is gone; a
+  `--check`, handled before the majors loop, HEADs every `IMG` address and exits 1 naming any that is not 200 (with a
+  User-Agent of its own: static.ghost.org answers Python-urllib's with 403 on every address — the first run's broken
+  test, caught and fixed). Control: HEAD's list → `404 …v5.0.0/…writing-posts-with-ghost.png`, exit 1; the fixed list →
+  PASS, exit 0. The two test sites still hold the dead address in their seeded posts; replacing it there is a test-site
+  write this entry does not ask for, so it lands at the next re-seed.
 severity: low
 origin: Story 5.24c's Dev (2026-10-01), MEASUREMENTS §59: `static.ghost.org/.../writing-posts-with-ghost.png` answered
   404 while `publication-cover.jpg` and `feature-image.jpg` answered 200; noted beside `tools/probe/seed-ghost.py:76` as a
@@ -7582,7 +7815,15 @@ reason: the two test sites are seeded already and no story re-seeds one; the nex
 plain: Three things on the Ghost 5 test site changed on 2026-09-25 — a probe's post was retitled and given a picture, a
   sample post got a new picture, and the Portal button's icon was switched — and nothing in Inflozo did it. A recording
   now depends on them, and the list of what the test sites hold does not mention them.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): kept, and written down as the owner's. `RESET-PROTOCOL.md` § Ghost gains "hand changes
+  on the test sites": `probe-gated-post` retitled with an Unsplash image (2026-09-25 04:48–04:49 UTC), "Reading the
+  margins"'s uploaded image (04:50 UTC) and `portal_button_icon` `icon-5` (2026-09-26 16:35 UTC) — and a fourth, the
+  owner's T3 profile picture (his two "edited user" rows at 2026-09-25 04:48) — each made by the owner in Ghost Admin
+  per T3's actions log (read with GETs only), and recorded in `ghost5.json`. MEASUREMENTS §61 records the actions-log
+  fact, in source on both majors and on both logs: an edit made in Ghost Admin is logged, a staff-token write is not
+  (`context.integration = {id: null}` → a null actor → the NOT NULL `actor_id` drops the row); its control, §59's
+  2026-10-01 staff-token writes, are absent from both logs.
 severity: low
 origin: Story 5.24c's Dev (2026-10-01), MEASUREMENTS §59 *Found, not written*: `probe-gated-post` retitled "PROBEs Gated
   Post" with an Unsplash feature image, "Reading the margins" given an uploaded feature image in place of the dead
@@ -7614,7 +7855,15 @@ reason: whether an unlinked project is offered the floor's set or the newest Gho
 plain: The recorder that learns a Ghost site's default ordering uses two posts and two tags it created, with dates and
   names chosen so the order is visible. If someone renamed or re-dated one by hand, the recorder would still read it and
   the test would still pass, on an order the rows no longer show.
-status: open
+status: done 2026-10-01 (Story 5.24d)
+resolution: Story 5.24d's Dev (2026-10-01): `record-cards.py`'s `publish_owned` checks each owned tag's name right after `by_slug`
+  and each owned post's `published_at` and first tag in Ghost's own answer to the write (after `docs.append`, so the
+  `finally` still drafts it); a mismatch raises `Void` naming the slug. `record()` now calls it FIRST, so a row changed
+  by hand voids the run before any document is published (the defaults are read by id, so the order moves nothing
+  recorded). `--self-check` gains a fake Admin: the rows as designed publish (the control), a renamed tag voids naming
+  `inflozo-defaults-b` with no write made, a re-dated and a re-tagged post each void naming it. Controls, each red: the
+  tag check removed, the post check removed, the date compared alone. A GET of the four owned rows on both majors
+  matches the design, so a real run passes. Never run live (it writes to T1 and T3).
 severity: low
 origin: Story 5.24c's review (2026-10-01), Edge Case Hunter: `tools/probe/record-cards.py` resolves `OWNED_POSTS` and
   `OWNED_TAGS` by slug, reads them by `filter=id:[…]`, and asserts nothing about the rows' `name`, `published_at` or

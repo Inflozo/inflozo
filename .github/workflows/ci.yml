@@ -59,6 +59,11 @@ jobs:
       - run: pnpm keyboard
       - run: pnpm check
       - run: pnpm build
+      # DW-269 (Story 5.24d): every route that reads files off disk carries them in its trace — read off the build
+      # above, the list Vercel copies into each function. `outputFileTracingIncludes` never applied under Turbopack, so
+      # this is the proof; it runs here because `pnpm check` runs before any build, and `deploy`'s `vercel build`
+      # only ever adds files.
+      - run: node tools/check-traces.mjs
 
   # The database gate (AD-26). It keys on the exit code, not on the log: every assertion in
   # supabase/tests/rls.sql aborts the run when it fails, so a red job is a real RLS hole.

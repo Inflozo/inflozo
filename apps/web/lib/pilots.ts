@@ -12,14 +12,11 @@ import { assembleEntry, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { sampleRows, type DesignRows } from './canvas.ts'
-import { surfaceCss } from './style-guide.ts'
+import { PACKAGES, surfaceCss } from './style-guide.ts'
 
-/** Resolved from this module's own address, not the working directory, so the render matrix (Story 4.11) reads the
- *  same canvas document from the repo root that the app reads from `apps/web`. Never `new URL('…', import.meta.url)`:
- *  Turbopack reads that form as an asset import and fails the build (executed 2026-09-17). This form it computes at
- *  run time from the chunk's own location (`resolveFileUrl` in its node runtime), so a deployed function finds
- *  `packages/` beside `apps/` exactly as `process.cwd()` did. */
-const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
+/** `packages/` is found by `style-guide.ts`'s ONE finder (DW-269): the working directory first, the form Turbopack traces
+ *  into the deployed functions, and this module's address as the fallback, so the render matrix (Story 4.11) reads the
+ *  same canvas document from the repo root that the app reads from `apps/web`. */
 export const DESIGNS_DIR = () => join(PACKAGES(), 'library', 'designs')
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')

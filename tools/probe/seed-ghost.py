@@ -2,6 +2,7 @@
 """Seed a probe Ghost with the FR-H3 fixture shape.
 
     python3 tools/probe/seed-ghost.py 5        # or 6, or "5 6"
+    python3 tools/probe/seed-ghost.py --check  # read-only: every IMG address answers 200
 
 The dataset is not arbitrary — `sections-inventory.md` derives every number from
 what has to be renderable, and the probes are worthless without it:
@@ -73,7 +74,7 @@ TAGS = ['Craft', 'Systems', 'Field Notes', 'Interviews', 'Tooling', 'Archive']
 # Ghost's own CDN — real images, no upload step, stable URLs.
 IMG = ('https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
        'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
-       'https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png')  # ponytail: this one answers 404 since at least 2026-10-01 (MEASUREMENTS §59); swap it before the next re-seed
+       'https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png')  # v5.0.0's answers 404 (DW-298); `--check`
 
 TITLES = [
     'On typography and restraint', 'The cost of clever', 'A quiet week in the archive',
@@ -181,7 +182,30 @@ def report(g, label):
     print(f'   tags under the 3-post floor: {weak or "none"}')
 
 
+def check():
+    """DW-298: every IMG address answers 200, HEADed — a dead one would seed a broken picture. Read-only, no key.
+    Returns the exit code: 1 naming each address that did not answer 200."""
+    dead = []
+    for url in IMG:
+        # A User-Agent of our own: static.ghost.org answers 403 to Python-urllib's, on every address (2026-10-01)
+        req = urllib.request.Request(url, method='HEAD', headers={'User-Agent': 'inflozo-probe'})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as r:
+                status = r.status
+        except urllib.error.HTTPError as e:
+            status = e.code
+        except (urllib.error.URLError, TimeoutError, OSError) as e:
+            status = f'no answer ({e})'
+        print(f'   {status}  {url}')
+        if status != 200:
+            dead.append(url)
+    print(f'   {"FAIL — not 200: " + ", ".join(dead) if dead else "PASS — every IMG address answers 200"}')
+    return 1 if dead else 0
+
+
 if __name__ == '__main__':
+    if '--check' in sys.argv[1:]:   # before the loop below, which reads every argument as a major
+        sys.exit(check())
     env = load_env()
     for major in (sys.argv[1:] or ['5', '6']):
         g = Ghost(env[f'GHOST{major}_URL'], env[f'GHOST{major}_STAFF_ACCESS_TOKEN'], major)

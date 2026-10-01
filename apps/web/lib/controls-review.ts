@@ -7,18 +7,17 @@
 // the frame route can serve it whole.
 
 import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { join } from 'node:path'
 import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
 import { REFERENCE_TOKENS } from '@inflozo/section-runtime'
 import type { Mode } from '@inflozo/section-runtime'
+import { PACKAGES } from './style-guide.ts'
 
-/** Resolved from this module's own address, as `pilots.ts` does (Story 4.11's review), so the render matrix can import
- *  `imagePool()` from the repo root and the two readers of `packages/` cannot disagree. Never `new URL('…',
- *  import.meta.url)`: Turbopack fails the build on that form; this one it computes at run time (`pilots.ts`). */
-const PACKAGES = () => join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
+/** `packages/` is found by `style-guide.ts`'s ONE finder (DW-269), as `pilots.ts` finds it, so the readers cannot disagree
+ *  and this module is traced into its routes' functions the way the editor's are: until Story 5.24d `/controls` carried
+ *  no file of its own and worked only because Vercel bundled it into a shared function. */
 export const CONTROLS_DIR = () => join(PACKAGES(), 'library', 'fixtures', 'controls')
 const SAMPLE = () => join(CONTROLS_DIR(), '1')
 /** Story 5.11 (R-158) — THE ONLY RING IN THE REPOSITORY. `packages/library/designs/` holds exactly one design per

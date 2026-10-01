@@ -86,10 +86,12 @@ async function main() {
     const context = await browser.newContext({ viewport: { width: 1600, height: 1000 }, bypassCSP: true })
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
-    await page.goto(`${APP}/auth/confirm?token_hash=${link.body.hashed_token}&type=magiclink`, { waitUntil: 'networkidle' })
+    await page.goto(`${APP}/auth/confirm?token_hash=${link.body.hashed_token}&type=magiclink`, { waitUntil: 'load' })
     check('step 1 — sign in lands off the sign-in page', !page.url().includes('/sign-in'), page.url())
 
-    await page.goto(`${APP}/pilots`, { waitUntil: 'networkidle' })
+    // DW-287 (Story 5.24d): `load`, never `networkidle` — a live page does not promise a quiet network; the landmark below
+    // (the canvas drawn in the frame) is what this walk waits for
+    await page.goto(`${APP}/pilots`, { waitUntil: 'load' })
     const robots = await page.locator('meta[name="robots"]').getAttribute('content')
     check('the page is noindex', /noindex/.test(robots || ''), robots)
     const iframe = page.locator('iframe[data-pilot], iframe[src$="/canvas"]').first()

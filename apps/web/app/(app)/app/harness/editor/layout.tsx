@@ -4,15 +4,17 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 import { isPlaceable, orbitWeekly, type SectionRegistryEntry } from '@inflozo/library'
-import { defaultContent, parseDoc, SYNTHESIS_DEFAULTS, type ProjectDoc } from '@inflozo/section-runtime'
+import { defaultContent, parseDoc, type ProjectDoc } from '@inflozo/section-runtime'
 import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
-import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
+import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
+import { ShellUserContext } from '@/components/shell/shell'
 import { harnessCanvasSrc } from '@/lib/canvas'
 import { imagePool, linkResources, paywallSamples, referenceSwatches, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
-import { storedSurfaces } from '@/lib/probe-rule'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
+import { harnessReread } from './actions'
+import { HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
  *
@@ -65,7 +67,10 @@ import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
  * STORY 5.21 — A THIRD VALUE OF THE SITE HEADER (`x-inflozo-harness-site: surfaces`) picks a linked site whose snapshot
  * carries Ghost's two surfaces, so `pnpm keyboard` walks the strip and the button with no database and no Ghost: the
  * shims follow the CONNECTION, not the content pill, so a site that never answers still draws both while the canvas paints
- * the sample. The editor's re-read on open is refused here (no database), which leaves the stored snapshot drawn.
+ * the sample. The editor's re-read on open is refused here (no database), which leaves the stored snapshot drawn — except
+ * under a FOURTH value, `surfaces-later` (DW-279): the same site with an EMPTY stored snapshot, whose re-read the harness's
+ * own action (`actions.ts`, handed in as the editor's `reread`) answers with the full one, so a landed answer is seen to
+ * redraw both. The fixtures are `sites.ts`.
  *
  * STORY 5.23a — `x-inflozo-harness-home: <n>` builds Home as n sections CYCLING the designs Home is built from below (the
  * pilots that compile there and the fixture ring's first design), the main feed flagged on the first alone: the long
@@ -73,21 +78,20 @@ import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
  * node and to walk DW-215's Remix over several sections; `tools/perf/fps-trace.mjs` traces NFR-1 on it. Each names its
  * own n and where it comes from. Without the header the default fixture is untouched — every other stop counts on it,
  * which is DW-215's own reason for waiting.
+ *
+ * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
+ * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
+ * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
+ * (DW-285): the harness sits outside the shell, so it hands a fixture user through the shell's own provider, and the
+ * phone notice draws the avatar the deployed walk reads.
  */
 
 export const metadata: Metadata = { title: 'Editor harness — Inflozo', robots: { index: false, follow: false } }
 
-const HARNESS_PROJECT = { id: '00000000-0000-4000-8000-000000000009', name: 'Pilot sections' }
-
-/** STORY 5.16 — CI'S ONE MAIN FEED. Page 2 is offered only on a page whose main feed runs past one page (R-176), and
- *  nothing in this fixture carried `isMainFeed` — the real "Pilot sections" was seeded before the flag, so the owner's
- *  own Home has none until Story 5.19. The Home design the Synthesis Defaults designate as the feed (the post grid) is
- *  marked here, DERIVED from that table rather than named, so `pnpm keyboard` walks page 2 on every commit. */
-const MAIN_FEED = SYNTHESIS_DEFAULTS['home.hbs']?.find((row) => row.isMainFeed === true)?.designId
 /** the most sections `x-inflozo-harness-home` may ask for — a ceiling on a request, not a count anything is measured on */
 const LONG_HOME_MAX = 400
 
-const instanceOf = (entry: SectionRegistryEntry, mainFeed: boolean) => ({
+const instanceOf = (entry: SectionRegistryEntry) => ({
   instanceId: randomUUID(),
   layerName: `${entry.category.toUpperCase()} — ${entry.name}`,
   designId: entry.id,
@@ -95,50 +99,13 @@ const instanceOf = (entry: SectionRegistryEntry, mainFeed: boolean) => ({
   controls: {},
   data: {},
   darkOverrides: {},
-  isMainFeed: mainFeed,
 })
 
 /** Through AD-27's ONE schema, exactly as `read.ts` and the seed do — so every field a later story defaults is
- *  defaulted here too, and a fixture the real editor could not have stored throws at the harness rather than in the
- *  browser. The main feed is Home's FIRST instance of `MAIN_FEED` alone: a page holds one (Story 5.19's rule), and a
- *  cycled Home (Story 5.23a) holds that design many times. */
-const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc => {
-  const feed = key === templateKeyOf('home') ? entries.findIndex((entry) => entry.id === MAIN_FEED) : -1
-  return parseDoc({ schemaVersion: 1, instances: entries.map((entry, n) => instanceOf(entry, n === feed)) }, key)
-}
-
-/** Story 5.20 — the linked site the members-off walk previews: readable in shape, answering nothing (port 9 is
- *  `discard`, and the harness's CSP admits it nowhere), with a record whose Subscription access is Nobody */
-const MEMBERS_OFF_SITE: EditorData['site'] = {
-  title: 'Harness site',
-  origin: 'https://127.0.0.1:9',
-  key: 'harness',
-  members: { signup_access: 'none', paid_enabled: false },
-}
-
-/** Story 5.21 — the linked site whose snapshot carries Ghost's announcement bar and Portal's button (FR-H5): the recorded
- *  fixture's words plus a bold word and a link, on the sample's accent, to logged-out visitors and free members, and the button on
- *  in its default look. Through `storedSurfaces`, the one reader `read.ts` uses, so the harness can only hold a snapshot
- *  the product could have read. No members record, so the button is not checked against one. Its address answers
- *  nothing, as the members-off site's does. */
-const SURFACES_SITE: EditorData['site'] = {
-  title: 'Harness site',
-  origin: 'https://127.0.0.1:9',
-  key: 'harness',
-  surfaces: storedSurfaces({
-    announcement: {
-      content: '<p>Fixture announcement — <strong>seeded</strong> for <a href="https://ghost.org/">VERIFY 21</a>.</p>',
-      background: 'accent',
-      visibility: '["visitors","free_members"]',
-    },
-    portal_button: true,
-    portal_button_source: 'probe',
-    portal_button_style: 'icon-and-text',
-    portal_button_signup_text: 'Subscribe',
-    // the sample's own accent, so the harness names no colour of its own (`tokens.test.ts`)
-    brand: { accent: orbitWeekly.site().accent_color, nav: [] },
-  }),
-}
+ *  defaulted here too (`isMainFeed` among them: `designateAll` below is what flags the main feed), and a fixture the real
+ *  editor could not have stored throws at the harness rather than in the browser. */
+const docOf = (key: string, entries: SectionRegistryEntry[]): ProjectDoc =>
+  parseDoc({ schemaVersion: 1, instances: entries.map(instanceOf) }, key)
 
 /** Story 5.20 — another tab's lock, just beaten: the reader's side of B5a, for R-192's walk */
 const READER_LOCK: EditorData['lock'] = {
@@ -154,8 +121,7 @@ const READER_LOCK: EditorData['lock'] = {
 export default async function EditorHarness({ children }: { children: ReactNode }) {
   if (!HARNESS) notFound()
   const asked = await headers()
-  const membersOff = asked.get('x-inflozo-harness-site') === 'members-off'
-  const shims = asked.get('x-inflozo-harness-site') === 'surfaces'
+  const siteAsked = asked.get('x-inflozo-harness-site')
   const readingAlong = asked.get('x-inflozo-harness-lock') === 'reader'
 
   const ring = samples()
@@ -177,10 +143,13 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   if (Number.isFinite(cycled) && cycled > LONG_HOME_MAX) throw new Error(`x-inflozo-harness-home asks for ${cycled} sections; the harness builds at most ${LONG_HOME_MAX}`)
   const homeShown = Number.isInteger(cycled) && cycled > 0 && home.length > 0 ? Array.from({ length: cycled }, (_, n) => home[n % home.length]!) : home
 
-  const docs: Record<string, ProjectDoc> = {
-    [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
-    [templateKeyOf('home')]: docOf(templateKeyOf('home'), homeShown),
-  }
+  const docs = designateAll(
+    {
+      [SITE.key]: docOf(SITE.key, compiling(SITE.file)),
+      [templateKeyOf('home')]: docOf(templateKeyOf('home'), homeShown),
+    },
+    (id) => entries[id],
+  )
 
   const data: EditorData = {
     docs,
@@ -218,8 +187,9 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     lock: readingAlong ? READER_LOCK : null,
     // Story 5.18 — NO LINKED SITE, so the harness is the unlinked path — the story's control: the pill says "Sample
     // content" with no SOURCE group, and not one Content API request is made (`pnpm keyboard` walks exactly today's editor)
-    // Story 5.20 — unless the members-off walk asks for its site by header (above), or Story 5.21's the surfaces one
-    site: membersOff ? MEMBERS_OFF_SITE : shims ? SURFACES_SITE : null,
+    // Story 5.20 — unless the members-off walk asks for its site by header (above), or Story 5.21's the surfaces one, or
+    // DW-279's the surfaces-later one (`sites.ts`)
+    site: siteAsked === 'members-off' ? MEMBERS_OFF_SITE : siteAsked === 'surfaces' ? SURFACES_SITE : siteAsked === 'surfaces-later' ? SURFACES_LATER_SITE : null,
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -227,7 +197,9 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   // in the guard alone — `lib/canvas.ts` owns the token, and the route decides what may be kept.
   return (
     <>
-      <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} {...data} />
+      <ShellUserContext value={HARNESS_USER}>
+        <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} {...data} />
+      </ShellUserContext>
       {children}
     </>
   )
@@ -235,3 +207,6 @@ export default async function EditorHarness({ children }: { children: ReactNode 
 
 /** Story 5.20 — where the harness's canvases live: its own two pages, never the app's `/projects/<id>` */
 const HARNESS_BASE = '/app/harness/editor'
+
+/** DW-285 — the signed-in user the shell would hand down, with no display name, as a fresh account has none */
+const HARNESS_USER = { email: 'harness@example.com', displayName: null }

@@ -143,6 +143,23 @@ export function sitePage(
  *  stylesheet is picked up at once and a stale one can never be served. `next.config.ts` inlines it. */
 const V = process.env.INFLOZO_CANVAS_V || 'dev'
 
+/** THE BROWSER MAY KEEP THE CANVAS DOCUMENT (the owner's ruling of 2026-09-20, Question 5) — ONE rule, which `/canvas`
+ *  and the keyboard harness's copy both call (DW-208: it had been written into each route). The document carries no
+ *  script, no nonce and no user content — the reference tokens, the stylesheets and an empty mount, identical for every
+ *  user until the next publish — so `private` keeps it out of shared caches. It is served `immutable` ONLY when the
+ *  address carries a build (`v`, from `V` above): an empty one or the local fallback `dev` is never kept for a year
+ *  (review, 2026-09-20), and a bare address is never cached, so a stale document cannot reach anything that asks without a
+ *  version. Outside production nothing is cached at all: an edited stylesheet must never be held. The pictures cannot
+ *  carry the build — a relative `canvas?image=x` drops the document's query when it resolves — so they take a short life
+ *  instead, which is all a picker session needs. */
+export function canvasCaching(v: string | null, live = process.env.NODE_ENV === 'production') {
+  const keep = (rule: string) => (live ? rule : 'no-store')
+  return {
+    document: v && v !== 'dev' ? keep('private, max-age=31536000, immutable') : 'no-store',
+    image: keep('private, max-age=600'),
+  }
+}
+
 /** The canvas document's own address, beside the page: `/canvas` on the app host, `/app/canvas` on localhost. */
 export const canvasSrc = (appPrefixed: boolean) => `${appPrefixed ? '/app' : ''}/canvas?v=${V}`
 

@@ -2,27 +2,13 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
+import { canvasCaching, canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
 import { carriesMemberVisibility, DESIGNS_DIR, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
 import { samples } from './lib/controls-review.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
 // for the pilots review. Rendering needs a DOM, which apps/web does not carry; `tools/check-snapshots.mjs` renders
 // every pilot on both emitters at every target, and the deployed harness draws this page.
-
-const ROUTE = join('app', '(app)', 'app', '(authed)', 'canvas', 'route.ts')
-
-// The frame is a ROUTE HANDLER: `app-routes.test.ts`'s walk of page.tsx files never sees it and the `(authed)` layout
-// never wraps it, so this line is its only guard, read back as text.
-test('the canvas route guards itself with currentUser before it builds any body', () => {
-  const src = readFileSync(ROUTE, 'utf8')
-  const guard = src.indexOf('await currentUser()')
-  assert.ok(guard > 0, 'the canvas route does not call currentUser()')
-  for (const body of ['pilotsCanvasDocument(', 'pilotImage(']) {
-    assert.ok(src.indexOf(body) > guard, `${body} runs before the guard — a stranger would get the body`)
-  }
-  assert.match(src, /303/, 'a signed-out request is sent to /sign-in with a 303, as controls/frame does')
-})
 
 test('the pilots canvas document carries no script, every pilot stylesheet and the tokens', () => {
   const doc = pilotsCanvasDocument()
@@ -87,8 +73,6 @@ test('a query the design fixes is handed its fixed rows, newest first', () => {
   }
 })
 
-// Vercel ships a function with only the files the build traced; a path joined at runtime (from the module's own
-// address, since Story 4.11) is invisible to it, so `next.config.ts` names them by hand and this holds the two lists together.
 test('the canvas document NARROWS to one design when asked, and to the library when not (the owner\'s ruling of 2026-09-20)', () => {
   const whole = pilotsCanvasDocument()
   const ids = pilotIds()
@@ -126,26 +110,15 @@ test("every canvas address carries the build, and a preview keeps it (the owner'
   const preview = previewSrc(canvasSrc(true), 'a4/13')
   assert.match(preview, /[?&]v=[^&]+/, 'a preview address dropped the build')
   assert.match(preview, /[?&]design=a4%2F13/, 'a preview address must still name its design')
-  // and the route's own guard: no version, no caching, and nothing cached outside production
-  const route = readFileSync(ROUTE, 'utf8')
-  assert.match(route, /versioned \? keep\('private, max-age=\d+, immutable'\) : 'no-store'/)
-  assert.match(route, /const live = process\.env\.NODE_ENV === 'production'/)
 })
 
-test('every file the canvas document and the pilots review read is traced for every route that reads them', () => {
-  const config = readFileSync('next.config.ts', 'utf8')
-  // the PILOTS_FILES list itself: a glob in another route's list traces nothing for these two
-  const list = /const PILOTS_FILES = \[([^\]]*)\]/.exec(config)?.[1] ?? ''
-  const globs = [...list.matchAll(/'((?:\.\.\/\.\.\/packages|\.\/lib)\/[^']+)'/g)].map((m) => m[1] as string)
-  const covers = (rel: string) => globs.some((g) => (g.endsWith('/**') ? rel.startsWith(g.slice(0, -3)) : g === rel))
-  for (const id of pilotIds()) {
-    for (const f of ['design.json', 'index.html', 'style.css']) assert.ok(covers(`../../packages/library/designs/${id}/${f}`), `${id}/${f} is not traced`)
-  }
-  for (const rel of ['../../packages/library/orbit-weekly/images/feature-01.svg', '../../packages/section-runtime/reference-tokens.css']) {
-    assert.ok(covers(rel), `${rel} is read by lib/pilots.ts and not traced — the deployed function would throw ENOENT`)
-  }
-  assert.ok(covers('./lib/canvas-chrome.css'), 'the chrome stylesheet the canvas document reads is not traced')
-  for (const route of ['/app/pilots', '/app/canvas', '/app/projects/**']) assert.ok(config.includes(`'${route}': PILOTS_FILES`), `${route} is not traced`)
+// DW-208 — the rule both canvas routes call, held as a unit; `frame-guard.test.ts` asks the route itself, because a unit
+// handed `live` explicitly cannot see the default the routes rely on
+test('canvasCaching: immutable only for a build in production, never for no build, an empty one or dev, and nothing outside production', () => {
+  const YEAR = 'private, max-age=31536000, immutable'
+  assert.deepEqual(canvasCaching('abc', true), { document: YEAR, image: 'private, max-age=600' })
+  for (const v of [null, '', 'dev']) assert.equal(canvasCaching(v, true).document, 'no-store', JSON.stringify(v))
+  for (const v of ['abc', null, '', 'dev']) assert.deepEqual(canvasCaching(v, false), { document: 'no-store', image: 'no-store' }, JSON.stringify(v))
 })
 
 // Story 5.4 — R-124's row is drawn for the categories R-113's register files it under, and for nothing else

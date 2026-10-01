@@ -13,7 +13,9 @@
  * the site's own post; the Post canvas's SUBJECT rows led by the style-guide entry, and a chosen post rendering with
  * its own address (DW-230); the Page canvas's own pages; R-193's starting tag and writer; the panel's shortfall note
  * and R-194's **Preview with sample content**, which lands focus on the pill; Home's page 2; and the network cut with
- * `page.route` — THE ONE SIMULATED CONDITION, named as such. Then, on T3's origin: a real 401 from a site row with a
+ * `page.route` — a SIMULATED CONDITION, named as such wherever one is used (each check says "simulated: page.route"),
+ * as are three failed reads in a row and, since Story 5.24d (DW-251), a site holding more posts than the list's limit,
+ * whose capped lines no test site can show. Then, on T3's origin: a real 401 from a site row with a
  * wrong key, which must cost exactly ONE request; the three unreadable rows (disconnected, no key, plain http), greyed
  * with their reasons and reading nothing; and an unlinked project, today's editor exactly, reading nothing. LAST, on T1:
  * a real 429, earned the way `record-content-api.py` earns it — 100 reads with a key Ghost never issued, from this
@@ -638,18 +640,28 @@ async function main() {
           const bHead = B.locator('#editor-controls button[aria-expanded]').filter({ hasText: /^Data$/ })
           if ((await bHead.count()) === 1 && (await bHead.getAttribute('aria-expanded')) !== 'true') await bHead.click()
           await B.waitForTimeout(300)
+          // Story 5.24d: A GHOST SURFACE'S ROW IS NOT A SECTION'S. Story 5.21's Review gave Ghost's strip and button rows
+          // (`ghost:…`) a ⋯ holding only Hide / Show — a look this browser keeps, never the doc — so a reader's stays LIVE,
+          // as R-192 keeps every view control; this check, written at 5.19 before those rows, read them as section rows
+          // and failed on both majors. A section row's ⋯ edits the doc and must be disabled; a surface's must not be.
           const bRead = await B.evaluate(() => {
             const controls = [...document.querySelectorAll('#editor-controls [data-data-group] button, #editor-controls [data-data-group] input')]
+            const mores = [...document.querySelectorAll('#editor-layers [data-layer-row] button[aria-label^="More for "]')].map((b) => ({
+              row: b.closest('[data-layer-row]').getAttribute('data-layer-row'), disabled: b.matches(':disabled'),
+            }))
+            const sections = mores.filter((m) => !m.row.startsWith('ghost:'))
             return {
               chip: document.querySelector('#editor-layers [data-main-feed-chip]') !== null,
               panelChip: document.getElementById('editor-panel-main-feed')?.textContent ?? null,
-              more: [...document.querySelectorAll('#editor-layers button[aria-label^="More for "]')].every((b) => b.matches(':disabled')),
+              more: sections.length > 0 && sections.every((m) => m.disabled),
+              surfacesLive: mores.filter((m) => m.row.startsWith('ghost:')).every((m) => !m.disabled),
+              mores,
               data: controls.length > 0 && controls.every((c) => c.matches(':disabled')),
               controls: controls.length,
             }
           })
-          check(`${tag} — R-192: reading along, the main feed's chip still shows in Layers and at the panel head, while every ⋯ and every Data control is disabled`,
-            bRead.chip && bRead.panelChip === DG.MAIN_FEED && bRead.more && bRead.data, JSON.stringify(bRead))
+          check(`${tag} — R-192: reading along, the main feed's chip still shows in Layers and at the panel head, while every section's ⋯ and every Data control is disabled — and a Ghost surface's ⋯ (Hide / Show, a look) stays live`,
+            bRead.chip && bRead.panelChip === DG.MAIN_FEED && bRead.more && bRead.surfacesLive && bRead.data, JSON.stringify(bRead))
           if (bNote !== null) await B.locator('[data-shortfall-sample]').click()
           const bSample = await B.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.source === 'sample', null, { timeout: 10000 }).then(() => true, () => false)
           const bFocus = await B.evaluate(() => document.activeElement?.id ?? null)
@@ -672,7 +684,7 @@ async function main() {
       await switchTo('author')
       check(`${tag} — R-193: untouched, the Author canvas starts on the site's fullest writer, "${startAuthor?.name}"`, (await pill()).subject === startAuthor?.name, JSON.stringify(await pill()))
 
-      // ── THE ONE SIMULATED CONDITION: the network cut with page.route, on a writer not yet read ──
+      // ── (simulated: page.route) the network cut, on a writer not yet read ──
       const other = authorsList.find((a) => a.slug !== startAuthor?.slug)
       if (other) {
         await page.route(`${g.origin}/**`, (r) => r.abort('internetdisconnected'))
@@ -1294,6 +1306,49 @@ async function main() {
 
     const violations = await page.evaluate(() => window.__violations ?? null)
     check('the page\'s own policy refused nothing across the walk — `connect-src \'self\' https:` admits every Ghost', Array.isArray(violations) && violations.length === 0, JSON.stringify(violations))
+
+    // ── (simulated: page.route) A SITE WITH MORE POSTS THAN THE LIST HOLDS (DW-251, Story 5.24d) ──
+    // Neither test site holds more posts than `LIST_LIMIT` (§51), so the capped check above reduces to "absent" on both.
+    // Here the list's own answer — every row Ghost's — has ONE number raised past the limit, `meta.pagination.total`, and the
+    // two places that say so are read for the words `lib/live-content.ts` owns: D5e's line under the Post canvas's subjects,
+    // and the Link Picker's. The control is the same session with nothing routed: both lines absent. Each is a fresh
+    // document, because a read stays fresh in the editor's own store for a minute.
+    {
+      const m = MAJORS[0]
+      const g = GHOST[m]
+      const tag = `${g.name} (${m}.x)`
+      const isList = (url) => url.href.startsWith(`${g.origin}/ghost/api/content/posts/`) && url.searchParams.get('limit') === String(LIVE.LIST_LIMIT) && !url.searchParams.has('filter')
+      const raised = async (route) => {
+        const response = await route.fetch()
+        const json = await response.json()
+        json.meta.pagination.total = LIVE.LIST_LIMIT + 1
+        return route.fulfill({ response, json })
+      }
+      const cappedLines = async () => {
+        await open(editor(P[m], 'post'))
+        await paintedFrom('post', 'site', 30000)
+        await page.waitForTimeout(500)
+        await openPill()
+        const pillLine = (await menu())?.capped ?? null
+        await closeMenus()
+        await switchTo('home')
+        await pickLayer('Three Up')
+        await openGroup('Content')
+        await page.locator('#editor-controls button[popovertarget$="-link"]').first().click()
+        await page.waitForTimeout(400)
+        const linkLine = await page.evaluate(() => document.querySelector('[popover]:popover-open [data-link-capped]')?.textContent ?? null)
+        await closeMenus()
+        return { pillLine, linkLine }
+      }
+      await page.route(isList, raised)
+      const capped = await cappedLines()
+      await page.unroute(isList, raised)
+      check(`${tag} — (simulated: page.route) a site holding more posts than the list's ${LIVE.LIST_LIMIT}: D5e says "${W.capped}" under the Post canvas's subjects, and the Link Picker says "${W.capped} ${W.pasteOlder}"`,
+        capped.pillLine === W.capped && capped.linkLine === `${W.capped} ${W.pasteOlder}`, JSON.stringify(capped))
+      const control = await cappedLines()
+      check(`${tag} — the control: the same session with the site's own total — no capped line in either place`,
+        control.pillLine === null && control.linkLine === null, JSON.stringify(control))
+    }
 
     // ── LAST, T1 only: a real 429, earned the way the recorder earns it ──
     if (MAJORS.includes('6') && !NO_429) {

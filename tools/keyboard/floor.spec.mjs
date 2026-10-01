@@ -1,8 +1,10 @@
 // Story 5.22 — THE EDITOR'S FLOOR, BY TOUCH AND BY WIDTH (R-201, R-202, D4f, D8a, D8b), over the same harness mount the
 // keyboard journey drives, and in the same gate (`bash tools/keyboard/run-keyboard-gate.sh`, `pnpm keyboard`).
 //
-// TAPS ARE ALLOWED HERE AND NOWHERE IN `journey.spec.mjs`, whose first test refuses a pointer. A touch screen is the
-// subject: which device gets the editor at all, and whether every target it gets is a finger's. The devices are
+// A POINTER IS ALLOWED HERE AND NOWHERE IN `journey.spec.mjs`, whose first test refuses one: taps, because a touch screen
+// is the subject — which device gets the editor at all, and whether every target it gets is a finger's — and, since
+// DW-211 (Story 5.24d), a mouse, because the section pill's ◀ ▶ and Shuffle are drawn only on a section the pointer is
+// over, so no key can reach them and no gate had ever pressed them in the real editor. The devices are
 // Playwright's own descriptors — the planning's evidence was their list — with `defaultBrowserType` dropped, because the
 // iPhone and iPad ones default to WebKit and this gate drives the Chromium the repository installs.
 //
@@ -77,7 +79,12 @@ test.describe('R-201 · a phone gets D4f, never the editor', () => {
     expect((await rows.first().boundingBox()).height, 'the row is 56px').toBe(56)
     await expect(page.locator('[data-small-screen] a[aria-label="Back to dashboard"]')).toHaveAttribute('href', '/')
     await expect(page.locator('[data-small-screen]')).not.toContainText(/deploy history|billing/i)
-    // the harness has no shell, so the decorative avatar is absent here (the app's shell hands the user down)
+    // DW-285: the decorative avatar, the user's own initial at D4f's 32px — the harness hands its fixture user through the
+    // shell's own provider, as the app's shell does, so the gate reads what only the deployed walk read before
+    const avatar = page.locator('[data-small-screen] span.rounded-full[aria-hidden]')
+    await expect(avatar).toHaveText('H')
+    const disc = await avatar.boundingBox()
+    expect([disc.width, disc.height], 'the avatar is D4f\'s 32 × 32').toEqual([32, 32])
     // NOTHING OF THE EDITOR MOUNTED: no editor root, no canvas, and no lock or sync request in the seconds after
     await expect(page.locator('[data-editor]')).toHaveCount(0)
     await expect(page.locator('iframe[title$="canvas"]')).toHaveCount(0)
@@ -263,6 +270,38 @@ for (const name of ['iPad Mini', 'iPad Pro 11']) {
     })
   })
 }
+
+test.describe('DW-211 · the section pill\'s ◀ ▶ and Shuffle in the real editor, pressed with a mouse (1280 × 720)', () => {
+  test.use({ viewport: { width: 1280, height: 720 }, hasTouch: false })
+
+  test('Next and Previous step the ring and say so, Shuffle lands on another design, and one ⌘Z takes it back', async ({ page }) => {
+    await page.goto(HARNESS)
+    await painted(page)
+    // the ringed section: the harness's last page section, whose category is the fixture ring (R-158)
+    const own = await page.locator('[data-layer-row]').evaluateAll((els) => els.map((e) => e.dataset.layerRow).filter((k) => !k.startsWith('site:')))
+    await page.locator(`[data-layer-row="${own.at(-1)}"] button`).first().click()
+    const count = page.locator('#editor-design-count')
+    await expect(count, 'the control: the ringed section is chosen, at its first design').toHaveText(/^1 of 3$/)
+    const root = page.frameLocator('iframe[title$="canvas"]').locator('#canvas > [data-inflozo-selected]')
+    /** the pointer over the section's root brings its pill; then the pill's own button, by its words */
+    const press = async (control) => {
+      await root.hover()
+      const pill = page.locator('[data-section-pill]')
+      await expect(pill, 'the pill is drawn on the pointed section').toHaveCount(1)
+      await pill.locator(control).click()
+    }
+    await press('[aria-label^="Next design"]')
+    await expect(count).toHaveText('2 of 3')
+    await expect(page.locator('#editor-said')).toHaveText(/^Design 2 of 3 — .+/)
+    await press('[aria-label^="Previous design"]')
+    await expect(count).toHaveText('1 of 3')
+    await press('[data-pill-shuffle]')
+    await expect(count, 'Shuffle lands on another design of the ring').not.toHaveText(/^1 of/)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+z')
+    await expect(count, 'one ⌘Z takes the Shuffle back').toHaveText('1 of 3')
+  })
+})
 
 test.describe('R-202 · the line is 1280, on a fine pointer', () => {
   test.use({ viewport: { width: 1279, height: 800 }, hasTouch: false })

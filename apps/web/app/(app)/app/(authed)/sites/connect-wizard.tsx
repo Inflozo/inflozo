@@ -130,9 +130,14 @@ export function ConnectWizard({
   const [checking, setChecking] = useState(false)
   // The browser check can take up to ten seconds, and Escape can close the sheet — unmounting this
   // wizard — while it is still awaited. A connect must not be dispatched from a wizard the customer
-  // has already cancelled (review 2, 2026-09-08).
+  // has already cancelled (review 2, 2026-09-08). SET IN THE EFFECT'S BODY TOO, as the editor's own `gone` is (DW-295):
+  // React 19's StrictMode runs every effect mount → unmount → mount in development, so a ref only the cleanup wrote stayed
+  // false for good and `next dev` never left "Connecting…".
   const alive = useRef(true)
-  useEffect(() => () => { alive.current = false }, [])
+  useEffect(() => {
+    alive.current = true
+    return () => { alive.current = false }
+  }, [])
 
   const error = state && 'error' in state ? state.error : null
   const fieldError = (field: ConnectField) =>

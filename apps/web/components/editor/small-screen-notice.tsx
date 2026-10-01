@@ -18,9 +18,10 @@ import { useShellUser } from '@/components/shell/shell'
    Story 12.5, whose criteria name this notice; until then they are ABSENT, never greyed.
 
    THE AVATAR IS DECORATIVE, as D4f draws it (a circle with no role), and it is the user's own initial — the Kit's
-   `Avatar`, which is already `aria-hidden`. It is absent where there is no shell to hand the user down (the keyboard
-   harness). The owner's ruling of 2026-09-05 moved the DASHBOARD's phone avatar into ☰ because it duplicated the drawer's
-   row; this surface has no drawer, so there is nothing for it to duplicate.
+   `Avatar`, which is already `aria-hidden`. It is absent where nothing hands a user down; the keyboard harness hands its
+   fixture user through the shell's own provider (DW-285), so the floor's phone stop reads it. The owner's ruling of
+   2026-09-05 moved the DASHBOARD's phone avatar into ☰ because it duplicated the drawer's row; this surface has no
+   drawer, so there is nothing for it to duplicate.
 
    THE LAPTOP IS D4f's DRAWING, in token colours (`tokens.test.ts` forbids a colour literal in a `.tsx`): its ink, coral
    and hairline are `ink`, `coral` and `line-strong` exactly, and its two grey bars — a warm grey no token carries, and

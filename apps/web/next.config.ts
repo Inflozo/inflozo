@@ -1,44 +1,10 @@
 import type { NextConfig } from 'next'
 
-/** Story 4.4: the style-guide surface reads `packages/library/orbit-weekly/` (imagery and Ghost's vendored
- *  card chunks) and the runtime's reference token stylesheet off disk, two directories above the app.
- *  A path built from `process.cwd()` at runtime is not something the build can follow on its own, so
- *  the files are named for the two routes that read them — without this the deployed function carries
- *  none of them and the page throws ENOENT. */
-/* STORY 5.20's DEV (2026-09-26) — THESE LISTS DO NOT SHIP ANYTHING UNDER TURBOPACK. Next 16.3.1 applies
-   `outputFileTracingIncludes` only to a webpack build's trace map (`collect-build-traces.js`, `entryNameFilesMap`), so
-   the files reach the deployed functions through Turbopack's own trace of `lib/style-guide.ts`'s `process.cwd()` path
-   — the form `style-guide.test.ts` now holds — and Vercel's shared functions. Kept because a webpack build would read
-   them; DW-269 is the real cure. */
-const STYLE_GUIDE_FILES = [
-  '../../packages/library/orbit-weekly/images/**',
-  '../../packages/library/orbit-weekly/vendor/**',
-  '../../packages/section-runtime/reference-tokens.css',
-]
-
-/** Story 4.5: the controls review reads its sample (`packages/library/fixtures/controls/`), the Orbit Weekly
- *  picture pool and the reference token stylesheet off disk — the same reason, for its two routes. */
-const CONTROLS_FILES = [
-  '../../packages/library/fixtures/controls/**',
-  '../../packages/library/orbit-weekly/images/**',
-  '../../packages/section-runtime/reference-tokens.css',
-]
-
-/** Story 4.10: the pilots review reads the design library itself (`packages/library/designs/`, the directory that
- *  IS the design list), the Orbit Weekly pictures and the reference token stylesheet off disk — the same reason.
- *  Story 5.1: the canvas document gained the editor's chrome stylesheet, and the editor reads the designs too, so
- *  the one canvas route and both editor routes take this list. `/app/projects/**`, not `[id]`: the keys are picomatch
- *  globs (`collect-build-traces.js`), where `[id]` is a character class and would match no route. */
-const PILOTS_FILES = [
-  '../../packages/library/designs/**',
-  '../../packages/library/orbit-weekly/images/**',
-  // Story 5.20: the canvas document carries the Paywall canvas's post body — Ghost's vendored card chunks among it
-  '../../packages/library/orbit-weekly/vendor/**',
-  '../../packages/section-runtime/reference-tokens.css',
-  // Story 5.4: R-113's control register, one row of which decides whether a section carries Member visibility
-  '../../packages/library/control-groups.json',
-  './lib/canvas-chrome.css',
-]
+/* THE FILES THE APP READS OFF DISK — designs, pictures, stylesheets — reach the deployed functions through Turbopack's
+   trace of `lib/style-guide.ts`'s `PACKAGES`, the one finder every reader imports, and `tools/check-traces.mjs` reads each
+   route's trace after CI's build and fails the push that loses one (DW-269, Story 5.24d). There are no
+   `outputFileTracingIncludes` lists here: Next 16.3.1 applies them only to a webpack build's trace map, which a Turbopack
+   build does not make, so the lists Stories 4.4 to 5.20 kept shipped nothing, and their text tests proved nothing. */
 
 const config: NextConfig = {
   // `next dev` otherwise writes AGENTS.md and CLAUDE.md into this folder on every start.
@@ -68,15 +34,6 @@ const config: NextConfig = {
     '@inflozo/ghost-shim',
     '@inflozo/theme-compiler',
   ],
-  outputFileTracingIncludes: {
-    '/app/style-guide': STYLE_GUIDE_FILES,
-    '/app/style-guide/frame': STYLE_GUIDE_FILES,
-    '/app/controls': CONTROLS_FILES,
-    '/app/controls/frame': CONTROLS_FILES,
-    '/app/pilots': PILOTS_FILES,
-    '/app/canvas': PILOTS_FILES,
-    '/app/projects/**': PILOTS_FILES,
-  },
 }
 
 export default config

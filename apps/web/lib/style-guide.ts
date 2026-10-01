@@ -30,12 +30,16 @@ import { CTA_STYLES } from '@inflozo/section-runtime'
  *  switching this line to `import.meta.url` shipped `app.func` and `canvas.func` with no `packages/` file at all (638
  *  files down to 266) and every editor on app.inflozo.com threw `"a4/13" is not a design`. A local build shows it:
  *  `.next/server/app/(app)/app/(authed)/style-guide/page.js.nft.json` carries `packages/**` only in this form.
- *  `next.config.ts`'s `outputFileTracingIncludes` does not stand in for it — Next 16.3.1 applies those only to a
- *  webpack build's trace map, which a Turbopack build does not make (DW-269).
+ *  `outputFileTracingIncludes` never stood in for it — Next 16.3.1 applies it only to a webpack build's trace map, which a
+ *  Turbopack build does not make — so Story 5.24d deleted those lists (DW-269).
+ *
+ *  THE ONE FINDER: `pilots.ts` and `controls-review.ts` import it, so every reader of `packages/` is traced the same way
+ *  and `/controls` carries its own files at last, and `tools/check-traces.mjs` (CI, after `pnpm build`) reads each route's
+ *  trace and fails the push that loses them — the proof this comment used to be the only form of.
  *
  *  The module's own address is the FALLBACK, for a reader whose working directory is not `apps/web`: the render matrix
  *  builds the canvas document (which carries this module's stylesheets since Story 5.20) from the repo root. */
-const PACKAGES = () => {
+export const PACKAGES = () => {
   const fromCwd = join(process.cwd(), '..', '..', 'packages')
   return existsSync(fromCwd) ? fromCwd : join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', 'packages')
 }

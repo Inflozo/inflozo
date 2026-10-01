@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { z } from 'zod'
+import { z } from '@/lib/zod'
 import type { ServerCredentialCreationOptions, ServerCredentialResponse } from '../../sign-in/webauthn.ts'
 import { deletionEmail, type Snapshot } from '@/lib/deletion-email'
 import { sendEmail } from '@/lib/email'

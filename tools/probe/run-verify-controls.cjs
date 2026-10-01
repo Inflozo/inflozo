@@ -25,8 +25,11 @@
 // grey list went, and a **Source** row heads the group — read here against the vocabulary's one list of its words.
 // Story 5.23 (R-205) — every design remembers itself — adds Image position to the ring walk's long way round: a setting
 // design 2 SHARES and design 3 lacks, which the rule as built at 5.11 brought back on its default.
-const { chromium } = require('/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
-const AXE = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@4.12.1/node_modules/axe-core/axe.min.js'
+// the repository's own Playwright and axe, as every other walk takes them (DW-216: this walk reached into a checkout
+// outside the repository, so it ran another copy's browser and broke the day that copy moved)
+const { chromium } = require('@playwright/test')
+const AXE = require.resolve('axe-core/axe.min.js')
+const diePips = require('./die-pips.cjs')
 const APP = 'https://app.inflozo.com'
 const SB = process.env.SUPABASE_URL.replace(/\/$/, '')
 const SECRET = process.env.SUPABASE_SECRET_KEY
@@ -76,10 +79,12 @@ async function main() {
     const context = await browser.newContext({ viewport: { width: 1440, height: 900 } })
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
-    await page.goto(`${APP}/auth/confirm?token_hash=${link.body.hashed_token}&type=magiclink`, { waitUntil: 'networkidle' })
+    await page.goto(`${APP}/auth/confirm?token_hash=${link.body.hashed_token}&type=magiclink`, { waitUntil: 'load' })
     check('step 1 — sign in lands on the dashboard', /app\.inflozo\.com\/(dashboard)?$/.test(page.url()) || !page.url().includes('/sign-in'), page.url())
 
-    await page.goto(`${APP}/controls`, { waitUntil: 'networkidle' })
+    // DW-287 (Story 5.24d): `load`, never `networkidle` — a live page does not promise 500 ms with no request in flight, and
+    // the reload at step 18 once waited 30 s for it with nothing wrong; every load here is followed by its own landmark
+    await page.goto(`${APP}/controls`, { waitUntil: 'load' })
     const iframe = page.locator('iframe[title="The controls sample section"]')
     const frame = () => page.frames().find((f) => f.url().includes('/controls/frame')) || null
     await page.waitForFunction(() => {
@@ -469,7 +474,7 @@ async function main() {
     await page.setViewportSize({ width: 1440, height: 900 })
 
     // ── step 18
-    await page.reload({ waitUntil: 'networkidle' })
+    await page.reload({ waitUntil: 'load' })
     await page.waitForFunction(() => !!document.querySelector('iframe[title="The controls sample section"]')?.contentDocument?.querySelector('.cx__feature .cx__icon svg'), null, { timeout: 30000 })
     c = await canvas()
     check('step 18 — reload brings everything back to the sample', c.attrs['data-columns'] === '3' && c.features.length === 3 && c.date === '2026-10-01' && c.posts.length === 3 && c.features[0].title === 'Seven links', JSON.stringify({ columns: c.attrs['data-columns'], features: c.features.map((f) => f.title), date: c.date, posts: c.posts.length }))
@@ -510,7 +515,7 @@ async function main() {
        every assertion about what happens BETWEEN two designs would be vacuous there. This page carries the three
        fixture designs of `packages/library/fixtures/controls/`, which is the only ring in the repository — so
        this is where carry / park / default is proved on production, and the owner's own steps 6–12 are these. */
-    await page.reload({ waitUntil: 'networkidle' })
+    await page.reload({ waitUntil: 'load' })
     await page.waitForFunction(() => !!document.querySelector('iframe[title="The controls sample section"]')?.contentDocument?.querySelector('.cx__feature .cx__icon svg'), null, { timeout: 30000 })
     const rootClass = () => page.evaluate(() => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelector('#canvas > section')?.className ?? null)
     /** The heading, WHICHEVER design is drawing it: `canvas()` reads `.cx__title`, which is design 1's own class,
@@ -694,25 +699,11 @@ async function main() {
         words: (b.textContent ?? '').trim(),
         faces: b.querySelectorAll('.remix-dice__face').length,
         pip: getComputedStyle(b.querySelector('.remix-dice__face--1')).backgroundImage,
-        // R-164: WHERE THE PIPS ACTUALLY LAND, never the rule that placed them. Each pip is a gradient layer, and
-        // a layer at `background-size: auto` fills the whole face — at which size a percentage position resolves
-        // to `(box - layer) x pct` = 0 and all six faces draw ONE centred dot, which is what the owner saw.
-        pips: [...b.querySelectorAll('.remix-dice__face')].map((f) => {
-          const cs = getComputedStyle(f)
-          const sizes = cs.backgroundSize.split(',').map((v) => v.trim())
-          const at = (v, span, layer) =>
-            v.endsWith('%') ? ((span - layer) * parseFloat(v)) / 100 + layer / 2 : parseFloat(v) + layer / 2
-          const centres = cs.backgroundPosition.split(',').map((pair, n) => {
-            const [x, y] = pair.trim().split(/\s+/)
-            const [sw, sh] = (sizes[n] ?? sizes[0]).split(/\s+/)
-            const lw = sw === 'auto' ? f.offsetWidth : parseFloat(sw)
-            const lh = (sh ?? sw) === 'auto' ? f.offsetHeight : parseFloat(sh ?? sw)
-            return `${at(x, f.offsetWidth, lw).toFixed(2)},${at(y, f.offsetHeight, lh).toFixed(2)}`
-          })
-          return new Set(centres).size
-        }),
       }
     })
+    // R-164: WHERE THE PIPS LAND, not the rule that placed them — `die-pips.cjs`, the ONE measurement the keyboard journey
+    // runs too (DW-216): with a layer the size of the face, every centre is the same centre and each count collapses to 1
+    if (dice512) dice512.pips = (await page.locator('#editor-remix .remix-dice__face').evaluateAll(diePips)).map((f) => f.distinct)
     check('remix — R-162 / R-163: the dice is beside this page\'s heading, icon-only with its words as its accessible name and its hover title, and it is a real six-faced cube with coral pips',
       dice512 !== null && dice512.label === 'Site Remix — ⇧R' && dice512.title === dice512.label && dice512.words === '' &&
       dice512.faces === 6 && /rgb\(255, 89, 65\)/.test(dice512.pip ?? ''), JSON.stringify(dice512 && { ...dice512, pip: undefined }))

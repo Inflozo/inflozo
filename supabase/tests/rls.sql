@@ -816,10 +816,14 @@ reset role;
 -- advance lock_generation, because that number is how the displaced device learns it was displaced
 -- and how much unsynced work it lost. Asserted against the OWNER, since AD-31 requires these to
 -- hold against the service role too.
+-- BOTH HALVES ARE SEEDED RELATIVE (DW-245, Story 5.24d): `g` is one past whatever generation an earlier block left,
+-- so a block that pushes the row past a literal fails on what it tests, never on the monotonic guard.
 do $$
-declare gen bigint;
+declare gen bigint; g bigint;
 begin
-  update public.edit_locks set holder_session_id='s1', lock_generation=5
+  select lock_generation + 1 into strict g from public.edit_locks
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001';
+  update public.edit_locks set holder_session_id='s1', lock_generation=g
     where project_id='aaaaaaaa-1111-0000-0000-000000000001';
   begin
     update public.edit_locks set holder_session_id='s2-seized'
@@ -828,11 +832,11 @@ begin
   exception when insufficient_privilege then
     raise notice 'PASS (F4): a holder change must advance lock_generation (42501)'; end;
   -- the takeover the owner asked for must still WORK when it advances the generation.
-  update public.edit_locks set holder_session_id='s2', lock_generation=6
+  update public.edit_locks set holder_session_id='s2', lock_generation=g + 1
     where project_id='aaaaaaaa-1111-0000-0000-000000000001';
   select lock_generation into gen from public.edit_locks
     where project_id='aaaaaaaa-1111-0000-0000-000000000001';
-  if gen <> 6 then raise exception 'FAIL (F4): a legitimate takeover was blocked'; end if;
+  if gen <> g + 1 then raise exception 'FAIL (F4): a legitimate takeover was blocked'; end if;
   raise notice 'PASS (F4): a takeover that advances the generation succeeds (gen now %)', gen;
 end $$;
 
@@ -841,14 +845,16 @@ end $$;
 -- happen, and that the losing side of a race changes nothing. Executed against the real Supabase project first
 -- (MEASUREMENTS.md §50) and asserted here so the gate keeps it.
 do $$
-declare hit int; gen bigint; owed int; bad text;
+declare hit int; gen bigint; owed int; bad text; g bigint;
 begin
-  update public.edit_locks set holder_session_id='cas-a', lock_generation=10, unsynced_edits=7
+  select lock_generation + 1 into strict g from public.edit_locks
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001';
+  update public.edit_locks set holder_session_id='cas-a', lock_generation=g, unsynced_edits=7
     where project_id='aaaaaaaa-1111-0000-0000-000000000001';
 
   -- THE CAS ITSELF: holder and generation in ONE statement, FILTERED ON THE GENERATION JUST READ.
-  update public.edit_locks set holder_session_id='cas-b', lock_generation=11
-    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and lock_generation=10;
+  update public.edit_locks set holder_session_id='cas-b', lock_generation=g + 1
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and lock_generation=g;
   get diagnostics hit = row_count;
   if hit <> 1 then raise exception 'FAIL (F4): the compare-and-swap changed % row(s) on the generation it read', hit; end if;
   raise notice 'PASS (F4): the CAS at generation N -> N+1, filtered on N, changes exactly one row';
@@ -856,13 +862,13 @@ begin
   -- AND THE LOSER OF A RACE CHANGES NOTHING. A second session firing the same CAS reads the generation it read
   -- before, which no longer matches -- zero rows, no error, and the row still holds the winner. This is the whole
   -- protocol: it is how a session learns it was beaten without a second round trip.
-  update public.edit_locks set holder_session_id='cas-c', lock_generation=11
-    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and lock_generation=10;
+  update public.edit_locks set holder_session_id='cas-c', lock_generation=g + 1
+    where project_id='aaaaaaaa-1111-0000-0000-000000000001' and lock_generation=g;
   get diagnostics hit = row_count;
   if hit <> 0 then raise exception 'FAIL (F4): a CAS on a generation that had moved changed % row(s)', hit; end if;
   select holder_session_id, lock_generation into strict bad, gen from public.edit_locks
     where project_id='aaaaaaaa-1111-0000-0000-000000000001';
-  if bad <> 'cas-b' or gen <> 11 then raise exception 'FAIL (F4): the loser overwrote the winner (% at %)', bad, gen; end if;
+  if bad <> 'cas-b' or gen <> g + 1 then raise exception 'FAIL (F4): the loser overwrote the winner (% at %)', bad, gen; end if;
   raise notice 'PASS (F4): the losing CAS changes no row and the winner still holds the lock';
 
   -- THE HEARTBEAT IS FILTERED ON THE HOLDER'S OWN SESSION, so a displaced device's next beat changes zero rows --
@@ -980,7 +986,12 @@ end $$;
 
 -- The control that actually holds today: `storage` must never be a PostgREST-exposed
 -- schema, because that is the only thing standing between a browser session and the
--- TRUNCATE grant above. Asserted rather than assumed.
+-- TRUNCATE grant above.
+-- WHAT THIS BLOCK CAN SEE (DW-294, Story 5.24d): a DATABASE-level `pgrst.db_schemas`, and nothing else. Hosted
+-- Supabase keeps the exposed schemas outside the database — unset there, and none in `pg_db_role_setting` for
+-- `authenticator` — and nothing sets it in the gate's container, so when it is unset this block asserts nothing and
+-- says so. The schemas are read where they live, over the wire, by `run-verify-ghost-admin.py --check`'s
+-- schemas-off-rest step (MEASUREMENTS §60).
 do $$
 declare exposed text := coalesce(current_setting('pgrst.db_schemas', true), '');
 begin
@@ -990,7 +1001,11 @@ begin
   if exposed <> '' and exposed like '%storage%' then
     raise exception 'FAIL: `storage` is an exposed PostgREST schema (%). With TRUNCATE still granted (D6), any authenticated session can destroy every user''s objects.', exposed;
   end if;
-  raise notice 'PASS: storage is not PostgREST-exposed (db_schemas = %)', coalesce(nullif(exposed, ''), 'unset locally');
+  if exposed = '' then
+    raise notice 'NOT ASSERTED HERE: no database-level pgrst.db_schemas, so this block cannot see which schemas PostgREST exposes -- `python3 tools/probe/run-verify-ghost-admin.py --check`''s schemas-off-rest step reads them over the wire';
+  else
+    raise notice 'PASS: neither private nor storage is in the database-level pgrst.db_schemas (%)', exposed;
+  end if;
 end $$;
 
 -- ============================================================================

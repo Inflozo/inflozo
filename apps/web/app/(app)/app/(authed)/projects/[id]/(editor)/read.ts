@@ -1,6 +1,6 @@
 import { cache } from 'react'
 import { categoryOf, compilesTo, isPaywallDesign, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
-import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc } from '@inflozo/section-runtime'
+import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
@@ -75,6 +75,16 @@ export type Project = { id: string; name: string; dark_enabled: boolean; revisio
  *  same change (review, 2026-09-17). Story 5.16 is such a writer: a page-2 key compiles to the file `PAGE_TWO` names —
  *  `index` to `index.hbs`, and an archive's `tag-paged` and `author-paged` to the archive's own file. */
 const fileOf = fileOfKey
+
+/** STORY 5.19's SERVER DOOR, ONE FUNCTION (DW-257): every doc the editor is handed leaves through the main-feed rule
+ *  (AD-27(d)) — `editorData` below for a stored project, and the keyboard harness for its fixture — so a doc written before
+ *  the rule is REPAIRED on its way in, and the harness's Home is designated by the rule itself rather than by a flag of its
+ *  own, which is what lets `pnpm keyboard` see this door break. Reading alone writes nothing (AD-22); a doc that already
+ *  satisfies the rule comes back as the same object. HERE, in the server read, and not in `lib/editor.ts`: that module is
+ *  the Shell's too, and the runtime it would import more than doubled the client script of every signed-in page (Projects
+ *  384,773 → 922,553 bytes, measured on a production build at Story 5.24d's Dev). */
+export const designateAll = (docs: Readonly<Record<string, ProjectDoc>>, library: SynthesisLibrary): Record<string, ProjectDoc> =>
+  Object.fromEntries(Object.entries(docs).map(([key, doc]) => [key, designate(doc, fileOf(key), library)]))
 
 export type EditorData = {
   /** every stored doc, by `template_key` — the site's, each canvas's, and since Story 5.16 each PAGE 2 that has a
@@ -287,7 +297,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
    * flag, or a main feed duplicated before this story — is REPAIRED here, in what is handed to the editor, and stored
    * repaired with the next edit of that canvas. Reading alone writes nothing (AD-22). A doc that already satisfies the
    * rule comes back as the same object, so a valid designation is never moved. */
-  for (const [key, doc] of Object.entries(docs)) docs[key] = designate(doc, fileOf(key), held)
+  Object.assign(docs, designateAll(docs, held))
 
   /* STORY 5.13 — the stored preview subjects, by template key.
    *

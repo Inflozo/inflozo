@@ -255,6 +255,11 @@ export const restingState = (j: Journal): SyncState => ({ kind: 'rest', owed: un
 /** AD1's flush interval. A DEFAULT WITH RATIONALE (§AD4), not behaviour. */
 export const FLUSH_MS = 3 * 60 * 1000
 
+/** How long one sync request may take before it counts as failed and the backoff takes over — the editor's every flush,
+ *  the tab-close one included, aborts at it. EXPORTED ONCE so the deployed walk's step 66b waits out the product's own
+ *  budget rather than a number of its own (DW-220). */
+export const SYNC_TIMEOUT_MS = 20_000
+
 /** The retry backoff: 5 · 10 · 20 · 40 · 60, capped. `attempt` counts from 1. */
 export const BACKOFF_S = [5, 10, 20, 40, 60] as const
 export const backoffSeconds = (attempt: number) => BACKOFF_S[Math.min(Math.max(attempt, 1), BACKOFF_S.length) - 1] as number

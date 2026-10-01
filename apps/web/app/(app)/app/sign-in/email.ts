@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from '../../../../lib/zod.ts'
 
 /**
  * ONE SCHEMA AT THE EMAIL BOUNDARY (spine, Consistency Conventions) — imported by both the

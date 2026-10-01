@@ -264,8 +264,37 @@ def self_check():
     assert out['posts']['filter'] == 'id:[p1,p2]' and out['tags']['filter'] == 'id:[t1,t2]' and out['authors']['filter'] is None
     assert 'filter=id%3A%5Bp1%2Cp2%5D' in g.asked[0] and 'filter' not in g.asked[2] and 'order' not in ''.join(g.asked)
     assert 'came back with 1' in voids(api_defaults, Content(1), owned)
+
+    class Admin:
+        """DW-301: the recorder's own rows on an Admin API — each owned tag named as `names` says, and every post's
+        write answered as Ghost answers it, with `skew` laid over one post's answer (a field Ghost did not keep)."""
+        major = '6'
+
+        def __init__(self, names, skew=None):
+            self.names, self.skew, self.writes = names, skew or {}, []
+
+        def api(self, method, path, body=None):
+            res, *rest = path.split('/')
+            if method == 'GET':   # `<res>/slug/<slug>/`: every owned row exists already
+                return {res: [{'id': rest[1], 'slug': rest[1], 'name': self.names.get(rest[1]), 'updated_at': 'u'}]}
+            self.writes.append(path)
+            sent = body[res][0]
+            return {res: [{'id': rest[0], 'published_at': sent['published_at'], 'tags': sent['tags'],
+                           **self.skew.get(sent['slug'], {})}]}
+    named = dict(OWNED_TAGS)
+    docs = []   # THE CONTROL: the rows as designed publish, every one in `docs`
+    assert publish_owned(Admin(named), docs)['posts'] == [s for s, _, _ in OWNED_POSTS] and len(docs) == len(OWNED_POSTS)
+    renamed, docs = Admin({**named, 'inflozo-defaults-b': 'Renamed by hand'}), []
+    assert 'inflozo-defaults-b' in (voids(publish_owned, renamed, docs) or ''), 'a renamed owned tag was not refused'
+    assert renamed.writes == [] and docs == [], (renamed.writes, docs)   # refused before anything was published
+    redated, docs = Admin(named, {'inflozo-defaults-1': {'published_at': '2026-09-25T04:48:00.000Z'}}), []
+    assert 'inflozo-defaults-1' in (voids(publish_owned, redated, docs) or ''), 'a re-dated owned post was not refused'
+    assert docs == [('posts', 'inflozo-defaults-1')], docs   # in `docs`, so the caller's finally drafts it
+    retagged, docs = Admin(named, {'inflozo-defaults-2': {'tags': [{'id': 'inflozo-defaults-b'}]}}), []
+    assert 'inflozo-defaults-2' in (voids(publish_owned, retagged, docs) or ''), 'a re-tagged owned post was not refused'
     print('self-check: control, unrendered-card and empty-block refusals fire; the lossless split holds; the defaults '
-          'are read through the recorder\'s own ids, with no order, and a short answer is refused')
+          'are read through the recorder\'s own ids, with no order, and a short answer is refused; a renamed owned tag '
+          'voids before anything is published, a re-dated or re-tagged owned post voids naming it and is still drafted')
 
 
 # ── talking to one box ────────────────────────────────────────────────────────
@@ -308,10 +337,20 @@ def set_setting(g, key, value):
 def publish_owned(g, docs):
     """DW-103: the recorder's own two tags (created once, never changed) and its two posts, PUBLISHED at their fixed
     dates — each appended to `docs` the moment it is published, so the caller's `finally` drafts it with the three
-    fixture documents. Returns the ids the defaults are read through."""
+    fixture documents. Returns the ids the defaults are read through.
+
+    DW-301: each row is checked to still be the one designed, because a row changed by hand would be read as Ghost's
+    default order and pass: a tag's name before any owned post is published (the name is never re-written), and each
+    post's published_at and first tag in Ghost's own answer to the write — after `docs.append`, so it is still drafted.
+    A mismatch is a Void naming the slug. Admin answers carry `tags` (`defaultRelations`, serializers/input/posts.js,
+    5.130.6 and 6.58.0) and `.000Z` dates, exactly OWNED_POSTS' strings (both majors, read 2026-10-01)."""
     tags = {}
     for slug, name in OWNED_TAGS:
-        tags[slug] = by_slug(g, 'tags', slug) or g.api('POST', 'tags/', {'tags': [{'name': name, 'slug': slug}]})['tags'][0]
+        tag = by_slug(g, 'tags', slug)
+        if tag and tag.get('name') != name:
+            raise Void(f'Ghost {g.major}: the owned tag {slug} is named {tag.get("name")!r}, not {name!r} — changed by '
+                       f'hand; put it back before re-running, or the default order is read against the wrong name')
+        tags[slug] = tag or g.api('POST', 'tags/', {'tags': [{'name': name, 'slug': slug}]})['tags'][0]
     posts = []
     lex = lexical([{'node': {'children': [{'detail': 0, 'format': 0, 'mode': 'normal', 'style': '', 'text': OWNED_BODY,
                                            'type': 'extended-text', 'version': 1}],
@@ -319,6 +358,10 @@ def publish_owned(g, docs):
     for slug, published_at, tag in OWNED_POSTS:
         doc = upsert_published(g, 'posts', slug, lex, {'published_at': published_at, 'tags': [{'id': tags[tag]['id']}]})
         docs.append(('posts', doc['id']))
+        got = (doc.get('published_at'), (doc.get('tags') or [{}])[0].get('id'))
+        if got != (published_at, tags[tag]['id']):
+            raise Void(f'Ghost {g.major}: the owned post {slug} came back published at {got[0]} with first tag id {got[1]}, '
+                       f'not {published_at} tagged {tag} — the default order would be read against a different row')
         posts.append(doc)
     return {'posts': [p['id'] for p in posts], 'tags': [t['id'] for t in tags.values()]}
 
@@ -356,6 +399,9 @@ def record(g, corpus):
     tagging = setting(g, 'outbound_link_tagging')
     set_setting(g, 'outbound_link_tagging', False)   # restored below, whatever happens in between
     try:
+        # DW-301: the recorder's own rows FIRST, so an owned row changed by hand voids the run before any document is
+        # published; the defaults are read by id, so the order the documents are published in moves nothing recorded
+        owned = publish_owned(g, docs)
         for which, (resource, slug) in SLUGS.items():
             bs = blocks(corpus, 'variations' if which == 'variations' else 'article')
             doc = upsert_published(g, resource, slug, lexical(bs))
@@ -375,7 +421,7 @@ def record(g, corpus):
             bodies[which] = [{'id': b['id'], 'html': f} for b, f in zip(bs, frags)]
             print(f'    [{which}] {resource}/{slug} — {len(frags)} blocks, {len(html)} bytes')
         # DW-103: inside the try, while the recorder's own pair is published — drafted in the same `finally` below
-        defaults = api_defaults(g, publish_owned(g, docs))
+        defaults = api_defaults(g, owned)
         print(f'    Content API defaults read through the recorder\'s own {len(OWNED_POSTS)} posts and {len(OWNED_TAGS)} tags')
     finally:
         # every restore is attempted, whichever fails: one failed draft must not leave the others

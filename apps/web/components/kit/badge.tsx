@@ -40,8 +40,9 @@ export const MainFeedChip = ({ on = 'panel', id }: { on?: 'panel' | 'canvas'; id
   <span
     id={id}
     data-main-feed-chip
-    // the mono face through `--font-mono` itself, not the `font-mono` utility, which names next/font's own variable — one
-    // the canvas's chrome layer does not carry (`lib/canvas-layer.ts`'s `fontStacks` hands the three stacks alone)
+    // the mono face through `--font-mono` itself, not the `font-mono` utility, which names the face's own variable
+    // (`--font-jetbrains-mono`, `app/fonts/fonts.css`) — one the canvas's chrome layer does not carry
+    // (`lib/canvas-layer.ts`'s `fontStacks` hands the three stacks alone)
     className={`inline-flex shrink-0 items-center whitespace-nowrap rounded-pill py-[2px] [font-family:var(--font-mono)] text-[8.5px] font-medium uppercase leading-[1.4] tracking-[.03em] text-ink ${
       on === 'canvas' ? 'border border-line bg-paper-raised px-[7px]' : 'bg-paper-sunk px-[6px]'
     }`}

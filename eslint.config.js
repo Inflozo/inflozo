@@ -107,6 +107,22 @@ export default [
     },
   },
   {
+    // DW-174, DW-201 (Story 5.24d): the app takes zod through ONE module, `apps/web/lib/zod.ts`, which sets `jitless`
+    // before any schema is built. A direct import builds its schema before that line on whichever page loads it first,
+    // and zod's eval probe is reported by the app's content-security policy (Projects did, on every load).
+    files: ['apps/web/**/*.{ts,tsx,mts,cts,js,mjs,cjs}'],
+    ignores: ['apps/web/lib/zod.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [{ name: 'zod', message: "Import { z } from '@/lib/zod' (by its relative .ts path in a node-tested file): it sets jitless first." }],
+          patterns: [{ group: ['zod/*'], message: "Import { z } from '@/lib/zod': it sets jitless first." }],
+        },
+      ],
+    },
+  },
+  {
     files: CORE,
     ignores: NOT_CORE,
     // DW-4 (Story 5.24c): no comment can switch a ban below off. `/* eslint-disable no-restricted-syntax */` written for one

@@ -2,7 +2,7 @@
 title: 'Story 5.24d — The sweep: the checks and the walks'
 type: 'chore'
 created: '2026-10-01'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '03d7393a4228bf29e92556aa151a892f2a1c486b'
@@ -268,44 +268,44 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
 
 **Execution — the app (offline):**
 
-- [ ] `apps/web/frame-guard.test.ts` (new), `controls.test.ts`, `style-guide.test.ts`, `pilots.test.ts` — **DW-117,
+- [x] `apps/web/frame-guard.test.ts` (new), `controls.test.ts`, `style-guide.test.ts`, `pilots.test.ts` — **DW-117,
   DW-162:** `registerHooks` from `node:module` maps `next/server` → `next/server.js`, `@/x` → `./x.ts`, and
   `@/lib/supabase/server` → the test file itself, which exports `currentUser`. Each route's `GET(new NextRequest(url,
   {headers: {'x-nonce': 'n'}}))`: signed out 303 with `location` ending `/sign-in`; signed in 200 `text/html`;
   style-guide's `?view=variations` 200 and no nonce 500 (moved from its text test). The three text tests and their dead
   `ROUTE` constants go. One comment beside `registerHooks` says why (no other test uses it). **Control:** the guard line
   deleted from the canvas route → 200 where 303 is expected.
-- [ ] `apps/web/lib/zod.ts` (new), the eight importers, `eslint.config.js` — **DW-174, DW-201:** `import { z } from
+- [x] `apps/web/lib/zod.ts` (new), the eight importers, `eslint.config.js` — **DW-174, DW-201:** `import { z } from
   'zod'; z.config({ jitless: true }); export { z }`. Node-tested files import it by relative `.ts` path
   (`style-pack.ts`, `projects.ts`, `health-rule.ts` → `./zod.ts`; `sign-in/email.ts`, `account/passkey-name-rule.ts` by
   their relative depth); the rest by `@/lib/zod`. A new `apps/web/**` block: `no-restricted-imports` of `zod` and
   `zod/*`, `apps/web/lib/zod.ts` ignored. **Control:** a new `apps/web/zod-jitless.test.ts`, in its own file because it
   must be the process's first zod evaluation, traps `Function` and imports `./lib/style-pack.ts`: 0 probes (HEAD 1), plus
   a `jitless:false` arm proving the trap live; reverting `style-pack.ts`'s import turns it and ESLint red.
-- [ ] `apps/web/lib/canvas.ts`, both canvas routes, `pilots.test.ts`, `frame-guard.test.ts` — **DW-208:**
+- [x] `apps/web/lib/canvas.ts`, both canvas routes, `pilots.test.ts`, `frame-guard.test.ts` — **DW-208:**
   `canvasCaching(v, live = process.env.NODE_ENV === 'production')` beside `V`, returning `{document, image}`; both
   routes call it, one comment left. Unit rows replace the regex; `frame-guard.test.ts` runs `/canvas?v=abc123` both
   ways (a unit test alone missed `live = true`). **Control:** dropping `v !== 'dev'`, and the default flipped, each red.
-- [ ] `apps/web/app/(app)/app/(authed)/sites/connect-wizard.tsx:135` — **DW-295:** `useEffect(() => { alive.current =
+- [x] `apps/web/app/(app)/app/(authed)/sites/connect-wizard.tsx:135` — **DW-295:** `useEffect(() => { alive.current =
   true; return () => { alive.current = false } }, [])`, the editor's shape. **Control** (main session, a throwaway
   account as every walk makes): `run-verify-ghost-admin.py --url http://localhost:3000 --only connect` against
   `next dev` with StrictMode on — red at HEAD (no action POST leaves, "Connecting…" stays), green fixed.
-- [ ] `apps/web/lib/journal.ts`, `editor.tsx:1601` — **DW-220's app half:** `export const SYNC_TIMEOUT_MS = 20_000`,
+- [x] `apps/web/lib/journal.ts`, `editor.tsx:1601` — **DW-220's app half:** `export const SYNC_TIMEOUT_MS = 20_000`,
   used for the unload flush's abort.
-- [ ] `components/shell/shell.tsx`, `harness/editor/layout.tsx`, `floor.spec.mjs:80`, the two comments — **DW-285:**
+- [x] `components/shell/shell.tsx`, `harness/editor/layout.tsx`, `floor.spec.mjs:80`, the two comments — **DW-285:**
   `export const ShellUserContext`; the harness wraps `<Editor>` in `<ShellUserContext value={{ email:
   'harness@example.com', displayName: null }}>`; the floor's phone stop asserts the avatar reads "H" at 32×32.
   **Control:** without the provider, red.
-- [ ] `lib/editor.ts`, `(editor)/read.ts:290`, `harness/editor/layout.tsx` — **DW-257's server door:** `designateAll()`
+- [x] `lib/editor.ts`, `(editor)/read.ts:290`, `harness/editor/layout.tsx` — **DW-257's server door:** `designateAll()`
   in `lib/editor.ts`, called by `read.ts` and the harness; the harness's own `MAIN_FEED` and feed index go, so
   `designate` picks the main feed for it. The stale comment `:111` is corrected. **Control:** a no-op `designateAll`
   turns the main-feed journeys red.
-- [ ] `editor.tsx:965`, `harness/editor/actions.ts` (new), `harness/editor/sites.ts` (new) — **DW-279:** `EditorProps`
+- [x] `editor.tsx:965`, `harness/editor/actions.ts` (new), `harness/editor/sites.ts` (new) — **DW-279:** `EditorProps`
   gains `reread?: typeof recheckSite` defaulting to `recheckSite`; a harness `'use server'` `harnessReread(projectId)`
   answers `{members: null, surfaces: …}` only for the harness project under `x-inflozo-harness-site: surfaces-later` (a
   site whose stored snapshot is empty), and refuses otherwise. It reads `projectId` (an unused argument is dropped from
   the request). The harness's site fixtures move to `sites.ts` (a `'use server'` file exports only async functions).
-- [ ] `apps/web/app/fonts/` (new), `app/layout.tsx`, `tokens.test.ts`, the stale comments — **DW-246:**
+- [x] `apps/web/app/fonts/` (new), `app/layout.tsx`, `tokens.test.ts`, the stale comments — **DW-246:**
   - every `.woff2` file Google serves for today's options, fetched with next's own User-Agent, each hash equal to
     HEAD's build output; the three `OFL.txt` licences beside them;
   - `fonts.css`: Google's `@font-face` rules word for word with local URLs, the three `… Fallback` rules copied from
@@ -322,7 +322,7 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
 
 **Execution — the build and CI:**
 
-- [ ] `tools/check-traces.mjs` (new), `ci.yml`, `lib/style-guide.ts`, `lib/controls-review.ts`, `lib/pilots.ts`,
+- [x] `tools/check-traces.mjs` (new), `ci.yml`, `lib/style-guide.ts`, `lib/controls-review.ts`, `lib/pilots.ts`,
   `next.config.ts`, the three text tests — **DW-269:**
   - the check reads `git ls-files` for every directory the canvas reads (`packages/library/designs`, the orbit-weekly
     images and vendor files, `reference-tokens.css`, `control-groups.json`, `fixtures/controls`, `fixtures/paywall`,
@@ -337,34 +337,34 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
 
 **Execution — the keyboard gate:**
 
-- [ ] `tools/keyboard/journey.spec.mjs` — **DW-292:** `rendersSettle(page)` beside `resetRenders`: the Design block's
+- [x] `tools/keyboard/journey.spec.mjs` — **DW-292:** `rendersSettle(page)` beside `resetRenders`: the Design block's
   visible preview frames all drawn, then `window.__inflozoRenders` still for three frame-plus-50 ms ticks; it replaces
   `panelsSettle` in the six render-count stops (R-210's stops keep theirs). **Control:** the old settle plus a wait for
   the tiles before the read is red every time; the new is green on `--repeat-each 4`.
-- [ ] `tools/probe/die-pips.cjs` (new), `journey.spec.mjs`, `run-verify-controls.cjs`, `run-verify-editor.cjs`,
+- [x] `tools/probe/die-pips.cjs` (new), `journey.spec.mjs`, `run-verify-controls.cjs`, `run-verify-editor.cjs`,
   `globals.css:275-276` — **DW-216:** `module.exports = function diePips(faces)` returning `{layers, distinct, box}`;
   the journey `import diePips from '../probe/die-pips.cjs'` with `evaluateAll`; the two walks `require` it in their own
   `evaluateAll`. `run-verify-controls.cjs:28` requires `@playwright/test` as the other walks do. **Control:**
   `background-size: auto` at `globals.css:277` (R-164's regression) → "face 2's pips must land in 2 different places".
-- [ ] `journey.spec.mjs` — **DW-182:** a stop on the fixture ring: start a canvas session with the canvas document's
+- [x] `journey.spec.mjs` — **DW-182:** a stop on the fixture ring: start a canvas session with the canvas document's
   own pointer events (5.23a's precedent), focus the heading, type past 40; the canvas's `[data-chrome="note"]` reads
   "Heading holds 40 characters." and the text stays 40; with `document.hasFocus = () => false` on the top page a blur
   keeps `[data-inflozo-editing]`; restored, a blur ends it. The header names the third synthesized press.
   **Control:** cutting `onRefused` (`editor.tsx:2870`) and the `hasFocus` guard (`inline.ts:271`) each red.
-- [ ] `floor.spec.mjs` — **DW-211:** a describe at 1280×720: select the ring's Layers row, hover its root, Next →
+- [x] `floor.spec.mjs` — **DW-211:** a describe at 1280×720: select the ring's Layers row, hover its root, Next →
   `#editor-design-count` "2 of 3" and `#editor-said` "Design 2 of 3 — …"; Previous → "1 of 3"; Shuffle → not "1 of";
   ⌘Z → "1 of 3". The header's "TAPS ARE ALLOWED" says a pointer. **Control:** the arrows swapped, and Shuffle cut, red.
-- [ ] `journey.spec.mjs` — **DW-279:** a stop under `surfaces-later` holds the re-read POST with `page.route` until the
+- [x] `journey.spec.mjs` — **DW-279:** a stop under `surfaces-later` holds the re-read POST with `page.route` until the
   empty snapshot paints no shims, releases it, and polls for both. **Control:** `drawShims(doc)` cut → red (without the
   hold the answer lands before the first paint and the cut stays green — executed).
-- [ ] `journey.spec.mjs` — **DW-257's other two:** the hydrate door — wait for IndexedDB `inflozo-doc-harness`'s `meta`,
+- [x] `journey.spec.mjs` — **DW-257's other two:** the hydrate door — wait for IndexedDB `inflozo-doc-harness`'s `meta`,
   set every `docs.home` `isMainFeed` false, reload, exactly one main-feed chip (control: `designated` removed at
   `editor.tsx:3360`, red); the edit read — `page.route` answers the harness site like `live-content.test.ts:400-412`'s
   `fakeSite`, and an edit needing a new query requests it exactly once (control: the `editReads` branch cut, red).
 
 **Execution — the walks (each control planted against production as a LOCAL RUN, then reverted):**
 
-- [ ] `run-verify-editor.cjs` — **DW-183, DW-204** (the retry and the control's reliability in separate commits, the
+- [x] `run-verify-editor.cjs` — **DW-183, DW-204** (the retry and the control's reliability in separate commits, the
   walk run twice after each, step 5's control passing every time):
   - `steady` rethrows on `/\/auth\/confirm\?/`, wraps `reload` (retried as `go(p.url(), o)`), and on a first failure
     notes `stall` with the ISO start time, the method and the pathname only; `goBack` stays unretried;
@@ -372,14 +372,14 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
     at creation; `main().catch`'s `HARNESS ERROR` carries its time.
   - **Controls:** step 79's first GET planted `{timeout: 1}` → a stall note and PASS (HEAD: HARNESS ERROR); `editorUrl()`
     held 35 s once → the same; `/auth/confirm` held 35 s on the phone context → the walk dies.
-- [ ] `run-verify-editor.cjs` step 89 — **DW-219, DW-291:** an `actionsSettle(ms)` helper beside `steady` (a Set of
+- [x] `run-verify-editor.cjs` step 89 — **DW-219, DW-291:** an `actionsSettle(ms)` helper beside `steady` (a Set of
   `next-action` POSTs, quiet for ~500 ms); step 89 settles and polls `stored513` until the slug matches, then reloads.
   Then it captures the subject save (`page.waitForRequest`), replays it once with another valid slug (`{"ok":true}`,
   the row moves — the replay's control), then forges each refusal in the I/O matrix — B's project id among them — each
   answering `SUBJ.SAVE_REFUSED`, A's row byte-identical and B's `project_template_prefs` still `[]`. Author: the pill
   names its fixture subject, another is chosen and its row polled. Page: the pill names its one subject and the menu
   holds exactly that row. **Control:** the subject POST held 4 s → red at HEAD's wait, green settled.
-- [ ] `run-verify-editor.cjs` steps 90, 66b, 36, the decoders, the signed-out loop, the filters —
+- [x] `run-verify-editor.cjs` steps 90, 66b, 36, the decoders, the signed-out loop, the filters —
   - **DW-284:** `actionsSettle(30000)` before step 90's poll, naming any still in flight on timeout. Control: the
     `"states"` POSTs held 4 s.
   - **DW-220:** 66b polls `revisionNow58()` until it moves, for `SYNC_TIMEOUT_MS + BACKOFF_S[0] * 1000` and a margin,
@@ -393,10 +393,10 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
   - **DW-117:** the signed-out loop `:5999` gains `/controls/frame` and `/style-guide/frame`, each 303.
   - **DW-174:** the four dashboard filters (`:5907`, `:6117`, `:6287`, `:6459`) go, so a CSP report on `/` fails —
     red on production before the push, which is its control.
-- [ ] `run-verify-controls.cjs`, `run-verify-pilots.cjs`, `run-verify-passkeys.py` — **DW-287:** every `networkidle`
+- [x] `run-verify-controls.cjs`, `run-verify-pilots.cjs`, `run-verify-passkeys.py` — **DW-287:** every `networkidle`
   becomes `load`; each in the two `.cjs` walks already has a landmark wait after it, and each in the passkeys walk gains
   one where none follows. **Control:** a request held open so the network never goes quiet → timeout at HEAD, PASS.
-- [ ] `run-verify-live-content.cjs` — **DW-251's capped half** (Ask First): a session block before T1's 429 step,
+- [x] `run-verify-live-content.cjs` — **DW-251's capped half** (Ask First): a session block before T1's 429 step,
   shaped like `:716`'s, routes `${origin}/ghost/api/content/posts/` at `limit === LIST_LIMIT` with no filter, sets
   `meta.pagination.total` to `LIST_LIMIT + 1` and fulfils; the source pill's line and the link picker's capped line read
   their words. The header names it a simulated condition without a count. **Control:** the same session unrouted reads
@@ -404,29 +404,29 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
 
 **Execution — the database and the test-site tools:**
 
-- [ ] `tools/probe/record-edit-lock.py`, `package.json` — **DW-245:** `fixture()` deletes the user it created if
+- [x] `tools/probe/record-edit-lock.py`, `package.json` — **DW-245:** `fixture()` deletes the user it created if
   anything after fails, then re-raises; `(Void, SubprocessError, OSError)` stays "RUN VOID" exit 1, anything else
   prints "PROBE ERROR" with its traceback, exit 2; an offline `--self-check` (before the help branch, in `pnpm test`)
   asserts a failed project POST issues the user's DELETE and the classifier's two exits.
-- [ ] `RLS-TEST.sql`, then `cp` to `supabase/tests/rls.sql` — **DW-245's F4:** both halves seeded relative (`select
+- [x] `RLS-TEST.sql`, then `cp` to `supabase/tests/rls.sql` — **DW-245's F4:** both halves seeded relative (`select
   lock_generation + 1 into strict g`, the CAS `g → g + 1`, asserting `g + 1`). **Control:** `lock_generation = 40`
   planted before F4 → red at HEAD (`monotonic (40 -> 10)`), green relative.
-- [ ] `run-verify-ghost-admin.py`, `RLS-TEST.sql` → `rls.sql`, `MEASUREMENTS.md` — **DW-294:** a `schemas-off-rest` step
+- [x] `run-verify-ghost-admin.py`, `RLS-TEST.sql` → `rls.sql`, `MEASUREMENTS.md` — **DW-294:** a `schemas-off-rest` step
   in `--check` beside `vault-off-rest`: `GET /rest/v1/<a table that does not exist>` with the publishable key and
   `Accept-Profile` `private`, `storage`, `vault` → 406 PGRST106, the hint printed; `public` and `graphql_public` not 406
   as its control. The SQL block keeps its FAIL branches for a database-level `pgrst.db_schemas` and, when unset, prints
   "NOT ASSERTED HERE" naming the `--check` step. A new MEASUREMENTS section records the reading and corrects §16b and
   the entry's "covered over the wire" (§16b is left as written). **Control:** `graphql_public` planted in the
   must-be-unexposed list → FAIL.
-- [ ] `tools/probe/seed-ghost.py:74-76` — **DW-298:** the third address becomes
+- [x] `tools/probe/seed-ghost.py:74-76` — **DW-298:** the third address becomes
   `https://static.ghost.org/v4.0.0/images/writing-posts-with-ghost.png` (200 at Create) and the `ponytail:` comment
   goes; a `--check` handled before the majors loop HEADs every `IMG` address and exits 1 on any non-200. **Control:** red
   at HEAD, green fixed.
-- [ ] `tools/probe/record-cards.py` — **DW-301:** the owned tags' names checked right after `by_slug`, before anything
+- [x] `tools/probe/record-cards.py` — **DW-301:** the owned tags' names checked right after `by_slug`, before anything
   is published; each owned post's PUT answer checked for its `published_at` and `tags[0]` after `docs.append`, so the
   `finally` still drafts it; a mismatch raises `Void` naming the slug. **Control:** `--self-check` gains a fake whose tag
   is renamed and asserts `publish_owned` raises naming `inflozo-defaults-b`.
-- [ ] `tools/probe/RESET-PROTOCOL.md` § Ghost, `MEASUREMENTS.md` — **DW-299:** a short "hand changes on the test sites"
+- [x] `tools/probe/RESET-PROTOCOL.md` § Ghost, `MEASUREMENTS.md` — **DW-299:** a short "hand changes on the test sites"
   paragraph: `probe-gated-post` retitled with an Unsplash image (2026-09-25 04:48–04:49 UTC), "Reading the margins"'s
   uploaded image (04:50 UTC), and `portal_button_icon` `icon-5` (**2026-09-26** 16:35 UTC), each by the owner in Ghost
   Admin per T3's actions log, kept, and recorded in `ghost5.json`. MEASUREMENTS gains the actions-log fact: browser edits
@@ -434,14 +434,14 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
 
 **Execution — the close:**
 
-- [ ] **`deferred-work.md`.** Written at this Create: DW-251's owner line naming Stories 5.24d and 9.1, 9.1's card
+- [x] **`deferred-work.md`.** Written at this Create: DW-251's owner line naming Stories 5.24d and 9.1, 9.1's card
   carrying the ring-tile half. At Dev every entry whose evidence exists closes; DW-251 stays open, owned by Story 9.1
   alone; DW-204 closes only on a classified stall (Ask First).
-- [ ] **The registers.** `epic-5-context.md` gains a sub-bullet for this story's Dev; the memory notes on CI's font flake
+- [x] **The registers.** `epic-5-context.md` gains a sub-bullet for this story's Dev; the memory notes on CI's font flake
   and Vercel's logs are the Dev session's to update.
-- [ ] **Standing rule 7.** Grep for `next/font`, `networkidle`, `outputFileTracingIncludes`, `panelsSettle`, `from
+- [x] **Standing rule 7.** Grep for `next/font`, `networkidle`, `outputFileTracingIncludes`, `panelsSettle`, `from
   'zod'`, `/home/ghost/Dev/BMAD`, and every DW id this story touched.
-- [ ] **The gates.** `pnpm check` (Node 24), `pnpm keyboard`, `bash supabase/tests/run-rls-gate.sh`, `node
+- [x] **The gates.** `pnpm check` (Node 24), `pnpm keyboard`, `bash supabase/tests/run-rls-gate.sh`, `node
   tools/check-traces.mjs` after `pnpm build`, and `python3 tools/doc-audit.py --check` twice: all green, every new
   check seen red on its control first.
 
@@ -473,6 +473,53 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
   walks pass with no `FAIL`.
 
 ## Spec Change Log
+
+- **2026-10-01 (Dev) — `designateAll` lives in `(editor)/read.ts`, not `lib/editor.ts`.** The Shell imports
+  `lib/editor.ts`, and the runtime import took Projects' client script from 384,773 to 922,553 bytes (97 → 182 KB
+  gzip), measured on the production build; `read.ts` is server-only and the harness layout imports it from there.
+- **2026-10-01 (Dev) — DW-257's edit read goes through Source → By tag.** A duplicated feed asks no new read (its query
+  is cached), so it could not go red; the tag source asks reads the feed has not made, and the stop asserts each
+  distinct read is requested exactly once (the `editReads` branch cut: red).
+- **2026-10-01 (Dev) — DW-182's press focuses the heading itself** (`el.focus()` after the synthesized
+  pointerdown/mousedown/mouseup: a synthesized press moves no focus); **DW-292's control slows the tile previews
+  800 ms** with `page.route` — on a warm server `panelsSettle` passed 4 of 4, so the race was made certain: old red 4/4,
+  `rendersSettle` green 4/4.
+- **2026-10-01 (Dev) — DW-287's passkeys landmark is Next's route announcer.** `next-route-announcer` is appended by the
+  App Router from an effect, so it exists only once the page has hydrated — the handlers the walk's presses need.
+- **2026-10-01 (Dev) — DW-236's control spoils the frame's header instead of truncating it.** Executed first: Chromium
+  decodes a PNG cut short anywhere past its header (half, a tenth, 64 characters — each 1440×900), so a truncated frame
+  never reaches the new branch; a frame whose first byte is changed is refused with the entry's own `EncodingError`.
+- **2026-10-01 (Dev) — DW-222's controls, re-planted where they can cross a section.** The 1 px move after the 300 px
+  wheel cannot cross on today's seed (the grid fills the reachable window; even 1066 px left it under the pointer), so
+  HEAD stayed green under it; the crossing control is a wheel up to the top and the pointer onto the sticky header.
+  `translate:0 40px` stays inside the tall grid, so the off-section plant is `translate:40px 0`. The sampler starts from
+  the root hovered as it begins, so only a real move counts as "rehovered". Its own old red was not reproduced (a
+  pointer-driven re-hover re-places the pill in the same frame); DW-222's resolution says so.
+- **2026-10-01 (Dev) — DW-291's and DW-284's holds lengthened to 12 s.** At 4 s (and DW-284 at 6 s) HEAD stayed green:
+  step 89's later checks outlast the hold before its reload, and step 90's ten-second poll caught both queued writes.
+- **2026-10-01 (Dev) — the walks prefer the repository's own Playwright and axe-core** (`run-verify-passkeys.py`,
+  `run-verify-core.py`), the BMAD paths kept as fallbacks — standing rule 7's grep for `/home/ghost/Dev/BMAD`.
+- **2026-10-01 (Dev) — `record()` publishes the recorder's own rows first** (DW-301). The I/O matrix's "voids … before
+  anything is published" holds only if `publish_owned` runs before the fixture documents, so it moved there; the
+  defaults are read by id, so the order moves nothing recorded. Held by `--self-check`; never run live.
+- **2026-10-01 (Dev, main session) — DW-183's "separate commits" are separate hunks in the one Dev commit.** R-81 gives a
+  phase one commit, and `tools/hooks/commit-msg` refuses a Dev commit while a task is open, so the retry (`steady`,
+  `steadyRequests`) and the change to step 5's reads (DW-174's filters) land together, in separate hunks. What the ledger
+  wanted the split for — telling which change broke step 5's control — did not arise: the control passed in every walk.
+- **2026-10-01 (Dev, main session) — DW-295's control is `--only brand-none`, reached as `app.inflozo.com`.** The harness
+  has no block named `connect`; every T1 seed is a connect walked through the wizard, and `brand-none` needs nothing
+  else. On `localhost` the app lives under `/app` and its redirects do not, so `next dev` was reached as
+  `http://app.inflozo.com:3000` through Chromium's host-resolver rule (one line, in a scratch copy of the harness), with
+  `allowedDevOrigins: ['app.inflozo.com']` set for the run and reverted — without it Next 16's dev server refused its own
+  chunks, the page never hydrated, and the form posted natively and connected at HEAD: a broken control, caught in the
+  server's log and re-run.
+- **2026-10-01 (Dev, main session) — the live-content walk's R-192 reader check tells a section's ⋯ from a Ghost
+  surface's.** Its first run here failed it on both majors, and so did HEAD's walk on production: Story 5.21's Review gave
+  Ghost's strip and button rows (`ghost:…`) a ⋯ holding only Hide / Show — a look this browser keeps — which stays live
+  for a reader as R-192 keeps every view control, and the check, written at 5.19, read every ⋯ as a section's. It now
+  asserts every section row's ⋯ disabled and every surface row's live (diagnosed read-only on T3 first: the two section
+  rows' ⋯ disabled, "Announcement bar" and "Subscribe button" live). Outside Group D, fixed here because this story's
+  acceptance needs the walk at 0 FAIL; the comment beside the check says why.
 
 ## Design Notes
 
@@ -569,3 +616,105 @@ and nothing to any server.
 - **T3 and T1, Admin API GETs:** the actions log names the owner for all three changes; the four owned recorder rows
   match their design on both majors. `static.ghost.org`: `v5.0.0/…/writing-posts-with-ghost.png` 404, the `v4.0.0`
   address 200, the other two 200.
+
+**Executed at Dev (2026-10-01).** Node 24.18.1; keys by variable name only; GETs only on T1 and T3, and no live run of
+`record-cards.py` or `record-edit-lock.py`. Every walk was a LOCAL RUN against production from a planted copy outside
+the repository (the working tree's walk, or HEAD's from a `git archive`), its throwaway accounts deleted (users 13 → 13
+every run); the repository's walks carry no plant.
+
+- **The gates, on the final tree:** `pnpm check` exit 0 (`apps/web` 627 tests, `frame-guard.test.ts`,
+  `zod-jitless.test.ts` and the three self-checks among them); `pnpm keyboard` 126 passed; `bash
+  supabase/tests/run-rls-gate.sh` exit 0, F4 seeded relative and the exposure block "NOT ASSERTED HERE" naming
+  `schemas-off-rest`; `pnpm build` then `node tools/check-traces.mjs` PASS on every route; the doc gate STALE once (the
+  board), then PASS.
+- **Controls seen red, offline:** the canvas guard deleted ("/app/canvas answered 200 to a stranger"); `canvasCaching`'s
+  `v !== 'dev'` dropped and its default flipped; a direct `zod` import (ESLint) and `jitless` off (the probe fires);
+  `next/font` imported (`tokens.test.ts`); `PACKAGES` from `import.meta.url` (the trace check red on every route while
+  the build passed); the keyboard stops on their plants — `onRefused` and the `hasFocus` guard cut (DW-182), the pill's
+  arrows swapped and Shuffle cut (DW-211), the provider removed (DW-285), `background-size: auto` (DW-216), `drawShims`
+  cut (DW-279), `designated` removed, `designateAll` a pass-through and the `editReads` branch cut (DW-257); DW-292's
+  describe with the tiles slowed 800 ms, old 4 of 4 red, `rendersSettle` 4 of 4 green. The subagent's database and
+  test-site tools each red on their control (`lock_generation = 40` before F4; `graphql_public` planted;
+  HEAD's `IMG` list; a renamed owned tag; HEAD's `fixture()`).
+- **The fonts:** 16 files equal by hash to the last `next/font` build, 39 rules equal in order, the three preloads the
+  same latin files; seven screens of a production harness build byte-identical against HEAD's (one 13-pixel diff on the
+  first run was HEAD's own run-to-run variance), red on five with Inter's 600 as 500; offline, HEAD exit 1 on three
+  `fonts.googleapis.com` fetches and the fix exit 0. Projects photographed on production before the push
+  (1440 and 390); the after-deploy pair is the main session's.
+- **The editor walk, planted (LOCAL RUNs):** the new walk under DW-183's, 219's, 220's, 284's and 291's plants, 670 PASS
+  and 4 FAIL — the four CSP reads of production's `/` eval, DW-174's red before the push; under DW-236's undecodable
+  frames, 59 frames · 1 skipped PASS, 57 · 1 PASS and 0 · 61 FAIL, then the phone's magic link held 35 s killed it as
+  planted; DW-222's header plant green (both checks) and `translate:40px 0` red (both); 12 s holds on steps 89 and 90
+  green (`inFlight []`, `stillInFlight []`). HEAD's walk under the same plants: 66b red, step 79 HARNESS ERROR, step 36's
+  settled check red, steps 89 and 90 red at 12 s (green at 4 s and 6 s — the holds were lengthened, Spec Change Log),
+  one undecodable frame `EncodingError`. HEAD's walk also died once at step 53 on a Clear button left busy and once
+  failed 69b — neither line is this story's, and both passed on HEAD's other runs.
+- **DW-287:** with one request held open on every page, HEAD's controls and pilots walks died at their first load and
+  the new ones passed whole (0 FAIL / 115 PASS, 0 FAIL / 152 PASS); `land()` on `/sign-in` 586 ms against
+  `networkidle`'s 30 s TimeoutError.
+- **DW-204:** thirteen real stall notes across these runs, read in Vercel's request rows (DW-204's resolution); none has
+  a row for its first attempt.
+- **Not run here — the main session's:** DW-295's control under `next dev`; the live-content walk (DW-251, Ask First);
+  the passkeys walk whole (it flips production's passkeys flag); the Projects pair after the deploy; the clean deployed
+  walks after the push.
+
+**Executed at Dev, in the main session (2026-10-01)** — what the spec keeps out of a subagent, then the gates again on the
+final tree. Keys by variable name only, read into each command's environment from `tools/probe/.env`.
+
+- **The owner's go**, asked in this session before any test-site write ("May I write to the test sites for 5.24d?"):
+  option 2, "Yes, including T1's hour block". Both live walks ran with `NO_429=1` all the same — this story does not touch
+  the 429 step, and an hour's hold on T1 from this network would land on the Review's own live walk.
+- **DW-295's control:** `next dev` (StrictMode on, its default) with `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`,
+  `SUPABASE_SECRET_KEY` and `SUPABASE_DB_POOLER_URL`; `run-verify-ghost-admin.py --url http://app.inflozo.com:3000 --only
+  brand-none` (Spec Change Log), its T1 seed a connect through the wizard; users 13 → 13 on every run.
+  - HEAD's wizard: FAIL, "seed T1: the connect never reached S2c in 60s; the form ends "… Back Connecting…"", and the dev
+    server logged the keys step's GET and no POST.
+  - The fix: `POST /sites/connect?step=keys 200 in 9.9s`, S2c, `brand-none` PASS, RESULT all steps passed.
+  - The broken control first: without `allowedDevOrigins` the server logged "Blocked cross-origin request to Next.js dev
+    resource" for every chunk, the page never hydrated, and HEAD connected through the form's native post. Hydration was
+    then checked before the control ran (`next-route-announcer` present in 869 ms). Both accommodations were reverted, and
+    `next-env.d.ts` restored.
+- **DW-251's capped half — the live-content walk**, LOCAL RUNs on `app.inflozo.com` (`APP_ORIGIN`, `NO_429=1`, both
+  majors; `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `GHOST{5,6}_URL`, `GHOST{5,6}_CONTENT_API_KEY`, `GHOST{5,6}_ADMIN_API_KEY`,
+  `GHOST{5,6}_STAFF_ACCESS_TOKEN`):
+  - Run 1: 5 FAIL, 152 PASS. The new block PASSED on T3 — "Showing your newest 100 posts." under the subjects and
+    "Showing your newest 100 posts. Paste an older post's address to link it." in the Link Picker — and so did its control,
+    both lines `null` unrouted. The five FAILs were outside it, on checks this story had not changed, and production still
+    ran HEAD's app: R-192's reader check on both majors, and on T3 three Tag-canvas checks whose canvas had not painted
+    inside the walk's 20 s.
+  - Diagnosed read-only before anything changed: a scratch copy of the walk on T3 that stopped before its first Ghost
+    write. The Tag canvas painted in 1.4 s and the short tag's pick landed in 0.8 s, so run 1's three were a slow read,
+    not a fault. R-192's check was stale, and is fixed (Spec Change Log): the reader's two section rows had their ⋯
+    disabled, and Ghost's "Announcement bar" and "Subscribe button" rows were live by design.
+  - Run 2, with that fix: **0 FAIL, 157 PASS**, the capped lines and their control PASS again, R-192's check PASS on both
+    majors, users 13 → 13.
+  - Each run set T3's Subscription access to Nobody and turned T1's Portal button on with its bar emptied, for under a
+    minute each, then put both back and read them back from Ghost: `members_signup_access` `all` and `paid_enabled`
+    true; `portal_button` false and `announcement_visibility` `["visitors"]`.
+- **The gates, re-run here on the final tree:**
+  - `pnpm check`: exit 0. `apps/web` ran 627 tests, 0 failed, the frame-guard, zod-jitless, canvasCaching and fonts
+    tests among them, then the three self-checks and `check-snapshots`.
+  - `bash supabase/tests/run-rls-gate.sh`: exit 0. F4 PASSES seeded relative ("gen now 7"), and the exposure block
+    prints NOT ASSERTED HERE.
+  - `pnpm build`, then `node tools/check-traces.mjs`: PASS on all six routes (101 files for the canvas four, 30 for
+    `/controls` and its frame). Its control, re-run here with `PACKAGES` planted to the module's address: the build
+    exit 0 and the check exit 1 on all six ("100 of the 101 files it reads are not in …"); restored, rebuilt, PASS.
+  - `pnpm keyboard`: 126 passed (4.4 min), every new stop among them — DW-182, DW-211 (the floor), DW-257's two, DW-279,
+    R-164's pips through `die-pips.cjs` — and the 5.23b render-count stops on `rendersSettle`.
+  - The build inside `unshare -rn` (loopback up): exit 0. `curl` to fonts.googleapis.com from inside it answered
+    nothing, so the namespace really was offline.
+  - `python3 tools/probe/seed-ghost.py --check`: three 200s, PASS.
+  - `schemas-off-rest`: PASS in each of the three harness runs above, with the same five answers as MEASUREMENTS §60.
+  - `python3 tools/doc-audit.py --check`, twice after the story board was regenerated: PASS both times, 0 warnings.
+  - The group re-derived (the first command above): `['DW-246']` — open on the deployed Projects pair alone; DW-251 is
+    Story 9.1's.
+- **Real services touched at Dev (R-82):**
+  - Supabase production: every walk's and the connect control's throwaway account (users 13 → 13 each time),
+    PostgREST's exposed schemas, and the Management API's `postgrest` setting, read.
+  - Vercel: the request logs, read (DW-204).
+  - T1 and T3: the connect's Admin API reads; both live walks' writes, approved, put back and read back; the actions
+    log and the recorder's owned rows, read with GETs.
+  - `app.inflozo.com`: every LOCAL RUN.
+  - `static.ghost.org` and Google Fonts: read only.
+  - Not touched: Resend and Dodo — this story changes no email and no payment. GitHub Actions and the Vercel deployment
+    run on the Dev push, and the Review reads them with the deployed walks.

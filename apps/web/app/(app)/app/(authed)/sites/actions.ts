@@ -3,7 +3,7 @@
 import { headers } from 'next/headers'
 import { notFound, redirect, RedirectType } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { z } from 'zod'
+import { z } from '@/lib/zod'
 import {
   brandPopupPath,
   CONNECT_MAX,

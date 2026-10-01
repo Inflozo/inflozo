@@ -115,7 +115,7 @@ development_status:
   5-24a-the-sweep-the-ledger-and-the-plan: done  # R-211: Story 5.24 split into five, run in order
   5-24b-the-sweep-accounts-sites-and-connections: done
   5-24c-the-sweep-the-section-runtime-the-library-and-the-recordings: done
-  5-24d-the-sweep-the-checks-and-the-walks: ready-for-dev
+  5-24d-the-sweep-the-checks-and-the-walks: in-progress
   5-24e-the-sweep-the-editor: backlog
   epic-5-retrospective: optional
 

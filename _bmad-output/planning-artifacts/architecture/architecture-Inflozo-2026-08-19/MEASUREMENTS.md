@@ -4012,3 +4012,102 @@ every `unverified` row both now prove, and each lost its reason. `errorDetails`'
 and the same thirty names added under `a4/13/` — every one a blank frame 240px tall at its viewport's width, byte-identical to a22/1's — and nothing
 modified. Before the swap the full gate failed on exactly those (the thirty a1/1 orphans and the thirty missing a4/13 cases),
 and no other case.
+
+## 60. Which schemas PostgREST exposes, read over the wire on production — `private`, `storage` and `vault` refused 406 PGRST106; and what §16b, §23b and DW-294 claimed · 2026-10-01
+
+**Why.** DW-294: `RLS-TEST.sql`'s exposure block read `current_setting('pgrst.db_schemas', true)`, which is unset both
+in the gate's container and on production — hosted Supabase keeps PostgREST's exposed schemas outside the database, and
+`pg_db_role_setting` carries no `pgrst.db_schemas` for `authenticator` (Story 5.24b's Create) — so it printed "PASS:
+storage is not PostgREST-exposed (db_schemas = unset locally)" having checked nothing. Story 5.24d reads them where they
+live. Every key reached its command by name only: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_ACCESS_TOKEN`.
+
+**(a) Over the wire.** `python3 tools/probe/run-verify-ghost-admin.py --check`'s new `schemas-off-rest` step:
+`GET /rest/v1/inflozo_no_such_table?limit=0` with the publishable key and one `Accept-Profile` each.
+
+| `Accept-Profile` | HTTP | `code` |
+|---|---|---|
+| `private` | **406** | `PGRST106` |
+| `storage` | **406** | `PGRST106` |
+| `vault` | **406** | `PGRST106` |
+| `public` | 404 | `PGRST205` |
+| `graphql_public` | 404 | `PGRST205` |
+
+The 406's hint, verbatim: "Only the following schemas are exposed: public, graphql_public". PostgREST refuses an
+unexposed profile before it looks for any table, so the table need not exist and no row is read either way; the two
+exposed schemas answer `PGRST205` (no such table in their schema cache) — the control. The line as printed:
+
+    PASS  schemas-off-rest: GET /rest/v1/inflozo_no_such_table with SUPABASE_PUBLISHABLE_KEY, Accept-Profile -> private 406 PGRST106, storage 406 PGRST106, vault 406 PGRST106, public 404 PGRST205, graphql_public 404 PGRST205 (406 PGRST106 wanted for private, storage, vault; not 406 for public, graphql_public); PostgREST's hint: Only the following schemas are exposed: public, graphql_public
+
+**Its control, planted and reverted:** `graphql_public` added to the must-be-unexposed list → `FAIL schemas-off-rest: …
+WRONG: graphql_public`, `RESULT: FAILED`, exit 1.
+
+**(b) The setting itself,** read-only through the Management API: `GET
+https://api.supabase.com/v1/projects/<ref>/postgrest` with `SUPABASE_ACCESS_TOKEN` → **200**, `db_schema`
+`"public,graphql_public"` — the same list as the hint. That answer also carries `jwt_secret`, so a probe that reads it
+prints the one field it needs and nothing else.
+
+**(c) The database gate, which cannot see it.** The block in `RLS-TEST.sql` keeps its two FAIL branches for a
+database-level `pgrst.db_schemas` and, when there is none, prints `NOT ASSERTED HERE: … schemas-off-rest step reads them
+over the wire` — `bash supabase/tests/run-rls-gate.sh`, exit 0. Its branches, executed in the gate's container with a
+session-level setting planted before the block: `public, graphql_public, storage` → `FAIL: storage is an exposed
+PostgREST schema`, psql exit 3; `public, graphql_public` → `PASS: neither private nor storage is in the database-level
+pgrst.db_schemas`; reverted.
+
+**(d) What this corrects — the earlier sections are left as written.** §16b's "`storage` is not a PostgREST-exposed
+schema — `GET /rest/v1/buckets` with the publishable key returns 404" sent no `Accept-Profile`, so it asked `public` for a
+table named `buckets`, and a 404 is what `public` answers whether `storage` is exposed or not: it said nothing about
+`storage`. `vault-off-rest` (§21j) has the same shape — its three 404s prove the Vault views and `site_credentials` are not
+in `public`, not that `vault` or `private` is unexposed — so DW-294's "`private` is still covered over the wire" was not
+so either. §16b's and §23b's "which `RLS-TEST.sql` asserts" held only for a database-level setting, which neither target
+has. From this section on, the reading is `schemas-off-rest`, on every `--check`.
+
+## 61. Ghost's actions log records an edit made in Ghost Admin and never a staff-token write — read in source on both majors and on both logs; the hand changes on T3 named · 2026-10-01
+
+**Why.** DW-299: three changes on T3 that no probe made reached Story 5.24c's recording (§59, *Found, not written*), and
+nothing said whose they were. Read-only, through `record-shim.py`'s client with `GHOST5_STAFF_ACCESS_TOKEN` and
+`GHOST6_STAFF_ACCESS_TOKEN` by name — GETs only; Ghost's source from jsDelivr's npm mirror, read-only (the method of memory
+`ghost-source-from-npm-tarball`), so read in source under standing rule 1.
+
+**(a) The two logs.** `GET /ghost/api/admin/actions/?include=actor&filter=created_at:>='2026-09-01 00:00:00'` (the route
+is `core/server/web/api/endpoints/admin/routes.js:331`, 5.130.6): T3 29 rows, T1 12, every one `actor_type` `user`, the
+owner. T3's on 2026-09-25 and -26:
+
+| UTC | Event | What |
+|---|---|---|
+| 2026-09-25 04:48:01, 04:49:04 | edited post | "PROBEs Gated Post" (`probe-gated-post`) |
+| 2026-09-25 04:48:05, 04:48:33 | edited user | Umang — his own profile |
+| 2026-09-25 04:50:57 | edited post | "Reading the margins" |
+| 2026-09-26 12:25:08 – 12:26:30 | edited setting, three times | `members_signup_access` |
+| 2026-09-26 16:34:42 – 16:35:09 | edited setting | `announcement_background`, `announcement_content`, `announcement_visibility` (twice) |
+| 2026-09-26 16:35:18, 16:35:33 | edited setting | `portal_button`, `portal_button_style` |
+| 2026-09-26 16:35:44, 16:35:54 | edited setting | `portal_button_icon` (twice) |
+
+What those settings read now (`GET settings/`), against 5.130.6's `default-settings.json`: `members_signup_access` `all`,
+`portal_button` `false` and `portal_button_style` `icon-and-text` — Ghost's defaults; the three `announcement_*` — the
+values `seed-ghost.py` seeds; and **`portal_button_icon` `icon-5`**, default none — the one his edits left changed. §59
+dated it 2026-09-25; the log says 2026-09-26, 16:35 UTC. The recording also gained his T3 profile picture
+(`content/images/2026/09/luca-bravo-O453M2Liufs-unsplash.jpg`, `null` in Story 4.6's `ghost5.json`): no probe writes
+`profile_image` (`tools/probe/` only reads it), §59's 2026-10-01 PUT of `users/1` left it out, and the two rows above are
+the only user edits T3 logged between the two recordings. T1's 12 rows: his own profile and an integration with its two
+keys (2026-09-08); the accent colour, both navigations and the integration's name (2026-09-09); and `active_theme` set four
+times, in two pairs about 20 s apart (2026-09-14).
+
+**(b) The staff-token writes are absent — the control.** §59 records, verbatim with their 200s and 204s, the staff-token
+writes made to both servers on 2026-10-01 — on T3 six theme DELETEs and PUTs of a tag, `users/1`, a tier and a newsletter,
+then both recorders' tags, posts, settings and theme activations. Not one is in either log, whose last rows are
+2026-09-26 16:35:54 (T3) and 2026-09-14 11:25:29 (T1); T3's `users/1` reads `updated_at` 2026-10-01T09:56:53Z — that PUT —
+while its last logged user edit is 2026-09-25 04:48:33. No probe signs into Ghost Admin as a user (no session sign-in in
+`tools/`, no Ghost password in `tools/probe/.env`), so a `user` row is a person in a browser.
+
+**(c) Why, in source.**
+
+| Step | 5.130.6 | 6.58.0 |
+|---|---|---|
+| a staff token is an `api_keys` row with a `user_id` and no `integration_id`; its request carries both `req.api_key` and `req.user` | `api/endpoints/users.js:36` (`ApiKey.add({user_id, type: 'admin'})`); `schema.js:411-412`; `services/auth/api-key/admin.js:82-83,187-190` | `schema.js:404-405`; `admin.js:82-83,187` |
+| the API framework sets `context.integration = {id: api_key.integration_id}` whenever a key is present — `{id: null}` for a staff token | `@tryghost/api-framework` 1.0.2 `lib/http.js:29-36` | 3.3.5 `lib/http.js:34-35` |
+| `getActor` returns the integration whenever `context.integration` is truthy — here `{id: null, type: 'integration'}` | `models/base/plugins/user-type.js:13-19` | `:13-16` |
+| `actions.actor_id` is NOT NULL, and the insert's failure is caught and only logged — the write succeeds, its row is dropped | `schema.js:822`; `models/base/plugins/actions.js:26-37,124` | `schema.js:921`; `actions.js:34,124` |
+
+**What it settles.** A row in either log is a person's edit in Ghost Admin; nothing in `tools/` writes one. A custom
+integration's key WOULD be logged — its `integration_id` is set, so the actor has an id — and none is in either log. The
+three changes DW-299 names, and the profile picture, are the owner's and are kept; `RESET-PROTOCOL.md` § Ghost says so.

@@ -1,42 +1,25 @@
 import type { ReactNode } from 'react'
-import { Bricolage_Grotesque, Inter, JetBrains_Mono } from 'next/font/google'
+import { preload } from 'react-dom'
+import './fonts/fonts.css'
 import './globals.css'
 
-// The exact axes every frame's <link> requests (Calibration Set.dc.html:11 and the same
-// line in every other .dc.html). next/font self-hosts them at build time, so the app makes
-// no runtime request to Google and 1.4's CSP has nothing extra to allow.
-// The frames ask for `opsz,wght@12..96,500;…;800` — the VARIABLE face across both axes.
-// next/font takes wght as the variable axis itself, so naming a weight list here would pin
-// static cuts and is refused alongside `axes` (executed: `next build` fails outright).
-const bricolage = Bricolage_Grotesque({
-  subsets: ['latin'],
-  axes: ['opsz'],
-  variable: '--font-bricolage',
-  display: 'swap',
-})
+// The exact axes every frame's <link> requests (Calibration Set.dc.html:11 and the same line in every other .dc.html):
+// Bricolage Grotesque's variable face across opsz and wght, Inter 400/500/600 and JetBrains Mono 400/500. THE APP SERVES
+// THEM ITSELF (`app/fonts/fonts.css`, DW-246): the same files next/font fetched from Google at every build until Story
+// 5.24d, so the app makes no runtime request to Google, 1.4's CSP has nothing extra to allow, and a build needs no network.
 
-const inter = Inter({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-inter',
-  display: 'swap',
-})
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-jetbrains-mono',
-  display: 'swap',
-})
+/** The three latin files — the faces every page draws first — preloaded exactly as next/font preloaded them. */
+const FIRST_FACES = [
+  new URL('./fonts/bricolage-grotesque-latin.woff2', import.meta.url),
+  new URL('./fonts/inter-latin.woff2', import.meta.url),
+  new URL('./fonts/jetbrains-mono-latin.woff2', import.meta.url),
+]
 
 export default function RootLayout({ children }: { children: ReactNode }) {
+  for (const face of FIRST_FACES) preload(face.pathname, { as: 'font', type: 'font/woff2', crossOrigin: '' })
   return (
-    <html
-      // Story 5.17's `selfMarkScript` may set `data-lock-self` here before hydration — this element only, never below
-      suppressHydrationWarning
-      lang="en"
-      className={`${bricolage.variable} ${inter.variable} ${jetbrainsMono.variable}`}
-    >
+    // Story 5.17's `selfMarkScript` may set `data-lock-self` here before hydration — this element only, never below
+    <html suppressHydrationWarning lang="en">
       <body>{children}</body>
     </html>
   )

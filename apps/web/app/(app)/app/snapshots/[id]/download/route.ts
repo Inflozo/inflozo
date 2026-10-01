@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { z } from 'zod'
+import { z } from '@/lib/zod'
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase/server'
 import { snapshotObjectKey, SNAPSHOT_BUCKET } from '../../../(authed)/account/deletion-rule'
 

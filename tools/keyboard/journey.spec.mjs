@@ -10,11 +10,14 @@
 // the claim is checked rather than remembered. `focus()` is allowed and used only to enter a region whose tab path
 // another test has already proved — it moves focus the way a script does, not the way a pointer does.
 //
-// ONE STATED EXCEPTION, AND IT PRESSES NOTHING (Story 5.15): R-175's PAUSED chip is drawn on a POINTED section, and a
-// keyboard cannot point. So those stops SYNTHESIZE the canvas document's own `pointerover` in the page — the event the
-// editor listens for — to read what the chip looks like and where it sits; it is never the pointer device, it reaches
-// no task a keyboard could not, and the selected half of the same rule is walked from the keyboard alone. Story 5.23a's
-// hover-through-a-paint stop points the same way, to read whether a pointed section is still pointed at after a paint.
+// ONE STATED EXCEPTION: EVENTS SYNTHESIZED IN THE PAGE, NEVER THE POINTER DEVICE (Story 5.15). R-175's PAUSED chip is
+// drawn on a POINTED section, and a keyboard cannot point, so those stops SYNTHESIZE the canvas document's own
+// `pointerover` — the event the editor listens for — to read what the chip looks like and where it sits; Story 5.23a's
+// hover-through-a-paint stop and 5.21's strip point the same way. THREE PRESSES are synthesized the same way, each for a
+// claim no key can reach: Preview's click and ground press, which must select nothing; 5.23a's press that starts an
+// inline session the keyed paint must then redraw; and DW-182's (Story 5.24d), which starts a session on the fixture
+// ring's heading to type past its limit and to lose the window. None reaches a task a keyboard could not: the canvas
+// has no keyboard path into inline editing (FR-D1), and every selection here is walked from the keyboard alone.
 //
 // WHAT IT CANNOT PROVE is the deployed walk's, which R-82 requires of every story anyway: the read, the session, the
 // sync route and the CSP. A harness proves the wiring and never the stack — `tools/probe/run-verify-editor.cjs` runs
@@ -25,6 +28,7 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { expect, test } from '@playwright/test'
+import diePips from '../probe/die-pips.cjs'
 
 /* KEYBOARD ONLY BELOW */
 
@@ -61,8 +65,8 @@ const said = (page) => page.locator('#editor-said').innerText()
 
 /** R-210 (Story 5.23b): a section operation paints the canvas at once and the panels a frame later, so a check that reads a
  *  panel in the instant after one first lets the panels settle — two frames and a moment more — and checks nothing
- *  different; a check that expects the panel to CHANGE polls for it. The 5.23b stops read their render counts after it too,
- *  so every render a gesture caused is counted. */
+ *  different; a check that expects the panel to CHANGE polls for it. The 5.23b render-count stops wait for the renders
+ *  themselves instead (`rendersSettle`, DW-292): a fixed moment let a late tile be counted as the gesture's. */
 const panelsSettle = (page) =>
   page.evaluate(() => new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(done, 150)))))
 
@@ -1148,6 +1152,46 @@ test('FR-D5 does not reach the ring: a site-wide section has the same Design blo
   }
 })
 
+/* ── DW-182 (Story 5.24d) — TWO RULES OF THE CANVAS'S EDITING SESSION, reached at last. The pilots declare no limit, but the
+   fixture ring's heading does (`packages/library/fixtures/controls/content.json`), and a lost window CAN be simulated: the
+   guard asks the TOP page `document.hasFocus()`, which the page can answer for itself. The session starts as a pointer
+   starts it — the canvas document's own press, synthesized (the header's third) — and the keys type. */
+const RING_CONTENT = JSON.parse(readFileSync(new URL('../../packages/library/fixtures/controls/content.json', import.meta.url), 'utf8'))
+
+test('DW-182: past the heading\'s limit the canvas says so and the words stay at the limit; a lost window keeps the session, and a blur once it is back ends it', async ({ page }) => {
+  const heading = RING_CONTENT.props.heading
+  await open(page)
+  await selectRinged(page)
+  const started = await canvasFrame(page).locator('#canvas').evaluate((c, words) => {
+    const root = c.querySelector(':scope > [data-inflozo-selected]')
+    const el = [...root.querySelectorAll('*')].filter((e) => e.textContent.trim() === words).at(-1)
+    if (!el) return null
+    el.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, button: 0, pointerType: 'mouse' }))
+    el.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, button: 0 }))
+    el.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, button: 0 }))
+    // a synthesized press has no default action, so the caret a real one would leave is given by hand
+    el.focus()
+    return el.hasAttribute('data-inflozo-editing') && el.ownerDocument.activeElement === el ? el.textContent : null
+  }, heading.default)
+  expect(started, 'the control: a press on the heading starts a session that holds the caret').toBe(heading.default)
+  const editing = canvasFrame(page).locator('[data-inflozo-editing]')
+  // past the limit: every character after the fortieth is refused, and the pill says so in the field's own words
+  await page.keyboard.type('x'.repeat(heading.maxChars - heading.default.length + 5))
+  const note = () => canvasFrame(page).locator('body').evaluate((body) =>
+    [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')]
+      .flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="note"]') ?? [])]).map((n) => n.textContent.trim()))
+  await expect.poll(note, 'the limit\'s pill').toEqual([`${heading.label} holds ${heading.maxChars} characters.`])
+  expect(await editing.evaluate((el) => el.textContent.length), 'the words stay at the limit').toBe(heading.maxChars)
+  // a window that lost focus (another tab, another app) keeps the session
+  await page.evaluate(() => { document.hasFocus = () => false })
+  await editing.evaluate((el) => el.blur())
+  await expect(editing, 'the window was lost, not the field: the session stays').toHaveCount(1)
+  // …and once the window is back, a blur ends it
+  await page.evaluate(() => { delete document.hasFocus })
+  await editing.evaluate((el) => { el.focus(); el.blur() })
+  await expect(editing, 'focus that moved away within the window ends it').toHaveCount(0)
+})
+
 /* ── Story 5.12 — SITE REMIX (FR-D17, R-145, R-161, R-163) ──────────────────────────────────────────────────
    `⇧R` is R-145's fourth owed key to arrive with its action, and the first SHIFTED single key — so the last
    stop below, a capital R typed into a panel field while nothing rolls, is the one the owner called the most
@@ -1273,26 +1317,11 @@ test('FR-D17: Remix re-rolls the canvas in ONE transaction — one press, one �
 
    IT MEASURES THE RESOLVED GEOMETRY, NEVER THE RULE. Reading `background-size` back would assert the CSS it was
    handed; this computes where each pip actually lands from the box and the layer, so removing the size line puts
-   every centre on top of every other and the counts collapse to 1. */
+   every centre on top of every other and the counts collapse to 1. The measurement is `tools/probe/die-pips.cjs`, the ONE
+   copy both deployed walks run too (DW-216). */
 test('R-164: each of the cube\'s six faces draws its own number of pips, in its own places', async ({ page }) => {
   await open(page)
-  const faces = await page.locator('.remix-dice__face').evaluateAll((els) =>
-    els.map((el) => {
-      const cs = getComputedStyle(el)
-      const box = { w: el.offsetWidth, h: el.offsetHeight }
-      const sizes = cs.backgroundSize.split(',').map((v) => v.trim())
-      const at = (v, span, layer) =>
-        v.endsWith('%') ? ((span - layer) * parseFloat(v)) / 100 + layer / 2 : parseFloat(v) + layer / 2
-      const centres = cs.backgroundPosition.split(',').map((pair, n) => {
-        const [x, y] = pair.trim().split(/\s+/)
-        const [sw, sh] = (sizes[n] ?? sizes[0]).split(/\s+/)
-        const lw = sw === 'auto' ? box.w : parseFloat(sw)
-        const lh = (sh ?? sw) === 'auto' ? box.h : parseFloat(sh ?? sw)
-        return `${at(x, box.w, lw).toFixed(2)},${at(y, box.h, lh).toFixed(2)}`
-      })
-      return { layers: centres.length, distinct: new Set(centres).size, box }
-    }),
-  )
+  const faces = await page.locator('.remix-dice__face').evaluateAll(diePips)
   expect(faces.length, 'six faces, and the roll draws every one of them').toBe(6)
   for (const [n, face] of faces.entries()) {
     expect(face.layers, `face ${n + 1} draws ${n + 1} pips`).toBe(n + 1)
@@ -2263,6 +2292,74 @@ test('5.19 · ⌘D on the main feed gives a copy that is never the main feed', a
   await expect(canvasFrame(page).locator('#canvas .a17-1__pager'), 'the copy draws no pager of its own').toHaveCount(1)
 })
 
+// DW-257 (Story 5.24d) — THE MAIN-FEED RULE'S OTHER DOORS, on every commit. The server door is `read.ts`'s `designateAll`,
+// which the harness now opens through too (its Home carries no flag of its own: the stops above see the rule's choice).
+// The local hydrate is the second door, and the paint's edit read the third.
+test('DW-257: the local hydrate is a door the rule stands at — a kept copy with no main feed opens with exactly one', async ({ page }) => {
+  const PROJECT = '00000000-0000-4000-8000-000000000009'
+  await open(page)
+  await expect(chipRow(page), 'the control: the harness Home opens with its main feed').toHaveCount(1)
+  // the editor's own record of this project, written as it opened: every Home flag taken off, as a copy kept on a device
+  // from before the rule holds it, and the first row renamed, so the reload is seen to open from THIS copy
+  const kept = 'Kept on this device'
+  const unflag = () => page.evaluate(({ id, name }) => new Promise((resolve, reject) => {
+    const req = indexedDB.open('inflozo-doc-harness')
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const db = req.result
+      const store = db.transaction('meta', 'readwrite').objectStore('meta')
+      const get = store.get(id)
+      get.onerror = () => reject(get.error)
+      get.onsuccess = () => {
+        const row = get.result
+        if (!row?.docs?.home) { db.close(); resolve(false); return }
+        row.docs.home.instances = row.docs.home.instances.map((i, n) => ({ ...i, isMainFeed: false, ...(n === 0 ? { layerName: name } : {}) }))
+        const put = store.put(row)
+        put.onerror = () => reject(put.error)
+        put.onsuccess = () => { db.close(); resolve(true) }
+      }
+    }
+  }), { id: PROJECT, name: kept })
+  await expect.poll(unflag, 'the editor has written its local record').toBe(true)
+  await page.reload()
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect(page.locator('[data-layer-row]').filter({ hasText: kept }), 'the control: the reload opened from the kept copy').toHaveCount(1)
+  await expect(chipRow(page), 'repaired as it entered: exactly one main feed').toHaveCount(1)
+})
+
+test('DW-257: an edit that needs a read no press made asks for it exactly once — a secondary feed set to By tag, on the site\'s content', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces' })
+  await answeringSite(page)
+  const asked = []
+  page.on('request', (r) => {
+    if (r.method() === 'GET' && r.url().includes('/ghost/api/content/')) asked.push(r.url())
+  })
+  await open(page)
+  await expect(page.locator('iframe[title$="canvas"]'), 'the control: the page is drawn from the site').toHaveAttribute('data-source', 'site')
+  // a secondary feed — the main feed's copy, whose own query is one the page already read
+  const main = await mainKey(page)
+  const own = (await rows(page)).page
+  await select(page, main)
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).page.length).toBe(own.length + 1)
+  const copy = (await rows(page)).page.find((k) => !own.includes(k))
+  await select(page, copy)
+  const data = await openData(page)
+  // THE EDIT: its Source set to By tag — a tag filter no press has read
+  const tagged = (url) => /[?&]filter=tag(%3A|:)/.test(url)
+  await data.locator('button[id$="-source"]').focus()
+  await page.keyboard.press('Enter')
+  await menuTo(page, LIB.POST_SOURCE_WORDS.tag)
+  await page.keyboard.press('Enter')
+  await expect(data.locator('button[id$="-source"]')).toContainText(LIB.POST_SOURCE_WORDS.tag)
+  await expect.poll(() => asked.filter(tagged).length, 'the paint asked for the read the edit needs').toBeGreaterThan(0)
+  await expect(page.locator('iframe[title$="canvas"]'), 'and drew the page from the site when it landed — never dropped whole to the sample').toHaveAttribute('data-source', 'site')
+  await page.waitForTimeout(1500)
+  // the feed's query in both orders (the panel's Order reads either): each a read of its own, and each asked ONCE
+  const reads = asked.filter(tagged)
+  expect(reads, 'each read the edit needs, asked exactly once').toEqual([...new Set(reads)])
+})
+
 test('5.19 · Source and the picked list from the keyboard: Hand-picked, three picks, and ⌥↓ moves one — announced', async ({ page }) => {
   await open(page)
   const added = await placeSecondGrid(page)
@@ -2862,6 +2959,37 @@ test('5.21 · the editor re-reads the site ONCE per opening — reading along to
   await expect.poll(() => rereads, 'opened on the Paywall: the one read').toBe(1)
   await page.waitForTimeout(1500)
   expect(rereads, 'opened on the Paywall: one read, never two').toBe(1)
+})
+
+// DW-279 (Story 5.24d) — A RE-READ THAT LANDS, seen by the harness at last. `surfaces-later` is the linked site with an EMPTY
+// stored snapshot, and the harness's own re-read (`harness/editor/actions.ts`, the editor's `reread` seam) answers it
+// with both surfaces. The answer is HELD until the empty snapshot has painted, so it can only reach the canvas through
+// the re-read's own redraw: unheld, it lands before the first paint, `paint()` draws it, and cutting the redraw stays
+// green (executed at Story 5.24d's Create).
+test('DW-279: a re-read that lands redraws Ghost\'s strip and button over a canvas painted without them', async ({ page }) => {
+  const PROJECT = '00000000-0000-4000-8000-000000000009'
+  let release
+  const answer = new Promise((go) => { release = go })
+  let rereads = 0
+  await page.route('**/app/harness/editor**', async (route) => {
+    const r = route.request()
+    // the re-read is the action whose body is the project id alone (5.21's stop above)
+    if (r.method() === 'POST' && r.headers()['next-action'] && r.postData() === JSON.stringify([PROJECT])) {
+      rereads++
+      await answer
+    }
+    await route.continue()
+  })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces-later' })
+  await page.goto(HARNESS)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect.poll(() => rereads, 'the one re-read as the editor opens, held').toBe(1)
+  expect((await shims(page)).surfaces, 'the control: the stored snapshot is empty, so the canvas painted no surface').toBe(0)
+  release()
+  await expect.poll(async () => (await shims(page)).surfaces, 'the answer landed and the re-read drew both surfaces').toBe(2)
+  const drawn = await shims(page)
+  expect(drawn.words, 'the strip carries the answer\'s words').toBe(SHIM_WORDS)
+  expect(drawn.stripFirst && drawn.buttonAtEnd && drawn.buttonShown, 'each where Ghost puts it').toBe(true)
 })
 
 test('5.21 · From your Ghost site (the owner\'s finding): two Layers rows name the shims; Enter chooses one and lets the section go; Space hides it in this browser, Preview shows it anyway; a synthesized pointer over the strip draws the tag', async ({ page }) => {
@@ -3879,6 +4007,32 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
 /** Every part's commits since the last `resetRenders`, by its `<Profiler>` id — a part that did not render is absent. */
 const renders = (page) => page.evaluate(() => ({ ...(window.__inflozoRenders ?? {}) }))
 const resetRenders = (page) => page.evaluate(() => { window.__inflozoRenders = {} })
+/** DW-292 — RENDERS SETTLED, the condition a render count means, never a fixed moment. The Design block's tiles commit
+ *  LATE inside `<Profiler id="design">`: each preview frame loads, paints and re-renders its card on its own time, so after
+ *  `panelsSettle`'s two frames and 150 ms a tile the SELECTION started could still land after `resetRenders` and be
+ *  counted as the gesture's — red on CI on unchanged code (5.24a's push), and 2 runs in 4 on a warm server here. So first
+ *  every Design-block tile on screen has its frame drawn, then the counts hold still for three frame-plus-50 ms ticks. */
+const rendersSettle = (page) =>
+  page.evaluate(async () => {
+    const tick = () => new Promise((done) => requestAnimationFrame(() => setTimeout(done, 50)))
+    const by = Date.now() + 15000
+    const onScreen = (el) => { const r = el.getBoundingClientRect(); return r.width > 0 && r.height > 0 && r.bottom > 0 && r.top < innerHeight }
+    // a tile's frame is drawn once `SectionPreview` has measured its section: until then it is `visibility: hidden`
+    const tilesDrawn = () => [...document.querySelectorAll('#editor-design [data-design-tile]')].filter(onScreen)
+      .every((tile) => { const frame = tile.parentElement?.querySelector('iframe'); return !!frame && frame.style.visibility !== 'hidden' })
+    while (!tilesDrawn()) {
+      if (Date.now() > by) throw new Error('the Design block\'s tiles never all drew')
+      await tick()
+    }
+    let last = JSON.stringify(window.__inflozoRenders ?? {})
+    for (let still = 0; still < 3;) {
+      if (Date.now() > by) throw new Error('the editor never stopped rendering')
+      await tick()
+      const now = JSON.stringify(window.__inflozoRenders ?? {})
+      still = now === last ? still + 1 : 0
+      last = now
+    }
+  })
 /** The root at a place among the canvas's sections, as `pointAt` takes it (`:nth-child` is 1-based, the place 0-based). */
 const rootAt = (place) => `#canvas > :nth-child(${place + 1})`
 
@@ -3894,12 +4048,12 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     // a section selected, so a Controls panel is drawn that the hover must leave alone
     await select(page, own[1])
     const at = await selectedPlace(page)
-    await panelsSettle(page)
+    await rendersSettle(page)
     await resetRenders(page)
     await pointAt(page, rootAt(at + 1))
     await expect(page.locator('[data-section-pill]'), 'the control: the section is pointed at').toHaveCount(1)
     await expect(page.locator('[data-layer-row].bg-coral-wash'), 'and its Layers row carries the wash').toHaveCount(1)
-    await panelsSettle(page)
+    await rendersSettle(page)
     const drawn = await renders(page)
     expect(drawn['layers-row'] ?? 0, 'at most the two rows whose wash changed').toBeLessThanOrEqual(2)
     expect(drawn['layers-row'] ?? 0, 'the pointed row itself').toBeGreaterThanOrEqual(1)
@@ -3912,10 +4066,10 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     await open(page)
     const own = (await rows(page)).page
     await select(page, own[1])
-    await panelsSettle(page)
+    await rendersSettle(page)
     await resetRenders(page)
     await select(page, own[2])
-    await panelsSettle(page)
+    await rendersSettle(page)
     const drawn = await renders(page)
     expect(drawn['layers-row'] ?? 0, 'the two rows whose selection changed, and no other').toBeLessThanOrEqual(2)
     expect(drawn['layers-row'] ?? 0, 'the newly chosen row').toBeGreaterThanOrEqual(1)
@@ -3929,7 +4083,7 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     const setting = await styleSetting(page)
     const was = await setting.checked()
     await setting.stop.focus()
-    await panelsSettle(page)
+    await rendersSettle(page)
     await resetRenders(page)
     // the render that commits the change shows it: read after the press with no frame in between, only the microtasks
     // React flushes a key's own update in
@@ -3940,7 +4094,7 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
       return [...radio.closest('[role="radiogroup"]').querySelectorAll('[role="radio"]')].findIndex((r) => r.getAttribute('aria-checked') === 'true')
     })
     expect(shown, 'FR-F4: the panel shows the change in the render that commits it').not.toBe(was)
-    await panelsSettle(page)
+    await rendersSettle(page)
     const drawn = await renders(page)
     expect(drawn['settings'] ?? 0, 'the Controls panel redraws').toBeGreaterThanOrEqual(1)
     expect(drawn['layers-row'] ?? 0, 'no Layers row').toBe(0)
@@ -3951,12 +4105,12 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     const own = (await rows(page)).page
     const fourth = own[3]
     await select(page, fourth)
-    await panelsSettle(page)
+    await rendersSettle(page)
     await resetRenders(page)
     await page.locator(`[data-layer-row="${fourth}"]`).focus()
     await page.keyboard.press('Alt+ArrowDown')
     await expect.poll(async () => (await rows(page)).page.indexOf(fourth)).toBe(4)
-    await panelsSettle(page)
+    await rendersSettle(page)
     const drawn = await renders(page)
     expect(drawn['layers-row'] ?? 0, 'at most the two rows that swapped').toBeLessThanOrEqual(2)
     expect(drawn['settings'] ?? 0, 'the Controls panel does not redraw').toBe(0)
@@ -3966,12 +4120,12 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
   test('`]` on the ringed section redraws the Controls panel and at most its own row — no other row', async ({ page }) => {
     await open(page)
     await selectRinged(page)
-    await panelsSettle(page)
+    await rendersSettle(page)
     await resetRenders(page)
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press(']')
     await expect(counter(page)).toHaveText(/^2 of \d+$/)
-    await panelsSettle(page)
+    await rendersSettle(page)
     const drawn = await renders(page)
     expect(drawn['settings'] ?? 0, 'the Controls panel draws the new design').toBeGreaterThanOrEqual(1)
     expect(drawn['layers-row'] ?? 0, 'at most the section\'s own row').toBeLessThanOrEqual(1)
@@ -3989,17 +4143,17 @@ test.describe('Story 5.23b — the panels redraw only what changed, on the long 
     await page.keyboard.press('Escape')
     await expect(page.locator('#editor-controls')).toBeHidden()
     const at = await selectedPlace(page)
-    await panelsSettle(page)
+    await rendersSettle(page)
     await resetRenders(page)
     await pointAt(page, rootAt(at + 1))
     await expect(page.locator('[data-section-pill]'), 'the control: the section is pointed at').toHaveCount(1)
-    await panelsSettle(page)
+    await rendersSettle(page)
     expect((await renders(page))['rail-row'] ?? 0, 'the hover redraws no rail row').toBe(0)
     await resetRenders(page)
     await page.locator(`[data-rail-row="${own[2]}"]`).focus()
     await page.keyboard.press('Enter')
     await expect(page.locator(`[data-rail-row="${own[2]}"]`)).toHaveAttribute('aria-current', 'true')
-    await panelsSettle(page)
+    await rendersSettle(page)
     const drawn = (await renders(page))['rail-row'] ?? 0
     expect(drawn, 'the selection redraws its two rail rows').toBeLessThanOrEqual(2)
     expect(drawn, 'the newly chosen one').toBeGreaterThanOrEqual(1)

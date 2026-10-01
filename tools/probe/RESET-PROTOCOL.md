@@ -104,6 +104,15 @@ tools/probe/record-shim.py --self-check` holds both offline, in `pnpm test`. The
 approved T1/T3 writes were refused as a change to a shared resource, and the story stopped until the owner said go in
 the session itself. A refused write is asked again, never routed around.
 
+**Hand changes on the test sites are the owner's, kept and written down** (DW-299, Story 5.24d). Ghost's actions log
+(`GET /ghost/api/admin/actions/`) records an edit made in Ghost Admin and never a staff-token write, so a row there is a
+person's (MEASUREMENTS §61). Three on T3 reached a recording and are **kept**: `probe-gated-post` retitled "PROBEs Gated
+Post" with an Unsplash feature image (2026-09-25, 04:48–04:49 UTC), "Reading the margins"'s uploaded feature image
+(04:50 UTC), and `portal_button_icon` set to `icon-5` (2026-09-26, 16:35 UTC) — each made by the owner in Ghost Admin
+per T3's actions log, and recorded in `packages/library/contexts/fixtures/ghost5.json`, as is the profile picture he
+gave his own T3 user at 04:48 UTC. His other logged edits those two days left Ghost's default or the seeded value
+(§61). An inventory that finds a value no probe wrote reads the log before calling it anyone's.
+
 ---
 
 ## What I will never do without asking, on any of the three

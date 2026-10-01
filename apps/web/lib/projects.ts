@@ -1,4 +1,4 @@
-import { z } from 'zod'
+import { z } from './zod.ts'
 
 /**
  * The project vocabulary: the name rules, the slug, the updated-at line and the typed-confirm

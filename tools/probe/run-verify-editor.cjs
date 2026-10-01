@@ -211,10 +211,20 @@
 // and out, whose full repaint must equal the canvas node for node (`isEqualNode`).
 // Because the step now EDITS the plant, it sends the owed work with ⌘S and waits for Synced, then leaves the editor before
 // putting Home back (step 52's reason): a departing page's own flush once landed after step 61's hydrate (Dev, run 3).
+// Story 5.24d (the sweep's checks and walks) makes its waits the conditions they mean. `steady` retries every idempotent
+// signed-in load once — page loads, reloads and the contexts' own GETs — and says so in a `stall` note with its ISO time,
+// method and path, never retrying a magic link or `goBack` (DW-183); a death's HARNESS ERROR carries its time too, so
+// Vercel's request logs can classify each (DW-204). `actionsSettle` waits for every server action in flight before step 89
+// reloads and step 90 reads the record back (DW-291, DW-284); step 89 replays the captured subject save, valid and then
+// forged seven ways, and walks the Author and Page canvases (DW-219); 66b waits the app's own sync budget (DW-220); step
+// 36 measures the pill against the section hovered when the scroll settles (DW-222); the screencast decoders skip and count
+// a frame that will not decode (DW-236); step 6's signed-out loop asks both frame routes (DW-117); the four CSP reads no
+// longer leave Projects out (DW-174); and the dice's pips are `die-pips.cjs`'s one measurement (DW-216).
 const { chromium, devices, request: pwRequest } = require('@playwright/test')
 const fs = require('node:fs')
 const path = require('node:path')
 const AXE = require.resolve('axe-core/axe.min.js')
+const diePips = require('./die-pips.cjs')
 const APP = process.env.APP_ORIGIN || 'https://app.inflozo.com'
 const PREFIX = process.env.APP_PREFIX ?? ''
 const LOCAL = Boolean(process.env.APP_ORIGIN)
@@ -368,11 +378,81 @@ async function main() {
     const page = await context.newPage()
     page.on('pageerror', (e) => note('pageerror', String(e)))
     await page.goto(await magic(emailA), { waitUntil: 'load' })
-    // ONE RETRY ON A NAVIGATION (Story 5.9's review): four runs in a row died on a 30s `page.goto` timeout, each at
-    // a different line, while curl had the same URL in a quarter of a second. After the magic link, which is
-    // single-use and must never be asked for twice.
-    const steady = (p) => { const go = p.goto.bind(p); p.goto = (url, o) => go(url, o).catch(() => go(url, o)); return p }
+    /* ONE RETRY FOR AN IDEMPOTENT SIGNED-IN LOAD, AND IT SAYS SO (DW-183, DW-204 — Story 5.24d). Story 5.9's review
+     * gave page navigations one silent retry after four runs died on a 30 s `page.goto` while curl had the same URL in a
+     * quarter of a second. Three things were wrong with it, each executed: it RETRIED THE MAGIC LINK on the five pages
+     * wrapped before their sign-in (a second goto re-spends a single-use token and can manufacture a sign-in failure that
+     * never happened); it left every `page.reload` and every `request.get` unwrapped, which is where most later deaths
+     * landed; and it was silent, so a stall could not be told from a product fault afterwards. Now every load that can be
+     * asked twice is retried once, a first failure is a `stall` note carrying its ISO start time, the method and the
+     * PATHNAME ALONE (never a query: a magic link's token rides in one) — the time Vercel's request logs are read at
+     * (DW-204's classification) — and a second failure is the run's HARNESS ERROR, as before.
+     * NEVER RETRIED: `/auth/confirm?…` (single-use) and `goBack` (a timed-out history move may already have moved, and
+     * a second one goes back twice — `ERR_ABORTED`, executed at Story 5.3). */
+    const stall = (method, url, started) => note('stall', `${started} ${method} ${new URL(url, APP).pathname} — retried once`)
+    const steady = (p) => {
+      const go = p.goto.bind(p)
+      p.goto = async (url, o) => {
+        if (/\/auth\/confirm\?/.test(url)) return go(url, o)
+        const started = new Date().toISOString()
+        try {
+          return await go(url, o)
+        } catch {
+          stall('GET', url, started)
+          return go(url, o)
+        }
+      }
+      const reload = p.reload.bind(p)
+      p.reload = async (o) => {
+        const url = p.url()
+        const started = new Date().toISOString()
+        try {
+          return await reload(o)
+        } catch {
+          stall('GET', url, started)
+          return go(url, o)
+        }
+      }
+      return p
+    }
+    /** …and a context's own request API (step 2's, step 5's, 6's and 79's signed-in GETs, step 9's raw stream): the
+     *  same one retry and note. The retry takes the default patience — a `timeout` the first call carried was the stall. */
+    const steadyRequests = (ctx) => {
+      const get = ctx.request.get.bind(ctx.request)
+      ctx.request.get = async (url, o = {}) => {
+        const started = new Date().toISOString()
+        try {
+          return await get(url, o)
+        } catch {
+          stall('GET', url, started)
+          const { timeout: _stalled, ...rest } = o
+          return get(url, rest)
+        }
+      }
+      return ctx
+    }
     steady(page)
+    steadyRequests(context)
+    /* SERVER ACTIONS SETTLED (DW-219, DW-284, DW-291 — Story 5.24d), the condition a read-back of the database means. The
+     * subject save and the looked-at record are server actions the editor sends in the background — the record ONE AT A
+     * TIME, on its serial chain — and step 89 reloaded and step 90 polled on fixed waits a slow save outlasted on production. So
+     * a read-back first waits until no `next-action` POST of this page is in flight and none has started for ~500 ms;
+     * on its deadline it answers what is still in flight, for the check that follows to name. */
+    const actionsInFlight = new Set()
+    page.on('request', (r) => { if (r.method() === 'POST' && r.headers()['next-action']) actionsInFlight.add(r) })
+    for (const event of ['requestfinished', 'requestfailed']) page.on(event, (r) => actionsInFlight.delete(r))
+    const actionsSettle = async (ms) => {
+      const by = Date.now() + ms
+      let quiet = null
+      for (;;) {
+        if (actionsInFlight.size === 0) {
+          quiet ??= Date.now()
+          if (Date.now() - quiet >= 500) return []
+        } else quiet = null
+        if (Date.now() > by) return [...actionsInFlight].map((r) => `${new URL(r.url()).pathname} ${(r.postData() ?? '').slice(0, 80)}`)
+        await page.waitForTimeout(50)
+      }
+    }
     check('step 1 — A signs in', !page.url().includes('/sign-in'), page.url())
 
     const openCard = async () => {
@@ -569,7 +649,7 @@ async function main() {
     await painted('post')
     editorRoots.post = await roots()
     await page.screenshot({ path: `${OUT}/editor-post-1440x900.png` })
-    const pilotsPage = await context.newPage()
+    const pilotsPage = steady(await context.newPage())
     await pilotsPage.goto(at('/pilots'), { waitUntil: 'load' })
     await pilotsPage.waitForFunction(() => !!document.querySelector('iframe[data-pilot]')?.contentDocument?.querySelector('#canvas > *'), null, { timeout: 30000 })
     const pilotsRoot = async (id) => {
@@ -766,7 +846,8 @@ async function main() {
       if (id === 'a4/13') await page.screenshot({ path: `${OUT}/editor-hover-latest-post-1440x900.png` })
     }
     // computed `font-family` is the REQUESTED stack, true whether or not a face loaded: the faces are read instead. A
-    // `… Fallback` family is `next/font`'s `local()` metric stand-in, which errors on a machine without that font.
+    // `… Fallback` family is a `local()` metric stand-in (`app/fonts/fonts.css`, the app's own since DW-246), which errors
+    // on a machine without that font.
     const inter = await tagNow()
     const shipped = (inter?.faces ?? []).filter((f) => !/ Fallback: /.test(f))
     check('step 10 — the tag\'s Inter is the editor\'s, added to the canvas document as `inflozo-chrome …` faces that have all loaded', !!inter && /^"inflozo-chrome Inter"/.test(inter.family) && shipped.length > 0 && shipped.every((f) => / loaded$/.test(f)), JSON.stringify({ family: inter?.family, faces: inter?.faces }))
@@ -970,12 +1051,20 @@ async function main() {
     }, [n, MARK_X])
     const unmark = () => canvasFrame().evaluate(() => document.querySelectorAll('[data-probe-marker]').forEach((e) => e.remove()))
     // per frame, the smallest distance from a marker's outer edge to the nearest coral row in a column clear of it
+    // DW-236 (Story 5.24d): a frame `img.decode()` refuses — `EncodingError` once ended a ten-minute walk at step 15 — is
+    // skipped and COUNTED, for the check's detail; the floors that follow still refuse a capture with too few frames left
+    // to measure, so a broken film is never a pass. The cause is still unknown and it is NOT a frame cut short: Chromium
+    // decodes a PNG truncated anywhere past its header (executed at this story's Dev), so the control spoils the header.
     const drift = (shots, box) => decoder.evaluate(async ({ shots, box }) => {
       const out = []
+      let skipped = 0
       for (const b64 of shots) {
         const img = new Image()
         img.src = `data:image/png;base64,${b64}`
-        await img.decode()
+        if (!(await img.decode().then(() => true, () => false))) {
+          skipped++
+          continue
+        }
         const k = img.width / box.viewport
         const c = document.createElement('canvas')
         c.width = img.width
@@ -998,7 +1087,7 @@ async function main() {
         if (edges.length === 0) continue
         out.push(Math.min(...edges.map((e) => (corals.length ? Math.min(...corals.map((y) => Math.abs(y - e))) : 999) / k)))
       }
-      return out
+      return { out, skipped }
     }, { shots, box })
     const scrollCase = async (label, n) => {
       const r0 = await onScreen(n)
@@ -1020,9 +1109,9 @@ async function main() {
       const still = await drift(await film(async () => {}), box)
       const moving = await drift(await film(() => screencast.send('Input.synthesizeScrollGesture', { x: 700, y: pointerY, yDistance: -500, speed: 1200, gestureSourceType: 'mouse' })), box)
       await unmark()
-      const control = still.length > 0 && Math.max(...still) <= 3
-      check(`step 15 — ${label}: control at rest, the line lies on the marker (≤ 3px)`, control, still.map((v) => v.toFixed(1)).join(' '))
-      check(`step 15 — ${label}: while the canvas scrolls, the line stays on its section in every captured frame (≤ 3px)`, control && moving.length >= 5 && Math.max(...moving) <= 3, `${moving.length} frames · worst ${Math.max(0, ...moving).toFixed(1)}px · ${moving.map((v) => v.toFixed(0)).join(' ')}`)
+      const control = still.out.length > 0 && Math.max(...still.out) <= 3
+      check(`step 15 — ${label}: control at rest, the line lies on the marker (≤ 3px)`, control, `${still.out.map((v) => v.toFixed(1)).join(' ')} · ${still.skipped} skipped`)
+      check(`step 15 — ${label}: while the canvas scrolls, the line stays on its section in every captured frame (≤ 3px)`, control && moving.out.length >= 5 && Math.max(...moving.out) <= 3, `${moving.out.length} frames · ${moving.skipped} skipped · worst ${Math.max(0, ...moving.out).toFixed(1)}px · ${moving.out.map((v) => v.toFixed(0)).join(' ')}`)
     }
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
@@ -1042,12 +1131,17 @@ async function main() {
     await page.waitForTimeout(200)
     const head = await onScreen(HEADER)
     const stuckShots = await film(() => screencast.send('Input.synthesizeScrollGesture', { x: 700, y: 600, yDistance: -500, speed: 1200, gestureSourceType: 'mouse' }))
-    const stuckRows = await decoder.evaluate(async ({ shots, x, top }) => {
+    const stuckFilm = await decoder.evaluate(async ({ shots, x, top }) => {
       const out = []
+      let skipped = 0
       for (const b64 of shots) {
         const img = new Image()
         img.src = `data:image/png;base64,${b64}`
-        await img.decode()
+        // DW-236: skipped and counted, as `drift` does
+        if (!(await img.decode().then(() => true, () => false))) {
+          skipped++
+          continue
+        }
         const k = img.width / 1440
         const c = document.createElement('canvas')
         c.width = img.width
@@ -1057,10 +1151,11 @@ async function main() {
         const d = g.getImageData(Math.round(x * k), Math.round(top * k), 1, Math.round(6 * k)).data
         out.push([...Array(d.length / 4).keys()].some((i) => Math.abs(d[i * 4] - 255) < 14 && Math.abs(d[i * 4 + 1] - 89) < 20))
       }
-      return out
+      return { out, skipped }
     }, { shots: stuckShots, x: head.card.left + 600, top: head.card.top })
+    const stuckRows = stuckFilm.out
     const scrolled = await canvasFrame().evaluate(() => scrollY)
-    check('step 15 — Header — Rail selected (sticky): its box\'s top line is on the card\'s top edge in every captured frame of the scroll', scrolled > 100 && stuckRows.length >= 5 && stuckRows.every(Boolean), `scrolled ${scrolled} · ${stuckRows.length} frames · ${stuckRows.map((v) => (v ? 'y' : 'n')).join('')}`)
+    check('step 15 — Header — Rail selected (sticky): its box\'s top line is on the card\'s top edge in every captured frame of the scroll', scrolled > 100 && stuckRows.length >= 5 && stuckRows.every(Boolean), `scrolled ${scrolled} · ${stuckRows.length} frames · ${stuckFilm.skipped} skipped · ${stuckRows.map((v) => (v ? 'y' : 'n')).join('')}`)
     await page.keyboard.press('Escape')
     await page.mouse.move(120, 400)
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
@@ -1925,14 +2020,31 @@ async function main() {
     await page.waitForTimeout(250)
 
     // ── step 36 — the pill hides from the first canvas scroll and is placed again 150ms after the last ──
+    /* DW-222 (Story 5.24d): THE SECTION THE POINTER IS OVER WHEN THE SCROLL SETTLES, read a frame later — the pill
+       re-places on the frame after the hover changes (`section-pill.tsx`). A wheel moves the canvas under a pointer that
+       never moved, and the hover follows whichever section that leaves under it; measured against the section hovered
+       BEFORE the scroll, this stop failed whenever the 300px carried the next one under the pointer (once in two at
+       `d4d6e266`, settled 10px below the next section's top). A pointer left on the old section is still measured
+       against it, so the stop asks the same of the pill either way: on the hovered section's corner rule. */
+    const hoveredOnScreen = () => page.evaluate(async () => {
+      await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+      const f = document.querySelector('section[aria-label="Canvas"] iframe')
+      const fr = f.getBoundingClientRect()
+      const s = fr.width / f.offsetWidth
+      const root = f.contentDocument.querySelector('#canvas > [data-inflozo-hover]')
+      if (!root) return null
+      const r = root.getBoundingClientRect()
+      return { x: fr.left + r.left * s, y: fr.top + r.top * s, right: fr.left + r.right * s, bottom: fr.top + r.bottom * s, place: [...root.parentElement.children].indexOf(root) }
+    })
     await hoverOn(GRID)
     const placed36 = await pillNow()
     await page.mouse.wheel(0, 300)
     await page.waitForTimeout(60)
     const scrolling36 = await pillNow()
     await page.waitForTimeout(700)
+    const hovered36 = await hoveredOnScreen()
     const settled36 = await pillNow()
-    const grid36 = await onScreen(GRID)
+    const grid36 = hovered36 ?? { x: NaN, y: NaN, right: NaN, bottom: NaN, place: null }
     /* WHAT "ON ITS SECTION" MEANS ONCE THE CORNER HAS SCROLLED OFF. The pill is kept inside the canvas card, the way
        P0-1's toolbar is kept inside the window — which is what the matrix row asks for in so many words ("like P0-1's
        toolbar"). So a section whose top is above the card draws the pill at the card's edge and NOT 10px below a
@@ -1942,7 +2054,7 @@ async function main() {
     const card36 = await page.locator('section[aria-label="Canvas"] iframe').boundingBox()
     const within = (p, r, box) => p.left >= Math.max(r.left, box.x) - 1 && p.right <= Math.min(r.right, box.x + box.width) + 1
       && p.top >= Math.max(r.top, box.y) - 1 && p.bottom <= Math.min(r.bottom, box.y + box.height) + 1
-    check('step 36 — the pill hides from the first canvas scroll and is placed again on its own section when the scroll settles', !!placed36 && placed36.visibility === 'visible' && scrolling36?.visibility === 'hidden' && settled36?.visibility === 'visible' && Math.abs(grid36.right - settled36.right - 10) <= 1 && within(settled36, { left: grid36.x, right: grid36.right, top: grid36.y, bottom: grid36.bottom }, card36), `${JSON.stringify({ placed: placed36?.visibility, scrolling: scrolling36?.visibility, settled: settled36?.visibility })} · pill ${JSON.stringify({ left: settled36?.left, right: settled36?.right, top: settled36?.top, bottom: settled36?.bottom })} · root ${JSON.stringify({ left: grid36.x, right: grid36.right, top: grid36.y, bottom: grid36.bottom })}`)
+    check('step 36 — the pill hides from the first canvas scroll and is placed again on the hovered section when the scroll settles', !!placed36 && placed36.visibility === 'visible' && scrolling36?.visibility === 'hidden' && settled36?.visibility === 'visible' && Math.abs(grid36.right - settled36.right - 10) <= 1 && within(settled36, { left: grid36.x, right: grid36.right, top: grid36.y, bottom: grid36.bottom }, card36), `${JSON.stringify({ placed: placed36?.visibility, scrolling: scrolling36?.visibility, settled: settled36?.visibility })} · pill ${JSON.stringify({ left: settled36?.left, right: settled36?.right, top: settled36?.top, bottom: settled36?.bottom })} · hovered root ${grid36.place === GRID ? 'the grid' : `#${grid36.place}`} ${JSON.stringify({ left: grid36.x, right: grid36.right, top: grid36.y, bottom: grid36.bottom })}`)
     /* And the same claim PER FRAME, which is what "never between the two" means (the epic context's direction to
        measure the pill against step 15's scroll capture). A sampler in the page reads, on every animation frame of a
        real wheel scroll, whether the pill is hidden and — when it is not — how far its own corner is from the corner
@@ -1953,12 +2065,19 @@ async function main() {
       page.evaluate(async () => {
         const f = document.querySelector('section[aria-label="Canvas"] iframe')
         const out = []
+        // the section hovered as sampling starts, so a frame counts as `rehovered` only when the hover MOVES
+        let last = f.contentDocument.querySelector('[data-inflozo-hover]')
         const read = () => {
           const el = document.querySelector('[data-section-pill]')
           if (!el) return out.push(null)
           if (getComputedStyle(el).visibility === 'hidden') return out.push('hidden')
           const root = f.contentDocument.querySelector('[data-inflozo-hover]')
           if (!root) return out.push(null)
+          // DW-222: the frame the hover moved to another section is skipped — the pill re-places on the NEXT one
+          if (root !== last) {
+            last = root
+            return out.push('rehovered')
+          }
           const fr = f.getBoundingClientRect()
           const s = fr.width / f.offsetWidth
           const [r, p] = [root.getBoundingClientRect(), el.getBoundingClientRect()]
@@ -1979,7 +2098,7 @@ async function main() {
       (async () => { for (let i = 0; i < 6; i++) { await page.mouse.wheel(0, 180); await page.waitForTimeout(60) } })(),
     ])
     const off = frames.filter((v) => typeof v === 'number')
-    check('step 36 — per frame of a real scroll, the pill is either hidden or wholly on its own section (≤ 3px, step 15\'s tolerance) — never between the two', frames.length > 30 && frames.includes('hidden') && off.length > 0 && Math.max(...off) <= 3, `${frames.length} frames · ${frames.filter((v) => v === 'hidden').length} hidden · ${off.length} placed · worst ${Math.max(0, ...off).toFixed(1)}px outside its section`)
+    check('step 36 — per frame of a real scroll, the pill is either hidden or wholly on its own section (≤ 3px, step 15\'s tolerance) — never between the two', frames.length > 30 && frames.includes('hidden') && off.length > 0 && Math.max(...off) <= 3, `${frames.length} frames · ${frames.filter((v) => v === 'hidden').length} hidden · ${frames.filter((v) => v === 'rehovered').length} skipped as the hover moved · ${off.length} placed · worst ${Math.max(0, ...off).toFixed(1)}px outside its section`)
 
     // Story 5.8: the edits above survive a reload now, so the seed is asked for (see `freshLoad`)
     await freshLoad()
@@ -3186,6 +3305,23 @@ async function main() {
       await page.locator('#editor-redo').click(); await page.waitForTimeout(350)
     }
     const stateIs58 = (want) => page.waitForFunction((w) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === w, want, { timeout: 15000 }).then(() => true, () => false)
+    /* DW-220 (Story 5.24d): 66b WAITS FOR THE CONDITION IT MEANS — the stored revision moving — for as long as the product
+       itself may take: one flush's own budget (`SYNC_TIMEOUT_MS`, the abort every flush carries), the first backoff
+       before its retry, and a margin. Its 15 s was shorter than one slow flush, so a hide flush the server answered late
+       read as one that never landed — failed once each at three stories on unchanged code. A Retrying seen on the way is
+       a note, not a failure: the editor said what it was doing, and the save landed. Both numbers are the app's own. */
+    const SYNC_WAIT58 = JOURNAL58.SYNC_TIMEOUT_MS + JOURNAL58.BACKOFF_S[0] * 1000 + 5000
+    const RETRYING58 = JOURNAL58.labelOf({ kind: 'retrying', attempt: 1, seconds: JOURNAL58.BACKOFF_S[0] })
+    const revisionPast58 = async (from) => {
+      const by = Date.now() + SYNC_WAIT58
+      const seen = new Set()
+      for (;;) {
+        seen.add(await page.evaluate(() => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') ?? null).catch(() => null))
+        if ((await revisionNow58()) > from) return { moved: true, seen: [...seen] }
+        if (Date.now() > by) return { moved: false, seen: [...seen] }
+        await page.waitForTimeout(250)
+      }
+    }
     const beforeHide58 = await revisionNow58()
     await owe58()
     const owedBeforeHide58 = (await topBarNow()).state
@@ -3193,13 +3329,17 @@ async function main() {
       Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
       document.dispatchEvent(new Event('visibilitychange'))
     })
-    const hidSynced58 = await stateIs58(SYNCED58)
+    const hid58 = await revisionPast58(beforeHide58)
+    const hidSynced58 = hid58.moved && (await stateIs58(SYNCED58))
     await page.evaluate(() => { delete document.visibilityState; document.dispatchEvent(new Event('visibilitychange')) })
+    if (hid58.seen.includes(RETRYING58)) note('step 66b — the hide flush went through Retrying before it landed', JSON.stringify(hid58.seen))
     check('step 66b — hiding the tab with an edit owed sends it, and the editor HEARS the answer: grey, then green',
-      owedBeforeHide58 === OWED58 && hidSynced58 && (await revisionNow58()) === beforeHide58 + 1, `${owedBeforeHide58} → synced ${hidSynced58} · revision ${beforeHide58} → ${await revisionNow58()}`)
+      owedBeforeHide58 === OWED58 && hidSynced58 && (await revisionNow58()) === beforeHide58 + 1, `${owedBeforeHide58} → synced ${hidSynced58} · revision ${beforeHide58} → ${await revisionNow58()} within ${SYNC_WAIT58} ms · states seen ${JSON.stringify(hid58.seen)}`)
     await owe58()
     await page.keyboard.press(`${CMD58}+s`)
-    const backSynced58 = await stateIs58(SYNCED58)
+    const back58 = await revisionPast58(beforeHide58 + 1)
+    const backSynced58 = back58.moved && (await stateIs58(SYNCED58))
+    if (back58.seen.includes(RETRYING58)) note('step 66b — the ⌘S after coming back went through Retrying before it landed', JSON.stringify(back58.seen))
     const selfConflict58 = await page.locator('dialog[open]').count()
     check('step 66b — and the next ⌘S after coming back is an ordinary save: no "changed somewhere else" against its own write',
       backSynced58 && selfConflict58 === 0 && (await revisionNow58()) === beforeHide58 + 2, `dialogs ${selfConflict58} · revision → ${await revisionNow58()}`)
@@ -3981,25 +4121,11 @@ async function main() {
         faces: b.querySelectorAll('.remix-dice__face').length,
         preserved: getComputedStyle(b.querySelector('.remix-dice__cube')).transformStyle,
         pip: getComputedStyle(b.querySelector('.remix-dice__face--1')).backgroundImage,
-        // R-164: WHERE THE PIPS LAND, not the rule that placed them. Each pip is a gradient layer, and a layer at
-        // `background-size: auto` fills the whole face — at which size a percentage position resolves to
-        // `(box - layer) x pct` = 0 and all six faces draw ONE centred dot. That shipped, and the owner saw it.
-        pips: [...b.querySelectorAll('.remix-dice__face')].map((f) => {
-          const cs = getComputedStyle(f)
-          const sizes = cs.backgroundSize.split(',').map((v) => v.trim())
-          const at = (v, span, layer) =>
-            v.endsWith('%') ? ((span - layer) * parseFloat(v)) / 100 + layer / 2 : parseFloat(v) + layer / 2
-          const centres = cs.backgroundPosition.split(',').map((pair, n) => {
-            const [x, y] = pair.trim().split(/\s+/)
-            const [sw, sh] = (sizes[n] ?? sizes[0]).split(/\s+/)
-            const lw = sw === 'auto' ? f.offsetWidth : parseFloat(sw)
-            const lh = (sh ?? sw) === 'auto' ? f.offsetHeight : parseFloat(sh ?? sw)
-            return `${at(x, f.offsetWidth, lw).toFixed(2)},${at(y, f.offsetHeight, lh).toFixed(2)}`
-          })
-          return new Set(centres).size
-        }),
       }
     })
+    // R-164: WHERE THE PIPS LAND, not the rule that placed them — `die-pips.cjs`, the ONE measurement the keyboard journey
+    // runs too (DW-216): with a layer the size of the face, every centre is the same centre and each count collapses to 1
+    if (dice512) dice512.pips = (await page.locator('#editor-remix .remix-dice__face').evaluateAll(diePips)).map((f) => f.distinct)
     check('step 88 — R-163: the dice is in the top bar, LEADS the right-hand cluster ahead of the sun, and is icon-only with its words as its accessible name and its hover title',
       dice512 !== null && dice512.label === 'Site Remix — ⇧R' && dice512.title === dice512.label && dice512.words === '' &&
       dice512.first && dice512.beforeSun, JSON.stringify(dice512 && { ...dice512, pip: undefined }))
@@ -4277,7 +4403,10 @@ async function main() {
 
     await page.locator('#editor-source').click()
     await page.waitForTimeout(500)
+    // DW-219: the save this press sends is CAPTURED — replayed below, valid and then forged, from this signed-in page
+    const save513 = page.waitForRequest((r) => r.method() === 'POST' && !!r.headers()['next-action'] && (r.postData() ?? '').includes(`"${WITHOUT513.slug}"`), { timeout: 15000 }).catch(() => null)
     await page.locator(`#editor-source-menu [data-subject-row="${WITHOUT513.slug}"]`).click()
+    const saveRequest513 = await save513
     await page.waitForTimeout(600)
     const noPic513 = await featureNow()
     check('step 89 — FR-H8: an article with no picture loses the WHOLE element — not an empty box, not a gap. Two articles, two different pages.',
@@ -4289,16 +4418,74 @@ async function main() {
       JSON.stringify({ with: cardWith513, without: cardWithout513 }))
 
     // ── the choice is a STATED, STORED one: it survives a reload, and it is per canvas ──
-    await page.waitForTimeout(1200)
+    // DW-291 (Story 5.24d): the reload waits for the save it depends on — every server action settled, then the row read
+    // back until it holds the choice — never a fixed moment, which a slow save outlasted once in two runs (5.23b's review)
+    const prefs513 = (key, select = 'template_key,preview_subject,user_id') => call('/rest/v1', `/project_template_prefs?project_id=eq.${P}&template_key=eq.${key}&select=${select}`).then((r) => r.body ?? [])
+    /** the row for `key`, read back until its subject is `slug` (or the deadline passes) */
+    const storedAs513 = async (key, slug) => {
+      let rows = []
+      for (const by = Date.now() + 15000; Date.now() < by; await page.waitForTimeout(500)) {
+        rows = await prefs513(key)
+        if (rows[0]?.preview_subject?.slug === slug) break
+      }
+      return rows
+    }
+    const inFlight513 = await actionsSettle(30000)
+    const stored513 = await storedAs513('post', WITHOUT513.slug)
     await page.reload({ waitUntil: 'load' })
-    await page.waitForTimeout(1200)
+    await painted('post').catch(() => null)
+    await page.waitForTimeout(600)
     const afterReload513 = await sourcePill()
     check('step 89 — the choice survives a reload: `project_template_prefs.preview_subject`, its first writer and its first reader',
-      afterReload513 !== null && afterReload513.subject === WITHOUT513.title && (await featureNow()).figure === false, JSON.stringify(afterReload513 && { subject: afterReload513.subject }))
-    const stored513 = (await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}&template_key=eq.post&select=template_key,preview_subject,user_id`)).body ?? []
+      afterReload513 !== null && afterReload513.subject === WITHOUT513.title && (await featureNow()).figure === false, JSON.stringify(afterReload513 && { subject: afterReload513.subject, inFlight: inFlight513 }))
     check('step 89 — and it is the row the schema has been holding since day one, against this user',
       stored513.length === 1 && stored513[0].preview_subject?.slug === WITHOUT513.slug && stored513[0].preview_subject?.kind === 'post' && stored513[0].user_id === ids[0],
-      JSON.stringify(stored513))
+      JSON.stringify({ stored513, inFlight: inFlight513 }))
+
+    /* ── DW-219 (Story 5.24d): THE SAVE'S REFUSALS, ASKED OF THE SERVER ITSELF ──
+       `setPreviewSubject` refuses a project id that is not a uuid, a template key no canvas owns, a slug empty or past
+       Ghost's 191, a kind its canvas cannot carry and any `source` mark but the site's — and then writes under the
+       caller's own session, so RLS refuses another user's project. The save captured above is replayed from this signed-in
+       page with its arguments edited: ONCE VALID, with another post's slug, which must land and move the row (the
+       replay's control — a replay that changed nothing would make every refusal below vacuous), then forged in each way
+       the I/O matrix names. Every forgery must answer the product's own sentence and leave both projects' rows as they
+       were: A's byte-identical, B's still none. */
+    const args513 = JSON.parse(saveRequest513?.postData() ?? 'null')
+    const replay513 = (args) => page.evaluate(async ([url, headers, body]) => {
+      const r = await fetch(url, { method: 'POST', headers, body })
+      return { status: r.status, text: await r.text() }
+    }, [saveRequest513.url(), Object.fromEntries(['next-action', 'next-router-state-tree', 'content-type', 'accept'].map((h) => [h, saveRequest513.headers()[h]]).filter(([, v]) => v !== undefined)), JSON.stringify(args)])
+    const REFUSED513 = JSON.stringify(SUBJ.SAVE_REFUSED).slice(1, -1)
+    if (!Array.isArray(args513) || args513.length !== 3 || args513[0] !== P) {
+      check('step 89 — DW-219: the subject save was captured as setPreviewSubject(projectId, templateKey, subject)', false, JSON.stringify(args513))
+    } else {
+      const OTHER513 = POSTS513.find((r) => r.caption === null && r.slug !== WITHOUT513.slug && r.slug !== WITH513.slug)
+      const valid513 = await replay513([P, args513[1], { ...args513[2], slug: OTHER513.slug }])
+      const moved513 = await storedAs513('post', OTHER513.slug)
+      check('step 89 — DW-219: the captured save, replayed from the signed-in page with another post, answers {"ok":true} and moves the row — the replay\'s control',
+        valid513.status === 200 && valid513.text.includes('{"ok":true}') && moved513[0]?.preview_subject?.slug === OTHER513.slug, JSON.stringify({ status: valid513.status, row: moved513[0]?.preview_subject }))
+      const rowA513 = JSON.stringify(await prefs513('post', '*'))
+      const forged513 = [
+        ['a project id that is not a uuid', ['abc', args513[1], args513[2]]],
+        ['a template key no canvas owns', [P, 'nonsense', args513[2]]],
+        ['an empty slug', [P, args513[1], { ...args513[2], slug: '' }]],
+        ['a slug of 192 characters, one past Ghost\'s bound', [P, args513[1], { ...args513[2], slug: 'x'.repeat(192) }]],
+        ['a kind the Post canvas cannot carry', [P, args513[1], { ...args513[2], kind: 'page' }]],
+        ['a source mark that is not the site\'s', [P, args513[1], { ...args513[2], source: 'ghost' }]],
+        ['ANOTHER USER\'S project (B\'s)', [B, args513[1], args513[2]]],
+      ]
+      const answers513 = []
+      for (const [label, args] of forged513) {
+        const a = await replay513(args)
+        answers513.push({ label, status: a.status, refused: a.text.includes(REFUSED513), ok: a.text.includes('{"ok":true}') })
+      }
+      const rowAAfter513 = JSON.stringify(await prefs513('post', '*'))
+      const rowsB513 = (await call('/rest/v1', `/project_template_prefs?project_id=eq.${B}&select=*`)).body
+      check('step 89 — DW-219: every forged save is refused in the product\'s own sentence — a bad project id, key, empty slug, 192-character slug, kind and source, and another user\'s project',
+        answers513.every((a) => a.refused && !a.ok), JSON.stringify(answers513))
+      check('step 89 — DW-219: and none of them wrote: A\'s row is byte-identical and B\'s project still has no preference row',
+        rowAAfter513 === rowA513 && JSON.stringify(rowsB513) === '[]', JSON.stringify({ unchanged: rowAAfter513 === rowA513, rowsB513 }))
+    }
 
     // ── THE ARCHIVE, WHICH WAS WRONG BEFORE ANYBODY CHOSE ANYTHING ──
     await page.goto(editorUrl('tag'), { waitUntil: 'load' })
@@ -4330,6 +4517,41 @@ async function main() {
     check('step 89 — choosing a different tag re-filters the page to THAT tag\'s posts',
       other513.every((t) => otherText513.includes(t)) && (await sourcePill()).subject === otherTag513.title,
       JSON.stringify({ tag: otherTag513.slug, missing: other513.filter((t) => !otherText513.includes(t)) }))
+
+    // ── DW-219 (Story 5.24d): THE AUTHOR AND PAGE CANVASES, which only unit tests had reached ──
+    // Author: the pill names its fixture writer untouched, another is chosen, and its row is read back
+    await page.goto(editorUrl('author'), { waitUntil: 'load' })
+    await painted('author').catch(() => null)
+    await page.waitForTimeout(600)
+    const authorFixture513 = OW513.fixtureSubject('author.hbs')
+    const authorRows513 = SUBJ.subjectOptions(SRC513, 'author')
+    const authorPill513 = await sourcePill()
+    check('step 89 — DW-219: the Author canvas names its writer, untouched, and it is the fixture the library derives',
+      authorPill513 !== null && authorPill513.has === 'true' && authorPill513.subject === authorRows513.find((r) => r.slug === authorFixture513.slug)?.title,
+      JSON.stringify(authorPill513 && { subject: authorPill513.subject, want: authorFixture513.slug }))
+    const otherAuthor513 = authorRows513.find((r) => r.slug !== authorFixture513.slug)
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    await page.locator(`#editor-source-menu [data-subject-row="${otherAuthor513.slug}"]`).click()
+    await actionsSettle(30000)
+    const authorStored513 = await storedAs513('author', otherAuthor513.slug)
+    check('step 89 — DW-219: choosing another writer names it and stores it — the Author row read back',
+      (await sourcePill())?.subject === otherAuthor513.title && authorStored513[0]?.preview_subject?.slug === otherAuthor513.slug && authorStored513[0]?.preview_subject?.kind === 'author',
+      JSON.stringify({ want: otherAuthor513.slug, stored: authorStored513 }))
+    // Page: one subject — the style-guide page — and the menu holds exactly that row
+    await page.goto(editorUrl('page'), { waitUntil: 'load' })
+    await painted('page').catch(() => null)
+    await page.waitForTimeout(600)
+    const pageRows513 = SUBJ.subjectOptions(SRC513, 'page')
+    const pagePill513 = await sourcePill()
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    const pageMenu513 = await page.evaluate(() => [...document.querySelectorAll('#editor-source-menu [data-subject-row]')].map((r) => r.dataset.subjectRow))
+    await page.keyboard.press('Escape')
+    await page.waitForTimeout(200)
+    check('step 89 — DW-219: the Page canvas names its one subject, and its menu holds exactly that row',
+      pagePill513 !== null && pagePill513.has === 'true' && pagePill513.subject === pageRows513[0]?.title &&
+      JSON.stringify(pageMenu513) === JSON.stringify(pageRows513.map((r) => r.slug)), JSON.stringify({ subject: pagePill513?.subject, menu: pageMenu513, want: pageRows513.map((r) => r.slug) }))
 
     // ── A SUBJECT THAT IS GONE: the fixture renders, the canvas is never empty, and it SAYS SO ──
     await page.goto('about:blank')
@@ -4600,6 +4822,10 @@ async function main() {
       JSON.stringify({ offsets: offsets90, template: [open90, paid90, free90, anon90].map((b) => b.template) }))
 
     // ── the record is REAL: the stored row holds all three, and a reload keeps every dot away ──
+    // DW-284 (Story 5.24d): the record is written by server actions ONE AT A TIME (`recordViewed`'s serial chain), so the
+    // read-back first waits for every one of them to have answered — then polls, as before. On production the poll's ten
+    // seconds once ran out with Free's write still queued behind Paid's; the wait names anything still in flight.
+    const inFlight90 = await actionsSettle(30000)
     let stored90 = []
     for (let i = 0; i < 20; i++) {
       stored90 = await storedViewed90('home')
@@ -4608,7 +4834,7 @@ async function main() {
     }
     check('step 90 — `project_template_prefs.member_states_viewed` holds all three for Home, against this user — the column\'s first writer',
       stored90.length === 1 && same90(stored90[0].member_states_viewed, VA.VISITORS) && stored90[0].user_id === ids[0],
-      JSON.stringify(stored90))
+      JSON.stringify({ stored90, stillInFlight: inFlight90 }))
     await pick90(PAID90)
     await page.reload({ waitUntil: 'load' })
     await painted('home')
@@ -5901,10 +6127,10 @@ async function main() {
     // back before steps 6, 6b and 7, which read it. Same `freshLoad` the rest of the walk uses.
     await freshLoad()
 
-    // SCOPED TO THE EDITOR AND THE CANVAS, as step 14's and step 70's are: step 80 opens the Projects page inside this
-    // session, and that page's zod JIT probe is a recorded violation of its own (DW-201) — the review's first complete
-    // run failed here on that one event and no other
-    const session = violations.splice(0).filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
+    // EVERY PAGE THE SESSION OPENED, Projects included (DW-174, DW-201 — Story 5.24d): until this story the read was scoped to
+    // the editor and the canvas, because Projects ran zod's eval probe on every load (step 80 opens it inside this
+    // session); `apps/web/lib/zod.ts` sets `jitless` before any app schema is built, so a report there is a finding again
+    const session = violations.splice(0)
     check('step 5 — the scripted session — folds, /post, Back, steps 10–13\'s and 15\'s hover, select, edits, reset, Esc and scrolling, and Story 5.3\'s typing, marks, links, paste, line breaks, a button\'s label, the lock pill, the scrolling toolbar, the panel\'s own field and the press on nothing, Story 5.5\'s switcher, its soft navigations and the whole round trip, Story 5.6\'s mode flips, dark authoring, resets, both clear entry points and the Theme settings screen, Story 5.7\'s device changes, folds, arrows and the 40-section fixture, Story 5.8\'s edits, undos, redos, ⌘Z, ⇧⌘Z, ⌘S, its two reloads and its Retrying panel, and Story 5.9\'s whole keyboard map — the skip link, the Tab walk, `L`, `.`, `1` `2` `3`, ⌘D, Del, the Esc ladder, the `?` card and every deferred key, and Story 5.12\'s dice, its roll, its confirm and `⇧R`, and Story 5.13\'s pill, its menu, its search, its two picks, its reload and its planted fallback, and Story 5.14\'s View as — its menu, its three visitors, its reloads, every key pressed at it, the Member visibility it gates and the canvas switch it survives — and Story 5.15\'s `core`, run from the editor against the canvas window while designing and in Preview, and Preview itself — in by the pill and by `P`, out by Back to editing, `Esc` and `P`, at Desktop and at Mobile, with a link, a submit and typing pressed in it — and Story 5.16\'s page 2, entered from D5d\'s row on Home and on Tag, edited, reloaded, measured at three devices in two windows, its header\'s R-180 ask cancelled and confirmed, and left by its pill — and Story 5.19\'s main feed, its chip pointed at and selected, a second feed placed, reassigned, deleted, hidden, shown, duplicated and undone, P0·5\'s Data group through every Source with three picks moved by ⌥↓, Latest Post\'s one pick, the Tag canvas\'s archive note and a crafted stored value — records zero securitypolicyviolation events in either document', session.length === 0, JSON.stringify(session))
     // the control: a script carrying each document's OWN nonce runs new Function(''). The editor's nonce is read off its
     // own scripts; the canvas document has none, so the frame is reloaded and its nonce read off that response's policy.
@@ -5997,7 +6223,8 @@ async function main() {
     check('step 6 — the same three on /settings answer the SAME real 404, above the settings skeleton', settingsAnswers.every((a) => JSON.stringify(a) === JSON.stringify(answers[0])), JSON.stringify(settingsAnswers))
     check('step 6 — B\'s project, a random uuid and abc answer identical real 404s', answers.every((a) => a.status === 404 && JSON.stringify(a) === JSON.stringify(answers[0])), JSON.stringify(answers))
     const stranger = await pwRequest.newContext()
-    for (const [label, url, want] of [['/projects/<id>', editorUrl(), 307], ['/canvas', at('/canvas'), 303]]) {
+    // DW-117 (Story 5.24d): every frame route guards itself — a route handler beside its page, outside `(authed)`'s layout
+    for (const [label, url, want] of [['/projects/<id>', editorUrl(), 307], ['/canvas', at('/canvas'), 303], ['/controls/frame', at('/controls/frame'), 303], ['/style-guide/frame', at('/style-guide/frame'), 303]]) {
       const r = await stranger.get(url, { maxRedirects: 0 })
       check(`step 6 — signed out, ${label} answers ${want} to /sign-in`, r.status() === want && /\/sign-in$/.test(new URL(r.headers().location, APP).pathname), `HTTP ${r.status()} → ${r.headers().location}`)
     }
@@ -6080,7 +6307,7 @@ async function main() {
     await noIdb.addInitScript(() => {
       Object.defineProperty(window, 'indexedDB', { configurable: true, get() { throw new Error('site data is switched off in this browser') } })
     })
-    const noIdbPage = await noIdb.newPage()
+    const noIdbPage = steady(await noIdb.newPage())
     await noIdbPage.goto(await magic(emailA), { waitUntil: 'load' })
     await noIdbPage.goto(editorUrl(), { waitUntil: 'load' })
     await noIdbPage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
@@ -6112,16 +6339,15 @@ async function main() {
     const restoredNoIdb = await noIdbEdit()
     check('step 70 — "Syncing every change to the cloud" is true: one change, no ⌘S, and projects.revision moved',
       afterNoIdb === beforeNoIdb + 1 && restoredNoIdb === beforeNoIdb + 2, `revision ${beforeNoIdb} → ${afterNoIdb} → ${restoredNoIdb}`)
-    // scoped to the editor and the canvas exactly as step 14's `touchSession()` is: the magic link lands on `/`, whose
-    // own violation (zod's JIT probe, DW below) is not this context's subject
-    const noIdbOwn = noIdbViolations.filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
-    check('step 70 — that context records zero CSP violations of its own in the editor or the canvas', noIdbOwn.length === 0, JSON.stringify(noIdbViolations))
+    // every page this context opened, the magic link's landing on `/` included: until Story 5.24d (DW-174) Projects ran
+    // zod's eval probe on every load and the read was scoped to the editor and the canvas
+    check('step 70 — that context records zero CSP violations: the editor, the canvas and the Projects page it landed on', noIdbViolations.length === 0, JSON.stringify(noIdbViolations))
     await handBack(noIdbPage)
     await noIdb.close()
 
     // ── step 8 — axe, in its own context (bypassCSP: axe is injected, which the policy would refuse) ──
     const axeContext = await browser.newContext({ viewport: { width: 1440, height: 900 }, bypassCSP: true })
-    const axePage = await axeContext.newPage()
+    const axePage = steady(await axeContext.newPage())
     await axePage.goto(await magic(emailA), { waitUntil: 'load' })
     await axePage.goto(editorUrl(), { waitUntil: 'load' })
     await axePage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
@@ -6280,11 +6506,12 @@ async function main() {
     // carries the same recorder; the EvalError control is step 5's, in the same run
     const touchViolations = []
     await recorder(touchContext, touchViolations)
-    const touchPage = await touchContext.newPage()
+    const touchPage = steady(await touchContext.newPage())
     await touchPage.goto(await magic(emailA), { waitUntil: 'load' })
     await touchPage.goto(editorUrl(), { waitUntil: 'load' })
-    // the landing is the dashboard, whose DW-174 report can land after its `load`: only the editor's and the canvas's count
-    const touchSession = () => touchViolations.filter((v) => /\/(projects\/|canvas$)/.test(new URL(v.url).pathname))
+    // every page this context opened, the dashboard it landed on included: until Story 5.24d (DW-174) its zod report was
+    // left out, as one that could land after its `load`
+    const touchSession = () => touchViolations
     await touchPage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
     const heroN = stackOf('home').findIndex(([d]) => d === 'a4/13')
     const heroPoint = await touchPage.evaluate((n) => {
@@ -6367,7 +6594,7 @@ async function main() {
     check('step 14 — a tap inside the selected section\'s headline starts editing it, with a collapsed caret in it', tappedInto.editable && /a4-13__headline/.test(tappedInto.className) && tappedInto.collapsed && tappedInto.inside, JSON.stringify(tappedInto))
     await touchPage.keyboard.press('Escape')
     await touchPage.waitForTimeout(200)
-    check('step 14 — the touch context records zero securitypolicyviolation events in the editor or the canvas across the hold, the tap and the moving finger', touchSession().length === 0, JSON.stringify(touchViolations))
+    check('step 14 — the touch context records zero securitypolicyviolation events — the dashboard it landed on, the editor and the canvas — across the hold, the tap and the moving finger', touchSession().length === 0, JSON.stringify(touchViolations))
     await handBack(touchPage)
     await touchContext.close()
 
@@ -6456,7 +6683,7 @@ async function main() {
     await phone.locator('[data-small-screen] section a').first().tap()
     await phone.waitForURL((u) => u.pathname.endsWith('/sites'), { timeout: 30000 }).catch(() => null)
     check('step 97 — Your sites reaches the sites list', new URL(phone.url()).pathname.endsWith('/sites'), phone.url())
-    check('step 97 — the phone context records zero securitypolicyviolation events', phoneViolations.filter((v) => /\/(projects\/|sites$)/.test(new URL(v.url).pathname)).length === 0, JSON.stringify(phoneViolations))
+    check('step 97 — the phone context records zero securitypolicyviolation events', phoneViolations.length === 0, JSON.stringify(phoneViolations))
     await phoneContext.close()
 
     // ── step 98 — a TABLET on production: D8a, every target 44px, and the lock the phone never took ──
@@ -6665,8 +6892,8 @@ async function main() {
     await crossContext.close()
 
     // ── step 9 — the skeleton streams first ──
-    const streamContext = await browser.newContext()
-    await (await streamContext.newPage()).goto(await magic(emailA), { waitUntil: 'load' })
+    const streamContext = steadyRequests(await browser.newContext())
+    await steady(await streamContext.newPage()).goto(await magic(emailA), { waitUntil: 'load' })
     // STORY 5.22 — RE-EXPECTED: THE SERVER NEVER DRAWS THE EDITOR NOW. It cannot know the pointer, and a phone must never
     // mount the editor (R-201), so `Editor`'s gate draws the skeleton until the browser has asked — the Suspense fallback's
     // and the gate's are the same one. So on EVERY open the raw HTML carries the skeleton's sentence (its HTML, `>Opening…`,
@@ -6696,4 +6923,5 @@ async function main() {
 }
 // a Playwright timeout prints its call log, request headers included: a cookie line carries the throwaway account's
 // session, so those lines are stripped before anything reaches a log (review, 2026-09-18)
-main().catch((e) => { console.log(results.join('\n')); console.error('HARNESS ERROR', String(e && e.stack ? e.stack : e).replace(/^.*cookie.*$/gim, '  [a header line stripped]')); process.exitCode = 2 })
+// DW-204: the death carries its ISO time, as a `stall` note does, so Vercel's request logs can be read at it
+main().catch((e) => { console.log(results.join('\n')); console.error('HARNESS ERROR', new Date().toISOString(), String(e && e.stack ? e.stack : e).replace(/^.*cookie.*$/gim, '  [a header line stripped]')); process.exitCode = 2 })

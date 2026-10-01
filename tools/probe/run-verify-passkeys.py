@@ -109,16 +109,21 @@ APP = 'https://app.inflozo.com'
 WEB = os.path.join(HERE, '..', '..', 'apps', 'web')
 PG_DIR = os.path.abspath(os.path.join(WEB, 'node_modules', 'postgres'))
 
-# Where Playwright lives. Overridable, because it is outside this repository by construction.
+# Where Playwright lives. Overridable. THE REPOSITORY'S OWN COPY FIRST (Story 5.24d — the grep that ended DW-216, where the
+# controls walk reached into another checkout): Playwright and axe have been root devDependencies since Story 4.11, and
+# another checkout's copy moves when that checkout does. The old locations stay as fallbacks.
 # pnpm hoists nothing, so the real package sits under `.pnpm/<name>@<version>/node_modules/`.
 # The glob is deliberate: pinning a version here is the hardcoded-count mistake in another hat.
+REPO_MODULES = os.path.abspath(os.path.join(HERE, '..', '..', 'node_modules'))
 PLAYWRIGHT_CANDIDATES = [
     os.environ.get('PLAYWRIGHT_DIR', ''),
+    os.path.join(REPO_MODULES, '.pnpm', 'playwright@*', 'node_modules', 'playwright'),
     '/home/ghost/Dev/BMAD/inflozo/node_modules/playwright',
     '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@*/node_modules/playwright',
 ]
 AXE_CANDIDATES = [
     os.environ.get('AXE_PATH', ''),
+    os.path.join(REPO_MODULES, 'axe-core', 'axe.min.js'),
     '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/axe-core@*/node_modules/axe-core/axe.min.js',
 ]
 
@@ -336,6 +341,15 @@ const cardReach = async (page) => {
   const browser = await chromium.launch()
   const context = await browser.newContext()
   const page = await context.newPage()
+  // DW-287 (Story 5.24d): every load waits for `load` and then for its own landmark — never `networkidle`, which a live
+  // page does not promise (the controls walk died on one with nothing wrong). The landmark is the App Router having
+  // HYDRATED: Next appends its route announcer from an effect, so it exists only once the page's handlers do — what the
+  // presses that follow need, and what `networkidle` had been standing in for.
+  const land = async (p, url) => {
+    const r = await p.goto(url, { waitUntil: 'load' })
+    await p.waitForFunction(() => !!document.querySelector('next-route-announcer'), null, { timeout: 30000 })
+    return r
+  }
 
   // The virtual authenticator lives on the browser target, so it survives the sign-out below —
   // which is the whole point of the `revoked-signin` step: the AUTHENTICATOR still holds the
@@ -355,8 +369,8 @@ const cardReach = async (page) => {
 
   try {
     // ── sign in with the magic link the Python half minted
-    await page.goto(CONFIRM_1, { waitUntil: 'networkidle' })
-    await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
+    await land(page, CONFIRM_1)
+    await land(page, `${APP}/account`)
     step('signed-in', await page.locator('h1', { hasText: 'Account' }).count() > 0,
          `landed on ${page.url()}`)
 
@@ -496,7 +510,7 @@ const cardReach = async (page) => {
     wire = await passkeys()
     const gone = Boolean(id) && !wire.list.some((p) => p.id === id)
     // The same session must still render /account: a revoke is not a sign-out.
-    const reload = await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
+    const reload = await land(page, `${APP}/account`)
     const sessionHeld = reload.status() === 200 && !page.url().includes('/sign-in')
     step('revoke', gone && sessionHeld,
          `id off the wire=${gone}, list now ${wire.list.length}, ` +
@@ -505,7 +519,7 @@ const cardReach = async (page) => {
 
     // ── the revoked credential at sign-in. The authenticator still holds it.
     await context.clearCookies()
-    await page.goto(`${APP}/sign-in`, { waitUntil: 'networkidle' })
+    await land(page, `${APP}/sign-in`)
     await page.getByRole('button', { name: 'Sign in with a passkey' }).click()
     // Wait FOR the banner, not for a clock: a slow ceremony failed the step for timing (second
     // review, 2026-09-07). The 15s is the ceiling, not the wait.
@@ -540,8 +554,8 @@ const cardReach = async (page) => {
          `the alerts said ${JSON.stringify(said)}`)
 
     // ── the magic link still works — minted NOW, after the first was redeemed (docstring)
-    await page.goto(await magicLink(), { waitUntil: 'networkidle' })
-    const back = await page.goto(`${APP}/account`, { waitUntil: 'networkidle' })
+    await land(page, await magicLink())
+    const back = await land(page, `${APP}/account`)
     step('magic-link', back.status() === 200 && !page.url().includes('/sign-in'),
          `magic link landed on ${page.url()} (${back.status()})`)
 
@@ -578,7 +592,7 @@ const cardReach = async (page) => {
     //    carries the credential, and the challenge before it goes through. The matcher and the handler are kept,
     //    because `page.unroute` matches them BY REFERENCE (`run-verify-ghost-admin.py`'s `holding`).
     await context.clearCookies()
-    await page.goto(`${APP}/sign-in`, { waitUntil: 'networkidle' })
+    await land(page, `${APP}/sign-in`)
     let heard, letGo
     const held = new Promise((r) => { heard = r })
     const released = new Promise((r) => { letGo = r })

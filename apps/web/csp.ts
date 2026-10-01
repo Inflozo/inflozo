@@ -76,14 +76,14 @@ export function policy(host: string, nonce: string, dev = false): string {
   return [
     `default-src 'self'`,
     scriptSrc,
-    // Tailwind ships a stylesheet, but next/font injects an inline <style> for the three
-    // self-hosted faces and React inlines critical CSS. A style nonce would have to reach
-    // both, and neither is ours to stamp.
+    // Tailwind ships a stylesheet, but React inlines critical CSS, and a style nonce would have
+    // to reach every inline <style> the framework writes — none of them ours to stamp.
     `style-src 'self' 'unsafe-inline'`,
     `img-src 'self' data: https:`,
     ...(app ? [`connect-src ${APP_CONNECT}`] : []),
-    // No `font-src`: next/font self-hosts all three faces, so `default-src 'self'` already
-    // covers them and a second directive saying the same thing is one more thing to drift.
+    // No `font-src`: the app serves all three faces itself (`app/fonts/`, DW-246), so
+    // `default-src 'self'` already covers them and a second directive saying the same thing is
+    // one more thing to drift.
     // NOT 'none': AD-21's editing canvas is a same-origin iframe of this very host.
     `frame-ancestors 'self'`,
     `base-uri 'self'`,

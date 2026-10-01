@@ -4,6 +4,7 @@ Supabase project before a line of the choreography is written.
 
     env $(grep -E '^SUPABASE_(URL|SECRET_KEY|PUBLISHABLE_KEY)=' tools/probe/.env | xargs) \\
         python3 tools/probe/record-edit-lock.py
+    python3 tools/probe/record-edit-lock.py --self-check   # offline, in `pnpm test`: no server touched
 
 WHY IT EXISTS. The spec's whole approach is "no new SQL": acquisition and take-over are an
 optimistic compare-and-swap on `edit_locks.lock_generation`, expressed as a PostgREST filtered
@@ -38,11 +39,13 @@ WHAT IT EXECUTES, each step PASS, FAIL or RECORD, exiting non-zero if any step f
 
 THE FIXTURE. One throwaway account (`edit-lock-harness-<stamp>@inflozo.com`) and one project row of
 its own, both created here and deleted in a `finally`, with the Admin-API user count read before and
-after so a leak is loud. Nothing a customer owns is read or written. The two sessions are two real
-GoTrue sessions for that one account — `generate_link` then `POST /auth/v1/verify` — because the
-lock is one person's devices negotiating with each other (`projects.user_id` is one account and team
-seats are out of v1), and because RLS and the column grants only apply to a token that carries a
-real `sub`.
+after so a leak is loud; an account whose projects could not be made is deleted by `fixture()` itself
+(DW-245). A control that fails, or the network or a subprocess, is RUN VOID (exit 1); the script's own
+bug — a shape it did not expect — is PROBE ERROR with its traceback (exit 2). Nothing a customer owns
+is read or written. The two sessions are two real GoTrue sessions for that one account —
+`generate_link` then `POST /auth/v1/verify` — because the lock is one person's devices negotiating
+with each other (`projects.user_id` is one account and team seats are out of v1), and because RLS
+and the column grants only apply to a token that carries a real `sub`.
 
 NO KEY IS EVER PRINTED. Values reach a subprocess environment and nothing else.
 
@@ -56,6 +59,7 @@ import subprocess
 import sys
 import threading
 import time
+import traceback
 import urllib.error
 import urllib.request
 
@@ -446,22 +450,32 @@ def realtime(sb, tokens, project, other, steps):
 # ══ the fixture
 def fixture(sb, stamp):
     """One account and two projects of its own — the second exists only so the broadcast channel's
-    isolation can be controlled. Returns (user_id, email, project, other_project)."""
+    isolation can be controlled. Returns (user_id, email, project, other_project).
+
+    ANYTHING THAT FAILS AFTER THE ACCOUNT EXISTS DELETES IT, then goes on (DW-245): the caller never
+    learns the id of an account this raised out of, so its `finally` cannot remove it. Its projects
+    go with it — `projects.user_id` cascades from `auth.users` (SCHEMA.sql:223)."""
     status, user, raw = sb.admin('POST', '/admin/users', {
         'email': f'edit-lock-harness-{stamp}@inflozo.com', 'password': f'Probe-{stamp}-Aa1!',
         'email_confirm': True})
     if status not in (200, 201) or not (user or {}).get('id'):
         raise Void(f'the fixture account could not be created: HTTP {status} ({raw[:200]})')
     user_id = user['id']
-    projects = []
-    for n in (1, 2):
-        status, body, raw = sb.service('POST', '/projects?select=id', {
-            'user_id': user_id, 'name': f'edit-lock-harness-{stamp}-{n}',
-            'slug': f'edit-lock-harness-{stamp}-{n}', 'style_pack': {}})
-        if status != 201 or not body:
-            raise Void(f'the fixture project could not be created: HTTP {status} ({raw[:200]})')
-        projects.append(body[0]['id'])
-    return user_id, user['email'], projects[0], projects[1]
+    try:
+        projects = []
+        for n in (1, 2):
+            status, body, raw = sb.service('POST', '/projects?select=id', {
+                'user_id': user_id, 'name': f'edit-lock-harness-{stamp}-{n}',
+                'slug': f'edit-lock-harness-{stamp}-{n}', 'style_pack': {}})
+            if status != 201 or not body:
+                raise Void(f'the fixture project could not be created: HTTP {status} ({raw[:200]})')
+            projects.append(body[0]['id'])
+        return user_id, user['email'], projects[0], projects[1]
+    except BaseException:
+        status, _, _ = sb.admin('DELETE', f'/admin/users/{user_id}', {})
+        print('    the fixture account was deleted before the error went on' if status in (200, 204) else
+              f'    ** the fixture account {user_id} could NOT be deleted (HTTP {status}) — remove it by hand')
+        raise
 
 
 def section(steps, rt, stamp):
@@ -554,6 +568,75 @@ def section(steps, rt, stamp):
     return '\n'.join(out)
 
 
+def verdict(e):
+    """DW-245: a run that is VOID and a probe that is BROKEN are two results. A control that did not
+    pass, a subprocess or the network failing — `Void`, `SubprocessError`, `OSError` — is RUN VOID,
+    exit 1. Anything else (a `KeyError`, a `ValueError`: a shape the script did not expect) is the
+    script's own bug: PROBE ERROR with its traceback, exit 2. Prints, and returns the exit code."""
+    if isinstance(e, (Void, subprocess.SubprocessError, OSError)):
+        print(f'\n  ** RUN VOID — nothing written. {type(e).__name__}: {e}')
+        return 1
+    print('\n  ** PROBE ERROR — nothing written. The script met a shape it did not expect; that is its '
+          'own bug, not a result:')
+    traceback.print_exception(e, file=sys.stdout)
+    return 2
+
+
+def self_check():
+    """Offline, and touches no server: a failed project POST deletes the account it made, a project
+    that is created deletes nothing, and the classifier's two exits."""
+    import contextlib, io
+
+    class Fake:
+        """A Supabase whose account POST succeeds and whose project POST answers `project`."""
+        def __init__(self, project):
+            self.project, self.calls = project, []
+
+        def admin(self, method, path, body=None):
+            self.calls.append((method, path))
+            return (200, {'id': 'u-1', 'email': 'e@x'}, '') if method == 'POST' else (200, {}, '')
+
+        def service(self, method, path, body=None, prefer=None):
+            self.calls.append((method, path))
+            return self.project
+
+    def run(fake):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            try:
+                return fixture(fake, 'stamp'), out.getvalue()
+            except BaseException as e:   # noqa: BLE001 — returned, asserted below
+                return e, out.getvalue()
+
+    gone = ('DELETE', '/admin/users/u-1')
+    fake = Fake((500, {'code': 'x'}, 'refused'))
+    e, said = run(fake)
+    assert isinstance(e, Void) and 'project could not be created' in str(e), e
+    assert fake.calls[-1] == gone and 'was deleted' in said, fake.calls
+    fake = Fake((201, [{}], '[{}]'))           # a probe bug after the account: the row has no id
+    e, said = run(fake)
+    assert isinstance(e, KeyError) and fake.calls[-1] == gone, (e, fake.calls)
+    fake = Fake((201, [{'id': 'p'}], ''))      # THE CONTROL: nothing failed, so nothing is deleted
+    e, said = run(fake)
+    assert e == ('u-1', 'e@x', 'p', 'p') and gone not in fake.calls, (e, fake.calls)
+
+    def exits(error):
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            try:
+                raise error
+            except Exception as e:   # noqa: BLE001 — classified, as main does
+                return verdict(e), out.getvalue()
+    for error in (Void('a control'), subprocess.TimeoutExpired('node', 1), OSError('down')):
+        code, said = exits(error)
+        assert code == 1 and 'RUN VOID' in said and 'PROBE ERROR' not in said, (error, code, said)
+    for error in (KeyError('lock_generation'), ValueError('json')):
+        code, said = exits(error)
+        assert code == 2 and 'PROBE ERROR' in said and 'Traceback' in said and 'RUN VOID' not in said, (error, said)
+    print('self-check: a failed project POST deletes the fixture account (a Void and a KeyError), a fixture that '
+          'is built deletes nothing; Void, SubprocessError and OSError are RUN VOID (1), anything else PROBE ERROR (2)')
+
+
 def write_section(text):
     body = open(MEASUREMENTS).read().rstrip('\n')
     at = body.find('\n## 50. ')
@@ -565,6 +648,9 @@ def write_section(text):
 
 
 if __name__ == '__main__':
+    if '--self-check' in sys.argv[1:]:   # before the branch below, which would print the doc instead
+        self_check()
+        sys.exit(0)
     if any(a.startswith('-') for a in sys.argv[1:]):
         # a recorder that ran on `--help` would create accounts on the live project
         print(__doc__)
@@ -596,9 +682,8 @@ if __name__ == '__main__':
         takeover_guard(sb, tokens[0], project, steps)
         insert_grant(sb, tokens[0], project, user_id, steps)
         rt = realtime(sb, tokens, project, other, steps)
-    except (Void, subprocess.SubprocessError, OSError, ValueError, KeyError) as e:
-        print(f'\n  ** RUN VOID — nothing written. {type(e).__name__}: {e}')
-        sys.exit(1)
+    except Exception as e:   # noqa: BLE001 — classified: RUN VOID (1) or PROBE ERROR (2), DW-245
+        sys.exit(verdict(e))
     finally:
         if user_id:
             sb.admin('DELETE', f'/admin/users/{user_id}', {})

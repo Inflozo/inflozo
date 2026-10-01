@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { group, readTheme, shortName, themeFile } from './tokens.ts'
 import { COMPACT, PHONE } from './lib/floor.ts'
@@ -14,6 +14,15 @@ const EXPORT = join(PLANNING, 'design', 'claude-design-export', 'Inflozo')
 const DESIGN_MD = join(PLANNING, 'ux-designs', 'ux-Inflozo-2026-09-03', 'DESIGN.md')
 
 const tokens = readTheme(readFileSync(themeFile(), 'utf8'))
+
+/** Every .ts and .tsx source under a directory of apps/web — tests and declarations aside — read off the tree, never listed. */
+const sources = (dir: string = process.cwd()): string[] =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    if (e.name === 'node_modules' || e.name === '.next') return []
+    const p = join(dir, e.name)
+    if (e.isDirectory()) return sources(p)
+    return /\.tsx?$/.test(e.name) && !e.name.endsWith('.test.ts') && !e.name.endsWith('.d.ts') ? [p] : []
+  })
 
 /** Every frame in the export, read once. */
 const frames = readdirSync(EXPORT)
@@ -134,15 +143,7 @@ const EMAIL = join('lib', 'email-shell.ts')
 const GHOST = join('lib', 'ghost-surfaces.ts')
 
 test('no .ts or .tsx under apps/web carries a colour literal', () => {
-  const walk = (dir: string): string[] =>
-    readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
-      if (e.name === 'node_modules' || e.name === '.next') return []
-      const p = join(dir, e.name)
-      if (e.isDirectory()) return walk(p)
-      return /\.tsx?$/.test(e.name) && !e.name.endsWith('.test.ts') && !e.name.endsWith('.d.ts') ? [p] : []
-    })
-
-  const all = walk(process.cwd())
+  const all = sources()
   // The ONE exempt path, not any path ending in it: `endsWith` would have exempted a future
   // `components/lib/style-pack.ts` too, which is the habit the name was chosen against
   // (review, 2026-09-06).
@@ -211,16 +212,22 @@ test('every colour Ghost\'s two surfaces write is one Ghost itself put on a page
   assert.ok(source.includes(`'${DEFAULT_ACCENT}'`), 'the default accent is the one colour this test names')
 })
 
-test('every face the theme names is a face layout.tsx loads', () => {
+// DW-246 (Story 5.24d): the three faces are the app's own files, declared in ONE stylesheet, so the guard reads that
+// stylesheet — and refuses `next/font` coming back, which fetched them from Google at every build.
+test('every face the theme names is declared in app/fonts/fonts.css, every file it names is there, and nothing imports next/font', () => {
   const css = readFileSync(themeFile(), 'utf8')
   const inline = /@theme inline\s*\{([\s\S]*?)\n\}/.exec(css)
   assert.ok(inline, 'globals.css has no @theme inline block')
   const faces = [...inline[1].matchAll(/var\((--font-[a-z-]+)\)/g)].map((m) => m[1])
   assert.ok(faces.length > 0, 'the inline theme names no font variable')
-  const layout = readFileSync(join(process.cwd(), 'app', 'layout.tsx'), 'utf8')
-  for (const face of faces) {
-    assert.ok(layout.includes(`variable: '${face}'`), `${face} is read by the theme but no next/font call declares it`)
-  }
+  const FONTS = join(process.cwd(), 'app', 'fonts')
+  const fonts = readFileSync(join(FONTS, 'fonts.css'), 'utf8')
+  const declared = /:root\s*\{([^}]*)\}/.exec(fonts)?.[1] ?? ''
+  for (const face of faces) assert.match(declared, new RegExp(`${face}\\s*:`), `${face} is read by the theme but fonts.css declares no such variable`)
+  const files = [...fonts.matchAll(/url\(([^)]+)\)/g)].map((m) => (m[1] as string).replace(/^['"]|['"]$/g, ''))
+  assert.ok(files.length > 0, 'fonts.css names no file')
+  for (const file of files) assert.ok(existsSync(join(FONTS, file)), `fonts.css names ${file}, which is not in app/fonts/`)
+  for (const source of sources()) assert.doesNotMatch(readFileSync(source, 'utf8'), /from ['"]next\/font/, `${source} imports next/font — the faces are the app's own (DW-246)`)
 })
 
 test('the app’s three widths are the export’s three widths', () => {

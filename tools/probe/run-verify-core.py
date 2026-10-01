@@ -35,7 +35,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 MODULES_TS = os.path.join(ROOT, 'packages', 'library', 'src', 'modules.ts')
 MODULE_DIR = os.path.join(ROOT, 'packages', 'library', 'modules')
-PLAYWRIGHT = '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright'
+# the repository's own Playwright first — a root devDependency since Story 4.11 (Story 5.24d, the grep that ended DW-216,
+# where the controls walk reached into another checkout); that checkout's copy is only the fallback
+PLAYWRIGHT = next((p for p in sorted(glob.glob(os.path.join(ROOT, 'node_modules', '.pnpm', 'playwright@*', 'node_modules', 'playwright')))
+                   if os.path.isdir(p)), '/home/ghost/Dev/BMAD/inflozo/node_modules/.pnpm/playwright@1.61.1/node_modules/playwright')
 THEME_ZIP = 'inflozo-probe-core.zip'
 THROWN = 'inflozo-probe: the throwing row threw'
 
