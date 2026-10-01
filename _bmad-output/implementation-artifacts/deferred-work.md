@@ -6591,9 +6591,14 @@ origin: Story 5.18's code review (2026-09-24, Verification Gap). `run-verify-liv
 reason: a tile is the same `SectionPreview` the card is, handed the same `live`; a positive capped line needs a site
   with more than 100 posts, or a `page.route` rewrite of `meta.pagination.total` named as a simulated condition, as
   the network cut is.
-owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names
-  this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned — the first customer site with more than 100 posts (DW-248's
-  trigger), or the next story that extends the live-content walk.")*
+owner: Stories 5.24d (The sweep: the checks and the walks) and 9.1 (A1 — the content model, the stylesheet and designs
+  #1, #3, #4 and #13), whose cards name this entry: 5.24d reads the capped lines on the live-content walk under a
+  simulated total past the limit; 9.1, the first story to ship a ring of more than one design, has the walk read a ring
+  tile drawing the linked site's newest post on production. *(Story 5.24d's Create, 2026-10-01: every shipped category
+  holds one design, so production draws no ring strip and the tile half cannot run before 9.1. Was "Story 5.24d (The
+  sweep: the checks and the walks), one of the sweep's five stories (R-211), whose card names this entry"; Story 5.24a's
+  Dev, 2026-09-28: was "unowned — the first customer site with more than 100 posts (DW-248's trigger), or the next story
+  that extends the live-content walk.")*
 location: `tools/probe/run-verify-live-content.cjs` · `apps/web/components/editor/design-picker.tsx` ·
   `apps/web/components/controls/link-picker.tsx`
 
