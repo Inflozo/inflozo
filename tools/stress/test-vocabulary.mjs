@@ -1,7 +1,7 @@
 // The control for Story 4.1's grammar, placed where the thing it controls lives.
 //
-// `tools/stress/sections.js` is the EXECUTED archetype set — eight realistic sections, mean 39.1
-// elements and 21.0 directives each, compiled and gated on both gscan majors for four rounds. If
+// `tools/stress/sections.js` is the EXECUTED archetype set — realistic sections, one per kind, sized in
+// MEASUREMENTS §14 and compiled and gated on both gscan majors since round 1. If
 // the new vocabulary cannot describe them, it does not describe the thing that was proven to work,
 // and no amount of documentation fixes that.
 //
@@ -24,7 +24,7 @@ const require = createRequire(import.meta.url)
 const here = dirname(fileURLToPath(import.meta.url))
 const REPO = join(here, '..', '..')
 
-const { A, ORDER, source } = require('./sections.js')
+const { A, ORDER, source, QUERIES, TARGET } = require('./sections.js')
 const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
 const { REFERENCE_TOKENS, TOKEN_NAMES, referenceTokensCss } =
@@ -159,6 +159,24 @@ check('every controls sample renders with a named target and raises no chrome li
     }
     if (checkChromeLiterals(jsdoc(), html).length) throw new Error(`controls/${n}: ${checkChromeLiterals(jsdoc(), html).join(' · ')}`)
   }
+})
+
+// Story 5.24c (DW-125): a render that names its template checks every binding against the context matrix (FR-H7), which
+// a render naming none cannot. Each archetype renders at its own target with its own queries; the control is a render
+// the matrix refuses, a feed at post.hbs, so a target that stopped being checked would fail here.
+check('every archetype renders at its own target with its own queries, and a feed at post.hbs is still refused', () => {
+  const refused = []
+  for (const kind of ORDER) {
+    try {
+      renderTheme(jsdoc(), source({ kind, i: 1 }), { target: TARGET[kind], dataBindings: QUERIES[kind] })
+    } catch (e) {
+      refused.push(`${kind} at ${TARGET[kind]}: ${e.message.split('\n').slice(0, 2).join(' ')}`)
+    }
+  }
+  if (refused.length) throw new Error(refused.join('\n       '))
+  let control = null
+  try { renderTheme(jsdoc(), source({ kind: 'feed', i: 1 }), { target: 'post.hbs' }) } catch (e) { control = e }
+  if (!/"posts" is not available/.test(control?.message ?? '')) throw new Error(`the control rendered: a feed at post.hbs must be refused (FR-H7) — ${control?.message ?? 'no error'}`)
 })
 
 check('no archetype still carries the retired data-prop-attr2', () => {

@@ -82,13 +82,18 @@ test('R-173: a plain link reads the pack\'s two link tokens, at zero specificity
   for (const rule of rules) assert.equal(unwhere(rule.slice(0, rule.indexOf('{'))), '', `not zero-specificity: ${rule}`)
   // THE TOKENS, never a colour: the link row's own two names, read from the contract rather than written here
   const [color, decoration] = TOKEN_ROWS['FR-E1 · link style'] as [string, string]
-  const plain = rules.find((r) => r.startsWith(':where(a:not([class]))'))
+  const plain = rules.find((r) => r.startsWith(':where(a:not([class]), a[class=""])'))
   assert.ok(plain?.includes(`color: var(${color})`) && plain.includes(`text-decoration: var(${decoration})`), plain)
   assert.ok(!rules.some((r) => /#[0-9a-f]{3,8}\b|rgb\(/i.test(r)), 'a link rule writes a colour instead of reading a token')
   // NEVER INVISIBLE: on each ground a section recolours, the words keep the ground's own colour
   for (const ground of ['contrast', 'accent', 'image']) {
     assert.ok(rules.some((r) => r.includes(`[data-bg="${ground}"]`) && r.includes('color: inherit')), `a link on ${ground} keeps the page's link colour`)
+    // DW-224: there the words take the ground's colour, so the underline is the link's only sign — forced, whatever
+    // `--link-decoration` a pack sets (WCAG 1.4.1)
+    assert.ok(rules.some((r) => r.includes(`[data-bg="${ground}"]`) && r.includes('text-decoration-line: underline')), `a link on ${ground} can lose its underline`)
   }
+  // DW-224: an anchor with `class=""` is a plain link too, and every rule reaches it
+  for (const r of rules) assert.ok(r.slice(0, r.indexOf('{')).includes('a[class=""]'), `class="" escapes: ${r}`)
   // and every var(--…) the rules read is a declared token
   for (const name of rules.join(' ').match(/var\((--[a-z-]+)\)/g) ?? []) {
     assert.ok(TOKEN_NAMES.includes(name.slice(4, -1)), `${name} is not a token`)

@@ -7,7 +7,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { MODES, REPO, VIEWPORTS, cases, fixtureRows, packCss, packs, pilot, pilotIds, pilotsCanvasDocument } from './cases.mjs'
+import { MODES, REPO, VIEWPORTS, carriesMemberVisibility, cases, fixtureRows, packCss, packs, pilot, pilotIds, pilotsCanvasDocument } from './cases.mjs'
 
 const rows = (id) => fixtureRows(pilot(id))
 const names = (id) => rows(id).map((r) => r.name)
@@ -30,10 +30,16 @@ test('A24 #1 is a post-context design: the style-guide post, at post.hbs (FR-H3 
   assert.deepEqual(rows('a24/1'), [{ name: 'style-guide-post', target: 'post.hbs' }])
 })
 
-test('A1 #1: no feed rows and no post fixture; its markup gates by member, so the member rows are derived for it too', () => {
-  assert.ok(!names('a1/1').some((n) => n.startsWith('feed-') || n.startsWith('style-guide-')), names('a1/1').join(' · '))
-  assert.deepEqual(names('a1/1'), names('a22/1'))
-  assert.deepEqual(names('a4/13'), [''])
+test('DW-171 — the Show-to arms are the editor\'s: a design has them exactly when its category carries Member visibility', () => {
+  for (const id of pilotIds()) {
+    assert.equal(rows(id).some((r) => r.visibility !== undefined), carriesMemberVisibility(id), `${id}: the matrix's Show-to arms disagree with the editor's rule`)
+  }
+})
+
+test('A1 #1 gates by member and draws no Show to: visitor rows only. A4 #13 draws Show to and gates nothing: its base row beside them', () => {
+  assert.deepEqual(names('a1/1'), ['visitor-anonymous', 'visitor-free', 'visitor-paid'])
+  assert.deepEqual(names('a4/13'), ['', 'show-to-anonymous', 'show-to-free', 'show-to-paid'])
+  for (const r of rows('a4/13').filter((x) => x.visibility !== undefined)) assert.notEqual(r.member, r.visibility, `${r.name} is viewed by its own audience`)
 })
 
 test('every case is design × pack × mode × viewport × the design\'s own rows — counted from the axes, never stored', () => {

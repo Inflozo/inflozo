@@ -14,8 +14,6 @@
     "@site.linkedin": "LinkedIn",
     "@site.locale": "Site language",
     "@site.timezone": "Site time zone",
-    "@site.codeinjection_head": "Site header code",
-    "@site.codeinjection_foot": "Site footer code",
     "@site.meta_title": "Meta title",
     "@site.meta_description": "Meta description",
     "@site.og_title": "Facebook card title",
@@ -31,7 +29,9 @@
     "@config.posts_per_page": "Posts per page",
     "navigation": "Navigation",
     "total_members": "Member count",
-    "content_api_key": "Content API key"
+    "total_paid_members": "Paid member count",
+    "content_api_key": "Content API key",
+    "content_api_url": "Content API URL"
   },
   "error": {
     "statusCode": "Error code",

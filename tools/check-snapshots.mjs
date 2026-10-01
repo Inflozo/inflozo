@@ -133,7 +133,8 @@ function renderDesign(d) {
   const id = `${d.category}/${d.n}`
   let theme = null
   for (const target of entry.compileTarget) {
-    const refused = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings })
+    // DW-168: at the oldest Ghost the design claims, so a field the matrix dates later is refused by its `since`
+    const refused = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings, version: entry.ghostCompat.minVersion })
     if (refused.length > 0) throw new Error(`${id} at ${target}: checkBindings refused\n  ${refused.join('\n  ')}`)
     rt.renderCanvas(doc(), entry.html, input(entry, target))
     const files = snapshotFiles(rt.renderTheme(doc(), entry.html, input(entry, target)))
@@ -205,6 +206,12 @@ check('control — bindings per target: a title binding added to A1 #1 is refuse
   const html = d.html.replace(/(<[a-z][^>]*>)/, '$1<span data-bind="title">·</span>')
   const refused = rt.checkBindings(doc(), html, { target: 'default.hbs', dataBindings: d.design.dataBindings })
   return mustFail(refused, /"title"/, 'a post field at the top of default.hbs')
+})
+check('control — DW-168: A22 #1 claiming Ghost 5.61.0 is refused, naming the field it reads and the release that added it', () => {
+  const entry = assemble(byId('a22/1'))
+  const target = entry.compileTarget[0]
+  const refused = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings, version: '5.61.0' })
+  return mustFail(refused, /@site\.allow_self_signup arrived in Ghost 5\.62\.0/, `A22 #1 at ${target} claiming 5.61.0`)
 })
 check("control — the wrapper axis: A24 #1 at index.hbs is FR-H7's refusal naming title, and at post.hbs it renders", () => {
   const entry = assemble(byId('a24/1'))

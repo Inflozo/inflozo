@@ -6,7 +6,8 @@
 //   `apps/web/lib/pilots.ts` — the same door, validation included, the editor's pilots page reads;
 // - PACKS are the token sets that exist: every `*-tokens.css` beside the runtime. Epic 6 widens it (DW-169);
 // - MODES and VIEWPORTS are NFR-6(a)'s own: light/dark × 1440, 834, 390, 1440 at 200% zoom, 1440 with motion reduced;
-// - FIXTURE ROWS come from what the design IS, the way `/pilots` decides its own switcher (`paginates`, member arms).
+// - FIXTURE ROWS come from what the design IS, the way `/pilots` decides its own switcher (`paginates`, member arms,
+//   and the Show-to arms from `carriesMemberVisibility`, the editor's own rule — DW-171).
 //
 // The FR-H3 fixture pins, each DERIVED rather than listed, so a pin arrives with its category:
 //   A34  feed first · middle · partial last (+ empty, FR-H4)  ← the design paginates (`data-pagination=`)
@@ -17,9 +18,12 @@
 //   an empty tag                                               ← the paginating design's `empty` row, at its own target
 //   the six synthesized stacks                                 ← Epic 7's templates, not designs; they join this list as
 //                                                                directories when the compiler synthesizes them (Story 7.35)
-// A design whose markup gates by member (`data-members=`) is photographed once per visitor, and once per Show-to
-// audience as a visitor it HIDES from — an arm shown to its own audience draws exactly the visitor arm's pixels, so
-// the one Show-to state with pixels of its own is the section gone (the owner's `/pilots` test step 10).
+// A design whose markup gates by member (`data-members=`) is photographed once per visitor. A design whose category
+// carries R-124's Member visibility row (`carriesMemberVisibility`, read off R-113's register — the rule the editor and
+// `/pilots` draw Show to by) is photographed once per Show-to audience as a visitor it HIDES from — an arm shown to its
+// own audience draws exactly the visitor arm's pixels, so the one Show-to state with pixels of its own is the section
+// gone (the owner's `/pilots` test step 10). Until Story 5.24c the Show-to arms followed `data-members` too, and
+// photographed A1 #1's, which the editor never draws, and not A4 #13's, which it does (DW-171).
 
 import { readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
@@ -34,7 +38,7 @@ const lib = await import(join(REPO, 'packages/library/src/index.ts'))
 const rt = await import(join(REPO, 'packages/section-runtime/src/index.ts'))
 const { shownRows } = await import(join(REPO, 'apps/web/lib/canvas.ts'))
 
-export const { pilot, pilotIds, pilotRows, pilotImage, pilotsCanvasDocument } = pilots
+export const { carriesMemberVisibility, pilot, pilotIds, pilotRows, pilotImage, pilotsCanvasDocument } = pilots
 export const ORIGIN = lib.orbitWeekly.ORBIT_WEEKLY_ORIGIN
 
 export const MODES = ['light', 'dark']
@@ -60,13 +64,13 @@ export const packCss = (pack) => join(RUNTIME, `${pack}-tokens.css`)
 export function fixtureRows(entry) {
   const axes = []
   if (/\bdata-pagination=/.test(entry.html)) axes.push(FEEDS.map((feed) => ({ name: `feed-${feed}`, feed })))
-  if (/\bdata-members=/.test(entry.html)) {
-    const visitors = lib.MEMBER_STATES.filter((s) => s !== 'everyone')
-    axes.push([
-      ...visitors.map((member) => ({ name: `visitor-${member}`, member })),
-      ...visitors.map((visibility) => ({ name: `show-to-${visibility}`, visibility, member: visitors.find((v) => v !== visibility) })),
-    ])
-  }
+  const visitors = lib.MEMBER_STATES.filter((s) => s !== 'everyone')
+  const seen = /\bdata-members=/.test(entry.html) ? visitors.map((member) => ({ name: `visitor-${member}`, member })) : []
+  const shown = carriesMemberVisibility(entry.id)
+    ? visitors.map((visibility) => ({ name: `show-to-${visibility}`, visibility, member: visitors.find((v) => v !== visibility) }))
+    : []
+  // a design with Show-to arms and no visitor arms keeps its base row beside them, named '' as a row-less design's is
+  if (seen.length + shown.length > 0) axes.push([...(seen.length > 0 ? seen : [{ name: '' }]), ...shown])
   const placed = entry.bindingContext.includes('post') ? entry.compileTarget.filter((t) => t in SUBJECTS) : []
   axes.push(placed.length > 0 ? placed.map((target) => ({ name: SUBJECTS[target], target })) : [{ name: '', target: entry.compileTarget[0] }])
   return axes.reduce((rows, axis) => rows.flatMap((r) => axis.map((a) => ({ ...r, ...a, name: [r.name, a.name].filter(Boolean).join('-') }))), [{ name: '' }])

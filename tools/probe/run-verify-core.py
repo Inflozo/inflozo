@@ -275,10 +275,7 @@ def judge(r, nonce):
 def verify(g, zipped, nonce):
     print(f'\n{"=" * 72}\nGhost {g.major} — {g.url}\n{"=" * 72}')
     version = g.api('GET', 'config/')['config']['version']
-    themes = g.api('GET', 'themes/')['themes']
-    previous = next((t['name'] for t in themes if t.get('active')), None)
-    if previous is None:
-        raise Void('no active theme reported — refusing to activate the probe with nothing to restore')
+    previous = shim.start_guard(g)
     st, res = g._multipart('themes/upload/', [('file', THEME_ZIP, 'application/zip', zipped)])
     name = res['themes'][0]['name']
     print(f'    Ghost {version}: theme uploaded HTTP {st} -> {name!r} (previous active: {previous!r})')
@@ -293,18 +290,9 @@ def verify(g, zipped, nonce):
             raise Void(f'/ never served this run\'s probe page (last HTTP {st}) — nothing Chromium reads there is a result')
         results = drive(g.url + '/')
     finally:
-        g.api('PUT', f'themes/{previous}/activate/')
-        active = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
-        print(f'    theme RESTORED -> {active!r}')
-        if active != previous:
-            raise Void(f'the previous theme {previous!r} did not come back — {active!r} is active')
         # owner's ruling, Story 4.7 Q1 (2026-09-14): the probe theme is deleted in the same cleanup, so the site ends
         # the run exactly as it started; read back, never assumed
-        g.api('DELETE', f'themes/{name}/')
-        left = [t['name'] for t in g.api('GET', 'themes/')['themes']]
-        print(f'    probe theme DELETED -> installed now: {left}')
-        if name in left:
-            raise Void(f'the probe theme {name!r} is still installed after DELETE')
+        shim.restore_and_delete(g, previous, [name])
     rows = judge(results, nonce)
     for ok, what in rows:
         print(f'    {"PASS" if ok else "FAIL"}  {what}')
@@ -330,7 +318,7 @@ if __name__ == '__main__':
             bad = [w for ok, w in rows if not ok]
             failed += len(bad)
             print(f'    Ghost {version}: {len(rows) - len(bad)} of {len(rows)} rows hold')
-    except (Void, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as e:
+    except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError, ValueError) as e:
         detail = e.read()[:400].decode('utf8', 'replace') if isinstance(e, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID. {type(e).__name__}: {e} {detail}')
         sys.exit(1)

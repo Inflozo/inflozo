@@ -446,6 +446,9 @@ export function t(
 // `autolink="false"` is the names joined by the separator. The shim returns the ITEMS; the caller
 // builds the nodes (NFR-3, as `{{navigation}}`).
 
+// Unreachable ON PURPOSE (DW-99, Story 5.24c): a tag or author list is `data-repeat="tags"` or `"authors"`, which
+// draws each row through the design's own markup, and `{{tags}}`'s joined markup has no directive — so this is no
+// `BARE_HELPERS` name. It stays for the recordings `contract.test.ts` holds it to.
 export const TAXONOMY_SEPARATOR = ', '
 
 export type TaxonomyItem = { name: string; url: string }

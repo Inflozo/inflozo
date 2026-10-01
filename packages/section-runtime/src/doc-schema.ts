@@ -64,7 +64,9 @@ export const instanceSchema = z.strictObject({
    *  doc holds at most one per design visited and never a stale second copy; a deliberate Clear dark overrides empties
    *  the records' dark maps with the live one. It lives inside `project_templates.doc`, which is `jsonb` and carries no
    *  DDL for its shape, so this field is the whole of the storage change (R-99: no migration, no Schema phase).
-   *  Defaulted for the same reason as `hidden`: every stored doc predates it. */
+   *  Defaulted for the same reason as `hidden`: every stored doc predates it. A record under a design id the library no
+   *  longer holds is KEPT on purpose — never drawn and never pruned: `switchControls` carries it, and a swap to that id
+   *  is refused (DW-288). */
   parkedControls: z.record(z.string(), z.strictObject({ controls: values, darkOverrides: values })).default({}),
 })
 

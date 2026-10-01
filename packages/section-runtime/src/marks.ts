@@ -264,8 +264,9 @@ export function serializeMarks(
   declared.add(PAGE_NUMBER)
 
   // Story 5.3: a Text Area's line break is `\n` in the value and `<br>` in both emitters' markup — escaped first, so the
-  // only tag a run can carry is this one
-  const plain = (run: string) => escapeUserText(run).replace(/\n/g, '<br>')
+  // only tag a run can carry is this one. DW-96: the TEXT sink only — an attribute sink escapes and stops, so no `<br>`
+  // reaches an `href` or a `data-i18n-*`
+  const plain = (run: string) => (theme === 'attribute' ? escapeUserText(run) : escapeUserText(run).replace(/\n/g, '<br>'))
 
   // ESCAPING AND SUBSTITUTION ARE INTERLEAVED, and the order is the crux (Story 5.16a). Substituting
   // first and escaping after would turn the page number's constant into `&#123;&#123;…` and lose it;

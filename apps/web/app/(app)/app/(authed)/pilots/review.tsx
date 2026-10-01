@@ -25,7 +25,8 @@ import { isApp } from '@/routing'
    the member state is `S4 Editor.dc.html:370`, S4d): the pilot; Light · Dark, as `data-mode` on the canvas `<html>`;
    Desktop 1440 · Tablet 834 · Phone 390, the iframe AT that width — so the design's own media queries read it — and
    scaled down to fit the pane; View as Signed out · Free · Paid, the `member` a render is handed; Page, on a design
-   that paginates; and Show to on the two whose frames draw it. Orbit Weekly feeds every render through
+   that paginates; and Show to on every design whose category carries R-124's Member visibility row — the editor's own
+   rule, `carriesMemberVisibility`, handed in by the page (DW-171). Orbit Weekly feeds every render through
    `templateContext`, the same context `tools/check-snapshots.mjs` renders against. Every module mount gets
    `js-enabled` and no script — the state `core` leaves it in on a live page (Story 4.7). Nothing is saved.
 
@@ -59,12 +60,11 @@ const SHOW_TO = [
   { value: 'free', label: 'Free members' },
   { value: 'paid', label: 'Paid members' },
 ]
-/** The pilots whose frames draw a Show to state (A22-1's states, A4-13's panel). Layers' control itself is Story 5.4's. */
-const DRAWS_SHOW_TO: readonly string[] = ['a22/1', 'a4/13']
 
 export function Review({
   entries,
   rows,
+  memberVisibility,
   swatches,
   links,
   pool,
@@ -73,6 +73,8 @@ export function Review({
 }: {
   entries: SectionRegistryEntry[]
   rows: Rows
+  /** per design id: does its category carry R-124's Member visibility row (`carriesMemberVisibility`)? */
+  memberVisibility: Readonly<Record<string, boolean>>
   swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
@@ -99,7 +101,7 @@ export function Review({
   latest.current = { id, states, mode, member, feed, visibility }
 
   const paginates = entry !== undefined && /\bdata-pagination=/.test(entry.html)
-  const showsTo = entry !== undefined && DRAWS_SHOW_TO.includes(entry.id)
+  const showsTo = entry !== undefined && memberVisibility[entry.id] === true
 
   const canvas = () => {
     const doc = frame.current?.contentDocument
@@ -126,7 +128,7 @@ export function Review({
         rows: rows[e.id],
         feed: now.feed,
         member: now.member,
-        visibility: DRAWS_SHOW_TO.includes(e.id) ? now.visibility : 'everyone',
+        visibility: memberVisibility[e.id] === true ? now.visibility : 'everyone',
         assets: canvasAssets,
         icons: lookup,
       }))

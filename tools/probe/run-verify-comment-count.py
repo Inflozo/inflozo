@@ -32,7 +32,9 @@ attributes while the two hash-param cases emit theirs verbatim. If the bare case
 text, the attributes would be fixed rather than reflecting the hash params, and "passed through
 verbatim" would be unproven.
 
-Cleans up: restores the previously active theme, deletes the probe post and theme.
+Cleans up, in a `finally`: deletes the probe post (`--keep` keeps it), then restores the previously
+active theme and deletes the probe theme, both read back (record-shim.py's `restore_and_delete`,
+through run-verify-e2.py). It refuses to start on a probe theme.
 """
 import os, re, sys, json, time, uuid, shutil, importlib.util
 
@@ -82,9 +84,9 @@ def run(g, label, out):
     print(f'\n{"=" * 78}\n{label}\n{"=" * 78}')
     post = previous = name = None
     try:
+        previous = e2.shim.start_guard(g)
         post = e2.make_post(g, f'CC probe {uuid.uuid4().hex[:6]}', 'n/a')
         build_theme()
-        previous = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
         _st, res = g.upload(e2.zip_dir(THEME), 'inflozo-probe-cc.zip')
         name = res['themes'][0]['name']
         g.api('PUT', f'themes/{name}/activate/')
@@ -122,21 +124,13 @@ def run(g, label, out):
                       'no_server_number': no_number, 'percent_verbatim': pct_verbatim,
                       'braces_verbatim': brc_verbatim, 'control_ok': ok}
     finally:
-        if name and previous:
-            try:
-                g.api('PUT', f'themes/{previous}/activate/')
-            except Exception as ex:
-                print(f'  ! restore failed: {ex}')
-        if name and not KEEP:
-            try:
-                g.api('DELETE', f'themes/{name}/')
-            except Exception:
-                pass
         if post and not KEEP:
             try:
                 g.api('DELETE', f'posts/{post["id"]}/')
             except Exception as ex:
                 print(f'  ! post cleanup failed: {ex}')
+        if name:
+            e2.shim.restore_and_delete(g, previous, [name])  # last, so a failure here still leaves the post deleted
 
 
 def main():

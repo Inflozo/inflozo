@@ -15,9 +15,11 @@ them, never the appendix's prose:
      a misspelt field in every scope. It gates the theme through tools/stress/gate.js (0 errors on
      both majors) before anything is uploaded.
   2. On T1 (6.x) and T3 (5.x) it uploads and activates that theme with the staff token, fetches `/`,
-     `/page/2/`, a post with a feature image and tags, a post without a feature image, the first public
-     page, a tag archive, the archive of an author with no profile_image and a missing path, and
-     restores the previous theme in a `finally` — then re-reads the active theme to prove it.
+     `/page/2/`, a post with a feature image and tags, a post without a feature image, a post carrying a
+     custom excerpt (since Story 5.24c), the first public page, a tag archive, the archive of an author
+     with no profile_image and a missing path — and LAST, the private page (below) — and in a `finally`
+     restores the previous theme and deletes the probe theme, reading both back (record-shim.py's
+     `restore_and_delete`). It refuses to start while a probe theme is active.
   3. It reads the whole Content API row of every resource a frame printed, one tier and one
      newsletter, and never writes the Content API key (a Void, not an assert: `python -O` strips asserts).
   4. It reads Ghost's own `public.js`, `default-settings.json` and the two template-options middleware
@@ -27,15 +29,18 @@ them, never the appendix's prose:
 It refuses to write ANYTHING when a page other than the 404 is not 200, a control fails (the root
 `{{title}}` on post.hbs prints empty while `{{#post}}{{title}}{{/post}}` beside it prints the title; a
 misspelt field prints empty in every scope), gscan reports an error, or the previous theme did not
-come back. What it writes to the servers is one theme upload and two activations — no content, no
-setting, no private mode, no custom-template assignment (the story's Ask First boundary).
+come back. What it writes to the servers is one theme upload, two activations and that theme's DELETE, and
+— since Story 5.24c, on the owner's ruling (its Question 1, item 7) — PRIVATE MODE FOR ABOUT A MINUTE: the
+last thing a run does, `is_private` and a throwaway `password` are switched on, `/private/` and the page a
+wrong password answers are recorded, and both settings are put back in a `finally` and read back. No
+content, no other setting, no custom-template assignment (the story's Ask First boundary).
 
 Writes packages/library/contexts/fixtures/ghost5.json, ghost6.json and ghost-source.json, each with
 the capture date and this command, and the generated index.ts a core test imports them through; `packages/library/src/contexts.test.ts` asserts the matrix
 against them per commit and offline.
 """
-import os, re, sys, json, io, zipfile, hashlib, tempfile, subprocess, datetime, importlib.util, time
-import urllib.request, urllib.error
+import os, re, sys, json, io, zipfile, hashlib, tempfile, subprocess, datetime, importlib.util, time, secrets
+import urllib.request, urllib.error, urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -166,6 +171,8 @@ class Probe:
             'tag.hbs': wrap(self.template('tag.hbs')),
             'author.hbs': wrap(self.template('author.hbs')),
             'error.hbs': wrap(self.template('error.hbs')),
+            # Story 5.24c (DW-127): rendered only in private mode, which the run switches on last and for a minute
+            'private.hbs': wrap(self.template('private.hbs')),
             'assets/css/screen.css': ('body { font-family: system-ui, sans-serif; }\n'
                                       '.kg-width-wide { max-width: 1000px; }\n.kg-width-full { max-width: 100%; }\n'),
             'package.json': json.dumps({
@@ -239,6 +246,10 @@ def choose(g):
     posts = d.get('posts') or []
     with_image = next((p for p in posts if p.get('feature_image') and p.get('tags')), None)
     without = next((p for p in posts if not p.get('feature_image')), None)
+    # Story 5.24c (DW-127): a third post, carrying a custom excerpt — never the one the other frames render, whose
+    # excerpt `contract.test.ts` pins at null
+    taken = {p['slug'] for p in (with_image, without) if p is not None}
+    with_excerpt = next((p for p in posts if p.get('custom_excerpt') and p['slug'] not in taken), None)
     _, d = g.content('pages/?limit=all&filter=visibility:public&order=slug%20asc')
     page = (d.get('pages') or [None])[0]
     _, d = g.content('tags/?limit=all&include=count.posts&filter=visibility:public&order=slug%20asc')
@@ -246,6 +257,7 @@ def choose(g):
     _, d = g.content('authors/?limit=all&order=slug%20asc')
     author = next((a for a in d.get('authors') or [] if not a.get('profile_image')), None)
     for what, row in (('a post with a feature image and tags', with_image), ('a post without a feature image', without),
+                      ('a post with a custom excerpt', with_excerpt),
                       ('a public page', page), ('a tag with posts', tag), ('an author with no profile_image', author)):
         if row is None:
             raise Void(f'{g.url} carries no {what} — the recorder writes no content, so it cannot make one')
@@ -254,6 +266,7 @@ def choose(g):
         ('index.hbs', '/page/2/'),
         ('post.hbs', f'/{with_image["slug"]}/'),
         ('post.hbs', f'/{without["slug"]}/'),
+        ('post.hbs', f'/{with_excerpt["slug"]}/'),
         ('page.hbs', f'/{page["slug"]}/'),
         ('tag.hbs', f'/tag/{tag["slug"]}/'),
         ('author.hbs', f'/author/{author["slug"]}/'),
@@ -315,13 +328,74 @@ def controls_held(pages):
     return failures
 
 
+PRIVATE_KEYS = ('is_private', 'password')
+WRONG_PASSWORD = 'inflozo-probe-wrong-password'
+
+
+def settings_of(g, keys):
+    """The current value of each key, from the whole list — `settings/?filter=` is not honoured (record-cards.py). An
+    empty string reads as None: Ghost stores every '' written to a nullable column as null (`setEmptyValuesToNull`,
+    core/server/models/base/plugins/data-manipulation.js:15-19, 5.130.6 · 6.58.0), so a never-set password ('') comes
+    back null after any write — the same empty password, and the read-back must not call it changed (seen on T3,
+    2026-10-01, MEASUREMENTS §59)."""
+    have = {s['key']: s['value'] for s in g.api('GET', 'settings/')['settings']}
+    missing = [k for k in keys if k not in have]
+    if missing:
+        raise Void(f'Ghost {g.major}: the settings list carries no {missing} — nothing to restore to, so nothing is switched')
+    return {k: None if have[k] == '' else have[k] for k in keys}
+
+
+def private_pages(g, probe):
+    """Story 5.24c (DW-127), the owner's ruling on its Question 1, item 7: PRIVATE MODE FOR ABOUT A MINUTE. `is_private` and
+    a throwaway password (never recorded) are switched on; `/private/` renders the theme's private.hbs, and a POST of a
+    wrong password renders it again with `error.message` — "Incorrect password." on 5, "Incorrect access code." on 6
+    (core/frontend/apps/private-blogging/lib/middleware.js). Both settings go back to what they were in a `finally`, and
+    are read back."""
+    before = settings_of(g, PRIVATE_KEYS)
+    print(f'    private mode: was is_private={before["is_private"]!r} (password {"set" if before["password"] else "empty"})')
+    pages = []
+    try:
+        g.api('PUT', 'settings/', {'settings': [{'key': 'is_private', 'value': True},
+                                                {'key': 'password', 'value': secrets.token_urlsafe(12)}]})
+        time.sleep(1)
+        wrong = urllib.request.Request(f'{g.url}/private/', data=urllib.parse.urlencode({'password': WRONG_PASSWORD}).encode(),
+                                       method='POST', headers={'User-Agent': 'inflozo-probe',
+                                                               'Content-Type': 'application/x-www-form-urlencoded'})
+        for path, fetch_page in (('/private/', lambda: g.page('/private/')),
+                                 ('/private/ (a wrong password)', lambda: read_page(wrong))):
+            st, html = fetch_page()
+            if st != 200:
+                raise Void(f'{path} answered HTTP {st}, not 200 — private mode did not render private.hbs')
+            frames, universal, controls = parse(html, probe)
+            pages.append({'template': 'private.hbs', 'path': path, 'http': st, 'frames': frames,
+                          'universal': universal, 'controls': controls})
+            print(f'    [private.hbs] HTTP {st} {path} — {len(frames)} frames')
+    finally:
+        try:
+            g.api('PUT', 'settings/', {'settings': [{'key': k, 'value': v} for k, v in before.items()]})
+        except Exception as e:  # a site left private is the one outcome this must not have: is_private alone, then read back
+            print(f'    restoring both settings FAILED ({type(e).__name__}: {e}) — restoring is_private alone')
+            g.api('PUT', 'settings/', {'settings': [{'key': 'is_private', 'value': before['is_private']}]})
+        after = settings_of(g, PRIVATE_KEYS)
+        print(f'    private mode RESTORED -> is_private={after["is_private"]!r}, password {"unchanged" if after == before else "CHANGED"}')
+        if after != before:
+            raise RuntimeError(f'Ghost {g.major}: private mode did not come back — is_private is {after["is_private"]!r}. '
+                               'Put it back in Ghost admin (Settings → General → Make this site private)')
+    return pages
+
+
+def read_page(req):
+    try:
+        with urllib.request.urlopen(req, timeout=45) as r:
+            return r.status, r.read().decode('utf8', 'replace')
+    except urllib.error.HTTPError as e:
+        return e.code, e.read().decode('utf8', 'replace')
+
+
 def record(g, probe, zipped):
     print(f'\n{"=" * 72}\nGhost {g.major} — {g.url}\n{"=" * 72}')
     version = g.api('GET', 'config/')['config']['version']
-    themes = g.api('GET', 'themes/')['themes']
-    previous = next((t['name'] for t in themes if t.get('active')), None)
-    if previous is None:
-        raise Void('no active theme reported — refusing to activate the probe with nothing to restore')
+    previous = shim.start_guard(g)
     targets = choose(g)
     st, res = g._multipart('themes/upload/', [('file', THEME_ZIP, 'application/zip', zipped)])
     name = res['themes'][0]['name']
@@ -339,12 +413,9 @@ def record(g, probe, zipped):
             pages.append({'template': template, 'path': path, 'http': st, 'frames': frames,
                           'universal': universal, 'controls': controls})
             print(f'    [{template}] HTTP {st} {path} — {len(frames)} frames, {len(universal)} universal, {len(controls)} controls')
+        pages += private_pages(g, probe)  # LAST, and for about a minute: the site asks every visitor for a password
     finally:
-        g.api('PUT', f'themes/{previous}/activate/')
-        active = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
-        print(f'    theme RESTORED -> {active!r}')
-        if active != previous:
-            raise Void(f'the previous theme {previous!r} did not come back — {active!r} is active')
+        shim.restore_and_delete(g, previous, [name])
     failures = controls_held(pages)
     if failures:
         raise Void('a control failed:\n      ' + '\n      '.join(failures))
@@ -480,7 +551,7 @@ if __name__ == '__main__':
                 if env.get(f'GHOST{M}_{k}') and env[f'GHOST{M}_{k}'] in blob:
                     raise Void(f'GHOST{M}_{k} reached a recording — refusing to write it')
         source = read_source(m, [recs[M]['ghost_version'] for M in recs])
-    except (Void, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError) as e:
+    except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError, subprocess.SubprocessError) as e:
         detail = e.read()[:400].decode('utf8', 'replace') if isinstance(e, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(e).__name__}: {e} {detail}')
         sys.exit(1)

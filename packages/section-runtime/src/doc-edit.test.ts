@@ -257,6 +257,17 @@ const ringDoc = () => doc({
   darkOverrides: { only1: 'x' },
 })
 
+test('DW-288 — a record under a design the library no longer holds is kept through a parse, a swap and a return, and a swap to it is refused', () => {
+  const retired = { controls: { gone: 'kept' }, darkOverrides: {} }
+  const parsed = doc({ ...(ringDoc().instances[0] as DocInstance), parkedControls: { 'a17/9': retired } })
+  assert.deepEqual(parsed.instances[0]?.parkedControls['a17/9'], retired, 'parseDoc dropped the record')
+  const there = ok(switchDesign(parsed, 'grid', 'a17/2', RING))
+  assert.deepEqual(there.instances[0]?.parkedControls['a17/9'], retired, 'a swap dropped the record')
+  const back = ok(switchDesign(there, 'grid', 'a17/1', RING))
+  assert.deepEqual(back.instances[0]?.parkedControls['a17/9'], retired, 'a return dropped the record')
+  assert.equal(switchDesign(back, 'grid', 'a17/9', RING), 'a17/9 is not one of the designs this section can be shown as')
+})
+
 test('switchDesign: the one instance takes the new design, and carry / park / default is switchControls\' answer', () => {
   const next = ok(switchDesign(ringDoc(), 'grid', 'a17/2', RING))
   const [i] = next.instances as [DocInstance]

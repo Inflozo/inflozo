@@ -90,6 +90,20 @@ the Admin API.
 it, the paywall and paid-tier probes degrade to anonymous and free states, and I will say so in the
 report rather than quietly testing less.
 
+**Every probe theme is deleted in the same cleanup, and read back** (DW-147, DW-237). Every script that
+uploads a theme to T1 or T3 ends in `record-shim.py`'s `restore_and_delete`, inside its `finally`: it
+re-activates the theme that was active, reads the active theme back, deletes every probe theme the run
+uploaded and reads the theme list back — whichever step failed — then raises the first failure. And a
+run **refuses to start while the active theme is `inflozo-probe-*`** (`start_guard`): an earlier run
+failed to restore, and this one would restore the probe and call the site clean. `python3
+tools/probe/record-shim.py --self-check` holds both offline, in `pnpm test`. The one exception is
+`run-verify-ghostpro.py`, which writes to a Ghost(Pro) trial and never to T1 or T3.
+
+**The writes are made in the session the owner approves them in, never handed to a helper** (Story 5.24c,
+2026-10-01). A ruling written into a spec is not something the session's permission check can see: there, a subagent's
+approved T1/T3 writes were refused as a change to a shared resource, and the story stopped until the owner said go in
+the session itself. A refused write is asked again, never routed around.
+
 ---
 
 ## What I will never do without asking, on any of the three

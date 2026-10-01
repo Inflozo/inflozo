@@ -32,7 +32,7 @@ import {
 } from '@inflozo/library'
 import { CONTENT_API_KEY_PLACEHOLDER, imgUrl } from '@inflozo/ghost-shim'
 import type { PropDef } from '@inflozo/library'
-import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks } from './index.ts'
+import { PAGE_NUMBER_HBS, REFUSED_DIRECTIVES, RENDERED_DIRECTIVES, checkChromeLiterals, renderCanvas, renderTheme as renderThemeRaw, serializeMarks, stampControls } from './index.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import type { ControlDef } from '@inflozo/library'
 import type { RenderInput, RuntimeElement } from './index.ts'
@@ -562,6 +562,18 @@ test('data-helper — a scalar helper agrees exactly, mustache against resolved 
   // MEASUREMENTS §15f: 57 members renders "50+", and the count helpers are ALWAYS a string
   assert.ok(canvas.includes('>50+<'), canvas)
   assert.ok(!/\{\{/.test(canvas), `the canvas emitted a mustache: ${canvas}`)
+})
+
+test('DW-99 — total_paid_members and content_api_url render on both emitters: the helper\'s mustache in the theme, the shim\'s value on the canvas', () => {
+  const paid = agree('<section class="c"><span class="m" data-helper="total_paid_members">0</span></section>', { site: { ...SITE, members: { total: 57, paid: 1200 } }, target: 'index.hbs' })
+  assert.ok(paid.theme.includes('{{total_paid_members}}'), paid.theme)
+  assert.ok(paid.canvas.includes('>1,200+<'), paid.canvas)
+  const api = agree('<section class="c"><span class="u" data-helper="content_api_url">x</span></section>', { site: SITE, target: 'index.hbs' })
+  assert.ok(api.theme.includes('{{content_api_url}}'), api.theme)
+  assert.ok(api.canvas.includes('>https://site.example/ghost/api/content/<'), api.canvas)
+  // unlinked, the address is nothing — Orbit Weekly has no Content API, and nothing is invented (Design Note 6)
+  assert.ok(renderCanvas(doc(), '<span class="u" data-helper="content_api_url">x</span>', {}).includes('<span class="u"></span>'))
+  for (const out of [paid.canvas, api.canvas]) assert.ok(!/\{\{/.test(out), `the canvas emitted a mustache: ${out}`)
 })
 
 test('data-helper="content_api_key" renders an inert placeholder and no key', () => {
@@ -1184,6 +1196,10 @@ test('Story 4.9 — S5: both emitters stamp one data-i18n-* per countdown key on
   const onRoot = bothWays('<section class="s" data-module="countdown" data-align="start">·</section>', { controlSchema: [], strings: { 'countdown.ended': 'Vorbei' } })
   assert.ok(onRoot.canvas.includes('data-i18n-ended="Vorbei"') && onRoot.theme.includes('data-i18n-ended="Vorbei"'), `${onRoot.canvas}\n${onRoot.theme}`)
   assert.ok(!onRoot.canvas.includes('data-align'), 'the controls were still stamped from the schema')
+  // DW-228: a RE-STAMP (the editor's control change on the live root) keeps the mount's strings — a running module reads them
+  const live = new JSDOM(`<body>${onRoot.canvas}</body>`).window.document.body.firstElementChild as unknown as RuntimeElement
+  stampControls(live, { controlSchema: [] })
+  assert.equal(live.getAttribute('data-i18n-ended'), 'Vorbei', 'a re-stamp took the root mount\'s data-i18n-* off')
 })
 
 test('Story 4.9 — the handed strings pass resolveStrings: a credit.* override and an unknown key throw on both emitters', () => {
@@ -1581,4 +1597,34 @@ test("Story 5.20 · a link the design already stands behind its flag (Header —
   const ownTheme = renderTheme(doc(), own, askInput({ portal: 'signup' }, 'w', ON)).template
   assert.equal(ownTheme.split('{{#if @site.allow_self_signup}}').length - 1, 1, `the flag was asked twice: ${ownTheme}`)
   agreeDecided(own, askInput({ portal: 'signup' }, 'w', OFF), { '@site.allow_self_signup': false })
+})
+
+test('DW-96 — a line break never reaches an attribute: both emitters fold it to a space, and only the text sink writes <br>', () => {
+  const schema: Record<string, PropDef> = { caption: { type: 'richtext', label: 'Caption' }, link: { type: 'url', label: 'Link' } }
+  const src = '<figure class="f"><img class="i" src="x.jpg" data-prop-attr="alt:caption;title:caption"><figcaption class="c" data-prop="caption">c</figcaption></figure>'
+  const { canvas, theme } = agree(src, { schema, content: { caption: { text: 'a\n\nb', marks: [] } } })
+  for (const out of [canvas, theme]) {
+    assert.ok(out.includes('alt="a b"') && out.includes('title="a b"'), out)
+    assert.ok(out.includes('>a<br><br>b<'), `the text sink lost its line break: ${out}`)
+  }
+  // the matrix row's other two sinks, on both emitters: a Text Area's value into an href (folded BEFORE the scheme
+  // check — unfolded, the canvas's tidy dropped the blank line the theme kept) and a module's string
+  const rich = agree('<a class="l" data-prop-attr="href:caption">x</a>', { schema, content: { caption: { text: 'a\n\nb', marks: [] } } })
+  const strings = agree('<section class="s" data-module="countdown">·</section>', { strings: { 'countdown.ended': 'a\n\nb' } })
+  for (const out of [rich.canvas, rich.theme]) assert.ok(out.includes('href="a b"'), out)
+  for (const out of [strings.canvas, strings.theme]) assert.ok(out.includes('data-i18n-ended="a b"'), out)
+  // no theme attribute holds a <br> — a Text Area's value, a module's string, or a link's href
+  const href = renderTheme(doc(), '<a class="l" data-prop-attr="href:link">x</a>', { schema, content: { link: 'https://x.example/a\nb' } }).template
+  for (const out of [theme, rich.theme, strings.theme, href]) assert.doesNotMatch(out, /="[^"]*<br>/, out)
+})
+
+test('DW-159 — a designer\'s comment ships from neither emitter, and the runtime\'s own markers still resolve', () => {
+  const src = `<!-- A note at the top -->
+<section class="s"><!-- a note inside --><h2 class="t" data-prop="title">t</h2>
+  <ul class="l"><li class="i" data-repeat="posts"><!-- a note inside a repeat --><a class="a" data-bind-attr="href:url" data-bind="title">x</a></li></ul>
+</section>`
+  const { canvas, theme } = agree(src, { content: { title: 'Hello' }, ghost: { posts: [{ title: 'One', url: 'https://site.example/one/' }] } })
+  for (const out of [canvas, theme]) assert.doesNotMatch(out, /<!--/, out)
+  assert.match(theme, /\{\{#foreach posts\}\}[\s\S]*\{\{#if url\}\}/, theme)
+  assert.match(canvas, /href="https:\/\/site\.example\/one\/"/, canvas)
 })

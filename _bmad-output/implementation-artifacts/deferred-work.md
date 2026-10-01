@@ -80,7 +80,8 @@ reason: `@types/node@26.4.1` types Node 26 while the stack pins Node 24.x, so co
 ### DW-4: `.toString()` is banned on every receiver, not only on a Date
 
 plain: One safety rule is stricter than intended and also blocks a few harmless things; nothing is broken, and it gets narrowed the first time it blocks real work.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `'toString'` left `hostReadingCalls` in `eslint.config.js`, and one selector refuses only the zero-argument call a Date prints the host timezone with (`CallExpression[arguments.length=0] > MemberExpression.callee[property.name='toString']`); the core block sets `linterOptions: { noInlineConfig: true }`, so no disable comment switches a ban off. Controls in `tools/check-baseline.mjs`, seen red with the change reverted: a Date's `.toString()` refused; `n.toString(16)` clean (HEAD refused it); `/* eslint-disable no-restricted-syntax */` beside `.localeCompare()` still refused (HEAD was silent).
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
   (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -3087,7 +3088,8 @@ resolution: CLOSED by Story 4.3 (2026-09-11). `packages/ghost-shim` exports
 plain: If a customer types a paragraph with an empty line in the middle of it, the editing canvas
   drops that empty line while the published site keeps it — only visible in a section styled to
   preserve line breaks, which none of the first designs is.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): the entry's own claim was already false — since Story 5.3 a Text Area's break is `<br>` in user text on both emitters. The defect found under it is fixed: an attribute holds one line (`core.ts`, the rule a paste already follows) and `marks.ts`'s attribute sink escapes and stops, so no `<br>` reaches `alt`, `title`, `href` or a `data-i18n-*`. Control (`agreement.test.ts`, DW-96): HEAD gave `alt="a\nb"` on the canvas and `alt="a<br><br>b"` in the theme, and `data-i18n-ended="a<br>b"` with only `marks.ts` reverted. The canvas-only residual — `tidy` runs after values are in the DOM — is a `ponytail:` comment at `tidy` naming its ceiling and upgrade.
 severity: low
 origin: Story 4.2 review (2026-09-11) — Edge Case Hunter; pre-existing in the stress harness, which
   ran the same trim on both paths
@@ -3170,7 +3172,7 @@ reason: not this story's — no caller passes real site data yet, and the record
 plain: The imitation of Ghost knows how to print the paid-member count and the API address, but no
   section can ask for them yet, because the list of things a section may ask for by name was fixed in
   Story 4.1 and does not include them.
-status: open
+status: done 2026-10-01 (Story 5.24c)
 severity: low
 origin: Story 4.3 review (2026-09-12) — Acceptance Auditor. `bareHelper` resolves both (the review
   added the cases) and `contract.test.ts` asserts both against the recordings, but `BARE_HELPERS` in
@@ -3178,10 +3180,15 @@ origin: Story 4.3 review (2026-09-12) — Acceptance Auditor. `bareHelper` resol
   Appendix B's A29 filter design needs `content_api_url` beside `content_api_key`. The review's
   second pass adds `t()` (reachable only through 4.9's `data-t`) and `taxonomyItems` (no directive
   renders a tag or author list yet) to the same class: shimmed, recorded, asserted, unreachable.
-resolution: partial, and the entry stays open — Story 4.9 (2026-09-14) made `t()` reachable: `data-t` and
-  `data-t-attr` render on both emitters and the canvas calls the shim's `t()` over the project's strings, asserted
-  against the new `{{t}}` recordings on both majors (MEASUREMENTS §44). `{{total_paid_members}}`,
-  `{{content_api_url}}` and `taxonomyItems` are still unreachable.
+resolution: Story 5.24c's Dev (2026-10-01) closed the rest. `total_paid_members` and `content_api_url` joined `BARE_HELPERS` with
+  their `universal` rows and labels, and `python3 tools/probe/record-contexts.py` recorded both printing on T1 and T3 on
+  2026-10-01 (`0`, and `https://ghost{5,6}.inflozo.com/ghost/api/content/`, on every frame), so `contexts.test.ts`'s "every
+  universal row was probed" holds them; on the owner's Question 4 each carries the release Ghost added it in (5.4.0, 5.98.0;
+  MEASUREMENTS §59). `taxonomyItems` is unreachable on purpose, said beside it in `packages/ghost-shim/src/index.ts`.
+  Controls seen red at e350c124: an agreement case per helper ("must be one of"), and `bindable('total_paid_members', …
+  use: 'helper')`. Earlier, Story 4.9 (2026-09-14) made `t()` reachable: `data-t` and `data-t-attr` render on both emitters
+  and the canvas calls the shim's `t()` over the project's strings, asserted against the `{{t}}` recordings on both majors
+  (MEASUREMENTS §44).
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
   (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "re-owned by Story 4.10 (2026-09-15), whose
   pilots needed none of the three: A22's category story for `{{total_paid_members}}` (A22 #1's paid count, left there by
@@ -3190,6 +3197,7 @@ owner: Story 5.24c (The sweep: the section runtime, the library and the recordin
 location: packages/library/src/vocabulary.ts `BARE_HELPERS`; packages/ghost-shim/src/index.ts `bareHelper`
 reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a review of 4.3 does not do
   on its own; the functions exist so the change is one line when its story arrives
+note (Story 5.24c's Dev, 2026-10-01): built and offline-proved — `total_paid_members` and `content_api_url` joined `BARE_HELPERS`, two `{"kind":"helper"}` rows in `matrix.json`'s `universal`, two labels ("Paid member count", "Content API URL"), and a comment beside `taxonomyItems` (unreachable on purpose: a tag or author list is `data-repeat="tags"`/`"authors"`). Controls seen red at HEAD: an agreement case per helper (HEAD threw "must be one of") and `bindable('total_paid_members', { … use: 'helper' }) === null`. Closed by the recording above.
 
 ### DW-100: `cards.js` has no no-JS sentence and no edit-safe row
 
@@ -3253,7 +3261,8 @@ reason: no encoder is installed to produce a licence-clean video, and nothing in
 ### DW-103: the resolver's recorded Ghost defaults are read from whatever else is on the test boxes
 
 plain: The sample data's "newest first, fifteen at a time" rule is checked against a list the test servers happen to return, so another test that adds a post to those servers changes that list for a reason that has nothing to do with Ghost.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01), recorded on both majors: `python3 tools/probe/record-cards.py` created the recorder's own pair on its first run (posts `inflozo-defaults-1`/`-2`, tags `inflozo-defaults-a`/`-b`), published them for the reading and drafted them in the same `finally` — read back afterwards as drafts, with neither tag nor post visible to the Content API. `capture.json`'s `content_api_defaults` now reads posts and tags through `id:[…]` to exactly those rows: posts `inflozo-defaults-2` then `-1` (`published_at desc`, against creation and slug order) and tags "Inflozo defaults A" then "B" (`name asc`, against creation order), on both majors. `orbit-weekly.test.ts` asserts the filter and the two rows — red against e350c124's `capture.json` — and is green on the new one (MEASUREMENTS §59).
 severity: low
 origin: Story 4.4 review (2026-09-13) — Blind Hunter.
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -3267,11 +3276,13 @@ reason: `api_defaults` records the live boxes' own posts, tags, authors and tier
   guard depends on the boxes carrying at least two rows per resource. Recording the defaults against rows the recorder
   itself owns would make the file stable; not done here because the fixture documents are returned to draft before the
   read (they must not sit in the recorded feed), so the recorder would need a second, permanent pair of documents.
+note (Story 5.24c's Dev, 2026-10-01): built and offline-proved — `record-cards.py` creates two posts and two tags it owns (`inflozo-defaults-1`/`-2`, `inflozo-defaults-a`/`-b`), publishes them with the three fixture documents and drafts them in the same `finally`, and reads posts and tags INSIDE the try by `filter=id:[…]` with no order or limit; `capture.json` records each resource's filter; its `--self-check` covers the read; `orbit-weekly.test.ts` asserts the filter and exactly two rows, red against today's `capture.json`. Closed by the recording above.
 
 ### DW-104: the validator accepts NQL the offline resolver refuses, so a design can validate green and preview empty
 
 plain: The checker that approves a design's data query allows a little more than the preview can actually run, so a design could pass every check and still show an empty list in the editor.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `splitTop` and the seed's one value (`ORBIT_WEEKLY_SEED`) moved to `vocabulary.ts`, read by the validator and the resolver alike; `validateDataBinding` refuses a filter's top-level `,` (`bad-get-filter`) and `validateDesignJson` any seed but the bundled one (`preview-seed-unbundled`). Controls in `validate.test.ts`, seen red against HEAD's validator: `featured:true,tag:news` and `previewSeed: "nope"` refused, `tag:[news,notes]` and `featured:true+tag:'news'` clean.
 severity: low
 origin: Story 4.4 review (2026-09-13) — Verification Gap.
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -3462,7 +3473,8 @@ reason: P0-3's Ghost-sourced card draws Count and Order; Story 4.5 built exactly
 plain: Checking the code for mistakes got several times slower after the full icon set was added, because
   the checker reads the whole icon file to work out its shape. Nothing is broken; it is slower and uses more
   memory, and there is a known fix if it starts to matter.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `packages/library/icons/tabler.d.json.ts` declares the JSON's shape by name (`version`, `license`, `icons: unknown` …) and `allowArbitraryExtensions` joined `tsconfig.base.json`. Control: `npx tsc --noEmit -p packages/library --listFilesOnly | grep tabler` lists `tabler.d.json.ts` alone, and `tabler.json` with the declaration moved aside; the library's typecheck measured 1.97 s / 730 MB without it and 0.42 s / 106 MB with it.
 severity: low
 origin: Story 4.5 Dev (2026-09-13) — measured: the library's typecheck rose from about 0.6 s to about
   2.2 s and about 690 MB; a `tabler.d.json.ts` declaration with `allowArbitraryExtensions` measured at
@@ -3713,7 +3725,8 @@ reason: appendix B.1 §4.3/§4.4: a tag's or author's post count exists only thr
 
 plain: The big test theme that proves Ghost accepts our output contains two lists that would be empty on a
   real site. The new check catches them, but that test does not run the check yet.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): the stress archetypes render at their own targets — header and footer navigation through `data-helper="navigation"`, pricing's tiers as a declared `plans` query (`type:paid+visibility:public`, as `fixtures/paywall/2` declares) with the plain-list benefits sub-repeat gone, and content's related list (the same fault) as a declared query; `sections.js` exports each kind's queries and target, `compile.js` passes `dataBindings`, and `build.js` keeps a query-carrying kind off `error.hbs` (R-7). `test-vocabulary.mjs` renders every archetype at its own target, red on HEAD's archetypes (header, footer, pricing and content refused), with its own control — a feed at `post.hbs` still throws. gscan 0 errors / 0 warnings on both majors, offline. What is left, the stack's placements, is DW-296's (Story 7.35).
 severity: low
 origin: Story 4.6 Create (2026-09-13)
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -3743,7 +3756,8 @@ reason: the matrix's one `custom-{name}.hbs` row is the ENTRY form (post block).
 
 plain: Some of the new rules are read from Ghost's code or its notes rather than seen on a live site: the
   password page, very old Ghost versions, and details the test sites simply do not have filled in.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01), on the owner's rulings (Question 1, Question 4). The seeded fields (Question 1's items 2–5: tag `archive`, author `umang`, tier `default-product`, newsletter `default-newsletter`) and a post's `custom_excerpt` were recorded printing on both majors by `python3 tools/probe/record-contexts.py`, and so was the private page — `/private/` and a wrong password's `error.message` — with private mode on for seconds, restored and read back (MEASUREMENTS §59). `contexts.test.ts`'s reverse rule then named every `unverified` row both recordings prove, and each lost its reason; `errorDetails`' rows stay `unverified`, cited in Ghost's source in both releases, since a theme validation error is not the recorder's to cause. The version half: the author social handles (5.117.0) and a tier's `trial_days` (5.8.0) and, on Question 4, every bare helper Ghost added inside 5.x (`comments` 5.3.0, `total_members` and `total_paid_members` 5.4.0, `content_api_key` 5.96.0, `content_api_url` 5.98.0) carry a `since` read in Ghost's npm releases, and are refused below it (`contexts.test.ts`, "DW-127" and "Question 4", each red before its gate).
 severity: low
 origin: Story 4.6 (2026-09-14) — MEASUREMENTS §41f
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -3756,6 +3770,7 @@ reason: `private.hbs` needs private mode and `errorDetails` a theme validation e
   handles to 5.118.0 and nothing recorded confirms it, so the matrix gates no resource field by version.
   Fields empty on both seeded servers are `unverified` with that reason — seeding them is a content write the
   story's Ask First reserved.
+note (Story 5.24c's Dev, 2026-10-01): the version half is done — the Content API's resource fields diffed between the 5.0.0 and 5.130.6 releases (npm tarballs) found two gates, bisected over npm's releases: the seven author social handles at 5.117.0 (the users migration; P0·2's 5.118.0 was one release late) and a tier's `trial_days` at 5.8.0 (the tiers serializer), each now a `since` in `matrix.json`, and `contexts.ts` gates a scope field by its `since` exactly as a universal key (offered and refused by version, red at HEAD); `errorDetails`' and `private.error`'s reasons cite Ghost's source in both releases; `contexts.test.ts` gained the reverse rule. `record-contexts.py` now renders a post carrying a custom excerpt, adds `private.hbs` and switches private mode on last, for a minute, restoring both settings in a `finally` and reading them back. Closed by the recordings above.
 
 ### DW-128: the canvas shows "1 min read" on a post the visitor may not read, where Ghost prints nothing
 
@@ -3796,7 +3811,8 @@ note (Story 5.20's Create, 2026-09-26): the premise is narrower than it reads. G
 
 plain: Two site settings that hold raw code are on the list of things a design could print as words. Nobody
   would want that, but no ruling says to hide them.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01), on the invariant (FR-H5's canvas–site agreement: NFR-3 keeps `codeinjection_*` out of the canvas): both keys moved to `matrix.json`'s `neverOffer` with their reason, appendix-b1 §6 gained a "Raw code — never offer" line naming them, and their two labels went. Control (`contexts.test.ts`, DW-99 · DW-129): `bindable('@site.codeinjection_head', …)` matches `/never offered/` and neither key is offered at the floor or at 6.58.0; HEAD offered both.
 severity: low
 origin: Story 4.6 (2026-09-14) — the universal set transcribed as `public.js` less appendix §6's never-offer list
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -4173,7 +4189,8 @@ reason: the inverse needs a way to know which module a js key belongs to — a p
 
 plain: The test-server recorder restores the previous theme and then deletes its own. If the restore call itself
   errors, the delete never runs, and the recorder's own theme is left installed until someone removes it by hand.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `record-shim.py`'s `restore_and_delete` tries the re-activation, always reads the active theme back, DELETEs each probe theme and reads the list back, then raises the first failure (the activation's own error first); every T1/T3 uploader calls it in its `finally` (DW-237). Control: `python3 tools/probe/record-shim.py --self-check` (in `pnpm test`) against a fake Ghost answering as Ghost does (422 active, 404 missing, 204 deleted) — red against the e350c124 cleanup shape at the activation-raising case ("the activation raised and the probe theme was never DELETEd").
 severity: low
 origin: Story 4.7's cleanup (owner's ruling on Q1), inherited unchanged by Story 4.9's recorder; noticed at 4.9's
   review. The error does reach the operator — it is not silent — but the cleanup is not attempted.
@@ -4444,7 +4461,8 @@ reason: the values are the export's Paper objects (`_build/a22lib.js:4`, `a20-ki
 plain: A note a designer writes inside a section's markup (the kind that begins `<!--`) was reaching the finished
   theme, so anyone reading a customer's page source would have seen our internal story numbers and file names. The
   five sample sections' notes were removed at the review; the rule that strips them still needs building.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `renderTree` drops every comment node under the root right after `root.innerHTML = src`, before the first token is put — a walk over the nodes, never a regex over the source — and `docs/section-authoring.md` says a design's comment is dropped by both emitters. Control (`agreement.test.ts`, DW-159): a comment at the top, inside and inside a repeat; neither output holds `<!--` and the theme still resolves `{{#foreach posts}}…{{#if url}}`. HEAD shipped every comment.
 severity: low
 origin: Story 4.10's review — every `snapshots/*/template.hbs` began with the pilot's authoring comment
   (`<!-- A1 #1 Rail — Story 4.10 pilot, provisional (AD-35). Frame: … -->`); nothing in `core.ts` strips a comment
@@ -4479,7 +4497,8 @@ reason: the frame draws both buttons and owner test step 12 expects "Browse the 
 
 plain: Portal only reads the email box and the error line when they are inside the sign-up form. A designer could
   put either outside the form and every check would pass, yet the form would submit nothing.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `memberAsks`' ancestor walk is one generator (`tagsInContext` in `validate.ts`), used by `memberAsks` and by `members-field-outside-form`, which refuses `data-members-email` or `data-members-error` with no open `data-members-form` around it. Control (`validate.test.ts`, DW-161): both fields after a closed form refused, both inside one clean; HEAD gave `[]`.
 severity: low
 origin: Story 4.10's review — `validateMarkup` walks the markup as a flat token stream (no ancestors), and the
   directives' summaries state the rule without enforcing it
@@ -4668,7 +4687,8 @@ resolution: THE "Ask First" LAPSED AND THEN THE OWNER RULED. Story 4.11 made `@p
 
 plain: Each section says the oldest Ghost it works on. Nothing checks that claim against the fields the section
   actually uses, so a section could read a field Ghost added later and still say it works on older Ghost.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `checkBindings` takes `version` — never `RenderInput`, because a render is guarded, not refused, on a version — and `tools/check-snapshots.mjs` passes each design's `ghostCompat.minVersion` at every target; every design still passes. Its `mustFail` row: A22 #1 claiming 5.61.0 must fail with "@site.allow_self_signup arrived in Ghost 5.62.0" — at HEAD "was not caught — got []". The two paywall fixtures that read `@site.allow_self_signup` claiming 5.0.0 now claim 5.62.0. A free ask on a Ghost below 5.62 is DW-297's (Story 7.18).
 severity: medium
 origin: Story 4.10's whole-story code review (2026-09-15, acceptance audit) — the spec's boundary "`ghostCompat.minVersion`
   is at least every `since` the matrix gives a field the design reads" holds for the five pilots (A1 #1 and A22 #1 at
@@ -4728,7 +4748,8 @@ reason: 4.11's Never excludes the categories that do not exist yet. The shape is
 plain: The photo machine decides "does this section have a Show-to setting" by reading the section's own markup; the
   pilots screen decides it from a short list typed by hand. The two disagree on two sections today, so one section's
   hidden state is photographed although the screen never shows it, and another's is shown but never photographed.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01), on the owner's ruling (its Question 2, option 1): `tools/matrix/cases.mjs` takes the Show-to arms from `carriesMemberVisibility` — the editor's own rule over R-113's register — and the visitor arms from `data-members`; `/pilots` reads the same rule (`page.tsx` hands `review.tsx` a `memberVisibility` map, and `DRAWS_SHOW_TO` is gone); `control-groups.json` joined `matrix.yml`'s shared inputs and `docs/render-matrix.md`. Control (`cases.test.mjs`): for every pilot the matrix has Show-to arms exactly when `carriesMemberVisibility` says so — red on HEAD for a1/1. The baselines, in the pinned image: the thirty blank `a1/1/…-show-to-*.png` deleted and the same thirty names added under `a4/13/`, each byte-identical to a22/1's; nothing modified, and the gate green.
 severity: low
 origin: Story 4.11's review (2026-09-17) — Acceptance Auditor, Verification Gap and Edge Case Hunter: `review.tsx`'s
   `DRAWS_SHOW_TO = ['a22/1', 'a4/13']` vs `cases.mjs`'s `/\bdata-members=/`; `a1/1` gets six `show-to-*` baselines the
@@ -5118,7 +5139,8 @@ reason: Story 5.4 draws the row for whichever section carries it and reads the r
 plain: Who a section is shown to is kept on the section you placed, not among the design's own settings. If someone
   later writes it into a design's settings list as well, the editor would hold the same answer in two places and they
   could drift apart.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `validateDesignJson` refuses a control named `member-visibility` or labelled "Member visibility" (trimmed, case-folded) as `member-visibility-control`, R-124's sentence. Control (`validate.test.ts`): one row per form; HEAD gave `[]` for both.
 severity: medium
 origin: Story 5.4's planning (2026-09-18) — Story 4.10 already gates a section through `RenderInput.visibility`
   (`core.ts` :200-202, `gateMembers` :1484-1500) on both emitters; a declared control would additionally stamp
@@ -5738,7 +5760,8 @@ reason: FR-D13 gives the exact sentence and the owner's test (step 10) accepted 
 
 ### DW-213: `itemsShown` reads the first `data-items` element bound to a path, so two lists on one path with two caps report the first
 
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `validateMarkup` refuses two `data-items` over one path with different caps (`items-limit-conflict`), a missing cap counting as a cap. Control (`validate.test.ts`, DW-213): 3 against 5 and 3 against none refused, 3 against 3 and none against none clean; HEAD gave `[]`.
 severity: low
 origin: Story 5.11's Review (2026-09-20), Edge Case Hunter.
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -5979,14 +6002,16 @@ reason: Step 89 failed once in two completed walks with nothing else running on 
 ### DW-224: R-173's plain-link rule is document-wide, and a pack with no underline hides a link on a coloured ground
 
 status: open
+resolution: partial, and the entry stays open — Story 5.24c's Dev (2026-10-01) built its half: every `LINK_RULES` selector in `tokens.ts` is `:where(a:not([class]), a[class=""])`, so an anchor with `class=""` no longer escapes, and on a contrast, accent or image ground the rule sets `text-decoration-line: underline` — there the words take the ground's colour, so the underline is the link's only sign (WCAG 1.4.1), whatever `--link-decoration` a pack sets. `reference-tokens.css` regenerated (only the link rules moved); `tokens.test.ts` asserts both, red against HEAD's rules and red again with only the underline removed. No photograph moved: the matrix is green. The post-body half is Story 6.1's alone.
 severity: medium
 origin: Story 5.14's code review (2026-09-21), the Acceptance Auditor, the Blind Hunter and the Edge Case Hunter.
-owner: Stories 5.24c (The sweep: the section runtime, the library and the recordings) and 6.1 (The token engine —
-  computed or authored, and nothing in between), whose cards name this entry: 5.24c builds the underline on a coloured
-  ground and the empty `class`; 6.1 asks the owner whether the rule reaches a post's body, and proves the answer on T1
-  and T3. *(Story 5.24c's Create, 2026-09-29: was "Story 5.24c …, one of the sweep's five stories (R-211)"; Story
-  5.24a's Dev, 2026-09-28: was "Epic 6 — the story that emits the token block into `default.hbs` and the one that builds
-  the packs.")*
+owner: Story 6.1 (The token engine — computed or authored, and nothing in between), whose card names this entry: it asks
+  the owner whether R-173's rule reaches a post's body, and proves the answer on T1 and T3. *(Story 5.24c's Dev, 2026-10-01:
+  its half built, see the resolution; was "Stories 5.24c (The sweep: …) and 6.1 (The token engine — …), whose cards name
+  this entry: 5.24c builds the underline on a coloured ground and the empty `class`; 6.1 asks the owner whether the rule
+  reaches a post's body, and proves the answer on T1 and T3"; Story 5.24c's Create, 2026-09-29: was "Story 5.24c …, one of
+  the sweep's five stories (R-211)"; Story 5.24a's Dev, 2026-09-28: was "Epic 6 — the story that emits the token block into
+  `default.hbs` and the one that builds the packs.")*
 note (Story 5.24c's Create, 2026-09-29): split, not dropped. The underline and `class=""` halves are built by 5.24c,
   with controls. The post-body half is a behaviour decision: R-173 (`reconcile-designs-decisions.md:3678`) covers "a link
   typed into a section's text" and says nothing about `{{content}}`, and the post-body frame (`C Post Body.dc.html`)
@@ -6055,7 +6080,8 @@ reason: `movesByItself` is per MODULE, and `carousel` carries `false` because it
 
 plain: Nothing is wrong on your pages today. When a design puts a moving part's text on the section itself, changing
   one of its settings could make that part lose its words until the page is drawn again.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `stampControls` keeps a root `data-i18n-*` — safe, because `refuseCatalogMisuse` refuses an authored one and `FOREIGN_ATTR_RE` a control named `i18n-*`, so the only such attribute on a root is S5's own stamp. Control (`agreement.test.ts`, the S5 root-mount case re-stamped through `stampControls`): `data-i18n-ended` stays `'Vorbei'`; HEAD gave `null`.
 severity: medium
 origin: Story 5.15's Dev (2026-09-22), read in the source (`packages/section-runtime/src/core.ts:1227-1229`)
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -6245,7 +6271,8 @@ location: `tools/probe/run-verify-editor.cjs` step 15's `decoder.evaluate` (`:94
 plain: Each time one of the recording probes runs, it uploads a small throwaway theme to the two test Ghost sites, uses
   it, and puts the site's real theme back — but never deletes the throwaway one. Nothing a customer sees is affected;
   the test sites just collect old probe themes in their theme list, one or two per run.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): every T1/T3 uploader ends in `restore_and_delete` (DW-147) and refuses to start on a probe theme; the leftovers Question 1 approved were deleted, each DELETE answered 204 and the list read back — T1 `inflozo-probe-13`, `-all`, `-contexts`, `-root`; T3 the same four, `inflozo-probe-plain` and `theme` — and the two recorder runs after them left no `inflozo-probe-*` theme on either site (read back: T1 `casper`, `racer`, `source`; T3 `casper`, `source`; MEASUREMENTS §59).
 severity: low
 origin: Story 5.16a's review (2026-09-23), reading `tools/probe/record-page-number.py`. Pre-existing: it follows
   `record-contexts.py`'s pattern exactly, and that recorder never deleted its upload either.
@@ -6255,6 +6282,7 @@ owner: Story 5.24c (The sweep: the section runtime, the library and the recordin
   (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "whoever next touches a `record-*.py` probe
   or `tools/probe/RESET-PROTOCOL.md`.")*
 location: `tools/probe/record-page-number.py` `record()`'s `finally` · `tools/probe/record-contexts.py:342`
+note (Story 5.24c's Dev, 2026-10-01): built and offline-proved with DW-147 — every T1/T3 uploader (`record-shim.py`, `run-verify-core.py`, `record-contexts.py`, `record-page-number.py`, `run-verify-13.py`, `run-verify-all.py`, `run-verify-47.py`, `run-verify-e2.py`, `run-verify-comment-count.py`) ends in `restore_and_delete` inside its `finally` and refuses to start on a probe theme (`start_guard`); `run-verify-ghostpro.py` is the named exception; `RESET-PROTOCOL.md` § Ghost says so. Closed by the deletions above.
 
 ### DW-238: the deploy-and-export take-over (D8g) has no entry point to hang off yet
 
@@ -7303,7 +7331,8 @@ reason: `networkidle` waits for 500 ms with no request in flight, which a live p
 plain: A section remembers the settings of every design it has been shown as. If a design is ever removed from the
   library, the settings remembered against it stay in the section's saved page, harmless and unused. That is fine, but
   no comment or test says it is on purpose.
-status: open
+status: done 2026-10-01 (Story 5.24c)
+resolution: Story 5.24c's Dev (2026-10-01): `doc-schema.ts`' `parkedControls` comment says a record under a design id the library no longer holds is kept, never drawn and never pruned — `switchControls` carries it, and a swap to that id is refused. Test (`doc-edit.test.ts`, DW-288): a record under `a17/9` survives `parseDoc`, a swap and a return, and the swap to it answers the refusal; it pins intended behaviour, and its control — dropping unknown records in `switchControls`' copy loop — turns it red.
 severity: low
 origin: Story 5.23's review (2026-09-27). `parkedControls` is keyed by design id (`doc-schema.ts`) and a record is
   written for every design left (R-205); `isDesigned` and `read.ts` look only at the live `designId`, so a stale key is

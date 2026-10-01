@@ -12,7 +12,7 @@
   "dataBindings": {
     "plans": { "source": "tiers", "filter": "type:paid+visibility:public" }
   },
-  "ghostCompat": { "minVersion": "5.0.0", "helpers": ["get", "foreach", "t"] },
+  "ghostCompat": { "minVersion": "5.62.0", "helpers": ["get", "foreach", "t"] },
   "darkCapabilities": ["tokens"],
   "previewSeed": "orbit-weekly",
   "provisional": true,

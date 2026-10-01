@@ -16,13 +16,19 @@ Covers, at runtime, on both majors:
   item 21  the announcement-bar seed, and whether clearing it stops the script
   conflict 2's other half — error.hbs for a NON-404 error
 
-Uploads a probe theme, restores the previous one, and cleans up what it creates.
+Uploads a probe theme; in a `finally` restores the previous one and deletes the probe theme, reading
+both back (record-shim.py's `restore_and_delete`), and refuses to start on a probe theme.
 """
-import os, re, sys, time, json, hmac, hashlib, base64, zipfile, io, uuid
+import os, re, sys, time, json, hmac, hashlib, base64, zipfile, io, uuid, importlib.util
 import urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 THEME = os.path.join(HERE, 'theme-all')
+
+# record-shim.py's start guard and theme cleanup, imported rather than copied (DW-237)
+_spec = importlib.util.spec_from_file_location('record_shim', os.path.join(HERE, 'record-shim.py'))
+shim = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(shim)
 
 
 def load_env():
@@ -155,65 +161,63 @@ def run(g, label):
 
 
 def theme_phase(g, label, gated, prev_settings):
-    themes = g.api('GET', 'themes/')['themes']
-    previous = next((t['name'] for t in themes if t.get('active')), None)
+    previous = shim.start_guard(g)
 
     st, res = g.upload(zip_dir(THEME), 'inflozo-probe-all.zip')
     t = res['themes'][0]
     print(f'\n[theme]   uploaded {t["name"]!r} HTTP {st}')
 
-    # -------------------------------------------------------------- item 14c
-    tmpl = t.get('templates') or []
-    print(f'\n[item 14c] custom templates Ghost derived from the FILENAMES:')
-    for x in tmpl:
-        print(f'    file={x.get("filename"):<28} slug={x.get("slug"):<20} label={x.get("name")!r}')
-    if not tmpl:
-        print('    (none reported on upload — re-reading GET /themes/)')
-        for x in (next((z for z in g.api("GET", "themes/")["themes"] if z["name"] == t["name"]), {}) or {}).get('templates', []):
+    try:
+        # -------------------------------------------------------------- item 14c
+        tmpl = t.get('templates') or []
+        print(f'\n[item 14c] custom templates Ghost derived from the FILENAMES:')
+        for x in tmpl:
             print(f'    file={x.get("filename"):<28} slug={x.get("slug"):<20} label={x.get("name")!r}')
+        if not tmpl:
+            print('    (none reported on upload — re-reading GET /themes/)')
+            for x in (next((z for z in g.api("GET", "themes/")["themes"] if z["name"] == t["name"]), {}) or {}).get('templates', []):
+                print(f'    file={x.get("filename"):<28} slug={x.get("slug"):<20} label={x.get("name")!r}')
 
-    g.api('PUT', f'themes/{t["name"]}/activate/')
-    time.sleep(2)
+        g.api('PUT', f'themes/{t["name"]}/activate/')
+        time.sleep(2)
 
-    # ------------------------------------------------------- items 18, 20, 12
-    st, html = g.page('/')
-    print(f'\n[items 18/20/12] rendered homepage (HTTP {st})')
-    show(grab(html))
+        # ------------------------------------------------------- items 18, 20, 12
+        st, html = g.page('/')
+        print(f'\n[items 18/20/12] rendered homepage (HTTP {st})')
+        show(grab(html))
 
-    # -------------------------------------------------------------- item 11
-    st, html = g.page(f'/{gated["slug"]}/')
-    print(f'\n[item 11]  gated post as ANONYMOUS (HTTP {st})')
-    for pat, lbl in (('CTA_OVERRIDE', 'partials/content-cta.hbs rendered'),
-                     ('SECRET-PAID-BODY', 'PAID BODY LEAKED — access control failed'),
-                     ('PUBLIC-PREAMBLE', 'public preamble shown')):
-        print(f'    {lbl:<45} {"YES" if pat in html else "no"}')
-    m = re.search(r'<div id="probe-access">(.*?)</div>', html, re.S)
-    if m: print(f'    {m.group(1).strip()}')
-    m = re.search(r'<div id="probe-cta">(.*?)</div>', html, re.S)
-    if m: print(f'    {m.group(1).strip()}')
-
-    # -------------------------------------------------------------- item 15
-    pub = g.api('GET', 'posts/?limit=1&filter=visibility:public&fields=id,slug')['posts']
-    if pub:
-        st, html = g.page(f'/{pub[0]["slug"]}/')
-        m = re.search(r'<div id="probe-comments">(.*?)</div>', html, re.S)
-        print(f'\n[item 15]  {{{{comments}}}} on a public post (HTTP {st})')
+        # -------------------------------------------------------------- item 11
+        st, html = g.page(f'/{gated["slug"]}/')
+        print(f'\n[item 11]  gated post as ANONYMOUS (HTTP {st})')
+        for pat, lbl in (('CTA_OVERRIDE', 'partials/content-cta.hbs rendered'),
+                         ('SECRET-PAID-BODY', 'PAID BODY LEAKED — access control failed'),
+                         ('PUBLIC-PREAMBLE', 'public preamble shown')):
+            print(f'    {lbl:<45} {"YES" if pat in html else "no"}')
+        m = re.search(r'<div id="probe-access">(.*?)</div>', html, re.S)
         if m: print(f'    {m.group(1).strip()}')
-        # what does {{comments}} actually emit into the DOM?
-        frag = re.search(r'(<script[^>]*comment[^>]*>.*?</script>|<div[^>]*ghost-comments[^>]*>.*?</div>)', html, re.S | re.I)
-        print(f'    emitted markup : {(frag.group(1)[:220] + "…") if frag else "(no comments container found in HTML)"}')
-        for probe in ('comments-frame', 'ghost-comments', 'sodo-comments', 'data-ghost-comments'):
-            print(f'    contains {probe:<22} {"YES" if probe in html else "no"}')
+        m = re.search(r'<div id="probe-cta">(.*?)</div>', html, re.S)
+        if m: print(f'    {m.group(1).strip()}')
 
-    # ------------------------------------------- conflict 2: error.hbs (non-404)
-    st, html = g.page('/ghost/api/content/posts/?key=deliberately-invalid')
-    st2, html2 = g.page(f'/{gated["slug"]}/?')          # benign
-    print(f'\n[conflict 2] error.hbs (non-404) — attempts')
-    print(f'    invalid content-key route -> HTTP {st}, probe block present: {"YES" if grab(html) else "no"}')
+        # -------------------------------------------------------------- item 15
+        pub = g.api('GET', 'posts/?limit=1&filter=visibility:public&fields=id,slug')['posts']
+        if pub:
+            st, html = g.page(f'/{pub[0]["slug"]}/')
+            m = re.search(r'<div id="probe-comments">(.*?)</div>', html, re.S)
+            print(f'\n[item 15]  {{{{comments}}}} on a public post (HTTP {st})')
+            if m: print(f'    {m.group(1).strip()}')
+            # what does {{comments}} actually emit into the DOM?
+            frag = re.search(r'(<script[^>]*comment[^>]*>.*?</script>|<div[^>]*ghost-comments[^>]*>.*?</div>)', html, re.S | re.I)
+            print(f'    emitted markup : {(frag.group(1)[:220] + "…") if frag else "(no comments container found in HTML)"}')
+            for probe in ('comments-frame', 'ghost-comments', 'sodo-comments', 'data-ghost-comments'):
+                print(f'    contains {probe:<22} {"YES" if probe in html else "no"}')
 
-    if previous:
-        g.api('PUT', f'themes/{previous}/activate/')
-        print(f'\n[theme]   restored {previous}')
+        # ------------------------------------------- conflict 2: error.hbs (non-404)
+        st, html = g.page('/ghost/api/content/posts/?key=deliberately-invalid')
+        st2, html2 = g.page(f'/{gated["slug"]}/?')          # benign
+        print(f'\n[conflict 2] error.hbs (non-404) — attempts')
+        print(f'    invalid content-key route -> HTTP {st}, probe block present: {"YES" if grab(html) else "no"}')
+    finally:
+        shim.restore_and_delete(g, previous, [t['name']])
 
 
 if __name__ == '__main__':

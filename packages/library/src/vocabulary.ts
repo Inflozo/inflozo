@@ -397,9 +397,10 @@ export function placeholdersOffered(
   return Object.keys(PLACEHOLDERS).filter((t) => own.has(t))
 }
 
-/** §7.3 gap row 9 — a helper with no bound path, which `data-bind` cannot express. */
+/** §7.3 gap row 9 — a helper with no bound path, which `data-bind` cannot express. `total_paid_members` and
+ *  `content_api_url` joined at Story 5.24c (DW-99): the shim had resolved both since Story 4.3 and nothing could ask. */
 export const BARE_HELPERS = [
-  'content', 'comments', 'navigation', 'total_members', 'statusCode', 'message', 'content_api_key',
+  'content', 'comments', 'navigation', 'total_members', 'total_paid_members', 'statusCode', 'message', 'content_api_key', 'content_api_url',
 ] as const
 
 /** §7.3 gap row 14 / AD-37 — what a design may ask the COMPILER about the page it sits on.
@@ -425,6 +426,34 @@ export const MEMBER_FORMS = ['subscribe', 'signin', 'signup'] as const
 
 /** The resources a `{{#get}}` may query (FR-H2's Data group Source). */
 export const GET_SOURCES = ['posts', 'tags', 'authors', 'tiers'] as const
+
+/** The one value `previewSeed` has — the bundled Orbit Weekly dataset (FR-H3). Here beside the grammar, as `DEFAULT_LIMIT`
+ *  is, so the validator refuses what `resolvePreviewSeed` would (DW-104). One constant, not a list: a list waits for a
+ *  second dataset. */
+export const ORBIT_WEEKLY_SEED = 'orbit-weekly'
+
+/** An NQL filter split at `sep` outside `[…]` and quotes — its top level. One copy, read by the validator and by the offline
+ *  resolver (`orbit-weekly.ts`), so a filter validates only where it also previews (DW-104). */
+export function splitTop(s: string, sep: string): string[] {
+  const out: string[] = []
+  let depth = 0
+  let quote = ''
+  let start = 0
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i]
+    if (quote !== '') {
+      if (c === quote) quote = ''
+    } else if (c === "'" || c === '"') quote = c
+    else if (c === '[') depth++
+    else if (c === ']') depth--
+    else if (c === sep && depth === 0) {
+      out.push(s.slice(start, i))
+      start = i + 1
+    }
+  }
+  out.push(s.slice(start))
+  return out
+}
 
 /** Ghost's own default LIMIT when a `{{#get}}` names none, per resource — asserted against what the Content API returned
  *  with no `limit`, on both majors (`orbit-weekly.test.ts` over `capture.json`). Tiers are not paginated: every tier comes

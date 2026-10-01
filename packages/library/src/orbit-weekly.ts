@@ -21,15 +21,12 @@ import corpus from '../orbit-weekly/corpus.json' with { type: 'json' }
 import { CAPTURE_COMMAND, RECORDINGS } from '../orbit-weekly/fixtures/index.ts'
 import type { DataBinding } from './registry.ts'
 import { nativeResourceOf } from './placement.ts'
-import { DEFAULT_LIMIT, GET_SOURCES, PAYWALL_TARGET } from './vocabulary.ts'
+import { DEFAULT_LIMIT, GET_SOURCES, ORBIT_WEEKLY_SEED, PAYWALL_TARGET, splitTop } from './vocabulary.ts'
 import { postAccess, type Visitor } from './access.ts'
 
 // Story 5.19 (DW-112): Ghost's default limit is the vocabulary's, beside `GET_SOURCES`; re-exported so the fixture
-// tests that assert it against the recording still read it here.
-export { DEFAULT_LIMIT }
-
-/** The one value `previewSeed` has, and what it resolves to. */
-export const ORBIT_WEEKLY_SEED = 'orbit-weekly'
+// tests that assert it against the recording still read it here. DW-104 (Story 5.24c): so is the seed's one value.
+export { DEFAULT_LIMIT, ORBIT_WEEKLY_SEED }
 
 /** The reserved origin every URL in the dataset and the corpus sits on (RFC 2606's `.example`, which
  *  no Ghost rewrites and no DNS answers). A consumer maps `${ORBIT_WEEKLY_ORIGIN}/images/…` to wherever
@@ -472,28 +469,6 @@ const FIELDS: Readonly<Record<Source, Readonly<Record<string, (r: Json) => reado
   tags: { id: (r) => [r['id']], slug: (r) => [r['slug']], visibility: (r) => [r['visibility']] },
   authors: { id: (r) => [r['id']], slug: (r) => [r['slug']] },
   tiers: { id: (r) => [r['id']], slug: (r) => [r['slug']], type: (r) => [r['type']], visibility: (r) => [r['visibility']], active: (r) => [r['active']] },
-}
-
-/** Splits at `sep` outside `[…]` and quotes. */
-function splitTop(s: string, sep: string): string[] {
-  const out: string[] = []
-  let depth = 0
-  let quote = ''
-  let start = 0
-  for (let i = 0; i < s.length; i++) {
-    const c = s[i]
-    if (quote !== '') {
-      if (c === quote) quote = ''
-    } else if (c === "'" || c === '"') quote = c
-    else if (c === '[') depth++
-    else if (c === ']') depth--
-    else if (c === sep && depth === 0) {
-      out.push(s.slice(start, i))
-      start = i + 1
-    }
-  }
-  out.push(s.slice(start))
-  return out
 }
 
 const unquote = (v: string): string => v.replace(/^'(.*)'$/, '$1').replace(/^"(.*)"$/, '$1')

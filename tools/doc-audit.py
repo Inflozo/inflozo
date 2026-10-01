@@ -256,7 +256,9 @@ DOCS = [
   'Clears the probe project for a clean schema apply. Deletes storage files through the dashboard '
   'first, because a SQL cascade removes the row and leaves the bytes billed.'),
  ('tools/probe/RESET-PROTOCOL.md', 'live', 'Reset protocol',
-  'Inventory, owner confirms, then clear — in that order, every time.'),
+  'Inventory, owner confirms, then clear — in that order, every time. Since Story 5.24c (DW-237) its § Ghost '
+  'binds every T1/T3 theme uploader to record-shim.py\'s one restore-and-delete, read back, and to a refusal '
+  'to start while a probe theme is active; run-verify-ghostpro.py is the one exception.'),
  ('tools/probe/seed-ghost.py', 'tool', 'Ghost fixture seeder', 'Seeds both Ghosts identically.'),
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
@@ -266,7 +268,10 @@ DOCS = [
   "because NFR-6(c2) says Ghost's resize behaviour follows the theme's own map — renders every "
   'FR-H5 helper into a parseable block on both majors, and writes '
   'packages/ghost-shim/fixtures/ghost{5,6}/ with the capture date and the command. It restores the '
-  'previous theme and REDACTS the Content API key to its shape. SINCE STORY 5.20 IT WRITES TWO THINGS '
+  'previous theme, deletes the probe theme and reads both back whichever failed — restore_and_delete, with '
+  'start_guard refusing a run while a probe theme is active; every T1/T3 uploader imports both, and '
+  '--self-check (in pnpm test) holds them offline against a fake Ghost answering as storage.js does (DW-147, '
+  'DW-237) — and REDACTS the Content API key to its shape. SINCE STORY 5.20 IT WRITES TWO THINGS '
   'AND PUTS BOTH BACK: its MEMBERS group creates two Paid-members-only probe posts per server with the '
   'staff token (a long one with a Public preview marker, a short one without) and deletes both in a '
   'finally, each read back gone; and on T3 alone it sets Subscription access to Nobody, re-renders the '
@@ -280,7 +285,10 @@ DOCS = [
   "AD-23's recorder for Story 4.4's style-guide body. Reads packages/library/orbit-weekly/corpus.json "
   '(one Lexical corpus), creates it on T1 and T3 as a post, a variation-sheet post and a page, reads the '
   'rendered html back through the Content API, returns all three to draft in a finally, and splits the '
-  'body per block losslessly. Writes packages/library/orbit-weekly/fixtures/ghost{5,6}/ with the capture '
+  'body per block losslessly. Since Story 5.24c (DW-103) it also owns two posts and two tags '
+  '(inflozo-defaults-*), created on its first run, published with the three documents and drafted in the same '
+  'finally, so the Content API default order and limit are read through its own rows by id:[…]. Writes '
+  'packages/library/orbit-weekly/fixtures/ghost{5,6}/ with the capture '
   'date, command, Ghost and renderer versions and the Content API default order and limit the Source '
   'resolver is asserted against, plus variations.html and a generated index.ts; vendors Ghost\'s card '
   'CSS and JS chunks verbatim from T1 over SSH. The control (the four documented root classes on both '
@@ -291,8 +299,12 @@ DOCS = [
   'packages/library/contexts/matrix.json — every field of every scope printed beside its {{#if}} '
   'truthiness, a number beside its includeZero=true guard, a list or object as its truthiness and first '
   'row, a helper into a raw block — gates it through tools/stress/gate.js, uploads and activates it on T1 '
-  'and T3, fetches the home page, page 2, two posts, a page, a tag archive, an author archive and a 404, '
-  'and restores the previous theme in a finally, re-reading it to prove it came back. Reads the whole '
+  'and T3, fetches the home page, page 2, three posts (one carrying a custom excerpt), a page, a tag archive, an '
+  'author archive and a 404 — and last, since Story 5.24c on the owner\'s ruling, PRIVATE MODE for seconds: '
+  'is_private and a throwaway password switched on, /private/ and a wrong password\'s page fetched, both settings '
+  'put back in a finally and read back (Ghost stores an empty password as null, read as the same) — '
+  'and in a finally restores the previous theme and deletes the probe theme, reading both back '
+  '(record-shim.py\'s restore_and_delete); it refuses to start while a probe theme is active. Reads the whole '
   "Content API row behind every frame, and Ghost's own public.js, default-settings.json and the two "
   'template-options middleware files at the floor, both servers\' versions, every gate in the matrix and '
   'the release before each. Controls (a root {{title}} on post.hbs empty beside the {{#post}} title; a '
@@ -350,8 +362,9 @@ DOCS = [
   'GS120-NO-UNKNOWN-GLOBALS on the @root markers (the finding: gscan refuses @root on both majors, so the '
   'emitted constant cannot spell it) and refusing any other error; gates the same theme without them at 0 '
   'errors. Uploads and activates on T1 and T3, falling back to the @root-free theme if Ghost refuses or '
-  'never serves the first, fetches /, /page/2/, /page/3/, a post, a public page and a 404, and restores the '
-  'previous theme in a finally, re-reading it to prove it came back. Controls (the guard empty at / and the '
+  'never serves the first, fetches /, /page/2/, /page/3/, a post, a public page and a 404, and in a finally '
+  'restores the previous theme and deletes every probe theme it uploaded, reading both back (record-shim.py\'s '
+  'restore_and_delete); it refuses to start while a probe theme is active. Controls (the guard empty at / and the '
   "page's own number from /page/2/ on, pagination.page printing 1·2·3 beside it, the probe's own layout "
   'actually served, the {{#foreach}} block printing a title) void the run and write nothing. Writes '
   "MEASUREMENTS.md §49 alone, replacing an earlier §49 of its own so a re-run re-records."),
@@ -362,7 +375,8 @@ DOCS = [
   "the repo's sources. Gates it through tools/stress/gate.js, uploads and activates it on T3 and T1, waits "
   "for this run's nonce on /, and drives the machine's Chromium through JavaScript on and off, reduced "
   'motion and 1024 -> 600 -> 1024 px, expecting no page error but the probe\'s own; restores the previous '
-  'theme in a finally, re-reads it, then deletes the probe theme and re-reads the list (owner, Q1). Creates no content, touches no '
+  'theme in a finally, re-reads it, then deletes the probe theme and re-reads the list (owner, Q1), through '
+  'record-shim.py\'s restore_and_delete, and refuses to start while a probe theme is active. Creates no content, touches no '
   'setting and writes nothing to disk; a page without the nonce voids the run. Also '
   'covers packages/library/modules/core.js, core.d.ts, registry.json and core.test.mjs, and '
   'packages/library/src/modules.ts and modules.test.ts, which the catalogue cannot index under packages/.'),
@@ -402,7 +416,8 @@ DOCS = [
   'render identically both ways, and the same theme must produce an identical gscan rule set with '
   'and without the triple stash. Found the field is a SafeString on both majors — so R-10 #7\'s '
   'carve-out is withdrawn — and that Ghost 6 sanitises it at render while Ghost 5 emits a <script> '
-  'straight into the page. Restores the previous theme and deletes its own posts.'),
+  'straight into the page. Deletes its own posts, then restores the previous theme and deletes its probe theme, reading both '
+  'back (record-shim.py\'s restore_and_delete, since Story 5.24c); it refuses to start on a probe theme.'),
  ('tools/probe/run-verify-comment-count.py', 'tool', 'Register probe · the comment count',
   'Whether {{comment_count}} substitutes a placeholder, and what it renders with JS off. Its FIRST '
   'control failed and that was the finding: the helper substitutes nothing server-side, so the probe '
@@ -1002,7 +1017,10 @@ DOCS = [
  ('tools/check-baseline.mjs', 'tool', 'The Baseline floor, checked by execution',
   "Story 4.8's check of FR-G8, run by pnpm test and therefore by CI and the Vercel build. Controls first: "
   "new ImageCapture() linted as a module must be refused by eslint-plugin-compat at the floor's Safari (proof the pin "
-  'reaches the lint — ImageCapture ships in Safari 17.4, which an unpinned floor passes), a second notBaseline entry must be refused '
+  'reaches the lint — ImageCapture ships in Safari 17.4, which an unpinned floor passes), AD-1\'s core ban linted as a core file '
+  '(since Story 5.24c, DW-4: a Date\'s argument-less .toString() refused, n.toString(16) clean, and a disable comment '
+  'refused its effect — .localeCompare() still refused under /* eslint-disable */, because the core block sets noInlineConfig), '
+  'a second notBaseline entry must be refused '
   'naming R-105, an entry whose css names something other than its feature must be refused, text-wrap-pretty gaining '
   'a low date must be refused asking for its date, '
   "an altered Tier-2 date must be refused naming both dates, size-limit at 1 B must report "
@@ -1057,12 +1075,15 @@ DOCS = [
  ('tools/matrix/cases.mjs', 'tool', 'The render matrix case list, derived',
   "Story 4.11: every design (the directory, through apps/web/lib/pilots.ts's own door) × every token set that exists × "
   'light/dark × 1440, 834, 390, 1440 at 200% and 1440 with reduced motion × the design\'s own fixture rows — feed pages '
-  'if it paginates, visitor and Show-to arms if its markup gates by member, the style-guide post and page if its context '
+  'if it paginates, visitor arms if its markup gates by member, Show-to arms if its category carries Member visibility '
+  '(carriesMemberVisibility, the editor\'s own rule over R-113\'s register — since Story 5.24c, DW-171), the style-guide '
+  'post and page if its context '
   'is post. Carries the FR-H3 pin table as comments, each pin derived. Also builds the render input, mirroring /pilots\' '
   'paint(). Pure: no browser. Stores no count.'),
  ('tools/matrix/cases.test.mjs', 'tool', 'The render matrix case list, checked by execution',
   "Story 4.11's browser-free half, run last by pnpm test: A17 #1 yields the four feed rows, A22 #1 the visitor and Show-to "
-  'arms, A24 #1 the style-guide post, A1 #1 no feed and no post fixture; the case total equals the product of the axes and '
+  'arms, A24 #1 the style-guide post, A1 #1 visitor arms only and A4 #13 its base row beside Show-to arms; every design has '
+  'Show-to arms exactly when carriesMemberVisibility says the editor draws them (DW-171); the case total equals the product of the axes and '
   'no file under tools/matrix/ or docs/render-matrix.md writes it down; MATRIX_DESIGNS narrows by id and category; and '
   'the canvas document carries every pack the matrix photographs.'),
  ('tools/matrix/matrix.spec.mjs', 'tool', 'The render matrix and its accessibility scan, per case',

@@ -13,13 +13,20 @@ Method: one theme, five templates, each carrying a different number of DISTINCT
 single-id gets on one page (1, 6, 12, 18, 24). Distinct ids so nothing is served
 from a memoised identical query. Renders each, three times, and records wall time,
 the number of gets that actually resolved, whether the abort marker appeared and
-whether the degraded-render header was set. Restores the previously active theme.
+whether the degraded-render header was set. In a `finally` it restores the previously
+active theme and deletes the probe theme, reading both back (record-shim.py's
+`restore_and_delete`); it refuses to start on a probe theme.
 """
-import os, re, sys, time, json, hmac, hashlib, base64, zipfile, io, uuid, shutil
+import os, re, sys, time, json, hmac, hashlib, base64, zipfile, io, uuid, shutil, importlib.util
 import urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 THEME = os.path.join(HERE, 'theme-47')
+
+# record-shim.py's start guard and theme cleanup, imported rather than copied (DW-237)
+_spec = importlib.util.spec_from_file_location('record_shim', os.path.join(HERE, 'record-shim.py'))
+shim = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(shim)
 
 # template file -> how many single-id gets it carries
 LADDER = [('index.hbs', 1), ('tag.hbs', 8), ('author.hbs', 16),
@@ -142,34 +149,33 @@ def run(g, label, results):
 
     build_theme(ids)
 
-    themes = g.api('GET', 'themes/')['themes']
-    previous = next((t['name'] for t in themes if t.get('active')), None)
+    previous = shim.start_guard(g)
     print(f'    previously active theme: {previous!r}')
 
     st, res = g.upload(zip_dir(THEME), 'inflozo-probe-47.zip')
     name = res['themes'][0]['name']
     print(f'    uploaded {name!r} HTTP {st}')
-    for w in (res['themes'][0].get('gscan') or {}).get('errors', [])[:5]:
-        print(f'    gscan error: {w}')
-    g.api('PUT', f'themes/{name}/activate/')
-    time.sleep(3)
-
-    # routes for each rung: index / a tag / an author / a page / a post
-    tags = g.api('GET', 'tags/?limit=1&filter=visibility:public')['tags']
-    authors = g.api('GET', 'users/?limit=1')['users']
-    pages = g.api('GET', 'pages/?limit=1&filter=status:published&fields=id,slug')['pages']
-    a_post = next((p for p in posts if p.get('slug')), None)
-    route = {
-        'index.hbs': '/',
-        'tag.hbs':  f'/tag/{tags[0]["slug"]}/' if tags else None,
-        'author.hbs': f'/author/{authors[0]["slug"]}/' if authors else None,
-        'page.hbs': f'/{pages[0]["slug"]}/' if pages else None,
-        'post.hbs': f'/{a_post["slug"]}/' if a_post else None,
-    }
-
-    print(f'\n    {"template":<12}{"gets":>5}{"route":<26}{"HTTP":>6}{"best s":>9}'
-          f'{"median s":>10}{"resolved":>10}{"aborted":>9}{"degraded":>10}')
     try:
+        for w in (res['themes'][0].get('gscan') or {}).get('errors', [])[:5]:
+            print(f'    gscan error: {w}')
+        g.api('PUT', f'themes/{name}/activate/')
+        time.sleep(3)
+
+        # routes for each rung: index / a tag / an author / a page / a post
+        tags = g.api('GET', 'tags/?limit=1&filter=visibility:public')['tags']
+        authors = g.api('GET', 'users/?limit=1')['users']
+        pages = g.api('GET', 'pages/?limit=1&filter=status:published&fields=id,slug')['pages']
+        a_post = next((p for p in posts if p.get('slug')), None)
+        route = {
+            'index.hbs': '/',
+            'tag.hbs':  f'/tag/{tags[0]["slug"]}/' if tags else None,
+            'author.hbs': f'/author/{authors[0]["slug"]}/' if authors else None,
+            'page.hbs': f'/{pages[0]["slug"]}/' if pages else None,
+            'post.hbs': f'/{a_post["slug"]}/' if a_post else None,
+        }
+
+        print(f'\n    {"template":<12}{"gets":>5}{"route":<26}{"HTTP":>6}{"best s":>9}'
+              f'{"median s":>10}{"resolved":>10}{"aborted":>9}{"degraded":>10}')
         for fname, n in LADDER:
             path = route.get(fname)
             if not path:
@@ -191,14 +197,7 @@ def run(g, label, results):
                                 best=round(times[0], 3), median=round(median, 3),
                                 resolved=resolved, aborted=aborted, degraded=degraded))
     finally:
-        if previous:
-            g.api('PUT', f'themes/{previous}/activate/')
-            print(f'\n    restored {previous!r}')
-        try:
-            g.api('DELETE', f'themes/{name}/')
-            print(f'    deleted probe theme {name!r}')
-        except Exception as e:
-            print(f'    could not delete probe theme: {e}')
+        shim.restore_and_delete(g, previous, [name])
 
 
 def main():

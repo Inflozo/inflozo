@@ -100,7 +100,7 @@ export type RuntimeElement = {
   readonly nextElementSibling: RuntimeElement | null
   readonly attributes: Iterable<{ name: string; value: string }>
   /** Story 4.9 — V1's tree half reads each element's own text nodes (`nodeType` 3) */
-  readonly childNodes: Iterable<{ readonly nodeType: number; readonly textContent: string | null }>
+  readonly childNodes: Iterable<{ readonly nodeType: number; readonly textContent: string | null; remove(): void }>
   getAttribute(name: string): string | null
   setAttribute(name: string, value: string): void
   removeAttribute(name: string): void
@@ -710,11 +710,11 @@ function tCalls(el: RuntimeElement): { directive: 'data-t' | 'data-t-attr'; call
 /** FR-H7 at the one door every render passes: every binding the context matrix does not allow at its
  *  scope on `input.target`, as `<tag attr="path"> — why` sentences. Empty only when every binding is
  *  available — the gate a move or duplicate onto another template must pass. */
-function bindingRefusals(root: RuntimeElement, input: RenderInput & { target: string }): string[] {
+function bindingRefusals(root: RuntimeElement, input: RenderInput & { target: string; version?: string }): string[] {
   const out: string[] = []
   for (const el of root.querySelectorAll('*')) {
     for (const { attr, path, use, self } of ghostPaths(el, input)) {
-      const place = { target: input.target, scope: scopeOf(el, root, input, self) }
+      const place = { target: input.target, scope: scopeOf(el, root, input, self), ...(input.version === undefined ? {} : { version: input.version }) }
       // Story 4.10: `{{#if}}` tests truthiness, so a condition may name a boolean, a printable value (a logo, an
       // excerpt, a count) or a list (an empty one takes the else arm). `@member`, an object and a helper stay refused.
       const why = use === 'condition' && (bindable(path, { ...place, use: 'value' }) === null || bindable(path, { ...place, use: 'repeat' }) === null)
@@ -729,8 +729,12 @@ function bindingRefusals(root: RuntimeElement, input: RenderInput & { target: st
 
 /** Re-validation (FR-H7, appendix B.1 §1): every binding in `src` the destination `input.target` does
  *  not allow, with its reason, and `[]` when all are available. What a move or duplicate onto another
- *  template calls before it completes; no story offers that action yet (see the ledger). */
-export function checkBindings(doc: RuntimeDocument, src: string, input: RenderInput): string[] {
+ *  template calls before it completes; no story offers that action yet (see the ledger).
+ *
+ *  DW-168: `version`, given, is the OLDEST Ghost the caller claims — a design's `ghostCompat.minVersion` — and every field
+ *  the matrix dates later is refused. It is this gate's alone: a render is guarded, never refused, on a version
+ *  (`bindable`'s comment), so `RenderInput` carries none. */
+export function checkBindings(doc: RuntimeDocument, src: string, input: RenderInput & { version?: string }): string[] {
   const target = input.target
   if (target === undefined) {
     throw new Error('checkBindings needs the destination template (input.target) — a binding is legal or not only on a named template (FR-H7).')
@@ -1138,6 +1142,9 @@ function catalogProp(path: string, def: PropDef | undefined): string | null {
   return def.catalog
 }
 
+/** DW-96: an attribute's value on one line — every run of line breaks, with the spaces around it, is one space */
+const oneLine = (v: string): string => v.replace(/\s*[\r\n]+\s*/g, ' ')
+
 function applyProps(
   doc: RuntimeDocument,
   scope: RuntimeElement,
@@ -1239,8 +1246,10 @@ function applyProps(
       if (attr === 'href') {
         // Story 4.5 — a destination is a LINK RECORD (a bare string is `{ href }`), and it becomes
         // attributes in exactly one place, `linkAttributes`, which the `a` mark calls too. A record
-        // with no valid destination sets nothing, so FR-F8's unset link hides like any unset prop.
-        const attrs = linkAttributes(isRich(raw) ? raw.text : raw)
+        // with no valid destination sets nothing, so FR-F8's unset link hides like any unset prop. DW-96: a typed
+        // destination folds to one line first, as every attribute does — unfolded, the canvas's `tidy` dropped a blank
+        // line the theme kept, and the browser's own URL parser would strip the break the scheme check never saw.
+        const attrs = linkAttributes(isRich(raw) ? oneLine(raw.text) : typeof raw === 'string' ? oneLine(raw) : raw)
         if (attrs['href'] === undefined) {
           if (i === 0) firstMissing = true
           continue
@@ -1278,7 +1287,10 @@ function applyProps(
       const v = isRich(raw) ? raw.text : raw
       // AD-36 (1): a user-supplied URL is scheme-checked BEFORE it becomes a marker. Here rather
       // than in the escaper, because a scheme is only meaningful where the context is known.
-      const safe = URL_ATTRS.has(attr) ? safeUrl(v) : String(v)
+      // DW-96: an attribute holds one line — a Text Area's breaks fold to a space, the rule a pasted text already follows
+      // (`apps/web/lib/inline.ts`), so both emitters read one value and no `<br>` can reach an attribute; a URL folds
+      // before its scheme check, as `href`'s link record does above
+      const safe = URL_ATTRS.has(attr) ? safeUrl(oneLine(String(v))) : oneLine(String(v))
       el.setAttribute(attr, users !== null ? users.put(path, safe, 'attribute') : safe)
     }
     // DW-93: the harness removed only its own attribute here and implemented no `hide`, so an
@@ -1309,7 +1321,9 @@ export function stampControls(
   const schema = input.controlSchema
   if (schema === undefined) return
   for (const { name } of [...section.attributes]) {
-    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal') section.removeAttribute(name)
+    // DW-228: a root mount's `data-i18n-*` strings stay through a re-stamp — only S5's stamp can put one there
+    // (`refuseCatalogMisuse` refuses an authored one, and `FOREIGN_ATTR_RE` a control named `i18n-*`)
+    if (name.startsWith('data-') && DIRECTIVES[name] === undefined && name !== 'data-portal' && !name.startsWith('data-i18n-')) section.removeAttribute(name)
   }
   for (const c of schema) {
     if (!CONTROL_NAME_RE.test(c.name) || DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR_RE.test(c.name)) {
@@ -1516,7 +1530,7 @@ function stampStrings(root: RuntimeElement, input: RenderInput, users: UserText 
     const bad = moduleStringsRefusals(row)
     if (bad.length > 0) throw new Error(`S5: ${bad.join(' · ')}`)
     for (const key of row[0]?.strings ?? []) {
-      const value = input.strings?.[key] ?? ''
+      const value = oneLine(input.strings?.[key] ?? '') // DW-96: an attribute holds one line, as a prop's does
       // Story 5.16a's review: an ATTRIBUTE sink, like the two in `applyProps` — the default `'text'` sink would
       // splice `PAGE_NUMBER_HBS` raw into this attribute for an override carrying `{page_number}` (executed:
       // `data-i18n-ended="… {{#if pagination.prev}}…"`), and the canvas would show the literal. The vector is in
@@ -1608,6 +1622,14 @@ function gateMembers(doc: RuntimeDocument, root: RuntimeElement, input: RenderIn
 
 export type ThemeOutput = { template: string; partials: Record<string, string> }
 
+/** DW-159: a designer's `<!-- … -->` note ships to no one. Dropped from the parsed tree before the first token is put, so
+ *  the runtime's own markers (`<!--__HBS_n__-->`, R2-7) are never among them; a walk over the nodes, never a regex over
+ *  the source, which would corrupt an attribute holding `<!--`. */
+function dropComments(root: RuntimeElement): void {
+  const notes = [root, ...root.querySelectorAll('*')].flatMap((el) => [...el.childNodes].filter((n) => n.nodeType === 8))
+  for (const n of notes) n.remove()
+}
+
 /** The shared walk. `users !== null` is the theme; `users === null` is the canvas. */
 function renderTree(
   doc: RuntimeDocument,
@@ -1637,6 +1659,7 @@ function renderTree(
   }
   const root = doc.createElement('div')
   root.innerHTML = src
+  dropComments(root)
   refuseUnrendered(root)
   refuseCatalogMisuse(root)
   refuseConditionsAndMembers(root, input)
@@ -1690,7 +1713,8 @@ function renderTree(
   // controls, the lists and the repeats, so a member gate is the outermost wrapper of its element on the theme
   gateMembers(doc, root, input, tokens, users)
   if (root.firstElementChild !== null) stampControls(root.firstElementChild, input)
-  // Story 4.9 — S5, AFTER the controls: stampControls strips every root data-* it does not own
+  // Story 4.9 — S5, AFTER the controls, so a mount's strings are the resolved ones; stampControls keeps a root's
+  // `data-i18n-*` through a later re-stamp (DW-228)
   stampStrings(root, input, users)
   expandItems(doc, root, input, tokens, users)
 
@@ -1821,6 +1845,9 @@ function expandRepeats(
   }
 }
 
+// ponytail: whitespace-only lines go from the whole string, and the canvas tidies AFTER values are in the DOM — so a blank
+// line inside a Ghost value or a fixture's `<pre>` is dropped on the canvas only (DW-96). Invisible unless a stylesheet
+// sets `white-space: pre*`, and no fixture's `<pre>` holds one; the upgrade is to tidy whitespace-only text nodes alone.
 const tidy = (html: string): string => html.replace(/^\s*[\r\n]/gm, '').trim()
 
 /** Emitter 1 — the `.hbs` text that ships to the customer's Ghost site. */

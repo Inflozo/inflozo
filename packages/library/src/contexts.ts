@@ -219,7 +219,13 @@ export function resolve(path: string, place: BindingPlace, use: BindingUse = 'va
   if (typeof chain === 'string') return `"${path}" cannot be checked ${where}: ${chain.replace(/\.$/, '')}.`
   if (use === 'helper') {
     const universal = own(CONTEXT_MATRIX.universal, rest)
-    if (universal?.kind === 'helper' && ups === 0) return { field: universal, name: 'universal' }
+    if (universal?.kind === 'helper' && ups === 0) {
+      // Question 4 (Story 5.24c): a bare helper Ghost added inside 5.x is gated as a field is (MEASUREMENTS §59)
+      if (universal.since !== undefined && place.version !== undefined && !versionAtLeast(place.version, universal.since)) {
+        return `"${path}" arrived in Ghost ${universal.since}, and this site runs ${place.version}.`
+      }
+      return { field: universal, name: 'universal' }
+    }
   }
   const index = chain.length - 1 - ups
   if (index < 0) return `"${path}" climbs above the top of ${place.target} — there is no scope ${ups} level${ups === 1 ? '' : 's'} up ${where}.`
@@ -227,6 +233,10 @@ export function resolve(path: string, place: BindingPlace, use: BindingUse = 'va
   if (typeof found === 'string') {
     const home = homesOf(rest.split('.')[0] as string)
     return `"${path}" is not available ${where}: ${found}${home === '' ? '' : ` — "${rest.split('.')[0]}" lives ${home}`}.`
+  }
+  // DW-127 (Story 5.24c): a resource field Ghost added above the floor is gated exactly as a universal key is
+  if (found.field.since !== undefined && place.version !== undefined && !versionAtLeast(place.version, found.field.since)) {
+    return `"${path}" arrived in Ghost ${found.field.since}, and this site runs ${place.version}.`
   }
   return found
 }
@@ -239,8 +249,9 @@ function homesOf(name: string): string {
 }
 
 /** FR-H7: `null` when `path` is legal at this place used this way, otherwise the refusal sentence.
- *  A version, when given, refuses a key newer than the site; the runtime passes none, because a
- *  design already binding one is guarded, not refused (the version axis belongs to the offer). */
+ *  A version, when given, refuses a key newer than the site; a render passes none, because a
+ *  design already binding one is guarded, not refused (the version axis belongs to the offer). The one
+ *  caller that passes it is `checkBindings`, the version gate a design's `ghostCompat.minVersion` meets (DW-168). */
 export function bindable(path: string, place: BindingPlace & { use?: BindingUse }): string | null {
   const use = place.use ?? 'value'
   const r = resolve(path, place, use)
@@ -282,7 +293,7 @@ export type Offer = {
 }
 
 /** FR-H7: what may be OFFERED at a place. Fields of the current scope and, one object deep, their
- *  fields; the universal set with every key newer than `version` subtracted (absent = the floor); and
+ *  fields, and the universal set — each with every key newer than `version` subtracted (absent = the floor); and
  *  `@page` only where it is meaningful. Never a `{{#get}}`-only resource, never a never-offer key. */
 export function offerBindings(place: BindingPlace): Offer {
   const values: string[] = []
@@ -297,6 +308,7 @@ export function offerBindings(place: BindingPlace): Offer {
   if (typeof chain === 'string') return { values, repeats, conditions, refused: chain.replace(/\.$/, '') }
   const walk = (scope: string, prefix: string, seen: readonly string[]) => {
     for (const [name, f] of Object.entries(scopeFields(scope))) {
+      if (f.since !== undefined && !versionAtLeast(place.version, f.since)) continue
       const path = `${prefix}${name}`
       if (f.kind === 'object' && f.of !== undefined && !seen.includes(f.of)) walk(f.of, `${path}.`, [...seen, f.of])
       else sort(f, path)

@@ -73,9 +73,11 @@ test('the controls held on both majors — the wrapper rule, the page block and 
   }
 })
 
-test('every matrix field not marked unverified is proved by a render or an API row, on both majors', async () => {
+test('every matrix field not marked unverified is proved by a render or an API row, on both majors — and one both prove is no longer unverified', async () => {
   // the block a template opens is proved by its control; every other scope by its frames
   const blocks = new Set(Object.values(M.targets).flatMap((t) => (t.block === undefined ? [] : [t.top])))
+  // DW-127's reverse rule: an `unverified` row that BOTH recordings now prove has lost its reason
+  const provedOn = new Map<string, number>()
   for (const major of MAJORS) {
     const rec = await load<Recording>(major)
     const proved = new Set<string>()
@@ -107,6 +109,7 @@ test('every matrix field not marked unverified is proved by a render or an API r
       for (const [name, f] of Object.entries(fields)) {
         if (f.unverified !== undefined) {
           assert.ok(f.unverified.trim() !== '', `${scope}.${name} is unverified with no reason`)
+          if (proved.has(`${scope}.${name}`)) provedOn.set(`${scope}.${name}`, (provedOn.get(`${scope}.${name}`) ?? 0) + 1)
           continue
         }
         if (!proved.has(`${scope}.${name}`)) missing.push(`${scope}.${name}${blocks.has(scope) ? ' (a template block)' : ''}`)
@@ -114,6 +117,8 @@ test('every matrix field not marked unverified is proved by a render or an API r
     }
     assert.deepEqual(missing, [], `${major}: no render or API row proves ${missing.join(', ')} — record it, or mark it unverified with the reason`)
   }
+  const stale = [...provedOn].filter(([, n]) => n === MAJORS.length).map(([row]) => row)
+  assert.deepEqual(stale, [], `both recordings prove ${stale.join(', ')} — drop its unverified reason`)
 })
 
 test("each value field's {{#if}} agrees with whether it printed, and a number's includeZero=true guard does", async () => {
@@ -304,6 +309,37 @@ test('offer by version: a gated key is absent below its gate and present at it; 
   assert.equal(offerBindings(at('default.hbs', [], '6.9.0')).values.includes('@site.admin_url'), false, 'versions compare as numbers, never as strings')
 })
 
+test('DW-127 — a resource field Ghost added above the floor is gated by version like a universal key: refused and not offered below it', () => {
+  const author = (v?: string) => at('author.hbs', [], v)
+  // an author's Bluesky handle arrived with 5.117.0's users migration; a tier's trial days with 5.8.0's serializer
+  assert.match(bindable('author.bluesky', author('5.116.2')) ?? '', /arrived in Ghost 5\.117\.0, and this site runs 5\.116\.2/)
+  assert.equal(bindable('author.bluesky', author('5.117.0')), null)
+  assert.equal(bindable('author.bluesky', author()), null, 'a render names no version, and is guarded, never refused, on one')
+  assert.equal(bindable('author.facebook', author('5.0.0')), null, 'a field present at the floor is never gated')
+  const offered = (v?: string) => offerBindings(author(v)).values
+  assert.ok(!offered('5.116.2').includes('author.bluesky') && offered('5.117.0').includes('author.bluesky'))
+  assert.ok(!offered().includes('author.bluesky'), 'no version is the floor')
+  const tier = (v: string) => offerBindings(at('index.hbs', [{ get: 'tiers' }], v)).values
+  assert.ok(!tier('5.7.1').includes('trial_days') && tier('5.8.0').includes('trial_days'))
+})
+
+test("Question 4 (Story 5.24c) — a bare helper Ghost added inside 5.x is refused below its release, as a field is", () => {
+  // each release is the first to ship core/frontend/helpers/<name>.js, bisected over npm's releases (MEASUREMENTS §59)
+  const gates: [string, string, string, ScopeEntry[], string][] = [
+    ['comments', '5.2.4', '5.3.0', [], 'post.hbs'],
+    ['total_members', '5.3.1', '5.4.0', [], 'index.hbs'],
+    ['total_paid_members', '5.3.1', '5.4.0', ['posts'], 'index.hbs'],
+    ['content_api_key', '5.95.0', '5.96.0', [], 'default.hbs'],
+    ['content_api_url', '5.97.3', '5.98.0', [], 'default.hbs'],
+  ]
+  for (const [h, before, since, scope, target] of gates) {
+    const place = (version?: string) => ({ ...at(target, scope, version), use: 'helper' as const })
+    assert.match(bindable(h, place(before)) ?? '', new RegExp(`arrived in Ghost ${since.replace(/\./g, '\\.')}, and this site runs ${before.replace(/\./g, '\\.')}`), h)
+    assert.equal(bindable(h, place(since)), null, `${h} at ${since}`)
+    assert.equal(bindable(h, place()), null, `${h}: a render names no version, and is guarded, never refused`)
+  }
+})
+
 test('offer by scope: post fields and their repeats at the top of post.hbs, and no list-template field', () => {
   const o = offerBindings(at('post.hbs'))
   assert.ok(o.values.includes('title') && o.values.includes('feature_image') && o.values.includes('primary_tag.name'))
@@ -350,6 +386,17 @@ test('every universal row was probed on both majors: a value or list has a recor
         assert.equal(u[path]?.printed, '', `${major} runs ${rec.ghost_version}: ${path} (${f.since}) must print empty below its gate`)
       }
     }
+  }
+})
+
+test('DW-99 · DW-129 — the paid count and the API address bind as bare helpers anywhere; the code-injection keys are never offered', () => {
+  for (const h of ['total_paid_members', 'content_api_url']) {
+    assert.equal(bindable(h, { target: 'index.hbs', scope: [], use: 'helper' }), null, h)
+    assert.equal(bindable(h, { target: 'post.hbs', scope: ['tags'], use: 'helper' }), null, `${h} inside a repeat`)
+  }
+  for (const k of ['@site.codeinjection_head', '@site.codeinjection_foot']) {
+    assert.match(bindable(k, at('default.hbs')) ?? '', /never offered/, k)
+    for (const version of [undefined, '6.58.0']) assert.ok(!offerBindings(at('default.hbs', [], version)).values.includes(k), `${k} offered at ${version ?? 'the floor'}`)
   }
 })
 

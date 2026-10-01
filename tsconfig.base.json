@@ -3,6 +3,7 @@
     "strict": true,
     "erasableSyntaxOnly": true,
     "allowImportingTsExtensions": true,
+    "allowArbitraryExtensions": true,
     "rewriteRelativeImportExtensions": true,
     "module": "nodenext",
     "moduleResolution": "nodenext",

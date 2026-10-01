@@ -35,7 +35,7 @@ is a number written down: `tools/matrix/cases.mjs` derives each axis.
 | Designs | the directory `packages/library/designs/{category}/{n}/`, read through `apps/web/lib/pilots.ts` — the editor's own door |
 | Packs | every `*-tokens.css` beside the runtime. Only the reference set exists until Epic 6 authors the packs (DW-169) |
 | Viewports | 1440 · 834 · 390 · 1440 at 200% zoom (720 CSS pixels at twice the density, photographed at CSS scale) · 1440 with reduced motion forced |
-| Fixture rows | what the design is: it paginates → first, middle, last and empty feed pages; its markup gates by member → one row per visitor, and one per Show-to audience seen by a visitor it hides from; its binding context is `post` → the style-guide post (and page) |
+| Fixture rows | what the design is: it paginates → first, middle, last and empty feed pages; its markup gates by member → one row per visitor; its category carries Member visibility → one row per Show-to audience seen by a visitor it hides from, read through `carriesMemberVisibility` (R-113's register, `packages/library/control-groups.json`), the rule the editor and `/pilots` draw Show to by (DW-171); its binding context is `post` → the style-guide post (and page) |
 
 Each case is rendered exactly as the editor draws it: `renderCanvas`, given the input that `renderSection()` in `apps/web/lib/canvas.ts` builds for `/pilots` and the editor (the rows through its `shownRows()`), written
 into the canvas document `/canvas` serves (`pilotsCanvasDocument()`), with `data-mode` set, `js-enabled` on every
@@ -102,7 +102,8 @@ a `--host` run, whose Chromium and fonts are this machine's and therefore never 
   each release;
 - **on every push**, only the designs that push touched: a design's directory or baselines, a whole category when its
   `content.json` changed, and **every design** when a shared input changed — `packages/section-runtime/` (the reference
-  tokens included), `packages/ghost-shim/`, the library's code and data, the canvas document's readers, `tools/matrix/`,
+  tokens included), `packages/ghost-shim/`, the library's code and data, its control register
+  (`packages/library/control-groups.json`, which decides the Show-to rows), the canvas document's readers, `tools/matrix/`,
   or the pins in `package.json` and the lockfile.
 
 **A red matrix does not block publishing the app** (R-116, owner 2026-09-17). `ci.yml`'s `deploy` needs `check` and

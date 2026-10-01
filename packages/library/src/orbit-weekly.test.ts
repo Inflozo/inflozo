@@ -131,11 +131,20 @@ test('limit, order and negation are evaluated; a filter outside the grammar REFU
   assert.throws(() => resolveSource({ source: 'pages' }), /not a \{\{#get\}\} source/)
 })
 
+// Ghost's own defaults, read in its source (api/endpoints/utils/serializers/input/, both tarballs): posts `published_at desc`
+// (5.130.6 `posts.js:100`) and `published_at desc, id desc` (6.58.0 `posts.js:96`); tags `name asc` (`tags.js:7`, `:14`) and
+// authors `name asc` (5 `authors.js:11`, 6 `:12`); the limit 15 whatever the filter. DW-103 (Story 5.24c): posts and tags are
+// read through the recorder's OWN two rows (`filter=id:[…]`, which keeps the default order — a `slug:[…]` filter is
+// reordered into its own, `utils/slug-filter-order.js`), so another probe's post no longer rewrites this recording.
 test('the resolver\'s default ORDER and LIMIT are Ghost\'s, as recorded on both majors', () => {
   for (const major of MAJORS) {
-    const d = recording(major, 'capture')['content_api_defaults'] as Record<string, { limit: number; rows: Record<string, unknown>[] }>
+    const d = recording(major, 'capture')['content_api_defaults'] as Record<string, { filter?: string | null; limit: number; rows: Record<string, unknown>[] }>
     for (const source of ['posts', 'tags', 'authors', 'tiers'] as const) {
-      const { limit, rows } = d[source]
+      const { filter, limit, rows } = d[source]
+      if (source === 'posts' || source === 'tags') {
+        assert.match(filter ?? '', /^id:\[[0-9a-f]{24},[0-9a-f]{24}\]$/, `Ghost ${major} ${source}: not read through the recorder's own rows (DW-103)`)
+        assert.equal(rows.length, 2, `Ghost ${major} ${source}: the recorder owns two rows and ${rows.length} came back`)
+      }
       assert.ok(rows.length > 1, `Ghost ${major} recorded one ${source} row — an order cannot be read from it`)
       const shuffled = [...rows].reverse()
       assert.deepEqual(sortRows(shuffled, DEFAULT_ORDER[source]), rows, `Ghost ${major} ${source}: "${DEFAULT_ORDER[source]}" is not the order Ghost returned`)
@@ -167,9 +176,9 @@ test('previewSeed "orbit-weekly" resolves; any other seed refuses by name', () =
   assert.throws(() => resolvePreviewSeed('some-other-dataset'), /resolves to nothing/)
 })
 
-// The validator accepts more NQL than the resolver evaluates (`validate.ts` lets `,` through; the
-// resolver refuses it by name), so a design can validate green and preview empty. Until the editor
-// exists this is the one place that drift is caught: every shipped design's bindings must resolve.
+// DW-104 (Story 5.24c): the validator refuses what the resolver cannot evaluate — a top-level `,` and a seed that is not
+// bundled — reading the resolver's own `splitTop` and seed from `vocabulary.ts`, so a design no longer validates green and
+// previews empty. This is the positive half, kept: every shipped design's bindings resolve.
 test('the reference design validates AND previews: its seed resolves and every binding returns rows', () => {
   const { resolveSource: resolve } = resolvePreviewSeed(referenceDesign.previewSeed)
   for (const [key, binding] of Object.entries(referenceDesign.dataBindings)) {

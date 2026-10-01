@@ -179,12 +179,14 @@ const block = (selector: string, values: Readonly<Record<string, string>>) =>
  *  colour, which the section already set, and the underline takes the contrast accent on contrast and the words' own
  *  colour elsewhere. `data-bg` is the one attribute both emitters stamp on every section root for its Background role
  *  (the BACKGROUND_ROLES vocabulary), and the only ground this rule can see: a design drawn on a ground of its own
- *  locks the role there or writes its own link rule (`docs/section-authoring.md`). No mode is named: the tokens
+ *  locks the role there or writes its own link rule (`docs/section-authoring.md`). There the words ARE the ground's
+ *  words, so the underline is the link's only sign (WCAG 1.4.1) and is forced, whatever `--link-decoration` a pack sets
+ *  (DW-224). A plain link is also `class=""`, which `:not([class])` alone lets escape. No mode is named: the tokens
  *  carry it (AD-30). */
 const LINK_RULES = [
-  ':where(a:not([class])) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
-  ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class])) { color: inherit; text-decoration-color: currentcolor; }',
-  ':where([data-bg="contrast"]) :where(a:not([class])) { text-decoration-color: var(--accent-on-contrast); }',
+  ':where(a:not([class]), a[class=""]) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
+  ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class]), a[class=""]) { color: inherit; text-decoration-line: underline; text-decoration-color: currentcolor; }',
+  ':where([data-bg="contrast"]) :where(a:not([class]), a[class=""]) { text-decoration-color: var(--accent-on-contrast); }',
 ].join('\n')
 
 /** The stylesheet, emitted from the contract, with FR-E1's link rule after it. FR-E4 owns mode RESOLUTION in Epic 6;

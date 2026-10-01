@@ -7,7 +7,8 @@ is not enough: "Nothing was executed at runtime … No Ghost 5 or Ghost 6 instan
 was booted to observe actual rendering."
 
 This boots both. It uploads a probe theme, activates it, reads what Ghost renders,
-and restores the previous theme afterwards.
+and in a `finally` restores the previous theme and deletes the probe theme, reading
+both back (record-shim.py's `restore_and_delete`). It refuses to start on a probe theme.
 
 The item BLOCKS E9. Conflict 1 is why: if `@even`/`@odd` parity is inverted the
 wrong way, every zebra-striped design in the library stripes backwards, and the
@@ -15,12 +16,17 @@ error is invisible until a human looks at a real site.
 
     python3 tools/probe/run-verify-13.py
 """
-import os, re, sys, time, json, hmac, hashlib, base64, zipfile, io, uuid
+import os, re, sys, time, json, hmac, hashlib, base64, zipfile, io, uuid, importlib.util
 import urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 THEME = os.path.join(HERE, 'theme-13')
 ZIPNAME = 'inflozo-probe-13.zip'          # Ghost identifies a theme by FILENAME (AD-19)
+
+# record-shim.py's start guard and theme cleanup, imported rather than copied (DW-237)
+_spec = importlib.util.spec_from_file_location('record_shim', os.path.join(HERE, 'record-shim.py'))
+shim = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(shim)
 
 
 def load_env():
@@ -96,8 +102,7 @@ def probe_block(html):
 def run(label, g):
     print(f'\n{"="*70}\n{label}\n{"="*70}')
 
-    themes = g.api('GET', 'themes/')['themes']
-    previous = next((t['name'] for t in themes if t.get('active')), None)
+    previous = shim.start_guard(g)
     print(f'  active theme before: {previous}')
 
     res = g.upload_theme(zip_theme(THEME), ZIPNAME)
@@ -105,21 +110,20 @@ def run(label, g):
     warns = t.get('gscan', {}).get('results', {}).get('warning', []) if isinstance(t.get('gscan'), dict) else []
     print(f'  uploaded as {t["name"]!r}  (Ghost reported {len(warns)} warnings)')
 
-    g.api('PUT', f'themes/{t["name"]}/activate/')
-    print(f'  activated {t["name"]}')
-    time.sleep(2)
+    try:
+        g.api('PUT', f'themes/{t["name"]}/activate/')
+        print(f'  activated {t["name"]}')
+        time.sleep(2)
 
-    st, html = g.page('/')
-    print(f'\n  --- GET /  (HTTP {st}) ---')
-    print('\n'.join('  ' + l for l in probe_block(html).splitlines()))
+        st, html = g.page('/')
+        print(f'\n  --- GET /  (HTTP {st}) ---')
+        print('\n'.join('  ' + l for l in probe_block(html).splitlines()))
 
-    st, html = g.page('/this-route-does-not-exist-' + uuid.uuid4().hex[:8] + '/')
-    print(f'\n  --- GET /<missing>  (HTTP {st}) — conflict 2 ---')
-    print('\n'.join('  ' + l for l in probe_block(html).splitlines()))
-
-    if previous:
-        g.api('PUT', f'themes/{previous}/activate/')
-        print(f'\n  restored {previous}')
+        st, html = g.page('/this-route-does-not-exist-' + uuid.uuid4().hex[:8] + '/')
+        print(f'\n  --- GET /<missing>  (HTTP {st}) — conflict 2 ---')
+        print('\n'.join('  ' + l for l in probe_block(html).splitlines()))
+    finally:
+        shim.restore_and_delete(g, previous, [t['name']])
     return True
 
 

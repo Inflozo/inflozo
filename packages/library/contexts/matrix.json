@@ -72,12 +72,6 @@
     "@site.timezone": {
       "kind": "text"
     },
-    "@site.codeinjection_head": {
-      "kind": "text"
-    },
-    "@site.codeinjection_foot": {
-      "kind": "text"
-    },
     "@site.navigation": {
       "kind": "list",
       "of": "navigation"
@@ -198,13 +192,25 @@
       "kind": "helper"
     },
     "total_members": {
-      "kind": "helper"
+      "kind": "helper",
+      "since": "5.4.0"
+    },
+    "total_paid_members": {
+      "kind": "helper",
+      "since": "5.4.0"
     },
     "content_api_key": {
-      "kind": "helper"
+      "kind": "helper",
+      "since": "5.96.0"
+    },
+    "content_api_url": {
+      "kind": "helper",
+      "since": "5.98.0"
     }
   },
   "neverOffer": {
+    "@site.codeinjection_head": "raw code — the site's header injection is markup and script, never words, and NFR-3 keeps codeinjection_* out of the canvas, so printing it would break FR-H5's canvas–site agreement (appendix B.1 §6)",
+    "@site.codeinjection_foot": "raw code — the site's footer injection is markup and script, never words, and NFR-3 keeps codeinjection_* out of the canvas, so printing it would break FR-H5's canvas–site agreement (appendix B.1 §6)",
     "@site.lang": "an undocumented alias of @site.locale (appendix B.1 §6) — bind @site.locale",
     "@site.members_signup_access": "undocumented (appendix B.1 §6)",
     "@site.portal_default_plan": "undocumented (appendix B.1 §6)",
@@ -337,14 +343,13 @@
       "errorDetails": {
         "kind": "list",
         "of": "errorDetail",
-        "unverified": "Ghost fills errorDetails only for a theme-validation error, which no request to a working site can produce"
+        "unverified": "Ghost fills errorDetails only for a theme-validation error, which no request to a working site can produce — read in both releases: error.hbs is handed `errorDetails: err.errorDetails || []` (core/frontend/web/middleware/error-handler.js:51 in 5.130.6, :89 in 6.58.0), the rule/failures shape is what Ghost's own error view iterates (core/server/views/error.hbs:30-40, both), and the error that carries gscan's results is the theme validator's (core/server/services/themes/validate.js:147 · :151)"
       }
     },
     "private": {
       "error": {
         "kind": "object",
-        "of": "private-error",
-        "unverified": "private.hbs renders only in private mode, which this recorder may not switch on"
+        "of": "private-error"
       }
     },
     "post": {
@@ -364,8 +369,7 @@
         "kind": "text"
       },
       "custom_excerpt": {
-        "kind": "text",
-        "unverified": "no public post on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       },
       "url": {
         "kind": "url"
@@ -424,7 +428,8 @@
         "kind": "helper"
       },
       "comments": {
-        "kind": "helper"
+        "kind": "helper",
+        "since": "5.3.0"
       }
     },
     "tag": {
@@ -438,19 +443,16 @@
         "kind": "text"
       },
       "description": {
-        "kind": "text",
-        "unverified": "no public tag on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       },
       "feature_image": {
-        "kind": "image",
-        "unverified": "no public tag on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "image"
       },
       "url": {
         "kind": "url"
       },
       "accent_color": {
-        "kind": "color",
-        "unverified": "no public tag on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "color"
       }
     },
     "author": {
@@ -467,59 +469,60 @@
         "kind": "text"
       },
       "location": {
-        "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       },
       "website": {
-        "kind": "url",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "url"
       },
       "url": {
         "kind": "url"
       },
       "profile_image": {
-        "kind": "image",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "image"
       },
       "cover_image": {
-        "kind": "image",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "image"
       },
       "facebook": {
-        "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       },
       "twitter": {
-        "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       },
       "threads": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "5.117.0: the migration that adds it to Ghost's users table (absent at 5.116.2, core/server/data/schema/schema.js), and the Content API's author serializer passes it unfiltered (clean.js); P0·2's 5.118.0 was one release late (Story 5.24c, DW-127)"
       },
       "bluesky": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "see author.threads"
       },
       "mastodon": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "see author.threads"
       },
       "tiktok": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "see author.threads"
       },
       "youtube": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "see author.threads"
       },
       "instagram": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "see author.threads"
       },
       "linkedin": {
         "kind": "text",
-        "unverified": "no author on T1 or T3 carries one, and the recorder may not write content"
+        "since": "5.117.0",
+        "note": "see author.threads"
       }
     },
     "tier": {
@@ -533,8 +536,7 @@
         "kind": "text"
       },
       "description": {
-        "kind": "text",
-        "unverified": "no tier on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       },
       "type": {
         "kind": "text"
@@ -552,15 +554,15 @@
         "kind": "text"
       },
       "benefits": {
-        "kind": "list",
-        "unverified": "no tier on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "list"
       },
       "trial_days": {
-        "kind": "number"
+        "kind": "number",
+        "since": "5.8.0",
+        "note": "5.8.0: the tiers serializer's first release to print it (absent at 5.7.1, api/endpoints/utils/serializers/output/tiers.js) (Story 5.24c, DW-127)"
       },
       "welcome_page_url": {
-        "kind": "url",
-        "unverified": "no tier on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "url"
       }
     },
     "newsletter": {
@@ -574,8 +576,7 @@
         "kind": "text"
       },
       "description": {
-        "kind": "text",
-        "unverified": "no newsletter on T1 or T3 carries one, and the recorder may not write content"
+        "kind": "text"
       }
     },
     "navigation": {
@@ -630,8 +631,7 @@
     },
     "private-error": {
       "message": {
-        "kind": "text",
-        "unverified": "see private.error"
+        "kind": "text"
       }
     }
   }

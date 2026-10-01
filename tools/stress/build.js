@@ -13,7 +13,7 @@ const fs = require('fs'); const path = require('path'); const crypto = require('
 const { execFileSync } = require('child_process');
 const { renderSection, renderSecondary, feedQuery, UserText, T0, T1, U0, U1 } = require('./compile');
 const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
-const { stressStack, source } = require('./sections');
+const { stressStack, source, QUERIES } = require('./sections');
 
 const OUT = path.join(__dirname, 'theme');
 const ms = (t) => Number(process.hrtime.bigint() - t) / 1e6;
@@ -83,10 +83,12 @@ let sectionCount = 0;
 
 const tRender = process.hrtime.bigint();
 for (const t of TEMPLATES) {
-  const stack = stressStack(t.sections);
+  // R-7: a {{#get}} on the error template compounds the outage it reports, so a kind with queries stays off it. The
+  // stack's other placements (a feed on post, page and error) are DW-296's, Story 7.35's.
+  const stack = stressStack(t.sections).filter((s) => !(t.file === 'error' && QUERIES[s.kind]));
   stack.forEach((s, n) => {
     const layer = `${s.kind}-${n + 1}`;
-    const r = renderSection(source(s), contentFor(s.kind, sectionCount), users);
+    const r = renderSection(source(s), contentFor(s.kind, sectionCount), users, undefined, QUERIES[s.kind]);
     rendered.push({ tmpl: t.file, layer, hbs: r.template });
     for (const [name, body] of Object.entries(r.partials)) sharedPartials[name] = body;
     sectionCount++;

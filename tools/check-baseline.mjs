@@ -217,6 +217,26 @@ await check("the pin reaches the lint: new ImageCapture() in packages/library/mo
   return hit[0].message
 })
 
+// DW-4 (Story 5.24c) — AD-1's `.toString()` ban reaches the Date form only, and no comment in a core package switches a ban
+// off. Here because this is the one ESLint harness, and a core package cannot read `process` to run one of its own.
+const coreLint = async (code) => (await new ESLint({ cwd: REPO }).lintText(code, { filePath: join(REPO, 'packages/section-runtime/src/probe.ts') }))[0].messages
+await check("DW-4: a Date's .toString() in a core package is refused", async () => {
+  const got = await coreLint('export const when = (d: Date): string => d.toString()\n')
+  const hit = got.find((m) => m.ruleId === 'no-restricted-syntax' && m.message.includes('.toString()'))
+  if (hit === undefined) fail(`not refused: ${JSON.stringify(got.map((m) => `${m.ruleId}: ${m.message}`))}`)
+  return hit.message
+})
+await check('DW-4: a number\'s radix form, n.toString(16), is clean', async () => {
+  const got = await coreLint('export const hex = (n: number): string => n.toString(16)\n')
+  if (got.length > 0) fail(`refused: ${JSON.stringify(got.map((m) => `${m.ruleId}: ${m.message}`))}`)
+})
+await check('DW-4: a disable comment in a core package does not silence .localeCompare()', async () => {
+  const got = await coreLint('/* eslint-disable no-restricted-syntax */\nexport const cmp = (a: string, b: string): number => a.localeCompare(b)\n')
+  const hit = got.find((m) => m.ruleId === 'no-restricted-syntax' && m.message.includes('localeCompare'))
+  if (hit === undefined) fail(`silenced: ${JSON.stringify(got.map((m) => `${m.ruleId}: ${m.message}`))}`)
+  return hit.message
+})
+
 await check('the one exception: a second entry carrying notBaseline is refused, naming R-105', () => {
   const [first] = BASELINE.tier2.filter((e) => e.notBaseline === undefined)
   const { refusals } = tier2Findings([...BASELINE.tier2.filter((e) => e !== first), { ...first, notBaseline: 'probe' }])

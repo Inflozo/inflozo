@@ -60,6 +60,9 @@ Build the machine every design in the library is authored against — **before a
     link record, asset id, Tabler icon name, `YYYY-MM-DD` date, item list) have value shapes of their own,
     and `docs/section-authoring.md` §2 is the authoring contract for both halves, the no-value lock and the
     category control union (`categoryControlUnion`, R-53) included.
+  - **Story 5.24c (2026-10-01) — three authoring mistakes refused at the door.** Member visibility declared as a control, by name or title
+    (`member-visibility-control`, R-124); one authored list drawn with two caps (`items-limit-conflict`); and Portal's email box
+    or error line outside a `data-members-form` (`members-field-outside-form`, one ancestor walk with R-4's) (DW-186, DW-213, DW-161).
 - **Binding is prevention, not warning.** Only bindings valid in the current template's render context are ever presented; there is no path by which a user can construct an invalid one. The matrix is keyed on template, scope (top level vs inside a repeat) and connected Ghost version, so fields introduced after a target's version are not offered for that site. Moving or duplicating a section re-validates every binding before the move completes. Ghost compiles without strict mode — an out-of-context binding renders empty with no error at build, deploy or runtime, so the editor is the only place this defect can be caught.
   - **Story 4.6 (2026-09-14) — the matrix is data, and it was recorded, not transcribed.**
     `packages/library/contexts/matrix.json` is FR-H7's one copy, read through `bindable` and `offerBindings`
@@ -79,6 +82,12 @@ Build the machine every design in the library is authored against — **before a
   - **Story 4.10's recording (2026-09-15) — a bare `url` inside `@site.navigation` is Ghost's url helper and prints
     "/".** `matrix.json` types it `helper`, so it refuses; a nav item links through `data-helper="navigation"`.
     Story 4.6's recording had shown the same "/" and read it as the field (MEASUREMENTS §45).
+  - **Story 5.24c (2026-10-01) — the version gate is `checkBindings`'s, and it reads every field's `since`.** `checkBindings` takes the oldest
+    Ghost a design claims (`check-snapshots.mjs` passes `ghostCompat.minVersion`, and refuses A22 #1 claiming 5.61.0), and
+    a resource field Ghost added above the floor is gated as a universal key is — the author social handles at 5.117.0, a
+    tier's `trial_days` at 5.8.0, bisected in npm's releases (MEASUREMENTS §59) — and, on the owner's Question 4, every bare
+    helper Ghost added inside 5.x (`comments`, `total_members`, `total_paid_members`, `content_api_key`, `content_api_url`). The code-injection keys are never offered
+    (NFR-3 keeps them off the canvas); `total_paid_members` and `content_api_url` are bare helpers (DW-168, DW-127, DW-129, DW-99).
 - **Every bound prop compiles inside a guard, and the guard is derived from the bound field, never from a helper argument.** The spike emitted a guard on a date *format string*, so the block never rendered and the content was silently and permanently lost — a garbage guard is *present*, which is why "is there a guard?" passes while the page is empty. Guards use `{{#if}}` exclusively. Text falls back to the static value the prop held; media **hides the element, never the attribute**, and a media guard must enclose any `srcset`.
   - **Story 4.2 (2026-09-11) — FR-H8's guard is UNCONDITIONAL, and its default comes from the
     kind.** A text binding falls back to the authored static value, a binding into a URL attribute
@@ -103,6 +112,9 @@ Build the machine every design in the library is authored against — **before a
   - **Story 4.4 — `orbitWeekly.resolveSource(binding)` is what `getRows` gets on an unlinked project**, and a
     filter outside `field:value` joined by `+` REFUSES rather than guesses. Its default order and limit are
     asserted against the Content API's recorded defaults on both majors.
+  - **Story 5.24c (2026-10-01) — a filter validates only where it also previews.** The validator refuses a top-level `,` and any seed but
+    `orbit-weekly`, reading `splitTop` and the seed from `vocabulary.ts` as the resolver does (DW-104). `record-cards.py` reads
+    Ghost's default order through two posts and two tags it owns (DW-103), recorded on both majors.
 - **A generated theme ships no third-party JavaScript.** Compile CI asserts `assets/js/` contains only Inflozo-authored files, with Ghost's `cards.js` the single declared exception; any future proposal is filtered to MIT / BSD-2 / BSD-3 / Apache-2.0 / ISC re-verified at the pinned version, because users may resell the themes. `core` carries the registry, the `data-i18n-*` reader, one shared `IntersectionObserver` factory, an `AbortController` teardown path and the **reduced-motion gate every animating module passes through**. A design may declare several modules and the compiler emits the union. Every module declares its **no-JS degradation** and whether it is **`edit-safe`**; anything not edit-safe is suppressed on the canvas with its section in its resting state. A module may declare the width below which its script runs, and then its no-JS line must describe **both** sides of that width.
   - **Story 4.7 (2026-09-14) — `core` exists, and the registry is data checked against §7.**
     `packages/library/modules/core.js` is a classic script `bundle()` pastes into one wrapping function; it
@@ -197,6 +209,8 @@ Build the machine every design in the library is authored against — **before a
     `new URL('…', import.meta.url)`, so `pilots.ts` resolves through `fileURLToPath`; the legacy docker builder
     ignores `ADD --checksum`, so the fonts are checked with `sha256sum -c`. **R-117:** NFR-6(a)'s 1% stands — a 3px
     sideways nudge of one button measured 0.36–0.71% and passes; a change that resizes a section always fails.
+  - **Story 5.24c (2026-10-01) — the Show-to arms are the editor's.** `cases.mjs` takes them from `carriesMemberVisibility` over R-113's
+    register, as `/pilots` now does; on Question 2's ruling a1/1's thirty blank frames went and a4/13's arrived (DW-171).
 - **The accessibility scan rides the same renders — there is no second matrix.** axe-core, WCAG 2.1 AA, **zero violations**, scoped to include the fixture renders and the synthesized templates, not only placed designs. Every image carries an alt, and an image that is the **sole content of a link** must carry a *non-empty* one. **The scan stops at the edge of the post body** — Ghost emits its own markup there and no theme can fix a customer's content.
 
 ## Technical Decisions
@@ -206,6 +220,9 @@ Build the machine every design in the library is authored against — **before a
     `src/core.ts` is the one walk, `src/agreement.test.ts` and `src/ad36.test.ts` are the proofs, and
     moving them out of `tools/stress/` is what puts them in `pnpm check` and therefore in CI;
     `tools/stress/compile.js` is now a thin CommonJS adapter over the package for the gscan harness.
+  - **Story 5.24c (2026-10-01) — the `.toString()` ban reaches the Date form only, and no comment switches a ban off.** The selector refuses
+    the call with no argument (`n.toString(16)` is clean), and the core block sets `noInlineConfig`; the controls are
+    `tools/check-baseline.mjs`'s (DW-4).
 - **The library is data, never code.** A design is four files plus two schemas — annotated `index.html`, flat `style.css` using `var(--…)` only, optional `behaviour.js`, `design.json` — with one `content.json` per **category** carrying the union content model. Nothing imports a design; both renderers read it. Removing the directory removes markup, stylesheet and module together.
   - **Story 4.7 (2026-09-14) — there is no `behaviour.js`.** FR-G7 lets a design run registry code only, so a
     design declares `data-module="name"` or `"name:768"` (R-38's width), the entry's `js` is recovered from those
@@ -215,6 +232,8 @@ Build the machine every design in the library is authored against — **before a
     remove the authored control attributes and stamp `resolveControls`' values, so a greyed control's stored
     value, a value outside its set and an unknown name reach neither output, and R-103's no-value lock
     stamps no `data-bg`; without a schema the authored root stands.
+  - **Story 5.24c (2026-10-01) — a re-stamp keeps a root mount's strings.** `stampControls` leaves a root `data-i18n-*` alone, the only such
+    attribute being S5's own stamp (DW-228).
 - **A dark override is a second value for the same control**, token-resolved — never a `-dark` twin attribute and never a mode-scoped selector in a design's own stylesheet. The token block and the base stylesheet are **the only files in a generated theme that mention a mode**.
 - **Brace-safe emission.** User text is text-plus-marks and becomes markup at exactly one place. Braces escape as HTML **numeric entities**, not backslashes (the backslash remedy was executed and is false — Handlebars' escape is not composable). The half that reads backwards and matters most: **both renderers call the same serializer, but only the canvas puts its output into a DOM** — the theme renderer splices the fragment into the emitted string *after* `outerHTML` has run, because an HTML parser decodes `&#123;` back to a live `{` on a DOM round trip. A mustache must never abut a closing brace. Compile CI asserts zero `{{{` and zero `}}}` in emitted output, with no exception.
   - **Story 4.2 (2026-09-11) — `packages/section-runtime/src/marks.ts` is the serializer, and the
@@ -222,6 +241,9 @@ Build the machine every design in the library is authored against — **before a
     shipped a nested `{{#foreach}}` inside an HTML comment, so every row it rendered was
     invisible on the live site; the canvas also expands repeats outer-first, so a nested repeat reads
     its row while `@site.*` reads the root, as Handlebars does.
+  - **Story 5.24c (2026-10-01) — an attribute holds one line, and a design's comment reaches no one.** A Text Area's break folds to a space in
+    an attribute and only the text sink writes `<br>`; a design's `<!-- … -->` is dropped from the parsed tree before the
+    first token is put, so the runtime's own markers are never among them (DW-96, DW-159).
 - **Every untrusted-value sink is closed by allow-list, in the shared core so both renderers inherit it** (AD-36), and each closure ships a runnable assertion that the vector is inert *and* the legitimate case still works: URL schemes allow-listed; helper arguments validated against each helper's own grammar rather than concatenated; bindable attribute names allow-listed with `style` and every `on*` absent; bound CSS values parsed to hex/`rgb()`/`hsl()` with a pack-token fallback. Escaping is a *character* control; a URL scheme, a CSS declaration and an attribute *name* are semantic properties no escaper can act on — `javascript:alert(1)` passes through every escaper intact.
   - **Story 4.2 (2026-09-11) — all four sink rules live in `packages/library` beside `safeUrl`,
     `safeCssColor(value, fallbackToken)` included.** AD-36 #4 had said `ghost-shim` owned the colour
@@ -265,7 +287,16 @@ Build the machine every design in the library is authored against — **before a
     story, reusing the one already uploaded.** Ghost cannot delete an uploaded image through its API,
     so the Dev run's extra copies stay on the test boxes; the recorder restores the previous theme,
     creates no content, touches no setting, and redacts the Content API key to its shape.
+  - **Story 5.24c (2026-10-01) — every probe theme is deleted in the same cleanup, and a run refuses to start on one.** Every T1/T3 uploader
+    ends in `record-shim.py`'s `restore_and_delete` and opens with `start_guard`, held offline by `--self-check` in
+    `pnpm test` (DW-147, DW-237; `RESET-PROTOCOL.md` § Ghost); the leftovers are deleted. The stress archetypes render at their own targets (DW-125).
+  - **Story 5.24c (2026-10-01) — what the matrix says is seen on a real Ghost.** The seeded tag, author, tier and newsletter fields, a post's
+    custom excerpt and `private.hbs` (its wrong-password error included) are recorded on both majors, so none is `unverified`;
+    only `errorDetails` is, cited in source (DW-127).
 - **One reference token set ships with the runtime** — the full custom-property contract at a single set of values — because a design's CSS consumes pack custom properties *exclusively*, so without it nothing renders on the canvas at all. Epic 6 replaces it with the authored packs and **does not change the contract**. *(Step-6 stress test finding F2: the canvas and Section Picker render "in the project's current Style Pack" three epics before any pack exists.)*
+  - **Story 5.24c (2026-10-01) — a plain link on a coloured ground keeps its underline.** The link rules reach `class=""` too and force
+    `text-decoration-line: underline` on contrast, accent and image, where the words take the ground's colour (WCAG 1.4.1);
+    whether the rule reaches a post's body is Story 6.1's question (DW-224).
 - **A pilot authored here is provisional.** It is marked as such in its `design.json`, its committed snapshot is expected to change exactly once, and the mass-rebaseline rule applies when its category gate re-authors it. **No epic outside the owning one edits a design file** — a defect found in a pilot later is raised against the owning category, never patched in place. The five pilots each exist to exercise one hard case: a site-wide singleton binding, the paginated feed extracting a card partial invoked with no params, member gating with Portal actions, a wrapper context valid only inside the post block, and rich text with all four marks over a guarded media binding with `srcset`.
   - **Story 4.10's planning (2026-09-15) — the pilot set was checked against the export, and one row no longer fits.**
     A4 #2's reason was written for the pre-merge "Split Editorial": Flush Left has no picture and five controls, and no
@@ -357,6 +388,8 @@ Build the machine every design in the library is authored against — **before a
   - **Story 4.3 (2026-09-12) — `section-runtime` imports `ghost-shim` directly rather than receiving
     it.** The core packages may depend on `library` and on each other; the DOM is injected because
     AD-1 forbids reaching a global, but a pure package has nothing to inject around.
+  - **Story 5.24c (2026-10-01) — `tabler.json` is typed by a declaration, never inferred.** `icons/tabler.d.json.ts` under
+    `allowArbitraryExtensions` (DW-113).
 - **Process rulings bind every story**: commit and push to `main` after every phase (`Story 4.<n> - <Phase> - <one line>`); run the documentation gate before every commit and never push it red; review and test phases hit real infrastructure, not mocks alone; owner questions go under `## Questions for the owner` in plain English with an example, numbered options and a **(RECOMMENDED)** mark; a story that changes the database pushes its migration first, on its own.
   - **Story 4.2 (2026-09-11) — the documentation gate cannot catalogue a file under `packages/`.**
     `tools/doc-audit.py`'s `BASES` does not walk it, so a new proof or tool there is named in the

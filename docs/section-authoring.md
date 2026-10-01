@@ -927,7 +927,7 @@ from both majors — `packages/ghost-shim/fixtures/`, captured by `python3 tools
 | Directive | Grammar | Canvas | Theme |
 |---|---|---|---|
 | `data-bind-srcset` | `path\|img_url` — the size list is the shim's | one candidate per `image_sizes` key, at the recorded sized URLs | `srcset="{{img_url path size="xs"}} 150w, …"`, one candidate per key from the one map |
-| `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple |
+| `data-helper` | one of the bare helpers | the shim's resolved value, as a **text node**; `navigation` builds Ghost's own `<ul class="nav">`; `content`/`comments` render Story 4.4's fixture and **refuse** without one (FR-H3); `content_api_key` is an inert placeholder; `total_paid_members` is a sample on an unlinked project, as `total_members` is; `content_api_url` is the linked site's own address and nothing on an unlinked one *(Story 5.24c, DW-99)* | the helper's own mustache — `{{content}}`, `{{total_members}}`, `{{content_api_key}}`; double braces, never triple |
 | `data-pagination` | `prev` · `next` · `numbers` | `prev`/`next` get the resolved `page_url` and the element is removed where the page does not exist; `numbers` shows `page / pages` | `prev`/`next` emit `href="{{page_url pagination.prev}}"` inside `{{#if pagination.prev}}`; `numbers` emits `{{pagination.page}} / {{pagination.pages}}` |
 
 Three things the review of Story 4.3 settled about those rows, each read in Ghost's own source
@@ -1055,8 +1055,8 @@ against what T1 and T3 printed and against Ghost's own source by `packages/libra
 | `error.hbs` | the error root | `data-helper="statusCode"` / `"message"` |
 | `default.hbs` | nothing of its own | the universal set only |
 
-The universal set — `@site.*`, `@config.posts_per_page`, and `navigation`, `total_members`,
-`content_api_key` as bare helpers — works everywhere, and an `@` path reads the root from any depth.
+The universal set — `@site.*`, `@config.posts_per_page`, and `navigation`, `total_members`, `total_paid_members`,
+`content_api_key`, `content_api_url` as bare helpers — works everywhere, and an `@` path reads the root from any depth.
 `@page.show_title_and_feature_image` is legal on the post-block templates and offered only on `page.hbs`
 and `custom-{name}.hbs`. A `data-repeat` over a `dataBindings` key opens its source's row scope (a query
 over `posts` holds post fields on any template); a context-path repeat opens the list it names; a
@@ -1105,7 +1105,13 @@ the matrix refuses — and is the gate a move or duplicate onto another template
 there is read as a context path, so a query repeat handed no declaration is refused as a field that does not
 exist. A `../` path climbs one scope per enclosing repeat, and a `{{#get}}` counts as a frame of its own around
 its rows; `../@site.x` is refused — a `@` path reads the root wherever it sits and needs no `../`. No story
-offers the move action yet.
+offers the move action yet. **Pass `version` too, and it is the oldest Ghost the design claims** *(Story 5.24c,
+DW-168)*: every binding Ghost added after the 5.0.0 floor carries the release it arrived in (`since` in
+`contexts/matrix.json`, read in Ghost's npm releases, MEASUREMENTS §41e and §59) and is refused below it — the
+author social handles (5.117.0), a tier's `trial_days` (5.8.0), and the bare helpers `comments` (5.3.0),
+`total_members` and `total_paid_members` (5.4.0), `content_api_key` (5.96.0) and `content_api_url` (5.98.0).
+`check-snapshots.mjs` passes each design's `ghostCompat.minVersion`, so a design reading one of them claims that
+release or later. A render takes no version: it is guarded, never refused, on one.
 
 **Which directives the walk reads is derived** *(Story 4.10, DW-131)*: every directive whose value names a Ghost
 path carries `ghostPath: true` in `vocabulary.ts`, and `contexts.test.ts` fails if a rendered one is not walked —
@@ -1182,7 +1188,7 @@ meet in one list (`P0-5 Populate From Panel.dc.html`, rule 4 of `P0 Editor Primi
 | 6 | pagination | `data-pagination="prev\|next\|numbers"` — rendered since 4.3; paginated targets only (R-7) |
 | 7 | nested repeats | **no directive** — deepest-first ordering, already executed |
 | 8 | ~~group-by / change detection~~ | **STRUCK (R-1)** — a header on a key change is not a compiler construct, it is the `group-headings` **behaviour module**. The row is kept struck because "add a group-by directive" is a proposal that would otherwise be made again. |
-| 9 | bare-helper binding, no path | `data-helper="content\|comments\|navigation\|total_members\|statusCode\|message\|content_api_key"` — rendered since 4.3, by the shim |
+| 9 | bare-helper binding, no path | `data-helper="content\|comments\|navigation\|total_members\|total_paid_members\|statusCode\|message\|content_api_key\|content_api_url"` — rendered since 4.3, by the shim; the paid count and the API address reachable since 5.24c (DW-99) |
 | 10 | compile-target-conditional wrapper | `data-target="page.hbs"` on the subtree |
 | 11 | mixed literal-and-bound attribute value | `data-bind-attr` gains R-27's `{token}` form |
 | 12 | bound value into an inline custom property | `data-bind-style="--tag-accent:accent_color"` |
@@ -1524,6 +1530,9 @@ gone from every emitted file (Portal also reads `data-members-email` and `data-m
 `vocabulary.ts`'s `CONSUMED_DIRECTIVES` rather than over a list restated in prose. A directive
 added to the set without a `emitted: true` marker joins the assertion automatically.
 
+**A comment in a design's markup is dropped by both emitters** *(Story 5.24c, DW-159)* — a designer's `<!-- … -->`
+note reaches no visitor, removed from the parsed tree before the runtime writes its own markers.
+
 ---
 
 ## 4 · The refusals, and why each exists
@@ -1600,6 +1609,10 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a value on `data-members-email` or `data-members-error` | *(Story 4.10)* Portal reads the attribute, not a value; both are valueless, like `data-ghost-search`. |
 | an ask to join outside a `data-if` on its own flag — a free ask outside `@site.allow_self_signup`, a paid one outside `@site.paid_members_enabled` (`member-ask-ungated`) | *(Story 5.20)* R-4. With the flag off Ghost's Portal answers the click with "Memberships unavailable" or signs nobody up, so the ask is absent rather than broken (UX-DR3). A link record the customer sets is gated at emission instead, by `linkGate`. |
 | a `tiers` query without `type:paid` and `visibility:public` at its top level (`tiers-unfiltered`) | *(Story 5.20)* FR-H6. The Content API answers the free tier and a hidden one with the rest (§54). Also refused at emission by the shim's `getQuery`, which re-runs the declaration's grammar. |
+| `data-members-email` or `data-members-error` with no `data-members-form` around it (`members-field-outside-form`) | *(Story 5.24c, DW-161)* Portal reads the email box and the error line only inside the form it submits, so outside one the form sends nothing and its message lands nowhere. One ancestor walk with `member-ask-ungated`'s. |
+| one `data-items` path drawn twice with two caps, or a cap and none (`items-limit-conflict`) | *(Story 5.24c, DW-213)* One list shows one number, and the panel reports the first copy's (`itemsShown`), so a second copy capped otherwise would disagree with it. Equal caps pass. |
+| a control named `member-visibility`, or labelled "Member visibility" (`member-visibility-control`) | *(Story 5.24c, DW-186)* R-124: who a section is shown to is stored on the placed section and gates its root on both emitters; declared as a control it would write a second `data-member-visibility` nothing reads. |
+| a `dataBindings` filter with a top-level `,` (`bad-get-filter`), and a `previewSeed` that is not a bundled dataset (`preview-seed-unbundled`) | *(Story 5.24c, DW-104)* The offline preview evaluates `field:value` joined by `+` and resolves the one seed `orbit-weekly`, so either would validate green and preview empty. A list of one field's values, `tag:[a,b]`, is one clause and passes. |
 | `partials/content-cta.hbs` beside another target, in a category that is not a paywall, or a paywall without it (`paywall-target`) | *(Story 5.20)* FR-H6. Ghost renders the partial where `{{content}}` stops a post for a visitor who may not read it — a place, not a page — so it is the paywall category's one target and no other category's. |
 | a `data-else` that is not the next element sibling of a `data-if` · either arm of a pair on a `data-repeat` or `data-items` · a `data-members` inside another, or on a `data-repeat`, `data-items`, `data-if` or `data-else` · a root `data-members` beside a show-to · a root `data-if` whose `data-else` sits beside it, under a show-to · a `member` or `visibility` outside the closed states | *(Story 4.10)* **refused by the runtime, by name**, on both emitters: the else arm follows its if arm; an arm beside a repeat would split the `{{#if}}` across the rows; member states do not nest and one element has one audience; one audience per section (the show-to gates the root alone). |
 
@@ -1636,7 +1649,7 @@ The ceiling is written down rather than left to be rediscovered; a `ponytail:` c
 
 *(Story 4.4.)* Every design's `previewSeed` is `"orbit-weekly"`, and that value now resolves:
 `orbitWeekly.resolvePreviewSeed('orbit-weekly')` in `@inflozo/library` returns the Source resolver and
-the fixtures; any other seed refuses by name. The data is `packages/library/orbit-weekly/`, the code
+the fixtures; any other seed refuses by name — and since Story 5.24c the validator refuses it first (`preview-seed-unbundled`, DW-104). The data is `packages/library/orbit-weekly/`, the code
 is `packages/library/src/orbit-weekly.ts`, and the proof is `src/orbit-weekly.test.ts`.
 
 **The sample publication.** One file, `dataset.json`: feed posts, tags (six topics plus `newsletter`),

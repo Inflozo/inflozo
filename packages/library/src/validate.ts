@@ -19,7 +19,7 @@ import {
   INLINE_STYLE_RE, INLINE_TOKENS, MARKS, MEDIA_FALLBACK_REFUSAL, PAGE_NUMBER, PAGINATED_TARGETS, PAYWALL_TARGET, PLACEHOLDERS,
   PROP_TYPES, RETIRED_DIRECTIVES,
   SIDEBAR_GROUPS, UNIVERSALS, UNIVERSAL_CONTROLS, URL_ATTRS, bindsUrlAttr, formAsk, isCompileTarget, isIsoDate, parseTAttr, parseTCall,
-  PILL_CHARS, pillRefusal, portalAsk, safeUrl, splitFirst, tCallRefusals, valueWords,
+  ORBIT_WEEKLY_SEED, PILL_CHARS, pillRefusal, portalAsk, safeUrl, splitFirst, splitTop, tCallRefusals, valueWords,
 } from './vocabulary.ts'
 import type { MemberAsk } from './vocabulary.ts'
 import { CATALOG, catalogPropRefusal } from './catalog.ts'
@@ -83,24 +83,8 @@ const TOKEN_RE = /<!--[\s\S]*?-->|<\/([a-zA-Z][\w:-]*)\s*>|<([a-zA-Z][\w:-]*)((?
  *  `askOf`), so the two can never disagree about which designs ask. */
 export function memberAsks(html: string): MemberAskAt[] {
   const out: MemberAskAt[] = []
-  const open: { name: string; gate: string | null }[] = []
-  TOKEN_RE.lastIndex = 0
-  for (let t = TOKEN_RE.exec(html); t !== null; t = TOKEN_RE.exec(html)) {
-    if (t[0].startsWith('<!--')) continue
-    if (t[1] !== undefined) {
-      // a closing tag closes the nearest open element of its name, and everything opened inside it that was never closed
-      const at = open.map((o) => o.name).lastIndexOf(t[1].toLowerCase())
-      if (at !== -1) open.length = at
-      continue
-    }
-    const name = (t[2] ?? '').toLowerCase()
-    const blob = t[3] ?? ''
-    const attrs: Array<[string, string]> = []
-    ATTR_RE.lastIndex = 0
-    for (let a = ATTR_RE.exec(blob); a !== null; a = ATTR_RE.exec(blob)) attrs.push([(a[1] ?? '').toLowerCase(), a[2] ?? a[3] ?? a[4] ?? ''])
-    const attr = (n: string) => attrs.find(([k]) => k === n)?.[1]
-    const gate = attr('data-if') ?? null
-    const gates = [...open.map((o) => o.gate), gate].filter((g): g is string => g !== null)
+  for (const { name, attr, around } of tagsInContext(html)) {
+    const gates = [...around, { attr }].map((o) => o.attr('data-if')).filter((g): g is string => g !== undefined)
     const found: [MemberAsk | null, string][] = []
     const form = attr('data-members-form')
     if (form !== undefined) found.push([formAsk(form), `data-members-form="${form}"`])
@@ -112,9 +96,34 @@ export function memberAsks(html: string): MemberAskAt[] {
       if (a.trim().toLowerCase() === 'data-portal' && spec !== undefined) found.push([portalAsk(spec.replace(/\{[^}]*\}/g, 'x')), `data-bind-attr="data-portal:${spec}"`])
     }
     for (const [ask, how] of found) if (ask !== null) out.push({ tag: name, ask, how, gates })
-    if (!VOID_TAGS.has(name) && !/\/\s*$/.test(blob)) open.push({ name, gate })
   }
   return out
+}
+
+type TagAt = { name: string; attr: (n: string) => string | undefined }
+
+/** Every start tag in the markup with the elements still open around it, outermost first — the ONE ancestor walk
+ *  (`memberAsks`' R-4 question and Portal's form, DW-161). A tag stack over the tokens answers it with no tree: an element
+ *  that is not void and does not close itself stays open until its closing tag, and a closing tag closes the nearest open
+ *  element of its name and everything opened inside it that was never closed. */
+function* tagsInContext(html: string): Generator<TagAt & { around: readonly TagAt[] }> {
+  const open: TagAt[] = []
+  for (const t of html.matchAll(TOKEN_RE)) {
+    if (t[0].startsWith('<!--')) continue
+    if (t[1] !== undefined) {
+      const at = open.map((o) => o.name).lastIndexOf(t[1].toLowerCase())
+      if (at !== -1) open.length = at
+      continue
+    }
+    const name = (t[2] ?? '').toLowerCase()
+    const blob = t[3] ?? ''
+    const attrs: Array<[string, string]> = []
+    ATTR_RE.lastIndex = 0
+    for (let a = ATTR_RE.exec(blob); a !== null; a = ATTR_RE.exec(blob)) attrs.push([(a[1] ?? '').toLowerCase(), a[2] ?? a[3] ?? a[4] ?? ''])
+    const tag = { name, attr: (n: string) => attrs.find(([k]) => k === n)?.[1] }
+    yield { ...tag, around: [...open] }
+    if (!VOID_TAGS.has(name) && !/\/\s*$/.test(blob)) open.push(tag)
+  }
 }
 export type MarkupOptions = {
   /** the control names this design declares, WITHOUT the `data-` prefix. When omitted, the root's
@@ -151,6 +160,8 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
   const declared = opts.controls === undefined ? null : new Set(opts.controls)
   const seenControls = new Set<string>()
   const referencedKeys = new Set<string>()
+  // DW-213: every cap each authored list path is drawn with — a missing cap is a cap (`null`)
+  const itemCaps = new Map<string, Set<string | null>>()
 
   tags.forEach((tag, i) => {
     const isRoot = i === 0
@@ -170,6 +181,8 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
     if (names.includes('data-items-limit') && !names.includes('data-items')) {
       push(out, 'orphan-items-limit', `<${tag.name}> carries data-items-limit with no data-items on the same element — it modifies an authored list and would be silently ignored.`)
     }
+    const items = attr('data-items')
+    if (items !== undefined) itemCaps.set(items, (itemCaps.get(items) ?? new Set()).add(attr('data-items-limit') ?? null))
     if (names.includes('data-if') && names.includes('data-else')) {
       push(out, 'if-and-else', `<${tag.name}> carries both data-if and data-else — the two arms are two SIBLING elements.`)
     }
@@ -367,6 +380,24 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
     }
   }
 
+  // DW-213 — one list, one cap: the panel reports the first element's (`itemsShown`), so a second copy capped otherwise
+  // would show a different number than the panel says. Two caps on one path are an authoring mistake, never a render case.
+  for (const [path, caps] of itemCaps) {
+    if (caps.size > 1) {
+      push(out, 'items-limit-conflict', `data-items="${path}" is drawn with ${[...caps].map((c) => (c === null ? 'no cap' : `a cap of ${c}`)).join(' and with ')} — one list shows one number, and the panel reports the first copy's (FR-D13), so the others would disagree with it. Give every copy the same data-items-limit, or none.`)
+    }
+  }
+
+  // DW-161 — Portal reads the email box and the error line only INSIDE the form it submits: outside one, the form sends
+  // nothing and its message lands nowhere, and every other check would pass
+  for (const { name, attr, around } of tagsInContext(html)) {
+    for (const field of ['data-members-email', 'data-members-error']) {
+      if (attr(field) !== undefined && !around.some((o) => o.attr('data-members-form') !== undefined)) {
+        push(out, 'members-field-outside-form', `<${name} ${field}> sits inside no data-members-form — Portal reads the email box and the error line only inside the form it submits, so the form would send nothing and its message would land nowhere. Put it inside the form.`)
+      }
+    }
+  }
+
   // Story 5.20 — R-4: an ask to join ships behind the site's OWN flag for it, or a site that cannot take it shows a
   // sign-up nobody can complete. A tier count or `@site.members_enabled` never stands in for the flag.
   for (const a of memberAsks(html)) {
@@ -441,6 +472,10 @@ export function validateDataBinding(k: string, b: DataBinding, { declared = true
   }
   if (b.filter !== undefined && !/^[A-Za-z0-9_.:,+\-[\]'"\s]+$/.test(b.filter)) {
     push(out, 'bad-get-filter', `dataBindings.${k}.filter carries a character NQL does not use. A filter is declared here and referenced by key from the markup, never written into an attribute — so it is validated once, never interpolated (AD-36).`)
+  } else if (b.filter !== undefined && splitTop(b.filter, ',').length > 1) {
+    // DW-104: the offline preview refuses a top-level `,` (an "or"), so a design declaring one would validate green and
+    // preview empty; the Data group composes none (P0·5's Source is single-pick). A list inside [...] is one clause.
+    push(out, 'bad-get-filter', `dataBindings.${k}.filter "${b.filter}" joins two parts with a top-level "," (an or), which the preview cannot evaluate — join with + to narrow, or list the values of one field in [a,b].`)
   }
   if (b.order !== undefined && !/^[a-z_]+ (asc|desc)$/.test(b.order)) {
     push(out, 'bad-get-order', `dataBindings.${k}.order must be "<field> asc" or "<field> desc" — got ${JSON.stringify(b.order)}.`)
@@ -590,6 +625,9 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
     } else if (DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive, or an attribute the page or Ghost owns (Portal binds data-members-signout to signing the reader out) — a control's attribute must mean nothing but the control (AD-3).`)
     }
+    if (c.name === 'member-visibility' || (typeof c.label === 'string' && c.label.trim().toLowerCase() === 'member visibility')) {
+      push(out, 'member-visibility-control', `control "${c.name}" is Member visibility, which is not a control (R-124): who a section is shown to is stored on the placed section and gates its root on both emitters; declared here it would write a second data-member-visibility nothing reads.`)
+    }
     if (UNIVERSAL_CONTROLS.includes(c.name)) {
       push(out, 'universal-control-redeclared', `control "${c.name}" is one of the three universal controls. They are declared once, never per design, and a design may narrow a universal's VALUES with a stated reason but may never rename, reinvent or redeclare one (R-23).`)
     }
@@ -719,6 +757,8 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
 
   if (typeof d.previewSeed !== 'string' || d.previewSeed === '') {
     push(out, 'preview-seed-missing', 'previewSeed is required — the Section Picker renders every design from it.')
+  } else if (d.previewSeed !== ORBIT_WEEKLY_SEED) {
+    push(out, 'preview-seed-unbundled', `previewSeed ${JSON.stringify(d.previewSeed)} is not a bundled dataset — the only one is "${ORBIT_WEEKLY_SEED}" (FR-H3), and a seed that resolves to nothing previews nothing (DW-104).`)
   }
   if (d.ghostCompat === undefined || typeof d.ghostCompat.minVersion !== 'string') {
     push(out, 'ghost-compat-missing', 'ghostCompat { minVersion, helpers[], deprecatedAt? } is required. It is authored WITH the design, never per Ghost release — which is what makes FR-C5\'s per-release verification a mechanical check rather than a standing editorial job.')

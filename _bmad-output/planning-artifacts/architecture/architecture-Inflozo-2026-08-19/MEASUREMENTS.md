@@ -3039,6 +3039,10 @@ validation error and `private.hbs` needs private mode — neither was executed. 
 two servers was read in source only, and only for `@site`: a resource field's version (P0·2 dates the
 author social handles to 5.118.0) is not recorded.
 
+*Later (2026-10-01, §59):* the empty fields above were seeded on both servers on the owner's ruling and now print in the
+recording, as do a post's custom excerpt and the private page; a resource field's version is read in Ghost's releases
+(the author social handles arrived in 5.117.0, not 5.118.0). Only `errorDetails` stays `unverified`.
+
 ---
 
 ## 42. `core` at the Baseline pin, and `core` in real Chromium on both majors · 2026-09-14
@@ -3884,3 +3888,127 @@ The medians after sit inside the medians before; the difference between runs is 
 | the custom integration's **Regenerate** (Admin and Content keys) | `admin-x-settings/modals-B5dtfzsB.mjs` | `custom-integration-modal-CrGOI8IB.js`, `api-keys-Df6uv1dT.js` |
 
 **What it settles.** `KEYS.staff.ask` — "Ghost Admin → your avatar → Your profile → Staff Access Token." — is right on both majors as written. `KEYS.rollHint` was not: both majors open the Integrations screen on **Built-in**, and a customer's own "Inflozo" integration is under **Custom**, a click the frames' sentence (`S11 Sites.dc.html` S11d `:232`, and S11e) never says. The hint is now "To roll keys: Ghost Admin → Settings → Integrations → Custom → Inflozo → Regenerate. Old keys stop working the moment you regenerate." — recorded as the third departure beside `KEYS` (R-74; the export is not edited), and `connect-rule.test.ts` pins both sentences.
+
+## 59. Story 5.24c — a field's first Ghost release, bisected in npm's releases; the test sites seeded and recorded, private mode included; the matrix's Show-to frames swapped · 2026-10-01
+
+**Why.** DW-127's version half: the matrix gated `@site` keys by release and no resource field, so P0·2's dating of the
+author social handles (5.118.0) was never checked, and a design's `ghostCompat.minVersion` (DW-168) could not be held to
+a resource field it reads. Read in Ghost's own source — the release tarballs `ghost-5.0.0.tgz`, `ghost-5.130.6.tgz` and
+`ghost-6.58.0.tgz` from the npm registry, and every published 5.x release through jsDelivr's npm mirror for the bisection
+(the method of memory `ghost-source-from-npm-tarball`); read-only, so read in source under standing rule 1.
+
+**The diff, 5.0.0 → 5.130.6** (`core/server/data/schema/schema.js`, the columns of each table a Content API resource reads):
+
+| Table | Added since 5.0.0 | In the matrix? |
+|---|---|---|
+| `posts` | `lexical`, `show_title_and_feature_image` | neither is a post-scope field (`@page.show_title_and_feature_image` is its own row) |
+| `tags` | — | — |
+| `users` | `threads`, `bluesky`, `mastodon`, `tiktok`, `youtube`, `instagram`, `linkedin`, and eight `*_notification` flags | the seven handles are author fields; the flags never reach the Content API (`clean.js`'s `author` deletes them) |
+| `products` (tiers) | `currency`, `monthly_price`, `yearly_price`, `trial_days` | the first three already printed at 5.0.0, through the serializer's price relation (`api/canary/utils/serializers/output/tiers.js`, `serializeTier`); `trial_days` did not |
+| `newsletters` | eighteen design columns | none is a newsletter field |
+
+Every computed post field the matrix carries (`access`, `reading_time`, `excerpt`, `url`) is in 5.0.0's canary serializers.
+
+**Bisected** over npm's published 5.x releases (the first release carrying the name; jsDelivr, one file per probe):
+
+| Field | Absent at | Present at | Where |
+|---|---|---|---|
+| `author.threads` · `bluesky` · `mastodon` · `tiktok` · `youtube` · `instagram` · `linkedin` | 5.116.2 | **5.117.0** | the `users` columns (`schema.js`); `clean.js`'s `author` passes them through unfiltered at 5.117.0 |
+| `tier.trial_days` | 5.7.1 | **5.8.0** | `api/endpoints/utils/serializers/output/tiers.js:74`, `serialized.trial_days = json.trial_days` |
+
+Both are now `since` in `packages/library/contexts/matrix.json`, and `contexts.ts` gates a scope field by its `since` as it
+gates a universal key — refused by `bindable` and left out by `offerBindings` below it (`contexts.test.ts`, DW-127). P0·2's
+5.118.0 for the handles was one release late.
+
+**Found beside it, and gated on the owner's ruling (Story 5.24c's Question 4, option 1, 2026-10-01).** Every bare helper the
+matrix offered ungated at the 5.0.0 floor and that Ghost added inside 5.x — bisected the same way over
+`core/frontend/helpers/{name}.js`, the first release shipping the file (re-checked on 2026-10-01 for `total_members`,
+`total_paid_members`, `content_api_key`, `content_api_url` and `comments` at both releases of each pair, and `navigation`,
+`post_class`, `content` present at 5.0.0):
+
+| Helper | Absent at | Present at |
+|---|---|---|
+| `comments` (a field of the post scope) | 5.2.4 | 5.3.0 |
+| `total_members`, `total_paid_members` | 5.3.1 | 5.4.0 |
+| `content_api_key` | 5.95.0 | 5.96.0 |
+| `content_api_url` | 5.97.3 | 5.98.0 |
+
+No pilot reads any of the five (the designs use `data-helper="content"` and `"navigation"`, both at 5.0.0). Each now carries
+its release as `since` in `packages/library/contexts/matrix.json`; `contexts.ts`' bare-helper path gates it exactly as a field
+(`contexts.test.ts`, "Question 4" — red before the gate: `total_members` claimed at 5.3.1 was not refused).
+
+**The test sites — Question 1's list, written on 2026-10-01 (the owner's Questions 1 and 5, option 1).** Every call below
+went through the recorders' own client (`record-shim.py`'s `Ghost`) with the staff token, named by variable only
+(`GHOST6_STAFF_ACCESS_TOKEN`, `GHOST5_STAFF_ACCESS_TOKEN`), from the main session after the owner's go-ahead (Question 5);
+the first attempt, from a subagent, had been refused by the session's permission classifier and wrote nothing.
+
+*Before.* Re-read with GETs only: both servers unchanged from the Create inventory (2026-09-29) — `casper` active,
+`is_private` false and no password; T1 carries `inflozo-probe-13`, `-all`, `-contexts`, `-root` (and `racer`, `source`);
+T3 the same four, `inflozo-probe-plain` and `theme` (package `inflozo-stress`); the tag `archive`, the author `umang` (T3:
+a profile picture only), the tier `default-product` and the newsletter `default-newsletter` with the approved fields
+empty; 33 published posts, 11 with an excerpt; no `inflozo-defaults-*` post or tag. The write script refused to write
+unless every one of those held.
+
+*Items 1–5, verbatim* (the leftover themes deleted without touching the active one; the images are `seed-ghost.py:74-75` —
+its third, `:76`, now answers 404, so it was not used):
+
+    GHOST6 DELETE /ghost/api/admin/themes/inflozo-probe-13/  -> 204
+    GHOST6 DELETE /ghost/api/admin/themes/inflozo-probe-all/  -> 204
+    GHOST6 DELETE /ghost/api/admin/themes/inflozo-probe-contexts/  -> 204
+    GHOST6 DELETE /ghost/api/admin/themes/inflozo-probe-root/  -> 204
+    GHOST6 PUT /ghost/api/admin/tags/6a86b61f3b29cb6183c011ae/ {"tags": [{"description": "Every past issue, newest first.", "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg", "accent_color": "#D96C3F"}]}  -> 200
+    GHOST6 PUT /ghost/api/admin/users/6a86b33f3b29cb6183c00e4a/ {"users": [{"website": "https://inflozo.com", "location": "Remote", "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg", "facebook": "inflozo", "twitter": "@inflozo", "threads": "@inflozo", "bluesky": "inflozo.bsky.social", "mastodon": "@inflozo@mastodon.social", "tiktok": "@inflozo", "youtube": "@inflozo", "instagram": "inflozo", "linkedin": "inflozo", "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"}]}  -> 200
+    GHOST6 PUT /ghost/api/admin/tiers/6a86b3413b29cb6183c00e59/ {"tiers": [{"description": "Every issue in full, and the whole archive.", "benefits": ["Every issue in full", "The whole archive", "Members-only notes"], "welcome_page_url": "/welcome/"}]}  -> 200
+    GHOST6 PUT /ghost/api/admin/newsletters/6a86b3413b29cb6183c00e5a/ {"newsletters": [{"description": "A weekly letter from the editors."}]}  -> 200
+    GHOST5 DELETE /ghost/api/admin/themes/inflozo-probe-13/  -> 204
+    GHOST5 DELETE /ghost/api/admin/themes/inflozo-probe-all/  -> 204
+    GHOST5 DELETE /ghost/api/admin/themes/inflozo-probe-contexts/  -> 204
+    GHOST5 DELETE /ghost/api/admin/themes/inflozo-probe-root/  -> 204
+    GHOST5 DELETE /ghost/api/admin/themes/inflozo-probe-plain/  -> 204
+    GHOST5 DELETE /ghost/api/admin/themes/theme/  -> 204
+    GHOST5 PUT /ghost/api/admin/tags/6a86b5fe6444934864da32a2/ {"tags": [{"description": "Every past issue, newest first.", "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg", "accent_color": "#D96C3F"}]}  -> 200
+    GHOST5 PUT /ghost/api/admin/users/1/ {"users": [{"website": "https://inflozo.com", "location": "Remote", "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg", "facebook": "inflozo", "twitter": "@inflozo", "threads": "@inflozo", "bluesky": "inflozo.bsky.social", "mastodon": "@inflozo@mastodon.social", "tiktok": "@inflozo", "youtube": "@inflozo", "instagram": "inflozo", "linkedin": "inflozo"}]}  -> 200
+    GHOST5 PUT /ghost/api/admin/tiers/6a86a9b96444934864da2f9b/ {"tiers": [{"description": "Every issue in full, and the whole archive.", "benefits": ["Every issue in full", "The whole archive", "Members-only notes"], "welcome_page_url": "/welcome/"}]}  -> 200
+    GHOST5 PUT /ghost/api/admin/newsletters/6a86a9b96444934864da2f9c/ {"newsletters": [{"description": "A weekly letter from the editors."}]}  -> 200
+
+Read back: T1 `casper` (active), `racer`, `source`; T3 `casper` (active), `source`; every field as written; T3's own
+profile picture untouched.
+
+*Item 6 — `python3 tools/probe/record-cards.py`, both majors* (DW-103). Per server, as the recorder's code writes it: the
+two tags POSTed on this first run (`inflozo-defaults-b`, then `inflozo-defaults-a`), the two posts POSTed published
+(`inflozo-defaults-1` at `2001-01-01T00:00:00.000Z`, `inflozo-defaults-2` at `2001-01-02T00:00:00.000Z`, each tagged one of
+them) beside the three fixture documents, `outbound_link_tagging` switched off; in the `finally`, all five documents PUT back
+to draft and `outbound_link_tagging` restored to `true`. The Content API, read inside the run with `filter=id:[…]` and no
+order or limit: posts `inflozo-defaults-2`, `inflozo-defaults-1`; tags "Inflozo defaults A", "Inflozo defaults B"; limit 15 —
+Ghost's default order, against both creation and slug order. Exit 0; `capture.json` changed in `content_api_defaults` and
+its date only, `variations.html` in its generated date line only.
+
+*Item 7 — `python3 tools/probe/record-contexts.py`, both majors* (DW-127, DW-99). The first run **voided on T3 at the
+private-mode read-back**: `is_private` was back to `false`, the probe theme deleted and `casper` active, but the
+`password` setting read back `null` where it had been `''`. Ghost stores every empty string written to a nullable column as
+null — `setEmptyValuesToNull`, `core/server/models/base/plugins/data-manipulation.js:15-19`, 5.130.6 and 6.58.0 — so a
+never-set password cannot be written back as `''`, and both read as no password (`settingsCache.get('password')` is falsy
+either way). The recorder now reads `''` as `None` (`settings_of`, citing this), and the second run passed on both: per
+server one theme upload, two activations and its DELETE (read back), then LAST `is_private` `true` with a throwaway
+password (never printed or recorded) for a few seconds while `/private/` and a wrong password's POST were fetched — both
+HTTP 200, the error "Incorrect password." on 5 and "Incorrect access code." on 6 — then both settings PUT back and read
+back: `is_private` `false`, the password empty. T1 was written only by the second run.
+
+*After.* No `inflozo-probe-*` theme on either server; `is_private` `false`, password empty, `outbound_link_tagging` `true`;
+the recorder's two posts drafts and its two tags invisible to the Content API (0 rows each); 33 published posts on each,
+as before.
+
+*Found, not written.* Three changes on T3 dated 2026-09-25 that no part of this story made reached the recording: the
+post `probe-gated-post` retitled "PROBEs Gated Post" with an Unsplash feature image, "Reading the margins" given an
+uploaded feature image in place of the dead `static.ghost.org` one, and `@site.portal_button_icon` now `icon-5`. And a
+bare navigation `url` is now recorded as Ghost's helper (raw), as the matrix has typed it since Story 4.10.
+
+*The recordings, read.* The seeded fields, a post's `custom_excerpt` and the private page print on both majors, and so do
+`total_paid_members` (`0`) and `content_api_url` (the site's `/ghost/api/content/`); `contexts.test.ts`'s reverse rule named
+every `unverified` row both now prove, and each lost its reason. `errorDetails`' rows stay `unverified`, cited in source.
+
+**The matrix's Show-to frames (Question 2, option 1).** `MATRIX_DESIGNS="a1/1 a4/13" bash tools/matrix/run-matrix-gate.sh
+--update` in the pinned image: `git status` showed exactly thirty `packages/library/baselines/a1/1/*-show-to-*.png` deleted
+and the same thirty names added under `a4/13/` — every one a blank frame 240px tall at its viewport's width, byte-identical to a22/1's — and nothing
+modified. Before the swap the full gate failed on exactly those (the thirty a1/1 orphans and the thirty missing a4/13 cases),
+and no other case.

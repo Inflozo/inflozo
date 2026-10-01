@@ -20,7 +20,8 @@ const controls = (extra) => [
 ].join(' ');
 
 const A = {
-  // A1 Headers & Navigation — nav repeat + member swap + secondary nav
+  // A1 Headers & Navigation — Ghost's own navigation + member swap + secondary nav. The nav is data-helper="navigation",
+  // as the library's a1/1: Ghost's key is @site.navigation, and a bare url inside it is Ghost's url helper (matrix.json).
   header: (i) => `
 <section class="d-a1-${i} hdr" ${controls([`data-sticky="sticky-shrink"`, `data-nav-align="end"`, `data-cta="on"`, `data-search="on"`, `data-member-links="on"`, `data-density="regular"`, `data-border="hairline"`, `data-logo-size="md"`, `data-shadow="soft"`, `data-width="wide"`, `data-mobile="drawer"`, `data-caps="off"`])}>
   <div class="hdr__util">
@@ -35,11 +36,7 @@ const A = {
       <span class="hdr__logo-text" data-prop="logoText">Orbit Weekly</span>
     </a>
     <nav class="hdr__nav" data-t-attr="aria-label:a11y.main_navigation">
-      <ul class="hdr__list">
-        <li class="hdr__item" data-repeat="navigation" data-partial="nav-item-${i}">
-          <a class="hdr__link" data-bind-attr="href:url"><span class="hdr__link-text" data-bind="label">Home</span>${icon(2)}</a>
-        </li>
-      </ul>
+      <div class="hdr__list" data-helper="navigation"></div>
     </nav>
     <div class="hdr__actions">
       <button class="hdr__search" type="button" data-t-attr="aria-label:search.trigger_label">${icon(3)}</button>
@@ -106,7 +103,8 @@ const A = {
   </div>
 </section>`,
 
-  // A7 Pricing / Tiers — repeat over tiers, feature sub-repeat, R2-15's filtered-get hazard surface
+  // A7 Pricing / Tiers — the public paid tiers through a declared {{#get}} (QUERIES.pricing: tiers exist only through a
+  // get), R2-15's filtered-get hazard surface. No benefits sub-repeat: a tier's benefits are a plain list, not rows.
   pricing: (i) => `
 <section class="d-a7-${i} tiers" ${controls([`data-cols="3"`, `data-highlight="middle"`, `data-cadence="toggle"`, `data-compare="on"`, `data-badge="on"`, `data-currency="symbol"`, `data-border="card"`, `data-align="center"`, `data-cta-style="solid"`])}>
   <header class="tiers__head">
@@ -114,15 +112,10 @@ const A = {
     <p class="tiers__sub" data-prop="subtitle" data-empty="fallback">Cancel anytime.</p>
   </header>
   <div class="tiers__grid">
-    <article class="tier" data-repeat="tiers" data-partial="tier-card-${i}">
+    <article class="tier" data-repeat="plans" data-partial="tier-card-${i}">
       <h3 class="tier__name" data-bind="name">Tier</h3>
       <p class="tier__desc" data-bind="description" data-empty="hide">What you get.</p>
       <p class="tier__price"><span class="tier__amt" data-bind="monthly_price">5</span><span class="tier__per" data-prop="perMonth">/month</span></p>
-      <ul class="tier__features">
-        <li class="tier__feature" data-repeat="benefits">
-          ${icon(4)}<span class="tier__feature-text" data-bind="name">Benefit</span>
-        </li>
-      </ul>
       <a class="tier__cta button button--primary" href="#/portal/signup" data-prop="tierCta">Subscribe</a>
     </article>
   </div>
@@ -188,7 +181,7 @@ const A = {
     <section class="article__related">
       <h2 class="article__related-title" data-prop="relatedTitle">More like this</h2>
       <ul class="article__related-list">
-        <li class="article__related-item" data-repeat="posts" data-repeat-limit="3" data-partial="related-${i}">
+        <li class="article__related-item" data-repeat="related" data-partial="related-${i}">
           <a class="article__related-link" data-bind-attr="href:url"><span data-bind="title">Title</span></a>
           <time class="article__related-date" data-bind="published_at|date:D MMM YYYY">14 Mar 2026</time>
         </li>
@@ -197,7 +190,7 @@ const A = {
   </footer>
 </section>`,
 
-  // A3 Footers — multi-column nav repeat + legal row
+  // A3 Footers — Ghost's navigation (data-helper, as the header's) + link columns + legal row
   footer: (i) => `
 <section class="d-a3-${i} ftr" ${controls([`data-cols="4"`, `data-newsletter="on"`, `data-social="on"`, `data-legal="stacked"`, `data-logo="on"`, `data-divider-top="line"`])}>
   <div class="ftr__cols">
@@ -206,11 +199,7 @@ const A = {
       <p class="ftr__blurb" data-prop="blurb" data-empty="fallback">A newsletter about building things.</p>
     </div>
     <nav class="ftr__nav" data-t-attr="aria-label:a11y.footer_navigation">
-      <ul class="ftr__list">
-        <li class="ftr__item" data-repeat="navigation" data-partial="ftr-item-${i}">
-          <a class="ftr__link" data-bind-attr="href:url"><span data-bind="label">Link</span></a>
-        </li>
-      </ul>
+      <div class="ftr__list" data-helper="navigation"></div>
     </nav>
     ${[1, 2].map((n) => `<div class="ftr__col">
       <h2 class="ftr__col-title" data-prop="col${n}.title">More</h2>
@@ -253,4 +242,16 @@ const pagedFeed = (i) => A.feed(i)
 
 const source = ({ kind, i }) => (kind === 'pagedFeed' ? pagedFeed(i) : A[kind](i));
 
-module.exports = { A, ORDER, stressStack, source };
+// Each kind's declared {{#get}} queries — design.json's `dataBindings`, the key its data-repeat names — and its own target,
+// where `test-vocabulary.mjs` renders it (FR-H7). R-7 refuses a get on the error and private templates, so `build.js` keeps
+// a kind with queries off error.hbs. The stack itself still renders with no target: DW-296's, Story 7.35's.
+const QUERIES = {
+  pricing: { plans: { source: 'tiers', filter: 'type:paid+visibility:public' } },   // as fixtures/paywall/2 declares it
+  content: { related: { source: 'posts', limit: 3, order: 'published_at desc' } },
+};
+const TARGET = {
+  header: 'default.hbs', hero: 'index.hbs', feed: 'index.hbs', pricing: 'page.hbs',
+  gallery: 'page.hbs', cta: 'post.hbs', content: 'post.hbs', footer: 'default.hbs',
+};
+
+module.exports = { A, ORDER, stressStack, source, QUERIES, TARGET };

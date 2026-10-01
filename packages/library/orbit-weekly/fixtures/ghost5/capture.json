@@ -1,8 +1,9 @@
 {
-  "captured": "2026-09-13",
+  "captured": "2026-10-01",
   "command": "python3 tools/probe/record-cards.py",
   "content_api_defaults": {
     "authors": {
+      "filter": null,
       "limit": 15,
       "rows": [
         {
@@ -20,100 +21,35 @@
       ]
     },
     "posts": {
+      "filter": "id:[6abdd46c59392be9d436b9e9,6abdd46e59392be9d436b9ee]",
       "limit": 15,
       "rows": [
         {
-          "published_at": "2026-08-20T08:26:15.000+00:00",
-          "slug": "probe-gated-post"
+          "published_at": "2001-01-02T00:00:00.000+00:00",
+          "slug": "inflozo-defaults-2"
         },
         {
-          "published_at": "2025-08-12T12:00:00.000+00:00",
-          "slug": "on-typography-and-restraint"
-        },
-        {
-          "published_at": "2025-08-11T12:00:00.000+00:00",
-          "slug": "the-cost-of-clever"
-        },
-        {
-          "published_at": "2025-08-10T12:00:00.000+00:00",
-          "slug": "a-quiet-week-in-the-archive"
-        },
-        {
-          "published_at": "2025-08-09T12:00:00.000+00:00",
-          "slug": "what-the-grid-gets-wrong"
-        },
-        {
-          "published_at": "2025-08-08T12:00:00.000+00:00",
-          "slug": "notes-from-a-slow-rebuild"
-        },
-        {
-          "published_at": "2025-08-07T12:00:00.000+00:00",
-          "slug": "reading-the-margins"
-        },
-        {
-          "published_at": "2025-08-06T12:00:00.000+00:00",
-          "slug": "against-the-redesign"
-        },
-        {
-          "published_at": "2025-08-05T12:00:00.000+00:00",
-          "slug": "small-tools-sharp-edges"
-        },
-        {
-          "published_at": "2025-08-04T12:00:00.000+00:00",
-          "slug": "the-shape-of-an-interview"
-        },
-        {
-          "published_at": "2025-08-03T12:00:00.000+00:00",
-          "slug": "how-we-pick-our-defaults"
-        },
-        {
-          "published_at": "2025-08-02T12:00:00.000+00:00",
-          "slug": "a-field-guide-to-whitespace"
-        },
-        {
-          "published_at": "2025-08-01T12:00:00.000+00:00",
-          "slug": "ten-years-of-one-layout"
-        },
-        {
-          "published_at": "2025-07-31T12:00:00.000+00:00",
-          "slug": "the-paragraph-is-the-unit"
-        },
-        {
-          "published_at": "2025-07-30T12:00:00.000+00:00",
-          "slug": "why-we-stopped-measuring"
+          "published_at": "2001-01-01T00:00:00.000+00:00",
+          "slug": "inflozo-defaults-1"
         }
       ]
     },
     "tags": {
+      "filter": "id:[6abdd46959392be9d436b9e5,6abdd46b59392be9d436b9e7]",
       "limit": 15,
       "rows": [
         {
-          "name": "Archive",
-          "slug": "archive"
+          "name": "Inflozo defaults A",
+          "slug": "inflozo-defaults-a"
         },
         {
-          "name": "Craft",
-          "slug": "craft"
-        },
-        {
-          "name": "Field Notes",
-          "slug": "field-notes"
-        },
-        {
-          "name": "Interviews",
-          "slug": "interviews"
-        },
-        {
-          "name": "Systems",
-          "slug": "systems"
-        },
-        {
-          "name": "Tooling",
-          "slug": "tooling"
+          "name": "Inflozo defaults B",
+          "slug": "inflozo-defaults-b"
         }
       ]
     },
     "tiers": {
+      "filter": null,
       "limit": 3,
       "rows": [
         {

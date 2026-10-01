@@ -25,9 +25,10 @@ const rt = require('../../packages/section-runtime/src/index.ts');
 const doc = () => new JSDOM('<body></body>').window.document;
 
 /** Emitter 1 — `.hbs` text plus its partials. `users` is the SHARED UserText: R2-5 substitutes last,
- *  over the whole emitted file tree, so the markers must survive this call. */
-const renderSection = (src, content, users, target) =>
-  rt.renderTheme(doc(), src, { content: content || {}, users, ...(target ? { target } : {}) });
+ *  over the whole emitted file tree, so the markers must survive this call. `dataBindings` is the section's
+ *  declared `{{#get}}` queries (design.json's), the keys its `data-repeat`s name. */
+const renderSection = (src, content, users, target, dataBindings) =>
+  rt.renderTheme(doc(), src, { content: content || {}, users, ...(target ? { target } : {}), ...(dataBindings ? { dataBindings } : {}) });
 
 /** Story 5.19 — Emitter 1 for a SECONDARY feed: the same section inside its query's `{{#get}}` (`RenderInput.feed`).
  *  `target` names the paginated template a design with a pager is judged for (R-7). */

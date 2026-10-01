@@ -29,7 +29,9 @@ WHAT IT WRITES TO THE SERVERS, and nothing else: three documents, found by slug 
 on every later run — a post for the article, a post for the variation sheet, a page for fixture 3 —
 PUBLISHED for the moment the Content API is read and returned to DRAFT in a `finally`, so no feed,
 tag count or sitemap on either box carries them afterwards (the analogue of record-shim.py restoring
-the previous theme). No image is uploaded: every URL in the corpus sits on the reserved origin
+the previous theme). Since Story 5.24c (DW-103) two more posts and two tags the recorder OWNS, created
+on its first run and treated exactly as the three documents are — published in the same run, drafted in
+the same `finally` — so the Content API's default order is read against rows no other probe touches. No image is uploaded: every URL in the corpus sits on the reserved origin
 `https://orbit-weekly.example`, which Ghost does not rewrite. ONE setting is touched for the length of
 the run and restored in a `finally`: `outbound_link_tagging` is switched off, because with it on Ghost
 prints `?ref=<this box's host>` on every outbound link and the recording would carry the test
@@ -45,7 +47,7 @@ written NOTHING — a recording from one box is worse than none.
 
 R-66: Lexical only. The mobiledoc renderer is never exercised — the corpus is Lexical JSON.
 """
-import os, re, sys, json, datetime, subprocess, importlib.util
+import os, re, sys, json, datetime, subprocess, importlib.util, urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
@@ -73,6 +75,18 @@ CARD_DIR = {'codeblock': 'codeblock', 'call-to-action': 'call-to-action', 'horiz
 SLUGS = {'article': ('posts', 'inflozo-style-guide-article'),
          'variations': ('posts', 'inflozo-style-guide-variations'),
          'page': ('pages', 'inflozo-style-guide-page')}
+
+# DW-103 (Story 5.24c) — the rows Ghost's DEFAULT order and limit are read against are the recorder's OWN, so no other
+# probe's post or tag rewrites the recording. Two posts, each carrying one of two tags, all created on the first run
+# and kept as DRAFTS between runs; a tag with no published post is invisible to every Content API reader
+# (models/tag-public.js:4-8, both majors). Each list is CREATED in its order here, and the values are chosen against it:
+# `published_at desc` reverses the posts' creation and slug order, and `name asc` reverses the tags' creation order —
+# so a default that fell back to either would fail the test, not pass it.
+OWNED_TAGS = (('inflozo-defaults-b', 'Inflozo defaults B'), ('inflozo-defaults-a', 'Inflozo defaults A'))
+OWNED_POSTS = (('inflozo-defaults-1', '2001-01-01T00:00:00.000Z', 'inflozo-defaults-b'),
+               ('inflozo-defaults-2', '2001-01-02T00:00:00.000Z', 'inflozo-defaults-a'))
+OWNED_BODY = ('A post the style-guide recorder owns, to read Ghost\'s default order against. It is a draft between '
+              'runs and published for the moment of the reading (tools/probe/record-cards.py, DW-103).')
 
 
 class Void(Exception):
@@ -232,19 +246,42 @@ def self_check():
     assert voids(check_block, '6', 'article', 0, b, '<figure class="kg-card kg-image-card"></figure>', v) is None
     html = '<p>a</p>\n<figure class="x"><img src="i"></figure><!--kg-card-begin: html--><div>h</div><!--kg-card-end: html-->'
     assert ''.join(split(html)) == html and len(split(html)) == 3
-    print('self-check: control, unrendered-card and empty-block refusals fire; the lossless split holds')
+
+    class Content:
+        """DW-103: a Content API answering `n` rows for every resource."""
+        major = '6'
+
+        def __init__(self, n):
+            self.n, self.asked = n, []
+
+        def content(self, path):
+            self.asked.append(path)
+            res = path.split('/')[0]
+            return 200, {'meta': {'pagination': {'limit': 15}}, res: [{'slug': f's{i}'} for i in range(self.n)]}
+    owned = {'posts': ['p1', 'p2'], 'tags': ['t1', 't2']}
+    g = Content(2)
+    out = api_defaults(g, owned)
+    assert out['posts']['filter'] == 'id:[p1,p2]' and out['tags']['filter'] == 'id:[t1,t2]' and out['authors']['filter'] is None
+    assert 'filter=id%3A%5Bp1%2Cp2%5D' in g.asked[0] and 'filter' not in g.asked[2] and 'order' not in ''.join(g.asked)
+    assert 'came back with 1' in voids(api_defaults, Content(1), owned)
+    print('self-check: control, unrendered-card and empty-block refusals fire; the lossless split holds; the defaults '
+          'are read through the recorder\'s own ids, with no order, and a short answer is refused')
 
 
 # ── talking to one box ────────────────────────────────────────────────────────
-def upsert_published(g, resource, slug, lex):
+def by_slug(g, resource, slug):
     try:
-        cur = g.api('GET', f'{resource}/slug/{slug}/')[resource][0]
+        return g.api('GET', f'{resource}/slug/{slug}/')[resource][0]
     except shim.urllib.error.HTTPError as e:
         if e.code != 404:
             raise
-        cur = None
+        return None
+
+
+def upsert_published(g, resource, slug, lex, extra=None):
+    cur = by_slug(g, resource, slug)
     body = {'title': f'Inflozo fixture — {slug}', 'slug': slug, 'lexical': lex, 'status': 'published',
-            'visibility': 'public'}
+            'visibility': 'public', **(extra or {})}
     if cur:
         body['updated_at'] = cur['updated_at']
         return g.api('PUT', f'{resource}/{cur["id"]}/', {resource: [body]})[resource][0]
@@ -268,17 +305,42 @@ def set_setting(g, key, value):
     g.api('PUT', 'settings/', {'settings': [{'key': key, 'value': value}]})
 
 
-def api_defaults(g):
-    """The Content API's own default LIMIT and ORDER per Source resource — no order and no limit passed,
-    so what comes back is Ghost's default. The resolver's defaults are asserted against this."""
+def publish_owned(g, docs):
+    """DW-103: the recorder's own two tags (created once, never changed) and its two posts, PUBLISHED at their fixed
+    dates — each appended to `docs` the moment it is published, so the caller's `finally` drafts it with the three
+    fixture documents. Returns the ids the defaults are read through."""
+    tags = {}
+    for slug, name in OWNED_TAGS:
+        tags[slug] = by_slug(g, 'tags', slug) or g.api('POST', 'tags/', {'tags': [{'name': name, 'slug': slug}]})['tags'][0]
+    posts = []
+    lex = lexical([{'node': {'children': [{'detail': 0, 'format': 0, 'mode': 'normal', 'style': '', 'text': OWNED_BODY,
+                                           'type': 'extended-text', 'version': 1}],
+                             'direction': 'ltr', 'format': '', 'indent': 0, 'type': 'paragraph', 'version': 1}}])
+    for slug, published_at, tag in OWNED_POSTS:
+        doc = upsert_published(g, 'posts', slug, lex, {'published_at': published_at, 'tags': [{'id': tags[tag]['id']}]})
+        docs.append(('posts', doc['id']))
+        posts.append(doc)
+    return {'posts': [p['id'] for p in posts], 'tags': [t['id'] for t in tags.values()]}
+
+
+def api_defaults(g, owned):
+    """The Content API's own default LIMIT and ORDER per Source resource — no order and no limit passed, so what comes
+    back is Ghost's default. The resolver's defaults are asserted against this. Posts and tags are read through the
+    recorder's own rows (DW-103), by `id:[…]`, which keeps the default order — never `slug:[…]`, which Ghost reorders into
+    the filter's own order (utils/slug-filter-order.js, MEASUREMENTS §29d, §51). Authors and tiers stay the site's: a
+    recorder cannot own a staff user or a tier."""
     out = {}
     for res, fields in (('posts', 'slug,published_at'), ('tags', 'slug,name'), ('authors', 'slug,name'),
                         ('tiers', 'slug,name,type,monthly_price')):
-        st, d = g.content(f'{res}/?fields={fields}')
+        flt = f'id:[{",".join(owned[res])}]' if res in owned else None
+        st, d = g.content(f'{res}/?fields={fields}' + ('' if flt is None else f'&filter={urllib.parse.quote(flt)}'))
         if st != 200:
             raise Void(f'Ghost {g.major}: Content API {res}/ answered HTTP {st}')
-        out[res] = {'limit': d['meta']['pagination']['limit'],
-                    'rows': [{k: r.get(k) for k in fields.split(',')} for r in d[res]]}
+        rows = [{k: r.get(k) for k in fields.split(',')} for r in d[res]]
+        if flt is not None and len(rows) != len(owned[res]):
+            raise Void(f'Ghost {g.major}: {res} filtered to the recorder\'s own {len(owned[res])} came back with {len(rows)} — '
+                       f'a draft or an invisible tag would read as a default order of fewer rows')
+        out[res] = {'filter': flt, 'limit': d['meta']['pagination']['limit'], 'rows': rows}
     return out
 
 
@@ -312,6 +374,9 @@ def record(g, corpus):
                 check_block(major, which, i, b, f, variants.get(b['id']))
             bodies[which] = [{'id': b['id'], 'html': f} for b, f in zip(bs, frags)]
             print(f'    [{which}] {resource}/{slug} — {len(frags)} blocks, {len(html)} bytes')
+        # DW-103: inside the try, while the recorder's own pair is published — drafted in the same `finally` below
+        defaults = api_defaults(g, publish_owned(g, docs))
+        print(f'    Content API defaults read through the recorder\'s own {len(OWNED_POSTS)} posts and {len(OWNED_TAGS)} tags')
     finally:
         # every restore is attempted, whichever fails: one failed draft must not leave the others
         # published, and a restore failure must not mask the Void that got us here
@@ -324,8 +389,6 @@ def record(g, corpus):
         print(f'    returned {len(docs)} documents to draft; outbound_link_tagging restored to {tagging}')
         if failed:
             raise Void(f'Ghost {major}: restore failed — {"; ".join(failed)} — put the box right by hand before re-running')
-    # read AFTER the drafts are back, or the three fixture documents would sit in the recorded feed
-    defaults = api_defaults(g)
 
     control(bodies['variations'], major)
     print(f'    control: all four documented root classes present')

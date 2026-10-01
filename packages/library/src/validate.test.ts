@@ -677,6 +677,13 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
     toggle({ disabledBy: { control: 'align', whenValue: 'middle', reason: 'r', inForce: 'off' } }),
   ] }, 'dependency-value')
   only({ previewSeed: '' }, 'preview-seed-missing')
+  // DW-104 (Story 5.24c): what the validator passes, the preview resolves — a seed that is not bundled, and a filter's
+  // top-level "," (an or), which `resolveSource` refuses by name; a list inside [...] is one clause, and stays clean
+  only({ previewSeed: 'nope' }, 'preview-seed-unbundled')
+  only({ dataBindings: { x: { source: 'posts', filter: 'featured:true,tag:news' } } }, 'bad-get-filter')
+  // DW-186 (Story 5.24c): Member visibility is the placed section's, never a control — refused by name and by title
+  only({ controlSchema: [ctl({ name: 'member-visibility' })] }, 'member-visibility-control')
+  only({ controlSchema: [ctl({ name: 'shown-to', label: '  Member Visibility ' })] }, 'member-visibility-control')
   only({ ghostCompat: undefined }, 'ghost-compat-missing')
   only({ ghostCompat: { minVersion: 'banana', helpers: [] } }, 'bad-min-version')
   only({ ghostCompat: { minVersion: '5.0.0', helpers: 'foreach' } }, 'ghost-compat-helpers')
@@ -685,6 +692,8 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
   // and the neighbours: a hand-picked order, and the reference design.json
   clean(validateDesignJson(design({ dataBindings: { picks: { source: 'posts', ids: ['a1', 'b2', 'c3'] } } })),
     'a hand-picked order (R-20)')
+  clean(validateDataBinding('x', { source: 'posts', filter: 'tag:[news,notes]' }), 'a list of one field\'s values (DW-104)')
+  clean(validateDataBinding('x', { source: 'posts', filter: "featured:true+tag:'news'" }), 'two clauses joined by + (DW-104)')
   clean(validateDesignJson(design({ dataBindings: { latest: { source: 'posts', limit: 1, order: 'published_at desc', fixed: true } } })),
     'a query the design fixes at one post (R-108)')
   clean(validateDesignJson(design()), 'the reference design.json')
@@ -1010,7 +1019,7 @@ test("Portal's form attributes are directives that take no value (Story 4.10)", 
   for (const bad of ['data-members-email="x"']) {
     assert.deepEqual(codes(validateMarkup(form(bad), { controls: [] })), ['bad-value'], bad)
   }
-  assert.deepEqual(codes(validateMarkup(root('<p data-members-error="oops"></p>'), { controls: [] })), ['bad-value'])
+  assert.deepEqual(codes(validateMarkup(root('<form data-members-form="subscribe" data-if="@site.allow_self_signup"><p data-members-error="oops"></p></form>'), { controls: [] })), ['bad-value'])
   assert.equal(DIRECTIVES['data-members-email']?.emitted, true)
   assert.equal(DIRECTIVES['data-members-error']?.emitted, true)
 })
@@ -1051,6 +1060,23 @@ test('member-ask-ungated: the WRONG flag, members_enabled, a tier count or the e
   for (const quiet of ['<a data-portal="signin" href="#">x</a>', '<a data-portal="account" href="#">x</a>', '<form data-members-form="signin"><input type="email" data-members-email></form>']) {
     clean(validateMarkup(root(quiet), { controls: [] }), quiet)
   }
+})
+
+test('DW-161 (Story 5.24c): Portal\'s email box and error line are refused outside a data-members-form, and clean inside one', () => {
+  const form = (inside: string) => `<form data-members-form="subscribe" data-if="@site.allow_self_signup">${inside}</form>`
+  // after a CLOSED form: the walk's closing tag ends the form, so both fields sit outside it
+  const outside = validateMarkup(root(`${form('<button>Go</button>')}<input type="email" data-members-email><p data-members-error></p>`), { controls: [] })
+  assert.deepEqual(codes(outside), ['members-field-outside-form', 'members-field-outside-form'], outside.map((f) => f.message).join(' | '))
+  // inside, however deep
+  clean(validateMarkup(root(form('<div><input type="email" data-members-email></div><p data-members-error></p>')), { controls: [] }), 'both fields inside the form')
+})
+
+test('DW-213 (Story 5.24c): one authored list drawn twice carries one cap — two caps, or a cap and none, are refused', () => {
+  const twice = (a: string, b: string) => codes(validateMarkup(root(`<ul><li data-items="logos"${a}><span data-prop="logos[].name">x</span></li></ul><ol><li data-items="logos"${b}><span data-prop="logos[].name">x</span></li></ol>`), { controls: [] }))
+  assert.ok(twice(' data-items-limit="3"', ' data-items-limit="5"').includes('items-limit-conflict'), '3 against 5')
+  assert.ok(twice(' data-items-limit="3"', '').includes('items-limit-conflict'), '3 against none')
+  assert.ok(!twice(' data-items-limit="3"', ' data-items-limit="3"').includes('items-limit-conflict'), '3 against 3 is one cap')
+  assert.ok(!twice('', '').includes('items-limit-conflict'), 'no cap on either is one cap')
 })
 
 test('memberAsks: the one reader of which asks a design makes, with the data-if paths around each', () => {

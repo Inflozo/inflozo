@@ -22,15 +22,22 @@ identically — plain text has nothing to escape. If they differ, the probe is m
 markup and not Ghost, and the subject result is void. Three probes in one session have already
 returned a convincing "held" that was really a broken test.
 
-Cleans up after itself: the previously active theme is restored and both probe posts deleted.
+Cleans up after itself, in a `finally`: both probe posts deleted (`--keep` keeps them), the previously
+active theme restored and the probe theme deleted, both read back (record-shim.py's
+`restore_and_delete`). It refuses to start on a probe theme.
 """
-import os, re, sys, json, time, hmac, hashlib, base64, zipfile, io, uuid, shutil, subprocess
+import os, re, sys, json, time, hmac, hashlib, base64, zipfile, io, uuid, shutil, subprocess, importlib.util
 import urllib.request, urllib.error
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(os.path.dirname(HERE))
 THEME = os.path.join(HERE, 'theme-e2')
 STRESS = os.path.join(ROOT, 'tools', 'stress')
+
+# record-shim.py's start guard and theme cleanup, imported rather than copied (DW-237)
+_spec = importlib.util.spec_from_file_location('record_shim', os.path.join(HERE, 'record-shim.py'))
+shim = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(shim)
 
 # Deliberately mixed: an anchor, an <em>, a <strong>, a <script> and an entity. Which of these
 # survive STORAGE and which survive RENDER are different questions and this separates them.
@@ -192,6 +199,7 @@ def run(g, label, results):
     print(f'\n{"=" * 78}\n{label}\n{"=" * 78}')
     created, previous, name = [], None, None
     try:
+        previous = shim.start_guard(g)
         subject = make_post(g, f'E2 subject {uuid.uuid4().hex[:6]}', CAPTION_HTML)
         control = make_post(g, f'E2 control {uuid.uuid4().hex[:6]}', CAPTION_PLAIN)
         created = [subject, control]
@@ -208,8 +216,6 @@ def run(g, label, results):
 
         # ── 2. render both stashes ────────────────────────────────────────────
         build_theme()
-        themes = g.api('GET', 'themes/')['themes']
-        previous = next((t['name'] for t in themes if t.get('active')), None)
         st, res = g.upload(zip_dir(THEME), 'inflozo-probe-e2.zip')
         name = res['themes'][0]['name']
         g.api('PUT', f'themes/{name}/activate/')
@@ -262,16 +268,6 @@ def run(g, label, results):
             'gscan_indifferent': gscan_blind,
         }
     finally:
-        if name and previous:
-            try:
-                g.api('PUT', f'themes/{previous}/activate/'); print(f'  restored  : {previous!r}')
-            except Exception as e:
-                print(f'  ! could not restore {previous!r}: {e}')
-        if name and not KEEP:
-            try:
-                g.api('DELETE', f'themes/{name}/')
-            except Exception:
-                pass
         for p in created:
             if KEEP:
                 break
@@ -279,6 +275,8 @@ def run(g, label, results):
                 g.api('DELETE', f'posts/{p["id"]}/')
             except Exception as e:
                 print(f'  ! could not delete probe post {p["id"]}: {e}')
+        if name:
+            shim.restore_and_delete(g, previous, [name])  # last, so a failure here still leaves the posts deleted
 
 
 def main():

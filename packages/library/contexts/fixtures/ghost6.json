@@ -2,25 +2,25 @@
   "api": {
     "author:6a86b33f3b29cb6183c00e4a": {
       "bio": null,
-      "bluesky": null,
-      "cover_image": null,
-      "facebook": null,
+      "bluesky": "inflozo.bsky.social",
+      "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+      "facebook": "inflozo",
       "id": "6a86b33f3b29cb6183c00e4a",
-      "instagram": null,
-      "linkedin": null,
-      "location": null,
-      "mastodon": null,
+      "instagram": "inflozo",
+      "linkedin": "inflozo",
+      "location": "Remote",
+      "mastodon": "@inflozo@mastodon.social",
       "meta_description": null,
       "meta_title": null,
       "name": "Umang",
-      "profile_image": null,
+      "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
       "slug": "umang",
-      "threads": null,
-      "tiktok": null,
-      "twitter": null,
+      "threads": "@inflozo",
+      "tiktok": "@inflozo",
+      "twitter": "@inflozo",
       "url": "https://ghost6.inflozo.com/author/umang/",
-      "website": null,
-      "youtube": null
+      "website": "https://inflozo.com",
+      "youtube": "@inflozo"
     },
     "author:6a86b7af3b29cb6183c0125d": {
       "bio": "Writes about systems and the long tail of maintenance.",
@@ -46,14 +46,14 @@
     },
     "newsletter:6a86b3413b29cb6183c00e5a": {
       "created_at": "2026-08-20T07:56:49.000Z",
-      "description": null,
+      "description": "A weekly letter from the editors.",
       "id": "6a86b3413b29cb6183c00e5a",
       "name": "Ghost6",
       "sender_email": null,
       "slug": "default-newsletter",
       "sort_order": 0,
       "subscribe_on_signup": true,
-      "updated_at": "2026-08-20T07:59:55.000Z",
+      "updated_at": "2026-10-01T03:31:24.000Z",
       "uuid": "eba0c5d0-5738-4629-bb26-606c7b196e62",
       "visibility": "members"
     },
@@ -275,12 +275,12 @@
         "youtube": null
       },
       "primary_tag": {
-        "accent_color": null,
+        "accent_color": "#D96C3F",
         "canonical_url": null,
         "codeinjection_foot": null,
         "codeinjection_head": null,
-        "description": null,
-        "feature_image": null,
+        "description": "Every past issue, newest first.",
+        "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
         "id": "6a86b61f3b29cb6183c011ae",
         "meta_description": null,
         "meta_title": null,
@@ -300,12 +300,12 @@
       "slug": "reading-the-margins",
       "tags": [
         {
-          "accent_color": null,
+          "accent_color": "#D96C3F",
           "canonical_url": null,
           "codeinjection_foot": null,
           "codeinjection_head": null,
-          "description": null,
-          "feature_image": null,
+          "description": "Every past issue, newest first.",
+          "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
           "id": "6a86b61f3b29cb6183c011ae",
           "meta_description": null,
           "meta_title": null,
@@ -328,6 +328,132 @@
       "updated_at": "2026-08-20T08:09:03.000+00:00",
       "url": "https://ghost6.inflozo.com/reading-the-margins/",
       "uuid": "08fd0187-b430-4f9e-901f-abcb794ed88e",
+      "visibility": "public"
+    },
+    "post:6a86b6203b29cb6183c011b5": {
+      "access": true,
+      "authors": [
+        {
+          "bio": "Writes about systems and the long tail of maintenance.",
+          "bluesky": null,
+          "cover_image": null,
+          "facebook": null,
+          "id": "6a86b7af3b29cb6183c0125d",
+          "instagram": null,
+          "linkedin": null,
+          "location": null,
+          "mastodon": null,
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Priya Raman",
+          "profile_image": null,
+          "slug": "priya-raman",
+          "threads": null,
+          "tiktok": null,
+          "twitter": null,
+          "url": "https://ghost6.inflozo.com/author/priya-raman/",
+          "website": null,
+          "youtube": null
+        }
+      ],
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "comment_id": "6a86b6203b29cb6183c011b5",
+      "comments": true,
+      "created_at": "2026-08-20T08:09:04.000+00:00",
+      "custom_excerpt": "Against the redesign \u2014 a hand-written excerpt, distinct from the body.",
+      "custom_template": null,
+      "email_subject": null,
+      "excerpt": "Against the redesign \u2014 a hand-written excerpt, distinct from the body.",
+      "feature_image": null,
+      "feature_image_alt": null,
+      "feature_image_caption": null,
+      "featured": false,
+      "frontmatter": null,
+      "html": "<p>Against the redesign. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A further paragraph, so excerpt truncation and reading time have something to work on.</p><blockquote>A pull quote, for the Koenig card treatments.</blockquote>",
+      "id": "6a86b6203b29cb6183c011b5",
+      "meta_description": null,
+      "meta_title": null,
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "primary_author": {
+        "bio": "Writes about systems and the long tail of maintenance.",
+        "bluesky": null,
+        "cover_image": null,
+        "facebook": null,
+        "id": "6a86b7af3b29cb6183c0125d",
+        "instagram": null,
+        "linkedin": null,
+        "location": null,
+        "mastodon": null,
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Priya Raman",
+        "profile_image": null,
+        "slug": "priya-raman",
+        "threads": null,
+        "tiktok": null,
+        "twitter": null,
+        "url": "https://ghost6.inflozo.com/author/priya-raman/",
+        "website": null,
+        "youtube": null
+      },
+      "primary_tag": {
+        "accent_color": null,
+        "canonical_url": null,
+        "codeinjection_foot": null,
+        "codeinjection_head": null,
+        "description": null,
+        "feature_image": null,
+        "id": "6a86b61a3b29cb6183c01185",
+        "meta_description": null,
+        "meta_title": null,
+        "name": "Craft",
+        "og_description": null,
+        "og_image": null,
+        "og_title": null,
+        "slug": "craft",
+        "twitter_description": null,
+        "twitter_image": null,
+        "twitter_title": null,
+        "url": "https://ghost6.inflozo.com/tag/craft/",
+        "visibility": "public"
+      },
+      "published_at": "2025-08-06T12:00:00.000+00:00",
+      "reading_time": 0,
+      "slug": "against-the-redesign",
+      "tags": [
+        {
+          "accent_color": null,
+          "canonical_url": null,
+          "codeinjection_foot": null,
+          "codeinjection_head": null,
+          "description": null,
+          "feature_image": null,
+          "id": "6a86b61a3b29cb6183c01185",
+          "meta_description": null,
+          "meta_title": null,
+          "name": "Craft",
+          "og_description": null,
+          "og_image": null,
+          "og_title": null,
+          "slug": "craft",
+          "twitter_description": null,
+          "twitter_image": null,
+          "twitter_title": null,
+          "url": "https://ghost6.inflozo.com/tag/craft/",
+          "visibility": "public"
+        }
+      ],
+      "title": "Against the redesign",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "updated_at": "2026-08-20T08:09:04.000+00:00",
+      "url": "https://ghost6.inflozo.com/against-the-redesign/",
+      "uuid": "87bb7352-f8ad-4537-be20-866be2699d58",
       "visibility": "public"
     },
     "post:6a86b6233b29cb6183c011cd": {
@@ -527,12 +653,12 @@
         "youtube": null
       },
       "primary_tag": {
-        "accent_color": null,
+        "accent_color": "#D96C3F",
         "canonical_url": null,
         "codeinjection_foot": null,
         "codeinjection_head": null,
-        "description": null,
-        "feature_image": null,
+        "description": "Every past issue, newest first.",
+        "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
         "id": "6a86b61f3b29cb6183c011ae",
         "meta_description": null,
         "meta_title": null,
@@ -552,12 +678,12 @@
       "slug": "ten-years-of-one-layout",
       "tags": [
         {
-          "accent_color": null,
+          "accent_color": "#D96C3F",
           "canonical_url": null,
           "codeinjection_foot": null,
           "codeinjection_head": null,
-          "description": null,
-          "feature_image": null,
+          "description": "Every past issue, newest first.",
+          "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
           "id": "6a86b61f3b29cb6183c011ae",
           "meta_description": null,
           "meta_title": null,
@@ -587,25 +713,25 @@
       "authors": [
         {
           "bio": null,
-          "bluesky": null,
-          "cover_image": null,
-          "facebook": null,
+          "bluesky": "inflozo.bsky.social",
+          "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+          "facebook": "inflozo",
           "id": "6a86b33f3b29cb6183c00e4a",
-          "instagram": null,
-          "linkedin": null,
-          "location": null,
-          "mastodon": null,
+          "instagram": "inflozo",
+          "linkedin": "inflozo",
+          "location": "Remote",
+          "mastodon": "@inflozo@mastodon.social",
           "meta_description": null,
           "meta_title": null,
           "name": "Umang",
-          "profile_image": null,
+          "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
           "slug": "umang",
-          "threads": null,
-          "tiktok": null,
-          "twitter": null,
+          "threads": "@inflozo",
+          "tiktok": "@inflozo",
+          "twitter": "@inflozo",
           "url": "https://ghost6.inflozo.com/author/umang/",
-          "website": null,
-          "youtube": null
+          "website": "https://inflozo.com",
+          "youtube": "@inflozo"
         }
       ],
       "canonical_url": null,
@@ -632,25 +758,25 @@
       "og_title": null,
       "primary_author": {
         "bio": null,
-        "bluesky": null,
-        "cover_image": null,
-        "facebook": null,
+        "bluesky": "inflozo.bsky.social",
+        "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+        "facebook": "inflozo",
         "id": "6a86b33f3b29cb6183c00e4a",
-        "instagram": null,
-        "linkedin": null,
-        "location": null,
-        "mastodon": null,
+        "instagram": "inflozo",
+        "linkedin": "inflozo",
+        "location": "Remote",
+        "mastodon": "@inflozo@mastodon.social",
         "meta_description": null,
         "meta_title": null,
         "name": "Umang",
-        "profile_image": null,
+        "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
         "slug": "umang",
-        "threads": null,
-        "tiktok": null,
-        "twitter": null,
+        "threads": "@inflozo",
+        "tiktok": "@inflozo",
+        "twitter": "@inflozo",
         "url": "https://ghost6.inflozo.com/author/umang/",
-        "website": null,
-        "youtube": null
+        "website": "https://inflozo.com",
+        "youtube": "@inflozo"
       },
       "primary_tag": {
         "accent_color": null,
@@ -713,25 +839,25 @@
       "authors": [
         {
           "bio": null,
-          "bluesky": null,
-          "cover_image": null,
-          "facebook": null,
+          "bluesky": "inflozo.bsky.social",
+          "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+          "facebook": "inflozo",
           "id": "6a86b33f3b29cb6183c00e4a",
-          "instagram": null,
-          "linkedin": null,
-          "location": null,
-          "mastodon": null,
+          "instagram": "inflozo",
+          "linkedin": "inflozo",
+          "location": "Remote",
+          "mastodon": "@inflozo@mastodon.social",
           "meta_description": null,
           "meta_title": null,
           "name": "Umang",
-          "profile_image": null,
+          "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
           "slug": "umang",
-          "threads": null,
-          "tiktok": null,
-          "twitter": null,
+          "threads": "@inflozo",
+          "tiktok": "@inflozo",
+          "twitter": "@inflozo",
           "url": "https://ghost6.inflozo.com/author/umang/",
-          "website": null,
-          "youtube": null
+          "website": "https://inflozo.com",
+          "youtube": "@inflozo"
         }
       ],
       "canonical_url": null,
@@ -757,25 +883,25 @@
       "og_title": null,
       "primary_author": {
         "bio": null,
-        "bluesky": null,
-        "cover_image": null,
-        "facebook": null,
+        "bluesky": "inflozo.bsky.social",
+        "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+        "facebook": "inflozo",
         "id": "6a86b33f3b29cb6183c00e4a",
-        "instagram": null,
-        "linkedin": null,
-        "location": null,
-        "mastodon": null,
+        "instagram": "inflozo",
+        "linkedin": "inflozo",
+        "location": "Remote",
+        "mastodon": "@inflozo@mastodon.social",
         "meta_description": null,
         "meta_title": null,
         "name": "Umang",
-        "profile_image": null,
+        "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
         "slug": "umang",
-        "threads": null,
-        "tiktok": null,
-        "twitter": null,
+        "threads": "@inflozo",
+        "tiktok": "@inflozo",
+        "twitter": "@inflozo",
         "url": "https://ghost6.inflozo.com/author/umang/",
-        "website": null,
-        "youtube": null
+        "website": "https://inflozo.com",
+        "youtube": "@inflozo"
       },
       "primary_tag": null,
       "published_at": "2026-08-20T08:09:26.000+00:00",
@@ -797,25 +923,25 @@
       "authors": [
         {
           "bio": null,
-          "bluesky": null,
-          "cover_image": null,
-          "facebook": null,
+          "bluesky": "inflozo.bsky.social",
+          "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+          "facebook": "inflozo",
           "id": "6a86b33f3b29cb6183c00e4a",
-          "instagram": null,
-          "linkedin": null,
-          "location": null,
-          "mastodon": null,
+          "instagram": "inflozo",
+          "linkedin": "inflozo",
+          "location": "Remote",
+          "mastodon": "@inflozo@mastodon.social",
           "meta_description": null,
           "meta_title": null,
           "name": "Umang",
-          "profile_image": null,
+          "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
           "slug": "umang",
-          "threads": null,
-          "tiktok": null,
-          "twitter": null,
+          "threads": "@inflozo",
+          "tiktok": "@inflozo",
+          "twitter": "@inflozo",
           "url": "https://ghost6.inflozo.com/author/umang/",
-          "website": null,
-          "youtube": null
+          "website": "https://inflozo.com",
+          "youtube": "@inflozo"
         }
       ],
       "canonical_url": null,
@@ -842,25 +968,25 @@
       "og_title": null,
       "primary_author": {
         "bio": null,
-        "bluesky": null,
-        "cover_image": null,
-        "facebook": null,
+        "bluesky": "inflozo.bsky.social",
+        "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
+        "facebook": "inflozo",
         "id": "6a86b33f3b29cb6183c00e4a",
-        "instagram": null,
-        "linkedin": null,
-        "location": null,
-        "mastodon": null,
+        "instagram": "inflozo",
+        "linkedin": "inflozo",
+        "location": "Remote",
+        "mastodon": "@inflozo@mastodon.social",
         "meta_description": null,
         "meta_title": null,
         "name": "Umang",
-        "profile_image": null,
+        "profile_image": "https://static.ghost.org/v4.0.0/images/feature-image.jpg",
         "slug": "umang",
-        "threads": null,
-        "tiktok": null,
-        "twitter": null,
+        "threads": "@inflozo",
+        "tiktok": "@inflozo",
+        "twitter": "@inflozo",
         "url": "https://ghost6.inflozo.com/author/umang/",
-        "website": null,
-        "youtube": null
+        "website": "https://inflozo.com",
+        "youtube": "@inflozo"
       },
       "primary_tag": null,
       "published_at": "2026-08-20T08:28:14.000+00:00",
@@ -875,6 +1001,27 @@
       "url": "https://ghost6.inflozo.com/probe-gated-post/",
       "uuid": "0dddf9a7-9ce3-4fc8-ae02-b274bb8faea5",
       "visibility": "paid"
+    },
+    "tag:6a86b61a3b29cb6183c01185": {
+      "accent_color": null,
+      "canonical_url": null,
+      "codeinjection_foot": null,
+      "codeinjection_head": null,
+      "description": null,
+      "feature_image": null,
+      "id": "6a86b61a3b29cb6183c01185",
+      "meta_description": null,
+      "meta_title": null,
+      "name": "Craft",
+      "og_description": null,
+      "og_image": null,
+      "og_title": null,
+      "slug": "craft",
+      "twitter_description": null,
+      "twitter_image": null,
+      "twitter_title": null,
+      "url": "https://ghost6.inflozo.com/tag/craft/",
+      "visibility": "public"
     },
     "tag:6a86b61b3b29cb6183c01190": {
       "accent_color": null,
@@ -919,12 +1066,12 @@
       "visibility": "public"
     },
     "tag:6a86b61f3b29cb6183c011ae": {
-      "accent_color": null,
+      "accent_color": "#D96C3F",
       "canonical_url": null,
       "codeinjection_foot": null,
       "codeinjection_head": null,
-      "description": null,
-      "feature_image": null,
+      "description": "Every past issue, newest first.",
+      "feature_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
       "id": "6a86b61f3b29cb6183c011ae",
       "meta_description": null,
       "meta_title": null,
@@ -941,10 +1088,14 @@
     },
     "tier:6a86b3413b29cb6183c00e59": {
       "active": true,
-      "benefits": [],
+      "benefits": [
+        "Every issue in full",
+        "The whole archive",
+        "Members-only notes"
+      ],
       "created_at": "2026-08-20T07:56:49.000Z",
       "currency": "USD",
-      "description": null,
+      "description": "Every issue in full, and the whole archive.",
       "id": "6a86b3413b29cb6183c00e59",
       "monthly_price": 500,
       "name": "Ghost6",
@@ -953,11 +1104,11 @@
       "type": "paid",
       "updated_at": "2026-08-20T07:59:55.000Z",
       "visibility": "public",
-      "welcome_page_url": null,
+      "welcome_page_url": "/welcome/",
       "yearly_price": 5000
     }
   },
-  "captured": "2026-09-14",
+  "captured": "2026-10-01",
   "command": "python3 tools/probe/record-contexts.py",
   "ghost_major": "6",
   "ghost_version": "6.58.0",
@@ -983,15 +1134,15 @@
         "F1": {
           "fields": {
             "benefits": {
-              "if": "0"
+              "if": "1"
             },
             "currency": {
               "if": "1",
               "printed": "USD"
             },
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Every issue in full, and the whole archive."
             },
             "id": {
               "if": "1",
@@ -1027,8 +1178,8 @@
               "printed": "public"
             },
             "welcome_page_url": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "/welcome/"
             },
             "yearly_price": {
               "if": "1",
@@ -1048,16 +1199,16 @@
               "printed": ""
             },
             "bluesky": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo.bsky.social"
             },
             "cover_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "facebook": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "id": {
               "if": "1",
@@ -1067,56 +1218,56 @@
               "printed": ""
             },
             "instagram": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "linkedin": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "location": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Remote"
             },
             "mastodon": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo@mastodon.social"
             },
             "name": {
               "if": "1",
               "printed": "Umang"
             },
             "profile_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
             },
             "slug": {
               "if": "1",
               "printed": "umang"
             },
             "threads": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "tiktok": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "twitter": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "url": {
               "if": "1",
               "printed": "/author/umang/"
             },
             "website": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://inflozo.com"
             },
             "youtube": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             }
           },
           "scope": "author",
@@ -1169,8 +1320,8 @@
         "F2": {
           "fields": {
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "A weekly letter from the editors."
             },
             "id": {
               "if": "1",
@@ -1203,8 +1354,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -1222,8 +1375,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -1369,16 +1524,16 @@
               "printed": ""
             },
             "bluesky": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo.bsky.social"
             },
             "cover_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "facebook": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "id": {
               "if": "1",
@@ -1388,56 +1543,56 @@
               "printed": ""
             },
             "instagram": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "linkedin": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "location": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Remote"
             },
             "mastodon": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo@mastodon.social"
             },
             "name": {
               "if": "1",
               "printed": "Umang"
             },
             "profile_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
             },
             "slug": {
               "if": "1",
               "printed": "umang"
             },
             "threads": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "tiktok": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "twitter": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "url": {
               "if": "1",
               "printed": "/author/umang/"
             },
             "website": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://inflozo.com"
             },
             "youtube": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             }
           },
           "scope": "author",
@@ -1472,14 +1627,6 @@
           "printed": "true"
         },
         "@site.bluesky": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
           "if": "0",
           "printed": ""
         },
@@ -1652,6 +1799,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -1662,6 +1815,12 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -1889,16 +2048,16 @@
         "F15": {
           "fields": {
             "accent_color": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "#D96C3F"
             },
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Every past issue, newest first."
             },
             "feature_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "id": {
               "if": "1",
@@ -1929,16 +2088,16 @@
         "F16": {
           "fields": {
             "accent_color": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "#D96C3F"
             },
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Every past issue, newest first."
             },
             "feature_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "id": {
               "if": "1",
@@ -2101,8 +2260,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -2120,8 +2281,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -2155,14 +2318,6 @@
           "printed": "true"
         },
         "@site.bluesky": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
           "if": "0",
           "printed": ""
         },
@@ -2335,6 +2490,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -2345,6 +2506,12 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -2476,16 +2643,16 @@
               "printed": ""
             },
             "bluesky": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo.bsky.social"
             },
             "cover_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "facebook": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "id": {
               "if": "1",
@@ -2495,56 +2662,56 @@
               "printed": ""
             },
             "instagram": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "linkedin": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "location": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Remote"
             },
             "mastodon": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo@mastodon.social"
             },
             "name": {
               "if": "1",
               "printed": "Umang"
             },
             "profile_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
             },
             "slug": {
               "if": "1",
               "printed": "umang"
             },
             "threads": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "tiktok": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "twitter": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "url": {
               "if": "1",
               "printed": "/author/umang/"
             },
             "website": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://inflozo.com"
             },
             "youtube": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             }
           },
           "scope": "author",
@@ -2640,16 +2807,16 @@
               "printed": ""
             },
             "bluesky": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo.bsky.social"
             },
             "cover_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "facebook": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "id": {
               "if": "1",
@@ -2659,56 +2826,56 @@
               "printed": ""
             },
             "instagram": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "linkedin": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "location": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Remote"
             },
             "mastodon": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo@mastodon.social"
             },
             "name": {
               "if": "1",
               "printed": "Umang"
             },
             "profile_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
             },
             "slug": {
               "if": "1",
               "printed": "umang"
             },
             "threads": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "tiktok": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "twitter": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "url": {
               "if": "1",
               "printed": "/author/umang/"
             },
             "website": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://inflozo.com"
             },
             "youtube": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             }
           },
           "scope": "author",
@@ -2727,8 +2894,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -2746,8 +2915,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -2781,14 +2952,6 @@
           "printed": "true"
         },
         "@site.bluesky": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
           "if": "0",
           "printed": ""
         },
@@ -2961,6 +3124,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -2971,6 +3140,12 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -3353,8 +3528,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -3372,8 +3549,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -3407,14 +3586,6 @@
           "printed": "true"
         },
         "@site.bluesky": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
           "if": "0",
           "printed": ""
         },
@@ -3587,6 +3758,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -3597,6 +3774,646 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
+          }
+        }
+      }
+    },
+    {
+      "controls": {
+        "post.hbs_block_title": "Against the redesign",
+        "post.hbs_root_title": ""
+      },
+      "frames": {
+        "F19": {
+          "fields": {
+            "access": {
+              "if": "1",
+              "printed": "true"
+            },
+            "authors": {
+              "first": "6a86b7af3b29cb6183c0125d",
+              "if": "1"
+            },
+            "comment_id": {
+              "if": "1",
+              "printed": "6a86b6203b29cb6183c011b5"
+            },
+            "comments": {
+              "raw": {
+                "head": "\n        <script defer src=\"https://cdn.jsdelivr.net/ghost/comments-ui@~1.6/umd/comments-ui.min.js\" data-locale=\"en\" data-ghost-comments=\"https://ghost6.inflozo",
+                "length": 558
+              }
+            },
+            "content": {
+              "raw": {
+                "head": "<p>Against the redesign. This fixture post exists so a design has something structurally real to render.</p><h2 id=\"a-second-heading\">A second heading</h2><p>A ",
+                "length": 318
+              }
+            },
+            "created_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:09:04.000+00:00"
+            },
+            "custom_excerpt": {
+              "if": "1",
+              "printed": "Against the redesign \u2014 a hand-written excerpt, distinct from the body."
+            },
+            "excerpt": {
+              "if": "1",
+              "printed": "Against the redesign \u2014 a hand-written excerpt, distinct from the body."
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_alt": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image_caption": {
+              "if": "0",
+              "printed": ""
+            },
+            "featured": {
+              "if": "0",
+              "printed": "false"
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b6203b29cb6183c011b5"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "post_class": {
+              "raw": {
+                "head": "post tag-craft no-image",
+                "length": 23
+              }
+            },
+            "primary_author": {
+              "first": "6a86b7af3b29cb6183c0125d",
+              "if": "1"
+            },
+            "primary_tag": {
+              "first": "6a86b61a3b29cb6183c01185",
+              "if": "1"
+            },
+            "published_at": {
+              "if": "1",
+              "printed": "2025-08-06T12:00:00.000+00:00"
+            },
+            "reading_time": {
+              "if": "0",
+              "printed": "1 min read",
+              "zero": "1"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "against-the-redesign"
+            },
+            "tags": {
+              "first": "6a86b61a3b29cb6183c01185",
+              "if": "1"
+            },
+            "title": {
+              "if": "1",
+              "printed": "Against the redesign"
+            },
+            "updated_at": {
+              "if": "1",
+              "printed": "2026-08-20T08:09:04.000+00:00"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/against-the-redesign/"
+            },
+            "visibility": {
+              "if": "1",
+              "printed": "public"
+            }
+          },
+          "scope": "post",
+          "via": [
+            "post"
+          ]
+        },
+        "F20": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7af3b29cb6183c0125d"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "primary_author"
+          ]
+        },
+        "F21": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b61a3b29cb6183c01185"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Craft"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "craft"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/craft/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "post",
+            "primary_tag"
+          ]
+        },
+        "F22": {
+          "fields": {
+            "accent_color": {
+              "if": "0",
+              "printed": ""
+            },
+            "description": {
+              "if": "0",
+              "printed": ""
+            },
+            "feature_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b61a3b29cb6183c01185"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Craft"
+            },
+            "slug": {
+              "if": "1",
+              "printed": "craft"
+            },
+            "url": {
+              "if": "1",
+              "printed": "/tag/craft/"
+            }
+          },
+          "scope": "tag",
+          "via": [
+            "post",
+            "tags"
+          ]
+        },
+        "F23": {
+          "fields": {
+            "bio": {
+              "if": "1",
+              "printed": "Writes about systems and the long tail of maintenance."
+            },
+            "bluesky": {
+              "if": "0",
+              "printed": ""
+            },
+            "cover_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "facebook": {
+              "if": "0",
+              "printed": ""
+            },
+            "id": {
+              "if": "1",
+              "printed": "6a86b7af3b29cb6183c0125d"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "instagram": {
+              "if": "0",
+              "printed": ""
+            },
+            "linkedin": {
+              "if": "0",
+              "printed": ""
+            },
+            "location": {
+              "if": "0",
+              "printed": ""
+            },
+            "mastodon": {
+              "if": "0",
+              "printed": ""
+            },
+            "name": {
+              "if": "1",
+              "printed": "Priya Raman"
+            },
+            "profile_image": {
+              "if": "0",
+              "printed": ""
+            },
+            "slug": {
+              "if": "1",
+              "printed": "priya-raman"
+            },
+            "threads": {
+              "if": "0",
+              "printed": ""
+            },
+            "tiktok": {
+              "if": "0",
+              "printed": ""
+            },
+            "twitter": {
+              "if": "0",
+              "printed": ""
+            },
+            "url": {
+              "if": "1",
+              "printed": "/author/priya-raman/"
+            },
+            "website": {
+              "if": "0",
+              "printed": ""
+            },
+            "youtube": {
+              "if": "0",
+              "printed": ""
+            }
+          },
+          "scope": "author",
+          "via": [
+            "post",
+            "authors"
+          ]
+        },
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Essay"
+            },
+            "url": {
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Privacy"
+            },
+            "url": {
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/against-the-redesign/",
+      "template": "post.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#3832e5"
+        },
+        "@site.admin_url": {
+          "if": "1",
+          "printed": "https://ghost6.inflozo.com/ghost/"
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost6"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost6.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
+            "length": 268
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -3730,16 +4547,16 @@
               "printed": ""
             },
             "bluesky": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo.bsky.social"
             },
             "cover_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "facebook": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "id": {
               "if": "1",
@@ -3749,56 +4566,56 @@
               "printed": ""
             },
             "instagram": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "linkedin": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "location": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Remote"
             },
             "mastodon": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo@mastodon.social"
             },
             "name": {
               "if": "1",
               "printed": "Umang"
             },
             "profile_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
             },
             "slug": {
               "if": "1",
               "printed": "umang"
             },
             "threads": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "tiktok": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "twitter": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "url": {
               "if": "1",
               "printed": "/author/umang/"
             },
             "website": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://inflozo.com"
             },
             "youtube": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             }
           },
           "scope": "author",
@@ -3814,16 +4631,16 @@
               "printed": ""
             },
             "bluesky": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo.bsky.social"
             },
             "cover_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "facebook": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "id": {
               "if": "1",
@@ -3833,56 +4650,56 @@
               "printed": ""
             },
             "instagram": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "linkedin": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "inflozo"
             },
             "location": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Remote"
             },
             "mastodon": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo@mastodon.social"
             },
             "name": {
               "if": "1",
               "printed": "Umang"
             },
             "profile_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v4.0.0/images/feature-image.jpg"
             },
             "slug": {
               "if": "1",
               "printed": "umang"
             },
             "threads": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "tiktok": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "twitter": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             },
             "url": {
               "if": "1",
               "printed": "/author/umang/"
             },
             "website": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://inflozo.com"
             },
             "youtube": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "@inflozo"
             }
           },
           "scope": "author",
@@ -3901,8 +4718,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -3920,8 +4739,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -3955,14 +4776,6 @@
           "printed": "true"
         },
         "@site.bluesky": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
           "if": "0",
           "printed": ""
         },
@@ -4135,6 +4948,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -4145,6 +4964,12 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -4183,8 +5008,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -4195,16 +5022,16 @@
         "F30": {
           "fields": {
             "accent_color": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "#D96C3F"
             },
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Every past issue, newest first."
             },
             "feature_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "id": {
               "if": "1",
@@ -4432,16 +5259,16 @@
         "F33": {
           "fields": {
             "accent_color": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "#D96C3F"
             },
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Every past issue, newest first."
             },
             "feature_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "id": {
               "if": "1",
@@ -4472,16 +5299,16 @@
         "F34": {
           "fields": {
             "accent_color": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "#D96C3F"
             },
             "description": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "Every past issue, newest first."
             },
             "feature_image": {
-              "if": "0",
-              "printed": ""
+              "if": "1",
+              "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
             },
             "id": {
               "if": "1",
@@ -4644,8 +5471,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -4679,14 +5508,6 @@
           "printed": "true"
         },
         "@site.bluesky": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
           "if": "0",
           "printed": ""
         },
@@ -4859,6 +5680,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -4869,6 +5696,12 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -4886,8 +5719,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -5123,8 +5958,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -5450,14 +6287,6 @@
           "if": "0",
           "printed": ""
         },
-        "@site.codeinjection_foot": {
-          "if": "0",
-          "printed": ""
-        },
-        "@site.codeinjection_head": {
-          "if": "0",
-          "printed": ""
-        },
         "@site.comments_access": {
           "if": "1",
           "printed": "all"
@@ -5627,6 +6456,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -5637,6 +6472,12 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }
@@ -5654,8 +6495,10 @@
               "printed": "Essay"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -5673,8 +6516,10 @@
               "printed": "Privacy"
             },
             "url": {
-              "if": "1",
-              "printed": "/"
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
             }
           },
           "scope": "navigation",
@@ -5736,11 +6581,285 @@
           "if": "0",
           "printed": ""
         },
-        "@site.codeinjection_foot": {
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
           "if": "0",
           "printed": ""
         },
-        "@site.codeinjection_head": {
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost6"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost6.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
+            "length": 268
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
+          }
+        }
+      }
+    },
+    {
+      "controls": {},
+      "frames": {
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Essay"
+            },
+            "url": {
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Privacy"
+            },
+            "url": {
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        },
+        "F48": {
+          "fields": {
+            "error": {
+              "first": "",
+              "if": "0"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            }
+          },
+          "scope": "private",
+          "via": []
+        }
+      },
+      "http": 200,
+      "path": "/private/",
+      "template": "private.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#3832e5"
+        },
+        "@site.admin_url": {
+          "if": "1",
+          "printed": "https://ghost6.inflozo.com/ghost/"
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
           "if": "0",
           "printed": ""
         },
@@ -5913,6 +7032,12 @@
           "if": "0",
           "printed": ""
         },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
         "navigation": {
           "raw": {
             "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
@@ -5923,6 +7048,309 @@
           "raw": {
             "head": "50+",
             "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
+          }
+        }
+      }
+    },
+    {
+      "controls": {},
+      "frames": {
+        "F3": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Essay"
+            },
+            "url": {
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.navigation"
+          ]
+        },
+        "F4": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "label": {
+              "if": "1",
+              "printed": "Privacy"
+            },
+            "url": {
+              "raw": {
+                "head": "/",
+                "length": 1
+              }
+            }
+          },
+          "scope": "navigation",
+          "via": [
+            "@site.secondary_navigation"
+          ]
+        },
+        "F48": {
+          "fields": {
+            "error": {
+              "first": "Incorrect access code.",
+              "if": "1"
+            },
+            "inflozo_no_such_field": {
+              "printed": ""
+            }
+          },
+          "scope": "private",
+          "via": []
+        },
+        "F49": {
+          "fields": {
+            "inflozo_no_such_field": {
+              "printed": ""
+            },
+            "message": {
+              "if": "1",
+              "printed": "Incorrect access code."
+            }
+          },
+          "scope": "private-error",
+          "via": [
+            "error"
+          ]
+        }
+      },
+      "http": 200,
+      "path": "/private/ (a wrong password)",
+      "template": "private.hbs",
+      "universal": {
+        "@config.posts_per_page": {
+          "if": "1",
+          "printed": "12"
+        },
+        "@page.show_title_and_feature_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.accent_color": {
+          "if": "1",
+          "printed": "#3832e5"
+        },
+        "@site.admin_url": {
+          "if": "1",
+          "printed": "https://ghost6.inflozo.com/ghost/"
+        },
+        "@site.allow_self_signup": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.bluesky": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.comments_access": {
+          "if": "1",
+          "printed": "all"
+        },
+        "@site.comments_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.cover_image": {
+          "if": "1",
+          "printed": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg"
+        },
+        "@site.description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.donations_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.facebook": {
+          "if": "1",
+          "printed": "ghost"
+        },
+        "@site.icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.instagram": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.linkedin": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.locale": {
+          "if": "1",
+          "printed": "en"
+        },
+        "@site.logo": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.mastodon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.members_invite_only": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.members_support_address": {
+          "if": "1",
+          "printed": "noreply"
+        },
+        "@site.meta_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.meta_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.navigation": {
+          "if": "1"
+        },
+        "@site.og_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.og_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.paid_members_enabled": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_button": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_button_icon": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.portal_button_signup_text": {
+          "if": "1",
+          "printed": "Subscribe"
+        },
+        "@site.portal_button_style": {
+          "if": "1",
+          "printed": "icon-and-text"
+        },
+        "@site.portal_name": {
+          "if": "1",
+          "printed": "true"
+        },
+        "@site.portal_plans": {
+          "if": "1"
+        },
+        "@site.portal_signup_checkbox_required": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.portal_signup_terms_html": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.recommendations_enabled": {
+          "if": "0",
+          "printed": "false"
+        },
+        "@site.secondary_navigation": {
+          "if": "1"
+        },
+        "@site.signup_url": {
+          "if": "1",
+          "printed": "#/portal"
+        },
+        "@site.threads": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.tiktok": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.timezone": {
+          "if": "1",
+          "printed": "Etc/UTC"
+        },
+        "@site.title": {
+          "if": "1",
+          "printed": "Ghost6"
+        },
+        "@site.twitter": {
+          "if": "1",
+          "printed": "@ghost"
+        },
+        "@site.twitter_description": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_image": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.twitter_title": {
+          "if": "0",
+          "printed": ""
+        },
+        "@site.url": {
+          "if": "1",
+          "printed": "https://ghost6.inflozo.com"
+        },
+        "@site.youtube": {
+          "if": "0",
+          "printed": ""
+        },
+        "content_api_url": {
+          "raw": {
+            "head": "https://ghost6.inflozo.com/ghost/api/content/",
+            "length": 45
+          }
+        },
+        "navigation": {
+          "raw": {
+            "head": "<ul class=\"nav\">\n    <li class=\"nav-essay\"><a href=\"https://ghost6.inflozo.com/essay/\">Essay</a></li>\n    <li class=\"nav-notes\"><a href=\"https://ghost6.inflozo.",
+            "length": 268
+          }
+        },
+        "total_members": {
+          "raw": {
+            "head": "50+",
+            "length": 3
+          }
+        },
+        "total_paid_members": {
+          "raw": {
+            "head": "0",
+            "length": 1
           }
         }
       }

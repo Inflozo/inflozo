@@ -73,7 +73,7 @@ TAGS = ['Craft', 'Systems', 'Field Notes', 'Interviews', 'Tooling', 'Archive']
 # Ghost's own CDN — real images, no upload step, stable URLs.
 IMG = ('https://static.ghost.org/v5.0.0/images/publication-cover.jpg',
        'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
-       'https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png')
+       'https://static.ghost.org/v5.0.0/images/writing-posts-with-ghost.png')  # ponytail: this one answers 404 since at least 2026-10-01 (MEASUREMENTS §59); swap it before the next re-seed
 
 TITLES = [
     'On typography and restraint', 'The cost of clever', 'A quiet week in the archive',

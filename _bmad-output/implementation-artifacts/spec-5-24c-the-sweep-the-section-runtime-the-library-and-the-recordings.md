@@ -281,7 +281,7 @@ All anchors are at `e350c124`.
 
 **Execution — Dev, the section runtime:**
 
-- [ ] `marks.ts:268`, `core.ts:1281`, `core.ts:1824` — **DW-96:**
+- [x] `marks.ts:268`, `core.ts:1281`, `core.ts:1824` — **DW-96:**
   - `core.ts:1281`: `String(v)` becomes `String(v).replace(/\s*[\r\n]+\s*/g, ' ')` — the rule a text paste already
     follows (`apps/web/lib/inline.ts:225`), so both emitters read one value.
   - `marks.ts:268`: only the text sink writes `<br>`; the attribute sink escapes and stops. That also protects the
@@ -291,7 +291,7 @@ All anchors are at `e350c124`.
     `white-space: pre*`, and no fixture's `<pre>` holds one; the upgrade is to tidy whitespace-only text nodes alone.
   - **Control** (`agreement.test.ts`): `alt` and `title` equal `a b` on both emitters, and no theme attribute holds a
     `<br>`. HEAD gives `alt="a\nb"` on the canvas and `alt="a<br><br>b"` in the theme.
-- [ ] `core.ts:103`, `:1639` and `docs/section-authoring.md` — **DW-159:**
+- [x] `core.ts:103`, `:1639` and `docs/section-authoring.md` — **DW-159:**
   - Right after `root.innerHTML = src`, before the first `tokens.put`, every comment node (`nodeType === 8`) under the
     root is removed; `remove(): void` joins the `childNodes` item type. Not a regex over `src`: that would corrupt an
     attribute holding `<!--`.
@@ -299,13 +299,13 @@ All anchors are at `e350c124`.
   - **Control:** an agreement vector with a comment at the top, inside, and inside a repeat — neither output holds
     `<!--`, and the theme still resolves `{{#foreach posts}}…{{#if url}}`. At HEAD every comment ships. Six fixtures lose
     a leading authoring comment from their renders; no test reads it.
-- [ ] `core.ts:1312`, `:1693` — **DW-228:**
+- [x] `core.ts:1312`, `:1693` — **DW-228:**
   - `stampControls` keeps a root `data-i18n-*` (`&& !name.startsWith('data-i18n-')`). Safe: `FOREIGN_ATTR_RE` refuses a
     control named `i18n-*`, and `:1434` refuses an authored `data-i18n-*`, so the only such attribute on a root is the
     runtime's own stamp. The comment at `:1693` follows.
   - **Control:** the root-mount case at `agreement.test.ts:1171-1187`, re-stamped through `stampControls`, keeps
     `data-i18n-ended` as `'Vorbei'`. HEAD gives `null`.
-- [ ] `core.ts:713`, `:717`, `:733`; `library/src/contexts.ts:242-243`; `tools/check-snapshots.mjs:136`, `:169` — **DW-168:**
+- [x] `core.ts:713`, `:717`, `:733`; `library/src/contexts.ts:242-243`; `tools/check-snapshots.mjs:136`, `:169` — **DW-168:**
   - `bindingRefusals` and `checkBindings`' input take `version?: string`, passed to `place` at `:717`. **Not
     `RenderInput`**: a render is guarded, never refused, on a version; the comment at `contexts.ts:242-243` says so and
     names `checkBindings` as the version gate.
@@ -313,12 +313,12 @@ All anchors are at `e350c124`.
   - A `mustFail` row (the mechanism at `:169`, shaped like `:203-208`): a22/1 at its first `compileTarget`, claiming
     5.61.0, must fail with `/@site\.allow_self_signup arrived in Ghost 5\.62\.0/`. At HEAD: "was not caught — got []".
   - `fixtures/paywall/1` and `/2` read `@site.allow_self_signup` claiming 5.0.0: both `minVersion`s become 5.62.0.
-- [ ] `doc-schema.ts:58-67`, `doc-edit.test.ts` — **DW-288:**
+- [x] `doc-schema.ts:58-67`, `doc-edit.test.ts` — **DW-288:**
   - One sentence in the comment: a record under a design id the library no longer holds is kept, never drawn and never
     pruned — `switchControls` carries it, and a swap to that id is refused.
   - **Test:** a record under `a17/9` survives `parseDoc`, a swap and a return. It pins intended behaviour, so it is green
     at HEAD; its control is dropping unknown records in `switchControls`' copy loop, which turns it red.
-- [ ] `tokens.ts:168-188`, `reference-tokens.css`, `tokens.test.ts:85-86` — **DW-224, its built half:**
+- [x] `tokens.ts:168-188`, `reference-tokens.css`, `tokens.test.ts:85-86` — **DW-224, its built half:**
   - Every `LINK_RULES` selector becomes `:where(a:not([class]), a[class=""])`, and rule 2 (a contrast, accent or image
     ground) adds `text-decoration-line: underline` — there the link takes the ground's words, so the underline is its
     only sign (WCAG 1.4.1). The comment says so.
@@ -331,7 +331,7 @@ All anchors are at `e350c124`.
 
 **Execution — Dev, the library:**
 
-- [ ] `src/vocabulary.ts:400-403`, `contexts/matrix.json`, `contexts/labels.json`, `ghost-shim/src/index.ts:453`,
+- [x] `src/vocabulary.ts:400-403`, `contexts/matrix.json`, `contexts/labels.json`, `ghost-shim/src/index.ts:453`,
   `docs/section-authoring.md:930`, `:1058-1059`, `:1185` — **DW-99:**
   - `total_paid_members` and `content_api_url` join `BARE_HELPERS`, with two `{"kind":"helper"}` rows in `universal` and
     two labels ("Paid member count", "Content API URL").
@@ -341,41 +341,41 @@ All anchors are at `e350c124`.
     `bindable('total_paid_members', { target: 'index.hbs', scope: [], use: 'helper' }) === null` (HEAD refuses).
   - **The rows land before the record-contexts run**, which prints both; `contexts.test.ts:339-354` is red until it
     lands, so both land in the one Dev commit.
-- [ ] `contexts/matrix.json:75-80`, `:207`, `contexts/labels.json:17-18`,
+- [x] `contexts/matrix.json:75-80`, `:207`, `contexts/labels.json:17-18`,
   `prds/prd-Inflozo-2026-08-17/appendix-b1-template-contexts.md` §6 — **DW-129:**
   - Both code-injection keys move to `neverOffer` with their reason; appendix-b1 §6 gains a "Raw code — never offer"
     line naming them; their two labels go.
   - **Control:** `bindable('@site.codeinjection_head', at('default.hbs'))` matches `/never offered/`. HEAD offers it.
-- [ ] `src/vocabulary.ts`, `src/orbit-weekly.ts`, `src/validate.ts:442-444`, `:720-722`, `orbit-weekly.test.ts:169-171` — **DW-104:**
+- [x] `src/vocabulary.ts`, `src/orbit-weekly.ts`, `src/validate.ts:442-444`, `:720-722`, `orbit-weekly.test.ts:169-171` — **DW-104:**
   - `splitTop` and the seed value move to `vocabulary.ts`, and `orbit-weekly.ts` imports them as it imports
     `DEFAULT_LIMIT`. One constant, not a list: a list waits for a second dataset.
   - `validateDataBinding` refuses a filter with more than one top-level part (`bad-get-filter`); `validateDesignJson`
     refuses any other `previewSeed` (a new code).
   - **Controls** (the refusal table, `validate.test.ts:648-693`): `featured:true,tag:news` and `previewSeed: "nope"`
     refused, `tag:[news,notes]` clean beside them. HEAD passes both.
-- [ ] `src/validate.ts:74-118` — **DW-161:**
+- [x] `src/validate.ts:74-118` — **DW-161:**
   - `memberAsks`' ancestor walk becomes one generator, used by `memberAsks` and by a new check: `data-members-email` or
     `data-members-error` with no open `data-members-form` ancestor is refused (a new code).
   - `validate.test.ts:1013`'s markup is wrapped in a form.
   - **Control:** both fields after a closed form refused, both inside one clean. HEAD gives `[]`.
-- [ ] `src/validate.ts:587-592` — **DW-186:**
+- [x] `src/validate.ts:587-592` — **DW-186:**
   - A control named `member-visibility`, or labelled "Member visibility" (trimmed, case-folded), is refused as
     `member-visibility-control`: "… is Member visibility, which is not a control (R-124): who a section is shown to is
     stored on the placed section and gates its root on both emitters; declared here it would write a second
     data-member-visibility nothing reads."
   - **Control:** one row per form. HEAD gives `[]` for both.
-- [ ] `src/validate.ts:169-172` — **DW-213:**
+- [x] `src/validate.ts:169-172` — **DW-213:**
   - Two `data-items` over one path with different caps are refused beside `orphan-items-limit`; a missing cap counts as
     a cap, and equal caps pass.
   - **Control:** 3 against 5, and 3 against none, refused; 3 against 3 clean. HEAD gives `[]`.
-- [ ] `packages/library/icons/tabler.d.json.ts` *(new)*, `tsconfig.base.json` — **DW-113:**
+- [x] `packages/library/icons/tabler.d.json.ts` *(new)*, `tsconfig.base.json` — **DW-113:**
   - The declaration exports names: `export declare const version: string`, `license: string`, `icons: unknown` (an
     `export default` fails under `nodenext`); `"allowArbitraryExtensions": true` joins the base config.
   - **Control:** Verification's `--listFilesOnly` row, with and without the declaration.
 
 **Execution — Dev, lint:**
 
-- [ ] `eslint.config.js:88`, `:110-154`, `:148-151`, `tools/check-baseline.mjs`, `tools/doc-audit.py:1002` — **DW-4:**
+- [x] `eslint.config.js:88`, `:110-154`, `:148-151`, `tools/check-baseline.mjs`, `tools/doc-audit.py:1002` — **DW-4:**
   - `'toString'` leaves `hostReadingCalls`. One selector refuses only a zero-argument call:
     `CallExpression[arguments.length=0] > MemberExpression.callee[property.name='toString']`.
   - The core block gains `linterOptions: { noInlineConfig: true }`.
@@ -385,7 +385,7 @@ All anchors are at `e350c124`.
 
 **Execution — Dev, the stress harness:**
 
-- [ ] `tools/stress/sections.js`, `compile.js:29-30`, `build.js:86-89`, `test-vocabulary.mjs`, `README.md` — **DW-125:**
+- [x] `tools/stress/sections.js`, `compile.js:29-30`, `build.js:86-89`, `test-vocabulary.mjs`, `README.md` — **DW-125:**
   - The header's and footer's navigation use `data-helper="navigation"`.
   - Pricing's tiers become a declared query under the key `plans` —
     `{ source: 'tiers', filter: 'type:paid+visibility:public' }`, as `fixtures/paywall/2` declares — and its benefits
@@ -403,7 +403,7 @@ All anchors are at `e350c124`.
 
 **Execution — Dev, the render matrix (DW-171):**
 
-- [ ] `tools/matrix/cases.mjs`, `cases.test.mjs:33-37`, `(authed)/pilots/page.tsx`, `review.tsx`, `.github/workflows/matrix.yml`,
+- [x] `tools/matrix/cases.mjs`, `cases.test.mjs:33-37`, `(authed)/pilots/page.tsx`, `review.tsx`, `.github/workflows/matrix.yml`,
   `docs/render-matrix.md:38`, `:103-106`, `tools/doc-audit.py:1060`:
   - Visitor rows still come from `data-members`; Show-to rows come from `carriesMemberVisibility`; the base row `''`
     stays for a design with no visitor rows.
@@ -412,7 +412,7 @@ All anchors are at `e350c124`.
   - `packages/library/control-groups.json` joins `matrix.yml`'s shared inputs and `render-matrix.md`'s list.
   - **Control** (`cases.test.mjs`, rewritten): for every pilot,
     `rows(id).some((r) => r.visibility !== undefined) === carriesMemberVisibility(id)`. HEAD fails for a1/1 and a4/13.
-- [ ] **The baselines** (Question 2, approved):
+- [x] **The baselines** (Question 2, approved):
   - Run `MATRIX_DESIGNS="a1/1 a4/13" bash tools/matrix/run-matrix-gate.sh --update` in the pinned image.
   - `git status` must show exactly the frames Question 2 names — deleted under `a1/1/`, added under `a4/13/` — and
     nothing modified. Any modified file stops the run for the owner's sampled review (Ask First).
@@ -421,7 +421,7 @@ All anchors are at `e350c124`.
 
 **Execution — Dev, the recorders' cleanup (DW-147, DW-237):**
 
-- [ ] `tools/probe/record-shim.py`:
+- [x] `tools/probe/record-shim.py`:
   - **`restore_and_delete(g, previous, names)`:**
     1. try the activation;
     2. always read the active theme back;
@@ -438,7 +438,7 @@ All anchors are at `e350c124`.
     - `previous` is never deleted; a missing name is not a failure.
   - `package.json:15` appends `python3 tools/probe/record-shim.py --self-check`.
   - **Control:** the self-check against today's `:585-596` shape fails at the activation-raising case.
-- [ ] **Every T1/T3 uploader calls it in its `finally`:**
+- [x] **Every T1/T3 uploader calls it in its `finally`:**
   - `record-shim.py`, `run-verify-core.py`, `record-contexts.py`, and `record-page-number.py`, which collects every name
     it uploaded;
   - `run-verify-13.py` and `run-verify-all.py`, which gain a `try`/`finally`;
@@ -446,13 +446,13 @@ All anchors are at `e350c124`.
   - The three mains that catch `Void` catch `RuntimeError` too (`record-contexts.py:483`, `record-page-number.py:378`,
     `run-verify-core.py:333`).
   - `run-verify-ghostpro.py` (Ghost(Pro) only) is untouched, and named as the one exception.
-- [ ] `RESET-PROTOCOL.md` § Ghost gains the rule — every probe theme is deleted in the same cleanup and read back, and a
+- [x] `RESET-PROTOCOL.md` § Ghost gains the rule — every probe theme is deleted in the same cleanup and read back, and a
   run refuses to start on a probe theme. The docstrings (`record-contexts.py:30-31`, `record-page-number.py:40-41`) and
   catalogue rows (`doc-audit.py:263`, `:279`, `:289`, `:344`, `:358`) follow. Grep for "restores the previous theme".
 
 **Execution — Dev, the recorders' recordings (Question 1's list, approved):**
 
-- [ ] `tools/probe/record-cards.py:271-282`, `:316-328`, `orbit-weekly.test.ts:134-146` — **DW-103:**
+- [x] `tools/probe/record-cards.py:271-282`, `:316-328`, `orbit-weekly.test.ts:134-146` — **DW-103:**
   - Two recorder-owned posts, each carrying one of two recorder-owned tags, drafts between runs. During a run they are
     published with the three fixture documents — the same `docs` list — and drafted in the same `finally`. While their
     posts are drafts, the two tags are invisible to every Content API reader.
@@ -465,7 +465,7 @@ All anchors are at `e350c124`.
   - `capture.json` records each resource's filter. The test asserts that posts and tags carry it with exactly two rows,
     and keeps the order and limit assertions, citing Ghost's source lines.
   - **Control:** the test against today's `capture.json` fails (no filter; the site's own rows).
-- [ ] `tools/probe/record-contexts.py`, `contexts/matrix.json`, `contexts.test.ts` — **DW-127:**
+- [x] `tools/probe/record-contexts.py`, `contexts/matrix.json`, `contexts.test.ts` — **DW-127:**
   - `choose()` adds a post that carries a `custom_excerpt` (eleven published posts on each site do). The post the other
     frames render is left alone, since `contract.test.ts:381` pins its excerpt at null.
   - **The private page** (Question 1's item 7, approved): `private.hbs` joins `Probe.files`; last in the run,
@@ -477,7 +477,7 @@ All anchors are at `e350c124`.
     social handles are the known case: a 5.117 migration, against P0·2's 5.118.0. If more than a handful need it, stop
     and re-home the rest (Ask First).
   - `contexts.test.ts` gains the reverse rule: an `unverified` row that both recordings now prove fails.
-- [ ] **The test sites, as Question 1 approved, in this order:**
+- [x] **The test sites, as Question 1 approved, in this order:**
   1. Re-read the inventory (Verification § Executed at Create's GETs); report any difference, act on none.
   2. Delete the approved leftover themes through the helper's DELETE and read-back.
   3. Fill the approved fields through Admin API PUTs with the staff token, the images from `seed-ghost.py:74-76`.
@@ -491,15 +491,15 @@ All anchors are at `e350c124`.
 
 **Execution — the close:**
 
-- [ ] **`deferred-work.md`.** Written at this Create: DW-296 and DW-297; DW-224's owner line naming Stories 5.24c and
+- [x] **`deferred-work.md`.** Written at this Create: DW-296 and DW-297; DW-224's owner line naming Stories 5.24c and
   6.1; and DW-196 moved to Story 6.1 on the owner's ruling (Question 3), 6.1's card carrying it. At Dev every entry
   whose evidence exists closes; DW-224 stays open, owned by Story 6.1 alone.
-- [ ] **The registers.** `MEASUREMENTS.md` gains the test-site writes and the version-half reading.
+- [x] **The registers.** `MEASUREMENTS.md` gains the test-site writes and the version-half reading.
   `epic-4-context.md` gains a sub-bullet per requirement this story settles, and `epic-5-context.md` one for this
   story's Dev.
-- [ ] **Standing rule 7.** Grep for `DRAWS_SHOW_TO`, `'toString'`, `data-repeat="navigation"`, `data-repeat="tiers"`,
+- [x] **Standing rule 7.** Grep for `DRAWS_SHOW_TO`, `'toString'`, `data-repeat="navigation"`, `data-repeat="tiers"`,
   "restores the previous theme", and every DW id this story touched.
-- [ ] **The gates.** `pnpm check` (Node 24), `node tools/stress/test-vocabulary.mjs`, the stress gscan,
+- [x] **The gates.** `pnpm check` (Node 24), `node tools/stress/test-vocabulary.mjs`, the stress gscan,
   `bash tools/matrix/run-matrix-gate.sh`, and `python3 tools/doc-audit.py --check` twice: all green, and every new
   check seen red on its control first.
 
@@ -531,6 +531,22 @@ All anchors are at `e350c124`.
     control first.
 
 ## Spec Change Log
+
+- **2026-10-01 (Dev) — Questions 4 and 5, both ruled option 1 by the owner.** Question 4 added work the triage did not
+  hold: every bare helper Ghost added inside 5.x carries its release as `since` in `contexts/matrix.json` (`comments`
+  5.3.0, `total_members` and `total_paid_members` 5.4.0, `content_api_key` 5.96.0, `content_api_url` 5.98.0, bisected in
+  npm's releases, MEASUREMENTS §59), and `contexts.ts`' bare-helper path refuses it below that release, as a field is
+  (`contexts.test.ts`, "Question 4", red before the gate). Question 5 moved the T1/T3 writes from a subagent, which the
+  session's permission check had refused, to the main session.
+- **2026-10-01 (Dev) — DW-96 reached two more sinks, found by the I/O matrix audit.** The row names a richtext value into
+  `href` and a `data-i18n-*` string: an `href` goes through Story 4.5's link record, not the prop sink, and there the
+  canvas's `tidy` dropped a blank line the theme kept (`href="a\nb"` against `href="a\n\nb"`); a module's string kept its
+  break on both. Both now fold to one line (`oneLine` in `core.ts`, before the scheme check), and the DW-96 test asserts
+  `a b` on both emitters for both, red with either fold reverted.
+- **2026-10-01 (Dev) — the private-mode read-back reads `''` as no password.** Ghost stores an empty string written to a
+  nullable column as null (`setEmptyValuesToNull`, `core/server/models/base/plugins/data-manipulation.js:15-19`, both
+  releases), so the first `record-contexts.py` run voided on T3 at the read-back with `is_private` already `false`; and if
+  restoring both settings fails, `is_private` is now put back alone before the read-back.
 
 ## Design Notes
 
@@ -582,9 +598,9 @@ that next runs it re-reads any contract row that pins them empty.
 
 ## Questions for the owner
 
-The owner ruled the first three on 2026-09-29. Questions 4 and 5 are open (Dev, 2026-10-01): Question 4 is a finding
-bigger than its triage, which the spec's Ask First stops on; Question 5 is the test-site writes, which the session's
-safety check refused even though Question 1 approved them.
+The owner ruled the first three on 2026-09-29 and the last two on 2026-10-01. No question is open. Questions 4 and 5
+came at Dev: Question 4 is a finding bigger than its triage, which the spec's Ask First stops on; Question 5 is the
+test-site writes, which the session's safety check refused even though Question 1 approved them.
 
 ### Question 1 — May I make these changes to your two test Ghost sites? (5.24's Question 14)
 
@@ -674,7 +690,9 @@ running Ghost 5.2, would show "Join  paid readers" — and nothing in Inflozo wo
 2. **Leave them for later.** The finding goes to Story 9.1, the first story that ships sections to customers, whose card
    gains it.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-01).** *"Hold them now, in this story."* Each of the five carries the release it
+arrived in, read in Ghost's source (MEASUREMENTS §59), and the version check this story built refuses a section that claims
+an older Ghost.
 
 ### Question 5 — The safety check stopped the test-site changes you approved. May I make them now? (Question 1's list)
 
@@ -691,7 +709,8 @@ a minute, records its password page, then switches it back and reads the setting
    this session, not through a helper, run the two recorders, and write every change into `MEASUREMENTS.md`.
 2. **Not yet.** Nothing is pushed, and the story stays Blocked until you say go.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-01).** *"Go ahead now."* Dev makes Question 1's seven changes in the main session, runs
+both recorders, and records every write in `MEASUREMENTS.md`.
 
 ## Verification
 
@@ -767,3 +786,50 @@ and nothing to any server.
 - **The recorders pass:** Ghost's theme, Content API and private-mode behaviour, read in the 5.130.6 and 6.58.0
   tarballs at the lines in Code Map; a sketch of `restore_and_delete` passed its self-check, and today's cleanup shape
   failed it at the activation-raising case.
+
+**Executed at Dev (2026-10-01).** Node 24.18.1; keys by variable name only (`GHOST5_STAFF_ACCESS_TOKEN`,
+`GHOST6_STAFF_ACCESS_TOKEN`, `GHOST{5,6}_CONTENT_API_KEY`, `GHOST{5,6}_URL`, read from `tools/probe/.env` by the
+recorders' `load_env`, never printed).
+
+- **The group:** the re-derivation command prints `[]` — every Group C entry is `done 2026-10-01 (Story 5.24c)` with a
+  `resolution:` naming its evidence, but DW-224 (Story 6.1's alone, its half built) and DW-196 (Story 6.1's on the
+  owner's ruling); DW-296 and DW-297 are Stories 7.35's and 7.18's. No entry was deleted or renumbered.
+- **`pnpm check`:** exit 0 — lint, typecheck, and every package's tests, none failing, then `test-vocabulary.mjs`, `derive-module-reach --check`,
+  both `--self-check`s, `check-baseline` (the three DW-4 rows), `check-catalog`, `check-snapshots` (the DW-168 `mustFail`
+  row included) and `cases.test.mjs`. Every new check was seen red on its control first: the offline ones by Dev's first
+  pass against e350c124 or with the change reverted, Question 4's and DW-96's widened rows in this session.
+- **The stress theme:** `node build.js && node gate.js theme` — Ghost 5.x via gscan 4.49.7 ERRORS 0 WARNINGS 0, Ghost 6.x
+  via gscan 6.4.2 ERRORS 0 WARNINGS 0.
+- **The render matrix** (its pinned container, Docker): `bash tools/matrix/run-matrix-gate.sh` — 0 violations, exit 0. `git status` under `packages/library/baselines/`: thirty `a1/1/*-show-to-*.png` deleted, the same
+  thirty names added under `a4/13/`, all thirty byte-identical to a22/1's, nothing modified — exactly Question 2's frames.
+- **DW-113:** `npx tsc --noEmit -p packages/library --listFilesOnly | grep tabler` prints `icons/tabler.d.json.ts` alone.
+- **`python3 tools/doc-audit.py --check`:** STALE on the first run (it regenerated `INDEX.md`, `INDEX.html` and the story
+  board), PASS on the second.
+- **The I/O matrix audit:** every row has a test that ran green above; the first row's `href` and `data-i18n-*` halves were
+  not held until this session (Spec Change Log).
+
+**Real services (R-82), at Dev:**
+
+- **T3 `ghost5.inflozo.com` (5.130.6) and T1 `ghost6.inflozo.com` (6.58.0)**, through `record-shim.py`'s client:
+  - the inventory re-read with GETs — unchanged from Create;
+  - Question 1's items 1–5: every theme DELETE answered 204 and every PUT 200, read back exactly as approved (verbatim in
+    MEASUREMENTS §59);
+  - `python3 tools/probe/record-cards.py` — exit 0 on both, the recorder's two posts and two tags created, published for
+    the reading and drafted; the Content API, filtered `id:[…]`, answered posts `inflozo-defaults-2`, `-1` and tags A, B
+    at limit 15;
+  - `python3 tools/probe/record-contexts.py` — the first run voided on T3 at the private-mode read-back (`''` stored as
+    null), with the site already public, the probe theme deleted and `casper` active; the second exit 0 on both:
+    `/private/` and a wrong password's page HTTP 200 ("Incorrect password." on 5, "Incorrect access code." on 6),
+    `is_private` back to `false` and read back, the probe theme deleted and read back;
+  - after: no `inflozo-probe-*` theme on either, the owned posts drafts and their tags invisible to the Content API,
+    `outbound_link_tagging` `true`, 33 published posts each.
+- **The npm registry and jsDelivr's npm mirror**, read-only: Ghost's releases for the bisections and the citations —
+  `core/frontend/helpers/{content_api_url,content_api_key,total_members,total_paid_members,comments}.js` answer 404 at
+  5.97.3, 5.95.0, 5.3.1, 5.3.1, 5.2.4 and 200 at 5.98.0, 5.96.0, 5.4.0, 5.4.0, 5.3.0; `default-settings.json` and
+  `private-blogging/lib/middleware.js` at 5.130.6 and 6.58.0; `data-manipulation.js:15-19` at both.
+- **`static.ghost.org`:** the seed images — `publication-cover.jpg` and `feature-image.jpg` 200, `writing-posts-with-ghost.png`
+  404 (noted beside `seed-ghost.py:76`).
+- **Docker:** the render matrix's pinned image, above.
+- **Not touched at Dev:** Supabase, Vercel, Resend and Dodo — this story changes no table, route, email or payment, and
+  `/pilots` draws what it drew. GitHub Actions (`ci.yml`, `matrix.yml`) and the Vercel deployment run on this push and are
+  read at Review, with `node tools/probe/run-verify-pilots.cjs` against `app.inflozo.com`.

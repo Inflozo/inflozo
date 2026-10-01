@@ -23,8 +23,9 @@ gscan refuses it:
   2. On T1 (6.x) and T3 (5.x) it uploads the `@root` theme first and records what GHOST ITSELF says:
      a refusal there is the conclusive answer, and it falls back to the plain theme so the run still
      measures. Whichever was accepted is activated, `/`, `/page/2/`, `/page/3/`, a post, a public
-     page and a 404 are fetched, and the previous theme is restored in a `finally` and re-read to
-     prove it came back.
+     page and a 404 are fetched, and in a `finally` the previous theme is restored and every probe
+     theme the run uploaded is deleted, both read back (record-shim.py's `restore_and_delete`). It
+     refuses to start while a probe theme is active.
   3. Every marker is in `default.hbs` — the layout, where a site-wide section compiles (R-180) and
      the hardest place for `pagination` to reach — and a second pair sits inside `{{#foreach posts}}`,
      which is what the emitter writes for a repeat and the one place the two spellings can differ.
@@ -37,8 +38,8 @@ gscan refuses it:
 
 It writes what a real Ghost served to MEASUREMENTS.md §49 — under its own heading, replacing an
 earlier §49 written by this command so a re-run re-records rather than appending a second one — and
-to nothing else. What it writes to the SERVERS is one or two theme uploads and two activations: no
-content, no setting, no private mode, no custom-template assignment.
+to nothing else. What it writes to the SERVERS is one or two theme uploads, the activations and a DELETE
+of each upload: no content, no setting, no private mode, no custom-template assignment.
 """
 import os, sys, json, time, datetime, importlib.util
 import urllib.error
@@ -209,11 +210,9 @@ def controls_held(rows, root_ok):
 def record(g, themes):
     print(f'\n{"=" * 72}\nGhost {g.major} — {g.url}\n{"=" * 72}')
     version = g.api('GET', 'config/')['config']['version']
-    previous = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
-    if previous is None:
-        raise Void('no active theme reported — refusing to activate the probe with nothing to restore')
+    previous = shim.start_guard(g)
     want = targets(g)
-    rows, root_ok, ghost_said = [], True, {}
+    rows, root_ok, ghost_said, uploaded = [], True, {}, []
     try:
         # GHOST'S OWN VERDICT on the `@root` theme, which is the conclusive half of the finding: gscan
         # is the linter, Ghost is the platform. Three answers are possible and each is recorded — the
@@ -225,6 +224,7 @@ def record(g, themes):
             try:
                 st, res = g._multipart('themes/upload/', [('file', f'inflozo-probe-{label}.zip', 'application/zip', zipped)])
                 name = res['themes'][0]['name']
+                uploaded.append(name)
                 print(f'    [{label}] theme uploaded HTTP {st} -> {name!r} (previous active: {previous!r})')
             except urllib.error.HTTPError as e:
                 detail = ' '.join(e.read()[:600].decode('utf8', 'replace').split())
@@ -258,11 +258,7 @@ def record(g, themes):
             shown = ' · '.join(f'{k}=[{"ABSENT" if v is None else v}]' for k, v in printed.items())
             print(f'    HTTP {got} {path:<34} {shown}')
     finally:
-        g.api('PUT', f'themes/{previous}/activate/')
-        active = next((t['name'] for t in g.api('GET', 'themes/')['themes'] if t.get('active')), None)
-        print(f'    theme RESTORED -> {active!r}')
-        if active != previous:
-            raise Void(f'the previous theme {previous!r} did not come back — {active!r} is active')
+        shim.restore_and_delete(g, previous, uploaded)  # every probe theme this run uploaded, not only the last
     bad = controls_held(rows, root_ok)
     if bad:
         raise Void("A CONTROL FAILED — R-186's guard is not what the story assumes. STOP AND ASK; do not reach "
@@ -290,7 +286,8 @@ def section(recs, gates):
     out = [f'## 49. `{{page_number}}` — the page-1 guard executed on both majors, and why the emitted constant '
            f'spells `pagination` and not `@root` · {today}', '',
            f'**Command.** `{COMMAND}` — one theme upload per server (a second only where the first is refused or '
-           'never served) and two activations, the previous theme restored in a `finally` and re-read to prove it; '
+           'never served) and two activations, the previous theme restored and the probe themes deleted in a `finally`, '
+           'both read back; '
            'no content, no setting and no key written.', '',
            "**Why.** Story 5.16a emits ONE constant Handlebars expression into user text (AD-5's first deliberate "
            "exception), guarded so page 1 prints nothing (R-186). The guard — `#if` on `pagination.prev` — was read in "
@@ -375,7 +372,7 @@ if __name__ == '__main__':
         for M in ('5', '6'):
             g = shim.Ghost(env[f'GHOST{M}_URL'], env[f'GHOST{M}_STAFF_ACCESS_TOKEN'], M, env[f'GHOST{M}_CONTENT_API_KEY'])
             recs.append(record(g, themes))
-    except (Void, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError) as e:
+    except (Void, RuntimeError, urllib.error.HTTPError, urllib.error.URLError, OSError, KeyError) as e:
         detail = e.read()[:400].decode('utf8', 'replace') if isinstance(e, urllib.error.HTTPError) else ''
         print(f'\n  ** RUN VOID — nothing written. {type(e).__name__}: {e} {detail}')
         sys.exit(1)

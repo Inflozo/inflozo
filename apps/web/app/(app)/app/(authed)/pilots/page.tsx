@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { orbitWeekly } from '@inflozo/library'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
-import { pilotRows, pilots } from '@/lib/pilots'
+import { carriesMemberVisibility, pilotRows, pilots } from '@/lib/pilots'
 import { Review } from './review'
 
 /* ────────────────────────────────────────────────────────────────── the pilots review
@@ -28,6 +28,9 @@ export default function PilotsReview() {
     <Review
       entries={entries}
       rows={Object.fromEntries(entries.map((e) => [e.id, pilotRows(e)]))}
+      // DW-171: Show to on exactly the designs the editor draws it for — R-124's row, read off R-113's register here,
+      // because `lib/pilots.ts` reads the disk and `review.tsx` is a client component; the render matrix reads the same rule
+      memberVisibility={Object.fromEntries(entries.map((e) => [e.id, carriesMemberVisibility(e.id)]))}
       // Story 5.6: per mode, because this page HAS a mode toggle — drawn from `light` alone the Background-role dots
       // said the light ground was in force while the canvas beside them was painted dark
       swatches={{ light: referenceSwatches('light'), dark: referenceSwatches('dark') }}

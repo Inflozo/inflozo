@@ -85,7 +85,6 @@ const hostReadingCalls = [
   'toLocaleDateString',
   'toLocaleTimeString',
   'getTimezoneOffset',
-  'toString',
   'getHours',
 ]
 
@@ -110,6 +109,9 @@ export default [
   {
     files: CORE,
     ignores: NOT_CORE,
+    // DW-4 (Story 5.24c): no comment can switch a ban below off. `/* eslint-disable no-restricted-syntax */` written for one
+    // call silenced every locale and clock ban beside it (executed, `.localeCompare()`); a core package has no directive.
+    linterOptions: { noInlineConfig: true },
     rules: {
       'no-restricted-imports': ['error', { patterns: bannedImports }],
       // `globalThis` is banned outright because it is the one-word way around every entry
@@ -149,6 +151,12 @@ export default [
           selector: `CallExpression > MemberExpression[property.name='${name}']`,
           message: `AD-1: .${name}() substitutes host locale or timezone for an input.`,
         })),
+        {
+          // DW-4 (Story 5.24c): AD-1 bans a Date's `.toString()`, and a selector cannot see the receiver's type — so it
+          // refuses the one form a Date has, the call with NO argument. `n.toString(16)` and `n.toString(2)` read no host.
+          selector: "CallExpression[arguments.length=0] > MemberExpression.callee[property.name='toString']",
+          message: 'AD-1: .toString() with no argument is how a Date prints the host timezone. Format from the input; a number\'s radix form (.toString(16)) is allowed.',
+        },
       ],
     },
   },

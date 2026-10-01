@@ -253,6 +253,8 @@ FR-H7's third axis. A field or helper added after the connected site's version *
 
 **Removed at 6.0:** AMP entirely (`amp` context, `@site.amp`, `meta.ampUrl`), and extension-less theme-root files are no longer served. Neither is offerable on any target.
 
+**Raw code — never offer:** `@site.codeinjection_head` and `@site.codeinjection_foot`. Each holds the site's own markup and script, never words; NFR-3 keeps `codeinjection_*` out of the canvas, so a design printing one would show nothing in the editor and the code as text on the site, breaking FR-H5's canvas–site agreement. *(Story 5.24c, DW-129.)*
+
 **Undocumented — never offer:** `@labs`, `@setting`, `@site.transistor_portal_*`, `@config.image_sizes` (real, but undocumented), and these ten other undocumented `@site` allowlist keys (`lang`, `members_signup_access`, `portal_default_plan`, `outbound_link_tagging`, `firstpromoter_account`, `default_email_address`, `support_email_address`, `editor_default_email_recipients`, `labs`, `site_uuid`).
 
 ---
