@@ -4832,7 +4832,8 @@ resolution: Story 5.24d's Dev (2026-10-01): the cause was LOAD ORDER, not a seco
   probes; with style-pack's import reverted to `zod` it counts 1 and ESLint fails `no-restricted-imports`. On production
   before the push Projects reported 3 `script-src eval` refusals from zod's chunk on a throwaway account's three loads
   (2026-10-01, 10:11 UTC). The deployed walk's four CSP reads (steps 5, 70, 14, 97) no longer leave Projects out, so
-  after the deploy the walk itself says whether `/` is clean (DW-201, the same change).
+  after the deploy the walk itself says whether `/` is clean (DW-201, the same change). The same throwaway-account load
+  of Projects after the Dev push `5f78f6d8` deployed: 0 refusals.
 severity: low
 origin: Story 5.1's Dev run (2026-09-17) — `tools/probe/run-verify-editor.cjs` against a local production build: a
   `script-src` `eval` violation from zod's core chunk on `/` (Projects) at every load, and the same on the editor until
@@ -6591,7 +6592,7 @@ plain: The automatic checks that run on every push include a keyboard walk that 
   does. Starting it fetches the site's three typefaces from Google's font service, and when that service answers
   oddly for a minute the walk cannot start and the whole push is marked red — nothing is published — although the code
   is fine. Pushing again fixes it. It happened once on 2026-09-24 and cost one deploy.
-status: open
+status: done 2026-10-01 (Story 5.24d)
 severity: low
 origin: Story 5.17's review commit `17490278` (2026-09-24, 06:03Z): CI's `check` job failed at `pnpm keyboard` with
   Turbopack's `next/font/google queries have exactly one entry` while compiling `app/layout.tsx`'s JetBrains Mono. The
@@ -6618,8 +6619,8 @@ owner: Story 5.24d (The sweep: the checks and the walks), one of the sweep's fiv
   this entry. *(Story 5.24a's Dev, 2026-09-28: was "unowned")*
 location: `apps/web/app/layout.tsx` (the three `next/font/google` calls) · `tools/keyboard/run-keyboard-gate.sh` ·
   `.github/workflows/ci.yml`'s `deploy` (its `vercel build`)
-amended: Story 5.24d's Dev (2026-10-01) — THE CODE LANDED; it closes on the deployed Projects pair. The three faces are the
-  app's own: `apps/web/app/fonts/` holds the 16 files Google serves for today's options (fetched with next's own
+resolution: Story 5.24d's Dev (2026-10-01): the three faces are the app's own, so no build fetches anything from Google.
+  The files: `apps/web/app/fonts/` holds the 16 files Google serves for today's options (fetched with next's own
   User-Agent, each equal by sha256 to HEAD's build output) beside the three OFL licences; `fonts.css` is Google's rules
   word for word with local addresses, next/font's three `… Fallback` faces copied from HEAD's built CSS and the three
   variables on `:root`; `layout.tsx` drops next/font and preloads the three latin files. `tokens.test.ts` holds
@@ -6628,8 +6629,12 @@ amended: Story 5.24d's Dev (2026-10-01) — THE CODE LANDED; it closes on the de
   and sign-in at 1440 and 390, the harness editor at 1440 and 390, an editor hover) byte-identical between production
   harness builds of HEAD and the fix (one re-run: HEAD's own editor-1440 varied 13 pixels between its runs, the fix's
   did not), and red on five with Inter's 600 rewritten as 500; `pnpm build` inside `unshare -rn` fails at HEAD on three
-  fonts.googleapis.com requests and passes fixed. Projects on app.inflozo.com was photographed with a throwaway account
-  at 1440 and 390 before the push; after the deploy the same photograph must be identical.
+  fonts.googleapis.com requests and passes fixed (the main session's re-run: exit 0, `curl` from inside the namespace
+  answering nothing). THE DEPLOYED PAIR: Projects on app.inflozo.com, a throwaway account at 1440 and 390, photographed
+  before the push and after the Dev push `5f78f6d8` deployed (`dpl_BauVQ66Tsn618CDBcQeyfLnw4Krs`, whose `/sign-in`
+  preloads `/_next/static/media/{bricolage-grotesque,inter,jetbrains-mono}-latin.*.woff2` and whose `<html>` carries
+  no next/font class) — byte-identical at both widths. CI on that push (run 36872679951): `check` — `pnpm keyboard`,
+  `pnpm check`, `pnpm build`, `check-traces` — `rls` and `deploy` all green.
 
 ### DW-247: a section that prints your member count would stop drawing while the editor shows your own site
 

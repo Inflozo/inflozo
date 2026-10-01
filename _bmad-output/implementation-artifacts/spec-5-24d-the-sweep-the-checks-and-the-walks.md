@@ -708,6 +708,17 @@ final tree. Keys by variable name only, read into each command's environment fro
   - `python3 tools/doc-audit.py --check`, twice after the story board was regenerated: PASS both times, 0 warnings.
   - The group re-derived (the first command above): `['DW-246']` — open on the deployed Projects pair alone; DW-251 is
     Story 9.1's.
+- **After the Dev push `5f78f6d8`** (`GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name):
+  - CI: `ci.yml` run 36872679951 — `check` (doc gate, `pnpm keyboard`, `pnpm check`, `pnpm build`, and the new
+    `node tools/check-traces.mjs`), `rls` and `deploy` all success; `matrix.yml` success.
+  - Vercel: `dpl_BauVQ66Tsn618CDBcQeyfLnw4Krs` READY on `app.inflozo.com`. `/sign-in` answers 200, its `<html>` carries no
+    next/font class, and it preloads `/_next/static/media/{bricolage-grotesque,inter,jetbrains-mono}-latin.*.woff2`.
+  - **The fonts' deployed pair:** Projects photographed at 1440 and 390 with a throwaway account (users 13 → 13) —
+    byte-identical to the photographs taken before the push. The first attempt died on its magic link's 30 s `goto`; it
+    was no result, and the re-run was clean.
+  - The same Projects load reported 0 securitypolicyviolation events on `/`; before the push, production reported 3,
+    zod's eval probe (DW-174).
+  - DW-246 closes on that pair; the re-derivation now prints `[]`.
 - **Real services touched at Dev (R-82):**
   - Supabase production: every walk's and the connect control's throwaway account (users 13 → 13 each time),
     PostgREST's exposed schemas, and the Management API's `postgrest` setting, read.
