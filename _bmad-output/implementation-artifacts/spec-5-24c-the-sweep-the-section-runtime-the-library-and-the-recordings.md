@@ -887,6 +887,19 @@ recorders' `load_env`, never printed).
 - **`static.ghost.org`:** the seed images — `publication-cover.jpg` and `feature-image.jpg` 200, `writing-posts-with-ghost.png`
   404 (noted beside `seed-ghost.py:76`).
 - **Docker:** the render matrix's pinned image, above.
+**Executed at Review (2026-10-01), on the Review push `a8d5c587`.** The Dev push `9eef8331` had `ci.yml` red at
+`pnpm keyboard` (`check` failure, `deploy` skipped, no Vercel deployment — read through `GITHUB_TOKEN` and `VERCEL_TOKEN`),
+the finding the first Review item fixes. After the fix: `ci.yml` run 36815590500 `check`, `rls` and `deploy` success;
+`matrix.yml` run 36815590501 success; `app.inflozo.com` READY on `a8d5c587`. Then `node tools/probe/run-verify-pilots.cjs`
+on the deployed site (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_*` by variable name): 0 FAIL, 152 PASS — step 10
+(Inline Row's Show to) and step 13 (Latest Post's Show to) among them. T1 and T3 read through `record-shim.py`'s client,
+GETs only: no `inflozo-probe-*` theme on either, `casper` active, every Question 1 field as approved, `is_private` false,
+the recorder's two posts drafts and their tags invisible to the Content API; the negative control, a garbage token on
+`GET admin/themes/`, answered 401 on both. No migration in the diff (`git diff --stat e350c124 HEAD -- supabase/` empty).
+Offline, all exit 0: both package test runs, `check-snapshots` (the paywall row included), `check-baseline`,
+`cases.test.mjs`, both `--self-check`s (the two new shim cases included), `test-vocabulary.mjs` (the R-7 stack check
+included), `pnpm check`, `pnpm keyboard`'s 5.23a journey, the stress gscan 0/0 on both majors, the doc gate twice.
+
 - **Not touched at Dev:** Supabase, Vercel, Resend and Dodo — this story changes no table, route, email or payment, and
   `/pilots` draws what it drew. GitHub Actions (`ci.yml`, `matrix.yml`) and the Vercel deployment run on this push and are
   read at Review, with `node tools/probe/run-verify-pilots.cjs` against `app.inflozo.com`.
