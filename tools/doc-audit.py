@@ -1101,8 +1101,9 @@ DOCS = [
   "the canvas reads (git ls-files: the designs, the controls and paywall fixtures, Orbit Weekly's images and vendored "
   "cards, the reference tokens, the control register, canvas-chrome.css), resolves each route's .nft.json against its "
   "own directory, and exits 1 naming the route and the files it lacks: /canvas, /pilots and both editor pages must carry "
-  "the whole set, /controls and its frame the designs and the controls fixtures. Exits 2 with no build or no git "
-  "listing. Its control is PACKAGES resolved from import.meta.url: the build still passes and every route fails. "
+  "the whole set, /controls and its frame the designs and the controls fixtures, the style-guide's routes Orbit Weekly's "
+  "images and vendored cards and the reference tokens. Exits 2 with no build, or when git lists no file for any one "
+  "path it asks. Its control is PACKAGES resolved from import.meta.url: the build still passes and every route fails. "
   'It stores no count: it prints them.'),
  ('tools/matrix/run-matrix-gate.sh', 'tool', 'The render matrix gate — NFR-6(a) and NFR-5 in one run',
   ("Story 4.11's gate, modelled on supabase/tests/run-rls-gate.sh: builds tools/matrix/Dockerfile (the Playwright image "

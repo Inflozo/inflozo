@@ -472,9 +472,13 @@ def fixture(sb, stamp):
             projects.append(body[0]['id'])
         return user_id, user['email'], projects[0], projects[1]
     except BaseException:
-        status, _, _ = sb.admin('DELETE', f'/admin/users/{user_id}', {})
+        # the DELETE can fail the way the POST did (the network), and the id must be printed all the same
+        try:
+            status = sb.admin('DELETE', f'/admin/users/{user_id}', {})[0]
+        except Exception as d:
+            status = f'{type(d).__name__}: {d}'
         print('    the fixture account was deleted before the error went on' if status in (200, 204) else
-              f'    ** the fixture account {user_id} could NOT be deleted (HTTP {status}) — remove it by hand')
+              f'    ** the fixture account {user_id} could NOT be deleted ({status}) — remove it by hand')
         raise
 
 
@@ -616,6 +620,10 @@ def self_check():
     fake = Fake((201, [{}], '[{}]'))           # a probe bug after the account: the row has no id
     e, said = run(fake)
     assert isinstance(e, KeyError) and fake.calls[-1] == gone, (e, fake.calls)
+    fake = Fake((500, {'code': 'x'}, 'refused'))   # the DELETE fails too (the network): the id is still printed
+    fake.admin = lambda method, path, body=None: (_ for _ in ()).throw(OSError('down')) if method == 'DELETE' else (200, {'id': 'u-1', 'email': 'e@x'}, '')
+    e, said = run(fake)
+    assert isinstance(e, Void) and 'u-1 could NOT be deleted (OSError: down)' in said, (e, said)
     fake = Fake((201, [{'id': 'p'}], ''))      # THE CONTROL: nothing failed, so nothing is deleted
     e, said = run(fake)
     assert e == ('u-1', 'e@x', 'p', 'p') and gone not in fake.calls, (e, fake.calls)

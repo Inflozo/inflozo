@@ -2681,6 +2681,9 @@ view (**R-217**);
 a capped list's header keeping its range (**R-218**)
 **And** the editor's binding offer on an unlinked project is decided — today `offerBindings` reads "no version" as the
 oldest Ghost and withholds every helper that arrived after 5.0 (DW-300, Story 5.24c's review)
+**And** the two checks Story 5.24d's review found missing are built: the schemas the data API exposes are read by an
+automatic gate, not only by hand (DW-302), and the connect wizard connecting under `next dev` is held by a keyboard-gate
+stop (DW-303)
 **And** every touched surface matches its frame, with zero axe violations at 1440, 834 and 390
 **And** the owner tests it on the deployed site (R-80), and `pnpm check`, `pnpm keyboard` and the deployed walks pass.
 

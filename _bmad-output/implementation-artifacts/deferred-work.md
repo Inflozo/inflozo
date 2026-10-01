@@ -7510,7 +7510,13 @@ resolution: Story 5.24d's Dev (2026-10-01): no walk waits for a quiet network. T
   (`page.goto: Timeout 30000ms exceeded … waiting until "networkidle"`), and the new ones pass whole — controls 0 FAIL /
   115 PASS, pilots 0 FAIL / 152 PASS; `land()` against `networkidle` on `/sign-in`: 586 ms with the passkey button
   drawn, against a TimeoutError at 30 s. The passkeys walk itself flips production's passkeys flag, so it runs whole at
-  Verification.
+  Verification. **Review (2026-10-01):** it ran whole on the deployed build, all steps passed. Two corrections. "No walk
+  waits for a quiet network" is true of the five deployed walks; `run-verify-ghost-admin.py`'s `ownership` step keeps
+  one `waitForLoadState('networkidle').catch(() => {})` on purpose — it is swallowed, so it cannot kill the run, and it
+  is the only thing between a forged form post and the read that proves nothing was written. And `networkidle` had been
+  hiding a wait the controls walk never had: its landmark was the sample's markup, the runtime sets the picture's address
+  after the frame loads, and step 2 read "canvas range 0px" one clean run in three; the landmark is now the picture
+  loaded (red every time with the picture held 3 s, green fixed).
 severity: low
 origin: Story 5.23's Dev (2026-09-27), the walk against `9263b6e3`. Run 1 was a HARNESS ERROR, `page.reload: Timeout
   30000ms exceeded` at `run-verify-controls.cjs:472` (step 18's reload), with 0 FAIL and 85 PASS before it. Run 2 was
@@ -7878,3 +7884,38 @@ location: `tools/probe/record-cards.py` `api_defaults`
 reason: a recorder run writes to T1 and T3 and needs the owner's in-session go (R-82), so the review built no check it
   could not run; the fix is one assertion per owned row, voiding the run with the row named.
 
+
+## Deferred from: code review of spec-5-24d (2026-10-01)
+
+### DW-302: no automatic check holds "the private schema is not reachable over the data API"
+
+plain: The rule that keeps your customers' Ghost keys out of reach of the public data address is now really checked —
+  but only when someone runs the check by hand. The automatic checks that guard every push do not run it, so if that
+  setting were ever changed in Supabase's dashboard, nothing would stop the next publish.
+status: open
+severity: medium
+origin: Story 5.24d's review (2026-10-01), Blind Hunter, Edge Case Hunter and Verification Gap: DW-294 moved the
+  assertion out of `RLS-TEST.sql` (which printed PASS while checking nothing) into `run-verify-ghost-admin.py --check`'s
+  `schemas-off-rest`, and the SQL block now says "NOT ASSERTED HERE". Neither `ci.yml` nor `pnpm test` runs `--check`.
+owner: Story 5.24e (The sweep: the editor), whose card names this entry.
+location: `.github/workflows/ci.yml` `rls`; `tools/probe/run-verify-ghost-admin.py` `schemas-off-rest`
+reason: the read needs `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in GitHub Actions, which holds only Vercel's
+  secrets today — adding one is the owner's action in GitHub's settings, so the review could not wire it. The step is
+  three GETs of a table that does not exist; it wants its own small script the `rls` job can call. Before this story no
+  gate asserted it either, so nothing regressed.
+
+### DW-303: nothing automatic would notice the connect wizard sticking on "Connecting…" under `next dev` again
+
+plain: The fault that stopped a site being connected on a developer's own machine is fixed, but it was proved by a
+  one-off hand run. If the same line were changed back, every automatic check would stay green. Customers are not
+  affected: the live site never had the fault.
+status: open
+severity: low
+origin: Story 5.24d's review (2026-10-01), Blind Hunter and Verification Gap: DW-295's control was a hand run of
+  `run-verify-ghost-admin.py --only brand-none` against `next dev`; no test mounts the wizard under StrictMode. The
+  keyboard gate runs under `next dev` but has no route that draws the wizard without a database.
+owner: Story 5.24e (The sweep: the editor), whose card names this entry.
+location: `apps/web/app/(app)/app/(authed)/sites/connect-wizard.tsx` (the `alive` effect)
+reason: a keyboard-gate stop needs a harness mount of the wizard with its browser check answered by `page.route` —
+  a new harness page, more than a review patch. The rule it would hold is general: a ref cleared in an effect's cleanup
+  must be set in the effect's body.

@@ -227,7 +227,8 @@ test('every face the theme names is declared in app/fonts/fonts.css, every file 
   const files = [...fonts.matchAll(/url\(([^)]+)\)/g)].map((m) => (m[1] as string).replace(/^['"]|['"]$/g, ''))
   assert.ok(files.length > 0, 'fonts.css names no file')
   for (const file of files) assert.ok(existsSync(join(FONTS, file)), `fonts.css names ${file}, which is not in app/fonts/`)
-  for (const source of sources()) assert.doesNotMatch(readFileSync(source, 'utf8'), /from ['"]next\/font/, `${source} imports next/font — the faces are the app's own (DW-246)`)
+  assert.match(readFileSync(join(process.cwd(), 'app', 'layout.tsx'), 'utf8'), /import '\.\/fonts\/fonts\.css'/, 'the root layout no longer imports fonts.css — every face would fall back to the system stack')
+  for (const source of sources()) assert.doesNotMatch(readFileSync(source, 'utf8'), /['"]next\/font[/'"]/, `${source} imports next/font — the faces are the app's own (DW-246)`)
 })
 
 test('the app’s three widths are the export’s three widths', () => {

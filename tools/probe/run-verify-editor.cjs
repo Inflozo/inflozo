@@ -389,7 +389,8 @@ async function main() {
      * (DW-204's classification) — and a second failure is the run's HARNESS ERROR, as before.
      * NEVER RETRIED: `/auth/confirm?…` (single-use) and `goBack` (a timed-out history move may already have moved, and
      * a second one goes back twice — `ERR_ABORTED`, executed at Story 5.3). */
-    const stall = (method, url, started) => note('stall', `${started} ${method} ${new URL(url, APP).pathname} — retried once`)
+    // the error's first line rides with it, so a timeout is told from a refused connection when the notes are classified
+    const stall = (method, url, started, e) => note('stall', `${started} ${method} ${new URL(url, APP).pathname} — retried once (${String(e?.message ?? e).split('\n')[0].replace(/\?[^\s"]*/g, '?…').slice(0, 120)})`)
     const steady = (p) => {
       const go = p.goto.bind(p)
       p.goto = async (url, o) => {
@@ -397,8 +398,8 @@ async function main() {
         const started = new Date().toISOString()
         try {
           return await go(url, o)
-        } catch {
-          stall('GET', url, started)
+        } catch (e) {
+          stall('GET', url, started, e)
           return go(url, o)
         }
       }
@@ -408,8 +409,10 @@ async function main() {
         const started = new Date().toISOString()
         try {
           return await reload(o)
-        } catch {
-          stall('GET', url, started)
+        } catch (e) {
+          // through `p.goto`, so a page still standing on its single-use link is never asked for it twice
+          if (/\/auth\/confirm\?/.test(url)) throw e
+          stall('GET', url, started, e)
           return go(url, o)
         }
       }
@@ -423,8 +426,8 @@ async function main() {
         const started = new Date().toISOString()
         try {
           return await get(url, o)
-        } catch {
-          stall('GET', url, started)
+        } catch (e) {
+          stall('GET', url, started, e)
           const { timeout: _stalled, ...rest } = o
           return get(url, rest)
         }
@@ -3311,6 +3314,8 @@ async function main() {
        read as one that never landed — failed once each at three stories on unchanged code. A Retrying seen on the way is
        a note, not a failure: the editor said what it was doing, and the save landed. Both numbers are the app's own. */
     const SYNC_WAIT58 = JOURNAL58.SYNC_TIMEOUT_MS + JOURNAL58.BACKOFF_S[0] * 1000 + 5000
+    // a renamed export would make this NaN, and a deadline of NaN never passes
+    if (!Number.isFinite(SYNC_WAIT58)) throw new Error('lib/journal.ts no longer exports SYNC_TIMEOUT_MS and BACKOFF_S as numbers')
     const RETRYING58 = JOURNAL58.labelOf({ kind: 'retrying', attempt: 1, seconds: JOURNAL58.BACKOFF_S[0] })
     const revisionPast58 = async (from) => {
       const by = Date.now() + SYNC_WAIT58
@@ -4533,11 +4538,11 @@ async function main() {
     await page.locator('#editor-source').click()
     await page.waitForTimeout(500)
     await page.locator(`#editor-source-menu [data-subject-row="${otherAuthor513.slug}"]`).click()
-    await actionsSettle(30000)
+    const inFlightAuthor513 = await actionsSettle(30000)
     const authorStored513 = await storedAs513('author', otherAuthor513.slug)
     check('step 89 — DW-219: choosing another writer names it and stores it — the Author row read back',
       (await sourcePill())?.subject === otherAuthor513.title && authorStored513[0]?.preview_subject?.slug === otherAuthor513.slug && authorStored513[0]?.preview_subject?.kind === 'author',
-      JSON.stringify({ want: otherAuthor513.slug, stored: authorStored513 }))
+      JSON.stringify({ want: otherAuthor513.slug, stored: authorStored513, inFlight: inFlightAuthor513 }))
     // Page: one subject — the style-guide page — and the menu holds exactly that row
     await page.goto(editorUrl('page'), { waitUntil: 'load' })
     await painted('page').catch(() => null)
@@ -6222,7 +6227,7 @@ async function main() {
     const settingsAnswers = [await fourOhFour(`${B}/settings`), await fourOhFour(`${require('node:crypto').randomUUID()}/settings`), await fourOhFour('abc/settings')]
     check('step 6 — the same three on /settings answer the SAME real 404, above the settings skeleton', settingsAnswers.every((a) => JSON.stringify(a) === JSON.stringify(answers[0])), JSON.stringify(settingsAnswers))
     check('step 6 — B\'s project, a random uuid and abc answer identical real 404s', answers.every((a) => a.status === 404 && JSON.stringify(a) === JSON.stringify(answers[0])), JSON.stringify(answers))
-    const stranger = await pwRequest.newContext()
+    const stranger = steadyRequests({ request: await pwRequest.newContext() }).request
     // DW-117 (Story 5.24d): every frame route guards itself — a route handler beside its page, outside `(authed)`'s layout
     for (const [label, url, want] of [['/projects/<id>', editorUrl(), 307], ['/canvas', at('/canvas'), 303], ['/controls/frame', at('/controls/frame'), 303], ['/style-guide/frame', at('/style-guide/frame'), 303]]) {
       const r = await stranger.get(url, { maxRedirects: 0 })

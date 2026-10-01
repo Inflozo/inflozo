@@ -49,7 +49,9 @@ const as = async <T>(who: typeof user, run: () => Promise<T>) => {
 }
 
 test('signed out, every frame route answers 303 to /sign-in', async () => {
-  for (const path of Object.keys(FILES)) {
+  // each route's other branches too — a picture, one design, the variation sheet: the guard stands before all of them
+  const asked = [...Object.keys(FILES), '/app/canvas?image=x', '/app/canvas?design=a1%2F1', '/app/controls/frame?image=x', '/app/style-guide/frame?view=variations']
+  for (const path of asked) {
     const answer = await get(path)
     assert.equal(answer.status, 303, `${path} answered ${answer.status} to a stranger`)
     assert.ok(answer.headers.get('location')?.endsWith('/sign-in'), `${path} sent a stranger to ${answer.headers.get('location')}`)

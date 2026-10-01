@@ -79,7 +79,9 @@ const fileOf = fileOfKey
 /** STORY 5.19's SERVER DOOR, ONE FUNCTION (DW-257): every doc the editor is handed leaves through the main-feed rule
  *  (AD-27(d)) — `editorData` below for a stored project, and the keyboard harness for its fixture — so a doc written before
  *  the rule is REPAIRED on its way in, and the harness's Home is designated by the rule itself rather than by a flag of its
- *  own, which is what lets `pnpm keyboard` see this door break. Reading alone writes nothing (AD-22); a doc that already
+ *  own, which is what lets `pnpm keyboard` see this FUNCTION break. That `editorData` still calls it is seen only by the
+ *  deployed editor walk's step 94 (a stored Home with no flag opens repaired) — the harness has no database to read
+ *  through. Reading alone writes nothing (AD-22); a doc that already
  *  satisfies the rule comes back as the same object. HERE, in the server read, and not in `lib/editor.ts`: that module is
  *  the Shell's too, and the runtime it would import more than doubled the client script of every signed-in page (Projects
  *  384,773 → 922,553 bytes, measured on a production build at Story 5.24d's Dev). */

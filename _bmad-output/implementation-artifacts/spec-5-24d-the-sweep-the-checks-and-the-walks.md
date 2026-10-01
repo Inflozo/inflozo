@@ -2,7 +2,7 @@
 title: 'Story 5.24d — The sweep: the checks and the walks'
 type: 'chore'
 created: '2026-10-01'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '03d7393a4228bf29e92556aa151a892f2a1c486b'
@@ -472,6 +472,70 @@ variable font, byte-identical to what HEAD's build ships; only the three latin f
   the Dev push is built, *then* all are green; and the deployed editor, controls, pilots, live-content and passkeys
   walks pass with no `FAIL`.
 
+### Review Findings
+
+*Code review, 2026-10-01 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier on `app.inflozo.com`, Supabase, Vercel, GitHub Actions, T1 and T3), then the clean committed walks on the
+deployed build in the main session. Every patch is applied in the Review commit, each new check seen red on its control.
+No question is the owner's; two findings are deferred to the ledger with a named owner; 22 dismissed as noise or as
+calls the spec already made.*
+
+- [x] [Review][Patch] **The controls walk failed its first clean deployed run** — step 2, "the canvas scrolls inside its
+  own frame — canvas range 0px, bar 0px", 1 FAIL / 114 PASS, then 0 FAIL / 115 PASS twice. `networkidle` had been hiding
+  a wait the walk never had: the runtime sets the sample picture's address after the frame loads, and with `load`
+  (DW-287) step 2 could read the canvas before the picture gave it its height. The landmark at all three loads is now
+  the picture loaded. Control, the picture held 3 s: HEAD's walk red at step 2, a first fix (the frame's `readyState`)
+  still red, this one 0 FAIL / 115 PASS [tools/probe/run-verify-controls.cjs:88]
+- [x] [Review][Patch] **The live-content walk failed its clean deployed run on T3** — "the choice is stored per canvas —
+  null" and, after the reload, "Style-guide article": 2 FAIL / 155 PASS. DW-291's fault in the walk this story did not
+  convert: the subject save is a background server action queued behind the looked-at record, and the walk read the row
+  after a fixed second, then reloaded over it. It now polls the row until it names the choice. Control, the save held
+  5 s on T3 (stopped before any Ghost write): the poll waited 5.9 s and both checks PASS
+  [tools/probe/run-verify-live-content.cjs:569]
+- [x] [Review][Patch] `check-traces.mjs` refused an empty git listing for two of its eight paths only, so a moved file
+  shrank the set and still printed PASS: every path is now asked on its own (control: `canvas-chrome.css` misnamed →
+  REFUSED, exit 2) [tools/check-traces.mjs:31]
+- [x] [Review][Patch] `check-traces.mjs` did not hold the style-guide's routes, whose text test this story deleted: its
+  page, frame and variations are checked for Orbit Weekly's images, vendored cards and the reference tokens — PASS on
+  the build [tools/check-traces.mjs:63]
+- [x] [Review][Patch] `schemas-off-rest`'s control passed on anything but 406 (a 401 or a 500 too) and printed
+  PostgREST's hint without reading it: the exposed pair must answer 404 PGRST205 and the hint must name exactly
+  `public, graphql_public` (controls: PGRST000 wanted → FAIL; `public` alone expected → FAIL)
+  [tools/probe/run-verify-ghost-admin.py:5135]
+- [x] [Review][Patch] `record-edit-lock.py`'s clean-up DELETE could raise the way the POST had, and the account's id was
+  then never printed — the leak DW-245 set out to close: caught and printed, with a self-check row (red with the guard
+  removed) [tools/probe/record-edit-lock.py:474]
+- [x] [Review][Patch] `record-cards.py` could create a missing owned tag and then void on the next one's name: every
+  name is checked before anything is created [tools/probe/record-cards.py:347]
+- [x] [Review][Patch] The editor walk's `reload` retry went round the single-use-link exclusion (a page still standing
+  on `/auth/confirm?` would have been asked for its link twice): it rethrows there [tools/probe/run-verify-editor.cjs:407]
+- [x] [Review][Patch] A `stall` note dropped the error, so a timeout could not be told from a refused connection when
+  DW-204's notes are classified: its first line rides with the note, any query string cut
+  [tools/probe/run-verify-editor.cjs:392]
+- [x] [Review][Patch] The signed-out loop — grown from two GETs to four by this story — was the one request context left
+  without the retry [tools/probe/run-verify-editor.cjs:6230]
+- [x] [Review][Patch] 66b's deadline is built from two of the app's exports; a renamed one made it NaN and the wait
+  endless: it throws instead. Step 89's Author read-back now names what was still in flight
+  [tools/probe/run-verify-editor.cjs:3313]
+- [x] [Review][Patch] `frame-guard.test.ts` asked each route signed out on its bare address only; the deleted text tests
+  had held the guard ahead of the picture branch: `?image=`, `?design=` and `?view=variations` are asked too
+  [apps/web/frame-guard.test.ts:51]
+- [x] [Review][Patch] `tokens.test.ts` did not hold the layout's import of `fonts.css` (removed, every face falls back
+  and the test passed), and saw `next/font` only after `from`: both held [apps/web/tokens.test.ts:228]
+- [x] [Review][Patch] The live walk's simulated total threw on an answer that was no list (a 401, a 429): it passes
+  through as Ghost sent it [tools/probe/run-verify-live-content.cjs:1322]
+- [x] [Review][Patch] `designateAll`'s comment claimed `pnpm keyboard` sees the server door break; it sees the function,
+  and `editorData`'s call is seen only by the deployed walk's step 94 — the comment says so
+  [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/read.ts:81]
+- [x] [Review][Patch] DW-287's resolution said no walk waits for a quiet network: one swallowed `networkidle` stays in
+  `run-verify-ghost-admin.py`'s `ownership` step on purpose, and the resolution now says so and records the controls
+  walk's race [_bmad-output/implementation-artifacts/deferred-work.md DW-287]
+- [x] [Review][Defer] No automatic gate holds "the `private` schema is not exposed" — `schemas-off-rest` is hand-run and
+  CI has no Supabase key [.github/workflows/ci.yml] — deferred, pre-existing (the SQL block never asserted it): DW-302,
+  Story 5.24e
+- [x] [Review][Defer] DW-295's fix has no automated check; its control was a hand run under `next dev`
+  [apps/web/app/(app)/app/(authed)/sites/connect-wizard.tsx:137] — deferred, pre-existing: DW-303, Story 5.24e
+
 ## Spec Change Log
 
 - **2026-10-01 (Dev) — `designateAll` lives in `(editor)/read.ts`, not `lib/editor.ts`.** The Shell imports
@@ -729,3 +793,37 @@ final tree. Keys by variable name only, read into each command's environment fro
   - `static.ghost.org` and Google Fonts: read only.
   - Not touched: Resend and Dodo — this story changes no email and no payment. GitHub Actions and the Vercel deployment
     run on the Dev push, and the Review reads them with the deployed walks.
+
+**Executed at Review (2026-10-01), in the main session** — the clean committed walks on the deployed build
+(`dpl_9vw7p3MpzSfwtccMq92jNivk6cRK`, READY, built from `2c37d986`, read through `VERCEL_TOKEN`), run one at a time
+before any patch touched the tree. Keys by variable name only.
+
+- **The owner's go**, asked in this session before the live-content walk: option 1, "Yes, short writes" — so `NO_429=1`.
+- **CI on `2c37d986`** (`GITHUB_TOKEN`): `ci.yml` run 36874347970 — `check` (with `node tools/check-traces.mjs` among its
+  steps), `rls` and `deploy` success; `matrix.yml` run 36874347850 success.
+- **`node tools/probe/run-verify-editor.cjs`:** 0 FAIL, 674 PASS, users 13 → 13. Three `stall` notes, each retried once
+  and the walk went on (`GET /projects/<id>` at 17:04:56Z, 17:10:46Z and 17:11:57Z). In Vercel's request rows
+  (`npx vercel@latest logs … --json`) none has a row for its first attempt and each retry answered 200 about 45 s later —
+  never reached Vercel, as DW-204's resolution found.
+- **`node tools/probe/run-verify-pilots.cjs`:** 0 FAIL, 152 PASS.
+- **`python3 tools/probe/run-verify-passkeys.py`:** exit 0, "all steps passed", no FAIL line; the passkeys flag put back
+  to True and read back, users 13 after.
+- **`node tools/probe/run-verify-controls.cjs`:** run 1 — 1 FAIL, 114 PASS (step 2, the first Review item); runs 2 and
+  3 — 0 FAIL, 115 PASS. Planted with the picture held 3 s: HEAD's walk red at step 2; the fixed walk 0 FAIL, 115 PASS
+  (its first planted run died on a 30 s `page.reload` and was no result).
+- **`NO_429=1 node tools/probe/run-verify-live-content.cjs`:** 2 FAIL, 155 PASS — both on T3's subject read-back (the
+  second Review item); the capped lines and their control PASS; T3's Subscription access and T1's Portal button and bar
+  put back and read back. The fix's control ran as a LOCAL RUN on T3 that stops before any Ghost write: the save held
+  5 s, the poll waited, both checks PASS, the fixture account deleted. A first plant that routed every request aborted
+  the editor's lock beats — a broken control, discarded.
+- **The Real-infra verifier, read-only:** signed out, `/canvas`, `/controls/frame` and `/style-guide/frame` each 303 to
+  `/sign-in` (`/sign-in` 200 the control); `<html>` carries no class, the three latin files preloaded through the `Link`
+  header, the deployed CSS's 39 `@font-face` rules over 16 files each 200 `font/woff2`, no Google address in the page or
+  the CSS, and no `font-src` (so `default-src 'self'`); `run-verify-ghost-admin.py --check` all steps passed —
+  `private`, `storage`, `vault` 406 PGRST106, `public` and `graphql_public` 404 PGRST205, and the Management API's
+  `db_schema` `public,graphql_public` (a made-up token 401, the negative control); `seed-ghost.py --check` three 200s;
+  T3's actions log names the owner for DW-299's three changes to the minute, and the recorder's four owned rows match
+  the design on both majors (GETs only; a made-up key 401). No migration in the diff, so R-99 has nothing to compare.
+- **The gates on the Review tree:** `pnpm check` exit 0; `node tools/check-traces.mjs` PASS on every route, the
+  style-guide's among them; both recorders' `--self-check` exit 0; `python3 tools/doc-audit.py --check` twice.
+- **Owed after the Review push:** the two repaired walks, clean, on the build that push deploys.

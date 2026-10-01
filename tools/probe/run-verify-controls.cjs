@@ -87,10 +87,16 @@ async function main() {
     await page.goto(`${APP}/controls`, { waitUntil: 'load' })
     const iframe = page.locator('iframe[title="The controls sample section"]')
     const frame = () => page.frames().find((f) => f.url().includes('/controls/frame')) || null
-    await page.waitForFunction(() => {
-      const f = document.querySelector('iframe[title="The controls sample section"]')
-      return !!f?.contentDocument?.querySelector('.cx__feature .cx__icon svg')
+    // …and the landmark is the sample DRAWN, its picture in: the runtime sets the picture's address after the frame has
+    // loaded, so with `networkidle` gone step 2 read the canvas the moment its markup existed and, one run in three on
+    // production, before the picture had given it its height ("canvas range 0px, bar 0px" — Story 5.24d's review, the
+    // clean deployed walk; red every time with the picture held 3 s, and with the frame's `readyState` as the landmark too)
+    const sampleDrawn = () => page.waitForFunction(() => {
+      const d = document.querySelector('iframe[title="The controls sample section"]')?.contentDocument
+      const picture = d?.querySelector('.cx__picture')
+      return !!d?.querySelector('.cx__feature .cx__icon svg') && !!picture && picture.complete && picture.naturalWidth > 0
     }, null, { timeout: 30000 })
+    await sampleDrawn()
     const aside = page.locator('aside#section-controls')
     const canvas = async () => page.evaluate(() => {
       const d = document.querySelector('iframe[title="The controls sample section"]').contentDocument
@@ -475,7 +481,7 @@ async function main() {
 
     // ── step 18
     await page.reload({ waitUntil: 'load' })
-    await page.waitForFunction(() => !!document.querySelector('iframe[title="The controls sample section"]')?.contentDocument?.querySelector('.cx__feature .cx__icon svg'), null, { timeout: 30000 })
+    await sampleDrawn()
     c = await canvas()
     check('step 18 — reload brings everything back to the sample', c.attrs['data-columns'] === '3' && c.features.length === 3 && c.date === '2026-10-01' && c.posts.length === 3 && c.features[0].title === 'Seven links', JSON.stringify({ columns: c.attrs['data-columns'], features: c.features.map((f) => f.title), date: c.date, posts: c.posts.length }))
 
@@ -516,7 +522,7 @@ async function main() {
        fixture designs of `packages/library/fixtures/controls/`, which is the only ring in the repository — so
        this is where carry / park / default is proved on production, and the owner's own steps 6–12 are these. */
     await page.reload({ waitUntil: 'load' })
-    await page.waitForFunction(() => !!document.querySelector('iframe[title="The controls sample section"]')?.contentDocument?.querySelector('.cx__feature .cx__icon svg'), null, { timeout: 30000 })
+    await sampleDrawn()
     const rootClass = () => page.evaluate(() => document.querySelector('iframe[title="The controls sample section"]').contentDocument.querySelector('#canvas > section')?.className ?? null)
     /** The heading, WHICHEVER design is drawing it: `canvas()` reads `.cx__title`, which is design 1's own class,
      *  and the whole point of the walk below is that the words survive a design that names them differently. */

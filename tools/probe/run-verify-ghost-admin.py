@@ -37,8 +37,8 @@ list gone stale — the sibling harness's own note):
   schemas-off-rest STORY 5.24d (DW-294), printed in both modes: the schemas PostgREST exposes,
                  read over the wire because hosted Supabase keeps them outside the database
                  (RLS-TEST.sql cannot see them): `Accept-Profile` `private`, `storage` and
-                 `vault` with the publishable key -> 406 PGRST106 each, its hint printed;
-                 `public` and `graphql_public` not 406, the control (MEASUREMENTS §60)
+                 `vault` with the publishable key -> 406 PGRST106 each, the hint naming exactly
+                 `public, graphql_public`; those two 404 PGRST205, the control (MEASUREMENTS §60)
   settings-keys  STORY 3.3, printed in both modes: the six settings keys the probes read are
                  really in the INTEGRATION key's own `GET /admin/settings/` payload on both
                  majors — `portal_button`, the two `codeinjection_*` and the three
@@ -5131,8 +5131,10 @@ def main():
     # ── DW-294 (Story 5.24d): WHICH SCHEMAS POSTGREST EXPOSES, read where hosted Supabase keeps them — over the wire.
     #    RLS-TEST.sql sees only a database-level `pgrst.db_schemas`, unset on production and in the gate's container;
     #    and vault-off-rest sends no Accept-Profile, so it only ever asked `public`. A schema PostgREST does not expose
-    #    answers 406 PGRST106 before any table is looked up, its hint naming the ones it does; the two it exposes answer
-    #    anything else — the control. The table does not exist, so no row is read either way (MEASUREMENTS §60).
+    #    answers 406 PGRST106 before any table is looked up, its hint naming the ones it does; the two it exposes get as
+    #    far as the table and answer 404 PGRST205 — the control, held to that answer (the review: "anything but 406"
+    #    passed a 401 or a 500 too). The hint must name those two and no third, so a schema nobody thought to list here
+    #    is seen as well. The table does not exist, so no row is read either way (MEASUREMENTS §60).
     unexposed, exposed = ('private', 'storage', 'vault'), ('public', 'graphql_public')
     profiles = {}
     for schema in unexposed + exposed:
@@ -5140,13 +5142,16 @@ def main():
                                       env['SUPABASE_PUBLISHABLE_KEY'], extra={'Accept-Profile': schema})
         profiles[schema] = (st, body if isinstance(body, dict) else {})
     wrong = ([s for s in unexposed if (profiles[s][0], profiles[s][1].get('code')) != (406, 'PGRST106')]
-             + [s for s in exposed if profiles[s][0] in (0, 406)])
-    failed = failed or bool(wrong)
+             + [s for s in exposed if (profiles[s][0], profiles[s][1].get('code')) != (404, 'PGRST205')])
     hints = sorted({b['hint'] for _, b in profiles.values() if b.get('hint')})
+    named = {tuple(x.strip() for x in h.split(':', 1)[-1].split(',')) for s in unexposed if (h := profiles[s][1].get('hint'))}
+    if named != {exposed}:
+        wrong.append(f'the hint names {sorted(named)}, not exactly {", ".join(exposed)}')
+    failed = failed or bool(wrong)
     print(f'  {"PASS" if not wrong else "FAIL"}  schemas-off-rest: GET /rest/v1/inflozo_no_such_table with '
           f'SUPABASE_PUBLISHABLE_KEY, Accept-Profile -> '
           + ', '.join(f'{s} {st} {b.get("code")}' for s, (st, b) in profiles.items())
-          + f' (406 PGRST106 wanted for {", ".join(unexposed)}; not 406 for {", ".join(exposed)}); '
+          + f' (406 PGRST106 wanted for {", ".join(unexposed)}; 404 PGRST205 for {", ".join(exposed)}); '
           f'PostgREST\'s hint: {" | ".join(hints) or "none"}'
           + (f'; WRONG: {", ".join(wrong)}' if wrong else ''))
 

@@ -344,13 +344,15 @@ def publish_owned(g, docs):
     post's published_at and first tag in Ghost's own answer to the write — after `docs.append`, so it is still drafted.
     A mismatch is a Void naming the slug. Admin answers carry `tags` (`defaultRelations`, serializers/input/posts.js,
     5.130.6 and 6.58.0) and `.000Z` dates, exactly OWNED_POSTS' strings (both majors, read 2026-10-01)."""
-    tags = {}
+    found = {slug: by_slug(g, 'tags', slug) for slug, _ in OWNED_TAGS}
+    # every name is checked before a missing tag is created, so a void has written nothing
     for slug, name in OWNED_TAGS:
-        tag = by_slug(g, 'tags', slug)
+        tag = found[slug]
         if tag and tag.get('name') != name:
             raise Void(f'Ghost {g.major}: the owned tag {slug} is named {tag.get("name")!r}, not {name!r} — changed by '
                        f'hand; put it back before re-running, or the default order is read against the wrong name')
-        tags[slug] = tag or g.api('POST', 'tags/', {'tags': [{'name': name, 'slug': slug}]})['tags'][0]
+    tags = {slug: found[slug] or g.api('POST', 'tags/', {'tags': [{'name': name, 'slug': slug}]})['tags'][0]
+            for slug, name in OWNED_TAGS}
     posts = []
     lex = lexical([{'node': {'children': [{'detail': 0, 'format': 0, 'mode': 'normal', 'style': '', 'text': OWNED_BODY,
                                            'type': 'extended-text', 'version': 1}],

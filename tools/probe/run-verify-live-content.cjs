@@ -566,8 +566,16 @@ async function main() {
       check(`${tag} — choosing "${pictured.title}" renders it (DW-230: the header marks no Home on a post's own address)`,
         postWords.includes(pictured.title) && navCurrent.length === 0 && (await pill()).subject === pictured.title,
         JSON.stringify({ navCurrent, subject: (await pill()).subject, said: await said() }))
-      await page.waitForTimeout(1000)
-      const prefs = await rest(`/project_template_prefs?project_id=eq.${P[m]}&template_key=eq.post&select=preview_subject`)
+      // THE SAVE IS A SERVER ACTION SENT IN THE BACKGROUND, and a second was not always enough for it on production: the
+      // row read `null`, and the reload below then left before it landed, so the Post canvas came back on the
+      // style-guide article (Story 5.24d's review, the clean deployed walk on T3 — DW-291's fault, in this walk). So the
+      // row is polled until it names the choice; the check still fails on a save that never lands.
+      let prefs
+      for (const by = Date.now() + 30000; ;) {
+        prefs = await rest(`/project_template_prefs?project_id=eq.${P[m]}&template_key=eq.post&select=preview_subject`)
+        if (prefs.body?.[0]?.preview_subject?.slug === pictured.slug || Date.now() > by) break
+        await page.waitForTimeout(250)
+      }
       check(`${tag} — the choice is stored per canvas with the site's mark — a subject is only ever "gone" from its own source`,
         prefs.body?.[0]?.preview_subject?.source === 'site' && prefs.body?.[0]?.preview_subject?.slug === pictured.slug, JSON.stringify(prefs.body?.[0]?.preview_subject))
       // review (2026-09-24): the mark survives `read.ts`'s round trip — a RELOAD of the Post canvas still previews the
@@ -1320,7 +1328,9 @@ async function main() {
       const isList = (url) => url.href.startsWith(`${g.origin}/ghost/api/content/posts/`) && url.searchParams.get('limit') === String(LIVE.LIST_LIMIT) && !url.searchParams.has('filter')
       const raised = async (route) => {
         const response = await route.fetch()
-        const json = await response.json()
+        // an answer that is no list (a 401, a 429, an error page) goes through as Ghost sent it
+        const json = await response.json().catch(() => null)
+        if (!json?.meta?.pagination) return route.fulfill({ response })
         json.meta.pagination.total = LIVE.LIST_LIMIT + 1
         return route.fulfill({ response, json })
       }

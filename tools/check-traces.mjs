@@ -12,7 +12,9 @@
 //
 // WHAT EACH ROUTE MUST CARRY is read from git, never listed (standing rule 4): every tracked file under the directories
 // the canvas document and the editor read. The canvas route, `/pilots` and both editor pages draw the canvas and carry the
-// whole set; `/controls` and its frame read the designs and the controls fixtures.
+// whole set; `/controls` and its frame read the designs and the controls fixtures; the style-guide's three routes read
+// Orbit Weekly's pictures and vendored cards and the reference tokens (Story 5.24d's review: their text test went with
+// the inert lists, and nothing had replaced it).
 //
 // CI runs it straight after `check`'s `pnpm build` (`.github/workflows/ci.yml`); `deploy`'s `vercel build` only ever adds
 // files, so a trace this passes is the least the deployment ships.
@@ -28,27 +30,31 @@ const AUTHED = join(REPO, 'apps/web/.next/server/app/(app)/app/(authed)')
 const tracked = (...paths) =>
   execFileSync('git', ['ls-files', '-z', '--', ...paths], { cwd: REPO, encoding: 'utf8' }).split('\0').filter(Boolean)
 
-const designs = tracked('packages/library/designs')
-const controls = tracked('packages/library/fixtures/controls')
+// a set git cannot find is a broken check, never a pass — asked path by path, so a moved file cannot shrink a set unseen
+const set = (...paths) =>
+  paths.flatMap((path) => {
+    const files = tracked(path)
+    if (files.length === 0) {
+      console.error(`REFUSED: git lists no file for ${path} — moved, or this is not a checkout of the repository`)
+      process.exit(2)
+    }
+    return files
+  })
+
+const designs = set('packages/library/designs')
+const controls = set('packages/library/fixtures/controls')
+// what `lib/style-guide.ts` reads for its own three routes
+const styleGuide = set(
+  'packages/library/orbit-weekly/images',
+  'packages/library/orbit-weekly/vendor',
+  'packages/section-runtime/reference-tokens.css',
+)
 const canvas = [
   ...designs,
   ...controls,
-  ...tracked(
-    'packages/library/orbit-weekly/images',
-    'packages/library/orbit-weekly/vendor',
-    'packages/section-runtime/reference-tokens.css',
-    'packages/library/control-groups.json',
-    'packages/library/fixtures/paywall',
-    'apps/web/lib/canvas-chrome.css',
-  ),
+  ...styleGuide,
+  ...set('packages/library/control-groups.json', 'packages/library/fixtures/paywall', 'apps/web/lib/canvas-chrome.css'),
 ]
-// a set git cannot find is a broken check, never a pass
-for (const [name, set] of [['the designs', designs], ['the controls fixtures', controls]]) {
-  if (set.length === 0) {
-    console.error(`REFUSED: git lists no file for ${name} — run this from a checkout of the repository`)
-    process.exit(2)
-  }
-}
 
 const ROUTES = [
   ['/canvas', 'canvas/route.js.nft.json', canvas],
@@ -57,6 +63,9 @@ const ROUTES = [
   ['the editor (every other canvas)', 'projects/[id]/(editor)/[template]/page.js.nft.json', canvas],
   ['/controls', 'controls/page.js.nft.json', [...designs, ...controls]],
   ['/controls/frame', 'controls/frame/route.js.nft.json', [...designs, ...controls]],
+  ['/style-guide', 'style-guide/page.js.nft.json', styleGuide],
+  ['/style-guide/frame', 'style-guide/frame/route.js.nft.json', styleGuide],
+  ['/style-guide/variations', 'style-guide/variations/page.js.nft.json', styleGuide],
 ]
 
 let failed = 0
