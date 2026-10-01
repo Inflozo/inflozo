@@ -2,7 +2,7 @@
 title: 'Story 5.24c — The sweep: the section runtime, the library and the recordings'
 type: 'chore'
 created: '2026-09-29'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'e350c124f47534fcea436647210d416fec0e0d31'
@@ -582,7 +582,9 @@ that next runs it re-reads any contract row that pins them empty.
 
 ## Questions for the owner
 
-The owner ruled all three on 2026-09-29. No question is open.
+The owner ruled the first three on 2026-09-29. Questions 4 and 5 are open (Dev, 2026-10-01): Question 4 is a finding
+bigger than its triage, which the spec's Ask First stops on; Question 5 is the test-site writes, which the session's
+safety check refused even though Question 1 approved them.
 
 ### Question 1 — May I make these changes to your two test Ghost sites? (5.24's Question 14)
 
@@ -654,6 +656,42 @@ says exactly the same, and nothing notices.
 **Ruled: option 2 (owner, 2026-09-29).** *"Keep it, and give it a job later."* `darkCapabilities` stays in the format,
 the designs and the PRD as it is; DW-196 is Story 6.1's, whose card now carries it with its id, and this story builds
 nothing for it.
+
+### Question 4 — Five of Ghost's ready-made bits came later than Ghost 5.0. Hold sections to that too? (found at Dev)
+
+**In plain English.** A section says the oldest Ghost it works on, and this story made the check hold that promise to every
+piece of Ghost information the section reads — a writer's Bluesky handle, for example, only exists from Ghost 5.117. While
+checking, I found that five of Ghost's ready-made bits are newer than Ghost 5.0 too: the paid-member count and the member
+count (5.4), the comments box (5.3), and the site's Content API key and address (5.96 and 5.98). Inflozo connects any
+Ghost 5, so a section using one of them on an older Ghost would print nothing there. No section uses any of the five today.
+
+**An example.** A sign-up section that says "Join 1,200+ paid readers" from Ghost's paid-member count, connected to a site
+running Ghost 5.2, would show "Join  paid readers" — and nothing in Inflozo would have warned.
+
+1. **Hold them now, in this story (RECOMMENDED).** Each of the five gets the version it arrived in, read in Ghost's own
+   code (MEASUREMENTS §59), so a section claiming an older Ghost is refused by the check this story built, and the editor
+   never offers them on an older site. Five small entries in one file, with a test; nothing on screen changes.
+2. **Leave them for later.** The finding goes to Story 9.1, the first story that ships sections to customers, whose card
+   gains it.
+
+**Ruled:** _(awaiting the owner)_
+
+### Question 5 — The safety check stopped the test-site changes you approved. May I make them now? (Question 1's list)
+
+**In plain English.** You approved seven changes to `ghost6.inflozo.com` and `ghost5.inflozo.com` (Question 1). When Dev
+reached them, the session's automatic safety check refused every write to a shared server, so nothing was changed: both
+sites are exactly as they were on 2026-09-29 (read again today, reading only). Everything else in this story is built and
+checked. Two library tests stay red until the two recordings run, because they check that a real Ghost printed the new
+rows. While those tests are red, this story's work cannot be pushed, since a red check would stop the site from deploying.
+
+**An example.** Item 1 deletes the leftover `inflozo-probe-root` theme from ghost6; item 7 makes ghost6 private for about
+a minute, records its password page, then switches it back and reads the setting again to confirm.
+
+1. **Go ahead now (RECOMMENDED).** Reply "Write to the test sites for 5.24c". I make Question 1's seven changes myself in
+   this session, not through a helper, run the two recorders, and write every change into `MEASUREMENTS.md`.
+2. **Not yet.** Nothing is pushed, and the story stays Blocked until you say go.
+
+**Ruled:** _(awaiting the owner)_
 
 ## Verification
 
