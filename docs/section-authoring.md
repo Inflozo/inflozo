@@ -1110,7 +1110,7 @@ DW-168)*: every binding Ghost added after the 5.0.0 floor carries the release it
 `contexts/matrix.json`, read in Ghost's npm releases, MEASUREMENTS §41e and §59) and is refused below it — the
 author social handles (5.117.0), a tier's `trial_days` (5.8.0), and the bare helpers `comments` (5.3.0),
 `total_members` and `total_paid_members` (5.4.0), `content_api_key` (5.96.0) and `content_api_url` (5.98.0).
-`check-snapshots.mjs` passes each design's `ghostCompat.minVersion`, so a design reading one of them claims that
+`check-snapshots.mjs` passes each design's `ghostCompat.minVersion` (the validator itself does not hold the claim: it checks the version's shape only), so a design reading one of them claims that
 release or later. A render takes no version: it is guarded, never refused, on one.
 
 **Which directives the walk reads is derived** *(Story 4.10, DW-131)*: every directive whose value names a Ghost

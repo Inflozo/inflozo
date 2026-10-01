@@ -105,12 +105,14 @@ def run(label, g):
     previous = shim.start_guard(g)
     print(f'  active theme before: {previous}')
 
-    res = g.upload_theme(zip_theme(THEME), ZIPNAME)
-    t = res['themes'][0]
-    warns = t.get('gscan', {}).get('results', {}).get('warning', []) if isinstance(t.get('gscan'), dict) else []
-    print(f'  uploaded as {t["name"]!r}  (Ghost reported {len(warns)} warnings)')
-
+    uploaded = []  # review 5.24c: the upload sits inside the try, so a theme Ghost took is deleted whatever follows
     try:
+        res = g.upload_theme(zip_theme(THEME), ZIPNAME)
+        t = res['themes'][0]
+        uploaded.append(t['name'])
+        warns = t.get('gscan', {}).get('results', {}).get('warning', []) if isinstance(t.get('gscan'), dict) else []
+        print(f'  uploaded as {t["name"]!r}  (Ghost reported {len(warns)} warnings)')
+
         g.api('PUT', f'themes/{t["name"]}/activate/')
         print(f'  activated {t["name"]}')
         time.sleep(2)
@@ -123,7 +125,7 @@ def run(label, g):
         print(f'\n  --- GET /<missing>  (HTTP {st}) — conflict 2 ---')
         print('\n'.join('  ' + l for l in probe_block(html).splitlines()))
     finally:
-        shim.restore_and_delete(g, previous, [t['name']])
+        shim.restore_and_delete(g, previous, uploaded)
     return True
 
 
@@ -135,3 +137,6 @@ if __name__ == '__main__':
             run(f'Ghost {major} — {env[f"GHOST{major}_URL"]}', g)
         except urllib.error.HTTPError as e:
             print(f'  HTTP {e.code}: {e.read()[:400].decode("utf8","replace")}')
+        except RuntimeError as e:  # review 5.24c: the start guard's and the cleanup's own sentences, not a traceback
+            print(f'  RUN VOID: {e}')
+            sys.exit(1)

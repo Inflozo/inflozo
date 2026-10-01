@@ -172,12 +172,19 @@ def active_theme(g):
 def start_guard(g):
     """The theme a run restores, read before anything is uploaded. Refused while it is a probe theme: an earlier
     run failed to restore, and this run would restore the probe and call it clean."""
-    previous = active_theme(g)
+    themes = g.api('GET', 'themes/')['themes']
+    previous = next((t['name'] for t in themes if t.get('active')), None)
     if previous is None:
         raise RuntimeError('no active theme reported — refusing to activate a probe with nothing to restore')
     if previous.startswith(PROBE_PREFIX):
         raise RuntimeError(f'the active theme is {previous!r}, a probe theme: an earlier run did not restore. '
                            'Activate the site\'s own theme in Ghost admin, then re-run')
+    # review 5.24c: an INSTALLED probe theme is refused too — a run whose upload succeeded and whose cleanup never ran
+    # leaves one inactive, and "no probe theme left" is only true if every run starts from none
+    left = [t['name'] for t in themes if t['name'].startswith(PROBE_PREFIX)]
+    if left:
+        raise RuntimeError(f'probe themes still installed: {left} — an earlier run did not clean up. '
+                           'Delete them in Ghost admin, then re-run')
     return previous
 
 
@@ -193,7 +200,11 @@ def restore_and_delete(g, previous, names):
     except Exception as e:
         failed = e
         print(f'    re-activating {previous!r} FAILED ({type(e).__name__}: {e}) — deleting and reading back anyway')
-    active = active_theme(g)
+    try:
+        active = active_theme(g)
+    except Exception as e:  # review 5.24c: a read-back that raises must not skip the DELETEs
+        failed = failed or e
+        active = None
     print(f'    active theme read back -> {active!r}')
     doomed = [n for n in names if n != previous]
     for name in doomed:
@@ -202,7 +213,12 @@ def restore_and_delete(g, previous, names):
         except Exception as e:
             body = e.read()[:200].decode('utf8', 'replace') if isinstance(e, urllib.error.HTTPError) else ''
             print(f'    DELETE {name!r} answered {type(e).__name__}: {e} {body} — the read-back decides')
-    left = [t['name'] for t in g.api('GET', 'themes/')['themes']]
+    try:
+        left = [t['name'] for t in g.api('GET', 'themes/')['themes']]
+    except Exception as e:  # the stored failure outranks the read-back's own
+        if failed is not None:
+            raise failed
+        raise
     print(f'    probe themes DELETED -> installed now: {left}')
     if failed is not None:
         raise failed
@@ -224,12 +240,16 @@ def self_check():
         missing one 404, else 204 (api/endpoints/themes.js) — which `Ghost.api` returns as {}. `activation`
         'refused' raises and changes nothing; 'late' switches, then raises (a timeout on a request Ghost carried
         out). A DELETE of a name in `broken` fails."""
-        def __init__(self, installed, active, activation=None, broken=()):
+        def __init__(self, installed, active, activation=None, broken=(), reads_fail=0):
             self.installed, self.active, self.activation, self.broken, self.log = list(installed), active, activation, broken, []
+            self.reads_fail = reads_fail  # how many GET themes/ raise (a timeout) before they answer
 
         def api(self, method, path, body=None):
             self.log.append((method, path))
             if (method, path) == ('GET', 'themes/'):
+                if self.reads_fail > 0:
+                    self.reads_fail -= 1
+                    raise TimeoutError('The read operation timed out')
                 return {'themes': [{'name': n, 'active': n == self.active} for n in self.installed]}
             name = path.split('/')[1]
             if method == 'PUT':
@@ -289,9 +309,19 @@ def self_check():
     e = raised(start_guard, Fake(['casper', 'inflozo-probe-contexts'], 'inflozo-probe-contexts'))
     assert isinstance(e, RuntimeError) and 'inflozo-probe-contexts' in str(e), repr(e)
     assert isinstance(raised(start_guard, Fake(['casper'], None)), RuntimeError)
-    assert start_guard(Fake(['casper', P], 'casper')) == 'casper'
+    assert start_guard(Fake(['casper'], 'casper')) == 'casper'
+    # review 5.24c: a probe theme merely INSTALLED refuses too, naming it
+    e = raised(start_guard, Fake(['casper', P], 'casper'))
+    assert isinstance(e, RuntimeError) and P in str(e) and 'installed' in str(e), repr(e)
+    # review 5.24c: a read-back that raises neither skips the DELETE nor hides the activation's own error
+    f = Fake(['casper', P], P, activation='late', reads_fail=1)
+    e = raised(restore_and_delete, f, 'casper', [P])
+    assert isinstance(e, TimeoutError) and ('DELETE', f'themes/{P}/') in f.log and P not in f.installed, repr(e)
+    f = Fake(['casper', P], P, reads_fail=1)
+    e = raised(restore_and_delete, f, 'casper', [P])
+    assert isinstance(e, TimeoutError) and P not in f.installed, repr(e)
     print('self-check: restore_and_delete deletes and reads back whatever failed, raises the first failure, never '
-          'deletes the previous theme, counts a 404 as gone; the start guard refuses a probe theme')
+          'deletes the previous theme, counts a 404 as gone; the start guard refuses a probe theme active or installed')
 
 
 # ── a deterministic PNG, so re-running the recorder uploads the same pixels ────

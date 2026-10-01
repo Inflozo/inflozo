@@ -2650,6 +2650,9 @@ So that a red check means a real fault and a green one means the thing works.
 the thing it protects is reverted
 **And** the app's fonts are served from Inflozo itself (DW-246) and every screen is unchanged — held by a screenshot
 comparison, not by eye
+**And** the test-site tooling found wanting at Story 5.24c's review is put right: the seeder's dead image address
+(DW-298), the inventory's three unexplained T3 changes written down (DW-299), and `record-cards.py` voiding a run whose
+owned rows are no longer the ones it designed (DW-301)
 **And** `pnpm check`, `pnpm keyboard` and the deployed walks pass.
 
 **FRs:** none new. · **Frame:** none — nothing on screen changes. · **Rulings:** R-207, R-211. · **Owner test:** none. ·
@@ -2676,6 +2679,8 @@ Ghost surface listed in Layers only when the site shows it (**R-215**); a sign-u
 cannot take its sign-up (**R-216**); a Layers row's pointer outlining its section, and only a click bringing it into
 view (**R-217**);
 a capped list's header keeping its range (**R-218**)
+**And** the editor's binding offer on an unlinked project is decided — today `offerBindings` reads "no version" as the
+oldest Ghost and withholds every helper that arrived after 5.0 (DW-300, Story 5.24c's review)
 **And** every touched surface matches its frame, with zero axe violations at 1440, 834 and 390
 **And** the owner tests it on the deployed site (R-80), and `pnpm check`, `pnpm keyboard` and the deployed walks pass.
 

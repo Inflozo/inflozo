@@ -23,9 +23,9 @@ major prints this text and exits, so `--help` uploads nothing.
      reduced motion: the animating module waits, mounts when the preference clears, aborts when it returns
      JavaScript off: no element carries `js-enabled` and no module ran, on the same authored markup
    A page error other than the probe's own fails its row; a page that is not this run's probe page voids the run.
-3. It restores the previous theme in a `finally`, re-reads the active theme to prove it, then DELETES the probe
-   theme and re-reads the theme list (the owner's ruling, Story 4.7 Q1, 2026-09-14): each site ends the run as it
-   started. It writes nothing to disk, creates no content and touches no setting; no key is printed (keys are read
+3. Its `finally` is `record-shim.py`'s `restore_and_delete`: the previous theme re-activated and read back, the probe
+   theme DELETED and read back, whichever step failed (the owner's ruling, Story 4.7 Q1, 2026-09-14; DW-237), and
+   `start_guard` refuses to start on a probe theme: each site ends the run as it started. It writes nothing to disk, creates no content and touches no setting; no key is printed (keys are read
    by variable name).
 """
 import os, re, sys, json, glob, time, shutil, secrets, subprocess, importlib.util

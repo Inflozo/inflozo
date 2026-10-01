@@ -2,7 +2,7 @@
 title: 'Story 5.24c — The sweep: the section runtime, the library and the recordings'
 type: 'chore'
 created: '2026-09-29'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'e350c124f47534fcea436647210d416fec0e0d31'
@@ -503,6 +503,62 @@ All anchors are at `e350c124`.
   `bash tools/matrix/run-matrix-gate.sh`, and `python3 tools/doc-audit.py --check` twice: all green, and every new
   check seen red on its control first.
 
+### Review Findings
+
+*Code review, 2026-10-01 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier on T1, T3, GitHub Actions and Vercel); every patch applied in the Review commit, each new check seen red on its
+control first. No question is the owner's; four findings are deferred to the ledger with named owners.*
+
+- [x] [Review][Patch] **The Dev push's CI was red and nothing deployed** — `pnpm keyboard`'s 5.23a journey pinned each
+  part's opening comment on the canvas, the observable it chose for "a part owns every top-level node it parses to"; DW-159
+  (this story, the frozen I/O row) drops a design's comment from both emitters, so the pin lost what it read. The invariant
+  stands (a part now parses to its root alone); the pin is reworked to hold DW-159 on the live canvas — no comment node
+  anywhere under `#canvas` after a keyed move and after the full repaint, with the control that sections whose FILE opens
+  with a comment were drawn [tools/keyboard/journey.spec.mjs:3400-3425]. Executed: the journey green; `pnpm keyboard`
+  joins Verification's commands so the gap cannot recur. *Routine call, stated: the two rulings do not contradict — only
+  the test's observable was DW-159's own subject.*
+- [x] [Review][Patch] DW-96 reached neither a stored link RECORD's `href` nor the `a` mark: the fold moves into
+  `linkAttributes`, the one place a destination becomes attributes, with the record vector in the DW-96 test
+  [packages/section-runtime/src/marks.ts:117]
+- [x] [Review][Patch] DW-159 missed a comment inside a `<template>`, a tree `querySelectorAll` never enters: `dropComments`
+  walks `content` too, with a vector [packages/section-runtime/src/core.ts:1628]
+- [x] [Review][Patch] DW-186 refused one spelling: the names and labels Member visibility goes by — `show-to`, "Show to"
+  and the rest — are one list (R-170), with two more refusal rows [packages/library/src/validate.ts:628]
+- [x] [Review][Patch] DW-213 compared caps as strings (`"3"` against `" 03"` read as two): compared as numbers
+  [packages/library/src/validate.ts:185]
+- [x] [Review][Patch] DW-104's class had one more member: a filter with an unclosed `[` or quote validated green and
+  previewed empty — refused `bad-get-filter`, two rows [packages/library/src/validate.ts:475]
+- [x] [Review][Patch] `build.js`'s R-7 filter (no query-carrying kind on `error.hbs`) was checked by nothing, since the
+  script runs by hand and gscan has no such rule: the selection is `sections.js`'s `stackFor`, held by a check in
+  `test-vocabulary.mjs` with its control [tools/stress/sections.js, tools/stress/test-vocabulary.mjs]
+- [x] [Review][Patch] The paywall fixtures' `minVersion` 5.62.0 was asserted by hand: `check-snapshots` now runs both
+  through `checkBindings` at their version, with the 5.61.0 control [tools/check-snapshots.mjs]
+- [x] [Review][Patch] `restore_and_delete`: a read-back that raised skipped every DELETE, and the final read-back's error
+  hid a stored activation error — both wrapped, two self-check cases; and `start_guard` refuses a probe theme merely
+  INSTALLED, not only the active one [tools/probe/record-shim.py:172-215]
+- [x] [Review][Patch] `run-verify-13.py`, `-47.py`, `-all.py` uploaded OUTSIDE their `try`, so a theme Ghost took before
+  the activation raised was never deleted: the upload is inside, and the names it collected go to the cleanup; `-13`'s
+  main catches `RuntimeError` as the others already did [tools/probe/run-verify-13.py:102]
+- [x] [Review][Patch] `record-contexts.py`'s private-mode fallback could raise before the read-back: each key is restored
+  alone, a second failure printed, and `settings_of` always runs [tools/probe/record-contexts.py:284-294]
+- [x] [Review][Patch] Wording and registers: the private-mode duration said four ways (now "for under a minute"
+  everywhere); `doc-audit.py`'s briefs for the three register probes and `run-verify-core.py`'s docstring name the cleanup;
+  DW-4's resolution says the ban still reaches every receiver; DW-99's and DW-103's notes lose their duplicate close;
+  DW-237's location follows the moved line; `errorDetails`' citations move from `unverified` to `note`; the stress README
+  says the §14 sizes predate this story's re-shaping and that `build.js` stacks only what each template's scope allows;
+  `section-authoring.md` says the validator itself does not hold `minVersion`
+- [x] [Review][Defer] The seeder's dead image address — deferred, pre-existing: DW-298, Story 5.24d
+- [x] [Review][Defer] Three T3 changes dated 2026-09-25 that no probe made, missing from the inventory — deferred,
+  pre-existing: DW-299, Story 5.24d
+- [x] [Review][Defer] `offerBindings` withholds every `since`-carrying helper when no version is given — deferred, a
+  product call for the story that draws the offer: DW-300, Story 5.24e
+- [x] [Review][Defer] `record-cards.py` never checks its owned rows are still the ones it designed — deferred, a recorder
+  run needs the owner's go: DW-301, Story 5.24d
+- Dismissed as noise: a `data-members-email` on the `<form>` element itself (no design puts a field on its form); the
+  DW-161 walk tokenising the markup again (one tokeniser, no disagreement possible); `splitTop`'s move (grep clean); a
+  stale `DRAWS_SHOW_TO` in an untracked worktree copy; `render-matrix.md` already names `control-groups.json` as a shared
+  input.
+
 **Acceptance Criteria:**
 
 - **The group.**
@@ -741,7 +797,8 @@ both recorders, and records every write in `MEASUREMENTS.md`.
   and no `inflozo-probe-*` theme left afterwards.
 - At Review, on the deployed site: `node tools/probe/run-verify-pilots.cjs` — expected: steps 10 and 13 (a22/1's and
   a4/13's Show-to) pass.
-- `pnpm check` — expected: exit 0. `python3 tools/doc-audit.py --check`, twice — expected: PASS.
+- `pnpm check` — expected: exit 0. **`pnpm keyboard`** (CI's own step before `pnpm check`; added at Review, where the
+  Dev push was found red on it) — expected: exit 0. `python3 tools/doc-audit.py --check`, twice — expected: PASS.
 
 **Real services (R-82).**
 - T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`: the read-only inventory at Create; at Dev, Question 1's writes,

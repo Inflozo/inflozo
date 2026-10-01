@@ -456,6 +456,22 @@ check('DW-121 — the controls sample renders through both emitters at each of i
   return entry.compileTarget.join(' · ')
 })
 
+check('review 5.24c — the paywall fixtures hold their minVersion to the fields they read, as every design does (DW-168)', () => {
+  const root = join(REPO, 'packages/library/fixtures')
+  const out = []
+  for (const n of ['1', '2']) {
+    const entry = assemble(loadDesign({ category: 'paywall', n }, root))
+    const [target] = entry.compileTarget
+    const refused = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings, version: entry.ghostCompat.minVersion })
+    if (refused.length > 0) throw new Error(`paywall/${n} at ${entry.ghostCompat.minVersion}: ${refused.join(' · ')}`)
+    // the control: one release lower and `@site.allow_self_signup` is refused
+    const older = rt.checkBindings(doc(), entry.html, { target, dataBindings: entry.dataBindings, version: '5.61.0' })
+    if (!older.some((r) => /allow_self_signup arrived in Ghost 5\.62\.0/.test(r))) throw new Error(`paywall/${n}: the control at 5.61.0 was not refused — got ${JSON.stringify(older)}`)
+    out.push(`paywall/${n} ${entry.ghostCompat.minVersion}`)
+  }
+  return out.join(' · ')
+})
+
 check('A17 #1 — the no-param partial: {{#foreach posts}} around {{> "post-card"}}, and the canvas draws one card per row', () => {
   const entry = assemble(byId('a17/1'))
   const out = rt.renderTheme(doc(), entry.html, input(entry, 'index.hbs'))

@@ -343,7 +343,8 @@
       "errorDetails": {
         "kind": "list",
         "of": "errorDetail",
-        "unverified": "Ghost fills errorDetails only for a theme-validation error, which no request to a working site can produce — read in both releases: error.hbs is handed `errorDetails: err.errorDetails || []` (core/frontend/web/middleware/error-handler.js:51 in 5.130.6, :89 in 6.58.0), the rule/failures shape is what Ghost's own error view iterates (core/server/views/error.hbs:30-40, both), and the error that carries gscan's results is the theme validator's (core/server/services/themes/validate.js:147 · :151)"
+        "unverified": "Ghost fills errorDetails only for a theme-validation error, which no request to a working site can produce (read in both releases; the citations are in note)",
+        "note": "error.hbs is handed `errorDetails: err.errorDetails || []` (core/frontend/web/middleware/error-handler.js:51 in 5.130.6, :89 in 6.58.0); the rule/failures shape is what Ghost's own error view iterates (core/server/views/error.hbs:30-40, both); the error that carries gscan's results is the theme validator's (core/server/services/themes/validate.js:147 · :151)"
       }
     },
     "private": {

@@ -13,7 +13,7 @@ const fs = require('fs'); const path = require('path'); const crypto = require('
 const { execFileSync } = require('child_process');
 const { renderSection, renderSecondary, feedQuery, UserText, T0, T1, U0, U1 } = require('./compile');
 const { IMAGE_SIZES } = require('../../packages/library/src/vocabulary.ts');
-const { stressStack, source, QUERIES } = require('./sections');
+const { stackFor, source, QUERIES } = require('./sections');
 
 const OUT = path.join(__dirname, 'theme');
 const ms = (t) => Number(process.hrtime.bigint() - t) / 1e6;
@@ -83,9 +83,10 @@ let sectionCount = 0;
 
 const tRender = process.hrtime.bigint();
 for (const t of TEMPLATES) {
-  // R-7: a {{#get}} on the error template compounds the outage it reports, so a kind with queries stays off it. The
-  // stack's other placements (a feed on post, page and error) are DW-296's, Story 7.35's.
-  const stack = stressStack(t.sections).filter((s) => !(t.file === 'error' && QUERIES[s.kind]));
+  // R-7: a {{#get}} on the error template compounds the outage it reports, so `stackFor` keeps a kind with queries off
+  // it — held by test-vocabulary.mjs, since nothing runs this script in CI. The stack's other placements (a feed on
+  // post, page and error) are DW-296's, Story 7.35's.
+  const stack = stackFor(t.file, t.sections);
   stack.forEach((s, n) => {
     const layer = `${s.kind}-${n + 1}`;
     const r = renderSection(source(s), contentFor(s.kind, sectionCount), users, undefined, QUERIES[s.kind]);

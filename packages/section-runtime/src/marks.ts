@@ -114,7 +114,9 @@ export function linkAttributes(link: unknown): Record<string, string> {
   if (typeof record.href !== 'string' || record.href.trim() === '') return {}
   // AD-36 (1) reaches a user's own link too: on the canvas this href is a same-origin URL inside
   // the owner's authenticated session, so the scheme check is not a theme-only concern.
-  const attrs: Record<string, string> = { href: safeUrl(record.href) }
+  // DW-96: an attribute holds one line, whatever shape the destination arrived in — a stored record's href included —
+  // and it folds BEFORE the scheme check, which would never see a break the browser's URL parser strips
+  const attrs: Record<string, string> = { href: safeUrl(record.href.replace(/\s*[\r\n]+\s*/g, ' ')) }
   // a stored record is data from a database, not a type: a non-array `rel` is no rel, not a throw
   const rel = new Set((Array.isArray(record.rel) ? record.rel : []).filter((r) => REL_SET.has(r)))
   if (record.newTab === true) {

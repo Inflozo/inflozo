@@ -24,7 +24,7 @@ const require = createRequire(import.meta.url)
 const here = dirname(fileURLToPath(import.meta.url))
 const REPO = join(here, '..', '..')
 
-const { A, ORDER, source, QUERIES, TARGET } = require('./sections.js')
+const { A, ORDER, source, stackFor, QUERIES, TARGET } = require('./sections.js')
 const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
 const { REFERENCE_TOKENS, TOKEN_NAMES, referenceTokensCss } =
@@ -177,6 +177,17 @@ check('every archetype renders at its own target with its own queries, and a fee
   let control = null
   try { renderTheme(jsdoc(), source({ kind: 'feed', i: 1 }), { target: 'post.hbs' }) } catch (e) { control = e }
   if (!/"posts" is not available/.test(control?.message ?? '')) throw new Error(`the control rendered: a feed at post.hbs must be refused (FR-H7) — ${control?.message ?? 'no error'}`)
+})
+
+// review 5.24c: `build.js` runs by hand and gscan has no rule for it, so R-7's filter is held here — the error template's
+// stack carries no kind that declares a query, and every other template's carries them all
+check('the stress stack keeps every query-carrying kind off error.hbs (R-7), and off nothing else', () => {
+  const kinds = (file) => new Set(stackFor(file, 40).map((s) => s.kind))
+  const queried = Object.keys(QUERIES)
+  const onError = queried.filter((k) => kinds('error').has(k))
+  if (onError.length) throw new Error(`error.hbs would carry a {{#get}} from ${onError.join(', ')}`)
+  const offIndex = queried.filter((k) => !kinds('index').has(k))
+  if (offIndex.length) throw new Error(`the control: index.hbs lost ${offIndex.join(', ')}`)
 })
 
 check('no archetype still carries the retired data-prop-attr2', () => {

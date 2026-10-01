@@ -1612,6 +1612,9 @@ test('DW-96 — a line break never reaches an attribute: both emitters fold it t
   const rich = agree('<a class="l" data-prop-attr="href:caption">x</a>', { schema, content: { caption: { text: 'a\n\nb', marks: [] } } })
   const strings = agree('<section class="s" data-module="countdown">·</section>', { strings: { 'countdown.ended': 'a\n\nb' } })
   for (const out of [rich.canvas, rich.theme]) assert.ok(out.includes('href="a b"'), out)
+  // review 5.24c: a stored link RECORD's href folds too, inside `linkAttributes`, so the `a` mark is covered as well
+  const record = agree('<a class="l" data-prop-attr="href:link">x</a>', { schema, content: { link: { href: 'https://x.example/a\n\nb' } } })
+  for (const out of [record.canvas, record.theme]) assert.ok(out.includes('href="https://x.example/a b"'), out)
   for (const out of [strings.canvas, strings.theme]) assert.ok(out.includes('data-i18n-ended="a b"'), out)
   // no theme attribute holds a <br> — a Text Area's value, a module's string, or a link's href
   const href = renderTheme(doc(), '<a class="l" data-prop-attr="href:link">x</a>', { schema, content: { link: 'https://x.example/a\nb' } }).template
@@ -1627,4 +1630,7 @@ test('DW-159 — a designer\'s comment ships from neither emitter, and the runti
   for (const out of [canvas, theme]) assert.doesNotMatch(out, /<!--/, out)
   assert.match(theme, /\{\{#foreach posts\}\}[\s\S]*\{\{#if url\}\}/, theme)
   assert.match(canvas, /href="https:\/\/site\.example\/one\/"/, canvas)
+  // review 5.24c: a comment inside a <template> — a tree of its own in a browser's DOM — is dropped too
+  const tpl = agree('<section class="s"><template><!-- in a template --><p>x</p></template></section>', {})
+  for (const out of [tpl.canvas, tpl.theme]) assert.doesNotMatch(out, /<!--/, out)
 })

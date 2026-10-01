@@ -81,7 +81,7 @@ reason: `@types/node@26.4.1` types Node 26 while the stack pins Node 24.x, so co
 
 plain: One safety rule is stricter than intended and also blocks a few harmless things; nothing is broken, and it gets narrowed the first time it blocks real work.
 status: done 2026-10-01 (Story 5.24c)
-resolution: Story 5.24c's Dev (2026-10-01): `'toString'` left `hostReadingCalls` in `eslint.config.js`, and one selector refuses only the zero-argument call a Date prints the host timezone with (`CallExpression[arguments.length=0] > MemberExpression.callee[property.name='toString']`); the core block sets `linterOptions: { noInlineConfig: true }`, so no disable comment switches a ban off. Controls in `tools/check-baseline.mjs`, seen red with the change reverted: a Date's `.toString()` refused; `n.toString(16)` clean (HEAD refused it); `/* eslint-disable no-restricted-syntax */` beside `.localeCompare()` still refused (HEAD was silent).
+resolution: Story 5.24c's Dev (2026-10-01): `'toString'` left `hostReadingCalls` in `eslint.config.js`, and one selector refuses only the zero-argument call a Date prints the host timezone with (`CallExpression[arguments.length=0] > MemberExpression.callee[property.name='toString']`); the core block sets `linterOptions: { noInlineConfig: true }`, so no disable comment switches a ban off. The ban still reaches every receiver — a Buffer's or a number's bare `.toString()` is refused too, since the selector cannot see a type — only the argument form is let through. Controls in `tools/check-baseline.mjs`, seen red with the change reverted: a Date's `.toString()` refused (any argument-less call is); `n.toString(16)` clean (HEAD refused it); `/* eslint-disable no-restricted-syntax */` beside `.localeCompare()` still refused (HEAD was silent).
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
   (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -3197,7 +3197,7 @@ owner: Story 5.24c (The sweep: the section runtime, the library and the recordin
 location: packages/library/src/vocabulary.ts `BARE_HELPERS`; packages/ghost-shim/src/index.ts `bareHelper`
 reason: adding a name to 4.1's vocabulary is 4.1's format changing, which a review of 4.3 does not do
   on its own; the functions exist so the change is one line when its story arrives
-note (Story 5.24c's Dev, 2026-10-01): built and offline-proved — `total_paid_members` and `content_api_url` joined `BARE_HELPERS`, two `{"kind":"helper"}` rows in `matrix.json`'s `universal`, two labels ("Paid member count", "Content API URL"), and a comment beside `taxonomyItems` (unreachable on purpose: a tag or author list is `data-repeat="tags"`/`"authors"`). Controls seen red at HEAD: an agreement case per helper (HEAD threw "must be one of") and `bindable('total_paid_members', { … use: 'helper' }) === null`. Closed by the recording above.
+note (Story 5.24c's Dev, 2026-10-01): built and offline-proved — `total_paid_members` and `content_api_url` joined `BARE_HELPERS`, two `{"kind":"helper"}` rows in `matrix.json`'s `universal`, two labels ("Paid member count", "Content API URL"), and a comment beside `taxonomyItems` (unreachable on purpose: a tag or author list is `data-repeat="tags"`/`"authors"`). Controls seen red at HEAD: an agreement case per helper (HEAD threw "must be one of") and `bindable('total_paid_members', { … use: 'helper' }) === null`.
 
 ### DW-100: `cards.js` has no no-JS sentence and no edit-safe row
 
@@ -3276,7 +3276,7 @@ reason: `api_defaults` records the live boxes' own posts, tags, authors and tier
   guard depends on the boxes carrying at least two rows per resource. Recording the defaults against rows the recorder
   itself owns would make the file stable; not done here because the fixture documents are returned to draft before the
   read (they must not sit in the recorded feed), so the recorder would need a second, permanent pair of documents.
-note (Story 5.24c's Dev, 2026-10-01): built and offline-proved — `record-cards.py` creates two posts and two tags it owns (`inflozo-defaults-1`/`-2`, `inflozo-defaults-a`/`-b`), publishes them with the three fixture documents and drafts them in the same `finally`, and reads posts and tags INSIDE the try by `filter=id:[…]` with no order or limit; `capture.json` records each resource's filter; its `--self-check` covers the read; `orbit-weekly.test.ts` asserts the filter and exactly two rows, red against today's `capture.json`. Closed by the recording above.
+note (Story 5.24c's Dev, 2026-10-01): built and offline-proved — `record-cards.py` creates two posts and two tags it owns (`inflozo-defaults-1`/`-2`, `inflozo-defaults-a`/`-b`), publishes them with the three fixture documents and drafts them in the same `finally`, and reads posts and tags INSIDE the try by `filter=id:[…]` with no order or limit; `capture.json` records each resource's filter; its `--self-check` covers the read; `orbit-weekly.test.ts` asserts the filter and exactly two rows, red against today's `capture.json`.
 
 ### DW-104: the validator accepts NQL the offline resolver refuses, so a design can validate green and preview empty
 
@@ -3757,7 +3757,7 @@ reason: the matrix's one `custom-{name}.hbs` row is the ENTRY form (post block).
 plain: Some of the new rules are read from Ghost's code or its notes rather than seen on a live site: the
   password page, very old Ghost versions, and details the test sites simply do not have filled in.
 status: done 2026-10-01 (Story 5.24c)
-resolution: Story 5.24c's Dev (2026-10-01), on the owner's rulings (Question 1, Question 4). The seeded fields (Question 1's items 2–5: tag `archive`, author `umang`, tier `default-product`, newsletter `default-newsletter`) and a post's `custom_excerpt` were recorded printing on both majors by `python3 tools/probe/record-contexts.py`, and so was the private page — `/private/` and a wrong password's `error.message` — with private mode on for seconds, restored and read back (MEASUREMENTS §59). `contexts.test.ts`'s reverse rule then named every `unverified` row both recordings prove, and each lost its reason; `errorDetails`' rows stay `unverified`, cited in Ghost's source in both releases, since a theme validation error is not the recorder's to cause. The version half: the author social handles (5.117.0) and a tier's `trial_days` (5.8.0) and, on Question 4, every bare helper Ghost added inside 5.x (`comments` 5.3.0, `total_members` and `total_paid_members` 5.4.0, `content_api_key` 5.96.0, `content_api_url` 5.98.0) carry a `since` read in Ghost's npm releases, and are refused below it (`contexts.test.ts`, "DW-127" and "Question 4", each red before its gate).
+resolution: Story 5.24c's Dev (2026-10-01), on the owner's rulings (Question 1, Question 4). The seeded fields (Question 1's items 2–5: tag `archive`, author `umang`, tier `default-product`, newsletter `default-newsletter`) and a post's `custom_excerpt` were recorded printing on both majors by `python3 tools/probe/record-contexts.py`, and so was the private page — `/private/` and a wrong password's `error.message` — with private mode on for under a minute, restored and read back (MEASUREMENTS §59). `contexts.test.ts`'s reverse rule then named every `unverified` row both recordings prove, and each lost its reason; `errorDetails`' rows stay `unverified`, cited in Ghost's source in both releases, since a theme validation error is not the recorder's to cause. The version half: the author social handles (5.117.0) and a tier's `trial_days` (5.8.0) and, on Question 4, every bare helper Ghost added inside 5.x (`comments` 5.3.0, `total_members` and `total_paid_members` 5.4.0, `content_api_key` 5.96.0, `content_api_url` 5.98.0) carry a `since` read in Ghost's npm releases, and are refused below it (`contexts.test.ts`, "DW-127" and "Question 4", each red before its gate).
 severity: low
 origin: Story 4.6 (2026-09-14) — MEASUREMENTS §41f
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
@@ -6281,7 +6281,7 @@ reason: Deleting is one more Admin API call in the `finally`, after the restore 
 owner: Story 5.24c (The sweep: the section runtime, the library and the recordings), one of the sweep's five stories
   (R-211), whose card names this entry. *(Story 5.24a's Dev, 2026-09-28: was "whoever next touches a `record-*.py` probe
   or `tools/probe/RESET-PROTOCOL.md`.")*
-location: `tools/probe/record-page-number.py` `record()`'s `finally` · `tools/probe/record-contexts.py:342`
+location: `tools/probe/record-page-number.py` `record()`'s `finally` · `tools/probe/record-contexts.py` `record()`'s `finally`
 note (Story 5.24c's Dev, 2026-10-01): built and offline-proved with DW-147 — every T1/T3 uploader (`record-shim.py`, `run-verify-core.py`, `record-contexts.py`, `record-page-number.py`, `run-verify-13.py`, `run-verify-all.py`, `run-verify-47.py`, `run-verify-e2.py`, `run-verify-comment-count.py`) ends in `restore_and_delete` inside its `finally` and refuses to start on a probe theme (`start_guard`); `run-verify-ghostpro.py` is the named exception; `RESET-PROTOCOL.md` § Ghost says so. Closed by the deletions above.
 
 ### DW-238: the deploy-and-export take-over (D8g) has no entry point to hang off yet
@@ -7555,3 +7555,67 @@ reason: a design's own `ghostCompat.minVersion` cannot see it — the ask is a c
   reads — so DW-168's check does not reach it. What a site below 5.62 should get (the ask kept, dropped, or the deploy
   warned) is the owner's decision, and Pre-flight is where a deploy already meets the site's version and its
   member-switch warnings (DW-260).
+
+## Deferred from: code review of spec-5-24c (2026-10-01)
+
+### DW-298: the Ghost seeder ships an image address that answers 404
+
+plain: The script that fills a test Ghost site with sample content points one picture at an address on Ghost's own
+  image library that no longer exists, so a fresh test site would get a broken picture there.
+status: open
+severity: low
+origin: Story 5.24c's Dev (2026-10-01), MEASUREMENTS §59: `static.ghost.org/.../writing-posts-with-ghost.png` answered
+  404 while `publication-cover.jpg` and `feature-image.jpg` answered 200; noted beside `tools/probe/seed-ghost.py:76` as a
+  `ponytail:` comment. Raised at the review as a finding with no owning document.
+owner: Story 5.24d (The sweep: the checks and the walks), whose card names this entry.
+location: `tools/probe/seed-ghost.py:74-76`
+reason: the two test sites are seeded already and no story re-seeds one; the next re-seed (a new test site, or a reset
+  under `RESET-PROTOCOL.md`) is when a live address is needed, and the fix is one address swapped for one that answers.
+
+### DW-299: three changes on T3 dated 2026-09-25 that no probe made reached a recording, and the inventory does not know them
+
+plain: Three things on the Ghost 5 test site changed on 2026-09-25 — a probe's post was retitled and given a picture, a
+  sample post got a new picture, and the Portal button's icon was switched — and nothing in Inflozo did it. A recording
+  now depends on them, and the list of what the test sites hold does not mention them.
+status: open
+severity: low
+origin: Story 5.24c's Dev (2026-10-01), MEASUREMENTS §59 *Found, not written*: `probe-gated-post` retitled "PROBEs Gated
+  Post" with an Unsplash feature image, "Reading the margins" given an uploaded feature image in place of the dead
+  `static.ghost.org` one, and `@site.portal_button_icon` now `icon-5`. Raised at the review: a finding must reach an
+  owning document, and `RESET-PROTOCOL.md`'s inventory is that document.
+owner: Story 5.24d (The sweep: the checks and the walks), whose card names this entry.
+location: `tools/probe/RESET-PROTOCOL.md` § Ghost · `packages/library/contexts/fixtures/ghost5.json`
+reason: the owner is the only one who could have made them by hand (the probes write nothing of the kind); the next
+  recorder run re-reads them either way. What is owed is a line in the inventory saying they are there and whose they are.
+
+### DW-300: `offerBindings` withholds every helper that carries a `since` when no version is given — the three older ones too
+
+plain: When the editor asks which pieces of Ghost information a section may use, and the project is not linked to a
+  site yet, it now holds back the five helpers that arrived after Ghost 5.0 — the comment box, the two member counts,
+  the Content API key and address — because "no version" is read as the oldest Ghost. Nothing on screen asks yet.
+status: open
+severity: low
+origin: Story 5.24c's Dev on Question 4 (2026-10-01): `since` on the bare helpers in `contexts/matrix.json`, applied by
+  `offerBindings` with "absent = the floor" (`packages/library/src/contexts.ts`, `versionAtLeast(undefined, …)` reads
+  `CONTEXT_MATRIX.floor`). Consistent with the rule already in force for the universal keys; no app caller exists
+  (`grep offerBindings apps/` is empty). Raised at the review so the story that builds the offer meets it knowing.
+owner: Story 5.24e (The sweep: the editor), whose card names this entry.
+location: `packages/library/src/contexts.ts` `offerBindings` · `packages/library/contexts/matrix.json` `universal`
+reason: whether an unlinked project is offered the floor's set or the newest Ghost's is a product call for the story
+  that draws the offer; the rule today is the conservative one and is held by `contexts.test.ts`.
+
+### DW-301: `record-cards.py` reads its owned posts and tags by id and never checks they are still the rows it designed
+
+plain: The recorder that learns a Ghost site's default ordering uses two posts and two tags it created, with dates and
+  names chosen so the order is visible. If someone renamed or re-dated one by hand, the recorder would still read it and
+  the test would still pass, on an order the rows no longer show.
+status: open
+severity: low
+origin: Story 5.24c's review (2026-10-01), Edge Case Hunter: `tools/probe/record-cards.py` resolves `OWNED_POSTS` and
+  `OWNED_TAGS` by slug, reads them by `filter=id:[…]`, and asserts nothing about the rows' `name`, `published_at` or
+  `tags[0]` before `orbit-weekly.test.ts` reads the recorded order.
+owner: Story 5.24d (The sweep: the checks and the walks), whose card names this entry.
+location: `tools/probe/record-cards.py` `api_defaults`
+reason: a recorder run writes to T1 and T3 and needs the owner's in-session go (R-82), so the review built no check it
+  could not run; the fix is one assertion per owned row, voiding the run with the row named.
+

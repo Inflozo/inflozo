@@ -182,7 +182,9 @@ export function validateMarkup(html: string, opts: MarkupOptions = {}): Failure[
       push(out, 'orphan-items-limit', `<${tag.name}> carries data-items-limit with no data-items on the same element — it modifies an authored list and would be silently ignored.`)
     }
     const items = attr('data-items')
-    if (items !== undefined) itemCaps.set(items, (itemCaps.get(items) ?? new Set()).add(attr('data-items-limit') ?? null))
+    // review 5.24c: compared as a NUMBER, so "3" and " 03" are one cap; a value that is not a number is its own cap and
+    // `bad-items-limit` names it
+    if (items !== undefined) itemCaps.set(items, (itemCaps.get(items) ?? new Set()).add(attr('data-items-limit') === undefined ? null : String(Number(attr('data-items-limit')))))
     if (names.includes('data-if') && names.includes('data-else')) {
       push(out, 'if-and-else', `<${tag.name}> carries both data-if and data-else — the two arms are two SIBLING elements.`)
     }
@@ -472,6 +474,9 @@ export function validateDataBinding(k: string, b: DataBinding, { declared = true
   }
   if (b.filter !== undefined && !/^[A-Za-z0-9_.:,+\-[\]'"\s]+$/.test(b.filter)) {
     push(out, 'bad-get-filter', `dataBindings.${k}.filter carries a character NQL does not use. A filter is declared here and referenced by key from the markup, never written into an attribute — so it is validated once, never interpolated (AD-36).`)
+  } else if (b.filter !== undefined && (b.filter.split('[').length !== b.filter.split(']').length || /['"]/.test(b.filter.replace(/'[^']*'|"[^"]*"/g, '')))) {
+    // review 5.24c: an unclosed [ or quote validated green and the preview answered no rows — `splitTop` never closes it
+    push(out, 'bad-get-filter', `dataBindings.${k}.filter "${b.filter}" leaves a [ ] or a quote unclosed, so no clause can be read from it.`)
   } else if (b.filter !== undefined && splitTop(b.filter, ',').length > 1) {
     // DW-104: the offline preview refuses a top-level `,` (an "or"), so a design declaring one would validate green and
     // preview empty; the Data group composes none (P0·5's Source is single-pick). A list inside [...] is one clause.
@@ -519,6 +524,11 @@ function valueGrammar(type: string, values: readonly string[]): string | null {
       return values.every((v) => CONTROL_WORD_RE.test(v)) ? null : 'a named value is a lowercase kebab word — no unit, no hex, no spaces.'
   }
 }
+
+/** DW-186 (R-124), review 5.24c: the names and labels Member visibility goes by — the editor says "Show to" (R-170), the
+ *  doc field is `memberVisibility`, the ledger says "Member visibility" — refused as a control under any of them. */
+const MEMBER_VISIBILITY_NAMES = new Set(['member-visibility', 'membervisibility', 'show-to', 'shown-to', 'visible-to', 'visibility'])
+const MEMBER_VISIBILITY_LABELS = new Set(['member visibility', 'show to', 'shown to', 'visible to', 'visibility'])
 
 export function validateDesignJson(design: DesignJson, markup?: string): Failure[] {
   const nulls = nullFailures('design.json', design)
@@ -625,7 +635,7 @@ export function validateDesignJson(design: DesignJson, markup?: string): Failure
     } else if (DIRECTIVES[`data-${c.name}`] !== undefined || FOREIGN_ATTR_RE.test(c.name)) {
       push(out, 'bad-control-name', `control "${c.name}" would write data-${c.name}, which is a directive, or an attribute the page or Ghost owns (Portal binds data-members-signout to signing the reader out) — a control's attribute must mean nothing but the control (AD-3).`)
     }
-    if (c.name === 'member-visibility' || (typeof c.label === 'string' && c.label.trim().toLowerCase() === 'member visibility')) {
+    if (MEMBER_VISIBILITY_NAMES.has(c.name.replace(/_/g, '-').toLowerCase()) || (typeof c.label === 'string' && MEMBER_VISIBILITY_LABELS.has(c.label.trim().replace(/\s+/g, ' ').toLowerCase()))) {
       push(out, 'member-visibility-control', `control "${c.name}" is Member visibility, which is not a control (R-124): who a section is shown to is stored on the placed section and gates its root on both emitters; declared here it would write a second data-member-visibility nothing reads.`)
     }
     if (UNIVERSAL_CONTROLS.includes(c.name)) {

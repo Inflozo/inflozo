@@ -684,6 +684,10 @@ test('every other design.json refusal fires, and its neighbour does not', () => 
   // DW-186 (Story 5.24c): Member visibility is the placed section's, never a control — refused by name and by title
   only({ controlSchema: [ctl({ name: 'member-visibility' })] }, 'member-visibility-control')
   only({ controlSchema: [ctl({ name: 'shown-to', label: '  Member Visibility ' })] }, 'member-visibility-control')
+  only({ controlSchema: [ctl({ name: 'show-to', label: 'Who sees this' })] }, 'member-visibility-control') // review 5.24c: the editor's own name
+  only({ controlSchema: [ctl({ name: 'audience', label: 'Show to' })] }, 'member-visibility-control')
+  only({ dataBindings: { x: { source: 'posts', filter: 'tag:[news,notes' } } }, 'bad-get-filter') // review 5.24c: unclosed
+  only({ dataBindings: { x: { source: 'posts', filter: "tag:'news" } } }, 'bad-get-filter')
   only({ ghostCompat: undefined }, 'ghost-compat-missing')
   only({ ghostCompat: { minVersion: 'banana', helpers: [] } }, 'bad-min-version')
   only({ ghostCompat: { minVersion: '5.0.0', helpers: 'foreach' } }, 'ghost-compat-helpers')
@@ -1076,6 +1080,7 @@ test('DW-213 (Story 5.24c): one authored list drawn twice carries one cap — tw
   assert.ok(twice(' data-items-limit="3"', ' data-items-limit="5"').includes('items-limit-conflict'), '3 against 5')
   assert.ok(twice(' data-items-limit="3"', '').includes('items-limit-conflict'), '3 against none')
   assert.ok(!twice(' data-items-limit="3"', ' data-items-limit="3"').includes('items-limit-conflict'), '3 against 3 is one cap')
+  assert.ok(!twice(' data-items-limit="3"', ' data-items-limit=" 03"').includes('items-limit-conflict'), 'review 5.24c: 3 against " 03" is one cap')
   assert.ok(!twice('', '').includes('items-limit-conflict'), 'no cap on either is one cap')
 })
 

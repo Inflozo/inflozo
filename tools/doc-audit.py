@@ -261,7 +261,7 @@ DOCS = [
   'to start while a probe theme is active; run-verify-ghostpro.py is the one exception.'),
  ('tools/probe/seed-ghost.py', 'tool', 'Ghost fixture seeder', 'Seeds both Ghosts identically.'),
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
- ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts.'),
+ ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts; its probe theme is restored, deleted and read back whatever fails, and it refuses to start on a probe theme (DW-237).'),
  ('tools/probe/record-shim.py', 'tool', 'Ghost helper-shim recorder',
   "AD-23's recorder for the Ghost helper shim (Story 4.3). Uploads one image and a probe theme "
   'carrying FR-J2\'s NORMATIVE image_sizes map — read from packages/library, never restated, '
@@ -300,7 +300,7 @@ DOCS = [
   'truthiness, a number beside its includeZero=true guard, a list or object as its truthiness and first '
   'row, a helper into a raw block — gates it through tools/stress/gate.js, uploads and activates it on T1 '
   'and T3, fetches the home page, page 2, three posts (one carrying a custom excerpt), a page, a tag archive, an '
-  'author archive and a 404 — and last, since Story 5.24c on the owner\'s ruling, PRIVATE MODE for seconds: '
+  'author archive and a 404 — and last, since Story 5.24c on the owner\'s ruling, PRIVATE MODE for under a minute: '
   'is_private and a throwaway password switched on, /private/ and a wrong password\'s page fetched, both settings '
   'put back in a finally and read back (Ghost stores an empty password as null, read as the same) — '
   'and in a finally restores the previous theme and deletes the probe theme, reading both back '
@@ -400,8 +400,8 @@ DOCS = [
   'purpose so a green run can be told from a run that checks nothing. Never prints smtp_pass. '
   'Since Story 5.24b (DW-14) it asks for nothing the plan cannot hold: the paid idle-timeout field, '
   'its 402 retry and its stated-not-applied line are gone. Stories 1.4, 2.1, 2.3.'),
- ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts.'),
- ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost.'),
+ ('tools/probe/run-verify-13.py', 'tool', 'Register probe · item 13', 'Docs-versus-code conflicts; its probe theme is restored, deleted and read back whatever fails (DW-237).'),
+ ('tools/probe/run-verify-47.py', 'tool', 'Register probe · item 47', 'The {{#get}} abort threshold. Found there is none per template — Ghost races each get against 5000 ms on both majors — and measured the real marginal cost of a hand-picked item. --identical isolates Ghost 6 query dedup from real query cost. Its probe theme is restored, deleted and read back whatever fails (DW-237).'),
  ('tools/probe/run-verify-a33-cards.py', 'tool', 'Register probe · Koenig card selectors',
   'Reads the class names Ghost\'s own card renderers emit, on both majors, to settle the six '
   'selectors A33 had marked unverified. A SOURCE read rather than a render, and deliberately: the '

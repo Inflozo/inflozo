@@ -152,10 +152,12 @@ def run(g, label, results):
     previous = shim.start_guard(g)
     print(f'    previously active theme: {previous!r}')
 
-    st, res = g.upload(zip_dir(THEME), 'inflozo-probe-47.zip')
-    name = res['themes'][0]['name']
-    print(f'    uploaded {name!r} HTTP {st}')
+    uploaded = []  # review 5.24c: the upload sits inside the try, so a theme Ghost took is deleted whatever follows
     try:
+        st, res = g.upload(zip_dir(THEME), 'inflozo-probe-47.zip')
+        name = res['themes'][0]['name']
+        uploaded.append(name)
+        print(f'    uploaded {name!r} HTTP {st}')
         for w in (res['themes'][0].get('gscan') or {}).get('errors', [])[:5]:
             print(f'    gscan error: {w}')
         g.api('PUT', f'themes/{name}/activate/')
@@ -197,7 +199,7 @@ def run(g, label, results):
                                 best=round(times[0], 3), median=round(median, 3),
                                 resolved=resolved, aborted=aborted, degraded=degraded))
     finally:
-        shim.restore_and_delete(g, previous, [name])
+        shim.restore_and_delete(g, previous, uploaded)
 
 
 def main():

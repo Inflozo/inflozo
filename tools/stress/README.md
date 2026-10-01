@@ -4,13 +4,15 @@ Closes **Round 1 decision 10**, open since round 1 and blocking `MEASUREMENTS.md
 
     pnpm install           # at the repo root, once — compile.js resolves @inflozo/section-runtime through the workspace
     npm install            # here
-    node build.js          # compile the stress sections (the run prints how many) — every archetype over every template,
+    node build.js          # compile the stress sections (the run prints how many) — every archetype over every template
+                           # its scope allows (R-7 keeps a query-carrying kind off error.hbs),
                            # and since Story 5.19 the feed as a secondary feed once per Source — assemble, gate, zip — Node 24
     node gate.js theme     # the AD-34 two-checker verdict (gscan 4.49.7 + 6.4.2)
 
 `sections.js` holds the annotated-HTML archetypes, one per kind, sized from `sections-inventory.md`
 against the spike's toy hero — the ~7.4x Round 1 measured and could not re-measure because no
-fixture was checked in; the sizes are `MEASUREMENTS.md` §14's, dated. Each archetype declares its
+fixture was checked in; the sizes are `MEASUREMENTS.md` §14's, dated — before Story 5.24c moved the header's and
+footer's navigation and pricing's tiers onto Ghost's own helpers and queries, which made those three smaller. Each archetype declares its
 own `{{#get}}` queries and the template it renders at, and `test-vocabulary.mjs` renders it there
 (Story 5.24c, DW-125).
 

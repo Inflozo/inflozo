@@ -3398,8 +3398,8 @@ async function styleSetting(page) {
 }
 
 /** Each design whose markup OPENS WITH A COMMENT, by its root's first class, with the comment's words — read off the
- *  library and its fixtures, so nothing here names a design. Compared as WORDS, whitespace folded on both sides: the canvas
- *  draws controls/2's comment without the blank line its file has (executed at 5.23a's Dev), and that is not a lost comment. */
+ *  library and its fixtures, so nothing here names a design. Since Story 5.24c (DW-159) the set is the CONTROL: these are
+ *  the sections whose drawing exercised the drop. */
 const folded = (words) => words.replace(/\s+/g, ' ').trim()
 const OPENING_COMMENTS = (() => {
   const lib = new URL('../../packages/library/', import.meta.url)
@@ -3411,21 +3411,17 @@ const OPENING_COMMENTS = (() => {
         return opening === null ? [] : [[opening[2], folded(opening[1])]]
       })))
 })()
-/** A part OWNS every top-level node it parses to (Story 5.23a): so every root whose design opens with a comment is drawn
- *  with that comment directly before it, wherever a keyed paint has moved it. How many such roots are drawn, and which
- *  have lost theirs. */
+/** A part OWNS every top-level node it parses to (Story 5.23a) — and since Story 5.24c (DW-159) a design's comment is
+ *  drawn by NEITHER emitter, so the one top-level node a part parses to is its root. The pin that read each root's
+ *  opening comment back (5.23a) lost its observable there; what it holds now is DW-159 on the live canvas: no comment
+ *  node anywhere under #canvas, with the control that sections whose FILE opens with a comment were drawn. */
 const commentsKept = (page) =>
   canvasFrame(page).locator('#canvas').evaluate((c, openings) => {
     let drawn = 0
+    for (const el of c.children) if (openings[el.classList[0]] !== undefined) drawn++
     const lost = []
-    for (const [n, el] of [...c.children].entries()) {
-      const words = openings[el.classList[0]]
-      if (words === undefined) continue
-      drawn++
-      let before = el.previousSibling
-      while (before !== null && before.nodeType === 3 && before.data.trim() === '') before = before.previousSibling
-      if (before === null || before.nodeType !== 8 || before.data.replace(/\s+/g, ' ').trim() !== words) lost.push(`root ${n} (${el.className})`)
-    }
+    const walker = c.ownerDocument.createTreeWalker(c, 128 /* NodeFilter.SHOW_COMMENT */)
+    while (walker.nextNode() !== null) lost.push(walker.currentNode.data.replace(/\s+/g, ' ').trim().slice(0, 40))
     return { drawn, lost }
   }, OPENING_COMMENTS)
 
@@ -3532,7 +3528,7 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     expect(await tagsOf(page), 'a thumbnail: that section alone is new').toEqual(kept(n).toSpliced(ringed, 1, null))
 
     // ── A MOVE — ⌥↓ and ⌥↑ on a Layers row: nothing rendered, every root the same node, the moved one a place on — and a
-    //    section whose part opens with a comment (the controls fixtures do) moves WITH its comment
+    //    section whose FILE opens with a comment (the controls fixtures do) is drawn without it (DW-159)
     const [, second, third, fourth, , sixth] = await own()
     await select(page, fourth)
     const from = await selectedPlace(page)
@@ -3544,7 +3540,7 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     const carried = await commentsKept(page)
     const movedClass = await canvasFrame(page).locator('#canvas').evaluate((c, at) => c.children[at].classList[0], from + 1)
     expect(Object.keys(OPENING_COMMENTS), 'the control: the section moved opens with a comment').toContain(movedClass)
-    expect(carried.lost, 'a part owns its comment: it moved with its root').toEqual([])
+    expect(carried.lost, 'DW-159: a design\'s comment is drawn by neither emitter — none on the canvas after a move').toEqual([])
     await page.keyboard.press('Alt+ArrowUp')
     await expect.poll(async () => (await own()).indexOf(fourth)).toBe(3)
     expect(await tagsOf(page), '⌥↑: every root the same node, back in its place').toEqual(kept(n))
@@ -3666,10 +3662,10 @@ test.describe('Story 5.23a — the canvas redraws only what changed, on the long
     await expect(bar(page)).toHaveCount(0)
     expect(allNew(await tagsOf(page)), 'the control: Preview in and out is a whole-page repaint').toBe(true)
     expect(await differs(page), 'the full repaint equals the keyed canvas, node for node').toBeNull()
-    // and the one walk both paints take keeps every part's comment — which no comparison between the two could see
+    // and the one walk both paints take drops every design's comment (DW-159) — which no comparison between the two could see
     const whole = await commentsKept(page)
-    expect(whole.drawn, 'the control: the long Home draws sections whose part opens with a comment').toBeGreaterThan(0)
-    expect(whole.lost, 'every part drawn with its own comment').toEqual([])
+    expect(whole.drawn, 'the control: the long Home draws sections whose file opens with a comment').toBeGreaterThan(0)
+    expect(whole.lost, 'no design\'s comment is on the canvas after the full repaint').toEqual([])
   })
 
   test('a pointed-at section the paint keeps stays pointed at — its outline and pill with it — and one the paint redraws is let go', async ({ page }) => {

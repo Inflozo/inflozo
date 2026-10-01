@@ -3990,7 +3990,7 @@ null — `setEmptyValuesToNull`, `core/server/models/base/plugins/data-manipulat
 never-set password cannot be written back as `''`, and both read as no password (`settingsCache.get('password')` is falsy
 either way). The recorder now reads `''` as `None` (`settings_of`, citing this), and the second run passed on both: per
 server one theme upload, two activations and its DELETE (read back), then LAST `is_private` `true` with a throwaway
-password (never printed or recorded) for a few seconds while `/private/` and a wrong password's POST were fetched — both
+password (never printed or recorded) for under a minute while `/private/` and a wrong password's POST were fetched — both
 HTTP 200, the error "Incorrect password." on 5 and "Incorrect access code." on 6 — then both settings PUT back and read
 back: `is_private` `false`, the password empty. T1 was written only by the second run.
 

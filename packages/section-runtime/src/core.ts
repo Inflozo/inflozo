@@ -1248,8 +1248,8 @@ function applyProps(
         // attributes in exactly one place, `linkAttributes`, which the `a` mark calls too. A record
         // with no valid destination sets nothing, so FR-F8's unset link hides like any unset prop. DW-96: a typed
         // destination folds to one line first, as every attribute does — unfolded, the canvas's `tidy` dropped a blank
-        // line the theme kept, and the browser's own URL parser would strip the break the scheme check never saw.
-        const attrs = linkAttributes(isRich(raw) ? oneLine(raw.text) : typeof raw === 'string' ? oneLine(raw) : raw)
+        // line the theme kept — and `linkAttributes` folds a record's own href, so the `a` mark is covered too.
+        const attrs = linkAttributes(isRich(raw) ? oneLine(raw.text) : raw)
         if (attrs['href'] === undefined) {
           if (i === 0) firstMissing = true
           continue
@@ -1628,6 +1628,12 @@ export type ThemeOutput = { template: string; partials: Record<string, string> }
 function dropComments(root: RuntimeElement): void {
   const notes = [root, ...root.querySelectorAll('*')].flatMap((el) => [...el.childNodes].filter((n) => n.nodeType === 8))
   for (const n of notes) n.remove()
+  // review 5.24c: a <template>'s content is a separate tree `querySelectorAll` never enters — a browser's DOM, or the
+  // test parser's, exposes it as `content`; a comment there shipped
+  for (const el of [root, ...root.querySelectorAll('template')]) {
+    const inner = (el as { content?: RuntimeElement }).content
+    if (inner !== undefined) dropComments(inner)
+  }
 }
 
 /** The shared walk. `users !== null` is the theme; `users === null` is the canvas. */

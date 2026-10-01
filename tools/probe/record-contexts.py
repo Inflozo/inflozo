@@ -346,7 +346,7 @@ def settings_of(g, keys):
 
 
 def private_pages(g, probe):
-    """Story 5.24c (DW-127), the owner's ruling on its Question 1, item 7: PRIVATE MODE FOR ABOUT A MINUTE. `is_private` and
+    """Story 5.24c (DW-127), the owner's ruling on its Question 1, item 7: PRIVATE MODE FOR UNDER A MINUTE. `is_private` and
     a throwaway password (never recorded) are switched on; `/private/` renders the theme's private.hbs, and a POST of a
     wrong password renders it again with `error.message` — "Incorrect password." on 5, "Incorrect access code." on 6
     (core/frontend/apps/private-blogging/lib/middleware.js). Both settings go back to what they were in a `finally`, and
@@ -373,9 +373,13 @@ def private_pages(g, probe):
     finally:
         try:
             g.api('PUT', 'settings/', {'settings': [{'key': k, 'value': v} for k, v in before.items()]})
-        except Exception as e:  # a site left private is the one outcome this must not have: is_private alone, then read back
-            print(f'    restoring both settings FAILED ({type(e).__name__}: {e}) — restoring is_private alone')
-            g.api('PUT', 'settings/', {'settings': [{'key': 'is_private', 'value': before['is_private']}]})
+        except Exception as e:  # a site left private is the one outcome this must not have: each key alone, then read back
+            print(f'    restoring both settings FAILED ({type(e).__name__}: {e}) — restoring each setting alone')
+            for k in PRIVATE_KEYS:  # review 5.24c: a second failure is printed, never raised, so the read-back always runs
+                try:
+                    g.api('PUT', 'settings/', {'settings': [{'key': k, 'value': before[k]}]})
+                except Exception as e2:
+                    print(f'    restoring {k} FAILED ({type(e2).__name__}: {e2})')
         after = settings_of(g, PRIVATE_KEYS)
         print(f'    private mode RESTORED -> is_private={after["is_private"]!r}, password {"unchanged" if after == before else "CHANGED"}')
         if after != before:
@@ -413,7 +417,7 @@ def record(g, probe, zipped):
             pages.append({'template': template, 'path': path, 'http': st, 'frames': frames,
                           'universal': universal, 'controls': controls})
             print(f'    [{template}] HTTP {st} {path} — {len(frames)} frames, {len(universal)} universal, {len(controls)} controls')
-        pages += private_pages(g, probe)  # LAST, and for about a minute: the site asks every visitor for a password
+        pages += private_pages(g, probe)  # LAST, and for under a minute: the site asks every visitor for a password
     finally:
         shim.restore_and_delete(g, previous, [name])
     failures = controls_held(pages)

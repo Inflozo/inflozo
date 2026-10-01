@@ -243,8 +243,8 @@ const pagedFeed = (i) => A.feed(i)
 const source = ({ kind, i }) => (kind === 'pagedFeed' ? pagedFeed(i) : A[kind](i));
 
 // Each kind's declared {{#get}} queries — design.json's `dataBindings`, the key its data-repeat names — and its own target,
-// where `test-vocabulary.mjs` renders it (FR-H7). R-7 refuses a get on the error and private templates, so `build.js` keeps
-// a kind with queries off error.hbs. The stack itself still renders with no target: DW-296's, Story 7.35's.
+// where `test-vocabulary.mjs` renders it (FR-H7). R-7 refuses a get on the error template, so `stackFor` keeps a kind with
+// queries off error.hbs (`test-vocabulary.mjs` holds it). The stack itself still renders with no target: DW-296's, Story 7.35's.
 const QUERIES = {
   pricing: { plans: { source: 'tiers', filter: 'type:paid+visibility:public' } },   // as fixtures/paywall/2 declares it
   content: { related: { source: 'posts', limit: 3, order: 'published_at desc' } },
@@ -254,4 +254,7 @@ const TARGET = {
   gallery: 'page.hbs', cta: 'post.hbs', content: 'post.hbs', footer: 'default.hbs',
 };
 
-module.exports = { A, ORDER, stressStack, source, QUERIES, TARGET };
+/** The stack `build.js` renders into one template: every kind, but a query-carrying one off `error` (R-7). */
+const stackFor = (file, n) => stressStack(n).filter((s) => !(file === 'error' && QUERIES[s.kind]));
+
+module.exports = { A, ORDER, stressStack, stackFor, source, QUERIES, TARGET };

@@ -163,11 +163,13 @@ def run(g, label):
 def theme_phase(g, label, gated, prev_settings):
     previous = shim.start_guard(g)
 
-    st, res = g.upload(zip_dir(THEME), 'inflozo-probe-all.zip')
-    t = res['themes'][0]
-    print(f'\n[theme]   uploaded {t["name"]!r} HTTP {st}')
-
+    uploaded = []  # review 5.24c: the upload sits inside the try, so a theme Ghost took is deleted whatever follows
     try:
+        st, res = g.upload(zip_dir(THEME), 'inflozo-probe-all.zip')
+        t = res['themes'][0]
+        uploaded.append(t['name'])
+        print(f'\n[theme]   uploaded {t["name"]!r} HTTP {st}')
+
         # -------------------------------------------------------------- item 14c
         tmpl = t.get('templates') or []
         print(f'\n[item 14c] custom templates Ghost derived from the FILENAMES:')
@@ -217,7 +219,7 @@ def theme_phase(g, label, gated, prev_settings):
         print(f'\n[conflict 2] error.hbs (non-404) — attempts')
         print(f'    invalid content-key route -> HTTP {st}, probe block present: {"YES" if grab(html) else "no"}')
     finally:
-        shim.restore_and_delete(g, previous, [t['name']])
+        shim.restore_and_delete(g, previous, uploaded)
 
 
 if __name__ == '__main__':
