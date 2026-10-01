@@ -2,7 +2,7 @@
 title: 'Story 5.24c — The sweep: the section runtime, the library and the recordings'
 type: 'chore'
 created: '2026-09-29'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: 'e350c124f47534fcea436647210d416fec0e0d31'
@@ -903,3 +903,12 @@ included), `pnpm check`, `pnpm keyboard`'s 5.23a journey, the stress gscan 0/0 o
 - **Not touched at Dev:** Supabase, Vercel, Resend and Dodo — this story changes no table, route, email or payment, and
   `/pilots` draws what it drew. GitHub Actions (`ci.yml`, `matrix.yml`) and the Vercel deployment run on this push and are
   read at Review, with `node tools/probe/run-verify-pilots.cjs` against `app.inflozo.com`.
+
+**Executed at Deploy (2026-10-01).** App code only: the diff from the baseline to HEAD touches nothing under `supabase/`, so
+there is no schema step, and the rest is tooling. `owner_test: none`, so this Deploy is also Done.
+
+- **CI, for HEAD `20d23a27`** (GitHub API, `GITHUB_TOKEN` by name): `ci.yml` run 36818148229 — `check`, `rls` and `deploy`
+  all `completed`/`success`; `matrix.yml` run 36818148174 `completed`/`success`.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): the deployment for that
+  sha is `READY`, target `production`, alias assigned. `https://app.inflozo.com/sign-in` answers HTTP 200.
+- **Deployment: `dpl_62eHzvksdBK7DQBceZwaGsQJ5HXw` (https://app.inflozo.com/).**
