@@ -2,7 +2,7 @@
 title: 'Story 5.24d — The sweep: the checks and the walks'
 type: 'chore'
 created: '2026-10-01'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '03d7393a4228bf29e92556aa151a892f2a1c486b'
@@ -832,3 +832,14 @@ before any patch touched the tree. Keys by variable name only.
   run-verify-live-content.cjs` **0 FAIL, 157 PASS** on both majors, the subject read-back PASS on T3 and T1, and both
   sites put back and read back (`signup_access` `all`, `paid_enabled` true; `portal_button` false,
   `announcement_visibility` `["visitors"]`). The story stays in review: Deploy and the owner's word follow (R-80).
+
+**Executed at Deploy (2026-10-02).** App code and tooling; no migration under `supabase/migrations/` in the diff from the
+baseline (the one `supabase/` change is `tests/rls.sql`, the RLS gate's own seed, DW-245, which `rls` ran in CI), so there is
+no schema step. `owner_test: none`, so this Deploy is also Done.
+
+- **CI, for HEAD `b77ed3c2e814f0a92c89716f9f877b7089b63c9f`** (GitHub API, `GITHUB_TOKEN` by name): `ci.yml` run 36903173503 — `check`, `rls` and `deploy`
+  all `success`; `matrix.yml` runs 36903173645 and 36948695377 `success`.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): the deployment for that sha
+  is `READY`, target `production`. `https://app.inflozo.com/sign-in` answers HTTP 200 (`/app/sign-in` 308 to it) and
+  `https://inflozo.com/` 200.
+- **Deployment: `dpl_FSWszANKCAmG6zBhX3eqLgnM3CBk` (https://app.inflozo.com/).**
