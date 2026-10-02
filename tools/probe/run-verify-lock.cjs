@@ -866,9 +866,26 @@ async function main() {
       const databases = () => S.evaluate(async () => (await indexedDB.databases()).map((d) => d.name)).catch(() => null)
       const before = await databases()
       const cloudBefore = await homeDoc()
-      await S.locator('button[popovertarget="account-menu"]').click()
-      await S.getByRole('button', { name: 'Sign out', exact: true }).click()
-      await S.waitForURL(/\/sign-in/, { timeout: 60000 }).catch(() => null)
+      // A SEND THAT GOT NO ANSWER ASKS FIRST, which is the product working — and on 2026-10-02's Review run it is what a
+      // network stall made of this stop: no save reached Vercel for the minute, the browser's own lock beats were missing
+      // with it, and the row failed with nothing to say which. So the ask is LOOKED FOR: if "Sign out with unsent work?"
+      // opens, that is recorded as a `stall` note, Wait is pressed, and the sign-out is pressed once more (the 5.24d rule:
+      // an idempotent step is retried once and said). A second ask is the row's FAIL, with the ask named in its detail.
+      const signOut = async () => {
+        if (!(await S.locator('#account-menu').evaluate((m) => m.matches(':popover-open')))) await S.locator('button[popovertarget="account-menu"]').click()
+        await S.locator('#account-menu').getByRole('button', { name: 'Sign out', exact: true }).click()
+        return Promise.race([
+          S.waitForURL(/\/sign-in/, { timeout: 60000 }).then(() => 'signed out', () => 'neither'),
+          S.locator('#account-menu-sign-out-title').waitFor({ state: 'visible', timeout: 60000 }).then(() => 'asked', () => 'neither'),
+        ])
+      }
+      let went = await signOut()
+      if (went === 'asked') {
+        note('stall', `${new Date().toISOString()} R-214's send got no answer and the ask opened — Wait pressed, sign-out pressed once more`)
+        await S.getByRole('button', { name: LOCK.LOCK_COPY.wait, exact: true }).click()
+        await S.waitForTimeout(1000)
+        went = await signOut()
+      }
       await S.waitForTimeout(1000)
       const after = await databases()
       const cloudAfter = await homeDoc()
@@ -878,7 +895,7 @@ async function main() {
         JSON.stringify({ victim, owedThen, refused, before, inCloud: victim !== null && cloudBefore.includes(victim) }))
       check('R-214 — Sign out sent the owed edit, erased this browser\'s copy and then signed out',
         /\/sign-in/.test(S.url()) && Array.isArray(after) && !after.includes(database) && victim !== null && !cloudAfter.includes(victim),
-        JSON.stringify({ at: new URL(S.url()).pathname, after, inCloud: victim !== null && cloudAfter.includes(victim) }))
+        JSON.stringify({ at: new URL(S.url()).pathname, went, after, inCloud: victim !== null && cloudAfter.includes(victim) }))
       await S.close()
     }
 

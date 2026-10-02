@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { nativeResourceOf, orbitWeekly } from '@inflozo/library'
 import { CANVASES, type CanvasKey } from './lib/editor.ts'
 import {
-  GONE, SAVE_REFUSED, SEARCH_WORDS, SOURCE_WORDS, SUBJECT_HEADING, SUBJECT_HELP, SUBJECT_SAID,
+  GONE, SAVE_REFUSED, SAVE_UNANSWERED, SEARCH_WORDS, SOURCE_WORDS, SUBJECT_HEADING, SUBJECT_HELP, SUBJECT_SAID,
   bundledSource, clearPending, dateWords, filterSubjects, hasSubject, PENDING_KEY, postsWords, readPending, subjectLabel,
   subjectOptions, writePending,
 } from './lib/preview-subject.ts'
@@ -119,6 +119,9 @@ test('the sentences read as plain English, name the kind, and say the choice is 
   )
   assert.match(SUBJECT_HELP('tag'), /that tag's own posts and no others/)
   assert.match(SAVE_REFUSED, /when you reload/)
+  // the unanswered write's pick waits and is sent again (DW-223), so its sentence never says it will go back
+  assert.match(SAVE_UNANSWERED, /sent again when you reload/)
+  assert.doesNotMatch(SAVE_UNANSWERED, /go back/)
 })
 
 /* ── DW-223 (Story 5.24e): the pick waits in this tab until its write answers ─────────────────────────────────────── */

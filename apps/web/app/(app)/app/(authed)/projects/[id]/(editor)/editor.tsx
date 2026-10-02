@@ -78,7 +78,7 @@ import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, oneValue, type Layout } from '@/lib/reorder'
 import { canvasFirst, counted, useHanded, useSaid, useStable } from '@/lib/renders'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
-import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, clearPending, hasSubject, readPending, siteSubjects, subjectOptions, writePending } from '@/lib/preview-subject'
+import { GONE, SAVE_UNANSWERED, SUBJECT_SAID, bundledSource, cappedPosts, clearPending, hasSubject, readPending, siteSubjects, subjectOptions, writePending } from '@/lib/preview-subject'
 import {
   bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SEARCH_DEBOUNCE_MS,
   searchFor, searchInForce, SETTINGS, siteLinks, siteTotal, subjectRead, withFound, type Cause, type LiveQuery,
@@ -1660,7 +1660,17 @@ function EditorShell({
       rest(true)
       return
     }
-    if (asked === 'nothing') return
+    // A BACKOFF WHOSE TURN FINDS NOTHING TO SEND, OR NO LOCK TO SEND UNDER, IS OVER (the review, 2026-10-02): the timer
+    // that called this has stopped, so without this the indicator said Retrying — or Signed out — for good, about work
+    // this session no longer owes or may no longer send (a take-over mid-backoff drops the journal; `land` re-rests only
+    // the signed-out case).
+    const backoffOver = () => {
+      if (why !== 'retry') return
+      signedOut.current = false
+      attempt.current = 0
+      rest(true)
+    }
+    if (asked === 'nothing') return backoffOver()
     // DW-203 (Story 5.24e): ONLY THE HOLDER SENDS. A tab reading along in the same browser shares the holder's
     // IndexedDB, and before this it adopted the holder's pending journal, sent it when hidden, took the 423 and then
     // dropped the holder's own on-device record (executed at 5.24e's Create). The hydrate no longer adopts it either;
@@ -1669,8 +1679,8 @@ function EditorShell({
     // paint and then lost the `acquire` keeps those edits in its journal, unsent and unannounced, where before this wall
     // the 423 path displaced it and said so (review, 2026-09-24). The shared on-device record is deliberately NOT reset
     // here: in the same-browser race it is the holder's. The upgrade is `land()` telling a session that typed before its
-    // first answer, when that answer makes it a reader, what it holds.
-    if (!now.lock.holder) return
+    // first answer, when that answer makes it a reader, what it holds — DW-308, Story 7.18's.
+    if (!now.lock.holder) return backoffOver()
     const payload = flushPayload(now.journal, now.docs)
     if (Object.keys(payload).length === 0) return
     if (inFlight.current) {
@@ -2482,7 +2492,8 @@ function EditorShell({
           clearPending(tabStore(), project.id, stored, next)
           return said
         },
-        () => ({ error: SAVE_REFUSED }),
+        // …so its sentence is the one that is true of a pick still waiting, never `SAVE_REFUSED`'s "will go back"
+        () => ({ error: SAVE_UNANSWERED }),
       )
       // review, 2026-09-21: an answer that a later choice or a canvas switch has overtaken is dropped — a refusal
       // belongs to the canvas and the choice it was refused on. And it is SAID: the menu that carries the sentence

@@ -189,7 +189,7 @@ test('every colour the email shell writes is a token value in the theme', () => 
 
 test('every colour Ghost\'s two surfaces write is one Ghost itself put on a page, or Ghost\'s own default accent', () => {
   const source = readFileSync(join(process.cwd(), GHOST), 'utf8')
-  const written = [...new Set(source.match(/#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g) ?? [])]
+  const written = [...new Set(source.match(/#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g) ?? [])]
   assert.ok(written.length > 0, `${GHOST} carries no colour at all — delete its exemption with them`)
   // what Ghost put on T1's and T3's pages, as recorded: the bar's sheet and close icon, Portal's frame sheet and icons —
   // the person per style, and since DW-278 the five presets — those fields ALONE, never the whole recording, which also

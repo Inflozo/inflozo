@@ -30,7 +30,7 @@ export function env(name: 'SUPABASE_URL' | 'SUPABASE_PUBLISHABLE_KEY' | 'SUPABAS
   return value
 }
 
-export async function supabaseServer() {
+export async function supabaseServer(writes = true) {
   const store = await cookies()
   return createServerClient(env('SUPABASE_URL'), env('SUPABASE_PUBLISHABLE_KEY'), {
     // THE PASSKEY API IS OPT-IN AND THROWS WITHOUT THIS. `auth-js` 2.115.0 asserts the flag at
@@ -44,6 +44,8 @@ export async function supabaseServer() {
     cookies: {
       getAll: () => store.getAll(),
       setAll(written) {
+        // `quietSession()` below: a caller that must leave the cookies exactly as they came
+        if (!writes) return
         // In a server component `cookies()` is read-only and this throws; the refresh in
         // `proxy.ts` has already written the same cookies on that request, so swallowing it
         // is correct rather than convenient. A server action or a route handler CAN write,
@@ -104,6 +106,22 @@ export const currentUser = cache(async function currentUser() {
   const { data } = await (await supabaseServer()).auth.getUser()
   return data.user
 })
+
+/**
+ * THE USER AND THEIR CLIENT, WITH THE COOKIES LEFT AS THEY CAME — for a server action that must REFUSE a signed-out
+ * call without moving the tab (R-213, the editor's three). `getUser()` on a session that has ended elsewhere REMOVES its
+ * cookies, and a cookie written inside a server action makes Next re-render the route the action was called from: the
+ * `(authed)` layout then redirected the tab to `/sign-in` — the very redirect those actions stopped making themselves.
+ * Executed on production at Story 5.24e's review (2026-10-02): the action answered 200 with `x-action-revalidated: 1`
+ * and a `Set-Cookie` dropping the session, and the editor tab was on `/sign-in` 330 ms later. Nothing is lost by not
+ * writing: `proxy.ts` has already refreshed a live session on this same request, and drops a dead one's cookies on the
+ * next request that is not an action.
+ */
+export async function quietSession() {
+  const supabase = await supabaseServer(false)
+  const { data } = await supabase.auth.getUser()
+  return { user: data.user, supabase }
+}
 
 /**
  * THE SESSION, ON ITS OWN — the guard a server action runs before it acts. A session that ended

@@ -194,6 +194,8 @@ test('readMarks: an element\'s own style is a mark — weight 600, 700, bold or 
   for (const w of ['400', '500', 'normal']) assert.deepEqual(marked(`<span style="font-weight:${w}">x</span>`), [], w)
   assert.deepEqual(readMarks(parse('<b style="font-weight:normal">words</b>'), ['strong'], false), { text: 'words' }, 'the wrapper alone')
   assert.deepEqual(marked('<i style="font-style:normal">x</i>'), [], 'an italic tag its own style makes upright')
+  assert.deepEqual(marked('<u style="text-decoration:none">x</u>'), [], 'an underline tag its own style takes away')
+  assert.deepEqual(marked('<u>x</u>'), ['u'], 'and the bare tag keeps it')
   assert.deepEqual(marked('<em style="font-weight:400">x</em>'), ['em'], 'a weight cancels bold only, never the italic of the tag it sits on')
   assert.deepEqual(marked('<span style="text-decoration:underline line-through">x</span>'), ['u'])
   assert.deepEqual(marked('<a href="https://x.example/" style="font-weight:bold">x</a>'), ['a', 'strong'], 'a link\'s own style is a mark too')

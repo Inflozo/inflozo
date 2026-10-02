@@ -22,6 +22,7 @@ const SITE_SETTINGS = join('server', 'site-settings.ts')
 const SITE_HEALTH = join('server', 'site-health.ts')
 const KEYS_SCREEN = join('app', '(app)', 'app', '(authed)', 'sites', 'keys-screen.tsx')
 const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
+const EDITOR_READ = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'read.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -661,15 +662,48 @@ test('R-213: no editor action redirects a signed-out tab — each reads the user
   const escape = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   /** the rule for one action: no redirecting guard, the user READ, and none answered with its own refusal at once */
   const refuses = (body: string, refusal: string) =>
-    !/\bsignedIn\(/.test(body) && new RegExp(`const user = await currentUser\\(\\)\\s*\\n\\s*if \\(!user\\) return ${escape(refusal)}`).test(body)
+    // …and read QUIETLY (the review, 2026-10-02): `currentUser()` or a bare `supabaseServer()` writes a dead session's
+    // cookie removal inside the action, which re-renders the route into the layout's redirect — executed on production
+    !/\bsignedIn\(|\bcurrentUser\(|\bsupabaseServer\(/.test(body) && new RegExp(`const \\{ user, supabase \\} = await quietSession\\(\\)\\s*\\n\\s*if \\(!user\\) return ${escape(refusal)}`).test(body)
   for (const name of names) assert.ok(refuses(bodyOf(code, name), REFUSALS[name]!), `${EDITOR_ACTIONS}: ${name} does not read the user and refuse with ${REFUSALS[name]}`)
   // the controls, each from the file itself: HEAD's redirecting guard, an export that reads no user, and another
   // action's refusal answered in place of its own — each is caught
   for (const name of names) {
     const body = bodyOf(code, name)
-    assert.equal(refuses(body.replace(/const user = await currentUser\(\)\s*\n\s*if \(!user\) return [^\n]*\n/, 'const user = await signedIn()\n'), REFUSALS[name]!), false, `control: ${name} with signedIn()`)
-    assert.equal(refuses(body.replace(/const user = await currentUser\(\)\s*\n\s*if \(!user\) return [^\n]*\n/, ''), REFUSALS[name]!), false, `control: ${name} reading no user`)
+    assert.equal(refuses(body.replace(/const \{ user, supabase \} = await quietSession\(\)\s*\n\s*if \(!user\) return [^\n]*\n/, 'const user = await signedIn()\n'), REFUSALS[name]!), false, `control: ${name} with signedIn()`)
+    assert.equal(refuses(body.replace(/const \{ user, supabase \} = await quietSession\(\)\s*\n\s*if \(!user\) return [^\n]*\n/, ''), REFUSALS[name]!), false, `control: ${name} reading no user`)
+    assert.equal(refuses(body.replace('await quietSession()', '{ user: await currentUser(), supabase: await supabaseServer() }'), REFUSALS[name]!), false, `control: ${name} reading the user the cookie-writing way`)
     const other = Object.values(REFUSALS).find((r) => r !== REFUSALS[name])!
     assert.equal(refuses(body, other), false, `control: ${name} answering ${other}`)
   }
+})
+
+test('R-214: the shell hands its user to every page it draws, not the editor alone — Sign out everywhere reads the id there', () => {
+  // `sessions-card.tsx` takes the user's id from `useShellUser()`, and `useSignOut` with no id signs out without sending
+  // or erasing. The provider stood on the editor branch only, so on production Account's door skipped R-214 whole (the
+  // review of 5.24e, the deployed walk's step 8). Both of the shell's returns provide it.
+  const shell = readFileSync(join(process.cwd(), 'components', 'shell', 'shell.tsx'), 'utf8')
+  // one per `<main>` the shell draws: the editor path's and every other page's
+  assert.equal(shell.split('<ShellUserContext value={user}>{children}</ShellUserContext>').length - 1, 2, 'a main draws its children with no user')
+  assert.match(readFileSync(join(process.cwd(), 'app', '(app)', 'app', '(authed)', 'account', 'sessions-card.tsx'), 'utf8'), /useSignOut\(useShellUser\(\)\?\.id/)
+})
+
+test('DW-198: /pilots hands the Sidebar the mode it is showing, never a fixed one', () => {
+  // `mode` is required on the Sidebar, so the typecheck finds a caller that forgets it — but not one that passes
+  // "light" while showing dark, which is the defect DW-198 was reported on. `/pilots` is behind sign-in with no harness
+  // mount, so the keyboard gate cannot press it; the editor's own stop covers the Sidebar's half.
+  const review = readFileSync(join(process.cwd(), 'app', '(app)', 'app', '(authed)', 'pilots', 'review.tsx'), 'utf8')
+  const sidebar = review.slice(review.indexOf('<Sidebar'), review.indexOf('/>', review.indexOf('<Sidebar')))
+  assert.match(sidebar, /\bswatches=\{swatches\}/)
+  assert.match(sidebar, /\bmode=\{mode\}/)
+})
+
+test('DW-273: the editor\'s read asks for the linked site\'s ghost_version and hands it to siteWith', () => {
+  // `siteWith` and `paywallPage` are each unit-tested, and the keyboard journey walks the major from the site to the
+  // Paywall's box — on a harness fixture. This is the one link neither reaches: the column in the real read's select, and
+  // the read value given to the rule. Without either a Ghost 5 site's Paywall quietly draws Ghost 6's box.
+  const read = readFileSync(EDITOR_READ, 'utf8')
+  const select = /\.from\('sites'\)\s*\.select\('([^']*)'\)/.exec(read)?.[1] ?? ''
+  assert.ok(select.split(',').map((c) => c.trim()).includes('ghost_version'), `${EDITOR_READ}: the sites select no longer names ghost_version`)
+  assert.match(read.replace(/\s+/g, ' '), /siteWith\([^)]*\.ghost_version\)/, `${EDITOR_READ}: ghost_version no longer reaches siteWith`)
 })

@@ -189,6 +189,10 @@ export const SUBJECT_HELP = (kind: SubjectKind): string =>
  *  canvas has already repainted — so what the customer needs to know is that it will not survive a reload. */
 export const SAVE_REFUSED = "We couldn't save that choice, so this page will go back to its usual one when you reload."
 
+/** The write that got NO ANSWER (the connection dropped mid-call). Since DW-223 that pick waits in this tab and is sent
+ *  again on a reload, so `SAVE_REFUSED`'s "will go back to its usual one" would be untrue of it (5.24e's review). */
+export const SAVE_UNANSWERED = "We couldn't save that choice yet. It is kept in this tab and will be sent again when you reload."
+
 /* ── DW-223 (Story 5.24e): A PICK WAITS IN THIS TAB UNTIL ITS WRITE ANSWERS ─────────────────────────────────────────
  *
  * A subject is saved by a server action that answers a moment after the canvas repaints, and a reload in that moment

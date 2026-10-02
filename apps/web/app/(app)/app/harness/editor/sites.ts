@@ -1,5 +1,6 @@
 import { orbitWeekly } from '@inflozo/library'
 import type { EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
+import { siteWith } from '@/lib/live-content'
 import { storedSurfaces, type Surfaces } from '@/lib/probe-rule'
 
 /* ────────────────────────────── THE KEYBOARD HARNESS'S FIXTURES — the project and the linked sites its headers pick.
@@ -47,3 +48,8 @@ export const SURFACES_SITE: EditorData['site'] = { title: 'Harness site', origin
  *  neither surface, and the re-read on open answers `SURFACES` (`actions.ts`), so a journey sees a landed answer redraw
  *  them — the one thing a database-less harness could not see before. */
 export const SURFACES_LATER_SITE: EditorData['site'] = { title: 'Harness site', origin: 'https://127.0.0.1:9', key: 'harness', surfaces: storedSurfaces({}) }
+
+/** DW-273 — a linked site on Ghost 5 (`x-inflozo-harness-site: ghost-5`), THROUGH `siteWith`, the one rule `read.ts` hands
+ *  the editor its site by: a stored `ghost_version` of T3's shape and no snapshot, so the journey sees the major reach the
+ *  Paywall canvas's box — the wiring neither `siteWith`'s unit test nor `paywallPage`'s can see. */
+export const GHOST_5_SITE: EditorData['site'] = siteWith({ title: 'Harness site', origin: 'https://127.0.0.1:9', key: 'harness' }, null, '5.130.6')

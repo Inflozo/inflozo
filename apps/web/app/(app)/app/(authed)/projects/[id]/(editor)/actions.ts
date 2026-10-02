@@ -5,7 +5,7 @@ import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, isUuid } from '@/lib
 import { SAVE_REFUSED, type Subject } from '@/lib/preview-subject'
 import type { Members, Surfaces } from '@/lib/probe-rule'
 import { VISITORS, readViewed } from '@/lib/view-as'
-import { currentUser, supabaseServer } from '@/lib/supabase/server'
+import { quietSession } from '@/lib/supabase/server'
 import { readSettings } from '@/server/site-probe'
 
 /**
@@ -34,8 +34,10 @@ import { readSettings } from '@/server/site-probe'
  * A SIGNED-OUT CALL IS REFUSED, NEVER REDIRECTED (R-213, Story 5.24e) — in all three actions here. `signedIn()`
  * redirects, and Next navigates whatever the caller catches (`lib/action-redirect.ts`), so a tab whose session had
  * ended was taken off the editor — and away from the only copy of work it might hold — by a preview subject or a look.
- * The owner declined exactly that (5.24's Question 3, option 3). `currentUser()` and each action's existing refusal
- * instead; the editor's Signed out state is what says the session has gone.
+ * The owner declined exactly that (5.24's Question 3, option 3). `quietSession()` and each action's existing refusal
+ * instead; the editor's Signed out state is what says the session has gone. QUIET, because reading the user the
+ * ordinary way dropped a dead session's cookies inside the action, and Next then re-rendered the route into the
+ * layout's own redirect (the review, 2026-10-02 — `lib/supabase/server.ts` has the execution).
  */
 
 /** Ghost's own bound on a slug (`posts.slug varchar(191)`): the slug is not checked against the source here, so
@@ -52,9 +54,8 @@ export async function setPreviewSubject(projectId: string, templateKey: string, 
   // Story 5.18 — the one mark a subject may carry: chosen over the connected site. Anything else is refused, never kept
   if (subject.source !== undefined && subject.source !== 'site') return { error: SAVE_REFUSED }
 
-  const user = await currentUser()
+  const { user, supabase } = await quietSession()
   if (!user) return { error: SAVE_REFUSED }
-  const supabase = await supabaseServer()
   const { error } = await supabase.from('project_template_prefs').upsert(
     {
       project_id: projectId,
@@ -118,9 +119,8 @@ export async function setViewedStates(
     keys.add(key)
   }
 
-  const user = await currentUser()
+  const { user, supabase } = await quietSession()
   if (!user) return { error: VIEWED_REFUSED }
-  const supabase = await supabaseServer()
   // one timestamp for the one statement: the column defaults to `now()` on INSERT only, so the UPDATE half sets it
   const updatedAt = new Date().toISOString()
   const { error } = await supabase.from('project_template_prefs').upsert(
@@ -161,9 +161,8 @@ const ROUTE = 'projects/editor/recheck-site'
 
 export async function recheckSite(projectId: string): Promise<SiteResult> {
   if (!isUuid(projectId)) return { refused: true }
-  const user = await currentUser()
+  const { user, supabase } = await quietSession()
   if (!user) return { refused: true }
-  const supabase = await supabaseServer()
   const { data, error } = await supabase.from('projects').select('linked_site_id').eq('id', projectId).maybeSingle()
   if (error || !data?.linked_site_id) {
     if (error) console.error('projects/editor: site re-read could not read the project', { code: error.code })

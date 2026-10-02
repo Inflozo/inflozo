@@ -2,9 +2,9 @@
 title: 'Story 5.24e — The sweep: the editor'
 type: 'chore'
 created: '2026-10-02'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '0e8dcbb0b6418b11e862f0db86cf809e6d1ce85f'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
 ---
@@ -989,9 +989,77 @@ All anchors are at `0e8dcbb0`.
 - **The owner's test (R-80).** *Given* the deployed build, *when* the owner follows § Owner's manual test, *then* each
   step shows what it says.
 
+### Review Findings
+
+*Code review, 2026-10-02 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier on `app.inflozo.com`, Supabase, Vercel, GitHub Actions, T1 and T3), then the review's own new checks run against
+production. Every patch is applied in the Review commit, each new check seen red on its control. No question is the
+owner's; one finding is deferred to the ledger with a named owner (DW-308); 23 dismissed as noise or as calls the spec
+already made.*
+
+- [x] [Review][Patch] **Sign out everywhere neither sent nor erased (R-214) — on production.** The Account page read the
+  user's id from a provider the shell gave the editor's branch only, so `useSignOut` got null and signed out with the
+  owed edit unsent and `inflozo-doc-<user>` still on disk. Found by the editor walk's new arm on `663e9a4d`, the same in
+  four runs. The shell now hands the user to every page it draws. Controls: a `server-wiring.test.ts` row, red with the
+  provider removed; the walk's arm, red on `663e9a4d` [apps/web/components/shell/shell.tsx:424]
+- [x] [Review][Patch] **An editor action pressed with a dead session's cookie still held sent the tab to `/sign-in`
+  (R-213) — on production.** `setPreviewSubject` answered 200 with no redirect of its own, but `getUser()` removed the
+  dead session's cookies inside the action, and a cookie written in a server action makes Next re-render the route:
+  `x-action-revalidated: 1`, and the `(authed)` layout's guard had the tab on `/sign-in` 330 ms later. The three
+  actions now read the session through `quietSession()`, which writes no cookie. Controls: the `server-wiring.test.ts`
+  row, red on `currentUser()` or a bare `supabaseServer()`; the walk's arm, red on `663e9a4d`
+  [apps/web/lib/supabase/server.ts:108]
+- [x] [Review][Patch] The sign-out ask was not described to a screen reader: with no body, the dialog had no
+  `aria-describedby`, so "N unsynced edits will be lost" and "Signing out erases this browser's copy." were never said
+  as it opened. It is now described by its danger panel; the editor walk's step 8 reads the description
+  [apps/web/components/editor/lock-takeover.tsx:79]
+- [x] [Review][Patch] A pick whose save got no answer said "this page will go back to its usual one when you reload",
+  which DW-223 made untrue — that pick waits and is sent again. It now says `SAVE_UNANSWERED`. Control: a journey that
+  aborts the action, red with the old sentence [apps/web/lib/preview-subject.ts:192]
+- [x] [Review][Patch] A backoff whose turn found nothing to send, or no lock to send under, left the indicator on
+  Retrying for good (its timer had stopped). The flush now ends it. Control: a journey — Retrying, the lock taken over,
+  the backoff's turn — red with the fix a no-op
+  [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:1655]
+- [x] [Review][Patch] `check-schemas-off-rest.py` compared PostgREST's hint as an ordered list, so the same two schemas
+  named the other way round would have gone red and blocked `deploy`; a hint that was no string would have thrown. It
+  reads a set now. Controls: three self-check rows; the reordered hint answered WRONG on the old script
+  [tools/probe/check-schemas-off-rest.py:77]
+- [x] [Review][Patch] The four-digit `#rgba` branch reached one of `tokens.test.ts`'s two scans; the Ghost-surfaces scan
+  has it too [apps/web/tokens.test.ts:192]
+- [x] [Review][Patch] An underline tag whose own style says `text-decoration:none` kept its mark, where bold and italic
+  each had a cancel rule: `<u style="text-decoration:none">` is unmarked. Two `marks.test.ts` rows
+  [packages/section-runtime/src/marks.ts:616]
+- [x] [Review][Patch] **The lock walk failed its R-214 row in one of three clean deployed runs** (1 FAIL / 85 PASS; a
+  second run died on a timeout; the third 0 FAIL / 86 PASS). Vercel's request rows for that minute hold no `/sync` POST
+  and the holder's own lock beats are missing with it — a stall on the walk's side of the network, where the product's
+  answer is the ask. The walk could not say which. It now looks for the ask, notes a `stall`, presses Wait and signs
+  out once more; a second ask is the FAIL, named [tools/probe/run-verify-lock.cjs:869]
+- [x] [Review][Patch] R-214's `sent` message was tested at the receiver only, with a matching base: a message whose base
+  is not this editor's must change nothing. Control: red with the base test removed [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] DW-273's wiring had no check — the unit tests held `siteWith` and `paywallPage` apart. A harness
+  site on Ghost 5 and a journey stop (red with `major` dropped at the call), and a `server-wiring.test.ts` row for the
+  read's `ghost_version` [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] DW-248 was pressed in the source pill only. The Link Picker's and the Data group's searches each
+  send their one `title:~` read, and the capped line goes while the search is in force — each red on its plant
+  [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] R-215's let-go had no check: a pointed-at Ghost row the re-read no longer shows is released (red
+  with the block deleted). Its chosen-row half has no journey that can reach it — the only second re-read is the
+  Paywall's, and entering it already clears the selection [tools/keyboard/journey.spec.mjs]
+- [x] [Review][Patch] `/pilots` passing the mode it shows (DW-198) had no check, and the keyboard gate cannot reach that
+  page: a `server-wiring.test.ts` row holds the two props [apps/web/server-wiring.test.ts]
+- [x] [Review][Patch] Story 5.21's stop asserted `toHaveClass(/bg-coral-wash/)`, which every row passes through its
+  `hover:` twin: the class itself is matched now [tools/keyboard/journey.spec.mjs:3103]
+- [x] [Review][Defer] A window that types in its first moment and then finds another session editing keeps that typing,
+  unsent and unsaid — DW-203's wall in `flush` stops it reaching the 423 that used to say so. The Dev named it in a
+  `ponytail:` comment with no entry and no owner
+  [apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx:1678] — deferred as DW-308, Story 7.18's, whose
+  card names it
+
 ## Spec Change Log
 
-*Empty until the first review loop.*
+- **Review loop 1 (2026-10-02).** No change to the frozen block. The review's patches are listed under § Review Findings;
+  two of them correct behaviour the I/O matrix already states ("An editor action signed out … the tab stays put";
+  "Sign out, work owed") that production did not yet meet on two doors.
 
 ## Design Notes
 
@@ -1068,6 +1136,11 @@ already ruled, so it is stated here in one line each.
 - After **Sign in**, the new tab lands on Projects. Go back to the editor tab rather than reopen the project there.
 - A window closed in the split second it checks in with the server keeps the lock for about a minute, not fifteen
   seconds: about one close in fifty (R-228, ruled at the Dev; DW-307, Story 7.18).
+- Closing the editing tab and opening the project in a NEW tab within about ten seconds shows the grey reading-along bar
+  until the closed tab's grace ends, then the new tab takes over and reloads. Chrome's "reopen closed tab" keeps the
+  tab's session, so it carries straight on *(the review, 2026-10-02: the grace DW-240 rests on, seen from the other side)*.
+- A window that types in the first moment after opening, before the server has answered that another session is
+  editing, keeps that typing unsent and is not told (DW-308, Story 7.18).
 
 ## Questions for the owner
 
@@ -1330,6 +1403,10 @@ live walk). The owner's test drops its step and says why.
   - DW-270's step is replaced by a note;
   - step 13 and the known ceilings name R-228.
 - **R-228** (Question 2): a close during the tab's own check-in waits about a minute (DW-307).
+- *(Named at the review, 2026-10-02 — made in the Dev, not listed then.)* **DW-241's close leaves the shortcuts card
+  open**: it only lists keys, so it is a view control (R-192). **`rest()` keeps Retrying and Signed out in fallback
+  too**, where an edit used to replace them: every edit there sends at once, so the panel flickered per keystroke over
+  R-227's sentence.
 
 **A security note.** During the walks, two process listings — mine and the implementing subagent's — printed the
 command line of a walk run as `env $(grep … | xargs) node …`. That put `SUPABASE_SECRET_KEY`'s value, and
@@ -1343,3 +1420,53 @@ rotate the key. The lesson is recorded: print process names only, never their ar
 - step 66c and step 89's variant on production;
 - the ranged GET of a clip answering 206;
 - axe at three widths on the deployed pages.
+
+### Results — Review (2026-10-02)
+
+Every key below is named by its variable in `tools/probe/.env`, never by its value. No key's value was printed.
+
+**On the Dev build, `663e9a4d` (`dpl_434C48XxiUC2cxbnKgRBFTYkFeij`, READY), before any patch:**
+- **GitHub's API** (`GITHUB_TOKEN`): `CI` — `check`, `rls`, `deploy` — and `Render matrix` succeeded on `663e9a4d`. The
+  `rls` log carries DW-302's line: `PASS  schemas-off-rest: … private 406 PGRST106, storage 406 PGRST106, vault 406
+  PGRST106, public 404 PGRST205, graphql_public 404 PGRST205 … read from Vercel's production env, by name`.
+- **Supabase** (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`): `check-schemas-off-rest.py` from the environment, PASS. Its
+  controls against production: `graphql_public` planted as unexposed → WRONG; `public` alone expected → WRONG.
+- **`app.inflozo.com`, the clips:** a ranged GET of `episode-12.mp3` and of `scrolling-one-of-them.mp4` answered 206
+  (`bytes 0-99/48430`, `0-99/20883`). The control is the plain GET of a made-up name, 404 — a ranged GET of one answers
+  206 too, Vercel slicing its 404 page.
+- **No migration (R-99):** nothing under `supabase/migrations` in the diff.
+- **The clean committed walks** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`), each alone:
+  - `run-verify-controls.cjs`: 0 FAIL, 115 PASS.
+  - `run-verify-editor.cjs`: 0 FAIL, 685 PASS, one `stall` note (a page load retried once). Step 66c (409, 422, 422,
+    and DW-235's "compiles to post.hbs, never home.hbs"), step 89's held pick, and step 8's ask — under axe at 1440, 834
+    and 390, Wait at each width, "Signing out…" with `aria-busy` and `aria-disabled` and no `disabled`, the erase with
+    and without owed work — all PASS.
+  - `run-verify-lock.cjs`, three runs: 1 FAIL / 85 PASS (R-214's row: still on `/projects`, the copy on disk, nothing
+    sent); a run that died on a timeout at 52 PASS with three Story 5.17 rows failed; then 0 FAIL / 86 PASS. No line
+    failed twice. DW-240 (a), DW-240 (b) and DW-244 passed with their controls in both whole runs. Vercel's request rows
+    for the failed minute (`VERCEL_TOKEN`) hold no `/sync` POST, and the holder's lock beats are missing for ~45 s with
+    it: the send never reached Vercel. The walk now tells that case from a defect (§ Review Findings).
+  - `run-verify-live-content.cjs` with `NO_429=1`, both majors, in the main session on the owner's in-session go ("Yes,
+    both parts"): 0 FAIL, 161 PASS, 231 Content API requests against the ceiling. DW-248's one `title:~` read and its
+    control, and DW-270's `tags,authors,tiers`, PASS (simulated: `page.route`). T3's Subscription access was set to
+    Nobody and put back, read back from Ghost (`signup_access` all, `paid_enabled` true); T1's button and bar were
+    switched and put back, read back (`portal_button` false, `["visitors"]`).
+  - Every walk's own count: 13 users before, 13 after.
+- **T1 and T3, read-only** (`GHOST5_CONTENT_API_KEY`, `GHOST6_CONTENT_API_KEY`): `include=tags,authors,tiers` → 200 with
+  `tiers`, and without it no `tiers` key; `title:~'a'` with the explicit order → 200, 15 rows; the escaped `it\'s` → 200;
+  the unescaped one → 400 on both, which is what the escape is for.
+- **The review's two new arms, as a LOCAL RUN against production** (`APP_ORIGIN=https://app.inflozo.com`): 3 FAIL, 686
+  PASS — Sign out everywhere left the edit unsent and the copy on disk (`"cloud":"3 → 3"`, `"after":true`); a subject
+  picked with the ended session's cookie held was on `/sign-in` 330 ms later (`"status":200`, `"revalidated":"1"`,
+  `"dropsCookie":true`); and the ask's description was empty. All three are this review's patches, red where they are
+  absent. The same arm with the cookie already dropped by a lock beat PASSed: Signed out, R-213's sentence, the Sign in
+  link, and View as and a pick refused in place.
+
+**The gates on the patched tree (Node 24.18.1):** `pnpm check` exit 0 — apps/web 668 tests, section-runtime 287,
+library 206, ghost-shim 47, theme-compiler 1, the schemas self-check's 11 canned answers; `pnpm keyboard` 157 passed,
+`next-env.d.ts` unchanged; `pnpm build && node tools/check-traces.mjs` exit 0; `python3 tools/doc-audit.py --check`
+green twice. Each new check was seen red on its control: against `663e9a4d` or on a plant, restored afterwards.
+
+**Still owed on the Review build**, recorded below once it is deployed: CI and the matrix; the editor walk with its
+three review rows green; the lock walk; and the live-content walk's 429 step, last and alone.
+

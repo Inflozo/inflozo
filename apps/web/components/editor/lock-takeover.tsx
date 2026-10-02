@@ -76,7 +76,9 @@ export function LockTakeover({
       onClick={closeOnBackdrop}
       onClose={onClose}
       aria-labelledby={`${id}-title`}
-      aria-describedby={body === undefined ? undefined : `${id}-body`}
+      // what a screen reader hears with the heading: the body, and the danger panel when it is drawn — R-214's ask has no
+      // body, and without the panel its "N edits will be lost" was never said as the dialog opened (5.24e's review)
+      aria-describedby={[body === undefined ? null : `${id}-body`, owed > 0 ? `${id}-loss` : null].filter(Boolean).join(' ') || undefined}
       className="m-auto w-[440px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-lg bg-surface shadow-modal backdrop:bg-scrim open:flex"
     >
       <div className="flex flex-col gap-2 px-[22px] pb-[14px] pt-5">
@@ -90,7 +92,7 @@ export function LockTakeover({
         )}
       </div>
       {owed > 0 ? (
-        <div className="mx-[22px] flex flex-col gap-[7px] rounded-thumb bg-danger-tint px-[13px] py-3">
+        <div id={`${id}-loss`} className="mx-[22px] flex flex-col gap-[7px] rounded-thumb bg-danger-tint px-[13px] py-3">
           <span className="text-control-label font-semibold text-danger-panel-ink">{LOCK_COPY.willBeLost(owed)}</span>
           {/* the frame's own second sentence, kept exactly — only the name left it; R-214's ask hands its own */}
           <span className="text-helper-caption leading-[1.5] text-danger-panel-ink">{loss}</span>

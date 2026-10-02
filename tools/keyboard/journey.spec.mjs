@@ -3100,7 +3100,8 @@ test('5.21 · From your Ghost site (the owner\'s finding): two Layers rows name 
   const tagWords = () =>
     canvasFrame(page).locator('body').evaluate((body) => [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].map((h) => h.shadowRoot?.querySelector('[data-chrome="tag"]')?.textContent).find(Boolean) ?? null)
   await expect.poll(tagWords).toBe(GS.GHOST_WORDS.tag('Announcement bar'))
-  await expect(stripRow).toHaveClass(/bg-coral-wash/)
+  // the class itself, never its `hover:` twin every row carries (the review of 5.24e: the bare pattern always passed)
+  await expect(stripRow).toHaveClass(/(^|\s)bg-coral-wash(\s|$)/)
   // the Paywall has no rows — no shim draws there
   await page.locator('#editor-template').focus()
   await page.keyboard.press('Enter')
@@ -3604,7 +3605,8 @@ const commentsKept = (page) =>
  *  API's own shape (`live-content.test.ts` holds the whitelist to them): filtered by slug, tag, writer or id, ordered by
  *  date and paged, as Ghost does. `revise()` retitles the newest post from then on, so a read that lands afterwards
  *  carries words no drawing made before it holds; `finished()` counts the answers the page has received. `capped`: the
- *  site holds more posts than the newest `LIST_LIMIT` the posts list reads, so DW-248's search at Ghost is live. */
+ *  site holds more posts than the newest `LIST_LIMIT` the posts list reads, so DW-248's search at Ghost is live — and it
+ *  answers one post no list holds, titled `found(term)`. */
 const SAMPLE = JSON.parse(readFileSync(new URL('../../packages/library/orbit-weekly/dataset.json', import.meta.url), 'utf8'))
 const LIVE = await import(new URL('../../apps/web/lib/live-content.ts', import.meta.url).href)
 async function answeringSite(page, { capped = false } = {}) {
@@ -3612,6 +3614,7 @@ async function answeringSite(page, { capped = false } = {}) {
   const revised = `${newest.title} (revised)`
   let posts = SAMPLE.posts
   let finished = 0
+  const found = (term) => `${term} — found at Ghost`
   page.on('requestfinished', (r) => {
     if (r.url().includes('/ghost/api/content/') && r.method() === 'GET') finished++
   })
@@ -3624,6 +3627,11 @@ async function answeringSite(page, { capped = false } = {}) {
     if (resource === 'settings') return route.fulfill({ json: { settings: SAMPLE.site }, headers: cors })
     const all = { posts, pages: [SAMPLE.subjects.page], tags: SAMPLE.tags, authors: SAMPLE.authors, tiers: SAMPLE.tiers }[resource] ?? []
     const [, field, value = ''] = /^(\w+):(.*)$/.exec(q.filter ?? '') ?? []
+    // DW-248's search at Ghost (`title:~'term'`): ONE post the newest `LIST_LIMIT` in hand do not hold, titled by its term
+    if (resource === 'posts' && field === 'title') {
+      const post = { ...newest, id: 'found-at-ghost', slug: 'found-at-ghost', title: found(value.replace(/^~'|'$/g, '')) }
+      return route.fulfill({ json: { posts: [post], meta: { pagination: { page: 1, limit: Number(q.limit ?? 15), pages: 1, total: 1 } } }, headers: cors })
+    }
     const among = value.replace(/^\[|\]$/g, '').split(',').map((v) => v.replace(/^'|'$/g, ''))
     const rows = all.filter((r) =>
       field === 'slug' ? among.includes(r.slug)
@@ -3652,6 +3660,7 @@ async function answeringSite(page, { capped = false } = {}) {
       posts = SAMPLE.posts.map((p) => (p.id === newest.id ? { ...p, title: revised } : p))
     },
     finished: () => finished,
+    found,
   }
 }
 
@@ -4494,6 +4503,8 @@ const LOCK = await import(new URL('../../apps/web/lib/lock.ts', import.meta.url)
 /** the harness's project, whose id names the lock's channel and this browser's records */
 const HARNESS_PROJECT_ID = '00000000-0000-4000-8000-000000000009'
 const saveState = (page) => page.locator('#editor-save-state [role="status"]')
+const SUBJECT_WORDS = await import(new URL('../../apps/web/lib/preview-subject.ts', import.meta.url).href)
+const EDITOR_WORDS = await import(new URL('../../apps/web/lib/editor.ts', import.meta.url).href)
 
 test('R-213 (Story 5.24e): a save refused for sign-in says Signed out with a Sign in link and no Retry now, keeps trying on its backoff, and lands at once on a visit back — a dropped connection, a 422, a 502, a 404 and a 400 stay Retrying', async ({ page, context }) => {
   await open(page)
@@ -4599,7 +4610,8 @@ test('R-214 (Story 5.24e): a sign-out in another tab that SENT this editor\'s ow
   // so on the project's channel — the message `sign-out.tsx` posts, built here from the same record
   const b = await context.newPage()
   await b.goto('/app/harness/error')
-  const told = await b.evaluate(([project, channel]) => new Promise((done) => {
+  /** the message, posted from the sign-out's tab: at the record's own base, or `past` it — a base this editor does not hold */
+  const tell = (past, revision) => b.evaluate(([project, channel, past, revision]) => new Promise((done) => {
     const asked = indexedDB.open('inflozo-doc-harness')
     asked.onsuccess = () => {
       const db = asked.result
@@ -4610,14 +4622,21 @@ test('R-214 (Story 5.24e): a sign-out in another tab that SENT this editor\'s ow
         db.close()
         const m = meta.result
         const upTo = entries.result.reduce((high, e) => Math.max(high, e.seq), m.synced ?? 0)
-        const message = { type: 'sent', project, base: m.baseRevision, revision: 7, stamp: m.stamp, upTo }
+        const message = { type: 'sent', project, base: m.baseRevision + past, revision, stamp: m.stamp, upTo }
         const open = new BroadcastChannel(channel)
         open.postMessage(message)
         open.close()
         done(message)
       }
     }
-  }), [HARNESS_PROJECT_ID, JOURNAL.SENT_CHANNEL(HARNESS_PROJECT_ID)])
+  }), [HARNESS_PROJECT_ID, JOURNAL.SENT_CHANNEL(HARNESS_PROJECT_ID), past, revision])
+  // sent from a base this editor does not hold — someone else's record, or an answer it has moved past: ignored, so the
+  // indicator stays as it was and the edit is still owed (the review, 2026-10-02)
+  await tell(1, 9)
+  await a.waitForTimeout(1000)
+  await expect(saveState(a), 'a foreign base is not this editor\'s 200').toHaveText('Saved on this device')
+  expect(await pendingOnDisk(a), 'and the edit is still owed').not.toEqual([])
+  const told = await tell(0, 7)
   expect(told.base, 'the control: the record was the editor\'s, at its base').toBeGreaterThan(-1)
   // taken as its own 200: the owed edit is sent, so the indicator rests green with nothing sent from here
   await expect(saveState(a)).toHaveText('Synced')
@@ -4851,6 +4870,65 @@ test('DW-223 (Story 5.24e): a subject picked and the page reloaded at once — b
   await expect.poll(() => held.length, { message: 'and sent it again' }).toBeGreaterThan(sent)
 })
 
+test('DW-223 (the review of 5.24e): a pick whose write got NO answer says so in the sentence that is true of it — kept in this tab, sent again on a reload — and the pick still waits', async ({ page }) => {
+  // the pick's write is DROPPED: the connection goes mid-call, so the action throws rather than answers
+  await page.route('**/app/harness/editor/post', (route) => {
+    const r = route.request()
+    return r.method() === 'POST' && r.headers()['next-action'] !== undefined && (r.postData() ?? '').includes('"slug"') ? route.abort() : route.continue()
+  })
+  await page.goto(`${HARNESS}/post`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  const pill = page.locator('#editor-source')
+  const before = await pill.innerText()
+  // D5e's next row, from the keyboard — the DW-223 stop's walk
+  await pill.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForFunction(() => [...document.querySelectorAll(':popover-open')].some((p) => p.contains(document.activeElement)))
+  const current = await page.evaluate(() => document.querySelector('#editor-source-menu [data-subject-row][aria-current="true"]')?.getAttribute('data-subject-row') ?? null)
+  for (let guard = 0; guard < 12; guard++) {
+    const on = await page.evaluate(() => document.activeElement?.getAttribute('data-subject-row') ?? null)
+    if (on !== null && on !== current) break
+    await page.keyboard.press('ArrowDown')
+  }
+  await page.keyboard.press('Enter')
+  await expect.poll(() => pill.innerText(), { message: 'the control: the pick is on the pill' }).not.toBe(before)
+  await expect(page.locator('#editor-said')).toHaveText(SUBJECT_WORDS.SAVE_UNANSWERED)
+  // and it is true: the pick is still waiting in this tab's store, for the reload that sends it again
+  const waiting = await page.evaluate((key) => sessionStorage.getItem(key), SUBJECT_WORDS.PENDING_KEY(HARNESS_PROJECT_ID, EDITOR_WORDS.templateKeyOf('post')))
+  expect(JSON.parse(waiting ?? 'null')?.kind, 'the pick waits in sessionStorage').toBe('post')
+})
+
+test('the review of 5.24e: a backoff whose turn finds no lock to send under is over — taken over from while Retrying, the indicator leaves Retrying on that turn', async ({ page }) => {
+  // DW-241's lock route: the holder's own row, then taken over by another session at the next generation
+  let taken = false
+  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null })
+  await page.route('**/lock', (route) => {
+    const { session } = JSON.parse(route.request().postData() ?? '{}')
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(taken ? { row: row('another-session', 2), held: false, won: false } : { row: row(session, 1), held: true, won: true }),
+    })
+  })
+  await page.route('**/sync', (route) => route.abort())
+  await open(page)
+  await expect.poll(() => page.evaluate(() => document.getElementById('editor-lock-bar') === null)).toBe(true)
+  await select(page, (await rows(page)).page[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect(saveState(page)).toHaveText('Retrying')
+  // taken over from mid-backoff: read-only, and the journal dropped — the backoff's clock is still running
+  taken = true
+  await page.evaluate((id) => new BroadcastChannel(`inflozo-lock-${id}`).postMessage('took-over'), HARNESS_PROJECT_ID)
+  await expect(page.locator('#editor-lock-bar')).toBeVisible()
+  await expect(saveState(page), 'the control: the take-over itself leaves the backoff counting').toHaveText('Retrying')
+  // its turn comes, finds nothing this session may send, and ends: never Retrying for good
+  await expect(saveState(page)).not.toHaveText('Retrying', { timeout: (JOURNAL.BACKOFF_S[0] + 3) * 1000 })
+  await expect(page.locator('#editor-retrying')).toHaveCount(0)
+})
+
 test('DW-248 (Story 5.24e): the title search at Ghost is the posts list\'s alone — a term typed in the pill on the Post canvas asks once, on the Tag canvas nothing', async ({ page }) => {
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces' })
   await answeringSite(page, { capped: true })
@@ -4860,18 +4938,21 @@ test('DW-248 (Story 5.24e): the title search at Ghost is the posts list\'s alone
     if (filter?.startsWith('title:~')) searches.push(filter)
   })
   /** D5e's search, typed into and left long past the pause the search waits for */
-  const typeInPill = async (term) => {
+  const typeInPill = async (term, { capped = false } = {}) => {
     await page.locator('#editor-source').focus()
     await page.keyboard.press('Enter')
     await expect(page.locator('#editor-source-search')).toBeFocused()
+    // the capped line stands until a search at Ghost is in force, and not while it is (the review of 5.24e)
+    if (capped) await expect(page.locator('[data-source-capped]'), 'the capped line, before a term').toBeVisible()
     await page.keyboard.type(term)
     await page.waitForTimeout(LIVE.SEARCH_DEBOUNCE_MS + 1200)
+    if (capped) await expect(page.locator('[data-source-capped]'), 'no capped line while the search at Ghost is in force').toHaveCount(0)
     await page.keyboard.press('Escape')
   }
   await page.goto(`${HARNESS}/post`)
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
   await expect(page.locator('iframe[title$="canvas"]'), 'the control: drawn from the site').toHaveAttribute('data-source', 'site')
-  await typeInPill('ab')
+  await typeInPill('ab', { capped: true })
   expect(searches, 'the control: on the Post canvas the capped posts list\'s term is one read at Ghost').toEqual(["title:~'ab'"])
   // the Tag canvas: its pill lists tags, which are never searched at Ghost
   await page.locator('#editor-template').focus()
@@ -4883,6 +4964,147 @@ test('DW-248 (Story 5.24e): the title search at Ghost is the posts list\'s alone
   await expect(page.locator('iframe[title$="canvas"]'), 'the control: the Tag canvas is drawn from the site too').toHaveAttribute('data-source', 'site')
   await typeInPill('cd')
   expect(searches, 'a tag\'s term is never a posts search').toEqual(["title:~'ab'"])
+})
+
+test('DW-273 (the review of 5.24e): the linked site\'s Ghost major reaches the Paywall canvas — on a Ghost 5 site the untouched box is Ghost 5\'s own, and 6\'s with no site', async ({ page }) => {
+  const accent = LIB.orbitWeekly.site().accent_color
+  const boxes = ['5', '6'].map((major) => RUNTIME.contentCta({ visibility: 'paid', member: false, accent, major }))
+  /** the box the canvas drew, beside each major's own as the canvas document parses it — like for like */
+  const drawn = () =>
+    surfaceBox(page).evaluate((box, [five, six]) => {
+      const parsed = (html) => Object.assign(box.ownerDocument.createElement('div'), { innerHTML: html }).innerHTML
+      return { box: box.innerHTML, five: parsed(five), six: parsed(six) }
+    }, boxes)
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'ghost-5' })
+  await openPaywall(page)
+  const onFive = await drawn()
+  expect(onFive.five, 'the control: the two majors draw two boxes (§54)').not.toBe(onFive.six)
+  expect(onFive.box, 'a Ghost 5 site gets 5\'s box').toBe(onFive.five)
+  // no site: 6's, as before
+  await page.setExtraHTTPHeaders({})
+  await openPaywall(page)
+  const unlinked = await drawn()
+  expect(unlinked.box, 'no site gets 6\'s').toBe(unlinked.six)
+})
+
+// R-215 (the review of 5.24e) — SHOWN, THEN NOT. `surfaces-gone` is the surfaces site whose re-read answers the empty
+// snapshot, held here until the strip is pointed at, so the answer takes a pointed-at row away. What the editor let go of
+// is seen when the surface comes back: the Paywall's own re-read on entry, under `surfaces-later`, answers both again — and
+// back on Home the strip's row carries no wash, because nothing points at it. (A CHOSEN row is let go by the same block,
+// and no journey can see that half: the only second re-read is the Paywall's, and entering the Paywall lets every
+// selection go by itself.)
+test('R-215 (the review of 5.24e): a pointed-at Ghost row the re-read no longer shows is let go — when the surface comes back its row is not washed', async ({ page }) => {
+  let release
+  const answer = new Promise((go) => { release = go })
+  let rereads = 0
+  await page.route('**/app/harness/editor**', async (route) => {
+    const r = route.request()
+    // the re-read is the action whose body is the project id alone (5.21's stop); the opening's is held
+    if (r.method() === 'POST' && r.headers()['next-action'] && r.postData() === JSON.stringify([HARNESS_PROJECT_ID]) && ++rereads === 1) await answer
+    await route.continue()
+  })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces-gone' })
+  await page.goto(HARNESS)
+  await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
+  await expect.poll(() => rereads, 'the one re-read as the editor opens, held').toBe(1)
+  expect((await shims(page)).surfaces, 'the control: the stored snapshot shows both').toBe(2)
+  // the pointer over the strip, synthesized as the 5.21 stop synthesizes it: its row takes the wash
+  const stripRow = page.locator('[data-layer-row="ghost:announcement-bar"]')
+  await canvasFrame(page).locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    const r = doc.querySelector('[data-ghost-surface="announcement-bar"]').getBoundingClientRect()
+    doc.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', clientX: r.left + 200, clientY: r.top + r.height / 2 }))
+  })
+  // the wash as a class of its own: every row carries `hover:bg-coral-wash`, which a bare match would take for it
+  const WASHED = /(^|\s)bg-coral-wash(\s|$)/
+  await expect(stripRow, 'the control: the pointed-at row is washed').toHaveClass(WASHED)
+  // the answer lands: the site shows neither surface now, so neither is drawn and the group is gone
+  release()
+  await expect.poll(async () => (await shims(page)).surfaces, 'the answer landed: no surface').toBe(0)
+  await expect(page.locator('[data-ghost-rows]')).toHaveCount(0)
+  // the surfaces come back — the Paywall's re-read on entry, answered with both — and Home lists both rows again
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces-later' })
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  await expect.poll(() => rereads, 'entering the Paywall re-checks').toBe(2)
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
+  await page.keyboard.press('Home')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'home')
+  await expect.poll(async () => (await rows(page)).all.filter((k) => k.startsWith('ghost:')), 'both rows, once the site shows both again').toEqual(GS.GHOST_ROWS.map((r) => `ghost:${r.id}`))
+  await expect(stripRow, 'nothing points at the strip: its row is not washed').not.toHaveClass(WASHED)
+})
+
+/** every `title:~` read the page sends Ghost, as DW-248's stops count them */
+const searchesOf = (page) => {
+  const searches = []
+  page.on('request', (r) => {
+    const filter = r.method() === 'GET' && r.url().includes('/ghost/api/content/posts/') ? new URL(r.url()).searchParams.get('filter') : null
+    if (filter?.startsWith('title:~')) searches.push(filter)
+  })
+  return searches
+}
+
+test('DW-248 (the review of 5.24e): the Link Picker\'s search is one read at Ghost whose found post is listed, with no capped line while it is in force — and a pasted address is no search', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces' })
+  const site = await answeringSite(page, { capped: true })
+  const searches = searchesOf(page)
+  await open(page)
+  await expect(page.locator('iframe[title$="canvas"]'), 'the control: drawn from the site').toHaveAttribute('data-source', 'site')
+  // the first section whose panel holds a link control, found on the page — never named here
+  const link = page.locator('#editor-controls button[popovertarget$="-link"]').first()
+  for (const key of (await rows(page)).all.filter((k) => !k.startsWith('ghost:'))) {
+    await select(page, key)
+    await openEveryGroup(page)
+    if ((await link.count()) > 0) break
+  }
+  await expect(link, 'the harness must carry a section with a link control').toHaveCount(1)
+  await link.focus()
+  await page.keyboard.press('Enter')
+  const panel = page.locator('[role="dialog"]:popover-open')
+  await expect(panel.locator('input[type="search"]')).toBeFocused()
+  await expect(panel.locator('[data-link-capped]'), 'the capped line, before a term').toBeVisible()
+  await page.keyboard.type('zq')
+  await expect.poll(() => searches, 'the term is one read at Ghost').toEqual(["title:~'zq'"])
+  await expect(panel, 'and the post it found is listed').toContainText(site.found('zq'))
+  await expect(panel.locator('[data-link-capped]'), 'no capped line while the search at Ghost is in force').toHaveCount(0)
+  // a pasted address is no search: nothing more is asked, and the line is back
+  await page.keyboard.press('ControlOrMeta+a')
+  await page.keyboard.insertText('https://example.com/zq-elsewhere')
+  await page.waitForTimeout(LIVE.SEARCH_DEBOUNCE_MS + 1200)
+  expect(searches, 'an address is never a posts search').toEqual(["title:~'zq'"])
+  await expect(panel.locator('[data-link-capped]')).toBeVisible()
+})
+
+test('DW-248 (the review of 5.24e): the Data group\'s hand-picked search is one read at Ghost whose found post is listed, with no capped line while it is in force', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces' })
+  const site = await answeringSite(page, { capped: true })
+  const searches = searchesOf(page)
+  await open(page)
+  await expect(page.locator('iframe[title$="canvas"]'), 'the control: drawn from the site').toHaveAttribute('data-source', 'site')
+  // a secondary feed, Hand-picked — the 5.19 stop's walk
+  await select(page, await placeSecondGrid(page))
+  const data = await openData(page)
+  await data.locator('button[id$="-source"]').focus()
+  await page.keyboard.press('Enter')
+  await menuTo(page, LIB.POST_SOURCE_WORDS.picked)
+  await page.keyboard.press('Enter')
+  await expect(data.locator('button[id$="-source"]')).toContainText(LIB.POST_SOURCE_WORDS.picked)
+  await data.locator('button[id$="-search"]').focus()
+  await page.keyboard.press('Enter')
+  const panel = page.locator('[role="dialog"]:popover-open')
+  await expect(panel.locator('input[type="search"]')).toBeFocused()
+  await expect(panel.locator('[data-picks-capped]'), 'the capped line, before a term').toBeVisible()
+  await page.keyboard.type('zx')
+  await expect.poll(() => searches, 'the term is one read at Ghost').toEqual(["title:~'zx'"])
+  await expect(panel, 'and the post it found is listed').toContainText(site.found('zx'))
+  await expect(panel.locator('[data-picks-capped]'), 'no capped line while the search at Ghost is in force').toHaveCount(0)
 })
 
 test('DW-290 (Story 5.24e): after the paint and before any gesture the canvas already holds the chrome\'s faces — and no chrome is drawn', async ({ page }) => {

@@ -15,7 +15,7 @@ import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 import { harnessReread } from './actions'
 import { standIns } from '../stand-ins'
-import { HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
+import { GHOST_5_SITE, HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
  *
@@ -71,7 +71,9 @@ import { HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE }
  * the sample. The editor's re-read on open is refused here (no database), which leaves the stored snapshot drawn — except
  * under a FOURTH value, `surfaces-later` (DW-279): the same site with an EMPTY stored snapshot, whose re-read the harness's
  * own action (`actions.ts`, handed in as the editor's `reread`) answers with the full one, so a landed answer is seen to
- * redraw both. The fixtures are `sites.ts`.
+ * redraw both. The fixtures are `sites.ts`. A FIFTH, `surfaces-gone` (R-215, the review of 5.24e), is the other way round: the
+ * stored snapshot shows both and the re-read answers neither, so a row the answer no longer shows is seen let go. A SIXTH,
+ * `ghost-5` (DW-273), is a site whose stored version is Ghost 5's, for the Paywall's box.
  *
  * STORY 5.23a — `x-inflozo-harness-home: <n>` builds Home as n sections CYCLING the designs Home is built from below (the
  * pilots that compile there and the fixture ring's first design), the main feed flagged on the first alone: the long
@@ -198,7 +200,14 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     // content" with no SOURCE group, and not one Content API request is made (`pnpm keyboard` walks exactly today's editor)
     // Story 5.20 — unless the members-off walk asks for its site by header (above), or Story 5.21's the surfaces one, or
     // DW-279's the surfaces-later one (`sites.ts`)
-    site: siteAsked === 'members-off' ? MEMBERS_OFF_SITE : siteAsked === 'surfaces' ? SURFACES_SITE : siteAsked === 'surfaces-later' ? SURFACES_LATER_SITE : null,
+    // the review of 5.24e — `surfaces-gone` is the surfaces site whose re-read answers NEITHER surface (`actions.ts`), and
+    // `ghost-5` a site on Ghost 5 (DW-273)
+    site:
+      siteAsked === 'members-off' ? MEMBERS_OFF_SITE
+      : siteAsked === 'surfaces' || siteAsked === 'surfaces-gone' ? SURFACES_SITE
+      : siteAsked === 'surfaces-later' ? SURFACES_LATER_SITE
+      : siteAsked === 'ghost-5' ? GHOST_5_SITE
+      : null,
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it

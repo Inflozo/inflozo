@@ -608,8 +608,8 @@ const PASTE_SCHEMES = /^(https?|mailto|tel):/i
  *  `bold`, `bolder` or 600 and up — CKEditor 5's rule; ProseMirror's 500 would bold a web page's computed
  *  `font-weight: 500`, which Chrome's copy writes inline (executed in Chromium at this story's Create). Italic is
  *  `italic`, and underline is `underline` among the decoration's words. A tag's own style cancels its mark: a bold tag
- *  whose weight is set and not heavy — Google Docs' `<b style="font-weight:normal">` round the whole paste — and an
- *  italic tag set `normal`. ponytail: a child's `font-weight:400` does not clear a parent's bold, as ProseMirror's
+ *  whose weight is set and not heavy — Google Docs' `<b style="font-weight:normal">` round the whole paste — an
+ *  italic tag set `normal`, and an underline tag whose decoration is `none`. ponytail: a child's `font-weight:400` does not clear a parent's bold, as ProseMirror's
  *  `clearMark` does; Google Docs' wrapper cancels itself, and clearing a range inside a mark is the upgrade if a source
  *  needs it. */
 function ownMarks(c: MarkNode): Set<string> {
@@ -617,10 +617,13 @@ function ownMarks(c: MarkNode): Set<string> {
   const heavy = weight === 'bold' || weight === 'bolder' || Number(weight) >= 600
   const tag = TAG_MARKS[c.nodeName]
   const marks = new Set<string>()
-  if (tag !== undefined && !(tag === 'strong' && weight !== '' && !heavy) && !(tag === 'em' && c.style?.fontStyle === 'normal')) marks.add(tag)
+  const decoration = (c.style?.textDecoration ?? '').split(/\s+/)
+  // each tag's own style cancels its mark — `<u style="text-decoration:none">` as the other two (5.24e's review)
+  const cancelled = (tag === 'strong' && weight !== '' && !heavy) || (tag === 'em' && c.style?.fontStyle === 'normal') || (tag === 'u' && decoration.includes('none'))
+  if (tag !== undefined && !cancelled) marks.add(tag)
   if (heavy) marks.add('strong')
   if (c.style?.fontStyle === 'italic') marks.add('em')
-  if ((c.style?.textDecoration ?? '').split(/\s+/).includes('underline')) marks.add('u')
+  if (decoration.includes('underline')) marks.add('u')
   return marks
 }
 

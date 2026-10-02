@@ -421,7 +421,11 @@ export function Shell({
           </div>
         ) : null}
 
-        <main className="flex min-w-0 flex-1 flex-col">{children}</main>
+        {/* the user reaches the pages too (the review of 5.24e): Account's Sign out everywhere reads its id here, and with
+            no provider on this branch it got null and signed out WITHOUT sending or erasing (R-214) — on production */}
+        <main className="flex min-w-0 flex-1 flex-col">
+          <ShellUserContext value={user}>{children}</ShellUserContext>
+        </main>
       </div>
 
       {/* ── ☰: a modal dialog, so the scrim, Escape and the focus trap are the platform's.

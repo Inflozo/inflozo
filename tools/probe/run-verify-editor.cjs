@@ -6571,7 +6571,9 @@ async function main() {
       shown8[w] = await askPage.waitForFunction((sel) => [...document.querySelectorAll(sel)].some((d) => d.checkVisibility()), ASK8, { timeout: 20000 }).then(() => true, () => false)
       if (w === 1440) ask8 = await askPage.evaluate((sel) => {
         const d = document.querySelector(sel)
-        return d && { words: d.innerText.replace(/\s+/g, ' ').trim(), focus: document.activeElement?.textContent?.trim() ?? null }
+        // what the dialog is DESCRIBED by — the words a screen reader says as it opens (the review, 2026-10-02)
+        const described = (d?.getAttribute('aria-describedby') ?? '').split(/\s+/).filter(Boolean).map((id) => document.getElementById(id)?.innerText ?? '').join(' ').replace(/\s+/g, ' ').trim()
+        return d && { words: d.innerText.replace(/\s+/g, ' ').trim(), focus: document.activeElement?.textContent?.trim() ?? null, described }
       }, ASK8)
       await askPage.addScriptTag({ path: AXE }).catch(() => {})
       askAxe8[w] = shown8[w]
@@ -6585,8 +6587,8 @@ async function main() {
         await askPage.waitForTimeout(300)
       }
     }
-    check('step 8 — R-214: Sign out with an edit this browser cannot send ASKS first — the heading, the edit that would be lost, that signing out erases this browser\'s copy, and the focus on Wait',
-      shown8[1440] && ask8 !== null && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.heading) && ask8.words.includes(LOCK8.LOCK_COPY.willBeLost(1)) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.erases) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.confirm) && ask8.focus === LOCK8.LOCK_COPY.wait,
+    check('step 8 — R-214: Sign out with an edit this browser cannot send ASKS first — the heading, the edit that would be lost, that signing out erases this browser\'s copy (both said as the dialog\'s description), and the focus on Wait',
+      shown8[1440] && ask8 !== null && ask8.described.includes(LOCK8.LOCK_COPY.willBeLost(1)) && ask8.described.includes(JOURNAL8.SIGN_OUT_COPY.erases) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.heading) && ask8.words.includes(LOCK8.LOCK_COPY.willBeLost(1)) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.erases) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.confirm) && ask8.focus === LOCK8.LOCK_COPY.wait,
       JSON.stringify(ask8))
     check('step 8 — axe: zero violations on Projects with the sign-out ask open, at 1440, 834 and 390, each from the account menu that width draws (Story 5.24e)',
       Object.values(shown8).every(Boolean) && Object.values(askAxe8).every((v) => v.length === 0), JSON.stringify({ shown8, askAxe8 }))
@@ -6718,6 +6720,179 @@ async function main() {
     check('step 8 — fixture: both editors\' lock handed back before each sign-out, so step 14 opens holding it', freed8 === null && quietFreed === null,
       JSON.stringify({ afterTheAsk: freed8, afterTheQuiet: quietFreed }))
     await quietContext.close()
+
+    /* THE REVIEW OF 5.24e — SIGN OUT EVERYWHERE SENDS AND ERASES TOO (R-214), AND R-213 WITH A SESSION ENDED FOR REAL.
+       Two browsers of account A, and no other context of the walk is open here, so ending A's every session touches
+       nothing else — each later context signs in again by its own magic link. THE FIRST owes one edit on its device, its
+       editor gone before it could send (step 8's way, above), and its lock handed back. THE SECOND then opens the editor
+       on Post — holding the lock, with a subject to pick — and is left alone. The first presses Account → Sign out
+       everywhere: its owed edit must reach the cloud (read back through the service key), its copy must go, and it must
+       land on /sign-in. That ALSO ends the second browser's session at Supabase while its cookies stay — a session ended
+       for real, not a cleared cookie jar — and a THIRD's, reading along on Post with its lock calls dropped, so that the
+       first request carrying its dead cookie is the preview subject it picks at once: that tab must stay on the editor
+       too. In the second, left alone past a heartbeat, the tab must stay on the editor; an edit's
+       ⌘S must meet the Signed out state with R-213's sentence and the Sign in link; and View as and a preview subject,
+       pressed, must leave the tab where it is (R-213; every server action's answer is written down, with any redirect it
+       carried) with the subject's refusal said. */
+    const SUBJECT8 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/preview-subject.ts')).href)
+    /** every server action a tab sends from here — which one, whether the session cookie rode with it, its status, any
+     *  redirect its answer carried, whether the answer dropped a cookie, and whether its body names /sign-in (never the
+     *  body itself) — and every place the tab's main frame goes */
+    const watch8 = (p) => {
+      const actions = []
+      const went = []
+      p.on('response', async (r) => {
+        const q = r.request()
+        if (q.method() !== 'POST' || q.headers()['next-action'] === undefined) return
+        const sent = q.postData() ?? ''
+        const row = { what: sent.includes('"states"') ? 'setViewedStates' : sent.includes('"slug"') ? 'setPreviewSubject' : 'another action', status: r.status(), at: new Date().toISOString() }
+        actions.push(row)
+        const asked = await q.allHeaders().catch(() => ({}))
+        const h = await r.allHeaders().catch(() => ({}))
+        Object.assign(row, {
+          cookieSent: /(^|;\s*)sb-[^=]*auth-token/.test(asked['cookie'] ?? ''),
+          redirect: h['x-action-redirect'] ?? null, location: h['location'] ?? null, revalidated: h['x-action-revalidated'] ?? null,
+          dropsCookie: /sb-[^=]*auth-token[^=]*=;|max-age=0/i.test(h['set-cookie'] ?? ''), type: h['content-type'] ?? null,
+        })
+        const body = await r.text().catch(() => null)
+        row.body = body === null ? null : { length: body.length, namesSignIn: body.includes('/sign-in'), redirectError: body.includes('NEXT_REDIRECT') }
+      })
+      p.on('framenavigated', (f) => { if (f === p.mainFrame()) went.push(`${new Date().toISOString()} ${new URL(f.url()).pathname}`) })
+      return { actions, went }
+    }
+    const homeCount8 = async () => (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc?.instances?.length ?? null
+    const everyContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const everyEditor = steady(await everyContext.newPage())
+    await everyEditor.goto(await magic(emailA), { waitUntil: 'load' })
+    await everyEditor.goto(editorUrl(), { waitUntil: 'load' })
+    await everyEditor.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await everyEditor.waitForFunction(() => document.querySelector('#editor-save-state [role="status"]')?.textContent === 'Synced', null, { timeout: 30000 }).catch(() => {})
+    await everyEditor.route('**/projects/*/sync', (r) => r.abort('failed'))
+    await everyEditor.locator('#editor-layers [data-layer-row]').filter({ hasText: TEMPLATES.home.find(([d]) => d === 'a17/1')[1] }).first().locator('button').first().click()
+    await everyEditor.waitForTimeout(400)
+    await everyEditor.locator('section[aria-label="Canvas"]').focus()
+    await everyEditor.keyboard.press(`${CMD58}+d`)
+    await everyEditor.waitForTimeout(800)
+    // the control: the edit is owed, on this device
+    const everyOwed = await everyEditor.evaluate(() => document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null).catch(() => null)
+    const everyTab = await tabOf8(everyEditor)
+    await everyContext.setOffline(true)
+    await everyEditor.goto('about:blank').catch(() => {})
+    await everyContext.setOffline(false)
+    const everyPage = steady(await everyContext.newPage())
+    await everyPage.goto(at('/account'), { waitUntil: 'load' })
+    const everyFreed = await handBackFor8(everyPage, everyTab)
+    const cloudBefore = await homeCount8()
+    // the second browser: the editor on Post, holding the lock, signed in — until the first signs out everywhere
+    const endedContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const ended = steady(await endedContext.newPage())
+    await ended.goto(await magic(emailA), { waitUntil: 'load' })
+    await ended.goto(editorUrl('post'), { waitUntil: 'load' })
+    await ended.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'post', null, { timeout: 30000 })
+    await ended.waitForFunction(() => document.querySelector('#editor-save-state [role="status"]')?.textContent === 'Synced', null, { timeout: 30000 }).catch(() => {})
+    const endedHeld = await ended.evaluate(() => document.getElementById('editor-lock-bar') === null)
+    await ended.waitForTimeout(1500)
+    // …and a third, reading along on Post beside it. Its lock calls are dropped from here on, so once the sessions end the
+    // FIRST request to carry its dead session's cookie is the action it presses — before any other answer can clear it
+    const staleContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const stale = steady(await staleContext.newPage())
+    await stale.goto(await magic(emailA), { waitUntil: 'load' })
+    await stale.goto(editorUrl('post'), { waitUntil: 'load' })
+    await stale.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'post', null, { timeout: 30000 })
+    const staleReads = await stale.waitForFunction(() => document.getElementById('editor-lock-bar') !== null, null, { timeout: 20000 }).then(() => true, () => false)
+    await stale.route('**/projects/*/lock', (r) => r.abort('failed'))
+    await stale.waitForTimeout(1500)
+    const { actions: staleActions, went: staleWent } = watch8(stale)
+    // Sign out everywhere, in the first browser — nothing refuses its send, so it asks nothing
+    const everyBefore = await databases8(everyPage)
+    await everyPage.getByRole('button', { name: 'Sign out everywhere', exact: true }).click()
+    await everyPage.locator('dialog[open][aria-labelledby="sign-out-everywhere-title"] button[type="submit"]').click()
+    const everyGone = await everyPage.waitForURL((u) => u.pathname.includes('/sign-in'), { timeout: 30000 }).then(() => true, () => false)
+    const everyAfter = await databases8(everyPage)
+    let cloudAfter = await homeCount8()
+    for (const by = Date.now() + 10000; cloudAfter === cloudBefore && Date.now() < by;) {
+      await everyPage.waitForTimeout(500)
+      cloudAfter = await homeCount8()
+    }
+    await everyPage.goto(at('/projects'), { waitUntil: 'load' }).catch(() => {})
+    const everyStillOut = new URL(everyPage.url()).pathname.includes('/sign-in')
+    check('step 8 — R-214: **Sign out everywhere** with an edit owed in this browser SENDS it — the cloud\'s Home gains the duplicated section — then erases this browser\'s copy and lands on /sign-in',
+      everyOwed === JOURNAL8.labelOf({ kind: 'rest', owed: true }) && typeof cloudBefore === 'number' && cloudAfter === cloudBefore + 1 && Array.isArray(everyBefore) && everyBefore.includes(DB8) && Array.isArray(everyAfter) && !everyAfter.includes(DB8) && everyGone && everyStillOut,
+      JSON.stringify({ owedBefore: everyOwed, cloud: `${cloudBefore} → ${cloudAfter}`, before: everyBefore?.includes(DB8), after: everyAfter?.includes(DB8), signedOut: everyGone && everyStillOut, at: new URL(everyPage.url()).pathname }))
+    await everyContext.close()
+    // R-213, THE DEAD COOKIE STILL IN THE JAR: the reading-along browser picks a preview subject at once
+    const staleAt = stale.url()
+    await stale.locator('#editor-source').click()
+    await stale.locator('#editor-source-menu [data-subject-row]:not([aria-current="true"])').first().click()
+    let staleSaid = null
+    for (const by = Date.now() + 20000; Date.now() < by;) {
+      staleSaid = await stale.evaluate(() => document.getElementById('editor-said')?.textContent ?? null).catch(() => null)
+      if (staleSaid === SUBJECT8.SAVE_REFUSED || stale.url() !== staleAt) break
+      await stale.waitForTimeout(250)
+    }
+    await stale.waitForTimeout(3000)
+    check('step 8 — R-213, the session ENDED FOR REAL and its cookie still held: a preview subject picked at once leaves the tab on the editor — no navigation, no redirect in the action\'s answer — with its refusal said',
+      staleReads && everyGone && stale.url() === staleAt && staleSaid === SUBJECT8.SAVE_REFUSED && staleActions.length > 0 && staleActions.every((a) => a.cookieSent === true && a.redirect === null && a.location === null),
+      JSON.stringify({ readingAlong: staleReads, at: new URL(staleAt).pathname, after: new URL(stale.url()).pathname, said: staleSaid, actions: staleActions, went: staleWent }))
+    await staleContext.close()
+    // R-213, in the second browser: its session is gone at Supabase. THE CONTROL FIRST — left alone past a heartbeat, the
+    // tab stays on the editor, so whatever moves it below is the press and not the lock's beat
+    const endedAt = ended.url()
+    await ended.waitForTimeout(LOCK8.HEARTBEAT_MS + 5000)
+    const endedStayed = ended.url() === endedAt
+    // an edit's ⌘S meets the Signed out state: Space hides the Post canvas's own section, one edit. BEFORE the two
+    // presses, so this half is read whatever they do to the tab
+    await ended.locator('#editor-layers [data-layer-row]:not([data-layer-row^="site:"])').first().focus()
+    await ended.keyboard.press(' ')
+    await ended.waitForTimeout(800)
+    await ended.locator('section[aria-label="Canvas"]').focus()
+    await ended.keyboard.press(`${CMD58}+s`)
+    await ended.waitForFunction((title) => document.querySelector('#editor-save-state [role="status"]')?.textContent === title, JOURNAL8.SIGNED_OUT_COPY.title, { timeout: 30000 }).catch(() => {})
+    const endedOut = await ended.evaluate(() => {
+      const link = document.getElementById('editor-sign-in')
+      return {
+        state: document.querySelector('#editor-save-state [role="status"]')?.textContent ?? null,
+        panel: document.getElementById('editor-signed-out')?.textContent ?? null,
+        link: link ? { words: link.textContent.trim(), href: link.getAttribute('href'), target: link.getAttribute('target') } : null,
+        retryNow: document.getElementById('editor-retry-now') !== null,
+      }
+    }).catch(() => null)
+    check('step 8 — R-213, in the browser that HOLDS the lock, its session ended the same way: left alone past a heartbeat the tab stays on the editor, and an edit\'s ⌘S says **Signed out** — R-213\'s sentence, the Sign in link to /sign-in in a new tab, no Retry now',
+      endedHeld && everyGone && endedStayed && endedOut !== null && endedOut.state === JOURNAL8.SIGNED_OUT_COPY.title && (endedOut.panel ?? '').includes(JOURNAL8.SIGNED_OUT_COPY.held) && endedOut.link !== null && endedOut.link.words === JOURNAL8.SIGNED_OUT_COPY.signIn && /\/sign-in$/.test(endedOut.link.href ?? '') && endedOut.link.target === '_blank' && !endedOut.retryNow && ended.url() === endedAt,
+      JSON.stringify({ held: endedHeld, stayed: endedStayed, ...endedOut, at: new URL(ended.url()).pathname }))
+    const { actions: endedActions, went: endedWent } = watch8(ended)
+    await ended.locator('#editor-view-as').click()
+    await ended.locator('#editor-view-as-menu [data-visitor="paid"]').click()
+    await ended.waitForTimeout(4000)
+    const afterLook = ended.url()
+    let endedSaid = null
+    if (afterLook === endedAt) {
+      await ended.locator('#editor-source').click()
+      await ended.locator('#editor-source-menu [data-subject-row]:not([aria-current="true"])').first().click()
+      for (const by = Date.now() + 20000; Date.now() < by;) {
+        endedSaid = await ended.evaluate(() => document.getElementById('editor-said')?.textContent ?? null).catch(() => null)
+        if (endedSaid === SUBJECT8.SAVE_REFUSED || ended.url() !== endedAt) break
+        await ended.waitForTimeout(250)
+      }
+      await ended.waitForTimeout(1500)
+    }
+    const afterPick = ended.url()
+    check('step 8 — R-213: …and there, once an answer has cleared the dead cookie, View as and a preview subject leave the tab on the editor — no navigation, no redirect in any action\'s answer — with the subject\'s refusal said',
+      afterLook === endedAt && afterPick === endedAt && endedSaid === SUBJECT8.SAVE_REFUSED && endedActions.length > 0 && endedActions.every((a) => a.redirect === null && a.location === null),
+      JSON.stringify({ at: new URL(endedAt).pathname, afterLook: new URL(afterLook).pathname, afterPick: new URL(afterPick).pathname, said: endedSaid, actions: endedActions, went: endedWent }))
+    const endedTab = await tabOf8(ended)
+    await endedContext.close()
+    // the ended browser could not hand its own lock back (its session is gone), so a fresh sign-in of the same account
+    // does — and Home goes back to the seed's, since the first browser's duplicate is in the cloud now
+    const tidyContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const tidy = steady(await tidyContext.newPage())
+    await tidy.goto(await magic(emailA), { waitUntil: 'load' })
+    await tidy.goto(at('/projects'), { waitUntil: 'load' })
+    const endedFreed = await handBackFor8(tidy, endedTab)
+    await tidyContext.close()
+    await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: seedHome8.doc }) })
+    check('step 8 — fixture: the lock handed back after each of the two browsers, and Home put back to the seed\'s, so step 14 opens holding it on the seed', everyFreed === null && endedFreed === null && (await homeCount8()) === seedHome8.doc.instances.length,
+      JSON.stringify({ afterTheFirst: everyFreed, afterTheEnded: endedFreed }))
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──
     // STORY 5.22 — RE-EXPECTED: `hasTouch` makes the pointer COARSE, and every touch screen that is not a phone gets D8's

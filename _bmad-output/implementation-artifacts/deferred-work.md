@@ -5679,6 +5679,10 @@ resolution: Story 5.24e's Dev (2026-10-02), R-213 and R-227: a save the server r
   true }`), the file holds no `redirect(`, and an export that reads no user fails — red at HEAD (`setPreviewSubject`
   redirected a signed-out tab), its three in-test controls caught. A save refused for good is DW-304 (Story 7.18). The
   walk is at Review.
+  *(Story 5.24e's review, 2026-10-02: the deployed walk pressed an action with the ended session's cookie still held, and
+  the tab WAS redirected — `getUser()` dropped the cookie inside the action and Next re-rendered the route into the
+  layout's guard. The three actions now read the session through `quietSession()`, which writes no cookie; the walk's
+  step 8 arm and `server-wiring.test.ts` hold it.)*
 severity: medium
 origin: Story 5.8's Review (2026-09-19), four of five layers. `flush()` sends every non-OK status but 409 to the
   backoff. 401 is the reachable one; 404 and 422 need a bug or a deleted project. B6 has five states and no sixth,
@@ -5720,6 +5724,9 @@ resolution: Story 5.24e's Dev (2026-10-02), R-214: every sign-out door — the a
   green against a local build of this tree (the walk's other reds there are the ones every local run shows: the request
   API's cookies over plain http), and not run on production, where HEAD has no ask. A deleted project's records go with
   the next sign-out's erase. The deployed walk is at Review.
+  *(Story 5.24e's review, 2026-10-02: Sign out everywhere skipped the send and the erase on production — the Account page
+  got no user id from the shell — and is fixed with a walk arm and a `server-wiring.test.ts` row; the first-opener
+  ceiling this wall leaves is DW-308, Story 7.18's.)*
 severity: medium
 origin: Story 5.8's Review (2026-09-19), Blind Hunter and Edge Case Hunter. `local-store.ts` keys rows by
   `<projectId>:<seq>` with no tab identity; nothing deletes `inflozo-doc-<userId>`.
@@ -8367,3 +8374,24 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` (`leave`
   `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`leaving`)
 reason: the fix needs a column, and Story 5.24e forbids a migration (R-99, its Never); the owner ruled the wait
   acceptable until then (R-228, Story 5.24e's Question 2).
+
+### DW-308: a window that types in its first moment and then finds another session editing keeps that typing, unsent and unsaid
+
+plain: When you open a project, the editor lets you start at once while it asks the server whether another of your
+  windows is already editing. If one is, this window turns read-only. Anything you typed in that first moment — well
+  under a second — stays in this window and is never sent, and nothing tells you so. Before Story 5.24e the server
+  refused that typing and the window said the edits were not included.
+status: open
+severity: low
+origin: Story 5.24e's review (2026-10-02), the Acceptance Auditor and the Blind Hunter: DW-203's wall in `flush`
+  (`if (!now.lock.holder) return`) stops a tab reading along from sending, so the first-opener race — a tab that typed
+  on its optimistic first paint and then lost its first `acquire` — no longer reaches the sync route's 423, whose path
+  displaced the session and announced `LOCK_COPY.displaced`. The Dev named the ceiling in a `ponytail:` comment beside
+  the wall and in DW-203's resolution, but gave it no entry and no owner.
+owner: Story 7.18 (the deploy wizard), whose card names this entry: the wizard requires the edit lock and already takes
+  DW-307, so the lock's last two edges are closed together.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`'s wall, and `land()`)
+reason: the fix is `land()` telling a session that typed before its first answer, when that answer makes it a reader,
+  what it holds — in memory only, because in the same-browser race the on-device record is the holder's and must not
+  be reset. That is a change to the lock's landing found at a review, with a window of one round trip; it wants its own
+  control (a journey that types inside the optimistic paint), not a patch beside forty other closures.

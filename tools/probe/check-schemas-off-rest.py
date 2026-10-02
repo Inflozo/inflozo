@@ -74,10 +74,14 @@ def check(url, key, unexposed=UNEXPOSED, exposed=EXPOSED):
                        'Nothing was judged, so it fails closed')
     wrong = ([s for s in unexposed if (profiles[s][0], profiles[s][1].get('code')) != (406, 'PGRST106')]
              + [s for s in exposed if (profiles[s][0], profiles[s][1].get('code')) != (404, 'PGRST205')])
-    hints = sorted({b['hint'] for _, b in profiles.values() if b.get('hint')})
-    named = {tuple(x.strip() for x in h.split(':', 1)[-1].split(',')) for s in unexposed if (h := profiles[s][1].get('hint'))}
-    if named != {exposed}:
-        wrong.append(f'the hint names {sorted(named)}, not exactly {", ".join(exposed)}')
+    # the hint as a SET of names: PostgREST's order is its config's, and the same two listed the other way round is the
+    # same exposure (5.24e's review — the tuple compare would have gone red on it and blocked `deploy`); a hint that is
+    # no string is no hint
+    told = {s: h for s in unexposed if isinstance(h := profiles[s][1].get('hint'), str) and h}
+    hints = sorted(set(told.values()))
+    named = {frozenset(x.strip() for x in h.split(':', 1)[-1].split(',')) for h in told.values()}
+    if named != {frozenset(exposed)}:
+        wrong.append(f'the hint names {sorted(sorted(n) for n in named)}, not exactly {", ".join(exposed)}')
     return not wrong, ('GET /rest/v1/inflozo_no_such_table with SUPABASE_PUBLISHABLE_KEY, Accept-Profile -> '
                        + ', '.join(f'{s} {st} {b.get("code")}' for s, (st, b) in profiles.items())
                        + f' (406 PGRST106 wanted for {", ".join(unexposed)}; 404 PGRST205 for {", ".join(exposed)}); '
@@ -149,6 +153,9 @@ def self_check():
 
     cases = [
         ('the PASS shape', lambda s: good[s], {}, 'PASS'),
+        ('the same two, named the other way round', lambda s: (406, {'code': 'PGRST106', 'hint': 'Only the following schemas are exposed: graphql_public, public'}) if s in UNEXPOSED else good[s], {}, 'PASS'),
+        ('a third schema named in the hint', lambda s: (406, {'code': 'PGRST106', 'hint': 'Only the following schemas are exposed: public, graphql_public, private'}) if s in UNEXPOSED else good[s], {}, 'WRONG'),
+        ('a hint that is no string', lambda s: (406, {'code': 'PGRST106', 'hint': ['public', 'graphql_public']}) if s in UNEXPOSED else good[s], {}, 'WRONG'),
         ('graphql_public planted as unexposed', lambda s: good[s], {'unexposed': UNEXPOSED + ('graphql_public',)}, 'WRONG'),
         ('public alone planted as exposed', lambda s: good[s], {'exposed': ('public',)}, 'WRONG'),
         ('no answer', None, {}, 'COULD NOT ASK'),
