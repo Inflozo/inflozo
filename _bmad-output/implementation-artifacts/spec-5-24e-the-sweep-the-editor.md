@@ -1006,9 +1006,13 @@ already made.*
   (R-213) — on production.** `setPreviewSubject` answered 200 with no redirect of its own, but `getUser()` removed the
   dead session's cookies inside the action, and a cookie written in a server action makes Next re-render the route:
   `x-action-revalidated: 1`, and the `(authed)` layout's guard had the tab on `/sign-in` 330 ms later. The three
-  actions now read the session through `quietSession()`, which writes no cookie. Controls: the `server-wiring.test.ts`
-  row, red on `currentUser()` or a bare `supabaseServer()`; the walk's arm, red on `663e9a4d`
-  [apps/web/lib/supabase/server.ts:108]
+  actions now read the session through `quietSession()`, which writes no cookie. **That was half of it:** on the build
+  with only that (`8c3e6bd1`) the walk's arm was still red, the same headers and the tab gone 360 ms later — `proxy.ts`
+  removes the dead cookie on the action's own response, which re-renders the route just the same. The proxy now leaves
+  a removal for the next request that is not an action (a refresh is still written). Controls: two
+  `server-wiring.test.ts` rows, each red with its half removed; the walk's arm, red on `663e9a4d` and on `8c3e6bd1`,
+  green on `f8c35e4b` (`"cookieSent":true`, `"revalidated":null`, the refusal said, the tab where it was)
+  [apps/web/lib/supabase/server.ts:108 · apps/web/proxy.ts:43]
 - [x] [Review][Patch] The sign-out ask was not described to a screen reader: with no body, the dialog had no
   `aria-describedby`, so "N unsynced edits will be lost" and "Signing out erases this browser's copy." were never said
   as it opened. It is now described by its danger panel; the editor walk's step 8 reads the description
@@ -1476,6 +1480,36 @@ library 206, ghost-shim 47, theme-compiler 1, the schemas self-check's 11 canned
 `next-env.d.ts` unchanged; `pnpm build && node tools/check-traces.mjs` exit 0; `python3 tools/doc-audit.py --check`
 green twice. Each new check was seen red on its control: against `663e9a4d` or on a plant, restored afterwards.
 
-**Still owed on the Review build**, recorded below once it is deployed: CI and the matrix; the editor walk with its
-three review rows green; the lock walk; and the live-content walk's 429 step, last and alone.
+**On the Review builds** (`GITHUB_TOKEN`, `VERCEL_TOKEN`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, and for T1
+`GHOST6_URL`, `GHOST6_CONTENT_API_KEY`, `GHOST6_ADMIN_API_KEY`, `GHOST6_STAFF_ACCESS_TOKEN`). Three pushes, each with
+`CI` (`check`, `rls`, `deploy`) and `Render matrix` green and the deployment READY: `e24f88e7`, `8c3e6bd1`, `f8c35e4b`.
 
+- **`e24f88e7`** (the patches): the lock walk 3, 5 and 1 FAIL over three runs, and the editor walk dead at step 2 on a
+  page load. Six instrumented lock runs found requests that never reached Vercel and no product fault (§ Review
+  Findings); the walk's two rows were given room and pushed as `8c3e6bd1`.
+- **`8c3e6bd1`**: the lock walk 0 FAIL, 86 PASS. The editor walk 2 FAIL, 688 PASS: Sign out everywhere green
+  (`"cloud":"3 → 4"`, the copy gone, `/sign-in`) and the ask's description green; the signed-out pick with its cookie
+  held still red — the proxy's half, fixed and pushed as `f8c35e4b`; and the second signed-out arm red on a pick whose
+  request never left the machine (Vercel holds no row from that tab for 33 s, its lock beats and save retries missing
+  with it).
+- **`f8c35e4b`, the build this review ends on** (`dpl_GDUGVE22LUwSxwEh47oH4HEJNDpN`):
+  - `run-verify-editor.cjs`: a run dead at sign-in on a page load; then 1 FAIL / 687 PASS with four `stall` notes — step
+    89's "the subject save was captured", a row this review did not touch, and R-213's three rows PASS; then
+    **0 FAIL, 690 PASS**, two `stall` notes. In it: R-214's ask described by its danger panel; Sign out everywhere
+    sending, erasing and signing out; R-213 with the ended session's cookie held — `"cookieSent":true`,
+    `"revalidated":null`, the refusal said, the tab on the editor; Signed out with R-213's sentence, the Sign in link
+    and no Retry now; step 66c; step 89's held pick; axe on its pages.
+  - `run-verify-lock.cjs`: **0 FAIL, 86 PASS**.
+  - `run-verify-controls.cjs`: **0 FAIL, 115 PASS**.
+  - `run-verify-live-content.cjs`, `MAJORS=6` with the 429 step, last and alone, on the owner's in-session go: a first
+    run died where the Template switcher did not paint Post inside 30 s, before any write to T1; then **0 FAIL, 96
+    PASS** — T1's button and bar switched and put back, read back from Ghost (`portal_button` false, `["visitors"]`),
+    and Ghost's own 429 earned at 2026-10-02T18:26:22Z (100 reads with a key Ghost never issued) and met by the editor
+    with its sentence and one request. T1's Content API turns this network away until about 19:26Z.
+  - Every walk's own count: 13 users before, 13 after.
+- **This machine's network was the evening's noise, and it is told apart from the product each time**: a request with
+  no row at Vercel never arrived (the walks' `stall` notes, the lock diagnosis, the pick above). No row failed twice
+  for a reason that was the product's except the two this review fixed.
+
+**Not run at this review:** T3's half of the live-content walk on the Review builds (it ran clean on `663e9a4d`, and
+the patches touch nothing it reads); Resend and Dodo, which the story does not touch.

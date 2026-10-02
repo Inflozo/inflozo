@@ -5681,8 +5681,9 @@ resolution: Story 5.24e's Dev (2026-10-02), R-213 and R-227: a save the server r
   walk is at Review.
   *(Story 5.24e's review, 2026-10-02: the deployed walk pressed an action with the ended session's cookie still held, and
   the tab WAS redirected — `getUser()` dropped the cookie inside the action and Next re-rendered the route into the
-  layout's guard. The three actions now read the session through `quietSession()`, which writes no cookie; the walk's
-  step 8 arm and `server-wiring.test.ts` hold it.)*
+  layout's guard. The three actions now read the session through `quietSession()`, which writes no cookie, and
+  `proxy.ts` leaves a dead session's cookie removal for the next request that is not a server action — its own removal on
+  the action's response did the same. The walk's step 8 arm (green on `f8c35e4b`) and `server-wiring.test.ts` hold it.)*
 severity: medium
 origin: Story 5.8's Review (2026-09-19), four of five layers. `flush()` sends every non-OK status but 409 to the
   backoff. 401 is the reachable one; 404 and 422 need a bug or a deleted project. B6 has five states and no sixth,
