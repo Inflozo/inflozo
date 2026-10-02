@@ -580,7 +580,12 @@ async function main() {
       JSON.stringify({ from: held(staleFrom), to: held(staleTaken), bar: bStale.bar }))
     check('matrix "Heartbeat": a beat that fails on the NETWORK changes nothing — cut off, A still shows no bar', (await surface(A)).bar === null)
     await A.unroute('**/projects/*/lock')
-    await A.waitForTimeout(LOCK.HEARTBEAT_MS + 5000)
+    // IT WAITS FOR THE BAR, with room for ONE beat that gets no answer (the review of 5.24e, 2026-10-02): a fixed
+    // heartbeat-and-five-seconds read A before its next tick whenever the first beat after the cut stalled on this
+    // machine's network — the request never reached Vercel, `askLock` gave up at its own ten seconds and `land(null)`
+    // changes nothing by design, so A learned a beat later and the row failed twice in three runs with no product fault.
+    await A.waitForFunction(() => { const bar = document.getElementById('editor-lock-bar'); return !!bar && !bar.hidden }, null, { timeout: LOCK_BEATS_MS * 2 }).catch(() => null)
+    await A.waitForTimeout(500)
     const aRevived = await surface(A)
     check('…and once A can reach the server again it learns it lost the lock: read-only and told assertively (AD-15) — and with NOTHING lost its bar is the ordinary reading-along one, never "0 … not included" (UX-DR3)',
       (aRevived.bar ?? '').includes(LOCK.LOCK_COPY.reading) && aRevived.announced === LOCK.LOCK_COPY.displaced(0), JSON.stringify({ bar: aRevived.bar, announced: aRevived.announced }))
@@ -681,6 +686,9 @@ async function main() {
         if (!gateOpen && isLockCall(route.request()) && (intent === 'acquire' || intent === 'beat')) { heldFirst.push(route); return }
         await route.continue().catch(() => {})
       }
+      // the holder goes on a beat it has HEARD (as (b) and DW-244 do): a beat that stalled on the network leaves the tab
+      // holding an old beat, and its leave then has less to backdate than `hasLeft` asks for (the review of 5.24e)
+      await beatAnswered(H)
       await H.route('**/projects/*/lock', holdFirst)
       await H.reload({ waitUntil: 'load' })
       const inGap = await leftNow(R)

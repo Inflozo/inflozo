@@ -1034,6 +1034,15 @@ already made.*
   and the holder's own lock beats are missing with it — a stall on the walk's side of the network, where the product's
   answer is the ask. The walk could not say which. It now looks for the ask, notes a `stall`, presses Wait and signs
   out once more; a second ask is the FAIL, named [tools/probe/run-verify-lock.cjs:869]
+- [x] [Review][Patch] **The lock walk failed on the Review build too** — three clean runs, 3, 5 and 1 FAIL: "A learns
+  it lost the lock" twice, and DW-240 (a)'s control twice (the row 35 s old where a landed leave makes it 50). Six
+  instrumented runs against production logged every lock call: each run had lock requests that never reached Vercel,
+  aborted at `askLock`'s own ten seconds, on both pages; every call that was answered behaved correctly (a holder's beat
+  always `won`, the leave's filter matched, no wrong intent, no answer out of order). One lost beat costs a row up to
+  30 s of age inside a 60 s `STALE_MS` — the design — but two rows had no room for it. The first now waits for A's bar
+  for two beats; the second lets the holder hear a beat before it reloads, as (b) and DW-244 do. The 10 s timeout and
+  the interval-only retry are the same at `0e8dcbb0`. A LOCAL RUN on production: 0 FAIL, 86 PASS
+  [tools/probe/run-verify-lock.cjs:583]
 - [x] [Review][Patch] R-214's `sent` message was tested at the receiver only, with a matching base: a message whose base
   is not this editor's must change nothing. Control: red with the base test removed [tools/keyboard/journey.spec.mjs]
 - [x] [Review][Patch] DW-273's wiring had no check — the unit tests held `siteWith` and `paywallPage` apart. A harness
