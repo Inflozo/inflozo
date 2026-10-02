@@ -2,8 +2,8 @@
 title: 'Story 5.24e — The sweep: the editor'
 type: 'chore'
 created: '2026-10-02'
-status: 'in-review'
-owner_test: pending
+status: 'done'
+owner_test: passed
 review_loop_iteration: 1
 baseline_commit: '0e8dcbb0b6418b11e862f0db86cf809e6d1ce85f'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-5-context.md']
@@ -1248,6 +1248,10 @@ the same there today, and the Paywall canvas's cut is fixed rather than the chos
 editor now asks Ghost for each post's tiers, so the paid visitor's access is Ghost's own answer. It is checked by the unit
 tests and by the live walk at Review, which simulates such a post, and it becomes visible with the first design that
 draws the article (a `{{content}}` body). *(Dev, 2026-10-02.)*
+
+## Owner's test findings
+
+**Passed (owner, 2026-10-03).** The owner walked `## Owner's manual test` on the deployed site and answered "passed". No findings.
 
 ## Verification
 
