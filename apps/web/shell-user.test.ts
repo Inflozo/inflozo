@@ -9,13 +9,13 @@ const email = 'maya@orbitweekly.com'
 
 test('no display name: the address is the only line, and the initial is its first letter', () => {
   for (const displayName of [null, '', '   ']) {
-    assert.equal(nameOf({ email, displayName }), email)
-    assert.equal(secondLineOf({ email, displayName }), null)
+    assert.equal(nameOf({ id: 'u1', email, displayName }), email)
+    assert.equal(secondLineOf({ id: 'u1', email, displayName }), null)
   }
 })
 
 test('a display name: the name above, the address beneath', () => {
-  const user = { email, displayName: '  Maya Chen ' }
+  const user = { id: 'u1', email, displayName: '  Maya Chen ' }
   assert.equal(nameOf(user), 'Maya Chen')
   assert.equal(secondLineOf(user), email)
 })

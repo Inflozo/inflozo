@@ -1,9 +1,10 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
-  displacedBy, duration, edits, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, nextGeneration, partyOf, RESTART_EVENTS,
-  heldElsewhere, restartsNudge, rowFrom, secondsLeft, SELF_MARK, selfMarkScript, STALE_MS, stillAsking, TAB_SESSION_KEY,
+  askedNow, countPatch, displacedBy, duration, edgePoll, edits, HEARTBEAT_MS, isStale, LEAVE_GRACE_MS, leaveBacks, leaveBeat, leaveStamp,
+  LOCK_COPY, NUDGE_MS, nextGeneration, partyOf, RESTART_EVENTS, heldElsewhere, restartsNudge, rowFrom, secondsLeft, STALE_MS,
   type LockRow,
 } from './lib/lock.ts'
 import { append, EMPTY_JOURNAL, hydrationFor, journalCleared, unsyncedEdits, type Journal } from './lib/journal.ts'
@@ -26,6 +27,7 @@ const row = (over: Partial<LockRow> = {}): LockRow => ({
   nudgeRequestedBy: null,
   nudgeAgeMs: null,
   request: null,
+  beat: null,
   ...over,
 })
 
@@ -69,11 +71,20 @@ test('the four parties, and a session that GAVE the lock away is a reader rather
   assert.equal(partyOf(row({ holderSessionId: MINE, generation: 9 }), MINE, 3, true), 'holder')
 })
 
-test('matrix "Keep editing": the row answers my own request, and a cleared column ends it', () => {
-  assert.equal(stillAsking(row({ nudgeRequestedBy: MINE }), MINE), true)
-  assert.equal(stillAsking(row({ nudgeRequestedBy: null }), MINE), false, 'Keep editing cleared the columns')
-  assert.equal(stillAsking(row({ nudgeRequestedBy: THEIRS }), MINE), false, 'somebody else asked after me')
-  assert.equal(stillAsking(null, MINE), false, 'the row has vanished: the lock is free')
+test('matrix "Keep editing", and DW-243: my request is KEPT only when its own holder cleared it — ENDED when the holder or generation moved, still WAITING when replaced', () => {
+  const asked = { holder: THEIRS, generation: 3 }
+  assert.equal(askedNow(row({ nudgeRequestedBy: MINE }), asked), 'waiting')
+  assert.equal(askedNow(row({ nudgeRequestedBy: null }), asked), 'kept', 'Keep editing cleared the columns, under the same holder')
+  // DW-243's three cases. At HEAD the first two read "kept" and said "Your other session kept editing." of neither
+  assert.equal(askedNow(row({ nudgeRequestedBy: 'tab-c' }), asked), 'waiting', 'replaced by a third device: the holder\'s one answer still comes')
+  assert.equal(askedNow(row({ holderSessionId: 'tab-c', generation: 4, nudgeRequestedBy: null }), asked), 'ended', 'a third session took over: nobody kept anything')
+  assert.equal(askedNow(row({ nudgeRequestedBy: MINE, ageMs: 0 }), asked), 'waiting', 'the holder reloaded: same session, same generation, still asked')
+  assert.equal(askedNow(row({ holderSessionId: MINE, generation: 4 }), asked), 'ended', 'handed to me')
+  // EITHER move ends it on its own — each red if the two tests were joined with \`&&\`
+  assert.equal(askedNow(row({ holderSessionId: 'tab-c', nudgeRequestedBy: null }), asked), 'ended', 'the holder moved at the same generation')
+  assert.equal(askedNow(row({ generation: 4, nudgeRequestedBy: null }), asked), 'ended', 'the generation moved under the same holder')
+  assert.equal(askedNow(null, asked), 'ended', 'the row has vanished: the lock is free')
+  assert.equal(askedNow(row(), null), 'ended', 'asked of no row: nothing to wait on')
 })
 
 // ── F-079: the countdown RESTARTS, it does not stop ────────────────────────────────────────────────────────────
@@ -200,6 +211,8 @@ test('the row maps once, and the two ages are measured on the server rather than
     nudgeRequestedBy: MINE,
     nudgeAgeMs: 30_000,
     request: `${MINE}@2026-09-23T11:59:30.000Z`,
+    // DW-240: the beat itself, carried opaque beside the age measured from it
+    beat: '2026-09-23T11:59:50.000Z',
   })
   assert.equal(isStale(mapped), false)
 })
@@ -250,20 +263,57 @@ test('a row with no nudge, and a clock that ran backwards, both map without lyin
 // AD-15's flush contract — `'release'` flushing before it releases — is asserted in `journal.test.ts`, beside
 // the three matrix rows `flushDecision` already answers.
 
-test('a holder\'s own reload paints as the holder: the pre-paint script marks <html> for THIS tab and no other', () => {
-  // EXECUTED, not read: the script runs against a stub `sessionStorage` and `document`, exactly as the page runs it
-  const run = (tab: string | null, holder: string) => {
-    const marks: string[] = []
-    const store = { getItem: (k: string) => (k === TAB_SESSION_KEY ? tab : null) }
-    const doc = { documentElement: { setAttribute: (name: string) => marks.push(name) } }
-    new Function('sessionStorage', 'document', selfMarkScript(holder))(store, doc)
-    return marks
+test('DW-240: a going holder\'s `leave` keeps the row its own for the grace and frees it after — under a heartbeat and a nudge', () => {
+  const left = Date.parse('2026-10-02T12:00:00.000Z')
+  const stamped = { holder_session_id: MINE, lock_generation: 2, unsynced_edits: 0, heartbeat_at: leaveStamp(left), nudge_requested_by: null, nudge_requested_at: null }
+  assert.equal(isStale(rowFrom(stamped, left)), false, 'live the moment it leaves: a reload\'s first beat keeps it')
+  assert.equal(isStale(rowFrom(stamped, left + LEAVE_GRACE_MS)), false, 'live to the end of the grace')
+  assert.equal(isStale(rowFrom(stamped, left + LEAVE_GRACE_MS + 1)), true, 'stale after it: the next opener takes it')
+  // the beat a leave filters on is the row's own `heartbeat_at`, carried opaque
+  assert.equal(rowFrom(stamped, left).beat, stamped.heartbeat_at)
+  // three times the reload gap, and inside one heartbeat and one nudge (§AD4's other two), so the edge poll frees a closed
+  // tab no later than at HEAD
+  assert.ok(LEAVE_GRACE_MS < HEARTBEAT_MS && LEAVE_GRACE_MS < NUDGE_MS)
+  // what a beat may be: PostgREST's own timestamptz shape, 64 characters or fewer — and nothing else, not even a time
+  // `Date.parse` reads but Postgres would refuse (a 502 where a 400 belongs)
+  for (const good of [stamped.heartbeat_at, '2026-10-02T12:00:00.123456+00:00', '2026-10-02T12:00:00+05:30', '2026-10-02T12:00:00Z']) assert.equal(leaveBeat(good), true, good)
+  for (const bad of [undefined, null, '', 42, 'not a time', '2026-10-02T12:00:00.000Z'.padEnd(65, '0'), 'Fri, 02 Oct 2026 12:00:00 GMT', '2026-10-02', '2026/10/02 12:00:00', '2026-10-02 12:00:00']) {
+    assert.equal(leaveBeat(bad), false, String(bad))
   }
-  assert.deepEqual(run(MINE, MINE), [SELF_MARK], 'the tab the row names is the holder reloading')
-  assert.deepEqual(run(THEIRS, MINE), [], 'a genuine second tab keeps the reader\'s bar from its first paint')
-  assert.deepEqual(run(null, MINE), [], 'a tab with no id yet is nobody\'s reload')
-  // a stored value can never close the tag it is written into, and still compares as itself
-  const hostile = '</script><script>alert(1)</script>'
-  assert.ok(!selfMarkScript(hostile).includes('</script>'), 'the < is escaped')
-  assert.deepEqual(run(hostile, hostile), [SELF_MARK], 'escaping changes the text, not the comparison')
+  // the grace is the ruled default's figure, pinned: changing it is a decision, never a drift (addendum's table)
+  assert.equal(LEAVE_GRACE_MS, 10_000)
+})
+
+test('DW-244: a session that does not hold the lock polls once more at a live row\'s staleness edge — and never otherwise', () => {
+  const after = STALE_MS - LEAVE_GRACE_MS
+  assert.equal(edgePoll(row({ ageMs: after }), false), LEAVE_GRACE_MS + 250, 'just left: ask again at the grace\'s end')
+  assert.equal(edgePoll(row({ ageMs: 0 }), false), null, 'a fresh row: the heartbeat comes first')
+  assert.equal(edgePoll(row({ ageMs: STALE_MS - HEARTBEAT_MS }), false), null, 'exactly a heartbeat away: the heartbeat is the edge')
+  assert.equal(edgePoll(row({ ageMs: STALE_MS + 1 }), false), null, 'already stale: the acquire that just ran took it, or lost a race')
+  assert.equal(edgePoll(row({ ageMs: after }), true), null, 'the holder beats; it never polls an edge')
+  assert.equal(edgePoll(null, false), null, 'no row: the lock is free')
+})
+
+test('DW-240: a beat that carries no count leaves the stored one standing — a reloaded tab reports none until its journal is read', () => {
+  assert.deepEqual(countPatch(3), { unsynced_edits: 3 })
+  assert.deepEqual(countPatch(0), { unsynced_edits: 0 }, 'a read journal that owes nothing says so')
+  // before the read (absent) and anything the database could not compare: no field at all, so the row keeps its count
+  for (const none of [undefined, null, -1, 1.5, Number.NaN, Number.POSITIVE_INFINITY, '3']) assert.deepEqual(countPatch(none), {}, String(none))
+})
+
+test('DW-240: a leave only ever moves a beat BACK — one already at or before its stamp would be revived, and is left alone', () => {
+  const now = Date.parse('2026-10-02T12:00:00.000Z')
+  assert.equal(leaveBacks(new Date(now).toISOString(), now), true, 'a fresh beat is backdated into the grace')
+  assert.equal(leaveBacks(new Date(now - STALE_MS + LEAVE_GRACE_MS + 1).toISOString(), now), true, 'a beat a millisecond later than the stamp still moves back')
+  assert.equal(leaveBacks(leaveStamp(now), now), false, 'exactly the stamp: nothing to move')
+  assert.equal(leaveBacks(new Date(now - STALE_MS - 1).toISOString(), now), false, 'a stale row would be REVIVED by the stamp')
+})
+
+test('DW-240: the route\'s leave filters on the beat this tab last heard, and asks `leaveBacks` before it writes', () => {
+  // the precedent is `editor.test.ts`'s route-order rows: the SQL is executed (MEASUREMENTS §65), the wiring is read here
+  const route = readFileSync('app/(app)/app/(authed)/projects/[id]/lock/route.ts', 'utf8')
+  const leave = route.slice(route.indexOf("if (intent === 'leave' && leaveBeat(heard))"), route.indexOf("if (intent === 'nudge'"))
+  assert.ok(leave.length > 0, 'the leave branch is where this test looks')
+  assert.match(leave, /\.eq\('holder_session_id', session\)\s*\n\s*\.eq\('heartbeat_at', heard\)/, 'the UPDATE is filtered on the session AND the heard beat')
+  assert.ok(leave.indexOf('leaveBacks(heard, now)') > -1 && leave.indexOf('leaveBacks(heard, now)') < leave.indexOf('.update('), 'the forward-move guard runs before the write')
 })

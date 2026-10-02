@@ -101,10 +101,19 @@ function fontStacks(): string {
     .join('')
 }
 
+/** DW-290 (Story 5.24e): EVERYTHING THE CHROME NEEDS BEFORE ITS FIRST DRAWING, AND NOTHING THAT DRAWS — the faces added to
+ *  the canvas document (loading now) and the editor's sheet constructed in its window. The editor runs this in idle time
+ *  after a paint, so the session's first selection no longer pays for both inside its own long task (5.23b measured it at
+ *  248–255 ms at 4×, ~100 ms of it the faces invalidating the canvas's layout). It adds nothing to the DOM. Idempotent:
+ *  each half is kept per document, so `chromeLayers` calling it again costs nothing. */
+export function prepareChrome(doc: Document): CSSStyleSheet {
+  addFonts(doc)
+  return sheetFor(doc)
+}
+
 /** The two hosts, made once per canvas document and reused while chrome shows. */
 export function chromeLayers(doc: Document): ChromeLayers {
-  addFonts(doc)
-  const sheet = sheetFor(doc)
+  const sheet = prepareChrome(doc)
   const stacks = fontStacks()
   const host = (kind: 'page' | 'view') => {
     const el = doc.querySelector<HTMLElement>(`[data-inflozo-chrome="${kind}"]`) ?? doc.createElement('div')
@@ -113,11 +122,17 @@ export function chromeLayers(doc: Document): ChromeLayers {
     // `--tw-border-style` (Story 5.19, found by the MAIN FEED chip): Tailwind's `border` reads it, and its `solid` is an
     // `@property` initial value — which a shadow root's ADOPTED sheet does not register, so every chrome border drew
     // none (the PAUSED chip's hairline included). Declared here, on the host, it is inherited as the initial value was.
-    // The shadow utilities read four more such variables and still draw nothing in this layer (DW-256).
+    // DW-256 (Story 5.24e): THE SHADOWS, THE SAME WAY. Tailwind 4.3.3's `.shadow-*` composes `--tw-inset-shadow`,
+    // `--tw-inset-ring-shadow`, `--tw-ring-offset-shadow` and `--tw-ring-shadow`, each an `@property` whose initial value
+    // is a zero shadow in fully transparent black — unregistered here, so the whole `box-shadow` was invalid and every
+    // chrome shadow drew none (P0-1's "set in Ghost" pill, `P0-1 Inline Text Toolbar.dc.html:142`, among them). Their
+    // initial values, declared on the host as `0 0 transparent`, the same colour by name (no literal for `tokens.test.ts`).
     el.style.cssText =
       `all:initial;position:${kind === 'page' ? 'absolute' : 'fixed'};left:0;top:0;width:0;height:0;` +
       `z-index:2147483647;pointer-events:none;transform-origin:0 0;line-height:1.5;${stacks}` +
-      '--tw-border-style:solid;font-family:var(--font-ui);-webkit-font-smoothing:antialiased'
+      '--tw-border-style:solid;--tw-inset-shadow:0 0 transparent;--tw-inset-ring-shadow:0 0 transparent;' +
+      '--tw-ring-offset-shadow:0 0 transparent;--tw-ring-shadow:0 0 transparent;' +
+      'font-family:var(--font-ui);-webkit-font-smoothing:antialiased'
     if (!el.isConnected) doc.body.append(el)
     const shadow = el.shadowRoot ?? el.attachShadow({ mode: 'open' })
     shadow.adoptedStyleSheets = [sheet]

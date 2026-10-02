@@ -3,8 +3,8 @@ import assert from 'node:assert/strict'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import {
   append, autoFrom, backoffSeconds, BACKOFF_S, canRedo, canUndo, DEPTH, EMPTY_JOURNAL, flushDecision, flushed,
-  flushPayload, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, panelOpen, redo, undo, unsynced,
-  restingState, unsyncedEdits, vanishedDesign, type Journal, type SyncState,
+  flushPayload, hydrationFor, journalCleared, ownFlushLanded, labelOf, maxSeq, owedOf, panelOpen, redo, undo, unsynced,
+  restingState, isSentMessage, sendBody, sentBy, sentMessage, signOutFlow, unsyncedEdits, vanishedDesign, type Journal, type OwedRecord, type SyncState,
 } from './lib/journal.ts'
 
 /* STORY 5.8 — the journal, the indicator and the backoff, asserted where `node --test` can reach them. Every row of
@@ -152,17 +152,19 @@ test('FR-D9: a restored doc naming a design the library no longer holds is refus
 
 // ── B6's indicator ─────────────────────────────────────────────────────────────────────────────────────────────
 
-test('B6: every state has its own name, the panel opens on Retrying and on nothing else', () => {
+test('B6: every state has its own name, the panel opens on Retrying and on R-213\'s Signed out, and on nothing else', () => {
   const states: SyncState[] = [
     { kind: 'rest', owed: true },
     { kind: 'rest', owed: false },
     { kind: 'syncing' },
     { kind: 'retrying', attempt: 1, seconds: 5 },
+    { kind: 'signed-out' },
     { kind: 'fallback' },
   ]
   const labels = states.map(labelOf)
   assert.equal(new Set(labels).size, states.length, 'no two states answer to the same name')
-  assert.deepEqual(states.filter(panelOpen).map((s) => s.kind), ['retrying'])
+  assert.deepEqual(states.filter(panelOpen).map((s) => s.kind), ['retrying', 'signed-out'])
+  assert.equal(labelOf({ kind: 'signed-out' }), 'Signed out')
   // the resting names are B6's own, not S4a's "Saved" — the divergence the Code Map records
   assert.equal(labelOf({ kind: 'rest', owed: true }), 'Saved on this device')
   assert.equal(labelOf({ kind: 'fallback' }), 'Syncing every change to the cloud')
@@ -290,4 +292,75 @@ test('AD-15: the journal goes for EITHER reason, and the generation decides on i
   assert.equal(journalCleared(moved, true), true)
   // and `hydrationFor` itself is untouched: it still answers the revision question and only that
   assert.deepEqual(same, { kind: 'local' })
+})
+
+/* ── R-214 (Story 5.24e): signing out sends, then erases, and asks first when it cannot send ─────────────────────── */
+
+test('R-214: what a local record owes is the flush\'s own payload and AD-16\'s count — and a record owing nothing owes nothing', () => {
+  const owing = edit(edit(EMPTY_JOURNAL, 'home', doc('a'), doc('a', 'b')).journal, 'post', doc(), doc('c')).journal
+  const docs = { home: doc('a', 'b'), post: doc('c'), page: doc('d') }
+  // …with what its 200 marks sent: the journal's own stamp and highest sequence, as the flush's `flushed` is handed them
+  assert.deepEqual(owedOf('p1', { baseRevision: 4, docs, journal: owing }), { projectId: 'p1', base: 4, docs: { home: docs.home, post: docs.post }, edits: 2, stamp: owing.stamp, upTo: maxSeq(owing) })
+  assert.equal(owedOf('p1', { baseRevision: 4, docs, journal: flushed(owing, owing.stamp, maxSeq(owing)) }), null, 'everything sent')
+  assert.equal(owedOf('p1', { baseRevision: 4, docs, journal: EMPTY_JOURNAL }), null, 'never edited')
+})
+
+test('R-214: nothing owed → erase → sign out; all sent → erase → sign out; a failure asks first, and only Sign out anyway erases', async () => {
+  const record = (projectId: string, edits: number): OwedRecord => ({ projectId, base: 3, docs: { home: doc('a') }, edits, stamp: 2, upTo: 2 })
+  /** the flow with fakes, every call written down in the order it was made */
+  const run = async (owed: OwedRecord[], sends: (r: OwedRecord) => boolean, answer?: boolean, eraseFails = false) => {
+    const calls: string[] = []
+    const went = await signOutFlow({
+      owed: async () => {
+        calls.push('owed')
+        return owed
+      },
+      send: async (r) => {
+        calls.push(`send ${r.projectId}`)
+        return sends(r)
+      },
+      erase: async () => {
+        calls.push('erase')
+        if (eraseFails) throw new Error('blocked')
+      },
+      signOut: async () => {
+        calls.push('sign out')
+      },
+      ask: async (edits) => {
+        calls.push(`ask ${edits}`)
+        if (answer === undefined) throw new Error('asked when everything was sent')
+        return answer
+      },
+    })
+    return { went, calls }
+  }
+  assert.deepEqual(await run([], () => true), { went: true, calls: ['owed', 'erase', 'sign out'] }, 'nothing owed')
+  assert.deepEqual(await run([record('p1', 2), record('p2', 1)], () => true), { went: true, calls: ['owed', 'send p1', 'send p2', 'erase', 'sign out'] }, 'all sent')
+  // the ask counts the edits that would be LOST — the unsent records' alone
+  assert.deepEqual(await run([record('p1', 2), record('p2', 1)], (r) => r.projectId === 'p1', false), { went: false, calls: ['owed', 'send p1', 'send p2', 'ask 1'] }, 'Wait: no erase, no sign-out')
+  assert.deepEqual(await run([record('p1', 2), record('p2', 1)], () => false, true), { went: true, calls: ['owed', 'send p1', 'send p2', 'ask 3', 'erase', 'sign out'] }, 'Sign out anyway')
+  assert.deepEqual(await run([], () => true, undefined, true), { went: true, calls: ['owed', 'erase', 'sign out'] }, 'an erase that fails still signs out')
+})
+
+test('R-214: the sign-out sends the flush\'s own body WITHOUT a lock session, and only a 200 is sent', () => {
+  const owing = edit(EMPTY_JOURNAL, 'home', doc('a'), doc('a', 'b')).journal
+  const record = owedOf('p1', { baseRevision: 4, docs: { home: doc('a', 'b') }, journal: owing }) as OwedRecord
+  // routine call 3: no `session` — the revision compare-and-set guards it, so the route's absent branch refuses nothing
+  assert.deepEqual(JSON.parse(sendBody(record)), { base: 4, docs: { home: doc('a', 'b') } })
+  assert.equal(sentBy(200), true)
+  // another writer, no session, the server failing, and no answer at all: each "cannot send" — the ask's business
+  for (const status of [409, 401, 500, 502, 503, null]) assert.equal(sentBy(status), false, String(status))
+})
+
+test('R-214: a 200 the sign-out got is told to the open editor as its own flush\'s answer — and only a well-formed one is read', () => {
+  const owing = edit(edit(EMPTY_JOURNAL, 'home', doc('a'), doc('a', 'b')).journal, 'post', doc(), doc('c')).journal
+  const record = owedOf('p1', { baseRevision: 4, docs: { home: doc('a', 'b'), post: doc('c') }, journal: owing }) as OwedRecord
+  const told = sentMessage(record, { revision: 5 })
+  assert.deepEqual(told, { type: 'sent', project: 'p1', base: 4, revision: 5, stamp: owing.stamp, upTo: maxSeq(owing) })
+  // what the editor then does with it is its own 200's step, and it leaves nothing owed of what was sent
+  assert.equal(unsynced(flushed(owing, told.stamp, told.upTo)), false)
+  assert.equal(isSentMessage(told), true)
+  for (const junk of [null, 'sent', { ...told, type: 'released' }, { ...told, project: 7 }, { ...told, base: '4' }, { ...told, upTo: 1.5 }]) {
+    assert.equal(isSentMessage(junk), false, JSON.stringify(junk))
+  }
 })

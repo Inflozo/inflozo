@@ -6,7 +6,8 @@ import { join } from 'node:path'
 import { isPaywallDesign, orbitWeekly, PAYWALL_TARGET, paywallRing, type SectionRegistryEntry, type Visitor } from '@inflozo/library'
 import { defaultContent, renderCanvas, renderTheme, type RenderInput } from '@inflozo/section-runtime'
 import { iconDrawing } from '@inflozo/library/icons'
-import { paywallPage, withoutMedia } from './lib/canvas.ts'
+import { paywallPage } from './lib/canvas.ts'
+import { contentCta } from '@inflozo/section-runtime'
 import { paywallSamples } from './lib/controls-review.ts'
 import { adminAt, askLine, askOf, membersNotice, membersOff, PAYWALL_WORDS, tierLine, tierText, warnsOn } from './lib/paywall.ts'
 import { pilot } from './lib/pilots.ts'
@@ -131,6 +132,48 @@ test('a placed member ask warns on a members-off site; a synthesized one never d
   assert.equal(askLine(off, SITE, { html: '<section data-bg="base"><p>quiet</p></section>' }, { instanceId: 'b1f0' }), null)
 })
 
+test('R-216: a placed section\'s line says what the site stops for the ask it makes, in the Sites screen\'s own sentence — one list (DW-274)', () => {
+  // a free ask (`data-members-form`, `data-portal="signup"`) and a paid one (`signup/{tier}/…`), as `memberAsks` reads them
+  const free = { html: '<section data-bg="base"><form data-members-form="signup"><button>Join</button></form></section>' }
+  const paid = { html: '<section data-bg="base"><a data-portal="signup/t1/monthly">Go paid</a></section>' }
+  const both = { html: '<section data-bg="base"><a data-portal="signup">Join</a><a data-portal="account/plans">Upgrade</a></section>' }
+  const placed = { instanceId: 'b1f0' }
+  const line = (members: Parameters<typeof askLine>[0], entry: { html: string }) => askLine(members, SITE, entry, placed)
+  const off = { signup_access: 'none', paid_enabled: false } as const
+  const invite = { signup_access: 'invite', paid_enabled: true } as const
+  const paidOnly = { signup_access: 'paid', paid_enabled: true } as const
+  const noStripe = { signup_access: 'all', paid_enabled: false } as const
+  const [inviteSaid, paidOnlySaid, noStripeSaid] = [invite, paidOnly, noStripe].map((m) => membersNotice(m, SITE)[0])
+  // members off: 5.20's line, whatever the ask
+  assert.equal(line(off, free), PAYWALL_WORDS.ask(SITE))
+  assert.equal(line(off, paid), PAYWALL_WORDS.ask(SITE))
+  // invite-only and paid-only stop a FREE ask, in the Sites screen's sentence; a paid ask there says nothing (DW-305)
+  assert.equal(line(invite, free), inviteSaid)
+  assert.equal(line(invite, paid), null)
+  assert.equal(line(paidOnly, free), paidOnlySaid)
+  assert.equal(line(paidOnly, paid), null)
+  // no Stripe stops a PAID ask; a free one is taken
+  assert.equal(line(noStripe, free), null)
+  assert.equal(line(noStripe, paid), noStripeSaid)
+  // both facts: the sentence for each ask the section makes — both when it makes both, in the Sites screen's order
+  const inviteNoStripe = { signup_access: 'invite', paid_enabled: false } as const
+  assert.equal(line(inviteNoStripe, both), membersNotice(inviteNoStripe, SITE).join(' '))
+  assert.equal(line(inviteNoStripe, free), inviteSaid)
+  assert.equal(line(inviteNoStripe, paid), noStripeSaid)
+  // the owner's test, step 9: A22 #1 (a free ask) on an invite-only ghost5 says the Sites screen's own sentence (R-170 —
+  // `FACTS`' words, never retyped here), with the name both screens use: the site's TITLE, "Ghost5", not its host
+  const step9 = askLine(invite, 'Ghost5', pilot('a22/1'), placed)
+  assert.equal(step9, membersNotice(invite, 'Ghost5')[0])
+  assert.ok(step9?.includes('Ghost5') && !step9.includes('inflozo.com'), String(step9))
+  // nothing stops it, no record yet, a section that asks nothing, or a section nobody placed: no line
+  for (const entry of [free, paid, both]) {
+    assert.equal(line({ signup_access: 'all', paid_enabled: true }, entry), null)
+    assert.equal(line(null, entry), null)
+    assert.equal(askLine(invite, SITE, entry, { instanceId: 'auto-home-3' }), null)
+  }
+  assert.equal(line(invite, { html: '<section data-bg="base"><a data-portal="signin">Sign in</a></section>' }), null)
+})
+
 /* ── the stand-ins at the partial, node for node ─────────────────────────────────────────────────────────────── */
 
 const htmlSafe = (html: string) =>
@@ -211,18 +254,29 @@ test('both stand-ins validate, are paywall designs, form one ring, and agree on 
   assert.match(theme, /\{\{#if @site\.paid_members_enabled\}\}[^]*\{\{#get "tiers"/, 'the plans sit behind the paid flag')
 })
 
-test('the Paywall canvas requests no media: the article\'s players are drawn without a source, for every visitor', () => {
+test('the Paywall canvas\'s media is same-origin: the article\'s players play the app\'s own clips, for every visitor (DW-102)', () => {
   // the control: the recorded article DOES point its audio and video at the reserved origin, so the check below is live
   const raw = orbitWeekly.blocks('6', 'article').map((b) => b.html).join('')
   const media = new RegExp(`${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/media/`)
   assert.match(raw, media)
-  // the canvas document's policy is `default-src 'self'`, so each such src was a refused fetch and a violation (step 5)
+  // the canvas document's policy is `default-src 'self'`, so a src on the reserved origin is a refused fetch and a
+  // violation (the editor walk's step 5, Story 5.20)
   for (const visitor of ['anonymous', 'free', 'paid'] as const) {
     assert.doesNotMatch(paywallPage({ visitor, accent: orbitWeekly.site().accent_color, box: null }), media, visitor)
   }
-  // the players themselves stay — the paid member reads the whole article, cards and all
+  // the paid member reads the whole article, cards and all, and each player's source is the app's own file
+  // (`public/orbit-weekly/media/`; `style-guide.test.ts` holds each one on disk)
   const paid = paywallPage({ visitor: 'paid', accent: orbitWeekly.site().accent_color, box: null })
-  assert.match(paid, /<audio/)
-  assert.match(paid, /<video/)
-  assert.equal(withoutMedia('<p>no media here</p>'), '<p>no media here</p>')
+  const players = [...paid.matchAll(/<(audio|video)\b[^>]*\ssrc="([^"]*)"/g)]
+  assert.deepEqual(players.map((m) => m[1]).sort(), ['audio', 'video'], 'a player lost its source')
+  for (const [, tag, src] of players) assert.match(src!, /^\/orbit-weekly\/media\/[^/]+$/, tag)
+})
+
+test('DW-273 (Story 5.24e): the untouched Paywall\'s box is the linked site\'s own major\'s — 5\'s on a Ghost 5 site, 6\'s with none', () => {
+  const accent = orbitWeekly.site().accent_color
+  const box = (major: '5' | '6') => contentCta({ visibility: 'paid', member: false, accent, major })
+  assert.notEqual(box('5'), box('6'), 'the control: the two majors draw two boxes (§54, one line\'s indent)')
+  assert.ok(paywallPage({ visitor: 'anonymous', accent, box: null, major: '5' }).includes(box('5')), 'a Ghost 5 site gets 5\'s box')
+  assert.ok(paywallPage({ visitor: 'anonymous', accent, box: null }).includes(box('6')), 'no site, or no version read, gets 6\'s')
+  assert.ok(paywallPage({ visitor: 'anonymous', accent, box: null, major: '6' }).includes(box('6')))
 })

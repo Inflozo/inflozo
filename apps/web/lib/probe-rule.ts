@@ -54,46 +54,64 @@ export function injectionFlag(settings: Record<string, unknown>): boolean {
 }
 
 /**
- * PORTAL DEFAULTS TO ON, and the source records whether that was read or assumed. Readable →
- * `'probe'` and no question; unreadable (absent, or anything that is not a boolean) → `true` with
- * `'default'`, and `site-notices.tsx` asks the one question, which writes `'declared'`. Story
- * 3.7's daily check re-reads it, so `'probe'` always wins in the end.
+ * UNREADABLE IS ASSUMED OFF — GHOST'S OWN DEFAULT (R-215, DW-277) — and the source records whether the value was read
+ * or assumed. `default-settings.json` gives `portal_button` the `defaultValue` `"false"` on both majors (5.130.6
+ * :338-344, 6.58.0 :409-415), and nothing in `core/server` switches it on at setup or in a migration. Readable →
+ * `'probe'` and no question; unreadable (absent, or anything that is not a boolean) → `false` with `'default'`, and
+ * `site-notices.tsx` asks the one question — "No, it's off" first, because the recommended answer is this stored
+ * assumption — which writes `'declared'`. Story 3.7's daily check re-reads it, so `'probe'` always wins in the end. Until
+ * R-215 the assumption was ON, from FR-C2's "on by default on essentially every site", which Ghost's source contradicts.
  *
  * Executed 2026-09-08: both test Ghosts answer a real JSON `false`, so the readable branch is the
  * one the live proof takes and the question is a unit contract until a Ghost that hides it exists.
- * (Story 5.21 read Ghost's own default in source: `portal_button` is `"false"` on a new site on both
- * majors, so the assumption above is the opposite of Ghost's — DW-277 holds that for the owner.)
  *
  * STORY 5.21 — AND THE BUTTON'S LOOK, off the same payload: `portal_button_style` (Ghost's three, validated by
  * Ghost's own `isIn`; anything else is Ghost's default, `icon-and-text`) and `portal_button_signup_text` (a string,
  * the empty one included — an empty label draws none, as Portal does — else Ghost's default "Subscribe"). Both are
  * PUBLIC settings on both majors (MEASUREMENTS §55), and the canvas draws Portal's button from them.
+ *
+ * STORY 5.24e (DW-278) — AND ITS ICON: `portal_button_icon`, one of Portal's five presets (`ICON_MAPPING` in its
+ * `trigger-button`, 2.69.339 and 2.51.5) or the site's own uploaded image, which Ghost reads back as an absolute URL —
+ * kept only as `https:`, because Portal draws it as an `<img src>` (`imageUrl`'s rule) — else null, Ghost's default
+ * (`defaultValue: null`, both majors), which Portal draws as its person. Public on both majors; read on 2026-10-02: T1
+ * `null`, T3 `icon-5`.
  */
 export const PORTAL_STYLES = ['icon-and-text', 'icon-only', 'text-only'] as const
 export type PortalStyle = (typeof PORTAL_STYLES)[number]
 const portalStyle = (value: unknown): PortalStyle => ((PORTAL_STYLES as readonly unknown[]).includes(value) ? (value as PortalStyle) : 'icon-and-text')
 const signupText = (value: unknown): string => (typeof value === 'string' ? value : 'Subscribe')
+export const PORTAL_ICONS = ['icon-1', 'icon-2', 'icon-3', 'icon-4', 'icon-5'] as const
+export type PortalIcon = (typeof PORTAL_ICONS)[number]
+/** a preset's id, an `https:` image URL, or null — on the way in and on the way out alike */
+const portalIcon = (value: unknown): string | null => ((PORTAL_ICONS as readonly unknown[]).includes(value) ? (value as PortalIcon) : imageUrl(value))
 
 export function portalState(settings: Record<string, unknown>): {
   portal_button: boolean
   portal_button_source: 'probe' | 'default' | 'declared'
   portal_button_style: PortalStyle
   portal_button_signup_text: string
+  portal_button_icon: string | null
 } {
   const value = settings.portal_button
-  const look = { portal_button_style: portalStyle(settings.portal_button_style), portal_button_signup_text: signupText(settings.portal_button_signup_text) }
+  const look = {
+    portal_button_style: portalStyle(settings.portal_button_style),
+    portal_button_signup_text: signupText(settings.portal_button_signup_text),
+    portal_button_icon: portalIcon(settings.portal_button_icon),
+  }
   return typeof value === 'boolean'
     ? { portal_button: value, portal_button_source: 'probe', ...look }
-    : { portal_button: true, portal_button_source: 'default', ...look }
+    : { portal_button: false, portal_button_source: 'default', ...look }
 }
 
 /**
  * THE ANNOUNCEMENT IS READ AND STORED, NOT RENDERED. FR-C4's seed is Story 3.4's; this only puts
  * the three values where 3.4 will find them, VERBATIM — `announcement_visibility` is a JSON
  * *string* (`"[\"visitors\"]"`, §15h item 21 and §39), and parsing it here would be this story
- * deciding a shape 3.4 has to decide anyway. A key Ghost did not send is stored as null so the
- * absence is a fact rather than a hole.
+ * deciding a shape 3.4 has to decide anyway. A key Ghost did not send reads as null — and since DW-280
+ * `settingsPatch` keeps a stored value over that null, so it is written only where nothing was stored.
  */
+const ANNOUNCEMENT_KEYS = { content: 'announcement_content', background: 'announcement_background', visibility: 'announcement_visibility' } as const
+
 export function announcementOf(settings: Record<string, unknown>): {
   content: string | null
   background: string | null
@@ -101,9 +119,9 @@ export function announcementOf(settings: Record<string, unknown>): {
 } {
   const text = (value: unknown) => (typeof value === 'string' ? value : null)
   return {
-    content: text(settings.announcement_content),
-    background: text(settings.announcement_background),
-    visibility: text(settings.announcement_visibility),
+    content: text(settings[ANNOUNCEMENT_KEYS.content]),
+    background: text(settings[ANNOUNCEMENT_KEYS.background]),
+    visibility: text(settings[ANNOUNCEMENT_KEYS.visibility]),
   }
 }
 
@@ -207,12 +225,16 @@ export function navOf(value: unknown): NavItem[] {
   })
 }
 
+/** the key each field is read from — here once, for the reader and for DW-280's guard in `settingsPatch` */
+const BRAND_KEYS = { accent: 'accent_color', logo: 'logo', nav: 'navigation' } as const
+
 export function brandOf(settings: Record<string, unknown>): Brand {
+  const accent = settings[BRAND_KEYS.accent]
   // An empty string is Ghost's own "unset" for the logo (executed, §40): `imageUrl` makes it null.
   return {
-    accent: isAccent(settings.accent_color) ? settings.accent_color : null,
-    logo: imageUrl(settings.logo),
-    nav: navOf(settings.navigation),
+    accent: isAccent(accent) ? accent : null,
+    logo: imageUrl(settings[BRAND_KEYS.logo]),
+    nav: navOf(settings[BRAND_KEYS.nav]),
   }
 }
 
@@ -521,6 +543,13 @@ export const PORTAL_COPY = {
   no: 'No, it’s off',
 } as const
 
+/** The question's two answers IN ORDER, the primary first (R-215): "No, it's off", the stored assumption — what an
+ *  unreadable button already reads as (`portalState`), so the recommended answer changes nothing. */
+export const PORTAL_ANSWERS = {
+  primary: { value: 'no', label: PORTAL_COPY.no },
+  secondary: { value: 'yes', label: PORTAL_COPY.yes },
+} as const
+
 export const PLAN_COPY = {
   body: 'We couldn’t read what this site’s Ghost(Pro) plan allows. Does it let you upload a custom theme?',
   full: 'Yes — custom themes allowed',
@@ -578,12 +607,14 @@ export const storedMembers = (siteSettings: unknown): Members | null => {
  *
  *   `announcement.visibility` is Ghost's JSON STRING (`"[\"visitors\"]"`, §39) parsed HERE, the one reader that needs it
  *   as a list; an array is admitted too (`navOf`'s idiom), and anything that is not a string inside it is dropped.
- *   `portal.button` is the stored boolean whatever its source — a `'default'` or `'declared'` answer is drawn as stored.
+ *   `portal.button` is the stored boolean whatever its source — a `'default'` or `'declared'` answer is drawn as stored,
+ *   and since R-215 an assumed one is stored `false`.
+ *   `portal.icon` is a preset's id or an `https:` URL, re-checked exactly as it was checked on the way in (DW-278).
  *   `accent` is `isAccent`'s, or null, because it is painted into CSS (NFR-3).
  */
 export type Surfaces = {
   announcement: { content: string; background: string; visibility: readonly string[] }
-  portal: { button: boolean; style: PortalStyle; label: string }
+  portal: { button: boolean; style: PortalStyle; label: string; icon: string | null }
   accent: string | null
 }
 
@@ -609,7 +640,7 @@ export const storedSurfaces = (siteSettings: unknown): Surfaces => {
       background: typeof announcement.background === 'string' ? announcement.background : '',
       visibility: visibilityOf(announcement.visibility),
     },
-    portal: { button: s.portal_button === true, style: portalStyle(s.portal_button_style), label: signupText(s.portal_button_signup_text) },
+    portal: { button: s.portal_button === true, style: portalStyle(s.portal_button_style), label: signupText(s.portal_button_signup_text), icon: portalIcon(s.portal_button_icon) },
     accent: isAccent(brand.accent) ? brand.accent : null,
   }
 }
@@ -625,21 +656,40 @@ export const storedSurfaces = (siteSettings: unknown): Surfaces => {
  * them. NEVER A STRIPE KEY: every value is built from a named key, never filtered from the payload (MEASUREMENTS §54).
  *
  * THE PORTAL RULE — A PROBE MAY OVERWRITE AN ANSWER WITH A READING, NEVER WITH AN ASSUMPTION. `portalState` cannot see
- * that the user already answered, so on a Ghost that keeps hiding `portal_button` every re-read would put `true`/`default`
- * back over the user's "No, it's off" and ask again, for ever. A real read (`'probe'`) still wins.
+ * that the user already answered, so on a Ghost that keeps hiding `portal_button` every re-read would put `false`/`default`
+ * back over the user's "Yes, it shows" and ask again, for ever. A real read (`'probe'`) still wins.
+ *
+ * DW-280 — THE SAME RULE, PER KEY: a key Ghost sent is a reading (junk included, which reads as the reader's own null or
+ * default); a key it LEFT OUT is no reading, so the stored field stands — the announcement's three, the brand's three, the
+ * button's look and the code-injection flag. `members` (below) was the first to have this guard. Where nothing is stored
+ * the reader's own answer is written, nulls and all, as before. NOT `portal_button` itself: a payload without it reads
+ * as Ghost's own default (`false`, source `'default'`, R-215) and REPLACES a stored reading of `true` — only a DECLARED
+ * answer is kept over it (the Portal rule above).
  */
 export function settingsPatch(previous: Record<string, unknown>, settings: Record<string, unknown>): Record<string, unknown> {
   const portal = portalState(settings)
   // An assumption does not overwrite an answer; a reading does.
   const declared = portal.portal_button_source === 'default' && previous.portal_button_source === 'declared'
+  const sent = (key: string) => Object.hasOwn(settings, key)
+  /** the reader's record, each field whose key Ghost left out kept from the stored record where it has one (a field
+   *  named as Ghost names its key needs no `keys`) */
+  const kept = <T extends Record<string, unknown>>(read: T, stored: unknown, keys?: Readonly<Record<keyof T, string>>): T => {
+    const was = isRecord(stored) ? stored : {}
+    return Object.fromEntries(Object.entries(read).map(([field, value]) => [field, sent(keys?.[field] ?? field) || !Object.hasOwn(was, field) ? value : was[field]])) as T
+  }
+  const { portal_button_style, portal_button_signup_text, portal_button_icon } = portal
+  // ONE stored boolean over two keys: a reading when either half carries code, or when both halves were sent
+  const injection = injectionFlag(settings)
+  const injectionRead = injection || (sent('codeinjection_head') && sent('codeinjection_foot')) || typeof previous.code_injection !== 'boolean'
   const next: Record<string, unknown> = {
     ...previous,
-    code_injection: injectionFlag(settings),
+    code_injection: injectionRead ? injection : previous.code_injection,
     ...portal,
+    ...kept({ portal_button_style, portal_button_signup_text, portal_button_icon }, previous),
     ...(declared ? { portal_button: previous.portal_button, portal_button_source: 'declared' } : {}),
-    announcement: announcementOf(settings),
+    announcement: kept(announcementOf(settings), previous.announcement, ANNOUNCEMENT_KEYS),
     // FR-C4, Story 3.4: the brand, on the payload that was already read.
-    brand: brandOf(settings),
+    brand: kept(brandOf(settings), previous.brand, BRAND_KEYS),
   }
   // STORY 5.20 — FR-H6's record of the member switches, only where the payload carries both halves well-formed; an
   // unreadable pair leaves the previous record standing (the spread above), never an assumption over a reading

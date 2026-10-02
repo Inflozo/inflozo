@@ -5,7 +5,7 @@ import { ExternalLink } from '@/components/kit/icons'
 import { Submit } from '@/components/kit/submit'
 import { hostOf } from '@/lib/connect-rule'
 import { adminAt, membersNotice, PAYWALL_WORDS } from '@/lib/paywall'
-import { INJECTION_COPY, PLAN_COPY, PORTAL_COPY, PREVIEW_COPY, storedMembers } from '@/lib/probe-rule'
+import { INJECTION_COPY, PLAN_COPY, PORTAL_ANSWERS, PORTAL_COPY, PREVIEW_COPY, storedMembers } from '@/lib/probe-rule'
 import { answerPlan, answerPortal, dismissInjectionNotice, recheckPlan } from './actions'
 
 /* ───────── STORY 3.3 — the four blocks the probes put on a Sites card, in this order: the
@@ -174,13 +174,14 @@ export function SiteNotices({ site, recheckFailed }: { site: NoticeSite; recheck
       ) : null}
 
       {portalAsk ? (
-        /* "Yes" IS THE PRIMARY, because Portal defaults to ON: the probe already wrote `true`, so
-           the recommended answer is the one that changes nothing. */
+        /* "No, it's off" IS THE PRIMARY (R-215): what cannot be read is assumed off, Ghost's own
+           default, so the probe already wrote `false` and the recommended answer is the stored
+           assumption — the one that changes nothing. */
         <Ask
           action={answerPortal}
           siteId={site.id}
-          primary={{ name: 'portal_button', value: 'yes', label: PORTAL_COPY.yes }}
-          secondary={{ name: 'portal_button', value: 'no', label: PORTAL_COPY.no }}
+          primary={{ name: 'portal_button', ...PORTAL_ANSWERS.primary }}
+          secondary={{ name: 'portal_button', ...PORTAL_ANSWERS.secondary }}
         >
           {PORTAL_COPY.body}
         </Ask>

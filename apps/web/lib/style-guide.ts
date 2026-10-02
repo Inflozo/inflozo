@@ -20,6 +20,7 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { orbitWeekly } from '@inflozo/library'
 import { CTA_STYLES } from '@inflozo/section-runtime'
+import { withMedia } from './canvas.ts'
 
 /** `packages/`, from the working directory FIRST — and that form is load-bearing for the deployed app, not a style.
  *
@@ -76,12 +77,13 @@ export const cardScripts = (): { chunks: string[]; js: string } => {
 
 /** Every `https://orbit-weekly.example/images/<name>.svg` in a recording, pointed at the SVG itself as a
  *  data URI. The recorded bytes carry the reserved origin; this is the one place it is mapped, and
- *  the mapping touches a URL and nothing else. Media and file URLs are left alone — no media is
- *  bundled, so a player renders its chrome and plays nothing. */
+ *  the mapping touches a URL and nothing else. Media goes to the app's own copies through the
+ *  canvas's `withMedia`, the one treatment of a media URL (DW-102), so a player plays; file URLs are
+ *  left alone. */
 export function withImages(html: string): string {
   const origin = orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')
   const seen = new Map<string, string>()   // a handful of files named dozens of times: read each once
-  return html.replace(new RegExp(`${origin}/images/([a-z0-9-]+\\.svg)`, 'g'), (_, name: string) => {
+  return withMedia(html).replace(new RegExp(`${origin}/images/([a-z0-9-]+\\.svg)`, 'g'), (_, name: string) => {
     let uri = seen.get(name)
     if (uri === undefined) {
       uri = `data:image/svg+xml;base64,${readFileSync(join(ORBIT_WEEKLY_DIR(), 'images', name)).toString('base64')}`

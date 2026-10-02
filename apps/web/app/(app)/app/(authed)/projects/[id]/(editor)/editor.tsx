@@ -41,28 +41,29 @@ import { EmptyPanel } from '@/components/kit/empty-panel'
 import { Skeleton } from '@/components/kit/loading'
 import { ReadOnly, ring, slimScrollbar } from '@/components/kit/greyed'
 import { ChevronLeft, InfoCircle, Laptop, Moon, Panel, Pause, PreviewEye, Redo as RedoIcon, Refresh, Sun, Undo as UndoIcon, X } from '@/components/kit/icons'
-import { LayerThumb } from '@/components/kit/layers-row'
+import { glyphOf, LayerThumb } from '@/components/kit/layers-row'
 import { Menu, type MenuItem } from '@/components/kit/select'
 import { PanelLabel } from '@/components/kit/labels'
 import { movesByItself, startBehaviours } from '@/lib/behaviours'
-import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
-import { chromeLayers, dropChromeLayers, pinned, place, type ChromeLayers } from '@/lib/canvas-layer'
+import { canvasAssets, canvasSrc, paywallPage, renderSection, rowsFor, sampleRows, shownRows, sitePage, surfaceSheetSrc, wheelToFrame, type DesignRows, type Queries, type RenderContext, type SitePage } from '@/lib/canvas'
+import { chromeLayers, dropChromeLayers, pinned, place, prepareChrome, type ChromeLayers } from '@/lib/canvas-layer'
 import { DESKTOP, DEVICES, deviceShown, fitFor, type Device } from '@/lib/device'
 import { COMPACT, PHONE } from '@/lib/floor'
-import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSurface, settingsPath, SITE, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
-import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, portalFor, readHidden, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
+import { CANVASES, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath as pathOfCanvas, fileOfKey, isSiteFooter, isSurface, landWithin, settingsPath, SITE, siteSlot, syncPath, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { ANNOUNCEMENT_CSS, announcementFor, buttonMarkup, GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, portalFor, readHidden, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, writeHidden, type Shim, type SurfaceId } from '@/lib/ghost-surfaces'
 import { adminAt, askLine, membersOff, PAYWALL_WORDS, tierText } from '@/lib/paywall'
 import {
   append, autoFrom, backoffSeconds, canRedo, canUndo, EMPTY_JOURNAL, flushed, flushPayload, FLUSH_MS,
-  flushDecision, hydrationFor, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState, undo as undoIn,
-  SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal, type Restore, type SyncState,
+  flushDecision, hydrationFor, isSentMessage, journalCleared, maxSeq, ownFlushLanded, redo as redoIn, restingState,
+  SENT_CHANNEL, undo as undoIn, SYNC_TIMEOUT_MS, unsynced, unsyncedEdits, vanishedDesign, type FlushCall, type Journal,
+  type Restore, type SyncState,
 } from '@/lib/journal'
 import {
-  HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, SELF_MARK, stillAsking, type LockRow,
+  askedNow, edgePoll, HEARTBEAT_MS, isStale, LOCK_COPY, NUDGE_MS, partyOf, type AskedOf, type LockRow,
 } from '@/lib/lock'
-import { askLock, lockSignals, lockUrl, tabSession, type LockAnswer, type LockSignal } from '@/lib/lock-client'
+import { askLock, lockSignals, lockUrl, tabSession, tabSessionKept, type LockAnswer, type LockSignal } from '@/lib/lock-client'
 import { edits, holdsCaret, IN_PREVIEW, KEYMAP, shortcutFor, SINGLE_KEY, type Gesture } from '@/lib/keymap'
-import { BACK_SAID, PAUSED, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
+import { BACK_SAID, PAUSED, PAUSED_SAID, PREVIEW, PREVIEW_SAID } from '@/lib/preview'
 import { remixFold, remixPicks, remixSaid, remixable } from '@/lib/remix'
 import { announce, pillPosition, shuffleTo, step } from '@/lib/ring'
 import { invokedAt, isSiteWide, offeredHere } from '@/lib/picker'
@@ -75,12 +76,12 @@ import {
 } from '@/lib/page-two'
 import { startInline, type Inline, type InlineSelection } from '@/lib/inline'
 import { captureLayout, landingAt, oneValue, type Layout } from '@/lib/reorder'
-import { canvasFirst, counted, useHanded, useStable } from '@/lib/renders'
+import { canvasFirst, counted, useHanded, useSaid, useStable } from '@/lib/renders'
 import { escDeselects, hold, HOLD_IDLE, HOLD_MS, rootFrom, samePropElsewhere, sectionRoots, takeStamps, withState, type HoldEvent, type Stamp } from '@/lib/selection'
-import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, siteSubjects, subjectOptions } from '@/lib/preview-subject'
+import { GONE, SAVE_REFUSED, SUBJECT_SAID, bundledSource, cappedPosts, clearPending, hasSubject, readPending, siteSubjects, subjectOptions, writePending } from '@/lib/preview-subject'
 import {
-  bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SETTINGS, siteLinks,
-  siteTotal, type Cause, type LiveQuery,
+  bindingReads, feedShortfall, getShortfall, keyOf as liveKey, LISTS, LIVE_WORDS, named, PUBLIC_TIERS, reader, retriable, SEARCH_DEBOUNCE_MS,
+  searchFor, searchInForce, SETTINGS, siteLinks, siteTotal, subjectRead, withFound, type Cause, type LiveQuery,
 } from '@/lib/live-content'
 import { ADDED_AS_MAIN, CAPPED_LIST, FEEDLESS, NOW_MAIN, withTransfer } from '@/lib/data-group'
 import { liveStore, type LiveStore } from '@/lib/live-client'
@@ -345,11 +346,11 @@ function Rail({ fold, label, controls, side, hidden }: { fold: ReturnType<typeof
 
 /** One of the rail's section buttons (Story 5.22), a `memo` part since Story 5.23b: its fields are primitives, so a
  *  selection redraws the two whose `aria-current` changed and a hover none. Counted for the keyboard gate. */
-type RailItem = { key: string; name: string; hidden: boolean; selected: boolean; doc: string; instanceId: string }
+type RailItem = { key: string; name: string; hidden: boolean; selected: boolean; doc: string; instanceId: string; category: string }
 
 const RAIL_CELL = `inline-flex size-8 shrink-0 items-center justify-center rounded-sm transition-colors ${ring}`
 
-const RailRow = memo(function RailRow({ id, name, hidden, selected, doc, instanceId, onRow }: Omit<RailItem, 'key'> & { id: string; onRow: (pick: Pick) => void }) {
+const RailRow = memo(function RailRow({ id, name, hidden, selected, doc, instanceId, category, onRow }: Omit<RailItem, 'key'> & { id: string; onRow: (pick: Pick) => void }) {
   const label = hidden ? `${name}, hidden` : name
   return (
     <Profiler id="rail-row" onRender={counted}>
@@ -362,7 +363,8 @@ const RailRow = memo(function RailRow({ id, name, hidden, selected, doc, instanc
         onClick={() => onRow({ doc, instanceId })}
         className={`${RAIL_CELL} ${selected ? 'bg-coral-tint' : 'hover:bg-paper-sunk'} ${hidden ? 'opacity-40' : ''}`}
       >
-        <LayerThumb size="h-[19px] w-[26px] coarse:h-6 coarse:w-[34px]" />
+        {/* DW-281 (Story 5.24e) — D8's own picture per kind, and its tinted edge on the selected tile (`:67`, `:197`) */}
+        <LayerThumb glyph={glyphOf(category)} at="rail" selected={selected} />
       </button>
     </Profiler>
   )
@@ -372,13 +374,13 @@ const RailRow = memo(function RailRow({ id, name, hidden, selected, doc, instanc
  *  at full width, and always below 1280. One rail, not two — at full width the fold used to be the one Show button.
  *
  *  "Show layers", a 1px divider, one button per section of the stack the page paints, then "+" (`Add section`) where
- *  anything can be placed. Each row button is the section's generic thumb (DW-281: D8a draws one per category) and is
- *  NAMED by its layer name — the rail has no room for the words, so they are its accessible name and hover title; the
- *  selected one carries `aria-current` and the coral tint, a hidden one is dimmed and says so. The pointer changes only
- *  target sizes (`D8:33`): 32px rows and 26 × 19 thumbs in a 44px rail on a mouse, 44px rows (the editor's touch rule) and
- *  34 × 24 thumbs in a 56px rail on touch. The Show button sits in a head of its own, 44 wide, so the rail's rule is
- *  drawn over its right edge (`after:`) rather than taking a pixel of it. Hidden in Preview, never unmounted. `memo` since
- *  Story 5.23b: a hover leaves it alone. */
+ *  anything can be placed. Each row button is its section's kind's picture (DW-281, Story 5.24e: D8a's one per category,
+ *  `LayerThumb`'s glyph) and is NAMED by its layer name — the rail has no room for the words, so they are its accessible
+ *  name and hover title; the selected one carries `aria-current` and the coral tint, a hidden one is dimmed and says so.
+ *  The pointer changes only target sizes (`D8:33`): 32px rows and 26 × 19 thumbs in a 44px rail on a mouse, 44px rows
+ *  (the editor's touch rule) and 34 × 24 thumbs in a 56px rail on touch. The Show button sits in a head of its own, 44
+ *  wide, so the rail's rule is drawn over its right edge (`after:`) rather than taking a pixel of it. Hidden in Preview,
+ *  never unmounted. `memo` since Story 5.23b: a hover leaves it alone. */
 const IconRail = memo(function IconRail({
   show,
   hidden,
@@ -426,7 +428,7 @@ const IconRail = memo(function IconRail({
       <span aria-hidden className="my-[3px] h-px w-6 shrink-0 bg-line coarse:my-1 coarse:w-8" />
       <div className={`flex min-h-0 w-full flex-1 flex-col items-center gap-[2px] overflow-y-auto py-[2px] ${slimScrollbar}`}>
         {rows.map((row) => (
-          <RailRow key={row.key} id={row.key} name={row.name} hidden={row.hidden} selected={row.selected} doc={row.doc} instanceId={row.instanceId} onRow={onRow} />
+          <RailRow key={row.key} id={row.key} name={row.name} hidden={row.hidden} selected={row.selected} doc={row.doc} instanceId={row.instanceId} category={row.category} onRow={onRow} />
         ))}
       </div>
       {canAdd ? (
@@ -483,6 +485,8 @@ type LockUi = {
   asking: boolean
   /** when the request landed — the requester's own ~30 s runs from here, and B5c prints the duration */
   askedAt: number | null
+  /** DW-243 (Story 5.24e): the holder and generation the request was made against — `askedNow` ends it when either moves */
+  askedOf: AskedOf | null
   /** ~30 s passed with no answer: the bar offers the take-over */
   unanswered: boolean
   /** Hand over is in flight: the flush goes out BEFORE the release */
@@ -726,6 +730,19 @@ export function Editor(props: EditorProps) {
   return phone ? <SmallScreenNotice name={props.project.name} /> : <EditorShell {...props} />
 }
 
+/** The stored announcement, parsed in an INERT document — `DOMParser`'s runs nothing and loads nothing. `EditorShell` renders
+ *  in the browser alone (Story 5.22's gate), so the parser is always there. */
+const inertBody = (html: string) => new DOMParser().parseFromString(html, 'text/html').body as unknown as MarkNode
+
+/** DW-223 (Story 5.24e): this TAB's store, or null where the browser refuses even to hand it over */
+const tabStore = (): Storage | null => {
+  try {
+    return window.sessionStorage
+  } catch {
+    return null
+  }
+}
+
 /** R-202's rule, LIVE — `useSyncExternalStore` over `matchMedia(COMPACT)`, so a window crossing 1280 (or a zoom) re-renders
  *  the one editor and remounts nothing. Module-level, so the subscription is one function for the component's life. */
 const compactNow = () => window.matchMedia(COMPACT).matches
@@ -833,6 +850,9 @@ function EditorShell({
   )
   const [selected, setSelected] = useHanded<Pick | null>(null)
   const [hovered, setHovered] = useHanded<Pick | null>(null)
+  /** R-217 (Story 5.24e): where the pointed section was pointed at from — the canvas, or its Layers row (`point`) */
+  const [pointedFrom, setPointedFrom] = useHanded<'canvas' | 'layers'>('canvas')
+  const hoverVia = useRef<'canvas' | 'layers'>('canvas')
   const [paints, setPaints] = useHanded(0)
   /** Story 5.6 — the mode the canvas is SHOWING. Session state, like `pilots/review.tsx`'s: it is never in the URL
    *  (`lib/editor.ts`) and never a stored per-canvas preference. A Light-only project has no way to leave 'light'. */
@@ -866,7 +886,15 @@ function EditorShell({
    * unit test rather than a browser observation. A canvas with no singular resource resolves to null, and the pill
    * then states the source and offers nothing to open.
    */
-  const [subjects, setSubjects] = useHanded(storedSubjects)
+  /** DW-223 (Story 5.24e): the picks this tab made whose writes had not answered when it last went — a reload in that
+   *  moment. They win over what the server holds, and are sent again on opening (below). The shell mounts in the browser
+   *  alone (Story 5.22's gate), so the store is there to read. */
+  const [waiting] = useState(() =>
+    Object.fromEntries(canvases.flatMap((canvas) => {
+      const pick = hasSubject(CANVASES[canvas].file) ? readPending(tabStore(), project.id, templateKeyOf(canvas)) : null
+      return pick === null ? [] : [[templateKeyOf(canvas), pick] as const]
+    })))
+  const [subjects, setSubjects] = useHanded(() => ({ ...storedSubjects, ...waiting }))
   /** the last save's refusal, carried in the menu: the choice stands for the session and will not survive a reload */
   const [subjectRefusal, setSubjectRefusal] = useHanded<string | null>(null)
   const [, startSubject] = useTransition()
@@ -983,6 +1011,17 @@ function EditorShell({
       // STORY 5.21 — the snapshot as Ghost now answers it: only the two shims are redrawn, never the page
       surfacesNow.current = answer.surfaces
       setSurfaces(answer.surfaces)
+      // R-215 (Story 5.24e): a chosen or pointed Ghost row the answer no longer shows is let go; a hidden one keeps its id
+      // in this browser's list, so a surface switched off and on again comes back hidden (`ghostRowsOf`)
+      const shownNow = rowsOn(answer.surfaces, answer.members, inertBody)
+      if (ghostChosenNow.current !== null && !shownNow.some((r) => r.id === ghostChosenNow.current)) {
+        ghostChosenNow.current = null
+        setGhostChosen(null)
+      }
+      if (ghostHoverNow.current !== null && !shownNow.some((r) => r.id === ghostHoverNow.current)) {
+        ghostHoverNow.current = null
+        setGhostHover(null)
+      }
       // …only into a document that holds a painted `#canvas`: a fresh document ahead of its paint gets them from `paint()`
       const doc = frame.current?.contentDocument
       if (doc && paintedAt.current !== null && doc.getElementById('canvas') !== null) drawShims(doc)
@@ -1018,17 +1057,52 @@ function EditorShell({
   const offered = useMemo(() => offersPageTwo(key, docs, previewing.subject, contentSource), [key, docs, previewing.subject, contentSource])
   /** …and the section whose panel carries D5d's row: page 1's main feed, or on page 2 its copy */
   const feedHere = useMemo(() => (offered ? mainFeedOn(docs, key, page, library) : null), [offered, docs, key, page, library])
+  /* DW-248 (Story 5.24e): THE ONE TERM the open search box holds — D5e's, the Link Picker's or a Data group's (one opens at
+     a time), each reporting it as it is typed and '' as it empties or closes. While the site's posts list is capped and the
+     session's search share holds, that term is ONE `title:~` read at Ghost, sent `SEARCH_DEBOUNCE_MS` after the last key,
+     whose rows join the list in hand by id (`withFound`); otherwise every box searches the rows in hand under the capped
+     line, as before. Posts only — pages, tags and writers are never capped searches. */
+  const [term, setTerm] = useHanded('')
+  // the search is `lib/live-content.ts`'s two rules: sent while the share holds and kept once landed (`searchFor`), and
+  // standing in for the capped line only while it is coming or has come (`searchInForce`)
+  const search = livePage !== null && reads.current !== null ? searchFor(reads.current.peek, reads.current.reading(), term, cappedPosts(reads.current.peek) !== null) : null
+  const searchKey = search === null ? null : liveKey(search)
+  /** the key of a search that settled with no answer — failed, or never sent because reading stopped */
+  const [searchFailed, setSearchFailed] = useHanded<string | null>(null)
+  useEffect(() => {
+    const s = reads.current
+    if (search === null || s === null) return
+    const at = window.setTimeout(() => {
+      void s.ensure([search]).then(() => {
+        if (s.peek(search) === undefined) setSearchFailed(liveKey(search))
+        setLiveTick((n) => n + 1)
+      })
+    }, SEARCH_DEBOUNCE_MS)
+    return () => window.clearTimeout(at)
+    // the term's own read is the question; a new term is a new key
+  }, [searchKey])
+  const searching = reads.current !== null && searchInForce(reads.current.peek, reads.current.reading(), search, searchFailed)
+  // a term belongs to the canvas it was typed on — a box left open across a switch reports nothing more
+  useEffect(() => setTerm(''), [key])
   const subjectRows = useMemo(
     () =>
       previewing.subject === null ? []
-      : subjectOptions(livePage !== null && reads.current !== null ? siteSubjects(reads.current.peek, livePage.zone) : bundled, previewing.subject.kind),
-    [bundled, livePage, previewing.subject?.kind],
+      : subjectOptions(
+          livePage !== null && reads.current !== null
+            // the chosen post's own read rides along, so a pick found by a search keeps its title once the search clears
+            ? siteSubjects(withFound(reads.current.peek, search, previewing.subject.kind === 'post' ? subjectRead(previewing.subject) : null), livePage.zone)
+            : bundled,
+          previewing.subject.kind,
+        ),
+    [bundled, livePage, previewing.subject?.kind, previewing.subject?.slug, searchKey, liveTick],
   )
-  /** the Link Picker's rows in hand — the site's own pages, posts, tags and writers where they show (DW-248's cap) */
-  const linksNow = useMemo(
-    () => (livePage !== null && reads.current !== null ? siteLinks(reader(reads.current.peek), livePage.zone) : links),
-    [livePage, links, liveTick],
-  )
+  /** the Link Picker's rows in hand — the site's own pages, posts, tags and writers where they show; DW-248: with a search
+   *  at Ghost's found posts among them, and the capped line only while no such search is in force */
+  const linksNow = useMemo(() => {
+    if (livePage === null || reads.current === null) return links
+    const found = siteLinks(reader(withFound(reads.current.peek, search)), livePage.zone)
+    return { ...found, ...(searching ? { capped: undefined } : {}), onQuery: setTerm }
+  }, [livePage, links, liveTick, searchKey, searching])
   /** the time zone the panel names under a date: the source's own */
   const zoneNow = livePage?.zone ?? timezone
   /* ─── Story 5.14 — FR-D16's "LOOKED AT" RECORD, and the nudge that names what I have not looked at ──────────────
@@ -1098,6 +1172,9 @@ function EditorShell({
   // device and outlives every indicator state; and nothing is scheduled by a component that has gone
   const again = useRef(false)
   const fellBack = useRef(false)
+  /** R-213 (Story 5.24e): the last answer the sync route gave was 401 — the session ended. The backoff keeps running
+   *  while it holds, showing Signed out rather than a countdown, and a visit back to the tab tries at once */
+  const signedOut = useRef(false)
   const gone = useRef(false)
   const clocks = useRef<{ retry?: ReturnType<typeof setInterval> }>({})
 
@@ -1121,6 +1198,7 @@ function EditorShell({
     row: heldOnServer,
     asking: false,
     askedAt: null,
+    askedOf: null,
     unanswered: false,
     handingOver: false,
     handOverFailed: false,
@@ -1136,7 +1214,7 @@ function EditorShell({
   const [dismissed, setDismissed] = useHanded<string | null>(null)
   /** UX-DR12's SECOND live region, and it is ASSERTIVE. `#editor-said` is the editor's polite one and stays polite:
    *  widening it would make every design-ring announcement shout. Only this story writes here. */
-  const [announced, setAnnounced] = useHanded('')
+  const [announced, setAnnounced] = useSaid()
   /** what a session that was just taken over from LOST, shown in B5a's own sentence slot until it asks again or holds
    *  again. The assertive region SAYS it; this SHOWS it — a sighted person was otherwise never told. */
   const [lost, setLost] = useHanded<string | null>(null)
@@ -1150,10 +1228,9 @@ function EditorShell({
    *  a fresh one at generation 1 and the session that had been taken over from never learned it (executed against a
    *  local build, 2026-09-23: the displaced session was told nothing, because `displacedBy(1, 1)` is false). The tab
    *  id survives the reload in `sessionStorage`, so the lock is simply still ours on the way back in.
-   *  ponytail: it covers a reload WE start. A customer's own F5 still releases and re-acquires, which is harmless —
-   *  the same session id comes back and takes the row again — but leaves a sub-second window in which another
-   *  session's poll could acquire first. A reload-aware release would need `navigation.type`, which is only readable
-   *  on the way back IN. */
+   *  It covers a reload WE start. A customer's own F5 used to release and re-acquire, leaving a sub-second window in
+   *  which another session's poll could acquire first; since DW-240 (Story 5.24e) the way out LEAVES instead, and the
+   *  row stays this session's for `LEAVE_GRACE_MS`, which the reloaded page's first beat lands inside. */
   const keeping = useRef(false)
   /** A RELOAD IS A HYDRATE (§AD1.1 runs exactly, and the cloud doc is what comes back), and `keeping` stops the
    *  release on the way out from deleting the lock this session has just gained. The take-over and a reader that
@@ -1224,7 +1301,7 @@ function EditorShell({
   const pillDrag = useRef<{ y: number; layout: Layout }>({ y: 0, layout: { tops: [], heights: [], gap: 0 } })
   const pill = useRef<HTMLDivElement | null>(null)
   /** what a completed move says, politely — `moveSection`'s own words, announced from here so both grips announce */
-  const [said, setSaid] = useHanded('')
+  const [said, setSaid] = useSaid()
   const [note, setNote] = useHanded<Note | null>(null)
   // the pill as the canvas document's handlers see it, in the same task it was set — paint reads it before React has
   // rendered the state
@@ -1329,7 +1406,12 @@ function EditorShell({
     const next: Viewed = { ...latest.current.viewed, ...changed }
     latest.current = { ...latest.current, viewed: next }
     setViewed(next)
+    // DW-225 (Story 5.24e): ONLY THE HOLDER RECORDS WHAT WAS LOOKED AT. A window reading along changes its own session's
+    // dots and writes nothing (5.24a's routine call 5) — asked here and again when the write's turn comes, so one queued
+    // while holding is not sent after the lock has gone.
+    if (!latest.current.lock.holder) return
     viewedWrites.current = viewedWrites.current.then(async () => {
+      if (!latest.current.lock.holder) return
       // A REFUSED WRITE RIDES THE NEXT ONE (review, 2026-09-21): a lost `seen` only brings a reminder back, but a lost
       // `afterChange` leaves the database saying "viewed" of a page that has since changed — the reminder wrongly silent
       const sending = { ...unsavedViewed.current, ...changed }
@@ -1421,10 +1503,13 @@ function EditorShell({
    *  and replacing Syncing or Retrying there flickered the red panel shut for a second. Only the flush itself — which
    *  passes `done` — may leave them. And fallback is read from the device, not from the last state: Retrying used to
    *  overwrite it, and the next success then said "Saved on this device" about a device holding nothing. */
+  /*  R-213 (Story 5.24e): Signed out is a flush's state too, kept exactly as Retrying is — and both are kept IN FALLBACK
+   *  as well, which they were not: there every edit sends at once, so an edit that closed the panel had it reopen one
+   *  round trip later, a flicker per keystroke over the very sentence (R-227's) a fallback tab most needs to read. */
   const rest = (done = false) =>
     setSync((was) =>
-      fellBack.current ? { kind: 'fallback' }
-      : !done && (was.kind === 'syncing' || was.kind === 'retrying') ? was
+      !done && (was.kind === 'syncing' || was.kind === 'retrying' || was.kind === 'signed-out') ? was
+      : fellBack.current ? { kind: 'fallback' }
       : restingState(latest.current.journal))
 
   /** The device is no longer holding the work, from this moment. The indicator changes in the same task the failure
@@ -1432,8 +1517,8 @@ function EditorShell({
   const toFallback = () => {
     local.current = null
     fellBack.current = true
-    // a new object even when Retrying stays, so the panel re-renders with the fallback's own sentence
-    setSync((was) => (was.kind === 'retrying' ? { ...was } : { kind: 'fallback' }))
+    // a new object even when Retrying or Signed out stays, so the panel re-renders with the fallback's own sentence
+    setSync((was) => (was.kind === 'retrying' || was.kind === 'signed-out' ? { ...was } : { kind: 'fallback' }))
   }
 
   /**
@@ -1536,17 +1621,18 @@ function EditorShell({
     clocks.current.retry = undefined
   }
 
-  /** The backoff, counted down a second at a time so waiting feels finite (B6). */
+  /** The backoff, counted down a second at a time so waiting feels finite (B6). R-213: while the route answers 401 the
+   *  same backoff runs under Signed out, with no countdown — a sign-in elsewhere is what it waits for, not a clock. */
   const scheduleRetry = () => {
     stopRetrying()
     if (gone.current) return
     attempt.current += 1
     let left = backoffSeconds(attempt.current)
-    setSync({ kind: 'retrying', attempt: attempt.current, seconds: left })
+    setSync(signedOut.current ? { kind: 'signed-out' } : { kind: 'retrying', attempt: attempt.current, seconds: left })
     clocks.current.retry = setInterval(() => {
       left -= 1
       if (left > 0) {
-        setSync({ kind: 'retrying', attempt: attempt.current, seconds: left })
+        if (!signedOut.current) setSync({ kind: 'retrying', attempt: attempt.current, seconds: left })
         return
       }
       stopRetrying()
@@ -1559,6 +1645,8 @@ function EditorShell({
    *  the prefix, so the fetch must carry it. The same rule `canvasSrc` applies to the canvas iframe, read from the
    *  same `isApp(pathname)` (`routing.ts`) — one rule, two callers, never a second literal. */
   const syncUrl = () => `${isApp(pathname) ? '/app' : ''}${syncPath(project.id)}`
+  /** R-213 — the sign-in page Signed out's link opens, by the same rule */
+  const signInUrl = `${isApp(pathname) ? '/app' : ''}/sign-in`
 
   const flush = async (why: FlushCall) => {
     const now = latest.current
@@ -1573,6 +1661,16 @@ function EditorShell({
       return
     }
     if (asked === 'nothing') return
+    // DW-203 (Story 5.24e): ONLY THE HOLDER SENDS. A tab reading along in the same browser shares the holder's
+    // IndexedDB, and before this it adopted the holder's pending journal, sent it when hidden, took the 423 and then
+    // dropped the holder's own on-device record (executed at 5.24e's Create). The hydrate no longer adopts it either;
+    // this is the second wall, and the one that holds whatever a reader's journal came to hold.
+    // ponytail: the FIRST-OPENER RACE no longer reaches the sync route's 423 — a tab that typed on its optimistic first
+    // paint and then lost the `acquire` keeps those edits in its journal, unsent and unannounced, where before this wall
+    // the 423 path displaced it and said so (review, 2026-09-24). The shared on-device record is deliberately NOT reset
+    // here: in the same-browser race it is the holder's. The upgrade is `land()` telling a session that typed before its
+    // first answer, when that answer makes it a reader, what it holds.
+    if (!now.lock.holder) return
     const payload = flushPayload(now.journal, now.docs)
     if (Object.keys(payload).length === 0) return
     if (inFlight.current) {
@@ -1584,7 +1682,8 @@ function EditorShell({
     // the clock this request is sending AT: an edit that lands while it is in flight has a higher stamp and is kept
     const sentStamp = now.journal.stamp
     const upTo = maxSeq(now.journal)
-    setSync((was) => (was.kind === 'fallback' ? was : { kind: 'syncing' }))
+    // R-213: Signed out stays up while the backoff's attempt is in flight, so its Sign in link never blinks away
+    setSync((was) => (was.kind === 'fallback' || was.kind === 'signed-out' ? was : { kind: 'syncing' }))
     // Story 5.17: the tab's lock session rides along, so the route can refuse work from a session that was taken over
     // from. `|| undefined` drops it from the JSON before the tab knows its id — never an empty id the route could read
     // as a stranger's.
@@ -1605,6 +1704,14 @@ function EditorShell({
         // the write DID land, the route's "already there" answer makes the retry a plain 200.
         signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
       })
+      // R-213 (Story 5.24e): THE ONE REFUSAL SIGNING IN CURES. Before it a 401 was "Retrying … when the connection
+      // returns" — a connection that was fine, and a Retry that could only meet the same answer. The backoff keeps
+      // trying underneath; a 404, 400 or 422 cannot be cured by a sign-in and stays Retrying below (DW-304, 7.18).
+      signedOut.current = answer.status === 401
+      if (answer.status === 401) {
+        scheduleRetry()
+        return
+      }
       if (answer.status === 409) {
         // ANOTHER SESSION WROTE. Nothing was written and nothing of ours is lost — the local doc is untouched.
         stopRetrying()
@@ -1626,6 +1733,8 @@ function EditorShell({
         // re-derive from the dropped journal is not something the spec rules — flagged for the review, not decided.
         stopRetrying()
         attempt.current = 0
+        // a displaced session owes nothing a sign-in could send: never left on Signed out (R-213)
+        signedOut.current = false
         rest(true)
         // THE ROUTE'S ANSWER IS ITSELF THE DISPLACEMENT: a free lock and an unknown id refuse nothing, so 423 can only
         // mean another session holds it. Decided HERE rather than left to `land`'s generation test, because a session
@@ -1654,6 +1763,7 @@ function EditorShell({
       rest(true)
     } catch {
       // offline, a 5xx, a dropped connection: the local doc is untouched and nothing is lost
+      signedOut.current = false
       scheduleRetry()
     } finally {
       inFlight.current = false
@@ -1673,10 +1783,41 @@ function EditorShell({
     void flush('retry').finally(() => setPressingRetry(false))
   }
 
+  /** R-214 (Story 5.24e): A SIGN-OUT IN ANOTHER TAB SENT THIS EDITOR'S OWED RECORD, and says so (`SENT_CHANNEL`). Taken
+   *  EXACTLY as this editor's own flush's 200 — the work up to that journal's stamp is marked sent and the base moves to
+   *  the revision it made — but only when it was sent from the base this editor holds; anything else is someone else's
+   *  record, or an answer this editor has already moved past. Without it the next edit carried the old base, met a 409
+   *  and the conflict dialog, over work this editor had itself handed the sign-out. */
+  const heardSent = useRef<(message: unknown) => void>(() => {})
+  heardSent.current = (message) => {
+    if (!isSentMessage(message) || message.project !== project.id || message.base !== base.current) return
+    base.current = message.revision
+    signedOut.current = false
+    const next = flushed(latest.current.journal, message.stamp, message.upTo)
+    latest.current = { ...latest.current, journal: next }
+    setJournal(next)
+    stopRetrying()
+    attempt.current = 0
+    store(next, latest.current.docs, latest.current.auto)
+    rest(true)
+  }
+  useEffect(() => {
+    if (typeof BroadcastChannel === 'undefined') return
+    let channel: BroadcastChannel
+    try {
+      channel = new BroadcastChannel(SENT_CHANNEL(project.id))
+    } catch {
+      return
+    }
+    channel.onmessage = (event: MessageEvent<unknown>) => heardSent.current(event.data)
+    return () => channel.close()
+    // one project, one mount
+  }, [])
+
   /* ─── Story 5.17 — FR-D18's lock: the heartbeat, the transport and the four gestures ─────────────────────────
    *
    * ONE ROUTE, ONE RECONCILER. Every answer from `lock/route.ts` lands in `land()`, so the generation test, the
-   * displacement and the state of my own request are read in ONE place rather than after each of six calls.
+   * displacement and the state of my own request are read in ONE place rather than after each call.
    */
 
   /** THIS TAB'S IDENTITY, and it survives a reload (`sessionStorage`) so a refresh keeps the lock rather than
@@ -1686,6 +1827,9 @@ function EditorShell({
   /** AD-16's count for THIS session: EDITS above the watermark, never operations. `remixFold` already makes a Site
    *  Remix one `commit`, so a re-roll of any size reports 1. */
   const owedNow = () => unsyncedEdits(latest.current.journal)
+  /** AD-16's count as the lock is told it — none until this device's journal is read, so a reload's first beat never
+   *  writes 0 over the count the row kept (DW-240, Story 5.24e; `countPatch`) */
+  const countNow = () => (hydratedRef.current ? owedNow() : undefined)
 
   const putLock = (next: LockUi) => {
     latest.current = { ...latest.current, lock: next }
@@ -1725,6 +1869,14 @@ function EditorShell({
       const owed = owedNow()
       heldGeneration.current = null
       dropJournal()
+      // R-213: a session displaced while Signed out owes nothing a sign-in could send, so it leaves that state and its
+      // backoff — `dropJournal` never re-rests the indicator, and it would otherwise say Signed out for good
+      if (signedOut.current) {
+        signedOut.current = false
+        stopRetrying()
+        attempt.current = 0
+        rest(true)
+      }
       // UX-DR12: assertively, because it is work that is already gone. "**This** session", not "that": the sentence
       // is read BY the session it is about (R-189).
       setAnnounced(LOCK_COPY.displaced(owed))
@@ -1749,11 +1901,12 @@ function EditorShell({
       return
     }
 
-    // my own request, as the row now answers it: still mine → waiting; cleared → the holder pressed Keep editing;
-    // the row gone → the lock is free and the next poll simply acquires it. ponytail: a THIRD session's nudge
-    // replacing mine reads as "kept" too — one person's third device asking at the same moment; DW ledger.
-    const waiting = was.askedAt !== null && stillAsking(row, tabId.current)
-    if (was.askedAt !== null && !waiting && !mine && row !== null) setAnnounced(LOCK_COPY.kept)
+    // my own request, as the row now answers it (DW-243, `askedNow`): the same holder and generation with the columns
+    // cleared → the holder pressed Keep editing, and only then is "kept" said; the holder or generation moved → it
+    // ended, and the next poll decides; anything else, a request REPLACED by a third device's included → still waiting
+    const asked = was.askedAt === null ? null : askedNow(row, was.askedOf)
+    const waiting = asked === 'waiting'
+    if (asked === 'kept' && !mine) setAnnounced(LOCK_COPY.kept)
 
     putLock({
       ...was,
@@ -1761,6 +1914,7 @@ function EditorShell({
       row,
       asking: waiting,
       askedAt: waiting ? was.askedAt : null,
+      askedOf: waiting ? was.askedOf : null,
       unanswered: waiting && was.unanswered,
       handOverFailed: mine ? was.handOverFailed : false,
     })
@@ -1776,12 +1930,13 @@ function EditorShell({
     if (answer === null || !answer.won) {
       // the write did not land: the button comes back, stays pressable, and the polite region SAYS so (the matrix's
       // own row — "reports it" is a sentence, not a label reverting)
-      putLock({ ...latest.current.lock, asking: false, askedAt: null })
+      putLock({ ...latest.current.lock, asking: false, askedAt: null, askedOf: null })
       setSaid(LOCK_COPY.unreachable)
       return
     }
     tell.current('nudge')
-    putLock({ ...latest.current.lock, row: answer.row, asking: true, askedAt: Date.now(), unanswered: false })
+    const at = answer.row
+    putLock({ ...latest.current.lock, row: at, asking: true, askedAt: Date.now(), askedOf: at && { holder: at.holderSessionId, generation: at.generation }, unanswered: false })
   }
 
   /** B5b's **Hand over** — AD-15's flush contract, in the order the contract names. */
@@ -1810,7 +1965,7 @@ function EditorShell({
     heldGeneration.current = null
     setDismissed(null)
     tell.current('released')
-    putLock({ ...latest.current.lock, holder: false, row: null, handingOver: false, handOverFailed: false, asking: false, askedAt: null, unanswered: false })
+    putLock({ ...latest.current.lock, holder: false, row: null, handingOver: false, handOverFailed: false, asking: false, askedAt: null, askedOf: null, unanswered: false })
   }
 
   /** B5b's **Keep editing** — the nudge columns are cleared, and no take-over is offered from that request. */
@@ -1832,11 +1987,11 @@ function EditorShell({
     if (row === null) {
       // the row has vanished, so the lock is free: acquire normally rather than compare against nothing
       takeover.current?.close()
-      land(await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: owedNow() }))
+      land(await askLock(lockAt(), { intent: 'acquire', session: tabId.current, unsynced: countNow() }))
       return
     }
     putLock({ ...was, taking: true })
-    const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: owedNow() })
+    const answer = await askLock(lockAt(), { intent: 'takeover', session: tabId.current, generation: row.generation, unsynced: countNow() })
     takeover.current?.close()
     if (answer === null || !answer.won) {
       // ZERO ROWS MEANS THE GENERATION MOVED UNDER US. Re-read and report the new state, never retry blindly. `null`
@@ -1849,7 +2004,7 @@ function EditorShell({
     }
     tell.current('took-over')
     heldGeneration.current = answer.row?.generation ?? row.generation + 1
-    putLock({ ...latest.current.lock, taking: false, holder: true, row: answer.row, asking: false, askedAt: null, unanswered: false })
+    putLock({ ...latest.current.lock, taking: false, holder: true, row: answer.row, asking: false, askedAt: null, askedOf: null, unanswered: false })
     // AND I AM EDITING THE LAST SYNCED SNAPSHOT. A RELOAD IS A HYDRATE — the conflict dialog beside this one says so
     // in as many words — so §AD1.1 runs exactly and the cloud doc is what comes back. This tab's session id survives
     // it in `sessionStorage`, so the lock just taken is still ours on the way back in — and `keeping` is what stops
@@ -1861,12 +2016,11 @@ function EditorShell({
    *  own reflection — which the take-over's own reload would otherwise do every single time, and which would make
    *  `commit()` refuse for the round trip it lasted. A LAYOUT effect, before the browser paints: the server render
    *  cannot know the tab's id (`sessionStorage` is the browser's), so this is the first moment it can be asked, and
-   *  asking it a frame later would be a frame of the wrong screen. */
+   *  asking it a frame later would be a frame of the wrong screen. DW-242 (Story 5.24e): this effect is the WHOLE of it
+   *  since Story 5.22 — the shell mounts from a layout effect, so nothing is painted before this asks — and Story 5.17's
+   *  pre-paint `<html>` mark, dead since, is gone; the journey's rAF sampler goes red if this becomes a `useEffect`. */
   useLayoutEffect(() => {
     tabId.current = tabSession()
-    // the first paint's mark has done its job (`selfMarkScript`): from here React's own state decides, so a session
-    // displaced LATER still shows its bar
-    document.documentElement.removeAttribute(SELF_MARK)
     if (heldOnServer !== null && heldOnServer.holderSessionId === tabId.current) {
       heldGeneration.current = heldOnServer.generation
       putLock({ ...latest.current.lock, holder: true, row: heldOnServer })
@@ -1876,10 +2030,12 @@ function EditorShell({
 
   useEffect(() => {
     let alive = true
+    /** DW-244 (Story 5.24e): the one extra poll at a live row's staleness edge (`edgePoll`), never more than one waiting */
+    let edge: ReturnType<typeof setTimeout> | undefined
 
     const poll = async () => {
       // THE HOLDER BEATS; EVERY OTHER SESSION TRIES TO ACQUIRE, which is how the first opener, a released lock and a
-      // stale one are all picked up with no seventh intent — an `acquire` against a LIVE lock writes nothing and
+      // stale one are all picked up with no intent of their own — an `acquire` against a LIVE lock writes nothing and
       // answers the row, so a reader polls through the same call.
       //
       // IT ASKS `heldGeneration`, NOT THE STATE. The opening state is optimistic — a first paint with no row shows
@@ -1889,7 +2045,7 @@ function EditorShell({
       // set ONLY when the server confirmed the lock is ours, which is exactly the question this asks.
       const wasHolder = heldGeneration.current !== null
       const holding = wasHolder || Date.now() - gaveAt.current < NUDGE_MS
-      const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: owedNow() })
+      const answer = await askLock(lockAt(), { intent: holding ? 'beat' : 'acquire', session: tabId.current, unsynced: countNow() })
       if (!alive) return
       // A BEAT THAT FOUND NO ROW AT ALL MEANS THE LOCK IS FREE — take it NOW, and let the ACQUIRE'S answer be the one
       // that lands, so the state never passes through "reader" on the way.
@@ -1912,6 +2068,11 @@ function EditorShell({
         return
       }
       land(answer)
+      // DW-244 (Story 5.24e): A ROW ABOUT TO GO STALE IS ASKED ABOUT AT ITS EDGE, not up to a heartbeat later — after a
+      // going holder's `leave` that is the grace and a quarter of a second, so a closed tab is free no later than at HEAD
+      clearTimeout(edge)
+      const at = answer === null ? null : edgePoll(answer.row, answer.held)
+      if (at !== null) edge = setTimeout(() => void poll(), at)
     }
 
     // LAYER 1 — the same browser, free and instant, and it is the case DW-203 is written about. NOTHING IS TRUSTED
@@ -1941,13 +2102,28 @@ function EditorShell({
      *  the way back in, because the new mount's `acquire` and the old one's `release` carry the SAME session id from
      *  `sessionStorage`, so the release deleted the row the re-acquire had just inserted (executed, 2026-09-23). The
      *  same id is also what makes not releasing free: coming back re-reads its own row and simply beats. */
+    /*  DW-240 (Story 5.24e): IT LEAVES, IT DOES NOT RELEASE. `leave` backdates this tab's own beat — the one it last heard,
+     *  so a late leave matches nothing once the reloaded page has beaten — and the row stays this tab's for
+     *  `LEAVE_GRACE_MS`: a reload's first beat keeps it, where the DELETE let another window's poll acquire in the gap. A
+     *  closed tab is stale after the grace, for the next opener's edge poll. With no beat heard yet it releases, as
+     *  before; Hand over keeps `release`, because there the row must go at once.
+     *  ponytail: a beat still in flight as the tab goes moves `heartbeat_at` past the one heard, so that leave matches
+     *  nothing and the going tab's row goes stale as a crashed tab's does (~60 s, the matrix's own error row): a close
+     *  landing inside a beat's round trip, or a hard navigation whose request outlasts the next beat (the lock walk met
+     *  it typing a URL away). A reload is unaffected — its own first beat keeps the row — and leaving by a link is a soft
+     *  navigation, which keeps the lock anyway. The upgrade is a per-page token on the row: a column, so a migration —
+     *  DW-307, Story 7.18 (R-228: the owner kept this ceiling for v1). */
     const leaving = () => {
       if (keeping.current || !latest.current.lock.holder) return
-      void askLock(lockAt(), { intent: 'release', session: tabId.current }, true)
+      // a tab whose id this browser does not keep comes back from a reload as ANOTHER session: the grace would only hold
+      // the lock against it, so that tab releases, as before (`tabSessionKept`)
+      const beat = tabSessionKept(tabId.current) ? (latest.current.lock.row?.beat ?? null) : null
+      void askLock(lockAt(), beat === null ? { intent: 'release', session: tabId.current } : { intent: 'leave', session: tabId.current, beat }, true)
     }
     window.addEventListener('pagehide', leaving)
     return () => {
       alive = false
+      clearTimeout(edge)
       clearInterval(beating)
       window.removeEventListener('pagehide', leaving)
       channel.stop()
@@ -1976,6 +2152,20 @@ function EditorShell({
     return () => clearTimeout(timer)
   }, [lock.askedAt, lock.unanswered, lock.holder])
 
+  /** DW-241 (Story 5.24e): LOSING THE LOCK CLOSES WHAT EDITS (R-192) — whichever way it goes: `land()`'s flip, Hand over or
+   *  the sync route's 423. Before this, a menu, a confirm or a field opened while holding stayed open on a reader's
+   *  screen, live-looking over a panel that had greyed (four of five, at the Create): every menu (`closeMenus`); every
+   *  confirm and picker the editor draws — Site Remix, the panel's Reset box, Clear dark overrides, Rename, the site-wide
+   *  Hide confirm, the Section Picker — all of which edit, while the shortcuts card only lists keys and stays; and a
+   *  field being typed in, ended by its own end, which redraws its section from the doc (the typing was refused by
+   *  `commit`'s guard). What only views — selection, View as, Template, the devices — stays live, as R-192 rules. */
+  useEffect(() => {
+    if (lock.holder) return
+    closeMenus()
+    for (const open of document.querySelectorAll<HTMLDialogElement>('[data-editor] dialog[open]:not([data-shortcuts-sheet])')) open.close()
+    editing.current?.inline.end()
+  }, [lock.holder])
+
   /** Each root's two attributes, from the latest selection and hover — after every paint, stamp and change of either. */
   const mark = () => {
     const now = latest.current
@@ -1990,7 +2180,8 @@ function EditorShell({
       // Story 5.10 — S4b's insertion hairline, painted inside the frame from `lib/canvas-chrome.css`. A SECOND mark
       // and not `data-inflozo-hover`, because the two genuinely differ: a canvas nothing can be placed on is hovered
       // exactly as any other and offers no gap to press.
-      root.toggleAttribute('data-inflozo-insert', on && now.canAdd && same(placed, now.hovered))
+      // R-217: never for a section pointed at from its Layers row — the hairline is a place to press, and that is the canvas's
+      root.toggleAttribute('data-inflozo-insert', on && now.canAdd && same(placed, now.hovered) && hoverVia.current !== 'layers')
       // Story 5.11 — the swap's 180ms settle. Re-applied here after every stamp for the same reason the two
       // above are: `stampControls` strips every root `data-*` it does not own.
       root.toggleAttribute('data-inflozo-swapped', on && same(placed, swapped.current))
@@ -2183,8 +2374,9 @@ function EditorShell({
     if (s === null || latest.current.source !== 'site' || s.reading().stopped !== null) return
     const wanted = designs.flatMap((e) =>
       Object.values(e.dataBindings ?? {}).flatMap((b) => {
+        // DW-259 (Story 5.24e): a hand-picked list past `LIST_LIMIT` is read in chunks, each its own read
         const r = bindingReads(b)
-        return [r.newest, r.oldest].filter((q): q is LiveQuery => q !== null)
+        return [...r.newest, ...r.oldest]
       }),
     )
     if (s.missing(wanted).length === 0) {
@@ -2272,10 +2464,26 @@ function EditorShell({
       if (paintedRef.current.source !== (next.source ?? 'sample')) return
       setSaid(reason === null ? SUBJECT_SAID(next, subjectRows) : `${SUBJECT_SAID(next, subjectRows)} ${leftBecause(reason)}`)
     })
+    sendPick(stored, next)
+    return done
+  }
+
+  /** The pick's write. DW-223 (Story 5.24e): the pick waits in this tab's store from before the action leaves until its
+   *  answer — kept or refused — so a reload in between brings it back and sends it again (`waiting`, below). */
+  const sendPick = (stored: string, next: orbitWeekly.Subject) => {
+    writePending(tabStore(), project.id, stored, next)
     const turn = ++subjectTurn.current
     startSubject(async () => {
-      // a thrown call (the network dropped) is the same refusal as a returned one, never the error boundary
-      const answer = await setPreviewSubject(project.id, stored, next).catch(() => ({ error: SAVE_REFUSED }))
+      // a thrown call (the network dropped) is the same refusal as a returned one, never the error boundary — but only an
+      // ANSWER clears the waiting pick: a call that threw may have landed or not, and the commonest throw is this very
+      // page going away mid-call, the reload the pick waits for (executed: clearing on it lost the pick every time)
+      const answer = await setPreviewSubject(project.id, stored, next).then(
+        (said) => {
+          clearPending(tabStore(), project.id, stored, next)
+          return said
+        },
+        () => ({ error: SAVE_REFUSED }),
+      )
       // review, 2026-09-21: an answer that a later choice or a canvas switch has overtaken is dropped — a refusal
       // belongs to the canvas and the choice it was refused on. And it is SAID: the menu that carries the sentence
       // closed with the choice, so `#editor-said` is the only place it can be heard.
@@ -2283,8 +2491,12 @@ function EditorShell({
       setSubjectRefusal(answer.error)
       setSaid(answer.error)
     })
-    return done
   }
+  // DW-223: the picks a reload interrupted are sent again as the editor opens — each was shown from the first paint
+  useEffect(() => {
+    for (const [stored, pick] of Object.entries(waiting)) sendPick(stored, pick)
+    // mount only: `waiting` is read once, as the editor opens
+  }, [])
 
   /** STORY 5.14's PRESS — the visitor the canvas previews, and it is NOT an edit (FR-D16, AD-22).
    *
@@ -2390,10 +2602,15 @@ function EditorShell({
     // Paywall canvas maps `choose(null)` to its one instance, and that is the editor choosing, not the customer
     if (asked !== null) openSheet('controls')
   }
-  const point = (pick: Pick | null) => {
-    if (same(pick, latest.current.hovered) || (!pick && !latest.current.hovered)) return
+  /** R-217 (DW-188, Story 5.24e): `via` says where the pointer is. Over the canvas a pointed section gets S4b's whole
+   *  hover — outline, name tag, pill and the insertion hairline; over its LAYERS ROW it gets the outline and the name tag
+   *  alone, nothing pressable, and the page never moves (only a click reveals, R-156). */
+  const point = (pick: Pick | null, via: 'canvas' | 'layers' = 'canvas') => {
+    if ((same(pick, latest.current.hovered) || (!pick && !latest.current.hovered)) && via === hoverVia.current) return
     latest.current.hovered = pick
+    hoverVia.current = via
     setHovered(pick)
+    setPointedFrom(via)
     mark()
   }
 
@@ -2410,7 +2627,7 @@ function EditorShell({
     const now = latest.current
     const s = shimsOn(now.key, site) ? surfacesNow.current : null
     // the stored HTML is parsed in an INERT document — `DOMParser`'s runs nothing and loads nothing
-    const bar = announcementFor(s, now.viewAs, (html) => new DOMParser().parseFromString(html, 'text/html').body as unknown as MarkNode)
+    const bar = announcementFor(s, now.viewAs, inertBody)
     const look = portalFor(s, membersNow.current, now.viewAs)
     for (const el of doc.querySelectorAll('[data-ghost-surface]')) el.remove()
     const root = (shim: Shim) => {
@@ -2515,6 +2732,30 @@ function EditorShell({
     // waits for the hydrate above.
     if (pending.current) return
     const now = latest.current
+    // DW-275 (Story 5.24e): AND, ON A SURFACE, UNTIL ITS POST-BODY SHEET HAS LANDED. The sheet is no longer inlined in every
+    // canvas document (`pilots.ts`), so the first Paywall paint links it in — before `3-pilots`, the place its `data-order`
+    // always held, or last in the head where that is missing — and every paint waits until it is MARKED landed: its
+    // `load` (or `error`, which paints without it rather than never) sets the mark and paints again. A link that is only
+    // PRESENT is not enough — a paint in between drew the article unstyled and measured the cut on it (the review).
+    const surfaceSheet = doc.querySelector<HTMLLinkElement>('[data-order="2b-surface"]')
+    if (isSurface(now.key) && !surfaceSheet?.hasAttribute('data-landed')) {
+      if (surfaceSheet === null) {
+        const link = doc.createElement('link')
+        link.rel = 'stylesheet'
+        link.href = surfaceSheetSrc(src)
+        link.setAttribute('data-order', '2b-surface')
+        const landed = () => {
+          link.setAttribute('data-landed', '')
+          paint()
+        }
+        link.addEventListener('load', landed, { once: true })
+        link.addEventListener('error', landed, { once: true })
+        const pilots = doc.querySelector('[data-order="3-pilots"]')
+        if (pilots) pilots.before(link)
+        else doc.head.append(link)
+      }
+      return
+    }
     // Story 5.6: the mode is ONE attribute on the canvas root, and every paint re-asserts it — the token block
     // (`tokens.ts`'s `:root[data-mode="dark"]`) does all the colouring from there (AD-30)
     doc.documentElement.setAttribute('data-mode', now.mode)
@@ -2649,16 +2890,17 @@ function EditorShell({
       // restart becomes visible — a change to `core.js`, which is Ask First.
       behaviours.current?.stop()
       behaviours.current = null
-      // STORY 5.20 — the canvas document's post-body stylesheet is ON for the surface alone (`pilots.ts`), and the
-      // surface's page is the article, the cut and the box, its instance's markup inside the box (`paywallPage`)
-      const surfaceSheet = doc.querySelector<HTMLStyleElement>('style[data-order="2b-surface"]')
+      // STORY 5.20 — the post-body stylesheet is ON for the surface alone, and the surface's page is the article, the cut
+      // and the box, its instance's markup inside the box (`paywallPage`). DW-275: it is the `<link>` the first Paywall
+      // paint put in (above), absent from a canvas that has never shown the surface
       if (surfaceSheet) surfaceSheet.media = paywall ? 'all' : 'not all'
       const arriving = paintedAt.current?.key !== now.key
       const accent = live !== null ? live.site['accent_color'] : orbitWeekly.site().accent_color
       /** did this paint KEEP the hovered section's drawing? Then the node under a resting pointer is the same node */
       let hoverKept = false
       if (paywall) {
-        mount.innerHTML = paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null })
+        // DW-273 (Story 5.24e): the connection's major, as the shims follow the connection and not the content pill
+        mount.innerHTML = paywallPage({ visitor: now.viewAs, accent, box: parts.some((p) => p !== '') ? parts.join('') : null, major: site?.major })
         stamps.current = takeStamps(mount.querySelectorAll<HTMLElement>(STAMPED))
         // a section's root is its part's element — on the surface, in the box
         roots.current = sectionRoots(parts, mount.querySelector('[data-inflozo-box]') ?? mount) as (HTMLElement | null)[]
@@ -3320,6 +3562,11 @@ function EditorShell({
    */
   useEffect(() => {
     let alive = true
+    // DW-203 (Story 5.24e): A TAB THAT OPENS READING ALONG NEITHER ADOPTS NOR REWRITES THIS BROWSER'S RECORD. It shares
+    // the holder's IndexedDB, and adopting its pending journal is how a reader came to send the holder's work and then
+    // drop the holder's own record (executed at the Create). Asked at mount: the layout effect above has already told a
+    // reload of the holder from a genuine reader. A reader that later GAINS the lock reloads, and that hydrate adopts.
+    const reading = !latest.current.lock.holder
     const settle = (ok: boolean) => {
       if (!alive) return
       hydratedRef.current = true
@@ -3330,7 +3577,9 @@ function EditorShell({
       request()
     }
     void (async () => {
-      const opened = await openLocal(userId)
+      // R-214 (Story 5.24e): a sign-out in another tab deletes this database, and its `versionchange` is the moment this
+      // editor stops holding the work — so it falls back there and then, and its next refusal says R-227's sentence
+      const opened = await openLocal(userId, () => toFallback())
       if (!alive) return
       if (!opened) {
         // NO IndexedDB: private mode, a blocked upgrade, site data switched off. Every change goes straight up and the
@@ -3340,6 +3589,11 @@ function EditorShell({
       }
       local.current = opened
       askToPersist()
+      if (reading) {
+        // the server's docs, already this component's props, and an empty journal — the record on disk is the holder's
+        settle(true)
+        return
+      }
       const held = await opened.read(project.id)
       if (!alive) return
       // OUR OWN TAB-CLOSE FLUSH (`ownFlushLanded`): the reload that sent the owed edits is the reload reading this
@@ -3422,6 +3676,9 @@ function EditorShell({
       // old base and was refused as a conflict with the user's own save. `flush` reads the answer, keeps the
       // in-flight guard, and AUTOSAVE OFF STILL DOES NOT STOP IT (AD-15): `flushDecision` lets `unload` through.
       if (document.visibilityState === 'hidden') void flush('unload')
+      // R-213 (Story 5.24e): BACK ON THE TAB WHILE SIGNED OUT, ONE TRY AT ONCE. The cookie jar is shared, so a sign-in
+      // in another tab rides this tab's next request (executed at the Create) — and coming back is the moment to make it
+      else if (signedOut.current) retryNow()
     }
     document.addEventListener('visibilitychange', leaving)
     return () => document.removeEventListener('visibilitychange', leaving)
@@ -3577,15 +3834,19 @@ function EditorShell({
       const authors = orbitWeekly.authors().map((a) => ({ ...a, profile_image: picture(a.profile_image) }))
       return { held: 'sample' as const, tags: orbitWeekly.tags(), authors, posts: orbitWeekly.posts(), capped: null, listCapped: { tag: null, author: null } }
     }
-    const r = reader(s.peek)
+    // DW-248: a search at Ghost's found posts join the list, and the capped line is said only while no such search runs
+    const r = reader(withFound(s.peek, search))
     const rows = (q: LiveQuery) => (r.got(q)?.rows ?? []) as readonly Readonly<Record<string, unknown>>[]
     // review (2026-09-25): the tag and writer lists are read at the same limit as the posts — a site past it is told so
     const listCapped = (which: 'tag' | 'author') => {
       const got = r.got(which === 'tag' ? LISTS.tag : LISTS.author)
       return got !== undefined && got.total > got.rows.length ? CAPPED_LIST(which, got.rows.length) : null
     }
-    return { held: { site: siteName }, tags: rows(LISTS.tag), authors: rows(LISTS.author), posts: rows(LISTS.post), capped: cappedPosts(s.peek), listCapped: { tag: listCapped('tag'), author: listCapped('author') } }
-  }, [livePage, liveTick, siteName])
+    return {
+      held: { site: siteName }, tags: rows(LISTS.tag), authors: rows(LISTS.author), posts: rows(LISTS.post),
+      capped: searching ? null : cappedPosts(s.peek), listCapped: { tag: listCapped('tag'), author: listCapped('author') }, onQuery: setTerm,
+    }
+  }, [livePage, liveTick, siteName, searchKey, searching])
   const pro = plan === 'free' && entry?.tier === 'pro'
   /* Story 5.11 — the SELECTED section's ring feeds the panel block, the HOVERED one's feeds the pill: the pill is
      drawn for what the pointer is over, which is not always what is chosen. Both are derived, so a category that
@@ -3677,6 +3938,24 @@ function EditorShell({
     if (chrome?.doc !== doc) setChrome(chromeLayers(doc))
     // `chrome` is read, not a dependency: it is what this effect sets
   }, [showing, paints])
+  /* DW-290 (Story 5.24e): THE CHROME'S FACES AND SHEET, MADE READY IN IDLE TIME after a paint and before any gesture —
+     so the session's first selection no longer builds them inside its own long task (`prepareChrome`). It adds nothing to
+     the DOM; a later call is free. `requestIdleCallback` is not Baseline (Safari lacks it), so a timer stands in there. */
+  useEffect(() => {
+    const doc = frame.current?.contentDocument
+    // only after a paint, into a document that holds the painted page — at mount the frame is still `about:blank`
+    if (paints === 0 || !doc?.getElementById('canvas')) return
+    const ready = () => {
+      // a frame reloaded in the meantime: this document is dead, and the next paint prepares the new one
+      if (doc.defaultView) prepareChrome(doc)
+    }
+    if (typeof window.requestIdleCallback === 'function') {
+      const at = window.requestIdleCallback(ready)
+      return () => window.cancelIdleCallback(at)
+    }
+    const at = setTimeout(ready, 1)
+    return () => clearTimeout(at)
+  }, [paints])
   /** Story 5.21 — which layer each root's chrome was drawn in at the last render: a sticky root is pinned only while it is
    *  STUCK (`pinned`), so the canvas's scroll listener compares the root's answer now with this one and re-renders on a
    *  change (`setPinTick`) — the one switch, as the root sticks or comes unstuck. Story 5.23b: the chrome is a `memo` part
@@ -3706,12 +3985,17 @@ function EditorShell({
             !root
               ? []
               : (behaviours.current?.paused ?? [])
-                  .filter((el) => root.contains(el) && movesByItself(el.getAttribute('data-module') ?? ''))
+                  // DW-226 (Story 5.24e): at the DEVICE's width — a part declared to run only below a width never moves
+                  // at or above it, so it is not paused there either; a device change repaints nothing, so it is a dependency
+                  .filter((el) => root.contains(el) && movesByItself(el.getAttribute('data-module') ?? '', device.width))
                   .map((el) => ({ el: el as HTMLElement, root })),
           ),
     // `core`'s handle is replaced by every paint, which `paints` counts
-    [preview, hoveredRoot, selectedRoot, paints],
+    [preview, hoveredRoot, selectedRoot, paints, device.width],
   )
+  /** DW-229 (Story 5.24e): the selected section holds a part still — the chip is `aria-hidden` chrome, so the Controls
+   *  panel SAYS it, once, for a screen reader (`PAUSED_SAID`) */
+  const pausedHere = selectedRoot !== null && chips.some((chip) => chip.root === selectedRoot)
 
   // ─── Story 5.4 — every section operation, through `doc-edit.ts`, and the two surfaces that ask for one ───
 
@@ -3720,13 +4004,15 @@ function EditorShell({
 
   /** One doc's own instances as Layers rows, in DOC order — the card's are `site`'s, the page group's are this
    *  canvas's. Doc order, not `canvasStack`'s: the row's `at` is the position `moveSection` is given, and B7 draws
-   *  the card's rows as the site doc stores them (DW-187: the `a3/` footers compile last whatever that order). */
+   *  the card's rows as the site doc stores them — since DW-187 (Story 5.24e) in canvas order too, every move clamped to its
+   *  band (`landWithin`) and a placement put before the first footer, so the two orders agree. */
   const rowsOf = (docKey: string): LayerRow[] => {
     // Story 5.19: only a natively paginated page has a main feed to mark or to hand on
     const paginated = PAGINATED_TARGETS.has(fileOfKey(docKey))
     // the doc AS EDITED: on page 2 its own design, or while it follows, the copy of page 1 (Story 5.16)
     return (editedDoc(docs, docKey, library)?.instances ?? []).map((i, at) => ({
-      doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at,
+      doc: docKey, instanceId: i.instanceId, layerName: i.layerName, hidden: i.hidden, at, category: categoryOf(i.designId),
+      footer: docKey === SITE.key && isSiteFooter(i.designId),
       // R-133: the `⋯` item is ABSENT where nothing could be cleared, and the engine's own definition decides.
       // R-135 (owner, 2026-09-19): and absent on a LIGHT-ONLY project, where Theme settings greys the same act with
       // its reason — the editor shows nothing about dark there, exactly as the sun is gone rather than disabled.
@@ -4087,7 +4373,9 @@ function EditorShell({
       if (!siteWide) return insertSection(doc, invokedAt(now.stack, docKey, invoked), instance)
       // category for category: a header replaces a header, never a footer
       const at = doc.instances.findIndex((i) => categoryOf(i.designId) === design.category)
-      if (at === -1) return insertSection(doc, doc.instances.length, instance)
+      // DW-189 (Story 5.24e): a new header or bar lands BEFORE the first footer, so the site doc is stored in the order the
+      // page draws it (`canvasStack`) and `screenRows`' tops rise in order; a footer still goes last (`siteSlot`)
+      if (at === -1) return insertSection(doc, siteSlot(doc.instances.map((i) => i.designId), design.id), instance)
       replaced = doc.instances[at]?.layerName ?? null
       const cleared = removeSection(doc, doc.instances[at]!.instanceId)
       return typeof cleared === 'string' ? cleared : insertSection(cleared, at, instance)
@@ -4112,10 +4400,17 @@ function EditorShell({
     )
   }
 
-  /** The drop, and `⌥↑`/`⌥↓`: one `moveSection`, announced politely in its own words (UX-DR12). */
-  const moveTo = (pick: Pick, to: number): string | null => {
+  /** DW-187 (Story 5.24e): the site doc's band per instance — its footers, which the page draws last; a page doc has none */
+  const footersOf = (docKey: string) => (docOf(docKey)?.instances ?? []).map((i) => docKey === SITE.key && isSiteFooter(i.designId))
+
+  /** The drop, and `⌥↑`/`⌥↓`: one `moveSection`, announced politely in its own words (UX-DR12). DW-187 (Story 5.24e): the ONE
+   *  door every move passes — Layers' drop and keys and the pill's grip — so a site-wide move is clamped to its band here
+   *  whoever asked (`landWithin`), and the site doc stays in the order the page draws it. */
+  const moveTo = (pick: Pick, asked: number): string | null => {
     const doc = docOf(pick.doc)
-    const moved = doc ? moveSection(doc, pick.instanceId, to) : 'there is no template to edit'
+    const from = (doc?.instances ?? []).findIndex((i) => i.instanceId === pick.instanceId)
+    const to = landWithin(footersOf(pick.doc), from, asked)
+    const moved = doc && to !== from ? moveSection(doc, pick.instanceId, to) : 'there is no move to make'
     if (typeof moved === 'string') return null
     if (apply(pick, () => moved.doc, { instanceId: pick.instanceId, name: layerNameOf(pick), said: moved.announce }) === HELD) return null
     setSaid(moved.announce)
@@ -4168,8 +4463,9 @@ function EditorShell({
   const gripMove = useStable((event: PointerEvent<HTMLSpanElement>) => {
     const now = dragStore.get()
     if (!now || now.landing) return
-    // dy stays 0: the row in Layers is not the thing being dragged, so only the slot follows the pointer
-    const to = landingAt(pillDrag.current.layout, now.from, event.clientY, pillDrag.current.y)
+    // dy stays 0: the row in Layers is not the thing being dragged, so only the slot follows the pointer — and it never
+    // leaves the section's band (DW-187)
+    const to = landWithin(footersOf(now.doc), now.from, landingAt(pillDrag.current.layout, now.from, event.clientY, pillDrag.current.y))
     if (to !== now.to) dragStore.set({ ...now, to })
   })
   const gripUp = useStable(() => {
@@ -4281,7 +4577,7 @@ function EditorShell({
   /** the rail's rows: the stack the page paints, in its order — none on a template surface, whose Layers holds no rows */
   const railRows = useMemo(
     (): RailItem[] =>
-      (surface ? [] : stack).map((i) => ({ key: keyOf(i), name: i.layerName, hidden: i.hidden, selected: same(i, selected), doc: i.doc, instanceId: i.instanceId })),
+      (surface ? [] : stack).map((i) => ({ key: keyOf(i), name: i.layerName, hidden: i.hidden, selected: same(i, selected), doc: i.doc, instanceId: i.instanceId, category: categoryOf(i.designId) })),
     [surface, stack, selected],
   )
   /** Controls is drawn: docked unless folded at full width, and only while it is the sheet below 1280 */
@@ -4316,6 +4612,12 @@ function EditorShell({
       return moveTo(row, at === -1 ? to : to + (at - row.at))
     }),
     chooseGhost: useStable(chooseGhost),
+    pointGhost: useStable(pointGhost),
+    /** R-217: a Layers row's mouse points at its section; leaving lets go only a hover that row made */
+    pointRow: useStable((row: { doc: string; instanceId: string } | null) => {
+      if (row !== null) point({ doc: row.doc, instanceId: row.instanceId }, 'layers')
+      else if (hoverVia.current === 'layers') point(null)
+    }),
     toggleGhostHidden: useStable(toggleGhostHidden),
     railShow: useStable(() => (latest.current.compact ? toggleLayers() : layers.toggle(false))),
     // a rail item chooses and reveals exactly as a Layers row does, and below 1280 it (re-)opens Controls
@@ -4394,18 +4696,24 @@ function EditorShell({
     () => (chosen !== undefined && memberVisibility[chosen.designId] === true ? { value: chosen.memberVisibility, previews: viewAs, onChange: on.visibility } : undefined),
     [chosen, memberVisibility, viewAs, on.visibility],
   )
+  /** R-215 (DW-277, Story 5.24e): the rows THE SITE SHOWS, off the snapshot in hand (a landed re-read included) — the bar
+   *  while its content has an audience (Ghost's `isFilled`), the button while `portal_button` is on and sign-up is open —
+   *  never what View as previews or the window's width. None shown is no group at all. Its own memo, so a hover never
+   *  parses the announcement again. */
+  const ghostShown = useMemo(() => (shimsOn(key, site) ? rowsOn(surfaces, members, inertBody) : []), [key, site, surfaces, members])
   const ghostRows = useMemo(
     () =>
-      shimsOn(key, site)
-        ? {
-            rows: GHOST_ROWS.map((r) => ({ ...r, hidden: ghostHidden.includes(r.id) })),
+      ghostShown.length === 0
+        ? undefined
+        : {
+            rows: ghostRowsOf(ghostShown, ghostHidden),
             selectedId: ghostChosen,
             hoveredId: ghostHover,
             onSelect: on.chooseGhost,
             onToggleHidden: on.toggleGhostHidden,
-          }
-        : undefined,
-    [key, site, ghostHidden, ghostChosen, ghostHover, on.chooseGhost, on.toggleGhostHidden],
+            onPoint: on.pointGhost,
+          },
+    [ghostShown, ghostHidden, ghostChosen, ghostHover, on.chooseGhost, on.toggleGhostHidden, on.pointGhost],
   )
   const sourceSite = useMemo(
     () =>
@@ -4417,10 +4725,11 @@ function EditorShell({
             cause: painted.shown.cause === null ? null : LIVE_WORDS.cause(painted.shown.cause, siteName),
             row: siteRow,
             nothing: painted.shown.nothing === null ? null : LIVE_WORDS.nothing(painted.shown.nothing, siteName),
-            capped: livePage !== null && previewing.subject?.kind === 'post' && reads.current !== null ? cappedPosts(reads.current.peek) : null,
+            // DW-248: the capped line unless a search at Ghost is coming or has come
+            capped: livePage !== null && previewing.subject?.kind === 'post' && reads.current !== null && !searching ? cappedPosts(reads.current.peek) : null,
             onChoose: on.chooseSource,
           },
-    [site, siteName, painted.shown, siteRow, livePage, previewing.subject?.kind, liveTick, on.chooseSource],
+    [site, siteName, painted.shown, siteRow, livePage, previewing.subject?.kind, liveTick, on.chooseSource, searchKey, searching],
   )
 
   if (failure) throw failure
@@ -4436,9 +4745,9 @@ function EditorShell({
           retires the name's `360px` constant its own comment asked this to replace (R-143's "re-tunes the name's
           truncation"). The side tracks are `minmax(min-content, 1fr)` rather than `minmax(0, 1fr)`: each side's controls
           can then never overflow into the group — a narrow tablet held upright moves the group over instead — and the
-          name and the MEMBERS OFF chip contribute NOTHING to that minimum, so they are what shrinks and truncates first
-          (the Paywall's NOT A PAGE SECTION chip is whole or absent, below). 56px on touch, with D8a's own 6px padding
-          and gaps (`D8 Editor Below 1440.dc.html:42`). */}
+          name contributes NOTHING to that minimum, so it is what shrinks and truncates first (the Paywall's NOT A PAGE
+          SECTION chip and C3b's MEMBERS OFF chip are each whole or absent, below — DW-283). 56px on touch, with D8a's own
+          6px padding and gaps (`D8 Editor Below 1440.dc.html:42`). */}
       <header
         ref={bar}
         hidden={preview}
@@ -4495,7 +4804,7 @@ function EditorShell({
         <span id="editor-save-state" className="shrink-0">
           {/* nothing is claimed before the device has answered: the initial state is green "Synced", and a reload with
               edits owed must never show that for the moment IndexedDB takes (the review) */}
-          {hydrated ? <SaveState state={sync} onRetry={on.retryNow} retrying={pressingRetry} held={!fellBack.current} /> : null}
+          {hydrated ? <SaveState state={sync} onRetry={on.retryNow} retrying={pressingRetry} held={!fellBack.current} signIn={signInUrl} /> : null}
         </span>
         {/* R-143 (owner, 2026-09-19): THE PAIR SITS HERE, immediately after the indicator, and no longer in S4a's
             right-hand cluster where `S4 Editor.dc.html:41-43` draws it. His reason is the one the frame could not
@@ -4551,10 +4860,12 @@ function EditorShell({
             dark — R-135 scopes the mode and nothing else — so it is drawn on every project. */}
         {/* the right column: the cluster, or below 1280 the ⋯ it collapses into (Story 5.22) */}
         <div className="flex min-w-0 items-center justify-end gap-[10px] coarse:gap-[6px]">
-          {/* C3b's MEMBERS OFF chip, in the bar while the card is up (:1662) — and still in the bar below 1280, where it
-              gives way before the ⋯ does, as the Paywall's other chip does on the left */}
+          {/* C3b's MEMBERS OFF chip, in the bar while the card is up (:1662). DW-283 (Story 5.24e): WHOLE OR NOT AT ALL, as
+              the Paywall's NOT A PAGE SECTION chip is (`data-surface-chip`): truncated below 1280 it read as a fragment and
+              pushed the bar past the window on a 600px tablet. Below 1280 it is not drawn, and nothing is lost — C3b's own
+              card says "Members are switched off" at every width */}
           {offCard ? (
-            <span data-members-off-chip className="w-0 max-w-fit grow truncate rounded-pill border border-ink-mid px-2 py-[2px] font-mono text-[10px] text-ink-deep-soft">
+            <span data-members-off-chip className="shrink-0 rounded-pill border border-ink-mid px-2 py-[2px] font-mono text-[10px] text-ink-deep-soft compact:hidden">
               {PAYWALL_WORDS.offChip}
             </span>
           ) : null}
@@ -4700,6 +5011,7 @@ function EditorShell({
             drag={dragStore}
             // the owner's ruling of 2026-09-20: choosing a row brings its section into view, with a little air above it
             onSelect={on.selectRow}
+            onPoint={on.pointRow}
             onGround={on.ground}
             onToggleHidden={on.toggleHidden}
             onRename={on.rename}
@@ -4896,6 +5208,8 @@ function EditorShell({
               // STORY 5.18 — B9's connected look and D5e's SOURCE group, wherever a site is linked (Home becomes
               // pressable then, and only then). Every word is `lib/live-content.ts`'s, and the site has one name.
               site={sourceSite}
+              // DW-248: posts are the one capped search — D5e on a Page, Tag or Author canvas searches its rows in hand
+              onQuery={previewing.subject?.kind === 'post' ? setTerm : undefined}
             />
           </div>
           {/* P0-1's toolbar and its link panel, and S4b's quick-action pill: all pressed, so all outside the frame
@@ -4903,8 +5217,9 @@ function EditorShell({
           <InlineTools id="canvas-inline" session={session} selection={inlineAt} hidden={scrolling || preview} resources={linksNow} handle={tools} />
           <SectionPill
             readOnly={!lock.holder}
-            // Story 5.20 — ABSENT on a template surface: the paywall is not placed, moved, copied or deleted (DW-262)
-            shown={!!pointed && !surface}
+            // Story 5.20 — ABSENT on a template surface: the paywall is not placed, moved, copied or deleted (DW-262).
+            // R-217 — and for a section pointed at from its Layers row: the outline says where it is, nothing more
+            shown={!!pointed && !surface && pointedFrom !== 'layers'}
             canAdd={canAdd}
             hidden={scrolling || preview}
             boxOf={pillBox}
@@ -4991,8 +5306,11 @@ function EditorShell({
               </IconButton>
             )}
           </div>
-          {/* STORY 5.20 — a placed section whose design asks a visitor to join, on a site whose record says members are
-              switched off: one line at the panel head, in 5.18's note shape — never for a synthesized instance (FR-H6) */}
+          {pausedHere ? <p className="sr-only" data-paused-said>{PAUSED_SAID}</p> : null}
+          {/* STORY 5.20, R-216 (Story 5.24e) — a placed section whose design asks a visitor to join, on a site whose record
+              stops that ask: the Sites screen's own sentence for each fact that does (5.20's line for members off), at the
+              panel head in 5.18's note shape — never for a synthesized instance (FR-H6). `askLine` reads the one list the
+              Sites notice reads (`lib/paywall.ts`'s `FACTS`) */}
           {chosen && entry && !surface && site !== null
             ? ((line) =>
                 line === null ? null : (
@@ -5067,7 +5385,7 @@ function EditorShell({
               onChange={on.change}
               // Story 5.6 — the mode's own swatch values, so the Background-role dots are the colours the canvas
               // is actually painting; the mode itself scopes every resolution, write and reset in the panel
-              swatches={swatches[mode]}
+              swatches={swatches}
               mode={mode}
               // R-135: absent on a Light-only project — `sidebar.tsx` draws no row at all without this
               onClearDark={darkEnabled ? on.clearDarkChosen : undefined}
@@ -5111,7 +5429,8 @@ function EditorShell({
       {/* A completed move, announced politely in `moveSection`'s own words — from here, so a drop on either grip
           (a Layers row's or the canvas pill's) reads out through one live region (UX-DR12) */}
       <p id="editor-said" aria-live="polite" className="sr-only">
-        {said}
+        {/* DW-205: a new node per sentence, so a repeat is heard again (`useSaid`) */}
+        <span key={said.n}>{said.words}</span>
       </p>
 
       {/* STORY 5.17 — UX-DR12'S SECOND REGION, AND IT IS ASSERTIVE: the edit-lock request and the take-over notice
@@ -5119,7 +5438,7 @@ function EditorShell({
           the other is work that is already gone. `#editor-said` above STAYS POLITE — widening it would make every
           design-ring announcement, every Shuffle and every completed move shout. Nothing else writes here. */}
       <p id="editor-announced" aria-live="assertive" className="sr-only">
-        {announced}
+        <span key={announced.n}>{announced.words}</span>
       </p>
 
       {/* FR-D5's site-wide confirm, for both entry points: a Layers row's menu (Hide or Delete), and the canvas pill's bin.
@@ -5294,6 +5613,8 @@ function EditorShell({
           // Story 5.18 — and with the canvas's own content: the site's where it shows, one source per card
           live={cardLive}
           refusal={pickerRefusal}
+          // DW-207 (Story 5.24e): browsing on lets the last refusal go — it was about a press no longer in front of you
+          onBrowse={() => setPickerRefusal(null)}
           onAdd={onPlace}
           onClose={() => {
             setPicking(false)

@@ -1,8 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { docSchema } from '@inflozo/section-runtime'
-import { canvasOfTemplateKey, isSurface, isUuid } from '@/lib/editor'
+import { isUuid } from '@/lib/editor'
 import { stable } from '@/lib/journal'
 import { heldElsewhere } from '@/lib/lock'
+import { docRefusal } from '@/lib/pilots'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -15,6 +16,9 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * THE BODY IS PARSED THROUGH `docSchema` PER KEY BEFORE IT IS TRUSTED. AD-27's one schema is the only definition of
  * what a doc is, and the RPC below writes `jsonb` without opinions — so a doc that would make `read.ts` throw for the
  * whole editor must be refused HERE, at the only door that writes one, rather than be stored and met on the next load.
+ * DW-235 (Story 5.24e): and the PLACEMENT rules `read.ts` throws on are asked too — `docRefusal` (`lib/pilots.ts`) is
+ * the one rule both doors call, so this route now has the parity it always claimed. It reads the library off disk, so
+ * this route's trace carries the designs (`tools/check-traces.mjs`): a lost trace would refuse every save.
  *
  * EVERYTHING ELSE IS THE RPC'S. `public.sync_project_doc()` is `security definer` and does the compare-and-set, the
  * upserts and the revision in ONE transaction, because `authenticated` holds no UPDATE grant on `projects.revision`
@@ -67,16 +71,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (keys.length === 0) return no(400, 'Nothing to write')
 
   const parsed: Record<string, unknown> = Object.create(null)
+  // the designs read while checking this body, each once
+  const held = {}
   for (const key of keys) {
     // `template_key_shape`, word for word (SCHEMA.sql): refused HERE as a 422, because inside the RPC it is a 23514,
     // which is a 502, which the editor retries for ever. `__proto__` is refused by the same line.
     if (!TEMPLATE_KEY.test(key)) return no(422, 'Not a template key')
     const doc = docSchema.safeParse((docs as Record<string, unknown>)[key])
     if (!doc.success) return no(422, `${key} is not a document this editor could have written`)
-    // Review 5.20 — a TEMPLATE SURFACE holds at most one instance (FR-H6's "one design active per project"). `read.ts`
-    // throws on a doc with more, which blacks out every canvas of the project, so the one write door refuses it first.
-    const canvas = canvasOfTemplateKey(key)
-    if (canvas !== null && isSurface(canvas) && doc.data.instances.length > 1) return no(422, `${key} holds one design`)
+    // DW-235 — before the lock read and the RPC: what `read.ts` would throw on is refused here, in its own words (the
+    // surface's one-design rule among them, which used to be this route's only placement check)
+    const refused = docRefusal(key, doc.data, held)
+    if (refused !== null) return no(422, refused)
     parsed[key] = doc.data
   }
 

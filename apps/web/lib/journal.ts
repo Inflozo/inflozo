@@ -200,14 +200,21 @@ export function vanishedDesign(doc: ProjectDoc, held: (designId: string) => bool
 
 /* ───────────────────────────── B6's indicator, as a machine ─────────────────────────────
  *
- * Five states and four transitions, and NOTHING ELSE MAY DRIVE IT (`B Missing Surfaces.dc.html:1351-1388`).
+ * Six states, and NOTHING ELSE MAY DRIVE IT (`B Missing Surfaces.dc.html:1351-1388`, five drawn; the sixth is R-213's).
  *
  *   at rest, nothing owed ────▶ "Synced"                 (green · check)
  *     └──── commit ────────────▶ "Saved on this device"   (grey · clock)
  *     └──── flush starts ──────▶ "Syncing"                (coral · arrow up)
  *             ├── ok ──────────▶ back to rest, now owing nothing → "Synced"
+ *             ├── 401 ─────────▶ "Signed out"             (red · logout) + its panel, the backoff still trying
  *             └── fail ────────▶ "Retrying · {n}s"        (red · exclamation) + B6's panel
  *   no IndexedDB ─────────────▶ "Syncing every change to the cloud"  (grey · upload, sticky)
+ *
+ * R-213 (owner, 2026-09-28) ADDED THE SIXTH, and only for the refusal signing in cures. Before it a save the route
+ * refused for an ended session read "Retrying … when the connection returns", which blamed a connection that was fine
+ * and offered a Retry that could never succeed. A 404, 400 or 422 is a refusal signing in cannot cure, and stays
+ * Retrying (DW-304, Story 7.18). Extrapolated from B6 (R-74): the Retrying panel's shape, its red, one link where
+ * Retry now stood.
  *
  * R-144 (owner, 2026-09-19) SPLIT THE RESTING STATE BY WHAT IS OWED, and it is a better machine than the one B6
  * drew. B6 flashed "Synced" for four seconds after a save and then faded to "Saved on this device" for ever — so
@@ -228,25 +235,127 @@ export type SyncState =
   | { kind: 'rest'; owed: boolean }
   | { kind: 'syncing' }
   | { kind: 'retrying'; attempt: number; seconds: number }
+  /** R-213: the route answered 401. The backoff keeps trying (no countdown is shown), and a visit back to the tab
+   *  tries at once — a sign-in in another tab rides this tab's next request, because the cookie jar is shared. */
+  | { kind: 'signed-out' }
   | { kind: 'fallback' }
 
-/** B6's five labels, and the compile error for a sixth is the Kit's own union (`kit/persistence-indicator.tsx`). */
+/** B6's five labels and R-213's sixth; the compile error for a seventh is the Kit's own union
+ *  (`kit/persistence-indicator.tsx`). */
 export type SyncLabel =
   | 'Saved on this device'
   | 'Syncing'
   | 'Synced'
   | 'Retrying'
+  | 'Signed out'
   | 'Syncing every change to the cloud'
 
 export const labelOf = (s: SyncState): SyncLabel =>
   s.kind === 'syncing' ? 'Syncing'
   : s.kind === 'retrying' ? 'Retrying'
+  : s.kind === 'signed-out' ? 'Signed out'
   : s.kind === 'fallback' ? 'Syncing every change to the cloud'
   : s.owed ? 'Saved on this device'
   : 'Synced'
 
-/** B6's panel opens on Retrying AND ON NOTHING ELSE — the frame's own note, and an acceptance criterion. */
-export const panelOpen = (s: SyncState) => s.kind === 'retrying'
+/** B6's panel opens on Retrying AND ON NOTHING ELSE — the frame's own note, and an acceptance criterion — save R-213's
+ *  Signed out, which is a refusal of the same weight and carries its own panel. */
+export const panelOpen = (s: SyncState) => s.kind === 'retrying' || s.kind === 'signed-out'
+
+/**
+ * THE SIGNED-OUT PANEL'S WORDS (R-213, R-227), one list read by the panel and by every check that asserts it (R-170).
+ * `held` is R-213's sentence, true while this device holds the work; `fallback` is R-227's (owner, 2026-10-02), for an
+ * editor holding no copy here — as after a sign-out in another tab, which R-214 erased — where "safe on this device"
+ * would be a lie, which B6's own rule forbids (FR-D10).
+ */
+export const SIGNED_OUT_COPY = {
+  title: 'Signed out',
+  held: "You've been signed out. Your work is safe on this device — sign in again and it will be sent.",
+  fallback: "You've been signed out. Your latest changes have not reached the cloud yet — keep this tab open, sign in again and they will be sent.",
+  signIn: 'Sign in',
+} as const
+
+/* ───────────────────────────── R-214: signing out sends, then erases ─────────────────────────────
+ *
+ * THE OWNER'S RULING (2026-09-28): signing out first sends any work not yet sent, then wipes this browser's copy, and
+ * asks first if the work cannot be sent. Every sign-out door — the account menu's, the restore page's and Sign out
+ * everywhere — runs this ONE function, handed its I/O, so the order is decided once and `journal.test.ts` holds it.
+ *
+ * THE RECORDS ARE SENT WITHOUT A LOCK SESSION, deliberately (the spec's routine call 3). The route's absent-session
+ * branch refuses nothing and the revision compare-and-set still guards every write: a 409 counts as "cannot send", and
+ * a record already stored answers 200 (`sync/route.ts`'s "already there"). Each 200 is TOLD to this browser's open editor
+ * of the project (`sentMessage`, below), which takes it as its own flush's answer — or its next edit would carry the old
+ * base and meet the conflict dialog over work it had itself sent. Acquiring the lock per record would refuse exactly
+ * the window the sign-out sends in.
+ * ponytail: a record orphaned in this browser lands even while ANOTHER DEVICE holds the lock unflushed; that device's
+ * next flush then meets the existing 409 flow. The upgrade is acquiring the lock per record.
+ */
+
+/** One project's work this browser owes the server, as the flush would send it — with what a flush's 200 marks sent:
+ *  the journal's own stamp and highest sequence (`flushed`). */
+export type OwedRecord = { projectId: string; base: number; docs: Record<string, ProjectDoc>; edits: number; stamp: number; upTo: number }
+
+/** What a local record owes, or null when it owes nothing: `flushPayload` over its own journal, AD-16's count beside it. */
+export const owedOf = (projectId: string, record: { baseRevision: number; docs: Readonly<Record<string, ProjectDoc>>; journal: Journal }): OwedRecord | null => {
+  if (!unsynced(record.journal)) return null
+  const docs = flushPayload(record.journal, record.docs)
+  return Object.keys(docs).length === 0 ? null
+    : { projectId, base: record.baseRevision, docs, edits: unsyncedEdits(record.journal), stamp: record.journal.stamp, upTo: maxSeq(record.journal) }
+}
+
+/** The sign-out's request body: the flush's own, WITHOUT a lock session (routine call 3 — the revision guards it). */
+export const sendBody = (record: OwedRecord): string => JSON.stringify({ base: record.base, docs: record.docs })
+
+/** What the sync route's answer means to the sign-out: only a 200 is sent. A 409 (another writer), a 401 (no session), a
+ *  5xx and no answer at all (`null`: the request never came back) are "cannot send" — the ask's business. */
+export const sentBy = (status: number | null): boolean => status === 200
+
+/** R-214 — the one channel a sign-out tells an open editor of the project on, per project. */
+export const SENT_CHANNEL = (projectId: string) => `inflozo-sent-${projectId}`
+
+/** "Your owed work has been sent": a 200 the sign-out got for this browser's record, handed to the open editor, which
+ *  applies it EXACTLY as its own flush's 200 when its base is the one sent (`flushed(journal, stamp, upTo)`, the base
+ *  moved to `revision`), and ignores it otherwise. */
+export type SentMessage = { type: 'sent'; project: string; base: number; revision: number; stamp: number; upTo: number }
+
+export const sentMessage = (record: OwedRecord, answer: { revision: number }): SentMessage => ({
+  type: 'sent', project: record.projectId, base: record.base, revision: answer.revision, stamp: record.stamp, upTo: record.upTo,
+})
+
+/** A message off the channel, read as one only when every field is the shape `sentMessage` writes. */
+export const isSentMessage = (m: unknown): m is SentMessage => {
+  if (typeof m !== 'object' || m === null) return false
+  const o = m as Record<string, unknown>
+  return o['type'] === 'sent' && typeof o['project'] === 'string' &&
+    (['base', 'revision', 'stamp', 'upTo'] as const).every((k) => Number.isSafeInteger(o[k]))
+}
+
+/** Nothing owed → erase → sign out. All sent → erase → sign out. Anything unsent → ask first: Wait keeps everything
+ *  (no erase, no sign-out), Sign out anyway erases and signs out. An erase that fails still signs out. True when the
+ *  sign-out ran. */
+export async function signOutFlow(o: {
+  owed: () => Promise<readonly OwedRecord[]>
+  send: (record: OwedRecord) => Promise<boolean>
+  erase: () => Promise<unknown>
+  signOut: () => Promise<unknown>
+  ask: (edits: number) => Promise<boolean>
+}): Promise<boolean> {
+  const unsent: OwedRecord[] = []
+  for (const record of await o.owed()) if (!(await o.send(record))) unsent.push(record)
+  if (unsent.length > 0 && !(await o.ask(unsent.reduce((n, r) => n + r.edits, 0)))) return false
+  await o.erase().catch(() => undefined)
+  await o.signOut()
+  return true
+}
+
+/** R-214's ask, derived from B5c (R-170, R-74): its shape and its danger panel, the count from `LOCK_COPY.willBeLost`
+ *  and the cancel from `LOCK_COPY.wait`, so one count and one Wait mean one thing across the two dialogs. */
+export const SIGN_OUT_COPY = {
+  heading: 'Sign out with unsent work?',
+  erases: "Signing out erases this browser's copy.",
+  confirm: 'Sign out anyway',
+  confirmBusy: 'Signing out…',
+} as const
 
 /** The resting state, derived rather than timed — R-144. There is no fourth transition to schedule any more:
  *  a flush that lands empties `pending`, and the next render simply reads it. */

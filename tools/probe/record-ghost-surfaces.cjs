@@ -13,8 +13,13 @@
  *
  * WHAT IT WRITES TO THE SERVERS, with the STAFF token, and nothing else — each put back in a `finally` and READ BACK:
  *   - `portal_button` switched ON for the Portal recordings (Ghost's default is off, and both test servers have it off);
+ *   - `portal_button_icon` set to null — Ghost's default, Portal's person — for the style recordings, so they are of the
+ *     person on both majors whatever a site chose (T3 has kept `icon-5` since 2026-09-26);
  *   - `portal_button_style` stepped through Ghost's three values, `icon-and-text`, `icon-only`, `text-only`;
+ *   - STORY 5.24e (DW-278): `portal_button_icon` stepped through Portal's five presets (`PORTAL_ICONS`, read from
+ *     `apps/web/lib/probe-rule.ts`) at the default style, `icon-and-text`;
  *   - `announcement_visibility` set to `[]` for the "cleared" recording.
+ * The icon goes back in a PUT of its own AFTER the rest, so a refusal of it can never leave a site showing the button.
  * The announcement's words, its background and every other setting are only READ. It creates, edits and deletes no post,
  * no member and no theme. It REFUSES TO START unless the bar is the fixture `run-verify-all.py` item 21 left — words, and
  * the logged-out visitor in its audience — because the recording is of THAT bar, as it stands.
@@ -27,6 +32,8 @@
  *   - PORTAL, switched on, per style: `#ghost-portal-root`'s place; the trigger iframe's inline style and box; inside it,
  *     the button's box and its computed height, radius, background and shadow, the label's font and box, the icon's
  *     box, and the frame's own `<style>` verbatim; and — the control — NO trigger at 390, beside the one at 834.
+ *   - PORTAL'S FIVE ICONS (DW-278), each at 1440 × 900: the same reading, the icon's markup verbatim (`icon.html`) — what
+ *     `apps/web/lib/ghost-surfaces.ts` draws each preset as, and the colours `tokens.test.ts` lets it write.
  *   - THE BAR CLEARED (`announcement_visibility` `[]`): whether `{{ghost_head}}` still injects the script, and whether any
  *     bar root exists.
  *
@@ -61,6 +68,8 @@ const COMMAND = 'node tools/probe/record-ghost-surfaces.cjs'
 /** R-137's three devices — `apps/web/lib/device.ts`'s table, restated here because this file must run with no build */
 const DEVICES = [[1440, 900], [834, 1112], [390, 844]]
 const STYLES = ['icon-and-text', 'icon-only', 'text-only']
+// DW-278: Portal's five presets, the app's own list (Node 24 strips the types; the module imports nothing)
+const { PORTAL_ICONS: ICONS } = require(path.join(REPO, 'apps', 'web', 'lib', 'probe-rule.ts'))
 const SECRETS = MAJORS.map((m) => process.env[`GHOST${m}_STAFF_ACCESS_TOKEN`])
 const clean = (s) => SECRETS.reduce((t, k) => t.split(k).join('<token>'), String(s))
 
@@ -210,6 +219,8 @@ async function recordMajor(browser, m) {
     throw new Error(`${g.name}'s announcement is not the fixture (words shown to visitors) — refusing to record a different bar: ${JSON.stringify({ content: before.announcement_content, visibility: before.announcement_visibility })}`)
   }
   const previous = { portal_button: before.portal_button, portal_button_style: before.portal_button_style, announcement_visibility: before.announcement_visibility }
+  // DW-278: put back on its own, last (T3's own `icon-5`, T1's null)
+  const previousIcon = before.portal_button_icon ?? null
   say(`  read: ${JSON.stringify(read)}`)
   const home = `${g.origin}/`
   const out = {
@@ -220,7 +231,7 @@ async function recordMajor(browser, m) {
     site: g.origin,
     settings: read,
     announcement: { at: {} },
-    portal: { off: {}, styles: {} },
+    portal: { off: {}, styles: {}, icons: {} },
     cleared: null,
     restored: null,
   }
@@ -242,10 +253,12 @@ async function recordMajor(browser, m) {
       say(`  bar @${at}: index ${bar.index} of ${bar.body_children} · ${Math.round(bar.bar_box.height * 100) / 100}px tall · ${bar.computed.background_color} · ${bar.computed.font_size}/${bar.computed.line_height} · trigger ${bar.trigger}`)
     }
 
-    // ── PORTAL: switched on, then each of Ghost's three styles, at each device ──
+    // ── PORTAL: switched on with Ghost's own icon (the person), then each of Ghost's three styles, at each device ──
     await g.put({ portal_button: true })
     const on = await g.settings()
     if (on.portal_button !== true) throw new Error(`${g.name}: portal_button did not read back true after the switch`)
+    await g.put({ portal_button_icon: null })
+    if ((await g.settings()).portal_button_icon != null) throw new Error(`${g.name}: portal_button_icon did not read back null (Ghost's person)`)
     for (const style of STYLES) {
       await g.put({ portal_button_style: style })
       if ((await g.settings()).portal_button_style !== style) throw new Error(`${g.name}: portal_button_style did not read back ${style}`)
@@ -271,6 +284,23 @@ async function recordMajor(browser, m) {
       }
     }
 
+    // ── DW-278: PORTAL'S FIVE ICONS — each preset at the default style, at the widest device, where the trigger draws ──
+    await g.put({ portal_button_style: 'icon-and-text' })
+    if ((await g.settings()).portal_button_style !== 'icon-and-text') throw new Error(`${g.name}: portal_button_style did not read back icon-and-text`)
+    for (const icon of ICONS) {
+      await g.put({ portal_button_icon: icon })
+      if ((await g.settings()).portal_button_icon !== icon) throw new Error(`${g.name}: portal_button_icon did not read back ${icon}`)
+      const device = DEVICES[0]
+      const at = `${device[0]}x${device[1]}`
+      const page = await load(browser, home, device, (p) => p.waitForSelector('iframe[title="portal-trigger"]', { state: 'attached', timeout: 30000 }))
+      const trigger = await readTrigger(page)
+      await closeOf(page)
+      const { frame_style_text: frameStyle, ...rest } = trigger
+      if (frameStyle !== undefined && frameStyle !== out.portal.frame_style) throw new Error(`${g.name}: Portal's frame stylesheet differs between loads`)
+      out.portal.icons[icon] = { [at]: rest }
+      say(`  portal icon ${icon} @${at}: ${trigger.trigger && trigger.icon ? `${trigger.icon.tag} ${JSON.stringify(trigger.icon.box)} · ${trigger.icon.style}` : 'NO trigger or icon'}`)
+    }
+
     // ── THE BAR CLEARED — the audience emptied, the words kept (Ghost Admin's own way to switch it off) ──
     await g.put({ announcement_visibility: '[]' })
     const cleared = await g.settings()
@@ -280,14 +310,17 @@ async function recordMajor(browser, m) {
     out.cleared = { announcement_visibility: cleared.announcement_visibility, ...clearedPage }
     say(`  cleared (${cleared.announcement_visibility}): script ${clearedPage.script} · root ${clearedPage.root}`)
   } finally {
-    // EVERYTHING PUT BACK, AND READ BACK — whatever happened above
+    // EVERYTHING PUT BACK, AND READ BACK — whatever happened above. The icon last and on its own (DW-278): the button is
+    // off again before it, and a refusal of it is a finding, never a throw that skips the read-back
     await g.put(previous)
+    const iconRefused = await g.put({ portal_button_icon: previousIcon }).then(() => null, (e) => clean(e.message))
     const after = await g.settings()
-    const back = { portal_button: after.portal_button, portal_button_style: after.portal_button_style, announcement_visibility: after.announcement_visibility }
-    restored = JSON.stringify(back) === JSON.stringify(previous)
+    const back = { portal_button: after.portal_button, portal_button_style: after.portal_button_style, announcement_visibility: after.announcement_visibility, portal_button_icon: after.portal_button_icon ?? null }
+    const found = { ...previous, portal_button_icon: previousIcon }
+    restored = iconRefused === null && JSON.stringify(back) === JSON.stringify(found)
     out.restored = back
-    say(`  restored and read back: ${JSON.stringify(back)} — ${restored ? 'as found' : 'NOT AS FOUND'}`)
-    if (!restored) findings.push(`${g.name}: the settings did not read back as found — ${JSON.stringify({ previous, back })}`)
+    say(`  restored and read back: ${JSON.stringify(back)} — ${restored ? 'as found' : 'NOT AS FOUND'}${iconRefused ? ` (the icon's PUT: ${iconRefused})` : ''}`)
+    if (!restored) findings.push(`${g.name}: the settings did not read back as found — ${JSON.stringify({ found, back, iconRefused })}`)
   }
 
   // ── the spec's Ask First, stated either way ──
@@ -299,6 +332,8 @@ async function recordMajor(browser, m) {
       STYLES.every((s) => out.portal.styles[s]['390x844'].trigger === false && out.portal.styles[s]['834x1112'].trigger === true && out.portal.styles[s]['1440x900'].trigger === true)],
     [`${g.name}: with the audience emptied the script is NOT injected and no bar root exists`, out.cleared !== null && out.cleared.script === false && out.cleared.root === false],
     [`${g.name}: the control — no trigger while portal_button is off`, Object.values(out.portal.off).every((o) => o.trigger === false)],
+    [`${g.name}: each of Portal's five icons is an SVG drawn 24 × 24 (DW-278, Portal's buttonIcon)`,
+      ICONS.every((i) => ((icon) => icon?.tag === 'svg' && Math.round(icon.box.width) === 24 && Math.round(icon.box.height) === 24)(out.portal.icons[i]?.['1440x900']?.icon))],
   ]
   for (const [claim, held] of verdicts) {
     say(`  ${held ? 'HELD' : 'ASK FIRST — DID NOT HOLD'}  ${claim}`)

@@ -38,7 +38,9 @@ list gone stale — the sibling harness's own note):
                  read over the wire because hosted Supabase keeps them outside the database
                  (RLS-TEST.sql cannot see them): `Accept-Profile` `private`, `storage` and
                  `vault` with the publishable key -> 406 PGRST106 each, the hint naming exactly
-                 `public, graphql_public`; those two 404 PGRST205, the control (MEASUREMENTS §60)
+                 `public, graphql_public`; those two 404 PGRST205, the control (MEASUREMENTS §60).
+                 Since Story 5.24e (DW-302) the step calls `check-schemas-off-rest.py`'s check(),
+                 the one copy of the rule, which CI's `rls` job runs on every push
   settings-keys  STORY 3.3, printed in both modes: the six settings keys the probes read are
                  really in the INTEGRATION key's own `GET /admin/settings/` payload on both
                  majors — `portal_button`, the two `codeinjection_*` and the three
@@ -685,6 +687,8 @@ Admin, load_env = _passkeys.Admin, _passkeys.load_env
 playwright_dir, axe_path = _passkeys.playwright_dir, _passkeys.axe_path
 _deletion = _sibling('run-verify-account-deletion')
 rest = _deletion.rest
+# `schemas-off-rest`'s rule, ONE copy: the script CI's `rls` job runs on every push (Story 5.24e, DW-302).
+_schemas = _sibling('check-schemas-off-rest')
 # The project's ONE JWT mint and Admin client, so `injection-live`'s write is signed exactly the
 # way every other probe in `tools/probe/` signs (propagate, never localise).
 _all = _sibling('run-verify-all')
@@ -4579,20 +4583,25 @@ const shoot = async (page, name) => {
       ((await rowsOf('id,capability,capability_source,site_settings')).find((r) => r.id === t1SiteId) || {})
 
     // The Portal question: `portal_button_source` `default` is what the probe writes when Ghost's
-    // payload had no boolean. "Yes" is the primary, because Portal defaults to ON.
+    // payload had no boolean. Since R-215 that assumption is OFF (Ghost's own default), so "No, it's
+    // off" is the primary and "Yes" the second answer — found by its WORDS, never by its place — and
+    // answering "Yes" moves T1's read `false` to `true`, so the row shows the answer was written.
     const seedPortal = await patchSettings(t1SiteId, { portal_button_source: 'default' })
     await page.goto(`${APP}/sites`, { waitUntil: 'load' })
     await page.getByText(SAY.portal_body).waitFor()
-    await page.getByRole('button', { name: SAY.portal_yes }).first().click()
+    const portalYes = page.getByRole('button', { name: SAY.portal_yes }).first()
+    // the Banner's answers are one form each, the primary's first (`site-notices.tsx`'s `Ask`)
+    const yesSecond = await portalYes.evaluate((b) => b.closest('form')?.previousElementSibling?.tagName === 'FORM')
+    await portalYes.click()
     const portalAnswered = (await until(async () => {
       const settings = (await settingsOfT1()).site_settings || {}
       return settings.portal_button_source === 'declared' ? settings : null
     })) || {}
     step('portal-question',
-      seedPortal.status === 200 && portalAnswered.portal_button === true
+      seedPortal.status === 200 && yesSecond && portalAnswered.portal_button === true
       && portalAnswered.portal_button_source === 'declared',
       `seeded portal_button_source = default (HTTP ${seedPortal.status}); the ONE question appeared with ` +
-      `${JSON.stringify(SAY.portal_yes)} as the primary, and answering it wrote portal_button ` +
+      `${JSON.stringify(SAY.portal_yes)} the second answer = ${yesSecond} (R-215: the primary is the assumed off), and answering it wrote portal_button ` +
       `${portalAnswered.portal_button} with source ${JSON.stringify(portalAnswered.portal_button_source)} ` +
       `— never 'probe', which only a real read may write (Story 3.7 re-reads it)`)
 
@@ -5130,30 +5139,12 @@ def main():
 
     # ── DW-294 (Story 5.24d): WHICH SCHEMAS POSTGREST EXPOSES, read where hosted Supabase keeps them — over the wire.
     #    RLS-TEST.sql sees only a database-level `pgrst.db_schemas`, unset on production and in the gate's container;
-    #    and vault-off-rest sends no Accept-Profile, so it only ever asked `public`. A schema PostgREST does not expose
-    #    answers 406 PGRST106 before any table is looked up, its hint naming the ones it does; the two it exposes get as
-    #    far as the table and answer 404 PGRST205 — the control, held to that answer (the review: "anything but 406"
-    #    passed a 401 or a 500 too). The hint must name those two and no third, so a schema nobody thought to list here
-    #    is seen as well. The table does not exist, so no row is read either way (MEASUREMENTS §60).
-    unexposed, exposed = ('private', 'storage', 'vault'), ('public', 'graphql_public')
-    profiles = {}
-    for schema in unexposed + exposed:
-        st, body = _deletion._request('GET', f'{sb.rstrip("/")}/rest/v1/inflozo_no_such_table?limit=0',
-                                      env['SUPABASE_PUBLISHABLE_KEY'], extra={'Accept-Profile': schema})
-        profiles[schema] = (st, body if isinstance(body, dict) else {})
-    wrong = ([s for s in unexposed if (profiles[s][0], profiles[s][1].get('code')) != (406, 'PGRST106')]
-             + [s for s in exposed if (profiles[s][0], profiles[s][1].get('code')) != (404, 'PGRST205')])
-    hints = sorted({b['hint'] for _, b in profiles.values() if b.get('hint')})
-    named = {tuple(x.strip() for x in h.split(':', 1)[-1].split(',')) for s in unexposed if (h := profiles[s][1].get('hint'))}
-    if named != {exposed}:
-        wrong.append(f'the hint names {sorted(named)}, not exactly {", ".join(exposed)}')
-    failed = failed or bool(wrong)
-    print(f'  {"PASS" if not wrong else "FAIL"}  schemas-off-rest: GET /rest/v1/inflozo_no_such_table with '
-          f'SUPABASE_PUBLISHABLE_KEY, Accept-Profile -> '
-          + ', '.join(f'{s} {st} {b.get("code")}' for s, (st, b) in profiles.items())
-          + f' (406 PGRST106 wanted for {", ".join(unexposed)}; 404 PGRST205 for {", ".join(exposed)}); '
-          f'PostgREST\'s hint: {" | ".join(hints) or "none"}'
-          + (f'; WRONG: {", ".join(wrong)}' if wrong else ''))
+    #    and vault-off-rest sends no Accept-Profile, so it only ever asked `public`. The assertion moved, unchanged, into
+    #    `check-schemas-off-rest.py`'s check() (Story 5.24e, DW-302), which CI's `rls` job runs on every push; this step
+    #    calls it, so the rule has one copy and the line prints what it printed (MEASUREMENTS §60).
+    ok, line = _schemas.check(sb, env['SUPABASE_PUBLISHABLE_KEY'])
+    failed = failed or not ok
+    print(f'  {"PASS" if ok else "FAIL"}  schemas-off-rest: {line}')
 
     # ── §39, RE-EXECUTED EVERY RUN: the six settings keys FR-C2's probes read are really in the
     #    INTEGRATION key's own `GET /admin/settings/` payload, on both majors. §15h item 21 measured

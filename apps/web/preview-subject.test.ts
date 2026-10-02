@@ -4,7 +4,8 @@ import { nativeResourceOf, orbitWeekly } from '@inflozo/library'
 import { CANVASES, type CanvasKey } from './lib/editor.ts'
 import {
   GONE, SAVE_REFUSED, SEARCH_WORDS, SOURCE_WORDS, SUBJECT_HEADING, SUBJECT_HELP, SUBJECT_SAID,
-  bundledSource, dateWords, filterSubjects, hasSubject, postsWords, subjectLabel, subjectOptions,
+  bundledSource, clearPending, dateWords, filterSubjects, hasSubject, PENDING_KEY, postsWords, readPending, subjectLabel,
+  subjectOptions, writePending,
 } from './lib/preview-subject.ts'
 
 /* Story 5.13 — the content-source pill and the preview subject, over the one pure module the pill, D5e's menu and
@@ -118,4 +119,38 @@ test('the sentences read as plain English, name the kind, and say the choice is 
   )
   assert.match(SUBJECT_HELP('tag'), /that tag's own posts and no others/)
   assert.match(SAVE_REFUSED, /when you reload/)
+})
+
+/* ── DW-223 (Story 5.24e): the pick waits in this tab until its write answers ─────────────────────────────────────── */
+
+test('DW-223: a pick waits in this tab\'s store until its write answers — read back whole, junk never, a later pick kept, a refusing store harmless', () => {
+  const memory = () => {
+    const map = new Map<string, string>()
+    return { getItem: (k: string) => map.get(k) ?? null, setItem: (k: string, v: string) => void map.set(k, v), removeItem: (k: string) => void map.delete(k), map }
+  }
+  const store = memory()
+  const first = { kind: 'post' as const, slug: 'field-notes-one', source: 'site' as const }
+  const later = { kind: 'post' as const, slug: 'another-post' }
+  assert.equal(PENDING_KEY('p1', 'post'), 'inflozo-subject:p1:post')
+  assert.equal(readPending(store, 'p1', 'post'), null, 'nothing waiting')
+  writePending(store, 'p1', 'post', first)
+  assert.deepEqual(readPending(store, 'p1', 'post'), first, 'the pick, whole, mark and all')
+  assert.equal(readPending(store, 'p2', 'post'), null, 'another project\'s canvas is not this one')
+  // a later pick replaced it before the first one's write answered: the first answer must not take the later one away
+  writePending(store, 'p1', 'post', later)
+  clearPending(store, 'p1', 'post', first)
+  assert.deepEqual(readPending(store, 'p1', 'post'), later, 'the later pick is still waiting')
+  clearPending(store, 'p1', 'post', later)
+  assert.equal(readPending(store, 'p1', 'post'), null, 'its own answer clears it')
+  // only a pick this editor could have written is read back
+  for (const junk of ['not json', '{"kind":"widget","slug":"x"}', '{"kind":"post","slug":""}', '{"kind":"post","slug":"x","source":"elsewhere"}', '42']) {
+    store.map.set(PENDING_KEY('p1', 'post'), junk)
+    assert.equal(readPending(store, 'p1', 'post'), null, junk)
+  }
+  // a store that refuses (a private window, a blocked site) costs the survival and nothing else
+  const refusing = { getItem: () => { throw new Error('denied') }, setItem: () => { throw new Error('denied') }, removeItem: () => { throw new Error('denied') } }
+  assert.doesNotThrow(() => writePending(refusing, 'p1', 'post', first))
+  assert.equal(readPending(refusing, 'p1', 'post'), null)
+  assert.doesNotThrow(() => clearPending(refusing, 'p1', 'post', first))
+  assert.equal(readPending(null, 'p1', 'post'), null)
 })

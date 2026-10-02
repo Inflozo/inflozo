@@ -15,7 +15,8 @@
  * and R-194's **Preview with sample content**, which lands focus on the pill; Home's page 2; and the network cut with
  * `page.route` — a SIMULATED CONDITION, named as such wherever one is used (each check says "simulated: page.route"),
  * as are three failed reads in a row and, since Story 5.24d (DW-251), a site holding more posts than the list's limit,
- * whose capped lines no test site can show. Then, on T3's origin: a real 401 from a site row with a
+ * whose capped lines no test site can show — and, since Story 5.24e, that capped list's title search at Ghost (DW-248)
+ * and a `tiers` post (DW-270), which no test site holds. Then, on T3's origin: a real 401 from a site row with a
  * wrong key, which must cost exactly ONE request; the three unreadable rows (disconnected, no key, plain http), greyed
  * with their reasons and reading nothing; and an unlinked project, today's editor exactly, reading nothing. LAST, on T1:
  * a real 429, earned the way `record-content-api.py` earns it — 100 reads with a key Ghost never issued, from this
@@ -1358,6 +1359,102 @@ async function main() {
       const control = await cappedLines()
       check(`${tag} — the control: the same session with the site's own total — no capped line in either place`,
         control.pillLine === null && control.linkLine === null, JSON.stringify(control))
+    }
+
+    // ── (simulated: page.route) DW-248 (Story 5.24e): A CAPPED LIST'S SEARCH IS ASKED OF GHOST ──
+    // The list's answer is raised past the limit as above AND loses the site's oldest post — the one a capped list really
+    // lacks. Typing a word of that post's title into D5e's search sends ONE `title:~` read, after the pause and never one
+    // per key, and the post comes back as a row from Ghost's own answer to it. Before this story the box searched only the
+    // rows in hand, so the post was nowhere. The control is the same typing over a list that is not capped: no search read
+    // at all, and the post among the rows in hand.
+    {
+      const m = MAJORS[0]
+      const g = GHOST[m]
+      const tag = `${g.name} (${m}.x)`
+      const all = (await ghostRead(m, 'posts', { limit: String(LIVE.LIST_LIMIT), order: 'published_at desc' })).posts ?? []
+      const target = all[all.length - 1] ?? null
+      const word = (target?.title ?? '').split(/[^\p{L}\p{N}]+/u).filter((w) => [...w].length >= 4).sort((a, b) => b.length - a.length)[0]?.toLowerCase() ?? null
+      const isList = (url) => url.href.startsWith(`${g.origin}/ghost/api/content/posts/`) && url.searchParams.get('limit') === String(LIVE.LIST_LIMIT) && !url.searchParams.has('filter')
+      const lacking = async (route) => {
+        const response = await route.fetch()
+        const json = await response.json().catch(() => null)
+        if (!json?.meta?.pagination || !Array.isArray(json.posts)) return route.fulfill({ response })
+        json.meta.pagination.total = LIVE.LIST_LIMIT + 1
+        json.posts = json.posts.filter((p) => p.id !== target?.id)
+        return route.fulfill({ response, json })
+      }
+      const searches = []
+      const watch = (r) => {
+        const u = new URL(r.url())
+        if (r.method() === 'GET' && u.origin === g.origin && (u.searchParams.get('filter') ?? '').startsWith('title:~')) searches.push(identity(r.url()))
+      }
+      const typeIn = async () => {
+        await open(editor(P[m], 'post'))
+        await paintedFrom('post', 'site', 30000)
+        await page.waitForTimeout(500)
+        await openPill()
+        searches.length = 0
+        page.on('request', watch)
+        await page.locator('#editor-source-search').pressSequentially(word ?? '', { delay: 60 })
+        await page.waitForTimeout(LIVE.SEARCH_DEBOUNCE_MS + 2500)
+        page.off('request', watch)
+        const rows = (await menu())?.rows ?? []
+        await closeMenus()
+        return { reads: [...searches], found: rows.some((r) => r.slug === target?.slug), rows: rows.length }
+      }
+      await page.route(isList, lacking)
+      const capped = await typeIn()
+      await page.unroute(isList, lacking)
+      check(`${tag} — (simulated: page.route) a capped list's search is ONE title:~ read at the site, after the pause — and the post the list lacked comes back from Ghost's own answer`,
+        word !== null && capped.reads.length === 1 && capped.found, JSON.stringify({ word, target: target?.slug, ...capped }))
+      const uncapped = await typeIn()
+      check(`${tag} — the control: the same typing over a list that is not capped asks Ghost nothing, and the post is among the rows in hand`,
+        uncapped.reads.length === 0 && uncapped.found, JSON.stringify(uncapped))
+    }
+
+    // ── (simulated: page.route) DW-270 (Story 5.24e): A `tiers` POST ──
+    // Neither test site holds one (read 2026-10-02), so the Post canvas's subject read is answered as a `tiers` post open to
+    // the site's own paid tier — its `tiers` sent only where the read asked for them, as Ghost sends them. What is seen: the
+    // reads `assemble` re-checks per visitor ASK for `tiers` (the subject's own and Home's feed), and the tiered post, its
+    // tiers carrying Ghost's whole tier row, paints as the canvas's subject. Who may read it per visitor is
+    // `live-content.test.ts`'s DW-270 case: no pilot design draws `access`, so no screen shows it yet.
+    {
+      const m = MAJORS[0]
+      const g = GHOST[m]
+      const tag = `${g.name} (${m}.x)`
+      const paid = ((await ghostRead(m, 'tiers', { filter: 'type:paid' })).tiers ?? [])[0] ?? null
+      const asked = []
+      const isSubject = (url) => url.href.startsWith(`${g.origin}/ghost/api/content/posts/`) && (url.searchParams.get('filter') ?? '').startsWith("slug:'")
+      const tiered = async (route) => {
+        const url = new URL(route.request().url())
+        const sent = (url.searchParams.get('include') ?? '').split(',').includes('tiers')
+        asked.push({ include: url.searchParams.get('include'), sent })
+        const response = await route.fetch()
+        const json = await response.json().catch(() => null)
+        if (!Array.isArray(json?.posts) || json.posts.length === 0) return route.fulfill({ response })
+        json.posts[0] = { ...json.posts[0], visibility: 'tiers', ...(sent && paid ? { tiers: [{ ...paid, monthly_price_id: 'price_walk', welcome_page_url: '/welcome/' }] } : {}) }
+        return route.fulfill({ response, json })
+      }
+      const feeds = []
+      const watchFeed = (r) => {
+        const u = new URL(r.url())
+        if (r.method() === 'GET' && u.origin === g.origin && u.pathname.endsWith('/content/posts/') && u.searchParams.get('page') === '1' && !u.searchParams.has('filter')) feeds.push(u.searchParams.get('include'))
+      }
+      page.on('request', watchFeed)
+      await page.route(isSubject, tiered)
+      await open(editor(P[m], 'post'))
+      const painted = await paintedFrom('post', 'site', 30000)
+      await page.waitForTimeout(800)
+      const named = (await pill())?.subject ?? null
+      await page.unroute(isSubject, tiered)
+      await open(editor(P[m]))
+      await paintedFrom('home', 'site', 30000)
+      page.off('request', watchFeed)
+      check(`${tag} — (simulated: page.route) control: a paid tier to open the post to, and the Post canvas read its subject`,
+        paid !== null && asked.length > 0, JSON.stringify({ paid: paid?.slug ?? null, asked }))
+      check(`${tag} — (simulated: page.route) DW-270: the subject's own read and Home's feed ask for tiers ("tags,authors,tiers"), and a tiers post carrying Ghost's whole tier row paints as the subject`,
+        asked.length > 0 && asked.every((a) => a.include === 'tags,authors,tiers') && feeds.length > 0 && feeds.every((i) => i === 'tags,authors,tiers') && painted && named !== null,
+        JSON.stringify({ asked, feeds, painted, named }))
     }
 
     // ── LAST, T1 only: a real 429, earned the way the recorder earns it ──

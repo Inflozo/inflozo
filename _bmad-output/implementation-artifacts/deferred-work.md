@@ -3245,7 +3245,18 @@ reason: the export is never edited (R-74); the design note belongs to the catego
 
 plain: The sample article's audio player and video look right, but pressing play does nothing, because no
   sound or video file was made for the sample publication.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the two clips the corpus names are made in-house with GStreamer 1.24 and
+  served by the app from `apps/web/public/orbit-weekly/media/`. `scrolling-one-of-them.mp4` is videotestsrc's ball, 9 s
+  at 640×360, H.264 constrained-baseline with the moov first. `episode-12.mp3` is a 6 s sine, MPEG-1 Layer III at 64
+  kbit/s mono. The commands sit beside `canvas.ts`'s `withMedia`, which is now the one treatment of a media URL
+  (`orbit-weekly.example/media/` → `/orbit-weekly/media/`). The style guide's `withImages` calls it, and the Paywall
+  canvas calls it in place of `withoutMedia`, which is gone. `proxy.ts`'s matcher leaves `orbit-weekly/` alone, so both
+  hosts serve the clips at the root under `default-src 'self'`. Controls, each seen red first: `style-guide.test.ts`'s
+  media sibling (a missing file, then a document still on the reserved origin), `paywall.test.ts`'s same-origin test (a
+  player lost its source) and `routing.test.ts` (the folder inside the matcher). No render-matrix re-baseline: the
+  matrix draws neither the style guide nor the Paywall and blocks every other origin. The ranged GET and the walk's
+  zero-CSP check are at Review.
 severity: low
 origin: Story 4.4 Dev (2026-09-13). The corpus points the audio and video cards at
   `https://orbit-weekly.example/media/…`, which nothing serves; the review page's CSP (`default-src 'self'`,
@@ -5029,7 +5040,22 @@ reason: no design in the library declares `maxChars` today — the controls fixt
 plain: When you copy words from Google Docs, Word on the web or Apple Notes and paste them into a section, the bold and
   italic do not come with them — only the words. Those apps write bold as a styled span rather than as a bold tag, and
   the paste reader keeps only the four real tags. Pasting from a web page, an email or Ghost's own editor keeps them.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): a paste's element is read for its own inline style as well as its tag.
+  `MarkNode` gains an optional `style` (`fontWeight`, `fontStyle`, `textDecoration`), which `DOMParser`'s elements
+  (Chromium 149, executed) and jsdom's both carry. `ownMarks(c)` beside `TAG_MARKS`
+  (`packages/section-runtime/src/marks.ts`) gives the tag's mark unless the element's own style cancels it: a bold tag
+  whose weight is set and not heavy (Google Docs' `<b style="font-weight:normal" id="docs-internal-guid-…">` round the
+  whole paste), or an italic tag set `font-style: normal`. It adds `strong` for `bold`, `bolder` or 600 and up (CKEditor
+  5's rule, read in `@ckeditor/ckeditor5-basic-styles` 48.5.2; ProseMirror's 500 would bold a web page's computed 500),
+  `em` for `italic`, and `u` for `underline` among the decoration's words. `readMarks` pushes every one the field
+  allows, a link's included: still only the four (FR-D4). `ponytail:` a child's `font-weight:400` does not clear a
+  parent's bold. Controls, each red at HEAD: Google Docs' clipboard shape, the wrapper ProseMirror 1.2.5, CKEditor 5
+  48.5.2 and Lexical 0.52.0 each special-case (read in their source), came out wholly bold and now keeps Bold strong and
+  italic em with " plain " unmarked; the wrapper alone stays unmarked, and 600, 700, `bold` and `bolder` are strong
+  where 400, 500 and `normal` are not. Every branch, broken alone in a scratch copy, turns a test red. Word Online's and
+  Apple Notes' shapes stay hypotheses. The owner's paste on the deployed site is the execution against Google Docs
+  itself (his test, step 4).
 severity: low
 origin: Story 5.3's code review (2026-09-18, blind-hunter layer). The spec's matrix says `span style` "arrives as its
   text", which is what `readMarks` does; the finding is that the most common sources of a formatted paste use exactly that.
@@ -5200,7 +5226,20 @@ reason: no built design declares it and `tools/check-snapshots.mjs` reads only d
 plain: Your header, announcement bar and footer are listed together in one card at the top of the Layers panel. The
   page always draws footers last, whatever order that card is in, so dragging a footer above a header would change the
   list without changing the page.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): a site-wide move is clamped to its band — headers and bars first, footers
+  last, the order the page draws (`canvasStack`). `isSiteFooter` (`lib/editor.ts`) names the `a3/` prefix once and
+  `landWithin(footers, from, to)` clamps a move inside its band. Layers' `dragTo` (the dashed slot), the ⌥-arrows (at
+  the band's end the key does nothing), `gripMove` and `moveTo` — the one door every commit passes — all call it, and
+  `LayerRow.footer` is set in `rowsOf`. `onPlace` puts a site-wide section that is not a footer before the first footer
+  (`siteSlot`), so the site doc is stored in canvas order. A page doc is unchanged. No A3 design exists until Story 9.9,
+  so the keyboard harness gains a stand-in footer (`app/harness/stand-ins.ts`: `a3/1`, the Rail re-id'd, behind
+  `x-inflozo-harness-stand-ins: on`; never in `packages/library`). Controls, each red first: `editor.test.ts`'s
+  `landWithin` case over made-up site docs (red unclamped) and its `siteSlot` case (red with HEAD's placement, always
+  the end); the journey's ⌥↑ on the stand-in footer (red at HEAD with the stand-ins), which then selects the header and
+  the footer and reads their sections first and last on the canvas (red with `canvasStack` planted unordered); the
+  floor's footer grip dragged above the header (red at HEAD with the stand-ins). The head band's own order is DW-306
+  (Story 9.5).
 severity: low
 origin: Story 5.4's planning (2026-09-18) — `apps/web/lib/editor.ts`'s `canvasStack` (:47-51) splits the site doc by
   `designId.startsWith('a3/')` and draws the footers last; the seeded "Pilot sections" project holds one site-wide
@@ -5217,7 +5256,15 @@ reason: no project in the repo holds both a header and a footer, and "footers co
 plain: Hovering a section on the page highlights its row in the list on the left. The other way round does nothing —
   put the pointer on a row and the page does not show you which section it is. Nothing asked for it; it is noted here
   so the decision is a decision.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), R-217: a Layers row's mouse points at its section —
+  `onPointerEnter`/`onPointerLeave` (not touch) call `point(pick, 'layers')` — and a pointer from Layers draws the
+  section's outline and name tag with no pill, no insert hairline and never a scroll (`pointedFrom`); only a click
+  brings a section into view (R-156). Ghost's rows point through `pointGhost`. Keyboard focus keeps D8e's ring alone.
+  `layers.tsx`'s "NOT BUILT, DELIBERATELY" note is rewritten. The editor, lock and axe walks park the pointer on the
+  Layers title rather than at a point the rows reach. Control: `floor.spec.mjs`'s R-217 stop — one hover outline over
+  the first row's section, a below-the-fold row leaves `scrollY` unchanged with no pill and no hairline, and leaving
+  takes the outline away — red at HEAD (no outline).
 severity: low
 origin: Story 5.4's Dev (2026-09-18) — the mirroring Story 5.2 built runs ONE way (`editor.tsx`'s `point()` sets
   `data-inflozo-hover` from the canvas's own `pointerover`, and `controls/layers.tsx` draws the wash from `hoveredKey`);
@@ -5237,7 +5284,13 @@ reason: the section's name is on its row and its name tag is on the canvas, so n
 plain: The little grip on the hover pill lets you drag a section up or down the page itself. For the shared header and
   footer it works out where you dropped by looking at where the sections sit on the page, while the list on the left
   keeps them in the order they are stored. Today the shared group holds one section, so the two orders cannot differ.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), with DW-187: the pill's grip and Layers' grip measure a site-wide landing in
+  the doc's own order, now the canvas's, and both clamp a footer's slot to the footer band (`gripMove`, `dragTo` →
+  `landWithin`). Control: `floor.spec.mjs`'s DW-189 stop drags the stand-in footer by its Layers grip and then by its
+  pill grip above the header; the slot stays in the footer band and the drop moves nothing. Red at HEAD with the
+  stand-ins, and red again with an unclamped `gripMove` planted in this tree (the pill's half, after the Layers half
+  passed), reverted.
 severity: low
 origin: Story 5.4's Review (2026-09-18, Edge Case Hunter) — `editor.tsx`'s `screenRows()` hands `landingAt` the site
   doc's instances in DOC order with each one's on-screen top; DW-187 records that the `a3/` footers compile last
@@ -5509,7 +5562,14 @@ reason: Inventing a revision check here would pre-empt 5.8's contract, and befor
 plain: In dark, the little colour dots beside "Background role" should show the dark colours. They do — but no
   automatic check looks, so a future change could quietly put the light colours back. In the same way, the
   project-wide Clear is only ever tested with one overridden section on one page.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the settings sidebar takes the swatches for both modes (`swatches:
+  Record<Mode, …>`) and a required `mode`, so a role's dots are the colours of the mode on screen; `/pilots` passes its
+  mode and `/controls` `light`. `clearProject` (`packages/section-runtime/src/doc-edit.ts`) is the one fold over every
+  doc, remembered overrides included, and Theme settings' Clear calls it. Controls: a journey stop reads the Background
+  role's dots against the canvas's own tokens in light and, after `.`, dark — red with `swatches.light` planted in the
+  sidebar ('dark: base'), reverted; `doc-edit.test.ts`'s `clearProject` cases over several sections on several docs, a
+  remembered override among them — red at HEAD by absence, since HEAD has no `clearProject` to call.
 severity: low
 origin: Story 5.6's Review (2026-09-18), Verification Gap: changing `swatches[mode]` to `swatches.light` in
   `pilots/review.tsx` or the editor fails nothing; `run-verify-editor.cjs` step 53 (b) plants one override on
@@ -5527,7 +5587,13 @@ reason: Both are coverage, not defects — the behaviour was read correct at Rev
 plain: While the editor loads you see a grey placeholder shaped like the page. On your 1440 screen it is the right
   shape. On a short, wide window the real page is shorter than the placeholder, so there would be a small jump when the
   editor arrives — and no automatic check looks at the placeholder's shape at all.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the skeleton's card fits as the real card fits —
+  `w-[min(100cqw,100cqh*1440/900,1440px)]` with `aspect-[1440/900]` on an `@container-size` ground that has the stage's
+  `coarse:pb-[52px]`, and `data-skeleton-card` so it can be read. That also closes the missing 1440 cap and the touch
+  padding. Control: `floor.spec.mjs`'s DW-199 stop reads the server's skeleton with JavaScript off and the real card
+  with it on, at 1440×600 and 2560×1440 with 1440×900 as the control: equal within 1 px. Red at HEAD on the short wide
+  window (41.6 px apart) after the control passed.
 severity: low
 origin: Story 5.7's Review (2026-09-19), Verification Gap + Acceptance Auditor: `aspect-[1440/900] max-h-full w-full`
   squashes rather than fits when the stage is height-bound (the file's own `ponytail:` note), and reverting the
@@ -5597,7 +5663,22 @@ plain: If you leave the editor open so long that you are signed out, the editor 
   says it is waiting for the connection — when what it really needs is for you to sign in again. Your work is still
   safe on your computer, and signing in from another tab makes the next try succeed, but the message is not the true
   reason.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), R-213 and R-227: a save the server refuses because the sign-in ran out (401)
+  takes the save indicator's sixth state, Signed out (`SyncState` and `SIGNED_OUT_COPY` in `lib/journal.ts`, Tabler
+  `logout` in `kit/icons.tsx`; the Kit's catalogue draws it with the other five). B6's red panel says R-213's sentence —
+  or R-227's while the editor holds no copy on this device — with a Sign in link that opens a new tab and no Retry now.
+  The backoff keeps trying underneath, and a visit back to the tab tries at once. Only a 401 takes it: a dropped
+  connection, a 422, a 502, a 404 and a 400 stay Retrying, and a tab displaced from the lock while Signed out leaves it.
+  The editor's three actions (`actions.ts`) answer a signed-out tab with their own refusal (`currentUser()`) instead of
+  redirecting it. Controls, each seen red: the journey's R-213 stop — red at HEAD ('Retrying' where 'Signed out' was
+  wanted), with the visit back's try removed (still Signed out 1.5 s later), and with the backoff gone while Signed out
+  (no further request); the journey's R-227 stop — a second page deletes this browser's copy, so the editor falls back
+  through its own `versionchange`, and the 401 then says R-227's sentence — red with the panel planted to say R-213's;
+  and `server-wiring.test.ts`'s row — each action returns ITS refusal (`SAVE_REFUSED`, `VIEWED_REFUSED`, `{ refused:
+  true }`), the file holds no `redirect(`, and an export that reads no user fails — red at HEAD (`setPreviewSubject`
+  redirected a signed-out tab), its three in-test controls caught. A save refused for good is DW-304 (Story 7.18). The
+  walk is at Review.
 severity: medium
 origin: Story 5.8's Review (2026-09-19), four of five layers. `flush()` sends every non-OK status but 409 to the
   backoff. 401 is the reachable one; 404 and 422 need a bug or a deleted project. B6 has five states and no sixth,
@@ -5615,7 +5696,30 @@ reason: nothing is lost while it stands — the device holds the work and a retr
 plain: Open the same project in two tabs and both write their undo history into the same place on your computer, so
   a reload can come back with a mixture. And the copy of your work kept on the computer stays there after you sign
   out or delete the project, which matters on a shared machine.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), R-214: every sign-out door — the account menu, the restore page and Sign out
+  everywhere — goes through one flow (`signOutFlow`, `lib/journal.ts`; `components/shell/sign-out.tsx`): send what this
+  browser owes, erase its copy (`inflozo-doc-<user>`), then sign out; when something cannot be sent it asks first, in
+  B5c's shape extrapolated ("Sign out with unsent work?", focus on Wait, "Sign out anyway" busy as "Signing out…"). Each
+  send is the flush's body without a lock session (`sendBody`), and only a 200 is sent (`sentBy`); a 200 is told to this
+  browser's open editor of the project (`SENT_CHANNEL`, `sentMessage`), which takes it as its own flush's answer when it
+  was sent from the base that editor holds — before, its next edit carried the old base into a 409 and the conflict
+  dialog. The two-tab half, open at HEAD (the Create executed it): `flush` returns unless this tab holds the lock, and
+  the hydrate skips the on-device record when the tab opens reading along. Its ceiling, named at the wall in `flush`: a
+  tab that typed on its optimistic first paint and then lost the first `acquire` keeps those edits unsent and
+  unannounced — the shared record is the holder's, so it is not reset. Controls, each seen red: `journal.test.ts`'s
+  `signOutFlow` cases (the sign-out moved before the erase, the ask skipped, a failed erase stopping the sign-out) and
+  its `sendBody`, `sentBy` and `sentMessage` cases (red by absence); the journey's R-214 stop — another page announces a
+  send of this editor's owed record, and the editor's next save carries the announced base — red with the editor's
+  listener removed; the journey's DW-203 stop (two pages, one context) — red at HEAD (the reader drew the holder's
+  unsent page), its reader's ⌘S sending nothing red with both walls removed; the lock walk's R-214 stop — an edit owed
+  on this device alone, Sign out pressed in a second tab — red as a LOCAL RUN on production at `3c88798f` (the copy
+  survived, the edit unsent) and green against a local build of this tree; and the editor walk's step 8, which presses
+  Sign out anyway with the sign-out's own request held — R-98's "Signing out…", `aria-busy` and `aria-disabled`, never
+  `disabled` — then reads the browser signed out and its copy gone, and a sign-out with nothing owed erasing it too —
+  green against a local build of this tree (the walk's other reds there are the ones every local run shows: the request
+  API's cookies over plain http), and not run on production, where HEAD has no ask. A deleted project's records go with
+  the next sign-out's erase. The deployed walk is at Review.
 severity: medium
 origin: Story 5.8's Review (2026-09-19), Blind Hunter and Edge Case Hunter. `local-store.ts` keys rows by
   `<projectId>:<seq>` with no tab identity; nothing deletes `inflozo-doc-<userId>`.
@@ -5692,7 +5796,13 @@ note (Story 5.24a's review, 2026-09-28): this entry now carries DW-175's signed-
 plain: The editor speaks to screen-reader users through one hidden line of text. If the same sentence is written
   twice running — duplicate a section, then duplicate its same-named copy — the second one changes nothing on the
   page, so nothing is spoken, and the person cannot tell the second key worked.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): every live region is one announcer, `useSaid` (`lib/renders.ts`): `{ words,
+  n }`, each sentence bumping `n`, rendered as `<span key={n}>` so a repeat is a new node and is spoken again — React
+  Aria's LiveAnnouncer technique. The editor's polite `#editor-said` and assertive `#editor-announced`, `item-list.tsx`,
+  `data-group.tsx` and `/controls`' review use it. Control: the ⌘D journey — a second identical ⌘D adds exactly ONE node
+  to `#editor-said`, a repeat being one announcement and never a burst — red at HEAD after the identical-sentence
+  control passed, and red with a second node planted beside the first.
 severity: low
 origin: Story 5.9's Review (2026-09-19), Edge Case Hunter. `setSaid` is a plain `useState`; React skips an identical
   value. The pattern is every story's since 5.2 — the keyboard map only makes a repeat likelier.
@@ -5728,7 +5838,12 @@ reason: R-153 ruled four columns on the width he tested; the narrow picker has n
 plain: (1) If a section is refused, the sentence saying so stays on screen after you change category or search.
   (2) While you search, the title says "All sections" but the category you had chosen still looks chosen.
   (3) The search box shows a ⌘K hint, but pressing ⌘K while typing in it does nothing in the picker.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the Section Picker's three leftovers. R-37's refusal clears as soon as a
+  search is typed or a category chosen; while a search is typed the rail's checked row is All sections, as the header
+  says (`browse`); and ⌘K inside the picker (`shortcutFor`) comes back to its search with the words selected. R-37's one
+  refusal is about A25, so the harness gains a stand-in post content layout (`a25/1`, re-id'd from `a24/1`,
+  harness-only). Controls: three journey stops, each red at HEAD with the stand-ins after its own control passed.
 severity: low
 origin: Story 5.10's Review (2026-09-20), Acceptance Auditor and Blind Hunter.
 owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
@@ -5816,7 +5931,12 @@ reason: `journey.spec.mjs:134` refuses every pointer API, `run-verify-editor.cjs
 
 ### DW-212: a capped list's panel row loses its min–max range
 
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), R-218: a capped list's header reads "{n} items · {shown} shown in this
+  design · {min}–{max}" (`shownInThisDesign`, `lib/ring.ts`), with `item-list.tsx` passing the list's own range.
+  Controls: `ring.test.ts`, red at HEAD; the controls walk's assertion, `/^3 items · 2 shown in this design · 2–6$/`,
+  its one FAIL against production at `3c88798f`. FR-D13 and Story 5.11's card carry the sentence. The deployed walk is
+  at Review.
 severity: low
 origin: Story 5.11's Review (2026-09-20), Blind Hunter.
 owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
@@ -6092,7 +6212,14 @@ reason: At `d4d6e266` one walk failed both of step 36's checks and the next, on 
 
 ### DW-223: a preview-article choice can land late, so a quick reload shows the previous article once
 
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): a picked preview subject waits in this tab's `sessionStorage`
+  (`PENDING_KEY`, `readPending`, `writePending`, `clearPending` in `lib/preview-subject.ts`) from the press until its
+  action answers; the hydrate lets a waiting pick win over the stored one and sends it again. Only an ANSWER clears it:
+  the commonest thrown call is the very reload the pick waits for (executed: clearing on a throw lost the pick every
+  time). Controls: `preview-subject.test.ts`'s helper cases; a journey on the harness Post canvas that holds the
+  `next-action` POST, picks, reloads at once and reads the pick back on the pill — red at HEAD. The editor walk's step
+  89 variant (every action held, an immediate reload) is at Review.
 severity: low
 origin: Story 5.14's code review (2026-09-21), the Real-infra verifier's second walk at `f313b1b0`.
 owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
@@ -6133,7 +6260,11 @@ reason: On contrast, accent and image grounds the words take `color: inherit`, s
 
 ### DW-225: two tabs of one project each write their own whole "looked at" record
 
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): only the lock's holder records what was looked at — `recordViewed` queues a
+  write, inside the `viewedWrites` chain, only while this tab holds the lock, so a window reading along records nothing.
+  Control: a journey stop with two pages in one context — the reader changes View as and sends no action carrying
+  "states", the holder sends one — red at HEAD (the reader recorded one).
 severity: low
 origin: Story 5.14's code review (2026-09-21), the Edge Case Hunter.
 owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
@@ -6151,7 +6282,12 @@ reason: Each tab merges into its own copy of the record and writes whole arrays;
 
 plain: When a header that shrinks as you scroll only does so on phones, the editor will still show its PAUSED tag when
   you point at it on the desktop view, where it would not move even on your live site.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `movesByItself(declaration, width)` (`lib/behaviours.ts`) is false where a
+  width is declared and the device is at least that wide — core's own `(width < Npx)` — and the chips pass
+  `device.width`, now in the memo's dependencies. Controls: `behaviours.test.ts` rewritten, red at HEAD (the width
+  ignored); and the journey's own DW-229 · DW-226 stop, beside R-175's rather than inside it — the fixture ring's
+  `marquee` declared to run only below 768 draws no chip at Desktop and one at Mobile.
 severity: low
 origin: Story 5.15's Dev (2026-09-22) — spec Design Notes, "Known ceilings"
 owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
@@ -6205,7 +6341,12 @@ reason: `stampControls` removes every root `data-*` that is not a directive, and
 
 plain: The small grey PAUSED tag is only drawn. Someone using a screen reader who selects a section with a part that
   holds still is not told that it holds still. Nothing on your pages carries such a part yet.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): while the selected root carries a PAUSED chip, the Controls panel holds an
+  sr-only line in 5.24a's words, `PAUSED_SAID` (`lib/preview.ts`): "PAUSED — this part moves by itself on your site; it
+  holds still while you design, and Preview runs it". Control: the journey — the list's held part is said once and the
+  Rail's is not — red at HEAD on 'said once' after the chip's control passed. The first real part is Story 9.1's
+  `header-scroll`.
 severity: low
 origin: Story 5.15's Review (2026-09-22) — Blind Hunter
 owner: Story 5.24e (The sweep: the editor), one of the sweep's five stories (R-211), whose card names this entry.
@@ -6333,7 +6474,14 @@ location: `packages/section-runtime/src/synthesize.ts` `pageTwoStack` · `apps/w
 plain: The save route checks that a key is one of the allowed names and that the doc parses, but not that every design
   in the doc may sit on that key's file. A bad doc saved under `index` (or any key) is caught on the next load, where
   the whole editor refuses to open, rather than at the save.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `docRefusal(key, doc, held)` beside `pilot()` (`lib/pilots.ts`) holds
+  `read.ts`'s sentences, the surface's one-design rule included; `read.ts` throws with it and the sync route asks it for
+  every key before the lock read and the RPC, a 422 in its own words. The route now reads the library off disk, so
+  `tools/check-traces.mjs` holds its trace (`projects/[id]/sync`, needing the designs): a lost trace would refuse every
+  save. Controls: `pilots.test.ts` (`home` with a24/1 → 'never home.hbs', `post` → null, an unknown design, a second
+  paywall design); `editor.test.ts`'s route-order row, red at HEAD. The editor walk's step 66c posts `{home: a24}` → 422
+  at Review, against the deployed fix only.
 severity: low
 origin: Story 5.16's review (2026-09-22). Pre-existing for every key — `read.ts` has always been the one place the
   `compileTarget` check runs — and this story added three keys to the same pattern.
@@ -6459,7 +6607,23 @@ plain: If you have the same project open twice and press reload in the one that 
   that moment, it takes over editing and the one you reloaded comes back reading along instead. Nothing is lost: you
   press Request editing and get it back. It is rare (the other session checks in every fifteen seconds), and the obvious
   fixes each cost something worse, so it is written down rather than guessed at.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): a going tab LEAVES rather than releases. `leave` (`lock/route.ts`) backdates
+  the row's beat to `now − STALE_MS + LEAVE_GRACE_MS` (`lib/lock.ts`, 10 s: three times the measured reload gap, under
+  the heartbeat and the nudge), filtered on the project, the session and the beat this tab last heard (`LockRow.beat`).
+  A reload's first beat lands inside the grace and keeps the lock; a late leave carrying the old beat matches nothing; a
+  closed tab is stale after the grace for the next opener. With no beat heard it releases, as before, and Hand over
+  keeps `release`. No migration: `heartbeat_at` is in `authenticated`'s UPDATE grant and the guards fire only on a
+  rewound generation or a changed holder. Executed (MEASUREMENTS §65): in `postgres:17` with the prelude, every
+  migration and the RLS gate's fixture, as the owner — HEAD's late release deleted 1 row where the late leave changed 0,
+  and a timely leave changed 1 with holder and generation unchanged. Controls: `lock.test.ts`'s grace case (live until
+  it ends, stale after); the lock walk's two new last stops — a reload with the other session reading inside its gap,
+  and a leave held until the reloaded page had beaten — red, each after its control passed, in LOCAL RUNs on production
+  while it served `3c88798f` (the reload left the lock to the other session; the late release deleted the row), and
+  green, with every other row of the walk, against a local build of this tree on the same Supabase (MEASUREMENTS §65).
+  That build also showed a reload's first beat writing 0 over the row's count before this device's journal was read —
+  the walk's two reload rows failed on it — so a beat now carries no count until the journal is read (`countPatch`, its
+  `lock.test.ts` case), and those rows pass since. The deployed walk is at Review.
 severity: low
 origin: Story 5.17's Dev (2026-09-24), found while fixing the "Same session reloads" row. `editor.tsx` releases the
   lock on `pagehide` so that a CLOSED tab frees it at once rather than after §AD4's ~60 s — and `pagehide` cannot tell
@@ -6494,7 +6658,14 @@ seen again: the review's first deployed walk at `8ac31e6d` (2026-09-24) — with
 plain: If a small menu (the ⋯ beside a section, the section picker, the Site Remix box) is open at the exact moment
   your other window takes over editing, that menu stays open and its buttons still look pressable. Pressing one does
   nothing to the site — the editor refuses every edit in a window reading along — but the menu should have closed.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): losing the lock closes what edits — one effect on `lock.holder`:
+  `closeMenus()`, every open `[data-editor] dialog` but the shortcuts sheet (Site Remix, the Reset box, Clear dark
+  overrides, Rename, the site-wide Hide confirm, the Section Picker), and an inline field being typed in. It covers
+  `land()`'s flip, Hand over and the 423 path; what only views stays live (R-192). Control: a journey stop that opens
+  ⌘K, a Layers ⋯, ⇧R and an inline field being typed in, then posts `took-over` on the lock's channel — the bar is up,
+  no popover, no dialog and no field left being typed in, and the device switcher still live and not greyed — red at
+  HEAD (the picker left open), and its inline arm red with the field's end removed from the effect.
 severity: low
 origin: Story 5.17's review (2026-09-24). R-192 disables the triggers (the ⋯ button, + Add section, Site Remix) for a
   reader, and the Reset box is closed on the holder→reader flip; a menu or box that was ALREADY open is not.
@@ -6511,7 +6682,13 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` �
 plain: Reloading the window that is editing no longer shows the grey "reading along" bar for an instant (Story 5.17
   fixed that) — but for the same instant, about a tenth of a second, the settings panel's fields can look greyed out
   before the page recognises itself. Nothing is disabled once it has; it is a flicker in the panel, not the bar.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): already fixed by Story 5.22's gate — the shell mounts in the browser alone
+  and recognises itself in a layout effect, before its first paint — so the self mark was dead code and goes:
+  `SELF_MARK` and `selfMarkScript` (`lib/lock.ts`), `E/layout.tsx`'s script, `globals.css`'s rules, the root layout's
+  `suppressHydrationWarning` and their tests. Control: a journey stop with a rAF sampler — a holder's own reload paints
+  no frame greyed, a genuine reader is greyed from its first — red with the layout effect planted as `useEffect`,
+  reverted.
 severity: low
 origin: Story 5.17's review (2026-09-24). `selfMarkScript` marks `<html>` before the first paint and `globals.css`
   hides the bar and restores the panel's opacity under the mark, but the server also renders R-192's
@@ -6530,7 +6707,14 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/layout.tsx` (t
 plain: If you open the same project on three devices and two of them press Request editing within the same half
   minute, the first one to ask is told "Your other session kept editing" although nobody answered it — its request
   was simply overwritten by the second one. Two sessions, the case built and tested, are unaffected.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `askedNow(row, askedOf)` (`lib/lock.ts`) replaces `stillAsking` with three
+  answers — ended (no row, or the holder or generation moved), kept (the request columns cleared) and waiting (anything
+  else, a request REPLACED by a third device's included) — so a replaced request keeps "Asking…" and hears the holder's
+  one answer; no column. Control: `lock.test.ts`'s replaced, taken-over and holder-reload cases, two of them red under
+  HEAD's logic (a replaced request and a take-over each read as "kept"); and its two cases of one move alone — the
+  holder moved at the same generation, the generation moved under the same holder — each red with the rule's `||`
+  planted as `&&`.
 severity: low
 origin: Story 5.17's review (2026-09-24). `edit_locks` carries ONE `nudge_requested_by`; `stillAsking` answers false
   both when the holder cleared it and when another session's nudge replaced it, and `land()` announces `kept` for
@@ -6549,7 +6733,28 @@ plain: When you close a tab that is editing, it does two things on the way out: 
   the right to edit. They are sent together and the browser does not promise which lands first. If your OTHER window
   checks in during that instant and takes the right to edit, the closing tab's last edits are refused. It needs three
   things to line up inside about a second, and your other window then holds exactly what the cloud held.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), with DW-240: the release no longer frees the row under the tab-close flush —
+  the going tab's `leave` backdates its beat, so the row stays its own for `LEAVE_GRACE_MS` and a flush landing in that
+  time passes `heldElsewhere`. A leave only ever moves the beat back (`leaveBacks`), on a beat of timestamptz's own
+  shape (`leaveBeat`, so a malformed one answers 400, never Postgres's 502), and a tab whose id is not kept in
+  `sessionStorage` releases instead — its reload gets a new id, so a grace would only hold the lock against it. A
+  session that does not hold the lock polls once more at a live row's staleness edge (`edgePoll`: when `STALE_MS −
+  ageMs` is under a heartbeat, at that moment plus 250 ms), so a closed tab is free at the grace's edge rather than a
+  heartbeat later. Controls, each seen red on its plant: `lock.test.ts`'s `edgePoll`, `leaveBeat` and `leaveBacks`
+  cases, `LEAVE_GRACE_MS` pinned, and a read of the route's leave (filtered on the heard beat, guarded by `leaveBacks`);
+  the journey's edge-poll stop — a live row five seconds from stale is asked about again 5.25 s later — red with the
+  scheduling removed; and the lock walk's DW-244 stop, which now ORDERS the race: the flush held, the going page's own
+  `pagehide` leave sent and answered 200, and the row read as left — gone, or the going tab's and aged into the grace —
+  before the other session reads the lock, else "control not met" and no pass. As a LOCAL RUN on production at
+  `3c88798f` it is red: HEAD's release (200) deleted the row, the other session's read took the lock, and the flush
+  answered 423. Against a local build of this tree it is green: the leave aged the row to 52 s, the flush answered 200,
+  the edit is in the cloud, and the other session took the lock at the grace's edge (MEASUREMENTS §65). The hide and the
+  pagehide are dispatched in the page: a request sent by a document already unloading was not met by Playwright's route
+  in two runs. The deployed walk is at Review. Its ceiling, kept for v1 by the owner (R-228) and named beside `leaving`
+  in `editor.tsx`: a beat still in flight as a tab goes moves the row past the beat its leave carries, so that close
+  goes stale as a crashed tab's does (~60 s, the matrix's own error row); a reload is unaffected. The upgrade is a
+  per-page token on the row — a column, so a migration: DW-307 (Story 7.18).
 severity: low
 origin: Story 5.17's review (2026-09-24). `visibilitychange` (the unload flush, Story 5.8) fires before `pagehide` (the
   release), both ride `keepalive`, and nothing orders their landing. A release that lands first frees the lock; the
@@ -6662,7 +6867,24 @@ location: `packages/ghost-shim/src/index.ts:596-604` · `apps/web/lib/probe-rule
 plain: When the editor shows your own site, the link box and the post list in the pill search your newest 100 posts,
   and up to 100 pages, tags and writers. On a site with more posts than that, typing will not find an older one —
   you can still paste its address into the link box.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): while the posts list D5e, the Link Picker and the Data group search is
+  capped, the editor sends ONE title search at Ghost, `SEARCH_DEBOUNCE_MS` after the last keystroke.
+  `searchRead('posts', term)` builds `filter=title:~'<term>'`: the trimmed term of 2–100 characters, each `'` and `"`
+  given a backslash — the one form nql-lang's STRING token (`['](\\['"]|[^'"])+?[']`, 0.6.3 and 0.7.0) reads whole. It
+  always sends `order=published_at desc` and `limit=15`, so Ghost 5's `slugFilterOrder` never lifts a term's `slug:[…]`
+  into raw SQL. Each term is its own 60 s key. Searches have `SEARCH_SHARE`, a fifth of the ceiling, to themselves
+  (`ask`): the share counts searches left to SEND, and the last one's answer is kept (`searchFor`). Past it the boxes
+  search the rows in hand under the capped line, which stands aside only while a search is coming or has come — never
+  after one failed or after reading stopped (`searchInForce`). Found rows join the list by id (`withFound`). Posts only:
+  D5e's box reports its term on a Post canvas alone, so a page, a tag or a writer typed on a capped site spends nothing.
+  Executed (MEASUREMENTS §62): 27 terms parsed by both pinned nql-langs, the controls (an unescaped quote, the empty
+  term) red; on T1 and T3 the escaped hostile term answered 200, and an upper-cased title word found its post. Controls
+  in `live-content.test.ts`, seen red against the unchanged library: the escapes, the explicit order, the bounds, the
+  share and the merge; `searchFor` and `searchInForce`'s cases, red with the first rules (the share's last answer
+  dropped; the line hidden after a failed search); and a journey stop on a capped site answered in the page — a term
+  typed in the pill is one `title:~` read on the Post canvas and none on the Tag canvas — red with D5e's box reporting
+  on every canvas. The live walk's simulated capped search is at Review.
 severity: low
 origin: Story 5.18's Create (2026-09-24), a deliberate limit of the client-side search Stories 5.3 and 5.13 built.
 reason: asking Ghost to search (`filter=title:~'…'`) would find any post, but every answer Ghost gives with a status
@@ -6703,7 +6925,15 @@ location: `_bmad-output/planning-artifacts/architecture/architecture-Inflozo-202
 plain: When the editor opens a page of your own site, it asks your site for what the page needs in two goes rather than
   one: first the settings and the lists, then the page of posts itself. It shows nothing wrong, and a page opens in
   well under a second on the test sites; it is simply one round trip more than it needs.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `sitePage` no longer returns on an unresolved subject. While the subject
+  waits on a read, a subject stored from the site is the likely answer for `source.pages` and `sitePieces`, so its own
+  row and its archive's page 1 go out in the same round as R-193's list; `{ nothing }` is judged only once resolved. A
+  stored Tag or Author paints after one round trip, not three; one the site no longer holds paints after two, its guess
+  costing a `200 []` — a browse, which never 404s (`posts-public.js`: only `read` throws NotFoundError, both majors; §51
+  executed a gone slug's `200 []`). Control in `live-content.test.ts`, which runs the editor's `request()` loop over a
+  cache the test fills, seen red against the unchanged `sitePage` ("tag.hbs: actual 3, expected 1"); Home and a stored
+  Post stay at 1, an untouched Tag at 2.
 severity: low
 origin: Story 5.18's code review (2026-09-24, Blind Hunter). `apps/web/lib/canvas.ts`'s `sitePage` returns `{ need }` the
   moment the subject is unresolved, before `sitePieces` has recorded the feed page's read, so Home discovers its
@@ -6854,7 +7084,12 @@ reason: a planning-order gap no story can close alone: moving a story across cat
 plain: The small pills the editor draws over the canvas — the lock pill on text that comes from Ghost, and the note
   when a character is refused — should cast a soft shadow, as their drawing shows. They draw none, because of how the
   editor's styles reach the layer they sit in. Nothing is broken to use; they look flatter than drawn.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the chrome layer's host declares Tailwind 4.3.3's four shadow variables —
+  `--tw-inset-shadow`, `--tw-inset-ring-shadow`, `--tw-ring-offset-shadow` and `--tw-ring-shadow`, each `0 0 #0000` —
+  which an adopted sheet does not register through `@property`, with its comment saying why (`lib/canvas-layer.ts`).
+  Control: DW-182's journey, extended — a `shadow-md` probe in the editor's own document computes a shadow (the
+  control), and the limit pill on the canvas then draws one — red at HEAD after the probe passed.
 severity: low
 origin: Story 5.19's Dev (2026-09-25), executed on the harness editor with the repo's own Playwright: inside the
   canvas chrome layer's shadow root, `shadow-md` and `shadow-lg` compute `box-shadow: none`, while the same classes in
@@ -6908,7 +7143,19 @@ reason: the shape of the fix is a second harness canvas seeded UNFLAGGED plus a 
 plain: Two parts of the editor decide differently what a "valid tag name" looks like: the part that reads posts from your
   site accepts accented letters, and the part that writes your theme accepts only plain ASCII. Real Ghost tag slugs are
   plain ASCII as far as Ghost's own code says, so no real tag falls between them today. It is one rule written twice.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): one grammar. `GHOST_SLUG_RE` is `/^[a-z0-9_×ß-þ-]+$/`, what Ghost's slugify
+  really writes, and `slugShaped` is a string of at most 191 characters matching it, imported from `@inflozo/library`
+  (no client page newly pulls the library — every importer of `live-content.ts` already does). Both earlier grammars
+  were wrong, read in source and executed on both pins: unidecode 0.1.8's `utf8_rx` leaves a Latin-1 letter that a
+  character in U+00A0–U+00BF follows, so a slug keeps × and ß–þ (`« Café »` with no-break spaces → `café`) and nothing
+  past Latin-1 (`中文` → `zhong-wen`); an import slugifies with `requiredChangesOnly` (`post.js:868`), so a post's `--`
+  and edge hyphens survive. `validateDataBinding`'s filter class, run again at emission, admits the same letters, or a
+  stored `café` tag threw on both emitters. Controls, each red at HEAD: `validate.test.ts` on `café`,
+  `live-content.test.ts` on `a--b`. gscan on the stress theme emitting `tag:'café'` (a scratch copy): 0 errors 0
+  warnings on both majors; its control, `author:'café'` in the same get, GS001-DEPR-AUTH-FILT on both. T1 and T3,
+  read-only: `slug:'café'` and `tag:'café'` answer 200 []. MEASUREMENTS §63. The entry's `plain:` line ("plain ASCII")
+  was wrong for the same reason.
 severity: low
 origin: Story 5.19's review (2026-09-25), the Blind Hunter and Edge Case layers. `apps/web/lib/live-content.ts`'s
   `slugShaped` (Story 5.18: `^[\p{Ll}\p{Lo}\p{Nd}_]+(?:-[\p{Ll}\p{Lo}\p{Nd}_]+)*$`, single hyphens, any script)
@@ -6929,7 +7176,13 @@ reason: standing rule 1 — both are hypotheses about Ghost until executed, and 
 plain: If you hand-pick more than 100 posts for one list, the editor asks your site for them in a single request that
   can return at most 100, so the canvas shows the first 100 and marks the rest as missing, while the published theme
   would show every one. The panel already warns past 25 picks that such a list is slow.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `bindingReads` reads a pick as its de-duplicated, sorted ids in chunks of
+  `LIST_LIMIT`, each chunk its own key; `siteRows` flat-maps the chunks in pick order, and `siteTotal` is 0 until every
+  chunk has landed. FR-H2's "no hard cap" stands, and picks 101 and up are no longer marked "Not on {site}"
+  (`data-group.tsx`'s `PICK_LACKING`). The editor's `requestDesigns` spreads the halves. Control in
+  `live-content.test.ts`: 150 picks against a look that answers at most 100 a read — all 150 rows in pick order from two
+  reads; seen red against the unchanged library.
 severity: low
 origin: Story 5.19's review (2026-09-25), the Blind Hunter layer: `bindingReads` reads the picks as ONE
   `filter=id:[…]` at `LIST_LIMIT` (100), which is also Ghost 6's own `maxLimit` cap for a get, while `feedExprs` emits N
@@ -7164,7 +7417,17 @@ location: `apps/web/next.config.ts` (`outputFileTracingIncludes`) · `apps/web/l
 
 plain: If one of your posts is open to some tiers only, the editor's "Paid member" preview shows it cut, although a paid
   reader with that tier would read it. Only the preview is wrong; the published site is Ghost's own.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `tiers` joins the include of the two reads `assemble`'s `seen()` re-reads
+  `access` over — the subject's own (`subjectRead`, posts and pages) and a list page's (`feedRead`); Ghost's own
+  frontend reads with the same three (`entry-lookup.js`, `fetch-data.js`). `entryRow` keeps them through `TIER_FIELDS`.
+  `INCLUDE.posts` and the theme's `POSTS_INCLUDE` stay `tags,authors`, so no shim fixture is re-recorded. Executed
+  read-only on both majors (MEASUREMENTS §64): Home's feed answered 200 with `tiers` on every row; a tier's
+  `monthly_price_id`, `yearly_price_id` and `welcome_page_url` are dropped by the whitelist. No test site holds a
+  `tiers` post, so the mapper's paid tiers are read in source; the live walk simulates one at Review (the include on the
+  wire; no pilot design draws `access` yet). Control in `live-content.test.ts`, seen red against the unchanged library
+  ("paid on the post's own canvas: actual false, expected true"): the include sent, `monthly_price_id` dropped, a paid
+  visitor true and a free one false, on the post's canvas and in Home's feed.
 severity: medium
 origin: Story 5.20's review (2026-09-26). `postAccess` (`packages/library/src/access.ts`) blocks a `tiers` post whose
   `tiers` list is absent; the Content API posts read (`apps/web/lib/live-content.ts:123`, `INCLUDE.posts = 'tags,authors'`)
@@ -7227,7 +7490,13 @@ also: **AMENDED 2026-09-26 by Story 5.21's Dev.** `readMembers` is now `readSett
 
 plain: Until you choose a design, the Paywall screen shows Ghost's own box as recorded from Ghost 6, even when your site
   runs Ghost 5. The two differ by one indent and read the same.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the untouched box is the linked site's own major's. `siteWith(read,
+  settings, version)` sets `major` from the site's stored `ghost_version` through `versionVerdict` (5 or 6, else none),
+  `read.ts` selects it, and `paywallPage` draws Ghost's box at it — the article stays Ghost 6's, its cards' stylesheet
+  being Ghost 6's — with Ghost 6's as the fallback where no site or no version is known. Controls, red before the
+  change: `paywall.test.ts`'s DW-273 case (a Ghost 5 site's box carries 5's indent) and `live-content.test.ts`'s
+  `siteWith` case.
 severity: low
 origin: Story 5.20's review (2026-09-26). `SURFACE_MAJOR = '6'` (`apps/web/lib/canvas.ts:257`); the editor does not know
   the linked site's major (`EditorSite` carries no version).
@@ -7240,7 +7509,14 @@ location: `apps/web/lib/canvas.ts` · `packages/ghost-shim/src/contract.test.ts`
 
 plain: A placed sign-up section warns in its panel only when members are switched off entirely, while the Sites screen
   also warns when your site is invite-only, paid-only or has no Stripe.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), R-216: one list in `lib/paywall.ts` (`FACTS`: each fact, the asks it stops,
+  the Sites screen's sentence) is read by both `membersNotice` and `askLine` (R-170). Members off gives 5.20's line for
+  any ask. Invite-only and paid-only give the Sites sentence for a free ask. No Stripe gives the Sites sentence for a
+  paid ask. When both facts stop the section's asks, both sentences show. A paid ask on an invite-only site says nothing
+  yet — DW-305, Story 9.1. Control, red at HEAD: `paywall.test.ts`'s R-216 table case (expected "Only people you invite
+  can join Orbit Weekly, so free sign-up forms show nothing there.", read `null`); 5.20's members-off case and its
+  journeys stay green.
 severity: low
 origin: Story 5.20's review (2026-09-26). `askLine` (`apps/web/lib/paywall.ts:121`) reads `membersOff`; `membersNotice`
   reads all four facts. The story's I/O matrix binds the panel line to members off, so it is built as specified.
@@ -7253,7 +7529,16 @@ location: `apps/web/lib/paywall.ts`
 
 plain: The Paywall screen's article styles are sent with every editor screen, switched off, and only switched on for the
   paywall.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the Paywall's post-body sheet is no part of the canvas document. `pilots.ts`
+  no longer inlines `surfaceCss`; both canvas routes answer `?sheet=surface` with it (`text/css`, the document's own
+  caching; `surfaceSheetSrc` in `canvas.ts`). The editor's first Paywall paint inserts it as `<link
+  data-order="2b-surface">` before the pilots' sheet — at the head's end where that sheet is absent — and paints nothing
+  of the surface until the sheet has LANDED: its load or its error marks the link (`data-landed`) and paints again.
+  Controls: `pilots.test.ts` (no surface CSS in the document; the routes answer the sheet); a journey stop — Home's
+  canvas carries no post-body sheet; with the sheet held in flight a repaint (View as) draws no article; once it lands
+  the first Paywall paint is styled, at the cut — red at HEAD, and its held-sheet arm red with the gate planted back to
+  the link's presence. The editor walk's two selectors follow (`[data-order="2b-surface"]`).
 severity: low
 origin: Story 5.20's review (2026-09-26). `apps/web/lib/pilots.ts:132` inlines `surfaceCss()` with `media="not all"` on
   every canvas; the matrix's narrowed documents leave it out.
@@ -7291,7 +7576,18 @@ plain: When Inflozo cannot read whether a site shows Ghost's floating Subscribe 
   "yes" until they answer, because the PRD says Ghost switches the button on almost everywhere. Ghost's own code switches
   it OFF on a new site, on both versions Inflozo supports, and both test servers have it off. No site we know hides the
   setting, so the question has never been shown to anyone.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02), R-215: `portalState`'s unreadable branch is `false`/`'default'`, Ghost's own
+  default (`default-settings.json`, both majors), and its comment is rewritten. The Sites question makes "No, it's off"
+  the primary, which is the stored assumption. `answerPortal` and `storedSurfaces` read no assumed value and are
+  unchanged. The admin walk's `portal-question` finds "Yes" by its words and asserts it is the second answer. Layers
+  lists a Ghost surface only while the site shows it: `rowsOn` gives the bar when `announcementFor` holds for some
+  visitor (`isFilled`), and the button when `portalFor(…,'anonymous')` draws it. The editor's `ghostRows` is filtered by
+  it and is undefined when empty; a chosen row is let go when a re-read removes it, and a hidden id is kept. Controls,
+  red at HEAD: `probe-rule.test.ts`'s unreadable cases ("portal_button = undefined should be assumed off"; the
+  default-over-default case expected `false`, read `true`); `ghost-surfaces.test.ts`'s `rowsOn` case (`rowsOn is not
+  defined`); the DW-279 journey, extended — no From your Ghost site group before the held answer, both rows after — red
+  at HEAD. A row stored before this story with the button assumed on draws until the site's next re-read.
 severity: low
 origin: Story 5.21's Create (2026-09-26), read in Ghost's source: `default-settings.json` gives `portal_button` the
   `defaultValue` `"false"` (5.130.6 :338-344, 6.58.0 :409-415), and nothing in `core/server` sets it on at setup or in a
@@ -7309,7 +7605,19 @@ location: `apps/web/lib/probe-rule.ts` (`portalState`, `PORTAL_COPY`) · `apps/w
 plain: Ghost lets a site pick one of five icons, or upload its own, for its floating Subscribe button. The canvas always
   draws Ghost's default person icon. The button's size and place are the same either way, and those are what the canvas
   shows it for.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `portalState` stores `portal_button_icon` — one of Portal's five presets
+  (`PORTAL_ICONS`), an `https:` URL through `imageUrl`, else null — and `storedSurfaces` re-checks it as
+  `Surfaces.portal.icon`, which `portalFor` passes. `buttonMarkup` draws Portal's own rule: no glyph for text-only; the
+  person at 34px for a member; a preset's own 24px white SVG; the site's image as `<img>` 26×26 `alt=""` through
+  `escapeUserText`; else the person (26 beside a label, 34 alone). The five SVGs are held per commit, byte for byte, to
+  `record-ghost-surfaces.cjs`'s new `portal.icons` recording on both majors, run in the main session on the owner's go
+  (MEASUREMENTS §67): each preset an SVG drawn 24 × 24, identical on 5.130 and 6.58, and both sites read back as found —
+  T3 `icon-5`, T1 null, `portal_button` false. The recording also lets `tokens.test.ts` admit icon-2's `#FFF`. Controls,
+  red at HEAD: the preset case (`width: 26px` read where 24 was wanted); the image case (no `<img>`); the storage case
+  (`PORTAL_ICONS is not defined`); and, until the recording, the recorded-icons case ("NO RECORDING … Capture it") and
+  `tokens.test.ts` ("writes #FFF, which Ghost put on no recorded page"), both green once it landed. An uploaded image is
+  read in Portal's source only.
 severity: low
 origin: Story 5.21's Create (2026-09-26), read in Portal's source (2.69.339 `trigger-button.jsx`, 2.51.5 `TriggerButton.js`):
   `portal_button_icon` null draws `user.svg` (26px beside the label, 34px alone); `icon-1` to `icon-5` are 24px SVGs; any
@@ -7349,7 +7657,14 @@ plain: Every time Inflozo reads a site's settings from Ghost — on connect, in 
   editor opens — it writes the announcement bar and the brand colour into its saved copy from what Ghost sent. If Ghost's
   answer is the right shape but happens to leave those keys out, the saved copy gets "nothing" written over a good value.
   The member switches have a guard against exactly that; the announcement and the brand do not.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `settingsPatch` guards per key: a key Ghost sent is a reading, and an absent
+  key keeps the stored field. This covers the announcement's three and the brand's three (one key map each, read by the
+  reader and the guard alike), and the code-injection flag (one stored boolean over two keys: a reading when either half
+  carries code or both halves were sent). By the same rule it also covers the button's look (style, label, icon).
+  `members`' guard was the shape. A first read with nothing stored writes the readers' nulls as before, and a pre-DW-71
+  brand still loses its readerless keys. Control, red at HEAD: `probe-rule.test.ts`'s DW-280 case — a well-formed
+  payload missing those keys wrote `{content:null, background:null, visibility:null}` over the stored announcement.
 severity: low
 origin: Story 5.21's Review (2026-09-26), the Blind Hunter: `settingsPatch` writes `announcement: announcementOf(settings)`
   and `brand: brandOf(settings)` unconditionally — `probePatch`'s behaviour since Story 3.3, so pre-existing, but the
@@ -7368,7 +7683,15 @@ plain: On a tablet, or in a narrow window, the Layers list becomes a strip of sm
   shows each tile as a tiny picture of its kind of section: a header bar, a hero, a grid of posts, a newsletter box, a
   dark footer. What gets built is the one small tile the Layers list already shows beside every row, the same for every
   section. The section's name is on the tile's hover and read out by a screen reader, but a finger cannot hover.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `LayerThumb` takes a glyph per category (`components/kit/layers-row.tsx`,
+  `ThumbGlyph`, `data-glyph`): A1 Header, A4 Hero, A17 Post Grid, A22 Newsletter and A3 Footer, drawn as `S4
+  Editor.dc.html:54-58` draws them at 30×21; the rail draws D8a's 34×24 and D8b's 26×19, the selected tile's border D8's
+  tint. Every other category, the fixtures and Ghost's rows draw Hero's. Colours are the token layer's (`line`,
+  `line-strong`, `ink`, `coral`, `ink-soft`; the Footer's dark ground `ink-hover`; the tint `coral-tint-strong`), never
+  a new one. `LayerRow` and `RailItem` carry `category`. Epic 9's and Epic 10's preambles gain the rule: a category's
+  first story adds its Layers picture. Control: a journey stop at 1440 (rows) and 1024 (rail) — each thumb's
+  `data-glyph` is its kind's — red at HEAD (every thumb Hero's).
 severity: low
 origin: Story 5.22's Create (2026-09-27).
   - `D8 Editor Below 1440.dc.html:66-70` draws five different 34 × 24 thumbnails: Header, Hero — Split Editorial, Post
@@ -7391,7 +7714,11 @@ location: `apps/web/components/kit/layers-row.tsx` (`LayerThumb`) · the rail in
 plain: When the Newsletter section (Inline Row) is chosen, the browser's developer console prints a warning that two
   controls in its settings panel share one internal name. Nothing on screen is wrong today, but React says it may drop
   or duplicate one of the two controls in a future version, and the warning hides real ones.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the read-only panel's keys carry their kind — `read-prop-…` and
+  `read-control-…` — so a design that declares a prop and a control of one name (the Inline Row's `blurb`) draws both
+  rows with no duplicate key. Control: a journey stop on the Inline Row as a reader, no duplicate-key warning — red at
+  HEAD ('…read-blurb').
 severity: low
 origin: Story 5.22's Dev (2026-09-27), found while driving the compact editor in the keyboard harness and confirmed
   PRE-EXISTING by choosing the same section at 1440 on the full layout, which 5.22 does not touch: `sidebar.tsx:458-459`
@@ -7407,7 +7734,10 @@ location: `apps/web/components/controls/sidebar.tsx` (the rows' `ReadOnly` keys)
 plain: On a small Android tablet held upright (about 600–627 pixels wide), the Paywall screen's top bar has one thing too
   many when the site's members are switched off: the ⋯ button at the right edge is pushed partly off the screen. Every
   other screen, and the Paywall itself on anything 630 pixels or wider, fits.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the Paywall's MEMBERS OFF chip is whole or absent — `shrink-0` and
+  `compact:hidden` — so no control of the bar leaves the window. Control: `floor.spec.mjs`'s DW-283 stop on a 600-wide
+  touch tablet, members off — red at HEAD (a bar control outside the window).
 severity: low
 origin: Story 5.22's Dev (2026-09-27), measured in the harness across widths: the bar's grid keeps every control out of
   the centred group by construction, the name and the MEMBERS OFF chip give way first, and the NOT A PAGE SECTION chip is
@@ -7587,7 +7917,16 @@ plain: The first time you pick or point at a section after opening a page, the e
   tags it draws on the canvas, and that preparation freezes it for about 0.25 seconds on the slowed-down test computer
   (about 0.06 seconds at normal speed). It happens once per page opened, before the speed test's clock starts, so the test
   never sees it.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the chrome's faces and sheet are prepared in idle time after a paint —
+  `prepareChrome(doc)` (`addFonts` and `sheetFor`, `lib/canvas-layer.ts`), which `chromeLayers` also calls, scheduled by
+  an effect on the paints with `requestIdleCallback`, else a 1 ms timer (Safari lacks it), and cancelled on cleanup;
+  never before the first paint or into a document with no `#canvas`, nor into a window already closed. It adds nothing
+  to the DOM. Control: a journey stop — after the paint and before any gesture, the canvas's `document.fonts` holds the
+  `inflozo-chrome` faces with no chrome host drawn — red at HEAD. `tools/perf/fps-trace.mjs` now prints the first
+  selection's longest task, for the record: at 4× on the production harness build, 193 ms and 192 ms at HEAD `3c88798f`,
+  75 ms and 74 ms on this tree (two runs each, every run passing NFR-1's three bars); the Controls panel's first mount
+  stays in it. Not a gate (NFR-1).
 severity: low
 origin: Story 5.23b's planning (2026-09-28), measured at 4× CPU throttle on a production harness build of `790b4d6e`: the
   session's first selection is a 248–255 ms long task; with the chrome's font faces left out (`addFonts` in
@@ -7850,7 +8189,22 @@ reason: the owner is the only one who could have made them by hand (the probes w
 plain: When the editor asks which pieces of Ghost information a section may use, and the project is not linked to a
   site yet, it now holds back the five helpers that arrived after Ghost 5.0 — the comment box, the two member counts,
   the Content API key and address — because "no version" is read as the oldest Ghost. Nothing on screen asks yet.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): no change to the rule; FR-H7 decides it. Binding is "prevention, not
+  warning", and "fields introduced after a target's version … are not offered for that site", so with no version (a
+  project linked to no site yet) the offer is the floor's; a comment beside `versionAtLeast`
+  (`packages/library/src/contexts.ts`) says so. The entry's helper wording was wrong: bare helpers are never offered at
+  any version, with a `since` or without. The universal loop skips non-`@` paths (`contexts.ts:325`) and `sort` has no
+  helper branch (`:307-310`), so neither a bare universal helper nor a scope's helper field (`content`, `post_class`,
+  `comments`, navigation's `url`, the error page's two) is ever listed. A helper's `since` is read only by `bindable(…,
+  use:'helper')` (`:223-230`), and a render passes no version. What "no version" withholds is the `@site.*` and scope
+  keys carrying a `since`: the seven 6.36.0 social keys, `admin_url` and five 5.x `@site` flags, an author's seven
+  handles, a tier's `trial_days`. `offerBindings`' own comment now says it offers no helper. Control: a
+  `contexts.test.ts` row checks every target (at the top, in each `{{#get}}` source, inside each top-level repeat) at no
+  version, the floor and every `since` in the matrix. No offer lists a path bindable as a helper, the no-version offer
+  equals the floor's, and `@site.threads` is absent with no version and present at 6.36.0. Red in a scratch copy with
+  `versionAtLeast` answering true for no version, and with `sort` given a helper branch; dropping the `@` skip alone
+  stays green, because `sort` keeps a bare helper out on its own.
 severity: low
 origin: Story 5.24c's Dev on Question 4 (2026-10-01): `since` on the bare helpers in `contexts/matrix.json`, applied by
   `offerBindings` with "absent = the floor" (`packages/library/src/contexts.ts`, `versionAtLeast(undefined, …)` reads
@@ -7892,7 +8246,18 @@ reason: a recorder run writes to T1 and T3 and needs the owner's in-session go (
 plain: The rule that keeps your customers' Ghost keys out of reach of the public data address is now really checked —
   but only when someone runs the check by hand. The automatic checks that guard every push do not run it, so if that
   setting were ever changed in Supabase's dashboard, nothing would stop the next publish.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): `tools/probe/check-schemas-off-rest.py` (stdlib) carries
+  `schemas-off-rest`'s assertion, moved unchanged, and CI's `rls` job runs it after `run-rls-gate.sh` on every push. It
+  reads `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` from Vercel's production env with the three Vercel secrets
+  `deploy` already holds, so GitHub gained no secret, and `deploy`'s `needs` is still `[check, rls]` (R-116). It prints
+  one line, never a value, and fails closed with COULD NOT ASK — on no answer, and on any answer that is not one of
+  PostgREST's two verdicts (a 404 or a 406 carrying its `code`): a 401, a 5xx, any other status, or a verdict with no
+  code. `run-verify-ghost-admin.py --check` calls the same `check()`. It PASSed in both modes and the three planted
+  controls FAILed (`graphql_public` unexposed, `public` alone, a wrong project id → COULD NOT ASK) (MEASUREMENTS §66).
+  Its stdlib `--self-check` — canned answers: the pass shape, each planted list, no answer, a 401, a 500, another
+  status, a verdict with no code — runs in the root `pnpm test` beside the recorders' self-checks, and went red with the
+  unjudged-answer guard planted off (a 401 read as WRONG). CI's `rls` log on the push is read at Review.
 severity: medium
 origin: Story 5.24d's review (2026-10-01), Blind Hunter, Edge Case Hunter and Verification Gap: DW-294 moved the
   assertion out of `RLS-TEST.sql` (which printed PASS while checking nothing) into `run-verify-ghost-admin.py --check`'s
@@ -7909,7 +8274,12 @@ reason: the read needs `SUPABASE_URL` and `SUPABASE_PUBLISHABLE_KEY` in GitHub A
 plain: The fault that stopped a site being connected on a developer's own machine is fixed, but it was proved by a
   one-off hand run. If the same line were changed back, every automatic check would stay green. Customers are not
   affected: the live site never had the fault.
-status: open
+status: done 2026-10-02 (Story 5.24e)
+resolution: Story 5.24e's Dev (2026-10-02): the connect wizard's keys step has a harness mount
+  (`app/harness/connect/page.tsx`, `notFound()` without `INFLOZO_HARNESS=1`; `app-routes.test.ts`'s `HARNESS_ONLY`, the
+  editor walk's step 79) and a keyboard-gate stop under `next dev`'s StrictMode: Ghost's settings routed to a 200, the
+  three fields filled, Enter on Connect, and a POST carrying `next-action` within 15 s. Control: red with `alive.current
+  = true` removed from the wizard ("Connecting…" stays), reverted.
 severity: low
 origin: Story 5.24d's review (2026-10-01), Blind Hunter and Verification Gap: DW-295's control was a hand run of
   `run-verify-ghost-admin.py --only brand-none` against `next dev`; no test mounts the wizard under StrictMode. The
@@ -7975,3 +8345,25 @@ location: `apps/web/lib/editor.ts` (`canvasStack`, and Story 5.24e's `landWithin
   `apps/web/components/controls/layers.tsx`
 reason: no A2 design exists, so no page can hold a bar and a header today; whether the band keeps a bar above the
   header or lets it sit below is A2's own design decision.
+
+### DW-307: closing the editing window while it checks in leaves the lock held for about a minute
+
+plain: When you close the window that is editing, your other window normally takes over in about 15 seconds. About one
+  close in fifty — when the window is closed in the split second it is checking in with the server — the other window
+  waits about a minute instead. Nothing is lost; it only waits longer. You accepted this for now (R-228).
+status: open
+severity: low
+origin: Story 5.24e's Dev (2026-10-02), the read-only audit of DW-240 and DW-244: a going tab's `leave` backdates the
+  row only when the beat it carries is the row's `heartbeat_at`, so a late leave from before a reload can never backdate
+  the reloaded page's row (DW-240's second stop). A beat still in flight as the tab goes moves the row past the beat its
+  leave carries, so that close matches nothing and the row goes stale on its own, after `STALE_MS` (~60 s), where
+  `release` at `0e8dcbb0` freed it within a check-in. The server cannot tell that close from a reload: both pages share
+  the tab's session id (`sessionStorage`), and no column names the page a beat came from. The odds are the beat's
+  round trip over `HEARTBEAT_MS`. The ceiling is named beside `leaving` in `editor.tsx` and in MEASUREMENTS §65.
+owner: Story 7.18 (the deploy wizard), whose card names this entry: the wizard requires the edit lock, and its Create
+  decides the per-page id — a column on the lock row, so a migration pushed first (R-99) — that lets a leave match its
+  own page's beat whatever landed since.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/lock/route.ts` (`leave`) · `apps/web/lib/lock.ts` ·
+  `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`leaving`)
+reason: the fix needs a column, and Story 5.24e forbids a migration (R-99, its Never); the owner ruled the wait
+  acceptable until then (R-228, Story 5.24e's Question 2).

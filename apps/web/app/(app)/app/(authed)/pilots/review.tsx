@@ -254,7 +254,10 @@ export function Review({
             entry={entry}
             state={state}
             onChange={onChange}
-            swatches={swatches[mode]}
+            // DW-198 (Story 5.24e): both modes' colours and the mode showing — a change made while previewing dark is a
+            // dark override here, as it is in the editor
+            swatches={swatches}
+            mode={mode}
             timezone={timezone}
             links={links}
             assets={panelAssets}

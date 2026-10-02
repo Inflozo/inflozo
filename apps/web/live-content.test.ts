@@ -5,9 +5,10 @@ import { feedQuery, formatDate, withData } from '@inflozo/section-runtime'
 import {
   addressOf, after, API_VERSION, ask, AUTHOR_FIELDS, bindingReads, FAILURES_TO_STOP, feedRead, feedShortfall, FRESH_MS,
   getShortfall, isFresh, keyOf, LIST_LIMIT, LISTS, LIVE_WORDS, named, NEVER, outcomeOf, PAGE_FIELDS, PAYWALL_FILE, pick, POST_FIELDS, PUBLIC_TIERS,
-  READ_TIMEOUT_MS, reader, REQUEST_CEILING, retriable, retried, SETTINGS, SHORTFALL, SITE_FIELDS, siteFrom, siteLinks, siteWith,
-  siteRows, siteTotal, slugShaped, START, startingArchive, subjectRead, TAG_FIELDS, TIER_FIELDS, wallClock, zoneOf,
-  type Answer, type LiveQuery, type Reading, type Row,
+  READ_TIMEOUT_MS, reader, REQUEST_CEILING, retriable, retried, SEARCH_DEBOUNCE_MS, SEARCH_LIMIT, SEARCH_SHARE, SEARCH_TERM, searchRead,
+  searchSpent, SETTINGS, SHORTFALL, SITE_FIELDS, siteFrom, siteLinks, siteWith,
+  siteRows, siteTotal, slugShaped, START, startingArchive, subjectRead, TAG_FIELDS, TIER_FIELDS, wallClock, withFound, zoneOf,
+  searchFor, searchInForce, type Answer, type LiveQuery, type Look, type Reading, type Row,
 } from './lib/live-content.ts'
 import { liveStore, WIDTH } from './lib/live-client.ts'
 import { sitePage } from './lib/canvas.ts'
@@ -29,7 +30,7 @@ test('never the body: every post and page read asks for `formats=mobiledoc`, and
     assert.equal(q.params['formats'] === 'mobiledoc', q.resource === 'posts' || q.resource === 'pages', keyOf(q))
   }
   const binding = bindingReads({ source: 'posts', limit: 3 })
-  assert.equal(binding.newest?.params['formats'], 'mobiledoc')
+  assert.equal(binding.newest[0]?.params['formats'], 'mobiledoc')
 })
 
 test('one key per read: the order of its params does not move it, and it carries no key — the address does', () => {
@@ -47,8 +48,9 @@ test('one key per read: the order of its params does not move it, and it carries
 })
 
 test('a slug not in Ghost\'s shape is never sent — a malformed filter is a 4xx, which counts against the customer\'s network', () => {
-  for (const ok of ['archive', 'field-notes', 'ten-years-of-one-layout', 'café', 'a1', '2026']) assert.ok(slugShaped(ok), ok)
-  for (const bad of ['', 'Bad', 'two words', "a'b", 'x:y', 'a--b', '-lead', 'trail-', 'a+b', 'a,b', '[x]', 'x'.repeat(192)]) {
+  // DW-258: ONE grammar, the library's — an import keeps `--` and edge hyphens, and nothing past Latin-1 survives slugify
+  for (const ok of ['archive', 'field-notes', 'ten-years-of-one-layout', 'café', 'a1', '2026', 'a--b', '-lead', 'trail-', 'x'.repeat(191)]) assert.ok(slugShaped(ok), ok)
+  for (const bad of ['', 'Bad', 'two words', "a'b", 'x:y', 'a+b', 'a,b', '[x]', 'x'.repeat(192), '中文', 'ā']) {
     assert.equal(slugShaped(bad), false, bad)
     assert.equal(subjectRead({ kind: 'post', slug: bad }), null, bad)
     assert.equal(feedRead({ kind: 'tag', slug: bad }, 1, 12), null, bad)
@@ -59,29 +61,60 @@ test('a slug not in Ghost\'s shape is never sent — a malformed filter is a 4xx
   assert.equal(feedRead(null, 2, 12)?.params['page'], '2')
 })
 
-test('a `{{#get}}` is read at the Count\'s ceiling in both date orders; a fixed query as it is; a pick as ONE `id:[…]` read', () => {
+test('a `{{#get}}` is read at the Count\'s ceiling in both date orders; a fixed query as it is; a pick as `id:[…]` reads', () => {
   const dated = bindingReads({ source: 'posts', filter: 'featured:true', limit: 3 })
-  assert.equal(dated.newest?.params['limit'], String(LIST_LIMIT))
-  assert.equal(dated.newest?.params['order'], 'published_at desc')
-  assert.equal(dated.oldest?.params['order'], 'published_at asc')
-  assert.equal(dated.newest?.params['filter'], 'featured:true')
+  assert.equal(dated.newest[0]?.params['limit'], String(LIST_LIMIT))
+  assert.equal(dated.newest[0]?.params['order'], 'published_at desc')
+  assert.equal(dated.oldest[0]?.params['order'], 'published_at asc')
+  assert.equal(dated.newest[0]?.params['filter'], 'featured:true')
   const fixed = bindingReads({ source: 'posts', limit: 1, order: 'published_at desc', fixed: true })
-  assert.equal(fixed.newest?.params['limit'], '1')
-  assert.equal(keyOf(fixed.newest as LiveQuery), keyOf(fixed.oldest as LiveQuery))
+  assert.equal(fixed.newest[0]?.params['limit'], '1')
+  assert.equal(keyOf(fixed.newest[0] as LiveQuery), keyOf(fixed.oldest[0] as LiveQuery))
   const a = '5ab100000000000000000001'
   const b = '5ab100000000000000000002'
   const picked = bindingReads({ source: 'posts', ids: [b, 'not-an-id', a] })
-  assert.equal(picked.newest?.params['filter'], `id:[${a},${b}]`, 'an id not in Ghost\'s shape is never sent')
+  assert.equal(picked.newest[0]?.params['filter'], `id:[${a},${b}]`, 'an id not in Ghost\'s shape is never sent')
+  assert.equal(picked.newest.length, 1, 'picks within LIST_LIMIT are ONE read (DW-259 chunks past it)')
   // Story 5.19: the ids are read SORTED — Ghost's own order is re-ordered by the pick below, so a pick moved to a new
   // place asks for the very same key and costs no request
-  assert.equal(keyOf(bindingReads({ source: 'posts', ids: [a, b] }).newest as LiveQuery), keyOf(picked.newest as LiveQuery))
-  assert.deepEqual(bindingReads({ source: 'posts', ids: ['nope'] }), { newest: null, oldest: null }, 'nothing to send is no read at all')
-  assert.equal(bindingReads({ source: 'tags' }).newest?.params['include'], 'count.posts')
+  assert.equal(keyOf(bindingReads({ source: 'posts', ids: [a, b] }).newest[0] as LiveQuery), keyOf(picked.newest[0] as LiveQuery))
+  assert.deepEqual(bindingReads({ source: 'posts', ids: ['nope'] }), { newest: [], oldest: [] }, 'nothing to send is no read at all')
+  assert.equal(bindingReads({ source: 'tags' }).newest[0]?.params['include'], 'count.posts')
   // R-20: Ghost answers a pick in ITS order (§51 (h)) — the rows come back in the PICK's, and a missing id is skipped
   const look = (q: LiveQuery): Answer | undefined =>
     q.params['filter']?.startsWith('id:') ? { rows: [{ id: a, title: 'A' }, { id: b, title: 'B' }], total: 2, pages: 1 } : undefined
   const rows = siteRows({ picks: { source: 'posts', ids: [b, 'gone0000000000000000000', a] } }, reader(look), 'Etc/UTC')
   assert.deepEqual(rows['picks']?.newest.map((r) => r['id']), [b, a])
+})
+
+test('DW-259 · a hand-picked list past LIST_LIMIT is read in chunks of it, each its own key — every pick comes back, in PICK order', () => {
+  // 150 distinct picks in an order no sort gives, and one picked twice (the theme's per-id gets draw it twice too)
+  const id = (n: number) => `5ab1${String(n).padStart(20, '0')}`
+  const distinct = Array.from({ length: LIST_LIMIT + 50 }, (_, i) => id((i * 37) % (LIST_LIMIT + 50)))
+  const ids = [...distinct, distinct[7] as string]
+  /** Ghost: a read answers at most LIST_LIMIT rows (6's `maxLimit`), in ITS order — not the pick's */
+  const asked = new Map<string, LiveQuery>()
+  const ghost = (q: LiveQuery): Answer => {
+    const want = /^id:\[(.*)\]$/.exec(q.params['filter'] ?? '')?.[1]?.split(',') ?? []
+    return { rows: want.toSorted().reverse().slice(0, Math.min(LIST_LIMIT, Number(q.params['limit']))).map((i) => ({ id: i, title: i })), total: want.length, pages: 1 }
+  }
+  const look = (q: LiveQuery): Answer | undefined => {
+    asked.set(keyOf(q), q)
+    return ghost(q)
+  }
+  const b = { source: 'posts', ids }
+  assert.deepEqual(siteRows({ picks: b }, reader(look), 'Etc/UTC')['picks']?.newest.map((r) => r['id']), ids, 'all of them, in the pick\'s order')
+  assert.equal(siteTotal(b, reader(look)), ids.length)
+  // the reads: de-duplicated, sorted and chunked — so ceil(150 / LIST_LIMIT) of them, none asking past LIST_LIMIT ids
+  const chunks = [...asked.values()].map((q) => /^id:\[(.*)\]$/.exec(q.params['filter'] ?? '')?.[1]?.split(',') ?? [])
+  assert.equal(chunks.length, Math.ceil(distinct.length / LIST_LIMIT))
+  assert.ok(chunks.every((c) => c.length <= LIST_LIMIT))
+  assert.deepEqual(chunks.flat(), distinct.toSorted(), 'each id once, sorted — a pick dragged to a new place asks for the same keys')
+  // a chunk not landed: no rows are known and nothing counts yet — and the walk asks for exactly what is missing
+  const late = keyOf([...asked.values()][1] as LiveQuery)
+  const half = reader((q) => (keyOf(q) === late ? undefined : ghost(q)))
+  assert.equal(siteTotal(b, half), 0, 'siteTotal is 0 until every chunk has landed')
+  assert.deepEqual(half.need.map(keyOf), [late])
 })
 
 // ─── the outcome of a status, and the stop rule ──────────────────────────────────────────────────────────────────
@@ -318,6 +351,115 @@ test('reads go one at a time until the site has answered, then up to WIDTH at on
   }
 })
 
+// ─── DW-248 (Story 5.24e) — a title search AT GHOST while the posts list is capped ───────────────────────────────
+
+test('DW-248 · a search is ONE `title:~` read per term: trimmed, its quotes escaped as nql-lang\'s STRING token reads them, and the order ALWAYS sent', () => {
+  const q = searchRead('posts', `  it's "quoted" \\ slug:[a,b]  `)
+  assert.equal(q?.resource, 'posts')
+  // `['](\\['"]|[^'"])+?[']` (nql-lang 0.6.3 and 0.7.0): inside the string a quote is a backslash and the quote; an
+  // unescaped one ends it, and the rest is a 400 that Ghost counts against the customer's own network
+  assert.equal(q?.params['filter'], `title:~'it\\'s \\"quoted\\" \\ slug:[a,b]'`)
+  // ALWAYS an order: sent none, Ghost 5's `slugFilterOrder` turns the `slug:[…]` it finds anywhere in a filter — inside
+  // the term too — into raw SQL (`input/posts.js:94-97`)
+  assert.equal(q?.params['order'], 'published_at desc')
+  assert.equal(q?.params['limit'], String(SEARCH_LIMIT))
+  assert.equal(q?.params['formats'], 'mobiledoc', 'never the body')
+  assert.equal(SEARCH_LIMIT, 15, 'the spec\'s number of rows a search brings')
+  // each term is its own key, the trimmed term's
+  assert.equal(keyOf(searchRead('posts', 'ghost') as LiveQuery), keyOf(searchRead('posts', '  ghost ') as LiveQuery))
+  assert.notEqual(keyOf(searchRead('posts', 'ghost') as LiveQuery), keyOf(searchRead('posts', 'ghosts') as LiveQuery))
+})
+
+test('DW-248 · the bounds: a term under 2 characters or over 100 is no read at all — counted in characters, after the trim', () => {
+  const { min, max } = SEARCH_TERM
+  assert.deepEqual({ min, max }, { min: 2, max: 100 }, 'the spec\'s bounds')
+  for (const t of ['', '   ', 'a', ` ${'x'.repeat(min - 1)}  `, 'x'.repeat(max + 1), '😀']) assert.equal(searchRead('posts', t), null, JSON.stringify(t))
+  for (const t of ['x'.repeat(min), 'x'.repeat(max), ` ${'x'.repeat(max)} `, '😀😀', `${"'".repeat(max)}`]) assert.ok(searchRead('posts', t) !== null, JSON.stringify(t))
+})
+
+test('DW-248 · searches have their own share of the ceiling: past SEARCH_SHARE a search does not go out, nothing stops, and the canvas reads on', async () => {
+  assert.equal(SEARCH_SHARE, REQUEST_CEILING / 5)
+  assert.equal(SEARCH_DEBOUNCE_MS, 300, 'a tuning, stated in the spec')
+  const s = searchRead('posts', 'ghost') as LiveQuery
+  let r: Reading = START
+  for (let n = 0; n < SEARCH_SHARE; n++) {
+    assert.equal(searchSpent(r), false)
+    const turn = ask(r, s)
+    assert.equal(turn.go, true)
+    r = after(turn.reading, 'ok')
+  }
+  assert.equal(searchSpent(r), true)
+  assert.deepEqual(ask(r, s), { go: false, reading: r }, 'the share is spent: no search goes out, and reading does not stop')
+  assert.equal(ask(r, LISTS.post).go, true, 'the canvas\'s own reads still go')
+  assert.equal(ask(r).go, true)
+  // through the store: a search costs one request and is cached under its own key — and, its rows being in no render
+  // context, it writes nothing the canvas repaints for (`version()`)
+  const net = fakeFetch(() => ({ status: 200, body: postsBody(2) }))
+  try {
+    const store = liveStore('https://ghost5.example', 'k', Date.now, words)
+    await store.ensure([s])
+    assert.equal(net.calls.length, 1)
+    assert.equal(net.calls[0]?.searchParams.get('filter'), "title:~'ghost'")
+    assert.equal(store.peek(s)?.rows.length, 2)
+    assert.equal(store.reading().searches, 1)
+    assert.equal(store.version(), 0, 'a search landing repaints nothing')
+    await store.ensure([LISTS.post])
+    assert.equal(store.version(), 1, 'the control: a list landing does')
+  } finally {
+    net.restore()
+  }
+})
+
+test('DW-248 · the share counts searches left to SEND: the one that spends it is still sent, and its rows are kept', () => {
+  const q = searchRead('posts', 'zed') as LiveQuery
+  const found: Answer = { rows: [], total: 0, pages: 1 }
+  const none: Look = () => undefined
+  const landed: Look = (x) => (keyOf(x) === keyOf(q) ? found : undefined)
+  const left: Reading = { ...START, searches: SEARCH_SHARE - 1 }
+  assert.deepEqual(searchFor(none, left, 'zed', true), q, 'one search left: it is sent')
+  const spent: Reading = ask(left, q).reading
+  assert.equal(searchSpent(spent), true)
+  assert.deepEqual(searchFor(landed, spent, 'zed', true), q, 'the search that spent the share: its answer is in hand, and KEPT')
+  assert.equal(searchFor(none, spent, 'zed', true), null, 'past the share, a new term is no read')
+  assert.equal(searchFor(landed, left, 'zed', false), null, 'a list that is not capped is never searched at Ghost')
+  assert.equal(searchFor(none, left, 'z', true), null, 'nor is a term under the bounds')
+})
+
+test('DW-248 · the capped line steps aside only for a search that is coming or has come — never one that settled with nothing', () => {
+  const q = searchRead('posts', 'zed') as LiveQuery
+  const none: Look = () => undefined
+  const landed: Look = (x) => (keyOf(x) === keyOf(q) ? { rows: [], total: 0, pages: 1 } : undefined)
+  assert.equal(searchInForce(none, START, q, null), true, 'pending: about to be sent, or in flight')
+  assert.equal(searchInForce(landed, START, q, keyOf(q)), true, 'landed, whatever settled before')
+  assert.equal(searchInForce(none, START, q, keyOf(q)), false, 'settled with no answer: the line comes back')
+  assert.equal(searchInForce(none, { ...START, stopped: 'failing' }, q, null), false, 'reading stopped: nothing will land')
+  assert.equal(searchInForce(none, START, null, null), false, 'no search at all')
+})
+
+test('DW-248 · the rows a search found join the posts list in hand BY ID — the list\'s own first, none twice — for every reader of the list', () => {
+  const p = (id: string, day: string) => ({ id, slug: `s-${id}`, title: `T ${id}`, url: `https://ghost5.example/${id}/`, published_at: `2026-0${day}T00:00:00.000Z` })
+  const list: Answer = { rows: [p('a', '9-02'), p('b', '9-01')], total: 250, pages: 3 }
+  const found: Answer = { rows: [p('b', '9-01'), p('z', '1-05')], total: 2, pages: 1 }
+  const q = searchRead('posts', 'zed') as LiveQuery
+  const look = (x: LiveQuery): Answer | undefined => (keyOf(x) === keyOf(LISTS.post) ? list : keyOf(x) === keyOf(q) ? found : undefined)
+  const merged = withFound(look, q)
+  assert.deepEqual(merged(LISTS.post)?.rows.map((r) => r['id']), ['a', 'b', 'z'])
+  assert.equal(merged(LISTS.post)?.total, 250, 'the site\'s own count stands — the list is still capped')
+  // D5e's subjects, the Link Picker's posts and the pickers' rows all read the list through a `Look`
+  assert.deepEqual(subjectOptions(siteSubjects(merged, 'Etc/UTC'), 'post').slice(1).map((r) => r.slug), ['s-a', 's-b', 's-z'])
+  assert.deepEqual(siteLinks(reader(merged), 'Etc/UTC').posts.map((r) => r.id), ['a', 'b', 'z'])
+  // no search, or one not landed: the list exactly as it is; every other read passes through untouched
+  assert.equal(withFound(look, null)(LISTS.post), list)
+  assert.equal(withFound(look, searchRead('posts', 'not landed'))(LISTS.post), list)
+  assert.equal(merged(q), found)
+  assert.equal(merged(LISTS.tag), undefined)
+  // the chosen subject's own read joins too, once — so a post picked from a search keeps its row (D5e's pill label)
+  const own = subjectRead({ kind: 'post', slug: 's-z' }) as LiveQuery
+  const subjectToo = (x: LiveQuery): Answer | undefined => (keyOf(x) === keyOf(own) ? { rows: [p('z', '1-05')], total: 1, pages: 1 } : look(x))
+  assert.deepEqual(withFound(subjectToo, q, own)(LISTS.post)?.rows.map((r) => r['id']), ['a', 'b', 'z'])
+  assert.deepEqual(withFound(subjectToo, null, own)(LISTS.post)?.rows.map((r) => r['id']), ['a', 'b', 'z'])
+})
+
 // ─── the whitelist ───────────────────────────────────────────────────────────────────────────────────────────────
 
 test('the whitelist is the dataset\'s own row shapes, field for field — the canvas can read nothing else', () => {
@@ -328,6 +470,11 @@ test('the whitelist is the dataset\'s own row shapes, field for field — the ca
   assert.deepEqual([...TAG_FIELDS].sort(), keys(orbitWeekly.tags()[0] as object, ['count']))
   assert.deepEqual([...AUTHOR_FIELDS].sort(), keys(orbitWeekly.authors()[0] as object, ['count']))
   assert.deepEqual([...TIER_FIELDS].sort(), keys(orbitWeekly.tiers()[0] as object))
+  // DW-270: a post's or a page's `tiers` is a RELATION, mapped as tags and authors are — through TIER_FIELDS, held to the
+  // dataset's tier row just above — and none of their FIELDS; the dataset's entries carry none, so the lists the two
+  // lines before drop hide nothing
+  for (const fields of [POST_FIELDS, PAGE_FIELDS]) assert.ok(!(fields as readonly string[]).includes('tiers'))
+  for (const entry of [orbitWeekly.subject('post'), orbitWeekly.subject('page'), ...orbitWeekly.posts()]) assert.equal(Object.hasOwn(entry, 'tiers'), false)
   for (const never of NEVER) {
     for (const fields of [SITE_FIELDS, POST_FIELDS, PAGE_FIELDS, TAG_FIELDS, AUTHOR_FIELDS, TIER_FIELDS]) assert.ok(!(fields as readonly string[]).includes(never), never)
   }
@@ -467,6 +614,47 @@ test('a subject belongs to the source it was chosen from: the other source\'s is
   assert.equal(own.ready.contexts['post.hbs']?.ghost['title'], 'Post 2')
 })
 
+/** DW-250 — THE EDITOR'S `request()` LOOP over a cache this test fills: each round asks, at once, every read the walk
+ *  still needs — on the first, beside the surfaces the editor always asks (`SURFACES`: the settings and the lists) —
+ *  the next walk reads them, and the page paints once a walk misses nothing. The count is the round trips before the
+ *  first paint. A read asked twice is the editor's "did not answer" and fails here. */
+function rounds(file: string, stored: orbitWeekly.Subject | null, site = fakeSite()) {
+  const cache = new Map<string, Answer | undefined>()
+  const peek: Look = (q) => cache.get(keyOf(q))
+  for (let n = 0; n < 5; n++) {
+    const view = sitePage(peek, { file, stored, page: 1, pageFile: file, targets: [file, 'default.hbs'], queries: {}, perPage: orbitWeekly.postsPerPage() })
+    if (!('need' in view)) return { n, view }
+    const ask = new Map((n === 0 ? [...view.need, SETTINGS, ...Object.values(LISTS)] : view.need).map((q) => [keyOf(q), q]))
+    for (const [k, q] of ask) {
+      assert.ok(!cache.has(k), `round ${n + 1} asks ${k} again`)
+      cache.set(k, site(q))
+    }
+  }
+  assert.fail(`${file} never painted`)
+}
+
+test('DW-250 · a stored Tag or Author paints after ONE round trip, as Home and a stored Post do — a gone one after two', () => {
+  assert.equal(rounds('home.hbs', null).n, 1)
+  assert.equal(rounds('post.hbs', { kind: 'post', slug: 'post-2', source: 'site' }).n, 1)
+  // the stored subject is the likely answer while R-193's list is in flight: its own row and its archive's first page
+  // are asked in the same round as the list (three rounds at 5.24d's HEAD)
+  for (const [file, stored] of [['tag.hbs', { kind: 'tag', slug: 'archive', source: 'site' }], ['author.hbs', { kind: 'author', slug: 'umang', source: 'site' }]] as const) {
+    const at = rounds(file, stored)
+    assert.equal(at.n, 1, file)
+    assert.ok('ready' in at.view)
+    assert.deepEqual({ slug: at.view.ready.subject?.slug, fellBack: at.view.ready.fellBack }, { slug: stored.slug, fellBack: false }, file)
+  }
+  // a stored tag the site no longer holds: the guess costs its `200 []` reads, then the fullest tag's page — two rounds
+  const gone = rounds('tag.hbs', { kind: 'tag', slug: 'deleted-tag', source: 'site' })
+  assert.equal(gone.n, 2)
+  assert.ok('ready' in gone.view)
+  assert.deepEqual({ slug: gone.view.ready.subject?.slug, fellBack: gone.view.ready.fellBack }, { slug: 'craft', fellBack: true })
+  // `{ nothing }` is judged once the subject is resolved, never on the guess
+  assert.deepEqual(rounds('tag.hbs', { kind: 'tag', slug: 'archive', source: 'site' }, fakeSite({ tags: false })).view, { nothing: 'tag' })
+  // the control: an untouched Tag cannot guess, so it still waits on R-193's list first
+  assert.equal(rounds('tag.hbs', null).n, 2)
+})
+
 test('zero is an answer, never back-filled: an empty list renders empty, and its pagination says so', () => {
   const empty = (q: LiveQuery): Answer | undefined =>
     q.resource === 'posts' ? { rows: [], total: 0, pages: 1 } : fakeSite()(q)
@@ -548,6 +736,11 @@ test('Story 5.21: the site as the editor is handed it — the snapshot Ghost\'s 
   assert.equal(siteWith(null, settings), null)
   assert.equal(siteWith(readable, {})?.members, undefined)
   assert.ok(siteWith(readable, {})?.surfaces !== undefined, 'a snapshot with nothing in it is still handed — it draws nothing')
+  // DW-273 (Story 5.24e): the site row's `ghost_version` reaches `major` through `versionVerdict` — the Paywall's untouched
+  // box is the linked site's own; a version not yet read, or none the canvas has a recording of, draws 6's
+  assert.equal(siteWith(readable, settings, '5.130.6')?.major, '5')
+  assert.equal(siteWith(readable, settings, '6.58.0')?.major, '6')
+  for (const unknown of [null, undefined, '', 'nonsense', '4.48.0', '7.0.0']) assert.equal(siteWith(readable, settings, unknown)?.major, undefined, String(unknown))
 })
 
 test('the panel\'s note: a list that cannot fill the section says so — zero included — and a short page 2 is ordinary pagination', () => {
@@ -614,9 +807,9 @@ test('Story 5.19 · each section\'s FOLDED queries are read once per distinct qu
   assert.ok(tag.every((q) => q.params['include'] === 'tags,authors' && q.params['formats'] === 'mobiledoc'))
   assert.ok(view.need.some((q) => q.params['filter'] === 'featured:true'), 'the secondary feed\'s own query is asked')
   assert.ok(asked.length > 0)
-  // a hand-picked list is ONE `filter=id:[…]` read, and a pick not in Ghost's id shape is never sent
+  // a hand-picked list within LIST_LIMIT is ONE `filter=id:[…]` read, and a pick not in Ghost's id shape is never sent
   const picks = withData(declared, { latest: { source: 'picked', picks: [{ id: '6a86b5fb6444934864da3283', title: 'a' }, { id: 'nope', title: 'b' }] } })
-  assert.deepEqual(bindingReads(picks['latest']!).newest?.params['filter'], 'id:[6a86b5fb6444934864da3283]')
+  assert.deepEqual(bindingReads(picks['latest']!).newest[0]?.params['filter'], 'id:[6a86b5fb6444934864da3283]')
 })
 
 test('Story 5.19 · the main feed is sized by the PROJECT\'s posts_per_page on the site, as on the sample — a value other than 12', () => {
@@ -632,7 +825,7 @@ test('Story 5.19 · the main feed is sized by the PROJECT\'s posts_per_page on t
 
 
 test('Story 5.20 · the paywall\'s partial: the style-guide article at the ROOT as a paid post open to the site\'s public paid tiers, access by the visitor — and the one tiers read, made there alone', () => {
-  // the module imports nothing but types, so it restates the library's target; the two are held equal here
+  // the library's target, imported since DW-258 (Story 5.24e) — one spelling, still asserted
   assert.equal(PAYWALL_FILE, PAYWALL_TARGET)
   assert.deepEqual(PUBLIC_TIERS, { resource: 'tiers', params: { filter: 'visibility:public' } })
   const base = fakeSite()
@@ -664,4 +857,44 @@ test('Story 5.20 · the paywall\'s partial: the style-guide article at the ROOT 
   asked.length = 0
   page('home.hbs', null, look)
   assert.ok(asked.length > 0 && !asked.includes(keyOf(PUBLIC_TIERS)))
+})
+
+test('DW-270 · a `tiers` post: the reads Ghost re-checks per visitor ask for its tiers, the whitelist keeps them through TIER_FIELDS, and the paid visitor reads it whole', () => {
+  // Ghost's relation sends a tier's WHOLE row (`products.*`, `models/post.js:140-148`); the mapper keeps a `tiers` post's
+  // PAID tiers (`mappers/posts.js:68-70` on 5, `:86-88` on 6) — and sends `tiers` only to a read that asked for them
+  const tier = {
+    id: 't-pro', name: 'Pro', slug: 'pro', type: 'paid', active: true, visibility: 'public', description: null, monthly_price: 500,
+    yearly_price: 5000, currency: 'usd', trial_days: 0, welcome_page_url: '/welcome/', monthly_price_id: 'price_m', yearly_price_id: 'price_y',
+  }
+  const tiered = { id: 'p9', slug: 'tiered', title: 'Tiered', url: 'https://ghost5.example/tiered/', published_at: '2026-09-09T12:00:00.000Z', visibility: 'tiers' }
+  const base = fakeSite()
+  const look = (q: LiveQuery): Answer | undefined => {
+    // the stored post's own read, and Home's feed: the one `tiers` post, its tiers where the read asked for them
+    if (q.resource !== 'posts' || !(q.params['filter'] === "slug:'tiered'" || (q.params['filter'] === undefined && q.params['page'] === '1'))) return base(q)
+    const sent = (q.params['include'] ?? '').split(',').includes('tiers')
+    return pick('posts', { posts: [{ ...tiered, ...(sent ? { tiers: [tier] } : {}) }], meta: { pagination: { total: 1, pages: 1 } } }, words) ?? undefined
+  }
+  const at = (file: 'post.hbs' | 'home.hbs', visitor: 'anonymous' | 'free' | 'paid') =>
+    sitePage(look, { file, stored: file === 'post.hbs' ? { kind: 'post', slug: 'tiered', source: 'site' } : null, page: 1, pageFile: file, targets: [file], queries: {}, perPage: 12, visitor })
+  for (const [visitor, access] of [['paid', true], ['free', false], ['anonymous', false]] as const) {
+    const post = at('post.hbs', visitor)
+    assert.ok('ready' in post)
+    assert.equal(post.ready.contexts['post.hbs']?.ghost['access'], access, `${visitor} on the post's own canvas`)
+    const home = at('home.hbs', visitor)
+    assert.ok('ready' in home)
+    assert.equal((home.ready.contexts['home.hbs']?.ghost['posts'] as Row[])[0]?.['access'], access, `${visitor} in Home's feed`)
+  }
+  // the include rides exactly the reads `assemble`'s `seen()` re-reads `access` over — the subject's own row and a list page
+  for (const q of [subjectRead({ kind: 'post', slug: 'x' }), subjectRead({ kind: 'page', slug: 'x' }), feedRead(null, 1, 12), feedRead({ kind: 'tag', slug: 'x' }, 2, 12)]) {
+    assert.equal(q?.params['include'], 'tags,authors,tiers', keyOf(q as LiveQuery))
+  }
+  assert.equal(subjectRead({ kind: 'tag', slug: 'x' })?.params['include'], 'count.posts', 'a taxonomy has no tiers')
+  // …and not a `{{#get}}`'s, which no visitor re-reads and which stays the theme's own `POSTS_INCLUDE` (no shim re-record)
+  assert.equal(bindingReads({ source: 'posts', limit: 3 }).newest[0]?.params['include'], 'tags,authors')
+  // the whitelist: through TIER_FIELDS, as a tag's and a writer's are — `monthly_price_id` and the rest dropped
+  const row = pick('posts', { posts: [{ ...tiered, tiers: [tier] }] }, words)?.rows[0] as Row
+  assert.deepEqual(row['tiers'], [Object.fromEntries(TIER_FIELDS.filter((f) => Object.hasOwn(tier, f)).map((f) => [f, (tier as Record<string, unknown>)[f]]))])
+  for (const dropped of ['monthly_price_id', 'yearly_price_id', 'welcome_page_url']) assert.ok(!JSON.stringify(row).includes(dropped), dropped)
+  // a row Ghost sent no tiers for carries none — the rule then blocks it, as Ghost's own `!post.tiers` does
+  assert.equal(Object.hasOwn(pick('posts', { posts: [tiered] }, words)?.rows[0] ?? {}, 'tiers'), false)
 })

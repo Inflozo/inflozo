@@ -1,5 +1,5 @@
 {
-  "captured": "2026-09-26",
+  "captured": "2026-10-02",
   "command": "node tools/probe/record-ghost-surfaces.cjs",
   "ghost_major": "6",
   "ghost_version": "6.58",
@@ -505,14 +505,15 @@
           "portal_root": {
             "index": 3,
             "last": false,
-            "count": 5
+            "count": 6
           },
           "children": [
             "div#announcement-bar-root",
             "div",
             "script",
             "div#ghost-portal-root",
-            "div#sodo-search-root"
+            "div#sodo-search-root",
+            "iframe"
           ],
           "iframe": {
             "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 105px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
@@ -575,14 +576,15 @@
           "portal_root": {
             "index": 3,
             "last": false,
-            "count": 5
+            "count": 6
           },
           "children": [
             "div#announcement-bar-root",
             "div",
             "script",
             "div#ghost-portal-root",
-            "div#sodo-search-root"
+            "div#sodo-search-root",
+            "iframe"
           ],
           "iframe": {
             "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 105px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
@@ -832,6 +834,452 @@
         }
       }
     },
+    "icons": {
+      "icon-1": {
+        "1440x900": {
+          "portal_root": {
+            "index": 3,
+            "last": false,
+            "count": 6
+          },
+          "children": [
+            "div#announcement-bar-root",
+            "div",
+            "script",
+            "div#ghost-portal-root",
+            "div#sodo-search-root",
+            "iframe"
+          ],
+          "iframe": {
+            "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 184px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
+            "class": "gh-portal-triggerbtn-iframe",
+            "title": "portal-trigger",
+            "testid": "portal-trigger-frame",
+            "box": {
+              "x": 1256,
+              "y": 802,
+              "width": 184,
+              "height": 98
+            },
+            "parent_is_root": true
+          },
+          "trigger": true,
+          "wrapper_box": {
+            "x": 0,
+            "y": 0,
+            "width": 182.421875,
+            "height": 98
+          },
+          "wrapper_padding": "10px 28px 0px 17px",
+          "button_class": "gh-portal-triggerbtn-container with-label",
+          "button_box": {
+            "x": 17,
+            "y": 10,
+            "width": 137.421875,
+            "height": 60
+          },
+          "button": {
+            "height": "60px",
+            "min_width": "60px",
+            "border_radius": "999px",
+            "background_color": "rgb(56, 50, 229)",
+            "box_shadow": "rgba(0, 0, 0, 0.24) 0px 8px 16px -2px",
+            "padding": "0px 12px 0px 16px"
+          },
+          "halo": "0px",
+          "label": {
+            "text": " Subscribe ",
+            "box": {
+              "x": 57,
+              "y": 23.5,
+              "width": 85.421875,
+              "height": 32
+            },
+            "font_family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+            "font_size": "16px",
+            "font_weight": "400",
+            "line_height": "16px",
+            "color": "rgb(255, 255, 255)",
+            "padding": "8px",
+            "white_space": "nowrap",
+            "max_width": "380px"
+          },
+          "icon": {
+            "tag": "svg",
+            "box": {
+              "x": 33,
+              "y": 28,
+              "width": 24,
+              "height": 24
+            },
+            "style": "width: 24px; height: 24px; color: rgb(255, 255, 255);",
+            "html": "<svg width=\"21\" height=\"24\" viewBox=\"0 0 21 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width: 24px; height: 24px; color: rgb(255, 255, 255);\"><path d=\"M10.533 11.267c2.835 0 5.134-2.299 5.134-5.134C15.667 3.298 13.368 1 10.533 1 7.698 1 5.4 3.298 5.4 6.133s2.298 5.134 5.133 5.134zM1 23c0-2.529 1.004-4.953 2.792-6.741 1.788-1.788 4.213-2.792 6.741-2.792 2.529 0 4.954 1.004 6.741 2.792 1.788 1.788 2.793 4.212 2.793 6.74\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+          },
+          "body_font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+          "button_page_box": {
+            "x": 1273,
+            "y": 812,
+            "width": 137.421875,
+            "height": 60
+          }
+        }
+      },
+      "icon-2": {
+        "1440x900": {
+          "portal_root": {
+            "index": 3,
+            "last": false,
+            "count": 5
+          },
+          "children": [
+            "div#announcement-bar-root",
+            "div",
+            "script",
+            "div#ghost-portal-root",
+            "div#sodo-search-root"
+          ],
+          "iframe": {
+            "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 184px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
+            "class": "gh-portal-triggerbtn-iframe",
+            "title": "portal-trigger",
+            "testid": "portal-trigger-frame",
+            "box": {
+              "x": 1256,
+              "y": 802,
+              "width": 184,
+              "height": 98
+            },
+            "parent_is_root": true
+          },
+          "trigger": true,
+          "wrapper_box": {
+            "x": 0,
+            "y": 0,
+            "width": 182.421875,
+            "height": 98
+          },
+          "wrapper_padding": "10px 28px 0px 17px",
+          "button_class": "gh-portal-triggerbtn-container with-label",
+          "button_box": {
+            "x": 17,
+            "y": 10,
+            "width": 137.421875,
+            "height": 60
+          },
+          "button": {
+            "height": "60px",
+            "min_width": "60px",
+            "border_radius": "999px",
+            "background_color": "rgb(56, 50, 229)",
+            "box_shadow": "rgba(0, 0, 0, 0.24) 0px 8px 16px -2px",
+            "padding": "0px 12px 0px 16px"
+          },
+          "halo": "0px",
+          "label": {
+            "text": " Subscribe ",
+            "box": {
+              "x": 57,
+              "y": 23.5,
+              "width": 85.421875,
+              "height": 32
+            },
+            "font_family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+            "font_size": "16px",
+            "font_weight": "400",
+            "line_height": "16px",
+            "color": "rgb(255, 255, 255)",
+            "padding": "8px",
+            "white_space": "nowrap",
+            "max_width": "380px"
+          },
+          "icon": {
+            "tag": "svg",
+            "box": {
+              "x": 33,
+              "y": 28,
+              "width": 24,
+              "height": 24
+            },
+            "style": "width: 24px; height: 24px; color: rgb(255, 255, 255);",
+            "html": "<svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width: 24px; height: 24px; color: rgb(255, 255, 255);\"><g fill=\"none\" fill-rule=\"evenodd\"><path stroke=\"#FFF\" stroke-width=\"1.5\" stroke-linecap=\"round\" d=\"M12.5 2v20M2 12.5h20\"></path></g></svg>"
+          },
+          "body_font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+          "button_page_box": {
+            "x": 1273,
+            "y": 812,
+            "width": 137.421875,
+            "height": 60
+          }
+        }
+      },
+      "icon-3": {
+        "1440x900": {
+          "portal_root": {
+            "index": 3,
+            "last": false,
+            "count": 6
+          },
+          "children": [
+            "div#announcement-bar-root",
+            "div",
+            "script",
+            "div#ghost-portal-root",
+            "div#sodo-search-root",
+            "iframe"
+          ],
+          "iframe": {
+            "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 184px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
+            "class": "gh-portal-triggerbtn-iframe",
+            "title": "portal-trigger",
+            "testid": "portal-trigger-frame",
+            "box": {
+              "x": 1256,
+              "y": 802,
+              "width": 184,
+              "height": 98
+            },
+            "parent_is_root": true
+          },
+          "trigger": true,
+          "wrapper_box": {
+            "x": 0,
+            "y": 0,
+            "width": 182.421875,
+            "height": 98
+          },
+          "wrapper_padding": "10px 28px 0px 17px",
+          "button_class": "gh-portal-triggerbtn-container with-label",
+          "button_box": {
+            "x": 17,
+            "y": 10,
+            "width": 137.421875,
+            "height": 60
+          },
+          "button": {
+            "height": "60px",
+            "min_width": "60px",
+            "border_radius": "999px",
+            "background_color": "rgb(56, 50, 229)",
+            "box_shadow": "rgba(0, 0, 0, 0.24) 0px 8px 16px -2px",
+            "padding": "0px 12px 0px 16px"
+          },
+          "halo": "0px",
+          "label": {
+            "text": " Subscribe ",
+            "box": {
+              "x": 57,
+              "y": 23.5,
+              "width": 85.421875,
+              "height": 32
+            },
+            "font_family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+            "font_size": "16px",
+            "font_weight": "400",
+            "line_height": "16px",
+            "color": "rgb(255, 255, 255)",
+            "padding": "8px",
+            "white_space": "nowrap",
+            "max_width": "380px"
+          },
+          "icon": {
+            "tag": "svg",
+            "box": {
+              "x": 33,
+              "y": 28,
+              "width": 24,
+              "height": 24
+            },
+            "style": "width: 24px; height: 24px; color: rgb(255, 255, 255);",
+            "html": "<svg width=\"25\" height=\"24\" viewBox=\"0 0 25 24\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width: 24px; height: 24px; color: rgb(255, 255, 255);\"><path d=\"M23.5 6v14.25c0 .597-.237 1.169-.659 1.591-.422.422-.994.659-1.591.659s-1.169-.237-1.591-.659c-.422-.422-.659-.994-.659-1.591V3c0-.398-.158-.78-.44-1.06-.28-.282-.662-.44-1.06-.44h-15c-.398 0-.78.158-1.06.44C1.157 2.22 1 2.601 1 3v17.25c0 .597.237 1.169.659 1.591.422.422.994.659 1.591.659h18M4.75 15h10.5M4.75 18h6\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M14.5 5.25h-9c-.414 0-.75.336-.75.75v4.5c0 .414.336.75.75.75h9c.414 0 .75-.336.75-.75V6c0-.414-.336-.75-.75-.75z\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+          },
+          "body_font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+          "button_page_box": {
+            "x": 1273,
+            "y": 812,
+            "width": 137.421875,
+            "height": 60
+          }
+        }
+      },
+      "icon-4": {
+        "1440x900": {
+          "portal_root": {
+            "index": 3,
+            "last": false,
+            "count": 6
+          },
+          "children": [
+            "div#announcement-bar-root",
+            "div",
+            "script",
+            "div#ghost-portal-root",
+            "div#sodo-search-root",
+            "iframe"
+          ],
+          "iframe": {
+            "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 184px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
+            "class": "gh-portal-triggerbtn-iframe",
+            "title": "portal-trigger",
+            "testid": "portal-trigger-frame",
+            "box": {
+              "x": 1256,
+              "y": 802,
+              "width": 184,
+              "height": 98
+            },
+            "parent_is_root": true
+          },
+          "trigger": true,
+          "wrapper_box": {
+            "x": 0,
+            "y": 0,
+            "width": 182.421875,
+            "height": 98
+          },
+          "wrapper_padding": "10px 28px 0px 17px",
+          "button_class": "gh-portal-triggerbtn-container with-label",
+          "button_box": {
+            "x": 17,
+            "y": 10,
+            "width": 137.421875,
+            "height": 60
+          },
+          "button": {
+            "height": "60px",
+            "min_width": "60px",
+            "border_radius": "999px",
+            "background_color": "rgb(56, 50, 229)",
+            "box_shadow": "rgba(0, 0, 0, 0.24) 0px 8px 16px -2px",
+            "padding": "0px 12px 0px 16px"
+          },
+          "halo": "0px",
+          "label": {
+            "text": " Subscribe ",
+            "box": {
+              "x": 57,
+              "y": 23.5,
+              "width": 85.421875,
+              "height": 32
+            },
+            "font_family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+            "font_size": "16px",
+            "font_weight": "400",
+            "line_height": "16px",
+            "color": "rgb(255, 255, 255)",
+            "padding": "8px",
+            "white_space": "nowrap",
+            "max_width": "380px"
+          },
+          "icon": {
+            "tag": "svg",
+            "box": {
+              "x": 33,
+              "y": 28,
+              "width": 24,
+              "height": 24
+            },
+            "style": "width: 24px; height: 24px; color: rgb(255, 255, 255);",
+            "html": "<svg width=\"24\" height=\"18\" viewBox=\"0 0 24 18\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width: 24px; height: 24px; color: rgb(255, 255, 255);\"><path d=\"M21.75 1.5H2.25c-.828 0-1.5.672-1.5 1.5v12c0 .828.672 1.5 1.5 1.5h19.5c.828 0 1.5-.672 1.5-1.5V3c0-.828-.672-1.5-1.5-1.5zM15.687 6.975L19.5 10.5M8.313 6.975L4.5 10.5\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path><path d=\"M22.88 2.014l-9.513 6.56C12.965 8.851 12.488 9 12 9s-.965-.149-1.367-.426L1.12 2.014\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"></path></svg>"
+          },
+          "body_font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+          "button_page_box": {
+            "x": 1273,
+            "y": 812,
+            "width": 137.421875,
+            "height": 60
+          }
+        }
+      },
+      "icon-5": {
+        "1440x900": {
+          "portal_root": {
+            "index": 3,
+            "last": false,
+            "count": 6
+          },
+          "children": [
+            "div#announcement-bar-root",
+            "div",
+            "script",
+            "div#ghost-portal-root",
+            "div#sodo-search-root",
+            "iframe"
+          ],
+          "iframe": {
+            "style": "z-index: 3999998; position: fixed; bottom: 0px; right: 0px; width: 184px; max-width: 500px; height: 98px; animation: 250ms ease 0s 1 normal none running animation-bhegco; transition: opacity 0.3s; overflow: hidden;",
+            "class": "gh-portal-triggerbtn-iframe",
+            "title": "portal-trigger",
+            "testid": "portal-trigger-frame",
+            "box": {
+              "x": 1256,
+              "y": 802,
+              "width": 184,
+              "height": 98
+            },
+            "parent_is_root": true
+          },
+          "trigger": true,
+          "wrapper_box": {
+            "x": 0,
+            "y": 0,
+            "width": 182.421875,
+            "height": 98
+          },
+          "wrapper_padding": "10px 28px 0px 17px",
+          "button_class": "gh-portal-triggerbtn-container with-label",
+          "button_box": {
+            "x": 17,
+            "y": 10,
+            "width": 137.421875,
+            "height": 60
+          },
+          "button": {
+            "height": "60px",
+            "min_width": "60px",
+            "border_radius": "999px",
+            "background_color": "rgb(56, 50, 229)",
+            "box_shadow": "rgba(0, 0, 0, 0.24) 0px 8px 16px -2px",
+            "padding": "0px 12px 0px 16px"
+          },
+          "halo": "0px",
+          "label": {
+            "text": " Subscribe ",
+            "box": {
+              "x": 57,
+              "y": 23.5,
+              "width": 85.421875,
+              "height": 32
+            },
+            "font_family": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+            "font_size": "16px",
+            "font_weight": "400",
+            "line_height": "16px",
+            "color": "rgb(255, 255, 255)",
+            "padding": "8px",
+            "white_space": "nowrap",
+            "max_width": "380px"
+          },
+          "icon": {
+            "tag": "svg",
+            "box": {
+              "x": 33,
+              "y": 28,
+              "width": 24,
+              "height": 24
+            },
+            "style": "width: 24px; height: 24px; color: rgb(255, 255, 255);",
+            "html": "<svg width=\"26\" height=\"26\" viewBox=\"0 0 26 26\" fill=\"none\" xmlns=\"http://www.w3.org/2000/svg\" style=\"width: 24px; height: 24px; color: rgb(255, 255, 255);\"><path d=\"M17.903 12.016c-.332-1.665-1.491-3.032-3.031-3.654M11.037 8.4C9.252 9.163 8 10.935 8 13c0 .432.055.85.158 1.25M10.44 17.296c.748.447 1.624.704 2.56.704 1.71 0 3.22-.858 4.12-2.167M15.171 21.22c3.643-.96 6.329-4.276 6.329-8.22 0-1.084-.203-2.121-.573-3.075M18.611 6.615C17.114 5.3 15.151 4.5 13 4.5c-2.149 0-4.112.797-5.608 2.113M5.112 9.826c-.395.98-.612 2.052-.612 3.174 0 4.015 2.783 7.38 6.526 8.27\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\"></path><path d=\"M8.924 24.29c1.273.46 2.645.71 4.076.71 5.52 0 10.17-3.727 11.57-8.803M6.712 2.777C3.285 4.89 1 8.678 1 13c0 3.545 1.537 6.731 3.982 8.928M24.849 11.089C23.933 5.369 18.977 1 13 1c-.69 0-1.367.058-2.025.17\" stroke=\"#fff\" stroke-width=\"1.5\" stroke-linecap=\"round\"></path></svg>"
+          },
+          "body_font": "-apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif",
+          "button_page_box": {
+            "x": 1273,
+            "y": 812,
+            "width": 137.421875,
+            "height": 60
+          }
+        }
+      }
+    },
     "frame_style": ":root { --brandcolor: #3832e5 }\n    /* Colors\n    /* ----------------------------------------------------- */\n    :root {\n        --black: #000;\n        --blackrgb: 0,0,0;\n        --grey0: #1d1d1d;\n        --grey1: #333;\n        --grey1rgb: 33, 33, 33;\n        --grey2: #3d3d3d;\n        --grey3: #474747;\n        --grey4: #515151;\n        --grey5: #686868;\n        --grey6: #7f7f7f;\n        --grey7: #979797;\n        --grey8: #aeaeae;\n        --grey9: #c5c5c5;\n        --grey10: #dcdcdc;\n        --grey11: #e1e1e1;\n        --grey12: #eaeaea;\n        --grey13: #f9f9f9;\n        --grey13rgb: 249,249,249;\n        --grey14: #fbfbfb;\n        --white: #fff;\n        --whitergb: 255,255,255;\n        --red: #f02525;\n        --darkerRed: #C50202;\n        --yellow: #FFDC15;\n        --green: #30CF43;\n    }\n\n    /* Globals\n    /* ----------------------------------------------------- */\n    html {\n        font-size: 62.5%;\n        height: 100%;\n    }\n\n    body {\n        margin: 0px;\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif;\n        font-size: 1.6rem;\n        height: 100%;\n        line-height: 1.6em;\n        font-weight: 400;\n        font-style: normal;\n        color: var(--grey2);\n        box-sizing: border-box;\n        overflow: hidden;\n    }\n\n    button,\n    button span {\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif;\n    }\n\n    *, ::after, ::before {\n        box-sizing: border-box;\n    }\n\n    h1, h2, h3, h4, h5, h6, p {\n        line-height: 1.15em;\n        padding: 0;\n        margin: 0;\n    }\n\n    h1 {\n        font-size: 35px;\n        font-weight: 700;\n        letter-spacing: -0.022em;\n    }\n\n    h2 {\n        font-size: 32px;\n        font-weight: 700;\n        letter-spacing: -0.021em;\n    }\n\n    h3 {\n        font-size: 24px;\n        font-weight: 700;\n        letter-spacing: -0.019em;\n    }\n\n    h4 {\n        font-size: 19px;\n        font-weight: 700;\n        letter-spacing: -0.02em;\n    }\n\n    h5 {\n        font-size: 15px;\n        font-weight: 700;\n        letter-spacing: -0.02em;\n    }\n\n    p {\n        font-size: 15px;\n        line-height: 1.5em;\n        margin-bottom: 24px;\n    }\n\n    strong {\n        font-weight: 600;\n    }\n\n    a,\n    .gh-portal-link {\n        cursor: pointer;\n    }\n\n    p a {\n        font-weight: 500;\n        color: var(--brandcolor);\n        text-decoration: none;\n    }\n\n    svg {\n        box-sizing: content-box;\n    }\n\n    input,\n    textarea {\n        font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, Oxygen, Ubuntu, Cantarell, \"Open Sans\", \"Helvetica Neue\", sans-serif;\n        font-size: 1.5rem;\n    }\n\n    textarea {\n        padding: 10px;\n        line-height: 1.5em;\n    }\n\n    .gh-longform {\n        padding: 56px 6vmin 6vmin;\n    }\n\n    .gh-longform p {\n        color: var(--grey3);\n        margin-bottom: 1.2em;\n    }\n\n    .gh-longform p:last-of-type {\n        margin-bottom: 0.2em;\n    }\n\n    .gh-longform h3 {\n        font-size: 27px;\n        margin-top: 0px;\n        margin-bottom: 0.25em;\n        text-wrap: balance;\n    }\n\n    .gh-longform h4 {\n        font-size: 17.5px;\n        margin-top: 1.85em;\n        margin-bottom: 0.4em;\n    }\n\n    .gh-longform h5 {\n        margin-top: 0.8em;\n        margin-bottom: 0.2em;\n    }\n\n    .gh-longform a {\n        color: var(--brandcolor);\n        font-weight: 500;\n    }\n\n    .gh-longform strong {\n        color: var(--grey1);\n    }\n\n    .gh-longform .ul {\n        text-decoration: underline;\n    }\n\n    .gh-longform .gh-portal-btn {\n        width: calc(100% + 4vmin);\n        margin-top: 4rem;\n        margin-inline-end: -4vmin;\n    }\n\n    .gh-longform .gh-portal-btn.no-margin-right {\n       margin-inline-end: 0;\n        width: 100%;\n    }\n\n    .gh-longform .gh-portal-btn-text {\n        color: var(--brandcolor);\n        cursor: pointer;\n        background: none;\n        transition: color linear 100ms;\n        font-size: 1.45rem;\n        text-decoration: underline;\n    }\n\n    @media (max-width: 1440px) {\n        h1 {\n            font-size: 32px;\n            letter-spacing: -0.022em;\n        }\n\n        h2 {\n            font-size: 28px;\n            letter-spacing: -0.021em;\n        }\n\n        h3 {\n            font-size: 26px;\n            letter-spacing: -0.02em;\n        }\n    }\n\n    @media (max-width: 480px) {\n        h1 {\n            font-size: 30px;\n            letter-spacing: -0.021em;\n        }\n\n        h2 {\n            font-size: 26px;\n            letter-spacing: -0.02em;\n        }\n\n        h3 {\n            font-size: 24px;\n            letter-spacing: -0.019em;\n        }\n\n        .gh-longform {\n            padding: 10vmin 28px;\n        }\n\n        .gh-desktop-only {\n            display: none;\n        }\n    }\n\n    @media (min-width: 481px) {\n        .gh-mobile-only {\n            display: none;\n        }\n    }\n\n    .gh-portal-triggerbtn-wrapper {\n        display: inline-flex;\n        align-items: flex-start;\n        justify-content: flex-end;\n        height: 100%;\n        opacity: 1;\n        transition: transform 0.16s linear 0s; opacity 0.08s linear 0s;\n        user-select: none;\n        line-height: 1;\n        padding: 10px 28px 0 17px;\n    }\n    html[dir=\"rtl\"] .gh-portal-triggerbtn-wrapper {\n        padding: 10px 17px 0 28px;\n    }\n\n    .gh-portal-triggerbtn-wrapper span {\n        margin-bottom: 1px;\n    }\n\n    .gh-portal-triggerbtn-container {\n        position: relative;\n        cursor: pointer;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        background: var(--brandcolor);\n        height: 60px;\n        min-width: 60px;\n        box-shadow: rgba(0, 0, 0, 0.24) 0px 8px 16px -2px;\n        border-radius: 999px;\n        transition: opacity 0.3s ease;\n    }\n\n    .gh-portal-triggerbtn-container:before {\n        position: absolute;\n        content: \"\";\n        top: 0;\n        right: 0;\n        bottom: 0;\n        left: 0;\n        border-radius: 999px;\n        background: rgba(var(--whitergb), 0);\n        transition: background 0.3s ease;\n    }\n\n    .gh-portal-triggerbtn-container:hover:before {\n        background: rgba(var(--whitergb), 0.08);\n    }\n\n    .gh-portal-triggerbtn-container.halo:before {\n        top: -4px;\n        right: -4px;\n        bottom: -4px;\n        left: -4px;\n        border: 4px solid rgba(var(--whitergb), 0.15);\n    }\n\n    .gh-portal-triggerbtn-container.with-label {\n        padding: 0 12px 0 16px;\n    }\n    html[dir=\"rtl\"] .gh-portal-triggerbtn-container.with-label {\n        padding: 0 16px 0 12px;\n    }\n\n    .gh-portal-triggerbtn-label {\n        padding: 8px;\n        color: var(--white);\n        display: block;\n        white-space: nowrap;\n        max-width: 380px;\n        overflow: hidden;\n        text-overflow: ellipsis;\n    }\n\n    .gh-portal-avatar {\n        margin-bottom: 0px !important;\n        width: 60px;\n        height: 60px;\n    }\n\n    .gh-portal-avatar {\n        position: relative;\n        display: flex;\n        align-items: center;\n        justify-content: center;\n        overflow: hidden;\n        margin: 0 0 8px 0;\n        border-radius: 999px;\n    }\n\n    .gh-portal-avatar img {\n        position: absolute;\n        display: block;\n        top: -2px;\n        right: -2px;\n        bottom: -2px;\n        left: -2px;\n        width: calc(100% + 4px);\n        height: calc(100% + 4px);\n        opacity: 1;\n        max-width: unset;\n    }\n"
   },
   "cleared": {
@@ -842,6 +1290,7 @@
   "restored": {
     "portal_button": false,
     "portal_button_style": "icon-and-text",
-    "announcement_visibility": "[\"visitors\"]"
+    "announcement_visibility": "[\"visitors\"]",
+    "portal_button_icon": null
   }
 }

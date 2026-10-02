@@ -7,8 +7,8 @@
  * shows, Ghost's markup built from text and marks only, Ghost's own stylesheets as recorded, and the marker NFR-6(c3)
  * finds them by. `editor.tsx`'s `drawShims` is the few lines that write it.
  *
- * PURE: its imports are the runtime's mark helpers, the URL scheme and types, so `node --test` reaches all of it
- * (`ghost-surfaces.test.ts`), as it does `lib/view-as.ts`. The one step that needs a DOM — parsing the stored HTML — is
+ * PURE: its imports are the runtime's mark helpers, the URL scheme, View as's visitors and types, so `node --test`
+ * reaches all of it (`ghost-surfaces.test.ts`), as it does `lib/view-as.ts`. The one step that needs a DOM — parsing the stored HTML — is
  * HANDED IN (`parse`): the editor passes `DOMParser`'s inert document, the test jsdom's.
  *
  * GHOST'S LOOK, NOT INFLOZO'S (R-74, FR-H5): the export draws neither surface, and these stand in for Ghost's page rather
@@ -25,8 +25,8 @@ import { escapeUserText, readMarks, serializeMarks, type MarkNode, type RichText
 import type { PropDef } from '@inflozo/library'
 import { isSurface, type CanvasKey } from './editor.ts'
 import type { EditorSite } from './live-content.ts'
-import { isAccent, type Members, type Surfaces } from './probe-rule.ts'
-import type { Visitor } from './view-as.ts'
+import { isAccent, PORTAL_ICONS, type Members, type PortalIcon, type Surfaces } from './probe-rule.ts'
+import { VISITORS, type Visitor } from './view-as.ts'
 
 /** NFR-6(c3)'s marker: `[data-ghost-surface]` finds exactly the shims drawn, and each value names its surface. */
 export const SURFACE = { strip: 'announcement-bar', button: 'portal-button' } as const
@@ -132,8 +132,10 @@ export function stripMarkup(a: { background: Background; words: RichText }, acce
 
 /* ── THE BUTTON — Portal's floating trigger ─────────────────────────────────────────────────────────────────────────── */
 
-/** What the button draws: Portal's member look, or the logged-out look `portal_button_style` and the label choose. */
-export type ButtonLook = { member: boolean; icon: 26 | 34 | null; label: string | null }
+/** What the button draws: Portal's member look, or the logged-out look `portal_button_style`, the label and the icon
+ *  choose. `icon` is the glyph: the person at 26 or 34px, the site's chosen icon — one of `PORTAL_ICONS`, or its own
+ *  image as an `https:` URL, as `storedSurfaces` re-checked it — or none. */
+export type ButtonLook = { member: boolean; icon: 26 | 34 | string | null; label: string | null }
 
 /**
  * THE BUTTON, OR NULL — Portal's own rules (2.69.339 `trigger-button.jsx`; 2.51.5 `TriggerButton.js` the same):
@@ -144,21 +146,46 @@ export type ButtonLook = { member: boolean; icon: 26 | 34 | null; label: string 
  *   a signed-in member (View as's Free and Paid member) always meets the member look: a 60px circle, no label, the halo
  *   ring and the person icon at 34px (a preview member has no avatar);
  *   a logged-out visitor meets `portal_button_style`: a label only for `icon-and-text` and `text-only`, and only where
- *   the label is not empty (`hasText`); the icon for the two icon styles, 26px beside a label and 34px alone.
- * The icon is always Ghost's default person icon (`user.svg`), whichever the site chose (DW-278).
+ *   the label is not empty (`hasText`); for the two icon styles the icon the site chose (DW-278, `renderTriggerIcon`
+ *   :104-143) — a preset or its own image — else the person, 26px beside a label and 34px alone.
  */
 export function portalFor(surfaces: Surfaces | null, members: Members | null, visitor: Visitor): ButtonLook | null {
   if (surfaces === null || !surfaces.portal.button) return null
   if (members !== null && members.signup_access === 'none') return null
   if (visitor !== 'anonymous') return { member: true, icon: 34, label: null }
-  const { style, label } = surfaces.portal
+  const { style, label, icon } = surfaces.portal
   const text = style !== 'icon-only' && label !== ''
-  return { member: false, icon: style === 'text-only' ? null : text ? 26 : 34, label: text ? label : null }
+  return { member: false, icon: style === 'text-only' ? null : (icon ?? (text ? 26 : 34)), label: text ? label : null }
 }
 
 /** Portal's person icon (`images/icons/user.svg`), VERBATIM as the trigger renders it at either size (recorded, `icon.html`). */
 export const userIcon = (px: 26 | 34): string =>
   `<svg id="Regular" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" style="width: ${px}px; height: ${px}px; color: rgb(255, 255, 255);"><defs><style>.cls-1{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.8px;}</style></defs><circle class="cls-1" cx="12" cy="9.75" r="5.25"></circle><path class="cls-1" d="M18.913,20.876a9.746,9.746,0,0,0-13.826,0"></path><circle class="cls-1" cx="12" cy="12" r="11.25"></circle></svg>`
+
+/** DW-278 — PORTAL'S FIVE PRESETS (`images/icons/button-icon-{1…5}.svg`, the same paths in 2.69.339 and 2.51.5), each as
+ *  the trigger renders it: React's SVG with Portal's `buttonIcon` style, 24px and white. Derived from Portal's source by
+ *  the serializer that reproduces `userIcon` byte for byte, and held to the RECORDING (`portal.icons` in `surfaces.json`,
+ *  both majors) by `ghost-surfaces.test.ts` — which fails, naming the recorder, until that recording exists. */
+const PRESETS: Readonly<Record<PortalIcon, string>> = {
+  'icon-1': '<svg width="21" height="24" viewBox="0 0 21 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: rgb(255, 255, 255);"><path d="M10.533 11.267c2.835 0 5.134-2.299 5.134-5.134C15.667 3.298 13.368 1 10.533 1 7.698 1 5.4 3.298 5.4 6.133s2.298 5.134 5.133 5.134zM1 23c0-2.529 1.004-4.953 2.792-6.741 1.788-1.788 4.213-2.792 6.741-2.792 2.529 0 4.954 1.004 6.741 2.792 1.788 1.788 2.793 4.212 2.793 6.74" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+  'icon-2': '<svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: rgb(255, 255, 255);"><g fill="none" fill-rule="evenodd"><path stroke="#FFF" stroke-width="1.5" stroke-linecap="round" d="M12.5 2v20M2 12.5h20"></path></g></svg>',
+  'icon-3': '<svg width="25" height="24" viewBox="0 0 25 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: rgb(255, 255, 255);"><path d="M23.5 6v14.25c0 .597-.237 1.169-.659 1.591-.422.422-.994.659-1.591.659s-1.169-.237-1.591-.659c-.422-.422-.659-.994-.659-1.591V3c0-.398-.158-.78-.44-1.06-.28-.282-.662-.44-1.06-.44h-15c-.398 0-.78.158-1.06.44C1.157 2.22 1 2.601 1 3v17.25c0 .597.237 1.169.659 1.591.422.422.994.659 1.591.659h18M4.75 15h10.5M4.75 18h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M14.5 5.25h-9c-.414 0-.75.336-.75.75v4.5c0 .414.336.75.75.75h9c.414 0 .75-.336.75-.75V6c0-.414-.336-.75-.75-.75z" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+  'icon-4': '<svg width="24" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: rgb(255, 255, 255);"><path d="M21.75 1.5H2.25c-.828 0-1.5.672-1.5 1.5v12c0 .828.672 1.5 1.5 1.5h19.5c.828 0 1.5-.672 1.5-1.5V3c0-.828-.672-1.5-1.5-1.5zM15.687 6.975L19.5 10.5M8.313 6.975L4.5 10.5" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path><path d="M22.88 2.014l-9.513 6.56C12.965 8.851 12.488 9 12 9s-.965-.149-1.367-.426L1.12 2.014" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>',
+  'icon-5': '<svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; color: rgb(255, 255, 255);"><path d="M17.903 12.016c-.332-1.665-1.491-3.032-3.031-3.654M11.037 8.4C9.252 9.163 8 10.935 8 13c0 .432.055.85.158 1.25M10.44 17.296c.748.447 1.624.704 2.56.704 1.71 0 3.22-.858 4.12-2.167M15.171 21.22c3.643-.96 6.329-4.276 6.329-8.22 0-1.084-.203-2.121-.573-3.075M18.611 6.615C17.114 5.3 15.151 4.5 13 4.5c-2.149 0-4.112.797-5.608 2.113M5.112 9.826c-.395.98-.612 2.052-.612 3.174 0 4.015 2.783 7.38 6.526 8.27" stroke="#fff" stroke-width="1.5" stroke-linecap="round"></path><path d="M8.924 24.29c1.273.46 2.645.71 4.076.71 5.52 0 10.17-3.727 11.57-8.803M6.712 2.777C3.285 4.89 1 8.678 1 13c0 3.545 1.537 6.731 3.982 8.928M24.849 11.089C23.933 5.369 18.977 1 13 1c-.69 0-1.367.058-2.025.17" stroke="#fff" stroke-width="1.5" stroke-linecap="round"></path></svg>',
+}
+
+/** The glyph inside the button, as `renderTriggerIcon` draws it: the person at its size, a preset's own SVG, or the site's
+ *  image at 26×26 with an empty alt — its address through `escapeUserText`, so it can never close the attribute.
+ *  ponytail: the image's markup is read in Portal's source (both majors), not recorded; a step with an image URL in
+ *  `record-ghost-surfaces.cjs` is the upgrade if it is ever held byte for byte. */
+const glyph = (icon: ButtonLook['icon']): string =>
+  icon === null
+    ? ''
+    : typeof icon === 'number'
+      ? userIcon(icon)
+      : (PORTAL_ICONS as readonly string[]).includes(icon)
+        ? PRESETS[icon as PortalIcon]
+        : `<img style="width: 26px; height: 26px;" src="${escapeUserText(icon)}" alt="">`
 
 /** PORTAL'S OWN TRIGGER RULES (2.69.339 `trigger-button.styles.js`, which 2.51.5 matches but for two blank lines), VERBATIM
  *  as recorded inside the trigger's frame on T1. Its hover and right-to-left rules never match here, and are kept verbatim. */
@@ -279,7 +306,7 @@ export function buttonMarkup(look: ButtonLook, accent: string | null): Shim {
     html:
       `<style>${PORTAL_CSS}</style>` +
       `<div class="gh-portal-triggerbtn-iframe" style="--brandcolor:${accentOf(accent)};${width}"><div class="gh-portal-frame">` +
-      `<div class="gh-portal-triggerbtn-wrapper"><div class="${container}">${look.icon === null ? '' : userIcon(look.icon)}${label}</div></div>` +
+      `<div class="gh-portal-triggerbtn-wrapper"><div class="${container}">${glyph(look.icon)}${label}</div></div>` +
       '</div></div>',
   }
 }
@@ -308,7 +335,23 @@ export const GHOST_WORDS = {
 } as const
 export const ghostName = (id: SurfaceId | null): string => GHOST_ROWS.find((r) => r.id === id)?.name ?? ''
 
+/** R-215 — THE ROWS THE SITE SHOWS, in the page's order: Layers names a surface only while the site has it on, by Ghost's
+ *  own rules — the bar when SOME visitor meets it (`announcementFor`: `isFilled`'s words and a non-empty audience,
+ *  `ghost_head.js` 6.58.0 :177), the button when Portal draws it for a logged-out visitor (`portal_button` on and
+ *  sign-up not Nobody, `isSigninAllowed`). The site's setting decides, never View as or the window's width. Empty for
+ *  none, and the editor then draws no group. A hidden row's id stays in this browser's list (`readHidden`), so a surface
+ *  switched off and on again comes back hidden. */
+export const rowsOn = (surfaces: Surfaces | null, members: Members | null, parse: (html: string) => MarkNode): typeof GHOST_ROWS =>
+  GHOST_ROWS.filter(({ id }) =>
+    id === SURFACE.strip ? VISITORS.some((v) => announcementFor(surfaces, v, parse) !== null) : portalFor(surfaces, members, 'anonymous') !== null,
+  )
+
 /** the browser's key for one project's hidden shims */
+/** The group's rows: each surface the site shows (`rowsOn`), with this browser's Hide on it. The hidden ids are NEVER
+ *  pruned to the rows shown — a surface switched off keeps its id, so it comes back hidden when the site shows it again
+ *  (R-215's matrix row). */
+export const ghostRowsOf = (shown: typeof GHOST_ROWS, hidden: readonly SurfaceId[]) => shown.map((r) => ({ ...r, hidden: hidden.includes(r.id) }))
+
 export const HIDDEN_KEY = (projectId: string): string => `inflozo-ghost-hidden:${projectId}`
 type Store = Pick<Storage, 'getItem' | 'setItem'>
 /** what this browser hides for the project: the known ids alone, and nothing where the store is absent, refused or junk */

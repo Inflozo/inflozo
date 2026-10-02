@@ -4,7 +4,8 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   CANVASES, canvasesOf, canvasFromSegment, canvasOfPageTwoKey, canvasOfPath, canvasOfTemplateKey, canvasPath, canvasStack,
-  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, fileOfKey, isEditorPath, isMembership, isSurface, isUuid, LOCK, lockPath, PAGE_TWO,
+  CONDITIONAL, CUSTOM_TEMPLATE_CAPTION, fileOfKey, isEditorPath, isMembership, isSiteFooter, isSurface, isUuid, landWithin, LOCK, siteSlot,
+  lockPath, PAGE_TWO,
   pageTwoKeyOf, SETTINGS, settingsPath, SITE, SYNC, syncPath, templateKeyOf, type CanvasKey,
 } from './lib/editor.ts'
 import { DESKTOP, DEVICES, deviceShown, fitFor, MOBILE, TABLET, viewportWords, type Device } from './lib/device.ts'
@@ -116,6 +117,51 @@ test('the editor path is /projects/<anything> and below, never /projects', () =>
 test('a uuid is checked before any query', () => {
   assert.ok(isUuid(ID))
   for (const s of ['abc', `${ID}x`, ID.replace(/-/g, ''), "' or 1=1 --"]) assert.ok(!isUuid(s), s)
+})
+
+test('DW-187 · DW-189 (Story 5.24e): a site-wide move stays in its band, so every move leaves the site doc in the order the page draws it', () => {
+  const i = (designId: string) => ({ designId })
+  // made-up site docs, each already in canvas order (headers and bars, then footers) — every shape a band can take
+  const docs = [
+    [i('a1/1'), i('a2/4'), i('a3/1')],
+    [i('a1/1'), i('a3/1'), i('a3/2')],
+    [i('a1/1'), i('a2/4'), i('a3/1'), i('a3/2')],
+    [i('a3/1'), i('a3/2')],
+    [i('a1/1'), i('a2/4')],
+    [i('a1/1')],
+  ]
+  const moved = <T,>(doc: readonly T[], from: number, to: number) => {
+    const out = [...doc]
+    const [one] = out.splice(from, 1)
+    out.splice(to, 0, one!)
+    return out
+  }
+  /** every from and every to, with `land` deciding where the row really lands; answers the moves that broke the order */
+  const broken = (land: (footers: boolean[], from: number, to: number) => number) =>
+    docs.flatMap((doc) => doc.flatMap((_, from) => doc.flatMap((__, to) => {
+      const after = moved(doc, from, land(doc.map((x) => isSiteFooter(x.designId)), from, to))
+      return JSON.stringify(after) === JSON.stringify(canvasStack(after, [])) ? [] : [`${doc.map((x) => x.designId)} ${from}→${to}`]
+    })))
+  assert.deepEqual(broken(landWithin), [], 'clamped, no move leaves the site doc out of the page\'s order')
+  // the control: unclamped, a footer dragged above a header (and a header below a footer) is exactly DW-187
+  assert.ok(broken((_, __, to) => to).length > 0, 'control: the unclamped moves break the order')
+  // a page doc has no bands, and every move is left as asked
+  assert.equal(landWithin([false, false, false], 0, 2), 2)
+  assert.equal(landWithin([false, false, false], 2, 0), 0)
+})
+
+test('DW-187: a NEW site-wide section lands in its band — a header or bar before the first footer, a footer last — so the site doc keeps the page\'s order', () => {
+  const i = (designId: string) => ({ designId })
+  const docs = [[], ['a1/1'], ['a3/1'], ['a1/1', 'a3/1'], ['a1/1', 'a2/4', 'a3/1', 'a3/2'], ['a3/1', 'a3/2']]
+  for (const doc of docs) {
+    for (const placing of ['a2/4', 'a3/9']) {
+      const after = doc.toSpliced(siteSlot(doc, placing), 0, placing)
+      assert.deepEqual(after, canvasStack(after.map(i), []).map((x) => x.designId), `${placing} into [${doc}]`)
+    }
+  }
+  // the control: placed at the end, a bar lands after a footer — out of the page's order
+  const end = ['a1/1', 'a3/1', 'a2/4']
+  assert.notDeepEqual(end, canvasStack(end.map(i), []).map((x) => x.designId))
 })
 
 test('the stack: site-wide outside a3 first, then the canvas, then the a3 footers, each in doc order', () => {
@@ -297,4 +343,14 @@ test('R-202: D8\'s rearrangement below 1280 on a fine pointer, and at ANY width 
   for (const width of [768, 834, 1194, 1366, 2560]) assert.equal(isCompact({ coarse: true, width }), true, `coarse at ${width}`)
   // the media text is the same rule: a coarse pointer, or a width
   assert.deepEqual(COMPACT.split(',').map((b) => b.trim().replace(/\d+/, 'N')), ['(pointer: coarse)', '(width < Npx)'])
+})
+
+test('DW-235 (Story 5.24e): the sync route asks `docRefusal` of every key before it reads the lock and before the RPC writes', () => {
+  // `read.ts` throws on a doc this refuses, which blacks out every canvas of the project — so the one door that writes a
+  // doc must refuse it FIRST (the surface-count line before it, `editor.test.ts`'s TEMPLATE_KEY row above, is the precedent)
+  const route = readFileSync(join(import.meta.dirname, 'app', '(app)', 'app', '(authed)', 'projects', '[id]', 'sync', 'route.ts'), 'utf8')
+  const asked = route.indexOf('docRefusal(key, ')
+  assert.ok(asked > 0, 'the sync route no longer asks docRefusal')
+  assert.ok(asked < route.indexOf(".from('edit_locks')"), 'docRefusal is asked before the lock is read')
+  assert.ok(asked < route.indexOf("rpc('sync_project_doc'"), 'docRefusal is asked before the write')
 })

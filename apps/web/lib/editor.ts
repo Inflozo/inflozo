@@ -182,9 +182,34 @@ export const canvasOfPath = (pathname: string): CanvasKey | null => {
   return segment === undefined || segment === '' ? 'home' : canvasFromSegment(segment)
 }
 
+/** DW-187 (Story 5.24e): the one spelling of "a site-wide section the page draws LAST" — A3's footers. */
+export const isSiteFooter = (designId: string): boolean => designId.startsWith('a3/')
+
 /** Layers' order and the canvas's: the site-wide instances outside `a3/` (headers), the canvas's own, then the `a3/`
  *  footers — each group in doc order. */
 export function canvasStack<T extends { designId: string }>(site: readonly T[], own: readonly T[]): T[] {
-  const footer = (i: T) => i.designId.startsWith('a3/')
+  const footer = (i: T) => isSiteFooter(i.designId)
   return [...site.filter((i) => !footer(i)), ...own, ...site.filter(footer)]
+}
+
+/**
+ * DW-187 · DW-189 (Story 5.24e): A SITE-WIDE MOVE STAYS IN ITS BAND (5.24a's routine call 2). The page draws the site doc's
+ * headers and bars first and its footers last whatever order the doc stores them in (`canvasStack`), so a footer dragged
+ * above a header — or a header ⌥↑'d past nothing — left Layers' order (the doc's) saying one thing and the page another.
+ * Clamped into the moving row's own band, a move keeps the site doc in canvas order, so Layers' order IS the page's.
+ * `footers` is the doc's instances, in order, as `isSiteFooter` answers them; a page doc has none and is unchanged.
+ * The bands are contiguous because every door keeps them so — this clamp on each move, `onPlace` putting a header before
+ * the first footer — and no stored doc holds a footer yet (the first real one is Story 9.9's).
+ */
+export function landWithin(footers: readonly boolean[], from: number, to: number): number {
+  const heads = footers.filter((footer) => !footer).length
+  return footers[from] ? Math.min(Math.max(to, heads), footers.length - 1) : Math.max(Math.min(to, heads - 1), 0)
+}
+
+/** DW-187 · DW-189 (Story 5.24e): WHERE A NEW SITE-WIDE SECTION GOES when none of its category is there to replace — a
+ *  header or a bar before the first footer, a footer last — so a placement, like a move, leaves the site doc in the order
+ *  the page draws it (`canvasStack`). */
+export function siteSlot(designIds: readonly string[], placing: string): number {
+  const firstFooter = designIds.findIndex(isSiteFooter)
+  return isSiteFooter(placing) || firstFooter === -1 ? designIds.length : firstFooter
 }

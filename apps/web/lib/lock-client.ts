@@ -17,7 +17,7 @@ import { TAB_SESSION_KEY, type LockAnswer } from './lock.ts'
  * behaviour rather than a fallback.
  */
 
-export type LockIntent = 'acquire' | 'beat' | 'nudge' | 'keep' | 'release' | 'takeover'
+export type LockIntent = 'acquire' | 'beat' | 'nudge' | 'keep' | 'release' | 'leave' | 'takeover'
 
 export type { LockAnswer }
 
@@ -26,8 +26,11 @@ export type LockCall = {
   session: string
   /** the generation the take-over compares against */
   generation?: number
-  /** AD-16's count, carried by every beat and acquire: EDITS, never operations */
+  /** AD-16's count: EDITS, never operations — absent until this device's journal is read, when a beat keeps the stored
+   *  count rather than write a 0 over it (`countPatch`, DW-240) */
   unsynced?: number
+  /** `leave`'s filter: the `heartbeat_at` this tab last heard (DW-240, Story 5.24e) */
+  beat?: string
 }
 
 /** THE LOCK ROUTE'S ADDRESS AS THE BROWSER MUST ASK FOR IT — `syncUrl()`'s rule, read from the same `isApp`, because
@@ -104,9 +107,20 @@ export function lockSignals(projectId: string, heard: (signal: LockSignal) => vo
  * therefore the one wrong answer.
  *
  * It can throw or come back empty in a private window or with site data blocked, so both ends are wrapped and a
- * failure simply means a fresh id per load: the protocol still works, a reload just re-acquires.
+ * failure means a fresh id per load: the protocol still works, a reload just re-acquires. Such a tab's way out RELEASES
+ * rather than leaves (`tabSessionKept`, DW-240): its reload comes back as another session, which the leave's grace would
+ * only hold the lock against.
  */
 const SESSION_KEY = TAB_SESSION_KEY
+
+/** Is this id the one this tab will read back on its next load? False where the id was never kept (a refusing store). */
+export function tabSessionKept(id: string): boolean {
+  try {
+    return id !== '' && sessionStorage.getItem(SESSION_KEY) === id
+  } catch {
+    return false
+  }
+}
 
 export function tabSession(): string {
   try {

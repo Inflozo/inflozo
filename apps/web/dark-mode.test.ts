@@ -107,9 +107,12 @@ test('R-133 — two entry points, ONE confirm, and it opens on Cancel (R-115, UX
 })
 
 test('R-205 — Theme settings\' Clear visits a section whose dark override is only REMEMBERED, through the one clear', () => {
-  // the runtime's `doc-edit.test.ts` proves the predicate and the clear; this holds the third door to them
+  // the runtime's `doc-edit.test.ts` proves the predicate, the clear and — since DW-198 (Story 5.24e) — the fold over every
+  // doc, `clearProject`, remembered overrides included; this holds the third door to them: the action calls that one fold
   const actions = readFileSync('app/(app)/app/(authed)/projects/[id]/settings/actions.ts', 'utf8')
-  assert.match(actions, /if \(!holdsDarkOverride\(instance\)\) continue/, 'a section is skipped only when it holds no override anywhere')
-  assert.match(actions, /clearDarkOverrides\(doc, instance\.instanceId\)/)
+  assert.match(actions, /const cleared = clearProject\(parsed\)/, 'the action clears through the runtime\'s one fold')
   assert.doesNotMatch(actions, /Object\.keys\(instance\.darkOverrides\)/, 'the live map alone would miss a remembered override')
+  const fold = readFileSync('../../packages/section-runtime/src/doc-edit.ts', 'utf8')
+  assert.match(fold, /if \(!holdsDarkOverride\(instance\)\) continue/, 'a section is skipped only when it holds no override anywhere')
+  assert.match(fold, /clearDarkOverrides\(doc, instance\.instanceId\)/)
 })

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { canvasCaching, canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
-import { carriesMemberVisibility, DESIGNS_DIR, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
+import { carriesMemberVisibility, DESIGNS_DIR, docRefusal, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
+import { parseDoc } from '@inflozo/section-runtime'
 import { samples } from './lib/controls-review.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
@@ -128,4 +129,34 @@ test('carriesMemberVisibility: read off the control register, false for a catego
   assert.equal(carriesMemberVisibility('a17/1'), false, 'a17 does not')
   assert.equal(carriesMemberVisibility('a22'), true, 'the category alone decides, so a bare category answers as its designs do')
   for (const id of ['', 'zz/1', '/1']) assert.equal(carriesMemberVisibility(id), false, JSON.stringify(id))
+})
+
+test('DW-235 (Story 5.24e): ONE rule for what a stored doc may hold — read.ts throws with it, and the sync route refuses with it before it writes', () => {
+  const doc = (key: string, ...designIds: string[]) =>
+    parseDoc({ schemaVersion: 1, instances: designIds.map((designId, n) => ({ instanceId: `i${n}`, layerName: designId, designId, content: {}, controls: {}, data: {}, darkOverrides: {} })) }, key)
+  // the spec's pair: a post header on Home is refused in read.ts's own words, and on its own canvas it stands
+  assert.match(docRefusal('home', doc('home', 'a24/1')) ?? '', /never home\.hbs/)
+  assert.equal(docRefusal('post', doc('post', 'a24/1')), null)
+  // a design the library does not hold, and a template surface with two designs — `read.ts`'s other refusals, one door
+  assert.match(docRefusal('home', doc('home', 'a99/1')) ?? '', /is not a design in packages\/library\/designs\//)
+  assert.match(docRefusal('paywall', doc('paywall', 'a24/1', 'a24/1')) ?? '', /a paywall holds one design/)
+  assert.match(docRefusal('paywall', doc('paywall', 'a24/1')) ?? '', /only a paywall design stands where a post stops/)
+  // `held` is the caller's map, filled as designs are read — read.ts hands its `entries` on through it
+  const held = {}
+  assert.equal(docRefusal('post', doc('post', 'a24/1'), held), null)
+  assert.deepEqual(Object.keys(held), ['a24/1'])
+})
+
+test('DW-275 (Story 5.24e): the canvas document carries no post-body sheet — the canvas routes serve it at ?sheet=surface', async () => {
+  const { surfaceCss } = await import('./lib/style-guide.ts')
+  const document = pilotsCanvasDocument()
+  assert.ok(surfaceCss().length > 0, 'the control: there is a sheet to leave out')
+  assert.ok(!document.includes(surfaceCss()), 'the sheet is not inlined in the canvas document')
+  assert.ok(!document.includes('2b-surface'), 'nor any element of its order')
+  // and both canvas routes answer it — read out of the files, as `editor.test.ts` reads the sync route (a route file may
+  // export only its handlers)
+  for (const route of [join('app', '(app)', 'app', '(authed)', 'canvas', 'route.ts'), join('app', '(app)', 'app', 'harness', 'canvas', 'route.ts')]) {
+    const source = readFileSync(route, 'utf8')
+    assert.match(source, /searchParams\.get\('sheet'\) === 'surface'[^]*surfaceCss\(\)[^]*text\/css/, `${route} answers ?sheet=surface with the sheet, as CSS`)
+  }
 })

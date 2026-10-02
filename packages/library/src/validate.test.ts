@@ -631,14 +631,19 @@ test('Story 5.19 — a query that is NOT a declaration (a secondary feed\'s) is 
   // every OTHER rule is still asked
   assert.deepEqual(validateDataBinding('posts', { ...feed, limit: 500 }, { declared: false }).map((f) => f.code), ['bad-get-limit'])
   assert.deepEqual(validateDataBinding('posts', { source: 'posts', filter: 'tag:{{x}}' }, { declared: false }).map((f) => f.code), ['bad-get-filter'])
+  // DW-258: the fold's Latin-1 slug passes the grammar run again at emission; a letter past Latin-1 still does not
+  assert.deepEqual(validateDataBinding('posts', { source: 'posts', filter: "tag:'café'" }, { declared: false }), [])
+  assert.deepEqual(validateDataBinding('posts', { source: 'posts', filter: "tag:'ā'" }, { declared: false }).map((f) => f.code), ['bad-get-filter'])
   assert.deepEqual(validateDataBinding('posts', { source: 'posts', ids: [] }, { declared: false }).map((f) => f.code), ['bad-get-ids'])
 })
 
 test('Story 5.19 — the Source vocabulary and the two grammars the fold emits', () => {
   assert.deepEqual([...POST_SOURCES], ['latest', 'featured', 'tag', 'author', 'picked'])
   assert.deepEqual(POST_SOURCES.map((v) => POST_SOURCE_WORDS[v]), ['Latest', 'Featured', 'By tag', 'By author', 'Hand-picked'])
-  for (const slug of ['craft', 'field-notes', 'a_b', '2026']) assert.ok(GHOST_SLUG_RE.test(slug), slug)
-  for (const slug of ["x'", 'Field', 'a b', '', 'é', 'x"}}']) assert.ok(!GHOST_SLUG_RE.test(slug), slug)
+  // DW-258: what Ghost's slugify really writes — Latin-1 letters unidecode 0.1.8 leaves, and an import's `--` and edge
+  // hyphens (the grammar's comment); the edges of the class are pinned: × and ß–þ in, É, ÿ and anything past Latin-1 out
+  for (const slug of ['craft', 'field-notes', 'a_b', '2026', 'café', 'é', 'ß', 'þ', '×', 'a--b', '-lead', 'trail-']) assert.ok(GHOST_SLUG_RE.test(slug), slug)
+  for (const slug of ["x'", 'Field', 'a b', '', 'x"}}', 'É', 'ÿ', 'ā', '中文']) assert.ok(!GHOST_SLUG_RE.test(slug), slug)
   assert.ok(GHOST_ID_RE.test('6a86b5fb6444934864da3283'))
   for (const id of ['6A86B5FB6444934864DA3283', '6a86b5fb6444934864da328', 'zz', "6a86b5fb6444934864da3283'"]) assert.ok(!GHOST_ID_RE.test(id), id)
   // DW-112: Ghost's default limit is the vocabulary's now

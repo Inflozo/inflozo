@@ -122,19 +122,25 @@ export function sitePage(
   const w = { kind, styleGuide: { post: orbitWeekly.subject('post'), page: orbitWeekly.subject('page') }, perPage: o.perPage }
   const source = siteSource(w, r)
   const { subject, fellBack } = orbitWeekly.resolveSubject(o.file, o.stored, source)
-  // the subject waits on a read (R-193's list, or the stored one's own `filter=slug:`): what depends on it waits too,
-  // and everything that does not — `@site`, every `{{#get}}` — is asked for in the same round
+  // the subject waits on a read (R-193's list, or the stored one's own `filter=slug:`): everything that does not depend
+  // on it — `@site`, every `{{#get}}` — is asked for in the same round
   const unresolved = r.need.length > 0
   const site = r.got(SETTINGS)?.rows[0]
   const zone = zoneOf(site)
   const rows = Object.fromEntries(Object.entries(o.queries).map(([key, queries]) => [key, siteRows(queries, r, zone)]))
-  if (unresolved) return { need: r.need }
-  if ((kind === 'tag' || kind === 'author') && subject === null) return { nothing: kind }
+  // `nothing` is judged only once the subject is resolved — never on the guess below
+  if (!unresolved && (kind === 'tag' || kind === 'author') && subject === null) return { nothing: kind }
+  // DW-250 (Story 5.24e): and so does what depends on it, on the LIKELY answer — a subject stored from the site is what
+  // the site will almost always still hold, so its row and its archive's page 1 go out in that same round too, and a
+  // stored Tag or Author paints after one round trip, not three. A guess the site no longer holds costs its `200 []` —
+  // a browse, which never 404s (`posts-public.js`: only `read` throws NotFoundError, both majors; §51 executed a gone
+  // slug's) — and the page then waits one more round, for the starting subject's page.
+  const likely = unresolved ? (o.stored?.source === 'site' ? o.stored : null) : subject
   // page 1's own count is always read: whether a page 2 exists is decided by it alone (§51 — past the last page Ghost
   // answers `200 []`), and a subject whose archive fits one page takes page 2 away (R-176)
-  const pages = source.pages(o.pageFile, subject)
-  const contexts = Object.fromEntries(o.targets.map((t) => [t, orbitWeekly.assemble(t, sitePieces(w, subject, t, o.page, r), o.visitor)]))
-  if (r.need.length > 0 || site === undefined) return { need: r.need }
+  const pages = source.pages(o.pageFile, likely)
+  const contexts = Object.fromEntries(o.targets.map((t) => [t, orbitWeekly.assemble(t, sitePieces(w, likely, t, o.page, r), o.visitor)]))
+  if (unresolved || r.need.length > 0 || site === undefined) return { need: r.need }
   return { ready: { subject, fellBack, source, pages, site, zone, contexts, rows } }
 }
 
@@ -165,6 +171,10 @@ export const canvasSrc = (appPrefixed: boolean) => `${appPrefixed ? '/app' : ''}
 
 /** The keyboard harness's own copy of it (R-146), which differs from the app's in its guard and nothing else. */
 export const harnessCanvasSrc = () => `/app/harness/canvas?v=${V}`
+
+/** DW-275 (Story 5.24e): the Paywall's post-body sheet, beside the canvas document it styles — the same route, its build
+ *  token carried so the browser keeps it as long as the document (`canvasCaching`), asked for on the first Paywall paint. */
+export const surfaceSheetSrc = (src: string) => `${src}${src.includes('?') ? '&' : '?'}sheet=surface`
 
 /** THE SAME DOCUMENT, NARROWED TO ONE DESIGN — a Section Picker preview's address (the owner's ruling of
  *  2026-09-20). A preview draws exactly one section, so it carries exactly one stylesheet; the editor's canvas,
@@ -269,18 +279,34 @@ export function renderSection(
   }))
 }
 
-/** STORY 5.20 — THE MAJOR the Paywall canvas previews: the style-guide's own (`style-guide.ts`' `PREVIEW_MAJOR`, T1's,
- *  the one the card chunks were vendored from). Ghost's box differs between the majors by one line's indent (§54). */
+/** STORY 5.20 — THE MAJOR the Paywall canvas's ARTICLE is drawn at: the style-guide's own (`style-guide.ts`'
+ *  `PREVIEW_MAJOR`, T1's, the one the card chunks were vendored from). Ghost's box differs between the majors by one
+ *  line's indent (§54), and since DW-273 (Story 5.24e) the box is the linked site's own major's — this is its fallback
+ *  where no site or no version is known. */
 export const SURFACE_MAJOR: orbitWeekly.Major = '6'
 
 const escText = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-/** The article's audio and video cards point at the reserved origin, and no media is bundled (`style-guide.ts`'s
- *  `withImages` says so): on the canvas document, whose policy is `default-src 'self'`, each player's `preload` fetch is
- *  a refused request and a `securitypolicyviolation` (the deployed editor walk's step 5, at Story 5.20's Dev). So the
- *  players are drawn with no source — their chrome, and nothing to play, which is all they ever played. */
-const MEDIA_SRC = new RegExp(`\\ssrc="${orbitWeekly.ORBIT_WEEKLY_ORIGIN.replace(/[.]/g, '\\.')}/media/[^"]*"`, 'g')
-export const withoutMedia = (html: string): string => html.replace(MEDIA_SRC, '')
+/** DW-102 (Story 5.24e) — THE ONE TREATMENT OF A MEDIA URL: Orbit Weekly's `https://orbit-weekly.example/media/<name>`
+ *  becomes the app's own `/orbit-weekly/media/<name>` (`public/`, served at the root on both hosts because `proxy.ts`'s
+ *  matcher leaves `orbit-weekly/` alone), a same-origin file the canvas document's `default-src 'self'` admits. It
+ *  replaced `withoutMedia`, which drew the players with no source while the reserved origin was a refused fetch (the
+ *  editor walk's step 5, Story 5.20). The Paywall page calls it here and `style-guide.ts`' `withImages` imports it: it
+ *  lives in THIS file because this one is client-safe (the editor bundles it; `style-guide.ts` reads the disk), and
+ *  nothing this file imports reaches `style-guide.ts`, so there is no cycle.
+ *
+ *  The clips are made in-house, licence-clean, with GStreamer 1.24's x264 and LAME, run in `public/orbit-weekly/media/`:
+ *    gst-launch-1.0 -e videotestsrc pattern=ball num-buffers=270 ! video/x-raw,width=640,height=360,framerate=30/1 \
+ *      ! x264enc pass=qual quantizer=26 ! video/x-h264,profile=constrained-baseline \
+ *      ! mp4mux faststart=true ! filesink location=scrolling-one-of-them.mp4
+ *    gst-launch-1.0 -e audiotestsrc wave=sine freq=440 volume=0.25 samplesperbuffer=44100 num-buffers=6 \
+ *      ! audio/x-raw,rate=44100,channels=1 ! lamemp3enc target=bitrate bitrate=64 cbr=true ! xingmux \
+ *      ! filesink location=episode-12.mp3
+ *  The video is the corpus's own 9 s at its 16:9, so the card's `0:09` holds once `video.js` reads the clip. The audio
+ *  card prints the clip's time too (`audio.js`'s `loadedmetadata`): `0:06`, since the corpus's 1268 s episode does not
+ *  fit a small committed file. A new corpus media name needs its file made the same way; `style-guide.test.ts` fails
+ *  until it exists. */
+export const withMedia = (html: string): string => html.replaceAll(`${orbitWeekly.ORBIT_WEEKLY_ORIGIN}/media/`, '/orbit-weekly/media/')
 
 /**
  * STORY 5.20 — THE PAYWALL CANVAS'S PAGE (C3a as corrected, `C Post Body.dc.html:1423-1472`): the style-guide article
@@ -296,12 +322,14 @@ export const withoutMedia = (html: string): string => html.replace(MEDIA_SRC, ''
  * `box` IS WRITTEN WHOLE, and both of its sources are trusted: the runtime's own render, and `contentCta`'s constants
  * with the accent through the colour parser. Every other word here is `PAYWALL_WORDS`' constant.
  */
-export function paywallPage(o: { visitor: Visitor; accent: unknown; box: string | null }): string {
+export function paywallPage(o: { visitor: Visitor; accent: unknown; box: string | null; major?: orbitWeekly.Major }): string {
   const blocks = orbitWeekly.blocks(SURFACE_MAJOR, 'article')
   const whole = postAccess({ visibility: 'paid' }, o.visitor)
   const at = orbitWeekly.PREVIEW_CUT + 1
-  const run = (from: number, to?: number) => withoutMedia(blocks.slice(from, to).map((b) => b.html).join(''))
-  const box = o.box ?? contentCta({ visibility: 'paid', member: o.visitor !== 'anonymous', accent: o.accent, major: SURFACE_MAJOR })
+  const run = (from: number, to?: number) => withMedia(blocks.slice(from, to).map((b) => b.html).join(''))
+  // DW-273 (Story 5.24e): Ghost's own box is the LINKED SITE's major's — 5's on a Ghost 5 site — and 6's where no site or no
+  // version is known. The article stays 6's either way: its cards' stylesheet is Ghost 6's, vendored (`style-guide.ts`)
+  const box = o.box ?? contentCta({ visibility: 'paid', member: o.visitor !== 'anonymous', accent: o.accent, major: o.major ?? SURFACE_MAJOR })
   const tail = whole
     ? `<div data-inflozo-gated><span>${escText(PAYWALL_WORDS.gated)}</span></div>${run(at)}`
     : `<div data-inflozo-cut><span data-inflozo-cut-label>${escText(PAYWALL_WORDS.cut)}</span><span data-inflozo-cut-note>${escText(PAYWALL_WORDS.below)}</span></div><div data-inflozo-box>${box}</div>`

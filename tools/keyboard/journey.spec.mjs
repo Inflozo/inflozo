@@ -16,7 +16,8 @@
 // hover-through-a-paint stop and 5.21's strip point the same way. THREE PRESSES are synthesized the same way, each for a
 // claim no key can reach: Preview's click and ground press, which must select nothing; 5.23a's press that starts an
 // inline session the keyed paint must then redraw; and DW-182's (Story 5.24d), which starts a session on the fixture
-// ring's heading to type past its limit and to lose the window. None reaches a task a keyboard could not: the canvas
+// ring's heading to type past its limit and to lose the window — the same press (`startHeading`) DW-241's inline arm
+// starts its field with (Story 5.24e). None reaches a task a keyboard could not: the canvas
 // has no keyboard path into inline editing (FR-D1), and every selection here is walked from the keyboard alone.
 //
 // WHAT IT CANNOT PROVE is the deployed walk's, which R-82 requires of every story anyway: the read, the session, the
@@ -305,6 +306,24 @@ test('⌘D duplicates the SELECTION, and a site-wide section has no Duplicate at
   // R-210: Layers follows the canvas a frame later — the check waits for it, and checks nothing different
   await expect.poll(async () => (await rows(page)).all).toHaveLength(before + 1)
   expect(await said(page)).toMatch(/duplicated/)
+
+  // DW-205 (Story 5.24e): the SAME sentence again is heard again — a new node in the polite region. Setting a region's
+  // words to what they already were changes nothing a screen reader can hear, which is how the second ⌘D was silent
+  await page.evaluate(() => {
+    window.__saidNodes = 0
+    new MutationObserver((records) => {
+      for (const r of records) window.__saidNodes += r.addedNodes.length
+    }).observe(document.getElementById('editor-said'), { childList: true, subtree: true, characterData: true })
+  })
+  const first = await said(page)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect.poll(async () => (await rows(page)).all).toHaveLength(before + 2)
+  expect(await said(page), 'the control: the second ⌘D says exactly what the first did').toBe(first)
+  // ONE new node — the sentence's own — and no more: a repeat is one announcement, never a burst
+  await expect.poll(() => page.evaluate(() => window.__saidNodes), { message: 'and the region gained a node, so it is announced' }).toBe(1)
+  await page.waitForTimeout(300)
+  expect(await page.evaluate(() => window.__saidNodes), 'exactly one').toBe(1)
 
   // a site-wide section is ONE shared instance: its key does nothing, exactly as its row carries no Duplicate
   await select(page, site[0])
@@ -1157,12 +1176,10 @@ test('FR-D5 does not reach the ring: a site-wide section has the same Design blo
    guard asks the TOP page `document.hasFocus()`, which the page can answer for itself. The session starts as a pointer
    starts it — the canvas document's own press, synthesized (the header's third) — and the keys type. */
 const RING_CONTENT = JSON.parse(readFileSync(new URL('../../packages/library/fixtures/controls/content.json', import.meta.url), 'utf8'))
-
-test('DW-182: past the heading\'s limit the canvas says so and the words stay at the limit; a lost window keeps the session, and a blur once it is back ends it', async ({ page }) => {
-  const heading = RING_CONTENT.props.heading
-  await open(page)
-  await selectRinged(page)
-  const started = await canvasFrame(page).locator('#canvas').evaluate((c, words) => {
+/** The selected ring fixture's heading, its editing session started as a pointer starts it — the canvas document's own
+ *  press, synthesized (the header's third) — with the caret in it. Its words, or null where no session started. */
+const startHeading = (page) =>
+  canvasFrame(page).locator('#canvas').evaluate((c, words) => {
     const root = c.querySelector(':scope > [data-inflozo-selected]')
     const el = [...root.querySelectorAll('*')].filter((e) => e.textContent.trim() === words).at(-1)
     if (!el) return null
@@ -1172,7 +1189,13 @@ test('DW-182: past the heading\'s limit the canvas says so and the words stay at
     // a synthesized press has no default action, so the caret a real one would leave is given by hand
     el.focus()
     return el.hasAttribute('data-inflozo-editing') && el.ownerDocument.activeElement === el ? el.textContent : null
-  }, heading.default)
+  }, RING_CONTENT.props.heading.default)
+
+test('DW-182: past the heading\'s limit the canvas says so and the words stay at the limit; a lost window keeps the session, and a blur once it is back ends it', async ({ page }) => {
+  const heading = RING_CONTENT.props.heading
+  await open(page)
+  await selectRinged(page)
+  const started = await startHeading(page)
   expect(started, 'the control: a press on the heading starts a session that holds the caret').toBe(heading.default)
   const editing = canvasFrame(page).locator('[data-inflozo-editing]')
   // past the limit: every character after the fortieth is refused, and the pill says so in the field's own words
@@ -1182,6 +1205,24 @@ test('DW-182: past the heading\'s limit the canvas says so and the words stay at
       .flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="note"]') ?? [])]).map((n) => n.textContent.trim()))
   await expect.poll(note, 'the limit\'s pill').toEqual([`${heading.label} holds ${heading.maxChars} characters.`])
   expect(await editing.evaluate((el) => el.textContent.length), 'the words stay at the limit').toBe(heading.maxChars)
+  // DW-256 (Story 5.24e): and the pill draws its shadow (P0-1 :142). In the chrome's shadow root Tailwind's four shadow
+  // variables are unregistered, so `shadow-md` computed to `none` until the host declared them. The control: the same
+  // class in the editor's own document computes a shadow, so `none` in the layer is the layer's doing and not the class's
+  const shadowOf = await canvasFrame(page).locator('body').evaluate((body) => {
+    const pill = [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')]
+      .flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="note"]') ?? [])])[0]
+    return pill ? getComputedStyle(pill).boxShadow : null
+  })
+  const probe = await page.evaluate(() => {
+    const el = document.createElement('div')
+    el.className = 'shadow-md'
+    document.body.append(el)
+    const shadow = getComputedStyle(el).boxShadow
+    el.remove()
+    return shadow
+  })
+  expect(probe, 'the control: shadow-md draws a shadow in the editor\'s own document').not.toBe('none')
+  expect(shadowOf, 'the limit pill in the chrome layer draws its shadow').not.toBe('none')
   // a window that lost focus (another tab, another app) keeps the session
   await page.evaluate(() => { document.hasFocus = () => false })
   await editing.evaluate((el) => el.blur())
@@ -2638,7 +2679,8 @@ test('5.20 · Back to post leaves the surface: the bar is paper again, the style
   await page.keyboard.press('Enter')
   await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
   await expect(page.locator('header[data-surface]')).toHaveCount(0)
-  expect(await canvasFrame(page).locator('style[data-order="2b-surface"]').evaluate((s) => s.media)).toBe('not all')
+  // DW-275 (Story 5.24e): the sheet is the `<link>` the first Paywall paint put in, switched off again here
+  expect(await canvasFrame(page).locator('[data-order="2b-surface"]').evaluate((s) => s.media)).toBe('not all')
   await expect(canvasFrame(page).locator('[data-inflozo-cut], [data-inflozo-dim], [data-inflozo-box], [data-inflozo-gated]')).toHaveCount(0)
   // and Home, from the switcher's first row
   await page.locator('#editor-template').focus()
@@ -2985,8 +3027,12 @@ test('DW-279: a re-read that lands redraws Ghost\'s strip and button over a canv
   await expect(canvasFrame(page).locator('#canvas > *').first()).toBeVisible()
   await expect.poll(() => rereads, 'the one re-read as the editor opens, held').toBe(1)
   expect((await shims(page)).surfaces, 'the control: the stored snapshot is empty, so the canvas painted no surface').toBe(0)
+  // R-215 (DW-277, Story 5.24e): and Layers lists no Ghost surface the site does not show — no group at all yet
+  await expect(page.locator('[data-ghost-rows]'), 'no From your Ghost site group while the snapshot shows nothing').toHaveCount(0)
   release()
   await expect.poll(async () => (await shims(page)).surfaces, 'the answer landed and the re-read drew both surfaces').toBe(2)
+  // …and once the answer shows both, both rows are listed
+  await expect.poll(async () => (await rows(page)).all.filter((k) => k.startsWith('ghost:')), 'both rows, once the site shows both').toEqual(GS.GHOST_ROWS.map((r) => `ghost:${r.id}`))
   const drawn = await shims(page)
   expect(drawn.words, 'the strip carries the answer\'s words').toBe(SHIM_WORDS)
   expect(drawn.stripFirst && drawn.buttonAtEnd && drawn.buttonShown, 'each where Ghost puts it').toBe(true)
@@ -3557,10 +3603,11 @@ const commentsKept = (page) =>
  *  lands in the harness. Here every Content API read is answered from the bundled sample, whose rows are the Content
  *  API's own shape (`live-content.test.ts` holds the whitelist to them): filtered by slug, tag, writer or id, ordered by
  *  date and paged, as Ghost does. `revise()` retitles the newest post from then on, so a read that lands afterwards
- *  carries words no drawing made before it holds; `finished()` counts the answers the page has received. */
+ *  carries words no drawing made before it holds; `finished()` counts the answers the page has received. `capped`: the
+ *  site holds more posts than the newest `LIST_LIMIT` the posts list reads, so DW-248's search at Ghost is live. */
 const SAMPLE = JSON.parse(readFileSync(new URL('../../packages/library/orbit-weekly/dataset.json', import.meta.url), 'utf8'))
 const LIVE = await import(new URL('../../apps/web/lib/live-content.ts', import.meta.url).href)
-async function answeringSite(page) {
+async function answeringSite(page, { capped = false } = {}) {
   const newest = SAMPLE.posts.toSorted((a, b) => b.published_at.localeCompare(a.published_at))[0]
   const revised = `${newest.title} (revised)`
   let posts = SAMPLE.posts
@@ -3586,10 +3633,16 @@ async function answeringSite(page) {
       : field === 'visibility' ? r.visibility === value
       : true)
     const dated = rows.every((r) => typeof r.published_at === 'string')
-    const ordered = dated ? rows.toSorted((a, b) => (q.order?.endsWith('asc') ? 1 : -1) * a.published_at.localeCompare(b.published_at)) : rows
+    // `include=count.posts` on a tag or a writer: each row's post count, as Ghost adds it
+    const counted = (q.include ?? '').split(',').includes('count.posts') && (resource === 'tags' || resource === 'authors')
+      ? rows.map((r) => ({ ...r, count: { posts: posts.filter((p) => (p[resource] ?? []).some((t) => t.slug === r.slug)).length } }))
+      : rows
+    const ordered = dated ? counted.toSorted((a, b) => (q.order?.endsWith('asc') ? 1 : -1) * a.published_at.localeCompare(b.published_at)) : counted
     const limit = q.limit === 'all' ? Math.max(1, ordered.length) : Number(q.limit ?? 15)
     const at = Number(q.page ?? 1)
-    const pagination = { page: at, limit, pages: Math.max(1, Math.ceil(ordered.length / limit)), total: ordered.length }
+    const asked = Object.fromEntries(Object.entries(q).filter(([k]) => k !== 'key'))
+    const total = ordered.length + (capped && LIVE.keyOf({ resource, params: asked }) === LIVE.keyOf(LIVE.LISTS.post) ? 500 : 0)
+    const pagination = { page: at, limit, pages: Math.max(1, Math.ceil(total / limit)), total }
     return route.fulfill({ json: { [resource]: ordered.slice((at - 1) * limit, at * limit), meta: { pagination } }, headers: cors })
   })
   return {
@@ -4432,4 +4485,675 @@ test('Story 5.24b (DW-91) — the app\'s error page names its tab "Something wen
   await page.goto('/app/harness/error')
   await expect(page.getByRole('heading', { level: 1, name: 'We couldn’t show that just now.' })).toBeVisible()
   await expect(page).toHaveTitle('Something went wrong · Inflozo')
+})
+
+// ── Story 5.24e — the sweep: the editor ───────────────────────────────────────────────────────────────────────────
+
+const JOURNAL = await import(new URL('../../apps/web/lib/journal.ts', import.meta.url).href)
+const LOCK = await import(new URL('../../apps/web/lib/lock.ts', import.meta.url).href)
+/** the harness's project, whose id names the lock's channel and this browser's records */
+const HARNESS_PROJECT_ID = '00000000-0000-4000-8000-000000000009'
+const saveState = (page) => page.locator('#editor-save-state [role="status"]')
+
+test('R-213 (Story 5.24e): a save refused for sign-in says Signed out with a Sign in link and no Retry now, keeps trying on its backoff, and lands at once on a visit back — a dropped connection, a 422, a 502, a 404 and a 400 stay Retrying', async ({ page, context }) => {
+  await open(page)
+  const { page: own } = await rows(page)
+  // the sync route, answered here: dropped, a status, or the write landing — every request written down with its moment
+  let answer = 'drop'
+  const sent = []
+  await page.route('**/sync', (route) => {
+    sent.push({ at: Date.now(), answer })
+    return answer === 'drop' ? route.abort()
+      : answer === 'landed' ? route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: 1 }) })
+      : route.fulfill({ status: answer, body: 'refused' })
+  })
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(page)).toHaveText('Saved on this device')
+  // the stop's own control: a dropped connection is Retrying, and B6 says the connection
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+s')
+  await expect(saveState(page)).toHaveText('Retrying')
+  await expect(page.locator('#editor-retrying')).toContainText('when the connection returns')
+  // R-213: the session has ended — the sixth state, R-213's sentence, the Sign in link, and no Retry now
+  answer = 401
+  await page.locator('#editor-retry-now').focus()
+  await page.keyboard.press('Enter')
+  await expect(saveState(page)).toHaveText(JOURNAL.SIGNED_OUT_COPY.title)
+  await expect(page.locator('#editor-signed-out')).toContainText(JOURNAL.SIGNED_OUT_COPY.held)
+  await expect(page.locator('#editor-retry-now'), 'no Retry now: it could only meet the same 401').toHaveCount(0)
+  // …and the backoff keeps trying underneath, with no visit back: a further request, answered 401 again, still Signed out
+  const tried = sent.length
+  await expect.poll(() => sent.length, { message: 'the backoff tries again while Signed out', timeout: (JOURNAL.BACKOFF_S[0] + 3) * 1000 }).toBeGreaterThan(tried)
+  await expect(saveState(page)).toHaveText(JOURNAL.SIGNED_OUT_COPY.title)
+  const signIn = page.locator('#editor-sign-in')
+  await expect(signIn).toHaveText(JOURNAL.SIGNED_OUT_COPY.signIn)
+  await expect(signIn).toHaveAttribute('target', '_blank')
+  expect(await signIn.getAttribute('href')).toMatch(/\/sign-in$/)
+  // Enter on it opens the sign-in page in a new tab, and this tab — which may hold the only copy — stays where it is
+  const where = page.url()
+  const tab = context.waitForEvent('page')
+  await signIn.focus()
+  await page.keyboard.press('Enter')
+  await (await tab).close()
+  expect(page.url()).toBe(where)
+  // signed in elsewhere: coming back to this tab tries AT ONCE — Synced well inside the next backoff, from exactly one
+  // request after the visit back
+  answer = 'landed'
+  const back = Date.now()
+  await page.evaluate(() => document.dispatchEvent(new Event('visibilitychange')))
+  await expect(saveState(page)).toHaveText('Synced', { timeout: 1500 })
+  expect(Date.now() - back, 'well inside the backoff: the visit back sent it, not the clock').toBeLessThan(1500)
+  expect(sent.filter((r) => r.at >= back).length, 'exactly one request after the visit back').toBe(1)
+  await expect(page.locator('#editor-signed-out')).toHaveCount(0)
+  // a refusal a sign-in cannot cure stays Retrying (DW-304, Story 7.18) — the server failing, and the route refusing
+  await select(page, own[0])
+  await page.keyboard.press('ControlOrMeta+d')
+  for (const status of [422, 502, 404, 400]) {
+    answer = status
+    const answered = page.waitForResponse((r) => new URL(r.url()).pathname.endsWith('/sync') && r.status() === status)
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+s')
+    await answered
+    await expect(saveState(page), `${status} is Retrying`).toHaveText('Retrying')
+    await expect(page.locator('#editor-signed-out'), `${status} is never Signed out`).toHaveCount(0)
+  }
+})
+
+test('R-227 (Story 5.24e): signed out while this device holds no copy — after a sign-out in another tab erased it — the panel says the work is only in this tab, never R-213\'s "safe on this device"', async ({ context }) => {
+  const a = await context.newPage()
+  await open(a)
+  const { page: own } = await rows(a)
+  await a.route('**/sync', (route) => route.fulfill({ status: 401, body: 'Not signed in' }))
+  // R-214's erase, the real way: a second tab of this browser deletes the database, and the editor's own `versionchange`
+  // lets go of it and falls back (FR-D10) — every later change goes straight to the cloud
+  const b = await context.newPage()
+  await b.goto('/app/harness/error')
+  await b.evaluate(() => new Promise((done) => {
+    const erase = indexedDB.deleteDatabase('inflozo-doc-harness')
+    erase.onsuccess = erase.onerror = () => done(null)
+  }))
+  await expect(saveState(a), 'the control: the editor holds nothing on this device now').toHaveText(JOURNAL.labelOf({ kind: 'fallback' }))
+  // an edit in fallback goes straight to the cloud, and meets the 401
+  await select(a, own[0])
+  await a.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(a)).toHaveText(JOURNAL.SIGNED_OUT_COPY.title)
+  await expect(a.locator('#editor-signed-out')).toContainText(JOURNAL.SIGNED_OUT_COPY.fallback)
+  await expect(a.locator('#editor-signed-out')).not.toContainText(JOURNAL.SIGNED_OUT_COPY.held)
+})
+
+test('R-214 (Story 5.24e): a sign-out in another tab that SENT this editor\'s owed work is taken as this editor\'s own 200 — its next save carries the new base, never a conflict', async ({ context }) => {
+  const a = await context.newPage()
+  await open(a)
+  const bodies = []
+  await a.route('**/sync', async (route) => {
+    bodies.push(JSON.parse(route.request().postData() ?? '{}'))
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: 100 + bodies.length }) })
+  })
+  // one edit owed, on this browser's disk, as the sign-out tab will find it
+  await select(a, (await rows(a)).page[0])
+  await a.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(a)).toHaveText('Saved on this device')
+  await expect.poll(() => pendingOnDisk(a), 'the control: the edit is owed on this browser\'s disk').not.toEqual([])
+  // the sign-out, in a second tab: it reads the owed record off the disk and, its send answered 200 at revision 7, says
+  // so on the project's channel — the message `sign-out.tsx` posts, built here from the same record
+  const b = await context.newPage()
+  await b.goto('/app/harness/error')
+  const told = await b.evaluate(([project, channel]) => new Promise((done) => {
+    const asked = indexedDB.open('inflozo-doc-harness')
+    asked.onsuccess = () => {
+      const db = asked.result
+      const tx = db.transaction(['meta', 'journal'], 'readonly')
+      const meta = tx.objectStore('meta').get(project)
+      const entries = tx.objectStore('journal').index('byProject').getAll(project)
+      tx.oncomplete = () => {
+        db.close()
+        const m = meta.result
+        const upTo = entries.result.reduce((high, e) => Math.max(high, e.seq), m.synced ?? 0)
+        const message = { type: 'sent', project, base: m.baseRevision, revision: 7, stamp: m.stamp, upTo }
+        const open = new BroadcastChannel(channel)
+        open.postMessage(message)
+        open.close()
+        done(message)
+      }
+    }
+  }), [HARNESS_PROJECT_ID, JOURNAL.SENT_CHANNEL(HARNESS_PROJECT_ID)])
+  expect(told.base, 'the control: the record was the editor\'s, at its base').toBeGreaterThan(-1)
+  // taken as its own 200: the owed edit is sent, so the indicator rests green with nothing sent from here
+  await expect(saveState(a)).toHaveText('Synced')
+  expect(bodies, 'the editor sent nothing itself').toHaveLength(0)
+  // its next save carries the base the sign-out's send made
+  await select(a, (await rows(a)).page[0])
+  await a.keyboard.press('ControlOrMeta+d')
+  await a.locator('section[aria-label="Canvas"]').focus()
+  await a.keyboard.press('ControlOrMeta+s')
+  await expect.poll(() => bodies.length).toBe(1)
+  expect(bodies[0].base, 'the announced revision, never the base the sign-out moved past').toBe(7)
+})
+
+/** The pending doc keys every project record on this browser's disk still owes — the harness user's own database. */
+const pendingOnDisk = (page) =>
+  page.evaluate(() => new Promise((done) => {
+    const asked = indexedDB.open('inflozo-doc-harness')
+    asked.onsuccess = () => {
+      const db = asked.result
+      const all = db.transaction('meta').objectStore('meta').getAll()
+      all.onsuccess = () => {
+        db.close()
+        done(all.result.flatMap((row) => Object.keys(row.pending ?? {})))
+      }
+    }
+  }))
+
+test('DW-203 (Story 5.24e): a tab reading along beside the holder in ONE browser adopts nothing, sends nothing when hidden, and the holder\'s owed work survives', async ({ context }) => {
+  const a = await context.newPage()
+  await open(a)
+  const before = (await rows(a)).all.length
+  await select(a, (await rows(a)).page[0])
+  await a.keyboard.press('ControlOrMeta+d')
+  await expect(saveState(a)).toHaveText('Saved on this device')
+  expect(await pendingOnDisk(a), 'the control: the holder owes its edit, on this browser\'s disk').not.toEqual([])
+  // B reads along in the same browser — so it shares A's IndexedDB — and the real holder elsewhere would answer its write
+  // with 423, which is how a reader at HEAD dropped the holder's own record
+  const b = await context.newPage()
+  await b.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  const sent = []
+  b.on('request', (r) => r.method() === 'POST' && new URL(r.url()).pathname.endsWith('/sync') && sent.push(r.url()))
+  await b.route('**/sync', (route) => route.fulfill({ status: 423, body: 'Another session holds this project' }))
+  await open(b)
+  await expect(b.locator('#editor-lock-bar')).toBeVisible()
+  // its ⌘S — the save key of a tab that does not hold the lock — sends nothing, once it has hydrated (the indicator is drawn)
+  await expect(saveState(b)).toHaveCount(1)
+  await b.locator('section[aria-label="Canvas"]').focus()
+  await b.keyboard.press('ControlOrMeta+s')
+  await b.waitForTimeout(1000)
+  expect(sent, 'a tab reading along sends no /sync on ⌘S').toEqual([])
+  // B shows its OWN state: the server's page, nothing owed — never the holder's unsent journal
+  expect((await rows(b)).all, 'B draws the server\'s page, not the holder\'s unsent one').toHaveLength(before)
+  await expect(saveState(b)).toHaveText('Synced')
+  // hidden, it sends nothing
+  await b.evaluate(() => {
+    Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+    document.dispatchEvent(new Event('visibilitychange'))
+  })
+  await b.waitForTimeout(1000)
+  expect(sent, 'nor when hidden').toEqual([])
+  expect(await pendingOnDisk(a), 'the holder\'s owed work is still on this browser\'s disk').not.toEqual([])
+})
+
+test('DW-225 (Story 5.24e): only the lock\'s holder records what was looked at — a window reading along changes View as and writes nothing', async ({ context }) => {
+  // a write of the looked-at record is a server action whose body carries the rows' `states`
+  const records = (r) => r.method() === 'POST' && r.headers()['next-action'] !== undefined && (r.postData() ?? '').includes('"states"')
+  const a = await context.newPage()
+  const b = await context.newPage()
+  const fromA = []
+  const fromB = []
+  a.on('request', (r) => records(r) && fromA.push(r))
+  b.on('request', (r) => records(r) && fromB.push(r))
+  await open(a)
+  await b.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  await open(b)
+  await expect(b.locator('#editor-lock-bar')).toBeVisible()
+  // what opening wrote (the holder's first look) has gone out by now; only View as is counted from here
+  await a.waitForTimeout(1500)
+  const opened = { a: fromA.length, b: fromB.length }
+  await viewAs(b, 'paid')
+  await b.waitForTimeout(1500)
+  expect(fromB.length - opened.b, 'a window reading along records nothing').toBe(0)
+  // the control: the holder's own View as change records one
+  await viewAs(a, 'paid')
+  await expect.poll(() => fromA.length - opened.a, { message: 'the holder records its look' }).toBe(1)
+})
+
+test('DW-241 (Story 5.24e): losing the lock closes every menu, confirm and picker the holder had open — the bar is up and nothing stays open over it', async ({ page }) => {
+  // the lock route answers as the holder's own row, then as taken over by another session at the next generation
+  let taken = false
+  const row = (holder, generation) => ({ holderSessionId: holder, generation, unsyncedEdits: 0, ageMs: 0, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null })
+  await page.route('**/lock', (route) => {
+    const { session } = JSON.parse(route.request().postData() ?? '{}')
+    return route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(taken ? { row: row('another-session', 2), held: false, won: false } : { row: row(session, 1), held: true, won: true }),
+    })
+  })
+  const openers = {
+    'the Section Picker (⌘K)': async () => {
+      await page.locator('section[aria-label="Canvas"]').focus()
+      await page.keyboard.press('ControlOrMeta+k')
+      await expect(picker(page)).toBeVisible()
+    },
+    'a Layers row\'s ⋯ menu': async () => {
+      await page.locator('[data-layer-row] button[aria-label^="More for"]').first().focus()
+      await page.keyboard.press('Enter')
+      await expect(page.locator('[popover]:popover-open')).toHaveCount(1)
+    },
+    'Site Remix\'s confirm (⇧R)': async () => {
+      await page.locator('section[aria-label="Canvas"]').focus()
+      await page.keyboard.press('Shift+R')
+      await expect(remixDialog(page)).toBeVisible()
+    },
+    'an inline field being typed in': async () => {
+      await selectRinged(page)
+      expect(await startHeading(page), 'the control: a session holds the caret').toBe(RING_CONTENT.props.heading.default)
+      await page.keyboard.type('xy')
+      await expect(canvasFrame(page).locator('[data-inflozo-editing]')).toHaveCount(1)
+    },
+  }
+  for (const [what, opener] of Object.entries(openers)) {
+    taken = false
+    await open(page)
+    // held first, confirmed by the server: a session that never held cannot be taken from
+    await expect.poll(() => page.evaluate(() => document.getElementById('editor-lock-bar') === null)).toBe(true)
+    await opener()
+    taken = true
+    // another session takes over: the lock's own channel tells this tab to read the row now
+    await page.evaluate((id) => new BroadcastChannel(`inflozo-lock-${id}`).postMessage('took-over'), HARNESS_PROJECT_ID)
+    await expect(page.locator('#editor-lock-bar'), `${what}: the bar is up`).toBeVisible()
+    await expect(page.locator(':popover-open'), `${what}: no menu is left open`).toHaveCount(0)
+    await expect(page.locator('dialog[open]'), `${what}: no confirm or picker is left open`).toHaveCount(0)
+    await expect(canvasFrame(page).locator('[data-inflozo-editing]'), `${what}: no field is left being typed in`).toHaveCount(0)
+    // what only VIEWS stays live (R-192): the devices still switch
+    const device = page.locator('#editor-device button[data-device]').first()
+    await expect(device, `${what}: a view control is still live`).toBeEnabled()
+    expect(await device.getAttribute('aria-disabled'), `${what}: and not greyed`).not.toBe('true')
+  }
+})
+
+test('DW-244 (Story 5.24e): a live row near its staleness edge is asked about AT the edge — the next lock call comes a quarter-second past it, never a heartbeat later', async ({ page }) => {
+  // another session's live row, five seconds from stale, answered to every call
+  const row = { holderSessionId: 'another-session', generation: 1, unsyncedEdits: 0, ageMs: LOCK.STALE_MS - 5000, nudgeRequestedBy: null, nudgeAgeMs: null, request: null, beat: null }
+  const calls = []
+  await page.route('**/lock', (route) => {
+    calls.push(Date.now())
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ row, held: false, won: false }) })
+  })
+  await open(page)
+  await expect(page.locator('#editor-lock-bar'), 'the control: the row was answered and landed — this tab reads along').toBeVisible()
+  const edge = LOCK.edgePoll(row, false)
+  expect(edge, 'the control: the row is well inside a heartbeat of its edge').toBeLessThan(LOCK.HEARTBEAT_MS - 5000)
+  // the first call a second or more after the opening's (`next dev`'s StrictMode sends two at once)
+  const later = () => calls.filter((t) => t - calls[0] > 1000)
+  await expect.poll(() => later().length, { timeout: LOCK.HEARTBEAT_MS - 3000, message: 'a lock call came before the heartbeat' }).toBeGreaterThan(0)
+  const gap = later()[0] - calls[0]
+  expect(gap, 'asked at the edge').toBeGreaterThanOrEqual(edge - 250)
+  expect(gap, 'and not a heartbeat later').toBeLessThan(edge + 2500)
+})
+
+test('DW-242 (Story 5.24e): a holder\'s own reload paints no frame of the reader\'s bar, and a genuine reader has it from its first', async ({ browser }) => {
+  /** every animation frame from the document's start: is the reading-along bar in the page? */
+  const sample = () => {
+    window.__barFrames = []
+    const look = () => {
+      window.__barFrames.push(document.getElementById('editor-lock-bar') !== null)
+      requestAnimationFrame(look)
+    }
+    requestAnimationFrame(look)
+  }
+  const frames = async (self) => {
+    const context = await browser.newContext()
+    const page = await context.newPage()
+    await page.addInitScript(sample)
+    // the harness's reader row names `harness-another-tab`: in the self arm THIS tab carries that id, as a holder's
+    // reload keeps its `sessionStorage` (`lib/lock.ts`'s TAB_SESSION_KEY)
+    if (self) await page.addInitScript(() => sessionStorage.setItem('inflozo-lock-session', 'harness-another-tab'))
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+    await open(page)
+    await page.waitForTimeout(500)
+    const seen = await page.evaluate(() => window.__barFrames)
+    await context.close()
+    return seen
+  }
+  const reader = await frames(false)
+  const first = reader.indexOf(true)
+  expect(first, 'the control: a genuine reader is greyed').toBeGreaterThan(-1)
+  expect(reader.slice(first).every(Boolean), 'and stays greyed from its first greyed frame').toBe(true)
+  const self = await frames(true)
+  expect(self.length, 'frames were sampled').toBeGreaterThan(10)
+  expect(self.filter(Boolean), 'the holder\'s own reload: not one frame of the reader\'s bar').toHaveLength(0)
+})
+
+test('DW-223 (Story 5.24e): a subject picked and the page reloaded at once — before its write answered — comes back as the pick, and is sent again', async ({ page }) => {
+  // the pick's write is HELD: a server action whose body names a slug never answers, so the reload lands while it is in
+  // flight — the moment a pick used to be lost in
+  const held = []
+  await page.route('**/app/harness/editor/post', (route) => {
+    const r = route.request()
+    if (r.method() === 'POST' && r.headers()['next-action'] !== undefined && (r.postData() ?? '').includes('"slug"')) {
+      held.push(r.url())
+      return
+    }
+    return route.continue()
+  })
+  await page.goto(`${HARNESS}/post`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  const pill = page.locator('#editor-source')
+  const before = await pill.innerText()
+  // D5e's next row, from the keyboard
+  await pill.focus()
+  await page.keyboard.press('Enter')
+  await page.waitForFunction(() => [...document.querySelectorAll(':popover-open')].some((p) => p.contains(document.activeElement)))
+  const current = await page.evaluate(() => document.querySelector('#editor-source-menu [data-subject-row][aria-current="true"]')?.getAttribute('data-subject-row') ?? null)
+  for (let guard = 0; guard < 12; guard++) {
+    const on = await page.evaluate(() => document.activeElement?.getAttribute('data-subject-row') ?? null)
+    if (on !== null && on !== current) break
+    await page.keyboard.press('ArrowDown')
+  }
+  await page.keyboard.press('Enter')
+  // the pill's words read as the page draws them (`innerText`) on both sides, so the comparison is like for like
+  await expect.poll(() => pill.innerText(), { message: 'the control: the pick is on the pill' }).not.toBe(before)
+  const picked = await pill.innerText()
+  await expect.poll(() => held.length, { message: 'its write left, and is held' }).toBeGreaterThan(0)
+  const sent = held.length
+  await page.reload()
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  await expect.poll(() => pill.innerText(), { message: 'the reload brought the pick back' }).toBe(picked)
+  await expect.poll(() => held.length, { message: 'and sent it again' }).toBeGreaterThan(sent)
+})
+
+test('DW-248 (Story 5.24e): the title search at Ghost is the posts list\'s alone — a term typed in the pill on the Post canvas asks once, on the Tag canvas nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'surfaces' })
+  await answeringSite(page, { capped: true })
+  const searches = []
+  page.on('request', (r) => {
+    const filter = r.method() === 'GET' && r.url().includes('/ghost/api/content/posts/') ? new URL(r.url()).searchParams.get('filter') : null
+    if (filter?.startsWith('title:~')) searches.push(filter)
+  })
+  /** D5e's search, typed into and left long past the pause the search waits for */
+  const typeInPill = async (term) => {
+    await page.locator('#editor-source').focus()
+    await page.keyboard.press('Enter')
+    await expect(page.locator('#editor-source-search')).toBeFocused()
+    await page.keyboard.type(term)
+    await page.waitForTimeout(LIVE.SEARCH_DEBOUNCE_MS + 1200)
+    await page.keyboard.press('Escape')
+  }
+  await page.goto(`${HARNESS}/post`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+  await expect(page.locator('iframe[title$="canvas"]'), 'the control: drawn from the site').toHaveAttribute('data-source', 'site')
+  await typeInPill('ab')
+  expect(searches, 'the control: on the Post canvas the capped posts list\'s term is one read at Ghost').toEqual(["title:~'ab'"])
+  // the Tag canvas: its pill lists tags, which are never searched at Ghost
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="post"]')).toBeFocused()
+  for (let guard = 0; guard < 6 && !(await page.locator('[data-canvas="tag"]').evaluate((el) => el === document.activeElement)); guard++) await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('Enter')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'tag')
+  await expect(page.locator('iframe[title$="canvas"]'), 'the control: the Tag canvas is drawn from the site too').toHaveAttribute('data-source', 'site')
+  await typeInPill('cd')
+  expect(searches, 'a tag\'s term is never a posts search').toEqual(["title:~'ab'"])
+})
+
+test('DW-290 (Story 5.24e): after the paint and before any gesture the canvas already holds the chrome\'s faces — and no chrome is drawn', async ({ page }) => {
+  await open(page)
+  const faces = () => canvasFrame(page).locator('body').evaluate((body) =>
+    [...body.ownerDocument.fonts].filter((f) => f.family.replace(/["']/g, '').startsWith('inflozo-chrome')).length)
+  await expect.poll(faces, { message: 'the chrome\'s faces, added in idle time' }).toBeGreaterThan(0)
+  expect(await canvasFrame(page).locator('[data-inflozo-chrome]').count(), 'and not one chrome host: preparing draws nothing').toBe(0)
+})
+
+const PREVIEW_WORDS = await import(new URL('../../apps/web/lib/preview.ts', import.meta.url).href)
+
+test('DW-229 · DW-226 (Story 5.24e): the selected list\'s held part is SAID once in the Controls panel and the Rail\'s is not — and a part declared to run only below a width is chipped at Mobile and not at Desktop', async ({ page }) => {
+  await open(page)
+  const chips = () => inChrome(page, '[data-chrome="paused"]')
+  const own = (await rows(page)).page
+  const said = page.locator('#editor-controls [data-paused-said]')
+  // the fixture ring's section (the last page row) holds its `marquee` still
+  await select(page, own[own.length - 1])
+  await expect.poll(chips, { message: 'the control: the list carries its chip' }).toBe(1)
+  await expect(said, 'DW-229: said once, for a screen reader').toHaveCount(1)
+  await expect(said).toHaveText(PREVIEW_WORDS.PAUSED_SAID)
+  // the Rail's part waits for a press, so there is nothing to say
+  await select(page, (await rows(page)).site[0])
+  await expect(said).toHaveCount(0)
+  // DW-226: the same part declared to run only BELOW 768 — at Desktop it never moves on the site, so it is not paused
+  await page.frameLocator('iframe[title$="canvas"]').locator('.cx__features').evaluate((el) => el.setAttribute('data-module', 'marquee:768'))
+  await select(page, own[own.length - 1])
+  await panelsSettle(page)
+  expect(await chips(), 'no chip at Desktop').toBe(0)
+  await expect(said).toHaveCount(0)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('3')
+  await expect.poll(chips, { message: 'and one at Mobile, where it runs' }).toBe(1)
+})
+
+test('DW-281 (Story 5.24e): every Layers row and every rail tile draws its own kind\'s picture — S4\'s five at 1440, D8\'s at 1024', async ({ page, browser }) => {
+  /** the picture a row's kind is drawn with, read off the harness's own layer names ("A17 — Three Up"): S4 draws five,
+   *  and every other kind (the fixture ring's among them) draws Hero's */
+  const expected = (name) => ({ A1: 'header', A4: 'hero', A17: 'grid', A22: 'newsletter', A3: 'footer' })[name.split(' — ')[0]] ?? 'hero'
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await open(page)
+  const drawn = await page.locator('[data-layer-row]').evaluateAll((rows) =>
+    rows.map((r) => ({ name: r.querySelector('button')?.textContent?.trim() ?? '', glyph: r.querySelector('[data-glyph]')?.getAttribute('data-glyph') ?? null })))
+  expect(drawn.length, 'the control: Layers has rows').toBeGreaterThan(1)
+  expect(new Set(drawn.map((d) => d.glyph)).size, 'the harness shows more than one kind, so one picture for all would fail').toBeGreaterThan(1)
+  for (const { name, glyph } of drawn) expect(glyph, `${name}'s row`).toBe(expected(name))
+  await page.setViewportSize({ width: 1024, height: 768 })
+  await expect(page.locator('[data-rail-row]').first()).toBeVisible()
+  const tiles = await page.locator('[data-rail-row]').evaluateAll((all) =>
+    all.map((t) => ({ name: t.getAttribute('aria-label').replace(/, hidden$/, ''), glyph: t.querySelector('[data-glyph]')?.getAttribute('data-glyph') ?? null })))
+  for (const { name, glyph } of tiles) expect(glyph, `${name}'s tile`).toBe(expected(name))
+  // the Footer's picture, on the harness's stand-in footer — A3 ships no design until Story 9.9. In a context of its own:
+  // this one's editor opens from the copy its first open kept on the device, which has no footer
+  const context = await browser.newContext({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders: { 'x-inflozo-harness-stand-ins': 'on' } })
+  const standing = await context.newPage()
+  await open(standing)
+  const footer = await standing.locator('[data-layer-row^="site:"]').last().evaluate((r) =>
+    ({ name: r.querySelector('button')?.textContent?.trim() ?? '', glyph: r.querySelector('[data-glyph]')?.getAttribute('data-glyph') ?? null }))
+  await context.close()
+  expect(footer.name, 'the control: the site band ends with the stand-in footer').toMatch(/^A3 — /)
+  expect(footer.glyph, `${footer.name}'s row`).toBe('footer')
+})
+
+test('DW-187 (Story 5.24e): ⌥↑ on a site-wide footer does nothing at its band\'s end — the footer stays below the header, so Layers\' order stays the page\'s', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-stand-ins': 'on' })
+  await open(page)
+  const { site, page: own } = await rows(page)
+  expect(site, 'the control: the header, then the stand-in footer').toHaveLength(2)
+  // the key is live: a page row moves down one
+  await page.locator(`[data-layer-row="${own[0]}"]`).focus()
+  await page.keyboard.press('Alt+ArrowDown')
+  await expect.poll(async () => (await rows(page)).page[1], { message: 'the control: ⌥↓ moves a page row' }).toBe(own[0])
+  // …and ⌥↑ on the footer, at the top of its band, moves nothing
+  await page.locator(`[data-layer-row="${site[1]}"]`).focus()
+  await page.keyboard.press('Alt+ArrowUp')
+  await panelsSettle(page)
+  expect((await rows(page)).site, 'the footer stayed below the header').toEqual(site)
+  // and the page agrees: the header's section is the canvas's first, the footer's its last
+  const order = await page.frameLocator('iframe[title$="canvas"]').locator('#canvas').evaluate((c) => [...c.children].length)
+  expect(order, 'the canvas still draws every section').toBeGreaterThan(2)
+  await select(page, site[0])
+  await expect.poll(() => selectedPlace(page), { message: 'the header\'s section is the canvas\'s first' }).toBe(0)
+  await select(page, site[1])
+  await expect.poll(() => selectedPlace(page), { message: 'the footer\'s section is the canvas\'s last' }).toBe(order - 1)
+})
+
+const REVIEW = await import(new URL('../../apps/web/lib/controls-review.ts', import.meta.url).href)
+
+test('DW-198 (Story 5.24e): the Background role\'s dots are the colours the canvas paints in the mode showing — light, and after `.` dark', async ({ page }) => {
+  await open(page)
+  await select(page, (await rows(page)).page[0])
+  await openEveryGroup(page)
+  /** each dot against the canvas's own token for its role, in the mode the canvas shows; colours normalised by one probe */
+  const compare = () => page.evaluate((tokens) => {
+    const doc = document.querySelector('iframe[title$="canvas"]').contentDocument
+    const probe = document.createElement('span')
+    document.body.append(probe)
+    const norm = (c) => {
+      probe.style.color = ''
+      probe.style.color = c.trim()
+      return getComputedStyle(probe).color
+    }
+    const group = [...document.querySelectorAll('#editor-controls [role="radiogroup"]')]
+      .find((g) => /Background/.test(document.getElementById(g.getAttribute('aria-labelledby'))?.textContent ?? ''))
+    const dots = [...(group?.querySelectorAll('[role="radio"][data-role]') ?? [])]
+      .filter((b) => tokens[b.dataset.role] !== undefined)
+      .map((b) => ({
+        role: b.dataset.role,
+        dot: norm(getComputedStyle(b.querySelector('span')).backgroundColor),
+        canvas: norm(getComputedStyle(doc.documentElement).getPropertyValue(tokens[b.dataset.role])),
+      }))
+    probe.remove()
+    return { mode: doc.documentElement.getAttribute('data-mode'), dots }
+  }, REVIEW.ROLE_TOKENS)
+  const light = await compare()
+  expect(light.mode).toBe('light')
+  expect(light.dots.length, 'the control: the role offers coloured dots').toBeGreaterThan(1)
+  for (const d of light.dots) expect(d.dot, `light: ${d.role}`).toBe(d.canvas)
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('.')
+  await expect.poll(async () => (await compare()).mode).toBe('dark')
+  const dark = await compare()
+  expect(dark.dots.map((d) => d.canvas), 'the control: the canvas\'s dark tokens are other colours than its light ones').not.toEqual(light.dots.map((d) => d.canvas))
+  for (const d of dark.dots) expect(d.dot, `dark: ${d.role}`).toBe(d.canvas)
+})
+
+test('DW-282 (Story 5.24e): a design declaring a prop and a control of one name draws both read-only rows with no duplicate key', async ({ page }) => {
+  const duplicate = []
+  page.on('console', (m) => { if (/Encountered two children with the same key/.test(m.text())) duplicate.push(m.text()) })
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  await open(page)
+  // a22/1, the Inline Row, declares a `blurb` prop and a `blurb` control — reading along, both rows are wrapped read-only
+  const inline = await page.locator('[data-layer-row]').evaluateAll((all) =>
+    all.find((r) => /Inline Row/.test(r.textContent ?? ''))?.dataset.layerRow ?? null)
+  expect(inline, 'the control: the Inline Row is on the harness Home').not.toBeNull()
+  await select(page, inline)
+  await openEveryGroup(page)
+  await panelsSettle(page)
+  expect(duplicate, 'React warns of no duplicate key').toEqual([])
+})
+
+test.describe('DW-207 (Story 5.24e): the Section Picker\'s three leftovers', () => {
+  /** the picker opened from the canvas with ⌘K */
+  const openPicker = async (page) => {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(picker(page)).toBeVisible()
+  }
+  const refusal = (page) => picker(page).locator('p[role="status"]')
+
+  test('R-37\'s refusal clears as soon as the customer types a search', async ({ page }) => {
+    // the stand-in post content layout (`harness/stand-ins.ts`) makes R-37's one refusal reachable with no database
+    await page.setExtraHTTPHeaders({ 'x-inflozo-harness-stand-ins': 'on' })
+    await page.goto(`${HARNESS}/post`)
+    await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'post')
+    const add = async () => {
+      await openPicker(page)
+      await picker(page).locator('[data-cell][data-design="a25/1"]').focus()
+      await page.keyboard.press('Enter')
+    }
+    await add()
+    await expect(picker(page), 'the first one is placed').toHaveCount(0)
+    await add()
+    await expect(refusal(page), 'the control: the second is refused, in the picker').toContainText('this layout already prints the article')
+    await page.locator('#picker-search').focus()
+    await page.keyboard.type('g')
+    await expect(refusal(page), 'typing a search lets it go').toHaveText('')
+  })
+
+  test('a category chosen, then a search typed: the rail\'s checked row is All sections, as the header says', async ({ page }) => {
+    await open(page)
+    await openPicker(page)
+    const all = picker(page).locator('[role="radio"]').first()
+    await expect(all).toHaveAttribute('aria-checked', 'true')
+    // the rail's one tab stop, then ↓ to the first category
+    await all.focus()
+    await page.keyboard.press('ArrowDown')
+    await expect(all, 'the control: a category is chosen').toHaveAttribute('aria-checked', 'false')
+    await page.locator('#picker-search').focus()
+    await page.keyboard.type('grid')
+    await expect(all, 'a search is over every section, so All sections is the checked row').toHaveAttribute('aria-checked', 'true')
+    await expect(picker(page).locator('h2')).toHaveText('All sections')
+  })
+
+  test('⌘K inside the picker comes back to its search with the words selected', async ({ page }) => {
+    await open(page)
+    await openPicker(page)
+    await page.locator('#picker-search').focus()
+    await page.keyboard.type('grid')
+    await page.keyboard.press('Tab')
+    await page.keyboard.press('Tab')
+    await expect(page.locator('#picker-search'), 'the control: focus has left the search').not.toBeFocused()
+    await page.keyboard.press('ControlOrMeta+k')
+    await expect(page.locator('#picker-search')).toBeFocused()
+    expect(await page.locator('#picker-search').evaluate((el) => [el.selectionStart, el.selectionEnd]), 'the words selected, from the first to the last').toEqual([0, 4])
+  })
+})
+
+test('DW-275 (Story 5.24e): the Paywall\'s post-body sheet is no part of the canvas document — Home has none, and the first Paywall paint brings it, styled, at the cut', async ({ page }) => {
+  await open(page)
+  await expect(canvasFrame(page).locator('[data-order="2b-surface"]'), 'Home\'s canvas carries no post-body sheet').toHaveCount(0)
+  // THE SHEET IS HELD IN FLIGHT, and a paint is asked for meanwhile — View as, whose change of visitor is a repaint
+  // (`chooseVisitor`), where `.` is only a re-stamp: none may draw the article before its sheet is in force, or the
+  // article is drawn unstyled and the cut measured on it
+  let asked = false
+  let release
+  const held = new Promise((done) => { release = done })
+  await page.route((url) => url.searchParams.get('sheet') === 'surface', async (route) => {
+    asked = true
+    await held
+    await route.continue()
+  })
+  await canvasFrame(page).locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    doc.defaultView.__unstyled = 0
+    new doc.defaultView.MutationObserver(() => {
+      if (doc.querySelector('.gh-content') && !doc.querySelector('[data-order="2b-surface"]')?.sheet) doc.defaultView.__unstyled++
+    }).observe(doc, { subtree: true, childList: true })
+  })
+  // to the Paywall: the switcher's last row
+  await page.locator('#editor-template').focus()
+  await page.keyboard.press('Enter')
+  await expect(page.locator('[data-canvas="home"]')).toBeFocused()
+  await page.keyboard.press('End')
+  await expect(page.locator('[data-canvas="paywall"]')).toBeFocused()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => asked, { message: 'the control: the Paywall asked for its sheet' }).toBe(true)
+  const visitor = await viewAsOf(page)
+  await viewAs(page, 'paid')
+  expect(await viewAsOf(page), 'the control: the visitor changed — a repaint asked for — while the sheet was in flight').not.toBe(visitor)
+  await panelsSettle(page)
+  release()
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  expect(await canvasFrame(page).locator('body').evaluate((b) => b.ownerDocument.defaultView.__unstyled), 'no article was drawn before its sheet').toBe(0)
+  const look = await canvasFrame(page).locator('body').evaluate((body) => {
+    const doc = body.ownerDocument
+    const sheet = doc.querySelector('[data-order="2b-surface"]')
+    const cut = doc.querySelector('[data-inflozo-cut], [data-inflozo-gated]')?.getBoundingClientRect()
+    return {
+      tag: sheet?.tagName ?? null, media: sheet?.media ?? null,
+      grid: getComputedStyle(doc.querySelector('.gh-content')).display,
+      cut: cut ? cut.top : null, height: doc.defaultView.innerHeight, scrolled: doc.defaultView.scrollY,
+    }
+  })
+  expect(look.tag, 'the sheet is linked in, beside the document').toBe('LINK')
+  expect(look.media, 'and on, for the surface').toBe('all')
+  expect(look.grid, 'the article is drawn with it — never unstyled').toBe('grid')
+  expect(look.scrolled, 'the canvas opened at the cut, measured on the styled article').toBeGreaterThan(0)
+  expect(look.cut !== null && look.cut >= 0 && look.cut <= look.height, JSON.stringify(look)).toBe(true)
+})
+
+test('DW-303 (Story 5.24e): under `next dev`\'s StrictMode the connect wizard\'s Connect sends its action — never stuck on "Connecting…"', async ({ page }) => {
+  // the browser's content-key check reaches a Ghost first: answered here, CORS and all, as a real one answers it
+  await page.route('https://harness-ghost.example/ghost/api/content/settings/**', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*', 'access-control-allow-methods': 'GET' },
+      body: JSON.stringify({ settings: {} }),
+    }))
+  // the action's POST is aborted: what is asserted is that it LEAVES (the harness has no database to connect to)
+  await page.route('**/app/harness/connect', (route) => (route.request().method() === 'POST' ? route.abort() : route.continue()))
+  await page.goto('/app/harness/connect')
+  // hydrated: Next's own route announcer is in the page, or the form would post natively and prove nothing
+  await page.locator('next-route-announcer').waitFor({ state: 'attached' })
+  await page.locator('#s2b-api-url').fill('https://harness-ghost.example')
+  await page.locator('#s2b-admin-key').fill(`${'a'.repeat(24)}:${'b'.repeat(64)}`)
+  await page.locator('#s2b-content-key').fill('c'.repeat(26))
+  const sent = page.waitForRequest((r) => r.method() === 'POST' && r.headers()['next-action'] !== undefined, { timeout: 15_000 })
+  await page.locator('form button[type="submit"]').focus()
+  await page.keyboard.press('Enter')
+  await sent
 })

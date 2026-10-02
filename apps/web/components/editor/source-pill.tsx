@@ -73,6 +73,7 @@ export const SourcePill = memo(function SourcePill({
   onChoose,
   busy = null,
   site = null,
+  onQuery,
 }: {
   /** The subject this canvas is ACTUALLY rendering (`resolveSubject`'s answer), or NULL where the canvas renders no
    *  single resource — which is `hasSubject(file)` already answered, derived from `placement.ts`'s own table. */
@@ -89,6 +90,8 @@ export const SourcePill = memo(function SourcePill({
   busy?: string | null
   /** Story 5.18 — the linked site, or null where none is linked (and then there is no SOURCE group at all) */
   site?: SourceSite | null
+  /** DW-248 (Story 5.24e): told the term the search holds ('' as the menu closes), for the editor's one search at Ghost */
+  onQuery?: (term: string) => void
 }) {
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
@@ -202,8 +205,11 @@ export const SourcePill = memo(function SourcePill({
         onToggle={(event) => {
           const opening = (event as unknown as ToggleEvent).newState === 'open'
           setOpen(opening)
-          // the search is emptied with the menu, so it never opens already narrowed
-          if (!opening) setQuery('')
+          // the search is emptied with the menu, so it never opens already narrowed — and the editor's search with it
+          if (!opening) {
+            setQuery('')
+            onQuery?.('')
+          }
           // and it takes the focus `openMenu` puts on the first row: a searchable list is typed into. `openMenu`'s
           // own focus runs in a frame scheduled from the press, which is this one or an earlier one, so this wins.
           // A menu with no subject (Home on a linked site) has no search, and keeps `openMenu`'s focus on its row.
@@ -287,10 +293,14 @@ export const SourcePill = memo(function SourcePill({
                   id="editor-source-search"
                   type="search"
                   value={query}
-                  onChange={(event) => setQuery(event.target.value)}
+                  onChange={(event) => {
+                    setQuery(event.target.value)
+                    onQuery?.(event.target.value)
+                  }}
                   placeholder={SEARCH_WORDS(kind)}
                   aria-label={SEARCH_WORDS(kind)}
-                  // the rows are already in hand, so the filter is pure and instant — nothing is fetched (DW-248)
+                  // the rows in hand are filtered at once; while the site's list is capped the editor also asks Ghost for the
+                  // title, debounced, and its rows join these (DW-248, Story 5.24e)
                   className="min-w-0 flex-1 bg-transparent text-[12.5px] text-ink outline-none placeholder:text-ink-soft"
                 />
               </div>

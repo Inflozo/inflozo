@@ -60,8 +60,13 @@ export const startBehaviours = (win: Window, editing: boolean, report: (error: u
 
 /** R-175's filter over a mount's `data-module`: does the part it declares move BY ITSELF — on a timer or as the page
  *  scrolls, with nothing pressed? Read through the grammar, so `header-scroll:768` is `header-scroll`; a malformed
- *  or unknown declaration moves nothing. */
-export function movesByItself(declaration: string): boolean {
+ *  or unknown declaration moves nothing.
+ *
+ *  DW-226 (Story 5.24e): AND DOES IT MOVE AT ALL AT THIS WIDTH. A declared width is the width BELOW which the part runs —
+ *  `core`'s own `(width < Npx)` — so at or above it the part never moves on the site, and a chip there claimed a pause
+ *  of nothing. `width` is the canvas's own CSS width, which is the device's: the iframe is drawn at the device's width
+ *  and fitted by a transform. Required, so no caller can forget it. */
+export function movesByItself(declaration: string, width: number): boolean {
   const parsed = parseModuleDeclaration(declaration)
-  return typeof parsed !== 'string' && MODULES.some((m) => m.name === parsed.name && m.movesByItself)
+  return typeof parsed !== 'string' && MODULES.some((m) => m.name === parsed.name && m.movesByItself) && (parsed.below === undefined || width < parsed.below)
 }

@@ -598,7 +598,8 @@ export function isMember(member: unknown): boolean {
 // is no place in a design where a filter could be composed (AD-36, "validated, never interpolated").
 // Recorded: `filter="tag:craft+featured:true" limit="3" order="published_at desc"` returned exactly
 // three slugs on both majors, and the NQL builds each major resolves differ (MEASUREMENTS §15g:
-// nql 0.12.7 on Ghost 5, 0.13.4 on Ghost 6) while both answer these filters identically.
+// nql 0.12.6 on Ghost 5's filter path — `@tryghost/bookshelf-filter` 0.5.23 pins it, beside core's own 0.12.7, both
+// over nql-lang 0.6.3 (§15g's dated note, Story 5.24e) — and 0.13.4 on Ghost 6) while both answer these filters identically.
 
 export type ContentQuery = {
   resource: string

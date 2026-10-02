@@ -21,6 +21,7 @@ const SITE_PROBE = join('server', 'site-probe.ts')
 const SITE_SETTINGS = join('server', 'site-settings.ts')
 const SITE_HEALTH = join('server', 'site-health.ts')
 const KEYS_SCREEN = join('app', '(app)', 'app', '(authed)', 'sites', 'keys-screen.tsx')
+const EDITOR_ACTIONS = join('app', '(app)', 'app', '(authed)', 'projects', '[id]', '(editor)', 'actions.ts')
 const MIGRATIONS = '../../supabase/migrations'
 
 /** Every `.ts`/`.tsx` under `apps/web`, minus the build output and the tests themselves. */
@@ -635,4 +636,40 @@ test('DW-82: every landing in sites/actions.ts keeps the list’s search, except
     assert.match(landing[1], /\bq\b|\burl\b/, `a landing without the list's search: redirect(${landing[1].trim()}`)
   }
   assert.doesNotMatch(actions, /redirect\(['"`]\/sites/, 'a literal /sites landing drops the search (DW-82)')
+})
+
+test('R-213: no editor action redirects a signed-out tab — each reads the user and answers ITS OWN refusal on none', () => {
+  // `signedIn()` redirects, and Next navigates whatever the caller catches (`lib/action-redirect.ts`): a tab whose session
+  // had ended was taken off the editor — and away from the only copy of work it might hold — by a preview subject, a
+  // look or a re-read. The owner declined exactly that (5.24's Question 3, option 3), so every export refuses instead,
+  // with the refusal it already answers its other failures with.
+  const REFUSALS: Readonly<Record<string, string>> = {
+    setPreviewSubject: '{ error: SAVE_REFUSED }',
+    setViewedStates: '{ error: VIEWED_REFUSED }',
+    recheckSite: '{ refused: true }',
+  }
+  /** the file's code, comments out (its prose names `signedIn()` and `redirect` to say why neither is called) */
+  const code = readFileSync(EDITOR_ACTIONS, 'utf8').replace(/\/\*[^]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+  const names = [...code.matchAll(/^export async function (\w+)/gm)].map((m) => m[1]!)
+  assert.deepEqual([...names].sort(), Object.keys(REFUSALS).sort(), `${EDITOR_ACTIONS}: every exported action has its own refusal named here, and only those`)
+  assert.doesNotMatch(code, /\bredirect\(/, 'nothing in the file redirects')
+  const bodyOf = (text: string, name: string) => {
+    const start = text.indexOf(`export async function ${name}`)
+    const next = text.indexOf('\nexport ', start + 1)
+    return text.slice(start, next < 0 ? undefined : next)
+  }
+  const escape = (t: string) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  /** the rule for one action: no redirecting guard, the user READ, and none answered with its own refusal at once */
+  const refuses = (body: string, refusal: string) =>
+    !/\bsignedIn\(/.test(body) && new RegExp(`const user = await currentUser\\(\\)\\s*\\n\\s*if \\(!user\\) return ${escape(refusal)}`).test(body)
+  for (const name of names) assert.ok(refuses(bodyOf(code, name), REFUSALS[name]!), `${EDITOR_ACTIONS}: ${name} does not read the user and refuse with ${REFUSALS[name]}`)
+  // the controls, each from the file itself: HEAD's redirecting guard, an export that reads no user, and another
+  // action's refusal answered in place of its own — each is caught
+  for (const name of names) {
+    const body = bodyOf(code, name)
+    assert.equal(refuses(body.replace(/const user = await currentUser\(\)\s*\n\s*if \(!user\) return [^\n]*\n/, 'const user = await signedIn()\n'), REFUSALS[name]!), false, `control: ${name} with signedIn()`)
+    assert.equal(refuses(body.replace(/const user = await currentUser\(\)\s*\n\s*if \(!user\) return [^\n]*\n/, ''), REFUSALS[name]!), false, `control: ${name} reading no user`)
+    const other = Object.values(REFUSALS).find((r) => r !== REFUSALS[name])!
+    assert.equal(refuses(body, other), false, `control: ${name} answering ${other}`)
+  }
 })

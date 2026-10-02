@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
+import { useSaid } from '@/lib/renders'
 import { movedTo } from '@inflozo/section-runtime'
 import type { DataControl, DataRow, PickedPost } from '@inflozo/section-runtime'
 import { DragGrip } from '@/components/kit/grip'
@@ -44,6 +45,9 @@ export type DataLists = {
   capped: string | null
   /** the same for the tag and writer selects (review, 2026-09-25): a site past the read's limit offers its fullest */
   listCapped: Readonly<Record<'tag' | 'author', string | null>>
+  /** DW-248 (Story 5.24e): told the term the post search holds ('' as it empties or closes), for the editor's one search
+   *  at Ghost while the site's posts list is capped. Tags and writers stay client-side. */
+  onQuery?: (term: string) => void
 }
 
 type Change = readonly [DataControl, unknown]
@@ -256,7 +260,8 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
 }) {
   const picks = row.picks ?? []
   const found = shown === undefined ? null : new Set(shown.map((r) => str((r as Row)['id'])))
-  const [said, setSaid] = useState('')
+  // DW-205 (Story 5.24e): the one announcer — a repeated sentence is a new node, and heard again
+  const [said, setSaid] = useSaid()
   const [query, setQuery] = useState('')
   const [drag, setDrag] = useState<Drag | null>(null)
   const layout = useRef<Layout>({ tops: [], heights: [], gap: 0 })
@@ -366,7 +371,7 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
         })}
       </ul>
       <p id={`${id}-how`} className="sr-only">Press Option or Alt with the up or down arrow to move this post.</p>
-      <p aria-live="polite" className="sr-only">{said}</p>
+      <p aria-live="polite" className="sr-only"><span key={said.n}>{said.words}</span></p>
       {warn ? (
         // P0·5 (:193-195): the frame's rust tint and hairline, drawn in the calibrated coral pair, and its two phrases bold
         <p data-picked-slow className="flex items-start gap-2 rounded-sm border border-coral-tint-strong bg-coral-tint p-[9px_10px] text-[11.5px] leading-[1.55] text-ink">
@@ -385,6 +390,7 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
               : (event) => {
                   const pop = document.getElementById(menu)
                   setQuery('')
+                  lists.onQuery?.('')
                   if (pop) openPopover(pop, event.currentTarget, { side: 'down', align: 'left' }, document.getElementById(search))
                 }
           }
@@ -402,9 +408,21 @@ function Picks({ id, row, lists, shown, design, onPicks }: {
           popover="auto"
           role="dialog"
           aria-label={SEARCH_POSTS}
+          // DW-248: a closed search is an empty one, for the editor's search at Ghost too
+          onToggle={(event) => (event as unknown as ToggleEvent).newState === 'closed' && lists.onQuery?.('')}
           className="max-h-[min(420px,70vh)] w-[280px] flex-col gap-2 overflow-hidden rounded border border-line bg-surface p-[8px] shadow-lg open:flex"
         >
-          <SearchInput id={search} label={SEARCH_POSTS} labelHidden placeholder={SEARCH_POSTS} value={query} onChange={(e) => setQuery(e.target.value)} />
+          <SearchInput
+            id={search}
+            label={SEARCH_POSTS}
+            labelHidden
+            placeholder={SEARCH_POSTS}
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              lists.onQuery?.(e.target.value)
+            }}
+          />
           {lists.capped === null ? null : <p data-picks-capped className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">{lists.capped}</p>}
           {results.length === 0 ? <p className="px-[2px] text-[11.5px] leading-[1.5] text-ink-soft">{NO_MATCHES}</p> : null}
           <ul className={`flex min-h-0 flex-1 list-none flex-col gap-px overflow-y-auto ${slimScrollbar}`}>

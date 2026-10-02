@@ -568,8 +568,9 @@ async function main() {
       && (await canvas()).attrs['data-tint'] === undefined,
       JSON.stringify({ align: (await canvas()).attrs['data-align'], title: await drawnHeading(), tintRows: await tint511.count(), tintAttr: (await canvas()).attrs['data-tint'] ?? null }))
     // the owner's step 10 — FR-D13's cap, and the items past it still there
-    check('ring — FR-D13: the panel reads "3 items · 2 shown in this design" and the section draws two of the three',
-      (await page.locator('#section-controls span', { hasText: /^3 items · 2 shown in this design$/ }).count()) === 1 && (await drawn('.cy__feature')) === 2,
+    // R-218 (DW-212, Story 5.24e): the sentence keeps the list's range at its end, as P0-3's line carries it
+    check('ring — FR-D13 and R-218: the panel reads "3 items · 2 shown in this design · 2–6" and the section draws two of the three',
+      (await page.locator('#section-controls span', { hasText: /^3 items · 2 shown in this design · 2–6$/ }).count()) === 1 && (await drawn('.cy__feature')) === 2,
       `${await drawn('.cy__feature')} drawn · ${await page.locator('#section-controls span', { hasText: /shown in this design/ }).count()} sentence(s)`)
 
     // the owner's step 9 — the long way round, and the parked value comes back exactly

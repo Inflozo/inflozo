@@ -86,7 +86,11 @@ export const NEXT_WORDS = 'Next design — ]'
 export const SHUFFLE_WORDS = 'Shuffle — another design, the same words'
 
 /** FR-D13's exact sentence for a list a design draws fewer of than the section holds: *"3 items · 2 shown in this
- *  design"*. The panel prints it INSTEAD of P0-3's range line, and only where the two numbers differ — a design
- *  that shows everything has nothing to explain. */
-export const shownInThisDesign = (count: number, shown: number): string =>
-  `${count} ${count === 1 ? 'item' : 'items'} · ${shown} shown in this design`
+ *  design"*. The panel prints it in place of P0-3's range line, and only where the two numbers differ — a design
+ *  that shows everything has nothing to explain.
+ *
+ *  R-218 (owner, 2026-09-28, DW-212 — Story 5.24e): THE RANGE STAYS. P0-3's line is "2–6 · 3 used" (`:101`, `:105`,
+ *  `:117`), and replacing it lost the one thing the customer needs to add or remove an item: how many the list may
+ *  hold. So where the list declares both bounds they follow the sentence — "3 items · 2 shown in this design · 2–6". */
+export const shownInThisDesign = (count: number, shown: number, min?: number, max?: number): string =>
+  `${count} ${count === 1 ? 'item' : 'items'} · ${shown} shown in this design${min !== undefined && max !== undefined ? ` · ${min}–${max}` : ''}`

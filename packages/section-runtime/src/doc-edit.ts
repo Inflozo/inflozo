@@ -155,9 +155,30 @@ export function clearDarkOverrides(doc: ProjectDoc, instanceId: string): Project
   }))
 }
 
+/** DW-198 (Story 5.24e): THE PROJECT-LEVEL CLEAR AS ONE PURE FOLD — every section holding a dark override anywhere
+ *  (`holdsDarkOverride`, remembered ones included) cleared through `clearDarkOverrides`, across every doc. Answers ONLY
+ *  the docs that changed: nothing to clear is an empty object, which the action treats as a success and not a write (the
+ *  RPC would refuse an empty write, and a revision advanced over nothing invalidates every open editor's base). It was
+ *  this loop written inline in `settings/actions.ts`, where no test reached it. */
+export function clearProject(docs: Readonly<Record<string, ProjectDoc>>): Record<string, ProjectDoc> {
+  const cleared: Record<string, ProjectDoc> = {}
+  for (const [key, original] of Object.entries(docs)) {
+    let doc = original
+    for (const instance of original.instances) {
+      if (!holdsDarkOverride(instance)) continue
+      const next = clearDarkOverrides(doc, instance.instanceId)
+      // a sentence would mean the instance left the doc between two lines of this loop
+      if (typeof next !== 'string') doc = next
+    }
+    if (doc !== original) cleared[key] = doc
+  }
+  return cleared
+}
+
 /** STORY 5.23 (R-205) — does this section hold a dark override ANYWHERE: live, or remembered against a design it has
- *  left? What the project-level Clear visits (`settings/actions.ts`), so a remembered override is cleared with the rest.
- *  Not what the moon, the panel row or the `⋯` item read: those ask what is IN FORCE, `darkOverridesInForce`. */
+ *  left? What the project-level Clear visits (`clearProject`, above, which Theme settings' action calls), so a remembered
+ *  override is cleared with the rest. Not what the moon, the panel row or the `⋯` item read: those ask what is IN FORCE,
+ *  `darkOverridesInForce`. */
 export const holdsDarkOverride = (i: Pick<DocInstance, 'darkOverrides' | 'parkedControls'>): boolean =>
   Object.keys(i.darkOverrides).length > 0 || Object.values(i.parkedControls).some((r) => Object.keys(r.darkOverrides).length > 0)
 

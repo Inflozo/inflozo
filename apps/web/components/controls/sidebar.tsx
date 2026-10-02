@@ -96,8 +96,10 @@ export type SidebarProps = {
   state: ControlState
   onChange: (next: ControlState, kind: Edit) => void
   visibility?: VisibilityRow
-  /** Background role's colours, by role — the site's own (the review hands it the reference tokens) */
-  swatches: Readonly<Record<string, string>>
+  /** Background role's colours, by role, FOR EACH MODE — the site's own (the reviews hand it the reference tokens).
+   *  DW-198 (Story 5.24e): the panel picks the mode's own, so the dots are the colours the canvas paints in the mode
+   *  showing; a caller handing one mode's map drew light dots over a dark canvas and could not tell */
+  swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
   /** the site's time zone name, printed under a date (the value itself is never converted) */
   timezone: string
   links: LinkResources
@@ -108,8 +110,10 @@ export type SidebarProps = {
   /** Story 5.19 — what P0·5's tag, writer and post pickers search: the source in force's own rows. The sample's where no
    *  site shows — `/controls` and `/pilots` hand none and get it. */
   lists?: DataLists
-  /** Story 5.6 — the mode the canvas is SHOWING. Every resolution, write and reset below is scoped to it. */
-  mode?: Mode
+  /** Story 5.6 — the mode the canvas is SHOWING. Every resolution, write and reset below is scoped to it. DW-198 (Story
+   *  5.24e): REQUIRED, so a caller that forgets it is a compile error — `/pilots` forgot it, and a change made there while
+   *  previewing dark was written as a light value instead of the dark override the editor writes */
+  mode: Mode
   /** Story 5.6, R-133 — open the editor's ONE "Clear dark overrides" confirm for this section. The row is drawn only
    *  where there is a doc to clear, so `/controls` and `/pilots` (in-memory state, no instance) draw none. */
   onClearDark?: () => void
@@ -257,7 +261,7 @@ const AUDIENCE: readonly { value: MemberState; label: string }[] = [
    the section kept by value, every handler of fixed identity — so a hover, a move or another section's edit leaves it
    alone, and a change to THIS section redraws it in the render that commits it (FR-F4). React's `<Profiler>` inside
    counts its renders for the keyboard gate (`lib/renders.ts`). */
-export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode = 'light', onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
+export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibility, swatches, timezone, links, assets, sourceRows, lists = SAMPLE_LISTS, mode, onClearDark, page, shownPage, siteWide, readOnly = false, note }: SidebarProps) {
   const base = useId()
   const [open, setOpen] = useState<Readonly<Record<string, boolean>>>({})
   const [floor, setFloor] = useState<{ path: string; sentence: string } | null>(null)
@@ -293,7 +297,7 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
       // a kind in every id: A22's Blurb setting and its Blurb text field share one name, and now one accordion
       id={`${base}-control-${row.name}`}
       row={row}
-      swatches={swatches}
+      swatches={swatches[mode]}
       onValue={(value) => commit(setControl(entry, state, row.name, value, mode), 'control')}
       onReset={() => commit(resetControl(entry, state, row.name, mode), 'control')}
     />
@@ -461,8 +465,10 @@ export const Sidebar = memo(function Sidebar({ entry, state, onChange, visibilit
           const [rows, foot] = at === -1 ? [group.rows, []] : [group.rows.slice(0, at), group.rows.slice(at)]
           // R-192: each row guards itself, so an item list can keep its items OPENABLE — reading is not editing
           const draw = (r: (typeof rows)[number]) =>
-            r.kind === 'prop' ? (r.list !== undefined ? content(r) : <ReadOnly key={`read-${r.path}`} on={readOnly}>{content(r)}</ReadOnly>)
-            : r.kind === 'control' ? <ReadOnly key={`read-${r.name}`} on={readOnly}>{control(r)}</ReadOnly>
+            // DW-282 (Story 5.24e): each key carries its KIND, as the field ids do — a22/1 declares a `blurb` prop AND a
+            // `blurb` control, and `read-blurb` twice was React's duplicate-key warning and a row it could drop
+            r.kind === 'prop' ? (r.list !== undefined ? content(r) : <ReadOnly key={`read-prop-${r.path}`} on={readOnly}>{content(r)}</ReadOnly>)
+            : r.kind === 'control' ? <ReadOnly key={`read-control-${r.name}`} on={readOnly}>{control(r)}</ReadOnly>
             : null
           return (
             <Accordion

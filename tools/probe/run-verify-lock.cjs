@@ -20,6 +20,9 @@
  *   A reloads and KEEPS the lock · B asks and A keeps editing, and B's SECOND ask still reaches A
  *   a take-over with nothing owed asks without a danger panel · a silent holder goes stale and is taken silently,
  *   and learns it when it can reach the server again
+ *   Story 5.24e, last: a reload keeps the lock with the other session reading inside its gap, and a late leave changes
+ *   nothing (DW-240) · a tab going with an edit owed and a slow flush keeps the lock for it (DW-244) · Sign out sends
+ *   the owed edit and erases this browser's copy (R-214)
  *
  * EVERY EXPECTATION IS DERIVED FROM THE APP'S OWN MODULES (`apps/web/lib/lock.ts`'s `LOCK_COPY` and its constants),
  * never restated here — R-170's "one name for one thing" made checkable, and standing rule 4 applied to a string.
@@ -264,17 +267,18 @@ async function main() {
      * reading B5a's bar — "You are editing this site somewhere else" — about its OWN tab for a whole ~15 s
      * heartbeat, with every edit silently refused (measured on app.inflozo.com at d895c183; it is what made step 93
      * of run-verify-editor.cjs fail). Two seconds is the assertion: a round trip, not a heartbeat. */
-    // the page's own policy, watched across the reload: `selfMarkScript` is an inline script, and one the policy
-    // refused would leave the reader's bar to paint — so a refusal must be loud, never a quiet pass
+    // the page's own policy, watched across the reload: a refusal must be loud, never a quiet pass. (Until Story 5.24e an
+    // inline pre-paint script masked the reader's bar here; DW-242 removed it as dead — the shell mounts in the browser
+    // alone since Story 5.22 and recognises itself in a layout effect, before its first paint.)
     await A.addInitScript(() => {
       window.__violations = []
       document.addEventListener('securitypolicyviolation', (e) => window.__violations.push(`${e.violatedDirective} ${e.blockedURI || 'inline'}`))
     })
     await A.reload({ waitUntil: 'load' })
     // SAMPLED, NOT GLANCED AT: the bar must never be SEEN, not for a frame. One look at 2.5 s passed while the bar
-    // flashed at ~1 s on every navigation (executed 2026-09-24 — reader at 1 s, holder by 2 s, five of five), and a
-    // count of the bar's mere PRESENCE could not tell that from the server's first frame, which is drawn and masked
-    // (`selfMarkScript`) until the editor recognises itself. So: VISIBLE samples fail, masked ones are recorded.
+    // flashed at ~1 s on every navigation (executed 2026-09-24 — reader at 1 s, holder by 2 s, five of five). So: VISIBLE
+    // samples fail, and one in the DOM but not visible is recorded (none is expected since DW-242: no server frame draws
+    // the bar any more).
     let flashed = 0
     let masked = 0
     for (const t0 = Date.now(); Date.now() - t0 < 3000; ) {
@@ -288,7 +292,7 @@ async function main() {
     }
     const aViolations = await A.evaluate(() => window.__violations ?? null)
     record('the server\'s first frame after the reload', `${masked} sample(s) held the reader's bar in the DOM, masked; ${flashed} showed it`)
-    check('…and the page\'s own policy refused nothing across the reload — the pre-paint script ran under its nonce',
+    check('…and the page\'s own policy refused nothing across the reload',
       Array.isArray(aViolations) && aViolations.length === 0, JSON.stringify(aViolations))
     const aBack = await surface(A)
     const backRow = await lockRow(A, P)
@@ -306,18 +310,26 @@ async function main() {
     // SERVER TRUTH AT FIRST PAINT, SAMPLED: a reader must never see an editable shell, not for a frame, before its own
     // `acquire` answers — `read.ts` hands the row over above the boundary for exactly this. One look at 2.5 s could not
     // tell that from "read-only after a round trip" (review, 2026-09-24), so the bar is read every ~100 ms from load.
+    // Since Story 5.22 the shell mounts in the browser alone, so the first samples can hold the server's SKELETON — no
+    // editor at all, editable or not. What may never be seen is the SHELL without the bar; a skeleton sample is recorded
+    // (Story 5.24e: this row failed on one skeleton sample at a run against HEAD, the walk not having been run since 5.22).
     let bAbsent = 0
+    let bSkeleton = 0
     let bSamples = 0
     for (const t0 = Date.now(); Date.now() - t0 < 2000; ) {
       const bar = await B.evaluate(() => {
         const el = document.getElementById('editor-lock-bar')
-        return el !== null && el.checkVisibility() ? 'visible' : 'absent'
+        if (el !== null && el.checkVisibility()) return 'visible'
+        return document.getElementById('editor-layers') === null ? 'skeleton' : 'absent'
       })
       bSamples++
       if (bar === 'absent') bAbsent++
+      if (bar === 'skeleton') bSkeleton++
       await B.waitForTimeout(100)
     }
-    check('the reader is a reader from its FIRST frame: the bar was on screen in every sample from load, before its own acquire answered', bSamples > 0 && bAbsent === 0, `${bAbsent} of ${bSamples} samples had no bar`)
+    record('the reader\'s first samples', `${bSkeleton} of ${bSamples} held the skeleton, before the shell mounted`)
+    check('the reader is a reader from its FIRST frame: the shell was never on screen without the bar, before its own acquire answered',
+      bSamples > bSkeleton && bAbsent === 0, `${bAbsent} of ${bSamples} samples drew the shell with no bar`)
     await B.waitForTimeout(500)
     const bRead = await surface(B)
     check('matrix "Second opener": B5a\'s bar, in the ruled words (R-189 — it says WHERE, never WHO)', (bRead.bar ?? '').includes(LOCK.LOCK_COPY.reading), bRead.bar)
@@ -398,8 +410,10 @@ async function main() {
     // THE POINTER MUST LEAVE THE CARD. The next card mounts in the same fixed corner, and a pointer resting on it is
     // PRESENCE, which restarts the countdown on every tick (F-079 — the owner's step 6 relies on exactly that). The
     // countdown checks below assume nobody is there; left where Keep editing was, the pointer held them at 30s → 30s
-    // (executed, 2026-09-24). Far left, over the Layers panel: outside the card at any width this walk uses.
-    await A.mouse.move(40, 450)
+    // (executed, 2026-09-24). Far left, on the Layers panel's TITLE: outside the card at any width this walk uses, and off
+    // every row, since a row under the pointer now outlines its section on the canvas (R-217, Story 5.24e).
+    const titleA = await A.locator('#editor-layers > div:first-child > span').first().boundingBox({ timeout: 2000 }).catch(() => null)
+    await A.mouse.move(titleA ? titleA.x + 20 : 40, titleA ? titleA.y + titleA.height / 2 : 450)
     await A.waitForTimeout(1500)
     const keptRow = await lockRow(A, P)
     check('matrix "Keep editing": the nudge columns are cleared and A\'s card is gone', keptRow !== null && keptRow.nudgeRequestedBy === null && (await surface(A)).card === null, JSON.stringify(held(keptRow)))
@@ -455,7 +469,11 @@ async function main() {
     await A.waitForTimeout(4000)
     const afterFlush = (await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc
     check('matrix "Hand over": the flush lands BEFORE the release — A\'s edit is on the server', !JSON.stringify(afterFlush ?? {}).includes(A_EDIT))
-    check('…and only then is the row deleted', (await lockRow(A, P)) === null)
+    // released: gone — or, when the other session's own read fell inside these four seconds, already its (Story 5.24e:
+    // the row was B's at a run against HEAD, B's ~15 s poll having landed in the window)
+    const handed = await lockRow(A, P)
+    check('…and only then is the row released: A no longer holds it — gone, or already taken by the other session',
+      handed === null || handed.holderSessionId !== beaten.holderSessionId, JSON.stringify(handed && held(handed)))
     const aAfter = await surface(A)
     check('A flips to read-only and gets B5a\'s own bar', (aAfter.bar ?? '').includes(LOCK.LOCK_COPY.reading) && aAfter.sidebarOpacity === '0.55', JSON.stringify({ bar: aAfter.bar, opacity: aAfter.sidebarOpacity }))
 
@@ -566,6 +584,303 @@ async function main() {
     const aRevived = await surface(A)
     check('…and once A can reach the server again it learns it lost the lock: read-only and told assertively (AD-15) — and with NOTHING lost its bar is the ordinary reading-along one, never "0 … not included" (UX-DR3)',
       (aRevived.bar ?? '').includes(LOCK.LOCK_COPY.reading) && aRevived.announced === LOCK.LOCK_COPY.displaced(0), JSON.stringify({ bar: aRevived.bar, announced: aRevived.announced }))
+
+    /* ══ STORY 5.24e — A GOING TAB LEAVES RATHER THAN RELEASES (DW-240, DW-244), AND SIGNING OUT SENDS FIRST (R-214) ══
+     *
+     * LAST, so a stop that goes red — as each does against a build from before the story — derails nothing above it, and
+     * each reads WHO HOLDS from the row first rather than assuming the stop before it ended as designed. The other
+     * session is made to read the lock at a chosen moment by the lock's own same-browser signal, `released`, posted in
+     * ITS page (`lockSignals` hears every other channel of the name, its own page's included): a signal only says "read
+     * the row now", so this moves nothing the protocol would not move on its next beat. */
+    /** this page's tab id — read again while a page that has just gained the lock is reloading under the read */
+    const tabOf = async (page) => {
+      for (let i = 0; i < 40; i++) {
+        try {
+          return await page.evaluate((key) => sessionStorage.getItem(key), LOCK.TAB_SESSION_KEY)
+        } catch {
+          await new Promise((r) => setTimeout(r, 250))
+        }
+      }
+      return null
+    }
+    const callOf = (request) => { try { return JSON.parse(request.postData() ?? '{}') } catch { return {} } }
+    const isLockCall = (request) => /\/projects\/[^/]+\/lock$/.test(new URL(request.url()).pathname) && callOf(request).session !== 'harness-observer'
+    const readNow = (page) => page.evaluate((name) => { const c = new BroadcastChannel(name); c.postMessage('released'); c.close() }, `inflozo-lock-${P}`)
+    /** the page's own next beat, answered — after it the next is a heartbeat away, so a page that goes now cannot send
+     *  one on its way out whose answer it never hears (a beat in flight moves the row past the one its leave carries:
+     *  the ceiling `editor.tsx`'s `leaving` names, wider on a hard navigation, whose request runs before the unload) */
+    const beatAnswered = (page) => page.waitForResponse((r) => isLockCall(r.request()) && ['beat', 'acquire'].includes(callOf(r.request()).intent), { timeout: LOCK.HEARTBEAT_MS + 5000 }).then(() => true, () => false)
+    /** a row read that survives the page reloading under it (a session that gains the lock reloads) */
+    const rowNow = (page) => lockRow(page, P).catch(() => undefined)
+    /** the pages by role, read from the row — and a free lock picked up first, as either page's next read would. A
+     *  session that has just GAINED the lock reloads onto the cloud copy, discarding what it held (the walk's own "B
+     *  HYDRATES" row), so the holder is taken only once its page has settled: the same document for 2.5 s, no bar. */
+    const whoHolds = async () => {
+      const tabs = { a: await tabOf(A), b: await tabOf(B) }
+      for (const by = Date.now() + LOCK_BEATS_MS * 2; Date.now() < by; await A.waitForTimeout(500)) {
+        const row = await rowNow(A)
+        const found = row && row.holderSessionId === tabs.a ? { H: A, R: B, row, rTab: tabs.b }
+          : row && row.holderSessionId === tabs.b ? { H: B, R: A, row, rTab: tabs.a } : null
+        if (row === null) await readNow(A).catch(() => {})
+        if (found === null) continue
+        const document0 = await found.H.evaluate(() => performance.timeOrigin).catch(() => null)
+        await found.H.waitForTimeout(2500)
+        const document1 = await found.H.evaluate(() => performance.timeOrigin).catch(() => null)
+        if (document0 !== null && document0 === document1 && (await surface(found.H).catch(() => ({ bar: 'unread' }))).bar === null) return found
+      }
+      return null
+    }
+    /** the edits this browser holds unsent for the project, read from its own disk (`inflozo-doc-<user>`'s `meta`) */
+    const owedOnDisk = (page) => page.evaluate((name) => new Promise((done) => {
+      const asked = indexedDB.open(name)
+      asked.onerror = () => done(null)
+      asked.onsuccess = () => {
+        const db = asked.result
+        if (!db.objectStoreNames.contains('meta')) { db.close(); return done(null) }
+        const all = db.transaction('meta').objectStore('meta').getAll()
+        all.onsuccess = () => { db.close(); done(all.result.flatMap((row) => Object.keys(row.pending ?? {}))) }
+        all.onerror = () => { db.close(); done(null) }
+      }
+    }), `inflozo-doc-${uid}`).catch(() => null)
+    /** one PAGE section present on this page, deleted from its row: one owed edit (a site-wide row would ask first) */
+    const oweOne = async (page) => {
+      // a session that has just gained the lock reloads onto the cloud copy: its rows are read once that page is up
+      await page.waitForSelector('#editor-layers [data-layer-row]', { timeout: 30000 }).catch(() => {})
+      await page.waitForTimeout(1000)
+      const names = await layerNames(page)
+      const victim = [B_EDIT, 'Hero — Latest Post', A_EDIT].find((n) => names.includes(n)) ?? null
+      if (victim !== null) await deleteLayer(page, victim)
+      return victim !== null && !(await layerNames(page)).includes(victim) ? victim : null
+    }
+    const homeDoc = async () => JSON.stringify((await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home&select=doc`)).body?.[0]?.doc ?? {})
+    /** the outgoing page's leave has landed: the row's beat backdated into the grace (or, before this story, the row gone) */
+    const leftNow = async (page) => {
+      let row
+      for (const by = Date.now() + 8000; Date.now() < by; await page.waitForTimeout(100)) {
+        row = await rowNow(page)
+        if (row === null || (row && row.ageMs >= LOCK.STALE_MS - LOCK.LEAVE_GRACE_MS - 2000)) break
+      }
+      return row
+    }
+    /** …and whether it HAS, for the holder that went: the row gone (a release, before this story) or still that holder's
+     *  and aged into the grace (a leave). Anything else — a later beat, another holder, a failed read — is not the race */
+    const hasLeft = (row, holder) => row === null || (!!row && row.holderSessionId === holder && row.ageMs >= LOCK.STALE_MS - LOCK.LEAVE_GRACE_MS - 2000)
+
+    // ── DW-240 (a): THE HOLDER RELOADS, AND THE OTHER SESSION READS THE LOCK INSIDE THE GAP ──
+    // The reloaded page's first lock call is HELD until the other session's read has answered: that is the gap, made
+    // wide on purpose. Before this story `pagehide` DELETED the row, so that read acquired a free lock and the reloaded
+    // tab came back reading along. Now `leave` backdates the beat and the row stays the holder's for `LEAVE_GRACE_MS`.
+    const gap = await whoHolds()
+    if (gap === null) check('DW-240 (a) — fixture: one of the two sessions holds the lock', false)
+    else {
+      const { H, R, row: before } = gap
+      const heldFirst = []
+      let gateOpen = false
+      const holdFirst = async (route) => {
+        const { intent } = callOf(route.request())
+        if (!gateOpen && isLockCall(route.request()) && (intent === 'acquire' || intent === 'beat')) { heldFirst.push(route); return }
+        await route.continue().catch(() => {})
+      }
+      await H.route('**/projects/*/lock', holdFirst)
+      await H.reload({ waitUntil: 'load' })
+      const inGap = await leftNow(R)
+      const answered = R.waitForResponse((r) => isLockCall(r.request()) && callOf(r.request()).intent === 'acquire', { timeout: 6000 }).then(() => true, () => false)
+      await readNow(R)
+      const askedInGap = await answered
+      const whileHeld = heldFirst.length
+      gateOpen = true
+      for (const route of heldFirst) await route.continue().catch(() => {})
+      await H.unroute('**/projects/*/lock', holdFirst)
+      await H.waitForTimeout(3000)
+      const after = await rowNow(R)
+      const [hNow, rNow] = [await surface(H), await surface(R)]
+      // THE CONTROL includes the going page's leave having LANDED before the other session's read — the row gone or aged
+      // into the grace — or the read was not inside the gap at all, and nothing below is a pass
+      const control = whileHeld > 0 && askedInGap && hasLeft(inGap, before.holderSessionId)
+      check('DW-240 (a) — control: the reloaded page\'s first lock call was held, the going page\'s leave had landed, and the other session read the lock while it was held',
+        control, JSON.stringify({ held: whileHeld, askedInGap, inGap: inGap === undefined ? 'unread' : inGap && { ...held(inGap), ageMs: inGap.ageMs } }))
+      check('DW-240 (a) — a reload with the other session reading inside its gap KEEPS the lock: the row is the holder\'s at the same generation, the holder has no bar and the other keeps its own',
+        control && !!after && after.holderSessionId === before.holderSessionId && after.generation === before.generation && hNow.bar === null && (rNow.bar ?? '').includes(LOCK.LOCK_COPY.reading),
+        (control ? '' : 'control not met — ') + JSON.stringify({ before: held(before), after: after && held(after), holderBar: hNow.bar, otherBar: rNow.bar }))
+    }
+
+    // ── DW-240 (b): THE OUTGOING PAGE'S LEAVE LANDS AFTER THE RELOADED PAGE HAS BEATEN ──
+    // `review, 2026-09-24` saw this one with no second session at all: the reload's own re-acquire landed, then the old
+    // page's release — filtered on the SAME session id — deleted it. The leave is filtered on the beat it last heard too,
+    // so one that arrives after the reloaded page's beat matches nothing. The leave is held here, then sent.
+    // ITS PAGEHIDE IS DISPATCHED IN THE PAGE, then the page reloads: a request an unloading document sends is one the
+    // route met in some runs and missed in another (Story 5.24e's local runs), so the leave the walk holds is sent from
+    // the live page by the editor's own `pagehide` listener — the same request — and the real reload's own, met or not,
+    // only adds a second, timely one.
+    const late = await whoHolds()
+    if (late === null) check('DW-240 (b) — fixture: one of the two sessions holds the lock', false)
+    else {
+      const { H, R, row: before } = late
+      const leaves = []
+      const holdLeave = async (route) => {
+        const { intent } = callOf(route.request())
+        if (isLockCall(route.request()) && (intent === 'leave' || intent === 'release')) { leaves.push(route); return }
+        await route.continue().catch(() => {})
+      }
+      await H.route('**/projects/*/lock', holdLeave)
+      // straight after the page's own beat has answered, so the leave carries the beat the row holds
+      await beatAnswered(H)
+      await H.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: false })))
+      for (const by = Date.now() + 5000; leaves.length === 0 && Date.now() < by;) await H.waitForTimeout(50)
+      const reloadAt = Date.now()
+      await H.reload({ waitUntil: 'load' })
+      // the reloaded page has beaten when the row's beat is later than the reload — read with the server's own age
+      let beaten = null
+      for (const by = Date.now() + LOCK.HEARTBEAT_MS + 8000; Date.now() < by; await R.waitForTimeout(250)) {
+        const row = await rowNow(R)
+        if (row && row.holderSessionId === before.holderSessionId && Date.now() - row.ageMs > reloadAt + 1000) { beaten = row; break }
+      }
+      let leaveAnswer = 'never held'
+      for (const route of leaves) {
+        // the page that sent it is gone, so it is sent from the context, with its cookies — `route.fetch()`
+        const answer = await route.fetch().catch(() => null)
+        leaveAnswer = answer === null ? 'unsent' : answer.status()
+        await route.fulfill(answer ? { response: answer } : { status: 204 }).catch(() => {})
+      }
+      await H.unroute('**/projects/*/lock', holdLeave)
+      await H.waitForTimeout(1500)
+      const after = await rowNow(R)
+      check('DW-240 (b) — control: the going page\'s leave was held until the reloaded page had beaten, then sent and answered',
+        leaves.length > 0 && beaten !== null && leaveAnswer === 200, JSON.stringify({ held: leaves.map((r) => callOf(r.request()).intent), beaten: beaten && held(beaten), leaveAnswer }))
+      check('DW-240 (b) — a leave that lands after the reloaded page\'s beat changes nothing: the row is the holder\'s, at the same generation, and fresh',
+        !!after && after.holderSessionId === before.holderSessionId && after.generation === before.generation && after.ageMs < LOCK.STALE_MS - LOCK.LEAVE_GRACE_MS - LOCK.HEARTBEAT_MS && (await surface(H)).bar === null,
+        JSON.stringify({ after: after && { ...held(after), ageMs: after.ageMs }, holderBar: (await surface(H)).bar }))
+    }
+
+    // ── DW-244: THE HOLDER GOES WITH ONE EDIT OWED, ITS LAST FLUSH SLOW, AND THE OTHER SESSION READS IN BETWEEN ──
+    // The flush (`visibilitychange`) and the leave (`pagehide`) go out together and nothing orders their landing. Here the
+    // walk orders them the way that lost the edit: the flush HELD, the leave sent and ANSWERED, the tab gone, and only then
+    // the other session's read, then the flush. Before this story the leave was a release that deleted the row, so that
+    // read took the lock and the flush answered 423 — the edit lost. Now the leave backdates the beat, the row is still the
+    // going tab's for the grace, the flush lands 200, and the other session takes the lock at the grace's edge (`edgePoll`).
+    // THE HIDE AND THE PAGEHIDE ARE DISPATCHED IN THE PAGE (the journey's DW-203 precedent, and DW-240 (b) above): a request
+    // issued from a document already unloading is one Playwright's route did not meet in two LOCAL RUNs against production,
+    // so the walk sends both from the live page, where its routes hold them, and then the tab goes — at once, before its
+    // next beat could refresh the row the leave just aged.
+    const going = await whoHolds()
+    if (going === null) check('DW-244 — fixture: one of the two sessions holds the lock', false)
+    else {
+      const { H, R, rTab, row: before } = going
+      const victim = await oweOne(H)
+      await H.waitForTimeout(500)
+      const owedThen = await owedOnDisk(H)
+      let flushAnswer = null
+      let flushHeldAt = 0
+      let flushSentAt = 0
+      let releaseFlush = () => {}
+      const flushGate = new Promise((done) => { releaseFlush = done })
+      // HELD UNTIL THE OTHER SESSION HAS READ THE LOCK after the leave (at most twenty seconds), so the order the race needs
+      // is the walk's, never the network's
+      const slowFlush = async (route) => {
+        if (flushHeldAt !== 0) return route.continue().catch(() => {})
+        flushHeldAt = Date.now()
+        await Promise.race([flushGate, new Promise((r) => setTimeout(r, 20000))])
+        flushSentAt = Date.now()
+        // the page that asked has gone by now: the context sends it, with its cookies
+        const answer = await route.fetch().catch(() => null)
+        flushAnswer = answer === null ? 'unsent' : answer.status()
+        await route.fulfill(answer ? { response: answer } : { status: 204 }).catch(() => {})
+      }
+      const leaves = []
+      const holdLeave = async (route) => {
+        const { intent } = callOf(route.request())
+        if (isLockCall(route.request()) && (intent === 'leave' || intent === 'release')) { leaves.push(route); return }
+        await route.continue().catch(() => {})
+      }
+      await H.route('**/projects/*/sync', slowFlush)
+      await H.route('**/projects/*/lock', holdLeave)
+      // the tab goes straight after its own beat has answered — the designed path, never the in-flight beat's ceiling
+      await beatAnswered(H)
+      await H.evaluate(() => {
+        Object.defineProperty(document, 'visibilityState', { configurable: true, get: () => 'hidden' })
+        document.dispatchEvent(new Event('visibilitychange'))
+      })
+      for (const by = Date.now() + 5000; flushHeldAt === 0 && Date.now() < by;) await H.waitForTimeout(50)
+      // the flush is out and held: now the page's own `pagehide` sends its leave (a release before this story), held too
+      if (flushHeldAt > 0) await H.evaluate(() => window.dispatchEvent(new PageTransitionEvent('pagehide', { persisted: false })))
+      for (const by = Date.now() + 5000; leaves.length === 0 && Date.now() < by;) await H.waitForTimeout(50)
+      // …and sent first, its answer awaited: whatever it does to the row has happened before the other session reads it
+      let leaveAnswer = 'never held'
+      const [first] = leaves
+      if (first) {
+        const answer = await first.fetch().catch(() => null)
+        leaveAnswer = answer === null ? 'unsent' : answer.status()
+        await first.fulfill(answer ? { response: answer } : { status: 204 }).catch(() => {})
+      }
+      // the tab goes at once, before its next beat; a second leave its real `pagehide` may send stays held, and changes
+      // nothing a first one did not
+      await H.goto(at('/projects'), { waitUntil: 'commit' })
+      const leftRow = await leftNow(R)
+      // THE CONTROL: the leave landed before the read — the row gone (a release) or still the going tab's and aged into the
+      // grace (a leave). A row anything else — a later beat, another holder — is not this race, and nothing below is a pass
+      const left = hasLeft(leftRow, before.holderSessionId)
+      const readAt = Date.now()
+      const answered = R.waitForResponse((r) => isLockCall(r.request()) && callOf(r.request()).intent === 'acquire', { timeout: 6000 }).then(() => true, () => false)
+      await readNow(R)
+      const askedBetween = await answered
+      releaseFlush()
+      for (const by = Date.now() + 25000; flushAnswer === null && Date.now() < by;) await R.waitForTimeout(100)
+      const cloud = await homeDoc()
+      let taken
+      for (const by = Date.now() + LOCK.LEAVE_GRACE_MS + LOCK.HEARTBEAT_MS + 10000; Date.now() < by; await new Promise((r) => setTimeout(r, 500))) {
+        taken = await rowNow(R)
+        if (taken && taken.holderSessionId === rTab) break
+      }
+      await H.unroute('**/projects/*/sync', slowFlush)
+      await H.unroute('**/projects/*/lock', holdLeave)
+      const control = victim !== null && Array.isArray(owedThen) && owedThen.length > 0 && flushHeldAt > 0 && leaveAnswer === 200 && left && askedBetween && flushSentAt > readAt
+      const unmet = control ? '' : 'control not met — '
+      check('DW-244 — control: one edit owed on this browser\'s disk, its flush held, the leave sent and answered 200 and LANDED (the row gone, or the going tab\'s and aged into the grace) before the other session read the lock, and the flush sent after that read',
+        control,
+        JSON.stringify({ victim, owedThen, held: flushHeldAt > 0, leaves: leaves.map((r) => callOf(r.request()).intent), leaveAnswer, left, leftRow: leftRow === undefined ? 'unread' : leftRow && { ...held(leftRow), ageMs: leftRow.ageMs }, askedBetween, flushAfterReadMs: flushSentAt > 0 ? flushSentAt - readAt : 'never sent' }))
+      check('DW-244 — a tab that goes with an edit owed keeps its lock for its slow flush: the flush answers 200 and the edit is in the cloud',
+        control && flushAnswer === 200 && victim !== null && !cloud.includes(victim), unmet + JSON.stringify({ flushAnswer, inCloud: victim !== null && cloud.includes(victim) }))
+      check('DW-244 — …and the other session then takes the lock, at the grace\'s edge rather than a heartbeat later',
+        control && !!taken && taken.holderSessionId === rTab, unmet + JSON.stringify(taken && held(taken)))
+    }
+
+    // ── R-214: SIGNING OUT SENDS WHAT THIS BROWSER STILL OWES, ERASES ITS COPY, AND ONLY THEN SIGNS OUT ──
+    // The holder makes one edit with its every flush refused, so the edit is owed in this browser alone; a second tab of
+    // the same browser opens Projects and signs out from the account menu, which sends it, erases the browser's copy
+    // (`inflozo-doc-<user>` — the editor tab lets go of it as it is deleted) and signs out. The editor stays open, so no
+    // way-out flush can carry the edit for it (a flush from an unloading page is not one the route reliably meets, above).
+    // Before this story the copy survived the sign-out, with the edit in it unsent.
+    const owner = await whoHolds()
+    if (owner === null) check('R-214 — fixture: one of the two sessions holds the lock', false)
+    else {
+      const { H } = owner
+      let refused = 0
+      const refuse = (r) => { refused++; return r.abort('failed') }
+      await H.route('**/projects/*/sync', refuse)
+      const victim = await oweOne(H)
+      await H.waitForTimeout(500)
+      const owedThen = await owedOnDisk(H)
+      const S = await H.context().newPage()
+      await S.goto(at('/projects'), { waitUntil: 'load' })
+      const database = `inflozo-doc-${uid}`
+      const databases = () => S.evaluate(async () => (await indexedDB.databases()).map((d) => d.name)).catch(() => null)
+      const before = await databases()
+      const cloudBefore = await homeDoc()
+      await S.locator('button[popovertarget="account-menu"]').click()
+      await S.getByRole('button', { name: 'Sign out', exact: true }).click()
+      await S.waitForURL(/\/sign-in/, { timeout: 60000 }).catch(() => null)
+      await S.waitForTimeout(1000)
+      const after = await databases()
+      const cloudAfter = await homeDoc()
+      await H.unroute('**/projects/*/sync', refuse)
+      check('R-214 — control: the edit was owed in this browser alone — on its disk, its copy listed, and the cloud still holding the section',
+        victim !== null && Array.isArray(owedThen) && owedThen.length > 0 && Array.isArray(before) && before.includes(database) && cloudBefore.includes(victim),
+        JSON.stringify({ victim, owedThen, refused, before, inCloud: victim !== null && cloudBefore.includes(victim) }))
+      check('R-214 — Sign out sent the owed edit, erased this browser\'s copy and then signed out',
+        /\/sign-in/.test(S.url()) && Array.isArray(after) && !after.includes(database) && victim !== null && !cloudAfter.includes(victim),
+        JSON.stringify({ at: new URL(S.url()).pathname, after, inCloud: victim !== null && cloudAfter.includes(victim) }))
+      await S.close()
+    }
 
     await ctxA.close()
     await ctxB.close()

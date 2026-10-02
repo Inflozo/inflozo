@@ -98,3 +98,17 @@ export function useHanded<S>(initial: S | (() => S)): [S, Dispatch<SetStateActio
   const [state, set] = useState(initial)
   return [state, useMemo(() => handed(set), [set])]
 }
+
+/**
+ * DW-205 (Story 5.24e): ONE ANNOUNCER, FOR EVERY LIVE REGION IN THE APP. A region whose words are set to what they
+ * already were changes nothing in the DOM, so a screen reader hears nothing — the second identical ⌘D's "duplicated"
+ * was silent, and four more regions had the same fault. So the words carry a count that every `say` bumps, and the
+ * region draws `<span key={n}>{words}</span>`: a new key is a NEW node, which a live region always announces. The
+ * technique React Aria's LiveAnnouncer and react-aria-live document. Handed (`useHanded`), so the editor's R-210
+ * hand-over orders it with every other state; outside the editor nothing is ever held, and it is plain state.
+ */
+export type Said = { words: string; n: number }
+export function useSaid(): [Said, (words: string) => void] {
+  const [said, set] = useHanded<Said>({ words: '', n: 0 })
+  return [said, useMemo(() => (words: string) => set((was) => ({ words, n: was.n + 1 })), [set])]
+}

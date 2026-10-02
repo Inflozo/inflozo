@@ -45,8 +45,10 @@
 --    Supabase re-grants TRUNCATE on the storage tables from its own migration and `postgres` is
 --    not the grantor, so the revoke is a no-op. Re-tested today: the new DELETE guards do **not**
 --    cover TRUNCATE, so this stays open and the control that actually holds is that `storage` is
---    not a PostgREST-exposed schema. `run-verify-ghost-admin.py --check`'s schemas-off-rest asserts
---    that over the wire (MEASUREMENTS §60); RLS-TEST.sql sees only a database-level setting.
+--    not a PostgREST-exposed schema. CI's `rls` job asserts that over the wire on every push with
+--    tools/probe/check-schemas-off-rest.py (Story 5.24e, DW-302; MEASUREMENTS §60), the check
+--    `run-verify-ghost-admin.py --check`'s schemas-off-rest calls; RLS-TEST.sql sees only a
+--    database-level setting.
 -- ============================================================================
 
 -- 1. Storage policies. SCHEMA.sql §12 recreates these; `create policy` errors if they exist.

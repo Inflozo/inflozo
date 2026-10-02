@@ -340,6 +340,31 @@ test("Question 4 (Story 5.24c) — a bare helper Ghost added inside 5.x is refus
   }
 })
 
+test('DW-300 (Story 5.24e) — FR-H7: with no version the offer is the floor\'s, and no offer at any version lists a helper', () => {
+  // an offer changes only where a key's `since` falls, so no version, the floor and every `since` reach every offer from the floor up
+  const all = [...Object.values(M.universal), ...Object.values(M.scopes).flatMap((f) => Object.values(f))]
+  const versions = [undefined, M.floor, ...new Set(all.flatMap((f) => (f.since === undefined ? [] : [f.since])))]
+  let offers = 0
+  for (const target of [...Object.keys(M.targets).filter((t) => !t.includes('{')), 'custom-members.hbs']) {
+    const scopes: ScopeEntry[][] = [[], ...Object.keys(M.get).map((get) => [{ get }]), ...offerBindings(at(target)).repeats.map((r) => [r])]
+    for (const scope of scopes) {
+      assert.deepEqual(offerBindings(at(target, scope)), offerBindings(at(target, scope, M.floor)), `no version is the floor at ${target} ${JSON.stringify(scope)}`)
+      for (const version of versions) {
+        const place = at(target, scope, version)
+        const o = offerBindings(place)
+        offers++
+        // a path bindable as a helper here names a helper-kind key here: a bare universal helper or a scope's helper field
+        const helpers = [...o.values, ...o.repeats, ...o.conditions].filter((p) => bindable(p, { ...place, use: 'helper' }) === null)
+        assert.deepEqual(helpers, [], `helpers offered at ${JSON.stringify(place)}`)
+      }
+    }
+  }
+  assert.ok(offers > versions.length, 'the walk visited no place')
+  // and the floor withholds what arrived after it: a key gated at 6.36.0 is absent with no version and offered at 6.36.0
+  const threads = (version?: string) => offerBindings(at('default.hbs', [], version)).values.includes('@site.threads')
+  assert.deepEqual([threads(undefined), threads('6.36.0')], [false, true])
+})
+
 test('offer by scope: post fields and their repeats at the top of post.hbs, and no list-template field', () => {
   const o = offerBindings(at('post.hbs'))
   assert.ok(o.values.includes('title') && o.values.includes('feature_image') && o.values.includes('primary_tag.name'))

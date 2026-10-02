@@ -8,11 +8,13 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { assembleEntry, validateDesign } from '@inflozo/library'
+import { assembleEntry, compilesTo, isPaywallDesign, isPlaceable, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
+import type { ProjectDoc } from '@inflozo/section-runtime'
+import { canvasOfTemplateKey, fileOfKey, isSurface } from './editor.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import { sampleRows, type DesignRows } from './canvas.ts'
-import { PACKAGES, surfaceCss } from './style-guide.ts'
+import { PACKAGES } from './style-guide.ts'
 
 /** `packages/` is found by `style-guide.ts`'s ONE finder (DW-269): the working directory first, the form Turbopack traces
  *  into the deployed functions, and this module's address as the fallback, so the render matrix (Story 4.11) reads the
@@ -52,6 +54,42 @@ export function pilot(id: string): SectionRegistryEntry {
   const entry = assembleEntry({ dir, design, content, html, css })
   if (typeof entry === 'string') throw new Error(`${id} does not assemble — ${entry}`)
   return entry
+}
+
+/**
+ * DW-235 (Story 5.24e): WHAT A STORED DOC MAY HOLD — ONE RULE FOR THE DOOR THAT READS A DOC AND THE ONE THAT WRITES IT.
+ * `read.ts` throws with it, because a doc nothing in the product could have written blacks out every canvas of its
+ * project; `sync/route.ts`, the one door that writes a doc, answers 422 with it BEFORE the write. Until this the route
+ * checked the schema, the key and a surface's count and stored the rest — so a doc `read.ts` refuses could be saved,
+ * and the editor then refused to open (its own parity claim, `sync/route.ts`'s header, was not true).
+ *
+ * Null when every instance may stand where it is; else `read.ts`'s own sentence, the first refusal found. `held` is the
+ * caller's entries by id, filled as designs are read, so `read.ts` reads each design once and hands the map on.
+ */
+export function docRefusal(key: string, doc: ProjectDoc, held: Record<string, SectionRegistryEntry> = {}): string | null {
+  const file = fileOfKey(key)
+  // STORY 5.20 — THE PAYWALL IS A TEMPLATE SURFACE: its doc holds AT MOST ONE instance, and that one is a paywall design
+  // — the one place a treatment is stored in a doc (FR-H6's "one design active per project", R-197)
+  const canvas = canvasOfTemplateKey(key)
+  const surface = canvas !== null && isSurface(canvas)
+  if (surface && doc.instances.length > 1) return `${key}: a paywall holds one design, and this doc holds ${doc.instances.length}`
+  for (const [n, instance] of doc.instances.entries()) {
+    const where = `${key} instance ${n} (${instance.instanceId}, ${instance.designId})`
+    // Story 5.4, before the library is even asked: a treatment is chosen outside the canvas and never placed on one
+    if (!surface && !isPlaceable(instance.designId)) return `${where}: that design is a treatment chosen outside the canvas, never placed on one`
+    let entry = held[instance.designId]
+    try {
+      entry ??= pilot(instance.designId)
+    } catch (e) {
+      return `${where}: ${(e as Error).message}`
+    }
+    if (surface && !isPaywallDesign(entry)) return `${where}: only a paywall design stands where a post stops, and ${instance.designId} is not one`
+    // `compilesTo`, the library's one rule (Story 5.16): a Home design may sit on `index.hbs`, Home's page 2, because
+    // Ghost hands the two files the same posts — so R-179's exact copy of a Home never blacks out the editor
+    if (!compilesTo(entry.compileTarget, file)) return `${where}: the design compiles to ${entry.compileTarget.join(', ')}, never ${file}`
+    held[instance.designId] = entry
+  }
+  return null
 }
 
 /** ponytail: every design is read, validated and assembled on each request (the page, then the frame route again), and
@@ -123,10 +161,10 @@ export function pilotsCanvasDocument(only?: string, extra: readonly { id: string
     `<title>${esc('Pilot sections')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
     `<style data-order="2-document">html,body{margin:0;background:var(--bg-page)}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}</style>` +
-    // STORY 5.20 — the Paywall canvas's post body (`style-guide.ts`'s `surfaceCss`), DISABLED: `media="not all"` matches
-    // nothing, so every other canvas renders exactly as before, and the paywall's paint switches it on and off again. A
-    // preview never draws a surface, so a narrowed document leaves it out.
-    (only === undefined ? `<style data-order="2b-surface" media="not all">${surfaceCss()}</style>` : '') +
+    // DW-275 (Story 5.24e): the Paywall canvas's post body (`style-guide.ts`'s `surfaceCss`) is NO LONGER INLINED here.
+    // Story 5.20 carried it disabled in every canvas document — 69,185 of its 124,335 bytes (10,379 of 22,872 gzipped)
+    // — for the one canvas that uses it. The canvas routes now answer `?sheet=surface` with it, and the editor's first
+    // Paywall paint links it in before `3-pilots` (`paint()`), where its `data-order` keeps the cascade it always had.
     `<style data-order="3-pilots">${css}</style>` +
     `<style data-order="4-editor">${readFileSync(CHROME(), 'utf8')}</style></head>` +
     `<body><div id="canvas"></div></body></html>`

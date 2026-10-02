@@ -30,9 +30,15 @@ import { openPopover } from '@/components/kit/select'
    with `null`; Escape and a click outside report nothing. */
 
 export type LinkResource = { id: string; title: string; url: string; meta: string }
-/** Story 5.18 — `capped` is the one honest limit of a client-side search (DW-248): where the connected site holds more
- *  posts than the rows in hand, the line that says so and how to link an older one. Absent on the sample. */
-export type LinkResources = Readonly<Record<'pages' | 'posts' | 'tags' | 'authors', readonly LinkResource[]>> & { readonly capped?: string }
+/** Story 5.18 — `capped` is the one honest limit of a client-side search: where the connected site holds more posts than
+ *  the rows in hand, the line that says so and how to link an older one. Absent on the sample, and absent while the
+ *  editor's one search at Ghost is in force (DW-248, Story 5.24e). */
+export type LinkResources = Readonly<Record<'pages' | 'posts' | 'tags' | 'authors', readonly LinkResource[]>> & {
+  readonly capped?: string
+  /** DW-248 (Story 5.24e): told the term this box holds as it is typed ('' as it empties or closes), so the editor's one
+   *  search at Ghost can run while the site's posts list is capped. A pasted address is no search, and says ''. */
+  readonly onQuery?: (term: string) => void
+}
 
 const GROUPS = [
   { key: 'pages', kind: 'page', label: 'Pages', icon: <PageGlyph size={14} className="shrink-0 text-ink-soft" /> },
@@ -169,10 +175,15 @@ export function LinkPanel({
   const panel = useRef<HTMLDivElement>(null)
   const opening = useRef(record)
   opening.current = record
+  // DW-248: the latest render's teller, read by the toggle listener below, which is added once
+  const told = useRef(resources.onQuery)
+  told.current = resources.onQuery
   useEffect(() => {
     const el = panel.current
     if (!el) return
     const reset = (event: Event) => {
+      // opening or closing, the box starts empty — and the editor's search with it
+      told.current?.('')
       if ((event as ToggleEvent).newState !== 'open') return
       setDraft(opening.current)
       setQuery('')
@@ -195,6 +206,7 @@ export function LinkPanel({
   const choose = (next: LinkRecord) => {
     setDraft(next)
     setQuery('')
+    resources.onQuery?.('')
   }
   const rels = new Set(draft?.rel ?? [])
 
@@ -215,7 +227,10 @@ export function LinkPanel({
         labelHidden
         placeholder="Search pages, posts — or paste a URL"
         value={query}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value)
+          resources.onQuery?.(outside(event.target.value.trim()) === null ? event.target.value : '')
+        }}
         onKeyDown={(event) => {
           if (event.key === 'Enter' && address !== null) {
             event.preventDefault()

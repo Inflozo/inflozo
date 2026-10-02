@@ -102,7 +102,10 @@ test('a longer ring shows the first tiles and a +N — and slides so the ACTIVE 
   for (let at = 0; at < ring.length; at++) assert.ok(strip(ring, at).tiles.includes(at), `design ${at} is off its own strip`)
 })
 
-test("FR-D13's sentence names both numbers, and reads for one item too", () => {
+test("FR-D13's sentence names both numbers, and reads for one item too — and R-218 keeps the list's range at its end", () => {
+  // R-218 (DW-212, Story 5.24e): the range P0-3 draws stays, after the sentence, where the list declares both bounds
+  assert.equal(shownInThisDesign(3, 2, 2, 6), '3 items · 2 shown in this design · 2–6')
+  assert.equal(shownInThisDesign(3, 2, undefined, 6), '3 items · 2 shown in this design', 'one bound alone is no range')
   assert.equal(shownInThisDesign(3, 2), '3 items · 2 shown in this design')
   assert.equal(shownInThisDesign(8, 3), '8 items · 3 shown in this design')
   assert.equal(shownInThisDesign(1, 1), '1 item · 1 shown in this design')

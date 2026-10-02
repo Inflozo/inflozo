@@ -986,7 +986,7 @@ the instance's Data values (`feedQuery`: posts, the page size, newest first, fol
 - **Both leave the pager out.** Inside a get `pagination` is the query's, and `{{page_url pagination.next}}` there links
   to the ROUTE's `/page/2/` (§53): a wrong page, not a missing one. So a feed must keep its pager in the one element,
   and must not read `pagination` anywhere else.
-- **The fold is AD-36's door.** A stored tag or writer reaches the hash only as `^[a-z0-9_-]+$`, quoted —
+- **The fold is AD-36's door.** A stored tag or writer reaches the hash only as Ghost's own slug grammar, `GHOST_SLUG_RE` — `^[a-z0-9_×ß-þ-]+$` since DW-258 (Story 5.24e: Ghost's slugify keeps × and ß–þ, MEASUREMENTS §63; `^[a-z0-9_-]+$` until then) — quoted —
   `tag:'…'`, and `authors:'…'` for a writer: the singular `author:` answers the same posts but gscan refuses it as
   deprecated on both majors (GS001-DEPR-AUTH-FILT, §53). A pick reaches it only as Ghost's 24-hex id. Anything else is
   ignored and the base query stands.

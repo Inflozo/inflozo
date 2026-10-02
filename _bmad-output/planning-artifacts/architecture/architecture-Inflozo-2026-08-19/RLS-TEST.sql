@@ -990,8 +990,9 @@ end $$;
 -- WHAT THIS BLOCK CAN SEE (DW-294, Story 5.24d): a DATABASE-level `pgrst.db_schemas`, and nothing else. Hosted
 -- Supabase keeps the exposed schemas outside the database — unset there, and none in `pg_db_role_setting` for
 -- `authenticator` — and nothing sets it in the gate's container, so when it is unset this block asserts nothing and
--- says so. The schemas are read where they live, over the wire, by `run-verify-ghost-admin.py --check`'s
--- schemas-off-rest step (MEASUREMENTS §60).
+-- says so. The schemas are read where they live, over the wire, by `tools/probe/check-schemas-off-rest.py`, which
+-- CI's `rls` job runs after this gate on every push (Story 5.24e, DW-302; MEASUREMENTS §60) — the same check
+-- `run-verify-ghost-admin.py --check`'s schemas-off-rest step calls.
 do $$
 declare exposed text := coalesce(current_setting('pgrst.db_schemas', true), '');
 begin
@@ -1002,7 +1003,7 @@ begin
     raise exception 'FAIL: `storage` is an exposed PostgREST schema (%). With TRUNCATE still granted (D6), any authenticated session can destroy every user''s objects.', exposed;
   end if;
   if exposed = '' then
-    raise notice 'NOT ASSERTED HERE: no database-level pgrst.db_schemas, so this block cannot see which schemas PostgREST exposes -- `python3 tools/probe/run-verify-ghost-admin.py --check`''s schemas-off-rest step reads them over the wire';
+    raise notice 'NOT ASSERTED HERE: no database-level pgrst.db_schemas, so this block cannot see which schemas PostgREST exposes -- tools/probe/check-schemas-off-rest.py reads them over the wire, run by CI''s rls job after this gate';
   else
     raise notice 'PASS: neither private nor storage is in the database-level pgrst.db_schemas (%)', exposed;
   end if;

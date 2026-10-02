@@ -1,4 +1,4 @@
-import { SyncAlert, SyncArrowUp, SyncCheck, SyncClock, SyncUpload } from './icons'
+import { SyncAlert, SyncArrowUp, SyncCheck, SyncClock, SyncSignedOut, SyncUpload } from './icons'
 
 /* THE PERSISTENCE INDICATOR — B Missing Surfaces, B6 · "PERSISTENCE, FIVE STATES", as ruling R-142 amends it.
  *
@@ -21,7 +21,7 @@ import { SyncAlert, SyncArrowUp, SyncCheck, SyncClock, SyncUpload } from './icon
  * frame's own resting gold measured 3.61:1 and the resting fill became the frame's darker hover shade (Story 1.5,
  * ruled by the owner 2026-09-06). Same hues, the export's own deeper value of each.
  *
- * THE FIVE LABELS ARE STILL B6'S FIVE, and the union is still the compile error for a sixth. They are no longer
+ * THE LABELS ARE B6'S FIVE AND R-213'S SIXTH (Story 5.24e), and the union is the compile error for a seventh. They are no longer
  * PRINTED; they are the `title` a hover shows and the accessible name a screen reader reads, which is the text
  * equivalent `EXPERIENCE.md`'s accessibility floor requires every state to have. A sighted user gets glyph +
  * colour; everyone gets the word.
@@ -35,6 +35,7 @@ export type PersistenceState =
   | 'Syncing'
   | 'Synced'
   | 'Retrying'
+  | 'Signed out'
   | 'Syncing every change to the cloud'
 
 /** Per state: the circle's fill, and the glyph inside it. Colour and shape are redundant with each other by
@@ -46,6 +47,8 @@ const look: Record<PersistenceState, { fill: string; Glyph: typeof SyncCheck }> 
   'Saved on this device': { fill: 'bg-ink-soft', Glyph: SyncClock },
   Syncing: { fill: 'bg-coral-text', Glyph: SyncArrowUp },
   Retrying: { fill: 'bg-danger-text', Glyph: SyncAlert },
+  // R-213: Retrying's red, because a save is refused in both — and a glyph of its own, so shape tells them apart (R-142)
+  'Signed out': { fill: 'bg-danger-text', Glyph: SyncSignedOut },
   // no local storage: the device holds nothing, so every change goes straight up. Grey like the resting state
   // and told apart from it by its glyph, never by its colour.
   'Syncing every change to the cloud': { fill: 'bg-ink-soft', Glyph: SyncUpload },

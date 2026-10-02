@@ -20,7 +20,7 @@
  */
 
 import {
-  addressOf, after, API_VERSION, ask, isFresh, keyOf, outcomeOf, pick, READ_TIMEOUT_MS, retried, START,
+  addressOf, after, API_VERSION, ask, isFresh, isSearch, keyOf, outcomeOf, pick, READ_TIMEOUT_MS, retried, START,
   type Answer, type LiveQuery, type Reading,
 } from './live-content.ts'
 
@@ -37,9 +37,10 @@ export type LiveStore = {
   reading: () => Reading
   /** choosing the site in the SOURCE group — the one "try again", never after a refused key or the ceiling */
   retry: () => void
-  /** Story 5.23a — how many answers have been written to the cache: a read that lands, a background one included. The
-   *  canvas keeps each section's drawing while its render context holds, and this is the context's word for "the rows
-   *  in hand have changed", so any landing repaints the whole page. */
+  /** Story 5.23a — how many answers have been written to the cache: a read that lands, a background one included — a
+   *  search's excepted (DW-248), whose rows reach no render context. The canvas keeps each section's drawing while its
+   *  render context holds, and this is the context's word for "the rows in hand have changed", so any landing repaints
+   *  the whole page. */
   version: () => number
 }
 
@@ -78,8 +79,9 @@ export function liveStore(origin: string, key: string, now: () => number = Date.
     flying.set(k, done)
     queue.push(async () => {
       try {
-        // THE STOP RULE AT THE FRONT OF THE QUEUE, not at the back: reading that stopped while this waited sends nothing
-        const turn = ask(reading)
+        // THE STOP RULE AT THE FRONT OF THE QUEUE, not at the back: reading that stopped while this waited sends nothing,
+        // and a search past its share sends nothing either (DW-248)
+        const turn = ask(reading, q)
         reading = turn.reading
         if (turn.go) {
           let status = 0
@@ -103,7 +105,9 @@ export function liveStore(origin: string, key: string, now: () => number = Date.
           if (answer !== null) {
             answered = true
             cache.set(k, { at: now(), answer })
-            written++
+            // a search's rows reach no render context — only the pickers' lists (`withFound`) — so the canvas, whose
+            // keyed paint holds while `version()` does, has nothing to repaint for (DW-248)
+            if (!isSearch(q)) written++
           }
         }
       } finally {

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { isUuid } from '@/lib/editor'
-import { nextGeneration, rowFrom, STALE_MS, type LockAnswer, type LockRow } from '@/lib/lock'
+import { countPatch, leaveBacks, leaveBeat, leaveStamp, nextGeneration, rowFrom, STALE_MS, type LockAnswer, type LockRow } from '@/lib/lock'
 import { currentUser, supabaseServer } from '@/lib/supabase/server'
 
 /**
@@ -29,9 +29,10 @@ import { currentUser, supabaseServer } from '@/lib/supabase/server'
  * RESTRICTIVE on `owns_project(project_id)`, so another user's project id reaches zero rows and answers the same
  * "nothing" a missing project answers.
  *
- * SIX INTENTS AND NOTHING ELSE. `acquire` (insert, or the CAS over a stale row) · `beat` (the ~15 s heartbeat,
- * carrying AD-16's edit count) · `nudge` · `keep` · `release` · `takeover` (the CAS). A non-holder's `beat` changes
- * no rows and falls through to the re-read, which is how a reader polls without a seventh intent.
+ * THESE INTENTS AND NOTHING ELSE. `acquire` (insert, or the CAS over a stale row) · `beat` (the ~15 s heartbeat,
+ * carrying AD-16's edit count) · `nudge` · `keep` · `release` (Hand over's DELETE) · `leave` (a going page's backdated
+ * beat, Story 5.24e) · `takeover` (the CAS). A non-holder's `beat` changes no rows and falls through to the re-read,
+ * which is how a reader polls without an intent of its own.
  *
  * DELIBERATELY NO TIMING RULE ON `takeover` — no "a nudge was on the row", no "~30 s passed". Every session that can
  * reach this row is the SAME account's (`projects.user_id` is one person and team seats are out of v1), so the ~30 s
@@ -51,7 +52,7 @@ const json = (status: number, body: unknown) =>
  *  the whole reason the CAS is expressible at all. */
 const COLUMNS = 'holder_session_id, lock_generation, unsynced_edits, heartbeat_at, nudge_requested_by, nudge_requested_at'
 
-const INTENTS = ['acquire', 'beat', 'nudge', 'keep', 'release', 'takeover'] as const
+const INTENTS = ['acquire', 'beat', 'nudge', 'keep', 'release', 'leave', 'takeover'] as const
 
 type Rows = Record<string, unknown>[] | null
 
@@ -72,7 +73,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   }
   if (typeof body !== 'object' || body === null) return no(400, 'Not an object')
 
-  const { intent, session, generation, unsynced } = body as Record<string, unknown>
+  // `beat` is the intent below; the body's field is the beat this tab last HEARD, which `leave` filters on
+  const { intent, session, generation, unsynced, beat: heard } = body as Record<string, unknown>
   if (typeof intent !== 'string' || !(INTENTS as readonly string[]).includes(intent)) return no(400, 'Not an intent')
   // the session id is the browser's own `crypto.randomUUID()`, and it is only ever COMPARED — never parsed and never
   // interpolated. Bounded anyway: it is stored in a `text` column.
@@ -80,9 +82,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   // `Number.isSafeInteger`, not `typeof === 'number'`: `NaN`, `Infinity` and `1e300` are all numbers, and a
   // generation the database cannot compare is a compare-and-set that silently never matches (the sync route's own
   // argument about `base`).
-  const owed = Number.isSafeInteger(unsynced) && (unsynced as number) >= 0 ? (unsynced as number) : 0
+  // DW-240 (Story 5.24e): absent until the tab has read its journal — a beat then keeps the stored count (`countPatch`)
+  const count = countPatch(unsynced)
   const held = Number.isSafeInteger(generation) && (generation as number) > 0 ? (generation as number) : null
   if (intent === 'takeover' && held === null) return no(400, 'Bad generation')
+  if (intent === 'leave' && !leaveBeat(heard)) return no(400, 'Bad beat')
 
   const supabase = await supabaseServer()
   const table = () => supabase.from('edit_locks')
@@ -112,7 +116,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
    *  lock changes zero rows, which IS the displacement signal. */
   const beat = async () => {
     const { data, error } = await table()
-      .update({ heartbeat_at: stamp(), unsynced_edits: owed })
+      .update({ heartbeat_at: stamp(), ...count })
       .eq('project_id', projectId)
       .eq('holder_session_id', session)
       .select(COLUMNS)
@@ -125,6 +129,26 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { error } = await table().delete().eq('project_id', projectId).eq('holder_session_id', session)
     if (error) return failed('release', error.code)
     return answer(await read(), true)
+  }
+
+  if (intent === 'leave' && leaveBeat(heard)) {
+    // DW-240 · DW-244 (Story 5.24e): A GOING PAGE BACKDATES ITS OWN BEAT rather than deleting the row, so the row is still
+    // its own for `LEAVE_GRACE_MS` — a reload's first beat lands inside that and keeps it — and stale after it, for the
+    // next opener. FILTERED ON THE BEAT THIS TAB LAST HEARD as well as on its session: a late leave carrying an old beat
+    // (the reloaded page has beaten since) matches nothing and changes nothing. `heartbeat_at` is in `authenticated`'s
+    // UPDATE grant and the guards fire only on a rewound generation or a changed holder, so no migration (the Create).
+    // A beat already at or before the stamp is a row stale, or nearly: writing would REVIVE it (`leaveBacks`), so not.
+    const now = Date.now()
+    if (!leaveBacks(heard, now)) return answer(await read(), false)
+    const { data, error } = await table()
+      .update({ heartbeat_at: leaveStamp(now) })
+      .eq('project_id', projectId)
+      .eq('holder_session_id', session)
+      .eq('heartbeat_at', heard)
+      .select(COLUMNS)
+    if (error) return failed('leave', error.code)
+    const left = first(data as Rows)
+    return answer(left ?? (await read()), left !== null)
   }
 
   if (intent === 'nudge' || intent === 'keep') {
@@ -183,7 +207,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const there = await read()
   if (there === null) {
     const { data, error } = await table()
-      .insert({ project_id: projectId, user_id: user.id, holder_session_id: session, heartbeat_at: stamp(), unsynced_edits: owed })
+      .insert({ project_id: projectId, user_id: user.id, holder_session_id: session, heartbeat_at: stamp(), unsynced_edits: count.unsynced_edits ?? 0 })
       .select(COLUMNS)
     if (!error) return answer(first(data as Rows) ?? (await read()), true)
     // 23505: another session inserted between the read and the insert. Fall through to the CAS path below.
@@ -213,7 +237,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       holder_session_id: session,
       lock_generation: nextGeneration(row.generation),
       heartbeat_at: stamp(),
-      unsynced_edits: owed,
+      unsynced_edits: count.unsynced_edits ?? 0,
       nudge_requested_by: null,
       nudge_requested_at: null,
     })

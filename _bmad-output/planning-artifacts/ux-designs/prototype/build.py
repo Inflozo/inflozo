@@ -377,7 +377,7 @@ page('connect-keys', 'Connect · Keys', 'Onboarding',
               '<a href="preview-only-notice.html">Preview-only</a> without asking; '
               '<span class="mono">http://</span> is warned; code injection raises a one-time notice that the '
               'live page can legitimately differ from the canvas; Portal&rsquo;s floating-button state is read, '
-              'or asked once, defaulting to on.',
+              'or asked once, defaulting to off (Ghost&rsquo;s own default, R-215, owner 2026-09-28, built by Story 5.24e).',
               anchor='validation'),
      subs=[SUB('Validation states', 'validation', 'J1 step 5')])
 

@@ -690,6 +690,14 @@ differing from the version a claim was proved against, after gscan and `member-c
 Both relative dates and nested parentheses work on 0.12.7 and 0.13.4. FR-I2's rules hold on both —
 but they now hold on *observed* grounds rather than on a version that neither major runs.
 
+*Dated note, 2026-10-02 (Story 5.24e, read in the npm tarballs' lockfiles; the figures above are left as recorded).* The
+Content API's `filter` does not reach Ghost 5's direct pin. It is parsed by the model plugin `@tryghost/bookshelf-filter`
+0.5.23, which pins `@tryghost/nql` **0.12.6** (`yarn.lock:7769-7777`, `:8291-8298`); Ghost's own 0.12.7
+(`package.json:110`) serves core's direct requires — the URL generator, content gating and the rest. Both resolve
+**nql-lang 0.6.3** (`yarn.lock:8284`), the parser that reads a filter, so nothing above changes. Ghost 6.58.0's plugin,
+`bookshelf-filter` 2.3.7, resolves the same 0.13.4 over nql-lang 0.7.0 (`pnpm-lock.yaml:6413-6417`, `:6836-6840`). §62
+executed a search filter on exactly these parsers.
+
 ### 15h. Items 2, 3, 9, 21 — closed in passing
 
 - **Item 2 · `hostSettings` is ABSENT on self-hosted**, both majors. `GET /admin/config/` returns
@@ -3817,7 +3825,7 @@ Every load: the iframe's inline style is `z-index: 3999998; position: fixed; bot
 - **"The text emptied" reaches Ghost as an empty string** (read in source, not clicked): Ghost Admin's Announcement field is Koenig's single-paragraph HTML field (`singleParagraph` on by default, `html-field` in the 6.58.0 admin bundle), whose `HtmlOutputPlugin` saves `''` whenever the editor holds no text — `documentElement.textContent ? html : ''`, identical in the shipped `koenig-lexical` of 6.58.0 and 5.130.6. So an emptied bar fails `isFilled` and Ghost injects nothing, which is the canvas's "content without words draws no strip"; and Admin never writes two paragraphs, so the shim's one known ceiling (two stored paragraphs read with a space between them) needs a write through the API to reach.
 - **The anchors the canvas marks for NFR-6(c3)** are Ghost's own live roots, `#announcement-bar-root` and `#ghost-portal-root` — the shim roots carry those ids AND `data-ghost-surface`, and on the live site both FLOAT relative to whatever a theme renders (VERIFY-AT-BUILD item 51), so no theme may depend on their markup.
 
-**What this does NOT say.** Nothing here records a signed-in member's page: Portal's member look — a 60px label-less circle with a 4px `rgba(255,255,255,.15)` halo and the person icon at 34px — is read in Portal's source (2.69.339 `trigger-button.jsx` :54-60, :188; 2.51.5 the same), and the bar's audience per member status is §46(c), read in source. A chosen icon (`icon-1`…`icon-5`, or an uploaded image) was not recorded — the snapshot does not store it, and the canvas draws the default person icon (DW-278). Ghost's own default `portal_button` of `"false"` is read in `default-settings.json` on both majors, not observed on a fresh site (both test servers have it off). The recording is Casper's page; another theme's CSS meets the bar and not Portal's iframe.
+**What this does NOT say.** Nothing here records a signed-in member's page: Portal's member look — a 60px label-less circle with a 4px `rgba(255,255,255,.15)` halo and the person icon at 34px — is read in Portal's source (2.69.339 `trigger-button.jsx` :54-60, :188; 2.51.5 the same), and the bar's audience per member status is §46(c), read in source. A chosen icon (`icon-1`…`icon-5`, or an uploaded image) was not recorded — the snapshot does not store it, and the canvas draws the default person icon (DW-278). *(2026-10-02: Story 5.24e stores and draws the chosen icon, and the five presets are recorded on both majors — §67; an uploaded image is still read in source only.)* Ghost's own default `portal_button` of `"false"` is read in `default-settings.json` on both majors, not observed on a fresh site (both test servers have it off). The recording is Casper's page; another theme's CSS meets the bar and not Portal's iframe.
 
 ## 56. R-223's session guard on production — a ticket whose sign-in has ended is refused at `/rest/v1`, the 401 as it arrives through Supabase's gateway, and what it costs · 2026-09-29
 
@@ -4111,3 +4119,271 @@ while its last logged user edit is 2026-09-25 04:48:33. No probe signs into Ghos
 **What it settles.** A row in either log is a person's edit in Ghost Admin; nothing in `tools/` writes one. A custom
 integration's key WOULD be logged — its `integration_id` is set, so the actor has an id — and none is in either log. The
 three changes DW-299 names, and the profile picture, are the owner's and are kept; `RESET-PROTOCOL.md` § Ghost says so.
+
+## 62. The NQL term grammar — a title search Ghost cannot fail to parse, read and executed on the pinned nql-lang and mongo-knex, then read-only on both majors · 2026-10-02
+
+**Why.** DW-248 (Story 5.24e): on a site with more posts than the editor's list holds, typing must search Ghost itself.
+Ghost counts every Content API answer of 400 or more against the customer's network (§51), so the filter the editor
+sends must be one Ghost cannot fail to parse. Read in the npm tarballs of `ghost` 5.130.6 and 6.58.0 and of the packages
+their filter path resolves — nql-lang 0.6.3 and mongo-knex 0.9.1 for Ghost 5 (§15g's dated note), nql-lang 0.7.0 and
+mongo-knex 0.11.2 for Ghost 6 — then executed: both parsers and both LIKE builders on those exact packages, and the
+editor's own request on T1 and T3, read-only. Keys by name only: `GHOST5_URL`, `GHOST6_URL` and the Content keys stored
+for them.
+
+**(a) The source.**
+- The posts input serializer wraps a filter as `(<filter>)+type:post` (`input/posts.js:134` on 5, `:130` on 6).
+- nql-lang's STRING token is `['](\\['"]|[^'"])+?[']` (`src/nql.l:33`, identical in 0.6.3 and 0.7.0): any character but
+  a quote, or a backslash and a quote. `~ STRING` strips the outer quotes, turns `\'` and `\"` back into the quote
+  (`lib/scope.js:42-45`) and builds a case-insensitive RegExp with every metacharacter escaped (`stringToRegExp`).
+- mongo-knex compiles that to `lower(title) LIKE ? ESCAPE '*'`, the value bound, with `*`, `%` and `_` escaped
+  (`processRegExp`; 0.9.1 `:46` and `:481`, 0.11.2 `:142` and `:826`).
+- Ghost 5's `setDefaultOrder` (`input/posts.js:94-102`) passes a filter sent WITHOUT an `order` to `slugFilterOrder`,
+  which matches `/slug:\s?\[(.*)\]/` anywhere in the text — a quoted term included — and writes the slugs unescaped into
+  `CASE WHEN … = '<slug>'` (`slug-filter-order.js:9`), then `orderRaw` (`crud.js:103-104`). Ghost 6 binds them (`:88-98`,
+  `crud.js:138-143`). An explicit `order` skips both.
+
+**(b) Executed on the pinned packages.** Each term escaped as `searchRead` (`apps/web/lib/live-content.ts`) escapes it,
+wrapped as the serializer wraps it, and fed to both parsers and both LIKE builders.
+
+| Terms | nql-lang 0.6.3 · 0.7.0 | mongo-knex 0.9.1 · 0.11.2 |
+|---|---|---|
+| 27 terms: plain words, `it's`, `say "hi"`, `a\b`, a trailing `\`, `\'`, `\"`, `x' OR 1=1 --`, `slug:[a,b]`, `') + slug:[x]`, `50% off`, `snake_case`, `star*`, `(parens)`, `[brackets]`, `a+b,c`, `~tilde`, `.*+?{}\|`, `café ☕ 中文`, `''`, `""`, `\\`, a tab, 100 × `x` | every one parsed to `{$and: [{title: {$regex: /…/i}}, {type: 'post'}]}`, its RegExp matching the term | `%` + the lowercased term, `*` `%` `_` escaped, + `%`, on both |
+| `^caret`, `dollar$` | parsed | 0.11.2 as above; **0.9.1 reads the escaped anchor as an anchor**: `caret%` and `%dollar` — a narrower match on Ghost 5, never an error |
+| **Controls:** `it's` and `say "hi"` unescaped, and the empty term | **`Query Error: unrecognized text`** on both — the 400 a real Ghost answers | — |
+
+**(c) Executed on both majors.** `searchRead` and the editor's own address builder made each request, sent with
+`Accept-Version: v5.0` and `Origin: https://app.inflozo.com`.
+
+| Server | Request | Answer |
+|---|---|---|
+| T3 ghost5 | the control: the newest post's longest title word, upper-cased — `title:~'PROBES'`, `limit=15`, `order=published_at desc` | HTTP 200, 1 row, that post |
+| T3 ghost5 | `title:~'it\'s \"x\" \ slug:[a,b] 50%_*'` | HTTP 200, 0 rows |
+| T1 ghost6 | the control, `title:~'PROBE'` | HTTP 200, 1 row, that post |
+| T1 ghost6 | the same escaped term | HTTP 200, 0 rows |
+
+**What it settles.** Escaping `'` and `"` is the whole grammar: nothing else ends the string, so every term of 1–100
+characters parses, and `SEARCH_TERM`'s floor of 2 never sends the empty one. `order` is always sent, so no term's
+`slug:[…]` reaches Ghost 5's raw SQL. On Ghost 5 a term starting `^` or ending `$` matches as a prefix or a suffix (a
+mongo-knex 0.9.1 quirk). **What it does NOT say:** nothing ran through a Ghost(Pro) edge (DW-249).
+
+## 63. What Ghost's slugify really writes — unidecode's UTF-8 class read over UTF-16, and an import's slug, read in source and executed on both pins · 2026-10-02
+
+**Why.** DW-258 (Story 5.24e): Story 5.18's `slugShaped` (lowercase letters of any script, single hyphens) and 5.19's
+`GHOST_SLUG_RE` (`^[a-z0-9_-]+$`, "ASCII only via unidecode") disagreed, and neither was executed. Ghost's source came
+from the npm tarballs (`ghost-5.130.6`, `ghost-6.58.0`, and each dependency at the version its lockfile resolves),
+read-only, then executed locally on those exact packages. Nothing was written to any Ghost site.
+
+**(a) The chain.** A tag's slug: `models/tag.js:125-131` (6.58.0; `:119-125` on 5.130.6) → `generateSlug`
+(`models/base/plugins/generate-slug.js:73`) → `@tryghost/security` `string.safe` → `@tryghost/string` `slugify` →
+`unidecode`. 6.58.0: security 1.0.6 → string 0.2.21 → unidecode 0.1.8 (pnpm-lock; Ghost's direct string 0.3.5 →
+unidecode 1.1.0 is not on this path). 5.130.6: security 1.0.1 → string 0.2.15 → unidecode 0.1.8 (yarn.lock; the direct
+0.2.17 is not on the path). `lib/slugify.js` is identical in 0.2.15, 0.2.17, 0.2.21 and 0.3.5, and `utf8_rx` is identical
+in unidecode 0.1.8 and 1.1.0. The old comment cited the direct pins, 0.3.5 and 0.2.17.
+
+**(b) The bug.** `utf8_rx = /(?![\x00-\x7F]|[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3})./g`
+was written for UTF-8 bytes; JavaScript hands it UTF-16 code units. A U+00C0–U+00DF character before one in
+U+0080–U+00BF (U+00E0–U+00EF before two, U+00F0–U+00F7 before three) is read as a valid multibyte sequence and left
+alone; slugify then lowercases it. U+0080–U+009F and U+00AD are stripped first (`strip-invisible-chars`) and `£` is
+replaced, so the protecting followers are U+00A0–U+00BF less those. Executed on both pins: `« Café »` with ASCII spaces
+→ `cafe`; with no-break spaces → `café`; `É»` → `é`; `÷»»»` → `÷`.
+
+**(c) Every character.** Every BMP code unit, alone, before 1–3 characters in U+00A0–U+00BF and after `x`, with and
+without `importing` (1,777,672 calls per pin), plus 600,000 random strings over ASCII, Latin-1 and other scripts. Every
+output matches `^[a-z0-9_×ß-þ-]*$`. The characters outside `[a-z0-9_-]` that survive are exactly × (U+00D7) and
+U+00DF–U+00FE, 33 of them, the same on both pins. Nothing past Latin-1 survives (`中文` → `zhong-wen`, `ā` → `a`, astral
+characters vanish).
+
+**(d) Imports.** `string.safe(s, {importing: true})` sets `requiredChangesOnly`, which skips collapsing `--` and
+stripping edge hyphens. `generateSlug` passes `importing` for a post's or page's slug (`models/post.js:868` on 6.58.0,
+`:828` on 5.130.6), never for a tag (`tag.js` above; one added through a post, `post.js:627`, passes
+`skipDuplicateChecks` only) or a user (`user.js:261-268`). Executed: `a--b`, `-lead` and `trail-` survive an import, and
+become `a-b`, `lead` and `trail` otherwise. 191 characters is Ghost's own ceiling (`generate-slug.js:75`); an import is
+not cut to 185.
+
+**(e) Downstream.** nql-lang 0.6.3 and 0.7.0 parse `tag:'café'`, `tag:café`, `tag:'a--b'`, `tag:'-lead'` and
+`authors:'þ×÷'` (executed). Before `validate.ts`'s filter class admitted ×ß–þ, the fold's `tag:'café'` threw
+`bad-get-filter` at emission (the stress build exited 1); with HEAD's slug grammar the fold ignored `café`. After: the
+stress theme (a scratch copy, the `tag` Source's slug `craft` → `café`) emitted `{{#get "posts" filter="tag:'café'" …}}`,
+and gscan 4.49.7 (v5) and 6.4.2 (v6) gave 0 errors, 0 warnings. Control: `author:'café'` in the same get gives
+GS001-DEPR-AUTH-FILT, 1 error on each. T1 and T3, read-only Content API GETs: `tags/?filter=slug:'café'` and
+`posts/?filter=tag:'café'` return 200 with no rows on both; the control `slug:'craft'` returns 200 with one row.
+
+**Result.** One grammar: `GHOST_SLUG_RE = /^[a-z0-9_×ß-þ-]+$/`, and `slugShaped` is at most 191 characters matching it.
+
+## 64. `include=tiers` — the reads View as re-checks per visitor, and what a tier carries, read in source and executed read-only on both majors · 2026-10-02
+
+**Why.** DW-270 (Story 5.24e): a `tiers` post's access turns on its `tiers` (`postAccess`; Ghost's own `!post.tiers`
+blocks), and the editor's reads asked for none, so the paid View as visitor read a `tiers` post as locked.
+
+**(a) The source.**
+- `tiers` is an allowed include on Content API posts and pages (`posts-public.js:9` on 5, `:11` on 6;
+  `pages-public.js:6` and `:8`).
+- Ghost's own frontend reads its entry and its lists with `include: 'authors,tags,tiers'` (`entry-lookup.js:41` and
+  `:42`, `fetch-data.js:20` and `:13`).
+- The relation selects the tier's whole row, `products.*` (`models/post.js:140`, `:147`).
+- The mapper (`mappers/posts.js:58-78` on 5, `:76-96` on 6) sets `tiers` by visibility: `public` and `members` carry
+  every tier, `paid` the paid tiers, `tiers` its own filtered to the paid (`:68-70` and `:86-88`). A read without the
+  include carries no `tiers` key at all.
+
+**(b) Executed.** Home's feed, read exactly as the editor now reads it: `feedRead(null, 1, 12)` —
+`include=tags,authors,tiers&limit=12&page=1&formats=mobiledoc`.
+
+| Server | Answer |
+|---|---|
+| T3 ghost5 | HTTP 200, 12 rows: 11 `public` rows, each carrying the free and paid tiers; 1 `paid` row, carrying the paid tiers only |
+| T1 ghost6 | the same |
+
+A tier as Ghost sends it, on both: `active, created_at, currency, description, id, monthly_price, monthly_price_id, name,
+slug, trial_days, type, updated_at, visibility, welcome_page_url, yearly_price, yearly_price_id`. After `pick`'s
+`TIER_FIELDS`: `active, currency, description, id, monthly_price, name, slug, trial_days, type, visibility,
+yearly_price`. `benefits` is not on this relation.
+
+**What it settles.** The include is accepted on both majors, so the paid visitor's access on a `tiers` post is Ghost's own
+answer. `{{#get}}` rows are re-read for no visitor, so `INCLUDE.posts` and the theme's `POSTS_INCLUDE` stay
+`tags,authors` and no shim fixture is re-recorded. **What it does NOT say:** neither test site holds a `visibility:
+tiers` post (read 2026-10-02); its paid tiers rest on the mapper read in source, and the live walk simulates one by
+`page.route`.
+
+**(c) Pages too** (Story 5.24e's Dev audit, 2026-10-02 — the subject read sends the include on pages as well, and (b)
+executed posts only). Read-only Content API GETs, `limit=3`, each with the include and without it as the control:
+
+| Server | `pages/?include=tags,authors,tiers` | `pages/?include=tags,authors` | `posts/` with the include · without |
+|---|---|---|---|
+| T3 ghost5 | HTTP 200, 2 rows, `tiers` on every row (Free, Ghost5, Ghost5 Pro) | HTTP 200, 2 rows, no `tiers` key | 200, 3 rows, `tiers` on every row · 200, no `tiers` |
+| T1 ghost6 | HTTP 200, 2 rows, `tiers` on every row (Free, Ghost6, Ghost6 Pro) | HTTP 200, 2 rows, no `tiers` key | the same |
+
+So a Page subject's read with `tiers` is never a 4xx on either major: the include is accepted on pages, and the key
+appears only when asked for.
+
+## 65. The edit lock's `leave` — a going tab backdates its own beat, executed against the schema under RLS and walked on the build before it and on a local build of it · 2026-10-02
+
+**Why.** DW-240 and DW-244 (Story 5.24e): `pagehide` cannot tell a reload from a close, and its `release` DELETEd the row,
+so a reload's gap let another session acquire, a late release could delete the reloaded tab's own row (the review's
+deployed walk at `8ac31e6d`), and the tab-close flush could land after another session had taken the lock (423). A
+going tab now sends `leave`: `heartbeat_at` set to `now − STALE_MS + LEAVE_GRACE_MS` (`apps/web/lib/lock.ts`, 10 s),
+filtered on the project, the session and the `heartbeat_at` this tab last heard — no column, so no migration (R-99).
+Since the audit the route also writes nothing when the stamp would move the beat FORWARD (`leaveBacks`: a leave can never
+revive a stale row), it answers 400 to a beat not shaped as a timestamptz (`leaveBeat`, where Postgres's own refusal was a
+502), and a tab whose id is not kept in `sessionStorage` sends `release`, its reload getting a new id.
+
+**(a) Executed against the schema.** `postgres:17-alpine`, the prelude, every file in `supabase/migrations/` and the RLS
+gate's own fixture (`supabase/tests/rls.sql`), then a scratch block as the OWNER — `set role authenticated`, the owner's
+`request.jwt.claim.sub` — on the fixture's lock row (holder and generation as the gate left them):
+
+    NOTICE:  HEAD: a late release (DELETE on the session) changed 1 row(s)
+    NOTICE:  PASS: a late leave carrying the old beat changed 0 rows
+    NOTICE:  PASS: a timely leave changed 1 row: the beat is 00:00:50 old, the holder and generation 9 unchanged
+
+The control is the first line: the reloaded page's beat (`heartbeat_at` moved on) landed, and the DELETE the release
+used, filtered on the session alone, still took the row (rolled back in a subtransaction). The `leave` carrying the old
+beat matches nothing; one carrying the beat now held backdates it into the grace and leaves `holder_session_id` and
+`lock_generation` alone, so `guard_lock_takeover` and the monotonic guard never fire. `heartbeat_at` is in
+`authenticated`'s UPDATE grant (`complete_schema.sql:1255`) under the owner's policy.
+
+**(b) The walk, both ways.** `tools/probe/run-verify-lock.cjs`'s new last stops, each reading who holds from the row
+first. Against `app.inflozo.com` while it served `3c88798f` (LOCAL RUNs, the build before this story):
+
+| Stop | Its control | At `3c88798f` |
+|---|---|---|
+| DW-240 (a) — the holder reloads; its reloaded page's first lock call is held while the other session, told by the lock's own `released` signal, reads the lock | held, the going page's leave LANDED first (the row gone, or the holder's and aged into the grace — asserted since the audit, no longer only printed), and the other session's acquire answered | **the other session holds the lock** — the release had freed it — in every run that reached it |
+| DW-240 (b) — the going page's leave (or release) held until the reloaded page has beaten, then sent | held, the beat seen, the late call answered 200 | **the row is gone** — the late release deleted the reloaded page's own row |
+| DW-244 — one edit owed on this device; its flush held; the going page's own `pagehide` leave (or release) held, then sent and its answer awaited; the tab gone at once; only then the other session's read, then the flush | held; the call answered 200; the row read as LEFT — gone, or the going tab's and aged into the grace — before the read, else "control not met" and no pass | **the flush answered 423** — HEAD's release (200) had deleted the row, and the other session's read took the lock |
+| R-214 — the edit owed on this device alone; Sign out pressed in a second tab of the same browser | on disk, listed, not in the cloud | **the copy survives the sign-out and the edit is unsent** |
+
+DW-244's first version could not go red at HEAD — its leave was not ordered before the other session's read, so HEAD's
+release had not landed inside it and the flush answered 200 — which is why the stop now sends the held leave itself and
+reads the row as left first. The audit's run at `3c88798f` (5 FAIL, 81 PASS): the four rows above red as the table says,
+DW-244's control met (`"leaves":["release"],"leaveAnswer":200,"leftRow":null`, the flush sent 873 ms after the read), and
+one row of Story 5.17's — B's unanswered sentence read "Asking…" — in that run alone; it passed in the runs before it and
+on the local build.
+
+The same walk against a local `next start` of this tree on the same Supabase (`APP_ORIGIN=http://127.0.0.1:3000`): every
+stop green, and every other row with them — on the audit's run 0 FAIL, 86 PASS, DW-244's leave having aged the row to
+52 070 ms before the read, the flush — sent 984 ms after the read — answering 200, and the other session taking the lock
+at the grace's edge. Two things the runs found and the code now carries:
+
+- **A reload's first beat goes before this device's journal is read**, so with `leave` it wrote 0 over the row's count
+  for up to a heartbeat (the walk's two reload rows failed on the first local build). A beat now carries no count until
+  the journal is read, and a beat with none leaves the stored count standing (`countPatch`, `lib/lock.ts`).
+- **A request an unloading document sends is not one Playwright's route reliably meets** — a pagehide leave was held in
+  some runs and missed in another, and a navigation's flush was missed in two — so the walk dispatches `pagehide` and
+  the hide in the live page, the editor's own listeners sending the same requests, and leaves straight after the page's
+  own beat has answered: a beat in flight as a tab goes moves the row past the beat its leave carries, and that close
+  then goes stale as a crashed tab's does (~60 s), a ceiling named beside `leaving` in `editor.tsx`. The owner kept it
+  for now (R-228, 2026-10-02); the per-page id that removes it, a migration, is DW-307, Story 7.18.
+
+Two rows that predate the story were stale since Story 5.22 and are re-read: the first-frame sampler counts a sample of
+the server's skeleton as not yet drawn (the shell mounts in the browser alone), and the hand-over row accepts a row
+already taken by the other session's own poll.
+
+## 66. §60's reading, wired into CI's `rls` job — the two values read from Vercel's production env by name · 2026-10-02
+
+**Why.** DW-302 (Story 5.24e): §60's reading ran only inside `run-verify-ghost-admin.py --check`, which no gate runs, so a
+change to the exposed schemas in Supabase's dashboard would not have stopped the next publish. The assertion moved
+unchanged into `tools/probe/check-schemas-off-rest.py` (stdlib), which CI's `rls` job runs after `run-rls-gate.sh` on
+every push. `deploy` still needs `[check, rls]` (R-116), so a red reading publishes nothing, and `--check`'s
+`schemas-off-rest` calls the same `check()`. Values reached each command by name only: `SUPABASE_URL`,
+`SUPABASE_PUBLISHABLE_KEY`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`.
+
+**(a) Where CI gets the two values.** GitHub holds only Vercel's secrets, and none was added. Read-only:
+`GET /v10/projects/{p}/env?teamId={t}&target=production` lists both as `encrypted`, target `production`;
+`GET /v1/projects/{p}/env/{id}?teamId={t}` answers each with `decrypted: true` and a value equal to `tools/probe/.env`'s
+(compared in memory, printed as a boolean). The list is the CLI's own `getEnvRecords` (vercel@62.1.0,
+`dist/chunks/chunk-4NICAS7W.js`, read in source); the by-id GET is in no part of that CLI's dist — it is Vercel's REST
+read of one variable, which corrects the Create's "the CLI's own pair". `vercel pull`'s `/v3/env/pull/…`
+(`pullEnvRecords`) returns every value, `SUPABASE_SECRET_KEY` included, which is why the check does not use it.
+
+**(b) The readings.** From the environment and from Vercel, each exit 0, one line, no value:
+
+    PASS  schemas-off-rest: GET /rest/v1/inflozo_no_such_table with SUPABASE_PUBLISHABLE_KEY, Accept-Profile -> private 406 PGRST106, storage 406 PGRST106, vault 406 PGRST106, public 404 PGRST205, graphql_public 404 PGRST205 (406 PGRST106 wanted for private, storage, vault; 404 PGRST205 for public, graphql_public); PostgREST's hint: Only the following schemas are exposed: public, graphql_public; SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY read from the environment, by name
+
+— and the same line ending `read from Vercel's production env, by name`, with the project's name and with its `prj_` id.
+`run-verify-ghost-admin.py --check` printed the same reading and passed every step. The RLS gate's notice now names the
+script: `NOT ASSERTED HERE: no database-level pgrst.db_schemas, so this block cannot see which schemas PostgREST exposes
+-- tools/probe/check-schemas-off-rest.py reads them over the wire, run by CI's rls job after this gate`.
+
+**(c) The controls**, each planted in memory against the real `main()`, each `FAIL` and exit 1: `graphql_public` added to
+the schemas that must be refused (`WRONG: graphql_public`); `public` alone expected as exposed (`WRONG: the hint names
+[('public', 'graphql_public')], not exactly public`); a project id Vercel does not hold (`COULD NOT ASK: Vercel's env
+list answered 404. Nothing was judged, so it fails closed`). Since the audit they are also the script's own stdlib
+`--self-check`, which the root `pnpm test` runs beside the recorders' self-checks: `check()` over canned answers — the
+pass shape, each planted list, no answer, a 401, a 500, another status, a verdict with no code — each verdict as wanted
+(`SELF-CHECK PASS  check-schemas-off-rest: 8 canned answers`). With (d)'s new guard planted off it FAILed: `a 401, the
+key refused: wanted COULD NOT ASK, got WRONG`.
+
+**(d) It fails closed.** No answer, a non-JSON answer and a missing name each print `COULD NOT ASK` and exit 1 — and,
+since the audit, so does any Supabase answer that is not one of PostgREST's two verdicts, a 404 or a 406 carrying its
+`code`: a 401, a 5xx, any other status, or a verdict with no code. Nothing such an answer says is about the schemas, so
+it is never judged; before, a JSON 401 or 5xx printed `WRONG:` as though PostgREST had exposed one. The live reading
+above is unchanged by it: every answer was a verdict, and the line still reads `PASS`.
+**What it does NOT say:** CI's own run — its `rls` log on the push carries the line, read at Review.
+
+## 67. Portal's five icons on the floating button — recorded on both majors, each site put back and read back · 2026-10-02
+
+**Command.** §55's, run once on 2026-10-02 in the main session on the owner's go ("Yes, write to the test sites for
+5.24e"): `env $(grep -E '^(GHOST5_URL|GHOST5_STAFF_ACCESS_TOKEN|GHOST6_URL|GHOST6_STAFF_ACCESS_TOKEN)=' tools/probe/.env | xargs) node tools/probe/record-ghost-surfaces.cjs`.
+Besides §55's writes it now sets `portal_button_icon` to null (Ghost's person) for the three style recordings, then steps
+it through Portal's five presets (`PORTAL_ICONS`, read from `apps/web/lib/probe-rule.ts`) at `icon-and-text`, loading the
+home page anonymously at 1440 × 900 for each. The icon is put back in a PUT of its own after the rest, so the button is
+off again before it, and everything is read back. Both servers read back as found: T3 `portal_button` false,
+`portal_button_style` `icon-and-text`, `announcement_visibility` `["visitors"]`, `portal_button_icon` `icon-5`; T1 the
+same with `portal_button_icon` null. Every §55 Ask First finding held again on both majors, and so did the new one.
+
+**Why.** DW-278 (Story 5.24e): the canvas drew Ghost's person on the floating button whichever icon the site chose. The
+presets' markup was read in Portal's source (2.69.339 `trigger-button.jsx` :104-143 and its `button-icon-{1..5}.svg`
+modules; 2.51.5 the same), which is a hypothesis until a page shows it (standing rule 1), and `apps/web/tokens.test.ts`
+lets Ghost's surfaces write only a colour Ghost itself put on a recorded page.
+
+| `portal_button_icon` | T3 `ghost5.inflozo.com` 5.130 | T1 `ghost6.inflozo.com` 6.58 |
+|---|---|---|
+| `icon-1` … `icon-5` | each an inline `<svg>` drawn **24 × 24** at x 33, y 28 inside the trigger frame, inline style `width: 24px; height: 24px; color: rgb(255, 255, 255);` | the same, and each preset's markup byte-identical to T3's |
+| the colours in the markup | white throughout; `icon-2` spells it `#FFF`, the other four `#fff` | the same |
+
+**What it means.** Each preset is drawn as Portal draws it: `apps/web/lib/ghost-surfaces.ts`'s `buttonMarkup` writes the
+recorded SVG for a preset, and `apps/web/ghost-surfaces.test.ts` holds all five, per commit, byte for byte to this
+recording on both majors (a recording without `portal.icons` FAILS, naming this command). `icon-2`'s `#FFF` is now a
+colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
+
+**What this does NOT say.** An uploaded icon (any other `portal_button_icon`, drawn as an `<img>` 26 × 26 with an empty
+`alt`) is read in Portal's source only: no image was uploaded to either site. The icons were recorded beside a label
+(`icon-and-text`) at 1440 only; a member's look is still §55's, read in source.

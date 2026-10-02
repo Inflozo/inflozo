@@ -222,7 +222,8 @@ export type PropRow = {
   value: unknown
   /** an authored array: its bounds, its item noun and the props one item carries, in markup order. `shown` is
    *  FR-D13's per-design cap applied to `count` — how many of the stored items THIS design draws — so the panel
-   *  prints "3 items · 2 shown in this design" from the engine's own number rather than a second count. */
+   *  prints "3 items · 2 shown in this design · 2–6" (R-218 keeps the range, Story 5.24e) from the engine's own number
+   *  rather than a second count. */
   list?: { item: string; min?: number; max?: number; count: number; shown: number; atMax?: string; props: PropRow[] }
 }
 

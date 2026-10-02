@@ -7,11 +7,11 @@ import type { MarkNode } from '@inflozo/section-runtime'
 import { CANVASES, isSurface, type CanvasKey } from './lib/editor.ts'
 import {
   ANNOUNCEMENT_CSS, AUDIENCE, announcementFor, buttonMarkup, CLOSE_SVG, FRAME, GHOST_ACCENT, PORTAL_CSS, PORTAL_FONT, PORTAL_GLOBALS,
-  PORTAL_MIN_WIDTH, portalFor, SHEET, shimsOn, stripMarkup, SURFACE, TRIGGER_CSS, userIcon, type ButtonLook,
-  GHOST_ROWS, GHOST_WORDS, ghostName, HIDDEN_KEY, readHidden, writeHidden,
+  PORTAL_MIN_WIDTH, portalFor, rowsOn, SHEET, shimsOn, stripMarkup, SURFACE, TRIGGER_CSS, userIcon, type ButtonLook,
+  GHOST_ROWS, GHOST_WORDS, ghostName, ghostRowsOf, HIDDEN_KEY, readHidden, writeHidden
 } from './lib/ghost-surfaces.ts'
 import type { EditorSite } from './lib/live-content.ts'
-import { PORTAL_STYLES, storedSurfaces, type Members, type Surfaces } from './lib/probe-rule.ts'
+import { PORTAL_ICONS, PORTAL_STYLES, settingsOf, settingsPatch, storedSurfaces, type Members, type Surfaces } from './lib/probe-rule.ts'
 import { VISITORS, type Visitor } from './lib/view-as.ts'
 
 /* Story 5.21 — Ghost's two surfaces on the canvas, the pure half (`lib/ghost-surfaces.ts`): §46(c)'s audience table, every
@@ -34,29 +34,37 @@ const dom = (html: string) => {
   return body
 }
 
+type Load = { trigger: boolean; iframe?: { style: string; box: { width: number; height: number } }; icon?: { html: string } | null; label?: { text: string; font_family: string; font_size: string } | null; button_class?: string }
 type Recording = {
+  command: string
   settings: Record<string, unknown>
   announcement: { style: string; at: Record<string, { index: number; bar_box: { height: number }; close_svg: string; computed: { font_family: string }; body_font: string; script: { src: string } | null }> }
   portal: {
     frame_style: string
     off: Record<string, { trigger: boolean }>
-    styles: Record<string, Record<string, { trigger: boolean; iframe?: { style: string; box: { width: number; height: number } }; icon?: { html: string } | null; label?: { text: string; font_family: string; font_size: string } | null; button_class?: string }>>
+    styles: Record<string, Record<string, Load>>
+    /** DW-278 — Portal's five icons, each at the default style and the widest device */
+    icons?: Record<string, Record<string, Load>>
   }
   cleared: { script: boolean; root: boolean }
 }
 const MAJORS = ['5', '6'] as const
-const recording = (m: '5' | '6') => JSON.parse(readFileSync(join(REPO, 'packages', 'ghost-shim', 'fixtures', `ghost${m}`, 'surfaces.json'), 'utf8')) as Recording
+const fixture = (m: '5' | '6') => `packages/ghost-shim/fixtures/ghost${m}/surfaces.json`
+const recording = (m: '5' | '6') => JSON.parse(readFileSync(join(REPO, fixture(m)), 'utf8')) as Recording
+/** the recorder, as `surfaces.json` names itself (its `command`) — what a missing recording's failure tells you to run */
+const CAPTURE = 'node tools/probe/record-ghost-surfaces.cjs'
 const [ANON, FREE, PAID] = VISITORS as [Visitor, Visitor, Visitor]
 
 /** The fixture the recorder found on both servers — item 21's bar — and the button switched on, as the matrix's first row. */
 const FIXTURE = '<p>Fixture announcement — seeded for VERIFY 21.</p>'
-const surfaces = (over: { content?: string; background?: string; visibility?: string[]; button?: boolean; style?: string; label?: string; accent?: string | null } = {}): Surfaces =>
+const surfaces = (over: { content?: string; background?: string; visibility?: string[]; button?: boolean; style?: string; label?: string; icon?: unknown; accent?: string | null } = {}): Surfaces =>
   storedSurfaces({
     announcement: { content: over.content ?? FIXTURE, background: over.background ?? 'accent', visibility: JSON.stringify(over.visibility ?? ['visitors']) },
     portal_button: over.button ?? true,
     portal_button_source: 'probe',
     portal_button_style: over.style ?? 'icon-and-text',
     portal_button_signup_text: over.label ?? 'Subscribe',
+    portal_button_icon: over.icon ?? null,
     brand: { accent: over.accent === undefined ? '#3832e5' : over.accent, nav: [] },
   })
 const ON: Members = { signup_access: 'all', paid_enabled: true }
@@ -138,6 +146,27 @@ test('matrix: the button off, or members switched off, draws no button — a sit
   // a snapshot whose Portal answer was assumed or declared is drawn per the stored value
   assert.equal(storedSurfaces({ portal_button: true, portal_button_source: 'default' }).portal.button, true)
   assert.equal(storedSurfaces({ portal_button: false, portal_button_source: 'declared' }).portal.button, false)
+})
+
+test('R-215: Layers lists a Ghost surface only when the site shows it — the bar when some visitor meets it (isFilled), the button when Portal draws it; never by View as or the width', () => {
+  const ids = (s: Surfaces | null, m: Members | null = ON) => rowsOn(s, m, parse).map((r) => r.id)
+  // both shown: both rows, in the page's order
+  assert.deepEqual(ids(surfaces()), GHOST_ROWS.map((r) => r.id))
+  // the button off, or sign-up set to Nobody (Portal's `isSigninAllowed`): no button row; no members record is not checked
+  assert.deepEqual(ids(surfaces({ button: false })), [SURFACE.strip])
+  assert.deepEqual(ids(surfaces(), { signup_access: 'none', paid_enabled: false }), [SURFACE.strip])
+  assert.deepEqual(ids(surfaces(), null), [SURFACE.strip, SURFACE.button])
+  // no announcement to show — an empty audience, or no words: no bar row
+  assert.deepEqual(ids(surfaces({ visibility: [] })), [SURFACE.button])
+  assert.deepEqual(ids(surfaces({ content: '<p> </p>' })), [SURFACE.button])
+  // SOME visitor: a bar for paid members alone is still the site's, whatever View as previews
+  assert.deepEqual(ids(surfaces({ visibility: ['paid_members'] })), [SURFACE.strip, SURFACE.button])
+  // nothing shown: no rows, and the editor then draws no group
+  assert.deepEqual(ids(surfaces({ button: false, visibility: [] })), [])
+  assert.deepEqual(ids(null), [])
+  assert.deepEqual(ids(storedSurfaces({})), [])
+  // …which is where an unreadable Portal setting now lands: assumed off (R-215), so no button row
+  assert.deepEqual(ids(storedSurfaces(settingsPatch({}, settingsOf({ settings: [] })))), [])
 })
 
 test('matrix: Portal\'s three styles, and an empty label — the label alone, a 60px circle, the icon beside the label, or the icon alone', () => {
@@ -296,9 +325,10 @@ test('§55: the button\'s rules, icon, frame and font are Portal\'s own on both 
         // 105px with no label; with one, the measured wrapper + 2
         const look = portalFor(surfaces({ style, label: String(r.settings.portal_button_signup_text) }), ON, ANON) as ButtonLook
         if (look.label === null) assert.equal(inline['width'], `${FRAME.narrow}px`)
-        // the icon Portal drew, byte for byte, at the size this look asks for
+        // the icon Portal drew, byte for byte, at the size this look asks for — the person: the styles are recorded with
+        // Ghost's own icon (DW-278's presets are the next test's)
         if (look.icon === null) assert.equal(load.icon ?? null, null, `ghost${m} ${style}: an icon Portal did not draw`)
-        else assert.equal(load.icon?.html, userIcon(look.icon), `ghost${m} ${style}: the icon`)
+        else assert.equal(load.icon?.html, userIcon(look.icon as 26 | 34), `ghost${m} ${style}: the icon`)
         // the label: the stored words between Portal's two spaces, in Portal's body font at 16px
         if (look.label === null) assert.equal(load.label ?? null, null)
         else {
@@ -313,6 +343,77 @@ test('§55: the button\'s rules, icon, frame and font are Portal\'s own on both 
     assert.ok(Object.values(r.portal.off).every((o) => o.trigger === false))
     // the 640px rule is a media query in the shadow sheet — a device change needs no repaint
     assert.ok(PORTAL_CSS.includes(`@media (width < ${PORTAL_MIN_WIDTH}px){.gh-portal-triggerbtn-iframe{display:none}}`))
+  }
+})
+
+// ── DW-278: the icon the site chose — Portal's `renderTriggerIcon` (2.69.339 `trigger-button.jsx` :104-143; 2.51.5 the same) ──
+
+/** the glyph inside the button the canvas draws for this snapshot and visitor */
+const glyphOf = (over: Parameters<typeof surfaces>[0], visitor: Visitor = ANON) =>
+  dom(buttonMarkup(portalFor(surfaces(over), ON, visitor) as ButtonLook, null).html).querySelector('.gh-portal-triggerbtn-container')
+
+test('DW-278: a preset draws Portal\'s own 24px white icon, beside the label or alone — never the person', () => {
+  for (const style of ['icon-and-text', 'icon-only']) {
+    const svg = glyphOf({ style, icon: 'icon-3' })?.querySelector('svg')
+    assert.equal(svg?.getAttribute('style'), 'width: 24px; height: 24px; color: rgb(255, 255, 255);', style)
+    assert.equal(svg?.getAttribute('viewBox'), '0 0 25 24', `${style}: icon-3's own drawing`)
+    assert.notEqual(svg?.outerHTML, userIcon(26))
+  }
+  // each preset its own drawing
+  assert.equal(new Set(PORTAL_ICONS.map((icon) => glyphOf({ icon })?.innerHTML)).size, PORTAL_ICONS.length)
+})
+
+test('DW-278: any other value draws the site\'s own image at 26px with an empty alt, its address escaped', () => {
+  const src = 'https://ghost5.inflozo.com/content/images/icon.png?v=1&size="2"'
+  const button = glyphOf({ icon: src })
+  const img = button?.querySelector('img')
+  assert.equal(img?.getAttribute('src'), src)
+  assert.equal(img?.getAttribute('alt'), '')
+  assert.equal(img?.getAttribute('style'), 'width: 26px; height: 26px;')
+  assert.equal(button?.querySelector('svg'), null)
+  assert.doesNotMatch(buttonMarkup(portalFor(surfaces({ icon: src }), ON, ANON) as ButtonLook, null).html, /size="2"/, 'a quote in the address closed the attribute')
+  // an address that is not https never reaches a src: the snapshot refused it, so Portal's person is drawn
+  for (const hostile of ['javascript:alert(1)', 'data:image/svg+xml,<svg onload=alert(1)>', 'http://x.example/i.png']) {
+    assert.equal(glyphOf({ icon: hostile })?.querySelector('img'), null, hostile)
+    assert.equal(glyphOf({ icon: hostile })?.querySelector('svg')?.outerHTML, userIcon(26), hostile)
+  }
+})
+
+test('DW-278: text only draws no glyph, a member meets the person at 34px, and no choice is the person — whatever the site chose', () => {
+  assert.equal(glyphOf({ style: 'text-only', icon: 'icon-3' })?.querySelector('svg, img'), null)
+  for (const member of [FREE, PAID]) {
+    for (const icon of [null, 'icon-3', 'https://x.example/i.png']) assert.equal(glyphOf({ icon }, member)?.querySelector('svg')?.outerHTML, userIcon(34), `${member} · ${icon}`)
+  }
+  assert.equal(glyphOf({ icon: null })?.querySelector('svg')?.outerHTML, userIcon(26), 'beside the label')
+  assert.equal(glyphOf({ style: 'icon-only', icon: null })?.querySelector('svg')?.outerHTML, userIcon(34), 'alone')
+})
+
+/** The recorded icons of one major, or a failure naming the fixture and the capture command — never a skip (standing rule 2) */
+function iconsOf(r: Recording, m: '5' | '6'): Record<string, Record<string, Load>> {
+  if (r.portal.icons === undefined) {
+    throw new Error(
+      `NO RECORDING — ${fixture(m)} carries no portal.icons. Capture it: ${CAPTURE} (it writes to T1 and T3 and puts each ` +
+        'back: the owner\'s go first). A drawing of Ghost\'s with no recording FAILS; it never skips and never passes vacuously.',
+    )
+  }
+  return r.portal.icons
+}
+
+test('DW-278: a missing icon recording FAILS naming the fixture and the capture command', () => {
+  const r = recording('6')
+  assert.throws(() => iconsOf({ ...r, portal: { ...r.portal, icons: undefined } }, '6'), (e: Error) => e.message.includes(fixture('6')) && e.message.includes(CAPTURE))
+})
+
+test('DW-278: each of Portal\'s five icons is drawn exactly as Portal drew it on both majors (recorded)', () => {
+  for (const m of MAJORS) {
+    const r = recording(m)
+    assert.equal(r.command, CAPTURE, `${fixture(m)} names another recorder`)
+    const icons = iconsOf(r, m)
+    for (const icon of PORTAL_ICONS) {
+      const load = icons[icon]?.['1440x900']
+      assert.ok(load?.trigger && load.icon, `ghost${m} ${icon}: no trigger and icon recorded — capture it: ${CAPTURE}`)
+      assert.equal(glyphOf({ icon, label: String(r.settings.portal_button_signup_text) })?.querySelector('svg')?.outerHTML, load.icon.html, `ghost${m} ${icon}: the icon Portal drew`)
+    }
   }
 })
 
@@ -340,3 +441,24 @@ test('Fix: the two Layers rows ARE the two surfaces, the words come from one lis
   assert.deepEqual(readHidden(null, 'p1'), [], 'no store at all')
 })
 
+
+test('R-215: a hidden Ghost row keeps its id while the site shows nothing, and comes back hidden', () => {
+  const kept = new Map<string, string>()
+  const store = { getItem: (k: string) => kept.get(k) ?? null, setItem: (k: string, v: string) => void kept.set(k, v), removeItem: (k: string) => void kept.delete(k) }
+  writeHidden(store, 'p1', ['portal-button'])
+  const [bar, button] = GHOST_ROWS
+  // the site switches the button off: no row is drawn for it — and nothing prunes the hidden id
+  assert.deepEqual(ghostRowsOf([bar!], readHidden(store, 'p1')).map((r) => [r.id, r.hidden]), [['announcement-bar', false]])
+  assert.deepEqual(readHidden(store, 'p1'), ['portal-button'])
+  // …and switches it on again: the row comes back hidden, the bar's still shown
+  assert.deepEqual(ghostRowsOf([bar!, button!], readHidden(store, 'p1')).map((r) => [r.id, r.hidden]), [['announcement-bar', false], ['portal-button', true]])
+})
+
+test('DW-181 on the announcement: an inline bold or italic in Ghost\'s stored HTML reads as Ghost\'s own marks, as a paste does', () => {
+  const s = surfaces({ content: '<p><span style="font-weight:700">Big</span> news and <span style="font-style:italic">soon</span> more</p>' })
+  const a = announcementFor(s, ANON, parse)
+  assert.ok(a !== null)
+  assert.equal(a.words.text, 'Big news and soon more')
+  const marked = (a.words.marks ?? []).map((m) => [a.words.text.slice(m.start, m.end), m.mark])
+  assert.deepEqual(marked, [['Big', 'strong'], ['soon', 'em']])
+})

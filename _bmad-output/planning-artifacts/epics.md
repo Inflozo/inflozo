@@ -936,7 +936,9 @@ declared fallback
 notice that the live page can legitimately differ from the canvas, and **discards the payload** — the injected
 content is never returned to a client, never stored, never logged and never enters a render path
 **And** Portal's floating subscribe button state is read, and **if the setting cannot be read Inflozo asks —
-one question, defaulting to on** — with the answer stored on the connection
+one question, defaulting to on** — with the answer stored on the connection *(R-215, owner, 2026-09-28, built by Story
+5.24e on 2026-10-02: Ghost's own default is OFF on both majors, so an unreadable setting is stored as off and the
+question's recommended answer is "No, it's off"; DW-277)*
 **And** the announcement bar's content, background and visibility are read on the same call, for FR-C4's seed
 **And** Preview-only is presented in **sky, not danger** (UX-DR7), and the Preview-Only Notice says what it is
 and what clears it
@@ -1770,7 +1772,9 @@ unaffected
 deploy or export**, with manual ⌘S always available
 **And** the indicator shows **Saved on this device · Syncing · Synced · Retrying** — four **labels** and one dot,
 **never a spinner**, with the expanded panel appearing only on Retrying and counting down ("Retrying · 12s")
-(UX-DR8, UX-DR19)
+(UX-DR8, UX-DR19) *(R-213, owner, 2026-09-28, built by Story 5.24e on 2026-10-02: a sixth state, **Signed out**, takes
+a save the server refuses for sign-in (401); it opens the same panel, with a **Sign in** link and no Retry now, and in
+fallback says R-227's sentence instead; DW-202)*
 **And** where local storage is unavailable or a write fails, the editor **falls back to immediate per-change
 cloud sync and says so in the indicator — never a false "Saved on this device"**
 **And** turning periodic cloud autosave off shows an explicit data-loss warning
@@ -1924,7 +1928,9 @@ custom page — while **A30 declares an explicit `surface` partition** (signup �
 crosses, because those surfaces differ in form markup and content model rather than render context
 **And** props a design does not use are **preserved invisibly and restored if shuffled back**
 **And** a design renders only as many list items as its structure fits, surplus items are preserved invisibly,
-and the sidebar states the count — "8 items · 3 shown in this design"
+and the sidebar states the count — "8 items · 3 shown in this design" *(R-218, owner, 2026-09-28, built by Story
+5.24e on 2026-10-02: the header keeps the list's range too, when the list declares both bounds — "3 items · 2 shown in
+this design · 2–6" for a list of two to six; DW-212)*
 **And** the change is announced politely — *"Design 8 of 18 — Image Backdrop"* (UX-DR12)
 **And** **`[` and `]` are bound HERE** — FR-D11's keys land with the ring they drive and join Story 5.9's one
 table and its `?` card, carrying the single-key focus condition, and the keyboard journey grows a stop for them
@@ -2680,7 +2686,10 @@ cannot take its sign-up (**R-216**); a Layers row's pointer outlining its sectio
 view (**R-217**);
 a capped list's header keeping its range (**R-218**)
 **And** the editor's binding offer on an unlinked project is decided — today `offerBindings` reads "no version" as the
-oldest Ghost and withholds every helper that arrived after 5.0 (DW-300, Story 5.24c's review)
+oldest Ghost and withholds every helper that arrived after 5.0 (DW-300, Story 5.24c's review) *(Story 5.24e's Dev,
+2026-10-02: FR-H7 decides it — with no version the offer is the floor's. The premise was wrong about helpers: a bare
+helper is never offered at any version; what "no version" withholds is the `@site.*` and scope keys carrying a
+`since`.)*
 **And** the two checks Story 5.24d's review found missing are built: the schemas the data API exposes are read by an
 automatic gate, not only by hand (DW-302), and the connect wizard connecting under `next dev` is held by a keyboard-gate
 stop (DW-303)
@@ -3530,6 +3539,7 @@ whether the compile keeps, drops or replaces that guard below 5.62 (DW-297)
 **And** once the first allowed Ghost write exists, the chokepoint's refusal is driven live: the harness asks the deploy path for a write outside `ADMIN_WRITES` and reads a `denied` audit row with no request reaching T1, beside the real upload's `admin_write` row (DW-54).
 **And** pressing Ship it in a session reading along first opens D8g's take-over (`lock-takeover.tsx` with D8g's strings), and the wizard never starts without the lock (DW-238).
 **And** a save the server refuses for good — the project deleted in another window, or this browser now signed in to another account (404), or a document it will not take (400, 422) — stops saying the work will be sent "when the connection returns", in the editor's save message and in Pre-flight's own flush; this story's Create asks the owner (R-83) for the sentence (DW-304, from Story 5.24e's Create, 2026-10-02).
+**And** closing the editing window while it checks in with the server frees the lock within a check-in, as any other close does: the lock row gains a per-page id (a migration, pushed first as `Schema`, R-99) so a going page's `leave` matches its own page's beat whatever landed since, and a reload still keeps its lock (DW-307, from Story 5.24e's Dev, 2026-10-02; R-228 accepted the wait until then).
 
 **FRs:** FR-J8 (the wizard), FR-D11 (⌘⏎), FR-D16 (the Pre-flight member-state row), FR-H2 (its two warnings). · **Frame:** `S8 Deploy.dc.html` S8a–d · S8d′. · **Owner test:** yes. ·
 **Verification:** real deploys to T1 and T3 (R-82).
@@ -4195,6 +4205,10 @@ button, link column, social row, inline newsletter form.
 > **authored-or-Ghost switch** in front of Source (Story 9.5, A2's shared list — *Source: Authored · From posts*), and
 > **naming two queries in one design** so the panel and the reset confirm can tell them apart (Story 9.2, A1 #7 Mega
 > Bar's columns — DW-165).
+>
+> **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
+> extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
+> B7's announcement glyph. Until a category's first story lands, its rows and rail tiles draw Hero's.
 
 ### A1 · Headers — 15 designs, 4 stories
 
@@ -4585,6 +4599,10 @@ behind §4's blocking owner gate.
 > its owner gate stay where inventory order puts them. It is the one story in this epic that runs outside its
 > category's run: `sprint-status.yaml` lists it in its running place, the Create prompt's "previous story" reads that
 > order, and the story board follows it.
+>
+> **Each category's Layers picture — DW-281 (Story 5.24e's Dev, 2026-10-02).** A category's first story adds its Layers picture,
+> extrapolated from S4 and D8's five (R-74); A1, A3, A4, A17 and A22 have theirs (Story 5.24e), and A2's nearest is
+> B7's announcement glyph. Until a category's first story lands, its rows and rail tiles draw Hero's.
 
 ### A4 · Heroes — 17 designs, 5 stories
 

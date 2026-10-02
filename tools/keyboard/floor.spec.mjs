@@ -505,3 +505,119 @@ test.describe('R-203 · the Section Picker below 1280: fewer, wider cards, each 
     }
   })
 })
+
+// ── Story 5.24e — the sweep: the editor ───────────────────────────────────────────────────────────────────────────
+
+test('DW-283 (Story 5.24e): on a 600-wide tablet the Paywall\'s MEMBERS OFF chip is whole or absent, and no control of the bar leaves the window', async ({ browser, baseURL }) => {
+  const context = await browser.newContext({ baseURL, viewport: { width: 600, height: 960 }, hasTouch: true, isMobile: true })
+  const page = await context.newPage()
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-site': 'members-off' })
+  await page.goto(`${HARNESS}/paywall`)
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-painted', 'paywall')
+  // the stop's own control: C3b's card is up, so the chip is due
+  await expect(page.locator('[data-paywall-off]')).toBeVisible()
+  expect((await barMeasure(page)).outside, 'no control of the bar is outside the window').toEqual([])
+  const chip = page.locator('[data-members-off-chip]')
+  if (await chip.isVisible()) expect(await chip.evaluate((el) => el.scrollWidth <= el.clientWidth + 0.5), 'the chip, where drawn, is whole').toBe(true)
+  await context.close()
+})
+
+test('DW-199 (Story 5.24e): the skeleton\'s card is the real card\'s box — on a short wide window and a big screen as on the control, 1440 × 900', async ({ browser, baseURL }) => {
+  /** the page card's box: the server's skeleton with scripts off, the editor's own card with them on */
+  const card = async (viewport, script) => {
+    const context = await browser.newContext({ baseURL, viewport, javaScriptEnabled: script })
+    const page = await context.newPage()
+    await page.goto(HARNESS)
+    if (script) await painted(page)
+    const box = script
+      ? await page.locator('section[aria-label="Canvas"]').evaluate((stage) => stage.firstElementChild.getBoundingClientRect().toJSON())
+      : await page.locator('[data-skeleton-card]').evaluate((el) => el.getBoundingClientRect().toJSON())
+    await context.close()
+    return box
+  }
+  for (const viewport of [{ width: 1440, height: 900 }, { width: 1440, height: 600 }, { width: 2560, height: 1440 }]) {
+    const [skeleton, real] = [await card(viewport, false), await card(viewport, true)]
+    const at = `${viewport.width} × ${viewport.height}`
+    for (const side of ['x', 'y', 'width', 'height']) expect(Math.abs(skeleton[side] - real[side]), `${at}: the skeleton's ${side} is the card's`).toBeLessThanOrEqual(1)
+  }
+})
+
+test('DW-189 (Story 5.24e): a site-wide footer\'s grip dragged above the header keeps its slot in the footer band, and the drop moves nothing', async ({ page }) => {
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-stand-ins': 'on' })
+  await page.goto(HARNESS)
+  await painted(page)
+  const site = await page.locator('[data-layer-row^="site:"]').evaluateAll((all) => all.map((r) => r.dataset.layerRow))
+  expect(site, 'the control: the header, then the stand-in footer').toHaveLength(2)
+  const [header, footer] = await Promise.all(site.map((key) => page.locator(`[data-layer-row="${key}"]`).boundingBox()))
+  const grip = await page.locator(`[data-layer-row="${site[1]}"] > span[aria-hidden]`).first().boundingBox()
+  await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2)
+  await page.mouse.down()
+  // up past the header, in steps, as a hand drags
+  await page.mouse.move(grip.x + grip.width / 2, header.y - 30, { steps: 12 })
+  const slot = await page.locator('[data-drop-slot]').boundingBox()
+  expect(slot, 'the control: the drag is live and draws its slot').not.toBeNull()
+  expect(slot.y, 'the slot stays in the footer band, never above the header').toBeGreaterThanOrEqual(footer.y - 1)
+  await page.mouse.up()
+  const order = () => page.locator('[data-layer-row^="site:"]').evaluateAll((all) => all.map((r) => r.dataset.layerRow))
+  await expect.poll(order).toEqual(site)
+  // DW-189: and THE CANVAS PILL'S GRIP over the footer's own section, read against the sections as they sit on the page
+  const last = page.frameLocator('iframe[title$="canvas"]').locator('#canvas > :last-child')
+  await last.hover()
+  const pill = page.locator('[data-section-pill]')
+  await expect(pill, 'the control: the footer\'s pill is drawn').toHaveCount(1)
+  const handle = await pill.locator('[title="Drag to reorder"]').boundingBox()
+  await page.mouse.move(handle.x + handle.width / 2, handle.y + handle.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(handle.x + handle.width / 2, 5, { steps: 12 })
+  const slot2 = await page.locator('[data-drop-slot]').boundingBox()
+  expect(slot2, 'the control: the pill\'s drag draws the same slot in Layers').not.toBeNull()
+  expect(slot2.y, 'the pill\'s slot stays in the footer band too').toBeGreaterThanOrEqual(footer.y - 1)
+  await page.mouse.up()
+  await expect.poll(order).toEqual(site)
+})
+
+test('R-217 (DW-188, Story 5.24e): a mouse over a Layers row outlines its section — no pill, never a scroll — and leaving takes it away', async ({ page }) => {
+  await page.goto(HARNESS)
+  await painted(page)
+  const canvas = page.frameLocator('iframe[title$="canvas"]')
+  /** the hover outline's boxes in the canvas's chrome layer, as drawn */
+  const hovers = () => canvas.locator('body').evaluate((body) =>
+    [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="hover"]') ?? [])])
+      .filter((el) => getComputedStyle(el).visibility !== 'hidden').map((el) => el.getBoundingClientRect().toJSON()))
+  const scrolled = () => canvas.locator('body').evaluate((body) => body.ownerDocument.defaultView.scrollY)
+  /** the name tag drawn on the outline, as its words read */
+  const tags = () => canvas.locator('body').evaluate((body) =>
+    [...body.ownerDocument.querySelectorAll('[data-inflozo-chrome]')].flatMap((h) => [...(h.shadowRoot?.querySelectorAll('[data-chrome="tag"]') ?? [])])
+      .filter((el) => getComputedStyle(el).visibility !== 'hidden').map((el) => el.textContent))
+  const nameOf = (key) => page.locator(`[data-layer-row="${key}"] button`).first().innerText()
+  expect(await scrolled(), 'the canvas starts at its top').toBe(0)
+  const rows = await page.locator('[data-layer-row]').evaluateAll((all) => all.map((r) => r.dataset.layerRow).filter((k) => !k.startsWith('ghost:')))
+  // over the first row: its section — the canvas's first — is outlined with its name, and nothing else is drawn for it
+  await page.locator(`[data-layer-row="${rows[0]}"]`).hover()
+  await expect.poll(async () => (await hovers()).length, { message: 'one outline' }).toBe(1)
+  const [box] = await hovers()
+  const first = await canvas.locator('#canvas > *').first().evaluate((el) => el.getBoundingClientRect().toJSON())
+  expect(Math.abs(box.top - first.top) <= 2 && Math.abs(box.height - first.height) <= 2, 'over its own section').toBe(true)
+  await expect.poll(tags, { message: 'and its name tag' }).toEqual([await nameOf(rows[0])])
+  await expect(page.locator('[data-section-pill]'), 'no pill: nothing pressable comes with a row\'s pointer').toHaveCount(0)
+  // over a row whose section is below the fold: outlined where it is, and the page does not move
+  const last = await canvas.locator('#canvas > *').last().evaluate((el) => ({ top: el.getBoundingClientRect().top, fold: el.ownerDocument.defaultView.innerHeight }))
+  expect(last.top, 'the control: the last row\'s section starts below the fold').toBeGreaterThanOrEqual(last.fold)
+  await page.locator(`[data-layer-row="${rows.at(-1)}"]`).hover()
+  await page.waitForTimeout(600)
+  expect(await scrolled(), 'the page never moves for a pointer').toBe(0)
+  const [far] = await hovers()
+  expect(Math.abs(far.top - last.top) <= 2, 'outlined where it is, below the fold').toBe(true)
+  await expect.poll(tags, { message: 'with its own name' }).toEqual([await nameOf(rows.at(-1))])
+  await expect(page.locator('[data-section-pill]')).toHaveCount(0)
+  expect(await canvas.locator('[data-inflozo-insert]').count(), 'no insertion hairline either').toBe(0)
+  // away: none
+  await page.mouse.move(700, 15)
+  await expect.poll(async () => (await hovers()).length, { message: 'leaving takes it away' }).toBe(0)
+  // a press is a selection, and R-156's reveal brings its section into view
+  await page.locator(`[data-layer-row="${rows.at(-1)}"] button`).first().click()
+  await expect.poll(() => canvas.locator('#canvas > *').last().evaluate((el) => {
+    const top = el.getBoundingClientRect().top
+    return top >= 0 && top < el.ownerDocument.defaultView.innerHeight
+  }), { message: 'the press reveals the section below the fold' }).toBe(true)
+})

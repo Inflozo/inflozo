@@ -1,7 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { clearDarkOverrides, holdsDarkOverride, parseDoc } from '@inflozo/section-runtime'
+import { clearProject, parseDoc } from '@inflozo/section-runtime'
 import type { ProjectDoc } from '@inflozo/section-runtime'
 import { isUuid, settingsPath } from '@/lib/editor'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
@@ -99,29 +99,18 @@ export async function clearProjectDarkOverrides(_previous: SettingsResult | null
     console.error('projects/settings: templates read failed', { code: error.code })
     return { error: COULD_NOT.clear }
   }
-  const cleared: Record<string, ProjectDoc> = {}
+  const parsed: Record<string, ProjectDoc> = {}
   for (const row of data ?? []) {
     const key = row.template_key as string
-    let doc: ProjectDoc
     try {
-      doc = parseDoc(row.doc, key)
+      parsed[key] = parseDoc(row.doc, key)
     } catch {
       // a doc the editor would drop with a reason (`read.ts`) is not this action's to rewrite — and never a 500
-      continue
     }
-    let changed = false
-    for (const instance of doc.instances) {
-      // Story 5.23 (R-205): a section whose override is only REMEMBERED, against a design it has left, is cleared too —
-      // or the override would come back the day the section returns to that design
-      if (!holdsDarkOverride(instance)) continue
-      const next = clearDarkOverrides(doc, instance.instanceId)
-      // a sentence here would mean the instance left the doc between two lines of this loop
-      if (typeof next === 'string') continue
-      doc = next
-      changed = true
-    }
-    if (changed) cleared[key] = doc
   }
+  // DW-198 (Story 5.24e): the fold is `clearProject`'s, beside `clearDarkOverrides` where `doc-edit.test.ts` reaches it —
+  // a remembered override (R-205) cleared with the rest, and only the docs that changed answered
+  const cleared = clearProject(parsed)
   // NOTHING TO CLEAR IS A SUCCESS AND NOT A WRITE: the RPC would refuse an empty object, and advancing the revision
   // over a change nobody made would invalidate every open editor's `base_revision` for nothing.
   if (Object.keys(cleared).length === 0) {

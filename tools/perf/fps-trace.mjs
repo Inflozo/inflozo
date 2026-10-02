@@ -10,6 +10,8 @@
 // `next dev`, whose unminified React is not what a customer runs — on a free port, and opens the editor on the long Home
 // (`x-inflozo-harness-home`, the harness's cycled fixture) at 1440 × 900. Then, for each run, in a fresh browser context:
 //
+//   THE FIRST SELECTION (DW-290, Story 5.24e): once the canvas's faces have loaded, the session's first Layers pick, its
+//   longest task printed for the record — never one of the bars.
 //   WARM, as NFR-1 defines it: the page painted, a ringed section selected from its Layers row, hovered — which mounts its
 //   pill and the chrome layers, the session's first-hover task — and its Style group open.
 //   THE CONTROL (standing rule 2): an 80 ms busy task on a timer must show as a long task AND as dropped vsyncs, or the
@@ -189,6 +191,17 @@ async function run(browser, base, n) {
     await cdp.send('Emulation.setCPUThrottlingRate', { rate: RATE })
     await page.evaluate(RECORDER)
 
+    // ── DW-290 (Story 5.24e): THE SESSION'S FIRST SELECTION, recorded and never a bar — its long task is the chrome's first
+    // mount and the Controls panel's. Taken once the canvas's faces have loaded and the page has had an idle moment, which
+    // is when the editor now prepares the chrome's fonts and sheets (`prepareChrome`); before, the first press paid for them
+    step = 'the first selection'
+    await page.frameLocator('iframe[title$="canvas"]').locator('html').evaluate(() => document.fonts.ready.then(() => undefined))
+    await page.waitForTimeout(500)
+    const f0 = await page.evaluate(() => performance.now())
+    await pick(page, rows[0])
+    await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))))
+    const firstPick = await measure(page, f0, await page.evaluate(() => performance.now()))
+
     // ── WARM: the first ringed section with two below it, selected, hovered, its Style group open
     step = 'warming: choosing a ringed section'
     let ringed = null
@@ -287,7 +300,7 @@ async function run(browser, base, n) {
     const clock = await measure(page, t0, t1)
     // a window the recorder saw no frame in reads as 0 dropped of 0 — a refusal, never a PASS (standing rule 2)
     if (clock.vsyncs === 0) return { n, refused: 'no frame was recorded inside the 3 s window' }
-    return { n, control, done, window: t1 - t0, ...clock }
+    return { n, control, done, window: t1 - t0, firstPick: firstPick.longest, ...clock }
   } catch (error) {
     return { n, failed: `${step} — ${error instanceof Error ? error.message.split('\n')[0] : String(error)}` }
   } finally {
@@ -354,7 +367,8 @@ try {
         `${r.window > CLOCK_MS + 50 ? ' (the gestures outran the 3 s)' : ''} · ${r.vsyncs} vsyncs, ${r.dropped} dropped (${pct(r.share)}; NFR-1 allows ${pct(DROPPED_MAX)})` +
         ` · p95 frame ${r.p95} refresh${r.p95 === 1 ? '' : 'es'} (${r.p95ms.toFixed(1)} ms; NFR-1 allows ${P95_MAX})` +
         ` · longest task ${Math.round(r.longest)} ms (NFR-1 allows ${TASK_MAX})` +
-        ` · control: ${CONTROL_MS} ms task seen as ${Math.round(r.control.longest)} ms, ${r.control.dropped} vsyncs dropped`,
+        ` · control: ${CONTROL_MS} ms task seen as ${Math.round(r.control.longest)} ms, ${r.control.dropped} vsyncs dropped` +
+        ` · first selection's longest task ${Math.round(r.firstPick)} ms (recorded, not a bar — DW-290)`,
     )
   }
 } catch (error) {

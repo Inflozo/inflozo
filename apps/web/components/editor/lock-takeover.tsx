@@ -36,55 +36,71 @@ import { LOCK_COPY } from '@/lib/lock'
  * ITS STRINGS ARE PROPS, AND THAT IS THE WHOLE OF WHAT THIS STORY OWES D8g (DW-238). Story 7.18 renders *"Take over
  * to ship?"* through this component and Story 7.26 does the same for export — one component, one vocabulary, and
  * the gate itself belongs where deploy and export are written.
+ *
+ * R-214'S ASK IS THE SECOND CALLER (Story 5.24e): "Sign out with unsent work?" is B5c extrapolated (R-74) — its danger
+ * panel's second line is a prop now (`loss`, the line this file used to hard-code), its body is optional because that
+ * ask has none, its ids carry a prefix because the account menu draws it twice (sidebar and drawer), and `onClose`
+ * tells the caller the ask was answered Wait — by the button, Escape or the backdrop, the three ways it closes.
  */
 export function LockTakeover({
   dialog,
+  id = 'editor-takeover',
   heading = LOCK_COPY.takeoverTitle,
   body,
   /** AD-16's count for the OTHER session, read off its last heartbeat. 0 makes the danger panel absent. */
   owed,
+  loss = LOCK_COPY.lossIsFinal,
   confirm = LOCK_COPY.takeOver,
   confirmBusy = LOCK_COPY.takingOver,
   taking,
   onConfirm,
+  onClose,
 }: {
   dialog: RefObject<HTMLDialogElement | null>
+  /** the prefix of its element ids — the editor's B5c keeps `editor-takeover`, which the lock walk reads */
+  id?: string
   heading?: string
-  body: string
+  body?: string
   owed: number
+  /** the danger panel's second line */
+  loss?: string
   confirm?: string
   confirmBusy?: string
   taking: boolean
   onConfirm: () => void
+  onClose?: () => void
 }) {
   return (
     <dialog
       ref={dialog}
       onClick={closeOnBackdrop}
-      aria-labelledby="editor-takeover-title"
-      aria-describedby="editor-takeover-body"
+      onClose={onClose}
+      aria-labelledby={`${id}-title`}
+      aria-describedby={body === undefined ? undefined : `${id}-body`}
       className="m-auto w-[440px] max-w-[calc(100vw-20px)] flex-col overflow-hidden rounded-lg bg-surface shadow-modal backdrop:bg-scrim open:flex"
     >
       <div className="flex flex-col gap-2 px-[22px] pb-[14px] pt-5">
-        <h2 id="editor-takeover-title" className="m-0 font-display text-[19px] font-bold tracking-[-0.02em] text-ink">
+        <h2 id={`${id}-title`} className="m-0 font-display text-[19px] font-bold tracking-[-0.02em] text-ink">
           {heading}
         </h2>
-        <p id="editor-takeover-body" className="text-ui-dense leading-[1.6] text-ink-soft-aa">
-          {body}
-        </p>
+        {body === undefined ? null : (
+          <p id={`${id}-body`} className="text-ui-dense leading-[1.6] text-ink-soft-aa">
+            {body}
+          </p>
+        )}
       </div>
       {owed > 0 ? (
         <div className="mx-[22px] flex flex-col gap-[7px] rounded-thumb bg-danger-tint px-[13px] py-3">
           <span className="text-control-label font-semibold text-danger-panel-ink">{LOCK_COPY.willBeLost(owed)}</span>
-          {/* the frame's own second sentence, kept exactly — only the name left it */}
-          <span className="text-helper-caption leading-[1.5] text-danger-panel-ink">{LOCK_COPY.lossIsFinal}</span>
+          {/* the frame's own second sentence, kept exactly — only the name left it; R-214's ask hands its own */}
+          <span className="text-helper-caption leading-[1.5] text-danger-panel-ink">{loss}</span>
         </div>
       ) : null}
       {/* the frame puts the danger fill FIRST and the way out second, and the focus still opens on the way out —
           the two are independent, and R-115 is about focus, not order */}
       <div className="flex items-center gap-[9px] px-[22px] pb-5 pt-4">
         <Button
-          id="editor-takeover-confirm"
+          id={`${id}-confirm`}
           // nothing is being lost when nothing is owed, so the confirm is not a danger FILL either (UX-DR3's
           // argument applied to the button the absent panel belongs to)
           variant={owed > 0 ? 'danger' : 'primary'}

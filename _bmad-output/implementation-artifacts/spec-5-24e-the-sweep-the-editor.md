@@ -2,7 +2,7 @@
 title: 'Story 5.24e — The sweep: the editor'
 type: 'chore'
 created: '2026-10-02'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '0e8dcbb0b6418b11e862f0db86cf809e6d1ce85f'
@@ -473,7 +473,7 @@ All anchors are at `0e8dcbb0`.
 
 **Execution — saving and signing out (R-213, R-214):**
 
-- [ ] `lib/journal.ts`, `components/kit/persistence-indicator.tsx`, `components/editor/save-state.tsx`, `E/editor.tsx` —
+- [x] `lib/journal.ts`, `components/kit/persistence-indicator.tsx`, `components/editor/save-state.tsx`, `E/editor.tsx` —
   **R-213 (DW-202).** A sixth state, `{ kind: 'signed-out' }`, labelled **Signed out**. `panelOpen` is true for it.
   - The Kit: a sixth member, filled `bg-danger-text`, with a Tabler glyph of its own so shape tells it from Retrying
     (R-142).
@@ -489,7 +489,7 @@ All anchors are at `0e8dcbb0`.
       (`:1561`), `target="_blank"` and `rel="noopener"`;
     - no Retry now.
   - 404, 400, 422 and every other status stay Retrying (DW-304).
-- [ ] `E/actions.ts:49,114,156` — **R-213's other half.** `setPreviewSubject`, `setViewedStates` and `recheckSite`
+- [x] `E/actions.ts:49,114,156` — **R-213's other half.** `setPreviewSubject`, `setViewedStates` and `recheckSite`
   check `currentUser()` and answer their existing refusals. Today their `signedIn()` redirects a signed-out tab to
   `/sign-in`, which is the owner's declined option 3 by accident.
   - **Controls:**
@@ -501,7 +501,7 @@ All anchors are at `0e8dcbb0`.
       - 422 → "Retrying".
     - A `server-wiring.test.ts` row: no export of `E/actions.ts` calls `signedIn()`.
     - Each is red at HEAD.
-- [ ] `lib/local-store.ts`, `components/shell/account-menu.tsx`, `(authed)/layout.tsx:56`, `restore/page.tsx`,
+- [x] `lib/local-store.ts`, `components/shell/account-menu.tsx`, `(authed)/layout.tsx:56`, `restore/page.tsx`,
   `account/sessions-card.tsx`, `components/editor/lock-takeover.tsx`, `lib/journal.ts` — **R-214 (DW-203).**
   - `local-store.ts` gains a read that lists the records, and `erase(userId)` (`indexedDB.deleteDatabase`, fail-soft).
   - Its `versionchange` close calls the editor's `toFallback()`, so an open editor stops claiming the device holds its
@@ -530,7 +530,7 @@ All anchors are at `0e8dcbb0`.
       - a failure → ask; Wait → no erase and no sign-out; anyway → erase, sign out.
     - A deployed walk at Review: `indexedDB.databases()` lacks `inflozo-doc-<id>` after sign-out (it survives at HEAD),
       and the owed edit is in `project_templates`.
-- [ ] `E/editor.tsx` (`flush`, the hydrate) — **DW-203's two-tab half, open at HEAD.** Executed: a tab reading along in
+- [x] `E/editor.tsx` (`flush`, the hydrate) — **DW-203's two-tab half, open at HEAD.** Executed: a tab reading along in
   the same browser adopts the holder's pending journal and sends it when hidden, takes the 423, then drops the holder's
   on-device record. Now:
   - `flush` returns unless this tab holds the lock;
@@ -538,7 +538,7 @@ All anchors are at `0e8dcbb0`.
   - **Control:** two pages in ONE context, the second with `x-inflozo-harness-lock: reader`
     (`journey.spec.mjs:2686`). B shows its own state, sends no `/sync` POST when hidden, and A's pending row survives.
     Red at HEAD.
-- [ ] `lib/pilots.ts`, `E/read.ts:204-233`, `P/sync/route.ts`, `tools/check-traces.mjs` — **DW-235.**
+- [x] `lib/pilots.ts`, `E/read.ts:204-233`, `P/sync/route.ts`, `tools/check-traces.mjs` — **DW-235.**
   `docRefusal(key, doc, held = {})` beside `pilot()` returns `read.ts`'s sentences, the one-instance surface rule
   included.
   - `read.ts` throws with it.
@@ -549,20 +549,20 @@ All anchors are at `0e8dcbb0`.
     - `docRefusal('home', a24/1)` matches `/never home\.hbs/`; `('post', a24/1)` is null.
     - The route calls it before `rpc('sync_project_doc'`, as `editor.test.ts:228` holds its precedent. Red at HEAD.
     - Review: step 66c posts `{home: a24}` → 422, run only with the fix deployed.
-- [ ] `lib/preview-subject.ts`, `E/editor.tsx` — **DW-223.**
+- [x] `lib/preview-subject.ts`, `E/editor.tsx` — **DW-223.**
   - Helpers keyed `inflozo-subject:<projectId>:<templateKey>`, try/catch, taking a `Store` (as `ghost-surfaces.ts:311-330`).
   - `chooseSubject` writes before the action and clears on its answer.
   - The hydrate lets a pending pick win and sends it again.
   - **Controls:** `preview-subject.test.ts` cases for the helpers; a journey on the harness Post canvas that holds the
     `next-action` POST, picks, reloads at once and reads the pick on the pill. Review: step 89's variant on production
     holds every action and reloads at once — the old article at HEAD.
-- [ ] `E/editor.tsx` (`recordViewed`) — **DW-225.** A write is queued, and sent inside the `viewedWrites` chain, only
+- [x] `E/editor.tsx` (`recordViewed`) — **DW-225.** A write is queued, and sent inside the `viewedWrites` chain, only
   while this tab holds the lock: a window reading along records nothing (5.24a's routine call 5). **Control:** two pages
   in one context — the reader changes View as → no action POST carrying `"states"`; the holder → one. Red at HEAD.
 
 **Execution — the edit lock:**
 
-- [ ] `lib/lock.ts`, `P/lock/route.ts`, `lib/lock-client.ts`, `E/editor.tsx`, `harness/editor/layout.tsx`,
+- [x] `lib/lock.ts`, `P/lock/route.ts`, `lib/lock-client.ts`, `E/editor.tsx`, `harness/editor/layout.tsx`,
   `lock.test.ts` — **DW-240, DW-244.**
   - `LEAVE_GRACE_MS = 10_000` beside `STALE_MS`: three times the measured reload gap, and under `HEARTBEAT_MS` and
     `NUDGE_MS`.
@@ -583,7 +583,7 @@ All anchors are at `0e8dcbb0`.
       - the outgoing leave is held until A's reloaded beat has answered; the row is A's and fresh.
     - A third, DW-244's: A holds one unsynced edit and its flush is held 4 s while it leaves; the edit lands and B then
       acquires. HEAD answers 423.
-- [ ] `E/editor.tsx` (one effect after `:1965`) — **DW-241.** While `!lock.holder`:
+- [x] `E/editor.tsx` (one effect after `:1965`) — **DW-241.** While `!lock.holder`:
   - `closeMenus()`;
   - close every `[data-editor] dialog[open]` — Site Remix, the Reset box, Clear dark overrides, Rename, the site-wide
     Hide confirm, the Section Picker;
@@ -591,12 +591,12 @@ All anchors are at `0e8dcbb0`.
   - It covers `land()`'s flip, Hand over and the 423 path. **Control:** a keyboard stop routes the lock held then taken,
     opens ⌘K, a Layers ⋯ and ⇧R, and posts `took-over` on the lock's channel. The bar is visible, the `:popover-open`
     count is 0 and `dialog[open]` is 0. Red at HEAD (four of five open).
-- [ ] `lib/lock.ts:47-63`, `E/layout.tsx:39-46`, `globals.css:404-408`, `E/editor.tsx:1867-1869`, `lock.test.ts:253-269`
+- [x] `lib/lock.ts:47-63`, `E/layout.tsx:39-46`, `globals.css:404-408`, `E/editor.tsx:1867-1869`, `lock.test.ts:253-269`
   — **DW-242.** Already fixed by Story 5.22's gate. The shell mounts from a layout effect and recognises itself in one,
   before the first paint: 0 of 156 frames painted greyed, against 161 of 161 for a genuine reader. The self mark is dead
   code and goes. **Control:** a journey stop with an rAF sampler, a self arm and a genuine-reader arm. It is red with
   `:1865`'s layout effect turned into `useEffect`.
-- [ ] `lib/lock.ts` (`stillAsking` → `askedNow(row, askedOf)`), `E/editor.tsx:1755-1756`, `lock.test.ts:72-77` —
+- [x] `lib/lock.ts` (`stillAsking` → `askedNow(row, askedOf)`), `E/editor.tsx:1755-1756`, `lock.test.ts:72-77` —
   **DW-243.** `askedNow` returns one of three answers:
   - **ended**: the row is null, or the holder or generation moved;
   - **kept**: the request columns are null;
@@ -607,7 +607,7 @@ All anchors are at `0e8dcbb0`.
 
 **Execution — live content:**
 
-- [ ] `lib/live-content.ts`, `E/editor.tsx`, `link-picker.tsx`, `lib/preview-subject.ts`, `data-group.tsx` — **DW-248.**
+- [x] `lib/live-content.ts`, `E/editor.tsx`, `link-picker.tsx`, `lib/preview-subject.ts`, `data-group.tsx` — **DW-248.**
   - `searchRead('posts', term)` builds `filter=title:~'<t>'`, where `t` is the trimmed term of 2–100 characters with
     `'` and `"` backslash-escaped. It sends `limit=15` and `order=published_at desc` (always — Ghost 5's
     `slugFilterOrder`).
@@ -621,14 +621,14 @@ All anchors are at `0e8dcbb0`.
     - `live-content.test.ts` rows: the escapes, the explicit order, the bounds, the merge — red at HEAD.
     - Review: the live-content walk with a capped list simulated by `page.route` (DW-251's precedent) types a fragment
       and expects one `title:~` read after the pause and its row.
-- [ ] `lib/canvas.ts` (`sitePage` `:127-137`) — **DW-250.** It no longer returns at `:131`. While the subject is
+- [x] `lib/canvas.ts` (`sitePage` `:127-137`) — **DW-250.** It no longer returns at `:131`. While the subject is
   unresolved it reads a stored site subject as the likely answer (`unresolved && o.stored?.source === 'site'`) for
   `source.pages` and `sitePieces`.
   - `{ nothing }` is judged only once resolved.
   - A gone slug costs one `200 []`, never a 4xx.
   - **Control:** a `live-content.test.ts` round-count row: a stored Tag or Author takes 1 round (3 at HEAD), a gone one 2,
     and Home and Post stay 1.
-- [ ] `packages/library/src/vocabulary.ts`, `lib/live-content.ts`, the two tests — **DW-258.**
+- [x] `packages/library/src/vocabulary.ts`, `lib/live-content.ts`, the two tests — **DW-258.**
   - `GHOST_SLUG_RE = /^[a-z0-9_×ß-þ-]+$/`, as Ghost's slugify really writes; its comment is corrected.
   - `slugShaped` is a string of 191 characters or fewer matching it, imported from `@inflozo/library` (the "importless"
     header is stale).
@@ -636,20 +636,20 @@ All anchors are at `0e8dcbb0`.
     refused. `validate.test.ts:641`: `é` becomes valid.
   - **Control:** red at HEAD on `café`. gscan on a stress theme emitting `tag:'café'`, both majors (`tools/stress`),
     0 errors and 0 warnings — a hypothesis until run.
-- [ ] `lib/live-content.ts` (`bindingReads`), `E/editor.tsx:2186`, its tests — **DW-259.**
+- [x] `lib/live-content.ts` (`bindingReads`), `E/editor.tsx:2186`, its tests — **DW-259.**
   - Picks are de-duplicated, sorted and chunked by `LIST_LIMIT`, each chunk its own key.
   - `siteRows` flat-maps the chunks; `siteTotal` is 0 until every chunk has landed. This also ends the false "Not on
     {site}" on picks 101 and up (`data-group.tsx:310`).
   - FR-H2's "no hard cap" stands.
   - **Control:** 150 picks against a look answering at most 100 — all 150 rows in pick order. Red at HEAD.
-- [ ] `lib/live-content.ts` (`subjectRead`, `feedRead`, `entryRow`) — **DW-270.**
+- [x] `lib/live-content.ts` (`subjectRead`, `feedRead`, `entryRow`) — **DW-270.**
   - `tiers` is added to the includes of the reads `seen()` re-checks per visitor.
   - `entryRow` keeps `tiers` mapped through `TIER_FIELDS`, as tags and authors are.
   - `INCLUDE.posts` and the theme's `POSTS_INCLUDE` stay as they are.
   - **Control:** the include is sent; the whitelist drops `monthly_price_id`; on `sitePage` a paid visitor gets `access`
     true and a free one false. Red at HEAD.
   - Review: the walk simulates a `tiers` post by `page.route`. Neither test site holds one (read 2026-10-02).
-- [ ] `packages/library/src/contexts.ts`, `contexts.test.ts`, `deferred-work.md` — **DW-300.** No change to the rule.
+- [x] `packages/library/src/contexts.ts`, `contexts.test.ts`, `deferred-work.md` — **DW-300.** No change to the rule.
   - FR-H7 ("prevention, not warning"; "fields introduced after a target's version … are not offered") decides it: with
     no version, the offer is the floor's.
   - A comment beside `versionAtLeast` says so.
@@ -660,7 +660,7 @@ All anchors are at `0e8dcbb0`.
 
 **Execution — Ghost's own surfaces, the Paywall, the sign-up line:**
 
-- [ ] `lib/probe-rule.ts`, `sites/site-notices.tsx`, `lib/ghost-surfaces.ts`, `E/editor.tsx:4397-4409`,
+- [x] `lib/probe-rule.ts`, `sites/site-notices.tsx`, `lib/ghost-surfaces.ts`, `E/editor.tsx:4397-4409`,
   `run-verify-ghost-admin.py:4581-4597` — **R-215 (DW-277).**
   - `portalState`'s unreadable branch is `false`, with its comment rewritten.
   - The Sites question makes **"No, it's off"** primary. The recommended answer is the stored assumption.
@@ -673,24 +673,24 @@ All anchors are at `0e8dcbb0`.
     - `probe-rule.test.ts:95-113`, `:272-275` move to `false`; a `ghost-surfaces.test.ts` `rowsOn` case.
     - The DW-279 journey: no `[data-ghost-rows]` before the held answer lands, both rows after.
     - All red at HEAD.
-- [ ] `lib/probe-rule.ts`, `lib/ghost-surfaces.ts`, `tools/probe/record-ghost-surfaces.cjs` — **DW-278.**
+- [x] `lib/probe-rule.ts`, `lib/ghost-surfaces.ts`, `tools/probe/record-ghost-surfaces.cjs` — **DW-278.**
   - `portalState` stores `portal_button_icon`: one of the five presets, or an https URL through `imageUrl`, else null.
   - `Surfaces.portal.icon` is re-checked by `storedSurfaces`; `portalFor` passes it.
   - `buttonMarkup` draws the preset's recorded SVG, or `<img alt="">` at 26×26 through `escapeUserText`.
   - `tokens.test.ts:190` holds the presets to a recorded page. So `record-ghost-surfaces.cjs` steps through the five
     icons on both majors and puts each site back (**Ask First**).
   - **Control:** a `ghost-surfaces.test.ts` case per branch, red at HEAD.
-- [ ] `lib/probe-rule.ts` (`settingsPatch`) — **DW-280.** A per-field guard: a key Ghost sent is a reading, and an
+- [x] `lib/probe-rule.ts` (`settingsPatch`) — **DW-280.** A per-field guard: a key Ghost sent is a reading, and an
   absent key keeps the stored field. The guard covers the announcement, the brand **and the `codeinjection_*` pair**,
   which has the same flaw. A first read with nothing stored still writes nulls. **Control:** a `probe-rule.test.ts`
   case, red at HEAD.
-- [ ] `E/read.ts:195,343`, `lib/live-content.ts` (`siteWith`), `lib/canvas.ts` (`paywallPage`), `E/editor.tsx:2661` —
+- [x] `E/read.ts:195,343`, `lib/live-content.ts` (`siteWith`), `lib/canvas.ts` (`paywallPage`), `E/editor.tsx:2661` —
   **DW-273.**
   - The site row's `ghost_version` reaches `site.major` through `versionVerdict`.
   - The box uses `o.major ?? SURFACE_MAJOR`; the article stays 6, its card CSS being Ghost 6's.
   - An unlinked project or unknown version draws 6.
   - **Control:** `paywall.test.ts` (major 5 → 5's box; none → 6's) and a `siteWith` case, red at HEAD.
-- [ ] `lib/pilots.ts:126-129`, both `/canvas` routes, `E/editor.tsx` (`paint()`), `journey.spec.mjs:2641`,
+- [x] `lib/pilots.ts:126-129`, both `/canvas` routes, `E/editor.tsx` (`paint()`), `journey.spec.mjs:2641`,
   `run-verify-editor.cjs:6030,6072` — **DW-275.**
   - The canvas document no longer inlines `surfaceCss()`.
   - Both canvas routes answer `?sheet=surface` with it, as `text/css` under `caching.document`.
@@ -700,7 +700,7 @@ All anchors are at `0e8dcbb0`.
   - **Controls:** `pilots.test.ts` (no `surfaceCss()` in the document), red at HEAD; a journey stop — Home has no sheet;
     at the first Paywall paint the media is `all`, `.gh-content` computes `display: grid`, and the canvas opens at the
     cut.
-- [ ] `lib/paywall.ts`, the Sites notice — **R-216 (DW-274).** One list of `{ask, fact, Sites sentence}` that
+- [x] `lib/paywall.ts`, the Sites notice — **R-216 (DW-274).** One list of `{ask, fact, Sites sentence}` that
   `membersNotice` and `askLine` both read (R-170):
 
   | Site fact | Free ask | Paid ask |
@@ -712,7 +712,7 @@ All anchors are at `0e8dcbb0`.
 
   Both sentences show when both facts apply. **Control:** a `paywall.test.ts` case over the table, red at HEAD; the
   5.20 members-off journeys stay green.
-- [ ] `E/editor.tsx:4557` and its comments — **DW-283.** MEMBERS OFF becomes `shrink-0 … compact:hidden`, copying
+- [x] `E/editor.tsx:4557` and its comments — **DW-283.** MEMBERS OFF becomes `shrink-0 … compact:hidden`, copying
   `data-surface-chip`. C3b's card title says "Members are switched off" at every width, so nothing is lost.
   **Control:** a `floor.spec.mjs` stop at 600 × 960, `hasTouch` and `isMobile`, members off, on `/paywall`:
   - `[data-paywall-off]` is visible (its own control);
@@ -722,7 +722,7 @@ All anchors are at `0e8dcbb0`.
 
 **Execution — Layers and the canvas chrome:**
 
-- [ ] `lib/editor.ts`, `components/controls/layers.tsx`, `E/editor.tsx`, the harness — **DW-187, DW-189.**
+- [x] `lib/editor.ts`, `components/controls/layers.tsx`, `E/editor.tsx`, the harness — **DW-187, DW-189.**
   - `isSiteFooter(designId)` names the `a3/` prefix once.
   - `landWithin(footers, from, to)` clamps a site-wide move into its band: headers and bars first, footers last. A page
     doc is unchanged.
@@ -737,7 +737,7 @@ All anchors are at `0e8dcbb0`.
       `canvasStack` — red unclamped;
     - a journey stop: ⌥↑ on the stand-in footer stays below the header;
     - a `floor.spec.mjs` stop: the footer's grip dragged to the top, and the slot stays in the footer band.
-- [ ] `components/controls/layers.tsx`, `E/editor.tsx`, `run-verify-editor.cjs` and `run-verify-lock.cjs` (the parks) —
+- [x] `components/controls/layers.tsx`, `E/editor.tsx`, `run-verify-editor.cjs` and `run-verify-lock.cjs` (the parks) —
   **R-217 (DW-188).**
   - A row's `onPointerEnter`/`onPointerLeave` (not touch) call `point({ …, via: 'layers' })`.
   - A Layers-sourced hover draws the section's outline and name tag, with no pill, no `data-inflozo-insert` hairline and
@@ -750,7 +750,7 @@ All anchors are at `0e8dcbb0`.
     - over a row whose section is below the fold → `scrollY` unchanged after 600 ms and no `[data-section-pill]`;
     - away → none.
     - Red at HEAD.
-- [ ] `components/kit/layers-row.tsx`, `E/editor.tsx` (`rowsOf`, `railRows`), `epics.md` — **DW-281.**
+- [x] `components/kit/layers-row.tsx`, `E/editor.tsx` (`rowsOf`, `railRows`), `epics.md` — **DW-281.**
   - `LayerThumb` takes a glyph per category: a1 Header, a4 Hero, a17 Post Grid, a22 Newsletter and a3 Footer, drawn as
     `S4 Editor.dc.html:54-58` draws them at 30×21. Every other category, the fixtures and the Ghost rows get Hero.
   - The rail draws D8a's 34×24 (`:66-70`) and D8b's 26×19 (`:196-200`).
@@ -762,11 +762,11 @@ All anchors are at `0e8dcbb0`.
     glyph".
   - **Control:** a journey stop at 1440 (rows) and at 1024 (rail). Each thumb's `data-glyph` matches the harness's
     names. Red at HEAD.
-- [ ] `lib/canvas-layer.ts:117-120` — **DW-256.** The host's style adds `--tw-inset-shadow`, `--tw-inset-ring-shadow`,
+- [x] `lib/canvas-layer.ts:117-120` — **DW-256.** The host's style adds `--tw-inset-shadow`, `--tw-inset-ring-shadow`,
   `--tw-ring-offset-shadow` and `--tw-ring-shadow`, each `0 0 #0000`, and its comment says why. **Control:** DW-182's
   journey (`:1161-1208`): the limit note's computed `box-shadow` is not `none`. A `shadow-md` probe in the editor's own
   document computes one, which is the stop's control.
-- [ ] `lib/canvas-layer.ts`, `E/editor.tsx:3663-3678`, `tools/perf/fps-trace.mjs` — **DW-290.**
+- [x] `lib/canvas-layer.ts`, `E/editor.tsx:3663-3678`, `tools/perf/fps-trace.mjs` — **DW-290.**
   - `prepareChrome(doc)` (`addFonts` and `sheetFor`) is exported; `chromeLayers` calls it.
   - An effect on `paints` schedules it with `requestIdleCallback ?? (fn => setTimeout(fn, 1))`. It adds nothing to the
     DOM.
@@ -776,20 +776,20 @@ All anchors are at `0e8dcbb0`.
   - By hand, at 4×: the first selection's long task, before and after, recorded. The fix is expected under 5.23b's
     248–255 ms and near the 141–149 ms measured with the faces left out; the Controls panel's first mount stays. Not a
     gate (NFR-1).
-- [ ] `E/editor-skeleton.tsx` — **DW-199.**
+- [x] `E/editor-skeleton.tsx` — **DW-199.**
   - The ground gains `@container-size coarse:pb-[52px]`.
   - The card becomes `w-[min(100cqw,100cqh*1440/900,1440px)] aspect-[1440/900]`, with `data-skeleton-card`. This also
     closes the missing 1440 cap and the touch padding.
   - **Control:** a `floor.spec.mjs` stop at 1440×600 and 2560×1440, with 1440×900 as its control. A context with
     JavaScript off reads the server's skeleton; one with it on reads the real card. They must be equal within 1 px. Red
     at HEAD.
-- [ ] `lib/` (one announcer hook), `E/editor.tsx` (`said`, `announced`), `item-list.tsx:66`, `data-group.tsx:259`,
+- [x] `lib/` (one announcer hook), `E/editor.tsx` (`said`, `announced`), `item-list.tsx:66`, `data-group.tsx:259`,
   `controls/review.tsx:88` — **DW-205.**
   - The state is `{ words, n }`; `set(w)` bumps `n`; the region renders `<span key={n}>{words}</span>`. This is the
     technique React Aria's LiveAnnouncer and react-aria-live document.
   - All five regions use it.
   - **Control:** the ⌘D journey (`:291-315`) — the second identical ⌘D adds one node to `#editor-said`. Red at HEAD.
-- [ ] `lib/behaviours.ts`, `behaviours.test.ts`, `E/editor.tsx` (the chips, the Controls panel) — **DW-226, DW-229.**
+- [x] `lib/behaviours.ts`, `behaviours.test.ts`, `E/editor.tsx` (the chips, the Controls panel) — **DW-226, DW-229.**
   - `movesByItself(declaration, width)` is false when a width is declared and `width >= below`, which is core's own
     `(width < Npx)`. The chips pass `device.width`, which joins the memo's dependencies.
   - An sr-only line in the Controls panel while the selected root has a chip, in 5.24a's words (routine call 6): "PAUSED
@@ -802,7 +802,7 @@ All anchors are at `0e8dcbb0`.
 
 **Execution — panels, the picker, paste, media:**
 
-- [ ] `apps/web/public/orbit-weekly/media/` (new), `lib/style-guide.ts`, `lib/canvas.ts`, `proxy.ts:101`, the tests —
+- [x] `apps/web/public/orbit-weekly/media/` (new), `lib/style-guide.ts`, `lib/canvas.ts`, `proxy.ts:101`, the tests —
   **DW-102.**
   - Generate, in-house, every `/media/` name `corpus.json` uses: video with GStreamer's `videotestsrc pattern=ball` →
     x264 constrained-baseline → `mp4mux faststart=true`; audio with a `sine` → `lamemp3enc`. The commands go in a
@@ -816,7 +816,7 @@ All anchors are at `0e8dcbb0`.
     - `paywall.test.ts:214-228` becomes "its media is same-origin";
     - `routing.test.ts` is red until the matcher lists the folder.
     - Review: a ranged GET answers 206, and the editor walk's zero-CSP check holds.
-- [ ] `packages/section-runtime/src/marks.ts`, `marks.test.ts` — **DW-181.**
+- [x] `packages/section-runtime/src/marks.ts`, `marks.test.ts` — **DW-181.**
   - `MarkNode` gains an optional `style` (`fontWeight`, `fontStyle`, `textDecoration`). `DOMParser` and jsdom both carry
     it (executed).
   - `ownMarks(c)` beside `TAG_MARKS`:
@@ -831,7 +831,7 @@ All anchors are at `0e8dcbb0`.
     - the `font-weight:normal` wrapper alone stays unmarked, and 600, 700 and `bold` are strong while 400, 500 and
       `normal` are not.
   - The owner's paste on the deployed site is the execution against Google Docs itself.
-- [ ] `components/controls/sidebar.tsx`, its three callers, `packages/section-runtime/src/doc-edit.ts`,
+- [x] `components/controls/sidebar.tsx`, its three callers, `packages/section-runtime/src/doc-edit.ts`,
   `P/settings/actions.ts` — **DW-198.**
   - `SidebarProps.swatches` becomes `Record<Mode, Record<string, string>>` and `mode` is **required**, so the typecheck
     finds a caller that forgets it. `control()` passes `swatches[mode]`.
@@ -845,7 +845,7 @@ All anchors are at `0e8dcbb0`.
     - a journey stop compares each Background-role dot with the canvas's token (through `ROLE_TOKENS`, colours normalised
       by a probe element) before and after `.` — red with `editor.tsx:5070` as `swatches.light`;
     - a two-canvas `clearProject` unit test — red at HEAD.
-- [ ] `components/editor/section-picker.tsx`, `E/editor.tsx:5296`, the harness — **DW-207.**
+- [x] `components/editor/section-picker.tsx`, `E/editor.tsx:5296`, the harness — **DW-207.**
   - `chosen = searching ? '' : category` feeds the title, `on` and `tabStop`. A rail row ends a search.
   - `onBrowse` (search change and rail choice) clears the refusal.
   - The `<dialog>`'s `onKeyDown` takes ⌘K by `shortcutFor`, then focuses and selects `#picker-search`.
@@ -855,19 +855,19 @@ All anchors are at `0e8dcbb0`.
     - the refusal clears on typing;
     - a category, then typing — **All sections** is `aria-checked`;
     - ⌘K in the search — the selection runs from 0 to the end of the text.
-- [ ] `lib/ring.ts`, `components/controls/item-list.tsx`, `ring.test.ts`, `run-verify-controls.cjs:571-573` —
+- [x] `lib/ring.ts`, `components/controls/item-list.tsx`, `ring.test.ts`, `run-verify-controls.cjs:571-573` —
   **R-218 (DW-212).**
   - `shownInThisDesign(count, shown, min?, max?)` appends ` · {min}–{max}` when both are known; `item-list.tsx:106`
     passes `list.min` and `list.max`.
   - The comments change, and so does the walk's assertion, to `/^3 items · 2 shown in this design · 2–6$/`.
   - **Control:** `shownInThisDesign(3, 2, 2, 6) === '3 items · 2 shown in this design · 2–6'`, red at HEAD.
-- [ ] `components/controls/sidebar.tsx:464-465` — **DW-282.** The keys become `read-prop-…` and `read-control-…`.
+- [x] `components/controls/sidebar.tsx:464-465` — **DW-282.** The keys become `read-prop-…` and `read-control-…`.
   **Control:** a journey stop that collects `console` errors matching `/Encountered two children with the same key/`,
   selects the Inline Row and expects none. Red at HEAD.
 
 **Execution — the two checks:**
 
-- [ ] `tools/probe/check-schemas-off-rest.py` (new), `ci.yml` (`rls`), `run-verify-ghost-admin.py`, the propagation
+- [x] `tools/probe/check-schemas-off-rest.py` (new), `ci.yml` (`rls`), `run-verify-ghost-admin.py`, the propagation
   files, `tools/doc-audit.py` — **DW-302.**
   - The script is stdlib only. `check(url, key, unexposed, exposed)` is `schemas-off-rest`'s assertion moved unchanged:
     - three schemas answer 406 `PGRST106`;
@@ -883,7 +883,7 @@ All anchors are at `0e8dcbb0`.
     control corrected.
   - **Controls (planted, each FAIL):** `graphql_public` in the must-be-unexposed list; `public` alone expected; a wrong
     project id. CI on the Dev push: the `rls` log carries the PASS line.
-- [ ] `apps/web/app/(app)/app/harness/connect/page.tsx` (new), `app-routes.test.ts:55-59`, `run-verify-editor.cjs:6101`,
+- [x] `apps/web/app/(app)/app/harness/connect/page.tsx` (new), `app-routes.test.ts:55-59`, `run-verify-editor.cjs:6101`,
   `connect-wizard.tsx:133-135`, `journey.spec.mjs`, `doc-audit.py:1168` — **DW-303.**
   - The page is `if (!HARNESS) notFound(); return <ConnectWizard step="keys" />`, as `harness/error/page.tsx` is.
   - `HARNESS_ONLY` and step 79's list gain it.
@@ -898,14 +898,14 @@ All anchors are at `0e8dcbb0`.
 
 **Execution — the main session (Ask First):**
 
-- [ ] **DW-278's recording**, on the owner's go in the Dev session: `record-ghost-surfaces.cjs` steps through the five
+- [x] **DW-278's recording**, on the owner's go in the Dev session: `record-ghost-surfaces.cjs` steps through the five
   presets on T1 and T3, then puts each site back and reads it back (T3's `icon-5`, T1's `null`, `portal_button` false).
 
 **Execution — the close:**
 
-- [ ] **`deferred-work.md`.** Every entry whose evidence exists closes. DW-304, DW-305 and DW-306 (written at this
+- [x] **`deferred-work.md`.** Every entry whose evidence exists closes. DW-304, DW-305 and DW-306 (written at this
   Create) stay open with their owners. DW-300's resolution corrects its helper wording.
-- [ ] **The documents** (standing rule 3), each change dated and citing its ruling:
+- [x] **The documents** (standing rule 3), each change dated and citing its ruling:
   - `prd.md`:
     - FR-D10's states and Appendix H's "the only five" (R-213);
     - FR-C2's default (R-215; its Story 5.21 note);
@@ -930,15 +930,15 @@ All anchors are at `0e8dcbb0`.
     - DW-302's CI wiring;
     - DW-278's icons;
     - §15g's version, corrected by a dated note.
-- [ ] **The registers.** `epic-5-context.md` gains this story's Dev sub-bullet.
-- [ ] **Standing rule 7.** Grep for:
+- [x] **The registers.** `epic-5-context.md` gains this story's Dev sub-bullet.
+- [x] **Standing rule 7.** Grep for:
   - `stillAsking`, `SELF_MARK`, `selfMarkScript`, `withoutMedia`, `slugShaped`'s old pattern;
   - `'Retrying'` alone where `signed-out` must follow;
   - `swatches.light`, `read-${`;
   - the old FR-D13 sentence;
   - `defaulting to *on*`;
   - every DW id this story touched.
-- [ ] **The gates.** All green, every new check seen red on its control first:
+- [x] **The gates.** All green, every new check seen red on its control first:
   - `pnpm check` (Node 24);
   - `pnpm keyboard`;
   - `bash supabase/tests/run-rls-gate.sh`;
@@ -1066,10 +1066,13 @@ already ruled, so it is stated here in one line each.
 - A signed-out holder's beat answers 401, so its lock goes stale. If the project is opened elsewhere before this tab
   sends, this tab is displaced and B5c's rule applies.
 - After **Sign in**, the new tab lands on Projects. Go back to the editor tab rather than reopen the project there.
+- A window closed in the split second it checks in with the server keeps the lock for about a minute, not fifteen
+  seconds: about one close in fifty (R-228, ruled at the Dev; DW-307, Story 7.18).
 
 ## Questions for the owner
 
-The owner ruled Question 1 on 2026-10-02 (R-227). No question is open.
+The owner ruled Question 1 at the Create (R-227) and Question 2 at the Dev (R-228), both on 2026-10-02. No question
+is open.
 
 ### Question 1 — Signed out in another tab of this browser: what should the editor's message say? (R-213 and R-214)
 
@@ -1101,6 +1104,27 @@ editor is in fallback, holding no copy on this device, the signed-out panel says
 changes have not reached the cloud yet — keep this tab open, sign in again and they will be sent." R-213's sentence
 stays for every other case.
 
+### Question 2 — Closing the editing window in the split second it checks in: wait a minute, or change the database? (DW-240, DW-244)
+
+**In plain English.** When you close the window that is editing, your other window now takes over in about 15
+seconds. But about 1 time in 50 — if you close it in the split second it is checking in with the server — the other
+window waits about a minute instead. Nothing is lost; it just waits longer. Removing that rare minute needs a database
+change, which this story is not allowed to make. The I/O matrix asks for "no later than its check-in at HEAD", so the
+rare case was the owner's to rule (the spec's Ask First: a closure bigger than its triage).
+
+**An example.** You close window A at the exact moment it tells the server "still here"; window B keeps the grey
+reading-along bar for about a minute instead of 15 seconds, then can edit.
+
+1. **Accept it; fix later (RECOMMENDED).** Keep the rare one-minute wait for now. The full fix (a small database
+   change) becomes a new deferred-work entry owned by Story 7.18, the deploy wizard, which already relies on the lock.
+2. **Old behaviour in that split second.** Free editing at once, as before. Closes are never slow, but a reload in that
+   same split second can hand editing to your other window — the very thing this story fixed.
+3. **Database change in this story.** Break the story's no-database-change rule: a separate Schema push goes first,
+   then the code.
+
+**Ruled: option 1 (owner, 2026-10-02).** *"1. Accept it; fix later"*. Recorded as **R-228**; the fix is **DW-307**,
+owned by Story 7.18, whose card names it.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy, in Chrome on a desktop about 1440 wide, signed in as yourself. Two projects are
@@ -1120,18 +1144,24 @@ Where a step changes something in Ghost Admin or Inflozo, it says how to put it 
 | 6 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f/post` | Ghost 5 Project, Post | Open the **Previewing with** pill at the foot, choose a different article, and reload at once (⌘R). | — | After the reload the page still shows the article you chose. |
 | 7 | `https://app.inflozo.com/projects/99d4d277-540f-4407-b9e1-033d4c93058f` | Ghost 5 Project, Home | Look at **From your Ghost site** at the foot of Layers. | — | Only **Announcement bar**. ghost5's floating Subscribe button is off, so it is not listed. |
 | 8 | `https://ghost5.inflozo.com/ghost/`, then step 7's URL | Ghost Admin → Settings → Membership → Portal, then the editor | Switch the portal button on and save. Reopen the Ghost 5 Project's Home. Afterwards switch it off again. | — | **Subscribe button** is listed again. The floating button, bottom right of the page, wears ghost5's chosen icon, not the plain person. |
-| 9 | `https://ghost5.inflozo.com/ghost/`, then step 7's URL | Ghost Admin → Settings → Membership → Subscription access, then the editor | Choose **Only people I invite** and save. Reopen the Ghost 5 Project's Home and select the first Newsletter section. Afterwards set it back to **Anyone can sign up**. | — | The section's settings say: "Only people you invite can join ghost5.inflozo.com, so free sign-up forms show nothing there." — the Sites screen's own sentence. |
+| 9 | `https://ghost5.inflozo.com/ghost/`, then step 7's URL | Ghost Admin → Settings → Membership → Subscription access, then the editor | Choose **Only people I invite** and save. Reopen the Ghost 5 Project's Home and select the first Newsletter section. Afterwards set it back to **Anyone can sign up**. | — | The section's settings say: "Only people you invite can join Ghost5, so free sign-up forms show nothing there." — the Sites screen's own sentence, naming the site by its title as the Sites screen does. *(Corrected at the Dev, 2026-10-02: the Create's draft named the domain.)* |
 | 10 | `https://app.inflozo.com/style-guide` | Style guide | Scroll to the audio card and a video card; press play on each. | — | The audio plays a short tone and the video a short clip. Before, nothing played. |
 | 11 | `https://app.inflozo.com/controls` | Controls | Press ▶ beside **1 of 3** once, then open **Content**. | — | The Features list's header reads "3 items · 2 shown in this design · 2–6". |
 | 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` in two windows side by side (⌘N) | Pilot sections, Home | Window A is editing; B shows the grey reading-along bar. Reload A about ten times, a few seconds apart. | — | A keeps editing every time, and B keeps reading along. |
-| 13 | same | Pilot sections | In A, hide one section (its ⋯ → Hide) and straight away close A's tab. Wait. Afterwards show the section again. | — | Within about fifteen seconds B can edit, and the section is hidden in B. |
-| 14 | same, A editing again | Pilot sections | In A press ⌘K. In B press **Request editing**, wait for **Take over**, and press it. | — | A's Section Picker closes by itself as A turns read-only, and its controls grey out. |
+| 13 | same | Pilot sections | In A, hide one section (its ⋯ → Hide) and straight away close A's tab. Wait. Afterwards show the section again. | — | Within about fifteen seconds B can edit, and the section is hidden in B. About one close in fifty — the split second A was checking in — B waits about a minute instead (R-228, your ruling; DW-307 fixes it in Story 7.18). |
+| 14 | same two windows — call the one now editing A and the other B (open the project again in a second window if step 13 left only one) | Pilot sections | In A press ⌘K and leave the Section Picker open. In B press **Request editing** and leave A's question unanswered. After about 30 seconds B's bar offers **Take over anyway**: press it, then press **Take over anyway** again in the box that opens. | — | A's Section Picker closes by itself as A turns read-only, and its controls grey out. |
 | 15 | Chrome: step 12's URL; another browser (Safari or Firefox): `https://app.inflozo.com/account` | the editor in Chrome, Account in the other browser | In the other browser, sign in and press **Sign out everywhere**. In Chrome, add one word to the post grid's title and press ⌘S. Press **Sign in** in the red panel, sign in in the new tab, then come back to the editor tab. Afterwards delete the word. | one word | "You've been signed out. Your work is safe on this device — sign in again and it will be sent." with **Sign in**. Back in the editor tab the save mark turns green, and a reload keeps the word. |
 | 16 | step 12's URL, plus `https://app.inflozo.com/` in a second tab of the same browser | the editor, then Projects | In the second tab, sign out (avatar → **Sign out**). Back in the editor tab, add one word to the title. Then press **Sign in** and sign in. | one word | "You've been signed out. Your latest changes have not reached the cloud yet — keep this tab open, sign in again and they will be sent." with **Sign in** (R-227). After you sign in and come back to the editor tab, the word is sent. |
-| 17 | window A: step 12's URL; window B: `https://app.inflozo.com/` | the editor and Projects, side by side | In B, switch autosave off (Account → Saving), go back to Projects, and reload A. Add one word to A's title. Turn Wi-Fi off. In B: avatar → **Sign out**, then press **Wait**. Turn Wi-Fi on and sign out again in B. Close window A. Sign in and open Pilot sections. Afterwards delete the word and switch autosave back on. | one word | The first time: "Sign out with unsent work?", "1 unsynced edit will be lost", "Signing out erases this browser's copy.", with the focus on **Wait**. The second time there is no question, and you are signed out. After signing in, the word is there. |
-| 18 | `https://ghost5.inflozo.com/ghost/`, then step 6's URL | Ghost Admin → a post → Post settings → Post access, then the editor | Set one post's access to **Specific tier(s)** with the paid tier, and Update. In **Previewing with**, choose that post. Set **View as** to Paid member, then Free member. Afterwards put the post's access back. | — | Paid member: the whole article, no cut. Free member: cut at the line. |
-| 19 | Pilot sections → **Template ▾ → Template surfaces → Paywall** | Paywall canvas | Open it. | — | Ghost's own box looks exactly as before. |
-| 20 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Pilot sections, Home | Select the hero and click the post's title on the page. | — | The small "… — set in Ghost" pill has a soft shadow under it. |
+| 17 | window A: step 12's URL; window B: `https://app.inflozo.com/` | the editor and Projects, side by side | In B, switch autosave off (Account → Saving), go back to Projects, and reload A. In A, hide one section (its ⋯ → Hide) — one change, so the count below reads 1 (each letter typed counts as its own change). Turn Wi-Fi off. In B open your account menu (the avatar; in a narrow window it sits under ☰ Menu) → **Sign out**, then press **Wait**. Turn Wi-Fi on and sign out again in B. Close window A. Sign in and open Pilot sections. Afterwards show the section again and switch autosave back on. | — | The first time: "Sign out with unsent work?", "1 unsynced edit will be lost", "Signing out erases this browser's copy.", with the focus on **Wait**. The second time there is no question, and you are signed out. After signing in, the section is still hidden. |
+| 18 | Pilot sections → **Template ▾ → Template surfaces → Paywall** | Paywall canvas | Open it. | — | Ghost's own box looks exactly as before. |
+| 19 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Pilot sections, Home | Select the hero and click the post's title on the page. | — | The small "… — set in Ghost" pill has a soft shadow under it. |
+
+**No step for a post open to specific tiers (DW-270).** The Create drafted one (Paid member sees the whole article, Free
+member sees it cut), but no section in the library draws the article body on the Post canvas yet, so Paid and Free look
+the same there today, and the Paywall canvas's cut is fixed rather than the chosen post's. The fix is underneath: the
+editor now asks Ghost for each post's tiers, so the paid visitor's access is Ghost's own answer. It is checked by the unit
+tests and by the live walk at Review, which simulates such a post, and it becomes visible with the first design that
+draws the article (a `{{content}}` body). *(Dev, 2026-10-02.)*
 
 ## Verification
 
@@ -1172,3 +1202,144 @@ Where a step changes something in Ghost Admin or Inflozo, it says how to put it 
 - Vercel's API: DW-302's narrow read and the deployment state.
 - GitHub's API: the CI runs.
 - T1 and T3: reads for DW-248, DW-258 and DW-270, and DW-278's recording — writes, on the owner's in-session go.
+
+### Results — Dev (2026-10-02)
+
+Every key below is named by its variable in `tools/probe/.env`, never by its value.
+
+**The group.**
+- At `3c88798f` the first command printed exactly § The triage's list, 41 ids.
+- After this Dev it prints `[]`: every Group E entry is `done 2026-10-02 (Story 5.24e)`, each closed on a control seen
+  red.
+- DW-304, DW-305 and DW-306 stay open with their owners. DW-307 is new, from the Dev's Question 2 (R-228), owned by
+  Story 7.18, whose card names it.
+- No entry was deleted or renumbered.
+
+**The gates, on the final tree (Node 24.18.1):**
+- `pnpm check`: exit 0.
+  - apps/web 665 tests, section-runtime 287, library 206, ghost-shim 47, theme-compiler 1;
+  - `check-schemas-off-rest.py --self-check`: 8 canned answers;
+  - check-baseline, check-catalog and check-snapshots PASS.
+- `pnpm keyboard`: 151 passed, `next-env.d.ts` unchanged.
+- `pnpm build && node tools/check-traces.mjs`: exit 0, and every route carries its files — the sync route all 20 it reads.
+- `bash supabase/tests/run-rls-gate.sh`: exit 0.
+- `python3 tools/doc-audit.py --check`: green twice, before the commit.
+- Every new check was seen red on its control first:
+  - against `3c88798f` where the change is absent;
+  - otherwise on a plant, restored afterwards.
+  - The list is in each entry's `resolution:`.
+
+**The real services (R-82).**
+- **T1 `ghost6.inflozo.com` and T3 `ghost5.inflozo.com`:**
+  - **DW-278's recording**, the only planned write. It ran in the main session on the owner's in-session go ("Yes, write
+    to the test sites for 5.24e"):
+    - the command: `env $(grep -E '^(GHOST5_URL|GHOST5_STAFF_ACCESS_TOKEN|GHOST6_URL|GHOST6_STAFF_ACCESS_TOKEN)=' tools/probe/.env | xargs) node tools/probe/record-ghost-surfaces.cjs`;
+    - exit 0, and every Ask First finding held on both majors;
+    - each of Portal's five icons is an SVG drawn 24 × 24, byte-identical on 5.130 and 6.58;
+    - both sites read back as found. T3: `portal_button` false, `icon-and-text`, `["visitors"]`, `icon-5`. T1: the same,
+      with `portal_button_icon` null.
+    - MEASUREMENTS §67.
+  - **Content API, read-only** (`GHOST5_CONTENT_API_KEY`, `GHOST6_CONTENT_API_KEY`):
+    - pages and posts with `include=tags,authors,tiers` answered 200 with `tiers` on every row, and without the include
+      200 with no `tiers` key, on both majors (§64(c));
+    - Home's feed with tiers: 200, 12 rows (§64(b));
+    - the title-search terms, including the escaped hostile one: 200 (§62);
+    - `slug:'café'` and `tag:'café'`: 200 `[]`, with `slug:'craft'` 200 and one row as the control (§63).
+  - **Admin API GETs** (`GHOST5_ADMIN_API_KEY`, `GHOST6_ADMIN_API_KEY`): `run-verify-ghost-admin.py --check`'s
+    settings-keys and brand-keys PASS.
+  - **The live-content walk's LOCAL RUN** (below), on the owner's in-session go. On T3, Subscription access was set to
+    Nobody for under a minute, then back to all and read back from Ghost: `signup_access` all, `paid_enabled` true.
+- **`app.inflozo.com` at `3c88798f`, the edited walks as LOCAL RUNs** (`APP_ORIGIN=https://app.inflozo.com`), each red
+  where this story's change is absent:
+  - `run-verify-lock.cjs`: 5 FAIL, 81 PASS.
+    - Red as designed: DW-240 (a), DW-240 (b), R-214, and DW-244. DW-244's control was met (the release answered 200 and
+      the row was gone), then its held flush answered **423**.
+    - One Story 5.17 row ("Asking…") failed in that run only, and passed in every other.
+  - `run-verify-live-content.cjs` with `MAJORS=5 NO_429=1`: 85 PASS, 2 FAIL.
+    - Red as designed: DW-248 (no `title:~` read was sent) and DW-270 (the reads asked for `tags,authors`).
+    - Two earlier runs over both majors died on transient production timeouts (a page load, a canvas switch) before
+      reaching those rows. Neither made a write.
+    - The 429 step was left out.
+  - `run-verify-controls.cjs`: its one FAIL was R-218's row, as designed.
+- **A local `next start` of this tree, on production Supabase:**
+  - The lock walk: 0 FAIL, 86 PASS. DW-244's leave aged the row to 52 070 ms, the flush answered 200, and the other
+    session took the lock at the grace's edge.
+  - The editor walk: 660 PASS, 24 FAIL. Every new row is green:
+    - step 8's sign-out ask, under axe at 1440, 834 and 390;
+    - Wait, at all three widths;
+    - **Sign out anyway**, reading "Signing out…" with `aria-busy` and `aria-disabled` and no `disabled`;
+    - the erase, with and without owed work;
+    - step 66c;
+    - step 89's held pick.
+  - The 24 FAILs are local-only: Playwright's request API answered 307 over plain http, the build id is `dev`, step 97
+    got a 401, and step 9 read a raw stream.
+- **Supabase:**
+  - **DW-302** (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`): `check-schemas-off-rest.py` PASS read from the environment,
+    and PASS read from Vercel's production env:
+    - `private`, `storage` and `vault`: 406 PGRST106;
+    - `public` and `graphql_public`: 404 PGRST205;
+    - the hint names exactly `public, graphql_public`.
+  - **`run-verify-ghost-admin.py --check`:** all seven steps PASS.
+    - vault-off-rest: 404 on all three, with `sites` 200 as its control;
+    - schemas-off-rest, through the script;
+    - pinned-ca, over `SUPABASE_DB_POOLER_URL`.
+  - **The walks' throwaway accounts**, with their projects, lock rows, View-as rows and owed edits, were read back with
+    `SUPABASE_SECRET_KEY`. Every account was deleted: 13 users before, 13 after.
+  - **The `leave` UPDATE**, executed in a `postgres:17` container under RLS as the owner (§65(a)): HEAD's late release
+    changed 1 row, a late leave 0, a timely leave 1.
+- **Vercel's API** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`):
+  - DW-302's production env list, and the two by-id reads (§66);
+  - the project's `accountId` equals `VERCEL_TEAM_ID`, so CI's `VERCEL_ORG_ID` reads the same project.
+- **Resend and Dodo:** not touched. This story sends no email and takes no payment.
+- **By hand:**
+  - `tools/perf/fps-trace.mjs` at 4× on production harness builds: the first selection's longest task was 193 and
+    192 ms at `3c88798f`, and 75 and 74 ms with this story. Every run passed NFR-1's three bars.
+  - gscan on the stress theme emitting `tag:'café'`: 0 errors and 0 warnings on both majors (4.49.7 and 6.4.2). Its
+    control, `author:'café'`, gave GS001-DEPR-AUTH-FILT on each.
+
+**The I/O matrix.** Every row has a test that ran and passed in the final `pnpm check` and `pnpm keyboard`. Some
+clauses are held by a walk alone, so the deployed walks at Review are their result:
+- the sign-out ask's dialog itself;
+- `pagehide` sending `leave`, the unload flush inside the grace, and the other session taking the lock;
+- the timeout → Retrying;
+- the real `erase()`.
+
+One row, "A `tiers` post", can only be held as data today. No design draws the article body on the Post canvas, so the
+`access` flag that decides whole-or-cut is asserted per visitor (unit), and the include is asserted on the wire (the
+live walk). The owner's test drops its step and says why.
+
+**Judgements made in this Dev, beyond the spec's words:**
+- **DW-280's per-key guard** also covers the button's style, label and icon: the same flaw.
+- **The sign-out ask's confirm** is LockTakeover's Kit `Button` with `BusyLabel`, not a Kit `Submit`. R-98 holds, and
+  the editor walk reads it.
+- **`countPatch`:** a reload's first beat no longer writes 0 over the row's count. The walks found this.
+- **R-214's `sent` message on `SENT_CHANNEL`:** an open editor whose owed record another tab sent moves to the new
+  revision instead of meeting a 409. The Dev's audit found this gap in routine call 3.
+- **The lock:**
+  - `leaveBacks`: a leave never moves the beat forward;
+  - `leaveBeat` is timestamptz-shaped;
+  - a tab whose id is not kept sends `release`.
+- **DW-256's four variables are `0 0 transparent`:** equal to `0 0 #0000`, with no colour literal. `tokens.test.ts`'s
+  regex gained its 4-digit branch.
+- **The harness stand-ins** (an A3 footer, an A25 layout) are reached by `x-inflozo-harness-stand-ins: on`
+  (`harness/stand-ins.ts`), never `packages/library`.
+- **The owner's test:**
+  - step 9 names the site by its title, as both screens do;
+  - step 14 presses Take over anyway twice;
+  - step 17 hides a section, which is one edit;
+  - DW-270's step is replaced by a note;
+  - step 13 and the known ceilings name R-228.
+- **R-228** (Question 2): a close during the tab's own check-in waits about a minute (DW-307).
+
+**A security note.** During the walks, two process listings — mine and the implementing subagent's — printed the
+command line of a walk run as `env $(grep … | xargs) node …`. That put `SUPABASE_SECRET_KEY`'s value, and
+`SUPABASE_URL`'s, into this session's transcript. Nothing was committed or written to a file. The owner was asked to
+rotate the key. The lesson is recorded: print process names only, never their arguments, while a walk runs.
+
+**Left for Review, on the deployed build:**
+- CI's `check`, `rls` (with DW-302's PASS line) and `deploy` on the Dev push;
+- the clean committed walks with 0 FAIL: editor, lock, controls, and live-content on both majors (`NO_429=1` first, then
+  the 429 step alone, said first);
+- step 66c and step 89's variant on production;
+- the ranged GET of a clip answering 206;
+- axe at three widths on the deployed pages.

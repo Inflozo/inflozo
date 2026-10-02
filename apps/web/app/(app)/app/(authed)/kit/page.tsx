@@ -512,6 +512,8 @@ export default function KitGallery() {
           <PersistenceIndicator state="Synced" />
           <PersistenceIndicator state="Retrying" seconds={12} />
           <PersistenceIndicator state="Syncing every change to the cloud" />
+          {/* R-213's sixth (Story 5.24e): a save refused because the sign-in has run out */}
+          <PersistenceIndicator state="Signed out" />
         </Group>
       </div>
 

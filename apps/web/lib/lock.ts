@@ -39,28 +39,60 @@ export const NUDGE_MS = 30_000
  *  comparison and nothing else (`…complete_schema.sql:500-511`). */
 export const STALE_MS = 60_000
 
+/**
+ * DW-240 · DW-244 (Story 5.24e): HOW LONG A HOLDER'S ROW STAYS ITS OWN AFTER ITS PAGE GOES. A tab going used to DELETE
+ * its row (`release`), and a reload's DELETE raced its own way back in — another window's poll could acquire in the gap
+ * and the reloading holder lost the lock to itself (DW-240). Now the going page sends `leave`, which BACKDATES
+ * `heartbeat_at` so the row is stale this long after, instead of `STALE_MS` after: a reload's first beat lands well
+ * inside it and simply keeps the row, and a closed tab is free for the next opener within a grace and one poll.
+ *
+ * THREE TIMES THE MEASURED RELOAD GAP (5.24e's Create), and UNDER `HEARTBEAT_MS` and `NUDGE_MS`, so the reader's poll
+ * at the staleness edge (`edgePoll`) is what frees a closed tab — never later than at HEAD, when the row went at once.
+ * A default with rationale, as the three above are.
+ */
+export const LEAVE_GRACE_MS = 10_000
+
+/** The `heartbeat_at` a `leave` writes: stale `LEAVE_GRACE_MS` from `now`. The route's one stamp, here so the test
+ *  reads the same arithmetic the database is handed. */
+export const leaveStamp = (now: number): string => new Date(now - STALE_MS + LEAVE_GRACE_MS).toISOString()
+
+/** AD-16's count as a beat writes it — or NOTHING (DW-240, Story 5.24e). A tab reports no count until this device's
+ *  journal has been read: a reload's first beat goes before that read, and writing its 0 over the stored count told the
+ *  other session "nothing owed" for up to a heartbeat (the lock walk's reload rows, against a build with `leave`). So an
+ *  absent or malformed count leaves the stored one standing; a new row starts at 0. */
+export const countPatch = (unsynced: unknown): { unsynced_edits?: number } =>
+  Number.isSafeInteger(unsynced) && (unsynced as number) >= 0 ? { unsynced_edits: unsynced as number } : {}
+
+/** A `leave`'s beat: the `heartbeat_at` this tab last heard, opaque and compared only — PostgREST's own shape of a
+ *  `timestamptz` (date, `T`, time, optional fraction, then `Z` or an offset), 64 characters or fewer, that `Date.parse`
+ *  reads; anything else is refused with a 400, never handed to Postgres to fail as a 502. The route filters on it, so a
+ *  late leave carrying an OLD beat matches nothing once the reloaded page has beaten (executed in a `postgres:17`
+ *  container at the Create: 0 rows, where HEAD's DELETE changed 1). */
+const TIMESTAMPTZ = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,6})?(Z|[+-]\d{2}(:?\d{2})?)$/
+export const leaveBeat = (beat: unknown): beat is string =>
+  typeof beat === 'string' && beat.length <= 64 && TIMESTAMPTZ.test(beat) && Number.isFinite(Date.parse(beat))
+
+/** A leave only ever moves a beat BACK: it writes `leaveStamp(now)` only where the beat it carries is later than that.
+ *  A beat already at or before it is a row that is stale, or nearly, and writing the stamp would REVIVE it — moving
+ *  `heartbeat_at` forward for a tab that is going (Story 5.24e's review). */
+export const leaveBacks = (heard: string, now: number): boolean => Date.parse(heard) > Date.parse(leaveStamp(now))
+
+/** DW-244: WHEN A SESSION THAT DOES NOT HOLD THE LOCK SHOULD ASK AGAIN, beyond the heartbeat. A live row that goes stale
+ *  before the next beat would otherwise be found up to a whole heartbeat late — after a `leave`, a grace plus 15 s — so
+ *  the reader polls once more at the edge itself, plus 250 ms. Null: no extra poll. */
+export const edgePoll = (row: LockRow | null, holding: boolean, staleMs: number = STALE_MS): number | null =>
+  holding || row === null || row.ageMs > staleMs || staleMs - row.ageMs >= HEARTBEAT_MS ? null : staleMs - row.ageMs + 250
+
 /** Where a tab keeps its lock session id. `sessionStorage` is per TAB and survives a reload — which is exactly
  *  "the same session" — and the server can never read it. Here, so `lock-client.ts` and the editor's server layout
  *  share one spelling. */
 export const TAB_SESSION_KEY = 'inflozo-lock-session'
 
-/** The mark a reloading holder wears for its first paint (see `selfMarkScript`). */
-export const SELF_MARK = 'data-lock-self'
-
-/**
- * A HOLDER'S OWN RELOAD MUST NOT PAINT THE READER'S BAR, NOT FOR ONE FRAME. The server renders the lock from the row,
- * and it cannot know which TAB is asking — so when the row still names this tab (the outgoing page's release has not
- * landed yet), its HTML is the reader's screen, painted until the page hydrates and recognises itself. Measured on
- * `app.inflozo.com` at 4ba9687c: the bar in one 100 ms sample after a reload. This is a script the page runs as its
- * HTML arrives, BEFORE that paint: if this tab is the row's holder it marks `<html>`, and `globals.css` keeps the bar
- * and the dim off under the mark until the editor's layout effect clears it. A different tab — a genuine reader —
- * never matches, so it still sees the bar from its very first paint.
- *
- * The holder id is only ever COMPARED; it is JSON-encoded with `<` escaped, so a stored value can never close the tag.
- */
-export const selfMarkScript = (holder: string): string =>
-  `try{if(sessionStorage.getItem(${JSON.stringify(TAB_SESSION_KEY)})===${JSON.stringify(holder).replace(/</g, '\\u003c')})` +
-  `document.documentElement.setAttribute(${JSON.stringify(SELF_MARK)},'')}catch(e){}`
+/* DW-242 (Story 5.24e): THE PRE-PAINT SELF MARK IS GONE, AND IT HAD BEEN DEAD SINCE STORY 5.22. It was Story 5.17's
+ * answer to a holder's own reload painting the reader's bar for a frame, when the server rendered the bar from the row.
+ * Since 5.22 the server and the first client render draw only the skeleton: the shell mounts from a layout effect and
+ * recognises this tab in one (`editor.tsx`), before the first paint — 0 of 156 frames greyed, against 161 of 161 for a
+ * genuine reader (the Create). The keyboard journey's rAF sampler is the control, red with that effect as `useEffect`. */
 
 /* ───────────────────────────── the row, as everything downstream reads it ───────────────────────────── */
 
@@ -77,6 +109,10 @@ export type LockRow = {
   nudgeRequestedBy: string | null
   /** how long ago it asked, or null */
   nudgeAgeMs: number | null
+  /** DW-240 (Story 5.24e): the raw `heartbeat_at` — OPAQUE, compared and never read as a time, so no surface trusts two
+   *  clocks. A going page sends it back with `leave`, and the route filters on it, so only the beat this tab last heard
+   *  can backdate the row. Null when the row carried none. */
+  beat: string | null
   /** WHICH REQUEST is waiting — its session AND the moment it was made — or null when none is. The same tab asking
    *  twice is TWO requests, and Keep editing answers ONE: keyed by the session alone, a holder that pressed Keep
    *  editing once never saw that tab ask again, and the requester was then offered a take-over for a request the
@@ -102,6 +138,7 @@ export const rowFrom = (
   generation: Number(row.lock_generation),
   unsyncedEdits: Number(row.unsynced_edits ?? 0),
   ageMs: since(row.heartbeat_at, now) ?? 0,
+  beat: typeof row.heartbeat_at === 'string' ? row.heartbeat_at : null,
   nudgeRequestedBy: typeof row.nudge_requested_by === 'string' ? row.nudge_requested_by : null,
   nudgeAgeMs: since(row.nudge_requested_at, now),
   // every `nudge` stamps `nudge_requested_at` afresh (`lock/route.ts`), so the pair names one request exactly
@@ -169,9 +206,26 @@ export function partyOf(
 export const heldElsewhere = (holder: string | null, session: string | null | undefined): boolean =>
   !!session && holder !== null && holder !== session
 
-/** Is my request still outstanding? `null` from the row means it was answered — Keep editing cleared the columns —
- *  and another session's id there means mine was replaced. */
-export const stillAsking = (row: LockRow | null, session: string): boolean => row?.nudgeRequestedBy === session
+/** The row a request was made against: its holder and generation. A request is answered by THAT holder, so a change of
+ *  either ends it — whatever the request columns say. */
+export type AskedOf = { holder: string; generation: number }
+
+/**
+ * DW-243 (Story 5.24e): WHAT BECAME OF MY REQUEST, read off the row — one of three, never inferred from my own id alone.
+ *
+ * `ended` — the row is gone, or its holder or generation moved: the lock changed hands (a hand-over to me, a take-over
+ * by a third session, a release), so nobody is left to answer and the next poll decides. `kept` — the request columns
+ * are empty under the same holder: the holder pressed Keep editing. `waiting` — anything else, A REPLACED REQUEST
+ * INCLUDED: one person's third device asking at the same moment overwrote mine, and the holder's one answer still
+ * reaches both (the spec's routine call 4; R-191 accepts a third device is not v1's shape). Before this, a replaced
+ * request and a take-over by a third session both read as "Your other session kept editing." — which was neither.
+ */
+export const askedNow = (row: LockRow | null, askedOf: AskedOf | null): 'ended' | 'kept' | 'waiting' =>
+  row === null || askedOf === null || row.holderSessionId !== askedOf.holder || row.generation !== askedOf.generation
+    ? 'ended'
+    : row.nudgeRequestedBy === null
+      ? 'kept'
+      : 'waiting'
 
 /**
  * F-079 (`reconcile-designs-decisions.md:1313-1314`): the holder's countdown is a NO-RESPONSE timer, and any

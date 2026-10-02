@@ -53,7 +53,7 @@ export default async function AuthedLayout({ children }: { children: ReactNode }
   if (profile?.deleted_at) redirect(RESTORE_PATH)
 
   return (
-    <Shell user={{ email: user.email ?? '', displayName: profile?.display_name ?? null }} plan={plan}>
+    <Shell user={{ id: user.id, email: user.email ?? '', displayName: profile?.display_name ?? null }} plan={plan}>
       {children}
     </Shell>
   )

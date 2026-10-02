@@ -18,8 +18,7 @@ const FIRST_FACES = [
 export default function RootLayout({ children }: { children: ReactNode }) {
   for (const face of FIRST_FACES) preload(face.pathname, { as: 'font', type: 'font/woff2', crossOrigin: '' })
   return (
-    // Story 5.17's `selfMarkScript` may set `data-lock-self` here before hydration — this element only, never below
-    <html suppressHydrationWarning lang="en">
+    <html lang="en">
       <body>{children}</body>
     </html>
   )

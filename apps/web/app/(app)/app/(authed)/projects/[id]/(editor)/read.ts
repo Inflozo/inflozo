@@ -1,15 +1,15 @@
 import { cache } from 'react'
-import { categoryOf, compilesTo, isPaywallDesign, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
+import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionRegistryEntry } from '@inflozo/library'
 import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type Mode, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources, referenceSwatches } from '@/lib/controls-review'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
-import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isSurface, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
+import { CANVASES, canvasOfPageTwoKey, canvasOfTemplateKey, canvasesOf, fileOfKey, isUuid, templateKeyOf, type CanvasKey } from '@/lib/editor'
 import { rowFrom, type LockRow } from '@/lib/lock'
 import { resolveEntitlement } from '@/lib/entitlement'
 import type { PlanId } from '@/lib/plan'
-import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
+import { carriesMemberVisibility, docRefusal, pilot, pilotIds } from '@/lib/pilots'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import { readViewed, type Visitor } from '@/lib/view-as'
 
@@ -192,7 +192,7 @@ export async function editorData(projectId: string): Promise<EditorData> {
     // browser's path, never the server's (AD-10, `admin-rule.ts:164`).
     // Story 5.20 — and its `site_settings`, for FR-H6's record of the member switches (`storedMembers` reads the one key)
     // Story 5.21 — and for the snapshot Ghost's two surfaces are drawn from (`storedSurfaces`)
-    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings').eq('id', linked).maybeSingle(),
+    linked === null ? null : sb.from('sites').select('url, title, content_key, disconnected_at, site_settings, ghost_version').eq('id', linked).maybeSingle(),
   ])
   if (error) throw new Error(`the project's templates could not be read (${error.code})`)
 
@@ -201,37 +201,11 @@ export async function editorData(projectId: string): Promise<EditorData> {
   for (const row of data ?? []) {
     const key = row.template_key as string
     const doc = parseDoc(row.doc, key)
-    const file = fileOf(key)
-    // STORY 5.20 — THE PAYWALL IS A TEMPLATE SURFACE: its doc holds AT MOST ONE instance, and that one is a paywall design
-    // — the one place a treatment is stored in a doc (FR-H6's "one design active per project", R-197). Anything else
-    // is a doc nothing in the product could have written, and it throws as the treatment rule below does.
-    const canvas = canvasOfTemplateKey(key)
-    const surface = canvas !== null && isSurface(canvas)
-    if (surface && doc.instances.length > 1) {
-      throw new Error(`${key}: a paywall holds one design, and this doc holds ${doc.instances.length}`)
-    }
-    for (const [n, instance] of doc.instances.entries()) {
-      const where = `${key} instance ${n} (${instance.instanceId}, ${instance.designId})`
-      // Story 5.4, before the library is even asked: a treatment is chosen outside the canvas and never placed on one
-      if (!surface && !isPlaceable(instance.designId)) {
-        throw new Error(`${where}: that design is a treatment chosen outside the canvas, never placed on one`)
-      }
-      let entry = entries[instance.designId]
-      try {
-        entry ??= pilot(instance.designId)
-      } catch (e) {
-        throw new Error(`${where}: ${(e as Error).message}`)
-      }
-      if (surface && !isPaywallDesign(entry)) {
-        throw new Error(`${where}: only a paywall design stands where a post stops, and ${instance.designId} is not one`)
-      }
-      // `compilesTo`, the library's one rule (Story 5.16): a Home design may sit on `index.hbs`, Home's page 2, because
-      // Ghost hands the two files the same posts — so R-179's exact copy of a Home never blacks out this editor
-      if (!compilesTo(entry.compileTarget, file)) {
-        throw new Error(`${where}: the design compiles to ${entry.compileTarget.join(', ')}, never ${file}`)
-      }
-      entries[instance.designId] = entry
-    }
+    // DW-235 (Story 5.24e): the placement rules — a paywall's one design, no treatment on a canvas, a design the library
+    // holds, a file it compiles to — are `docRefusal`'s, which the sync route asks before it writes. A doc it refuses is
+    // one nothing in the product could have written, and it throws here; `entries` is filled as the designs are read
+    const refused = docRefusal(key, doc, entries)
+    if (refused !== null) throw new Error(refused)
     docs[key] = doc
   }
 
@@ -340,7 +314,8 @@ export async function editorData(projectId: string): Promise<EditorData> {
   // STORY 5.20 — FR-H6's record of the member switches, re-checked on the way out; a site with no record carries none.
   // STORY 5.21 — and the snapshot Ghost's two surfaces are drawn from (FR-H5), on every linked site that is NOT
   // disconnected. One pure rule, `siteWith`, unit-tested beside `siteFrom`.
-  const site = siteWith(read, siteRow?.data?.site_settings)
+  // DW-273 (Story 5.24e): and the site's Ghost major, so the Paywall's untouched box is that major's own
+  const site = siteWith(read, siteRow?.data?.site_settings, siteRow?.data?.ghost_version)
 
   return {
     docs,

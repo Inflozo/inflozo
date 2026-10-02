@@ -72,6 +72,7 @@ export function SwatchRow({
             key={role}
             type="button"
             role="radio"
+            data-role={role}
             aria-checked={picked}
             aria-disabled={one !== undefined || undefined}
             aria-describedby={one !== undefined ? `${id}-reason` : undefined}

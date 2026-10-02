@@ -1,5 +1,5 @@
 import type { ProjectDoc } from '@inflozo/section-runtime'
-import { EMPTY_JOURNAL, type Journal, type JournalEntry } from './journal.ts'
+import { EMPTY_JOURNAL, owedOf, type Journal, type JournalEntry, type OwedRecord } from './journal.ts'
 
 /* THE IndexedDB DOOR (Story 5.8, `addendum.md` §AD4's default store).
  *
@@ -10,7 +10,8 @@ import { EMPTY_JOURNAL, type Journal, type JournalEntry } from './journal.ts'
  *
  * ONE DATABASE PER USER. Two accounts on one browser get two databases, so signing out and in as somebody else can
  * never surface the first account's document — RLS would refuse them the project anyway, and this is the second wall
- * rather than the only one.
+ * rather than the only one. And SIGNING OUT DELETES IT (R-214, Story 5.24e): `owedRecords` lists what it still owes so
+ * the sign-out can send it first, and `erase` removes the database whole (`signOutFlow` in `journal.ts` is the order).
  *
  * TWO OBJECT STORES, because they are written at different sizes and with different lifetimes. `meta` holds ONE
  * record per project — the whole document, the base revision, and the journal's pointers — and is replaced on every
@@ -51,6 +52,10 @@ type EntryRow = JournalEntry & { key: string; projectId: string }
 
 export type LocalStore = {
   read(projectId: string): Promise<LocalRecord | null>
+  /** every project this browser holds a record for (R-214) */
+  list(): Promise<(LocalRecord & { projectId: string })[]>
+  /** this connection let go, so a sign-out's erase is never held by a read of its own */
+  close(): void
   /** the document and the journal's pointers, replaced whole */
   save(projectId: string, record: LocalRecord): Promise<boolean>
   /** one transaction appended, and the seqs the trim (or an undone tail) dropped, removed */
@@ -92,12 +97,15 @@ export function askToPersist(): void {
  * `onblocked` is a REAL case and not defensive padding: a second tab holding an older version of this database keeps
  * the upgrade waiting for ever, and a promise that never settles would hang the first paint — which is gated on this.
  */
-export async function openLocal(userId: string): Promise<LocalStore | null> {
+/** The one spelling of a user's database name — opened here, deleted by `erase`. */
+const databaseOf = (userId: string) => `inflozo-doc-${userId}`
+
+export async function openLocal(userId: string, gone?: () => void): Promise<LocalStore | null> {
   let db: IDBDatabase
   try {
     if (typeof indexedDB === 'undefined') return null
     db = await new Promise<IDBDatabase>((resolve, reject) => {
-      const request = indexedDB.open(`inflozo-doc-${userId}`, VERSION)
+      const request = indexedDB.open(databaseOf(userId), VERSION)
       request.onupgradeneeded = () => {
         const next = request.result
         if (!next.objectStoreNames.contains(META)) next.createObjectStore(META, { keyPath: 'projectId' })
@@ -107,8 +115,13 @@ export async function openLocal(userId: string): Promise<LocalStore | null> {
       }
       request.onsuccess = () => {
         // never be the tab that blocks the next schema upgrade: close when another tab asks, and every call after
-        // that fails soft into the fallback
-        request.result.onversionchange = () => request.result.close()
+        // that fails soft into the fallback. R-214 (Story 5.24e): a sign-out in another tab DELETES this database,
+        // which arrives here the same way — and `gone` is the editor's `toFallback`, so an open editor stops claiming
+        // the device holds its work the moment it no longer does
+        request.result.onversionchange = () => {
+          request.result.close()
+          gone?.()
+        }
         resolve(request.result)
       }
       request.onerror = () => reject(request.error ?? new Error('IndexedDB could not be opened'))
@@ -129,29 +142,44 @@ export async function openLocal(userId: string): Promise<LocalStore | null> {
     }
   }
 
+  const read = (projectId: string) =>
+    soft<LocalRecord | null>(async () => {
+      const tx = db.transaction([META, JOURNAL], 'readonly')
+      const meta = (await wrap(tx.objectStore(META).get(projectId) as IDBRequest<MetaRow | undefined>)) ?? null
+      if (!meta) return null
+      const rows = await wrap(tx.objectStore(JOURNAL).index('byProject').getAll(projectId) as IDBRequest<EntryRow[]>)
+      const entries = rows
+        .sort((a, b) => a.seq - b.seq)
+        .map(({ seq, txn, docKey, before, after }) => ({ seq, txn, docKey, before, after }))
+      // the pointers are the META record's: a tail of undone entries is still ON DISK, which is what makes redo
+      // survive a reload as well as undo
+      const journal: Journal = {
+        ...EMPTY_JOURNAL,
+        entries,
+        undone: Math.min(meta.undone ?? 0, entries.length),
+        synced: meta.synced ?? 0,
+        pending: meta.pending ?? {},
+        stamp: meta.stamp ?? 0,
+        nextSeq: Math.max(meta.nextSeq ?? 1, entries.reduce((high, e) => Math.max(high, e.seq + 1), 1)),
+      }
+      return { baseRevision: meta.baseRevision, docs: meta.docs, auto: meta.auto ?? [], journal }
+    }, null)
+
   return {
-    read: (projectId) =>
+    read,
+
+    list: () =>
       soft(async () => {
-        const tx = db.transaction([META, JOURNAL], 'readonly')
-        const meta = (await wrap(tx.objectStore(META).get(projectId) as IDBRequest<MetaRow | undefined>)) ?? null
-        if (!meta) return null
-        const rows = await wrap(tx.objectStore(JOURNAL).index('byProject').getAll(projectId) as IDBRequest<EntryRow[]>)
-        const entries = rows
-          .sort((a, b) => a.seq - b.seq)
-          .map(({ seq, txn, docKey, before, after }) => ({ seq, txn, docKey, before, after }))
-        // the pointers are the META record's: a tail of undone entries is still ON DISK, which is what makes redo
-        // survive a reload as well as undo
-        const journal: Journal = {
-          ...EMPTY_JOURNAL,
-          entries,
-          undone: Math.min(meta.undone ?? 0, entries.length),
-          synced: meta.synced ?? 0,
-          pending: meta.pending ?? {},
-          stamp: meta.stamp ?? 0,
-          nextSeq: Math.max(meta.nextSeq ?? 1, entries.reduce((high, e) => Math.max(high, e.seq + 1), 1)),
+        const ids = await wrap(db.transaction(META, 'readonly').objectStore(META).getAllKeys())
+        const out: (LocalRecord & { projectId: string })[] = []
+        for (const id of ids) {
+          const record = await read(String(id))
+          if (record) out.push({ ...record, projectId: String(id) })
         }
-        return { baseRevision: meta.baseRevision, docs: meta.docs, auto: meta.auto ?? [], journal }
-      }, null),
+        return out
+      }, []),
+
+    close: () => db.close(),
 
     save: (projectId, record) =>
       soft(async () => {
@@ -193,3 +221,32 @@ export async function openLocal(userId: string): Promise<LocalStore | null> {
       }, false),
   }
 }
+
+/** R-214 — every record this browser holds for the user that owes the server something, as the flush would send it.
+ *  The connection is closed before it answers, so the erase that follows is never blocked by this read. Nothing to
+ *  read — no IndexedDB, a refused open — owes nothing. */
+export async function owedRecords(userId: string): Promise<OwedRecord[]> {
+  const store = await openLocal(userId)
+  if (!store) return []
+  try {
+    return (await store.list()).flatMap((record) => owedOf(record.projectId, record) ?? [])
+  } finally {
+    store.close()
+  }
+}
+
+/** R-214 — this browser's copy, deleted whole. FAIL-SOFT, and it never waits on a tab that will not let go: a blocked
+ *  delete answers at once (the browser finishes it when that tab closes), and a refusal answers false — the sign-out
+ *  goes ahead either way (the matrix's "an erase that fails still signs out"). */
+export const erase = (userId: string): Promise<boolean> =>
+  new Promise((resolve) => {
+    try {
+      if (typeof indexedDB === 'undefined') return resolve(true)
+      const request = indexedDB.deleteDatabase(databaseOf(userId))
+      request.onsuccess = () => resolve(true)
+      request.onerror = () => resolve(false)
+      request.onblocked = () => resolve(false)
+    } catch {
+      resolve(false)
+    }
+  })

@@ -11,6 +11,7 @@ import { arrowKeys, openMenu } from '@/lib/menu'
 import type { PlanId } from '@/lib/plan'
 import { nameOf, secondLineOf, type ShellUser } from '@/lib/shell-user'
 import { signOut } from '@/app/(app)/app/sign-in/actions'
+import { useSignOut } from './sign-out'
 
 export type { ShellUser }
 
@@ -133,6 +134,8 @@ export function AccountMenu({
   const menu = useRef<HTMLDivElement>(null)
   const shortcuts = useRef<HTMLDialogElement>(null)
   const id = MENU_ID[variant]
+  // R-214 (Story 5.24e): Sign out sends what this browser still owes, erases its copy, and asks first if it cannot send
+  const { run, asking } = useSignOut(user.id, `${id}-sign-out`)
   const dense = variant === 'sidebar'
   const iconSize = dense ? 15 : 16
   const name = nameOf(user)
@@ -285,14 +288,20 @@ export function AccountMenu({
 
         <div aria-hidden className="m-[4px_8px] h-px bg-line" />
 
-        {/* Clearing the cookies is a write, so Sign out is 1.4's server action, not a link. */}
-        <form action={signOut}>
+        {/* Clearing the cookies is a write, so Sign out is 1.4's server action, not a link — reached since R-214 through
+            the one flow that sends and erases first (`sign-out.tsx`); the form's own status still says "Signing out…" */}
+        <form
+          action={async () => {
+            await run(signOut)
+          }}
+        >
           <SignOut dense={dense} iconSize={iconSize} />
         </form>
       </div>
 
       {/* outside the popover, so the dialog is a sibling in the top layer rather than a child of one */}
       <ShortcutsSheet dialog={shortcuts} />
+      {asking}
     </>
   )
 }

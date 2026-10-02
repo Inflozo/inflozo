@@ -472,7 +472,9 @@ export function validateDataBinding(k: string, b: DataBinding, { declared = true
   if (b.limit !== undefined && (!Number.isInteger(b.limit) || b.limit < 1 || b.limit > 100)) {
     push(out, 'bad-get-limit', `dataBindings.${k}.limit must be 1–100. limit="all" is capped at 100 (FR-H2) and trips gscan on 6.x.`)
   }
-  if (b.filter !== undefined && !/^[A-Za-z0-9_.:,+\-[\]'"\s]+$/.test(b.filter)) {
+  // DW-258 (Story 5.24e): the class admits the Latin-1 letters `GHOST_SLUG_RE` does (× and ß–þ, what Ghost's slugify really
+  // writes) — the shim runs this rule AGAIN on the folded binding at emission, so a stored `café` tag would otherwise throw
+  if (b.filter !== undefined && !/^[A-Za-z0-9_×ß-þ.:,+\-[\]'"\s]+$/.test(b.filter)) {
     push(out, 'bad-get-filter', `dataBindings.${k}.filter carries a character NQL does not use. A filter is declared here and referenced by key from the markup, never written into an attribute — so it is validated once, never interpolated (AD-36).`)
   } else if (b.filter !== undefined && (b.filter.split('[').length !== b.filter.split(']').length || /['"]/.test(b.filter.replace(/'[^']*'|"[^"]*"/g, '')))) {
     // review 5.24c: an unclosed [ or quote validated green and the preview answered no rows — `splitTop` never closes it

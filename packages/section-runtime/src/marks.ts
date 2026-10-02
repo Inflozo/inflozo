@@ -363,13 +363,16 @@ export function editText(value: PropValue, next: string): PropValue {
 // when the two differ. Only a paste, which brings no record, is read for its marks (`readMarks`). Everything below is
 // pure over handed nodes (AD-1): the browser's elements and a jsdom tree both satisfy `MarkNode`.
 
-/** The members of a DOM node the readers below walk. */
+/** The members of a DOM node the readers below walk. `style` is an element's own inline style, read by `readMarks`
+ *  (DW-181) — a paste, and Ghost's announcement as the canvas reads it (`apps/web/lib/ghost-surfaces.ts`): `DOMParser`'s
+ *  elements and jsdom's both carry it, and a node without one reads as unstyled. */
 export type MarkNode = {
   readonly nodeType: number
   readonly nodeName: string
   readonly nodeValue: string | null
   readonly childNodes: ArrayLike<MarkNode>
   getAttribute?(name: string): string | null
+  readonly style?: { readonly fontWeight: string; readonly fontStyle: string; readonly textDecoration: string }
 }
 
 const TEXT_NODE = 3
@@ -600,10 +603,32 @@ const UNSEEN: ReadonlySet<string> = new Set(['HEAD', 'LINK', 'META', 'NOSCRIPT',
 const TAG_MARKS: Readonly<Record<string, string>> = { B: 'strong', STRONG: 'strong', EM: 'em', I: 'em', U: 'u' }
 const PASTE_SCHEMES = /^(https?|mailto|tel):/i
 
+/** DW-181 (Story 5.24e) — the marks an element's OWN markup says: Google Docs writes bold and italic as styled spans, not
+ *  tags (Word Online's and Apple Notes' shapes are cited nowhere public, so they stay hypotheses). Bold is a weight of
+ *  `bold`, `bolder` or 600 and up — CKEditor 5's rule; ProseMirror's 500 would bold a web page's computed
+ *  `font-weight: 500`, which Chrome's copy writes inline (executed in Chromium at this story's Create). Italic is
+ *  `italic`, and underline is `underline` among the decoration's words. A tag's own style cancels its mark: a bold tag
+ *  whose weight is set and not heavy — Google Docs' `<b style="font-weight:normal">` round the whole paste — and an
+ *  italic tag set `normal`. ponytail: a child's `font-weight:400` does not clear a parent's bold, as ProseMirror's
+ *  `clearMark` does; Google Docs' wrapper cancels itself, and clearing a range inside a mark is the upgrade if a source
+ *  needs it. */
+function ownMarks(c: MarkNode): Set<string> {
+  const weight = c.style?.fontWeight ?? ''
+  const heavy = weight === 'bold' || weight === 'bolder' || Number(weight) >= 600
+  const tag = TAG_MARKS[c.nodeName]
+  const marks = new Set<string>()
+  if (tag !== undefined && !(tag === 'strong' && weight !== '' && !heavy) && !(tag === 'em' && c.style?.fontStyle === 'normal')) marks.add(tag)
+  if (heavy) marks.add('strong')
+  if (c.style?.fontStyle === 'italic') marks.add('em')
+  if ((c.style?.textDecoration ?? '').split(/\s+/).includes('underline')) marks.add('u')
+  return marks
+}
+
 /** A PARSED PASTE as text plus marks — the only place marks are read from markup. Whitespace runs collapse to one
- *  space; `<br>` and a block's edges are `\n` when the field takes `lines`, else a space. `strong`/`b`, `em`/`i`, `u`
- *  and an `a` whose href is http, https, mailto or tel become marks, and only the `allowed` ones are kept; every other
- *  element is its text, and a script's or a style's contents are not text at all. The caller parses with `DOMParser`,
+ *  space; `<br>` and a block's edges are `\n` when the field takes `lines`, else a space. `strong`/`b`, `em`/`i`, `u`,
+ *  an element's own bold, italic or underline style (`ownMarks`, DW-181) and an `a` whose href is http, https, mailto or
+ *  tel become marks, and only the `allowed` ones are kept — still only the four (FR-D4); every other element is its
+ *  text, and a script's or a style's contents are not text at all. The caller parses with `DOMParser`,
  *  whose document runs and loads nothing. */
 export function readMarks(root: MarkNode, allowed: readonly string[], lines: boolean): RichText {
   const allow = new Set(allowed)
@@ -633,7 +658,6 @@ export function readMarks(root: MarkNode, allowed: readonly string[], lines: boo
       const block = BLOCKS.has(c.nodeName)
       if (block) edge()
       const at = text.length
-      const tag = TAG_MARKS[c.nodeName]
       const href = c.nodeName === 'A' ? (c.getAttribute?.('href') ?? '').trim() : ''
       const link = c.nodeName === 'A' && !inLink && allow.has('a') && PASTE_SCHEMES.test(href)
       if (link) inLink = true
@@ -641,7 +665,8 @@ export function readMarks(root: MarkNode, allowed: readonly string[], lines: boo
       if (link) {
         inLink = false
         marks.push({ start: at, end: text.length, mark: 'a', href })
-      } else if (tag !== undefined && allow.has(tag)) marks.push({ start: at, end: text.length, mark: tag })
+      }
+      for (const mark of ownMarks(c)) if (allow.has(mark)) marks.push({ start: at, end: text.length, mark })
       if (block) edge()
     }
   }

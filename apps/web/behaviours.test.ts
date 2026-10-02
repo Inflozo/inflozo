@@ -18,12 +18,17 @@ test('CANVAS_MODULES holds every registry row, in registry order, as core takes 
   }
 })
 
-test('R-175: movesByItself reads the declaration through the grammar and answers from the registry', () => {
-  assert.equal(movesByItself('marquee'), true)
-  assert.equal(movesByItself('header-scroll:768'), true, 'a width is part of the declaration, not of the name')
+test('R-175 and DW-226: movesByItself reads the declaration through the grammar, answers from the registry — and only where the part runs at this width', () => {
+  assert.equal(movesByItself('marquee', 1440), true)
+  // a width is part of the declaration, not of the name: the part runs BELOW it — core's own `(width < Npx)` — and at or
+  // above it never moves, so it carries no chip there (DW-226: at HEAD this read true at every width)
+  assert.equal(movesByItself('header-scroll:768', 390), true)
+  assert.equal(movesByItself('header-scroll:768', 767), true)
+  assert.equal(movesByItself('header-scroll:768', 768), false, 'at the width itself the query is false')
+  assert.equal(movesByItself('header-scroll:768', 1440), false)
   // parts that wait for a press or a submit never carry the chip — the pilots' two, and a carousel's arrows
-  for (const waits of ['nav-drawer', 'member-form', 'carousel']) assert.equal(movesByItself(waits), false, waits)
-  for (const bad of ['Marquee', 'marquee:0', 'no-such-module', 'core', '']) assert.equal(movesByItself(bad), false, bad)
+  for (const waits of ['nav-drawer', 'member-form', 'carousel']) assert.equal(movesByItself(waits, 390), false, waits)
+  for (const bad of ['Marquee', 'marquee:0', 'no-such-module', 'core', '']) assert.equal(movesByItself(bad, 390), false, bad)
 })
 
 /* THE DAY A MODULE FILE LANDS, THIS IS RED UNTIL THE CANVAS RUNS IT. The list is the directory — every `.js` file

@@ -24,7 +24,8 @@
  * THE OWNER NAMED FIVE MORE ON 2026-09-19 (ruling R-142), and they are the second stated exception rather
  * than a widening: B6 draws the persistence indicator as a coloured DOT, and he replaced it with an icon in a
  * circle — "keep the colors but with icons inside a circle, use appropriate Tabler Icons" — so there is no
- * export glyph to read for any of the five states. Same shape as R-130: the export still governs every glyph
+ * export glyph to read for any of the five states (R-213 added a sixth, Signed out, as Tabler `logout`: Story 5.24e,
+ * 2026-10-02). Same shape as R-130: the export still governs every glyph
  * it draws, and Tabler enters here only where the owner names it. Their paths are NOT retyped from the frame
  * or from his message — each is `packages/library/icons/tabler.json`'s own `outline`, emitted from that file
  * and verified path for path, and each is inlined for R-130's reason (importing `@inflozo/library/icons` for
@@ -187,6 +188,16 @@ export const SyncAlert = ({ strokeWidth = 2.5, ...p }: IconProps) => (
   <Icon strokeWidth={strokeWidth} {...p}>
     <path d="M12 19v.01" />
     <path d="M12 15v-10" />
+  </Icon>
+)
+/** Tabler `logout` — Signed out (R-213, Story 5.24e) — the session ended, so nothing can go up until a sign-in. The same
+ *  drawing as the account menu's Sign out, so one glyph means one thing (R-170); a SHAPE of its own beside Retrying's
+ *  exclamation, so red is never the only thing telling the two apart (R-142) */
+export const SyncSignedOut = ({ strokeWidth = 2.5, ...p }: IconProps) => (
+  <Icon strokeWidth={strokeWidth} {...p}>
+    <path d="M14 8v-2a2 2 0 0 0 -2 -2h-7a2 2 0 0 0 -2 2v12a2 2 0 0 0 2 2h7a2 2 0 0 0 2 -2v-2" />
+    <path d="M9 12h12l-3 -3" />
+    <path d="M18 15l3 -3" />
   </Icon>
 )
 /** Tabler `upload` — Syncing every change to the cloud — this browser holds nothing, so everything goes straight up */

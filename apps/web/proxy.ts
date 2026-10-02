@@ -96,6 +96,8 @@ export async function proxy(req: NextRequest) {
 // under `public/`, and runs it (review, 2026-09-06). It stays a literal here: Next extracts
 // `config` statically, so it cannot be imported from `routing.ts` — and the dots stay unescaped,
 // as in Next's own docs, so the text the test reads is the pattern Next runs. Each excluded folder
-// is a PREFIX reserved for static files: a page route must never be placed under `brand/` or
-// `connect/`, because it would escape the proxy — no rewrite, no CSP, no session refresh.
-export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|icon.png|apple-icon.png|brand/|connect/).*)'] }
+// is a PREFIX reserved for static files: a page route must never be placed under `brand/`,
+// `connect/` or `orbit-weekly/` (Story 5.24e's DW-102: the sample publication's audio and video,
+// which the style guide and the Paywall canvas play), because it would escape the proxy — no
+// rewrite, no CSP, no session refresh.
+export const config = { matcher: ['/((?!_next/|favicon.ico|icon.svg|icon.png|apple-icon.png|brand/|connect/|orbit-weekly/).*)'] }

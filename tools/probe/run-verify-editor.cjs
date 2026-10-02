@@ -456,6 +456,14 @@ async function main() {
         await page.waitForTimeout(50)
       }
     }
+    /* R-217 (Story 5.24e): a pointer over a Layers ROW now outlines its section on the canvas, so a walk that parks the
+       pointer "at rest" parks it on the panel's own title — off every row and off the canvas — read from the page rather
+       than a fixed point the rows can grow under (it was (120, 400), which this project's rows reach). Where Layers is
+       hidden, the old point, which is then the stage's ground. */
+    const parkOffRows = async () => {
+      const title = await page.locator('#editor-layers > div:first-child > span').first().boundingBox({ timeout: 2000 }).catch(() => null)
+      await page.mouse.move(title ? title.x + 20 : 120, title ? title.y + title.height / 2 : 400)
+    }
     check('step 1 — A signs in', !page.url().includes('/sign-in'), page.url())
 
     const openCard = async () => {
@@ -606,8 +614,8 @@ async function main() {
     check('step 2 — S4a\'s 864 survives as the WIDTH the stage allows at 1440 (1440 - 240 - 280 - 56), so the fit is width-bound here', c && c.width === 864, String(c?.width))
     check('step 2 — Controls: 280px, left rule, 16px padding, paper, PAGE 13/600 uppercase at 16px from the top', shape.controls.w === 280 && shape.controls.rule === '1px' && shape.controls.pad === '16px' && shape.controls.bg === 'rgb(247, 245, 242)' && shape.controls.label === 'Page' && shape.controls.labelSize === '13px' && shape.controls.labelWeight === '600' && shape.controls.labelCase === 'uppercase' && Math.abs(shape.controls.labelTop - 16) < 2, JSON.stringify(shape.controls))
     // the mouse is where the card was clicked, over the canvas now, and a section painted under a resting pointer is
-    // hovered (Story 5.2): move it onto Layers so "at rest" is at rest
-    await page.mouse.move(120, 400)
+    // hovered (Story 5.2): move it onto the Layers title so "at rest" is at rest (a ROW would outline its section, R-217)
+    await parkOffRows()
     await page.waitForTimeout(250)
     // the roots are read BEFORE any screenshot: Playwright's screenshot leaves `style=""` on a focusable input (executed)
     /* STORY 5.15: `js-enabled` is `core`'s, set on a mount it RUNS and never authored. While designing the editor holds
@@ -854,7 +862,7 @@ async function main() {
     const inter = await tagNow()
     const shipped = (inter?.faces ?? []).filter((f) => !/ Fallback: /.test(f))
     check('step 10 — the tag\'s Inter is the editor\'s, added to the canvas document as `inflozo-chrome …` faces that have all loaded', !!inter && /^"inflozo-chrome Inter"/.test(inter.family) && shipped.length > 0 && shipped.every((f) => / loaded$/.test(f)), JSON.stringify({ family: inter?.family, faces: inter?.faces }))
-    await page.mouse.move(120, 400) // over Layers, off the canvas
+    await parkOffRows() // the Layers title, off the rows and the canvas
     await page.waitForTimeout(250)
     check('step 10 — leaving the canvas clears the mark, the hover box, the tag and the wash', (await marked()) === 0 && (await boxNow('hover')) === null && (await tagNow()) === null && !(await rowsNow()).includes(WASH))
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
@@ -876,7 +884,7 @@ async function main() {
     await page.waitForTimeout(500)
     context.off('page', onPage)
     check('step 11 — a press does nothing else: focus stays on the canvas body, no text is selected, and a middle click on Archive opens no page, navigates nowhere and keeps the selection', pressed.active && pressed.collapsed && opened.length === 0 && (await canvasFrame().evaluate(() => location.href)) === hrefBefore && (await onScreen(HEADER)).selected, JSON.stringify({ pressed, opened, href: await canvasFrame().evaluate(() => location.href) }))
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.waitForTimeout(200)
     const sel = await onScreen(HEADER)
     const selBox = await boxNow('selected')
@@ -885,7 +893,7 @@ async function main() {
     check('step 11 — the selected line paints 1.50 ± 0.1px of coral, counted only because a hover line measured 1.00 first', hoverControl && !!selLine && selLine.readable && selLine.first === 'rgb(255, 89, 65)' && Math.abs(selLine.width - 1.5) <= 0.1, `control ${hoverControl} · ${JSON.stringify(selLine)}`)
     await hoverOn(HEADER)
     check('step 11 — hovering the selection keeps its 1.5px box alone, and shows the name tag', (await boxNow('hover')) === null && fits(await boxNow('selected'), await onScreen(HEADER)) && (await tagNow())?.text === layerOf(HEADER))
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.waitForTimeout(200)
     // the Prevents line of AD-21 (rect-tracked overlays break on sticky roots): the header is sticky, so scrolling the
     // canvas keeps its root on screen while the page moves, and the anchor loop must keep the box on it
@@ -921,7 +929,7 @@ async function main() {
     await clickOn(HERO)
     const hero = await onScreen(HERO)
     const badge = await badgeNow()
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.waitForTimeout(200)
     // for the owner's comparison with S4c and B10
     await page.screenshot({ path: `${OUT}/editor-selected-latest-post-free-1440x900.png` })
@@ -995,7 +1003,7 @@ async function main() {
     await page.waitForTimeout(200)
     const rested = await panelOf()
     check('step 13 — Esc from the canvas deselects, and the panel shows PAGE over the empty state', rested.label === 'Page settings' && rested.head === 'Page' && rested.empty && (await controlsAside().getByText('Click any section on the canvas — its controls appear here.').count()) === 1, JSON.stringify(rested))
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.waitForTimeout(200)
     check('step 13 — after hovering, selecting and Esc, no element in the canvas document carries a data-inflozo-* attribute', (await marked()) === 0)
 
@@ -1126,7 +1134,7 @@ async function main() {
     await page.waitForTimeout(200)
     await scrollCase('Three Up hovered, the pointer still', GRID)
     // (b) sticky: Header — Rail selected; stuck at the top, its box's top line must stay on the card's top edge
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
     await clickOn(HEADER)
@@ -1160,7 +1168,7 @@ async function main() {
     const scrolled = await canvasFrame().evaluate(() => scrollY)
     check('step 15 — Header — Rail selected (sticky): its box\'s top line is on the card\'s top edge in every captured frame of the scroll', scrolled > 100 && stuckRows.length >= 5 && stuckRows.every(Boolean), `scrolled ${scrolled} · ${stuckRows.length} frames · ${stuckFilm.skipped} skipped · ${stuckRows.map((v) => (v ? 'y' : 'n')).join('')}`)
     await page.keyboard.press('Escape')
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
 
@@ -1514,7 +1522,7 @@ async function main() {
     const afterFirstEsc = await editingNow()
     check('step 24 — Esc while editing ends the editing and keeps the section selected', afterFirstEsc.editables === 0 && (await onScreen(GRID)).selected, JSON.stringify(afterFirstEsc))
     // at rest means at rest: the pointer off the canvas, so no root carries the hover mark and the chrome layer is gone
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.keyboard.press('Escape')
     await page.waitForTimeout(250)
     const rest53 = await canvasFrame().evaluate(() => ({
@@ -1549,7 +1557,7 @@ async function main() {
       `${JSON.stringify({ before: barPlaced?.visibility, during: whileScrolling?.visibility, after: afterScrolling?.visibility })} · bar ${afterScrolling?.left},${afterScrolling?.bottom} · word ${wordNow.left},${wordNow.top}`)
     await page.keyboard.press('Escape')
     await page.keyboard.press('Escape')
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await canvasFrame().evaluate(() => document.scrollingElement.scrollTo(0, 0))
     await page.waitForTimeout(200)
 
@@ -1976,7 +1984,7 @@ async function main() {
     await page.mouse.move((pill35.left + pill35.right) / 2, (pill35.top + pill35.bottom) / 2, { steps: 4 })
     await page.waitForTimeout(300)
     check('step 35 — the pointer moving from the iframe onto the pill keeps the hover and the pill (the null-relatedTarget trap)', (await pillNow()) !== null && (await onScreen(GRID)).hover, `pill ${(await pillNow()) !== null} · hover ${(await onScreen(GRID)).hover}`)
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.waitForTimeout(300)
     check('step 35 — leaving the pill for a panel lets the hover go, and the pill with it', (await pillNow()) === null && !(await onScreen(GRID)).hover)
     // R-125: the Pro tag keeps the corner, the pill sits to its left
@@ -3189,7 +3197,7 @@ async function main() {
 
     // ── step 61 — R-142's circle, R-144's green rest, and R-143's moved pair ──
     // The GLYPH is asserted by its own path data, read out of `packages/library/icons/tabler.json` — the file the
-    // component was generated from — so the five states cannot silently come to share an icon, which is the one
+    // component was generated from — so the six states (R-213's Signed out the sixth) cannot silently come to share an icon, which is the one
     // way R-142's guarantee could rot (standing rule 4: derived, never retyped).
     const TABLER58 = JSON.parse(require('node:fs').readFileSync(path.join(REPO, 'packages/library/icons/tabler.json'), 'utf8')).icons
     const glyph58 = (n) => TABLER58[n].outline.filter(([el]) => el === 'path').map(([, a]) => a.d).join(' | ')
@@ -3364,6 +3372,20 @@ async function main() {
       stale66c === 409 && bad66c === 422 && key66c === 422 && (await revisionNow58()) === rev66c && JSON.stringify(await homeDocNow58()) === JSON.stringify(doc66c), JSON.stringify({ stale66c, bad66c, key66c }))
     check('step 66c — a stale base carrying EXACTLY what the server holds is not a conflict: 200, and still nothing written (the control is the 409 above)',
       already66c === 200 && (await revisionNow58()) === rev66c, `HTTP ${already66c}`)
+    // DW-235 (Story 5.24e): the PLACEMENT rules `read.ts` throws on are this door's too (`docRefusal`, `lib/pilots.ts`).
+    // A Post design on Home is a well-formed doc, so the 422 is pinned to its own words — a schema 422 is a FAIL here.
+    // Run only against a build that carries the fix: before 5.24e this route WROTE it, and the next load threw for the
+    // whole editor (its control is `editor.test.ts`'s route-order row, red at that HEAD). A deployed run serves this
+    // checkout (checked above) and a local build is this checkout; a LOCAL RUN against production may predate it.
+    if (LOCAL && new URL(APP).host === 'app.inflozo.com') note('step 66c — DW-235 left out', 'a LOCAL RUN against production, whose build may predate the fix and would write the doc')
+    else {
+      const placed66c = await page.evaluate(async ([b, id]) => {
+        const r = await fetch(`${location.pathname.startsWith('/app/') ? '/app' : ''}/projects/${id}/sync`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(b) })
+        return { status: r.status, text: await r.text() }
+      }, [{ base: rev66c, docs: { home: { ...doc66c, instances: [...doc66c.instances, { ...doc66c.instances[0], instanceId: 'walk-66c-post-header', designId: 'a24/1' }] } } }, P])
+      check('step 66c — DW-235: a Post design on Home is refused before the write, in read.ts\'s own words ("never home.hbs"), and nothing is written',
+        placed66c.status === 422 && /never home\.hbs/.test(placed66c.text) && (await revisionNow58()) === rev66c && JSON.stringify(await homeDocNow58()) === JSON.stringify(doc66c), JSON.stringify(placed66c))
+    }
 
     // ── step 67 — FR-D9's whole promise: the work AND the history survive a reload ──
     // SINCE THE REVIEW it reloads WITH AN EDIT OWED, which is what a person does: the reload itself fires the tab-close
@@ -4044,7 +4066,7 @@ async function main() {
     check('step 86 — ABSENT, NEVER GREYED (UX-DR3): no arrows and no thumbnail strip where the ring holds one — and no Try-a-design card and no key chips at all',
       ring511 !== null && ring511.arrows === 0 && ring511.strip === 0 && ring511.tryCard === 0 && ring511.chips.length === 0, JSON.stringify(ring511))
     // S4b + S6's pill gives the same answer: the counter, the arrows and Shuffle arrive with the ring, not before
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await clickOn(GRID)
     const pill511 = await page.evaluate(() => {
       const pill = document.querySelector('[data-section-pill]')
@@ -4098,7 +4120,7 @@ async function main() {
     const overAdd511 = await wheelOver511('[data-add-section]')
     check('step 87 — and the same with the pointer on the "+ Add section" pill, the one the hypothesis named',
       overAdd511 !== null && overAdd511 > 0, overAdd511 === null ? 'no add pill under the pointer' : `${overAdd511}px`)
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await freshLoad()
 
     /* ── step 88 — STORY 5.12, SITE REMIX: THE DICE, AND THE HONEST ANSWER IT GIVES ON THIS PROJECT ──────────
@@ -4447,6 +4469,42 @@ async function main() {
       stored513.length === 1 && stored513[0].preview_subject?.slug === WITHOUT513.slug && stored513[0].preview_subject?.kind === 'post' && stored513[0].user_id === ids[0],
       JSON.stringify({ stored513, inFlight: inFlight513 }))
 
+    /* ── DW-223 (Story 5.24e): A PICK WHOSE SAVE IS STILL IN FLIGHT WHEN THE TAB RELOADS ──
+       Every server action of this page is HELD — never answered — while WITH513 is chosen, and the page reloads at once:
+       the moment a slow save on production meets. Before this story the reload read the stored row, the OLD article, and
+       the pick was gone. Now the tab keeps the pick until its save answers (`PENDING_KEY`, `lib/preview-subject.ts`), so
+       the reloaded canvas names it and sends it again, and that second send — unheld — is the one that lands. */
+    const held223 = []
+    // held only until the reload begins: the reloaded page's own re-send must reach the server
+    let holding223 = true
+    const hold223 = async (route) => {
+      const r = route.request()
+      if (holding223 && r.method() === 'POST' && r.headers()['next-action']) { held223.push(r); return } // never answered: the reload abandons it
+      await route.fallback()
+    }
+    const postPage223 = (u) => u.pathname.endsWith(`/projects/${P}/post`)
+    await page.route(postPage223, hold223)
+    await page.locator('#editor-source').click()
+    await page.waitForTimeout(500)
+    await page.locator(`#editor-source-menu [data-subject-row="${WITH513.slug}"]`).click()
+    for (const by = Date.now() + 15000; held223.length === 0 && Date.now() < by;) await page.waitForTimeout(100)
+    const pendingBefore223 = await page.evaluate((k) => sessionStorage.getItem(k), `inflozo-subject:${P}:post`)
+    holding223 = false
+    await page.reload({ waitUntil: 'load' })
+    await page.unroute(postPage223, hold223)
+    for (const r of held223) actionsInFlight.delete(r)
+    await painted('post').catch(() => null)
+    await page.waitForTimeout(600)
+    const reloaded223 = await sourcePill()
+    const inFlight223 = await actionsSettle(30000)
+    const stored223 = await storedAs513('post', WITH513.slug)
+    const pendingAfter223 = await page.evaluate((k) => sessionStorage.getItem(k), `inflozo-subject:${P}:post`)
+    check('step 89 — DW-223: control — the save was really held, the tab kept the pick, and the row still held the old article when the page went',
+      held223.length > 0 && pendingBefore223 !== null && JSON.parse(pendingBefore223).slug === WITH513.slug, JSON.stringify({ held: held223.length, pendingBefore223 }))
+    check('step 89 — DW-223: a reload with the save still in flight keeps the pick — the canvas names it, sends it again, and the row then holds it',
+      reloaded223?.subject === WITH513.title && stored223[0]?.preview_subject?.slug === WITH513.slug && pendingAfter223 === null,
+      JSON.stringify({ subject: reloaded223?.subject, want: WITH513.title, old: WITHOUT513.title, stored: stored223[0]?.preview_subject, pendingAfter223, inFlight: inFlight223 }))
+
     /* ── DW-219 (Story 5.24d): THE SAVE'S REFUSALS, ASKED OF THE SERVER ITSELF ──
        `setPreviewSubject` refuses a project id that is not a uuid, a template key no canvas owns, a slug empty or past
        Ghost's 191, a kind its canvas cannot carry and any `source` mark but the site's — and then writes under the
@@ -4701,7 +4759,7 @@ async function main() {
 
     await call('/rest/v1', `/project_template_prefs?project_id=eq.${P}`, { method: 'DELETE' })
     await freshLoad()
-    await page.mouse.move(120, 400)
+    await parkOffRows()
 
     // ── opening: S4a's trigger, the centred group, and nothing beside it ──
     const open90 = await bar90()
@@ -4973,7 +5031,7 @@ async function main() {
         hovered.tag === layerOf(n) && hovered.chips === 0 && selected.selected && selected.chips === 0, JSON.stringify({ hovered, selected }))
     }
     await page.keyboard.press('Escape')
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.waitForTimeout(300)
 
     // ── B3a's pill, measured where it is drawn ──
@@ -5007,7 +5065,7 @@ async function main() {
     await freshLoad()
     await clickOn(GRID)
     const chosen91 = layerOf(GRID)
-    await page.mouse.move(120, 400)
+    await parkOffRows()
     await page.locator('#editor-preview').click()
     await page.waitForTimeout(700)
     const in91 = await chrome91()
@@ -6027,7 +6085,8 @@ async function main() {
       cut: document.querySelector('[data-inflozo-cut-label]')?.textContent ?? null, note: document.querySelector('[data-inflozo-cut-note]')?.textContent ?? null,
       box: document.querySelector('[data-inflozo-box] .gh-post-upgrade-cta')?.textContent.replace(/\s+/g, ' ').trim() ?? null,
       gated: document.querySelector('[data-inflozo-gated]')?.textContent ?? null,
-      sheet: document.querySelector('style[data-order="2b-surface"]')?.media ?? null,
+      // DW-275 (Story 5.24e): the sheet is a `<link>` the first Paywall paint puts in, no longer an inline `<style>`
+      sheet: document.querySelector('[data-order="2b-surface"]')?.media ?? null,
       dim: getComputedStyle(document.querySelector('[data-inflozo-dim] > p') ?? document.body).opacity,
     }))
     const strip95 = () => page.evaluate(() => ({ showing: document.querySelector('[data-paywall-showing]')?.textContent ?? null, note: document.querySelector('[data-paywall-strip]')?.textContent ?? null }))
@@ -6069,7 +6128,7 @@ async function main() {
     // Back to post: a soft navigation — the editor stays mounted, and the post canvas paints with the stylesheet off
     await page.locator('#paywall-back').click()
     await painted('post')
-    const post95 = await canvasFrame().evaluate(() => ({ sheet: document.querySelector('style[data-order="2b-surface"]')?.media ?? null, cut: !!document.querySelector('[data-inflozo-cut]') }))
+    const post95 = await canvasFrame().evaluate(() => ({ sheet: document.querySelector('[data-order="2b-surface"]')?.media ?? null, cut: !!document.querySelector('[data-inflozo-cut]') }))
     check('step 95 — Back to post leaves the surface: the bar is paper again, the post canvas paints, and the paywall\'s stylesheet is off',
       post95.sheet === 'not all' && !post95.cut && !(await page.evaluate(() => document.querySelector('header')?.hasAttribute('data-surface'))), JSON.stringify(post95))
     await leaveEditor()
@@ -6097,8 +6156,8 @@ async function main() {
 
     // ── step 79 — the harness does NOT exist in production (R-146) ──
     // Story 5.20 made the harness a layout with a page per canvas, so a canvas's page is refused too; Story 5.24b (DW-91)
-    // added the page that throws on purpose for the gate's error-title test
-    for (const path of ['/harness/editor', '/harness/editor/paywall', '/harness/canvas', '/harness/error']) {
+    // added the page that throws on purpose for the gate's error-title test, and Story 5.24e (DW-303) the connect wizard's
+    for (const path of ['/harness/editor', '/harness/editor/paywall', '/harness/canvas', '/harness/error', '/harness/connect']) {
       const r = await context.request.get(at(path), { maxRedirects: 0 })
       check(`step 79 — R-146: ${path} answers 404 on the deployed site — the keyboard harness is the gate's alone`, r.status() === 404, `HTTP ${r.status()}`)
     }
@@ -6390,7 +6449,9 @@ async function main() {
     check('step 8 — axe: zero violations with Three Up hovered (the name tag showing)', hoveredAxe.length === 0 && (await axePage.frameLocator('section[aria-label="Canvas"] iframe').locator('[data-chrome="tag"]').count()) === 1, hoveredAxe.join('; '))
     g = await gridAt()
     await axePage.mouse.click(g.x, g.y)
-    await axePage.mouse.move(120, 400)
+    // off the canvas and off every Layers row (R-217): the panel's title, as `parkOffRows` parks the main page
+    const titleAxe = await axePage.locator('#editor-layers > div:first-child > span').first().boundingBox({ timeout: 2000 }).catch(() => null)
+    await axePage.mouse.move(titleAxe ? titleAxe.x + 20 : 120, titleAxe ? titleAxe.y + titleAxe.height / 2 : 400)
     await axePage.waitForTimeout(300)
     const selectedAxe = await axeRun()
     // STORY 5.11: the panel that is mounted here carries B1a's Design block, so this run IS the block's axe run —
@@ -6469,6 +6530,73 @@ async function main() {
       previewAxe.length === 0 && previewShown.bar && previewShown.header === false, `${JSON.stringify(previewShown)} · ${previewAxe.join('; ')}`)
     await axePage.keyboard.press('Escape')
     await axePage.waitForTimeout(400)
+    /* STORY 5.24e — R-214'S ASK, ON PROJECTS (B5c's shape, extrapolated). The editor owes one edit with its every flush
+       refused, so the edit is held on this device alone; a second tab of the same browser opens Projects and presses Sign
+       out with its own send refused too — what the ask exists for — and axe scans the ask at 1440, 834 and 390, each
+       opened from the account menu that width draws. Wait then keeps everything: the dialog closes and nobody is signed
+       out. Every word is the app's own (`lib/journal.ts`, `lib/lock.ts`). */
+    const JOURNAL8 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/journal.ts')).href)
+    const LOCK8 = await import(require('node:url').pathToFileURL(path.join(REPO, 'apps/web/lib/lock.ts')).href)
+    await axePage.route('**/projects/*/sync', (r) => r.abort('failed'))
+    // a PAGE section — Three Up, the one this step already scans — chosen from its row: ⌘D is one edit (AD-16), undone
+    // below before anything can send it
+    await axePage.locator('#editor-layers [data-layer-row]').filter({ hasText: TEMPLATES.home.find(([d]) => d === 'a17/1')[1] }).first().locator('button').first().click()
+    await axePage.waitForTimeout(400)
+    await axePage.locator('section[aria-label="Canvas"]').focus()
+    await axePage.keyboard.press(`${CMD58}+d`)
+    await axePage.waitForTimeout(800)
+    const askPage = steady(await axeContext.newPage())
+    await askPage.route('**/projects/*/sync', (r) => r.abort('failed'))
+    await askPage.goto(at('/projects'), { waitUntil: 'load' })
+    // each width opens the ask from the account menu IT draws — the sidebar's from 834 (`tablet`), the ☰ drawer's below
+    // — since an ask opened at one width and resized to another sits under a hidden column, unseen and unscanned
+    // THE ASK ITSELF, by its own title id (`useSignOut`'s `…-sign-out`): at 390 it sits inside the ☰ drawer's own open
+    // dialog, whose text holds the ask's words even while the ask is closed — so a dialog is never matched by its text
+    const ASK8 = 'dialog[open][aria-labelledby$="-sign-out-title"]'
+    const visibleAsk8 = () => askPage.evaluate((sel) => [...document.querySelectorAll(sel)].filter((d) => d.checkVisibility()).length, ASK8)
+    const askAxe8 = {}
+    const shown8 = {}
+    const waited8 = {}
+    let ask8 = null
+    for (const [w, h] of [[1440, 900], [834, 1112], [390, 844]]) {
+      await askPage.setViewportSize({ width: w, height: h })
+      await askPage.waitForTimeout(400)
+      const menu = w < 834 ? 'account-menu-mobile' : 'account-menu'
+      if (w < 834) {
+        await askPage.getByRole('button', { name: 'Menu', exact: true }).click()
+        await askPage.waitForTimeout(400)
+      }
+      await askPage.locator(`button[popovertarget="${menu}"]`).click()
+      await askPage.locator(`#${menu}`).getByRole('button', { name: 'Sign out', exact: true }).click()
+      shown8[w] = await askPage.waitForFunction((sel) => [...document.querySelectorAll(sel)].some((d) => d.checkVisibility()), ASK8, { timeout: 20000 }).then(() => true, () => false)
+      if (w === 1440) ask8 = await askPage.evaluate((sel) => {
+        const d = document.querySelector(sel)
+        return d && { words: d.innerText.replace(/\s+/g, ' ').trim(), focus: document.activeElement?.textContent?.trim() ?? null }
+      }, ASK8)
+      await askPage.addScriptTag({ path: AXE }).catch(() => {})
+      askAxe8[w] = shown8[w]
+        ? await askPage.evaluate(async (tags) => (await window.axe.run(document, { runOnly: tags })).violations.map((v) => `${v.id}(${v.nodes.length}): ${v.nodes.map((n) => n.target.join(' ')).slice(0, 3).join(' · ')}`), WCAG).catch((e) => [`axe did not run: ${e.message}`])
+        : ['the ask did not open']
+      await askPage.getByRole('button', { name: LOCK8.LOCK_COPY.wait, exact: true }).click().catch(() => {})
+      await askPage.waitForTimeout(600)
+      waited8[w] = (await visibleAsk8()) === 0 && !new URL(askPage.url()).pathname.includes('/sign-in')
+      if (w < 834) {
+        await askPage.keyboard.press('Escape')
+        await askPage.waitForTimeout(300)
+      }
+    }
+    check('step 8 — R-214: Sign out with an edit this browser cannot send ASKS first — the heading, the edit that would be lost, that signing out erases this browser\'s copy, and the focus on Wait',
+      shown8[1440] && ask8 !== null && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.heading) && ask8.words.includes(LOCK8.LOCK_COPY.willBeLost(1)) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.erases) && ask8.words.includes(JOURNAL8.SIGN_OUT_COPY.confirm) && ask8.focus === LOCK8.LOCK_COPY.wait,
+      JSON.stringify(ask8))
+    check('step 8 — axe: zero violations on Projects with the sign-out ask open, at 1440, 834 and 390, each from the account menu that width draws (Story 5.24e)',
+      Object.values(shown8).every(Boolean) && Object.values(askAxe8).every((v) => v.length === 0), JSON.stringify({ shown8, askAxe8 }))
+    check('step 8 — R-214: Wait keeps everything — the ask closes and nobody is signed out, at every width',
+      Object.values(waited8).length === 3 && Object.values(waited8).every(Boolean), JSON.stringify({ waited8, at: askPage.url() }))
+    await askPage.close()
+    await axePage.locator('section[aria-label="Canvas"]').focus()
+    await axePage.keyboard.press(`${CMD58}+z`)
+    await axePage.waitForTimeout(800)
+    await axePage.unroute('**/projects/*/sync')
     /* STORY 5.16's own state: PAGE 2, with D5d's pill over the ground and D5d's row on the feed's panel. The main feed is
        planted for it as step 92 plants it — after this editor has gone, so its departing flush cannot overwrite it — and
        the seed's own Home is put back before the context closes. Axe is injected again: the reload is a new document. */
@@ -6500,7 +6628,96 @@ async function main() {
     await axePage.goto('about:blank')
     await axePage.waitForTimeout(600)
     await call('/rest/v1', `/project_templates?project_id=eq.${P}&template_key=eq.home`, { method: 'PATCH', body: JSON.stringify({ doc: seedHome8.doc }) })
+    /* STORY 5.24e — R-214'S CONFIRM, PRESSED (R-98), AND BOTH SIGN-OUTS' ERASE. LAST IN THIS CONTEXT, because signing out
+       ends its session — this device's alone (`signOut`'s `scope: 'local'`), so no other context of the walk is touched.
+       The editor opens once more and owes one edit with every flush refused; its lock is handed back and the context goes
+       OFFLINE before the editor leaves, so neither its way-out flush nor a beat can land (a request from an unloading page
+       is not one a route reliably meets — the lock walk's DW-244 note). Projects then asks, and **Sign out anyway** is
+       pressed with the sign-out's own request HELD, so its busy state is read while it is real. */
+    const DB8 = `inflozo-doc-${ids[0]}`
+    const databases8 = (p) => p.evaluate(async () => (await indexedDB.databases()).map((d) => d.name)).catch(() => null)
+    /** the lock HANDED BACK FROM ANOTHER PAGE of the same account, once the editor that held it has gone — so nothing can
+     *  re-acquire it between the release and the leaving (`handBack` from the editor itself races its next beat) — and the
+     *  row then read through the route's non-holder beat, as step 97 reads it: the steps after this one open holding it */
+    const tabOf8 = (p) => p.evaluate(() => sessionStorage.getItem('inflozo-lock-session')).catch(() => null)
+    const handBackFor8 = (p, session) => p.evaluate(async ({ url, session }) => {
+      await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'release', session }) })
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ intent: 'beat', session: 'walk-5-24e-read-only' }) })
+      return r.ok ? (await r.json()).row : { status: r.status }
+    }, { url: `${PREFIX}/projects/${P}/lock`, session }).catch((e) => ({ error: String(e?.message ?? e).slice(0, 80) }))
+    await axePage.goto(editorUrl(), { waitUntil: 'load' })
+    await axePage.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.painted === 'home', null, { timeout: 30000 })
+    await axePage.route('**/projects/*/sync', (r) => r.abort('failed'))
+    await axePage.locator('#editor-layers [data-layer-row]').filter({ hasText: TEMPLATES.home.find(([d]) => d === 'a17/1')[1] }).first().locator('button').first().click()
+    await axePage.waitForTimeout(400)
+    await axePage.locator('section[aria-label="Canvas"]').focus()
+    await axePage.keyboard.press(`${CMD58}+d`)
+    await axePage.waitForTimeout(800)
+    const axeTab8 = await tabOf8(axePage)
+    await axeContext.setOffline(true)
+    await axePage.goto('about:blank').catch(() => {})
+    await axeContext.setOffline(false)
+    const outPage = steady(await axeContext.newPage())
+    await outPage.route('**/projects/*/sync', (r) => r.abort('failed'))
+    // the sign-out's own request — Projects' server action after the press — held until its busy state is read
+    let holdOut = false
+    let outHeld = 0
+    let releaseOut = () => {}
+    const outGate = new Promise((done) => { releaseOut = done })
+    await outPage.route((u) => u.pathname.endsWith('/projects'), async (route) => {
+      if (holdOut && route.request().method() === 'POST' && route.request().headers()['next-action'] !== undefined) {
+        outHeld++
+        await outGate
+      }
+      await route.continue().catch(() => {})
+    })
+    await outPage.goto(at('/projects'), { waitUntil: 'load' })
+    const freed8 = await handBackFor8(outPage, axeTab8)
+    const before8 = await databases8(outPage)
+    await outPage.locator('button[popovertarget="account-menu"]').click()
+    await outPage.locator('#account-menu').getByRole('button', { name: 'Sign out', exact: true }).click()
+    const asked8 = await outPage.waitForFunction((sel) => [...document.querySelectorAll(sel)].some((d) => d.checkVisibility()), ASK8, { timeout: 20000 }).then(() => true, () => false)
+    holdOut = true
+    await outPage.getByRole('button', { name: JOURNAL8.SIGN_OUT_COPY.confirm, exact: true }).click().catch(() => {})
+    for (const by = Date.now() + 15000; outHeld === 0 && Date.now() < by;) await outPage.waitForTimeout(50)
+    const busy8 = await outPage.evaluate((sel) => {
+      const ask = [...document.querySelectorAll(sel)].find((d) => d.checkVisibility())
+      const b = ask && [...ask.querySelectorAll('button')].find((x) => x.getAttribute('aria-busy') === 'true')
+      // `innerText`: the Kit's BusyLabel keeps both words in the box and hides the one not showing
+      return b ? { label: b.innerText.trim(), busy: b.getAttribute('aria-busy'), disabled: b.getAttribute('aria-disabled'), disabledAttribute: b.hasAttribute('disabled') } : null
+    }, ASK8).catch(() => null)
+    releaseOut()
+    const gone8 = await outPage.waitForURL((u) => u.pathname.includes('/sign-in'), { timeout: 20000 }).then(() => true, () => false)
+    const after8 = await databases8(outPage)
+    await outPage.goto(at('/projects'), { waitUntil: 'load' }).catch(() => {})
+    const stillOut8 = new URL(outPage.url()).pathname.includes('/sign-in')
+    check('step 8 — R-214 · R-98: **Sign out anyway** says it is working while the sign-out is in flight — "Signing out…", aria-busy and aria-disabled, never `disabled`',
+      asked8 && outHeld > 0 && busy8 !== null && busy8.label === JOURNAL8.SIGN_OUT_COPY.confirmBusy && busy8.busy === 'true' && busy8.disabled === 'true' && !busy8.disabledAttribute,
+      JSON.stringify({ asked8, held: outHeld, busy8 }))
+    check('step 8 — R-214: …then the browser is signed out, and its copy is erased — `indexedDB.databases()` no longer lists this account\'s',
+      Array.isArray(before8) && before8.includes(DB8) && gone8 && stillOut8 && Array.isArray(after8) && !after8.includes(DB8),
+      JSON.stringify({ before: before8?.includes(DB8), signedOut: gone8 && stillOut8, after: after8?.includes(DB8) }))
     await axeContext.close()
+    // …and a sign-out with NOTHING owed erases this browser's copy too — no ask, straight out
+    const quietContext = await browser.newContext({ viewport: { width: 1440, height: 900 } })
+    const quiet = steady(await quietContext.newPage())
+    await quiet.goto(await magic(emailA), { waitUntil: 'load' })
+    await quiet.goto(editorUrl(), { waitUntil: 'load' })
+    await quiet.waitForFunction(() => document.querySelector('#editor-save-state [role="status"]')?.textContent === 'Synced', null, { timeout: 30000 }).catch(() => {})
+    const quietTab = await tabOf8(quiet)
+    await quiet.goto(at('/projects'), { waitUntil: 'load' })
+    const quietFreed = await handBackFor8(quiet, quietTab)
+    const quietBefore = await databases8(quiet)
+    await quiet.locator('button[popovertarget="account-menu"]').click()
+    await quiet.locator('#account-menu').getByRole('button', { name: 'Sign out', exact: true }).click()
+    const quietGone = await quiet.waitForURL((u) => u.pathname.includes('/sign-in'), { timeout: 20000 }).then(() => true, () => false)
+    const quietAfter = await databases8(quiet)
+    check('step 8 — R-214: a sign-out with nothing owed asks nothing, signs out, and erases this browser\'s copy too',
+      Array.isArray(quietBefore) && quietBefore.includes(DB8) && quietGone && Array.isArray(quietAfter) && !quietAfter.includes(DB8),
+      JSON.stringify({ before: quietBefore?.includes(DB8), signedOut: quietGone, after: quietAfter?.includes(DB8) }))
+    check('step 8 — fixture: both editors\' lock handed back before each sign-out, so step 14 opens holding it', freed8 === null && quietFreed === null,
+      JSON.stringify({ afterTheAsk: freed8, afterTheQuiet: quietFreed }))
+    await quietContext.close()
 
     // ── step 14 — touch: a hold shows the hover, a tap selects ──
     // STORY 5.22 — RE-EXPECTED: `hasTouch` makes the pointer COARSE, and every touch screen that is not a phone gets D8's

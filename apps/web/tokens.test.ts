@@ -155,9 +155,9 @@ test('no .ts or .tsx under apps/web carries a colour literal', () => {
   }
   const files = all.filter((f) => !exempt.includes(f))
   assert.ok(files.some((f) => f.endsWith('.tsx')), 'found no .tsx to scan')
-  // hex in any length, and rgb(a) — the same atoms the token test accepts, so what one
-  // gate allows in globals.css the other refuses everywhere else
-  const literal = /#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g
+  // hex in any length — the four-digit `#rgba` form included (Story 5.24e's review found one it missed) — and rgb(a):
+  // the same atoms the token test accepts, so what one gate allows in globals.css the other refuses everywhere else
+  const literal = /#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g
   const offenders = files.flatMap((f) => {
     const hits = readFileSync(f, 'utf8').match(literal)
     return hits ? [`${f}: ${[...new Set(hits)].join(' ')}`] : []
@@ -191,17 +191,19 @@ test('every colour Ghost\'s two surfaces write is one Ghost itself put on a page
   const source = readFileSync(join(process.cwd(), GHOST), 'utf8')
   const written = [...new Set(source.match(/#(?:[0-9A-Fa-f]{8}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{3})\b|rgba?\([^)]*\)/g) ?? [])]
   assert.ok(written.length > 0, `${GHOST} carries no colour at all — delete its exemption with them`)
-  // what Ghost put on T1's and T3's pages, as recorded: the bar's sheet and close icon, Portal's frame sheet and icon —
-  // those fields ALONE, never the whole recording, which also carries each test site's own accent (review, 2026-09-26)
+  // what Ghost put on T1's and T3's pages, as recorded: the bar's sheet and close icon, Portal's frame sheet and icons —
+  // the person per style, and since DW-278 the five presets — those fields ALONE, never the whole recording, which also
+  // carries each test site's own accent (review, 2026-09-26)
+  type Loads = Record<string, Record<string, { icon?: { html: string } | null }>>
   const recorded = ['5', '6']
     .map((m) => JSON.parse(readFileSync(join(process.cwd(), '..', '..', 'packages', 'ghost-shim', 'fixtures', `ghost${m}`, 'surfaces.json'), 'utf8')) as {
       announcement: { style: string; at: Record<string, { close_svg: string }> }
-      portal: { frame_style: string; styles: Record<string, Record<string, { icon?: { html: string } | null }>> }
+      portal: { frame_style: string; styles: Loads; icons?: Loads }
     })
     .flatMap((r) => [
       r.announcement.style, r.portal.frame_style,
       ...Object.values(r.announcement.at).map((a) => a.close_svg),
-      ...Object.values(r.portal.styles).flatMap((s) => Object.values(s).map((l) => l.icon?.html ?? '')),
+      ...[r.portal.styles, r.portal.icons ?? {}].flatMap((loads) => Object.values(loads).flatMap((s) => Object.values(s).map((l) => l.icon?.html ?? ''))),
     ])
     .join('\n')
   // Ghost's default accent is not on a page whose site has its own — it is `default-settings.json`'s, read in source

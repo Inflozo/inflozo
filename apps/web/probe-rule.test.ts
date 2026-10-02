@@ -14,6 +14,7 @@ import {
   isAccent,
   navOf,
   PLAN_COPY,
+  PORTAL_ICONS,
   PORTAL_STYLES,
   portalState,
   PREVIEW_COPY,
@@ -25,6 +26,8 @@ import {
   storedMembers,
   storedSurfaces,
   THEME_PREFIX,
+  PORTAL_ANSWERS,
+  PORTAL_COPY,
 } from './lib/probe-rule.ts'
 import { readFileSync } from 'node:fs'
 import { brandPopupPath } from './lib/connect-rule.ts'
@@ -91,7 +94,7 @@ test('the payload never leaves injectionFlag — it answers a boolean and nothin
 
 // ── The matrix's "Portal readable" and "Portal unreadable" rows.
 
-test('portal_button is read when Ghost sends a boolean, and defaults to on when it does not', () => {
+test('portal_button is read when Ghost sends a boolean, and is assumed OFF when it does not — Ghost\'s own default (R-215)', () => {
   // the pair alone — Story 5.21's look rides the same reader and is held in its own test below
   const state = (values: Record<string, unknown>) => {
     const { portal_button, portal_button_source } = portalState(settingsOf(payload(values)))
@@ -100,16 +103,17 @@ test('portal_button is read when Ghost sends a boolean, and defaults to on when 
   // Executed: BOTH test Ghosts answer a real `false`, so this is the branch the live proof takes.
   assert.deepEqual(state({ portal_button: false }), { portal_button: false, portal_button_source: 'probe' })
   assert.deepEqual(state({ portal_button: true }), { portal_button: true, portal_button_source: 'probe' })
-  // Unreadable — absent, or any shape that is not a boolean — is ON, and the source says it was
-  // assumed. That is what puts the one question on the card.
+  // Unreadable — absent, or any shape that is not a boolean — is OFF, Ghost's own default on a new site
+  // (`default-settings.json`, both majors; DW-277), and the source says it was assumed. That is what puts the
+  // one question on the card.
   for (const value of [undefined, null, 'true', 1, {}]) {
     assert.deepEqual(
       state({ portal_button: value }),
-      { portal_button: true, portal_button_source: 'default' },
-      `portal_button = ${JSON.stringify(value)} should default to on`,
+      { portal_button: false, portal_button_source: 'default' },
+      `portal_button = ${JSON.stringify(value)} should be assumed off`,
     )
   }
-  assert.deepEqual(state({}), { portal_button: true, portal_button_source: 'default' })
+  assert.deepEqual(state({}), { portal_button: false, portal_button_source: 'default' })
 })
 
 test('Story 5.21: the button\'s look is read off the same payload — Ghost\'s three styles, else icon-and-text; any string label, else Subscribe', () => {
@@ -268,10 +272,13 @@ test('a probe overwrites a declared Portal answer with a READING, never with an 
   const read = patchOf({ previous: answered, settings: { portal_button: true } }).site_settings
   assert.equal(read.portal_button, true)
   assert.equal(read.portal_button_source, 'probe')
-  // And a default over a default is still a default — nothing to preserve.
+  // And a default over a default is still a default — nothing to preserve — and it is OFF (R-215).
   const fresh = patchOf({ previous: {}, settings: {} }).site_settings
-  assert.equal(fresh.portal_button, true)
+  assert.equal(fresh.portal_button, false)
   assert.equal(fresh.portal_button_source, 'default')
+  // Since R-215 the assumption is off, so the answer it must never overwrite is "Yes, it shows".
+  const yes = patchOf({ previous: { portal_button: true, portal_button_source: 'declared' }, settings: {} }).site_settings
+  assert.deepEqual([yes.portal_button, yes.portal_button_source], [true, 'declared'])
 })
 
 test('the ask verdict raises plan_ask, and never re-asks a question already answered', () => {
@@ -647,7 +654,7 @@ test('Story 5.21: the snapshot the canvas draws from is re-checked on the way ou
   })
   assert.deepEqual(stored, {
     announcement: { content: '<p>Hi</p>', background: 'accent', visibility: ['visitors', 'free_members'] },
-    portal: { button: true, style: 'text-only', label: '' },
+    portal: { button: true, style: 'text-only', label: '', icon: null },
     accent: '#3832e5',
   })
   // Ghost's JSON string, or an array as `navOf` admits — never anything else
@@ -657,9 +664,81 @@ test('Story 5.21: the snapshot the canvas draws from is re-checked on the way ou
   assert.equal(storedSurfaces({ brand: { accent: 'red;}body{display:none' } }).accent, null)
   for (const junk of ['true', 1, null, undefined]) assert.equal(storedSurfaces({ portal_button: junk }).portal.button, false, JSON.stringify(junk))
   // a snapshot written before this story carries no look: Ghost's own defaults
-  assert.deepEqual(storedSurfaces({ portal_button: true }).portal, { button: true, style: 'icon-and-text', label: 'Subscribe' })
+  assert.deepEqual(storedSurfaces({ portal_button: true }).portal, { button: true, style: 'icon-and-text', label: 'Subscribe', icon: null })
   // nothing at all — never probed, or junk — has nothing to draw
   for (const junk of [null, undefined, 'x', [], {}]) {
-    assert.deepEqual(storedSurfaces(junk), { announcement: { content: '', background: '', visibility: [] }, portal: { button: false, style: 'icon-and-text', label: 'Subscribe' }, accent: null }, JSON.stringify(junk))
+    assert.deepEqual(storedSurfaces(junk), { announcement: { content: '', background: '', visibility: [] }, portal: { button: false, style: 'icon-and-text', label: 'Subscribe', icon: null }, accent: null }, JSON.stringify(junk))
   }
+})
+
+/* ───────── STORY 5.24e — DW-278: the icon the site chose for Portal's button, and DW-280: a key Ghost left out. */
+
+test('DW-278: portal_button_icon is stored — one of Portal\'s five presets, or the site\'s own image as an https URL, else none — and re-checked on the way out', () => {
+  const icon = (value: unknown) => portalState(settingsOf(payload({ portal_button_icon: value }))).portal_button_icon
+  // Portal's five (`trigger-button` ICON_MAPPING, 2.69.339 and 2.51.5) are readings, kept as sent
+  for (const preset of PORTAL_ICONS) assert.equal(icon(preset), preset)
+  // any other value is an image Portal draws as `<img src>`: https only, `imageUrl`'s rule (img-src admits data:)
+  assert.equal(icon('https://ghost5.inflozo.com/content/images/2026/09/icon.png'), 'https://ghost5.inflozo.com/content/images/2026/09/icon.png')
+  // Ghost's own default (null), an empty one, another case, and every hostile value: none — Portal's person
+  for (const junk of [undefined, null, '', 'icon-6', 'ICON-1', 'icon', 'data:image/svg+xml,<svg onload=alert(1)>', 'javascript:alert(1)', 'http://x.example/i.png', '/content/images/i.png', 5]) {
+    assert.equal(icon(junk), null, JSON.stringify(junk))
+  }
+  // the snapshot carries it, and the canvas's reader re-checks it exactly as it was checked on the way in
+  assert.equal(settingsPatch({}, settingsOf(payload({ portal_button_icon: 'icon-5' }))).portal_button_icon, 'icon-5')
+  assert.equal(storedSurfaces({ portal_button: true, portal_button_icon: 'icon-5' }).portal.icon, 'icon-5')
+  assert.equal(storedSurfaces({ portal_button: true, portal_button_icon: 'https://x.example/i.png' }).portal.icon, 'https://x.example/i.png')
+  for (const junk of ['javascript:alert(1)', 'data:image/png;base64,AAAA', 'icon-9', 7, {}]) {
+    assert.equal(storedSurfaces({ portal_button: true, portal_button_icon: junk }).portal.icon, null, JSON.stringify(junk))
+  }
+})
+
+test('DW-280: a key Ghost left out is no reading — the stored announcement, brand, code-injection flag and button look stand; a first read still writes nulls', () => {
+  const full = {
+    codeinjection_head: '<script>x()</script>',
+    codeinjection_foot: '',
+    announcement_content: '<p>Hi</p>',
+    announcement_background: 'dark',
+    announcement_visibility: '["visitors"]',
+    accent_color: '#3832e5',
+    logo: 'https://x.example/l.png',
+    navigation: '[{"label":"Home","url":"/"}]',
+    portal_button: true,
+    portal_button_style: 'text-only',
+    portal_button_signup_text: 'Join',
+    portal_button_icon: 'icon-5',
+  }
+  const stored = settingsPatch({}, settingsOf(payload(full)))
+  // the right shape, carrying none of those keys: every stored field stands
+  const kept = settingsPatch(stored, settingsOf(payload({ title: 'Ghost6' })))
+  assert.deepEqual(kept.announcement, { content: '<p>Hi</p>', background: 'dark', visibility: '["visitors"]' })
+  assert.deepEqual(kept.brand, { accent: '#3832e5', logo: 'https://x.example/l.png', nav: [{ label: 'Home', url: '/' }] })
+  assert.equal(kept.code_injection, true)
+  assert.deepEqual([kept.portal_button_style, kept.portal_button_signup_text, kept.portal_button_icon], ['text-only', 'Join', 'icon-5'])
+  // PER FIELD: a key sent is a reading — junk included, which reads as the reader's own null — and its siblings stand
+  const one = settingsPatch(stored, settingsOf(payload({ announcement_content: '<p>New</p>', accent_color: 'red', portal_button_icon: null })))
+  assert.deepEqual(one.announcement, { content: '<p>New</p>', background: 'dark', visibility: '["visitors"]' })
+  assert.deepEqual(one.brand, { accent: null, logo: 'https://x.example/l.png', nav: [{ label: 'Home', url: '/' }] })
+  assert.equal(one.portal_button_icon, null, 'the site went back to Ghost\'s person: a reading')
+  // the code-injection flag is ONE boolean over two keys: decided when either half carries code, or both halves were sent
+  assert.equal(settingsPatch(stored, settingsOf(payload({ codeinjection_head: '', codeinjection_foot: '' }))).code_injection, false)
+  assert.equal(settingsPatch({ code_injection: false }, settingsOf(payload({ codeinjection_foot: '<!-- x -->' }))).code_injection, true)
+  assert.equal(settingsPatch(stored, settingsOf(payload({ codeinjection_foot: '' }))).code_injection, true, 'one empty half says nothing of the other')
+  // a brand stored before DW-71 loses its readerless keys at its next read, as before
+  assert.deepEqual(Object.keys(settingsPatch({ brand: { ...(stored.brand as object), cover: 'https://x.example/c.png' } }, settingsOf(payload({}))).brand as object).sort(), ['accent', 'logo', 'nav'])
+  // NOTHING STORED: the readers' own answers, nulls and all, as before
+  const first = settingsPatch({}, settingsOf(payload({ title: 'Ghost6' })))
+  assert.deepEqual(first.announcement, { content: null, background: null, visibility: null })
+  assert.deepEqual(first.brand, { accent: null, logo: null, nav: [] })
+  assert.equal(first.code_injection, false)
+  assert.deepEqual([first.portal_button_style, first.portal_button_signup_text, first.portal_button_icon], ['icon-and-text', 'Subscribe', null])
+})
+
+test('R-215: the Sites question asks "No, it\'s off" FIRST — the primary is the stored assumption, so it changes nothing', () => {
+  assert.equal(PORTAL_ANSWERS.primary.label, PORTAL_COPY.no)
+  assert.equal(PORTAL_ANSWERS.secondary.label, PORTAL_COPY.yes)
+  assert.deepEqual(Object.keys(PORTAL_ANSWERS), ['primary', 'secondary'], 'two answers, the primary first')
+  // what an unreadable button already reads as is exactly what the primary answers
+  const [primary, secondary]: string[] = [PORTAL_ANSWERS.primary.value, PORTAL_ANSWERS.secondary.value]
+  assert.equal(portalState({}).portal_button, primary === 'yes')
+  assert.notEqual(primary, secondary)
 })

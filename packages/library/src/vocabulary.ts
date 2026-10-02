@@ -470,13 +470,19 @@ export const POST_SOURCE_WORDS: Readonly<Record<PostSource, string>> = {
   latest: 'Latest', featured: 'Featured', tag: 'By tag', author: 'By author', picked: 'Hand-picked',
 }
 
-/** The only tag or writer slug the fold writes into a `{{#get}}` filter — quoted, `tag:'…'` and `authors:'…'`. These
- *  are the only characters Ghost's `slugify` leaves (`unidecode`, then the reserved-character sweep: `@tryghost/string`
- *  `lib/slugify.js`, read at both majors' pins, 0.3.5 and 0.2.17), and `tag` and `authors` filter on `tags.slug` and
- *  `authors.slug` on both majors (`core/server/models/post.js:295-313`, recorded in MEASUREMENTS §53) — `authors`, not the
- *  singular `author`, which gscan refuses as deprecated (GS001-DEPR-AUTH-FILT, an ERROR on both majors). A stored value
- *  outside the grammar is ignored by the fold, never interpolated (AD-36). */
-export const GHOST_SLUG_RE = /^[a-z0-9_-]+$/
+/** A GHOST SLUG, as Ghost's own `slugify` really writes one — the ONE grammar (DW-258): the fold writes only such a tag
+ *  or writer slug into a `{{#get}}` filter, quoted (`tag:'…'`, `authors:'…'`), and `lib/live-content.ts`'s `slugShaped`
+ *  sends only such a slug. NOT ASCII-only: a slug passes `generateSlug` → `security.string.safe` → `@tryghost/string`'s
+ *  `slugify` → `unidecode` 0.1.8 (`models/tag.js:125-131` on 6.58.0, `:119-125` on 5.130.6), and unidecode's `utf8_rx`
+ *  reads UTF-16 code units as UTF-8 bytes, so a Latin-1 letter followed by a character in U+00A0–U+00BF is not
+ *  transliterated, only lowercased — `« Café »` with no-break spaces → `café`. Executed on both pins' packages over every
+ *  BMP character, alone and before U+00A0–U+00BF: the only letters left outside `[a-z0-9_-]` are × (U+00D7) and ß–þ
+ *  (U+00DF–U+00FE). An import slugifies with `requiredChangesOnly` (`models/post.js:868` on 6.58.0, `:828` on 5.130.6),
+ *  so a post's or page's `--` and edge hyphens survive. `tag` and `authors` filter on `tags.slug` and `authors.slug` on
+ *  both majors (`core/server/models/post.js:295-313`, MEASUREMENTS §53) — `authors`, not the singular `author`, which
+ *  gscan refuses as deprecated (GS001-DEPR-AUTH-FILT, an ERROR on both majors). A stored value outside the grammar is
+ *  ignored by the fold, never interpolated (AD-36). */
+export const GHOST_SLUG_RE = /^[a-z0-9_×ß-þ-]+$/
 
 /** A Ghost object id — 24 hexadecimal digits — the only shape a hand-picked post's id is folded into `filter="id:…"`
  *  with (AD-36). */

@@ -49,10 +49,11 @@ create extension if not exists "pgcrypto";
 -- "inside a server route" half true rather than aspirational: a server route holds a direct
 -- database connection, the data API does not reach here at all.
 --
--- `private` MUST NOT be added to PGRST_DB_SCHEMAS. `run-verify-ghost-admin.py --check`'s
--- schemas-off-rest asserts that over the wire (MEASUREMENTS §60) — RLS-TEST.sql sees only a
--- database-level setting, which hosted Supabase does not use — because this control is a
--- configuration value and configuration drifts.
+-- `private` MUST NOT be added to PGRST_DB_SCHEMAS. CI's `rls` job asserts that over the wire on
+-- every push with tools/probe/check-schemas-off-rest.py (Story 5.24e, DW-302; MEASUREMENTS §60;
+-- `run-verify-ghost-admin.py --check`'s schemas-off-rest calls the same check) — RLS-TEST.sql
+-- sees only a database-level setting, which hosted Supabase does not use — because this control
+-- is a configuration value and configuration drifts.
 create schema if not exists private;
 revoke all on schema private from public, anon, authenticated;
 grant usage on schema private to service_role;

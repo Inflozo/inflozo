@@ -78,7 +78,8 @@ export function poolImage(id: string): Buffer | null {
 
 /** Background role's colour roles and the reference token each is painted with. Image has no colour: the
  *  panel draws the Kit's image glyph for it. */
-const ROLE_TOKENS: Readonly<Record<string, string>> = {
+/** Exported for the keyboard journey (DW-198, Story 5.24e), which holds each Background-role dot to the canvas's own token */
+export const ROLE_TOKENS: Readonly<Record<string, string>> = {
   base: '--bg-page',
   surface: '--bg-surface',
   accent: '--accent',

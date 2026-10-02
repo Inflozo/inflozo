@@ -14,6 +14,7 @@ import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
 import { carriesMemberVisibility, pilot, pilotIds } from '@/lib/pilots'
 import { harnessReread } from './actions'
+import { standIns } from '../stand-ins'
 import { HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE } from './sites'
 
 /* ────────────────────────────────────────────── Story 5.9 — the keyboard harness (R-146, closing DW-167).
@@ -79,6 +80,10 @@ import { HARNESS_PROJECT, MEMBERS_OFF_SITE, SURFACES_LATER_SITE, SURFACES_SITE }
  * own n and where it comes from. Without the header the default fixture is untouched — every other stop counts on it,
  * which is DW-215's own reason for waiting.
  *
+ * STORY 5.24e — `x-inflozo-harness-stand-ins: on` adds two designs the shipped library does not hold yet (`../stand-ins.ts`):
+ * a FOOTER, which the rule below places in the site doc after the header — so the band clamp (DW-187) has a band to hold —
+ * and a POST CONTENT LAYOUT, so R-37's refusal can be met in the Section Picker (DW-207). Never in `packages/library`.
+ *
  * STORY 5.24d — THE MAIN FEED IS THE RULE'S, NOT THE HARNESS'S (DW-257): every doc leaves through `read.ts`'s
  * `designateAll`, the server door the editor's real read uses, and no instance is flagged here — so the post grid becomes
  * Home's main feed because the rule picks it, and a no-op door turns the main-feed journeys red. And THE SIGNED-IN USER
@@ -116,6 +121,7 @@ const READER_LOCK: EditorData['lock'] = {
   nudgeRequestedBy: null,
   nudgeAgeMs: null,
   request: null,
+  beat: null,
 }
 
 export default async function EditorHarness({ children }: { children: ReactNode }) {
@@ -123,6 +129,7 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   const asked = await headers()
   const siteAsked = asked.get('x-inflozo-harness-site')
   const readingAlong = asked.get('x-inflozo-harness-lock') === 'reader'
+  const standing = asked.get('x-inflozo-harness-stand-ins') === 'on'
 
   const ring = samples()
   const entries = Object.fromEntries([
@@ -130,6 +137,8 @@ export default async function EditorHarness({ children }: { children: ReactNode 
     ...ring.map((e) => [e.id, e] as const),
     // Story 5.20 — the stand-in paywalls: never placed (they are treatments), so `compiling` below never picks one up
     ...paywallSamples().map((e) => [e.id, e] as const),
+    // Story 5.24e — the footer and the post content layout, when asked for: after the pilots, so the footer is placed last
+    ...(standing ? standIns().map((e) => [e.id, e] as const) : []),
   ])
   const placed = Object.values(entries).filter((e) => isPlaceable(e.id))
   const compiling = (file: string) => placed.filter((e) => e.compileTarget.includes(file))
@@ -209,4 +218,4 @@ export default async function EditorHarness({ children }: { children: ReactNode 
 const HARNESS_BASE = '/app/harness/editor'
 
 /** DW-285 — the signed-in user the shell would hand down, with no display name, as a fresh account has none */
-const HARNESS_USER = { email: 'harness@example.com', displayName: null }
+const HARNESS_USER = { id: 'harness', email: 'harness@example.com', displayName: null }

@@ -14,6 +14,7 @@ import { Globe, Plus, X } from '@/components/kit/icons'
 import { SearchInput } from '@/components/kit/input'
 import { radioKeys, tabStop } from '@/components/kit/segmented'
 import type { DesignRows } from '@/lib/canvas'
+import { shortcutFor } from '@/lib/keymap'
 import { cards, emptyState, isSiteWide, metaLine, offeredHere, rail, SITE_WIDE_WORDS, spanFor } from '@/lib/picker'
 import type { Visitor } from '@/lib/view-as'
 
@@ -103,6 +104,7 @@ export function SectionPicker({
   refusal,
   onAdd,
   onClose,
+  onBrowse,
 }: {
   dialog: React.RefObject<HTMLDialogElement | null>
   /** whether it is SHOWN. Since the owner's ruling of 2026-09-20 the component stays mounted after the first open —
@@ -130,6 +132,9 @@ export function SectionPicker({
   refusal: string | null
   onAdd: (placement: Placement) => void
   onClose: () => void
+  /** DW-207 (Story 5.24e): the customer browsed on — a search typed or a rail row chosen — so the last refusal, about a
+   *  card no longer in front of them, goes */
+  onBrowse?: () => void
 }) {
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState<string | null>(null)
@@ -151,9 +156,19 @@ export function SectionPicker({
   }, [query, category])
 
   const searching = query.trim() !== ''
+  /* DW-207 (Story 5.24e): A SEARCH IS OVER EVERY SECTION (`cards`), SO THE RAIL SAYS SO. The row chosen is "All sections"
+     while a search runs — the header, the checked row and the rail's tab stop all read this one value, where the rail
+     used to keep a category checked over results that ignored it. A rail row ends the search. */
+  const chosen = searching ? '' : (category ?? '')
   // the header says what the CHOSEN rail row says — and with nothing chosen that row is now "All sections", so the
   // two can never read differently (routine, decided rather than asked)
-  const title = searching ? 'All sections' : (rows_.find((r) => r.category === category)?.title ?? 'All sections')
+  const title = rows_.find((r) => r.category === chosen)?.title ?? 'All sections'
+  /** a rail row chosen: its category, the search ended, and the last refusal gone */
+  const browse = (value: string) => {
+    setCategory(value || null)
+    setQuery('')
+    onBrowse?.()
+  }
   const empty = emptyState(offered.length, shown.length, query)
   /* THE RAIL'S OWN ROWS, with "All sections" FIRST (the owner's test of 2026-09-20). It is a radio like any other
      and carries the empty value, so `radioKeys` and `tabStop` walk it beside the categories and nothing here learns
@@ -166,6 +181,18 @@ export function SectionPicker({
       ref={dialog}
       onClick={closeOnBackdrop}
       onClose={onClose}
+      // DW-207 (Story 5.24e): ⌘K inside the picker comes back to its search — focused, its words selected to type over —
+      // read through the map's own `shortcutFor`, never a second spelling of the key. The editor's handler stands aside
+      // while a dialog is open, so the key was the browser's
+      onKeyDown={(event) => {
+        if (shortcutFor(event, false) !== 'add') return
+        event.preventDefault()
+        const search = document.getElementById('picker-search')
+        if (search instanceof HTMLInputElement) {
+          search.focus()
+          search.select()
+        }
+      }}
       aria-label="Add a section"
       /* S5a`:28-29`: the scrim over the whole editor, and a panel INSET 22px on every side — not a centred box, so
          the `sheet` vocabulary (a 460px card) is deliberately not reused here. `max-w/max-h: none` because the user
@@ -181,7 +208,10 @@ export function SectionPicker({
           placeholder="Find a section…"
           hint="⌘K"
           value={query}
-          onChange={(event) => setQuery(event.target.value)}
+          onChange={(event) => {
+            setQuery(event.target.value)
+            onBrowse?.()
+          }}
         />
         <div id="picker-categories" className="flex min-h-0 flex-1 flex-col gap-px overflow-y-auto pr-[6px]">
           {/* the Kit's radio group, never a second arrow implementation: one Tab stop, the arrows move the choice.
@@ -190,11 +220,11 @@ export function SectionPicker({
           <div
             role="radiogroup"
             aria-label="Categories"
-            onKeyDown={(event) => radioKeys(event, choices, (value) => setCategory(value || null))}
+            onKeyDown={(event) => radioKeys(event, choices, browse)}
             className="flex flex-col gap-px"
           >
             {railRows.map((row, n) => {
-              const on = row.category === (category ?? '')
+              const on = row.category === chosen
               return (
                 <Fragment key={row.category || 'all'}>
                   {/* S5a`:37`: mono 10.5, over the categories themselves */}
@@ -205,8 +235,8 @@ export function SectionPicker({
                     type="button"
                     role="radio"
                     aria-checked={on}
-                    tabIndex={n === tabStop(choices, category ?? '') ? 0 : -1}
-                    onClick={() => setCategory(row.category || null)}
+                    tabIndex={n === tabStop(choices, chosen) ? 0 : -1}
+                    onClick={() => browse(row.category)}
                     /* S5a`:38-71`: 7px/10px, `--radius-sm`, hover at ink 4%, and the chosen row at
                        `--color-coral-tint` on `--color-coral-text` at 600 — the Layers row's own treatment
                        (`Editor Sidebar Kit.dc.html:220-223`), which is why the rail needs no new token */

@@ -35,7 +35,8 @@ export default function ControlsReview() {
   return (
     <Review
       designs={designs}
-      swatches={referenceSwatches()}
+      // DW-198 (Story 5.24e): both modes' colours — the panel picks the mode's own (`/controls` previews light alone)
+      swatches={{ light: referenceSwatches('light'), dark: referenceSwatches('dark') }}
       // Story 5.19 — no rows handed over: a query is the INSTANCE's now (its Source, tag, writer or picks), so the page
       // resolves the sample's per state with the editor's own `sampleRows`
       links={linkResources()}

@@ -3,6 +3,8 @@ import { paywallSamples, samples } from '@/lib/controls-review'
 import { canvasCaching } from '@/lib/canvas'
 import { HARNESS } from '@/lib/harness'
 import { pilotIds, pilotImage, pilotsCanvasDocument } from '@/lib/pilots'
+import { surfaceCss } from '@/lib/style-guide'
+import { standIns } from '../stand-ins'
 
 /**
  * STORY 5.9 — the keyboard harness's canvas document: the app's own `/canvas` bytes (`pilotsCanvasDocument()`,
@@ -24,6 +26,10 @@ export async function GET(request: NextRequest) {
   // what the browser may keep, and for how long: `lib/canvas.ts`'s one rule, the same call `/canvas` makes
   const caching = canvasCaching(request.nextUrl.searchParams.get('v'))
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' }
+  // DW-275 (Story 5.24e): the Paywall's post-body sheet, kept out of the document and asked for on its first paint
+  if (request.nextUrl.searchParams.get('sheet') === 'surface') {
+    return new NextResponse(surfaceCss(), { headers: { ...headers, 'cache-control': caching.document, 'content-type': 'text/css; charset=utf-8' } })
+  }
   const image = request.nextUrl.searchParams.get('image')
   if (image !== null) {
     const svg = pilotImage(image)
@@ -35,8 +41,10 @@ export async function GET(request: NextRequest) {
   // STORY 5.10, the owner's ruling of 2026-09-20 (Question 4, option 3): a PREVIEW asks for one design and is
   // served one design's stylesheet. The editor's own canvas asks for none and is served them all, because it may
   // draw any section in the document. An unknown id is a 404 like an unknown picture — never served as "all".
-  // Story 5.20 — and the two stand-in paywalls (R-158's shape), which the harness's Paywall canvas chooses between
-  const ring = [...samples(), ...paywallSamples()]
+  // Story 5.20 — and the two stand-in paywalls (R-158's shape), which the harness's Paywall canvas chooses between.
+  // Story 5.24e — and, when the page asked for them, the footer and post content stand-ins (`../stand-ins.ts`); the page's
+  // extra headers ride the canvas's own request, so the default document every other stop counts on is unchanged
+  const ring = [...samples(), ...paywallSamples(), ...(request.headers.get('x-inflozo-harness-stand-ins') === 'on' ? standIns() : [])]
   const design = request.nextUrl.searchParams.get('design')
   if (design !== null && ![...pilotIds(), ...ring.map((e) => e.id)].includes(design)) {
     return new NextResponse('that design is not in the library', { status: 404, headers })

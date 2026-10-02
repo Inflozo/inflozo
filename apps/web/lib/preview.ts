@@ -13,6 +13,9 @@ export const PREVIEW = 'Preview'
 export const BACK = 'Back to editing'
 /** B3a's chip, drawn in literal capitals. */
 export const PAUSED = 'PAUSED'
+/** DW-229 (Story 5.24e): what the chip MEANS, said to a screen reader — the chip is `aria-hidden` chrome, so a selected
+ *  section holding a part still had nothing it could hear. In 5.24a's words (its routine call 6), led by the chip's own. */
+export const PAUSED_SAID = `${PAUSED} — this part moves by itself on your site; it holds still while you design, and Preview runs it`
 /** What `#editor-said` says on the way in, and how to leave. */
 export const PREVIEW_SAID = 'Preview. Press Escape or P to come back.'
 /** What `#editor-said` says on the way out. */

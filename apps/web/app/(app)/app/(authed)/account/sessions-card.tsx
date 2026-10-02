@@ -6,6 +6,8 @@ import { Button } from '@/components/kit/button'
 import { closeOnBackdrop, openOnCancel, sheet, title } from '@/components/kit/dialog'
 import { ring } from '@/components/kit/greyed'
 import { Laptop } from '@/components/kit/icons'
+import { useShellUser } from '@/components/shell/shell'
+import { useSignOut } from '@/components/shell/sign-out'
 import { SESSION_MAX_AGE } from '@/lib/supabase/cookies'
 import { signOutEverywhere, type ActionResult } from './actions'
 
@@ -29,8 +31,18 @@ import { signOutEverywhere, type ActionResult } from './actions'
 
 export function SessionsCard() {
   const dialog = useRef<HTMLDialogElement>(null)
+  // R-214 (Story 5.24e): Sign out everywhere signs THIS browser out too, so it runs the one flow every sign-out runs —
+  // what this browser owes is sent first and its copy erased, and the ask comes first if something cannot be sent.
+  // Wait keeps the last answer, so nothing new is said under the dialog.
+  const { run, asking } = useSignOut(useShellUser()?.id ?? null, 'sign-out-everywhere-ask')
   const [answered, signOutAction, signingOut] = useActionState<ActionResult | null, FormData>(
-    signOutEverywhere,
+    async (previous, formData) => {
+      let result = previous
+      await run(async () => {
+        result = await signOutEverywhere(previous, formData)
+      })
+      return result
+    },
     null,
   )
 
@@ -133,6 +145,7 @@ export function SessionsCard() {
           </Button>
         </form>
       </dialog>
+      {asking}
     </section>
   )
 }

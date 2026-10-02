@@ -2,14 +2,13 @@ import type { Metadata, Viewport } from 'next'
 import { redirect } from 'next/navigation'
 import { buttonClasses } from '@/components/kit/button'
 import { Lockup } from '@/components/kit/logo'
-import { Submit } from '@/components/kit/submit'
 import type { Snapshot } from '@/lib/deletion-email'
 import { signedIn, supabaseServer } from '@/lib/supabase/server'
 import {
   deadlineLabel,
   DELETION_WINDOW_DAYS,
 } from '../(authed)/account/deletion-rule'
-import { signOut } from '../sign-in/actions'
+import { SignOutForm } from '@/components/shell/sign-out'
 import { RestoreForm } from './restore-form'
 
 /* ───────────────────────────── FR-A5's window, Story 2.5 — and it has no frame of its own.
@@ -129,12 +128,9 @@ export default async function RestorePage() {
 
         {passed ? null : <RestoreForm />}
 
-        {/* Signing out does not stop the countdown, and signing back in lands right here. */}
-        <form action={signOut} className="flex justify-center">
-          <Submit busy="Signing out…" variant="secondary" size={36}>
-            Sign out
-          </Submit>
-        </form>
+        {/* Signing out does not stop the countdown, and signing back in lands right here. R-214: the same flow as every
+            other sign-out — what this browser owes is sent first and its copy erased (`sign-out.tsx`) */}
+        <SignOutForm userId={user.id} />
       </div>
     </main>
   )

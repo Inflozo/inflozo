@@ -73,7 +73,10 @@ function parseVersion(v: string | undefined): [number, number, number] | null {
   return m === null ? null : [Number(m[1]), Number(m[2]), Number(m[3])]
 }
 
-/** true when `version` (the floor when absent or unparseable) is at or above `since` */
+/** true when `version` (the floor when absent or unparseable) is at or above `since`.
+ *  FR-H7 decides the absent case (Story 5.24e, DW-300): binding is "prevention, not warning", and "fields introduced
+ *  after a target's version … are not offered for that site" — so with no version, a project linked to no site yet, the
+ *  offer is the floor's, never the newest Ghost's. */
 export function versionAtLeast(version: string | undefined, since: string): boolean {
   const have = parseVersion(version) ?? (parseVersion(CONTEXT_MATRIX.floor) as [number, number, number])
   const want = parseVersion(since)
@@ -294,7 +297,8 @@ export type Offer = {
 
 /** FR-H7: what may be OFFERED at a place. Fields of the current scope and, one object deep, their
  *  fields, and the universal set — each with every key newer than `version` subtracted (absent = the floor); and
- *  `@page` only where it is meaningful. Never a `{{#get}}`-only resource, never a never-offer key. */
+ *  `@page` only where it is meaningful. Never a `{{#get}}`-only resource, never a never-offer key, and never a helper at
+ *  any version (DW-300): the universal loop takes only `@` keys, and `sort` lists values, lists and booleans alone. */
 export function offerBindings(place: BindingPlace): Offer {
   const values: string[] = []
   const repeats: string[] = []

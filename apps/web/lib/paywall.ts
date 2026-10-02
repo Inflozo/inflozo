@@ -18,7 +18,7 @@
  * recording moved — the spec's docs task, "correct either if the recording moves it".
  */
 
-import { memberAsks, type MemberAskAt } from '@inflozo/library'
+import { memberAsks, type MemberAsk, type MemberAskAt } from '@inflozo/library'
 import type { Members } from './probe-rule.ts'
 
 /** A number of tiers as the card prints it: "1 tier", "5 tiers". */
@@ -70,23 +70,37 @@ export const PAYWALL_WORDS = {
   ask: (site: string): string => `Members are switched off on ${site}, so this section's sign-up form shows nothing there.`,
 } as const
 
-/** The Sites notice's sentences, one per fact the record holds (the I/O matrix's "matching sentences"). A site with no
- *  record yet says nothing. Members off already says the paywall cannot sign anyone up, so it stands alone; otherwise
- *  the access sentence and Stripe's each say their own fact. */
-export function membersNotice(members: Members | null, site: string): string[] {
-  if (members === null) return []
-  if (members.signup_access === 'none') {
-    return [`Members are switched off on ${site} — subscription access is set to Nobody — so its sign-up forms show nothing and its paywall cannot sign anyone up.`]
-  }
-  const out: string[] = []
-  if (members.signup_access === 'invite') out.push(`Only people you invite can join ${site}, so free sign-up forms show nothing there.`)
-  if (members.signup_access === 'paid') out.push(`New members must pay to join ${site}, so free sign-up forms show nothing there.`)
-  if (!members.paid_enabled) out.push(`Paid memberships are off on ${site} — Stripe is not connected — so paid sign-up buttons show nothing there.`)
-  return out
-}
-
 /** Is the site's Subscription access set to Nobody? The one condition C3b's card and a placed ask's line read. */
 export const membersOff = (members: Members | null | undefined): boolean => members?.signup_access === 'none'
+
+/**
+ * R-216 (DW-274) — ONE LIST OF WHAT THE SITE'S MEMBER SWITCHES STOP (R-170): each fact the record can hold, the asks it
+ * stops, and the Sites screen's sentence for it. The Sites notice says every fact that holds; a placed section's panel
+ * line says the facts that stop an ask the section makes, in the same sentence — so the two can never word one fact two
+ * ways. In the Sites screen's order. Members off STANDS ALONE (the others hold only while members are on, since it already
+ * says nothing can sign up) and stops every ask; on the panel it keeps 5.20's line about "this section" (`panel`). Invite-
+ * only stops a paid ask in Portal too, and no Sites sentence says so yet — DW-305, Story 9.1.
+ */
+const FACTS: readonly { holds: (m: Members) => boolean; stops: readonly MemberAsk[]; sites: (site: string) => string; panel?: (site: string) => string }[] = [
+  {
+    holds: (m) => m.signup_access === 'none',
+    stops: ['free', 'paid'],
+    sites: (site) => `Members are switched off on ${site} — subscription access is set to Nobody — so its sign-up forms show nothing and its paywall cannot sign anyone up.`,
+    panel: PAYWALL_WORDS.ask,
+  },
+  { holds: (m) => m.signup_access === 'invite', stops: ['free'], sites: (site) => `Only people you invite can join ${site}, so free sign-up forms show nothing there.` },
+  { holds: (m) => m.signup_access === 'paid', stops: ['free'], sites: (site) => `New members must pay to join ${site}, so free sign-up forms show nothing there.` },
+  {
+    holds: (m) => !membersOff(m) && !m.paid_enabled,
+    stops: ['paid'],
+    sites: (site) => `Paid memberships are off on ${site} — Stripe is not connected — so paid sign-up buttons show nothing there.`,
+  },
+]
+const factsOf = (members: Members | null | undefined) => (members ? FACTS.filter((f) => f.holds(members)) : [])
+
+/** The Sites notice's sentences, one per fact the record holds (the I/O matrix's "matching sentences"). A site with no
+ *  record yet says nothing. */
+export const membersNotice = (members: Members | null, site: string): string[] => factsOf(members).map((f) => f.sites(site))
 
 /** Ghost admin at one of its settings anchors, read in the shipped admin bundles of both majors (the spec's Code Map):
  *  Settings → Membership is `#/settings/members`, Tiers is `#/settings/tiers`. */
@@ -117,7 +131,11 @@ export const askOf = (entry: { html: string }): MemberAskAt[] => memberAsks(entr
 export const warnsOn = (instance: { instanceId: string }): boolean => !instance.instanceId.startsWith('auto-')
 
 /** The member-ask line at a placed section's panel head, or null: a section the customer placed, whose design asks a
- *  visitor to join, on a site whose record says members are switched off. */
+ *  visitor to join, on a site whose record stops that ask (R-216) — each fact that stops one of its asks, in `FACTS`'
+ *  words, one sentence after another when two do. */
 export function askLine(members: Members | null | undefined, site: string, entry: { html: string }, instance: { instanceId: string }): string | null {
-  return membersOff(members) && warnsOn(instance) && askOf(entry).length > 0 ? PAYWALL_WORDS.ask(site) : null
+  if (!warnsOn(instance)) return null
+  const asks = new Set(askOf(entry).map((a) => a.ask))
+  const said = factsOf(members).filter((f) => f.stops.some((ask) => asks.has(ask))).map((f) => (f.panel ?? f.sites)(site))
+  return said.length === 0 ? null : said.join(' ')
 }

@@ -4787,8 +4787,10 @@ Question 2, ruled **option 1** (owner, 2026-09-28): *"Your picks, everywhere"*.
   sign-out in another tab that R-214 erased — the panel says R-227's sentence instead, because "safe on this device"
   would be untrue.
 - **Declined.** Option 2, Retrying with a new sentence; option 3, sending the tab to the sign-in page.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 3 · ⬜ built — Story 5.24e, with FR-D10's states and
-  EXPERIENCE's persistence indicator row.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 3 · ✅ built — Story 5.24e's Dev (2026-10-02): the sixth state
+  `signed-out` and `SIGNED_OUT_COPY` (`lib/journal.ts`), B6's panel with Sign in (`components/editor/save-state.tsx`),
+  the flush's 401 and the three actions' refusals (DW-202 closed); FR-D10's states and Appendix H's six names, and
+  EXPERIENCE's persistence indicator rows.
 
 **R-214 — signing out erases this browser's copy of the work, after sending what is owed.** Story 5.24's Create,
 Question 4, ruled **option 1** (owner, 2026-09-28): *"Erase it at sign-out, after first sending anything not yet sent;
@@ -4805,7 +4807,9 @@ if it cannot be sent, ask before signing out"*.
   Signing out in one tab while the editor is open in another also leaves R-213's "safe on this device" untrue —
   Story 5.24e's Question 1, ruled as R-227.)*
 - **Declined.** Option 2, always erase; option 3, keep it.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 4 · ⬜ built — Story 5.24e.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 4 · ✅ built — Story 5.24e's Dev (2026-10-02): `signOutFlow`
+  (`lib/journal.ts`) behind every sign-out door (`components/shell/sign-out.tsx` — the account menu, the restore page,
+  Sign out everywhere), the ask in B5c's shape, and the two-tab half (DW-203 closed).
 
 **R-215 — the floating Subscribe button is assumed off when it cannot be read, and Layers lists a Ghost surface only
 when the site shows it.** Story 5.24's Create, Question 6, ruled **option 1** (owner, 2026-09-28): *"Assume off, Ghost's
@@ -4819,8 +4823,9 @@ own default. And also if it is off by default - do not show it on layers sidebar
     `portal_button` is on, and, by the same reading, the Announcement bar when the site has an announcement to show. The
     row follows the site's setting, not the window's width or View as.
 - **Declined.** Option 2, assume on.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 6 · ⬜ built — Story 5.24e, with FR-C2's sentence, the
-  Layers group (Story 5.21's ruling of 2026-09-26) and EXPERIENCE's Ghost's Own Surfaces row.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 6 · ✅ built — Story 5.24e's Dev (2026-10-02): `portalState`'s
+  unreadable branch off, the Sites question's primary "No, it's off", Layers' group through `rowsOn` (DW-277 closed);
+  FR-C2's sentence, FR-H5's Layers sentence and EXPERIENCE's Ghost's Own Surfaces row and step 5.
 
 **R-216 — a sign-up section's settings say when the site cannot take its sign-up.** Story 5.24's Create, Question 7,
 ruled **option 1** (owner, 2026-09-28): *"The settings say it too, in the Sites screen's own sentence, matched to what
@@ -4831,7 +4836,9 @@ the section asks for"*.
 - **The rule.** The line follows the ask: a free sign-up on an invite-only or paid-only site, a paid one with Stripe
   off, each in the Sites screen's own sentence (R-170).
 - **Declined.** Option 2, members off only.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 7 · ⬜ built — Story 5.24e, with FR-H6's sentence.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 7 · ✅ built — Story 5.24e's Dev (2026-10-02): one list,
+  `FACTS` in `lib/paywall.ts`, read by the Sites notice and the panel's line (DW-274 closed); FR-H6's sentence. A paid
+  ask on an invite-only site is DW-305 (Story 9.1).
 
 **R-217 — pointing at a Layers row outlines its section; only a click brings it into view.** Story 5.24's Create,
 Question 8, ruled **option 2** (owner, 2026-09-28): *"Outline it and scroll it into view."* — and **amended the same day**
@@ -4843,7 +4850,9 @@ clicks on it."*
   on the row brings the section into view, as R-156 already has it (a sticky section exempt). The amendment withdraws the
   reading first recorded here — a scroll once the pointer rests on the row.
 - **Declined.** A scroll on hover (option 2 as first read); option 3, as it was.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 8 · ⬜ built — Story 5.24e, with EXPERIENCE's Layers row.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 8 · ✅ built — Story 5.24e's Dev (2026-10-02): a Layers row's
+  pointer outlines its section with no pill, hairline or scroll (`components/controls/layers.tsx`, the editor's
+  `pointedFrom`; DW-188 closed), the walks' pointer parks moved off the rows; EXPERIENCE's Layers row.
 
 **R-218 — a capped list's header keeps its range.** Story 5.24's Create, Question 9, ruled **option 2** (owner,
 2026-09-28): *"Both on one line: "3 items · 2 shown in this design · 2–6""*.
@@ -4852,7 +4861,8 @@ clicks on it."*
   (DW-212).
 - **The rule.** The header reads *"{n} items · {shown} shown in this design · {min}–{max}"*.
 - **Declined.** Option 1, as it was; option 3, the range on hover.
-- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 9 · ⬜ built — Story 5.24e.
+- Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 9 · ✅ built — Story 5.24e's Dev (2026-10-02):
+  `shownInThisDesign` with the range (`lib/ring.ts`, DW-212 closed); FR-D13's sentence and Story 5.11's card, dated.
 
 **R-219 — a Ghost under a path is refused and said so; supporting it is future work.** Story 5.24's Create, Question
 10, ruled **option 1** (owner, 2026-09-28): *"Not supported yet, and say so: "Inflozo connects a Ghost site at the root
@@ -4988,7 +4998,26 @@ Create, Question 1, ruled **option 1** (owner, 2026-10-02): *"1. A second senten
 - **Declined.** Option 2, the open editor writing this browser's copy back after the erase, which undoes R-214 for an
   open editor; option 3, one sentence for every case.
 - Targets: ✅ this entry · ✅ R-213's entry · ✅ Story 5.24e's spec — Question 1, the R-213 task and the owner's test ·
-  ⬜ built — Story 5.24e, with FR-D10's states and EXPERIENCE's persistence indicator row.
+  ✅ built — Story 5.24e's Dev (2026-10-02): `SIGNED_OUT_COPY.fallback`, said while the editor is in fallback; FR-D10's
+  states, Appendix H and EXPERIENCE's persistence indicator rows.
+
+**R-228 — closing the editing window while it checks in may hold the lock for about a minute, until Story 7.18.**
+Story 5.24e's Dev, Question 2, ruled **option 1** (owner, 2026-10-02): *"1. Accept it; fix later"*.
+
+- **Why it was a question.** Story 5.24e's `leave` keeps a reloading tab's lock for a 10 s grace (DW-240) and matches
+  only the beat the tab last heard, so a late leave from before a reload cannot backdate the reloaded page's row. A tab
+  closed while its own check-in is in flight has moved the row past that beat, so its leave matches nothing and the row
+  goes stale on its own, after about a minute, where the release before this story freed it within a check-in (about
+  15 seconds). The spec's I/O matrix says a close frees the lock "no later than its check-in at HEAD". Telling that close
+  from a reload needs a per-page id on the lock row — a migration, which the story forbids (R-99, its Never).
+- **The rule.** About one close in fifty — the check-in's round trip over the 15-second heartbeat — the other window
+  waits about a minute before it can edit. Nothing is lost. The fix is DW-307, owned by Story 7.18 (the deploy wizard,
+  which already requires the lock), whose card carries it.
+- **Declined.** Option 2, freeing the lock at once when a check-in is in flight, which hands editing to the other window
+  on a reload in that same split second — the fault DW-240 fixed; option 3, the migration in this story.
+- Targets: ✅ this entry · ✅ Story 5.24e's spec — Question 2 and its owner's test, step 13 · ✅ DW-307 in
+  `deferred-work.md` · ✅ `epics.md` — Story 7.18's card · ✅ MEASUREMENTS §65 and the `ponytail:` beside `leaving` in
+  `editor.tsx` name DW-307 · ✅ `addendum.md`'s Leave grace row.
 
 ## B · Approved decisions superseded by this session
 

@@ -5,7 +5,13 @@
  * `display_name` the row is avatar · the address on the small line · the badge; the bold name
  * line appears by itself the day E2 lets someone save one. A whitespace name is no name.
  */
-export type ShellUser = { email: string; displayName: string | null }
+export type ShellUser = {
+  /** R-214 (Story 5.24e): the account's id, which names this browser's copy of its work (`inflozo-doc-<id>`) — the
+   *  sign-out erases it. Never shown. */
+  id: string
+  email: string
+  displayName: string | null
+}
 
 /** The bold line's text when there is one, else the address — also the avatar's initial. */
 export const nameOf = (user: ShellUser) => user.displayName?.trim() || user.email

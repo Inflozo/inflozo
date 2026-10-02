@@ -27,6 +27,9 @@ const el = (html: string) => {
   d.innerHTML = html
   return d
 }
+/** a clipboard's HTML as `lib/inline.ts` reads it: the body of an inert `DOMParser` document */
+const parser = new (doc().defaultView!.DOMParser)()
+const parse = (html: string) => parser.parseFromString(html, 'text/html').body as unknown as MarkNode
 const rich = (v: PropValue) => v as RichText
 const richtext = (marks: string[]): PropDef => ({ type: 'richtext', label: 'Body', marks })
 
@@ -149,11 +152,6 @@ test('setLink covers the range and every link it touches; unlink removes each to
 })
 
 test('readMarks: the four marks where allowed, a safe href only, everything else as its text, and lines or spaces', () => {
-  const body = new JSDOM('').window.document
-  const parse = (html: string) => {
-    const d = new body.defaultView!.DOMParser().parseFromString(html, 'text/html')
-    return d.body as unknown as MarkNode
-  }
   const html = '<b>Bold</b> <i>it</i> <u>un</u>\n<a href="https://x.example/">ok</a> <a href="javascript:alert(1)">bad</a><img src="/x"><script>evil()</script><span style="color:red">red</span>'
   const all = readMarks(parse(html), ['strong', 'em', 'u', 'a'], true)
   assert.equal(all.text, 'Bold it un ok badred')
@@ -173,4 +171,30 @@ test('readMarks: the four marks where allowed, a safe href only, everything else
   assert.deepEqual(readMarks(parse('<p>words</p><style>p{color:red}</style><title>T</title><template>x</template><noscript>n</noscript>'), [], true), { text: 'words' })
   // a page split across two anchors with the same href is one link
   assert.deepEqual(readMarks(parse('<a href="https://x/">a</a><a href="https://x/">b</a>'), ['a'], false).marks, [{ start: 0, end: 2, mark: 'a', href: 'https://x/' }])
+})
+
+// DW-181 (Story 5.24e) — Google Docs writes bold and italic as styled spans, inside one `<b style="font-weight:normal"
+// id="docs-internal-guid-…">` round the whole paste. ProseMirror, CKEditor 5 and Lexical each special-case that wrapper,
+// read in their source 2026-10-02: prosemirror-schema-basic 1.2.5's `b` rule ("a Google Docs misbehavior"), CKEditor 5
+// paste-from-office 48.5.2's `removeBoldWrapper`, and Lexical 0.52.0's `convertBringAttentionToElement`. Before DW-181 the
+// wrapper bolded the whole paste and the spans were text.
+test('readMarks: a Google Docs paste keeps its bold and italic as the field\'s marks, and its normal-weight <b> wrapper marks nothing', () => {
+  const docs = '<meta charset="utf-8"><b style="font-weight:normal;" id="docs-internal-guid-1234"><span style="font-weight:700;">Bold</span><span style="font-weight:400;"> plain </span><span style="font-style:italic;font-weight:400;">italic</span></b>'
+  assert.deepEqual(readMarks(parse(docs), ['strong', 'em', 'u', 'a'], false), {
+    text: 'Bold plain italic',
+    marks: [{ start: 0, end: 4, mark: 'strong' }, { start: 11, end: 17, mark: 'em' }],
+  })
+  assert.deepEqual(readMarks(parse(docs), ['em'], false).marks, [{ start: 11, end: 17, mark: 'em' }], 'still only the field\'s own marks')
+})
+
+test('readMarks: an element\'s own style is a mark — weight 600, 700, bold or bolder, italic, underline among other decorations — and a tag\'s own style can cancel it', () => {
+  const marked = (html: string) => (readMarks(parse(html), ['strong', 'em', 'u', 'a'], false).marks ?? []).map((m) => m.mark).sort()
+  for (const w of ['600', '700', 'bold', 'bolder']) assert.deepEqual(marked(`<span style="font-weight:${w}">x</span>`), ['strong'], w)
+  // 500 too: a web page's computed `font-weight: 500`, which Chrome's copy writes inline, is not bold (CKEditor 5's ≥600)
+  for (const w of ['400', '500', 'normal']) assert.deepEqual(marked(`<span style="font-weight:${w}">x</span>`), [], w)
+  assert.deepEqual(readMarks(parse('<b style="font-weight:normal">words</b>'), ['strong'], false), { text: 'words' }, 'the wrapper alone')
+  assert.deepEqual(marked('<i style="font-style:normal">x</i>'), [], 'an italic tag its own style makes upright')
+  assert.deepEqual(marked('<em style="font-weight:400">x</em>'), ['em'], 'a weight cancels bold only, never the italic of the tag it sits on')
+  assert.deepEqual(marked('<span style="text-decoration:underline line-through">x</span>'), ['u'])
+  assert.deepEqual(marked('<a href="https://x.example/" style="font-weight:bold">x</a>'), ['a', 'strong'], 'a link\'s own style is a mark too')
 })

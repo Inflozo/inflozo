@@ -4,7 +4,7 @@
  * STATED choice and not an accident. Everything both of them decide that is not a pixel lives here: the words B9's
  * pill prints, the rows D5e's menu lists, the filter its search runs, and the two sentences a fallback owes.
  *
- * PURE AND IMPORTLESS BUT FOR THE LIBRARY AND `lib/live-content.ts` (itself importless), because `node --test` strips
+ * PURE AND IMPORTLESS BUT FOR THE LIBRARY AND `lib/live-content.ts` (which reads the library too), because `node --test` strips
  * types and cannot load a `.tsx` (`lib/picker.ts` is the standing precedent and `kit-button.test.ts:6-7` the reason).
  * `preview-subject.test.ts` and `live-content.test.ts` assert the I/O matrices' rows over it.
  *
@@ -188,3 +188,52 @@ export const SUBJECT_HELP = (kind: SubjectKind): string =>
 /** The one sentence the write is allowed to fail with. The choice still stands on the canvas for this session — the
  *  canvas has already repainted — so what the customer needs to know is that it will not survive a reload. */
 export const SAVE_REFUSED = "We couldn't save that choice, so this page will go back to its usual one when you reload."
+
+/* ── DW-223 (Story 5.24e): A PICK WAITS IN THIS TAB UNTIL ITS WRITE ANSWERS ─────────────────────────────────────────
+ *
+ * A subject is saved by a server action that answers a moment after the canvas repaints, and a reload in that moment
+ * lost the pick: the page came back with the old subject, and the write — if it ever landed — had been made for a page
+ * nobody was looking at. So `chooseSubject` writes the pick here BEFORE the action and clears it on the answer, and the
+ * editor's opening lets a pick still waiting win over the stored one and sends it again. `sessionStorage`, because it is
+ * this TAB's pick — another tab never sees it — and it survives exactly the reload it is for. Every call is
+ * try/caught, as `ghost-surfaces.ts`'s hidden list is: a refusing store costs the survival and nothing else. */
+
+/** this tab's key for one canvas's waiting pick */
+export const PENDING_KEY = (projectId: string, templateKey: string): string => `inflozo-subject:${projectId}:${templateKey}`
+type PickStore = Pick<Storage, 'getItem' | 'setItem' | 'removeItem'>
+const KINDS: readonly SubjectKind[] = ['post', 'page', 'tag', 'author']
+
+/** the pick waiting for this canvas, or null — and null for anything that is not one this editor could have written */
+export function readPending(store: PickStore | null | undefined, projectId: string, templateKey: string): Subject | null {
+  try {
+    const raw = store?.getItem(PENDING_KEY(projectId, templateKey))
+    const pick: unknown = raw ? JSON.parse(raw) : null
+    if (typeof pick !== 'object' || pick === null) return null
+    const { kind, slug, source } = pick as Record<string, unknown>
+    if (!KINDS.includes(kind as SubjectKind) || typeof slug !== 'string' || slug === '' || (source !== undefined && source !== 'site')) return null
+    return source === 'site' ? { kind: kind as SubjectKind, slug, source } : { kind: kind as SubjectKind, slug }
+  } catch {
+    return null
+  }
+}
+
+/** the pick, kept until its write answers */
+export function writePending(store: PickStore | null | undefined, projectId: string, templateKey: string, pick: Subject): void {
+  try {
+    store?.setItem(PENDING_KEY(projectId, templateKey), JSON.stringify(pick))
+  } catch {
+    /* the browser refused: the pick holds for this opening alone, as it did before */
+  }
+}
+
+/** the write answered: the pick goes — unless a LATER pick is the one waiting now, which keeps its own place */
+export function clearPending(store: PickStore | null | undefined, projectId: string, templateKey: string, pick: Subject): void {
+  try {
+    const waiting = readPending(store, projectId, templateKey)
+    if (waiting !== null && waiting.kind === pick.kind && waiting.slug === pick.slug && waiting.source === pick.source) {
+      store?.removeItem(PENDING_KEY(projectId, templateKey))
+    }
+  } catch {
+    /* nothing to clear in a store that refuses */
+  }
+}

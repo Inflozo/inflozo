@@ -895,12 +895,25 @@ DOCS = [
     'server/ghost-admin/db.ts connects, and with tls.rootCertificates[0] it is refused '
     'SELF_SIGNED_CERT_IN_CHAIN (DW-50); brand-keys reads the three keys the brand reader keeps (DW-71).',
     'STORY 5.24d GAVE --check schemas-off-rest (DW-294): GET /rest/v1/ on a table that does not exist, with the '
-    'publishable key and Accept-Profile private, storage and vault, answers 406 PGRST106 each, its hint printed; '
-    'public and graphql_public not 406, the control (MEASUREMENTS §60) — the half RLS-TEST.sql cannot see.',
+    'publishable key and Accept-Profile private, storage and vault, answers 406 PGRST106 each, the hint naming '
+    'exactly public, graphql_public; those two answer 404 PGRST205, the control (MEASUREMENTS §60) — the half '
+    'RLS-TEST.sql cannot see. Since Story 5.24e (DW-302) the step calls tools/probe/check-schemas-off-rest.py, the '
+    "one copy of the rule, which CI's rls job runs on every push.",
     'Note that --check is no longer plumbing alone — it re-executes settings-keys and brand-keys '
     'against both live Ghosts, so it needs every key the full run does, the two staff tokens '
     'included; it still starts no browser and creates nothing. Stories 3.2, 3.3 and 3.4.',
    )),
+ ('tools/probe/check-schemas-off-rest.py', 'tool', 'The exposed schemas, checked on every push',
+  "Story 5.24e's check of DW-302, run by CI's rls job after run-rls-gate.sh. Hosted Supabase keeps the schemas "
+  'PostgREST exposes outside the database, so RLS-TEST.sql cannot see them; this reads them over the wire: GET '
+  '/rest/v1/ on a table that does not exist with the publishable key, Accept-Profile private, storage and vault '
+  'answering 406 PGRST106 each, public and graphql_public 404 PGRST205 (the control), and the hint naming exactly '
+  'public, graphql_public (MEASUREMENTS §60). SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY come from the environment, '
+  "else from Vercel's production env with the deploy job's own secrets — the env list, then a by-id GET for each "
+  'of those two names and no other — so GitHub holds no new secret. Stdlib only. It prints one line and never a '
+  'value, and fails closed: a Vercel or Supabase it could not ask exits 1 saying COULD NOT ASK, told apart from a '
+  "schema that is exposed. run-verify-ghost-admin.py --check's schemas-off-rest calls its check(), so the rule "
+  'has one copy.'),
  ('tools/probe/run-verify-passkeys.py', 'tool', 'Passkey ceremony harness',
   "The passkey round trip, driven through the deployed UI on app.inflozo.com with a Chrome virtual "
   'authenticator: register, the name it is born with, rename, revoke, and what the revoked '
@@ -1214,6 +1227,17 @@ DOCS = [
   "takes the stuck header's selected box from the fixed layer to the scrolling one (the deployed walk's step 12). "
   "Story 5.24b (DW-91) opens /app/harness/error, a harness-only page that throws on purpose, and reads the app error "
   "boundary's tab title, \"Something went wrong · Inflozo\", over its heading — red with error.tsx's title line deleted. "
+  "Story 5.24e walks the editor's sweep: R-213's sixth state (a 401 is Signed out, with Sign in and no Retry now; a dropped "
+  "connection and a 422 stay Retrying); DW-203's reader in one browser adopting and sending nothing; DW-225's reader "
+  "recording nothing; DW-241's lost lock closing every menu, confirm and picker; DW-242's rAF sampler (a holder's reload "
+  "never greyed, a genuine reader greyed from its first frame); DW-223's pick surviving a reload with its action held; "
+  "DW-290's chrome faces prepared before any gesture; DW-229 and DW-226's PAUSED said once and chipped by width; DW-281's "
+  "Layers pictures at 1440 and 1024; DW-187's ⌥↑ held in the footer band and DW-207's three Section Picker leftovers, on "
+  "harness-only stand-ins (a footer and a post content layout, x-inflozo-harness-stand-ins); DW-198's role dots in the mode "
+  "on screen; DW-282's read-only rows with no duplicate key; DW-275's Paywall sheet arriving with its first paint; and "
+  "DW-303's connect wizard sending its action under next dev's StrictMode (/app/harness/connect) — and extends ⌘D "
+  "(DW-205: a repeated sentence is a new node), DW-182 (DW-256: the canvas pill's shadow), DW-279 (R-215: no Ghost row "
+  "before the site shows one) and 5.20's Back to post. "
   "Stores no "
   'count: every subject is read off the page.'),
  ('tools/keyboard/floor.spec.mjs', 'tool', 'The editor\'s floor, by touch and by width',
@@ -1228,7 +1252,10 @@ DOCS = [
   'D5d\'s page-2 pill never meets the viewport chip, centred or slid right of it; and the bar at every width from 720, '
   'either pointer, on Home and on the Paywall: the centred group meets neither side and no control leaves the window; '
   'and R-203\'s Section Picker, four columns at full width, two below 1280, one where two would cut a name, with no '
-  'name or tier tag cut that full width shows whole. Stores no count.'),
+  'name or tier tag cut that full width shows whole. Story 5.24e adds DW-283\'s MEMBERS OFF chip, whole or absent on a '
+  '600-wide tablet; DW-199\'s skeleton card measured against the real one at 1440 x 600 and 2560 x 1440, 1440 x 900 the '
+  'control; DW-189\'s stand-in footer dragged by its Layers grip and its pill grip, its slot staying in the footer band; '
+  'and R-217\'s Layers row pointing at its section with no pill and no scroll. Stores no count.'),
  ('tools/keyboard/playwright.config.mjs', 'tool', 'The keyboard journey runner configuration',
   'Story 5.9: one worker, no retries, no touch, and a refusal to load without KEYBOARD_BASE_URL — the harness the gate '
   'boots is the only thing this journey means anything against. Since Story 5.22 it runs floor.spec.mjs beside the '

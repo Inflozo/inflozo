@@ -40,14 +40,15 @@ export function EditorSkeleton({ name }: { name: string }) {
           </div>
           {/* D8's icon rail, which stands where Layers does below 1280 and on every touch screen */}
           <div className="hidden w-11 shrink-0 border-r border-line coarse:w-14 compact:block" />
-          <div className="flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 py-8">
+          {/* DW-199 (Story 5.24e): THE GROUND IS A SIZE CONTAINER, so the card is fitted the way the real one is — `fitFor`'s
+              `min(1, stage width / 1440, stage height / 900)`, read here as container units over the same padded box — and
+              it carries the stage's touch padding too. Before this it was width-bound only: on a short, wide window it drew
+              taller than the real card, and on a big screen wider than 1440, the very flicker R-98 exists to remove. */}
+          <div className="@container-size flex min-w-0 flex-1 flex-col items-center justify-center bg-canvas-ground px-7 py-8 coarse:pb-[52px]">
             {/* R-137 (Story 5.7): the resting card is Desktop's 1440 × 900 fitted — centred in the ground, rounded on
                 all four corners, with ground below it. A skeleton that draws a different shape from the screen it
-                stands in for is the very flicker R-98 exists to remove.
-                ponytail: width-bound only, which the owner's 1440 stage is (864 / 1440 beats 788 / 900). On a short,
-                wide window the real card is height-bound and this draws taller; measure the stage here if that is
-                ever seen — the fallback has no `ResizeObserver` to read. */}
-            <div className="flex aspect-[1440/900] max-h-full w-full shrink-0 flex-col gap-8 overflow-hidden rounded-[6px] bg-paper-raised p-8 shadow-canvas-page">
+                stands in for is the very flicker R-98 exists to remove. */}
+            <div data-skeleton-card className="flex aspect-[1440/900] w-[min(100cqw,100cqh*1440/900,1440px)] shrink-0 flex-col gap-8 overflow-hidden rounded-[6px] bg-paper-raised p-8 shadow-canvas-page">
               <Skeleton />
               <Skeleton />
               <Skeleton />

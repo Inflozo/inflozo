@@ -66,7 +66,7 @@ jobs:
       - run: node tools/check-traces.mjs
 
   # The database gate (AD-26). It keys on the exit code, not on the log: every assertion in
-  # supabase/tests/rls.sql aborts the run when it fails, so a red job is a real RLS hole.
+  # supabase/tests/rls.sql aborts the run when it fails, so a red gate step is a real RLS hole.
   # docker is preinstalled on the runner; the script brings its own postgres and psql.
   rls:
     runs-on: ubuntu-latest
@@ -74,6 +74,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - run: bash supabase/tests/run-rls-gate.sh
+      # DW-302 (Story 5.24e): the half the gate above cannot see. Hosted Supabase keeps the schemas PostgREST exposes
+      # outside the database, so they are read over the wire on every push: `private`, `storage` and `vault` refused,
+      # the hint naming exactly `public, graphql_public` (MEASUREMENTS §60). Its two values come from Vercel's
+      # production env with the secrets `deploy` already holds, so GitHub gains none. One line, never a value; a Vercel
+      # or Supabase it could not ask fails the job ("COULD NOT ASK"), so nothing publishes. Stdlib only: no install.
+      - run: python3 tools/probe/check-schemas-off-rest.py
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
   # Publishing happens here, not on the push (owner's ruling, 2026-09-05, DW-7). `needs` is the whole
   # point: a red `check` or a red `rls` means this job never runs, so a broken row-level-security

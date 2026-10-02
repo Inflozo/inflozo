@@ -132,7 +132,8 @@ export function ConnectWizard({
   // wizard — while it is still awaited. A connect must not be dispatched from a wizard the customer
   // has already cancelled (review 2, 2026-09-08). SET IN THE EFFECT'S BODY TOO, as the editor's own `gone` is (DW-295):
   // React 19's StrictMode runs every effect mount → unmount → mount in development, so a ref only the cleanup wrote stayed
-  // false for good and `next dev` never left "Connecting…".
+  // false for good and `next dev` never left "Connecting…". The keyboard gate presses Connect under `next dev` on every
+  // commit since Story 5.24e (DW-303: `/app/harness/connect`), red with the line below removed.
   const alive = useRef(true)
   useEffect(() => {
     alive.current = true

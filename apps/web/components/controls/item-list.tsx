@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useSaid } from '@/lib/renders'
 import { addItem, duplicateItem, getPath, moveItem, removeItem, setContent } from '@inflozo/section-runtime'
 import type { ControlEntry, ControlState, PropRow } from '@inflozo/section-runtime'
 import { AddButton } from '@/components/kit/button'
@@ -63,7 +64,8 @@ export function ItemList({
   const list = row.list
   const items = Array.isArray(row.value) ? (row.value as unknown[]) : []
   const [open, setOpen] = useState<number | null>(null)
-  const [said, setSaid] = useState('')
+  // DW-205 (Story 5.24e): the one announcer — a repeated sentence is a new node, and heard again
+  const [said, setSaid] = useSaid()
   const [drag, setDrag] = useState<Drag | null>(null)
   // every row's top and height as the drag began, relative to the list — the slot is read against these,
   // never against rows that are already sliding, which would chase itself. Story 5.4 lifted the arithmetic
@@ -97,13 +99,14 @@ export function ItemList({
     commit(moved.state)
   }
 
-  /* STORY 5.11 — FR-D13's sentence, IN PLACE OF P0-3's range line and only where the two numbers differ: a design
+  /* STORY 5.11 — FR-D13's sentence, in place of P0-3's range line and only where the two numbers differ: a design
      renders only as many items as its structure fits (`data-items-limit`), and "8 items shuffled into a 3-card
      layout shows 3 … the sidebar shows the count". The items past the cap are not gone — they are waiting for a
      design that fits them — so this says what is drawn, never what is stored. `shown` is the ENGINE's own number
-     (`PropRow.list`), so the panel and both emitters cannot disagree about it. */
+     (`PropRow.list`), so the panel and both emitters cannot disagree about it. R-218 (Story 5.24e): and the list's
+     range rides at its end, as P0-3's line carries it — "3 items · 2 shown in this design · 2–6" */
   const range = list.shown < list.count
-    ? shownInThisDesign(list.count, list.shown)
+    ? shownInThisDesign(list.count, list.shown, list.min, list.max)
     : list.min !== undefined && list.max !== undefined ? `${list.min}–${list.max} · ${list.count} used` : `${list.count} used`
 
   return (
@@ -232,7 +235,7 @@ export function ItemList({
         Press Option or Alt with the up or down arrow to move this {noun}.
       </p>
       <p aria-live="polite" className="sr-only">
-        {said}
+        <span key={said.n}>{said.words}</span>
       </p>
 
       <div role="status">

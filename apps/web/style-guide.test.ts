@@ -6,6 +6,7 @@ import { orbitWeekly } from '@inflozo/library'
 import {
   DESIGNED_CARDS, ORBIT_WEEKLY_DIR, articleDocument, cardScripts, chunkUniverse, simulatedCardsCss, variationsDocument, withImages,
 } from './lib/style-guide.ts'
+import { paywallPage } from './lib/canvas.ts'
 
 // Story 4.4's review surface, held by the files it reads. The half of the fixture contract a core
 // package cannot test — it cannot open a file — lives here: the stylesheet ORDER, the complement, the
@@ -66,6 +67,19 @@ test('every image the dataset and the corpus name exists, and none is left on th
   for (const name of named) assert.ok(existsSync(join(ORBIT_WEEKLY_DIR(), 'images', name)), `images/${name} is named and does not exist`)
   for (const doc of [article, sheet]) assert.ok(!doc.includes(origin), 'an image URL on the reserved origin was not mapped')
   assert.equal(withImages('<a href="https://orbit-weekly.example/the-list/">x</a>'), '<a href="https://orbit-weekly.example/the-list/">x</a>', 'a link is not an image and is never touched')
+})
+
+test('every media file the dataset and the corpus name is served by the app, and every document plays it from there (DW-102)', () => {
+  const data = readFileSync(join(ORBIT_WEEKLY_DIR(), 'dataset.json'), 'utf8') + readFileSync(join(ORBIT_WEEKLY_DIR(), 'corpus.json'), 'utf8')
+  const named = new Set([...data.matchAll(/https:\/\/orbit-weekly\.example\/media\/([^"]+)/g)].map((m) => `/orbit-weekly/media/${m[1]}`))
+  assert.ok(named.size > 0)
+  for (const path of named) assert.ok(existsSync(join(import.meta.dirname, 'public', path)), `public${path} is named and does not exist`)
+  // the canvas's Paywall page too: the paid member's is the one that reads the whole article, players and all
+  const docs = [article, sheet, paywallPage({ visitor: 'paid', accent: orbitWeekly.site().accent_color, box: null })]
+  for (const doc of docs) assert.ok(!doc.includes(`${orbitWeekly.ORBIT_WEEKLY_ORIGIN}/media/`), 'a media URL on the reserved origin was not mapped')
+  // …and what they point at is exactly those files, so the mapping and the folder cannot drift apart
+  const played = new Set(docs.flatMap((doc) => [...doc.matchAll(/\ssrc="(\/orbit-weekly\/media\/[^"]+)"/g)].map((m) => m[1])))
+  assert.deepEqual([...played].sort(), [...named].sort())
 })
 
 test("the recordings' import module is the list on disk, not a stale one", () => {

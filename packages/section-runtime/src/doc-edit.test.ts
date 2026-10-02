@@ -3,7 +3,7 @@ import assert from 'node:assert/strict'
 import { UNIVERSALS } from '@inflozo/library'
 import type { ControlEntry } from './controls.ts'
 import {
-  clearDarkOverrides, darkOverrideCount, duplicateSection, holdsDarkOverride, insertSection, isDesigned, moveSection,
+  clearDarkOverrides, clearProject, darkOverrideCount, duplicateSection, holdsDarkOverride, insertSection, isDesigned, moveSection,
   removeSection, renameSection, setHidden, setMemberVisibility, switchDesign,
 } from './doc-edit.ts'
 import { parseDoc, type DocInstance, type ProjectDoc } from './doc-schema.ts'
@@ -156,6 +156,22 @@ test('clearDarkOverrides: that instance\'s map is emptied and every other byte o
   assert.notEqual(before.instances[0]?.darkOverrides[universal().name], undefined, 'the original doc is not mutated')
   assert.deepEqual(parseDoc(after, 'home'), after, 'and the result still parses through AD-27\'s one schema')
   assert.match(String(clearDarkOverrides(before, 'nope')), /no section nope/)
+})
+
+test('DW-198 (Story 5.24e): clearProject clears every section across every doc and answers ONLY the docs that changed', () => {
+  const site = doc(withOverride('header'))
+  const home = doc(withOverride('hero'), instance('grid'), withOverride('news'))
+  const post = doc(instance('article'))
+  const cleared = clearProject({ site, home, post })
+  assert.deepEqual(Object.keys(cleared).sort(), ['home', 'site'], 'the untouched canvas is not answered, so it is not written')
+  for (const d of Object.values(cleared)) for (const i of d.instances) assert.deepEqual(i.darkOverrides, {}, `${i.instanceId} cleared`)
+  assert.deepEqual(cleared.home?.instances[1], home.instances[1], 'a section with nothing to clear is untouched')
+  assert.notDeepEqual(home.instances[0]?.darkOverrides, {}, 'the docs handed in are not mutated')
+  // a remembered override, against a design the section has left (R-205), is cleared too — the case the inline loop
+  // was written for
+  const remembered = doc({ ...(instance('hero') as Record<string, unknown>), parkedControls: { 'a4/13': { controls: {}, darkOverrides: { [universal().name]: universal().values[0] } } } })
+  assert.deepEqual(clearProject({ home: remembered }).home?.instances[0]?.parkedControls['a4/13']?.darkOverrides, {})
+  assert.deepEqual(clearProject({ post }), {}, 'nothing to clear answers nothing')
 })
 
 test('clearDarkOverrides on a section with nothing stored is a no-op that still answers a doc', () => {

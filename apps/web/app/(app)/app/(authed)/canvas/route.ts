@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { currentUser } from '@/lib/supabase/server'
 import { canvasCaching } from '@/lib/canvas'
 import { pilotIds, pilotImage, pilotsCanvasDocument } from '@/lib/pilots'
+import { surfaceCss } from '@/lib/style-guide'
 
 /**
  * THE CANVAS DOCUMENT, served whole into the editor's iframe and the pilots review's (Story 4.10, one URL since Story
@@ -20,6 +21,10 @@ export async function GET(request: NextRequest) {
   // what the browser may keep, and for how long: `lib/canvas.ts`'s one rule, which the harness's copy calls too
   const caching = canvasCaching(request.nextUrl.searchParams.get('v'))
   const headers = { 'cache-control': 'no-store', 'x-robots-tag': 'noindex, nofollow' }
+  // DW-275 (Story 5.24e): the Paywall's post-body sheet, kept out of the document and asked for on its first paint
+  if (request.nextUrl.searchParams.get('sheet') === 'surface') {
+    return new NextResponse(surfaceCss(), { headers: { ...headers, 'cache-control': caching.document, 'content-type': 'text/css; charset=utf-8' } })
+  }
   const image = request.nextUrl.searchParams.get('image')
   if (image !== null) {
     const svg = pilotImage(image)

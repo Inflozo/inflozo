@@ -61,6 +61,9 @@ const ROUTES = [
   ['/pilots', 'pilots/page.js.nft.json', canvas],
   ['the editor (Home)', 'projects/[id]/(editor)/page.js.nft.json', canvas],
   ['the editor (every other canvas)', 'projects/[id]/(editor)/[template]/page.js.nft.json', canvas],
+  // DW-235 (Story 5.24e): the sync route asks `docRefusal` before every write, which reads each design off disk — a trace
+  // without them would refuse every save
+  ['the sync route', 'projects/[id]/sync/route.js.nft.json', designs],
   ['/controls', 'controls/page.js.nft.json', [...designs, ...controls]],
   ['/controls/frame', 'controls/frame/route.js.nft.json', [...designs, ...controls]],
   ['/style-guide', 'style-guide/page.js.nft.json', styleGuide],

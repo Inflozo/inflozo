@@ -118,6 +118,8 @@ export type { DocInstance, ProjectDoc } from './doc-schema.ts'
 // compiler all read the rules here rather than re-deriving them.
 export {
   clearDarkOverrides,
+  // DW-198 (Story 5.24e) — the project-level Clear, over every doc: only the docs that changed
+  clearProject,
   darkOverrideCount,
   // Story 5.23 (R-205) — a dark override held anywhere, remembered ones included: what the project-level Clear visits
   holdsDarkOverride,

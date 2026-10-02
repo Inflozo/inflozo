@@ -1,10 +1,11 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useSaid } from '@/lib/renders'
 import { ringFor } from '@inflozo/library'
 import type { IconLookup, SectionRegistryEntry } from '@inflozo/library'
 import { defaultContent, renderCanvas, stampControls, switchControls, withData } from '@inflozo/section-runtime'
-import type { ControlState, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
+import type { ControlState, Mode, RuntimeDocument, RuntimeElement } from '@inflozo/section-runtime'
 import { loadIcons } from '@/components/controls/icon-picker'
 import { SectionPill, type PillBox } from '@/components/controls/section-pill'
 import { DesignPicker } from '@/components/editor/design-picker'
@@ -68,7 +69,7 @@ export function Review({
 }: {
   /** Story 5.11 — the fixture RING, in `{n}` order; the page opens on the first */
   designs: readonly SectionRegistryEntry[]
-  swatches: Readonly<Record<string, string>>
+  swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
   timezone: string
@@ -85,7 +86,8 @@ export function Review({
     darkOverrides: { bg: 'contrast' },
     parkedControls: {},
   }))
-  const [said, setSaid] = useState('')
+  // DW-205 (Story 5.24e): the one announcer — a repeated sentence is a new node, and heard again
+  const [said, setSaid] = useSaid()
   /** the sample has been drawn at least once, so the pill has a rect to anchor to and the strip has its icons */
   const [painted, setPainted] = useState(false)
   const current = useRef(state)
@@ -369,6 +371,7 @@ export function Review({
           state={state}
           onChange={onChange}
           swatches={swatches}
+          mode="light"
           timezone={timezone}
           links={links}
           assets={panelAssets}
@@ -377,7 +380,7 @@ export function Review({
       </aside>
       {/* UX-DR12 — a design change is announced politely, from the one place the arrows, the strip and both
           Shuffle seats all reach (the editor's `#editor-said` has the same job) */}
-      <p id="controls-said" aria-live="polite" className="sr-only">{said}</p>
+      <p id="controls-said" aria-live="polite" className="sr-only"><span key={said.n}>{said.words}</span></p>
       {collapsed ? (
         <div className="hidden w-11 shrink-0 flex-col items-center border-l border-line bg-paper py-[6px] tablet:flex tablet:h-full">
           <button

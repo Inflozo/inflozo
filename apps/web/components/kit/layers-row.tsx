@@ -107,16 +107,67 @@ export function LayersRow({
   )
 }
 
-/** Story 5.22 — `size` is the box alone: D8's icon rail draws the same thumb at 26 × 19 and, on touch, 34 × 24. */
-export const LayerThumb = ({ size = 'h-[21px] w-[30px]' }: { size?: string }) => (
-  <span aria-hidden className={`flex ${size} gap-[2px] rounded-[4px] border border-line bg-surface p-[3px]`}>
-    <span className="flex flex-1 flex-col justify-center gap-[2px]">
-      <span className="h-[3px] rounded-[1px] bg-ink" />
-      <span className="h-[2px] w-[70%] rounded-[1px] bg-line-strong" />
+/* DW-281 (Story 5.24e): A PICTURE PER KIND OF SECTION, as S4 draws the five it shows (`S4 Editor.dc.html:54-58`) at
+   30 × 21 and D8 the same five on its rail (`D8 Editor Below 1440.dc.html:66-70` at 34 × 24, `:196-200` at 26 × 19).
+   Until this every row and tile drew Hero's. A1 Header, A4 Hero, A17 Post Grid, A22 Newsletter and A3 Footer have theirs;
+   every other category, the fixtures and Ghost's own rows draw Hero's until a category's first story adds its own,
+   extrapolated from these five (R-74; Epic 9's and Epic 10's preambles carry the rule). Colours are the token layer's:
+   the frames' five fills are `line`, `line-strong`, `ink`, `coral` and `ink-soft` exactly; the Footer's dark ground is
+   the nearest ink token, `ink-hover`; and the rail's selected edge, D8's tint, is the nearest coral tint,
+   `coral-tint-strong` — never a new colour (`tokens.test.ts` refuses a literal in a `.tsx`, comments included). */
+export type ThumbGlyph = 'header' | 'hero' | 'grid' | 'newsletter' | 'footer'
+const GLYPHS: Readonly<Record<string, ThumbGlyph>> = { a1: 'header', a4: 'hero', a17: 'grid', a22: 'newsletter', a3: 'footer' }
+/** the picture a category draws — Hero's for every category that has none of its own yet */
+export const glyphOf = (category: string | null | undefined): ThumbGlyph => GLYPHS[category ?? ''] ?? 'hero'
+
+/** Story 5.22 — `rail` is D8's icon rail: 26 × 19 on a mouse and, on touch, 34 × 24; `row` is S4's 30 × 21 Layers row.
+ *  Each picture's inner sizes are the frame's own at each of the three. */
+export const LayerThumb = ({ glyph = 'hero', at = 'row', selected = false }: { glyph?: ThumbGlyph; at?: 'row' | 'rail'; selected?: boolean }) => {
+  const rail = at === 'rail'
+  const box = rail ? 'h-[19px] w-[26px] p-[2px] coarse:h-6 coarse:w-[34px] coarse:p-[3px]' : 'h-[21px] w-[30px] p-[3px]'
+  const edge = selected ? 'border-coral-tint-strong' : 'border-line'
+  const shell = `flex shrink-0 ${box} gap-[2px] rounded-[4px] border ${edge} ${glyph === 'footer' ? 'bg-ink-hover' : 'bg-surface'}`
+  return (
+    <span aria-hidden data-glyph={glyph} className={`${shell} ${glyph === 'header' || glyph === 'newsletter' ? 'items-center' : ''}`}>
+      {glyph === 'header' ? (
+        <>
+          <span className={`h-[3px] rounded-[1px] bg-line-strong ${rail ? 'w-[7px] coarse:w-[9px]' : 'w-[8px]'}`} />
+          <span className={`ml-auto h-[3px] rounded-[1px] bg-coral ${rail ? 'w-[5px] coarse:w-[7px]' : 'w-[6px]'}`} />
+        </>
+      ) : glyph === 'grid' ? (
+        <>
+          <span className="flex-[1.4] rounded-[2px] bg-line" />
+          <span className="flex flex-1 flex-col gap-[2px]">
+            <span className="flex-1 rounded-[1px] bg-line" />
+            <span className="flex-1 rounded-[1px] bg-line" />
+          </span>
+        </>
+      ) : glyph === 'newsletter' ? (
+        <>
+          <span className="flex flex-1 flex-col gap-[2px]">
+            <span className="h-[2px] rounded-[1px] bg-line-strong" />
+            <span className="h-[2px] rounded-[1px] bg-line-strong" />
+          </span>
+          <span className={`rounded-[1px] bg-coral opacity-70 ${rail ? 'h-[6px] w-[8px] coarse:h-[7px] coarse:w-[10px]' : 'h-[6px] w-[9px]'}`} />
+        </>
+      ) : glyph === 'footer' ? (
+        <>
+          <span className="h-[3px] flex-1 rounded-[1px] bg-ink-soft" />
+          <span className="h-[3px] flex-1 rounded-[1px] bg-ink-soft" />
+          <span className="h-[3px] flex-1 rounded-[1px] bg-ink-soft" />
+        </>
+      ) : (
+        <>
+          <span className="flex flex-1 flex-col justify-center gap-[2px]">
+            <span className="h-[3px] rounded-[1px] bg-ink" />
+            <span className="h-[2px] w-[70%] rounded-[1px] bg-line-strong" />
+          </span>
+          <span className={`rounded-[2px] bg-coral opacity-70 ${rail ? 'w-[8px] coarse:w-[11px]' : 'w-[10px]'}`} />
+        </>
+      )}
     </span>
-    <span className="w-[10px] rounded-[2px] bg-coral opacity-70" />
-  </span>
-)
+  )
+}
 
 /** The site-wide group (R-126): the SAME shape as the page group — a heading, a right-aligned mono count and the
     rows — with a hairline under it dividing the two. `pages` is the derived template count (standing rule 4), and it
