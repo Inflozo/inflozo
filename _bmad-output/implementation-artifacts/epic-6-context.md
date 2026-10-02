@@ -1,0 +1,78 @@
+# Epic 6 Context: Style Packs
+
+<!-- Compiled from planning artifacts. Edit freely. Regenerate with compile-epic-context if planning docs change. -->
+<!-- HOW THIS FILE GROWS (DW-73, Story 3.9, 2026-09-11): the bullet is the REQUIREMENT and it stays
+     one or two sentences. Everything a story settles goes in an INDENTED SUB-BULLET under it, led in
+     bold by the story or ruling that decided it. Append a sub-bullet; never lengthen the lead. -->
+
+## Goal
+
+Replace the one reference token set the runtime has carried since Epic 4 with the real Style Pack system: a token engine where every token is computed or authored, twelve presets with hand-paired dark palettes on a self-hosted font pool, a whole-canvas restyle in a ≤ 300 ms crossfade, per-project token editing with a live contrast warning, the one-file mode resolution every generated theme uses, and auto-branding that lands the customer's accent and logo in the active pack. Section stylesheets read pack tokens and nothing else, so a pack changes the whole look without touching a design and dark mode is prepaid. **The custom-property contract does not change — only its values.** Opens after Story 5.24e (R-211). **Exit:** live restyle < 300 ms; all 12 packs verified across the five pilot sections in both modes.
+
+## Stories
+
+- Story 6.1: The token engine — computed or authored, and nothing in between
+- Story 6.2: The twelve presets and the font pool
+- Story 6.3: The pack-switcher moment
+- Story 6.4: Editing tokens, per mode, with contrast checked live
+- Story 6.5: Mode resolution — three inputs, one precedence, one file
+- Story 6.6: Auto-branding seeds the pack
+
+## Requirements & Constraints
+
+- **Every pack token is COMPUTED or AUTHORED, and Appendix D says which per row — no third state.** Authored: the seven palette roles per mode (background, surface, text, muted text, border, accent, on-accent), scrim strength and pill radius; whatever follows from declared colours (on-contrast text, accent-on-contrast, dark elevation and hover surface, negative, plate, tabular figures, drop-cap ratio) is computed and never asked for. A new token enters Appendix D, marked, in the commit that introduces it.
+  - **Story 6.1's Create (2026-10-03):** the rules are the spec's Design Notes table — contrast ground = text; on-contrast the better of background and text on it; accent-on-contrast and the error red stepped in OKLCH lightness to 4.5:1; hover = plate = halfway toward the border; dark elevation one step up from surface; border fade and the scrim's colour from the text. R-110 and R-112 reproduce Paper exactly. §D.0 gains a row per engine row (the contrast ground, border fade, page margin, every FR-E1 row, AD-3's tag accent), each marked and held equal to `TOKEN_ROWS` by `test-vocabulary.mjs`. The card's "scrim strength / pill radius defaults" read with R-32: authored. The scale steps' values are 6.1's Question 2 (open at Create).
+- **A pack is the full token set:** palette × 2 modes, heading + body font, radius (Sharp/Soft/Round), density (Compact/Comfortable/Airy — never the per-section Vertical spacing scale), site width (Narrow/Normal/Wide), gutters (Tight/Normal/Loose), buttons (Solid/Soft/Outline/Pill), shadow (None/Subtle/Lifted), links (Underline/Accent). Sections span the site width and stay responsive within it.
+  - **DW-155 (Story 6.1):** Normal is the frames' geometry — content 1,296 px, side margins 72 · 40 · 20 px at 1440 · 834 · 390 — the margin its own Appendix D row beside the 24 px gutter; the pilots re-baseline.
+  - **Story 6.1's Create (2026-10-03):** the margin is computed and the same in every pack (72 · 40 · 20 at ≥ 1024 · 768–1023 · ≤ 767, `A1 Headers - Spec.md:19`, `A4 Heroes - Spec.md:67`); Comfortable density takes `A4-0`'s ladder (96 · 80 · 64); R Responsive System's A.4 numbers (96/48/20, a 1248 measure) are superseded for both. `--space-gutter` is the column gutter, `--site-margin` the page margin. The dark blocks carry only per-mode properties, so no width band is overridden in dark.
+- **The link style is applied, not only declared (R-173).** Every pack's token block gives a plain link (an `<a>` with no or empty class) the pack's `--link-color` / `--link-decoration` at zero specificity, and on a contrast, accent or image ground keeps the ground's words with a forced underline (built by 5.24c).
+  - **DW-224 (Story 6.1):** before the first theme ships the block, the owner rules whether the rule also reaches links inside a post body (`{{content}}`, coloured Koenig cards included); the answer is built and proved on T1 and T3.
+  - **Story 6.1's Create (2026-10-03):** Question 1 is open, option 1 (the same look in a post) recommended — the canvas's `THEME_CSS` already previews it, and Ghost's card links carry classes the rule never reaches. The proof is a probe theme carrying the token block, uploaded to T1 and T3 by `tools/probe/record-token-links.py` (MEASUREMENTS §68) on the owner's in-session go.
+- **Twelve presets, hand-paired (never inverted) light + dark, AA on every token pairing the library uses.** Packs 1–12 take pairings D1–D12. Palette values are authored into Appendix D and read from there alone: the export's kit `PACKS` and the Calibration Set are calibration, and where a drawing and Appendix D disagree on an accent the owner rules first (DW-11).
+  - **R-110, R-112 (owner, 2026-09-15):** Paper's words on the accent are its ink, not white; its Light link is ink words with an accent underline. The Paper pack authors the same values.
+  - **DW-15, DW-169 (Story 6.2):** the dashboard's `PRESETS` regenerate from the authored palettes; the owner picks three packs as the render matrix's references, re-baselined as a mass rebaseline (his sampled review, a baselines-only commit naming its cause).
+- **The font pool is 30 pairings, each declaring its families, weights shipped and variable-or-static face.** Headings roman only, bodies roman + italic (no synthetic obliques), non-`wght` axes pinned; ≤ 5 files and ≤ 200 KB per latin-script theme; woff2, `font-display: swap`, the two roman faces preloaded; OFL or Apache 2.0 only; no generated theme requests Google's font hosts.
+- **Subsetting is by script range, never by content** (later posts would render tofu): latin + latin-ext split by `unicode-range`; a non-latin project ships the full face, size surfaced; an uncovered script falls back to the system stack and says so. **The canvas loads the same subsets, files and axis instances the theme ships** — never a full face or a CDN.
+- **Every token is user-editable per project and per mode, and a live AA check on token pairings warns, never blocks** — responsibility transfers to the user there. Colour pickers and the font-pairing list live in the Style Pack editor alone; custom packs are per-project (duplicating carries a look), with no account-level library in v1.
+- **Light values on `:root`, dark under ONE declared selector list, and nothing else in a theme selects on mode.** The visitor's explicit choice (`[data-mode]`, persisted by the `mode-toggle` module) beats the owner's pin (`color_scheme` as body class `scheme-light` / `scheme-dark`), which beats the system preference (`prefers-color-scheme`, pure CSS, so Auto works with JS off and is no third palette); both markers resolve into the same token block.
+  - **DW-195 (Story 6.5):** a section's own dark override reaches a visitor as a per-instance custom property emitted into the token block, and AD-30 is amended to say so before Epic 9 authors stylesheets against it.
+  - **Story 6.5's card:** verified on the canvas in all three states plus a unit assertion over the emitted block; the on-Ghost proof is the E4/E7 joint gate (Story 7.35).
+- **Auto-branding seeds the customer's accent and logo into the active pack** as ordinary editable tokens, re-runnable from the Style panel.
+  - **DW-70 (Story 6.6):** S2c's project chooser is drawn in the Claude Design project first (R-74), and its fieldset takes that frame's scroll bound.
+- **`darkCapabilities` gets a job:** every design declares it, nothing reads it, and the owner kept it (5.24c's Q3, 2026-09-29).
+  - **DW-196 (Story 6.1):** a validated vocabulary (FR-F7's per-control dark overrides and FR-D7's per-mode swaps supply the words) and a reader that holds each declaration true.
+  - **Story 6.1's Create (2026-10-03):** three words, each derived from the design and checked by `validateDesign` (`dark-capabilities`, both directions): `tokens` — no colour literal and no mode in its stylesheet, required of every design (AD-30's "fails the build" gets its reader); `background` — it offers two or more Background values; `override` — one of its own controls declares `darkOverride`. `image-swap` waits for the first design that draws a per-mode image.
+
+## Technical Decisions
+
+- **The contract is fixed; packs answer its rows.** The runtime's reference set (Paper as drawn) is what designs read through `var(--…)`; light and dark redeclare the same property set. Section CSS is plain, token-only and outside Tailwind.
+- **AD-30:** a dark override resolves to a token; a mode-specific toggle is one `data-{control}` with a token-resolved value, never a `-dark` twin; a design stylesheet naming `prefers-color-scheme`, a scheme class or `data-mode` fails the build. `color_scheme` is the only mode selector: pinned, no visitor toggle is offered and `{{comments mode=…}}` derives from it (R-34).
+- **AD-17:** every theme declares and references `color_scheme`, `dark_accent_color` and `dark_logo` — the body class the precedence resolves on (Auto emits none), and the dark accent and logo feeding E6's token block with fallbacks (dark accent → light accent; dark logo → light logo → wordmark). The dark accent defaults to the pack's.
+- **AD-18:** `screen.css` opens with `--font-heading: var(--gh-font-heading, "<pairing heading>")` and its body twin, so a Ghost Admin font choice beats the pairing on the live site and the canvas can differ there.
+- **Homes:** packs in `packages/library/packs/`, pool metadata in `packages/library/fonts/`, the theme's token block in `default.hbs` (Epic 7 emits it). `projects.style_pack` (jsonb, user-writable) is E6's column, `{ preset, brand? }` today. Pack colours are site data, never app tokens; `apps/web/lib/style-pack.ts` is the app's one home for a colour literal.
+- **Render matrix:** three reference packs × 2 modes × 3 viewports, the pack axis derived from the token sets that exist; any pack, shared-primitive or renderer change is a mass rebaseline.
+
+## UX & Interaction Patterns
+
+- **`S7 Style Packs.dc.html`, from the sidebar's "Change"; tablet and desktop only.** S7a the roster panel (pack cells: "Ag" in the pack's heading face, palette dots, pencil to edit, active coral ring, "+ New pack"; pack-level rows below); S7b mid-switch ("Trying on Tangerine…"); S7c Edit pack (name, seven roles per mode, dark tuned separately, Reset to defaults); S7d New pack (from the current look, "From your site", joins the pack grid).
+- **The switch is the moment the product sells:** a 300 ms crossfade, the new pack announced politely in canvas status (UX-DR12); under `prefers-reduced-motion` an instant change, never a removed affordance (UX-DR15).
+- **Hex, raw colour pickers and font pickers exist only in the Style Pack editor;** section controls stay named values and Swatch Rows of pack roles. A contrast warning carries words, never colour alone (UX-DR8).
+- **6.6 builds on S2c:** what was read off Ghost on the left, what is decided ("Which project?") on the right; a popup from the Sites list, full-screen in onboarding, one component.
+
+## Cross-Story Dependencies
+
+- **Within the epic:** 6.1's engine and rows come first; 6.2 authors against them; 6.3 and 6.4 need the presets; 6.5 adds the owner-pin input to the token block; 6.6 lands in 6.4's Style panel.
+- **Epics 4–5:** the editor reads no pack today — the canvas and Section Picker previews draw the reference block, and only the dashboard card and S2c's thumbnails read `projects.style_pack` — so wearing the project's pack is Epic 6's to wire. 6.5 emits what Story 5.6's dark authoring stores.
+- **Epic 7:** emits the token block, fonts (7.4) and dark built-ins (7.11); 7.10 marks promoted tokens in the Style panel and warns before a pack switch while the accent is promoted; 7.8's gate asserts AA against the pack's tokens and must not turn a user edit's warning into a block.
+- **Epic 9:** the Headers designs build the `mode-toggle` module and the first stylesheets that read DW-195's per-instance override.
+- **`projects.style_pack.brand`** (Story 3.4) holds the site's accent, logo and menu; the Style Pack editor claims or drops the logo and menu (DW-66).
+- **Unowned:** Story 5.12 left Remix's "Re-roll what — Style Pack · Designs · Both" absent while one pack existed; FR-D17 still asks for a pack-only re-roll and no story names its return.
+- **Open between the sources** — the owner rules each (R-83) before the story that meets it builds:
+  - **6.2 / 6.4:** S7a's caption calls its pack names placeholders (Harbor, Neon Dusk, Cocoa, Mist, Butter — not Orbit, Mono, Ocean, Quiet), yet 6.2 reads "matches S7a" as names and order; S7a also says Standard (not Normal), Spacious (not Airy), Title font, three button styles (no Pill), and has no gutter, shadow or link rows.
+  - **6.1 / 6.4:** S7c edits "Contrast" as the seventh role per mode (the Swatch Row names the same seven); FR-E1 authors on-accent there, Appendix D has no contrast-ground row, and `tokens.ts` files `--bg-contrast` as computed.
+  - **6.2:** the export sets Paper's headings in Georgia (as the reference set does) and Ink wholly in Inter; Appendix D pairs them Fraunces / Inter and Libre Caslon Text / Source Serif 4 — 6.2's criteria name only the accents.
+  - **6.2:** every one of the 30 pairings must render in the matrix under some pack before GA, but the matrix reads only the three reference packs and D13–D30 belong to no preset.
+  - **6.2:** D19 and D22 are listed as two-file pairings, yet their heading weights (to 900, to 800) exceed the 400–700 body clip the same-family rule requires to cover them.
+  - **6.1:** its card proves the token block on T1 and T3, while 6.5's says Epic 6 cannot reach them (no compiler): a probe theme through a recorder (the owner's go, main session) or Epic 7.
+  - **6.5:** AD-30's title says one file selects on mode, its body two (token block and base stylesheet); nothing says what a visitor's choice persisted under Auto does once the owner pins.
+  - **Story 6.1's Create (2026-10-03):** each now has an owner in the ledger and a line on its card — S7a's placeholder names DW-309 (6.2), S7's labels and rows DW-310 (6.4), the faces DW-311, D19/D22 DW-312 and the pool's matrix promise DW-313 (all 6.2), Remix's pack re-roll DW-314 (6.3), 7.8's gate DW-315, AD-30's title and the pinned visitor DW-316 (6.5). Corrected: S7c's "Contrast" swatch is on-accent (`#FFFFFF` beside Tangerine's light accent, `#1F1410` beside its dark one, `S7 Style Packs.dc.html:320`), so the seven roles are FR-E1's under one other label, and the contrast ground is computed. The T1/T3 item is settled by 6.1's probe theme; 6.5's on-Ghost check stays at Story 7.35.

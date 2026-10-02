@@ -2772,6 +2772,7 @@ requests**
 **And** each preset's palette is authored into Appendix D and read from there alone: the export's kit PACKS and the Calibration Set's S7a swatches are calibration only and disagree on Tangerine's and Ink's accents, and Appendix D's Ink ('B/W + one red') is neither — 'matches S7a' means the roster's names, order and layout, and where a drawing and Appendix D disagree on an accent the owner rules before the preset ships (R-83, DW-11).
 **And** `apps/web/lib/style-pack.ts`'s `PRESETS` (Paper alone, read off D4a's pack cell) is regenerated from the authored Appendix D palettes, so the dashboard card's placeholder and D4a's pack cells paint from the values the canvas does (DW-15).
 **And** three of the twelve, picked by the owner (R-83), become the render matrix's reference packs — the only pack files `tools/matrix/cases.mjs` reads — re-baselined as NFR-6(a)'s mass rebaseline (DW-169).
+**And** before the presets ship, the owner rules (R-83) the four disagreements Story 6.1's Create found: S7a's pack names are placeholders by its own caption, so whether "matches S7a" means the layout alone (DW-309); Appendix D's faces for Paper and Ink are not the export's (DW-311); D19's and D22's two files cannot carry their headings' weights (DW-312); and every pairing must render in the matrix before launch while the matrix photographs three packs (DW-313) (from Story 6.1's Create, 2026-10-03).
 
 **FRs:** FR-E2 (the presets). · **Frame:** `S7 Style Packs.dc.html` S7a. · **Owner test:** yes.
 
@@ -2790,6 +2791,7 @@ So that choosing feels like a decision rather than a page load.
 **And** under `prefers-reduced-motion` the crossfade becomes an **instant state change, never a removed
 affordance** (UX-DR15)
 **And** the mid-switch state matches S7b.
+**And** Site Remix's pack re-roll returns — "Re-roll what — Style Pack · Designs · Both", with single-step undo — which Story 5.12 left absent while Paper was the only pack (FR-D17, DW-314, from Story 6.1's Create, 2026-10-03).
 
 **FRs:** FR-E2 (the moment). · **Frame:** `S7 Style Packs.dc.html` S7b. · **Owner test:** yes.
 
@@ -2811,6 +2813,7 @@ block** — and responsibility transfers to the user at that point, which is wha
 **And** **custom packs are deliberately per-project**: there is no account-level custom pack library in v1, and
 duplicating a project is how a look is carried forward
 **And** the editor and creation states match S7c and S7d.
+**And** the panel's words are FR-E1's, one name per thing (R-170): S7a says Standard and Spacious where FR-E1 says Normal and Airy, has no Pill, gutter, shadow or link-style row, and S7c names on-accent "Contrast"; the missing rows are drawn in the Claude Design project before they are built (R-74, DW-310, from Story 6.1's Create, 2026-10-03).
 
 **FRs:** FR-E3. · **Frame:** `S7 Style Packs.dc.html` S7c · S7d. · **Owner test:** yes.
 
@@ -2838,6 +2841,7 @@ the one mode signal present in the HTML Ghost sends, and it composes with `{{bod
 a scheme class or on `data-mode`
 **And** a dark override resolves to a token, and exactly one file selects on mode (AD-30).
 **And** a section's own dark override reaches a visitor as a per-instance custom property emitted into the token block, AD-30 amended to name that expression before Epic 9 authors stylesheets against it (DW-195).
+**And** AD-30's title ("exactly one file selects on mode") and its rule (the token block and the base stylesheet) are made to say the same thing, and what a visitor's choice saved under Auto does once the owner pins the site is stated and built (DW-316, from Story 6.1's Create, 2026-10-03).
 
 **FRs:** FR-E4. · **Owner test:** none (a theme mechanism, visible through 6.3). · **Verification:** on the
 canvas in all three states, plus a unit assertion over the emitted token block — **not on T1/T3, because the
@@ -3154,6 +3158,7 @@ fail on a customer's content
 **And** an **image that is the sole content of a link carries a non-empty `alt`**, falling back through
 `feature_image_alt` then the post title.
 **And** every emitted element and attribute is held to the FR-G8 pin — one below Widely that `baseline.json` does not name is refused, a named `html` entry held to its Tier-2 condition (DW-137) — and its CSS check refuses a Tier-3 at-rule form, selector or function by name, one probe per web-features family diffed at the pin (DW-139).
+**And** the AA assertion against the pack's tokens holds shipped packs and library defaults and never fails a deploy for a pairing the user edited and was warned about — FR-E3 makes that a warning, never a block — asking the owner (R-83) if that changes what a deploy does (DW-315, from Story 6.1's Create, 2026-10-03).
 
 **FRs:** FR-J17. · **Frame:** `S8 Deploy.dc.html` S8b. · **Owner test:** yes (a failure message). ·
 **Verification:** run against Casper and Source as the negative control.

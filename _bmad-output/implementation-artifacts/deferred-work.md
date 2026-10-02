@@ -2007,6 +2007,9 @@ also: `projects.style_pack.brand` is a key Story 3.4 put in a column **E6 owns**
   (Story 6.1) inherits it and decides whether a pack that carries a site brand shows it, offers to clear
   it, or re-derives the pack from it. Only `placeholderFor` reads it today, for the dashboard card's
   accent; every other field is stored for the epic that uses it.
+note (Story 6.1's Create, 2026-10-03): the Style Pack editor is Story 6.4's and the brand seed Story 6.6's, not 6.1's —
+  6.1 is the token engine and reads no `brand`; `apps/web/lib/style-pack.ts:6-7` says the same wrong thing and 6.1's
+  Dev corrects it.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -8396,3 +8399,118 @@ reason: the fix is `land()` telling a session that typed before its first answer
   what it holds — in memory only, because in the same-browser race the on-device record is the holder's and must not
   be reset. That is a change to the lock's landing found at a review, with a window of one round trip; it wants its own
   control (a journey that types inside the optimistic paint), not a patch beside forty other closures.
+
+## Deferred from: Story 6.1's Create (2026-10-03)
+
+### DW-309: S7a's pack names are placeholders by its own caption, and Story 6.2 reads "matches S7a" as the roster's names
+
+plain: The drawing of the Style Pack panel says of itself that its pack names are stand-ins — Harbor, Neon Dusk, Cocoa,
+  Mist, Butter — while the product plan names twelve others (Orbit, Mono, Ocean, Quiet…). The story that ships the twelve
+  packs has to take the names from the plan, or ask.
+status: open
+severity: low
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile, read in the frame
+owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
+location: `S7 Style Packs.dc.html` S7a's caption ("roster shows 4 of 12; the shipping 12 pack names were not supplied —
+  placeholder names in use") · `prd.md` Appendix D's pack table · `epics.md` Story 6.2 ("'matches S7a' means the
+  roster's names, order and layout")
+reason: Appendix D is the roster, as it is the palettes (DW-11's shape); whether "matches S7a" then means the layout
+  alone is the owner's to rule (R-83) before the presets ship.
+
+### DW-310: S7's labels and rows are not FR-E1's: two other names, no Pill, no gutter, shadow or link rows, "Contrast" for on-accent
+
+plain: The Style Pack panel's drawing calls two settings by other names than the plan ("Standard" for Normal width,
+  "Spacious" for Airy density, with "Title font" and "Corners"), has no Pill button and no rows for gutters, shadow or
+  link style, and names the colour of words on the accent "Contrast". The story that builds the panel picks one name
+  per thing and has the missing rows drawn.
+status: open
+severity: medium
+origin: Story 6.1's Create (2026-10-03), checked in the frame: S7c's "Contrast" swatch is `#FFFFFF` beside Tangerine's
+  light accent and `#1F1410` beside its dark one, so it is on-accent and the seven roles are FR-E1's under one other label
+owner: Story 6.4 (Editing tokens, per mode, with contrast checked live), whose card names this entry.
+location: `S7 Style Packs.dc.html` S7a (the pack-level rows) and S7c/S7d (the swatch rows, the `Contrast` swatch at
+  :320) · `prd.md` FR-E1 (:253) and Appendix C (:983-1002, "scale vocabularies are closed") · `reconcile-designs.md`
+  :4573, :4587 (a record that flagged S7a stale; never ruled, never redrawn)
+reason: Story 6.1's engine takes FR-E1's and Appendix C's words, which are closed; what the panel prints is 6.4's under
+  R-170 (one name per thing), and rows no frame draws are drawn first (R-74).
+
+### DW-311: Appendix D pairs Paper and Ink with faces no drawing uses
+
+plain: The plan gives Paper the fonts Fraunces and Inter and Ink the fonts Libre Caslon Text and Source Serif 4, but
+  every drawing sets Paper's headings in Georgia and Ink wholly in Inter. Before those packs ship, someone decides which
+  is right.
+status: open
+severity: medium
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
+owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
+location: `prd.md` Appendix D (:1016-1017) · `…/claude-design-export/Inflozo/a29-kit.js:10,20` (every kit agrees) ·
+  `packages/section-runtime/src/tokens.ts` (the reference set keeps Georgia and Inter, as drawn)
+reason: DW-11 covers the accents only. The faces also decide which files are self-hosted and the theme's font budget,
+  so the owner rules (R-83) where a drawing and Appendix D disagree on a face, as 6.2's card already has him rule on
+  an accent.
+
+### DW-312: D19 and D22 are listed as two-file pairings, but their headings need weights the body file does not carry
+
+plain: Two font pairings promise to ship as two files because heading and body are one family, but their headings use
+  weights (up to 900 and 800) the body files, cut to 400–700, do not hold.
+status: open
+severity: low
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
+owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
+location: `prd.md` Appendix D §D.a rule 3 (:1059, "provided the clipped range covers the heading weights") · §D.c
+  rows D19 (:1104) and D22 (:1107)
+reason: the rule's own proviso fails for both: either the body's range widens (bigger files) or they ship as three — a
+  bundle-size decision Story 6.2 makes when it builds the pool.
+
+### DW-313: every pairing must render in the photo check before launch, but the check photographs three packs
+
+plain: The plan says each of the thirty font pairings must appear in the automatic photo check under some pack before
+  launch, but the check will only ever photograph three packs, and pairings 13 to 30 belong to no pack at all.
+status: open
+severity: medium
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
+owner: Story 6.2 (The twelve presets and the font pool), which picks the three reference packs (DW-169) and whose card
+  names this entry.
+location: `prd.md` Appendix D (:1117, "every pairing must render in the render matrix under at least one pack before
+  GA") · `epics.md` Story 6.2 (three packs, "the only pack files `tools/matrix/cases.mjs` reads")
+reason: the two promises cannot both hold as written; 6.2 decides how the other pairings are proved — a fonts-only case
+  over the reference palette, or a narrower promise ruled by the owner.
+
+### DW-314: Site Remix's "re-roll the Style Pack" has no story since Story 5.12 left it out
+
+plain: Remix was to let you re-roll the colours and fonts, the designs, or both. Story 5.12 left the colours-and-fonts
+  choice out because only one pack existed, and no story brings it back.
+status: open
+severity: medium
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
+owner: Story 6.3 (The pack-switcher moment), the first story with more than one pack to switch to, whose card names
+  this entry.
+location: `prd.md` FR-D17 · `epics.md` Story 5.12 (:1967-1971, "scoped re-roll is offered — pack only, designs only")
+  · `spec-5-12-site-remix.md:80-83` (the "Re-roll what" group left absent while Paper was the only pack)
+reason: R-195 — a requirement left out of its story needs a named owner.
+
+### DW-315: the deploy's quality gate would fail a theme for a contrast the user was only warned about
+
+plain: When you edit a colour, Inflozo warns about poor contrast but lets you keep it. The deploy check, as written,
+  then fails the theme for that same contrast — so the warning becomes a block.
+status: open
+severity: medium
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
+owner: Story 7.8 (the theme quality gate), whose card names this entry.
+location: `epics.md` Story 7.8 (:3145, "AA contrast on emitted text against the Style Pack's own tokens") · `prd.md`
+  FR-E3 (:255, "a warning, never a block"), FR-G4 (the AA guarantee is scoped to shipped packs and library defaults)
+reason: the gate's AA assertion has to stop at that scope, or report a pairing the user accepted without failing the
+  deploy; 7.8 decides, asking the owner (R-83) if it changes what a deploy does.
+
+### DW-316: AD-30's title says one file selects on mode while its rule allows two, and a visitor's saved choice is unsaid once the owner pins
+
+plain: The architecture's dark-mode rule says in its title that exactly one file in a theme picks light or dark, and
+  in its text that two may. And nothing says what a visitor who chose dark under Auto sees once the owner pins the site
+  to light.
+status: open
+severity: low
+origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
+owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), whose card names this entry.
+location: `ARCHITECTURE-SPINE.md` AD-30 (:352, the title; :358, "the token block and the base stylesheet are the only
+  files in a generated theme that mention a mode") · `prd.md` FR-E4 (:256-262), FR-D7 (:224, R-34)
+reason: 6.5 writes the one selector list and the precedence, so both edges are its to settle.
