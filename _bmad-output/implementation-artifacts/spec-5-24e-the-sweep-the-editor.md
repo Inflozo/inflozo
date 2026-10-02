@@ -1513,3 +1513,20 @@ green twice. Each new check was seen red on its control: against `663e9a4d` or o
 
 **Not run at this review:** T3's half of the live-content walk on the Review builds (it ran clean on `663e9a4d`, and
 the patches touch nothing it reads); Resend and Dodo, which the story does not touch.
+
+### Results — Deploy (2026-10-03)
+
+**Executed at Deploy.** App code only. No migration (R-99): nothing under `supabase/migrations` changed since the Dev
+commit `663e9a4d`, so there is no Schema phase and no RLS-TEST.sql to rerun beyond CI's own `rls`. No tooling-only change
+is left to deploy. Every key below is named by its variable, never printed.
+
+- **CI, for HEAD `ef06e4b9`** (GitHub API, `GITHUB_TOKEN` by name): `CI` (`check`, `rls`, `deploy`) and `Render matrix`
+  both `completed`/`success`. HEAD only adds this story's Review record to the spec, the ledger and the board, so the
+  code is the build `f8c35e4b` the review's walks ended on.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): the deployment for
+  that sha, `dpl_C9HPtsTyzzJ1YRtUYFNYef4CpCd7`, is `READY`, target `production`, aliased to `inflozo.com`,
+  `app.inflozo.com` and `www.inflozo.com`. A plain GET answered 200 on `app.inflozo.com/sign-in` and on `inflozo.com/`.
+- **Deployment: `dpl_C9HPtsTyzzJ1YRtUYFNYef4CpCd7` (https://app.inflozo.com/).**
+- **The owner's manual test** already names its URLs on `app.inflozo.com` and `ghost5.inflozo.com`, the real domains, in
+  every step that has one; `owner_test` stays `pending`.
+- **No question for the owner.** Both were ruled (R-227, R-228).
