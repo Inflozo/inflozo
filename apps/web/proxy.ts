@@ -21,17 +21,31 @@ import { sessionCookie } from './lib/supabase/cookies.ts'
  *
  * `getUser()`, not `getSession()`: only the first verifies the token with GoTrue. It is also
  * what triggers the refresh, so the call is the work, not a check on it.
+ *
+ * A DEAD SESSION'S COOKIES ARE NOT REMOVED ON A SERVER ACTION'S REQUEST (R-213, Story 5.24e's review). A cookie set on
+ * an action's response — here as much as inside the action — makes Next re-render the route the action was called
+ * from, and the `(authed)` layout then redirects the tab to `/sign-in`: executed on production twice, 2026-10-02, the
+ * second time with the action itself writing nothing (`quietSession`, `lib/supabase/server.ts`) and this function's
+ * removal alone doing it (`x-action-revalidated: 1`, the tab gone 360 ms later). The editor's actions must refuse a
+ * signed-out press and leave the tab where it is, so the removal waits for the next request that is not an action —
+ * the lock's beat, a save, any page. A REFRESH is still written on an action's request: a rotated token must never be
+ * dropped, and re-rendering a signed-in route moves nobody.
  */
 async function refreshSession(req: NextRequest, res: NextResponse) {
   const url = process.env.SUPABASE_URL
   const key = process.env.SUPABASE_PUBLISHABLE_KEY
   if (!url || !key) return
+  const action = req.headers.has('next-action')
 
   const supabase = createServerClient(url, key, {
     cookies: {
       getAll: () => req.cookies.getAll(),
       setAll(written) {
-        for (const { name, value, options } of written) res.cookies.set(name, value, sessionCookie(options))
+        for (const { name, value, options } of written) {
+          // a removal, as `@supabase/ssr` writes one: an empty value at `maxAge: 0`
+          if (action && (value === '' || options?.maxAge === 0)) continue
+          res.cookies.set(name, value, sessionCookie(options))
+        }
       },
     },
   })

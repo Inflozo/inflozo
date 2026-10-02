@@ -678,6 +678,14 @@ test('R-213: no editor action redirects a signed-out tab — each reads the user
   }
 })
 
+test('R-213: the proxy removes no session cookie on a server action\'s request — the removal re-renders the route into the layout\'s redirect', () => {
+  // Executed on production (the deployed walk's step 8, twice): with the action writing nothing, the proxy's own removal
+  // on the action's response still sent the tab to /sign-in. A refresh — a non-empty value — is still written.
+  const proxy = readFileSync(join(process.cwd(), 'proxy.ts'), 'utf8').replace(/\/\*[^]*?\*\//g, '').replace(/\/\/.*$/gm, '')
+  assert.match(proxy, /const action = req\.headers\.has\('next-action'\)/)
+  assert.match(proxy, /if \(action && \(value === '' \|\| options\?\.maxAge === 0\)\) continue\s*\n\s*res\.cookies\.set\(/)
+})
+
 test('R-214: the shell hands its user to every page it draws, not the editor alone — Sign out everywhere reads the id there', () => {
   // `sessions-card.tsx` takes the user's id from `useShellUser()`, and `useSignOut` with no id signs out without sending
   // or erasing. The provider stood on the editor branch only, so on production Account's door skipped R-214 whole (the
