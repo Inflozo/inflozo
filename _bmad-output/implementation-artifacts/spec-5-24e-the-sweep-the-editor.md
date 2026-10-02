@@ -483,7 +483,8 @@ All anchors are at `0e8dcbb0`.
     so a sign-in in another tab rides this tab's next fetch (executed).
   - The panel shows:
     - the title **Signed out**;
-    - the sentence, imported from `lib/journal.ts` — R-213's words; in fallback, Question 1's;
+    - the sentence, imported from `lib/journal.ts` — R-213's words; in fallback, R-227's: "You've been signed out. Your
+      latest changes have not reached the cloud yet — keep this tab open, sign in again and they will be sent.";
     - one **Sign in** link in Retry now's style: an `<a>` to the app's `/sign-in`, with `syncUrl`'s `/app` prefix rule
       (`:1561`), `target="_blank"` and `rel="noopener"`;
     - no Retry now.
@@ -917,7 +918,7 @@ All anchors are at `0e8dcbb0`.
     - `:163` Ghost's Own Surfaces (R-215);
     - `:833` (the default).
   - `addendum.md`'s lock timings: `LEAVE_GRACE_MS`.
-  - The register: R-213–R-218's "⬜ built" targets become ✅ with this story's Dev.
+  - The register: R-213–R-218's and R-227's "⬜ built" targets become ✅ with this story's Dev.
   - `epics.md`:
     - Story 5.11's card (`:1927`), a dated note: R-218;
     - the Epic 9 and Epic 10 preamble lines (DW-281).
@@ -953,7 +954,7 @@ All anchors are at `0e8dcbb0`.
     `resolution:` names that evidence;
   - *and* DW-304, DW-305 and DW-306 are open, each named in its owner's card, and no entry was deleted or renumbered.
 - **The rulings.**
-  - *Given* R-213 to R-218,
+  - *Given* R-213 to R-218 and R-227,
   - *when* each one's line is removed,
   - *then* its stop goes red;
   - *and* FR-D10, FR-C2, FR-H6, FR-D13 and EXPERIENCE.md say what was built, and the register's targets are ticked.
@@ -994,8 +995,9 @@ All anchors are at `0e8dcbb0`.
 
 ## Design Notes
 
-**One question is the owner's.** Question 1 sets two of his rulings against each other in one case (standing rule 6).
-Every other call below is technical or already ruled, so it is stated here in one line each.
+**One question was the owner's, and he has ruled it.** Question 1 set two of his rulings against each other in one
+case (standing rule 6); he ruled option 1 on 2026-10-02, recorded as R-227. Every other call below is technical or
+already ruled, so it is stated here in one line each.
 
 **Routine calls made here.**
 
@@ -1067,7 +1069,7 @@ Every other call below is technical or already ruled, so it is stated here in on
 
 ## Questions for the owner
 
-One question is open. Dev may build everything else first; the Dev commit waits for your answer.
+The owner ruled Question 1 on 2026-10-02 (R-227). No question is open.
 
 ### Question 1 — Signed out in another tab of this browser: what should the editor's message say? (R-213 and R-214)
 
@@ -1094,7 +1096,10 @@ open tab until you sign in again.
 3. **One sentence for every case.** "You've been signed out. Sign in again and your work will be sent." This drops
    "safe on this device" everywhere, including where it is true.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-02).** *"1. A second sentence for that one case"*. Recorded as **R-227**: while the
+editor is in fallback, holding no copy on this device, the signed-out panel says "You've been signed out. Your latest
+changes have not reached the cloud yet — keep this tab open, sign in again and they will be sent." R-213's sentence
+stays for every other case.
 
 ## Owner's manual test
 
@@ -1122,7 +1127,7 @@ Where a step changes something in Ghost Admin or Inflozo, it says how to put it 
 | 13 | same | Pilot sections | In A, hide one section (its ⋯ → Hide) and straight away close A's tab. Wait. Afterwards show the section again. | — | Within about fifteen seconds B can edit, and the section is hidden in B. |
 | 14 | same, A editing again | Pilot sections | In A press ⌘K. In B press **Request editing**, wait for **Take over**, and press it. | — | A's Section Picker closes by itself as A turns read-only, and its controls grey out. |
 | 15 | Chrome: step 12's URL; another browser (Safari or Firefox): `https://app.inflozo.com/account` | the editor in Chrome, Account in the other browser | In the other browser, sign in and press **Sign out everywhere**. In Chrome, add one word to the post grid's title and press ⌘S. Press **Sign in** in the red panel, sign in in the new tab, then come back to the editor tab. Afterwards delete the word. | one word | "You've been signed out. Your work is safe on this device — sign in again and it will be sent." with **Sign in**. Back in the editor tab the save mark turns green, and a reload keeps the word. |
-| 16 | step 12's URL, plus `https://app.inflozo.com/` in a second tab of the same browser | the editor, then Projects | In the second tab, sign out (avatar → **Sign out**). Back in the editor tab, add one word to the title. Then press **Sign in** and sign in. | one word | The sentence you rule in Question 1. After you sign in, the word is sent. |
+| 16 | step 12's URL, plus `https://app.inflozo.com/` in a second tab of the same browser | the editor, then Projects | In the second tab, sign out (avatar → **Sign out**). Back in the editor tab, add one word to the title. Then press **Sign in** and sign in. | one word | "You've been signed out. Your latest changes have not reached the cloud yet — keep this tab open, sign in again and they will be sent." with **Sign in** (R-227). After you sign in and come back to the editor tab, the word is sent. |
 | 17 | window A: step 12's URL; window B: `https://app.inflozo.com/` | the editor and Projects, side by side | In B, switch autosave off (Account → Saving), go back to Projects, and reload A. Add one word to A's title. Turn Wi-Fi off. In B: avatar → **Sign out**, then press **Wait**. Turn Wi-Fi on and sign out again in B. Close window A. Sign in and open Pilot sections. Afterwards delete the word and switch autosave back on. | one word | The first time: "Sign out with unsent work?", "1 unsynced edit will be lost", "Signing out erases this browser's copy.", with the focus on **Wait**. The second time there is no question, and you are signed out. After signing in, the word is there. |
 | 18 | `https://ghost5.inflozo.com/ghost/`, then step 6's URL | Ghost Admin → a post → Post settings → Post access, then the editor | Set one post's access to **Specific tier(s)** with the paid tier, and Update. In **Previewing with**, choose that post. Set **View as** to Paid member, then Free member. Afterwards put the post's access back. | — | Paid member: the whole article, no cut. Free member: cut at the line. |
 | 19 | Pilot sections → **Template ▾ → Template surfaces → Paywall** | Paywall canvas | Open it. | — | Ghost's own box looks exactly as before. |

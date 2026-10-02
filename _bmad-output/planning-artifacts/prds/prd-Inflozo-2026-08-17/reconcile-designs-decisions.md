@@ -4783,6 +4783,9 @@ Question 2, ruled **option 1** (owner, 2026-09-28): *"Your picks, everywhere"*.
 - **The rule.** In B6's red panel: *"You've been signed out. Your work is safe on this device — sign in again and it will
   be sent."*, with a **Sign in** button that opens a new tab so this one keeps its work; once signed in, the owed work is
   sent. Only a refusal that signing in cures takes this state; a dropped connection keeps Retrying.
+- **Refined by R-227** (owner, 2026-10-02): where the editor holds no copy on this device — in fallback, as after a
+  sign-out in another tab that R-214 erased — the panel says R-227's sentence instead, because "safe on this device"
+  would be untrue.
 - **Declined.** Option 2, Retrying with a new sentence; option 3, sending the tab to the sign-in page.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 3 · ⬜ built — Story 5.24e, with FR-D10's states and
   EXPERIENCE's persistence indicator row.
@@ -4800,7 +4803,7 @@ if it cannot be sent, ask before signing out"*.
   the holder's on-device record. The edit lock never stopped it, because only `commit()` asks who holds the lock and
   `flush()` and the hydrate do not. Story 5.24e closes it: a tab that does not hold the lock adopts and sends nothing.
   Signing out in one tab while the editor is open in another also leaves R-213's "safe on this device" untrue —
-  Story 5.24e's Question 1.)*
+  Story 5.24e's Question 1, ruled as R-227.)*
 - **Declined.** Option 2, always erase; option 3, keep it.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 4 · ⬜ built — Story 5.24e.
 
@@ -4970,6 +4973,22 @@ stylesheet and designs #1, #3, #4 and #13" — keeping each story's number and i
   5.24b's card · ✅ `prd.md` Appendix G · ✅ built — Story 5.24b's Dev (2026-09-29): `connectSite` asks the root's
   `config/` when a path was typed, after `already_connected` and before the plan's limit; only a `404` there refuses
   (`pathRefused`, pure and tested both ways), and any other answer is the validation itself.
+
+**R-227 — signed out with no copy on this device, the editor says the work is only in this tab.** Story 5.24e's
+Create, Question 1, ruled **option 1** (owner, 2026-10-02): *"1. A second sentence for that one case"*.
+
+- **Why it was a question.** R-213's sentence says "Your work is safe on this device", and R-214 erases this browser's
+  copy at sign-out. Signing out in one tab while the editor is open in another leaves that editor holding no copy on the
+  device, so the sentence would be false. The save message's own rule (B6, FR-D10) is never to claim the device holds
+  what it does not.
+- **The rule.** In that one case — the signed-out state while the editor is in fallback, holding no copy on the device —
+  B6's red panel says *"You've been signed out. Your latest changes have not reached the cloud yet — keep this tab open,
+  sign in again and they will be sent."*, with the same **Sign in** button. R-213's sentence stays for every other case:
+  signed out on another device, or the sign-in simply running out.
+- **Declined.** Option 2, the open editor writing this browser's copy back after the erase, which undoes R-214 for an
+  open editor; option 3, one sentence for every case.
+- Targets: ✅ this entry · ✅ R-213's entry · ✅ Story 5.24e's spec — Question 1, the R-213 task and the owner's test ·
+  ⬜ built — Story 5.24e, with FR-D10's states and EXPERIENCE's persistence indicator row.
 
 ## B · Approved decisions superseded by this session
 
