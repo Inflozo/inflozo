@@ -4795,6 +4795,12 @@ if it cannot be sent, ask before signing out"*.
   a shared computer, traded against work not yet sent.
 - **The rule.** Sign out sends what is owed, then deletes the browser's copy; when it cannot send, it asks before signing
   out, and signing out anyway erases. The two-tab half of DW-203 was already closed by the edit lock (Story 5.17).
+  *(Story 5.24e's Create, 2026-10-02: that last sentence is false, executed in the harness with two tabs of one
+  browser. A tab reading along adopts the holder's pending journal, sends it when hidden, takes the 423, then drops
+  the holder's on-device record. The edit lock never stopped it, because only `commit()` asks who holds the lock and
+  `flush()` and the hydrate do not. Story 5.24e closes it: a tab that does not hold the lock adopts and sends nothing.
+  Signing out in one tab while the editor is open in another also leaves R-213's "safe on this device" untrue —
+  Story 5.24e's Question 1.)*
 - **Declined.** Option 2, always erase; option 3, keep it.
 - Targets: ✅ this entry · ✅ Story 5.24a's spec — Question 4 · ⬜ built — Story 5.24e.
 

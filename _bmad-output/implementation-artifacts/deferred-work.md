@@ -7919,3 +7919,59 @@ location: `apps/web/app/(app)/app/(authed)/sites/connect-wizard.tsx` (the `alive
 reason: a keyboard-gate stop needs a harness mount of the wizard with its browser check answered by `page.route` —
   a new harness page, more than a review patch. The rule it would hold is general: a ref cleared in an effect's cleanup
   must be set in the effect's body.
+
+## Deferred from: Story 5.24e's Create (2026-10-02)
+
+### DW-304: a save the server refuses for good still says it will be sent "when the connection returns"
+
+plain: If a project is deleted in another window while it is open in the editor, or this browser is now signed in to a
+  different account, the editor keeps saying it will send your work "when the connection returns" — and it never will.
+  Signing in again cannot fix it either, so the signed-out message Story 5.24e builds (R-213) does not cover it.
+status: open
+severity: low
+origin: Story 5.24e's Create (2026-10-02), the read-only pass on R-213, executed in the harness: `sync/route.ts` answers
+  404 for a deleted project or another account's session (`:50`, `:114`), 400 for a malformed body (`:56-67`) and 422
+  for a document it will not store (`:73`, `:75`, `:79`), and `editor.tsx`'s `flush` sends every one of them to the
+  Retrying backoff (`:1643` → `:1656`). R-213 takes only "a refusal that signing in cures" — the 401.
+owner: Story 7.18 (the deploy wizard), whose card names this entry: its pre-deploy flush meets the same refusal, and its
+  Create asks the owner (R-83) for the sentence both say.
+location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`flush`) ·
+  `apps/web/components/editor/save-state.tsx` · `apps/web/lib/journal.ts`
+reason: the honest answer is a state and a sentence no frame draws and no ruling gives (R-74, R-83). A 400 or 422
+  needs a bug to reach it; a 404 needs the project deleted, or the account changed in the same browser, while the
+  editor is open.
+
+### DW-305: on an invite-only site, a section asking people to pay is not warned, though Ghost blocks its sign-up too
+
+plain: When your site lets in only people you invite, Ghost's own sign-up window refuses everyone — paying members too.
+  The settings line Story 5.24e builds (R-216) warns a free sign-up section in the Sites screen's words, but no Sites
+  sentence covers a PAID ask on such a site, so a section asking people to pay would show no warning while its button
+  signs nobody up.
+status: open
+severity: low
+origin: Story 5.24e's Create (2026-10-02), the read-only pass on R-216: Portal's `signup-page.jsx:715-718` (read in
+  source) blocks every sign-up when sign-up access is invite-only, while a paid ask compiles behind
+  `@site.paid_members_enabled` alone (R-4); `membersNotice` (`apps/web/lib/paywall.ts:76-86`) has an invite-only
+  sentence for free sign-up forms only. No library design carries a paid ask today (a22/1's is free).
+owner: Story 9.1 (A1 — the content model, the stylesheet and designs #1, #3, #4 and #13), whose card names this entry:
+  A1's free-member upgrade ask (`account/plans`) is the first paid ask a design can carry, and its Create asks the
+  owner (R-83) for the sentence, or rules the case out.
+location: `apps/web/lib/paywall.ts` (`membersNotice`, and the one list of asks and sentences R-216 builds)
+reason: the words are the owner's — R-216 says "in the Sites screen's own sentence", and no Sites sentence exists for
+  this case (R-170) — and nothing reaches the case before a design carries a paid ask.
+
+### DW-306: an announcement bar can be put below the header, while the library says A2 sits above it
+
+plain: Your site-wide header and announcement bars share one group in Layers, and you can put them in either order —
+  the page follows the list. The library's description of announcement bars says they sit above the header. Before the
+  first announcement bar design ships, someone must decide whether one may sit below the header.
+status: open
+severity: low
+origin: Story 5.24e's Create (2026-10-02), the read-only pass on DW-187: `apps/web/lib/editor.ts`'s `canvasStack`
+  (`:185-190`) draws the site doc's non-footers in doc order, and Story 5.24e's clamp keeps headers and bars in one
+  band, in the order the user puts them; `sections-inventory.md:129` describes A2 as "Site-wide, above header".
+owner: Story 9.5 (A2 — the content model, the stylesheet and designs #1–4), whose card names this entry.
+location: `apps/web/lib/editor.ts` (`canvasStack`, and Story 5.24e's `landWithin`) ·
+  `apps/web/components/controls/layers.tsx`
+reason: no A2 design exists, so no page can hold a bar and a header today; whether the band keeps a bar above the
+  header or lets it sit below is A2's own design decision.
