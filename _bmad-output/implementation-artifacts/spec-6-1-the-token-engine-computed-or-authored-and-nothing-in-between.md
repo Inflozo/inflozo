@@ -2,7 +2,7 @@
 title: 'Story 6.1 — The token engine: computed or authored, and nothing in between'
 type: 'feature'
 created: '2026-10-03'
-status: 'in-review'
+status: 'done'
 owner_test: none
 review_loop_iteration: 1
 baseline_commit: '834a4159f133aa410cbcd5ed7b453818e9dd3614'
@@ -666,3 +666,15 @@ Keys are named by their variable in `tools/probe/.env`, never by value. Node 24.
   - The pilots, controls and lock walks ran on `662689ee`; the Review build changes no emitted CSS byte.
 - **Supabase schema:** no migration in this story (`git diff --stat 834a4159 HEAD -- supabase/` is empty), so there is
   nothing for production to be behind on (R-99).
+
+### Results — Deploy (2026-10-03)
+
+**Executed at Deploy.** App code and tooling; no migration (`git diff --stat 834a4159 HEAD -- supabase/migrations` is empty),
+so there is no schema step and `RLS-TEST.sql` ran in CI's `rls` job. `owner_test: none` — nothing new appears on the
+owner's screens — so this Deploy is also Done.
+
+- **CI, for HEAD `ffb3fafc1d1b4f56ccee14edcabba72d643774da`** (GitHub API, `GITHUB_TOKEN` by name): `ci.yml` run
+  37125929757 — `check`, `rls` and `deploy` all `success`; `matrix.yml` run 37125929763 `success`.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT` by name): the deployment for that
+  sha is `READY`, target `production`. `https://app.inflozo.com/sign-in` answers HTTP 200 and `https://inflozo.com/` 200.
+- **Deployment: `dpl_2tr7UbiFV8yypNGZGjEbWEAUKb5k` (https://app.inflozo.com/).**

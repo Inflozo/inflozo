@@ -120,7 +120,7 @@ development_status:
   epic-5-retrospective: optional
 
   epic-6: in-progress
-  6-1-the-token-engine-computed-or-authored-and-nothing-in-between: review
+  6-1-the-token-engine-computed-or-authored-and-nothing-in-between: done
   6-2-the-twelve-presets-and-the-font-pool: backlog
   6-3-the-pack-switcher-moment: backlog
   6-4-editing-tokens-per-mode-with-contrast-checked-live: backlog
