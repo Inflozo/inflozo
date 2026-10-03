@@ -2,7 +2,8 @@
 title: 'Story 6.2 — The twelve presets and the font pool'
 type: 'feature'
 created: '2026-10-03'
-status: 'ready-for-dev'
+status: 'in-progress'
+baseline_commit: '3f6449a3883f2a5c27623d1290667c79de99f322'
 owner_test: pending
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
@@ -187,7 +188,7 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `tools/fonts/build-pool.py` + its `tools/doc-audit.py` catalogue row -- new, PEP 723 inline deps (`fonttools`,
+- [x] `tools/fonts/build-pool.py` + its `tools/doc-audit.py` catalogue row -- new, PEP 723 inline deps (`fonttools`,
   `brotli`, pinned), run with `uv run`; docstring on any flag. Reads §D.c from `prd.md` (the rows, nothing typed again);
   for each family fetches `METADATA.pb`, the licence text and the declared TTFs from github.com/google/fonts at ONE pinned
   commit; refuses a licence other than OFL/Apache 2.0 or a face type or weight that differs from §D.c; pins every
@@ -195,73 +196,73 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
   static family; subsets each face to `latin` and `latin-ext` with the ranges in `apps/web/app/fonts/fonts.css`, keeping
   every layout feature; writes woff2 with timestamps not recalculated, so a re-run is byte-identical -- one step builds
   the canvas's files and the theme's (D.b)
-- [ ] `packages/library/fonts/` -- run the builder: `files/*.woff2`, `licences/<family>.txt`, and `pool.json` (per
+- [x] `packages/library/fonts/` -- run the builder: `files/*.woff2`, `licences/<family>.txt`, and `pool.json` (per
   pairing: id, name, each role's family, CSS fallback generic, face type, range or weights, and each file's style,
   weight, subset, `unicode-range`, bytes and sha256; each face's cap height from `OS/2` and whether it carries `tnum`;
   the licence and the commit) -- the pool, built once and committed
-- [ ] `packages/library/src/` + `package.json` `exports` -- export the pool (`pool.json`) and the packs; a
+- [x] `packages/library/src/` + `package.json` `exports` -- export the pool (`pool.json`) and the packs; a
   `fontFaceCss(pairingId, url)` beside the runtime's token block (`packages/section-runtime/src/fonts.ts`, exported)
   emitting one `@font-face` per file — family, style, weight range, `font-display: swap`, `unicode-range`, `src:
   url(url(file)) format('woff2')` — with an optional family prefix for the app document -- the one emitter the canvas,
   the app and Epic 7 share
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- Appendix D: the roster table per
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- Appendix D: the roster table per
   R-231; a new **§D.d The twelve presets (normative, authored)** after §D.c — per pack its pairing, per mode the
   seven roles and the scrim, the pill radius and the seven steps, and `REFERENCE_PACKS` per R-234; §D.c's D19/D22
   rows and §D.a rule 3 per R-232; §D.c's closing promise per R-233; §D.a rule 5 says how the budget is read
   (Design Notes) with the measured Paper figures -- the document the packs are read from
-- [ ] `packages/library/packs/` -- the twelve as data in §D.d's order (ids `paper` … `quiet`), `REFERENCE_PACKS`, each
+- [x] `packages/library/packs/` -- the twelve as data in §D.d's order (ids `paper` … `quiet`), `REFERENCE_PACKS`, each
   preset's fonts filled from `pool.json` (family list with its fallback, cap height, `tabular`) -- the presets, data
   only, in the spine's home
-- [ ] Ask First -- author the twelve per Design Notes' proposal and the rulings; render each on the five pilots, light
+- [x] Ask First -- author the twelve per Design Notes' proposal and the rulings; render each on the five pilots, light
   and dark, at 1440 (the matrix's render path, `?pack=`); show the owner a private review page with each pack's table;
   apply his changes; record his approval under `## Questions for the owner` -- the presets' values are his to approve
-- [ ] `packages/section-runtime/src/tokens.ts`, `index.ts`, `reference-tokens.css` -- `REFERENCE_PACK` becomes the Paper
+- [x] `packages/section-runtime/src/tokens.ts`, `index.ts`, `reference-tokens.css` -- `REFERENCE_PACK` becomes the Paper
   preset read from the library; drop the hand-written faces; regenerate the CSS -- one Paper
-- [ ] `packages/section-runtime/src/packs.test.ts` (new) -- every preset passes `packTokens`; the AA sheet (Always) per
+- [x] `packages/section-runtime/src/packs.test.ts` (new) -- every preset passes `packTokens`; the AA sheet (Always) per
   preset and mode, naming any failure; `REFERENCE_PACK` equals `paper`; `fontFaceCss` emits exactly the pool's files
   for a pairing, `swap` and the ranges; a prefixed family never equals an app face -- the runnable check of the presets
-- [ ] `tools/stress/test-vocabulary.mjs` -- §D.d ↔ `packs/` both directions; §D.c ↔ `pool.json` (families, face type,
+- [x] `tools/stress/test-vocabulary.mjs` -- §D.d ↔ `packs/` both directions; §D.c ↔ `pool.json` (families, face type,
   range or weights) both directions; every `pool.json` file exists with its sha256 and no other file sits in `files/`;
   per pairing faces ≤ 5 and latin bytes ≤ 200 KB; licences OFL/Apache; heading faces roman only, body faces roman and
   italic; no tracked file under `apps/web`, `packages` or `tools/matrix` names a Google font host — each check behind a control
   that fails it -- Appendix D held in CI
-- [ ] `apps/web/lib/pilots.ts`, `style-guide.ts` -- `pilotsCanvasDocument(only?, extra?, pack = 'paper')` and the
+- [x] `apps/web/lib/pilots.ts`, `style-guide.ts` -- `pilotsCanvasDocument(only?, extra?, pack = 'paper')` and the
   style guide's `head()` carry the pack's token block (Paper's stays `reference-tokens.css`'s bytes) and its
   `fontFaceCss` with URLs that reach the canvas route's `?font=` from that document, as `?image=` does -- the canvas
   loads the theme's files (D.b)
-- [ ] `apps/web/app/(app)/app/(authed)/canvas/route.ts`, `app/harness/canvas/route.ts`, `tools/check-traces.mjs` --
+- [x] `apps/web/app/(app)/app/(authed)/canvas/route.ts`, `app/harness/canvas/route.ts`, `tools/check-traces.mjs` --
   `?font=<file>` served only when the name is a `pool.json` file (`font/woff2`, immutable, `nosniff`), `?pack=<id>` only
   when a preset (404 otherwise); `/canvas` carries `packages/library/fonts` -- self-hosted, same origin, traced
-- [ ] `apps/web/lib/style-pack.ts` -- `PRESETS` derived from the library's packs (name; glyph family = the pool
+- [x] `apps/web/lib/style-pack.ts` -- `PRESETS` derived from the library's packs (name; glyph family = the pool
   heading face under the app prefix; placeholder surface = light background; accent; text) — no hex left in the file
   but what the derivation needs; a `packFacesCss()` of every preset's heading faces under the prefix, linked in the
   authed layout so a glyph draws wherever a cell does -- DW-15: the dashboard and D4a paint from the canvas's values
-- [ ] `apps/web/components/kit/pack-cell.tsx` -- the active cell carries a visually hidden "Current"; the glyph never
+- [x] `apps/web/components/kit/pack-cell.tsx` -- the active cell carries a visually hidden "Current"; the glyph never
   synthesises a weight (`font-synthesis: none`) -- the ring's meaning reaches a screen reader
-- [ ] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/` -- the editor reads `style_pack` with the project;
+- [x] `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/` -- the editor reads `style_pack` with the project;
   a new `style-pack.tsx` beside `editor.tsx` draws S4a's card (Design Notes) and S7a's panel; at rest the panel reads
   "Page", then the card, then the existing `EmptyPanel`; **Change** swaps the panel for the roster (focus to the back
   button), the back button returns (focus to Change), Escape returns too; cells are `PackCell`s in a list, not buttons;
   the ABSENT comment (:297-299) says the card is 6.2's and the switch 6.3's -- S4a and S7a, looking only
-- [ ] `apps/web/app/(app)/app/(authed)/pilots/page.tsx`, `review.tsx`, `apps/web/lib/controls-review.ts` -- a Pack
+- [x] `apps/web/app/(app)/app/(authed)/pilots/page.tsx`, `review.tsx`, `apps/web/lib/controls-review.ts` -- a Pack
   menu (the twelve, §D.d's order, Paper first) that loads the canvas with `?pack=`, the Background dots following the
   chosen pack and mode -- every pack on the five pilots in both modes, the epic's exit, for the owner's eye
-- [ ] `tools/keyboard/journey.spec.mjs` -- one journey: Tab to Change, Enter, the panel lists the twelve with the
+- [x] `tools/keyboard/journey.spec.mjs` -- one journey: Tab to Change, Enter, the panel lists the twelve with the
   current one named "Current", the back button returns focus to Change -- the keyboard path in CI
-- [ ] `packages/library/designs/a4/13/style.css`, `a1/1/style.css` -- the `--button-fill` button answers
+- [x] `packages/library/designs/a4/13/style.css`, `a1/1/style.css` -- the `--button-fill` button answers
   `[data-bg="contrast"]` as A22 #1 does -- DW-317: an Outline label is never the band's own colour
-- [ ] `tools/matrix/cases.mjs`, `cases.test.mjs`, `matrix.spec.mjs`, `serve.mjs` -- the pack axis is `REFERENCE_PACKS`;
+- [x] `tools/matrix/cases.mjs`, `cases.test.mjs`, `matrix.spec.mjs`, `serve.mjs` -- the pack axis is `REFERENCE_PACKS`;
   each case's document carries its pack's block and faces (served `?font=` as `/canvas` does); per R-233 one case
   per pairing photographs a specimen the matrix owns (a heading, a paragraph with a bold and an italic run, tabular
   figures, latin-ext letters) in Paper's palette with that pairing's faces, light, 1440; the test asserts the axis equals
   `REFERENCE_PACKS` and a reference pack sits off Paper's step on `buttons` and on `gutters` -- DW-169, DW-313, DW-317
-- [ ] `docs/render-matrix.md` -- the pack axis (`REFERENCE_PACKS`, ruled), the specimen row, and that the image's
+- [x] `docs/render-matrix.md` -- the pack axis (`REFERENCE_PACKS`, ruled), the specimen row, and that the image's
   Georgia and Inter are now fallbacks -- the rules say what runs
-- [ ] `packages/library/baselines/` -- Ask First: `bash tools/matrix/run-matrix-gate.sh --update` in the image; the
+- [x] `packages/library/baselines/` -- Ask First: `bash tools/matrix/run-matrix-gate.sh --update` in the image; the
   owner's sampled review (one design per category, each reference pack light and dark at 1440, before beside after,
   each with its cause and its frame, plus a page of the specimens); on approval a baselines-only commit after the Dev
   commit naming this story, pushed with it -- NFR-6(a)'s mass rebaseline
-- [ ] `deferred-work.md`, `epic-6-context.md`, `editor.tsx`, `new-project-sheet.tsx`, `style-pack.ts`,
+- [x] `deferred-work.md`, `epic-6-context.md`, `editor.tsx`, `new-project-sheet.tsx`, `style-pack.ts`,
   `tools/matrix/Dockerfile` (comment only), `ARCHITECTURE-SPINE.md:645` -- close DW-11, DW-15, DW-169, DW-309, DW-311,
   DW-312, DW-313, DW-317 with their proof; a dated Dev sub-bullet; comments name the right stories; grep for `Georgia`
   and for the old `PRESETS` shape (standing rule 7) -- the ledger closes on evidence
@@ -291,6 +292,15 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
   --check` and `bash supabase/tests/run-rls-gate.sh` are green.
 
 ## Spec Change Log
+
+- **Dev (2026-10-03), where the build had to differ from the letter of a task** — each recorded where it lives:
+  a static face's file carries its weight (`poppins-roman-600-latin.woff2`), since one family can ship several;
+  `fontFaceCss`'s address callback is handed the pool's record of the file, so the app's address (`style-pack.ts`'s
+  `fontHref`) carries the file's own hash and `?font=` may be kept `immutable`; `fontHref` lives in `lib/style-pack.ts`
+  because the New project sheet is a client module that must not carry the runtime (the runtime gained a light
+  `./fonts` subpath); A1 #1 offers no contrast ground, so the validator refuses a `[data-bg="contrast"]` rule there and
+  its stylesheet says so instead (DW-317); the builder drops TrueType hinting, or D15 breaks §D.a rule 5 (§D.a says so);
+  Libre Caslon Text is variable-only upstream, so D2's static 700 is cut from it under Question 5.
 
 ## Design Notes
 
@@ -341,7 +351,9 @@ and 4.11:1 under its own text `#2B1D12`, so its on-accent is authored darker, as
 
 ## Questions for the owner
 
-The owner ruled all four at Create on 2026-10-03, each as recommended (R-231 to R-234). No question is open.
+The owner ruled Questions 1–4 at Create on 2026-10-03, each as recommended (R-231 to R-234), and Questions 5–7 in the Dev
+session the same day, each as recommended (Question 5 recorded as R-235; Questions 6 and 7 are the Ask First list's two
+approvals), on one private review page (https://claude.ai/artifact/RYnF2YzsZWnenMuoDsUU7B). No question is open.
 
 ### Question 1 — Where the drawings and the plan disagree about the twelve packs, which wins? (DW-309, DW-311, DW-11)
 
@@ -413,6 +425,56 @@ Paper (solid buttons) is photographed.
 **Ruled: option 1 (owner, 2026-10-03).** *"Paper, Mono and Neon"* — recorded as R-234. `REFERENCE_PACKS` is `paper`,
 `mono`, `neon`; Mono sits off Paper's step on buttons and gutters (DW-317).
 
+### Question 5 — Ink's heading font now comes only as an adjustable file. Cut the one weight Ink needs from it? (DW-311)
+
+**In plain English.** The plan gives Ink's headings Libre Caslon Text as one fixed file at bold (weight 700). Google has
+since replaced that family's fixed files with a single adjustable one that can draw any weight from 400 to 700, and the
+font builder is told to stop when Google's files differ from the plan.
+
+**An example.** Google used to ship `LibreCaslonText-Bold.ttf`; at the pinned version it ships only
+`LibreCaslonText[wght].ttf`. Cut at 700, it gives exactly the one file the plan describes — 23.8 KB for English text.
+
+1. **Cut a fixed weight-700 file from the adjustable one (RECOMMENDED).** The plan's table stays as written; Ink looks
+   as the review page shows it (it was built this way so you can judge it).
+2. **Change the plan to call it adjustable**, clipped to 700 only — the same bytes under a different label in the table.
+3. **Give Ink a different heading font** — name it, from the pool or outside it.
+
+**Ruled: option 1 (owner, 2026-10-03).** *"Cut bold from it"* — recorded as R-235. `tools/fonts/build-pool.py`'s
+`STATIC_CUTS` names Libre Caslon Text, so D2's `S · 700` is cut from the variable file at 700; §D.c stays as written.
+
+### Question 6 — Do you approve the twelve Style Packs' colours and settings? (Ask First)
+
+**In plain English.** Each of the twelve packs now has its own colours for light and for dark, its two fonts and its own
+corners, spacing, width, gutters, buttons, shadow and links. The review page shows every pack on the five sample sections,
+in light and in dark, with its table of values. Nothing is saved until you approve.
+
+**An example.** Tangerine's buttons are its orange `#E8450A` with near-black words, because white words on that orange
+are too faint to read (3.97:1, below the 4.5:1 every pack holds).
+
+1. **Approve all twelve as shown (RECOMMENDED).**
+2. **Approve with changes** — name the pack and what to change, for example "Neon's dark accent bluer" or "Ocean with
+   solid buttons"; the change is made and shown to you again.
+3. **Redo some** — name which, and what is wrong with them.
+
+**Ruled: option 1 (owner, 2026-10-03).** *"Approve all twelve"* — the presets are committed as the review page showed
+them: Appendix D §D.d and `packages/library/packs/packs.json`, unchanged.
+
+### Question 7 — Do you approve the new test photographs? (Ask First, the mass rebaseline)
+
+**In plain English.** The automatic photo check now takes every section in Paper, Mono and Neon (your three reference
+packs), and one sample photograph per font pairing. Every old photograph changes, because Paper's headings are now
+Fraunces and every page loads Inflozo's own font files. The review page shows one section per kind, before beside after,
+in light and dark, and a page of the pairing samples.
+
+**An example.** The Latest Post hero's headline was drawn in a Georgia look-alike; now it is Fraunces, the font the
+theme will ship — the layout does not move.
+
+1. **Approve (RECOMMENDED).** The new photographs are saved in their own commit, after the code.
+2. **Reject** — say what looks wrong; it is fixed as a defect and the photographs are taken again.
+
+**Ruled: option 1 (owner, 2026-10-03).** *"Approve"* — the new baselines land in their own commit right after the Dev
+commit, naming it, and the two are pushed together.
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, on a laptop with the window at full width. Nothing here
@@ -458,3 +520,34 @@ changes your projects.
   `matrix.yml` green on the head; production READY from it.
 - **github.com/google/fonts** (read-only, at the pinned commit): the builder's source; no key.
 - Supabase schema, Resend, Dodo, T1 and T3 are not touched: no migration, no email, no billing, no theme.
+
+**Dev's results (2026-10-03):**
+- `uv run tools/fonts/build-pool.py 2>&1 | cat` — every §D.c family read at google/fonts `9710da1eacb3be272583c3224dcb70f9da6eadbb`,
+  each OFL or Apache 2.0, `pool.json` written; run again from the download cache, `pool.json` and every file under
+  `files/` and `licences/` byte-identical (sha256 listing compared). Every pairing within §D.a rule 5 as read; the
+  heaviest is D15 at 165.1 KB of latin. Libre Caslon Text refused as variable-only until R-235's `STATIC_CUTS` entry.
+- `python3 tools/fonts/build-pool.py --self-check` (new, in `pnpm test`) — pass; red with the licence refusal removed
+  and red with the "static only" refusal removed (each a scratch copy).
+- `node --test packages/section-runtime/src/packs.test.ts …tokens.test.ts` — pass; red with white words on Tangerine.
+- `node tools/stress/test-vocabulary.mjs` — pass; red with one §D.d value changed, one §D.c weight changed, one woff2
+  byte flipped and a `fonts.gstatic.com` line added to a test document, each restored and compared.
+- `pnpm check` (Node 24) — exit 0. `pnpm keyboard` — 158 passed, the new 6.2 journey among them; that journey then
+  gained the I/O matrix's read-only row (Change opens the list while reading along, with the Layers footer's greyed
+  `+ Add section` as the control that the window really is reading along) and passed again alone (`--grep "6.2 ·"`).
+- `pnpm build` — pass; `check-traces` passed on a scratch copy that counts untracked files (`/canvas` carries
+  `packages/library/fonts`); CI's `check` job runs the real script on the committed tree.
+- `bash tools/matrix/run-matrix-gate.sh --update` in the pinned image, then the gate — green on the new set: every
+  design × Paper, Mono and Neon × light and dark × every viewport and row, plus one specimen per pairing; 0 axe
+  violations, nothing sideways. The owner's sampled review approved it (Question 7).
+- `python3 tools/doc-audit.py --check` twice and `bash supabase/tests/run-rls-gate.sh` — green (no migration).
+- A side-by-side of Fraunces' optical sizes (scratch only): the size-matched cut doubles Paper's heading file
+  (33.5 → 64.3 KB) for a small change at heading sizes, and the headline cut is too thin at card-title size, so §D.a
+  rule 4 (non-`wght` axes pinned at their defaults) is kept as written — a routine call, no question.
+
+**Real services in Dev (R-82):**
+- **github.com/google/fonts** (`raw.githubusercontent.com`, read-only, no key) — `METADATA.pb`, licence and TTF for
+  every §D.c family at the pinned commit: 200 for each file the builder reads; the upstream `fvar`s were read with
+  fontTools (Fraunces `opsz` 9–144 default 9, `WONK` default 1; Libre Caslon Text `wght` 400–700 only).
+- **claude.ai** — the owner's private review page (packs, before beside after, specimens), where he ruled Questions 5–7.
+- Supabase, Vercel, Resend, Dodo, T1 and T3: not touched in Dev. app.inflozo.com, CI and Vercel READY are the Review's
+  (above).

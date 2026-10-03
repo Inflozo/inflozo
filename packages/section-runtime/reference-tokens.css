@@ -18,10 +18,10 @@
   --negative: #D92D20;
   --plate: #F3EFE8;
   --figures-tabular: "tnum" 1;
-  --drop-cap-ratio: 3.504;
+  --drop-cap-ratio: 3.468;
   --scrim: rgba(35, 32, 25, 0.45);
   --radius-pill: 999px;
-  --font-heading: Georgia, serif;
+  --font-heading: 'Fraunces', serif;
   --font-body: 'Inter', sans-serif;
   --radius-card: 8px;
   --radius-control: 8px;

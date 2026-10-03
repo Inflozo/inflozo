@@ -642,7 +642,7 @@ graph TB
 | FR-B projects & dashboard | E1 (cut line), E13 | `apps/web/app/(app)/dashboard`, `projects` | AD-6, AD-8, AD-25 |
 | FR-C sites & connections | E3 | `apps/web/server/ghost-admin`, `sites`, `site_credentials` | AD-7, AD-10, AD-23, AD-24 |
 | FR-D editor core | E5 | `apps/web/app/(app)/editor`, `packages/section-runtime` | AD-1, AD-3, AD-4, AD-15, AD-16, AD-21, AD-22 |
-| FR-E style packs | E6 | `packages/library/packs`, the token block in `default.hbs` | AD-3, AD-17, AD-18 |
+| FR-E style packs | E6 | `packages/library/packs` (Appendix D §D.d's presets as data — Story 6.2), `packages/library/fonts` (the font pool: woff2 files, licences and `pool.json`, built by `tools/fonts/build-pool.py` from §D.c — Story 6.2), the token engine and the faces' emitter in `packages/section-runtime` (`tokens.ts`, `fonts.ts`), the token block in `default.hbs` | AD-3, AD-17, AD-18 |
 | FR-F control system | E4 | `packages/section-runtime/controls` | AD-1, AD-2, AD-3 |
 | FR-G section library | E4 (platform), E9, E10 | `packages/library`, `packages/library/modules` (FR-G7's `core`, the registry's machine half, and each module beside its test — Story 4.7) | AD-1, AD-2, AD-23 |
 | FR-H binding & content | E4 (platform), E5 (surfaces) | `packages/ghost-shim`, `packages/library/orbit-weekly`, `packages/library/contexts` (FR-H7's matrix and `src/contexts.ts`, in the library because the validator, both emitters and the editor read it and `ghost-shim` sits above the library — Story 4.6), `packages/section-runtime` (the scope walk every render naming its target passes) | AD-1, AD-10, AD-23 |

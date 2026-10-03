@@ -6,7 +6,10 @@ FROM mcr.microsoft.com/playwright:v1.61.1-noble@sha256:5b8f294aff9041b7191c34a4b
 
 # THE FONTS ARE A GATE, NOT POLISH (executed 2026-09-17): the stock image resolves Georgia, Inter, serif and sans-serif
 # to WenQuanYi Zen Hei, a CJK face, so every baseline would be a pilot photographed in a Chinese fallback.
-# The reference token set names `Georgia, serif` and `'Inter', sans-serif` (packages/section-runtime/src/tokens.ts).
+# SINCE STORY 6.2 THESE ARE FALLBACKS ONLY: every case's document carries its pack's own faces as `@font-face` rules,
+# the font pool's woff2 files served by tools/matrix/serve.mjs (packages/library/fonts/), so a heading is Fraunces and a
+# body Inter from those files, never from this image. What is installed here draws only a glyph a subset lacks, and
+# keeps serif and sans-serif off the CJK face. The image is unchanged (Story 6.2's Never), so its pins below stand.
 #   Inter   — apt's fonts-inter, pinned to the version checked in the image.
 #   Georgia — Gelasio, Georgia's metric-compatible face, which apt does not carry: fetched from google/fonts at one
 #             commit and pinned by checksum, so a changed file fails the build rather than a baseline.

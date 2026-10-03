@@ -107,7 +107,8 @@ test('Paper as drawn: every computed row takes Design Notes\' value, R-110 and R
     '--scrim': ['rgba(35, 32, 25, 0.45)', 'rgba(23, 21, 17, 0.6)'],
     '--tag-accent': ['var(--border-hairline)', 'var(--border-hairline)'],
     '--figures-tabular': ['"tnum" 1', '"tnum" 1'],
-    '--drop-cap-ratio': ['3.504', '3.504'],
+    // Story 6.2 (R-231): Fraunces (cap .7) over Inter (cap .7275), each read off the pool's own file — it was Georgia's 3.504
+    '--drop-cap-ratio': ['3.468', '3.468'],
     // R-110 (owner, 2026-09-15): the ink on the accent, both modes, as authored
     '--text-on-accent': ['#232019', '#171511'],
     '--button-text': ['#232019', '#171511'],

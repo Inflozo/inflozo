@@ -244,7 +244,12 @@ DOCS = [
   'proven to work. It lives here and not in the package because a test in a core package cannot '
   'read a file (AD-1 bans node:fs there), which is also what makes it the place the in-memory '
   'reference markup and the on-disk fixture are checked against each other. .mjs because '
-  'tools/stress is CommonJS and the packages are ESM.'),
+  'tools/stress is CommonJS and the packages are ESM. Since Story 6.1 it holds Appendix D §D.0 to the engine\'s '
+  'TOKEN_ROWS, and since Story 6.2 the rest of Appendix D: §D.d to packages/library/packs/ and §D.c to the font pool\'s '
+  'pool.json, both ways; every pool file to its sha256, with nothing else in files/; §D.a rule 5\'s budget as read '
+  '(faces ≤ 5, latin files ≤ 200 KB per pairing); OFL or Apache 2.0 with the licence text beside the files; roman-only '
+  'headings and roman-and-italic bodies; and no file under apps/web, packages or tools/matrix naming a Google font host — '
+  'each check behind a control that must fail it.'),
  ('tools/probe/check-access.py', 'tool', 'Credential check',
   'Verifies every live credential works. Prints verdicts only — it has no code path that can reach '
   'a secret, written that way after two keys leaked into a transcript. Since Story 5.24b (DW-90) it '
@@ -1129,10 +1134,24 @@ DOCS = [
   "the canvas reads (git ls-files: the designs, the controls and paywall fixtures, Orbit Weekly's images and vendored "
   "cards, the reference tokens, the control register, canvas-chrome.css), resolves each route's .nft.json against its "
   "own directory, and exits 1 naming the route and the files it lacks: /canvas, /pilots and both editor pages must carry "
-  "the whole set, /controls and its frame the designs and the controls fixtures, the style-guide's routes Orbit Weekly's "
+  "the whole set (/canvas the font pool's files too, which it serves by ?font= — Story 6.2), /controls and its frame the "
+  "designs and the controls fixtures, the style-guide's routes Orbit Weekly's "
   "images and vendored cards and the reference tokens. Exits 2 with no build, or when git lists no file for any one "
   "path it asks. Its control is PACKAGES resolved from import.meta.url: the build still passes and every route fails. "
   'It stores no count: it prints them.'),
+ ('tools/fonts/build-pool.py', 'tool', 'The font pool, built once from Appendix D §D.c',
+  ("Story 6.2's one step for the canvas's faces and the theme's (§D.b): `uv run tools/fonts/build-pool.py 2>&1 | cat`, no "
+   'flags (PEP 723: fontTools and brotli, pinned). Reads §D.c\'s rows out of prd.md and, for each family, METADATA.pb, the '
+   'licence and the declared TTFs from github.com/google/fonts at ONE pinned commit; refuses, naming the family and the '
+   'difference with nothing written, a licence other than OFL or Apache 2.0, a face type or weight that differs from '
+   '§D.c, a same-family heading the body does not cover, or a face count that is not the Files column.',
+   'Pins every non-wght axis at its default and clips wght with the instancer, takes a static family\'s declared '
+   'weights, subsets each face to latin and latin-ext with apps/web/app/fonts/fonts.css\'s unicode-ranges (every layout '
+   'feature kept, TrueType hinting dropped), and writes woff2 with no timestamp recalculated, so a re-run is '
+   'byte-identical. Writes packages/library/fonts/ — files/, licences/ and pool.json (each file\'s bytes and sha256, each '
+   "face's OS/2 cap height and tnum, each family's licence and CSS fallback, the commit); tools/stress/test-vocabulary.mjs "
+   'holds it to §D.c in CI. Downloads are cached per commit under ~/.cache/inflozo-fonts. STATIC_CUTS names the one '
+   'family §D.c declares static that upstream ships variable only (Libre Caslon Text), on an owner\'s ruling.')),
  ('tools/matrix/run-matrix-gate.sh', 'tool', 'The render matrix gate — NFR-6(a) and NFR-5 in one run',
   ("Story 4.11's gate, modelled on supabase/tests/run-rls-gate.sh: builds tools/matrix/Dockerfile (the Playwright image "
    'pinned by tag and digest, plus Inter from apt and Gelasio from google/fonts checked by sha256sum -c, with fc-match '
@@ -1146,19 +1165,21 @@ DOCS = [
    '.github/workflows/matrix.yml, its own workflow — ci.yml\'s deploy never waits on it (R-116). The rules for a '
    're-baseline are docs/render-matrix.md.')),
  ('tools/matrix/cases.mjs', 'tool', 'The render matrix case list, derived',
-  "Story 4.11: every design (the directory, through apps/web/lib/pilots.ts's own door) × every token set that exists × "
+  "Story 4.11: every design (the directory, through apps/web/lib/pilots.ts's own door) × the owner's reference packs (REFERENCE_PACKS, R-234 — Story 6.2) × "
   'light/dark × 1440, 834, 390, 1440 at 200% and 1440 with reduced motion × the design\'s own fixture rows — feed pages '
   'if it paginates, visitor arms if its markup gates by member, Show-to arms if its category carries Member visibility '
   '(carriesMemberVisibility, the editor\'s own rule over R-113\'s register — since Story 5.24c, DW-171), the style-guide '
   'post and page if its context '
-  'is post. Carries the FR-H3 pin table as comments, each pin derived. Also builds the render input, mirroring /pilots\' '
-  'paint(). Pure: no browser. Stores no count.'),
+  'is post — and one specimen per font pairing (R-233, Story 6.2), the matrix\'s own markup in Paper\'s palette with the '
+  'pairing\'s faces, light, at 1440. Carries the FR-H3 pin table as comments, each pin derived. Also builds the render '
+  'input, mirroring /pilots\' paint(). Pure: no browser. Stores no count.'),
  ('tools/matrix/cases.test.mjs', 'tool', 'The render matrix case list, checked by execution',
   "Story 4.11's browser-free half, run last by pnpm test: A17 #1 yields the four feed rows, A22 #1 the visitor and Show-to "
   'arms, A24 #1 the style-guide post, A1 #1 visitor arms only and A4 #13 its base row beside Show-to arms; every design has '
   'Show-to arms exactly when carriesMemberVisibility says the editor draws them (DW-171); the case total equals the product of the axes and '
   'no file under tools/matrix/ or docs/render-matrix.md writes it down; MATRIX_DESIGNS narrows by id and category; and '
-  'the canvas document carries every pack the matrix photographs.'),
+  'the pack axis is REFERENCE_PACKS with each case\'s document carrying its pack\'s block and faces, a reference pack sits '
+  "off Paper's step on buttons and gutters (DW-317), and there is one specimen per pairing (R-233)."),
  ('tools/matrix/matrix.spec.mjs', 'tool', 'The render matrix and its accessibility scan, per case',
   "Story 4.11's Playwright spec. First the manifest (image, Playwright, Chromium, the faces Chromium drew each token font "
   'with, the root widelyAvailableOnDate — DW-138) and every baseline held to a case. Then per case, one page load: '

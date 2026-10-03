@@ -44,6 +44,9 @@ export { REFERENCE_TOKENS } from './tokens.ts'
 // ratio Story 6.4's live contrast warning reads
 export { packTokens, packTokensCss, REFERENCE_PACK, SCALES } from './tokens.ts'
 export type { Face, Pack, PackMode, TokenRow, TokenSource } from './tokens.ts'
+// Story 6.2 — a pairing's faces as `@font-face` rules: the one emitter the canvas, the app's pack cells and Epic 7 share
+export { fontFaceCss } from './fonts.ts'
+export type { FontFaceOptions } from './fonts.ts'
 export { contrast } from './colour.ts'
 export { editText, linkAttributes } from './marks.ts'
 // Story 5.16a — AD-5's one exception, exported so the tests can name the exact string the theme emits

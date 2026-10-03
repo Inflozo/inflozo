@@ -1009,7 +1009,7 @@ Forbidden anywhere at section level: pixel/rem/percent inputs, hex/RGB pickers, 
 
 ## Appendix D — Style Packs (12 presets, paired light + dark) & the Font Pairing Pool (30)
 
-Each pack = full token set (FR-E1). Fonts come from the curated 30-pairing pool below; packs 1–12 use pairings 1–12 respectively.
+Each pack = full token set (FR-E1). Fonts come from the curated 30-pairing pool below; packs 1–12 use pairings 1–12 respectively. **This table is the roster** — the twelve names, in this order, and their faces (R-231, owner 2026-10-03: the plan wins over the drawings; S7a's names are placeholders by its own caption and its layout is the roster's). Every value a pack is made of is authored in §D.d.
 
 | Pack | Vibe | Heading / Body | Pairing |
 |---|---|---|---|
@@ -1079,9 +1079,9 @@ FR-E1 requires every pairing to declare its two families, the **weights shipped*
 
 1. **Heading role ships roman only.** No design in the library sets an italic heading, so a heading italic face is never emitted. A **variable** heading family emits **one** file with its `wght` axis clipped to the declared range; a **static** heading family emits one file per declared weight (the pool declares one heading weight for every static heading).
 2. **Body role ships roman + italic.** FR-D4's inline marks include italic, so a body family without a true italic cannot hold the body role — synthetic obliques are not acceptable output. A **variable** body family emits **two** files (roman + italic), each clipped to `wght 400–700`. A **static** body family emits **four** (400, 700, 400 italic, 700 italic).
-3. **Same family in both roles** emits the body's two files only, provided the clipped range covers the heading weights. D12, D19 and D22 are the pool's two-file pairings.
+3. **Same family in both roles** emits the body's two files only, provided the clipped range covers the heading weights. D12, D19 and D22 are the pool's two-file pairings. Where the heading reaches past the body's 700, the body's **roman** clip widens to the heading's top weight and its italic stays at `wght 400–700` (R-232, owner 2026-10-03: D19's Chivo roman is clipped 400–900 and D22's Figtree 400–800 — about a kilobyte each, against a third file of 20–25 KB).
 4. **Non-`wght` axes are pinned at their design defaults** at instancing time (`opsz`, `wdth`, `SOFT`, `WONK`, `YTLC`), so a variable face never carries an axis the token system cannot drive.
-5. **Ceiling: ≤ 5 font files and ≤ 200 KB of font payload per compiled theme** for a latin-script project. This is Appendix D's budget; NFR-2 asserts only that every shipped font is subset, preloaded and `woff2`-only, and FR-J3's theme-size budget is what enforces the total.
+5. **Ceiling: ≤ 5 font files and ≤ 200 KB of font payload per compiled theme** for a latin-script project. This is Appendix D's budget; NFR-2 asserts only that every shipped font is subset, preloaded and `woff2`-only, and FR-J3's theme-size budget is what enforces the total. **How it is read** (Story 6.2): §D.b splits every face into a `latin` and a `latin-ext` file, so a three-face pairing is six files on disk and "files" counts **faces**; the 200 KB counts what a latin page downloads — the **latin** files, since the browser fetches `latin-ext` only for a page that has such a letter (§D.b). Measured on the pool's own files at Story 6.2's Dev (2026-10-03), Paper's latin files total 137.3 KB and its latin-ext add 158.7 KB, so the other reading would fail the default pack. TrueType hinting is dropped from every file — the pool's variable faces carry none upstream, and kept, D15's four static Lato faces read 211 KB of latin. `tools/stress/test-vocabulary.mjs` holds every pairing to both measures, from `packages/library/fonts/pool.json`.
 6. **Self-hosted, always.** The compiler bundles the woff2 files into `assets/fonts/`, emits `@font-face` with `font-display: swap`, and preloads the two roman faces. **No generated theme makes a request to `fonts.googleapis.com` or `fonts.gstatic.com`** — hotlinking is a documented GDPR liability for EU site owners and a runtime third-party dependency P5 forbids (FR-J3).
 7. **Licensing.** Every family in the pool ships under the SIL Open Font License or Apache 2.0, both of which permit redistribution inside the theme zip the user downloads and installs. A family whose license does not permit that redistribution may not enter the pool.
 
@@ -1124,10 +1124,10 @@ FR-E1 requires every pairing to declare its two families, the **weights shipped*
 | D16 | Civic | Epilogue | V · `wght 600–800` | Public Sans | V · `wght 400–700` + italic | 3 |
 | D17 | Salon | Cormorant Garamond | V · `wght 500–700` | Jost | V · `wght 400–700` + italic | 3 |
 | D18 | Kinetic | Syne | V · `wght 600–800` | Inter | V · `wght 400–700` + italic | 3 |
-| D19 | Broadsheet | Chivo | V · `wght 600–900` | Chivo | V · `wght 400–700` + italic | 2 |
+| D19 | Broadsheet | Chivo | V · `wght 600–900` | Chivo | V · `wght 400–900` + italic `wght 400–700` (R-232) | 2 |
 | D20 | Almanac | Bitter | V · `wght 600–800` | Rubik | V · `wght 400–700` + italic | 3 |
 | D21 | Manuscript | Spectral | S · 700 | Inter | V · `wght 400–700` + italic | 3 |
-| D22 | Fieldnote | Figtree | V · `wght 600–800` | Figtree | V · `wght 400–700` + italic | 2 |
+| D22 | Fieldnote | Figtree | V · `wght 600–800` | Figtree | V · `wght 400–800` + italic `wght 400–700` (R-232) | 2 |
 | D23 | Atelier | Petrona | V · `wght 500–800` | Work Sans | V · `wght 400–700` + italic | 3 |
 | D24 | Maison | Bodoni Moda | V · `wght 500–800` (`opsz` pinned) | Inter | V · `wght 400–700` + italic | 3 |
 | D25 | Billboard | Anton | S · 400 | Inter | V · `wght 400–700` + italic | 3 |
@@ -1137,7 +1137,72 @@ FR-E1 requires every pairing to declare its two families, the **weights shipped*
 | D29 | Console | Space Mono | S · 700 | Inter | V · `wght 400–700` + italic | 3 |
 | D30 | Provincial | Alegreya | V · `wght 500–800` | Alegreya Sans | S · 400, 700, 400i, 700i | 5 |
 
-**Reading the pool.** 23 of the 30 pairings emit 3 files, 3 emit 2 (D12, D19, D22 — one family in both roles), and 4 emit 5 (**D8, D15, D27, D30** — the static-body pairings, where four static faces do the work two variable ones would). That 2-to-5 spread is the whole reason face type is declared per family rather than assumed. The pool is FR-E3's font-pairing list and FR-E3's fixture: every pairing must render in the render matrix under at least one pack before GA.
+**Reading the pool.** 23 of the 30 pairings emit 3 files, 3 emit 2 (D12, D19, D22 — one family in both roles), and 4 emit 5 (**D8, D15, D27, D30** — the static-body pairings, where four static faces do the work two variable ones would). That 2-to-5 spread is the whole reason face type is declared per family rather than assumed. The pool is FR-E3's font-pairing list and FR-E3's fixture: **every pairing is photographed by the render matrix as a specimen of its own** — a heading, a paragraph with a bold and an italic run, tabular figures and latin-ext letters, in Paper's palette with that pairing's faces, light, at 1440 — on every full run, whether or not a preset wears it (R-233, owner 2026-10-03). The pool is built from this table by one step, `tools/fonts/build-pool.py`, from google/fonts at one pinned commit into `packages/library/fonts/` (the files, their licences and `pool.json`, each file's sha256 recorded); `tools/stress/test-vocabulary.mjs` holds the two equal and every file to its sha256.
+
+### D.d The twelve presets (normative, authored — Story 6.2)
+
+**Every preset value is authored here and read from here alone** (DW-11). `packages/library/packs/packs.json` holds the
+same values as data, in this order, and `tools/stress/test-vocabulary.mjs` fails `pnpm test` when the two disagree in
+either direction, naming the pack, the mode and the role; the export's kit `PACKS`, the Calibration Set and S7a's dots
+are calibration only. The names, the order and the faces are the roster table's (R-231 — the plan wins over the
+drawings); each preset's fonts are its pairing's in §D.c, read from the pool's own files (`pool.json`: the family list
+with its fallback, each roman face's cap height, the body's `tnum`). Each palette is hand-paired per mode, never
+inverted: backgrounds deepen, surfaces lift, accents are re-tuned. Every preset goes through the engine's `packTokens`
+(§D.0) and holds, in both modes, at least 4.5:1 for text and muted text on the background and on the surface, and for
+on-accent on the accent (`packages/section-runtime/src/packs.test.ts`). Where white does not reach that on an accent,
+the on-accent is authored dark, as Paper's ink is (R-110): Tangerine's `#E8450A` reads 3.97:1 under white (R-231).
+
+**The palettes** — §D.0's seven palette roles per mode, and the scrim's strength:
+
+| Pack | Mode | Background | Surface | Text | Muted | Border | Accent | On-accent | Scrim |
+|---|---|---|---|---|---|---|---|---|---|
+| Paper | light | `#FBF9F5` | `#FFFFFF` | `#232019` | `#6B6459` | `#EBE5DB` | `#D96C3F` | `#232019` | 0.45 |
+| Paper | dark | `#171511` | `#211D17` | `#F2EDE4` | `#A79E8F` | `#332E27` | `#E0805A` | `#171511` | 0.6 |
+| Ink | light | `#FFFFFF` | `#F6F6F4` | `#111111` | `#585858` | `#E2E2DF` | `#C8102E` | `#FFFFFF` | 0.5 |
+| Ink | dark | `#0D0D0D` | `#181818` | `#F4F4F2` | `#A6A6A2` | `#2E2E2C` | `#FF5A5F` | `#0D0D0D` | 0.65 |
+| Orbit | light | `#F5F6FB` | `#FFFFFF` | `#161A2E` | `#5A6078` | `#E0E3F0` | `#4F46E5` | `#FFFFFF` | 0.45 |
+| Orbit | dark | `#0D1020` | `#161A2F` | `#E8EAF6` | `#9BA1BD` | `#272C47` | `#8B85FF` | `#0D1020` | 0.6 |
+| Tangerine | light | `#FFF4EA` | `#FFFFFF` | `#2B1D12` | `#76604F` | `#F0DCC9` | `#E8450A` | `#1A0F08` | 0.45 |
+| Tangerine | dark | `#1E1310` | `#2A1B15` | `#FDF3E7` | `#B5A495` | `#3A2A21` | `#FF6B33` | `#1E1310` | 0.6 |
+| Slate | light | `#F4F4F5` | `#FFFFFF` | `#1B1D21` | `#5B616B` | `#E2E4E8` | `#4B5563` | `#FFFFFF` | 0.45 |
+| Slate | dark | `#121418` | `#1B1E24` | `#EEF0F3` | `#A0A6B0` | `#2C3038` | `#A3B0C2` | `#121418` | 0.6 |
+| Meadow | light | `#F4F7F0` | `#FFFFFF` | `#1E2A1F` | `#55665A` | `#DDE6D6` | `#3E7C4F` | `#FFFFFF` | 0.4 |
+| Meadow | dark | `#111A13` | `#19241B` | `#E9F1E6` | `#9DB09F` | `#2A382C` | `#7BC48D` | `#111A13` | 0.6 |
+| Dune | light | `#F9F4EC` | `#FFFDF9` | `#33291B` | `#6E604C` | `#E9DDC9` | `#A9522E` | `#FFFFFF` | 0.45 |
+| Dune | dark | `#1A1410` | `#241C16` | `#F4EBDD` | `#B3A592` | `#3A2F25` | `#E08A62` | `#1A1410` | 0.6 |
+| Mono | light | `#FFFFFF` | `#F2F2F2` | `#000000` | `#555555` | `#D4D4D4` | `#000000` | `#FFFFFF` | 0.5 |
+| Mono | dark | `#0A0A0A` | `#161616` | `#FFFFFF` | `#A8A8A8` | `#333333` | `#FFFFFF` | `#000000` | 0.65 |
+| Ocean | light | `#F2F8F8` | `#FFFFFF` | `#0C2A2E` | `#4D6A6D` | `#D3E5E6` | `#0F6E73` | `#FFFFFF` | 0.4 |
+| Ocean | dark | `#071B1E` | `#0D262A` | `#E3F2F2` | `#8FB1B3` | `#1D3A3E` | `#4CC3C5` | `#071B1E` | 0.6 |
+| Berry | light | `#FBF3F6` | `#FFFFFF` | `#2B1420` | `#735A66` | `#F0DCE6` | `#B0316B` | `#FFFFFF` | 0.45 |
+| Berry | dark | `#1C0F16` | `#27151F` | `#F8E9F0` | `#BC9DAD` | `#3B2330` | `#F07AAE` | `#1C0F16` | 0.6 |
+| Neon | light | `#F7F6FF` | `#FFFFFF` | `#12102A` | `#5C5780` | `#E1DEF5` | `#C2187A` | `#FFFFFF` | 0.45 |
+| Neon | dark | `#0B0A14` | `#15132A` | `#F2F0FF` | `#A9A3C9` | `#2A2647` | `#FF3EA5` | `#0B0A14` | 0.65 |
+| Quiet | light | `#FAFAF8` | `#FFFFFF` | `#2A2A28` | `#6A6A66` | `#E6E5E0` | `#5E6B63` | `#FFFFFF` | 0.4 |
+| Quiet | dark | `#161615` | `#1E1E1C` | `#E9E8E3` | `#A3A29C` | `#31312E` | `#A9B8AE` | `#161615` | 0.55 |
+
+**The pack-level choices** — the pairing, the pill radius and one step on each of §D.0's step rows (radius scale,
+spacing density, site width, gutters, button style, shadow level, link style); the steps' values are the engine's
+`SCALES` (R-230):
+
+| Pack | Id | Pairing | Pill radius | Radius | Density | Width | Gutters | Buttons | Shadow | Links |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Paper | `paper` | D1 | `999px` | soft | comfortable | normal | normal | solid | subtle | accent |
+| Ink | `ink` | D2 | `999px` | sharp | comfortable | narrow | normal | solid | none | underline |
+| Orbit | `orbit` | D3 | `999px` | soft | comfortable | wide | normal | pill | subtle | accent |
+| Tangerine | `tangerine` | D4 | `999px` | round | comfortable | normal | normal | pill | lifted | accent |
+| Slate | `slate` | D5 | `999px` | soft | compact | wide | normal | solid | subtle | underline |
+| Meadow | `meadow` | D6 | `999px` | round | airy | normal | loose | soft | subtle | accent |
+| Dune | `dune` | D7 | `999px` | soft | airy | normal | normal | solid | none | accent |
+| Mono | `mono` | D8 | `2px` | sharp | compact | wide | tight | outline | none | underline |
+| Ocean | `ocean` | D9 | `999px` | soft | airy | wide | loose | soft | subtle | accent |
+| Berry | `berry` | D10 | `999px` | round | comfortable | narrow | normal | pill | lifted | accent |
+| Neon | `neon` | D11 | `999px` | round | comfortable | wide | loose | pill | lifted | accent |
+| Quiet | `quiet` | D12 | `999px` | sharp | airy | narrow | normal | outline | none | underline |
+
+**The reference packs** (R-234, owner 2026-10-03) — the render matrix's pack axis, `REFERENCE_PACKS` in
+`packages/library/packs/`: `paper` · `mono` · `neon`. Paper is the default; Mono sits off Paper's step on buttons and
+on gutters (DW-317); Neon is dark-first, round, pill and loose.
 
 ---
 

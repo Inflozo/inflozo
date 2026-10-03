@@ -10,10 +10,12 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { assembleEntry, compilesTo, isPaywallDesign, isPlaceable, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
-import type { ProjectDoc } from '@inflozo/section-runtime'
+import { POOL, presetOf } from '@inflozo/library/packs'
+import { fontFaceCss, packTokensCss, type Pack, type ProjectDoc } from '@inflozo/section-runtime'
 import { canvasOfTemplateKey, fileOfKey, isSurface } from './editor.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import { sampleRows, type DesignRows } from './canvas.ts'
+import { fontHref } from './style-pack.ts'
 import { PACKAGES } from './style-guide.ts'
 
 /** `packages/` is found by `style-guide.ts`'s ONE finder (DW-269): the working directory first, the form Turbopack traces
@@ -22,6 +24,8 @@ import { PACKAGES } from './style-guide.ts'
 export const DESIGNS_DIR = () => join(PACKAGES(), 'library', 'designs')
 const IMAGES = () => join(PACKAGES(), 'library', 'orbit-weekly', 'images')
 const TOKENS = () => join(PACKAGES(), 'section-runtime', 'reference-tokens.css')
+/** Story 6.2 — the pool's woff2 files (`tools/fonts/build-pool.py`), served beside the canvas document by `?font=`. */
+const FONTS = () => join(PACKAGES(), 'library', 'fonts', 'files')
 /** R-113's control register — which settings-panel group each category's rows sit in (Story 5.4 reads one row of it). */
 const REGISTER = () => join(PACKAGES(), 'library', 'control-groups.json')
 /** The editor's in-canvas chrome (AD-21), read the way the tokens are: from this module's own address. */
@@ -127,10 +131,34 @@ export function pilotImage(name: string): Buffer | null {
   return readdirSync(IMAGES()).includes(`${name}.svg`) ? readFileSync(join(IMAGES(), `${name}.svg`)) : null
 }
 
+/** STORY 6.2 — every file the font pool records (`packages/library/fonts/pool.json`): the ONE list `?font=` serves from. */
+const POOL_FILES: ReadonlySet<string> = new Set(Object.values(POOL.faces).flatMap((f) => f.files.map((x) => x.file)))
+
+/** One pool file's bytes, or null for any name that is not a file the pool records: a name is never joined into a path
+ *  unchecked, so nothing but the pool's own woff2 can be read through `?font=`. */
+export function poolFont(name: string): Buffer | null {
+  return POOL_FILES.has(name) ? readFileSync(join(FONTS(), name)) : null
+}
+
+/** STORY 6.2 — a preset's token block and its pairing's `@font-face` rules, the two styles every canvas document opens
+ *  with. Paper's block is `reference-tokens.css` itself, byte for byte (the file `test-vocabulary.mjs` holds to the
+ *  engine), so the canvas every customer sees today is unchanged but for its faces; any other preset is the engine's
+ *  `packTokensCss`. The faces are the theme's own files, subsets and axis instances (§D.b), from this app's own route —
+ *  never a font host. An unknown id throws: the routes answer 404 before they get here. */
+export function packHead(pack: string, base: string): { tokens: string; faces: string } {
+  const preset = presetOf(pack)
+  if (preset === undefined) throw new Error(`"${pack}" is not a Style Pack preset (prd.md §D.d)`)
+  return {
+    tokens: pack === 'paper' ? readFileSync(TOKENS(), 'utf8') : packTokensCss(preset.pack as Pack),
+    faces: fontFaceCss(preset.pairing, fontHref(base)),
+  }
+}
+
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
 /**
- * THE CANVAS DOCUMENT: the reference tokens, the pilots' stylesheets (each scoped by its own class prefix), the
+ * THE CANVAS DOCUMENT: the reference tokens and their faces (Story 6.2: `pack` names the preset, Paper by default — the
+ * editor's canvas keeps Paper until Story 6.3's switch; `/pilots` and the render matrix ask for others), the pilots' stylesheets (each scoped by its own class prefix), the
  * editor's chrome stylesheet (every rule keyed on `data-inflozo-*`, so inert at rest) and an empty mount point — and
  * NO script, so it needs no nonce. The editor and the pilots review write sections into `#canvas` from the parent
  * document (same origin) and set `data-mode` on this `<html>` for Light and Dark; `/canvas` serves it to both. A whole document in an
@@ -151,8 +179,9 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * is 50,577 bytes of which 42,511 are design stylesheets, so one design's is ~16 KB against 50 KB, and at forty
  * designs it is ~16 KB against ~347 KB. An unknown id throws through `pilot()`, which is the route's 404.
  */
-export function pilotsCanvasDocument(only?: string, extra: readonly { id: string; css: string }[] = []): string {
-  const tokens = readFileSync(TOKENS(), 'utf8')
+export function pilotsCanvasDocument(only?: string, extra: readonly { id: string; css: string }[] = [], pack = 'paper'): string {
+  // Story 6.2: the pack's block and its faces — Paper unless `/pilots` (or the matrix) asks for another preset
+  const { tokens, faces } = packHead(pack, 'canvas')
   // a narrowed document still reads ONE design, never the library (the preview's whole payload argument)
   const carried = only === undefined ? [...pilots(), ...extra] : [extra.find((e) => e.id === only) ?? pilot(only)]
   const css = carried.map((e) => `/* ${e.id} */\n${e.css}`).join('\n')
@@ -160,6 +189,7 @@ export function pilotsCanvasDocument(only?: string, extra: readonly { id: string
     `<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">` +
     `<title>${esc('Pilot sections')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
+    `<style data-order="1b-faces">${faces}</style>` +
     `<style data-order="2-document">html,body{margin:0;background:var(--bg-page)}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}</style>` +
     // DW-275 (Story 5.24e): the Paywall canvas's post body (`style-guide.ts`'s `surfaceCss`) is NO LONGER INLINED here.
     // Story 5.20 carried it disabled in every canvas document — 69,185 of its 124,335 bytes (10,379 of 22,872 gzipped)

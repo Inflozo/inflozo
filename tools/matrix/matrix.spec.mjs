@@ -13,7 +13,7 @@ import { test, expect } from '@playwright/test'
 import { existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { join, relative } from 'node:path'
-import { ORIGIN, REPO, VIEWPORTS, cases, only, pilot, renderCanvas, renderInput, selected } from './cases.mjs'
+import { ORIGIN, REPO, VIEWPORTS, cases, only, pilot, renderCanvas, renderInput, selected, specimenMarkup } from './cases.mjs'
 import { serve } from './serve.mjs'
 
 const require = createRequire(import.meta.url)
@@ -38,15 +38,16 @@ test.beforeAll(async () => { server = await serve() })
 test.afterAll(async () => { await server?.close() })
 
 /** The canvas document with nothing on the network but itself: the pictures' real origin answered by the server, the
- *  document from the server, and every other request refused, so no case depends on a network it does not own. */
-async function open(page) {
+ *  document and its faces (`canvas?font=`) from the server, and every other request refused, so no case depends on a
+ *  network it does not own. Story 6.2: the document is the case's pack's (`?pack=`), or its pairing's specimen. */
+async function open(page, c = { pack: 'paper' }) {
   await page.route('**/*', async (route) => {
     const url = route.request().url()
     if (url.startsWith(`${server.url}/`)) return route.continue()
     if (url.startsWith(`${ORIGIN}/images/`)) return route.fulfill({ response: await route.fetch({ url: `${server.url}${new URL(url).pathname}` }) })
     return route.abort()
   })
-  await page.goto(`${server.url}/`, { waitUntil: 'load' })
+  await page.goto(`${server.url}/?${c.pairing ? `specimen=${c.pairing}` : `pack=${c.pack}`}`, { waitUntil: 'load' })
 }
 
 // ─── the runner is part of the baseline ─────────────────────────────────────────────────────────────────────
@@ -124,11 +125,11 @@ for (const viewport of VIEWPORTS) {
       reducedMotion: viewport.reducedMotion ?? 'no-preference',
     })
     for (const c of LIST.filter((x) => x.viewport === viewport)) {
-      test(c.title, { annotation: [{ type: 'design', description: c.id }, { type: 'pack', description: c.pack }] }, async ({ page }) => {
+      test(c.title, { annotation: [{ type: c.pairing ? 'specimen' : 'design', description: c.id }, { type: 'pack', description: c.pack }] }, async ({ page }) => {
         writes()
-        const e = entry(c.id)
-        const html = renderCanvas(new JSDOM('<body></body>').window.document, e.html, renderInput(e, c.row, iconDrawing))
-        await open(page)
+        // a specimen is the matrix's own markup (R-233); a design is rendered as the editor's paint() renders it
+        const html = c.pairing ? specimenMarkup(c.pairing) : ((e) => renderCanvas(new JSDOM('<body></body>').window.document, e.html, renderInput(e, c.row, iconDrawing)))(entry(c.id))
+        await open(page, c)
 
         // paint(): the mode on <html>, the section into #canvas, and the state `core` leaves a mount in (no script)
         const drawn = await page.evaluate(({ markup, mode }) => {

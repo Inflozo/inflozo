@@ -12,7 +12,8 @@
 //
 // WHAT EACH ROUTE MUST CARRY is read from git, never listed (standing rule 4): every tracked file under the directories
 // the canvas document and the editor read. The canvas route, `/pilots` and both editor pages draw the canvas and carry the
-// whole set; `/controls` and its frame read the designs and the controls fixtures; the style-guide's three routes read
+// whole set, `/canvas` with the font pool's files it serves (Story 6.2); `/controls` and its frame read the designs and
+// the controls fixtures; the style-guide's three routes read
 // Orbit Weekly's pictures and vendored cards and the reference tokens (Story 5.24d's review: their text test went with
 // the inert lists, and nothing had replaced it).
 //
@@ -56,8 +57,11 @@ const canvas = [
   ...set('packages/library/control-groups.json', 'packages/library/fixtures/paywall', 'apps/web/lib/canvas-chrome.css'),
 ]
 
+// Story 6.2 — the font pool's files, which `/canvas` serves by `?font=` (every canvas document's faces come from there)
+const fonts = set('packages/library/fonts/files')
+
 const ROUTES = [
-  ['/canvas', 'canvas/route.js.nft.json', canvas],
+  ['/canvas', 'canvas/route.js.nft.json', [...canvas, ...fonts]],
   ['/pilots', 'pilots/page.js.nft.json', canvas],
   ['the editor (Home)', 'projects/[id]/(editor)/page.js.nft.json', canvas],
   ['the editor (every other canvas)', 'projects/[id]/(editor)/[template]/page.js.nft.json', canvas],

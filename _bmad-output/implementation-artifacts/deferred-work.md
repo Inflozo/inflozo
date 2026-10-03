@@ -337,7 +337,8 @@ reason: Hosted `storage.objects` has `protect_objects_delete BEFORE DELETE ... F
 ### DW-11: the export's section render kits disagree with the Calibration Set on two Style Pack accents
 
 plain: Two files in the design export give two different oranges for one colour scheme and a purple versus a blue for another; the story that builds the colour schemes must take them from the product plan, not from either file.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03), as R-231 ruled: every preset value is authored in prd.md Appendix D §D.d and held as data in `packages/library/packs/packs.json`; `tools/stress/test-vocabulary.mjs` fails `pnpm test` when the two disagree in either direction (pack, mode and role named — its control changes one dark accent, drops a preset and reverses the reference packs). Ink is black and white with one red (`#C8102E` / `#FF5A5F`), Tangerine's light accent is the roster's `#E8450A` with a dark on-accent; the kits' `PACKS`, the Calibration Set and S7a's dots stay calibration (`tokens.test.ts` still carries the kits' two as test data only).
 owner: Story 6.2 (The twelve presets and the font pool), whose criteria carry its requirement word for word with its
   id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -442,7 +443,8 @@ reason: `PATCH …/config/auth` answered `402 "User sessions can only be configu
 plain: The little wireframe on each project card is coloured with the "Paper" colour scheme, and the only
   place those three colours are written down today is a drawing; the story that builds the colour
   schemes properly must replace them from the product plan, and the card will follow automatically.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03): `apps/web/lib/style-pack.ts`'s `PRESETS` is derived from `@inflozo/library/packs` — §D.d's twelve, each card's surface its light background, its accent and text — and the file holds no colour literal; the glyph family is the pool's heading face under `Inflozo pack ` (`packFacesCss`, linked in the signed-in layout). `style-pack.test.ts` holds `PRESETS` to the library preset by preset; D4a's cell and the dashboard card paint from it unchanged in shape.
 owner: Story 6.2 (The twelve presets and the font pool), whose criteria carry its requirement word for word with its
   id (R-195). *(Story 5.24a's Dev, 2026-09-28: it had no owner line.)*
 severity: low
@@ -4755,7 +4757,8 @@ reason: `checkBindings` already walks every Ghost path a design reads at each ta
 plain: The picture check photographs every section in every colour-and-type scheme. The plan says three schemes;
   today only one exists, so it photographs one. When the twelve schemes are built, three of them become the
   references and every photograph has to be taken again.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03), as R-234 ruled: `tools/matrix/cases.mjs`'s pack axis is `REFERENCE_PACKS` (Paper, Mono, Neon) from `packages/library/packs/`, each case's document carrying its pack's block and faces (`/?pack=`, as `/canvas?pack=` serves it); `cases.test.mjs` asserts the axis equals the list. The mass rebaseline is its own baselines-only commit after the Dev commit, on the owner's approval of the sampled review (`docs/render-matrix.md`).
 severity: medium
 origin: Story 4.11's planning (2026-09-17) — NFR-6(a) names "3 reference Style Packs"; Epic 4 ships exactly ONE
   reference token set on purpose (step-6 stress finding F2: a design's CSS reads pack custom properties
@@ -8455,7 +8458,8 @@ reason: the fix is `land()` telling a session that typed before its first answer
 plain: The drawing of the Style Pack panel says of itself that its pack names are stand-ins — Harbor, Neon Dusk, Cocoa,
   Mist, Butter — while the product plan names twelve others (Orbit, Mono, Ocean, Quiet…). The story that ships the twelve
   packs has to take the names from the plan, or ask.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03), as R-231 ruled: S7a's roster in the editor (`projects/[id]/(editor)/style-pack.tsx`) lists Appendix D's twelve in §D.d's order with S7a's layout — never its placeholder names; the keyboard journey reads the order off `packs.json` and holds the roster to it.
 severity: low
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile, read in the frame
 owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
@@ -8489,7 +8493,8 @@ reason: Story 6.1's engine takes FR-E1's and Appendix C's words, which are close
 plain: The plan gives Paper the fonts Fraunces and Inter and Ink the fonts Libre Caslon Text and Source Serif 4, but
   every drawing sets Paper's headings in Georgia and Ink wholly in Inter. Before those packs ship, someone decides which
   is right.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03), as R-231 ruled: Paper is pairing D1 (Fraunces / Inter) and Ink D2 (Libre Caslon Text / Source Serif 4), their faces the pool's own files; `REFERENCE_PACK` is the library's Paper preset, so `reference-tokens.css` names `'Fraunces', serif` and its drop cap is 3.468 (Fraunces' cap .7, Inter's .7275, both off OS/2). Google/fonts now ships Libre Caslon Text as a variable font only, so the builder cuts §D.c's static 700 from it — R-235 (owner, 2026-10-03, Story 6.2's Dev, Question 5, option 1).
 severity: medium
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
 owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
@@ -8505,7 +8510,8 @@ ruling (owner, 2026-10-03, Story 6.2's Create, Question 1, option 1): *"The plan
 
 plain: Two font pairings promise to ship as two files because heading and body are one family, but their headings use
   weights (up to 900 and 800) the body files, cut to 400–700, do not hold.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03), as R-232 ruled: §D.c's D19 and D22 rows declare the body roman `wght 400–900` and `400–800` with the italic at 400–700, §D.a rule 3 says so, and `tools/fonts/build-pool.py` refuses a same-family heading its body does not cover; built, Broadsheet and Fieldnote are two faces each (`pool.json`).
 severity: low
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
 owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
@@ -8521,7 +8527,8 @@ ruling (owner, 2026-10-03, Story 6.2's Create, Question 2, option 1): *"Widen th
 
 plain: The plan says each of the thirty font pairings must appear in the automatic photo check under some pack before
   launch, but the check will only ever photograph three packs, and pairings 13 to 30 belong to no pack at all.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03), as R-233 ruled: the render matrix photographs one specimen per pairing of the pool — a heading at two sizes, a paragraph with a bold and an italic run, tabular figures and latin-ext letters, in Paper's palette with that pairing's faces, light, at 1440 (`specimenMarkup` / `specimenDocument` in `tools/matrix/cases.mjs`, baselines under `packages/library/baselines/specimens/`); §D.c's closing paragraph promises exactly that, and `cases.test.mjs` holds one specimen to every pairing.
 severity: medium
 origin: Story 6.1's Create (2026-10-03), the Epic 6 context compile
 owner: Story 6.2 (The twelve presets and the font pool), which picks the three reference packs (DW-169) and whose card
@@ -8577,7 +8584,8 @@ reason: 6.5 writes the one selector list and the precedence, so both edges are i
 plain: Every photograph so far shows Paper's solid orange button. A pack that picks the Outline button would draw its
   main button as dark words on the dark band in two of the sample sections, and nothing would notice, because no check
   draws a pack other than Paper yet.
-status: open
+status: done 2026-10-03 (Story 6.2)
+resolution: Story 6.2's Dev (2026-10-03): A4 #13's primary action answers `[data-bg="contrast"]` as A22 #1 does (the band's words as its fill); A1 #1 offers no contrast ground (Background is base · surface), so the validator refuses a rule for one and its stylesheet says so beside the button. R-234 makes Mono a reference pack — Outline buttons and Tight gutters — so `--button-text` and `--space-gutter` are photographed off Paper's step; `cases.test.mjs` asserts a reference pack sits off Paper on both and that the tokens really differ there.
 severity: medium
 origin: Story 6.1's Review (2026-10-03), Blind Hunter + Edge Case Hunter + Verification Gap
 owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.

@@ -56,17 +56,20 @@ import { readViewed, type Visitor } from '@/lib/view-as'
  *  (`20260904120000_complete_schema.sql:224`), so this story has no Schema phase (R-99). */
 /** Story 5.18 — `linked_site_id` joins it, and for `dark_enabled`'s reason: whether the canvas may read a site is SERVER
  *  TRUTH, never a guess the editor makes (FR-B5; the column pre-exists, `…complete_schema.sql:229`, so no Schema phase). */
+/** Story 6.2 — `style_pack` joins it, E6's column, for S4a's Style Pack card and S7a's roster: the editor shows the
+ *  project's pack (a stored preset this build does not know reads as Paper, `presetIdOf`); it writes nothing — choosing a
+ *  pack is Story 6.3's. The column pre-exists (`…complete_schema.sql:223`), so no migration and no Schema phase. */
 /** Story 5.19 — `posts_per_page` joins it: FR-H2's main feed is sized by the THEME's setting, never the sample's, and a
  *  secondary feed's Count starts there. SERVER TRUTH for the same reason; the column pre-exists with its `>= 1` check
  *  (`…complete_schema.sql:226-227`), so no migration and no Schema phase (R-99). */
 export const projectOf = cache(async (id: string): Promise<Project | null> => {
   if (!isUuid(id)) return null
-  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, linked_site_id, posts_per_page').eq('id', id).maybeSingle()
+  const { data, error } = await (await supabaseServer()).from('projects').select('id, name, dark_enabled, revision, linked_site_id, posts_per_page, style_pack').eq('id', id).maybeSingle()
   if (error) throw new Error(`the project could not be read (${error.code})`)
   return data
 })
 
-export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; linked_site_id: string | null; posts_per_page: number }
+export type Project = { id: string; name: string; dark_enabled: boolean; revision: number; linked_site_id: string | null; posts_per_page: number; style_pack: unknown }
 
 /** The template file a stored key compiles into — `templateKeyOf`'s inverse. `custom:custom-x.hbs` names its own,
  *  which is what R-129's three membership canvases store under (Story 5.5 opened them, and this map already answered
@@ -156,6 +159,9 @@ export type EditorData = {
    *  order, junk dropped. A canvas with no row here has been looked at as nobody, which is the same answer. Story 5.16:
    *  a page 2 keeps its own record under its own key (R-167). */
   viewed: Readonly<Record<string, readonly Visitor[]>>
+  /** Story 6.2 — `projects.style_pack` as stored (jsonb, user-writable): read through `lib/style-pack.ts`'s
+   *  `presetIdOf`, never trusted */
+  stylePack: unknown
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {
@@ -344,5 +350,6 @@ export async function editorData(projectId: string): Promise<EditorData> {
        about the document. The client's own `acquire` on mount is the real decision either way — this is only what
        it paints with for the one round trip before that answer arrives. */
     lock: lock.error || !lock.data ? null : rowFrom(lock.data, Date.now()),
+    stylePack: project?.style_pack ?? null,
   }
 }

@@ -11,8 +11,10 @@ import { join } from 'node:path'
 import { assembleEntry, orbitWeekly, validateDesign } from '@inflozo/library'
 import type { CategoryContent, DesignJson, SectionRegistryEntry } from '@inflozo/library'
 import { iconDrawing } from '@inflozo/library/icons'
-import { REFERENCE_TOKENS } from '@inflozo/section-runtime'
-import type { Mode } from '@inflozo/section-runtime'
+import { presetOf } from '@inflozo/library/packs'
+import { fontFaceCss, packTokens, REFERENCE_TOKENS } from '@inflozo/section-runtime'
+import type { Mode, Pack } from '@inflozo/section-runtime'
+import { fontHref } from './style-pack.ts'
 import { PACKAGES } from './style-guide.ts'
 
 /** `packages/` is found by `style-guide.ts`'s ONE finder (DW-269), as `pilots.ts` finds it, so the readers cannot disagree
@@ -94,11 +96,15 @@ export const ROLE_TOKENS: Readonly<Record<string, string>> = {
  *  previewed; drawn from `light` they would have said the light ground was in force. Since Story 6.1 that is true of
  *  these JS maps and no longer of the CSS: the stylesheet's dark blocks redeclare only the per-mode properties, so a
  *  dark block can never override a width band. */
-export function referenceSwatches(mode: Mode = 'light'): Record<string, string> {
+export function referenceSwatches(mode: Mode = 'light', pack = 'paper'): Record<string, string> {
+  // Story 6.2 — any preset's, for `/pilots`' Pack menu: the dots follow the pack the canvas is painted in
+  const preset = presetOf(pack)
+  if (preset === undefined) throw new Error(`"${pack}" is not a Style Pack preset`)
+  const tokens = pack === 'paper' ? REFERENCE_TOKENS : packTokens(preset.pack as Pack)
   return Object.fromEntries(
     Object.entries(ROLE_TOKENS).map(([role, property]) => {
-      const value = REFERENCE_TOKENS[mode][property]
-      if (!value) throw new Error(`the ${mode} reference tokens declare no ${property} — the ${role} swatch has no colour`)
+      const value = tokens[mode][property]
+      if (!value) throw new Error(`the ${mode} ${pack} tokens declare no ${property} — the ${role} swatch has no colour`)
       return [role, value]
     }),
   )
@@ -139,6 +145,8 @@ export function canvasDocument(): string {
     `<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">` +
     `<title>${esc('Controls sample')}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
+    // Story 6.2: Paper's faces, the pool's own files from the canvas route beside this frame (`/controls/frame`)
+    `<style data-order="1b-faces">${fontFaceCss(presetOf('paper')?.pairing ?? '', fontHref('../canvas'))}</style>` +
     `<style data-order="2-document">::-webkit-scrollbar{width:8px}::-webkit-scrollbar-thumb{background:color-mix(in srgb,var(--text-muted) 40%,transparent);border-radius:8px}::-webkit-scrollbar-button{display:none}body{margin:0}</style>` +
     `<style data-order="3-sample">${css}</style></head>` +
     `<body><div id="canvas"></div></body></html>`

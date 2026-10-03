@@ -16,6 +16,7 @@
 // package cannot read a file: AD-1 bans `node:fs` there, and the test-file exemption gives back only `node:test` and
 // `node:assert`).
 
+import { presetOf } from '@inflozo/library/packs'
 import { contrast, darker, isHex, mix, rgba, stepToContrast } from './colour.ts'
 
 export type TokenSource = 'computed' | 'authored'
@@ -147,31 +148,17 @@ export type Pack = {
   links: keyof typeof SCALES.links
 }
 
-/** Paper, as the export draws it (every frame, proof and kit is drawn in Paper — `_build/a22lib.js`, `a29-kit.js`):
- *  the palette per mode with R-110's ink on the accent, the scrim strengths, the pill, Georgia over Inter and the
- *  drawn step on each scale. Georgia's cap height is next@16.3.1's capsize metric; Inter's is 1490/2048 from
- *  `apps/web/app/fonts/inter-latin.woff2`, whose subset keeps `tnum`. */
-export const REFERENCE_PACK: Pack = {
-  light: {
-    background: '#FBF9F5', surface: '#FFFFFF', text: '#232019', muted: '#6B6459', border: '#EBE5DB', accent: '#D96C3F',
-    // R-110 (owner, 2026-09-15): Paper draws white here, 3.4:1 on #D96C3F (axe, Story 4.10); the ink passes at 4.77:1
-    onAccent: '#232019',
-    scrim: 0.45,
-  },
-  dark: {
-    background: '#171511', surface: '#211D17', text: '#F2EDE4', muted: '#A79E8F', border: '#332E27', accent: '#E0805A',
-    onAccent: '#171511',
-    scrim: 0.6,
-  },
-  pillRadius: '999px',
-  fonts: { heading: { family: 'Georgia, serif', capHeight: 0.6929 }, body: { family: "'Inter', sans-serif", capHeight: 0.7275, tabular: true } },
-  radius: 'soft',
-  density: 'comfortable',
-  width: 'normal',
-  gutters: 'normal',
-  buttons: 'solid',
-  shadow: 'subtle',
-  links: 'accent',
+/** STORY 6.2 — ONE PAPER: the reference pack IS the Paper preset, Appendix D §D.d's first row, read from the library
+ *  (`@inflozo/library/packs`, where its fonts are pairing D1's — Fraunces over Inter, R-231 — with each face's cap
+ *  height off the pool's own file). It used to be hand-copied here from the export, Georgia and all; now there is one
+ *  Paper and the library holds it. R-110's ink on the accent, the scrims and the drawn steps are §D.d's values. The
+ *  dependency runs runtime → library and never back. */
+export const REFERENCE_PACK: Pack = paperPreset()
+
+function paperPreset(): Pack {
+  const paper = presetOf('paper')
+  if (paper === undefined) throw new Error('the library holds no Paper preset — prd.md §D.d and packages/library/packs/ disagree')
+  return paper.pack as Pack
 }
 
 /** The red every pack's negative starts from, the page margin every pack shares, and the bands the responsive rows

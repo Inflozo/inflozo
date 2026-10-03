@@ -90,6 +90,7 @@ import { isApp, stripApp } from '@/routing'
 import { recheckSite, setPreviewSubject, setViewedStates } from './actions'
 import { EditorSkeleton } from './editor-skeleton'
 import type { EditorData } from './read'
+import { StylePackCard, StylePackHead, StylePackRoster } from './style-pack'
 
 /* ─────────────────────────────────────────── S4 Editor.dc.html — S4a, the editor at rest, 1440 (Story 5.1).
 
@@ -295,8 +296,13 @@ import type { EditorData } from './read'
    the pill says what the LAST PAINT used (R-165), with the cause in words. The body is never read (`formats=mobiledoc`,
    MEASUREMENTS §51), and the key never reaches the render context, the markup or a log.
 
+   STORY 6.2 — S4a'S STYLE PACK CARD AT REST, AND S7a'S ROSTER BEHIND ITS CHANGE (`style-pack.tsx`), LOOKING ONLY: the card
+   is 6.2's and Change opens the list, which is a view and so stays live while reading along (R-192); choosing a pack —
+   a cell that switches, the canvas wearing it — is 6.3's (R-118), and so is reaching the list below 1280, where the panel
+   is an overlay a selection opens (DW-322).
+
    ABSENT, NOT GREYED (UX-DR3), each until its story: Ship it (7.18), the name's rename underline (no story yet) and
-   the Style Pack card (6.3) (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
+   the Style Pack switch (6.3) (R-118); S4's own "Dark mode / Readers get a moon toggle" sidebar row, which is the
    VISITOR's `mode-toggle` and a different setting (`EXPERIENCE.md:652`) whose refusal has nothing to read before
    Epic 7 (R-118 a third time); clicking an icon on the canvas, its empty slot and a button's icon (9.1, R-121), P0-1's
    docked bar at 390 (R-87), the lock pill on a text prop promoted to Ghost Admin (7.10) and P0-2's filled-slot
@@ -774,6 +780,7 @@ function EditorShell({
   autosave,
   lock: heldOnServer,
   site,
+  stylePack,
   canvasSrc: canvasPath,
   canvasBase,
   reread = recheckSite,
@@ -787,6 +794,21 @@ function EditorShell({
   /** STORY 5.20 — THIS CANVAS IS A TEMPLATE SURFACE (the Paywall): not a page, so no site doc, no Section Picker, no
    *  Remix and no Preview, an ink bar, C3a's strip, and a paint of its own (`paywallPage`). */
   const surface = isSurface(key)
+  /* STORY 6.2 — S7a's roster in place of the rest panel: Change opens it with focus on the back button, and the back button
+     or Esc returns with focus on Change. A selection replaces the rest panel, so it leaves the roster too. */
+  const [packList, setPackList] = useState(false)
+  const packMoved = useRef(false)
+  const packBack = useRef<HTMLButtonElement>(null)
+  const packChange = useRef<HTMLButtonElement>(null)
+  const showPacks = (open: boolean) => {
+    packMoved.current = true
+    setPackList(open)
+  }
+  useEffect(() => {
+    if (!packMoved.current) return
+    packMoved.current = false
+    ;(packList ? packBack : packChange).current?.focus()
+  }, [packList])
   /** where a canvas lives — the app's address, or the harness's own pages (`canvasBase`) */
   const pathOf = (k: CanvasKey) =>
     canvasBase === undefined ? `${isApp(pathname) ? '/app' : ''}${pathOfCanvas(project.id, k)}` : k === 'home' ? canvasBase : `${canvasBase}/${k}`
@@ -3810,6 +3832,11 @@ function EditorShell({
   const chosenNow = selected ? stack.find((i) => same(i, selected)) : undefined
   const chosenSig = chosenNow === undefined ? '' : JSON.stringify(chosenNow)
   const chosen = useMemo(() => chosenNow, [chosenSig])
+  // Story 6.2 — a selection, or the Paywall's panel, replaces the rest panel and leaves S7a's roster with it
+  const resting = !surface && !chosen
+  useEffect(() => {
+    if (!resting) setPackList(false)
+  }, [resting])
   const pointedNow = hovered ? stack.find((i) => same(i, hovered)) : undefined
   const pointedSig = pointedNow === undefined ? '' : JSON.stringify(pointedNow)
   const pointed = useMemo(() => pointedNow, [pointedSig])
@@ -5284,6 +5311,16 @@ function EditorShell({
           hidden={!controlsShown}
           aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
           data-readonly={lock.holder ? undefined : ''}
+          // Story 6.2 — Esc leaves S7a's roster for the rest panel, focus back on Change; prevented, so the ladder skips it
+          onKeyDown={
+            resting && packList
+              ? (e) => {
+                  if (e.key !== 'Escape') return
+                  e.preventDefault()
+                  showPacks(false)
+                }
+              : undefined
+          }
           className={`flex w-[280px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-line bg-paper p-4 ${slimScrollbar} ${
             lock.holder ? '' : 'opacity-[.55]'
           }`}
@@ -5297,8 +5334,13 @@ function EditorShell({
               {/* Story 5.19 — D5c's panel head (:334-335): the main feed's name with its chip beside it */}
               <span className="flex min-w-0 items-center gap-2">
                 {/* Story 5.20 — on the Paywall canvas the head is C3a's :1477: "Paywall", with "n / m" once a design is
-                    chosen (the pill's own arithmetic, `pillPosition`) */}
-                <PanelLabel id="editor-panel-name">{surface ? PAYWALL_WORDS.panel : chosen ? chosen.layerName : 'Page'}</PanelLabel>
+                    chosen (the pill's own arithmetic, `pillPosition`). Story 6.2 — at rest with the roster open it is
+                    S7a's: the back chevron and "Style Pack" */}
+                {resting && packList ? (
+                  <StylePackHead backRef={packBack} onBack={() => showPacks(false)} />
+                ) : (
+                  <PanelLabel id="editor-panel-name">{surface ? PAYWALL_WORDS.panel : chosen ? chosen.layerName : 'Page'}</PanelLabel>
+                )}
                 {surface && paywallAt >= 0 ? (
                   <span id="editor-panel-position" className="font-mono text-[11.5px] text-ink-soft">{pillPosition(paywallAt, paywalls.length)}</span>
                 ) : null}
@@ -5425,8 +5467,15 @@ function EditorShell({
               visibility={visibilityRow}
             />
             </>
+          ) : packList ? (
+            // Story 6.2 — S7a's roster, looking only: no cell is a button until Story 6.3 makes one switch
+            <StylePackRoster stylePack={stylePack} />
           ) : (
-            <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
+            <>
+              {/* Story 6.2 — S4a's rest panel: "Page", the project's Style Pack card, then the sidebar's empty state */}
+              <StylePackCard stylePack={stylePack} changeRef={packChange} onChange={() => showPacks(true)} />
+              <EmptyPanel title="Nothing selected" instruction="Click any section on the canvas — its controls appear here." />
+            </>
           )}
         </aside>
         </div>

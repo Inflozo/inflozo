@@ -17,6 +17,8 @@
 // selected: `dropChromeLayers` removes them; the roots' two state marks are the editor's own (`editor.tsx` `mark()`),
 // cleared with the hover and the selection, so rest is zero. No script is added.
 
+import { PACK_FAMILY_PREFIX } from './style-pack.ts'
+
 export type ChromeLayers = { doc: Document; page: ShadowRoot; view: ShadowRoot }
 
 const FAMILY = 'inflozo-chrome '
@@ -75,6 +77,9 @@ function addFonts(doc: Document) {
     for (const r of rule instanceof CSSFontFaceRule ? [rule] : 'cssRules' in rule && rule.cssRules instanceof CSSRuleList ? [...rulesOf(rule.cssRules)] : []) {
       if (!(r instanceof CSSFontFaceRule)) continue
       const family = unquote(r.style.getPropertyValue('font-family'))
+      // Story 6.2 — a pack cell's face is the SITE's, declared for the app's glyphs alone (`packFacesCss`): never chrome,
+      // and loading every pack's face into every canvas would fetch fonts no chrome draws
+      if (family.startsWith(PACK_FAMILY_PREFIX)) continue
       // a relative url is relative to its stylesheet, never to the canvas document
       const src = r.style.getPropertyValue('src').replace(/url\((["']?)([^"')]+)\1\)/g, (_, _q, url: string) => `url("${new URL(url, href).href}")`)
       const options: FontFaceDescriptors = {}

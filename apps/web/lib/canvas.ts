@@ -163,6 +163,8 @@ export function canvasCaching(v: string | null, live = process.env.NODE_ENV === 
   return {
     document: v && v !== 'dev' ? keep('private, max-age=31536000, immutable') : 'no-store',
     image: keep('private, max-age=600'),
+    // Story 6.2: a pool face's address carries its own hash (`style-pack.ts`'s `fontHref`), so a rebuilt file is a new address
+    font: keep('private, max-age=31536000, immutable'),
   }
 }
 

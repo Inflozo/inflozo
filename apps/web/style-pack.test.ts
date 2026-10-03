@@ -1,6 +1,8 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { DEFAULT_PRESET, PRESETS, defaultStylePack, placeholderFor } from './lib/style-pack.ts'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packFacesCss, placeholderFor, presetIdOf } from './lib/style-pack.ts'
 
 // `placeholderFor`'s fallback is the only thing between an unknown Style Pack and a card
 // painted with `undefined` colours, and E6 is the epic that first writes a preset name an
@@ -101,4 +103,41 @@ test('a pack that lost its preset keeps its brand accent — the parse must not 
   for (const junk of [null, undefined, 'paper', 42, [], ['brand']]) {
     assert.equal(placeholderFor(junk), paper, JSON.stringify(junk))
   }
+})
+
+/* ───────── STORY 6.2 — THE PRESETS ARE THE LIBRARY'S (DW-15): the dashboard card and D4a's cell paint from the values the
+   canvas's token block is computed from, and a pack's glyph is drawn in its own face under a family of its own. */
+
+test('PRESETS is the library\'s twelve, in §D.d\'s order, each card colour the preset\'s own light value', async () => {
+  const { PRESETS: LIBRARY } = await import('@inflozo/library/packs')
+  assert.deepEqual(Object.keys(PRESETS), LIBRARY.map((p) => p.id))
+  for (const p of LIBRARY) {
+    const card = PRESETS[p.id]
+    assert.equal(card?.name, p.name)
+    assert.equal(card?.surface, p.pack.light.background, `${p.id}: FR-B1's surface is the light background`)
+    assert.equal(card?.accent, p.pack.light.accent)
+    assert.equal(card?.text, p.pack.light.text)
+    assert.match(card?.glyphFamily ?? '', new RegExp(`^'${PACK_FAMILY_PREFIX}`), `${p.id}: the glyph is the pack face under the app's prefix`)
+  }
+  assert.equal(PRESETS.paper?.heading, 'Fraunces', 'R-231: Paper is Fraunces over Inter')
+  assert.equal(PRESETS.paper?.body, 'Inter')
+})
+
+test('presetIdOf is placeholderFor\'s rule: a stored preset this build does not know is Paper', () => {
+  assert.equal(presetIdOf({ preset: 'mono' }), 'mono')
+  for (const junk of [{ preset: 'harbor' }, { preset: '__proto__' }, null, 'mono', {}]) assert.equal(presetIdOf(junk), DEFAULT_PRESET, JSON.stringify(junk))
+})
+
+test('packFacesCss declares every preset\'s heading face under the prefix, from the canvas route, and never an app face', () => {
+  const css = packFacesCss('/canvas')
+  const declared = [...css.matchAll(/font-family: '([^']+)'/g)].map((m) => m[1] as string)
+  assert.ok(declared.length > 0)
+  for (const f of declared) assert.ok(f.startsWith(PACK_FAMILY_PREFIX), f)
+  for (const p of Object.values(PRESETS)) assert.ok(declared.includes(`${PACK_FAMILY_PREFIX}${p.heading}`), `${p.id}'s heading face is not declared`)
+  // the app's own faces, read off its stylesheet — none may be redefined (the spec's Always)
+  const app = new Set([...readFileSync(join('app', 'fonts', 'fonts.css'), 'utf8').matchAll(/font-family: '([^']+)'/g)].map((m) => m[1]))
+  assert.ok(app.has('Inter'), 'the control: the app\'s own Inter was read')
+  for (const f of declared) assert.ok(!app.has(f), `${f} redefines an app face`)
+  for (const src of css.matchAll(/src: url\(([^)]+)\)/g)) assert.match(src[1] as string, /^\/canvas\?font=[a-z0-9-]+\.woff2&h=[0-9a-f]{12}$/)
+  assert.doesNotMatch(css, /font-style: italic/, 'a heading face is roman only (§D.a rule 1)')
 })

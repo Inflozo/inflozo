@@ -19,8 +19,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { orbitWeekly } from '@inflozo/library'
-import { CTA_STYLES } from '@inflozo/section-runtime'
+import { presetOf } from '@inflozo/library/packs'
+import { CTA_STYLES, fontFaceCss } from '@inflozo/section-runtime'
 import { withMedia } from './canvas.ts'
+import { fontHref } from './style-pack.ts'
 
 /** `packages/`, from the working directory FIRST — and that form is load-bearing for the deployed app, not a style.
  *
@@ -160,12 +162,17 @@ figcaption{margin-top:.75em;padding:0 var(--site-margin);text-align:center;font-
  */
 export const surfaceCss = (): string => `${THEME_CSS}\n${simulatedCardsCss().css}\n${CTA_STYLES}`
 
+/** Story 6.2 — Paper's faces, the pool's own files from the canvas route: this frame is served one level down
+ *  (`/style-guide/frame`), so `../canvas` is the route beside it on either host (§D.b: the canvas loads the theme's files). */
+const PAPER_FACES = () => fontFaceCss(presetOf('paper')?.pairing ?? '', fontHref('../canvas'))
+
 function head(title: string): string {
   const tokens = readFileSync(join(PACKAGES(), 'section-runtime', 'reference-tokens.css'), 'utf8')
   const cards = simulatedCardsCss()
   const accent = orbitWeekly.site().accent_color
   return `<!doctype html><html lang="en" data-mode="light"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${esc(title)}</title>` +
     `<style data-order="1-tokens">${tokens}</style>` +
+    `<style data-order="1b-faces">${PAPER_FACES()}</style>` +
     `<style data-order="2-theme">${THEME_CSS}</style>` +
     // {{ghost_head}}'s order (research §2.4): cards.min.css, then Ghost's accent custom property
     `<style data-order="3-cards.min.css" data-chunks="${cards.chunks.join(' ')}">${cards.css}</style>` +

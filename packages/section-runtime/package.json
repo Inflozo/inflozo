@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./fonts": "./src/fonts.ts",
     "./reference-tokens.css": "./reference-tokens.css"
   },
   "scripts": {

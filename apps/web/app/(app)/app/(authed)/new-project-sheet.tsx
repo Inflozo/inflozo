@@ -32,7 +32,9 @@ import { createProject, type ActionResult } from './projects/actions'
    Two controls the frame draws are ABSENT rather than greyed, and that is the other half of
    the same rule — there is nothing behind them to open at all: the Redesign door's "Connect a
    site" button (E3), and the project picker that sat inside the door now removed. The Style
-   Pack row carries Paper and no pencil and no New pack cell: the pack editor is E6's.
+   Pack row carries Paper alone, with no pencil and no New pack cell: D4a's choice (Paper and
+   Tangerine) arrives with Story 6.3's switch (DW-322) and the pack editor with Story 6.4. Since
+   Story 6.2 the cell paints from the library's Paper preset and its glyph is the pool's Fraunces.
 
    AT THE CAP THE SAME DIALOG IS D4b — every door greyed with the plan's pill instead of a
    reason, no Style Pack row, the upgrade block, and Create project drawn disabled. The page

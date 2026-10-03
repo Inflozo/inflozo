@@ -11,6 +11,7 @@ import type { LinkResources } from '@/components/controls/link-picker'
 import { Sidebar, type Edit } from '@/components/controls/sidebar'
 import { slimScrollbar } from '@/components/kit/greyed'
 import { Segmented } from '@/components/kit/segmented'
+import { Select } from '@/components/kit/select'
 import { canvasAssets as assetsFor, canvasSrc, mountSections, renderSection, shownRows } from '@/lib/canvas'
 import { isApp } from '@/routing'
 
@@ -65,7 +66,8 @@ export function Review({
   entries,
   rows,
   memberVisibility,
-  swatches,
+  packs,
+  packSwatches,
   links,
   pool,
   timezone,
@@ -75,7 +77,10 @@ export function Review({
   rows: Rows
   /** per design id: does its category carry R-124's Member visibility row (`carriesMemberVisibility`)? */
   memberVisibility: Readonly<Record<string, boolean>>
-  swatches: Readonly<Record<Mode, Readonly<Record<string, string>>>>
+  /** Story 6.2 — Appendix D §D.d's presets, in its order, Paper first: the Pack menu's rows */
+  packs: readonly { id: string; name: string }[]
+  /** per preset, per mode: the Background role's dots, so they follow the pack and the mode the canvas is painted in */
+  packSwatches: Readonly<Record<string, Readonly<Record<Mode, Readonly<Record<string, string>>>>>>
   links: LinkResources
   pool: readonly { id: string; bytes: number }[]
   timezone: string
@@ -87,6 +92,9 @@ export function Review({
     Object.fromEntries(entries.map((e) => [e.id, { content: defaultContent(e.contentSchema), controls: {}, data: {}, darkOverrides: {} }])),
   )
   const [mode, setMode] = useState<Mode>('light')
+  // Story 6.2 — the preset the canvas document is drawn in (`/canvas?pack=`): a change loads that document, and its
+  // `load` paints the pilot again, as the first one did
+  const [pack, setPack] = useState(packs[0]?.id ?? 'paper')
   const [width, setWidth] = useState(1440)
   const [member, setMember] = useState<Visitor>('anonymous')
   const [feed, setFeed] = useState<Feed>('first')
@@ -111,7 +119,10 @@ export function Review({
 
   const canvasAssets = assetsFor(pool)
   const shown = (e: SectionRegistryEntry, s: ControlState) => shownRows(e, s, rows[e.id])
-  const src = canvasSrc(isApp(usePathname()))
+  const base = canvasSrc(isApp(usePathname()))
+  const src = pack === 'paper' ? base : `${base}&pack=${encodeURIComponent(pack)}`
+  // the Background role's dots, in the pack and (below) the mode the canvas is painted in
+  const swatches = packSwatches[pack] as (typeof packSwatches)[string]
 
   const paint = () => {
     const c = canvas()
@@ -209,6 +220,15 @@ export function Review({
         <div role="toolbar" aria-label="Canvas state" className="flex flex-wrap items-end gap-x-5 gap-y-3 rounded border border-line bg-paper p-3">
           <div className="min-w-[320px] flex-[2]">
             <Segmented id="pilot" label="Pilot" options={entries.map((e) => ({ value: e.id, label: e.name }))} active={id} onChange={setId} />
+          </div>
+          <div className="min-w-[160px]">
+            <Select
+              id="pack"
+              label="Pack"
+              value={packs.find((p) => p.id === pack)?.name ?? pack}
+              options={packs.map((p) => ({ value: p.id, label: p.name, active: p.id === pack }))}
+              onSelect={setPack}
+            />
           </div>
           <div className="min-w-[140px]">
             <Segmented id="mode" label="Mode" options={[{ value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }]} active={mode} onChange={(v) => setMode(v as Mode)} />

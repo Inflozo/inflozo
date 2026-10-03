@@ -5071,8 +5071,8 @@ Question 1, ruled **option 1** (owner, 2026-10-03): *"The plan wins"*.
 - **Declined.** Option 2, the drawings' names, a Georgia look-alike (Gelasio) for Paper and a purple Ink in Inter;
   option 3, a mix.
 - Targets: ✅ this entry · ✅ Story 6.2's spec — Question 1, the plain-English section and the owner's test · ✅
-  `epics.md` — Story 6.2's card · ✅ DW-11, DW-309, DW-311 in `deferred-work.md` · ✅ `epic-6-context.md` · ⬜ `prd.md`
-  Appendix D §D.d and the presets built — Story 6.2's Dev.
+  `epics.md` — Story 6.2's card · ✅ DW-11, DW-309, DW-311 in `deferred-work.md` · ✅ `epic-6-context.md` · ✅ `prd.md`
+  Appendix D §D.d and the presets built — Story 6.2's Dev (2026-10-03), approved in-session (its Question 6).
 
 **R-232 — D19's and D22's body files widen to cover their headings' weights.** Story 6.2's Create, Question 2, ruled
 **option 1** (owner, 2026-10-03): *"Widen the text files to cover the headings"*.
@@ -5084,8 +5084,8 @@ Question 1, ruled **option 1** (owner, 2026-10-03): *"The plan wins"*.
   400–800) and its italic. Measured at Create with fontTools' instancer: Chivo's latin roman grows 29,852 → 31,144 B,
   Figtree's 18,912 → 19,908 B, where a separate heading file would add 25,412 B and 19,316 B.
 - **Declined.** Option 2, a third file for the heading; option 3, capping those headings at 700.
-- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-312 · ⬜ `prd.md` §D.a rule 3
-  and §D.c's D19 and D22 rows, and the pool built — Story 6.2's Dev.
+- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-312 · ✅ `prd.md` §D.a rule 3
+  and §D.c's D19 and D22 rows, and the pool built — Story 6.2's Dev (2026-10-03).
 
 **R-233 — every pairing is photographed once, as a specimen.** Story 6.2's Create, Question 3, ruled **option 1**
 (owner, 2026-10-03): *"One specimen photo per pairing"*.
@@ -5096,8 +5096,8 @@ Question 1, ruled **option 1** (owner, 2026-10-03): *"The plan wins"*.
   italic run, tabular figures and latin-ext letters — in Paper's palette with that pairing's two faces, light, at 1440,
   beside the three reference packs' cases. §D.c's promise is reworded to say so.
 - **Declined.** Option 2, narrowing the promise to the twelve preset pairings; option 3, photographing all twelve packs.
-- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-313 · ⬜ `prd.md` §D.c, the
-  matrix case and `docs/render-matrix.md` — Story 6.2's Dev.
+- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-313 · ✅ `prd.md` §D.c, the
+  matrix case and `docs/render-matrix.md` — Story 6.2's Dev (2026-10-03).
 
 **R-234 — the render matrix's reference packs are Paper, Mono and Neon.** Story 6.2's Create, Question 4, ruled
 **option 1** (owner, 2026-10-03): *"Paper, Mono and Neon"*.
@@ -5110,8 +5110,22 @@ Question 1, ruled **option 1** (owner, 2026-10-03): *"The plan wins"*.
   Widening the axis is a mass rebaseline behind the owner's sampled review.
 - **Declined.** Option 2, Paper, Tangerine and Ink (the drawings' three, none off Paper's gutters or with outline
   buttons); option 3, three others.
-- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-169, DW-317 · ⬜ `prd.md` §D.d,
-  `packages/library/packs/`'s `REFERENCE_PACKS`, the matrix and its baselines — Story 6.2's Dev.
+- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-169, DW-317 · ✅ `prd.md` §D.d,
+  `packages/library/packs/`'s `REFERENCE_PACKS`, the matrix and its baselines — Story 6.2's Dev (2026-10-03), the
+  baselines approved in-session (its Question 7).
+
+**R-235 — Ink's static heading is cut from Libre Caslon Text's variable file.** Story 6.2's Dev, Question 5, ruled
+**option 1** (owner, 2026-10-03): *"Cut bold from it"*.
+
+- **Why it was a question.** §D.c declares D2's heading Libre Caslon Text `S · 700`, and the pool's builder refuses a
+  face whose type differs from §D.c; at the pinned google/fonts commit the family ships only `LibreCaslonText[wght].ttf`
+  (`wght` 400–700), read from the file's own `fvar` (DW-311).
+- **The rule.** `tools/fonts/build-pool.py`'s `STATIC_CUTS` names the family, so the builder cuts the one static face
+  §D.c declares — `wght` pinned at 700 with fontTools' instancer — and records `cut` beside it in `pool.json`. §D.c stays
+  as written; any other family whose type differs is still refused, and removing the entry makes the builder refuse D2.
+- **Declined.** Option 2, relabelling D2's heading as variable clipped to 700 (the same bytes); option 3, another font.
+- Targets: ✅ this entry · ✅ Story 6.2's spec — Question 5 · ✅ `build-pool.py`'s `STATIC_CUTS` comment and
+  `pool.json` — Story 6.2's Dev, 2026-10-03.
 
 ## B · Approved decisions superseded by this session
 

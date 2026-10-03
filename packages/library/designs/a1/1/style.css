@@ -57,6 +57,9 @@
 .a1-1__signin { font-size: 0.875rem; color: var(--text-muted); text-decoration: none; white-space: nowrap; transition: color 160ms ease-out; }
 .a1-1__signin:hover { color: var(--text-body); }
 .a1-1__cta { padding: 0.5625rem 1.0625rem; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--button-text); font-size: 0.875rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
+/* DW-317 (Story 6.2): the header offers no contrast ground (Background is base · surface), so its button is always on the
+   page or the surface, where every button step reads; the day it offers one, the button answers it as A22 #1's does —
+   `[data-bg="contrast"] .a1-1__cta { background: var(--text-on-contrast); color: var(--bg-contrast); }` */
 .a1-1[data-sign-in="off"] .a1-1__signin, .a1-1[data-subscribe="off"] .a1-1__cta { display: none; }
 
 .a1-1[data-nav-position="right"] .a1-1__nav { margin-inline-start: auto; }

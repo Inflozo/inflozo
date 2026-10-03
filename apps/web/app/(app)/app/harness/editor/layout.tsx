@@ -9,6 +9,7 @@ import { Editor } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/editor'
 import { designateAll, type EditorData } from '@/app/(app)/app/(authed)/projects/[id]/(editor)/read'
 import { ShellUserContext } from '@/components/shell/shell'
 import { harnessCanvasSrc } from '@/lib/canvas'
+import { DEFAULT_PRESET, packFacesCss } from '@/lib/style-pack'
 import { imagePool, linkResources, paywallSamples, referenceSwatches, samples } from '@/lib/controls-review'
 import { CANVASES, canvasesOf, SITE, templateKeyOf } from '@/lib/editor'
 import { HARNESS } from '@/lib/harness'
@@ -208,6 +209,8 @@ export default async function EditorHarness({ children }: { children: ReactNode 
       : siteAsked === 'surfaces-later' ? SURFACES_LATER_SITE
       : siteAsked === 'ghost-5' ? GHOST_5_SITE
       : null,
+    // Story 6.2 — a fresh project's pack, Paper, as `defaultStylePack` writes it
+    stylePack: { preset: DEFAULT_PRESET },
   }
 
   // `canvasSrc` is the harness's own path: the app's `/canvas` keeps its session guard rather than having it
@@ -215,6 +218,8 @@ export default async function EditorHarness({ children }: { children: ReactNode 
   // in the guard alone — `lib/canvas.ts` owns the token, and the route decides what may be kept.
   return (
     <>
+      {/* Story 6.2 — the pack cells' faces, as the signed-in layout declares them, from the harness's own canvas route */}
+      <style data-pack-faces>{packFacesCss('/app/harness/canvas')}</style>
       <ShellUserContext value={HARNESS_USER}>
         <Editor project={HARNESS_PROJECT} canvasSrc={harnessCanvasSrc()} canvasBase={HARNESS_BASE} reread={harnessReread} {...data} />
       </ShellUserContext>

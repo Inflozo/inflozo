@@ -16,6 +16,8 @@
 //     node test-vocabulary.mjs
 
 import { createRequire } from 'node:module'
+import { createHash } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { readFileSync, readdirSync, statSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
@@ -299,6 +301,210 @@ check('Appendix D §D.0 and the engine\'s TOKEN_ROWS name the same rows, marked 
     d0Drift([renamed, ...rest], TOKEN_ROWS), d0Drift([...rows, first], TOKEN_ROWS)]
   if (caught.some((d) => d.length !== 1)) throw new Error(`the comparison is not a control: ${JSON.stringify(caught)}`)
   console.log(`      §D.0 and TOKEN_ROWS agree on ${rows.length} rows`)
+})
+
+/* ── Story 6.2 — Appendix D held in CI: §D.d ↔ the presets, §D.c ↔ the pool, every file ↔ its sha256 ─────────────────
+   The PRD is the normative half again (DW-11): §D.d authors the twelve and `packages/library/packs/packs.json` holds them
+   as data; §D.c declares the thirty pairings and `packages/library/fonts/pool.json` is what `tools/fonts/build-pool.py`
+   built from it. Each table is cut out of prd.md by heading, as §D.0 is above; each comparison runs both ways, and each
+   check carries a control that must fail it, so an empty parse or a blind comparison is never a pass. */
+const PRD_TEXT = () => readFileSync(join(REPO, '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md'), 'utf8')
+const PACKS_JSON = JSON.parse(readFileSync(join(REPO, 'packages/library/packs/packs.json'), 'utf8'))
+const POOL_DIR = join(REPO, 'packages/library/fonts')
+const POOL_JSON = JSON.parse(readFileSync(join(POOL_DIR, 'pool.json'), 'utf8'))
+const cut = (prd, from, to) => {
+  const a = prd.indexOf(`\n### ${from} `)
+  const b = a === -1 ? -1 : prd.indexOf(to, a + 1)
+  if (a === -1 || b === -1) throw new Error(`prd.md has no "### ${from}" closed by ${JSON.stringify(to)} — the table cannot be cut out`)
+  return prd.slice(a, b)
+}
+/** Every table in a section, as rows of cells keyed by the table's own header. */
+const tables = (section) => {
+  const out = []
+  let head = null
+  for (const line of section.split('\n')) {
+    if (!line.startsWith('|')) { head = null; continue }
+    const cells = line.split('|').slice(1, -1).map((c) => c.replace(/`/g, '').trim())
+    if (/^-+$/.test(cells[0] ?? '')) continue
+    if (head === null) { head = cells; out.push({ head, rows: [] }); continue }
+    out.at(-1).rows.push(Object.fromEntries(head.map((h, i) => [h, cells[i] ?? ''])))
+  }
+  return out
+}
+const ROLES = { Background: 'background', Surface: 'surface', Text: 'text', Muted: 'muted', Border: 'border', Accent: 'accent', 'On-accent': 'onAccent', Scrim: 'scrim' }
+const LEVELS = { Pairing: 'pairing', 'Pill radius': 'pillRadius', Radius: 'radius', Density: 'density', Width: 'width', Gutters: 'gutters', Buttons: 'buttons', Shadow: 'shadow', Links: 'links' }
+
+/** §D.d as `{ reference, presets: [{ id, name, …levels, light, dark }] }`, the shape packs.json carries. */
+function ddPresets(prd) {
+  const section = cut(prd, 'D.d', '\n---')
+  const [palette, levels] = [tables(section).find((t) => t.head[1] === 'Mode'), tables(section).find((t) => t.head[1] === 'Id')]
+  if (!palette || !levels) throw new Error('§D.d carries no palette table (Pack | Mode | …) or no pack-level table (Pack | Id | …)')
+  const presets = levels.rows.map((r) => {
+    const p = { id: r.Id, name: r.Pack }
+    for (const [h, k] of Object.entries(LEVELS)) p[k] = r[h]
+    for (const mode of ['light', 'dark']) {
+      const row = palette.rows.find((x) => x.Pack === r.Pack && x.Mode === mode)
+      p[mode] = row ? Object.fromEntries(Object.entries(ROLES).map(([h, k]) => [k, k === 'scrim' ? Number(row[h]) : row[h]])) : null
+    }
+    return p
+  })
+  const ref = /\*\*The reference packs\*\*[^\n]*\n?[^\n]*?((?:`[a-z]+`(?: · )?)+)/.exec(section)
+  return { reference: ref ? [...ref[1].matchAll(/`([a-z]+)`/g)].map((m) => m[1]) : [], presets, paletteRows: palette.rows.length }
+}
+function ddDrift(dd, data) {
+  const out = []
+  const flat = (p) => Object.entries(p).flatMap(([k, v]) => (v !== null && typeof v === 'object' ? Object.entries(v).map(([r, x]) => [`${k} ${r}`, x]) : [[k, v]]))
+  const ids = (list) => list.map((p) => p.id)
+  if (ids(dd.presets).join() !== ids(data.presets).join()) out.push(`the order or the ids differ: §D.d ${ids(dd.presets).join(' ')} · packs.json ${ids(data.presets).join(' ')}`)
+  for (const [where, a, b] of [['§D.d', dd.presets, data.presets], ['packs.json', data.presets, dd.presets]]) {
+    for (const p of a) {
+      const q = b.find((x) => x.id === p.id)
+      if (!q) { out.push(`${p.id} is a preset of ${where} and not of the other`); continue }
+      const other = new Map(flat(q))
+      for (const [k, v] of flat(p)) if (!other.has(k) || other.get(k) !== v) out.push(`${p.id} ${k}: ${where} ${JSON.stringify(v)}, the other ${JSON.stringify(other.get(k))}`)
+    }
+  }
+  if (dd.reference.join() !== data.reference.join()) out.push(`the reference packs: §D.d ${dd.reference.join(' · ') || 'none'}, packs.json ${data.reference.join(' · ')}`)
+  return [...new Set(out)]
+}
+check('Appendix D §D.d and packages/library/packs/ hold the same twelve, in the same order, both ways (DW-11)', () => {
+  const dd = ddPresets(PRD_TEXT())
+  if (dd.presets.length === 0 || dd.paletteRows === 0 || dd.reference.length === 0) throw new Error('§D.d parsed as an empty table (or no reference packs), so this check would pass whatever the data said')
+  const drift = ddDrift(dd, PACKS_JSON)
+  if (drift.length) throw new Error(drift.join('\n       '))
+  // the control: one dark accent changed, one preset dropped, the reference packs reordered — each named
+  const [first, ...rest] = PACKS_JSON.presets
+  const changed = { ...PACKS_JSON, presets: [{ ...first, dark: { ...first.dark, accent: '#000001' } }, ...rest] }
+  const caught = [ddDrift(dd, changed), ddDrift(dd, { ...PACKS_JSON, presets: rest }), ddDrift(dd, { ...PACKS_JSON, reference: [...PACKS_JSON.reference].reverse() })]
+  if (!caught[0].some((d) => d.includes(`${first.id} dark accent`)) || caught[1].length === 0 || caught[2].length !== 1) throw new Error(`the comparison is not a control: ${JSON.stringify(caught)}`)
+  console.log(`      §D.d and packs.json agree on ${dd.presets.length} presets; the reference packs ${dd.reference.join(' · ')}`)
+})
+
+/** §D.c as the builder reads it: per pairing, each role's family, type, and range (+ italic) or weights. */
+function dcPairings(prd) {
+  const table = tables(cut(prd, 'D.c', '\n### ')).find((t) => t.head[0] === '#')
+  if (!table) throw new Error('§D.c carries no pool table')
+  const face = (cell) => {
+    const t = cell.replace(/–/g, '-')
+    if (t.startsWith('V')) {
+      const r = [...t.matchAll(/wght (\d+)-(\d+)/g)].map((m) => [Number(m[1]), Number(m[2])])
+      return { type: 'V', range: r[0] ?? null, ...(t.includes('+ italic') ? { italic: r[1] ?? r[0] ?? null } : {}) }
+    }
+    return { type: 'S', weights: (t.split('·')[1] ?? '').match(/\d+i?/g) ?? [] }
+  }
+  return table.rows.map((r) => ({ id: r['#'], name: r.Pairing, files: Number(r.Files),
+    heading: { family: r['Heading family'], ...face(r['Heading face · weights']) }, body: { family: r['Body family'], ...face(r['Body face · weights']) } }))
+}
+function dcDrift(rows, pool) {
+  const out = []
+  const key = (p) => JSON.stringify({ id: p.id, name: p.name, heading: decl(p.heading), body: decl(p.body) })
+  const decl = (r) => ({ family: r.family, type: r.type, range: r.range, italic: r.italic, weights: r.weights })
+  const inPool = new Map(pool.pairings.map((p) => [p.id, p]))
+  for (const r of rows) {
+    const p = inPool.get(r.id)
+    if (!p) out.push(`${r.id} is a pairing of §D.c and not of pool.json`)
+    else if (key(r) !== key(p)) out.push(`${r.id}: §D.c ${key(r)} — pool.json ${key(p)} (re-run tools/fonts/build-pool.py)`)
+    else if (new Set([...p.heading.faces, ...p.body.faces]).size !== r.files) out.push(`${r.id}: §D.c's Files column says ${r.files}, the pool built ${new Set([...p.heading.faces, ...p.body.faces]).size} faces`)
+  }
+  for (const p of pool.pairings) if (!rows.some((r) => r.id === p.id)) out.push(`${p.id} is a pairing of pool.json and not of §D.c`)
+  return out
+}
+check('Appendix D §D.c and packages/library/fonts/pool.json declare the same pairings — families, face type, range or weights — both ways', () => {
+  const rows = dcPairings(PRD_TEXT())
+  if (rows.length === 0) throw new Error('§D.c parsed as an empty table, so this check would pass whatever the pool held')
+  const drift = dcDrift(rows, POOL_JSON)
+  if (drift.length) throw new Error(drift.join('\n       '))
+  // the control: one body range moved in the PRD, one pairing missing from the pool
+  const [first, ...rest] = rows
+  const moved = [{ ...first, body: { ...first.body, range: [first.body.range[0], first.body.range[1] + 100] } }, ...rest]
+  if (dcDrift(moved, POOL_JSON).length !== 1 || dcDrift(rows, { ...POOL_JSON, pairings: POOL_JSON.pairings.slice(1) }).length !== 1) throw new Error('the comparison is not a control')
+  console.log(`      §D.c and pool.json agree on ${rows.length} pairings`)
+})
+
+const sha256 = (buf) => createHash('sha256').update(buf).digest('hex')
+const poolFiles = (pool) => Object.values(pool.faces).flatMap((f) => f.files)
+check('every pool.json file is on disk with its sha256, and no other file sits in packages/library/fonts/files/', () => {
+  const files = poolFiles(POOL_JSON)
+  if (files.length === 0) throw new Error('pool.json records no file, so this check proves nothing')
+  const bad = []
+  for (const f of files) {
+    let buf
+    try { buf = readFileSync(join(POOL_DIR, 'files', f.file)) } catch { bad.push(`${f.file} is missing`); continue }
+    if (sha256(buf) !== f.sha256) bad.push(`${f.file}: sha256 ${sha256(buf)}, pool.json records ${f.sha256}`)
+    else if (buf.length !== f.bytes) bad.push(`${f.file}: ${buf.length} bytes, pool.json records ${f.bytes}`)
+  }
+  const named = new Set(files.map((f) => f.file))
+  for (const f of readdirSync(join(POOL_DIR, 'files'))) if (!named.has(f)) bad.push(`${f} sits in files/ and pool.json declares no face of it`)
+  if (bad.length) throw new Error(`${bad.join('\n       ')}\n       — the pool is built by uv run tools/fonts/build-pool.py, never by hand`)
+  // the control: one byte flipped changes the hash
+  const one = readFileSync(join(POOL_DIR, 'files', files[0].file))
+  const flipped = Buffer.from(one); flipped[flipped.length >> 1] ^= 0xff
+  if (sha256(flipped) === files[0].sha256) throw new Error('the hash comparison is not a control')
+  console.log(`      ${files.length} files, every one its recorded sha256`)
+})
+
+/** D.a rule 5 as Design Notes reads it: at most five faces per pairing, at most 200 KB of LATIN files (§D.a). */
+function overBudget(pool) {
+  return pool.pairings.flatMap((p) => {
+    const faces = [...new Set([...p.heading.faces, ...p.body.faces])].map((id) => pool.faces[id])
+    const latin = faces.reduce((t, f) => t + (f?.files.find((x) => x.subset === 'latin')?.bytes ?? Infinity), 0)
+    return [...(faces.length > 5 ? [`${p.id} ${p.name}: ${faces.length} faces, more than 5`] : []), ...(latin > 200_000 ? [`${p.id} ${p.name}: ${(latin / 1000).toFixed(1)} KB of latin files, more than 200 KB`] : [])]
+  })
+}
+check('every pairing keeps §D.a rule 5\'s budget as read: ≤ 5 faces and ≤ 200 KB of latin files', () => {
+  const over = overBudget(POOL_JSON)
+  if (over.length) throw new Error(over.join('\n       '))
+  const [p] = POOL_JSON.pairings
+  const big = { ...POOL_JSON, faces: { ...POOL_JSON.faces, [p.heading.faces[0]]: { ...POOL_JSON.faces[p.heading.faces[0]], files: [{ subset: 'latin', bytes: 300_000 }] } } }
+  if (overBudget(big).length === 0) throw new Error('the budget is not a control: a 300 KB face passed')
+  const heaviest = POOL_JSON.pairings.map((x) => [x.id, [...new Set([...x.heading.faces, ...x.body.faces])].reduce((t, id) => t + POOL_JSON.faces[id].files.find((f) => f.subset === 'latin').bytes, 0)]).sort((a, b) => b[1] - a[1])[0]
+  console.log(`      the heaviest pairing, ${heaviest[0]}, is ${(heaviest[1] / 1000).toFixed(1)} KB of latin`)
+})
+
+function licenceFaults(pool) {
+  const out = []
+  for (const [family, f] of Object.entries(pool.families)) {
+    if (f.licence !== 'OFL' && f.licence !== 'APACHE2') out.push(`${family}: licence ${f.licence}, neither OFL nor Apache 2.0 (§D.a rule 7)`)
+    let text = ''
+    try { text = readFileSync(join(POOL_DIR, f.licenceFile), 'utf8') } catch { out.push(`${family}: no licence file at ${f.licenceFile}`) }
+    if (text && !(f.licence === 'OFL' ? /SIL OPEN FONT LICENSE/i : /Apache License/i).test(text)) out.push(`${family}: ${f.licenceFile} is not the ${f.licence} text`)
+  }
+  return out
+}
+check('every family is OFL or Apache 2.0, its licence text beside the files — and nothing else sits in licences/', () => {
+  const faults = licenceFaults(POOL_JSON)
+  const kept = new Set(Object.values(POOL_JSON.families).map((f) => f.licenceFile.split('/')[1]))
+  for (const f of readdirSync(join(POOL_DIR, 'licences'))) if (!kept.has(f)) faults.push(`licences/${f} belongs to no family of the pool`)
+  if (faults.length) throw new Error(faults.join('\n       '))
+  const [name, fam] = Object.entries(POOL_JSON.families)[0]
+  if (licenceFaults({ families: { [name]: { ...fam, licence: 'UFL' } } }).length === 0) throw new Error('the licence check is not a control')
+  console.log(`      ${Object.keys(POOL_JSON.families).length} families, every one OFL or Apache 2.0`)
+})
+
+function roleFaults(pool) {
+  return pool.pairings.flatMap((p) => {
+    const styles = (r) => r.faces.map((id) => pool.faces[id]?.style)
+    return [...(styles(p.heading).some((s) => s !== 'normal') ? [`${p.id}: a heading face is not roman (§D.a rule 1)`] : []),
+      ...(!styles(p.body).includes('normal') || !styles(p.body).includes('italic') ? [`${p.id}: the body lacks a roman or an italic (§D.a rule 2)`] : [])]
+  })
+}
+check('heading faces are roman only and every body has a roman and a true italic (§D.a rules 1–2)', () => {
+  const faults = roleFaults(POOL_JSON)
+  if (faults.length) throw new Error(faults.join('\n       '))
+  const [p, ...rest] = POOL_JSON.pairings
+  if (roleFaults({ ...POOL_JSON, pairings: [{ ...p, body: { ...p.body, faces: p.body.faces.filter((id) => POOL_JSON.faces[id].style === 'normal') } }, ...rest] }).length !== 1) throw new Error('the role check is not a control')
+})
+
+// §D.a rule 6 and the spec's Always: nothing the app, a package or the matrix ships names Google's font hosts
+const HOSTS = /fonts\.(?:googleapis|gstatic)\.com/
+const BINARY = /\.(png|woff2?|ttf|otf|ico|jpe?g|gif|webp)$/i
+check('no tracked file under apps/web, packages or tools/matrix names a Google font host', () => {
+  const files = execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', 'apps/web', 'packages', 'tools/matrix'], { cwd: REPO, encoding: 'utf8' }).split('\n').filter((f) => f && !BINARY.test(f))
+  if (files.length === 0) throw new Error('git listed no file, so the sweep proves nothing')
+  const naming = files.filter((f) => { try { return HOSTS.test(readFileSync(join(REPO, f), 'utf8')) } catch { return false } })
+  if (naming.length) throw new Error(`${naming.join(', ')} name a Google font host — every face is the pool's own (§D.a rule 6)`)
+  if (!HOSTS.test("@import url('https://fonts.gstatic.com/s/x.woff2')") || HOSTS.test('Google Fonts')) throw new Error('the host pattern is not a control')
+  console.log(`      swept ${files.length} tracked files`)
 })
 
 // Story 6.1 (FR-F2, FR-G4) — sections span the site width: every design's stylesheet reads the pack's `--site-width`,

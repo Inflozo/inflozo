@@ -27,20 +27,23 @@ under `tools/matrix/test-results/` (gitignored; in CI, the `render-matrix-diffs`
 
 ## What a case is
 
-Every design × every pack × light and dark × every viewport × the design's own fixture rows. Nothing in that sentence
-is a number written down: `tools/matrix/cases.mjs` derives each axis.
+Every design × every pack × light and dark × every viewport × the design's own fixture rows — and one specimen per
+font pairing. Nothing in that sentence is a number written down: `tools/matrix/cases.mjs` derives each axis.
 
 | Axis | Where it comes from |
 |---|---|
 | Designs | the directory `packages/library/designs/{category}/{n}/`, read through `apps/web/lib/pilots.ts` — the editor's own door |
-| Packs | every `*-tokens.css` beside the runtime. Only the reference set exists until Epic 6 authors the packs (DW-169) |
+| Packs | the owner's reference packs, `REFERENCE_PACKS` in `packages/library/packs/` — Paper, Mono and Neon (R-234, owner 2026-10-03; DW-169). Mono sits off Paper's step on buttons and on gutters, so a design's Outline button and its gutter are photographed (DW-317); `cases.test.mjs` holds the axis to the list and that pack to its steps. Each case's document is `/canvas?pack=`'s: the pack's token block and its pairing's faces |
 | Viewports | 1440 · 834 · 390 · 1440 at 200% zoom (720 CSS pixels at twice the density, photographed at CSS scale) · 1440 with reduced motion forced |
+| Specimens | one per pairing of the font pool (`packages/library/fonts/pool.json`, Appendix D §D.c) — R-233, owner 2026-10-03, DW-313: a heading at two sizes, a paragraph with a bold and an italic run, tabular figures and latin-ext letters, in Paper's palette with that pairing's faces, light, at 1440. The markup is the matrix's own (`specimenMarkup` in `cases.mjs`), so every pairing is photographed whether or not a preset wears it. Baselines in `packages/library/baselines/specimens/<pairing>/`; `MATRIX_DESIGNS=specimens` narrows to them |
 | Fixture rows | what the design is: it paginates → first, middle, last and empty feed pages; its markup gates by member → one row per visitor; its category carries Member visibility → one row per Show-to audience seen by a visitor it hides from, read through `carriesMemberVisibility` (R-113's register, `packages/library/control-groups.json`), the rule the editor and `/pilots` draw Show to by (DW-171); its binding context is `post` → the style-guide post (and page) |
 
 Each case is rendered exactly as the editor draws it: `renderCanvas`, given the input that `renderSection()` in `apps/web/lib/canvas.ts` builds for `/pilots` and the editor (the rows through its `shownRows()`), written
-into the canvas document `/canvas` serves (`pilotsCanvasDocument()`), with `data-mode` set, `js-enabled` on every
-module mount, and the window as tall as the section, as the editor's iframe is. A local `node:http` server serves the
-document and Orbit Weekly's pictures at their real origin; nothing else is on the network. Baselines live in
+into the canvas document `/canvas` serves (`pilotsCanvasDocument()`, in the case's pack — `?pack=`), with `data-mode` set,
+`js-enabled` on every module mount, and the window as tall as the section, as the editor's iframe is. A local
+`node:http` server serves the document, the font pool's woff2 files at `canvas?font=` exactly as the app's route serves
+them (Story 6.2 — every face a case draws is the theme's own file, never a font host), and Orbit Weekly's pictures at
+their real origin; nothing else is on the network. Baselines live in
 `packages/library/baselines/{category}/{n}/`, one PNG per case.
 
 ## What fails
@@ -65,10 +68,12 @@ document and Orbit Weekly's pictures at their real origin; nothing else is on th
 
 ## The runner is part of the baseline
 
-The gate runs inside one image, `tools/matrix/Dockerfile`: the Playwright image pinned by tag **and** digest, plus the
-fonts the token set names. The stock image draws Georgia and Inter in a Chinese fallback face, so the fonts are a gate:
-Inter from apt at a pinned version, and Gelasio — Georgia's metric-compatible face — from google/fonts at one commit,
-checked by checksum. The build fails if `fc-match` does not resolve them. A baseline is written only inside this image,
+The gate runs inside one image, `tools/matrix/Dockerfile`: the Playwright image pinned by tag **and** digest, plus
+fallback fonts. **Since Story 6.2 every face a case draws is the pool's own woff2**, declared in the case's document and
+served beside it, so the image's fonts are fallbacks only — they draw a glyph a subset lacks and keep `serif` and
+`sans-serif` off the stock image's Chinese face: Inter from apt at a pinned version and Gelasio (Georgia's
+metric-compatible face, from before the pool) from google/fonts at one commit, checked by checksum. The build still
+fails if `fc-match` does not resolve them. A baseline is written only inside this image,
 never on a laptop's own browser and never in CI.
 
 `tools/matrix/manifest.json` records what the baselines were taken under, read from the running system at `--update`:
@@ -77,7 +82,7 @@ never on a laptop's own browser and never in CI.
 |---|---|
 | `image` | the base image, tag and digest, from the Dockerfile |
 | `playwright` · `chromium` | the test runner and the browser build that drew the photographs |
-| `fonts` | the face Chromium actually used for `--font-heading` and `--font-body` |
+| `fonts` | the face Chromium actually used for `--font-heading` and `--font-body` in Paper's document — since Story 6.2 the pool's Fraunces and Inter, loaded from `canvas?font=` |
 | `widelyAvailableOnDate` | the root `package.json`'s browser floor (FR-G8) |
 
 The gate compares each field with what it can observe — Playwright and Chromium from the running process, the faces

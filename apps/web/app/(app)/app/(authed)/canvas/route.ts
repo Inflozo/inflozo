@@ -1,7 +1,8 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { currentUser } from '@/lib/supabase/server'
 import { canvasCaching } from '@/lib/canvas'
-import { pilotIds, pilotImage, pilotsCanvasDocument } from '@/lib/pilots'
+import { pilotIds, pilotImage, pilotsCanvasDocument, poolFont } from '@/lib/pilots'
+import { presetOf } from '@inflozo/library/packs'
 import { surfaceCss } from '@/lib/style-guide'
 
 /**
@@ -12,6 +13,9 @@ import { surfaceCss } from '@/lib/style-guide'
  * The document carries NO script, so it needs no nonce: the page framing it writes the sections in from the parent,
  * same origin. A picture is served only when its name is a file in Orbit Weekly's picture directory, read off the
  * directory — a name is never joined into a path unchecked.
+ *
+ * Since Story 6.2 it also serves the font pool's files (`?font=<file>`, the pool's own list) and draws the document in
+ * any preset (`?pack=<id>`), so every canvas loads the theme's own faces from this app and never from a font host.
  *
  * It sits beside the pages and not under their layouts, so it guards itself the way `controls/frame/route.ts` does —
  * BEFORE any body is built.
@@ -24,6 +28,17 @@ export async function GET(request: NextRequest) {
   // DW-275 (Story 5.24e): the Paywall's post-body sheet, kept out of the document and asked for on its first paint
   if (request.nextUrl.searchParams.get('sheet') === 'surface') {
     return new NextResponse(surfaceCss(), { headers: { ...headers, 'cache-control': caching.document, 'content-type': 'text/css; charset=utf-8' } })
+  }
+  // STORY 6.2 — THE POOL'S FACES, SELF-HOSTED (Appendix D §D.a rule 6, §D.b): a file is served only when its name is a file
+  // `pool.json` records, read off that list — a name is never joined into a path unchecked — and kept as long as the
+  // document, since its address carries its own hash (`fontHref`)
+  const font = request.nextUrl.searchParams.get('font')
+  if (font !== null) {
+    const bytes = poolFont(font)
+    if (bytes === null) return new NextResponse('that file is not in the font pool', { status: 404, headers })
+    return new NextResponse(new Uint8Array(bytes), {
+      headers: { ...headers, 'cache-control': caching.font, 'content-type': 'font/woff2', 'x-content-type-options': 'nosniff' },
+    })
   }
   const image = request.nextUrl.searchParams.get('image')
   if (image !== null) {
@@ -40,7 +55,11 @@ export async function GET(request: NextRequest) {
   if (design !== null && !pilotIds().includes(design)) {
     return new NextResponse('that design is not in the library', { status: 404, headers })
   }
-  return new NextResponse(pilotsCanvasDocument(design ?? undefined), {
+  // STORY 6.2 — A PRESET BY ID (`/pilots`' Pack menu): the document carries that preset's block and faces. The editor's
+  // canvas asks for none and keeps Paper until Story 6.3's switch; an unknown id is a 404, never served as Paper
+  const pack = request.nextUrl.searchParams.get('pack') ?? 'paper'
+  if (presetOf(pack) === undefined) return new NextResponse('that is not a Style Pack', { status: 404, headers })
+  return new NextResponse(pilotsCanvasDocument(design ?? undefined, [], pack), {
     headers: { ...headers, 'cache-control': caching.document, 'content-type': 'text/html; charset=utf-8' },
   })
 }

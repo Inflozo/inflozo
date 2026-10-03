@@ -3,8 +3,10 @@ import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { canvasCaching, canvasSrc, harnessCanvasSrc, previewSrc } from './lib/canvas.ts'
-import { carriesMemberVisibility, DESIGNS_DIR, docRefusal, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument } from './lib/pilots.ts'
-import { parseDoc } from '@inflozo/section-runtime'
+import { carriesMemberVisibility, DESIGNS_DIR, docRefusal, pilot, pilotIds, pilotImage, pilotRows, pilots, pilotsCanvasDocument, poolFont } from './lib/pilots.ts'
+import { fontFaceCss, packTokensCss, parseDoc, type Pack } from '@inflozo/section-runtime'
+import { POOL, PRESETS } from '@inflozo/library/packs'
+import { fontHref } from './lib/style-pack.ts'
 import { samples } from './lib/controls-review.ts'
 
 // Story 4.10's review surface, held by the files it reads — the fences `controls.test.ts` put around Story 4.5's page,
@@ -117,9 +119,10 @@ test("every canvas address carries the build, and a preview keeps it (the owner'
 // handed `live` explicitly cannot see the default the routes rely on
 test('canvasCaching: immutable only for a build in production, never for no build, an empty one or dev, and nothing outside production', () => {
   const YEAR = 'private, max-age=31536000, immutable'
-  assert.deepEqual(canvasCaching('abc', true), { document: YEAR, image: 'private, max-age=600' })
+  // Story 6.2: a pool face is kept as long as the document — its address carries its own hash (`fontHref`)
+  assert.deepEqual(canvasCaching('abc', true), { document: YEAR, image: 'private, max-age=600', font: YEAR })
   for (const v of [null, '', 'dev']) assert.equal(canvasCaching(v, true).document, 'no-store', JSON.stringify(v))
-  for (const v of ['abc', null, '', 'dev']) assert.deepEqual(canvasCaching(v, false), { document: 'no-store', image: 'no-store' }, JSON.stringify(v))
+  for (const v of ['abc', null, '', 'dev']) assert.deepEqual(canvasCaching(v, false), { document: 'no-store', image: 'no-store', font: 'no-store' }, JSON.stringify(v))
 })
 
 // Story 5.4 — R-124's row is drawn for the categories R-113's register files it under, and for nothing else
@@ -159,4 +162,31 @@ test('DW-275 (Story 5.24e): the canvas document carries no post-body sheet — t
     const source = readFileSync(route, 'utf8')
     assert.match(source, /searchParams\.get\('sheet'\) === 'surface'[^]*surfaceCss\(\)[^]*text\/css/, `${route} answers ?sheet=surface with the sheet, as CSS`)
   }
+})
+
+/* ───────── STORY 6.2 — the canvas loads the theme's own faces from this app (§D.b), in any preset `?pack=` names */
+
+test('a font is served only when its name is a file the pool records — never a path, never an unknown name', () => {
+  const [first] = Object.values(POOL.faces).flatMap((f) => f.files)
+  const bytes = poolFont(first!.file)
+  assert.equal(bytes?.subarray(0, 4).toString('latin1'), 'wOF2', 'a pool file is served as the woff2 it is')
+  for (const name of ['../../x', `../files/${first!.file}`, 'pool.json', '', 'fraunces-roman-latin', 'FRAUNCES-ROMAN-LATIN.WOFF2', '__proto__']) {
+    assert.equal(poolFont(name), null, `${JSON.stringify(name)} was served`)
+  }
+})
+
+test('every canvas document carries its pack\'s block and its pairing\'s faces from ?font= — Paper\'s block byte for byte', () => {
+  const tokens = readFileSync(join('..', '..', 'packages', 'section-runtime', 'reference-tokens.css'), 'utf8')
+  const paper = pilotsCanvasDocument()
+  assert.ok(paper.includes(`<style data-order="1-tokens">${tokens}</style>`), "Paper's block is not reference-tokens.css")
+  assert.match(paper, /font-family: 'Fraunces';[^}]*src: url\(canvas\?font=fraunces-roman-latin\.woff2&h=[0-9a-f]{12}\)/)
+  assert.match(paper, /font-family: 'Inter';[^}]*font-style: italic/)
+  for (const p of PRESETS) {
+    const doc = pilotsCanvasDocument(undefined, [], p.id)
+    const faces = /<style data-order="1b-faces">([^]*?)<\/style>/.exec(doc)?.[1] ?? ''
+    assert.equal(faces, fontFaceCss(p.pairing, fontHref('canvas')), `${p.id}: the document's faces are not its pairing's`)
+    if (p.id !== 'paper') assert.ok(doc.includes(packTokensCss(p.pack as Pack)), `${p.id}: the document does not carry its token block`)
+    assert.doesNotMatch(doc, /fonts\.(googleapis|gstatic)\.com/)
+  }
+  assert.throws(() => pilotsCanvasDocument(undefined, [], 'harbor'), /not a Style Pack preset/)
 })

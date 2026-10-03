@@ -453,6 +453,60 @@ test('§7.3(1): Esc steps outward one rung per press, and each says where it lan
   expect(await focused(page)).toBe('BUTTON[Collapse controls]')
 })
 
+// ── Story 6.2 — S4a's Style Pack card and S7a's roster, looking only ──────────────────────────────────────────────────
+
+test('6.2 · Tab reaches Change on the rest panel, Enter opens the presets with the current one named, and Back and Esc return to Change', async ({ page }) => {
+  await open(page)
+  // the presets as the library holds them — read off its data, never a list or a count written here (standing rule 4)
+  const presets = JSON.parse(readFileSync(fileURLToPath(new URL('../../packages/library/packs/packs.json', import.meta.url)), 'utf8')).presets
+  const panel = page.locator('#editor-controls')
+  await expect(panel).toHaveAttribute('aria-label', 'Page settings')
+  await expect(panel.locator('[data-style-pack-card]')).toContainText(presets[0].name)
+  await expect(panel.getByText('Nothing selected')).toBeVisible()
+
+  // the panel's first stop is its fold; the next is Change
+  await page.locator('#editor-controls [aria-label="Collapse controls"]').focus()
+  await page.keyboard.press('Tab')
+  const change = page.locator('#style-pack-change')
+  await expect(change).toBeFocused()
+  await page.keyboard.press('Enter')
+
+  // S7a: the back button takes the focus, the head reads Style Pack, and every preset is a cell in §D.d's order
+  await expect(page.locator('#style-pack-back')).toBeFocused()
+  await expect(page.locator('#editor-panel-name')).toHaveText('Style Pack')
+  const cells = panel.locator('[data-style-pack-roster] [data-style-pack]')
+  await expect(cells).toHaveCount(presets.length)
+  expect(await cells.evaluateAll((els) => els.map((e) => e.dataset.stylePack))).toEqual(presets.map((p) => p.id))
+  // the current one — the harness's project is a fresh one, Paper — is named "Current", and no other is
+  const named = cells.filter({ hasText: 'Current' })
+  await expect(named).toHaveCount(1)
+  await expect(named).toHaveAttribute('data-style-pack', 'paper')
+  // looking only (R-118): a cell is not a stop until Story 6.3 makes it switch
+  expect(await stopsIn(page, '[data-style-pack-roster]')).toBe(0)
+
+  // the back button returns, focus on Change
+  await page.locator('#style-pack-back').focus()
+  await page.keyboard.press('Enter')
+  await expect(change).toBeFocused()
+  await expect(panel.locator('[data-style-pack-roster]')).toHaveCount(0)
+  await expect(page.locator('#editor-panel-name')).toHaveText('Page')
+
+  // and so does Esc, from anywhere in the list — and the ladder takes nothing from that press
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#style-pack-back')).toBeFocused()
+  await page.keyboard.press('Escape')
+  await expect(change).toBeFocused()
+  await expect(panel.locator('[data-style-pack-card]')).toBeVisible()
+
+  // reading along (R-192): the list is a view, so Change still opens it while another window holds the lock
+  await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
+  await open(page)
+  await expect(page.locator('#editor-add-section'), 'the control: this window really is reading along').toBeDisabled()
+  await expect(change).toBeEnabled()
+  await change.click()
+  await expect(cells).toHaveCount(presets.length)
+})
+
 // ── R-147's card ────────────────────────────────────────────────────────────────────────────────────────────────
 
 test('R-147: ? opens the card, it lists exactly the keys that work, and Esc returns focus', async ({ page }) => {

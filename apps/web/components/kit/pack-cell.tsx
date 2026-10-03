@@ -5,7 +5,8 @@ import { ring } from './greyed'
 /* Editor Sidebar Kit.dc.html:204 — the pack cell: a glyph in the pack's OWN heading font,
    its palette as dots, a pencil to edit, and a coral ring when active. The palette values
    belong to the Style Pack (E6, Story 6.1) and arrive as colour strings — the site's
-   system, never the app's. */
+   system, never the app's. Story 6.2: the glyph's face is the pool's (`lib/style-pack.ts`'s
+   `packFacesCss`), and the cell is INFORMATION, not a button, until Story 6.3 makes it switch. */
 
 export function PackCell({
   name,
@@ -45,10 +46,15 @@ export function PackCell({
           <Pencil size={8} />
         </button>
       ) : null}
-      <span aria-hidden style={{ fontFamily: glyphFamily }} className="text-[15px] font-semibold">
+      {/* Story 6.2: the glyph is the pack's own face as the pool ships it — a weight it lacks is never synthesised */}
+      <span aria-hidden style={{ fontFamily: glyphFamily, fontSynthesis: 'none' }} className="text-[15px] font-semibold">
         Ag
       </span>
-      <span className="text-[10.5px] font-semibold text-ink">{name}</span>
+      <span className="text-[10.5px] font-semibold text-ink">
+        {name}
+        {/* the coral ring's meaning, said: the ring alone carries it to the eye and to nothing else (Story 6.2) */}
+        {active ? <span className="sr-only">, Current</span> : null}
+      </span>
       <span aria-hidden className="flex gap-[3px]">
         {palette.map((c, i) => (
           <span key={i} style={{ background: c }} className="size-[9px] rounded-full shadow-hairline-inset" />
