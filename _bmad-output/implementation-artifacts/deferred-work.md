@@ -354,6 +354,9 @@ reason: The `*-kit.js` token objects (`PACKS` in `a29-kit.js:1-40`, same in the 
   Appendix D and treat both export files as calibration; the Style Pack tokens are out of Story 1.3's
   scope entirely (app chrome only). Logged so the disagreement is not rediscovered in E6 as a
   "which file is right" question when the answer is "neither, by the file's own header".
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 1, option 1): *"The plan wins"* — R-231. Ink is black and
+  white with one red; Tangerine's light accent is the roster's `#E8450A` with a dark on-accent; every value is authored in
+  Appendix D §D.d. Story 6.2's Dev builds it and closes this entry.
 
 ### DW-12: nothing in the app can read `feature_flags`, so the one flag it has resolves to its seeded value
 
@@ -4767,6 +4770,8 @@ reason: widening the axis re-renders every case, which is a MASS REBASELINE unde
   owner's approval on a sampled visual review, its own commit touching baselines only, naming the change that
   caused it. So the widening is not a patch to this harness; it is that ruled event, and it belongs to the story
   that causes it.
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 4, option 1): *"Paper, Mono and Neon"* — R-234. Story 6.2's
+  Dev widens the axis behind the sampled review and closes this entry.
 
 ## Deferred from: code review of spec-4-11-the-render-matrix-and-the-accessibility-scan-that-runs-on-it (2026-09-17)
 
@@ -8459,6 +8464,8 @@ location: `S7 Style Packs.dc.html` S7a's caption ("roster shows 4 of 12; the shi
   roster's names, order and layout")
 reason: Appendix D is the roster, as it is the palettes (DW-11's shape); whether "matches S7a" then means the layout
   alone is the owner's to rule (R-83) before the presets ship.
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 1, option 1): *"The plan wins"* — R-231. The roster is
+  Appendix D's twelve in its order, laid out as S7a lays them out. Story 6.2's Dev builds it and closes this entry.
 
 ### DW-310: S7's labels and rows are not FR-E1's: two other names, no Pill, no gutter, shadow or link rows, "Contrast" for on-accent
 
@@ -8491,6 +8498,8 @@ location: `prd.md` Appendix D (:1016-1017) · `…/claude-design-export/Inflozo/
 reason: DW-11 covers the accents only. The faces also decide which files are self-hosted and the theme's font budget,
   so the owner rules (R-83) where a drawing and Appendix D disagree on a face, as 6.2's card already has him rule on
   an accent.
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 1, option 1): *"The plan wins"* — R-231. Paper is Fraunces
+  / Inter and Ink Libre Caslon Text / Source Serif 4. Story 6.2's Dev builds it and closes this entry.
 
 ### DW-312: D19 and D22 are listed as two-file pairings, but their headings need weights the body file does not carry
 
@@ -8504,6 +8513,9 @@ location: `prd.md` Appendix D §D.a rule 3 (:1059, "provided the clipped range c
   rows D19 (:1104) and D22 (:1107)
 reason: the rule's own proviso fails for both: either the body's range widens (bigger files) or they ship as three — a
   bundle-size decision Story 6.2 makes when it builds the pool.
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 2, option 1): *"Widen the text files to cover the
+  headings"* — R-232. Chivo's body roman clips 400–900 and Figtree's 400–800; each stays two files. Story 6.2's Dev
+  builds it and closes this entry.
 
 ### DW-313: every pairing must render in the photo check before launch, but the check photographs three packs
 
@@ -8518,6 +8530,8 @@ location: `prd.md` Appendix D (:1117, "every pairing must render in the render m
   GA") · `epics.md` Story 6.2 (three packs, "the only pack files `tools/matrix/cases.mjs` reads")
 reason: the two promises cannot both hold as written; 6.2 decides how the other pairings are proved — a fonts-only case
   over the reference palette, or a narrower promise ruled by the owner.
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 3, option 1): *"One specimen photo per pairing"* — R-233.
+  Story 6.2's Dev builds the case and closes this entry.
 
 ### DW-314: Site Remix's "re-roll the Style Pack" has no story since Story 5.12 left it out
 
@@ -8576,6 +8590,8 @@ reason: `--button-text` equals `--text-on-accent` and `--space-gutter` equals `-
   light with `buttons: 'outline'` gives label `#232019` on the contrast ground `#232019`. 6.2 widens the pack axis
   (DW-169): one drawn pack must sit off the reference step on `buttons` and `gutters`, and each design that draws a
   `--button-fill` button on a contrast ground answers it there, as A22 #1 does.
+ruling (owner, 2026-10-03, Story 6.2's Create, Question 4, option 1): R-234 makes Mono a reference pack — outline
+  buttons and tight gutters, off Paper's step on both. Story 6.2's Dev closes this entry.
 
 ### DW-318: the dark link proof on the two Ghost sites cannot say which of the two dark switches worked
 

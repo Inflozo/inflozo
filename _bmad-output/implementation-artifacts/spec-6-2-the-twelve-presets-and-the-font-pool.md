@@ -16,7 +16,7 @@ of the plan, whose files Inflozo serves itself, so no page ever asks Google for 
 selected, the right-hand panel shows your project's pack as a card with a **Change** button, and Change opens the list
 of all twelve as the Style Pack drawing shows it; you can look at them there and try every pack on the five sample
 sections at `/pilots` in light and dark, but choosing a pack for a project comes with Story 6.3. The canvas also draws
-its words in the pack's real fonts on every computer (Paper in Fraunces and Inter, if you rule as recommended), and you
+its words in the pack's real fonts on every computer (Paper now in Fraunces and Inter, as you ruled), and you
 approve the twelve packs' colours and the new test photographs on a private page before either is saved.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
@@ -56,7 +56,7 @@ owner's three reference packs plus one specimen photograph per pairing, behind h
 - The app's own faces (`apps/web/app/fonts/fonts.css`) are never redefined: a pool face drawn in the app document (a
   pack cell's "Ag") is declared under a family name of its own.
 - Counts are derived, never written down (standing rule 4) — in code, tests, Appendix D and every message.
-- What the owner rules in Questions 1–4 lives in ONE place each: names, faces and accents in §D.d and Appendix D's
+- What the owner ruled in Questions 1–4 (R-231 to R-234) lives in ONE place each: names, faces and accents in §D.d and Appendix D's
   roster table; the D19/D22 range in §D.c; the specimen promise in §D.c's closing paragraph; the reference packs as
   `REFERENCE_PACKS` in `packages/library/packs/`.
 
@@ -88,7 +88,7 @@ owner's three reference packs plus one specimen photograph per pairing, behind h
 | Static heading | D2 Libre Caslon Text `S · 700` | one face per declared weight | — |
 | Variable body | Inter `V · wght 400–700` + italic | roman and italic faces, each clipped 400–700, `tnum` kept | — |
 | Static body | D8 IBM Plex Mono `S · 400, 700, 400i, 700i` | four faces | — |
-| One family, both roles | D12 Newsreader | the body's two faces only, covering the heading's range (D19/D22 per Question 2) | — |
+| One family, both roles | D12 Newsreader | the body's two faces only, covering the heading's range (D19 and D22 widened, R-232) | — |
 | Upstream differs from §D.c | a `V` family that is static upstream, or a missing weight | the builder stops naming family and difference; nothing written | exit non-zero |
 | Licence | `METADATA.pb` licence other than OFL/APACHE2 | the builder stops naming the family | exit non-zero |
 | Budget | a pairing's faces > 5 or latin bytes > 200 KB | `test-vocabulary.mjs` fails naming the pairing and its measure | — |
@@ -205,9 +205,9 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
   url(url(file)) format('woff2')` — with an optional family prefix for the app document -- the one emitter the canvas,
   the app and Epic 7 share
 - [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- Appendix D: the roster table per
-  Question 1; a new **§D.d The twelve presets (normative, authored)** after §D.c — per pack its pairing, per mode the
-  seven roles and the scrim, the pill radius and the seven steps, and `REFERENCE_PACKS` per Question 4; §D.c's D19/D22
-  rows and §D.a rule 3 per Question 2; §D.c's closing promise per Question 3; §D.a rule 5 says how the budget is read
+  R-231; a new **§D.d The twelve presets (normative, authored)** after §D.c — per pack its pairing, per mode the
+  seven roles and the scrim, the pill radius and the seven steps, and `REFERENCE_PACKS` per R-234; §D.c's D19/D22
+  rows and §D.a rule 3 per R-232; §D.c's closing promise per R-233; §D.a rule 5 says how the budget is read
   (Design Notes) with the measured Paper figures -- the document the packs are read from
 - [ ] `packages/library/packs/` -- the twelve as data in §D.d's order (ids `paper` … `quiet`), `REFERENCE_PACKS`, each
   preset's fonts filled from `pool.json` (family list with its fallback, cap height, `tabular`) -- the presets, data
@@ -251,7 +251,7 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
 - [ ] `packages/library/designs/a4/13/style.css`, `a1/1/style.css` -- the `--button-fill` button answers
   `[data-bg="contrast"]` as A22 #1 does -- DW-317: an Outline label is never the band's own colour
 - [ ] `tools/matrix/cases.mjs`, `cases.test.mjs`, `matrix.spec.mjs`, `serve.mjs` -- the pack axis is `REFERENCE_PACKS`;
-  each case's document carries its pack's block and faces (served `?font=` as `/canvas` does); per Question 3 one case
+  each case's document carries its pack's block and faces (served `?font=` as `/canvas` does); per R-233 one case
   per pairing photographs a specimen the matrix owns (a heading, a paragraph with a bold and an italic run, tabular
   figures, latin-ext letters) in Paper's palette with that pairing's faces, light, 1440; the test asserts the axis equals
   `REFERENCE_PACKS` and a reference pack sits off Paper's step on `buttons` and on `gutters` -- DW-169, DW-313, DW-317
@@ -280,7 +280,7 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
   Body", five dots, **Change** — and below it the existing "Nothing selected" line.
 - Given that card, when Change is pressed, then the panel **matches S7a** (`S7 Style Packs.dc.html:112-122`): the back
   chevron and "STYLE PACK", the Current card, and the twelve presets in a three-column grid in §D.d's order, each with
-  "Ag" in its own heading face, its name and four dots, the current one ringed and named "Current"; with Question 1's
+  "Ag" in its own heading face, its name and four dots, the current one ringed and named "Current"; with R-231's
   names, not S7a's placeholders, and without the pencil, custom cell, "+ New pack" and pack-level rows.
 - Given `/pilots`, when any pack is chosen, then the five pilots draw in that pack in light and dark at every device.
 - Given the matrix, when it runs, then its pack axis is the owner's three reference packs, one of them off Paper's
@@ -341,8 +341,7 @@ and 4.11:1 under its own text `#2B1D12`, so its on-accent is authored darker, as
 
 ## Questions for the owner
 
-All four are needed before Dev, and Story 6.2's card names each (DW-309, DW-311, DW-11, DW-312, DW-313, DW-169). The
-plan above follows each recommended option; a different ruling changes only the one place Boundaries names for it.
+The owner ruled all four at Create on 2026-10-03, each as recommended (R-231 to R-234). No question is open.
 
 ### Question 1 — Where the drawings and the plan disagree about the twelve packs, which wins? (DW-309, DW-311, DW-11)
 
@@ -362,7 +361,9 @@ Neon and Quiet.
    Ink is dark purple, all in Inter; Tangerine as option 1.
 3. **A mix** — say which part follows the drawing, for example "the plan's names, but keep Paper's Georgia look".
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-03).** *"The plan wins"* — recorded as R-231. The roster is Appendix D's twelve in
+its order with S7a's layout; Paper is Fraunces / Inter, Ink black and white with one red in Libre Caslon Text / Source
+Serif 4, Tangerine `#E8450A` with a dark on-accent.
 
 ### Question 2 — Two font pairings need one file a little bigger. Is that fine? (DW-312)
 
@@ -376,7 +377,8 @@ that file 1.3 KB bigger, while a third file for headings would add about 25 KB.
 2. **Ship a third file for the headings.** About 20–25 KB more per site using them.
 3. **Make those headings lighter** (stop at 700), so the files stay as listed.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-03).** *"Widen the text files to cover the headings"* — recorded as R-232. Chivo's
+body roman is clipped 400–900 and Figtree's 400–800; each pairing stays two files.
 
 ### Question 3 — How do we prove all thirty font pairings work before launch? (DW-313)
 
@@ -391,7 +393,7 @@ launch. The check photographs only three packs, and every pairing after the twel
 2. **Narrow the promise** to the twelve pack pairings; the other eighteen are checked by file tests only.
 3. **Photograph all twelve packs** instead of three — every section four times as many photographs.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-03).** *"One specimen photo per pairing"* — recorded as R-233.
 
 ### Question 4 — Which three packs should the photo check use? (DW-169, DW-317)
 
@@ -408,7 +410,8 @@ Paper (solid buttons) is photographed.
    drawings; but none of them uses outline buttons or different gutters.
 3. **Three others** — name them.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-03).** *"Paper, Mono and Neon"* — recorded as R-234. `REFERENCE_PACKS` is `paper`,
+`mono`, `neon`; Mono sits off Paper's step on buttons and gutters (DW-317).
 
 ## Owner's manual test
 
@@ -417,14 +420,14 @@ changes your projects.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
-| 1 | `https://app.inflozo.com/pilots` | Pilots review | Open the **Pack** menu above the canvas. | — | Twelve packs in this order: Paper, Ink, Orbit, Tangerine, Slate, Meadow, Dune, Mono, Ocean, Berry, Neon, Quiet (as Question 1 ruled). Paper is chosen. |
+| 1 | `https://app.inflozo.com/pilots` | Pilots review | Open the **Pack** menu above the canvas. | — | Twelve packs in this order: Paper, Ink, Orbit, Tangerine, Slate, Meadow, Dune, Mono, Ocean, Berry, Neon, Quiet (R-231). Paper is chosen. |
 | 2 | same | Pilots review | Pick each pack in turn; for each, switch **Light** then **Dark**. | — | The five sample sections take that pack's colours, fonts, corners and buttons. Every word is easy to read in both modes. Dark is its own palette, not the light one turned inside out. |
-| 3 | same | Pilots review | Pick Mono, then Neon (or your three reference packs), and switch to **Tablet**, then **Phone**. | — | Nothing runs off the side. On the dark bands, every button's words are readable. |
-| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Pilot sections | Click the grey area beside the page so nothing is selected. | — | The right panel reads **PAGE**, then a card: a large "Ag" in Paper's heading font, **Paper**, "Fraunces · Inter" (as Question 1 recommends), five colour dots and a **Change** button. Under it, "Nothing selected". |
+| 3 | same | Pilots review | Pick Mono, then Neon (two of your three reference packs), and switch to **Tablet**, then **Phone**. | — | Nothing runs off the side. On the dark bands, every button's words are readable. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, Pilot sections | Click the grey area beside the page so nothing is selected. | — | The right panel reads **PAGE**, then a card: a large "Ag" in Paper's heading font, **Paper**, "Fraunces · Inter", five colour dots and a **Change** button. Under it, "Nothing selected". |
 | 5 | same | Editor | Click **Change**. | — | The panel becomes **STYLE PACK** with a back arrow: Paper's card marked **Current**, then twelve small cells, three to a row, in step 1's order, each "Ag" in its own heading font, its name and four dots. Paper's cell has the coral ring. No pencils, no "+ New pack", no font or width rows. |
 | 6 | same | Style Pack panel | Click Tangerine's cell. | — | Nothing changes. Choosing a pack arrives with Story 6.3. |
 | 7 | same | Style Pack panel | Click the back arrow. | — | Back to PAGE, as in step 4. |
-| 8 | same | Editor canvas | Look at the headings and paragraphs on the page. | — | Headings in Fraunces (softer, rounder than Georgia — if Question 1 is ruled as recommended) and text in Inter — the same on any computer, even one without these fonts installed. |
+| 8 | same | Editor canvas | Look at the headings and paragraphs on the page. | — | Headings in Fraunces (softer, rounder than Georgia) and text in Inter — the same on any computer, even one without these fonts installed. |
 | 9 | same | Editor | Click the page once, then press **Tab** until **Change** is outlined; press **Enter**; press **Tab** a few times; then **Escape**. | — | The panel opens with the back arrow outlined, the pack list reads out, and Escape brings you back with **Change** outlined. |
 | 10 | same, in a second window | Editor, read-only | Open the same project in a second window and click **Change** there. | — | The list opens there too: looking is allowed while the other window edits. |
 

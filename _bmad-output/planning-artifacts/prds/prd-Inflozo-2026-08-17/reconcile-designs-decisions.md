@@ -5054,6 +5054,65 @@ Story 5.24e's Dev, Question 2, ruled **option 1** (owner, 2026-10-02): *"1. Acce
   Story 6.1's card · ✅ built — Story 6.1's Dev (`SCALES` in `packages/section-runtime/src/tokens.ts`, held by
   `tokens.test.ts`; Appendix D §D.0 names the steps and points here).
 
+**R-231 — where the drawings and the plan disagree about the twelve packs, the plan wins.** Story 6.2's Create,
+Question 1, ruled **option 1** (owner, 2026-10-03): *"The plan wins"*.
+
+- **Why it was a question.** S7a's caption calls five of its pack names placeholders (Harbor, Neon Dusk, Cocoa, Mist,
+  Butter); every drawing sets Paper's headings in Georgia, which no theme may ship (Appendix D §D.a rules 6–7), and Ink
+  dark purple in Inter alone, where Appendix D pairs Paper with Fraunces / Inter, Ink with Libre Caslon Text / Source
+  Serif 4 and describes Ink as black and white with one red; the kits draw Tangerine `#E8541F` where S7a, D4a and the
+  Calibration Set draw `#E8450A` (DW-309, DW-311, DW-11).
+- **The rule.** The roster is Appendix D's twelve in Appendix D's order (Paper, Ink, Orbit, Tangerine, Slate, Meadow,
+  Dune, Mono, Ocean, Berry, Neon, Quiet), laid out as S7a lays them out; "matches S7a" means its layout, not its names.
+  Paper is Fraunces with Inter, so every canvas's headings move from Georgia to Fraunces. Ink is black and white with one
+  red, in Libre Caslon Text with Source Serif 4. Tangerine's light accent is the roster's `#E8450A`, with an on-accent
+  authored dark enough to read on it (white reads 3.97:1). Every value is authored in Appendix D §D.d; the drawings are
+  calibration.
+- **Declined.** Option 2, the drawings' names, a Georgia look-alike (Gelasio) for Paper and a purple Ink in Inter;
+  option 3, a mix.
+- Targets: ✅ this entry · ✅ Story 6.2's spec — Question 1, the plain-English section and the owner's test · ✅
+  `epics.md` — Story 6.2's card · ✅ DW-11, DW-309, DW-311 in `deferred-work.md` · ✅ `epic-6-context.md` · ⬜ `prd.md`
+  Appendix D §D.d and the presets built — Story 6.2's Dev.
+
+**R-232 — D19's and D22's body files widen to cover their headings' weights.** Story 6.2's Create, Question 2, ruled
+**option 1** (owner, 2026-10-03): *"Widen the text files to cover the headings"*.
+
+- **Why it was a question.** Appendix D §D.a rule 3 ships a one-family pairing as the body's two files "provided the
+  clipped range covers the heading weights"; D19 Chivo's heading runs to 900 and D22 Figtree's to 800 while both bodies
+  clip at 700 (DW-312).
+- **The rule.** Each ships two files: the body's roman widened to the heading's top weight (Chivo 400–900, Figtree
+  400–800) and its italic. Measured at Create with fontTools' instancer: Chivo's latin roman grows 29,852 → 31,144 B,
+  Figtree's 18,912 → 19,908 B, where a separate heading file would add 25,412 B and 19,316 B.
+- **Declined.** Option 2, a third file for the heading; option 3, capping those headings at 700.
+- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-312 · ⬜ `prd.md` §D.a rule 3
+  and §D.c's D19 and D22 rows, and the pool built — Story 6.2's Dev.
+
+**R-233 — every pairing is photographed once, as a specimen.** Story 6.2's Create, Question 3, ruled **option 1**
+(owner, 2026-10-03): *"One specimen photo per pairing"*.
+
+- **Why it was a question.** Appendix D §D.c promises every pairing renders in the render matrix under some pack before
+  GA, while the matrix photographs three packs and the pairings after the twelfth belong to no pack (DW-313).
+- **The rule.** The matrix photographs, once per pairing, a specimen it owns — a heading, a paragraph with a bold and an
+  italic run, tabular figures and latin-ext letters — in Paper's palette with that pairing's two faces, light, at 1440,
+  beside the three reference packs' cases. §D.c's promise is reworded to say so.
+- **Declined.** Option 2, narrowing the promise to the twelve preset pairings; option 3, photographing all twelve packs.
+- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-313 · ⬜ `prd.md` §D.c, the
+  matrix case and `docs/render-matrix.md` — Story 6.2's Dev.
+
+**R-234 — the render matrix's reference packs are Paper, Mono and Neon.** Story 6.2's Create, Question 4, ruled
+**option 1** (owner, 2026-10-03): *"Paper, Mono and Neon"*.
+
+- **Why it was a question.** NFR-6(a) photographs three reference packs and the card leaves the three to the owner
+  (DW-169); one of them must sit off Paper's step on buttons and gutters, so the pilots' `--button-text` and
+  `--space-gutter` are seen (DW-317).
+- **The rule.** `REFERENCE_PACKS` is Paper (the default), Mono (square corners, outline buttons, tight gutters, a
+  static monospace body — the furthest from Paper) and Neon (dark-first, round corners, pill buttons, loose gutters).
+  Widening the axis is a mass rebaseline behind the owner's sampled review.
+- **Declined.** Option 2, Paper, Tangerine and Ink (the drawings' three, none off Paper's gutters or with outline
+  buttons); option 3, three others.
+- Targets: ✅ this entry · ✅ Story 6.2's spec · ✅ `epics.md` — Story 6.2's card · ✅ DW-169, DW-317 · ⬜ `prd.md` §D.d,
+  `packages/library/packs/`'s `REFERENCE_PACKS`, the matrix and its baselines — Story 6.2's Dev.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a
