@@ -633,6 +633,29 @@ on the same commit read as success through the same query.
 - Signed out, against production (pre-6.2 code, so the guard only): `canvas?font=…`, `?font=../x`, `?pack=mono` and
   `?pack=harbor` each answer 303 to `/sign-in` with an empty body; control `/sign-in` 200.
 
-**Real services (R-82).** The signed-in checks on `app.inflozo.com`, the network log, the New project window's glyph,
-the four walks and Vercel READY can only run once this commit deploys; their results are appended below by the commit
-that follows it.
+**Real services (R-82), on the Review commit `42788c15` once it deployed.** Run in the main session: the verifier's own
+key reads were refused by the permission classifier, and the head it was given was not deployed.
+- **GitHub Actions** (public API, no key): `ci.yml` run 37142385337 `check` **success**, `rls` **success**, `deploy`
+  **success**; `matrix.yml` run 37142385315 `matrix` **success** (every design: shared inputs changed).
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, asked by each walk before it starts): `dpl_4JHp53XgvXZ4vpTtbG9pzQp2541V`
+  READY, built from `42788c15`.
+- **app.inflozo.com, signed in** (`SUPABASE_URL` + `SUPABASE_SECRET_KEY`, a throwaway account, deleted, users 13 → 13)
+  — a scratch probe in the shape of `run-verify-pilots.cjs`, every line PASS:
+  - `canvas?font=alegreya-roman-latin.woff2&h=<its hash>`: 200, `font/woff2`, `private, max-age=31536000, immutable`,
+    `nosniff`, 55,892 bytes whose sha256 is `pool.json`'s. The same file with no hash and with another hash: 200,
+    `no-store`. `?font=../x`, `?font=..%2F..%2Fpackage.json`, `?font=nope.woff2`: 404.
+  - `canvas?pack=mono`: Mono's light background and only Archivo / IBM Plex Mono `@font-face` rules; `?pack=harbor`: 404.
+  - `/pilots`, the Pack menu at Paper, Mono and Neon × Light and Dark, every pilot in turn: the canvas wears the
+    preset's own background in each mode and its heading and body families are LOADED faces in the canvas document
+    (Fraunces / Inter, Archivo / IBM Plex Mono, Unbounded / Inter), none in error.
+  - The signed-in document declares the pack faces as `Inflozo pack <family>` at `/canvas?font=`, never `Inter` or
+    `Bricolage Grotesque`; the New project window's "Ag" (opened on `/start`) is set in `Inflozo pack Fraunces` and
+    that face is loaded.
+  - The network log over all of it: no request to `fonts.googleapis.com` or `fonts.gstatic.com`; every `?font=`
+    response 200 `font/woff2`. **Control:** the same recorder sees a request made on purpose to `fonts.gstatic.com`.
+- **The walks**, each on that deployment, each with its own throwaway accounts deleted: `run-verify-controls.cjs` 0 FAIL
+  of 115; `run-verify-pilots.cjs` 0 FAIL of 152; `run-verify-lock.cjs` 0 FAIL of 86; `run-verify-editor.cjs` 0 FAIL of
+  690, first run, no stall noted — its step 5 CSP session (zero violations, `EvalError` controls) covers the editor's
+  canvas, where a request to a font host would be a violation.
+- **Not touched, by the diff:** no migration (`git diff --name-only 3f6449a3 HEAD -- supabase/` is empty; the one new
+  read is `projects.style_pack`, a column of Story 1.2's schema), no Resend, no Dodo, no T1 or T3.
