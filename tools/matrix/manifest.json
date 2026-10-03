@@ -4,7 +4,7 @@
   "playwright": "1.61.1",
   "chromium": "149.0.7827.55",
   "fonts": {
-    "--font-heading": "Gelasio",
+    "--font-heading": "Fraunces",
     "--font-body": "Inter"
   },
   "widelyAvailableOnDate": "2026-08-18"
