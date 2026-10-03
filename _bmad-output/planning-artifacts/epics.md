@@ -2793,6 +2793,7 @@ So that choosing feels like a decision rather than a page load.
 affordance** (UX-DR15)
 **And** the mid-switch state matches S7b.
 **And** Site Remix's pack re-roll returns — "Re-roll what — Style Pack · Designs · Both", with single-step undo — which Story 5.12 left absent while Paper was the only pack (FR-D17, DW-314, from Story 6.1's Create, 2026-10-03).
+**And** a pack can be chosen wherever Story 6.2 shows the twelve without a choice: the New project window offers them as D4a draws its Style Pack row, and a project starts in the pack chosen there; and the Style Pack card and roster are reachable on a tablet and in any window below 1280, where Story 5.22's Controls overlay opens only for a selection (DW-322, from Story 6.2's Create, 2026-10-03).
 
 **FRs:** FR-E2 (the moment). · **Frame:** `S7 Style Packs.dc.html` S7b. · **Owner test:** yes.
 

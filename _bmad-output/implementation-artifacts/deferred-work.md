@@ -8633,3 +8633,22 @@ location: `packages/section-runtime/src/tokens.ts` `negative()` (Paper dark `#F0
   the 720 px measure at desktop; it was 24)
 reason: the spec's I/O matrix fixes the negative rule to background and surface and Paper's dark value to `#F04737`,
   and its task list moved all three of `THEME_CSS`'s side margins; neither is a defect a reader has met.
+
+## Deferred from: Story 6.2's Create (2026-10-03)
+
+### DW-322: two ways into the packs that Story 6.2 leaves for the switch — the New project window's choice and the roster below 1280
+
+plain: The New project window is drawn with a choice of packs (Paper and Tangerine), and the Style Pack list should be
+  reachable on a tablet too. Story 6.2 shows the twelve packs but lets nobody pick one, so the window keeps Paper alone
+  and the list is reached only on a wide screen until the story that makes picking work.
+status: open
+severity: medium
+origin: Story 6.2's Create (2026-10-03), reading D4a, S4a and Story 5.22's narrow layout together
+owner: Story 6.3 (The pack-switcher moment), whose card names this entry.
+location: `D4 Dashboard Sheets and Blocks.dc.html:105-116` (D4a's Style Pack row: Paper active, Tangerine, "+ New
+  pack") · `apps/web/app/(app)/app/(authed)/new-project-sheet.tsx` (one Paper cell) · `editor.tsx` (below 1280 the
+  Controls panel is an overlay opened by a selection, so S4a's rest panel and its Style Pack card are not shown) ·
+  `EXPERIENCE.md:60` (Style Packs: tablet and desktop)
+reason: R-118 — a control arrives with the story that makes it work. Choosing a pack, in the New project window or the
+  roster, writes `projects.style_pack` and needs the canvas to wear the chosen pack, which is 6.3's; the "+ New pack"
+  cell is 6.4's.
