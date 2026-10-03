@@ -15,7 +15,7 @@ import { fontFaceCss, packTokensCss, type Pack, type ProjectDoc } from '@inflozo
 import { canvasOfTemplateKey, fileOfKey, isSurface } from './editor.ts'
 import { iconDrawing } from '@inflozo/library/icons'
 import { sampleRows, type DesignRows } from './canvas.ts'
-import { fontHref } from './style-pack.ts'
+import { fontHash, fontHref } from './style-pack.ts'
 import { PACKAGES } from './style-guide.ts'
 
 /** `packages/` is found by `style-guide.ts`'s ONE finder (DW-269): the working directory first, the form Turbopack traces
@@ -132,13 +132,17 @@ export function pilotImage(name: string): Buffer | null {
 }
 
 /** STORY 6.2 — every file the font pool records (`packages/library/fonts/pool.json`): the ONE list `?font=` serves from. */
-const POOL_FILES: ReadonlySet<string> = new Set(Object.values(POOL.faces).flatMap((f) => f.files.map((x) => x.file)))
+const POOL_FILES: ReadonlyMap<string, string> = new Map(Object.values(POOL.faces).flatMap((f) => f.files.map((x) => [x.file, x.sha256] as const)))
 
 /** One pool file's bytes, or null for any name that is not a file the pool records: a name is never joined into a path
  *  unchecked, so nothing but the pool's own woff2 can be read through `?font=`. */
 export function poolFont(name: string): Buffer | null {
   return POOL_FILES.has(name) ? readFileSync(join(FONTS(), name)) : null
 }
+
+/** Is `h` the hash `fontHref` puts in THIS file's address? Only then may the answer be kept `immutable`: an address with
+ *  no hash, or a rebuilt file asked for under its old one, is served and never cached (review, 2026-10-03). */
+export const poolFontIs = (name: string, h: string | null): boolean => POOL_FILES.has(name) && h === fontHash(POOL_FILES.get(name) ?? '')
 
 /** STORY 6.2 — a preset's token block and its pairing's `@font-face` rules, the two styles every canvas document opens
  *  with. Paper's block is `reference-tokens.css` itself, byte for byte (the file `test-vocabulary.mjs` holds to the

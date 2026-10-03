@@ -38,6 +38,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 
 try:
@@ -150,11 +151,14 @@ def fetch(path):
     try:
         with urllib.request.urlopen(url, timeout=60) as r:
             body = r.read()
-    except Exception as e:  # a 404 is a missing file, which the caller names
+    except urllib.error.HTTPError as e:  # a 404 is a missing file, which the caller names; a network fault is itself
+        if e.code != 404:
+            raise
         raise FileNotFoundError(f'{url}: {e}') from None
     os.makedirs(os.path.dirname(local), exist_ok=True)
-    with open(local, 'wb') as f:
+    with open(local + '.part', 'wb') as f:  # renamed whole, so an interrupted download is never read as upstream
         f.write(body)
+    os.replace(local + '.part', local)
     return body
 
 
@@ -186,6 +190,8 @@ def read_metadata(family):
     if licence not in LICENCES:
         raise Refused(f'{family}: licence {licence}, which is neither OFL nor Apache 2.0 (§D.a rule 7)')
     category = re.search(r'^category: "([^"]+)"', pb, re.M).group(1)
+    if category not in GENERIC:  # here, before anything is written — never a KeyError after the files are
+        raise Refused(f'{family}: upstream category {category} has no CSS fallback in GENERIC')
     fonts = [{'style': s, 'weight': int(w), 'filename': f} for s, w, f in
              re.findall(r'fonts \{[^}]*?style: "(\w+)"[^}]*?weight: (\d+)[^}]*?filename: "([^"]+)"', pb, re.S)]
     axes = {t: (float(lo), float(hi)) for t, lo, hi in
@@ -436,9 +442,11 @@ def self_check():
 
 
 if __name__ == '__main__':
-    if '--self-check' in sys.argv:
+    if sys.argv[1:] == ['--self-check']:
         self_check()
         sys.exit(0)
+    if sys.argv[1:]:  # `--help` or a typo must never run the build: it fetches, rewrites and removes files
+        sys.exit(f'unknown argument {sys.argv[1:]}: no flags but --self-check (read the docstring)')
     try:
         main()
     except Refused as e:

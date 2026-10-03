@@ -8676,3 +8676,54 @@ location: `D4 Dashboard Sheets and Blocks.dc.html:105-116` (D4a's Style Pack row
 reason: R-118 — a control arrives with the story that makes it work. Choosing a pack, in the New project window or the
   roster, writes `projects.style_pack` and needs the canvas to wear the chosen pack, which is 6.3's; the "+ New pack"
   cell is 6.4's.
+
+## Deferred from: code review of spec-6-2-the-twelve-presets-and-the-font-pool (2026-10-03)
+
+### DW-323: the font pool's whole record rides into the browser with the New project window and the editor
+
+plain: To draw a pack's name, fonts and dots, the app's pages now load the full list of every font file with its
+  fingerprint, though they use a few names from it. Nothing is wrong on screen; the pages are a little heavier than
+  they need to be.
+status: open
+severity: low
+origin: Story 6.2's Review (2026-10-03), Blind Hunter + Verification Gap; not measured on a built bundle
+owner: Story 6.3 (The pack-switcher moment), whose card names this entry.
+location: `apps/web/lib/style-pack.ts` (imports `@inflozo/library/packs`, which loads `pool.json` and `packs.json`) ·
+  its client readers `new-project-sheet.tsx`, `lib/canvas-layer.ts`, `(editor)/style-pack.tsx` (which also runs
+  `packTokens` for every preset at import)
+reason: 6.3 is the story that makes the client need the presets (the switch paints from them), so what the browser
+  must carry is decided there, with a measurement; trimming it now would be done twice.
+
+### DW-324: what the photo check still does not photograph — the widest weights, bold italic, a heading's accented letters, and a button on a dark band
+
+plain: The sample photograph per font pairing draws headings at two fixed weights and accented letters in the text font
+  only, so the heaviest headings you approved for Broadsheet and Fieldnote, a bold italic, and accented letters in a
+  heading font are never photographed. Nothing checks that a photograph was drawn in Inflozo's own font file rather
+  than a stand-in, except for Paper. And no photograph shows a section's button on the dark band.
+status: open
+severity: medium
+origin: Story 6.2's Review (2026-10-03), Blind Hunter + Verification Gap
+owner: Story 6.4 (Editing tokens, per mode, with contrast checked live), whose card names this entry.
+location: `tools/matrix/cases.mjs` `specimenMarkup` (`font-weight:700` and `600`; latin-ext in the body face only) and
+  `fixture` (`controls: {}`, so no case sits on `data-bg="contrast"`) · `tools/matrix/matrix.spec.mjs` (the manifest's
+  fonts are Paper's document's alone) · `packages/library/designs/a4/13/style.css` (DW-317's rule, rendered by nothing)
+reason: every one changes the specimens or adds cases, which is a rebaseline behind the owner's sampled review
+  (`docs/render-matrix.md`); R-233's specimen is what he ruled, and 6.4 is where any pairing becomes pickable, so the
+  eighteen that no preset wears first reach a customer there.
+
+### DW-325: the Style Pack card, the list and the Pack menu have only ever been run with Paper
+
+plain: Until a pack can be chosen, every project is Paper, so no test has shown the card and the list following a
+  project whose pack is something else, or `/pilots` really changing the page when its menu changes. Two smaller
+  things also have no test: which address the app asks for a pack's font, and that the editor does not copy pack fonts
+  into the page it draws.
+status: open
+severity: medium
+origin: Story 6.2's Review (2026-10-03), Verification Gap
+owner: Story 6.3 (The pack-switcher moment), whose card names this entry.
+location: `(editor)/read.ts` (`style_pack` in the select) · `(editor)/style-pack.tsx` `current()` ·
+  `app/harness/editor/layout.tsx` (the fixture is always `DEFAULT_PRESET`) · `pilots/review.tsx` (`&pack=`) ·
+  `(authed)/layout.tsx` (`onApp`) · `lib/canvas-layer.ts` (`PACK_FAMILY_PREFIX` skipped)
+reason: no project can hold another pack until 6.3's switch writes one; its journey is the first run where the stored
+  value is not the default, and it needs a harness fixture that sets the preset.
+

@@ -94,6 +94,8 @@ test('a preset\'s fonts are its pairing\'s: family lists, the roman faces\' cap 
     const roman = POOL.faces[pairing.body.faces.find((f) => POOL.faces[f]?.style === 'normal') ?? '']
     assert.equal(fonts.body.tabular, roman?.tnum, `${p.id} tabular`)
     assert.equal(fonts.body.capHeight, roman?.capHeight, `${p.id} body cap`)
+    // the heading's too (review): it is `--drop-cap-ratio`'s input
+    assert.equal(fonts.heading.capHeight, POOL.faces[pairing.heading.faces.find((f) => POOL.faces[f]?.style === 'normal') ?? '']?.capHeight, `${p.id} heading cap`)
   }
 })
 

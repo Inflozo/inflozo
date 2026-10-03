@@ -97,7 +97,8 @@ export const DEFAULT_PRESET = 'paper'
  *  frame one level down, `/canvas` (or `/app/canvas`) from an app page — carrying the start of its own sha256, so a
  *  rebuilt file is a new address and the route may keep it `immutable` (`lib/canvas.ts`'s `canvasCaching`). Here and
  *  not in `lib/canvas.ts` because this module is a client one's too, and must not carry the runtime with it. */
-export const fontHref = (base: string) => (f: PoolFile) => `${base}?font=${f.file}&h=${f.sha256.slice(0, 12)}`
+export const fontHash = (sha256: string) => sha256.slice(0, 12)
+export const fontHref = (base: string) => (f: PoolFile) => `${base}?font=${f.file}&h=${fontHash(f.sha256)}`
 
 /** A blank project's `style_pack`: Paper, the default (choosing another is Story 6.3's). */
 export const defaultStylePack = (): StylePack => ({ preset: DEFAULT_PRESET })

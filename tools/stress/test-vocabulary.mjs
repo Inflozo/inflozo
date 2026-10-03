@@ -415,7 +415,9 @@ check('Appendix D §D.c and packages/library/fonts/pool.json declare the same pa
   const drift = dcDrift(rows, POOL_JSON)
   if (drift.length) throw new Error(drift.join('\n       '))
   // the control: one body range moved in the PRD, one pairing missing from the pool
-  const [first, ...rest] = rows
+  const first = rows.find((r) => r.body.range)
+  if (!first) throw new Error('§D.c has no variable body to build the control from')
+  const rest = rows.filter((r) => r !== first)
   const moved = [{ ...first, body: { ...first.body, range: [first.body.range[0], first.body.range[1] + 100] } }, ...rest]
   if (dcDrift(moved, POOL_JSON).length !== 1 || dcDrift(rows, { ...POOL_JSON, pairings: POOL_JSON.pairings.slice(1) }).length !== 1) throw new Error('the comparison is not a control')
   console.log(`      §D.c and pool.json agree on ${rows.length} pairings`)
@@ -423,9 +425,9 @@ check('Appendix D §D.c and packages/library/fonts/pool.json declare the same pa
 
 const sha256 = (buf) => createHash('sha256').update(buf).digest('hex')
 const poolFiles = (pool) => Object.values(pool.faces).flatMap((f) => f.files)
-check('every pool.json file is on disk with its sha256, and no other file sits in packages/library/fonts/files/', () => {
-  const files = poolFiles(POOL_JSON)
-  if (files.length === 0) throw new Error('pool.json records no file, so this check proves nothing')
+/** Every way the files on disk differ from what `pool` records of them. */
+function fileFaults(pool) {
+  const files = poolFiles(pool)
   const bad = []
   for (const f of files) {
     let buf
@@ -435,11 +437,19 @@ check('every pool.json file is on disk with its sha256, and no other file sits i
   }
   const named = new Set(files.map((f) => f.file))
   for (const f of readdirSync(join(POOL_DIR, 'files'))) if (!named.has(f)) bad.push(`${f} sits in files/ and pool.json declares no face of it`)
+  return bad
+}
+check('every pool.json file is on disk with its sha256, and no other file sits in packages/library/fonts/files/', () => {
+  const files = poolFiles(POOL_JSON)
+  if (files.length === 0) throw new Error('pool.json records no file, so this check proves nothing')
+  const bad = fileFaults(POOL_JSON)
   if (bad.length) throw new Error(`${bad.join('\n       ')}\n       — the pool is built by uv run tools/fonts/build-pool.py, never by hand`)
-  // the control: one byte flipped changes the hash
-  const one = readFileSync(join(POOL_DIR, 'files', files[0].file))
-  const flipped = Buffer.from(one); flipped[flipped.length >> 1] ^= 0xff
-  if (sha256(flipped) === files[0].sha256) throw new Error('the hash comparison is not a control')
+  // the controls, through the comparison itself (review): a record whose hash is another's, and a record that drops a
+  // face — so its files sit on disk undeclared — are each named
+  const [id, face] = Object.entries(POOL_JSON.faces)[0]
+  const wrong = { ...POOL_JSON, faces: { ...POOL_JSON.faces, [id]: { ...face, files: face.files.map((f) => ({ ...f, sha256: sha256(f.sha256) })) } } }
+  const { [id]: _dropped, ...fewer } = POOL_JSON.faces
+  if (fileFaults(wrong).length !== face.files.length || fileFaults({ ...POOL_JSON, faces: fewer }).length !== face.files.length) throw new Error('the file comparison is not a control')
   console.log(`      ${files.length} files, every one its recorded sha256`)
 })
 
@@ -457,6 +467,8 @@ check('every pairing keeps §D.a rule 5\'s budget as read: ≤ 5 faces and ≤ 2
   const [p] = POOL_JSON.pairings
   const big = { ...POOL_JSON, faces: { ...POOL_JSON.faces, [p.heading.faces[0]]: { ...POOL_JSON.faces[p.heading.faces[0]], files: [{ subset: 'latin', bytes: 300_000 }] } } }
   if (overBudget(big).length === 0) throw new Error('the budget is not a control: a 300 KB face passed')
+  const many = { ...POOL_JSON, pairings: [{ ...p, body: { ...p.body, faces: Object.keys(POOL_JSON.faces).slice(0, 6) } }] }
+  if (!overBudget(many).some((m) => m.includes('faces, more than'))) throw new Error('the budget is not a control: six faces passed')
   const heaviest = POOL_JSON.pairings.map((x) => [x.id, [...new Set([...x.heading.faces, ...x.body.faces])].reduce((t, id) => t + POOL_JSON.faces[id].files.find((f) => f.subset === 'latin').bytes, 0)]).sort((a, b) => b[1] - a[1])[0]
   console.log(`      the heaviest pairing, ${heaviest[0]}, is ${(heaviest[1] / 1000).toFixed(1)} KB of latin`)
 })

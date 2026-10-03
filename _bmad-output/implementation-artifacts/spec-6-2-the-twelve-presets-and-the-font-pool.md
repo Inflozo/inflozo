@@ -2,7 +2,7 @@
 title: 'Story 6.2 — The twelve presets and the font pool'
 type: 'feature'
 created: '2026-10-03'
-status: 'in-progress'
+status: 'in-review'
 baseline_commit: '3f6449a3883f2a5c27623d1290667c79de99f322'
 owner_test: pending
 review_loop_iteration: 0
@@ -267,6 +267,57 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
   DW-312, DW-313, DW-317 with their proof; a dated Dev sub-bullet; comments name the right stories; grep for `Georgia`
   and for the old `PRESETS` shape (standing rule 7) -- the ledger closes on evidence
 
+### Review Findings
+
+*Code review, 2026-10-03 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier). The verifier's first finding stopped everything else: CI's `check` job was red on the Dev head, so `deploy`
+was skipped and none of this story had reached production. Every patch below is applied in the Review commit. No
+finding is the owner's to decide. The deferred findings are in the ledger with named owners (DW-323 to DW-325). The rest
+were dismissed as noise, as calls the spec or a ruling already made (the five dots, §D.a rule 5's reading, R-235's
+"§D.c stays as written", A22 #1's answer copied to A4 #13), or as a traceback where a named refusal would be nicer.*
+
+- [x] [Review][Patch] **The Dev head never deployed.** The 6.2 journey's read-only row opened Change with a pointer
+  (`change.click()`), which the journey's own no-pointer control refuses (NFR-6(d)); Dev re-ran that journey alone
+  (`--grep "6.2 ·"`), which skips the control, so `pnpm keyboard` was red in CI, `check` failed and `deploy` was skipped
+  (run 37140453790). The row opens Change with focus and Enter [`tools/keyboard/journey.spec.mjs`]
+- [x] [Review][Patch] Escape left the pack list only while focus was inside the panel — and its cells are not tab
+  stops, so step 9 of the owner's test ("Tab a few times; then Escape") did nothing. Escape is now a rung of the editor's
+  own ladder and leaves the list from anywhere, focus on Change; the journey presses it from the Layers list
+  [`editor.tsx` `onEscape`; `journey.spec.mjs`]
+- [x] [Review][Patch] The panel kept the name "Page settings" while it showed the list; it is "Style Pack" [`editor.tsx`]
+- [x] [Review][Patch] A font was kept `immutable` for a year whatever its address said: the hash in the address was
+  never compared. It is kept only under its own hash; an address with none, or a rebuilt file under its old one, is
+  served and not cached [`lib/pilots.ts` `poolFontIs`; both canvas routes; `lib/style-pack.ts` `fontHash`]
+- [x] [Review][Patch] No check executed the route's `?font=` and `?pack=` answers — the lib functions and the matrix's
+  own server were tested, never the route — so losing the branch would draw every canvas in fallback faces with CI
+  green. The route is now called: 200 `font/woff2` `nosniff` with the `wOF2` magic, a year only under its hash, 404 for a
+  path, an unknown file and an unknown pack, Mono not served as Paper; seen red without the hash check
+  [`apps/web/frame-guard.test.ts`]
+- [x] [Review][Patch] A font's cache rule was asserted only for an address carrying a build, which a font's never does
+  [`apps/web/pilots.test.ts`]
+- [x] [Review][Patch] A push that changed only a specimen photograph scoped to "touched no design" and ran nothing
+  [`.github/workflows/matrix.yml`]
+- [x] [Review][Patch] The font builder ran a full build — fetch, rewrite, remove — on `--help` or any typo; reported a
+  network fault as "not an OFL or Apache 2.0 family"; wrote its download cache in place, so an interrupted download was
+  read as upstream ever after; and met an unmapped upstream category as a `KeyError` after the files were written. It
+  refuses unknown arguments, catches only a 404, renames a finished download into place, and refuses the category before
+  anything is written [`tools/fonts/build-pool.py`; `--self-check` still passes]
+- [x] [Review][Patch] Three controls did not exercise the check they guard: the sha256 control tested the hash function,
+  nothing controlled "no other file sits in files/", and the budget's faces measure had none. Each now goes through the
+  comparison itself; the §D.c control no longer assumes the first row's body is variable
+  [`tools/stress/test-vocabulary.mjs`]
+- [x] [Review][Patch] The heading's cap height (`--drop-cap-ratio`'s input) was never held to the pool; the DW-317 test
+  let two different packs satisfy "one of them off Paper on buttons and on gutters"; `/pilots`' swatches were tested for
+  Paper only [`packs.test.ts`; `tools/matrix/cases.test.mjs`; `apps/web/controls.test.ts`]
+- [x] [Review][Defer] The pool's whole record (`pool.json`, every sha256) and the presets ride into the client bundles
+  of the New project window and the editor [`apps/web/lib/style-pack.ts`] — deferred, DW-323
+- [x] [Review][Defer] The matrix does not photograph R-232's widened weights, a bold italic or a heading's latin-ext
+  file; nothing asserts a non-Paper pack's or a specimen's faces were drawn from the pool; A4 #13's contrast-ground
+  button rule (DW-317) is rendered by no case [`tools/matrix/cases.mjs`] — deferred, DW-324
+- [x] [Review][Defer] The card, the roster and `/pilots`' Pack menu have only ever run with Paper stored; the signed-in
+  layout's choice of font address and the canvas chrome's skipping of pack faces have no check
+  [`style-pack.tsx`, `(authed)/layout.tsx`, `lib/canvas-layer.ts`] — deferred, DW-325
+
 **Acceptance Criteria:**
 - Given Appendix D and the repository, when `pnpm check` runs, then §D.d equals `packages/library/packs/` and §D.c
   equals `pool.json`, every pool file matches its sha256, every pairing keeps D.a's budget as read, every family is OFL
@@ -301,6 +352,12 @@ sampled review). Baselines are `packages/library/baselines/{category}/{n}/{slug}
   `./fonts` subpath); A1 #1 offers no contrast ground, so the validator refuses a `[data-bg="contrast"]` rule there and
   its stylesheet says so instead (DW-317); the builder drops TrueType hinting, or D15 breaks §D.a rule 5 (§D.a says so);
   Libre Caslon Text is variable-only upstream, so D2's static 700 is cut from it under Question 5.
+- **Review (2026-10-03), recorded here because nothing else says it:** a `pool.json` file record is `{subset, file,
+  bytes, sha256}` — style and weight live on its face and the `unicode-range` in the top-level `subsets` map, so nothing
+  is written twice; S7a draws its panel 320 px wide and the editor's right panel is S4a's 280 px, so the roster is drawn
+  at 280 with S7a's own gaps and its cells are narrower than the frame's (the panel does not change width under Change —
+  a routine call, and the owner sees it at step 5 of his test); `?font=` is kept a year only under the hash its address
+  carries (`poolFontIs`).
 
 ## Design Notes
 
@@ -551,3 +608,31 @@ changes your projects.
 - **claude.ai** — the owner's private review page (packs, before beside after, specimens), where he ruled Questions 5–7.
 - Supabase, Vercel, Resend, Dodo, T1 and T3: not touched in Dev. app.inflozo.com, CI and Vercel READY are the Review's
   (above).
+
+### Results — Review (2026-10-03)
+
+Keys are named by their variable in `tools/probe/.env`, never by value. Node 24.18.1 throughout.
+
+**What the verifier found first.** GitHub Actions on the Dev head `f509af7a` (read without a token; the repository is
+public): `matrix.yml` run 37140453777 `matrix` **success**; `ci.yml` run 37140453790 `rls` **success**, `check`
+**failure** at `pnpm keyboard`, `deploy` **skipped** — so nothing of Story 6.2 was on production, and `pnpm check`,
+`pnpm build` and `check-traces` had never run in CI on this code. Reproduced locally on that head: `1 failed, 157
+passed` — "NFR-6(d): the keyboard journey must use no pointer — found .click(". Dev's line above, "`pnpm keyboard` —
+158 passed", was true before the read-only row was added and false for the committed tree. Control: `rls` and `matrix`
+on the same commit read as success through the same query.
+
+**The patched tree.**
+- `pnpm keyboard`, whole, no `--grep`: **158 passed**, exit 0 — the no-pointer control and the 6.2 journey with its new
+  Esc-from-the-Layers-list row among them.
+- `pnpm check`: exit 0. `pnpm build`: exit 0. `node tools/check-traces.mjs`: "every route carries its files" — the real
+  script on the working tree, which Dev could only run on a scratch copy.
+- `node tools/stress/test-vocabulary.mjs`: pass, the three re-made controls included. `python3
+  tools/fonts/build-pool.py --self-check`: pass.
+- `apps/web/frame-guard.test.ts`' new route test: pass; **red** with the hash check removed from the route (the
+  control), then restored.
+- Signed out, against production (pre-6.2 code, so the guard only): `canvas?font=…`, `?font=../x`, `?pack=mono` and
+  `?pack=harbor` each answer 303 to `/sign-in` with an empty body; control `/sign-in` 200.
+
+**Real services (R-82).** The signed-in checks on `app.inflozo.com`, the network log, the New project window's glyph,
+the four walks and Vercel READY can only run once this commit deploys; their results are appended below by the commit
+that follows it.

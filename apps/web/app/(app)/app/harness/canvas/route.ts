@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { paywallSamples, samples } from '@/lib/controls-review'
 import { canvasCaching } from '@/lib/canvas'
 import { HARNESS } from '@/lib/harness'
-import { pilotIds, pilotImage, pilotsCanvasDocument, poolFont } from '@/lib/pilots'
+import { pilotIds, pilotImage, pilotsCanvasDocument, poolFont, poolFontIs } from '@/lib/pilots'
 import { presetOf } from '@inflozo/library/packs'
 import { surfaceCss } from '@/lib/style-guide'
 import { standIns } from '../stand-ins'
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     const bytes = poolFont(font)
     if (bytes === null) return new NextResponse('that file is not in the font pool', { status: 404, headers })
     return new NextResponse(new Uint8Array(bytes), {
-      headers: { ...headers, 'cache-control': caching.font, 'content-type': 'font/woff2', 'x-content-type-options': 'nosniff' },
+      headers: { ...headers, 'cache-control': poolFontIs(font, request.nextUrl.searchParams.get('h')) ? caching.font : 'no-store', 'content-type': 'font/woff2', 'x-content-type-options': 'nosniff' },
     })
   }
   const image = request.nextUrl.searchParams.get('image')

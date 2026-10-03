@@ -795,7 +795,7 @@ function EditorShell({
    *  Remix and no Preview, an ink bar, C3a's strip, and a paint of its own (`paywallPage`). */
   const surface = isSurface(key)
   /* STORY 6.2 — S7a's roster in place of the rest panel: Change opens it with focus on the back button, and the back button
-     or Esc returns with focus on Change. A selection replaces the rest panel, so it leaves the roster too. */
+     or Esc returns with focus on Change. Esc is the ladder's own rung (`onEscape`). A selection replaces the rest panel, so it leaves the roster too. */
   const [packList, setPackList] = useState(false)
   const packMoved = useRef(false)
   const packBack = useRef<HTMLButtonElement>(null)
@@ -1365,7 +1365,7 @@ function EditorShell({
   // Story 5.18: and the SOURCE chosen, the canvas's STORED subject (a paint resolves it against the source it paints
   // with) and the source the last paint counted pages in
   // Story 5.22: and the layout, and the sheet open in it — `choose`, `L`, the skip link and `Esc` are bound once
-  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet })
+  const latest = useRef({ key, docs, stack, selected, hovered, auto, mode, journal, device, canAdd, subject: previewing.subject, viewAs, viewed, preview, page, lock, source, stored: storedSubject, contentSource, compact, sheet, packList })
   /* STORY 5.23b — `latest` NEVER GOES BACK (R-210's Always). A section operation's state reaches React a task after the
      canvas (the hand-over), so a render can be drawn before it lands — never one this component's own setters cause, since
      each pays what is owed first, but one an external store causes (the layout crossing 1280) — and a render that wrote
@@ -1377,7 +1377,7 @@ function EditorShell({
      for the paint in its own task). In a layout effect, so a render React throws away writes nothing, and before this
      component's other layout effects, which read it. */
   useLayoutEffect(() => {
-    latest.current = { ...latest.current, key, canAdd, compact, contentSource, subject: previewing.subject, stored: storedSubject }
+    latest.current = { ...latest.current, key, canAdd, compact, contentSource, subject: previewing.subject, stored: storedSubject, packList }
   })
   /** Story 5.16 — R-180: the site-wide sections that have asked on THIS visit to page 2, by instance id. Emptied on
    *  every change of page, so a section asks again the next time page 2 is shown. */
@@ -3296,6 +3296,13 @@ function EditorShell({
     if (latest.current.sheet !== null) {
       e.preventDefault()
       closeSheet()
+      return
+    }
+    // STORY 6.2 — S7a's roster is left by Esc from ANYWHERE (review, 2026-10-03): its cells are not tab stops, so focus
+    // is soon outside the panel, and a handler on the panel alone left the roster open. Focus goes back to Change.
+    if (latest.current.packList) {
+      e.preventDefault()
+      showPacks(false)
       return
     }
     if (latest.current.selected) {
@@ -5307,20 +5314,10 @@ function EditorShell({
             points at B5a's own sentence, which is the honest answer to "why does nothing here respond". */}
         <aside
           id="editor-controls"
-          aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : 'Page settings'}
+          aria-label={surface ? `${PAYWALL_WORDS.panel} settings` : chosen ? 'Section settings' : packList ? 'Style Pack' : 'Page settings'}
           hidden={!controlsShown}
           aria-describedby={lock.holder ? undefined : 'editor-lock-reason'}
           data-readonly={lock.holder ? undefined : ''}
-          // Story 6.2 — Esc leaves S7a's roster for the rest panel, focus back on Change; prevented, so the ladder skips it
-          onKeyDown={
-            resting && packList
-              ? (e) => {
-                  if (e.key !== 'Escape') return
-                  e.preventDefault()
-                  showPacks(false)
-                }
-              : undefined
-          }
           className={`flex w-[280px] shrink-0 flex-col gap-4 overflow-y-auto border-l border-line bg-paper p-4 ${slimScrollbar} ${
             lock.holder ? '' : 'opacity-[.55]'
           }`}

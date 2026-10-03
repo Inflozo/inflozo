@@ -122,6 +122,8 @@ test('canvasCaching: immutable only for a build in production, never for no buil
   // Story 6.2: a pool face is kept as long as the document — its address carries its own hash (`fontHref`)
   assert.deepEqual(canvasCaching('abc', true), { document: YEAR, image: 'private, max-age=600', font: YEAR })
   for (const v of [null, '', 'dev']) assert.equal(canvasCaching(v, true).document, 'no-store', JSON.stringify(v))
+  // a font's address never carries the build (`v`), so its rule must not hang on one
+  assert.equal(canvasCaching(null, true).font, YEAR)
   for (const v of ['abc', null, '', 'dev']) assert.deepEqual(canvasCaching(v, false), { document: 'no-store', image: 'no-store', font: 'no-store' }, JSON.stringify(v))
 })
 

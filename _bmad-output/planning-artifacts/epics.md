@@ -2794,6 +2794,7 @@ affordance** (UX-DR15)
 **And** the mid-switch state matches S7b.
 **And** Site Remix's pack re-roll returns — "Re-roll what — Style Pack · Designs · Both", with single-step undo — which Story 5.12 left absent while Paper was the only pack (FR-D17, DW-314, from Story 6.1's Create, 2026-10-03).
 **And** a pack can be chosen wherever Story 6.2 shows the twelve without a choice: the New project window offers them as D4a draws its Style Pack row, and a project starts in the pack chosen there; and the Style Pack card and roster are reachable on a tablet and in any window below 1280, where Story 5.22's Controls overlay opens only for a selection (DW-322, from Story 6.2's Create, 2026-10-03).
+**And** the card, the roster and `/pilots`' Pack menu are shown, by a check, to follow a stored pack that is not Paper, and the app's pages carry no more of the font pool's record than they draw from (DW-325, DW-323, from Story 6.2's Review, 2026-10-03).
 
 **FRs:** FR-E2 (the moment). · **Frame:** `S7 Style Packs.dc.html` S7b. · **Owner test:** yes.
 
@@ -2816,6 +2817,7 @@ block** — and responsibility transfers to the user at that point, which is wha
 duplicating a project is how a look is carried forward
 **And** the editor and creation states match S7c and S7d.
 **And** the panel's words are FR-E1's, one name per thing (R-170): S7a says Standard and Spacious where FR-E1 says Normal and Airy, has no Pill, gutter, shadow or link-style row, and S7c names on-accent "Contrast"; the missing rows are drawn in the Claude Design project before they are built (R-74, DW-310, from Story 6.1's Create, 2026-10-03).
+**And** the pairing specimens photograph each role at the ends of its declared weights, a bold italic and a heading's latin-ext letters, each photograph is shown to be drawn from the pool's own file, and a `--button-fill` button is photographed on a contrast ground under an Outline pack — behind the owner's sampled review (DW-324, from Story 6.2's Review, 2026-10-03).
 
 **FRs:** FR-E3. · **Frame:** `S7 Style Packs.dc.html` S7c · S7d. · **Owner test:** yes.
 

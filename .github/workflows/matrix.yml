@@ -52,7 +52,7 @@ jobs:
           if printf '%s\n' "$changed" | grep -qE '^(packages/section-runtime/|packages/ghost-shim/|packages/library/(src|orbit-weekly|icons|strings|modules|contexts|packs|fonts)/|packages/library/control-groups\.json$|tools/matrix/|apps/web/lib/(pilots|controls-review|style-pack)\.ts$|apps/web/app/\(app\)/app/\(authed\)/pilots/|package\.json$|pnpm-lock\.yaml$|\.nvmrc$|\.github/workflows/matrix\.yml$)'; then
             echo "run=true" >> "$GITHUB_OUTPUT"; echo "designs=" >> "$GITHUB_OUTPUT"; echo "scope: every design (a shared input changed)"; exit 0
           fi
-          designs="$(printf '%s\n' "$changed" | sed -nE 's#^packages/library/(designs|baselines)/([^/]+)/([0-9]+)/.*#\2/\3#p; s#^packages/library/designs/([^/]+)/content\.json$#\1#p' | sort -u | tr '\n' ' ')"
+          designs="$(printf '%s\n' "$changed" | sed -nE 's#^packages/library/(designs|baselines)/([^/]+)/([0-9]+)/.*#\2/\3#p; s#^packages/library/designs/([^/]+)/content\.json$#\1#p; s#^packages/library/baselines/(specimens/[^/]+)/.*#\1#p' | sort -u | tr '\n' ' ')"
           if [ -z "${designs// /}" ]; then
             echo "run=false" >> "$GITHUB_OUTPUT"; echo "scope: this push touched no design"; exit 0
           fi

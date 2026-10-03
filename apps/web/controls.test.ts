@@ -41,6 +41,9 @@ test('the swatches are the reference tokens, and every colour role has one', () 
   const swatches = referenceSwatches()
   assert.deepEqual(Object.keys(swatches).sort(), ['accent', 'base', 'contrast', 'surface'])
   for (const [role, value] of Object.entries(swatches)) assert.ok(value.length > 0, `${role} has no colour`)
+  // Story 6.2's review: `/pilots`' dots follow the chosen pack — another preset's are its own, an unknown one is refused
+  assert.notDeepEqual(referenceSwatches('light', 'mono'), swatches)
+  assert.throws(() => referenceSwatches('light', 'harbor'))
 })
 
 // review: the page's Data rows are the one thing the theme's {{#get}} order is not compared against

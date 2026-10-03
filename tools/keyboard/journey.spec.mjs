@@ -494,16 +494,25 @@ test('6.2 · Tab reaches Change on the rest panel, Enter opens the presets with 
   // and so does Esc, from anywhere in the list — and the ladder takes nothing from that press
   await page.keyboard.press('Enter')
   await expect(page.locator('#style-pack-back')).toBeFocused()
+  await expect(panel).toHaveAttribute('aria-label', 'Style Pack')
   await page.keyboard.press('Escape')
   await expect(change).toBeFocused()
   await expect(panel.locator('[data-style-pack-card]')).toBeVisible()
+  // from OUTSIDE the panel too (review): the cells are not stops, so a Tab or two leaves it — the Layers list here
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#style-pack-back')).toBeFocused()
+  await page.locator('[data-layer-row]').first().focus()
+  await page.keyboard.press('Escape')
+  await expect(change).toBeFocused()
+  await expect(panel.locator('[data-style-pack-roster]')).toHaveCount(0)
 
   // reading along (R-192): the list is a view, so Change still opens it while another window holds the lock
   await page.setExtraHTTPHeaders({ 'x-inflozo-harness-lock': 'reader' })
   await open(page)
   await expect(page.locator('#editor-add-section'), 'the control: this window really is reading along').toBeDisabled()
   await expect(change).toBeEnabled()
-  await change.click()
+  await change.focus()
+  await page.keyboard.press('Enter')
   await expect(cells).toHaveCount(presets.length)
 })
 

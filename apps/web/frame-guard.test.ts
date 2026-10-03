@@ -96,3 +96,35 @@ test('the canvas route keeps a built document a year in production, and nothing 
   assert.equal(await caching('production'), 'private, max-age=31536000, immutable')
   assert.equal(await caching('development'), 'no-store')
 })
+
+// Story 6.2's review — THE ROUTE'S OWN ANSWERS for a pool face and a preset, which no check executed: lose the `?font=`
+// branch and every canvas falls back to `serif` behind `font-display: swap` with every other test green
+test('the canvas route serves a pool face as woff2, kept a year only under its own hash, and refuses a path, an unknown file and an unknown pack', async () => {
+  const { POOL } = await import('@inflozo/library/packs')
+  const { fontHref } = await import('./lib/style-pack.ts')
+  const file = Object.values(POOL.faces)[0]?.files[0]
+  assert.ok(file, 'the pool records no file, so this test proves nothing')
+  const env = process.env as Record<string, string | undefined>
+  const was = env.NODE_ENV
+  env.NODE_ENV = 'production'
+  try {
+    await as({ id: 'someone' }, async () => {
+      const face = await get(fontHref('/app/canvas')(file))
+      assert.equal(face.status, 200)
+      assert.equal(face.headers.get('content-type'), 'font/woff2')
+      assert.equal(face.headers.get('x-content-type-options'), 'nosniff')
+      assert.equal(face.headers.get('cache-control'), 'private, max-age=31536000, immutable')
+      assert.equal(Buffer.from(await face.arrayBuffer()).subarray(0, 4).toString('latin1'), 'wOF2')
+      // no hash, or another file's: served, never kept
+      for (const h of ['', '&h=000000000000']) assert.equal((await get(`/app/canvas?font=${file.file}${h}`)).headers.get('cache-control'), 'no-store', h)
+      for (const name of ['../x', '..%2F..%2Fpackage.json', 'nope.woff2', '']) assert.equal((await get(`/app/canvas?font=${name}`)).status, 404, name)
+      const mono = await get('/app/canvas?pack=mono')
+      assert.equal(mono.status, 200)
+      assert.notEqual(await mono.text(), await (await get('/app/canvas')).text(), 'Mono was served as Paper')
+      assert.equal((await get('/app/canvas?pack=harbor')).status, 404)
+    })
+  } finally {
+    if (was === undefined) delete env.NODE_ENV
+    else env.NODE_ENV = was
+  }
+})

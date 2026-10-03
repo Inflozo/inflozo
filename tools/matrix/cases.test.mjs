@@ -81,6 +81,7 @@ test('DW-317: a reference pack sits off Paper\'s step on buttons and on gutters,
   const off = (row) => packs().filter((p) => presetPack(p)[row] !== paper[row])
   assert.ok(off('buttons').length > 0, `every reference pack draws ${paper.buttons} buttons, as Paper does`)
   assert.ok(off('gutters').length > 0, `every reference pack has ${paper.gutters} gutters, as Paper does`)
+  assert.ok(off('buttons').some((p) => off('gutters').includes(p)), 'no ONE reference pack is off Paper on both (the criterion\'s wording)')
   // and the tokens really differ there — the move from --text-on-accent to --button-text is observable
   const t = (p) => rt.packTokens(presetPack(p)).light
   assert.ok(off('buttons').some((p) => t(p)['--button-text'] !== t(p)['--text-on-accent'] || t(p)['--button-fill'] !== t(p)['--accent']))
