@@ -2773,6 +2773,7 @@ requests**
 **And** `apps/web/lib/style-pack.ts`'s `PRESETS` (Paper alone, read off D4a's pack cell) is regenerated from the authored Appendix D palettes, so the dashboard card's placeholder and D4a's pack cells paint from the values the canvas does (DW-15).
 **And** three of the twelve, picked by the owner (R-83), become the render matrix's reference packs — the only pack files `tools/matrix/cases.mjs` reads — re-baselined as NFR-6(a)'s mass rebaseline (DW-169).
 **And** before the presets ship, the owner rules (R-83) the four disagreements Story 6.1's Create found: S7a's pack names are placeholders by its own caption, so whether "matches S7a" means the layout alone (DW-309); Appendix D's faces for Paper and Ink are not the export's (DW-311); D19's and D22's two files cannot carry their headings' weights (DW-312); and every pairing must render in the matrix before launch while the matrix photographs three packs (DW-313) (from Story 6.1's Create, 2026-10-03).
+**And** one pack the render matrix draws sits off Paper's step on buttons and on gutters, so the pilots' `--button-text` and `--space-gutter` are seen, and every design that draws a `--button-fill` button on a contrast ground answers it there — an Outline label is otherwise the band's own colour (DW-317, from Story 6.1's Review, 2026-10-03).
 
 **FRs:** FR-E2 (the presets). · **Frame:** `S7 Style Packs.dc.html` S7a. · **Owner test:** yes.
 
@@ -2842,6 +2843,7 @@ a scheme class or on `data-mode`
 **And** a dark override resolves to a token, and exactly one file selects on mode (AD-30).
 **And** a section's own dark override reaches a visitor as a per-instance custom property emitted into the token block, AD-30 amended to name that expression before Epic 9 authors stylesheets against it (DW-195).
 **And** AD-30's title ("exactly one file selects on mode") and its rule (the token block and the base stylesheet) are made to say the same thing, and what a visitor's choice saved under Auto does once the owner pins the site is stated and built (DW-316, from Story 6.1's Create, 2026-10-03).
+**And** the T1/T3 recording reads dark through each switch ALONE — the system preference with no `data-mode`, and `data-mode="dark"` on a light system — because Story 6.1's recording set both at once (DW-318, from its Review, 2026-10-03).
 
 **FRs:** FR-E4. · **Owner test:** none (a theme mechanism, visible through 6.3). · **Verification:** on the
 canvas in all three states, plus a unit assertion over the emitted token block — **not on T1/T3, because the
@@ -4636,6 +4638,7 @@ So that I can start using Heroes on my own site.
 **And** each renders in the NFR-6(a) matrix, compiles into a sample theme passing gscan, holds a screenshot baseline, and passes the FR-G8 Baseline checks in **both CSS and JS**
 **And** each design **matches its frame** — `A4-<n> <Name>.dc.html` — and the category's `A4-0 Category Proof.dc.html` tokenisation proof, stress frame and roster
 **And** a field whose spec advises a length rather than capping it (the headline: 'the editor advises at 90 characters') carries an advisory counter declared beside `maxChars` that turns muted past the advice and never refuses a character (DW-180).
+**And** A4's stylesheet settles where its layout and its spacing change: Story 6.1 moved section padding and page margin to the token bands (1023 · 767) while A4 #13 keeps its layout breakpoint at 1080, so between 1,024 and 1,080 px it draws the tablet layout on desktop spacing — the frames decide, and Story 10.79 does the same for A24 #1's 835–1,023 window (DW-320, from Story 6.1's Review, 2026-10-03).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A4). · **Frame:** `A4-<n> <Name>.dc.html` · `A4-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -6850,6 +6853,7 @@ So that I can start using Post Content Layouts on my own site.
 and C1d's "Open Paywall →" at `:1064`): a navigation to the Paywall canvas Story 5.20 built, the second door beside the
 Template switcher's Template surfaces group
 **And** the render matrix's accessibility scan stops at the post body's edge: each case excludes the element bound to `{{content}}`, derived from the binding, and a case carrying the binding with nothing excluded fails (DW-170).
+**And** the post body's caption inset is the frame's, not the page margin Story 6.1's stand-in gives it, and the first design to read `--negative` holds it at 4.5:1 on the elevated ground too (DW-321, from Story 6.1's Review, 2026-10-03).
 
 **FRs:** FR-G1, FR-G4, FR-G5, FR-G6 (for A25). · **Frame:** `A25-<n> <Name>.dc.html` · `A25-0 Category Proof.dc.html`. · **Owner test:** yes. · **Verification:** deployed and rendered on T1 and T3 (R-82).
 
@@ -8667,6 +8671,7 @@ in Layers and item lists, and **single-key shortcuts being inert inside a text f
 **And** the two layers that touch a real Ghost are **serialized per target**, because theme activation is
 globally stateful, so concurrent runs queue and never interleave.
 **And** before the suite is trusted, DW-68's stall is diagnosed: the suite signs in against any deployment URL and each 30–60 s stall is matched to its Vercel runtime-log invocation, so a red run names the deployment, the platform or the runner (DW-68).
+**And** every page under the signed-in layout is requested signed out and its reply's BODY is read: the redirect is a 307 whose body still carries what the page rendered (`/pilots` carries its sample content), so the suite proves no page puts a customer's data there (DW-319, from Story 6.1's Review, 2026-10-03).
 
 **Owner test:** none (automated). · **Verification:** production stack, T1–T3 (R-82).
 

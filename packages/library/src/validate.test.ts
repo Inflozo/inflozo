@@ -1048,6 +1048,8 @@ test('dark-capabilities: the declaration is exactly what the design earns — to
     [':root[data-mode="dark"] .x { color: var(--text-body) }', 'data-mode'],
     ['@media (prefers-color-scheme: dark) { .x { color: var(--text-body) } }', 'prefers-color-scheme'],
     ['body.scheme-dark .x { color: var(--text-body) }', 'scheme-dark'],
+    ['.x { color: light-dark(var(--accent), var(--text-body)) }', 'light-dark'],
+    ['.x { color-scheme: dark }', 'color-scheme'],
   ] as const) one({}, css, new RegExp(`unearned tokens — style\\.css names the mode \`${mode}\``))
   // A COLOUR LITERAL anywhere in a value, a var() fallback included
   for (const [css, literal] of [
@@ -1060,7 +1062,10 @@ test('dark-capabilities: the declaration is exactly what the design earns — to
     ['.x { color: #fff; & b { color: var(--accent) } }', '#fff'],
   ] as const) one({}, css, new RegExp(`unearned tokens — style\\.css writes the colour literal \`${literal.replace(/[(]/g, '\\$&')}\``))
   // …and what is NOT one: a hex in a comment or a string, a selector, color-mix over tokens, the colour keywords
-  assert.deepEqual(said({}, '/* #fff, prefers-color-scheme */ .x::after { content: "#fff data-mode" } a[href="#add"] { color: color-mix(in srgb, currentcolor 30%, transparent); background: transparent; border-color: inherit }'), [])
+  assert.deepEqual(said({}, '/* #fff, prefers-color-scheme */ .x::after { content: "#fff data-mode" } a[href="#add"] { color: color-mix(in srgb, currentcolor 30%, transparent); background: transparent; border-color: inherit } .x { mask: url(#fade); clip-path: url(sprite.svg#bed) } .x[data-mode-switch="on"] .scheme-darker { prefers-color: var(--accent) }'), [])
+  // LEAVING THE WORD OUT IS NO WAY PAST THE READER (review): a literal or a mode is refused with tokens undeclared too
+  one({ darkCapabilities: ['background'] }, '.x { color: #fff }', /missing tokens, which this design cannot earn — style\.css writes the colour literal `#fff`/)
+  one({ darkCapabilities: ['background'] }, ':root[data-mode="dark"] .x { color: var(--text-body) }', /missing tokens, which this design cannot earn — style\.css names the mode `data-mode`/)
   // with no stylesheet, tokens must still be declared
   one({ darkCapabilities: ['background'] }, undefined, /missing tokens/)
 })

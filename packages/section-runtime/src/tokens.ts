@@ -98,6 +98,9 @@ const times = (f: number): Density => {
   const scale = (v: string) => `${String(Math.round((parseFloat(v) * f) / 0.25) * 0.25)}rem`
   return { section: COMFORTABLE.section.map(scale), compact: COMFORTABLE.compact.map(scale), spacious: COMFORTABLE.spacious.map(scale), gap: COMFORTABLE.gap.map(scale) }
 }
+/** A section sits on the page ground or on the surface (the Background role's two plain values), so a colour drawn
+ *  straight on a section must read on both. */
+const onGrounds = (colour: string, m: PackMode, target: number) => contrast(colour, m.background) >= target && contrast(colour, m.surface) >= target
 const solid = (m: PackMode): ButtonLook => ({ fill: m.accent, border: TRANSPARENT_BORDER, text: m.onAccent })
 
 export const SCALES = {
@@ -113,8 +116,8 @@ export const SCALES = {
     },
     outline: (m: PackMode): ButtonLook => ({
       fill: 'transparent',
-      border: `1px solid ${contrast(m.accent, m.background) >= 3 ? m.accent : m.text}`,
-      text: contrast(m.accent, m.background) >= 4.5 ? m.accent : m.text,
+      border: `1px solid ${onGrounds(m.accent, m, 3) ? m.accent : m.text}`,
+      text: onGrounds(m.accent, m, 4.5) ? m.accent : m.text,
     }),
     // Solid, with `--button-radius` the pill radius (packTokens)
     pill: solid,
@@ -122,8 +125,9 @@ export const SCALES = {
   // geometry and the text colour's alpha; dark draws no shadow at any step, as Paper's dark drawing does
   shadow: { none: null, subtle: ['0 4px 16px', 0.08], lifted: ['0 12px 32px', 0.14] },
   links: {
-    // R-112: the accent's words where they read on the page ground, else the text's words with an accent underline
-    accent: (m: PackMode) => (contrast(m.accent, m.background) >= 4.5 ? [m.accent, 'underline'] : [m.text, `underline ${m.accent}`]),
+    // R-112: the accent's words where they read on the page ground and the surface, else the text's words with an
+    // accent underline
+    accent: (m: PackMode) => (onGrounds(m.accent, m, 4.5) ? [m.accent, 'underline'] : [m.text, `underline ${m.accent}`]),
     underline: (m: PackMode) => [m.text, 'underline'],
   },
 } as const
@@ -185,12 +189,22 @@ const BANDS = [
 const DROP_CAP_LINES = 3
 const BODY_LINE = 1.7
 
+// one family: a quoted name (its quotes balanced — an open one would swallow the next declaration) or bare words
+const FAMILY = String.raw`(?:"[\p{L}\p{N}_ .-]+"|'[\p{L}\p{N}_ .-]+'|[\p{L}\p{N}_-]+(?: [\p{L}\p{N}_-]+)*)`
+const FAMILY_LIST_RE = new RegExp(`^${FAMILY}(?:, ?${FAMILY})*$`, 'u')
+
 const ROLES = ['background', 'surface', 'text', 'muted', 'border', 'accent', 'onAccent'] as const
 
 /** Every authored input, refused by name before a value reaches the block. The two free strings are held to what a
  *  declaration can carry, because the block is written into a `<style>`: a family or a radius that could close the
  *  declaration, the rule or the element is refused (Story 6.4 makes packs editable per project). */
 function check(pack: Pack): void {
+  const isObject = (v: unknown) => typeof v === 'object' && v !== null
+  // a stored pack is JSON (Story 6.4): a missing part is refused by name, never by a TypeError
+  if (!isObject(pack)) throw new Error('the pack is not an object')
+  for (const part of ['light', 'dark', 'fonts'] as const) if (!isObject(pack[part])) throw new Error(`${part}: missing`)
+  for (const role of ['heading', 'body'] as const) if (!isObject(pack.fonts[role])) throw new Error(`${role} font: missing`)
+  if (typeof pack.fonts.body.tabular !== 'boolean') throw new Error(`body font: tabular ${JSON.stringify(pack.fonts.body.tabular)} is not true or false`)
   for (const mode of ['light', 'dark'] as const) {
     for (const role of ROLES) {
       const v = pack[mode][role]
@@ -203,12 +217,22 @@ function check(pack: Pack): void {
     const steps = Object.keys(SCALES[row])
     if (!steps.includes(pack[row])) throw new Error(`${row}: ${JSON.stringify(pack[row])} is not a step — ${steps.join(' · ')}`)
   }
-  if (!/^\d+(\.\d+)?(px|rem|em|%)$/.test(pack.pillRadius)) throw new Error(`pillRadius: ${JSON.stringify(pack.pillRadius)} is not a length`)
+  if (typeof pack.pillRadius !== 'string' || !/^(0|\d+(\.\d+)?(px|rem|em|%))$/.test(pack.pillRadius)) throw new Error(`pillRadius: ${JSON.stringify(pack.pillRadius)} is not a length`)
   for (const role of ['heading', 'body'] as const) {
     const { family, capHeight } = pack.fonts[role]
-    if (typeof family !== 'string' || !/^[\w\s'",-]+$/.test(family)) throw new Error(`${role} font: ${JSON.stringify(family)} is not a font-family list`)
+    if (typeof family !== 'string' || !FAMILY_LIST_RE.test(family)) throw new Error(`${role} font: ${JSON.stringify(family)} is not a font-family list`)
     if (typeof capHeight !== 'number' || !(capHeight > 0 && capHeight < 1)) throw new Error(`${role} font: cap height ${JSON.stringify(capHeight)} is not a fraction of the em`)
   }
+}
+
+/** The error red, stepped to 4.5:1 on the background and then on the surface. Two grounds that straddle mid-grey step in
+ *  opposite directions, and the second step can undo the first; there no colour reads on both, so the red gives way to
+ *  whichever of black and white reads better on its worse ground. */
+function negative(m: PackMode): string {
+  const worst = (c: string) => Math.min(contrast(c, m.background), contrast(c, m.surface))
+  const red = stepToContrast(stepToContrast(ERROR_RED, m.background, 4.5), m.surface, 4.5)
+  if (worst(red) >= 4.5) return red
+  return worst('#000000') >= worst('#FFFFFF') ? '#000000' : '#FFFFFF'
 }
 
 /** The properties a MODE decides — every colour and everything drawn in one: the palette, the contrast ground and its
@@ -234,12 +258,13 @@ function modeTokens(pack: Pack, mode: 'light' | 'dark'): Record<string, string> 
     '--text-on-accent': m.onAccent,
     '--border-fade': rgba(m.text, mode === 'light' ? 0.08 : 0.1),
     '--bg-contrast': ground,
-    '--text-on-contrast': contrast(m.background, ground) >= contrast(m.text, ground) ? m.background : m.text,
+    // a weak authored text/background pair must not make the band's words unreadable: the better of the two, stepped
+    '--text-on-contrast': stepToContrast(contrast(m.background, ground) >= contrast(m.text, ground) ? m.background : m.text, ground, 4.5),
     '--accent-on-contrast': stepToContrast(m.accent, ground, 4.5),
     // light lifts with its shadow; dark lifts by a step toward the border
     '--bg-elevated': mode === 'light' ? m.surface : mix(m.surface, m.border, 0.5),
     '--bg-hover': hover,
-    '--negative': stepToContrast(stepToContrast(ERROR_RED, m.background, 4.5), m.surface, 4.5),
+    '--negative': negative(m),
     '--plate': hover,
     '--scrim': rgba(darker(m.text, m.background), m.scrim),
     '--button-fill': button.fill,

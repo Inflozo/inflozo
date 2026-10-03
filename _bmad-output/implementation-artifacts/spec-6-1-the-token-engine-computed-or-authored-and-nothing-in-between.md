@@ -2,9 +2,9 @@
 title: 'Story 6.1 — The token engine: computed or authored, and nothing in between'
 type: 'feature'
 created: '2026-10-03'
-status: 'in-progress'
+status: 'in-review'
 owner_test: none
-review_loop_iteration: 0
+review_loop_iteration: 1
 baseline_commit: '834a4159f133aa410cbcd5ed7b453818e9dd3614'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
@@ -295,6 +295,49 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
   manifest alone (the hook adds the generated boards) naming this story as the cause -- DW-155's "pilots re-baselined",
   NFR-6(a)'s mass rebaseline, the project's first
 
+### Review Findings
+
+*Code review, 2026-10-03 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier on T1, T3, GitHub Actions, Vercel and `app.inflozo.com`), then the deployed walks. Every patch is applied in the
+Review commit, each new test seen red against the pre-review code. No question is the owner's. The deferred findings are
+in the ledger with named owners (DW-317 to DW-321). The rest were dismissed as noise or as calls the spec already made.*
+
+- [x] [Review][Patch] A stylesheet with a colour literal or a mode passed when the design left `tokens` out of
+  `darkCapabilities` — the AC "a design stylesheet that names a mode or writes a colour literal is refused" was false
+  (executed by three layers). The stray is now named whether or not the word is declared
+  [`packages/library/src/validate.ts` `darkCapabilityFailures`]
+- [x] [Review][Patch] The `tokens` reader refused `url(#fade)` as a colour literal, matched `data-mode-switch` as the
+  mode, and missed `light-dark()` and `color-scheme` [`validate.ts` `untokened`; `docs/section-authoring.md`, which now
+  also says a named colour is not caught]
+- [x] [Review][Patch] The Accent link and the Outline label and border were checked on the page ground alone, though
+  every pilot offers the surface ground — "≥ 4.5:1 on the ground it is drawn on" (Always). They take the accent only
+  where it holds on both; Paper's values are unchanged [`packages/section-runtime/src/tokens.ts` `SCALES`; §D.0]
+- [x] [Review][Patch] On-contrast text was never stepped, so a weak authored text gave unreadable band words (2.71:1
+  executed); it is stepped to 4.5:1 [`tokens.ts` `modeTokens`; §D.0]
+- [x] [Review][Patch] The negative's second step could undo its first on grounds that straddle mid-grey (2.48:1
+  executed); it gives way to the better of black and white there [`tokens.ts` `negative`]
+- [x] [Review][Patch] `packTokens` accepted an unbalanced quote in a font family (which swallows the next declaration),
+  a non-boolean `tabular`, and threw a bare TypeError on a missing part; it refused `pillRadius: '0'` and a non-ASCII
+  family name [`tokens.ts` `check`]
+- [x] [Review][Patch] A misspelt token in a pilot, a fixture or `THEME_CSS` was caught by nothing; the declared-read
+  sweep now covers every design, every fixture and the stand-in, behind a control. The §D.0 control gains a renamed
+  property and a duplicated row; the `--site-width` sweep gains its control [`tools/stress/test-vocabulary.mjs`]
+- [x] [Review][Patch] The recorder set `published` only after the publish answered, so a lost answer left the article
+  public; and a re-run moved §68 past any later section [`tools/probe/record-token-links.py` — not re-run: it writes to
+  T1 and T3; the section write is tested on copies]
+- [x] [Review][Patch] `THEME_CSS`'s comment claimed its `a{}` rule is what a live site gets; it is broader, and R-229 is
+  judged on T1/T3 [`apps/web/lib/style-guide.ts`]
+- [x] [Review][Defer] A Soft or Outline button is drawn by no check, and an Outline label on a contrast ground is the
+  ground's own colour in A4 #13 and A1 #1 [`tokens.ts` `SCALES.buttons`] — deferred to Story 6.2, DW-317
+- [x] [Review][Defer] §68's dark rows set the system preference and `data-mode` together [`record-token-links.py`] —
+  deferred to Story 6.5, DW-318
+- [x] [Review][Defer] A signed-out `/pilots` answers 307 with the page's sample content in the body
+  [`(authed)/layout.tsx`] — deferred, pre-existing, DW-319
+- [x] [Review][Defer] A4 #13 (1024–1080) and A24 #1 (835–1023) change layout at one width and padding at another
+  [`a4/13/style.css`, `a24/1/style.css`] — deferred to the category stories, DW-320
+- [x] [Review][Defer] The negative is not held on the elevated ground, and the stand-in's caption inset is the page
+  margin [`tokens.ts`, `style-guide.ts`] — deferred to their first readers, DW-321
+
 **Acceptance Criteria:**
 - Given the token contract and Appendix D §D.0, when `pnpm test` runs, then every row of `TOKEN_ROWS` appears in §D.0
   marked exactly as the code marks it and no §D.0 row is missing from the code — and adding a row to either alone
@@ -349,7 +392,7 @@ moves):
 | Row → property | Rule | Paper light | Paper dark |
 |---|---|---|---|
 | contrast ground `--bg-contrast` | = text | `#232019` | `#F2EDE4` (was `#EDE7DA`) |
-| on-contrast text `--text-on-contrast` | whichever of background and text has more contrast on the ground | `#FBF9F5` | `#171511` |
+| on-contrast text `--text-on-contrast` | whichever of background and text has more contrast on the ground, stepped to 4.5:1 where even that falls short (Review) | `#FBF9F5` | `#171511` |
 | accent-on-contrast `--accent-on-contrast` | the accent if ≥ 4.5:1 on the ground, else `stepToContrast(accent, ground, 4.5)` | `#D96C3F` (was `#e8a87c`) | `#AC512B` (was `#8a3b12`) |
 | hover surface `--bg-hover`; plate `--plate` (the same rule — the specs make the plate the hover fill, `A18 Post Lists - Spec.md:266`) | halfway (sRGB) from whichever of background and surface is nearer the border, toward the border | `#F3EFE8` | `#2A261F` |
 | elevation `--bg-elevated` | light: surface (its shadow lifts it); dark: halfway from surface toward border | `#FFFFFF` | `#2A261F` (was `#252220`) |
@@ -375,9 +418,9 @@ only the fixtures and `THEME_CSS`.
 | density → `--space-section`, `-compact`, `-spacious`, `--space-gap` | **comfortable**: `6rem 5rem 4rem` · `4rem 3.5rem 3rem` · `8.25rem 6.75rem 5.25rem` · `1.5rem` (A4-0's ladder) |
 | site width → `--site-width` | narrow `72rem` · **normal `81rem`** · wide `90rem` |
 | gutters → `--space-gutter` (between columns) | tight `1rem` · **normal `1.5rem`** · loose `2rem` |
-| buttons → `--button-fill`, `--button-border`, `--button-text`, `--button-radius` | **solid**: accent · `1px solid transparent` · on-accent · the radius step; soft: 16 % accent over background · `1px solid transparent` · the accent stepped to 4.5:1 on that fill; outline: `transparent` · `1px solid` the accent where it holds 3:1 on background, else text · the accent where it holds 4.5:1, else text; pill: solid with `--button-radius` = the pill radius |
+| buttons → `--button-fill`, `--button-border`, `--button-text`, `--button-radius` | **solid**: accent · `1px solid transparent` · on-accent · the radius step; soft: 16 % accent over background · `1px solid transparent` · the accent stepped to 4.5:1 on that fill; outline: `transparent` · `1px solid` the accent where it holds 3:1 on background and surface, else text · the accent where it holds 4.5:1 on both, else text (Review: a section sits on either); pill: solid with `--button-radius` = the pill radius |
 | shadow → `--shadow-card` | none: `none`; **subtle**: light `0 4px 16px rgba(text, 0.08)`, dark `none`; lifted: light `0 12px 32px rgba(text, 0.14)`, dark `none` |
-| links → `--link-color`, `--link-decoration` | **accent** (R-112): the accent and `underline` where it holds 4.5:1 on background, else text and `underline <accent>`; underline: text and `underline` |
+| links → `--link-color`, `--link-decoration` | **accent** (R-112): the accent and `underline` where it holds 4.5:1 on background and surface (Review), else text and `underline <accent>`; underline: text and `underline` |
 
 **The block's shape.** `:root` declares every property (desktop values; light colours). The per-mode properties — the
 palette, contrast ground, on-contrast, accent-on-contrast, hover, plate, elevation, negative, border fade, scrim,
@@ -587,3 +630,33 @@ side margin, the width of the element held to `--site-width`, and the section pa
   PostgreSQL 17 container), no email and no billing. Vercel publishes the Dev push through CI's `deploy` job.
   `/pilots` on app.inflozo.com and the walks (`run-verify-editor.cjs`, `-lock`, `-controls`) are Review's, on that
   deployment.
+
+### Results — Review (2026-10-03)
+
+Keys are named by their variable in `tools/probe/.env`, never by value. Node 24.18.1 throughout.
+
+**The patched tree.**
+- `pnpm check`: exit 0. `node tools/stress/test-vocabulary.mjs`: pass, the widened read sweep and its control included.
+- `reference-tokens.css` still equals `referenceTokensCss()` byte for byte — no patch moved a Paper value, so no
+  photograph moves and the matrix is not re-baselined.
+- Control: the new `validate.test.ts` and `tokens.test.ts` cases FAIL with HEAD's `validate.ts` and `tokens.ts` swapped
+  in (one and two tests red), and pass with the patches restored.
+
+**Real services (R-82), on the Dev build `662689ee`.**
+- **GitHub Actions** (`GITHUB_TOKEN`): CI's `check`, `rls` and `deploy` green; the Render matrix workflow green.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`): production READY, built from `662689ee`.
+- **T3 `ghost5.inflozo.com` (5.130.6) and T1 `ghost6.inflozo.com` (6.58.0)**, read-only (`GHOST5_STAFF_ACCESS_TOKEN`,
+  `GHOST6_STAFF_ACCESS_TOKEN`): both active on `casper`, no `inflozo-probe-*` theme, the article `draft` with its
+  `updated_at` two days before the run — it was never published. Control: a zeroed secret answers 401 on both.
+  MEASUREMENTS §68's rows equal the engine's values in rgb form, and each of its controls can fail.
+- **`app.inflozo.com`, signed in** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`; throwaway accounts, deleted, user count
+  unchanged):
+  - `run-verify-pilots.cjs`: 0 FAIL, 152 PASS — every pilot, light and dark, desktop, tablet and phone, axe clean.
+  - `run-verify-controls.cjs`: 0 FAIL, 115 PASS.
+  - `run-verify-lock.cjs`: 0 FAIL, 86 PASS.
+  - `run-verify-editor.cjs`: 0 FAIL, 960 PASS, then a HARNESS ERROR — a 30 s Playwright timeout in step 90, waiting
+    for the canvas to paint after a switch to the Post canvas (`painted('post')`, :4960), after one `stall` note on
+    `GET /projects/…/post` earlier in the run. Both accounts were deleted and the user count is unchanged. Not a
+    result for the steps after it: the walk is re-run on the Review build and both runs are recorded below.
+- **Supabase schema:** no migration in this story (`git diff --stat 834a4159 HEAD -- supabase/` is empty), so there is
+  nothing for production to be behind on (R-99).

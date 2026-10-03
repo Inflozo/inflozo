@@ -149,11 +149,35 @@ test('every colour the engine computes for text holds 4.5:1 on its ground — Pa
         on(v['--accent-on-contrast'], v['--bg-contrast'], 'accent-on-contrast')
         on(v['--negative'], v['--bg-page'], 'negative on the page')
         on(v['--negative'], v['--bg-surface'], 'negative on the surface')
+        // a section sits on the page ground or the surface, so a plain link and an Outline label read on both
         on(v['--link-color'], v['--bg-page'], 'the Accent link')
-        // a Soft label sits on its own fill; an Outline label on the page
+        on(v['--link-color'], v['--bg-surface'], 'the Accent link on the surface')
+        // a Soft label sits on its own fill
         on(v['--button-text'], buttons === 'soft' ? v['--button-fill'] : v['--bg-page'], `the ${buttons} button's label`)
+        if (buttons === 'outline') on(v['--button-text'], v['--bg-surface'], 'the outline button\'s label on the surface')
       }
     }
+  }
+})
+
+test('review: the rules hold on packs Paper never exercises — a weak accent on the surface, weak text, grounds that straddle grey', () => {
+  const dark = (over: Partial<PackMode>, rest: Partial<Pack> = {}) => packTokens({ ...REFERENCE_PACK, ...rest, dark: { ...REFERENCE_PACK.dark, ...over } }).dark
+  // an accent that reads on the page (4.5:1 or more) and not on the lighter surface is not the link's or the label's words
+  const weak = { background: '#121212', surface: '#3A3A3A', accent: '#8C8C8C' }
+  assert.ok(contrast(weak.accent, weak.background) >= 4.5 && contrast(weak.accent, weak.surface) < 4.5, 'the control: the accent splits the two grounds')
+  assert.equal(dark(weak)['--link-color'], REFERENCE_PACK.dark.text)
+  assert.equal(dark(weak, { buttons: 'outline' })['--button-text'], REFERENCE_PACK.dark.text)
+  // the band's words are stepped where even the better of background and text falls short on it
+  const band = packTokens({ ...REFERENCE_PACK, light: { ...REFERENCE_PACK.light, text: '#999999' } }).light
+  assert.ok(contrast(REFERENCE_PACK.light.background, '#999999') < 4.5, 'the control: the authored pair is weak')
+  assert.ok(contrast(band['--text-on-contrast'] as string, band['--bg-contrast'] as string) >= 4.5)
+  // grounds on either side of mid-grey: stepping for one undoes the other, so the red gives way to the better of black and white
+  const grey = dark({ background: '#8A8A8A', surface: '#606060' })['--negative'] as string
+  assert.ok(Math.min(contrast(grey, '#8A8A8A'), contrast(grey, '#606060')) >= 3.4, `${grey} is the best there is on both`)
+  // the width bands carry a real value at every density step
+  for (const density of Object.keys(SCALES.density) as Pack['density'][]) {
+    const t = packTokens({ ...REFERENCE_PACK, density })
+    for (const b of [t.tablet, t.mobile]) for (const [k, v] of Object.entries(b)) assert.match(String(v), /^\d+(\.\d+)?rem$/, `${density} ${k}`)
   }
 })
 
@@ -188,6 +212,16 @@ test('a step that does not exist, or a colour that is not #rrggbb, is refused by
   assert.throws(() => packTokens(family('Georgia</style><script>x()</script>')), /heading font/)
   assert.throws(() => packTokens(family('Georgia; } :root { --bg-page: red')), /heading font/)
   assert.doesNotThrow(() => packTokens(family('"Libre Caslon Text", Georgia, serif')))
+  assert.doesNotThrow(() => packTokens(family("'Señor Sans v2.0', serif")))
+  // an open quote would swallow the declaration after it; a newline has no place in one
+  for (const f of ['"Georgia', "Georgia', serif", 'Georgia,\nserif', ' ', ',']) assert.throws(() => packTokens(family(f)), /heading font/, JSON.stringify(f))
+  assert.doesNotThrow(() => packTokens({ ...REFERENCE_PACK, pillRadius: '0' }))
+  // a stored pack is JSON (Story 6.4): a missing part or a wrong type is refused by name, never by a TypeError
+  const broken = (over: object) => () => packTokens({ ...REFERENCE_PACK, ...over } as unknown as Pack)
+  assert.throws(broken({ fonts: undefined }), /^Error: fonts: missing/)
+  assert.throws(broken({ dark: null }), /^Error: dark: missing/)
+  assert.throws(broken({ fonts: { heading: REFERENCE_PACK.fonts.heading } }), /^Error: body font: missing/)
+  assert.throws(broken({ fonts: { ...REFERENCE_PACK.fonts, body: { ...REFERENCE_PACK.fonts.body, tabular: 'false' } } }), /body font: tabular "false"/)
 })
 
 test('the block: :root declares every property, the dark blocks exactly the per-mode set, each width band exactly the responsive set', () => {

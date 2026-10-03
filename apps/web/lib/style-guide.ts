@@ -101,7 +101,8 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * (A25 Spec :105 — C4's 880 is the canvas's number, not the theme's), the wide and full breakouts every
  * theme owns regardless of `card_assets`, and prose type. It consumes the reference tokens and nothing
  * else, as a design's CSS must. Its side margin is the page's (`--site-margin`, Story 6.1), and its `a{}` rule is
- * R-229's: a plain link in a post's body takes the pack's link look, as the token block gives it on a live site.
+ * R-229's look for a post's links. It is BROADER than the token block's rule on a live site — it reaches a classed link
+ * too, unless the card's own CSS answers — so R-229 is judged on T1/T3 (MEASUREMENTS §68), never on this stand-in.
  */
 export const THEME_CSS = `
 *,*::before,*::after{box-sizing:border-box}

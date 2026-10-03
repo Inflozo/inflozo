@@ -1043,7 +1043,7 @@ author is asked for the step — while the colours its step draws are computed f
 | **palette** | **authored** | `--bg-page` `--bg-surface` `--text-body` `--text-muted` `--border-hairline` `--accent` `--text-on-accent` | the pack's identity: background, surface, text, muted text, border, accent and on-accent, each `#rrggbb`, hand-paired per mode (FR-E1). On-accent is the author's, and so is its contrast on the accent (Story 6.4 warns, never blocks) |
 | **border fade** | **computed** | `--border-fade` | the text colour at 8 % in light and 10 % in dark |
 | **contrast ground** | **computed** | `--bg-contrast` | the text colour — a contrast band is the page's own ink |
-| **on-contrast text** | **computed** | `--text-on-contrast` | whichever of background and text has more contrast on the contrast ground |
+| **on-contrast text** | **computed** | `--text-on-contrast` | whichever of background and text has more contrast on the contrast ground, moved as accent-on-contrast is where even that falls short of 4.5:1 |
 | **accent-on-contrast** | **computed** | `--accent-on-contrast` | the accent where it holds 4.5:1 on the contrast ground; else the accent moved away from the ground in OKLCH lightness, hue kept, chroma given up only where sRGB forces it, until it does |
 | **elevation** | **computed** | `--bg-elevated` | light: the surface, which its shadow lifts; dark: halfway (sRGB) from the surface toward the border |
 | **hover surface** | **computed** | `--bg-hover` | halfway (sRGB) from whichever of background and surface sits nearer the border, toward the border |
@@ -1061,7 +1061,7 @@ author is asked for the step — while the colours its step draws are computed f
 | **gutters** | **authored** | `--space-gutter` | the step: Tight · Normal · Loose — the gap between columns, its own scale and never the Vertical spacing labels. The page's side margin is page margin's, not this row's |
 | **button style** | **authored** | `--button-fill` `--button-border` `--button-radius` `--button-text` | the step: Solid · Soft · Outline · Pill. Each step's fill, border and label follow from the palette by its rule; a computed label holds 4.5:1 on what it is drawn on |
 | **shadow level** | **authored** | `--shadow-card` | the step: None · Subtle · Lifted — drawn in the text colour, and in dark at no step |
-| **link style** | **authored** | `--link-color` `--link-decoration` | the step: Accent · Underline. Accent is R-112's: the accent's words where they hold 4.5:1 on the background, else the text's words with an accent underline. The token block applies it to every plain link, a post's body included (R-173, R-229) |
+| **link style** | **authored** | `--link-color` `--link-decoration` | the step: Accent · Underline. Accent is R-112's: the accent's words where they hold 4.5:1 on the background and on the surface (a section may sit on either), else the text's words with an accent underline. The token block applies it to every plain link, a post's body included (R-173, R-229) |
 | **tag accent** | **computed** | `--tag-accent` | the border colour, `var(--border-hairline)` — AD-3: Ghost's own tag colour replaces it per element |
 
 **The steps' values are the engine's `SCALES`**, as the owner ruled them (R-230, 2026-10-03): this appendix names

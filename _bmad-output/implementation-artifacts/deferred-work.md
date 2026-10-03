@@ -8557,3 +8557,79 @@ owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), w
 location: `ARCHITECTURE-SPINE.md` AD-30 (:352, the title; :358, "the token block and the base stylesheet are the only
   files in a generated theme that mention a mode") · `prd.md` FR-E4 (:256-262), FR-D7 (:224, R-34)
 reason: 6.5 writes the one selector list and the precedence, so both edges are its to settle.
+
+### DW-317: a Soft or Outline button has never been drawn, and on a dark band an Outline one would be invisible
+
+plain: Every photograph so far shows Paper's solid orange button. A pack that picks the Outline button would draw its
+  main button as dark words on the dark band in two of the sample sections, and nothing would notice, because no check
+  draws a pack other than Paper yet.
+status: open
+severity: medium
+origin: Story 6.1's Review (2026-10-03), Blind Hunter + Edge Case Hunter + Verification Gap
+owner: Story 6.2 (The twelve presets and the font pool), whose card names this entry.
+location: `packages/section-runtime/src/tokens.ts` `SCALES.buttons` (the Outline and Soft labels are computed for the
+  page ground and the surface) · `packages/library/designs/a4/13/style.css` `.a4-13__action--primary` and
+  `a1/1/style.css` `.a1-1__cta` (no `[data-bg="contrast"]` answer; A22 #1 has one) · `a17/1/style.css` (its gaps read
+  `--space-gutter`) · `tools/matrix/cases.mjs:58` (one pack)
+reason: `--button-text` equals `--text-on-accent` and `--space-gutter` equals `--space-gap` in the only pack the matrix
+  draws, so the pilots' move to them is unobservable; reverting it keeps every gate green. Executed at Review: Paper
+  light with `buttons: 'outline'` gives label `#232019` on the contrast ground `#232019`. 6.2 widens the pack axis
+  (DW-169): one drawn pack must sit off the reference step on `buttons` and `gutters`, and each design that draws a
+  `--button-fill` button on a contrast ground answers it there, as A22 #1 does.
+
+### DW-318: the dark link proof on the two Ghost sites cannot say which of the two dark switches worked
+
+plain: The test on your two Ghost sites turned dark mode on in two ways at once, so it proves dark works but not that
+  each way works alone.
+status: open
+severity: low
+origin: Story 6.1's Review (2026-10-03), Real-infra verifier + Blind Hunter
+owner: Story 6.5 (Mode resolution — three inputs, one precedence, one file), whose card names this entry.
+location: `tools/probe/record-token-links.py` (`colorScheme: mode` and `data-mode` set together) · MEASUREMENTS §68
+reason: either the `prefers-color-scheme` block or `:root[data-mode="dark"]` alone produces §68's dark rows. Separating
+  them is a T1/T3 write (the owner's in-session go), and 6.5 records the third input on the same servers anyway.
+
+### DW-319: a signed-out visit to a signed-in page is redirected, but the page's own content still travels with the redirect
+
+plain: Someone who is not signed in and opens app.inflozo.com/pilots is sent to the sign-in page, as intended — but the
+  reply that sends them there also carries the page's sample content. On that page it is only sample data; nobody has
+  yet checked every signed-in page for the same thing.
+status: open
+severity: low
+origin: Story 6.1's Review (2026-10-03), Real-infra verifier — pre-existing, not this story's change
+owner: Story 15.1 (The E2E suite, including the keyboard-only journey), whose card names this entry.
+location: `apps/web/app/(app)/app/(authed)/layout.tsx` (`redirect('/sign-in')`) · executed: `GET https://app.inflozo.com/pilots`
+  signed out answers 307 with a ~100 kB body (design CSS, sample-publication rows, a `NEXT_REDIRECT` marker)
+reason: Next renders a page beside its layout, so the layout's redirect does not stop the page's own reads. Every
+  customer read goes through the user's RLS session and returns nothing signed out, which is the expected answer — but
+  it is a hypothesis until each `(authed)` page is requested signed out and its body read (standing rule 1).
+
+### DW-320: two sample sections change layout at one width and spacing at another
+
+plain: Between 1,024 and 1,080 px wide the Latest Post hero is already in its tablet layout but still has desktop
+  spacing, and between 835 and 1,023 px the Centred post header has tablet spacing under a desktop-size title. No
+  drawing shows those in-between widths.
+status: open
+severity: low
+origin: Story 6.1's Review (2026-10-03), Blind Hunter + Edge Case Hunter + Verification Gap
+owner: Story 10.1 (A4 — the content model, the stylesheet and designs #1, #3, #4 and #17), whose card names this entry and Story 10.79's half.
+location: `packages/library/designs/a4/13/style.css` (`@media (max-width: 1080px)`) · `a24/1/style.css`
+  (`@media (max-width: 834px)`) · `packages/section-runtime/src/tokens.ts` `BANDS` (1023 · 767)
+reason: Story 6.1 moved section padding and page margin into the token bands (the category frames' ≥ 1024 · 768–1023 ·
+  ≤ 767) and left each design's own layout breakpoints as drawn. The matrix photographs 1440, 834, 720 and 390, so
+  neither window is drawn. A24 #1's Spacious on a phone also moved 88 → 84 px (A4-0's ladder; A24's spec names only
+  Comfortable there).
+
+### DW-321: two computed values have no reader yet, and one stand-in inset is wide
+
+plain: The error red is checked for readability on the page and on cards but not on raised menus, and picture captions
+  in the post preview are now inset by the page margin, which narrows them. Nothing on screen uses the red yet.
+status: open
+severity: low
+origin: Story 6.1's Review (2026-10-03), Acceptance Auditor + Blind Hunter
+owner: Story 10.83 (A25 — the content model, the stylesheet and designs #2, #3, #4 and #5), whose card names this entry.
+location: `packages/section-runtime/src/tokens.ts` `negative()` (Paper dark `#F04737` on `--bg-elevated` `#2A261F` is
+  4.06:1) · `apps/web/lib/style-guide.ts` `THEME_CSS` `figcaption{padding:0 var(--site-margin)}` (72 px a side inside
+  the 720 px measure at desktop; it was 24)
+reason: the spec's I/O matrix fixes the negative rule to background and surface and Paper's dark value to `#F04737`,
+  and its task list moved all three of `THEME_CSS`'s side margins; neither is a defect a reader has met.

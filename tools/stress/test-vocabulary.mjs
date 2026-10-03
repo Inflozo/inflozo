@@ -224,19 +224,27 @@ check('the emitted reference-tokens.css has not drifted from the contract', () =
   }
 })
 
-check("every var(--…) the reference design reads is declared, or carries its own fallback", () => {
-  const css = readFileSync(join(REPO, 'packages/library/fixtures/reference-design/style.css'), 'utf8')
+// Story 6.1's review widened this from the reference design alone to every stylesheet that reads the block: a misspelt
+// `--site-margin` in a pilot, a fixture or the post-body stand-in was caught by nothing.
+check('every var(--…) a design, a fixture or the post-body stand-in reads is declared, or carries its own fallback', () => {
   const declared = new Set(TOKEN_NAMES)
-  const undeclared = []
   // `var(--x)` with no fallback must name a token; `var(--x, <fallback>)` is a design-local property
   // the design sets on the element itself (AD-3's carve-out) and is legitimately unset at the root.
-  for (const m of css.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])/g)) {
-    if (m[2] === ')' && !declared.has(m[1])) undeclared.push(m[1])
+  const undeclaredIn = (css) => [...new Set([...css.matchAll(/var\(\s*(--[a-zA-Z0-9-]+)\s*([,)])/g)].filter((m) => m[2] === ')' && !declared.has(m[1])).map((m) => m[1]))]
+  const sheets = ['designs', 'fixtures'].flatMap((d) => readdirSync(join(REPO, 'packages/library', d), { recursive: true })
+    .filter((f) => String(f).endsWith('style.css')).map((f) => join('packages/library', d, String(f))))
+  sheets.push('apps/web/lib/style-guide.ts') // THEME_CSS, read as bytes: the app is not importable from here
+  const bad = []
+  for (const file of sheets) {
+    const css = readFileSync(join(REPO, file), 'utf8')
+    if (!/var\(/.test(css)) throw new Error(`${file}: the extraction found no var(--…) at all, so it proves nothing`)
+    const undeclared = undeclaredIn(css)
+    if (undeclared.length) bad.push(`${file} reads ${undeclared.join(', ')}`)
   }
-  if (undeclared.length) {
-    throw new Error(`the reference design reads ${[...new Set(undeclared)].join(', ')}, which the token contract does not declare`)
-  }
-  if (!/var\(/.test(css)) throw new Error('the extraction found no var(--…) at all, so it proves nothing')
+  if (bad.length) throw new Error(`${bad.join('; ')} — which the token contract does not declare`)
+  // the control: a misspelt token must be named, and one with a fallback must not
+  if (undeclaredIn('a{padding:var(--site-margn);gap:var(--own, 1px)}').join() !== '--site-margn') throw new Error('the extraction is not a control')
+  console.log(`      swept ${sheets.length} stylesheets`)
 })
 
 check('the token contract is reachable in both modes and declares no empty value', () => {
@@ -282,10 +290,13 @@ check('Appendix D §D.0 and the engine\'s TOKEN_ROWS name the same rows, marked 
   if (rows.length === 0) throw new Error('§D.0 parsed as an empty table, so this check would pass whatever the code said')
   const drift = d0Drift(rows, TOKEN_ROWS)
   if (drift.length) throw new Error(drift.join('\n       '))
-  // the control: one row's mark flipped, one row dropped and one invented must each be named
+  // the control: one row's mark flipped, one row dropped, one invented, one property renamed and one row listed twice
+  // must each be named
   const [first, ...rest] = rows
   const flipped = { ...first, source: first.source === 'computed' ? 'authored' : 'computed' }
-  const caught = [d0Drift([flipped, ...rest], TOKEN_ROWS), d0Drift(rest, TOKEN_ROWS), d0Drift([...rows, { row: 'invented', source: 'computed', properties: [] }], TOKEN_ROWS)]
+  const renamed = { ...first, properties: [...first.properties.slice(0, -1), '--renamed'] }
+  const caught = [d0Drift([flipped, ...rest], TOKEN_ROWS), d0Drift(rest, TOKEN_ROWS), d0Drift([...rows, { row: 'invented', source: 'computed', properties: [] }], TOKEN_ROWS),
+    d0Drift([renamed, ...rest], TOKEN_ROWS), d0Drift([...rows, first], TOKEN_ROWS)]
   if (caught.some((d) => d.length !== 1)) throw new Error(`the comparison is not a control: ${JSON.stringify(caught)}`)
   console.log(`      §D.0 and TOKEN_ROWS agree on ${rows.length} rows`)
 })
@@ -298,7 +309,9 @@ check('every design reads var(--site-width), so a pack\'s site width reaches eve
   const sheets = readdirSync(DESIGNS).filter((c) => isDir(join(DESIGNS, c))).flatMap((c) =>
     readdirSync(join(DESIGNS, c)).filter((n) => /^\d+$/.test(n) && isDir(join(DESIGNS, c, n))).map((n) => ({ id: `${c}/${n}`, css: readFileSync(join(DESIGNS, c, n, 'style.css'), 'utf8') })))
   if (sheets.length === 0) throw new Error('the sweep found no design at all, so it proves nothing')
-  const missing = sheets.filter((s) => !/var\(\s*--site-width\s*\)/.test(s.css.replace(/\/\*[\s\S]*?\*\//g, ''))).map((s) => s.id)
+  const reads = (css) => /var\(\s*--site-width\s*\)/.test(css.replace(/\/\*[\s\S]*?\*\//g, ''))
+  if (reads('/* var(--site-width) */ .x { max-width: 1152px }') || !reads('.x { max-width: var(--site-width) }')) throw new Error('the sweep is not a control')
+  const missing = sheets.filter((s) => !reads(s.css)).map((s) => s.id)
   if (missing.length) throw new Error(`${missing.join(', ')} never read var(--site-width) — a section spans the site width (FR-F2)`)
   console.log(`      swept ${sheets.length} designs, every one reads --site-width`)
 })

@@ -192,10 +192,12 @@ missing, unearned or unknown:
 
 - **`tokens`** — the stylesheet reads the pack's tokens alone: it writes **no colour literal** (a hex, or an `rgb`,
   `hsl`, `hwb`, `lab`, `lch`, `oklab`, `oklch` or `color()` call — anywhere in a value, a `var()` fallback included;
-  `color-mix` over tokens and `transparent`, `currentcolor`, `inherit` are fine) and **names no mode**
-  (`prefers-color-scheme`, `data-mode`, `scheme-light`, `scheme-dark`). The pack's dark palette is then the design's dark
-  look, which is why every design must earn it (FR-G4, AD-30). Handed no stylesheet, the validator asks only that it is
-  declared.
+  `color-mix` over tokens and `transparent`, `currentcolor`, `inherit` are fine, and so is a `url(#fragment)`) and
+  **names no mode** (`prefers-color-scheme`, `data-mode`, `scheme-light`, `scheme-dark`, `light-dark()`,
+  `color-scheme`). The pack's dark palette is then the design's dark look, which is why every design must earn it
+  (FR-G4, AD-30) — a stylesheet that does not is refused whether or not the word is declared. Handed no stylesheet, the
+  validator asks only that it is declared. **A named colour (`white`, `red`) or a system colour (`CanvasText`) is NOT
+  caught** — do not write one; the reader gains the list the day a design does.
 - **`background`** — the design offers two or more Background-role values, so its ground can differ in dark (FR-D7). A
   design narrowed to one value, or locked with none (R-103), does not earn it.
 - **`override`** — one of the design's own controls declares `darkOverride` (FR-F7).

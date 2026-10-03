@@ -281,8 +281,9 @@ def record(g, zipped, nonce, tokens):
         st, html = g.page(path)
         if st != 200 or nonce not in html or 'class="gh-content"' not in html:
             print(f'    the draft preview answered HTTP {st} and is not the probe theme\'s post page — publishing the article for the run')
+            published = True   # BEFORE the PUT: a publish whose answer is lost must still be returned to draft (`to_draft` reads first)
             doc = g.api('PUT', f'{resource}/{post["id"]}/', {resource: [{'status': 'published', 'updated_at': post['updated_at']}]})[resource][0]
-            published, how = True, 'the article published for the reading and returned to draft in the same `finally`'
+            how = 'the article published for the reading and returned to draft in the same `finally`'
             path = urllib.parse.urlparse(doc['url']).path
             for _ in range(10):
                 st, html = g.page(path)
@@ -365,14 +366,13 @@ def section(recs, gates, tokens):
 
 
 def write_section(text):
-    """Replace an earlier §68 written by this command, or append — a re-run re-records rather than leaving two."""
+    """Replace an earlier §68 written by this command IN PLACE, or append — a re-run re-records rather than leaving two,
+    and never moves the section past a later one."""
     body = open(MEASUREMENTS, encoding='utf8').read().rstrip('\n')
     at = body.find(f'\n## {SECTION}. ')
-    if at != -1:
-        end = body.find('\n## ', at + 1)
-        body = (body[:at] + ('' if end == -1 else body[end:])).rstrip('\n')
+    head, tail = (body, '') if at == -1 else (body[:at], body[at + 1:].partition('\n## ')[2])
     with open(MEASUREMENTS, 'w', encoding='utf8') as f:
-        f.write(body + '\n\n' + text.rstrip('\n') + '\n')
+        f.write(head.rstrip('\n') + '\n\n' + text.rstrip('\n') + '\n' + (f'\n## {tail}\n' if tail else ''))
 
 
 if __name__ == '__main__':

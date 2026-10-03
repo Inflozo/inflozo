@@ -1085,18 +1085,19 @@ function validateStylesheet(css: string, controlValues: Readonly<Record<string, 
  *  stylesheet names — null when there is neither. A comment or a string says nothing about either and is dropped first
  *  (a string's quotes stay, so `[data-mode=""]` still names the mode). A literal is a hex, or an `rgb`/`hsl`/`hwb`/`lab`/
  *  `lch`/`oklab`/`oklch`/`color()` call, anywhere in a value, a `var()` fallback included; `color-mix` over tokens and the
- *  keywords `transparent`, `currentcolor` and `inherit` are not literals. Each pattern reads its input once (the hostile
+ *  keywords `transparent`, `currentcolor` and `inherit` are not literals, and neither is a `url(#fragment)`. A mode is
+ *  also named by `light-dark()` and `color-scheme`, the two ways CSS selects on it without a selector. Each pattern reads its input once (the hostile
  *  inputs `tools/check-snapshots.mjs` times). ponytail: a named colour (`white`, `red`…) is not caught; add the list when a
  *  design writes one. */
 function untokened(css: string): string | null {
   const bare = css.replace(/\/\*[\s\S]*?(?:\*\/|$)|"(?:[^"\\\n]|\\[\s\S])*"?|'(?:[^'\\\n]|\\[\s\S])*'?/g, (m) => (m.startsWith('/*') ? ' ' : '""'))
-  const mode = /prefers-color-scheme|\bdata-mode\b|\bscheme-(?:light|dark)\b/i.exec(bare)
+  const mode = /prefers-color-scheme|\bdata-mode(?![\w-])|\bscheme-(?:light|dark)(?![\w-])|\blight-dark(?=\()|(?<![\w-])color-scheme(?![\w-])/i.exec(bare)
   if (mode !== null) return `names the mode \`${mode[0]}\``
   // every declaration: a run the next `;` or `}` ends (one a `{` ends is a selector or an at-rule's prelude), so a rule
   // nested inside another hides nothing in the declarations around it
   for (const [, declaration = '', end] of bare.matchAll(/([^{};]*)([{};]|$)/g)) {
     const at = declaration.indexOf(':')
-    const literal = end === '{' || at === -1 ? null : /#[0-9a-f]{3,8}(?![\w-])|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i.exec(declaration.slice(at + 1))
+    const literal = end === '{' || at === -1 ? null : /#[0-9a-f]{3,8}(?![\w-])|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i.exec(declaration.slice(at + 1).replace(/url\([^)]*\)/gi, 'url()'))
     if (literal !== null) return `writes the colour literal \`${literal[0]}\` (in \`${declaration.trim()}\`)`
   }
   return null
@@ -1124,6 +1125,8 @@ function darkCapabilityFailures(design: DesignJson, controlValues: Readonly<Reco
   if ((Array.isArray(design.controlSchema) ? design.controlSchema : []).some((c) => c.darkOverride === true)) earned.add('override')
   const said: string[] = []
   for (const w of earned) if (!declared.includes(w)) said.push(`missing ${w} — ${why[w]}`)
+  // tokens is REQUIRED, so leaving the word out is no way past the reader: the stray literal or mode is named either way
+  if (stray !== null && !declared.includes('tokens')) said.push(`missing tokens, which this design cannot earn — style.css ${stray}, and a design's colours come from the pack's tokens alone (AD-30)`)
   for (const w of new Set(declared)) {
     if (!words.includes(w)) said.push(`unknown ${JSON.stringify(w)} — the words are ${DARK_CAPABILITIES.join(' · ')}`)
     else if (!earned.has(w as string)) said.push(w === 'tokens' ? `unearned tokens — style.css ${stray}, and a design's colours come from the pack's tokens alone (AD-30)` : `unearned ${String(w)} — the design does not do it: ${why[w as string]}`)
