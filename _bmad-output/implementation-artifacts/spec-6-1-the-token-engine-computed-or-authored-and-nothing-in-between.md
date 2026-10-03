@@ -654,9 +654,15 @@ Keys are named by their variable in `tools/probe/.env`, never by value. Node 24.
   - `run-verify-pilots.cjs`: 0 FAIL, 152 PASS — every pilot, light and dark, desktop, tablet and phone, axe clean.
   - `run-verify-controls.cjs`: 0 FAIL, 115 PASS.
   - `run-verify-lock.cjs`: 0 FAIL, 86 PASS.
-  - `run-verify-editor.cjs`: 0 FAIL, 960 PASS, then a HARNESS ERROR — a 30 s Playwright timeout in step 90, waiting
-    for the canvas to paint after a switch to the Post canvas (`painted('post')`, :4960), after one `stall` note on
-    `GET /projects/…/post` earlier in the run. Both accounts were deleted and the user count is unchanged. Not a
-    result for the steps after it: the walk is re-run on the Review build and both runs are recorded below.
+  - `run-verify-editor.cjs`, three runs, none with a FAIL:
+    - on `662689ee`: 0 FAIL, 480 PASS, then a HARNESS ERROR — a 30 s Playwright timeout in step 90, waiting for the
+      canvas to paint after a switch to the Post canvas (`painted('post')`). Not a result for the steps after it.
+    - on the Review build `8c267e81` (CI `check`, `rls`, `deploy` and the Render matrix green; Vercel READY from it):
+      0 FAIL, 683 PASS — step 90 passed — then a HARNESS ERROR at a different line, a 30 s timeout on step 100's
+      sign-in `goto`.
+    - on `8c267e81` again: **0 FAIL, 690 PASS**, exit 0, with three `stall` notes each retried once.
+    - Two different lines, each passing in another run, and every run's accounts deleted with the user count
+      unchanged (13 → 13): the stalls are the harness's known kind (DW-204, DW-222), not this story's.
+  - The pilots, controls and lock walks ran on `662689ee`; the Review build changes no emitted CSS byte.
 - **Supabase schema:** no migration in this story (`git diff --stat 834a4159 HEAD -- supabase/` is empty), so there is
   nothing for production to be behind on (R-99).
