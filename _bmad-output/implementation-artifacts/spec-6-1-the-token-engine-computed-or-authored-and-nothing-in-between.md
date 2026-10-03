@@ -18,7 +18,7 @@ get them wrong. Nothing new appears on your screens yet (choosing and editing pa
 the five sample sections change to match their drawings: the page is wider (1,296 px of content on a desktop), the
 side margins and the space above and below each section shrink on tablets and phones as drawn, and a few colours on
 dark bands are corrected — you approve those new photographs before they replace the old ones. Your two test Ghost
-sites then prove the link look in a real theme, inside a post too as you rule in Question 1, and every section design's
+sites then prove the link look in a real theme, inside a post too, as you ruled, and every section design's
 note about its dark-mode support is now checked against what the design really does.
 
 <frozen-after-approval reason="human-owned intent — do not modify unless human renegotiates">
@@ -168,7 +168,7 @@ proves the link rule on T1 and T3.
 - `apps/web/lib/style-guide.ts` `THEME_CSS` (:105-130) — the post-body stand-in the style guide and the Paywall canvas
   load (`surfaceCss` :159); the render matrix does not. `--space-gutter` is its side margin three times (:111, :117,
   :119); `a{color:var(--link-color);text-decoration:var(--link-decoration)}` (:110) already gives every post-body link
-  the pack's look on the canvas — which is Question 1's option 1.
+  the pack's look on the canvas — which is what R-229 rules.
 - `apps/web/lib/device.ts:26-30` — the editor previews only 1440, 834 and 390, so a band edge anywhere between them
   draws identically in the editor; real visitors between 768 and 1023 px see the tablet values.
 
@@ -227,14 +227,13 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
 - [ ] `packages/section-runtime/src/tokens.ts` -- the engine: `TOKEN_ROWS` re-keyed to §D.0's row names, each
   `{ source: 'computed' | 'authored', properties }`, with the new rows (page margin `--site-margin`; border fade on its
   own; site width and gutters split; `--button-text` in button style); the `Pack` type (Design Notes § The pack); `SCALES`
-  (Question 2's ruled table); `packTokens(pack)` returning complete `light` / `dark` maps plus `tablet` / `mobile` maps
+  (R-230's table, Design Notes); `packTokens(pack)` returning complete `light` / `dark` maps plus `tablet` / `mobile` maps
   of the responsive properties; `packTokensCss(pack)` emitting the block in Design Notes' shape, `LINK_RULES` last;
   `REFERENCE_PACK` (Paper as drawn) with `REFERENCE_TOKENS` and `referenceTokensCss()` derived from it, never written
   out -- one engine every pack goes through, so no pack can carry a value nobody chose
-- [ ] `packages/section-runtime/src/tokens.ts` `LINK_RULES`, `tokens.test.ts` -- Question 1: option 1 changes
-  nothing here (the rule is document-wide today); option 2 scopes all three rules to links outside a post's body —
-  `:where(a:not([class]), a[class=""]):not(:where(.gh-content a))` and the ground forms — with a test that a link inside
-  `.gh-content` is untouched, plus `THEME_CSS`'s `a{}` removal (the `style-guide.ts` task) -- DW-224 built as ruled
+- [ ] `packages/section-runtime/src/tokens.test.ts` -- R-229 (Question 1): `LINK_RULES` stays document-wide; assert
+  that no `LINK_RULES` selector carries a `:not(…)` or names `.gh-content`, so the rule reaches a post's body -- DW-224
+  built as ruled, and a later scoping cannot land unnoticed
 - [ ] `packages/section-runtime/src/index.ts` -- export `packTokens`, `packTokensCss`, `REFERENCE_PACK`, `SCALES`,
   `TOKEN_ROWS`' types and `colour.ts`'s `contrast` -- the API Stories 6.2–6.4 build on
 - [ ] `packages/section-runtime/reference-tokens.css` -- regenerate with Verification's one-liner -- the canvas, the
@@ -250,7 +249,7 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
   check of the rules
 - [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- Appendix D §D.0: one table row per engine
   row, named as the code names it, marked, with the rule in "How" (Design Notes' wording), the three wrong "How" cells
-  corrected; one sentence that the scale steps' values are the engine's `SCALES` as ruled at Question 2 (its R-number);
+  corrected; one sentence that the scale steps' values are the engine's `SCALES` as ruled in R-230;
   the page-margin row citing the category frames and saying R Responsive System's A.4 numbers are superseded here --
   §D.0 is the normative half the check holds the code to
 - [ ] `tools/stress/test-vocabulary.mjs` -- (a) a check that cuts prd.md between `### D.0` and `### D.a`, parses the
@@ -265,8 +264,7 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
 - [ ] `packages/library/fixtures/{controls/1,controls/2,controls/3,paywall/1,paywall/2}/style.css` -- `padding-inline`
   → `var(--site-margin)` -- one meaning per token everywhere it is read
 - [ ] `apps/web/lib/style-guide.ts` -- `THEME_CSS`'s side margin (:111, :117, :119) → `--site-margin`; its `a{}` rule
-  (:110) stays under Question 1's option 1 and goes under option 2 -- the post-body stand-in follows the page geometry
-  and the ruling
+  (:110) stays (R-229) -- the post-body stand-in follows the page geometry
 - [ ] `packages/library/src/validate.ts`, `registry.ts`, `validate.test.ts`, every `design.json` in `designs/` and
   `fixtures/`, `docs/section-authoring.md` -- `darkCapabilities` gets three words, each derived from the design itself
   (Design Notes § darkCapabilities); `validateDesign` refuses a declaration that differs from the derived set in either
@@ -284,7 +282,7 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
   `reference-tokens.css`, gated at 0 errors on both majors, uploaded to T1 and T3 behind `start_guard`, read in Chromium
   in both modes, restored and deleted in a `finally`, written to MEASUREMENTS §68 behind its controls; docstring on any
   flag; run on the owner's in-session go (Ask First) -- the first theme that ships the token block, proving R-173 and
-  Question 1's ruling on both majors
+  R-229 on both majors
 - [ ] `ARCHITECTURE-SPINE.md` AD-30, `epics.md` UX-DR2, `apps/web/lib/style-pack.ts:6-7`, `apps/web/lib/controls-review.ts`
   (its "dark redeclares the same property set" comment, true of the JS maps and no longer of the CSS),
   `deferred-work.md` (DW-155, DW-196, DW-224 resolved with their proof; DW-66 amended), `epic-6-context.md` (a dated
@@ -312,7 +310,7 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
 - Given the reference block on a probe theme on T1 (6.58.0) and T3 (5.130.6), when a page renders in light and in
   dark, then a plain link in a section reads the pack's link colour and decoration, a plain link on a contrast ground
   keeps the ground's words with an underline, a classed link keeps its own look, and a plain link inside a post's body
-  follows Question 1's ruling — recorded in MEASUREMENTS §68 behind controls that would have failed otherwise.
+  takes the pack's link look too (R-229) — recorded in MEASUREMENTS §68 behind controls that would have failed otherwise.
 - Given any design, when it validates, then its `darkCapabilities` equals the set derived from its stylesheet and
   controls — `tokens`, `background`, `override` — or `dark-capabilities` names the difference; and a design stylesheet
   that names a mode or writes a colour literal is refused.
@@ -368,7 +366,7 @@ strength authored; a shadow's colour is the text colour. The card's "scrim stren
 are authored rows. `--negative` and `--scrim` have no reader in the library yet; `--plate` and dark `--bg-elevated`
 only the fixtures and `THEME_CSS`.
 
-**The scale steps** (Question 2's recommended table; Dev builds the ruled one). Section padding is per band
+**The scale steps** (Question 2's table, ruled option 1 — R-230). Section padding is per band
 (desktop · tablet · mobile); Compact and Airy multiply Comfortable's every value by 0.75 and 1.25, rounded to 0.25rem.
 
 | Row | Step → values |
@@ -406,11 +404,12 @@ in `<article class="gh-content">`. The post is record-cards' own draft article, 
 in the same `finally`). Read in both modes (`data-mode` set on `<html>`): colour, `text-decoration-line` and
 `-color` of each link. Controls, each voiding the run if it fails: the nonce theme is the one served; `--link-color`
 resolves on `:root`; the classed link keeps its own colour; with the token `<style>` disabled the plain link's colour
-changes. Expected: the section links as the I/O matrix says, and the body link per Question 1.
+changes. Expected: the section links as the I/O matrix says, and the body link in the pack's link colour and decoration
+(R-229).
 
 ## Questions for the owner
 
-Both are needed before Dev. The plan above follows each one's recommended option and says what the other changes.
+The owner ruled both on 2026-10-03, option 1 each — R-229 and R-230. No question is open.
 
 ### Question 1 — Should a link inside one of your posts look like a link in a section? (DW-224)
 
@@ -426,7 +425,9 @@ Ghost's orange callout box, which Ghost always draws white.
 2. **Sections only.** That link keeps the browser's blue, purple once visited, until a post-layout design gives post
    links a look of their own.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-03).** *"The same look everywhere"* — recorded as R-229. The token block's link
+rule stays document-wide, so a plain link a post's body prints takes the pack's look; `THEME_CSS` keeps its `a{}`
+rule, and the T1/T3 proof expects the post's link in the pack's link colour and decoration.
 
 ### Question 2 — The drawings show only Paper's setting on each look. May I use these values for the others?
 
@@ -450,15 +451,15 @@ below), so the other steps need values. These are mine, worked out from Paper's 
 2. **Use them with changes** — say which, for example "Round 20 px, Wide 1,400 px".
 3. **Have them drawn first in Claude Design.** I write the prompt; this story waits until the drawing is back.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-03).** *"Use these values"* — recorded as R-230. Design Notes' scale table is the
+ruled one, and the engine's `SCALES` carries exactly those values.
 
 ## Verification
 
 **Commands:**
 - `node -e "import('$PWD/packages/section-runtime/src/tokens.ts').then(m=>process.stdout.write(m.referenceTokensCss()))" > packages/section-runtime/reference-tokens.css`
   -- expected: `git diff` shows the values of Design Notes' table move, `--site-margin` and `--button-text` appear, the
-  dark blocks shrink to the per-mode properties and two width blocks appear; the link rules unchanged (Question 1,
-  option 1).
+  dark blocks shrink to the per-mode properties and two width blocks appear; the link rules unchanged (R-229).
 - `node --test packages/section-runtime/src/tokens.test.ts packages/library/src/validate.test.ts` -- expected: pass;
   the Paper and AA cases red against HEAD's hand-written values, the `dark-capabilities` cases red against HEAD's
   validator.

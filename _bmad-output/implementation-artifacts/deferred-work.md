@@ -6256,6 +6256,9 @@ owner: Story 6.1 (The token engine — computed or authored, and nothing in betw
   reaches a post's body, and proves the answer on T1 and T3"; Story 5.24c's Create, 2026-09-29: was "Story 5.24c …, one of
   the sweep's five stories (R-211)"; Story 5.24a's Dev, 2026-09-28: was "Epic 6 — the story that emits the token block into
   `default.hbs` and the one that builds the packs.")*
+ruling (owner, 2026-10-03, Story 6.1's Create, Question 1, option 1): *"The same look everywhere"* — R-229. The rule stays
+  document-wide, so a plain link in a post's body takes the pack's look; Story 6.1's Dev proves it on T1 and T3 and
+  closes this entry.
 note (Story 5.24c's Create, 2026-09-29): split, not dropped. The underline and `class=""` halves are built by 5.24c,
   with controls. The post-body half is a behaviour decision: R-173 (`reconcile-designs-decisions.md:3678`) covers "a link
   typed into a section's text" and says nothing about `{{content}}`, and the post-body frame (`C Post Body.dc.html`)

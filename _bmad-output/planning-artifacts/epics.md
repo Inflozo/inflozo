@@ -2733,7 +2733,7 @@ radius — two or three real decisions per pack rather than twelve
 on-accent), heading and body font from the curated pool, radius scale (Sharp/Soft/Round), spacing density
 (Compact/Comfortable/Airy — **a pack-level token, distinct from the per-section Vertical spacing scale**), site
 width (Narrow/Normal/Wide) and gutters (**Tight/Normal/Loose — its own scale, deliberately not the Vertical
-spacing labels**), button style, shadow level and link style
+spacing labels**), button style, shadow level and link style — each step's values ruled in R-230 (owner, 2026-10-03)
 **And** **every pack's token block carries R-173's link rule** (Story 5.14): a plain link, an `<a>` with no class,
 reads the pack's `--link-color` and `--link-decoration` at zero specificity, and keeps its ground's words on a
 contrast, accent or image ground. A pack emitted through `referenceTokensCss()` carries it already; one written any
@@ -2741,7 +2741,7 @@ other way must carry it too. **The first theme that ships the token block proves
 **And** before the first theme ships the token block, **the owner rules (R-83) whether R-173's link look also reaches
 the links inside a post's body** — the unscoped `:where(a:not([class]), a[class=""])` restyles every plain link
 `{{content}}` prints, those on a coloured Koenig card included, while R-173 speaks only of a link typed into a section's
-text — and the ruling is built and proved on T1 and T3 with the rest (DW-224)
+text — and the ruling is built and proved on T1 and T3 with the rest (DW-224); **ruled R-229 (owner, 2026-10-03): it does** — one link look on the whole site
 **And** **`darkCapabilities` is given its job here**: every design declares it and nothing reads it, and the owner kept it
 (Story 5.24c's Question 3, 2026-09-29: *"Keep it, and give it a job later"*), so this story decides what it says about
 a design and builds the reader that holds each declaration true — a validated vocabulary, whose words the PRD already
