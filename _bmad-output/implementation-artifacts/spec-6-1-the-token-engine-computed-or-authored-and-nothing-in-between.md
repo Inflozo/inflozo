@@ -2,7 +2,7 @@
 title: 'Story 6.1 — The token engine: computed or authored, and nothing in between'
 type: 'feature'
 created: '2026-10-03'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: none
 review_loop_iteration: 0
 baseline_commit: '834a4159f133aa410cbcd5ed7b453818e9dd3614'
@@ -220,25 +220,25 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] `packages/section-runtime/src/colour.ts` -- new: `#rrggbb` parsing (a throw for anything else), WCAG contrast
+- [x] `packages/section-runtime/src/colour.ts` -- new: `#rrggbb` parsing (a throw for anything else), WCAG contrast
   ratio, sRGB mixing, and `stepToContrast(colour, ground, target)` — OKLCH lightness moved away from the ground in 0.005
   steps, hue kept, chroma scaled down 1 % at a time only where the gamut needs it -- one home for the maths the engine
   needs now and Story 6.4's live contrast check reuses
-- [ ] `packages/section-runtime/src/tokens.ts` -- the engine: `TOKEN_ROWS` re-keyed to §D.0's row names, each
+- [x] `packages/section-runtime/src/tokens.ts` -- the engine: `TOKEN_ROWS` re-keyed to §D.0's row names, each
   `{ source: 'computed' | 'authored', properties }`, with the new rows (page margin `--site-margin`; border fade on its
   own; site width and gutters split; `--button-text` in button style); the `Pack` type (Design Notes § The pack); `SCALES`
   (R-230's table, Design Notes); `packTokens(pack)` returning complete `light` / `dark` maps plus `tablet` / `mobile` maps
   of the responsive properties; `packTokensCss(pack)` emitting the block in Design Notes' shape, `LINK_RULES` last;
   `REFERENCE_PACK` (Paper as drawn) with `REFERENCE_TOKENS` and `referenceTokensCss()` derived from it, never written
   out -- one engine every pack goes through, so no pack can carry a value nobody chose
-- [ ] `packages/section-runtime/src/tokens.test.ts` -- R-229 (Question 1): `LINK_RULES` stays document-wide; assert
+- [x] `packages/section-runtime/src/tokens.test.ts` -- R-229 (Question 1): `LINK_RULES` stays document-wide; assert
   that no `LINK_RULES` selector carries a `:not(…)` or names `.gh-content`, so the rule reaches a post's body -- DW-224
   built as ruled, and a later scoping cannot land unnoticed
-- [ ] `packages/section-runtime/src/index.ts` -- export `packTokens`, `packTokensCss`, `REFERENCE_PACK`, `SCALES`,
+- [x] `packages/section-runtime/src/index.ts` -- export `packTokens`, `packTokensCss`, `REFERENCE_PACK`, `SCALES`,
   `TOKEN_ROWS`' types and `colour.ts`'s `contrast` -- the API Stories 6.2–6.4 build on
-- [ ] `packages/section-runtime/reference-tokens.css` -- regenerate with Verification's one-liner -- the canvas, the
+- [x] `packages/section-runtime/reference-tokens.css` -- regenerate with Verification's one-liner -- the canvas, the
   matrix and the style guide read these bytes
-- [ ] `packages/section-runtime/src/tokens.test.ts` -- rewrite to the new shape and cover the I/O matrix: every engine
+- [x] `packages/section-runtime/src/tokens.test.ts` -- rewrite to the new shape and cover the I/O matrix: every engine
   row marked; the light and dark maps complete and equal in keys; `:root` declares every property, each dark block
   exactly the per-mode set, each width block exactly the responsive set; the Paper values of Design Notes' table; R-110
   and R-112 exact; every computed text colour ≥ 4.5:1 on its ground for Paper and for the kits' Tangerine and Ink
@@ -247,25 +247,25 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
   Story 6.2's to author and 6.4's to warn: the kits' white on Tangerine's light accent is 3.67:1);
   the throws on an unknown step and a non-hex colour; `LINK_RULES` at the end of every pack's block -- the one runnable
   check of the rules
-- [ ] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- Appendix D §D.0: one table row per engine
+- [x] `_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md` -- Appendix D §D.0: one table row per engine
   row, named as the code names it, marked, with the rule in "How" (Design Notes' wording), the three wrong "How" cells
   corrected; one sentence that the scale steps' values are the engine's `SCALES` as ruled in R-230;
   the page-margin row citing the category frames and saying R Responsive System's A.4 numbers are superseded here --
   §D.0 is the normative half the check holds the code to
-- [ ] `tools/stress/test-vocabulary.mjs` -- (a) a check that cuts prd.md between `### D.0` and `### D.a`, parses the
+- [x] `tools/stress/test-vocabulary.mjs` -- (a) a check that cuts prd.md between `### D.0` and `### D.a`, parses the
   table's row names and marks, and compares them with `TOKEN_ROWS` in both directions, failing on zero rows parsed;
   (b) a check that every design under `packages/library/designs/` reads `var(--site-width)`; (c) adjust any existing
   token check the block's new shape breaks -- the AC's "no third state" and "span the site width", enforced in CI
-- [ ] `packages/library/designs/a1/1/style.css`, `a4/13/style.css`, `a17/1/style.css`, `a22/1/style.css`,
+- [x] `packages/library/designs/a1/1/style.css`, `a4/13/style.css`, `a17/1/style.css`, `a22/1/style.css`,
   `a24/1/style.css` -- roots' `padding-inline` → `var(--site-margin)`; A17-1's column gap and pager gap →
   `var(--space-gutter)`; A4-13's and A24-1's literal section padding → the `--space-section`, `-compact`, `-spacious`
   tokens, deleting their per-width padding overrides; button labels → `var(--button-text)` -- the pilots consume the
   geometry and the button row instead of approximating them
-- [ ] `packages/library/fixtures/{controls/1,controls/2,controls/3,paywall/1,paywall/2}/style.css` -- `padding-inline`
+- [x] `packages/library/fixtures/{controls/1,controls/2,controls/3,paywall/1,paywall/2}/style.css` -- `padding-inline`
   → `var(--site-margin)` -- one meaning per token everywhere it is read
-- [ ] `apps/web/lib/style-guide.ts` -- `THEME_CSS`'s side margin (:111, :117, :119) → `--site-margin`; its `a{}` rule
+- [x] `apps/web/lib/style-guide.ts` -- `THEME_CSS`'s side margin (:111, :117, :119) → `--site-margin`; its `a{}` rule
   (:110) stays (R-229) -- the post-body stand-in follows the page geometry
-- [ ] `packages/library/src/validate.ts`, `registry.ts`, `validate.test.ts`, every `design.json` in `designs/` and
+- [x] `packages/library/src/validate.ts`, `registry.ts`, `validate.test.ts`, every `design.json` in `designs/` and
   `fixtures/`, `docs/section-authoring.md` -- `darkCapabilities` gets three words, each derived from the design itself
   (Design Notes § darkCapabilities); `validateDesign` refuses a declaration that differs from the derived set in either
   direction, or carries any other word, with one code, `dark-capabilities`, whose message names the missing, unearned
@@ -273,23 +273,23 @@ DW-66 (:2006-2007, the same misattribution), DW-155, DW-196, DW-224.
   `["tokens", "background"]`, `controls/1` adds `"override"`; tests fire the code each way beside a clean control and
   feed the `said()` lines nothing new; the guide's paragraph and example say what each word means -- DW-196: a field
   nothing could falsify becomes one the build checks
-- [ ] `tools/matrix/matrix.spec.mjs` -- after the height loop, measure `scrollWidth − clientWidth` of the document for
+- [x] `tools/matrix/matrix.spec.mjs` -- after the height loop, measure `scrollWidth − clientWidth` of the document for
   every drawn case and fail the case above zero, behind a positive control (a probe element wider than the viewport
   must be detected, then removed); `docs/render-matrix.md` § What fails (:46) gains the line -- "stays responsive
   within it", checked at every viewport of every design
-- [ ] `tools/probe/record-token-links.py` + `tools/doc-audit.py` catalogue row -- new recorder in
+- [x] `tools/probe/record-token-links.py` + `tools/doc-audit.py` catalogue row -- new recorder in
   `record-page-number.py`'s and `run-verify-core.py`'s shape (Design Notes § The proof): a probe theme carrying
   `reference-tokens.css`, gated at 0 errors on both majors, uploaded to T1 and T3 behind `start_guard`, read in Chromium
   in both modes, restored and deleted in a `finally`, written to MEASUREMENTS §68 behind its controls; docstring on any
   flag; run on the owner's in-session go (Ask First) -- the first theme that ships the token block, proving R-173 and
   R-229 on both majors
-- [ ] `ARCHITECTURE-SPINE.md` AD-30, `epics.md` UX-DR2, `apps/web/lib/style-pack.ts:6-7`, `apps/web/lib/controls-review.ts`
+- [x] `ARCHITECTURE-SPINE.md` AD-30, `epics.md` UX-DR2, `apps/web/lib/style-pack.ts:6-7`, `apps/web/lib/controls-review.ts`
   (its "dark redeclares the same property set" comment, true of the JS maps and no longer of the CSS),
   `deferred-work.md` (DW-155, DW-196, DW-224 resolved with their proof; DW-66 amended), `epic-6-context.md` (a dated
   Dev sub-bullet) -- AD-30's named list becomes "the rows §D.0 marks computed"; UX-DR2 says R's A.4 margin and padding
   numbers are the token block's now; the comments name the right stories; the ledger closes on evidence (standing
   rule 3)
-- [ ] `packages/library/baselines/`, `tools/matrix/manifest.json` -- `bash tools/matrix/run-matrix-gate.sh --update` in
+- [x] `packages/library/baselines/`, `tools/matrix/manifest.json` -- `bash tools/matrix/run-matrix-gate.sh --update` in
   the image; the owner's sampled review (one design per category, light and dark at 1440, before beside after, each
   with its cause in one sentence and its frame); on approval, after the Dev commit, a commit of the baselines and the
   manifest alone (the hook adds the generated boards) naming this story as the cause -- DW-155's "pilots re-baselined",
@@ -409,7 +409,8 @@ changes. Expected: the section links as the I/O matrix says, and the body link i
 
 ## Questions for the owner
 
-The owner ruled both on 2026-10-03, option 1 each — R-229 and R-230. No question is open.
+The owner ruled Questions 1 and 2 at Create (R-229, R-230) and Questions 3 and 4 in the Dev session, all on
+2026-10-03. No question is open.
 
 ### Question 1 — Should a link inside one of your posts look like a link in a section? (DW-224)
 
@@ -454,6 +455,38 @@ below), so the other steps need values. These are mine, worked out from Paper's 
 **Ruled: option 1 (owner, 2026-10-03).** *"Use these values"* — recorded as R-230. Design Notes' scale table is the
 ruled one, and the engine's `SCALES` carries exactly those values.
 
+### Question 3 — May Dev write to your two test Ghost sites? (Ask First, asked in the Dev session)
+
+**In plain English.** To prove the link look in a real Ghost theme, Dev uploads a small test theme to ghost6.inflozo.com
+and ghost5.inflozo.com, switches each site to it for about a minute while a browser reads the links in light and dark,
+then switches back to the theme that was active, deletes the test theme and reads both back. If Ghost's private preview
+of a draft cannot show the test theme, the existing test article is published for that minute and put back to draft.
+
+**An example.** For that minute, a visitor to ghost6.inflozo.com sees a bare test page instead of the usual theme.
+
+1. **Go, as described (RECOMMENDED).**
+2. **Go, but never publish the article** — if the draft preview fails, stop and ask instead.
+3. **Not now** — no writes; the story stops before its Dev commit.
+
+**Ruled: option 1 (owner, 2026-10-03).** Run in the main session the same day. The draft preview showed the test theme on
+both sites, so the article was never published (MEASUREMENTS §68).
+
+### Question 4 — Do the new photographs of the five sample sections look right? (the sampled review)
+
+**In plain English.** The new page geometry moves every photograph of a drawn section in the render matrix, and new
+photographs replace the old ones only on your approval (`docs/render-matrix.md` § The rebaseline rule). Dev showed one
+design per category, light and dark at desktop width, the old photograph beside the new one, each with its cause and
+its frame, on a private review page.
+
+**An example.** In A24 #1 Centred, the picture now runs the full 1,296 px with 72 px margins, as its drawing shows;
+before, it stopped 144 px from each edge.
+
+1. **Approve (RECOMMENDED)** — the new photographs land in their own commit, named after this story.
+2. **Reject** — the cause is treated as a defect and fixed where it lives, and the old photographs stay.
+
+**Ruled: option 1 (owner, 2026-10-03).** The baselines land in their own commit right after the Dev commit; DW-155 is
+closed.
+
 ## Verification
 
 **Commands:**
@@ -479,3 +512,78 @@ ruled one, and the engine's `SCALES` carries exactly those values.
 - After the Dev push deploys: `/pilots` on app.inflozo.com at 1440 and 390 — the content column and margins match the
   five frames; a dark contrast band's link underline is visible. The walks (`run-verify-editor.cjs`, `-lock`,
   `-controls`) are re-run at Review, since the geometry moves where they measure.
+
+### Results — Dev (2026-10-03)
+
+Every key below is named by its variable in `tools/probe/.env`, never by its value. Every `pnpm` command ran under
+Node 24.18.1 (`export PATH=/home/ghost/.nvm/versions/node/v24.18.1/bin:$PATH`; the shell's default is 22).
+
+**The engine and its checks.**
+- `reference-tokens.css` regenerated from `referenceTokensCss()`: Design Notes' values moved as its table says
+  (`--accent-on-contrast` `#D96C3F` / `#AC512B`, dark `--bg-contrast` `#F2EDE4`, `--negative` `#D92D20` / `#F04737`,
+  `--drop-cap-ratio` `3.504`, hover and plate `#F3EFE8` / `#2A261F`, the border fade and scrim from the text);
+  `--site-margin` and `--button-text` appeared; each dark block shrank to the per-mode properties; two width blocks
+  appeared; the link rules are unchanged but for their comment (R-229). `test-vocabulary.mjs` holds file and engine
+  equal.
+- `node --test packages/section-runtime/src/tokens.test.ts packages/library/src/validate.test.ts`: pass. The Paper case
+  asserts values HEAD's hand-written set does not carry (`--accent-on-contrast` `#e8a87c` / `#8a3b12`, `--negative`
+  `#a3231b` / `#e4736a`, the drop cap `3`), and the dark-capabilities case a code HEAD's validator never pushes.
+- `node tools/stress/test-vocabulary.mjs`: pass. §D.0 and `TOKEN_ROWS` agree on rows, marks and properties, and the
+  check's own control (one mark flipped, one row dropped, one invented) names each. With HEAD's prd.md swapped in it
+  FAILS, naming every row HEAD's table lacks; prd.md was restored and compared byte for byte.
+- Two additions in the main session after the implementation, each with its control:
+  - the colour-literal reader now reads every declaration, so a literal beside a nested rule
+    (`.x { color: #fff; & b { … } }`) is refused. The case is in `validate.test.ts`, and it FAILS with the first
+    reader swapped back in (restored and compared afterwards);
+  - the unknown-step case carries `@ts-expect-error`, so the typecheck itself fails the day `huge` becomes a step.
+
+**The gates, on the final tree.**
+- `pnpm check`: exit 0 — lint, typecheck, every package's tests, the vocabulary checks, the self-checks,
+  check-baseline, check-catalog, check-snapshots (its hostile-input timing through the new reader) and `cases.test`.
+- `pnpm keyboard`: every journey and floor stop passed; `next-env.d.ts` unchanged.
+- `pnpm build && node tools/check-traces.mjs`: exit 0, "every route carries its files".
+- `bash supabase/tests/run-rls-gate.sh`: exit 0. There is no migration in this story, so it has no Schema phase.
+- `python3 tools/doc-audit.py --check`, twice: the first run regenerated the stale story board, the second passed.
+
+**The render matrix** (`bash tools/matrix/run-matrix-gate.sh`, inside the pinned image):
+- Before the rebaseline: red, and every failure is a `toHaveScreenshot` mismatch. 0 axe violations. No drawn case
+  scrolls sideways, each measured behind its positive control.
+- `--update`: every drawn case's photograph was retaken. `tools/matrix/manifest.json` is unchanged, so the runner is
+  the same.
+- The owner's sampled review, Question 4: one design per category, light and dark at 1440, before beside after, each
+  with its cause and its frame, on a private review page. **Approved** in the Dev session. The baselines land in their
+  own commit after the Dev commit, naming this story.
+- After: green. No mismatch, 0 violations, nothing sideways.
+
+**The pilots' geometry.** Read through the matrix's own render path (`cases.mjs`, `serve.mjs`) with `getComputedStyle`:
+side margin, the width of the element held to `--site-width`, and the section padding.
+
+| | 1440 | 834 | 390 |
+|---|---|---|---|
+| side margin, every pilot | 72 px | 40 px | 20 px |
+| content column, every pilot | 1,296 px | 754 px | 350 px |
+| section padding: A4 #13, A17 #1, A22 #1 (above and below), A24 #1 (above only, as its frame draws) | 96 px | 80 px | 64 px |
+| A1 #1 Rail | a bar, no section padding (its frame) | | |
+| sideways scroll, every pilot | 0 | 0 | 0 |
+
+**Real services (R-82).**
+- **T3 `ghost5.inflozo.com` (5.130.6) and T1 `ghost6.inflozo.com` (6.58.0).** `python3 tools/probe/record-token-links.py`
+  ran in the main session on the owner's in-session go (Question 3).
+  - Keys: `GHOST5_URL`, `GHOST5_STAFF_ACCESS_TOKEN`, `GHOST6_URL` and `GHOST6_STAFF_ACCESS_TOKEN`. The client also loads
+    `GHOST5_CONTENT_API_KEY` and `GHOST6_CONTENT_API_KEY`, but no Content API call was made.
+  - The probe theme passed gscan 4.49.7 (v5) and gscan 6.4.2 (v6), each with 0 errors and 0 warnings.
+  - On each server:
+    - `casper` was the active theme before the run, and `start_guard` passed.
+    - `POST themes/upload/` returned HTTP 200 with the theme `inflozo-probe-token-links`. It was activated, and `/`
+      served this run's nonce.
+    - Ghost's draft preview `/p/{uuid}/` rendered record-cards' draft article through the probe theme, so the article
+      was never published.
+  - In Chromium, in light and in dark, every link row read as expected and every control held. The rows are in
+    MEASUREMENTS §68.
+  - In the `finally`, `casper` was re-activated and read back on both servers, and the probe theme was deleted. The
+    installed themes afterwards: T3 `casper` and `source`; T1 `casper`, `racer` and `source`.
+  - A separate read afterwards: both servers active on `casper`, no `inflozo-probe-*` theme, and the article `draft`.
+- **Supabase, Vercel, Resend and Dodo were not reached by this phase.** No migration (the RLS gate runs in its own
+  PostgreSQL 17 container), no email and no billing. Vercel publishes the Dev push through CI's `deploy` job.
+  `/pilots` on app.inflozo.com and the walks (`run-verify-editor.cjs`, `-lock`, `-controls`) are Review's, on that
+  deployment.

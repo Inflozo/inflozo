@@ -1,7 +1,7 @@
 /* Story 5.20's first stand-in paywall. `var(--…)` over the reference tokens only, and every control selects on its
    `data-` attribute on the root (AD-3). */
 
-.paywall-1 { display: flex; flex-direction: column; gap: 0.75rem; padding: var(--space-section) var(--space-gutter); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); border-radius: var(--radius-card); }
+.paywall-1 { display: flex; flex-direction: column; gap: 0.75rem; padding: var(--space-section) var(--site-margin); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); border-radius: var(--radius-card); }
 .paywall-1[data-bg="surface"] { background: var(--bg-surface); }
 .paywall-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .paywall-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }

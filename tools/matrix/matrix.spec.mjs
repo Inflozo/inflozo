@@ -153,6 +153,24 @@ for (const viewport of VIEWPORTS) {
         const name = `${c.title} — pack ${c.pack}, mode ${c.mode}, viewport ${viewport.name}${c.row.name ? `, ${c.row.name}` : ''}${missing}`
         await expect.soft(drawn ? page.locator('#canvas') : page, name).toHaveScreenshot(c.snapshot)
 
+        // Story 6.1 (FR-F2, FR-G4): a section spans the site width and stays responsive within it, so nothing scrolls
+        // sideways — measured after the photograph, so the probe never reaches one, behind its positive control: a probe
+        // wider than the viewport must be measured as overflow and removed, or the measure is not a result
+        if (drawn) {
+          const sideways = await page.evaluate(() => {
+            const root = document.documentElement
+            const probe = document.createElement('div')
+            probe.style.cssText = `width: ${root.clientWidth + 64}px; height: 1px`
+            document.body.append(probe)
+            const control = root.scrollWidth - root.clientWidth
+            probe.remove()
+            return { control, overflow: root.scrollWidth - root.clientWidth }
+          })
+          if (sideways.control <= 0) throw new Error(`${name}: the overflow check's positive control — a probe wider than the viewport — was not measured, so this check is not a result (standing rule 2)`)
+          test.info().annotations.push({ type: 'overflow', description: String(sideways.overflow) })
+          expect.soft(sideways.overflow, `${name}: the page scrolls sideways by ${sideways.overflow}px — a section is wider than its viewport`).toBe(0)
+        }
+
         // axe in the same page, behind its positive control: a scan that cannot see an alt-less <img> is not a result
         // ponytail: no design draws {{content}} yet; when one does, the scan must stop at the post body's edge (FR-H3/NFR-5)
         await page.addScriptTag({ path: AXE })

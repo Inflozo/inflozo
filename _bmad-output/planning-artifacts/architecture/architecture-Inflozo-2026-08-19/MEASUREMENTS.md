@@ -4387,3 +4387,47 @@ colour Ghost put on a recorded page, so `tokens.test.ts` admits it.
 **What this does NOT say.** An uploaded icon (any other `portal_button_icon`, drawn as an `<img>` 26 × 26 with an empty
 `alt`) is read in Portal's source only: no image was uploaded to either site. The icons were recorded beside a label
 (`icon-and-text`) at 1440 only; a member's look is still §55's, read in source.
+
+## 68. R-173's link rule in a real theme — the reference token block on a probe theme, both majors, a post's body included (R-229) · 2026-10-03
+
+**Command.** `python3 tools/probe/record-token-links.py` — one theme upload per server and two activations, the previous theme restored and the probe theme deleted in a `finally`, both read back; record-cards.py's own draft article read as each line below says; no other content, no setting and no key written.
+
+**Why.** R-173 (Story 5.14) gives every plain link — an `<a>` with no class — the pack's `--link-color` and `--link-decoration` through the token block at zero specificity, and keeps a coloured ground's own words with a forced underline (Story 5.24c); R-229 (owner, 2026-10-03, Story 6.1's Question 1) ruled that the rule reaches a post's body too. Until now all of it ran on the canvas alone. This is the first theme that ships the token block: `packages/section-runtime/reference-tokens.css`, byte-for-byte what `referenceTokensCss()` emits, inline in `default.hbs`. Gate: Ghost 5.x via gscan 4.49.7 — 0 errors / 0 warnings · Ghost 6.x via gscan 6.4.2 — 0 errors / 0 warnings.
+
+**The controls, each of which voids the run:** the page read was this run's probe theme (its nonce); `--link-color` resolved on `:root` to the reference value in each mode; the classed link kept its own `rgb(10, 11, 12)`; with the token `<style>` disabled the plain link's colour changed, and came back when it was enabled again; the post's body held a plain link outside every card. Every one held.
+
+### (a) T3 `ghost5.inflozo.com` (5.130.6) — the post read through Ghost's draft preview, `/p/{uuid}/`
+
+| Link | Mode | `color` | `text-decoration-line` | `text-decoration-color` | |
+|---|---|---|---|---|---|
+| plain, page ground | light | `rgb(35, 32, 25)` | `underline` | `rgb(217, 108, 63)` | as expected |
+| plain, contrast ground | light | `rgb(251, 249, 245)` | `underline` | `rgb(217, 108, 63)` | as expected |
+| plain, the post's body (R-229) | light | `rgb(35, 32, 25)` | `underline` | `rgb(217, 108, 63)` | as expected |
+| classed, contrast ground (control) | light | `rgb(10, 11, 12)` | `none` | `rgb(10, 11, 12)` | control |
+| *token block disabled* | light | `rgb(0, 0, 238)` | | | the control: the plain link's colour moved |
+| plain, page ground | dark | `rgb(224, 128, 90)` | `underline` | `rgb(224, 128, 90)` | as expected |
+| plain, contrast ground | dark | `rgb(23, 21, 17)` | `underline` | `rgb(172, 81, 43)` | as expected |
+| plain, the post's body (R-229) | dark | `rgb(224, 128, 90)` | `underline` | `rgb(224, 128, 90)` | as expected |
+| classed, contrast ground (control) | dark | `rgb(10, 11, 12)` | `none` | `rgb(10, 11, 12)` | control |
+| *token block disabled* | dark | `rgb(0, 0, 238)` | | | the control: the plain link's colour moved |
+
+### (b) T1 `ghost6.inflozo.com` (6.58.0) — the post read through Ghost's draft preview, `/p/{uuid}/`
+
+| Link | Mode | `color` | `text-decoration-line` | `text-decoration-color` | |
+|---|---|---|---|---|---|
+| plain, page ground | light | `rgb(35, 32, 25)` | `underline` | `rgb(217, 108, 63)` | as expected |
+| plain, contrast ground | light | `rgb(251, 249, 245)` | `underline` | `rgb(217, 108, 63)` | as expected |
+| plain, the post's body (R-229) | light | `rgb(35, 32, 25)` | `underline` | `rgb(217, 108, 63)` | as expected |
+| classed, contrast ground (control) | light | `rgb(10, 11, 12)` | `none` | `rgb(10, 11, 12)` | control |
+| *token block disabled* | light | `rgb(0, 0, 238)` | | | the control: the plain link's colour moved |
+| plain, page ground | dark | `rgb(224, 128, 90)` | `underline` | `rgb(224, 128, 90)` | as expected |
+| plain, contrast ground | dark | `rgb(23, 21, 17)` | `underline` | `rgb(172, 81, 43)` | as expected |
+| plain, the post's body (R-229) | dark | `rgb(224, 128, 90)` | `underline` | `rgb(224, 128, 90)` | as expected |
+| classed, contrast ground (control) | dark | `rgb(10, 11, 12)` | `none` | `rgb(10, 11, 12)` | control |
+| *token block disabled* | dark | `rgb(0, 0, 238)` | | | the control: the plain link's colour moved |
+
+### What it means
+
+- **R-173 holds in a real theme on both majors.** A plain link on the page ground reads the reference set's link colour and decoration in light (R-112: ink words, accent underline) and in dark (the accent's words), and on a contrast ground keeps the ground's words, underlined in `--accent-on-contrast` — the values `tokens.ts` computes, read back from Chromium.
+- **R-229 holds.** The plain link Ghost's own renderer prints in a post's body (`{{content}}`, class-less on both majors) takes the same look, because the rule is document-wide; a classed link keeps its own.
+- **What this does NOT say.** Nothing here was compiled by Inflozo's emitter — the theme is a probe carrying the token block verbatim, as Epic 7 will. The owner pin (`scheme-*`) is Story 6.5's, and its on-Ghost proof is Story 7.35's.

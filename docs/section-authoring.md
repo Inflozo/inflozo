@@ -151,7 +151,7 @@ category's union, the answer is to declare it again there — not to reach for a
     "latest": { "source": "posts", "filter": "featured:true", "limit": 9, "order": "published_at desc" }
   },
   "ghostCompat": { "minVersion": "5.0.0", "helpers": ["foreach", "get", "img_url", "date"] },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background"],
   "previewSeed": "orbit-weekly",
   "provisional": false,
   "descriptor": {
@@ -184,6 +184,24 @@ Two restrictions are enforced at validation, not left to render:
   `author`). Outside them `{{pagination}}` is a **fatal render**, not a warning.
 - a design performing a **`{{#get}}`** excludes `error.hbs` and `private.hbs`. An error page that
   queries the database compounds the outage it is reporting.
+
+**`darkCapabilities` says what the design does in dark, and the build checks every word** *(Story 6.1, DW-196)*.
+Its words are each DERIVED from the design itself — `validateDesign` works the set out and refuses a declaration that
+differs from it in either direction, or carries any other word, with one code, `dark-capabilities`, naming what is
+missing, unearned or unknown:
+
+- **`tokens`** — the stylesheet reads the pack's tokens alone: it writes **no colour literal** (a hex, or an `rgb`,
+  `hsl`, `hwb`, `lab`, `lch`, `oklab`, `oklch` or `color()` call — anywhere in a value, a `var()` fallback included;
+  `color-mix` over tokens and `transparent`, `currentcolor`, `inherit` are fine) and **names no mode**
+  (`prefers-color-scheme`, `data-mode`, `scheme-light`, `scheme-dark`). The pack's dark palette is then the design's dark
+  look, which is why every design must earn it (FR-G4, AD-30). Handed no stylesheet, the validator asks only that it is
+  declared.
+- **`background`** — the design offers two or more Background-role values, so its ground can differ in dark (FR-D7). A
+  design narrowed to one value, or locked with none (R-103), does not earn it.
+- **`override`** — one of the design's own controls declares `darkOverride` (FR-F7).
+
+The example above earns `tokens` and `background`. A per-mode image swap is not a word yet: nothing in the library
+draws one, so nothing could falsify it, and the word arrives with the first design that does.
 
 **A control is one attribute on the section root, and it is closed-valued.** Every control writes
 `data-{name}="{named-value}"` on the root and the design's stylesheet selects on it. No free text,
@@ -1586,6 +1604,7 @@ that still passes — a guard that blocks everything is not a guard (AD-36).
 | a control `type` outside `segmented · stepper · toggle · named-select · swatch-row`, or a control with no `label` or with a `group` outside `settings · content · layout · style` (`arrangement` is told it is `layout` now) | *(Story 4.5; the groups R-113's, Story 4.10)* Appendix C's control vocabulary is closed, and a text, link, picture, icon, date or list is a content prop, not a control. The panel prints a row title in words and puts the row in the accordion its role names. |
 | a segmented control offering fewer than two or more than four values, a value longer than `PILL_CHARS` characters, or a value wider than its pill in the panel (`pill-words`) | *(Story 4.10)* R-114: pills are for short choices. The owner's example, "Spans two columns", is a dropdown; the fit is measured in the pill's own type (`pillWidth`), because a word never wraps — it widens its pill and squeezes the others. |
 | one control name with two types, two value sets or two groups anywhere in the library; a built design's setting that `packages/library/control-groups.json` does not file, files under another group, or files under Data; one title printed twice in one panel, an accordion's title included | *(Story 4.10)* R-113, R-53, R-13: a name is a promise about what a control does, and a title is what the customer reads. `categoryControlUnion` returns the refusal naming both designs; `tools/check-snapshots.mjs` holds every built design to the register and every panel to R-13 on every commit. |
+| a `darkCapabilities` that is not exactly what the design does in dark — a word it earns and leaves out, a word it does not earn, a word outside `tokens · background · override`, or a word twice (`dark-capabilities`) — and so any design whose stylesheet writes a colour literal or names a mode | *(Story 6.1, DW-196)* each word is derived from the design: `tokens` from its stylesheet, `background` from the Background values it offers, `override` from its own controls. A declaration nothing checks is one nothing can falsify; AD-30's "a design stylesheet that names a mode fails the build" is this refusal. |
 | a stylesheet rule selecting on a `data-*` attribute that is no declared control or universal (`stylesheet-control-undeclared`), or on a value the design does not offer for it (`stylesheet-control-value`) | *(Story 4.10's Fix)* AD-3 from the stylesheet's side: renaming a control and missing one rule leaves a setting that does nothing, with every other check green. `validateDesign` reads `style.css` when it is handed one, as `tools/check-snapshots.mjs` does. |
 | values that break their type's grammar — a toggle that is not exactly `on`/`off`, a stepper that is not ascending consecutive integers, a swatch row offering anything but the pack's roles, a named value that is not a kebab word — or a `valueLabels` key that is not a value | *(Story 4.5)* the grammar is what keeps the attribute selector, the panel's drawing and the stored value the same thing. A label for a value nobody can pick is a typo. |
 | `inherit`, `initial`, `unset` or `revert` anywhere in a control or a `universals` narrowing | *(Story 4.5)* FR-F2, R-23 — no `Inherit`, and no other CSS-wide word, at section level. |

@@ -1034,21 +1034,44 @@ A pack declares far fewer values than the library consumes. The gap is closed by
 follows from what the pack already declared, and **asking** only for what is genuine taste. There is no
 third state: a token that is neither is a token twelve packs will each answer differently.
 
-| Token | Source | How |
-|---|---|---|
-| background, surface, text, muted text, border, accent, on-accent (×2 modes) | **authored** | the pack's identity; hand-paired per mode (FR-E1) |
-| **on-contrast text** | **computed** | the readable pair for the contrast ground, from that ground |
-| **accent-on-contrast** | **computed** | the accent re-tuned against the contrast ground to hold AA |
-| **dark elevation** / **dark hover-surface** | **computed** | stepped from the dark surface token |
-| **negative** / **plate** | **computed** | derived from the pack's own surface and border |
-| **tabular figures** | **computed** | a font feature of the declared body family, not a colour choice |
-| **drop-cap ratio** | **computed** | from the body face's cap height and the heading scale |
-| **scrim strength** | **authored** | genuine judgement — how hard imagery is dimmed is the pack's taste |
-| **pill radius** | **authored** | genuine judgement — it reads with the radius scale but is not implied by it |
+Each row below is a row of the token engine (`TOKEN_ROWS` in `packages/section-runtime/src/tokens.ts`, Story 6.1),
+named as the code names it, with the properties a design reads through `var(--…)`. A **step** row is authored — the
+author is asked for the step — while the colours its step draws are computed from the palette by the step's rule.
 
-That is **two authored decisions per pack** beyond the palette, against the twelve the reconciliation
-found ~20 categories asking for. A new token enters this table marked computed or authored **in the
-same commit that introduces it** (AD-30 owns the mechanism).
+| Row | Source | Properties | How |
+|---|---|---|---|
+| **palette** | **authored** | `--bg-page` `--bg-surface` `--text-body` `--text-muted` `--border-hairline` `--accent` `--text-on-accent` | the pack's identity: background, surface, text, muted text, border, accent and on-accent, each `#rrggbb`, hand-paired per mode (FR-E1). On-accent is the author's, and so is its contrast on the accent (Story 6.4 warns, never blocks) |
+| **border fade** | **computed** | `--border-fade` | the text colour at 8 % in light and 10 % in dark |
+| **contrast ground** | **computed** | `--bg-contrast` | the text colour — a contrast band is the page's own ink |
+| **on-contrast text** | **computed** | `--text-on-contrast` | whichever of background and text has more contrast on the contrast ground |
+| **accent-on-contrast** | **computed** | `--accent-on-contrast` | the accent where it holds 4.5:1 on the contrast ground; else the accent moved away from the ground in OKLCH lightness, hue kept, chroma given up only where sRGB forces it, until it does |
+| **elevation** | **computed** | `--bg-elevated` | light: the surface, which its shadow lifts; dark: halfway (sRGB) from the surface toward the border |
+| **hover surface** | **computed** | `--bg-hover` | halfway (sRGB) from whichever of background and surface sits nearer the border, toward the border |
+| **negative** | **computed** | `--negative` | a fixed error red, `#D92D20`, moved in OKLCH lightness as accent-on-contrast is until it holds 4.5:1 on the background, then on the surface — a readable red, not a colour derived from the surface and border |
+| **plate** | **computed** | `--plate` | the hover surface's rule — the specs make the plate the hover fill (`A18 Post Lists - Spec.md:266`) — so in light it comes from the background, not the surface |
+| **tabular figures** | **computed** | `--figures-tabular` | `"tnum" 1` where the declared body face carries tabular figures, else `normal` — a font feature, not a colour choice |
+| **drop-cap ratio** | **computed** | `--drop-cap-ratio` | from the **heading** face's cap height, with the body's: the heading-face initial spans three body lines (`A25 Post Content Layouts - Spec.md:149`) — ((3 − 1) × 1.7 + body cap) ÷ heading cap ÷ 1.7, to three decimals, 1.7 being the body's line height |
+| **scrim strength** | **authored** | `--scrim` | genuine judgement — how hard imagery is dimmed is the pack's taste, per mode. The scrim's colour is computed: the darker of text and background |
+| **pill radius** | **authored** | `--radius-pill` | genuine judgement — it reads with the radius scale but is not implied by it |
+| **fonts** | **authored** | `--font-heading` `--font-body` | the pairing from the pool (D.c), each face with its cap height, and whether the body face carries tabular figures |
+| **radius scale** | **authored** | `--radius-card` `--radius-control` | the step: Sharp · Soft · Round |
+| **spacing density** | **authored** | `--space-section` `--space-section-compact` `--space-section-spacious` `--space-gap` | the step: Compact · Comfortable · Airy — a pack-level token, never the per-section Vertical spacing scale. The three section paddings change with the width band, as page margin does; Comfortable is the category frames' ladder (`A4-0 Category Proof.dc.html`) |
+| **site width** | **authored** | `--site-width` | the step: Narrow · Normal · Wide — the content column on a wide screen |
+| **page margin** | **computed** | `--site-margin` | the same for every pack — the category frames' side margin, 72 · 40 · 20 px at ≥ 1024 · 768–1023 · ≤ 767 px (`A1-1 Rail`, `A4-13 Latest Post`, `A22-1 Inline Row`, `A24-1 Centred`, `A4-0 Category Proof`; the bands `A1 Headers - Spec.md`, `A4 Heroes - Spec.md`). `R Responsive System.dc.html`'s A.4 ladder — a 96/48/20 gutter, a 1,248 measure, 64/96/128 padding — disagrees with every category frame and flags its own numbers as speculative; it is **superseded here** for the page margin and for Comfortable's section padding |
+| **gutters** | **authored** | `--space-gutter` | the step: Tight · Normal · Loose — the gap between columns, its own scale and never the Vertical spacing labels. The page's side margin is page margin's, not this row's |
+| **button style** | **authored** | `--button-fill` `--button-border` `--button-radius` `--button-text` | the step: Solid · Soft · Outline · Pill. Each step's fill, border and label follow from the palette by its rule; a computed label holds 4.5:1 on what it is drawn on |
+| **shadow level** | **authored** | `--shadow-card` | the step: None · Subtle · Lifted — drawn in the text colour, and in dark at no step |
+| **link style** | **authored** | `--link-color` `--link-decoration` | the step: Accent · Underline. Accent is R-112's: the accent's words where they hold 4.5:1 on the background, else the text's words with an accent underline. The token block applies it to every plain link, a post's body included (R-173, R-229) |
+| **tag accent** | **computed** | `--tag-accent` | the border colour, `var(--border-hairline)` — AD-3: Ghost's own tag colour replaces it per element |
+
+**The steps' values are the engine's `SCALES`**, as the owner ruled them (R-230, 2026-10-03): this appendix names
+the steps and never repeats their numbers.
+
+Beyond the palette, the fonts and a step on each scale, the pack's author decides **scrim strength and pill
+radius**, and nothing else — rather than the per-category judgements the reconciliation found asked for. A new token
+enters this table marked computed or authored **in the same commit that introduces it** (AD-30 owns the mechanism),
+and `tools/stress/test-vocabulary.mjs` fails `pnpm test` when this table and `TOKEN_ROWS` disagree: a row in one and
+not the other, a row marked differently, or a row naming other properties.
 
 ### D.a Emission rules (normative — these fix the bundle size, not the table)
 

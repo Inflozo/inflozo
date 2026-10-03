@@ -3,11 +3,11 @@
    margin on the part that follows, so an absent part takes its gap with it. The space above is the section's;
    the 64 below belongs to the post body (C), so the section ends at its picture. */
 
-.a24-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: 96px 0; padding-inline: var(--space-gutter); }
+.a24-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section) 0; padding-inline: var(--site-margin); }
 .a24-1[data-bg="surface"] { background: var(--bg-surface); }
 .a24-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
-.a24-1[data-spacing="compact"] { padding-block-start: 64px; }
-.a24-1[data-spacing="spacious"] { padding-block-start: 132px; }
+.a24-1[data-spacing="compact"] { padding-block-start: var(--space-section-compact); }
+.a24-1[data-spacing="spacious"] { padding-block-start: var(--space-section-spacious); }
 .a24-1[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
 .a24-1[data-divider="fade"] { border-block-start: 1px solid var(--border-fade); }
 
@@ -78,22 +78,16 @@
 .a24-1[data-bg="contrast"] .a24-1__tag:focus-visible, .a24-1[data-bg="contrast"] .a24-1__author:focus-visible { color: var(--text-on-contrast); text-decoration-color: var(--accent-on-contrast); outline-color: var(--accent-on-contrast); }
 .a24-1[data-bg="contrast"] .a24-1__avatar { background: var(--text-on-contrast); color: var(--bg-contrast); }
 
-/* 834: title and standfirst both take the measure, title 42, standfirst 18, padding 80. */
+/* 834: title and standfirst both take the measure, title 42, standfirst 18. */
 @media (max-width: 834px) {
-  .a24-1 { padding-block-start: 80px; }
-  .a24-1[data-spacing="compact"] { padding-block-start: 56px; }
-  .a24-1[data-spacing="spacious"] { padding-block-start: 108px; }
   .a24-1__title { font-size: 42px; max-width: none; }
   .a24-1[data-title-size="small"] .a24-1__title { font-size: 36px; }
   .a24-1[data-title-size="large"] .a24-1__title { font-size: 52px; }
   .a24-1__standfirst { font-size: 18px; max-width: none; }
 }
 
-/* ≤ 767: title 32 (Large 36), standfirst 17, gaps 20/16/20/32, padding 64, and the reading time leaves the meta. */
+/* ≤ 767: title 32 (Large 36), standfirst 17, gaps 20/16/20/32, and the reading time leaves the meta. */
 @media (max-width: 767px) {
-  .a24-1 { padding-block-start: 64px; }
-  .a24-1[data-spacing="compact"] { padding-block-start: 48px; }
-  .a24-1[data-spacing="spacious"] { padding-block-start: 88px; }
   .a24-1__title { margin-block-start: 20px; font-size: 32px; }
   .a24-1[data-title-size="small"] .a24-1__title { font-size: 28px; }
   .a24-1[data-title-size="large"] .a24-1__title { font-size: 36px; }

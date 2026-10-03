@@ -42,7 +42,7 @@ test('the swatches follow the mode, so the panel\'s dots are the colours the can
   assert.equal(referenceSwatches().base, light.base, 'light is the default, so every existing caller is unchanged')
 })
 
-test('the mode is ONE attribute on the canvas root, written by every paint (AD-30, tokens.ts:165-172)', () => {
+test('the mode is ONE attribute on the canvas root, written by every paint (AD-30, tokens.ts\'s packTokensCss)', () => {
   const paint = body(editor, 'const paint = ()')
   assert.match(paint, /documentElement\.setAttribute\('data-mode', now\.mode\)/)
   // …and a repaint in dark draws the DARK render: `renderSection` reads `state.controls`, so the mode's slice has to

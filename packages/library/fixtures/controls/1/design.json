@@ -24,7 +24,7 @@
     "latest": { "source": "posts", "limit": 3, "order": "published_at desc" }
   },
   "ghostCompat": { "minVersion": "5.0.0", "helpers": ["get", "foreach"] },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background", "override"],
   "previewSeed": "orbit-weekly",
   "provisional": true,
   "descriptor": {

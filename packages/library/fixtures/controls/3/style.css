@@ -1,7 +1,7 @@
 /* Story 5.11's ring fixture, design 3. Flat, `var(--…)` over the reference tokens only, every control selecting
    on its `data-` attribute on the section root (AD-3), and its own `cz` prefix. */
 
-.cz { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.cz { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 .cz[data-bg="surface"] { background: var(--bg-surface); }
 .cz[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .cz[data-spacing="compact"] { padding-block: var(--space-section-compact); }

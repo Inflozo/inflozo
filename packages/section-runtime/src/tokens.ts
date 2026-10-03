@@ -1,168 +1,326 @@
-// The reference token set — the full custom-property contract at ONE set of values.
+// The token engine — the full custom-property contract, and the one function every pack goes through to fill it.
 //
-// Why it ships with the runtime and not with Epic 6's packs: a design's CSS consumes pack custom
-// properties EXCLUSIVELY (`var(--…)` only, AD-2), so without a token block nothing resolves and the
-// canvas renders blank — three epics before any pack exists (step-6 stress finding F2). Epic 6
-// replaces these VALUES with the twelve authored packs and **does not change the contract**.
+// Why it ships with the runtime and not with Epic 6's packs: a design's CSS consumes pack custom properties
+// EXCLUSIVELY (`var(--…)` only, AD-2), so without a token block nothing resolves and the canvas renders blank — three
+// epics before any pack existed (step-6 stress finding F2). Story 6.1 made the reference set what every pack is: its
+// AUTHORED inputs run through the engine. The contract kept every property and gained the page margin
+// (`--site-margin`, DW-155) and the button's label (`--button-text`); every value is now the engine's.
+//
+// R-32 (Appendix D §D.0, AD-30): every row is COMPUTED from what the pack declared or AUTHORED by the pack's author, and
+// there is no third state. A pack answers the authored rows — its colours per mode, two fonts, the scrim's strength,
+// the pill radius and one step on each scale — and `packTokens` computes every other value by the rules
+// below, so twelve packs cannot answer the contrast ground, the hover surface or the drop cap twelve ways.
 //
 // The contract is the data below; `reference-tokens.css` is the stylesheet emitted from it, and
-// `tools/stress/test-vocabulary.mjs` reads the bytes of both and fails on any drift — the same split
-// the reference markup already uses (a test in a core package cannot read a file: AD-1 bans
-// `node:fs` there, and the test-file exemption gives back only `node:test` and `node:assert`).
-//
-// Every row below names the FR-E1 or Appendix D.0 line it exists for. D.0 is normative about which
-// are AUTHORED by a pack and which are COMPUTED from what the pack declared; both are properties a
-// design may read, so both are in the contract.
+// `tools/stress/test-vocabulary.mjs` reads the bytes of both — and of §D.0 — and fails on any drift (a test in a core
+// package cannot read a file: AD-1 bans `node:fs` there, and the test-file exemption gives back only `node:test` and
+// `node:assert`).
 
-/** FR-E1's rows, as the property names each resolves to. A pack answers the row; the library reads
- *  the property. Nothing outside this map may appear in a design's `var(--…)` without a fallback. */
-export const TOKEN_ROWS: Readonly<Record<string, readonly string[]>> = {
-  // ── FR-E1: the palette a pack AUTHORS, hand-paired per mode ────────────────
-  'palette · background': ['--bg-page'],
-  'palette · surface': ['--bg-surface'],
-  'palette · text': ['--text-body'],
-  'palette · muted text': ['--text-muted'],
-  'palette · border': ['--border-hairline', '--border-fade'],
-  'palette · accent': ['--accent'],
-  'palette · on-accent': ['--text-on-accent'],
+import { contrast, darker, isHex, mix, rgba, stepToContrast } from './colour.ts'
 
-  // ── Appendix D.0: COMPUTED from what the pack already declared ─────────────
-  'D.0 · contrast ground': ['--bg-contrast'],
-  'D.0 · on-contrast text': ['--text-on-contrast'],
-  'D.0 · accent-on-contrast': ['--accent-on-contrast'],
-  'D.0 · dark elevation': ['--bg-elevated'],
-  'D.0 · dark hover-surface': ['--bg-hover'],
-  'D.0 · negative': ['--negative'],
-  'D.0 · plate': ['--plate'],
-  'D.0 · tabular figures': ['--figures-tabular'],
-  'D.0 · drop-cap ratio': ['--drop-cap-ratio'],
+export type TokenSource = 'computed' | 'authored'
+export type TokenRow = { readonly source: TokenSource; readonly properties: readonly string[] }
 
-  // ── Appendix D.0: AUTHORED, the two genuine judgements per pack ────────────
-  'D.0 · scrim strength': ['--scrim'],
-  'D.0 · pill radius': ['--radius-pill'],
-
-  // ── FR-E1: the rest of the pack's own rows ─────────────────────────────────
-  'FR-E1 · heading font + body font': ['--font-heading', '--font-body'],
-  'FR-E1 · radius scale': ['--radius-card', '--radius-control'],
-  'FR-E1 · spacing density': [
-    '--space-section',
-    '--space-section-compact',
-    '--space-section-spacious',
-    '--space-gap',
-  ],
-  'FR-E1 · site width + gutters': ['--site-width', '--space-gutter'],
-  'FR-E1 · button style': ['--button-fill', '--button-border', '--button-radius'],
-  'FR-E1 · shadow level': ['--shadow-card'],
-  'FR-E1 · link style': ['--link-color', '--link-decoration'],
-
-  // ── AD-3's carve-out: the ONE value a stylesheet cannot know when it is authored. `data-bind-style`
-  //    sets it per element from Ghost; the root default is what an unbound tag reads.
-  'AD-3 · bound tag accent': ['--tag-accent'],
+/** The rows, named as Appendix D §D.0 names them, each marked and each naming the properties it resolves to. A pack
+ *  answers an authored row; the library reads the property. Nothing outside this map may appear in a design's
+ *  `var(--…)` without a fallback, and `test-vocabulary.mjs` holds §D.0 to it in both directions. A step row's colours
+ *  are computed from the palette, but the row is AUTHORED: the author is asked for the step. */
+export const TOKEN_ROWS: Readonly<Record<string, TokenRow>> = {
+  // the palette's roles, per mode, hand-paired (FR-E1)
+  palette: {
+    source: 'authored',
+    properties: ['--bg-page', '--bg-surface', '--text-body', '--text-muted', '--border-hairline', '--accent', '--text-on-accent'],
+  },
+  'border fade': { source: 'computed', properties: ['--border-fade'] },
+  'contrast ground': { source: 'computed', properties: ['--bg-contrast'] },
+  'on-contrast text': { source: 'computed', properties: ['--text-on-contrast'] },
+  'accent-on-contrast': { source: 'computed', properties: ['--accent-on-contrast'] },
+  elevation: { source: 'computed', properties: ['--bg-elevated'] },
+  'hover surface': { source: 'computed', properties: ['--bg-hover'] },
+  negative: { source: 'computed', properties: ['--negative'] },
+  plate: { source: 'computed', properties: ['--plate'] },
+  'tabular figures': { source: 'computed', properties: ['--figures-tabular'] },
+  'drop-cap ratio': { source: 'computed', properties: ['--drop-cap-ratio'] },
+  // the two genuine judgements beyond the palette (R-32) — the scrim's COLOUR is computed, its strength is not
+  'scrim strength': { source: 'authored', properties: ['--scrim'] },
+  'pill radius': { source: 'authored', properties: ['--radius-pill'] },
+  fonts: { source: 'authored', properties: ['--font-heading', '--font-body'] },
+  // the steps (R-230's values, in SCALES)
+  'radius scale': { source: 'authored', properties: ['--radius-card', '--radius-control'] },
+  'spacing density': {
+    source: 'authored',
+    properties: ['--space-section', '--space-section-compact', '--space-section-spacious', '--space-gap'],
+  },
+  'site width': { source: 'authored', properties: ['--site-width'] },
+  // DW-155: the page margin is its own row beside the column gutter — the same for every pack
+  'page margin': { source: 'computed', properties: ['--site-margin'] },
+  gutters: { source: 'authored', properties: ['--space-gutter'] },
+  'button style': { source: 'authored', properties: ['--button-fill', '--button-border', '--button-radius', '--button-text'] },
+  'shadow level': { source: 'authored', properties: ['--shadow-card'] },
+  'link style': { source: 'authored', properties: ['--link-color', '--link-decoration'] },
+  // AD-3's carve-out: the ONE value a stylesheet cannot know when it is authored. `data-bind-style` sets it per element
+  // from Ghost; the root default is what an unbound tag reads.
+  'tag accent': { source: 'computed', properties: ['--tag-accent'] },
 }
 
 /** Every property in the contract, derived from the rows — never a second list (standing rule 4). */
-export const TOKEN_NAMES: readonly string[] = Object.values(TOKEN_ROWS).flat()
+export const TOKEN_NAMES: readonly string[] = Object.values(TOKEN_ROWS).flatMap((r) => r.properties)
 
-/** Story 4.10 — THE VALUES ARE PAPER'S. Every frame, proof and kit in the design export is drawn in the Paper pack, so
- *  every row its token objects name takes their light and dark values — `_build/a22lib.js:4-9` (`L`, `D`; fonts and
- *  radius from `PACKS.paper`) and `a20-kit.js:8-30`: the palette, the contrast ground and its text, the hover
- *  surface, the two fonts, the radius (card, control and the button's), the shadow, and the accent where the button
- *  fill and the link colour carry it. Every row no Paper object names keeps the value Story 4.2 wrote. Only values
- *  changed (R-74); the contract did not, and Epic 6 still authors every pack against it.
- *
- *  Light is the base. Dark redeclares the same property SET — never a subset, or a design reading a
- *  missing one resolves to nothing in exactly one mode, which is the failure this contract exists
- *  to make impossible. `tokens.test.ts` asserts the two sets are equal. */
+/** One mode's authored colours, `#rrggbb`, and the scrim's strength (0–1). */
+export type PackMode = {
+  background: string
+  surface: string
+  text: string
+  muted: string
+  border: string
+  accent: string
+  onAccent: string
+  scrim: number
+}
+/** A face, with its cap height as a fraction of the em (the drop cap is computed from the two). */
+export type Face = { family: string; capHeight: number }
+
+const TRANSPARENT_BORDER = '1px solid transparent'
+type ButtonLook = { fill: string; border: string; text: string }
+
+/** Every step of every scale, and its values — R-230 (owner, 2026-10-03), Story 6.1's Question 2, and nowhere else:
+ *  Appendix D names the steps and points here. Section padding is per width band (desktop · tablet · mobile); Compact
+ *  and Airy multiply Comfortable's every value by 0.75 and 1.25, to the nearest 0.25rem. A button, shadow or link step
+ *  is a rule over the mode's palette. */
+const COMFORTABLE = {
+  section: ['6rem', '5rem', '4rem'],
+  compact: ['4rem', '3.5rem', '3rem'],
+  spacious: ['8.25rem', '6.75rem', '5.25rem'],
+  gap: ['1.5rem'],
+} as const // A4-0 Category Proof's ladder: 96 · 80 · 64, 64 · 56 · 48 and 132 · 108 · 84 px
+type Density = { readonly [K in keyof typeof COMFORTABLE]: readonly string[] }
+const times = (f: number): Density => {
+  const scale = (v: string) => `${String(Math.round((parseFloat(v) * f) / 0.25) * 0.25)}rem`
+  return { section: COMFORTABLE.section.map(scale), compact: COMFORTABLE.compact.map(scale), spacious: COMFORTABLE.spacious.map(scale), gap: COMFORTABLE.gap.map(scale) }
+}
+const solid = (m: PackMode): ButtonLook => ({ fill: m.accent, border: TRANSPARENT_BORDER, text: m.onAccent })
+
+export const SCALES = {
+  radius: { sharp: '2px', soft: '8px', round: '16px' },
+  density: { compact: times(0.75), comfortable: COMFORTABLE as Density, airy: times(1.25) },
+  width: { narrow: '72rem', normal: '81rem', wide: '90rem' },
+  gutters: { tight: '1rem', normal: '1.5rem', loose: '2rem' },
+  buttons: {
+    solid,
+    soft: (m: PackMode): ButtonLook => {
+      const fill = mix(m.background, m.accent, 0.16)
+      return { fill, border: TRANSPARENT_BORDER, text: stepToContrast(m.accent, fill, 4.5) }
+    },
+    outline: (m: PackMode): ButtonLook => ({
+      fill: 'transparent',
+      border: `1px solid ${contrast(m.accent, m.background) >= 3 ? m.accent : m.text}`,
+      text: contrast(m.accent, m.background) >= 4.5 ? m.accent : m.text,
+    }),
+    // Solid, with `--button-radius` the pill radius (packTokens)
+    pill: solid,
+  },
+  // geometry and the text colour's alpha; dark draws no shadow at any step, as Paper's dark drawing does
+  shadow: { none: null, subtle: ['0 4px 16px', 0.08], lifted: ['0 12px 32px', 0.14] },
+  links: {
+    // R-112: the accent's words where they read on the page ground, else the text's words with an accent underline
+    accent: (m: PackMode) => (contrast(m.accent, m.background) >= 4.5 ? [m.accent, 'underline'] : [m.text, `underline ${m.accent}`]),
+    underline: (m: PackMode) => [m.text, 'underline'],
+  },
+} as const
+
+/** A pack: what its author is asked for, and nothing else. */
+export type Pack = {
+  light: PackMode
+  dark: PackMode
+  pillRadius: string
+  fonts: { heading: Face; body: Face & { tabular: boolean } }
+  radius: keyof typeof SCALES.radius
+  density: keyof typeof SCALES.density
+  width: keyof typeof SCALES.width
+  gutters: keyof typeof SCALES.gutters
+  buttons: keyof typeof SCALES.buttons
+  shadow: keyof typeof SCALES.shadow
+  links: keyof typeof SCALES.links
+}
+
+/** Paper, as the export draws it (every frame, proof and kit is drawn in Paper — `_build/a22lib.js`, `a29-kit.js`):
+ *  the palette per mode with R-110's ink on the accent, the scrim strengths, the pill, Georgia over Inter and the
+ *  drawn step on each scale. Georgia's cap height is next@16.3.1's capsize metric; Inter's is 1490/2048 from
+ *  `apps/web/app/fonts/inter-latin.woff2`, whose subset keeps `tnum`. */
+export const REFERENCE_PACK: Pack = {
+  light: {
+    background: '#FBF9F5', surface: '#FFFFFF', text: '#232019', muted: '#6B6459', border: '#EBE5DB', accent: '#D96C3F',
+    // R-110 (owner, 2026-09-15): Paper draws white here, 3.4:1 on #D96C3F (axe, Story 4.10); the ink passes at 4.77:1
+    onAccent: '#232019',
+    scrim: 0.45,
+  },
+  dark: {
+    background: '#171511', surface: '#211D17', text: '#F2EDE4', muted: '#A79E8F', border: '#332E27', accent: '#E0805A',
+    onAccent: '#171511',
+    scrim: 0.6,
+  },
+  pillRadius: '999px',
+  fonts: { heading: { family: 'Georgia, serif', capHeight: 0.6929 }, body: { family: "'Inter', sans-serif", capHeight: 0.7275, tabular: true } },
+  radius: 'soft',
+  density: 'comfortable',
+  width: 'normal',
+  gutters: 'normal',
+  buttons: 'solid',
+  shadow: 'subtle',
+  links: 'accent',
+}
+
+/** The red every pack's negative starts from, the page margin every pack shares, and the bands the responsive rows
+ *  change at — the category frames' page geometry (`A1 Headers - Spec.md:19`, `A4 Heroes - Spec.md:67`, `A4-0
+ *  Category Proof.dc.html:132`): desktop ≥ 1024, tablet 768–1023, mobile ≤ 767. R Responsive System's A.4 margin and
+ *  padding numbers are superseded for both (§D.0). */
+const ERROR_RED = '#D92D20'
+const PAGE_MARGIN = ['4.5rem', '2.5rem', '1.25rem'] // 72 · 40 · 20 px
+const BANDS = [
+  { name: 'tablet', query: '(max-width: 1023px)' },
+  { name: 'mobile', query: '(max-width: 767px)' },
+] as const
+/** The drop cap spans three body lines in the heading face (`A25 Post Content Layouts - Spec.md:149`); 1.7 is
+ *  `THEME_CSS`'s body line height, which its `calc(var(--drop-cap-ratio) * 1.7em)` multiplies back. */
+const DROP_CAP_LINES = 3
+const BODY_LINE = 1.7
+
+const ROLES = ['background', 'surface', 'text', 'muted', 'border', 'accent', 'onAccent'] as const
+
+/** Every authored input, refused by name before a value reaches the block. The two free strings are held to what a
+ *  declaration can carry, because the block is written into a `<style>`: a family or a radius that could close the
+ *  declaration, the rule or the element is refused (Story 6.4 makes packs editable per project). */
+function check(pack: Pack): void {
+  for (const mode of ['light', 'dark'] as const) {
+    for (const role of ROLES) {
+      const v = pack[mode][role]
+      if (!isHex(v)) throw new Error(`${mode} ${role}: ${JSON.stringify(v)} is not a #rrggbb colour`)
+    }
+    const s = pack[mode].scrim
+    if (typeof s !== 'number' || !(s >= 0 && s <= 1)) throw new Error(`${mode} scrim: ${JSON.stringify(s)} is not a strength from 0 to 1`)
+  }
+  for (const row of Object.keys(SCALES) as (keyof typeof SCALES)[]) {
+    const steps = Object.keys(SCALES[row])
+    if (!steps.includes(pack[row])) throw new Error(`${row}: ${JSON.stringify(pack[row])} is not a step — ${steps.join(' · ')}`)
+  }
+  if (!/^\d+(\.\d+)?(px|rem|em|%)$/.test(pack.pillRadius)) throw new Error(`pillRadius: ${JSON.stringify(pack.pillRadius)} is not a length`)
+  for (const role of ['heading', 'body'] as const) {
+    const { family, capHeight } = pack.fonts[role]
+    if (typeof family !== 'string' || !/^[\w\s'",-]+$/.test(family)) throw new Error(`${role} font: ${JSON.stringify(family)} is not a font-family list`)
+    if (typeof capHeight !== 'number' || !(capHeight > 0 && capHeight < 1)) throw new Error(`${role} font: cap height ${JSON.stringify(capHeight)} is not a fraction of the em`)
+  }
+}
+
+/** The properties a MODE decides — every colour and everything drawn in one: the palette, the contrast ground and its
+ *  words, the hover, plate, elevation and negative, the border fade, scrim and shadow, the link and the button's
+ *  colours. These, and only these, are redeclared in the dark blocks. */
+function modeTokens(pack: Pack, mode: 'light' | 'dark'): Record<string, string> {
+  const m = pack[mode]
+  const ground = m.text
+  // halfway from whichever ground the border sits nearer, toward the border — the specs make the plate the hover fill
+  // (`A18 Post Lists - Spec.md:266`)
+  const near = contrast(m.background, m.border) <= contrast(m.surface, m.border) ? m.background : m.surface
+  const hover = mix(near, m.border, 0.5)
+  const button = SCALES.buttons[pack.buttons](m)
+  const shadow = SCALES.shadow[pack.shadow]
+  const [linkColor, linkDecoration] = SCALES.links[pack.links](m)
+  return {
+    '--bg-page': m.background,
+    '--bg-surface': m.surface,
+    '--text-body': m.text,
+    '--text-muted': m.muted,
+    '--border-hairline': m.border,
+    '--accent': m.accent,
+    '--text-on-accent': m.onAccent,
+    '--border-fade': rgba(m.text, mode === 'light' ? 0.08 : 0.1),
+    '--bg-contrast': ground,
+    '--text-on-contrast': contrast(m.background, ground) >= contrast(m.text, ground) ? m.background : m.text,
+    '--accent-on-contrast': stepToContrast(m.accent, ground, 4.5),
+    // light lifts with its shadow; dark lifts by a step toward the border
+    '--bg-elevated': mode === 'light' ? m.surface : mix(m.surface, m.border, 0.5),
+    '--bg-hover': hover,
+    '--negative': stepToContrast(stepToContrast(ERROR_RED, m.background, 4.5), m.surface, 4.5),
+    '--plate': hover,
+    '--scrim': rgba(darker(m.text, m.background), m.scrim),
+    '--button-fill': button.fill,
+    '--button-border': button.border,
+    '--button-text': button.text,
+    '--shadow-card': mode === 'dark' || shadow === null ? 'none' : `${shadow[0]} ${rgba(m.text, shadow[1])}`,
+    '--link-color': linkColor,
+    '--link-decoration': linkDecoration,
+  }
+}
+
+/** The properties a WIDTH decides, per band — the page margin and the section paddings. */
+function bandTokens(pack: Pack, band: number): Record<string, string> {
+  const d = SCALES.density[pack.density]
+  return {
+    '--site-margin': PAGE_MARGIN[band] as string,
+    '--space-section': d.section[band] as string,
+    '--space-section-compact': d.compact[band] as string,
+    '--space-section-spacious': d.spacious[band] as string,
+  }
+}
+
+/** In the contract's order, and every property exactly once — a value the engine forgot is a thrown error, never a
+ *  declaration silently missing from one mode. */
+function ordered(values: Record<string, string>): Record<string, string> {
+  const missing = TOKEN_NAMES.filter((n) => !Object.hasOwn(values, n))
+  const extra = Object.keys(values).filter((n) => !TOKEN_NAMES.includes(n))
+  if (missing.length + extra.length > 0) throw new Error(`the engine and TOKEN_ROWS disagree — missing ${missing.join(', ') || 'none'}, extra ${extra.join(', ') || 'none'}`)
+  return Object.fromEntries(TOKEN_NAMES.map((n) => [n, values[n] as string]))
+}
+
+/** THE ENGINE. A pack's authored inputs in; every property of the contract out. `light` and `dark` are COMPLETE — a
+ *  shared value in both — so a reader of either finds every property; `tablet` and `mobile` carry the width-band
+ *  values of the responsive properties alone. */
+export function packTokens(pack: Pack): {
+  light: Record<string, string>
+  dark: Record<string, string>
+  tablet: Record<string, string>
+  mobile: Record<string, string>
+} {
+  check(pack)
+  const { heading, body } = pack.fonts
+  const radius = SCALES.radius[pack.radius]
+  const d = SCALES.density[pack.density]
+  const shared: Record<string, string> = {
+    '--figures-tabular': body.tabular ? '"tnum" 1' : 'normal',
+    // the heading-face initial spans three body lines: (lines − 1) × line height + the body's cap, in heading caps
+    '--drop-cap-ratio': String(Math.round((((DROP_CAP_LINES - 1) * BODY_LINE + body.capHeight) / heading.capHeight / BODY_LINE) * 1000) / 1000),
+    '--radius-pill': pack.pillRadius,
+    '--font-heading': heading.family,
+    '--font-body': body.family,
+    '--radius-card': radius,
+    '--radius-control': radius,
+    '--space-gap': d.gap[0] as string,
+    '--site-width': SCALES.width[pack.width],
+    '--space-gutter': SCALES.gutters[pack.gutters],
+    '--button-radius': pack.buttons === 'pill' ? pack.pillRadius : radius,
+    '--tag-accent': 'var(--border-hairline)',
+    ...bandTokens(pack, 0),
+  }
+  return {
+    light: ordered({ ...shared, ...modeTokens(pack, 'light') }),
+    dark: ordered({ ...shared, ...modeTokens(pack, 'dark') }),
+    tablet: bandTokens(pack, 1),
+    mobile: bandTokens(pack, 2),
+  }
+}
+
+/** Story 4.10's Paper, now as the engine computes it: the reference VALUES every design reads through the canvas, the
+ *  matrix and the style guide until a project wears a pack (Stories 6.3, 6.4). Both maps are complete, so the
+ *  controls panel's swatches read either mode as they always have. */
 export const REFERENCE_TOKENS: Readonly<{
   light: Readonly<Record<string, string>>
   dark: Readonly<Record<string, string>>
-}> = {
-  light: {
-    '--bg-page': '#FBF9F5',
-    '--bg-surface': '#FFFFFF',
-    '--text-body': '#232019',
-    '--text-muted': '#6B6459',
-    '--border-hairline': '#EBE5DB',
-    '--border-fade': 'rgba(28, 26, 23, 0.08)',
-    '--accent': '#D96C3F',
-    // R-110 (owner, 2026-09-15): Paper draws white here, 3.4:1 on #D96C3F (axe, Story 4.10); the ink passes at 4.8:1.
-    '--text-on-accent': '#232019',
-    '--bg-contrast': '#232019',
-    '--text-on-contrast': '#FBF9F5',
-    '--accent-on-contrast': '#e8a87c',
-    '--bg-elevated': '#ffffff',
-    '--bg-hover': '#F4F0E8',
-    '--negative': '#a3231b',
-    '--plate': '#f6f2ea',
-    '--figures-tabular': '"tnum" 1',
-    '--drop-cap-ratio': '3',
-    '--scrim': 'rgba(28, 26, 23, 0.45)',
-    '--radius-pill': '999px',
-    '--font-heading': 'Georgia, serif',
-    '--font-body': "'Inter', sans-serif",
-    '--radius-card': '8px',
-    '--radius-control': '8px',
-    '--space-section': '4.5rem',
-    '--space-section-compact': '2.5rem',
-    '--space-section-spacious': '7rem',
-    '--space-gap': '1.5rem',
-    '--site-width': '72rem',
-    '--space-gutter': '1.5rem',
-    '--button-fill': '#D96C3F',
-    '--button-border': '1px solid transparent',
-    '--button-radius': '8px',
-    '--shadow-card': '0 4px 16px rgba(28, 27, 26, 0.08)',
-    // R-112 (owner, 2026-09-15, Story 4.10's Q5): a link in Light is ink words with the accent underline — the
-    // export's own hover treatment for a nav item — because the accent on the page ground is 3.24:1 (WCAG AA text is
-    // 4.5:1). Dark keeps the accent as words: #E0805A on #171511 is 6.43:1.
-    '--link-color': '#232019',
-    '--link-decoration': 'underline #D96C3F',
-    '--tag-accent': 'var(--border-hairline)',
-  },
-  dark: {
-    '--bg-page': '#171511',
-    '--bg-surface': '#211D17',
-    '--text-body': '#F2EDE4',
-    '--text-muted': '#A79E8F',
-    '--border-hairline': '#332E27',
-    '--border-fade': 'rgba(240, 235, 226, 0.10)',
-    '--accent': '#E0805A',
-    '--text-on-accent': '#171511',
-    '--bg-contrast': '#EDE7DA',
-    '--text-on-contrast': '#171511',
-    '--accent-on-contrast': '#8a3b12',
-    '--bg-elevated': '#252220',
-    '--bg-hover': '#2A251E',
-    '--negative': '#e4736a',
-    '--plate': '#211e1b',
-    '--figures-tabular': '"tnum" 1',
-    '--drop-cap-ratio': '3',
-    '--scrim': 'rgba(10, 9, 8, 0.6)',
-    '--radius-pill': '999px',
-    '--font-heading': 'Georgia, serif',
-    '--font-body': "'Inter', sans-serif",
-    '--radius-card': '8px',
-    '--radius-control': '8px',
-    '--space-section': '4.5rem',
-    '--space-section-compact': '2.5rem',
-    '--space-section-spacious': '7rem',
-    '--space-gap': '1.5rem',
-    '--site-width': '72rem',
-    '--space-gutter': '1.5rem',
-    '--button-fill': '#E0805A',
-    '--button-border': '1px solid transparent',
-    '--button-radius': '8px',
-    '--shadow-card': 'none',
-    '--link-color': '#E0805A',
-    '--link-decoration': 'underline',
-    '--tag-accent': 'var(--border-hairline)',
-  },
-}
+}> = (({ light, dark }) => ({ light, dark }))(packTokens(REFERENCE_PACK))
 
 const block = (selector: string, values: Readonly<Record<string, string>>) =>
   `${selector} {\n${Object.entries(values)
     .map(([k, v]) => `  ${k}: ${v};`)
     .join('\n')}\n}`
+const indent = (css: string) => css.split('\n').map((l) => `  ${l}`).join('\n')
 
 /** FR-E1's LINK STYLE, APPLIED (R-173, the owner, 2026-09-21: "Fix it inside this story now"). R-112 gave the two link
  *  tokens their values and nothing read them, so a link a customer typed into a section's text with P0-1's toolbar
@@ -174,6 +332,11 @@ const block = (selector: string, values: Readonly<Record<string, string>>) =>
  *  a design that draws its own links keeps them with any selector at all (A4-13's `.a4-13__sub a`), and Epic 6's
  *  packs restyle every link by changing two tokens.
  *
+ *  DOCUMENT-WIDE, A POST'S BODY INCLUDED (R-229, owner, 2026-10-03, Story 6.1's Question 1): one link look on the whole
+ *  site, so a plain link `{{content}}` prints takes it too. Ghost's own card links all carry a class and keep Ghost's
+ *  look. `tokens.test.ts` refuses a selector here that scopes the rule out of a post (a `:not(…)` of its own, or one
+ *  naming `.gh-content`), so a later narrowing cannot land unnoticed.
+ *
  *  AND NEVER INVISIBLE: on a ground a section recolours — contrast, accent, image — the page-ground link colour would
  *  be the wrong ink (Paper's ink link on its ink contrast ground), so there the words keep the ground's own text
  *  colour, which the section already set, and the underline takes the contrast accent on contrast and the words' own
@@ -183,30 +346,42 @@ const block = (selector: string, values: Readonly<Record<string, string>>) =>
  *  words, so the underline is the link's only sign (WCAG 1.4.1) and is forced, whatever `--link-decoration` a pack sets
  *  (DW-224). A plain link is also `class=""`, which `:not([class])` alone lets escape. No mode is named: the tokens
  *  carry it (AD-30). */
-const LINK_RULES = [
+export const LINK_RULES = [
   ':where(a:not([class]), a[class=""]) { color: var(--link-color); text-decoration: var(--link-decoration); text-underline-offset: 0.15em; }',
   ':where([data-bg="contrast"], [data-bg="accent"], [data-bg="image"]) :where(a:not([class]), a[class=""]) { color: inherit; text-decoration-line: underline; text-decoration-color: currentcolor; }',
   ':where([data-bg="contrast"]) :where(a:not([class]), a[class=""]) { text-decoration-color: var(--accent-on-contrast); }',
 ].join('\n')
 
-/** The stylesheet, emitted from the contract, with FR-E1's link rule after it. FR-E4 owns mode RESOLUTION in Epic 6;
- *  the three token blocks here are the minimum that makes both modes reachable on the canvas — system preference,
- *  and an explicit `data-mode`, which FR-E4 defines as the VISITOR's override written by the
- *  `mode-toggle` module; the canvas reuses that same attribute to preview a mode, deliberately, so
- *  no fourth mode signal exists. FR-E4's other input, the owner's server-rendered `scheme-*` body
- *  class, is Epic 6's to add to this block. AD-30: the token
- *  block is one of the only two files in a generated theme that may mention a mode. */
-export function referenceTokensCss(): string {
+/** A pack's token block — the only way a pack is emitted, so every block ends with R-173's link rule. `:root` declares
+ *  every property (desktop values, light colours); the dark blocks redeclare the per-mode properties and nothing else,
+ *  because a dark block (0,2,0) redeclaring a width value would beat the width band's `:root` (0,1,0) in dark; then the
+ *  two width bands, each with the responsive properties alone; then the link rule.
+ *
+ *  FR-E4 owns mode RESOLUTION in Epic 6: the two dark blocks here are the minimum that makes both modes reachable on
+ *  the canvas — system preference, and an explicit `data-mode`, which FR-E4 defines as the VISITOR's override written
+ *  by the `mode-toggle` module; the canvas reuses that same attribute to preview a mode, deliberately, so no fourth
+ *  mode signal exists. FR-E4's other input, the owner's server-rendered `scheme-*` body class, is Story 6.5's to add.
+ *  AD-30: the token block is one of the only two files in a generated theme that may mention a mode. */
+export function packTokensCss(pack: Pack): string {
+  const { light, tablet, mobile } = packTokens(pack)
+  const dark = modeTokens(pack, 'dark')
+  const perMode = Object.fromEntries(TOKEN_NAMES.filter((n) => Object.hasOwn(dark, n)).map((n) => [n, dark[n] as string]))
+  const bands = { tablet, mobile }
   return [
-    '/* GENERATED from packages/section-runtime/src/tokens.ts — edit the contract, not this file.\n' +
-      '   tools/stress/test-vocabulary.mjs fails if the two drift. */',
-    block(':root', REFERENCE_TOKENS.light),
-    `@media (prefers-color-scheme: dark) {\n${block(':root:not([data-mode="light"])', REFERENCE_TOKENS.dark)
-      .split('\n')
-      .map((l) => `  ${l}`)
-      .join('\n')}\n}`,
-    block(':root[data-mode="dark"]', REFERENCE_TOKENS.dark),
-    `/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173) */\n${LINK_RULES}`,
+    block(':root', light),
+    `@media (prefers-color-scheme: dark) {\n${indent(block(':root:not([data-mode="light"])', perMode))}\n}`,
+    block(':root[data-mode="dark"]', perMode),
+    ...BANDS.map((b) => `@media ${b.query} {\n${indent(block(':root', bands[b.name]))}\n}`),
+    `/* FR-E1 · link style, applied: a plain link reads the two link tokens (R-112, R-173), a post's body included (R-229) */\n${LINK_RULES}`,
     '',
   ].join('\n\n')
+}
+
+/** The reference stylesheet the canvas, the render matrix and the style guide read: Paper through the engine. */
+export function referenceTokensCss(): string {
+  return (
+    '/* GENERATED from packages/section-runtime/src/tokens.ts — edit the contract, not this file.\n' +
+    '   tools/stress/test-vocabulary.mjs fails if the two drift. */\n\n' +
+    packTokensCss(REFERENCE_PACK)
+  )
 }

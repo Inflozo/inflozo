@@ -2,7 +2,7 @@
    Geometry from the frame: head on a 720 measure, blurb clamped 560, field 46 high and 10 from the button, note 13
    directly under; field width steps one named value down at 1080; at 767 and below field and button stack at 48. */
 
-.a22-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.a22-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 .a22-1[data-bg="surface"] { background: var(--bg-surface); }
 .a22-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .a22-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }
@@ -41,7 +41,7 @@
 .a22-1__field:focus { outline: none; border: 1.5px solid var(--accent); padding: 0 13.5px; }
 /* the field is always a step away from the plane it sits on */
 .a22-1[data-bg="surface"] .a22-1__field { background: var(--bg-page); }
-.a22-1__button { box-sizing: border-box; height: 46px; min-width: 126px; margin: 0; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--text-on-accent); font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
+.a22-1__button { box-sizing: border-box; height: 46px; min-width: 126px; margin: 0; padding: 0 22px; display: inline-flex; align-items: center; justify-content: center; border: var(--button-border); border-radius: var(--button-radius); background: var(--button-fill); color: var(--button-text); font-family: var(--font-body); font-size: 15px; font-weight: 600; cursor: pointer; }
 .a22-1[data-bg="contrast"] .a22-1__button { background: var(--text-on-contrast); color: var(--bg-contrast); }
 
 .a22-1__note,

@@ -100,7 +100,8 @@ const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replac
  * this is the least a theme must carry for the fixture to be read at all: the Comfortable 720 measure
  * (A25 Spec :105 — C4's 880 is the canvas's number, not the theme's), the wide and full breakouts every
  * theme owns regardless of `card_assets`, and prose type. It consumes the reference tokens and nothing
- * else, as a design's CSS must.
+ * else, as a design's CSS must. Its side margin is the page's (`--site-margin`, Story 6.1), and its `a{}` rule is
+ * R-229's: a plain link in a post's body takes the pack's link look, as the token block gives it on a live site.
  */
 export const THEME_CSS = `
 *,*::before,*::after{box-sizing:border-box}
@@ -108,15 +109,15 @@ html{background:var(--bg-page);color:var(--text-body);font-family:var(--font-bod
 body{margin:0;font-size:1.0625rem;line-height:1.7}
 img,svg,video,iframe{max-width:100%}
 a{color:var(--link-color);text-decoration:var(--link-decoration)}
-.gh-canvas,.gh-content{display:grid;grid-template-columns:[full-start] minmax(var(--space-gutter),1fr) [wide-start] minmax(0,calc((var(--site-width) - 720px)/2)) [main-start] min(720px,calc(100% - var(--space-gutter)*2)) [main-end] minmax(0,calc((var(--site-width) - 720px)/2)) [wide-end] minmax(var(--space-gutter),1fr) [full-end]}
+.gh-canvas,.gh-content{display:grid;grid-template-columns:[full-start] minmax(var(--site-margin),1fr) [wide-start] minmax(0,calc((var(--site-width) - 720px)/2)) [main-start] min(720px,calc(100% - var(--site-margin)*2)) [main-end] minmax(0,calc((var(--site-width) - 720px)/2)) [wide-end] minmax(var(--site-margin),1fr) [full-end]}
 .gh-canvas>*,.gh-content>*{grid-column:main-start/main-end;margin:0;min-width:0}
 .gh-content>*+*{margin-top:1.5em}
 .gh-content>.kg-width-wide{grid-column:wide-start/wide-end}
 .gh-content>.kg-width-full{grid-column:full-start/full-end}
 .gh-content>.kg-width-full img{width:100%}
-.kg-content-wide>div{width:100%;max-width:var(--site-width);margin:0 auto;padding:0 var(--space-gutter)}
+.kg-content-wide>div{width:100%;max-width:var(--site-width);margin:0 auto;padding:0 var(--site-margin)}
 .kg-image{display:block;margin:0 auto;height:auto}
-figcaption{margin-top:.75em;padding:0 var(--space-gutter);text-align:center;font-size:.8125rem;color:var(--text-muted)}
+figcaption{margin-top:.75em;padding:0 var(--site-margin);text-align:center;font-size:.8125rem;color:var(--text-muted)}
 .gh-content h2,.gh-content h3,.gh-head h1{font-family:var(--font-heading);line-height:1.15;letter-spacing:-.02em}
 .gh-content>h2{margin-top:2em;font-size:1.75rem}
 .gh-content>h3{margin-top:1.75em;font-size:1.3rem}

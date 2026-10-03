@@ -30,7 +30,7 @@
     "bg": { "values": ["base", "surface", "contrast"], "reason": "This design is drawn for plain grounds, so accent and image are not offered." }
   },
   "ghostCompat": { "minVersion": "5.0.0", "helpers": ["if", "img_url", "date", "excerpt", "t"] },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background"],
   "previewSeed": "orbit-weekly",
   "provisional": true,
   "descriptor": {

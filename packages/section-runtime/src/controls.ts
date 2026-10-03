@@ -157,7 +157,7 @@ export function resolveControls(
 // ─── the mode, and the slice it resolves from ────────────────────────────────
 
 /** FR-D7's two modes. The canvas shows one at a time; `data-mode` on its `<html>` is the signal, and
- *  `tokens.ts:165-172` reserved it for exactly that (AD-30: never a `-dark` twin, never a mode selector in a
+ *  `tokens.ts`'s `packTokensCss` reserved it for exactly that (AD-30: never a `-dark` twin, never a mode selector in a
  *  design's stylesheet, never a second mode signal). */
 export type Mode = 'light' | 'dark'
 

@@ -27,7 +27,7 @@ const REPO = join(here, '..', '..')
 const { A, ORDER, source, stackFor, QUERIES, TARGET } = require('./sections.js')
 const { DIRECTIVES, UNIVERSAL_CONTROLS, scanTags, validateMarkup, validateDesign } =
   await import(join(REPO, 'packages/library/src/index.ts'))
-const { REFERENCE_TOKENS, TOKEN_NAMES, referenceTokensCss } =
+const { REFERENCE_TOKENS, TOKEN_NAMES, TOKEN_ROWS, referenceTokensCss } =
   await import(join(REPO, 'packages/section-runtime/src/tokens.ts'))
 
 let failed = 0
@@ -245,6 +245,62 @@ check('the token contract is reachable in both modes and declares no empty value
     if (values.length !== TOKEN_NAMES.length) throw new Error(`${mode} declares ${values.length} of ${TOKEN_NAMES.length}`)
     for (const [k, v] of values) if (String(v).trim() === '') throw new Error(`${mode} ${k} is empty`)
   }
+})
+
+/* ── Story 6.1 — R-32's "no third state", held between the code and the PRD ──────────────────────────────────────
+   Appendix D §D.0 is the normative half: every row of the engine's `TOKEN_ROWS` appears there, marked as the code marks
+   it and naming the same properties, and no §D.0 row is missing from the code. A new token enters both in one commit,
+   so either alone turns this red. The table is cut out of prd.md between `### D.0` and `### D.a`, the precedent
+   `apps/web/plan.test.ts` and `tools/check-catalog.mjs` set for reading a PRD table. */
+function d0Rows(prd) {
+  const from = prd.indexOf('\n### D.0 ')
+  const to = prd.indexOf('\n### D.a ', from)
+  if (from === -1 || to === -1) throw new Error('prd.md has no "### D.0" followed by "### D.a" — the table cannot be cut out')
+  const strip = (cell) => cell.replace(/[*`]/g, '').trim()
+  return prd.slice(from, to).split('\n')
+    .filter((l) => l.startsWith('|') && !/^\|\s*-/.test(l))
+    .map((l) => l.split('|').slice(1, -1))
+    .filter((cells) => strip(cells[0] ?? '') !== 'Row')
+    .map((cells) => ({ row: strip(cells[0] ?? ''), source: strip(cells[1] ?? ''), properties: (cells[2] ?? '').match(/--[a-z0-9-]+/g) ?? [] }))
+}
+function d0Drift(rows, tokenRows) {
+  const out = []
+  const inPrd = new Map(rows.map((r) => [r.row, r]))
+  for (const [row, { source, properties }] of Object.entries(tokenRows)) {
+    const d = inPrd.get(row)
+    if (d === undefined) out.push(`"${row}" is a row of TOKEN_ROWS and not of §D.0`)
+    else if (d.source !== source) out.push(`"${row}" is ${source} in TOKEN_ROWS and ${d.source || 'unmarked'} in §D.0`)
+    else if (d.properties.join(' ') !== properties.join(' ')) out.push(`"${row}" names ${properties.join(' ')} in TOKEN_ROWS and ${d.properties.join(' ') || 'nothing'} in §D.0`)
+  }
+  for (const r of rows) if (!Object.hasOwn(tokenRows, r.row)) out.push(`"${r.row}" is a row of §D.0 and not of TOKEN_ROWS`)
+  if (rows.length !== new Set(rows.map((r) => r.row)).size) out.push('§D.0 lists a row twice')
+  return out
+}
+check('Appendix D §D.0 and the engine\'s TOKEN_ROWS name the same rows, marked alike — no third state (R-32)', () => {
+  const prd = readFileSync(join(REPO, '_bmad-output/planning-artifacts/prds/prd-Inflozo-2026-08-17/prd.md'), 'utf8')
+  const rows = d0Rows(prd)
+  if (rows.length === 0) throw new Error('§D.0 parsed as an empty table, so this check would pass whatever the code said')
+  const drift = d0Drift(rows, TOKEN_ROWS)
+  if (drift.length) throw new Error(drift.join('\n       '))
+  // the control: one row's mark flipped, one row dropped and one invented must each be named
+  const [first, ...rest] = rows
+  const flipped = { ...first, source: first.source === 'computed' ? 'authored' : 'computed' }
+  const caught = [d0Drift([flipped, ...rest], TOKEN_ROWS), d0Drift(rest, TOKEN_ROWS), d0Drift([...rows, { row: 'invented', source: 'computed', properties: [] }], TOKEN_ROWS)]
+  if (caught.some((d) => d.length !== 1)) throw new Error(`the comparison is not a control: ${JSON.stringify(caught)}`)
+  console.log(`      §D.0 and TOKEN_ROWS agree on ${rows.length} rows`)
+})
+
+// Story 6.1 (FR-F2, FR-G4) — sections span the site width: every design's stylesheet reads the pack's `--site-width`,
+// so a Narrow or Wide pack moves every section's content column at once
+check('every design reads var(--site-width), so a pack\'s site width reaches every section', () => {
+  const DESIGNS = join(REPO, 'packages/library/designs')
+  const isDir = (p) => { try { return statSync(p).isDirectory() } catch { return false } }
+  const sheets = readdirSync(DESIGNS).filter((c) => isDir(join(DESIGNS, c))).flatMap((c) =>
+    readdirSync(join(DESIGNS, c)).filter((n) => /^\d+$/.test(n) && isDir(join(DESIGNS, c, n))).map((n) => ({ id: `${c}/${n}`, css: readFileSync(join(DESIGNS, c, n, 'style.css'), 'utf8') })))
+  if (sheets.length === 0) throw new Error('the sweep found no design at all, so it proves nothing')
+  const missing = sheets.filter((s) => !/var\(\s*--site-width\s*\)/.test(s.css.replace(/\/\*[\s\S]*?\*\//g, ''))).map((s) => s.id)
+  if (missing.length) throw new Error(`${missing.join(', ')} never read var(--site-width) — a section spans the site width (FR-F2)`)
+  console.log(`      swept ${sheets.length} designs, every one reads --site-width`)
 })
 
 /* ── Story 5.16a, R-188: THE CHECK THAT SHOUTS THE DAY THE NOTE STOPS BEING TRUE ────────────────────────────

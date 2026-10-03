@@ -1,7 +1,7 @@
 /* Story 4.5's controls sample. Flat, `var(--…)` over the reference tokens only, and every control
    selects on its `data-` attribute on the section root (AD-3). */
 
-.cx { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.cx { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 .cx[data-bg="surface"] { background: var(--bg-surface); }
 .cx[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .cx[data-spacing="compact"] { padding-block: var(--space-section-compact); }

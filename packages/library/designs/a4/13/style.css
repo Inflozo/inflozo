@@ -1,11 +1,11 @@
 /* A4 #13 Latest Post. Flat, `var(--…)` over the pack's tokens only; every control selects on its `data-` attribute on
    the root. Geometry is 3 Split's (A4 Heroes - Spec.md §3): seven and five on a 64 px gutter, six and six on 40 at
-   ≤ 1080, one column at ≤ 767 with the card between the sub and the actions. Vertical spacing resolves to A4's own
-   64 · 96 · 132 (§0). */
+   ≤ 1080, one column at ≤ 767 with the card between the sub and the actions. Vertical spacing reads the pack's section padding,
+   whose Comfortable is A4's own ladder (A4-0 Category Proof, §0); the side margin is the page's. */
 
-.a4-13 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: 96px; padding-inline: var(--space-gutter); }
-.a4-13[data-spacing="compact"] { padding-block: 64px; }
-.a4-13[data-spacing="spacious"] { padding-block: 132px; }
+.a4-13 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
+.a4-13[data-spacing="compact"] { padding-block: var(--space-section-compact); }
+.a4-13[data-spacing="spacious"] { padding-block: var(--space-section-spacious); }
 .a4-13[data-bg="surface"] { background: var(--bg-surface); }
 .a4-13[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .a4-13[data-divider="line"] { border-block-start: 1px solid var(--border-hairline); }
@@ -31,7 +31,7 @@
 /* the actions: A4's action ladder */
 .a4-13__actions { margin-block-start: 32px; display: flex; align-items: center; gap: 12px; }
 .a4-13__action { box-sizing: border-box; display: inline-block; font-size: 15px; font-weight: 600; line-height: 1.34; text-decoration: none; text-align: center; border-radius: var(--button-radius); }
-.a4-13__action--primary { padding: 13px 22px; background: var(--button-fill); color: var(--text-on-accent); border: var(--button-border); }
+.a4-13__action--primary { padding: 13px 22px; background: var(--button-fill); color: var(--button-text); border: var(--button-border); }
 .a4-13__action--secondary { padding: 12px 21px; background: var(--bg-surface); color: var(--text-body); border: 1px solid var(--border-hairline); }
 .a4-13[data-bg="surface"] .a4-13__action--secondary { background: var(--bg-page); }
 .a4-13[data-primary-action="off"] .a4-13__action--primary { display: none; }
@@ -68,7 +68,6 @@
 
 /* tablet, 1080–768: six and six on 40, headline 40 · 44 · 48, actions stacked, card title 22 */
 @media (max-width: 1080px) {
-  .a4-13 { padding-block: 80px; }
   .a4-13__inner, .a4-13[data-card-side="left"] .a4-13__inner { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); column-gap: 40px; }
   .a4-13__headline { margin-block-start: 14px; font-size: 44px; line-height: 1.07; }
   .a4-13[data-headline-size="medium"] .a4-13__headline { font-size: 40px; }
@@ -82,7 +81,6 @@
 
 /* phone, ≤ 767: one column; the card is a row between the sub and the actions, whichever side it is set to */
 @media (max-width: 767px) {
-  .a4-13 { padding-block: 64px; }
   .a4-13__inner, .a4-13[data-card-side="left"] .a4-13__inner { display: flex; flex-direction: column; align-items: stretch; }
   .a4-13__text { display: contents; }
   .a4-13__eyebrow, .a4-13__headline, .a4-13__sub { order: 1; }

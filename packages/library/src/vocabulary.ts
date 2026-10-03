@@ -299,6 +299,15 @@ export const UNIVERSALS: readonly UniversalDef[] = [
  *  lists them; `design.json`'s `universals` narrows them. */
 export const UNIVERSAL_CONTROLS: readonly string[] = UNIVERSALS.map((u) => u.name)
 
+/** Story 6.1 (DW-196) — the words a design's `darkCapabilities` may say, each DERIVED from the design itself and held to
+ *  it by `validateDesign` (`dark-capabilities`): `tokens` — its stylesheet writes no colour literal and names no mode, so
+ *  the pack's dark palette is its dark look (AD-30; required of every design, FR-G4's "token-driven only");
+ *  `background` — it offers two or more Background-role values, so its ground can differ in dark (FR-D7, `bg`'s
+ *  `darkOverride`); `override` — one of its own controls declares `darkOverride` (FR-F7). `image-swap` waits for the
+ *  first design that draws a per-mode image: nothing could falsify it before. */
+export const DARK_CAPABILITIES = ['tokens', 'background', 'override'] as const
+export type DarkCapability = (typeof DARK_CAPABILITIES)[number]
+
 /** The Portal actions the Link Picker offers (`prd.md:928`), value → label, in chip order. Upgrade
  *  is `account/plans`: `upgrade` is not a value Portal parses. */
 export const PORTAL_ACTIONS: Readonly<Record<string, string>> = {

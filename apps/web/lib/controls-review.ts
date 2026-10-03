@@ -89,9 +89,11 @@ export const ROLE_TOKENS: Readonly<Record<string, string>> = {
 /** The swatch colours: the reference token values themselves, so `apps/web` carries no colour literal
  *  (`tokens.test.ts`). A missing property throws rather than drawing an empty circle.
  *
- *  Story 5.6 — PER MODE. Dark redeclares the same property set (`tokens.ts` asserts the two sets equal), so the
- *  panel's Background-role dots are the colours the canvas is ACTUALLY painting while dark is previewed; drawn from
- *  `light` they would have said the light ground was in force. */
+ *  Story 5.6 — PER MODE. `REFERENCE_TOKENS.dark` is the whole property set, as `light` is (`tokens.test.ts` asserts
+ *  the two equal), so the panel's Background-role dots are the colours the canvas is ACTUALLY painting while dark is
+ *  previewed; drawn from `light` they would have said the light ground was in force. Since Story 6.1 that is true of
+ *  these JS maps and no longer of the CSS: the stylesheet's dark blocks redeclare only the per-mode properties, so a
+ *  dark block can never override a width band. */
 export function referenceSwatches(mode: Mode = 'light'): Record<string, string> {
   return Object.fromEntries(
     Object.entries(ROLE_TOKENS).map(([role, property]) => {

@@ -1,6 +1,6 @@
 /* Story 5.20's second stand-in paywall — the first's words in two columns, and the site's paid plans by name. */
 
-.paywall-2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-gap); align-items: start; padding: var(--space-section) var(--space-gutter); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); }
+.paywall-2 { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: var(--space-gap); align-items: start; padding: var(--space-section) var(--site-margin); background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); }
 .paywall-2[data-layout="stack"] { grid-template-columns: minmax(0, 1fr); }
 .paywall-2[data-bg="surface"] { background: var(--bg-surface); }
 .paywall-2[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }

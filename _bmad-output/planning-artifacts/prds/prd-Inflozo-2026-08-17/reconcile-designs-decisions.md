@@ -3696,7 +3696,8 @@ generic blue anchor links."*
   tasks and owner test) · ✅ `packages/section-runtime/src/tokens.ts` and the regenerated `reference-tokens.css` ·
   ✅ `tokens.test.ts` · ✅ the deployed walk (step 20) · ✅ `prd.md` FR-E1 and FR-D4 · ✅ `epics.md` Story 5.14 and
   Story 6.1 · ✅ `docs/section-authoring.md` · ✅ R-112's entry · ✅ `deferred-work.md` (DW-155) — Story 5.14's Dev
-  (2026-09-21). ⬜ T1 and T3, when a theme first ships the token block (Story 6.1).
+  (2026-09-21). ✅ T1 and T3, when a theme first ships the token block — Story 6.1's Dev (2026-10-03), MEASUREMENTS
+  §68: a probe theme carrying `reference-tokens.css` on 6.58.0 and 5.130.6, every row held behind its controls.
 - **Extended by R-229** (owner, 2026-10-03): a plain link inside a post's body takes the same look.
 
 **R-174 — the four moving parts the table marks "no" hold still while you design, like every other one.** Story
@@ -5033,8 +5034,8 @@ Story 5.24e's Dev, Question 2, ruled **option 1** (owner, 2026-10-02): *"1. Acce
 - **Declined.** Option 2, scoping the rule to sections and leaving a post's links in the browser's blue until a
   post-layout design styles them.
 - Targets: ✅ this entry · ✅ R-173's entry · ✅ Story 6.1's spec — Question 1, the `LINK_RULES` and `THEME_CSS` tasks
-  and the proof · ✅ `prd.md` FR-E1 · ✅ `epics.md` — Story 6.1's card · ✅ DW-224 in `deferred-work.md` · ⬜ proved on
-  T1 and T3 — Story 6.1's Dev (MEASUREMENTS §68).
+  and the proof · ✅ `prd.md` FR-E1 · ✅ `epics.md` — Story 6.1's card · ✅ DW-224 in `deferred-work.md` · ✅ proved on
+  T1 and T3 — Story 6.1's Dev (2026-10-03, MEASUREMENTS §68: the post's plain link in the pack's look on both majors).
 
 **R-230 — the steps no drawing shows take Story 6.1's proposed values.** Story 6.1's Create, Question 2, ruled
 **option 1** (owner, 2026-10-03): *"Use these values"*.
@@ -5050,7 +5051,8 @@ Story 5.24e's Dev, Question 2, ruled **option 1** (owner, 2026-10-02): *"1. Acce
   Notes § The scale steps, and from its Dev the engine's `SCALES`, which Appendix D §D.0 points at rather than repeats.
 - **Declined.** Option 2, the values with changes; option 3, having the steps drawn in Claude Design first.
 - Targets: ✅ this entry · ✅ Story 6.1's spec — Question 2 and Design Notes · ✅ `prd.md` FR-E1 · ✅ `epics.md` —
-  Story 6.1's card · ⬜ built — Story 6.1's Dev (`SCALES`, and Appendix D §D.0 pointing here).
+  Story 6.1's card · ✅ built — Story 6.1's Dev (`SCALES` in `packages/section-runtime/src/tokens.ts`, held by
+  `tokens.test.ts`; Appendix D §D.0 names the steps and points here).
 
 ## B · Approved decisions superseded by this session
 

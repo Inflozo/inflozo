@@ -2,7 +2,7 @@
    on its `data-` attribute on the section root (AD-3), and its own `cy` prefix so the three samples' stylesheets
    can sit in one canvas document without meeting. */
 
-.cy { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.cy { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 .cy[data-bg="surface"] { background: var(--bg-surface); }
 .cy[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .cy[data-spacing="compact"] { padding-block: var(--space-section-compact); }

@@ -472,7 +472,7 @@ const DESIGN: DesignJson = {
     { name: 'rule', type: 'segmented', label: 'Rule', group: 'style', values: ['none', 'line'], default: 'none' },
   ],
   ghostCompat: { minVersion: '5.0.0', helpers: ['foreach'] },
-  darkCapabilities: ['tokens'],
+  darkCapabilities: ['tokens', 'background'],
   previewSeed: 'orbit-weekly',
   descriptor: {
     archetype: 'feed', containment: 'none', ground: 'surface',
@@ -1011,6 +1011,58 @@ test('AD-3 from the stylesheet\'s side: every [data-…] a rule selects on is a 
   // Portal's members actions are Ghost's, never a control's
   assert.deepEqual(said('[data-members-signout]{} [data-members-plan="x"]{}'), [])
   // (linear time on hostile input is timed by tools/check-snapshots.mjs — a core package reads no clock, AD-1)
+})
+
+/* DW-196 (Story 6.1): `darkCapabilities` says what the design does in dark, each word derived from the design itself, so a
+   declaration nothing could falsify becomes one the build checks — in both directions, with one code. */
+test('dark-capabilities: the declaration is exactly what the design earns — tokens, background, override — or the difference is named', () => {
+  const said = (over: Partial<DesignJson>, css?: string) =>
+    validateDesign({ html: EVERY_DIRECTIVE, design: design(over), ...(css === undefined ? {} : { css }) }).filter((f) => f.code === 'dark-capabilities').map((f) => f.message)
+  const one = (over: Partial<DesignJson>, css: string | undefined, why: RegExp) => {
+    const m = said(over, css)
+    assert.equal(m.length, 1, `exactly one dark-capabilities refusal, got ${JSON.stringify(m)}`)
+    assert.match(m[0]!, why)
+  }
+  const plain = '.s { color: var(--text-body); background: var(--bg-page) }'
+  // THE CLEAN CONTROL: the base design offers every Background value, has no dark override of its own and a token-only
+  // stylesheet — it earns tokens and background, and says so; with no stylesheet only tokens' presence is asked
+  assert.deepEqual(said({}, plain), [])
+  assert.deepEqual(said({}), [])
+  // SHORT: two or more Background values earn background
+  one({ darkCapabilities: ['tokens'] }, plain, /missing background/)
+  // LONG: override claimed with no control of its own declaring darkOverride — and earned the moment one does
+  one({ darkCapabilities: ['tokens', 'background', 'override'] }, plain, /unearned override/)
+  assert.deepEqual(said({ darkCapabilities: ['tokens', 'background', 'override'], controlSchema: [...DESIGN.controlSchema.slice(0, -1), toggle({ darkOverride: true })] }, plain), [])
+  one({ controlSchema: [...DESIGN.controlSchema.slice(0, -1), toggle({ darkOverride: true })] }, plain, /missing override/)
+  // UNKNOWN: a word outside the vocabulary, named beside the words there are
+  one({ darkCapabilities: ['tokens', 'background', 'image-swap'] as unknown as DesignJson['darkCapabilities'] }, plain, /unknown "image-swap" — the words are tokens · background · override/)
+  one({ darkCapabilities: ['tokens', 'background', 'tokens'] }, plain, /listed twice/)
+  // background is unearned by a design that offers one Background value, or none (R-103's lock)
+  for (const values of [['base'], []]) {
+    one({ universals: { bg: { values, reason: 'r' } } }, plain, /unearned background/)
+    assert.deepEqual(said({ darkCapabilities: ['tokens'], universals: { bg: { values, reason: 'r' } } }, plain), [], `${values.length} Background values earn no background`)
+  }
+  // A MODE IN A STYLESHEET: AD-30's "a design stylesheet that names prefers-color-scheme, a scheme class or data-mode
+  // fails the build" — tokens is unearned, and the mode is named
+  for (const [css, mode] of [
+    [':root[data-mode="dark"] .x { color: var(--text-body) }', 'data-mode'],
+    ['@media (prefers-color-scheme: dark) { .x { color: var(--text-body) } }', 'prefers-color-scheme'],
+    ['body.scheme-dark .x { color: var(--text-body) }', 'scheme-dark'],
+  ] as const) one({}, css, new RegExp(`unearned tokens — style\\.css names the mode \`${mode}\``))
+  // A COLOUR LITERAL anywhere in a value, a var() fallback included
+  for (const [css, literal] of [
+    ['.x { color: #fff }', '#fff'],
+    ['.x { background: rgb(0 0 0 / .5) }', 'rgb('],
+    ['.x { color: var(--text-body, #232019) }', '#232019'],
+    ['.x { border: 1px solid oklch(50% 0.1 40) }', 'oklch('],
+    ['.x { box-shadow: 0 1px 2px hsla(0, 0%, 0%, .2) }', 'hsla('],
+    // in a block that also holds a nested rule
+    ['.x { color: #fff; & b { color: var(--accent) } }', '#fff'],
+  ] as const) one({}, css, new RegExp(`unearned tokens — style\\.css writes the colour literal \`${literal.replace(/[(]/g, '\\$&')}\``))
+  // …and what is NOT one: a hex in a comment or a string, a selector, color-mix over tokens, the colour keywords
+  assert.deepEqual(said({}, '/* #fff, prefers-color-scheme */ .x::after { content: "#fff data-mode" } a[href="#add"] { color: color-mix(in srgb, currentcolor 30%, transparent); background: transparent; border-color: inherit }'), [])
+  // with no stylesheet, tokens must still be declared
+  one({ darkCapabilities: ['background'] }, undefined, /missing tokens/)
 })
 
 test('a control is never named like an attribute the page or Ghost owns', () => {

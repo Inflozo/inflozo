@@ -377,6 +377,21 @@ DOCS = [
   "page's own number from /page/2/ on, pagination.page printing 1·2·3 beside it, the probe's own layout "
   'actually served, the {{#foreach}} block printing a title) void the run and write nothing. Writes '
   "MEASUREMENTS.md §49 alone, replacing an earlier §49 of its own so a re-run re-records."),
+ ('tools/probe/record-token-links.py', 'tool', 'Token-block link recorder',
+  "Story 6.1's recorder (standing rule 1, R-82): R-173's link rule and R-229 — a plain link in a post's body takes the "
+  "pack's look — executed in the first theme that ships the token block. Refuses unless reference-tokens.css is "
+  "byte-for-byte what referenceTokensCss() emits, then builds a probe theme carrying it inline in default.hbs beside a "
+  'contrast-ground section (a plain and a classed link) and a page-ground plain link, post.hbs wrapping {{content}} in '
+  'article.gh-content; gates it through tools/stress/gate.js at 0 errors on both majors. On T3 and T1, behind '
+  "record-shim.py's start_guard, uploads and activates it, waits for this run's nonce, and reads record-cards.py's own "
+  "draft article through Ghost's draft preview /p/{uuid}/ — or, if that is not the probe theme's page, publishes it for "
+  "the run and returns it to draft in the same finally, read back. Chromium (the repository's Playwright) reads each "
+  "link's color, text-decoration-line and -color in light and dark. Controls (the nonce, --link-color resolving on :root, "
+  'the classed link keeping its own colour, the plain link changing colour with the token <style> disabled, a plain '
+  'body link to read) void the run; a row that does not hold writes nothing. Restores the previous theme and deletes '
+  "the probe in a finally (restore_and_delete), reading both back. Run on the owner's in-session go, in the main "
+  'session. Any argument prints its docstring and exits. Writes MEASUREMENTS.md §68 alone, replacing an earlier §68 of '
+  'its own.'),
  ('tools/probe/run-verify-core.py', 'tool', 'Register probe · core in real Chromium',
   "Story 4.7's probe (R-82): `core` proven where it will run. Bundles a minimal probe theme whose main.js is "
   'bundle() over the REAL packages/library/modules/core.js plus probe rows (plain, animating, a :768 width, '

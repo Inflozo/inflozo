@@ -22,7 +22,7 @@
     "bg": { "values": ["base", "surface"], "reason": "An inverted header is a design of its own, Contrast Band, not a setting." }
   },
   "ghostCompat": { "minVersion": "5.62.0", "helpers": ["if", "navigation", "t"] },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background"],
   "previewSeed": "orbit-weekly",
   "provisional": true,
   "descriptor": {

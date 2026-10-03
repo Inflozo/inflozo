@@ -56,6 +56,11 @@ document and Orbit Weekly's pictures at their real origin; nothing else is on th
   `<img>` with no alt; if axe does not report it, the case aborts — a scan that cannot see a planted fault is not a
   result. When a design first draws a post body (`{{content}}`), the scan must stop at its edge: Ghost writes that
   markup, not the theme.
+- **A case that scrolls sideways** *(Story 6.1, FR-F2 · FR-G4: a section spans the site width and stays responsive
+  within it)*. After the photograph, every drawn case measures the document's `scrollWidth − clientWidth` and fails
+  above zero, naming the overflow in pixels — checked at every viewport of every design. Its positive control comes
+  first: a probe wider than the viewport is appended and must be measured as overflow, then removed; if it is not,
+  the case aborts. The totals line says how many drawn cases measured it and how many scrolled.
 - **A runner that is not the one the baselines were taken under** — see the manifest below.
 
 ## The runner is part of the baseline

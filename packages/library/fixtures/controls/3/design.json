@@ -20,7 +20,7 @@
     { "group": "content", "note": "There are no icons here. This design prints its features as words alone, so there is nothing for an icon to sit beside." }
   ],
   "ghostCompat": { "minVersion": "5.0.0", "helpers": [] },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background"],
   "previewSeed": "orbit-weekly",
   "provisional": true,
   "descriptor": {

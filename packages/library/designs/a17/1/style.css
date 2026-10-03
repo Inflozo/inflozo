@@ -2,7 +2,7 @@
    `data-` attribute on the section root (AD-3). Sizes are the frame's: `A17-1 Three Up.dc.html`. */
 
 /* The section and the universal trio */
-.a17-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--space-gutter); }
+.a17-1 { background: var(--bg-page); color: var(--text-body); font-family: var(--font-body); padding-block: var(--space-section); padding-inline: var(--site-margin); }
 .a17-1[data-bg="surface"] { background: var(--bg-surface); }
 .a17-1[data-bg="contrast"] { background: var(--bg-contrast); color: var(--text-on-contrast); }
 .a17-1[data-spacing="compact"] { padding-block: var(--space-section-compact); }
@@ -20,7 +20,7 @@
 
 /* The grid: 24 gutter, 48 row gap */
 .a17-1__feed { display: flex; flex-direction: column; gap: 3rem; }
-.a17-1__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem var(--space-gap); }
+.a17-1__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3rem var(--space-gutter); }
 .a17-1[data-per-row="two"] .a17-1__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .a17-1[data-per-row="four"] .a17-1__grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .a17-1[data-first-cell="span"] .a17-1__cell:first-child { grid-column: span 2; }
@@ -69,7 +69,7 @@
 .a17-1__meta:not(:has(.a17-1__time)) .a17-1__sep--time { display: none; }
 
 /* The pager: Newer · the indicator · Older (R-109), each end keeping its slot on the first and last page */
-.a17-1__pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--space-gap); padding-block-start: 1.5rem; border-block-start: 1px solid var(--border-hairline); }
+.a17-1__pager { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: var(--space-gutter); padding-block-start: 1.5rem; border-block-start: 1px solid var(--border-hairline); }
 .a17-1__newer, .a17-1__older { display: inline-flex; align-items: center; gap: 0.75rem; font-family: var(--font-heading); font-size: 1.25rem; font-weight: 700; color: inherit; text-decoration: none; }
 .a17-1__newer { grid-column: 1; justify-self: start; }
 .a17-1__older { grid-column: 3; justify-self: end; }

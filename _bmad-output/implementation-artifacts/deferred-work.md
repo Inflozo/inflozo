@@ -2004,12 +2004,15 @@ reason: The owner ruled that Epic 3 ships the brand half on schedule rather than
   the sequence does not exist yet. `announcement_clear` staying uncalled is the check on that: the day it
   has a caller is the day this entry closes.
 also: `projects.style_pack.brand` is a key Story 3.4 put in a column **E6 owns**. E6's Style Pack editor
-  (Story 6.1) inherits it and decides whether a pack that carries a site brand shows it, offers to clear
+  (Story 6.4, with the brand seed Story 6.6's) inherits it and decides whether a pack that carries a site brand shows it, offers to clear
   it, or re-derives the pack from it. Only `placeholderFor` reads it today, for the dashboard card's
   accent; every other field is stored for the epic that uses it.
 note (Story 6.1's Create, 2026-10-03): the Style Pack editor is Story 6.4's and the brand seed Story 6.6's, not 6.1's —
   6.1 is the token engine and reads no `brand`; `apps/web/lib/style-pack.ts:6-7` says the same wrong thing and 6.1's
   Dev corrects it.
+note (Story 6.1's Dev, 2026-10-03): corrected — the `also:` line above names Story 6.4's editor and Story 6.6's seed,
+  and `apps/web/lib/style-pack.ts`'s header now says the engine is 6.1's, the packs 6.2's, the editor and per-mode
+  overrides 6.4's and the brand seed 6.6's. The token engine reads no `brand`.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -4403,7 +4406,12 @@ plain: The drawings put a page's content 72 pixels in from each side at desktop 
   sample colours now match the drawings, but the page width the sections use is still the older 1,152 pixels with a
   24-pixel margin, so on the pilots page the columns are a little narrower than drawn and some headlines wrap one line
   earlier.
-status: open
+status: done 2026-10-03 (Story 6.1)
+resolution: Story 6.1's Dev (2026-10-03) — built (see its note below) and re-baselined: the owner approved the sampled
+  review in the Dev session (one design per category, light and dark at 1440, before beside after, each with its cause
+  and its frame), and the new photographs land in their own commit right after the Dev commit, naming the story as
+  the cause (NFR-6(a)'s mass rebaseline, the project's first). `bash tools/matrix/run-matrix-gate.sh` on them: green,
+  no axe violation and no case scrolling sideways, each behind its positive control; the runner manifest unchanged.
 severity: medium
 origin: Story 4.10's Dev run — reported by all five pilot authors; the spec's rule was "every row the Paper objects
   name takes their values; every other row keeps today's value", and no Paper token object names a width or gutter
@@ -4419,6 +4427,17 @@ amended: Story 5.14 (Dev, 2026-09-21), R-173 — **`--accent-on-contrast` is now
   visible on the canvas (7.99:1 and 6.28:1 on Paper's contrast grounds, measured by Story 5.14's sweep). Epic 6's
   value for the row replaces it with nothing else to change.
 location: packages/section-runtime/src/tokens.ts (`--site-width` 72rem, `--space-gutter` 1.5rem) · every pilot's style.css
+note (Story 6.1's Dev, 2026-10-03): BUILT, and the entry stays open for its rebaseline. The token engine's Normal is the
+  frames' geometry — `--site-width` 81rem (1,296 px) and a new row, page margin (`--site-margin` 72 · 40 · 20 px at
+  ≥ 1024 · 768–1023 · ≤ 767, computed, the same for every pack) beside the 24 px column gutter; Comfortable density is
+  `A4-0`'s ladder (96 · 80 · 64). Every pilot root and the fixtures' side padding read `--site-margin`, A4 #13 and
+  A24 #1 read the section tokens instead of their literal ladders (their per-width overrides deleted), A17 #1's column
+  and pager gaps read the gutter, and `THEME_CSS`'s side margin is the page margin. The rows no Paper object named —
+  `--border-fade`, `--scrim`, both `--accent-on-contrast`, `--plate`, `--negative`, dark `--bg-elevated` — are computed
+  by the engine's rules now, never written by hand. `bash tools/matrix/run-matrix-gate.sh` before the rebaseline: red
+  on moved photographs only (every failure a `toHaveScreenshot` mismatch, 0 axe violations), and the new sideways
+  check green on every drawn case behind its positive control. Closed the same day: the owner approved the sampled
+  review and the baselines land in their own commit (NFR-6(a)'s mass rebaseline, `docs/render-matrix.md`).
 reason: changing a row no Paper object names would be inventing the value; the frames draw it, so it is a one-row
   token change once ruled. A1, A22, A24 and A4 also carry their own section padding as literals where the frame's
   ladder differs from `--space-section`.
@@ -5506,7 +5525,20 @@ reason: Story 5.6 is the editor, and Epic 5 deploys nothing — the override is 
 plain: Every section design in our library carries a note saying how much dark-mode support it has. Nothing in
   the product ever looks at that note. Either something should use it, or it should go — right now it is a field
   authors have to fill in for no effect, which is how a field quietly starts saying something untrue.
-status: open
+status: done 2026-10-03 (Story 6.1)
+resolution: Story 6.1's Dev (2026-10-03) — the field has a closed vocabulary (`DARK_CAPABILITIES` in
+  `packages/library/src/vocabulary.ts`, typed on `DesignJson` and the registry entry), each DERIVED from the design:
+  `tokens` (the stylesheet writes no colour literal and names no mode — required of every design, and AD-30's "a design
+  stylesheet that names a mode fails the build" gets its reader), `background` (two or more Background values) and
+  `override` (one of its own controls declares `darkOverride`). `validateDesign` refuses a declaration that differs
+  from the derived set in either direction, or carries any other word, with one code, `dark-capabilities`, naming the
+  missing, unearned or unknown words; handed no stylesheet, only `tokens`' presence is asked. Every pilot and fixture
+  declares `["tokens", "background"]`, and `controls/1` adds `"override"` — what the reader derived from
+  each, run over every one before a declaration was changed. Proof: `validate.test.ts`'s dark-capabilities test fires
+  the code short, long, unknown, twice, on a mode (`data-mode`, `prefers-color-scheme`, `scheme-dark`) and on a
+  colour literal (a hex, `rgb()`, a `var()` fallback, `oklch()`, `hsla()`) beside its clean controls, red against
+  HEAD's validator; `tools/check-snapshots.mjs` validates every design with its stylesheet on every commit, and its
+  hostile-input timing runs through the new reader. `docs/section-authoring.md` says what each word means.
 severity: low
 origin: Story 5.6's Create run (2026-09-18), executed over the repository: `darkCapabilities: string[]` is
   declared on `DesignJson` and on `SectionRegistryEntry` (`packages/library/src/registry.ts:136`, `:178`) and
@@ -6245,8 +6277,8 @@ reason: Step 89 failed once in two completed walks with nothing else running on 
 
 ### DW-224: R-173's plain-link rule is document-wide, and a pack with no underline hides a link on a coloured ground
 
-status: open
-resolution: partial, and the entry stays open — Story 5.24c's Dev (2026-10-01) built its half: every `LINK_RULES` selector in `tokens.ts` is `:where(a:not([class]), a[class=""])`, so an anchor with `class=""` no longer escapes, and on a contrast, accent or image ground the rule sets `text-decoration-line: underline` — there the words take the ground's colour, so the underline is the link's only sign (WCAG 1.4.1), whatever `--link-decoration` a pack sets. `reference-tokens.css` regenerated (only the link rules moved); `tokens.test.ts` asserts both, red against HEAD's rules and red again with only the underline removed. No photograph moved: the matrix is green. The post-body half is Story 6.1's alone.
+status: done 2026-10-03 (Story 6.1)
+resolution: closed by Story 6.1's Dev (2026-10-03), the post-body half as R-229 ruled: the rule stays document-wide, `tokens.test.ts` refuses a link selector that scopes it out of a post (one naming `.gh-content`, or a `:not(…)` beyond the plain-link test), and `tools/probe/record-token-links.py` proved it on T1 (6.58.0) and T3 (5.130.6), MEASUREMENTS §68 — a probe theme carrying `reference-tokens.css`, read in Chromium in light and dark: the plain link on the page ground, on the contrast ground and in the post's body (read through Ghost's draft preview) each as the token block says, behind controls (this run's nonce, `--link-color` on `:root`, a classed link keeping its own colour, the plain link's colour moving with the token `<style>` disabled). Before it, Story 5.24c's Dev (2026-10-01) built its half: every `LINK_RULES` selector in `tokens.ts` is `:where(a:not([class]), a[class=""])`, so an anchor with `class=""` no longer escapes, and on a contrast, accent or image ground the rule sets `text-decoration-line: underline` — there the words take the ground's colour, so the underline is the link's only sign (WCAG 1.4.1), whatever `--link-decoration` a pack sets. `reference-tokens.css` regenerated (only the link rules moved); `tokens.test.ts` asserts both, red against HEAD's rules and red again with only the underline removed. No photograph moved: the matrix is green. The post-body half is Story 6.1's alone.
 severity: medium
 origin: Story 5.14's code review (2026-09-21), the Acceptance Auditor, the Blind Hunter and the Edge Case Hunter.
 owner: Story 6.1 (The token engine — computed or authored, and nothing in between), whose card names this entry: it asks
@@ -6259,6 +6291,14 @@ owner: Story 6.1 (The token engine — computed or authored, and nothing in betw
 ruling (owner, 2026-10-03, Story 6.1's Create, Question 1, option 1): *"The same look everywhere"* — R-229. The rule stays
   document-wide, so a plain link in a post's body takes the pack's look; Story 6.1's Dev proves it on T1 and T3 and
   closes this entry.
+note (Story 6.1's Dev, 2026-10-03): built as R-229 ruled, and the entry stays open for its proof. `LINK_RULES` stays
+  document-wide, and `tokens.test.ts` now refuses a link selector that names `.gh-content` or carries a `:not(…)` beyond
+  the plain-link test, so a later scoping cannot land unnoticed; `THEME_CSS` keeps its `a{}` rule. The proof is
+  `tools/probe/record-token-links.py` — a probe theme carrying `reference-tokens.css`, gated 0 errors on both majors,
+  read in Chromium in light and dark, the post's body included — exercised OFFLINE against a local page built from
+  Ghost's own recorded article (every control and row held, and the controls refused a wrong nonce and a page with no
+  token block). Run on T1 and T3 on the owner's in-session go (2026-10-03), in the main session: every row held on
+  both majors and MEASUREMENTS §68 is written — the entry is closed, see the resolution.
 note (Story 5.24c's Create, 2026-09-29): split, not dropped. The underline and `class=""` halves are built by 5.24c,
   with controls. The post-body half is a behaviour decision: R-173 (`reconcile-designs-decisions.md:3678`) covers "a link
   typed into a section's text" and says nothing about `{{content}}`, and the post-body frame (`C Post Body.dc.html`)

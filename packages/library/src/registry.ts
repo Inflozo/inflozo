@@ -6,7 +6,7 @@
 // `design.json` field list and FR-G3's entry list are therefore DIFFERENT SETS, and reading one
 // as the other is the mistake this module removes.
 
-import type { BindingContext, ControlGroup, ControlType, PropType, SidebarGroup } from './vocabulary.ts'
+import type { BindingContext, ControlGroup, ControlType, DarkCapability, PropType, SidebarGroup } from './vocabulary.ts'
 import { MODULES, parseModuleDeclaration } from './modules.ts'
 import { scanTags } from './validate.ts' // validate.ts imports only TYPES from here, so this edge is not a runtime cycle
 
@@ -152,7 +152,9 @@ export type DesignJson = {
   /** P0-0: the controls this design could never use, each with its note */
   absent?: AbsentNote[]
   ghostCompat: { minVersion: string; helpers: string[]; deprecatedAt?: string }
-  darkCapabilities: string[]
+  /** Story 6.1 (DW-196): what the design does in dark, in `DARK_CAPABILITIES`' words — each derived from the design and
+   *  checked both ways by `validateDesign` (`dark-capabilities`) */
+  darkCapabilities: DarkCapability[]
   previewSeed: string
   /** FR-G5's machine-checkable structural descriptor tuple; no two designs in a category share one */
   descriptor: {
@@ -200,7 +202,7 @@ export type SectionRegistryEntry = {
   js?: string[]
   dataBindings?: Record<string, DataBinding>
   ghostCompat: { minVersion: string; helpers: string[]; deprecatedAt?: string }
-  darkCapabilities: string[]
+  darkCapabilities: DarkCapability[]
   previewSeed: string
   /** FR-G5's tuple — carried so the "no two designs in a category share one" assertion has
    *  something in the registry to read (review 1) */

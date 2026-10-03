@@ -11,7 +11,7 @@
     "bg": { "values": ["base", "surface", "contrast"], "default": "surface", "reason": "This stand-in is drawn for plain grounds, so accent and image are not offered." }
   },
   "ghostCompat": { "minVersion": "5.62.0", "helpers": ["t"] },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background"],
   "previewSeed": "orbit-weekly",
   "provisional": true,
   "descriptor": {

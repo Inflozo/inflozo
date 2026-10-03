@@ -21,7 +21,7 @@
     "minVersion": "5.0.0",
     "helpers": ["foreach", "get", "img_url", "date", "pagination", "t"]
   },
-  "darkCapabilities": ["tokens"],
+  "darkCapabilities": ["tokens", "background"],
   "previewSeed": "orbit-weekly",
   "provisional": true,
   "descriptor": {

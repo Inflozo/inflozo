@@ -3,9 +3,11 @@ import { isAccent } from './probe-rule.ts'
 
 /**
  * `projects.style_pack`, and the one schema for it (the spine's rule (a): one zod schema per
- * boundary). E6 OWNS THIS COLUMN — the Style Pack editor, Appendix D's twelve packs and the
- * per-mode token overrides are Story 6.1's — and Story 1.5 reads it three epics early, through
- * this same schema, because the dashboard card's placeholder is drawn from the pack (FR-B1).
+ * boundary). E6 OWNS THIS COLUMN — Story 6.1 built the token engine every pack goes through
+ * (`packTokens` in `@inflozo/section-runtime`); Appendix D's twelve packs are Story 6.2's, the Style
+ * Pack editor and the per-mode token overrides Story 6.4's, the brand seed Story 6.6's — and Story
+ * 1.5 reads it three epics early, through this same schema, because the dashboard card's
+ * placeholder is drawn from the pack (FR-B1).
  *
  * THE COLOURS BELOW ARE NOT APP TOKENS AND MUST NEVER BECOME ONE. A Style Pack belongs to the
  * USER'S SITE, not to Inflozo's chrome (`components/kit/pack-cell.tsx`), which is why they are
