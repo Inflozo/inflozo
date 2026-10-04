@@ -270,6 +270,9 @@ DOCS = [
   'Seeds both Ghosts identically. --check (Story 5.24d, DW-298) HEADs every image address it seeds and exits 1 naming '
   'any that does not answer 200; read-only, no key.'),
  ('tools/probe/provision-ghost.sh', 'tool', 'Ghost provisioning', 'Builds a probe Ghost from scratch.'),
+ ('tools/probe/server-triage.sh', 'tool', 'Test-server intrusion check',
+  'Read-only: the planted-process, outbound-connection, SSH, theme-upload-by-IP, SQL-in-filter and Ghost actions-log reads '
+  'that found how T3 was taken over (R-238). The owner runs it; the classifier refuses Claude\'s own SSH reads.'),
  ('tools/probe/run-verify-all.py', 'tool', 'Register probes', 'Executes register items against real Ghosts; its probe theme is restored, deleted and read back whatever fails, and it refuses to start on a probe theme (DW-237).'),
  ('tools/probe/record-shim.py', 'tool', 'Ghost helper-shim recorder',
   "AD-23's recorder for the Ghost helper shim (Story 4.3). Uploads one image and a probe theme "
@@ -1376,6 +1379,10 @@ DOCS = [
   'no story that is not done, or whose living owners never name its DW id on their card or in their spec (Story '
   "5.24a); its self-check runs tools/hooks/commit-msg's Dev guard for real in a throwaway repository (DW-172); and "
   "its date is the page's last content change, through this gate's `dated()` (DW-132)."),
+ ('docs/incident-2026-10-03-t3.md', 'record', 'Incident — T3 taken over and used in a DDoS',
+  'What happened to the Ghost 5 test server on 2026-10-03, read from its own logs: a SQL injection behind the public Content '
+  'key, the built-in Zapier Admin key, a crafted theme (CVE-2026-22594), a DDoS botnet. What was ruled out, what T1 showed, '
+  'the seven lessons and where each one now lives. Ruling R-238.'),
  ('docs/project-context.md', 'live', 'Project context — the facts every BMAD skill loads',
   'The block bmad-build, bmad-build-auto, bmad-code-review and the planning skills load as persistent '
   'facts on every run (their customize.toml lists `file:{project-root}/**/project-context.md`; the '

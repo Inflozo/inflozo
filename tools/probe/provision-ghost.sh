@@ -13,6 +13,15 @@
 # version a Ghost major BUNDLES the gate's input, so a box whose pairing has moved
 # is worse than no box — it produces verdicts that look comparable and are not.
 #
+# SECURITY (the T3 incident, docs/incident-2026-10-03-t3.md, ruling R-238). T3 — a Ghost 5 box built by this script —
+# was taken over six weeks after it went up: a SQL injection behind the PUBLIC Content key read the built-in Zapier
+# Admin key, and a crafted theme (CVE-2026-22594) ran code. So:
+#   - Never leave an end-of-life Ghost major on the public internet. A Ghost 5 box (Story 15.7's pass, DW-326) is
+#     short-lived: before step 6's `ufw allow 'Nginx Full'`, open 80/443 to the owner's IP only, run the pass, and
+#     destroy the droplet the same day.
+#   - A pinned version is a frozen one: check the pinned Ghost against Ghost's security advisories before trusting the box.
+#   - tools/probe/server-triage.sh is the read-only check to run if a box ever behaves oddly.
+#
 # Idempotent enough to re-run after a rebuild. Every step reports.
 set -uo pipefail
 

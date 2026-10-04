@@ -5204,6 +5204,8 @@ Just mention a note."*
 - Targets: ✅ this entry · ✅ `prd.md` §4, a note under T3 · ✅ `CLAUDE.md` standing rule 1 · ✅
   `docs/project-context.md` · ✅ `_bmad/custom/bmad-build.toml`, `bmad-build-auto.toml`, `bmad-code-review.toml` · ✅
   DW-326 · ✅ `epics.md` — Story 15.7's card carries the Ghost 5 pass · ✅ `tools/probe/.env.example`.
+  · ✅ the lessons: `docs/incident-2026-10-03-t3.md` (the record), `docs/project-context.md`, `tools/probe/provision-ghost.sh`'s
+  header, `tools/probe/server-triage.sh`, and AD-36's vector for the theme payload in `ad36.test.ts`.
 
 ## B · Approved decisions superseded by this session
 

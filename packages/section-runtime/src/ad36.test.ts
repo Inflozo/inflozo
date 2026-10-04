@@ -563,6 +563,7 @@ test('AD-36 · a crafted Source value is inert through the fold, refused when ha
     { source: 'author', author: 'x" }}<script>alert(1)</script>' },
     { source: 'picked', picks: [{ id: '5f00"}}<script>', title: 't' }, { id: 'not-24-hex', title: 't' }] },
     { source: 'featured}}{{#get "tiers"' },
+    { source: 'tag', tag: "x'}}{{@site[?(({__proto__:\"\".toString})[\"constructor\"](\"return 1\")())]}}" },
   ]) {
     const out = theme(crafted)
     assert.ok(!/script|limit="all"|tiers/.test(out), `a crafted value reached the theme: ${out}`)
@@ -575,6 +576,9 @@ test('AD-36 · a crafted Source value is inert through the fold, refused when ha
     { source: 'posts', ids: ['5f00"}}<script>'] },
     { source: 'posts', filter: 'tag:x"' },
     { source: 'posts', limit: 500 },
+    // R-238: the shape that ran code on T3 (CVE-2026-22594, open on every Ghost before 6.19.1, so on every Ghost 5 site
+    // Inflozo still supports) — a Handlebars expression inside a {{#get}} filter. Inflozo must never be the theme that ships it.
+    { source: 'posts', filter: 'id:{{@site[?(({__proto__:"".toString})["constructor"]("return 1")())]}}' },
   ]) {
     assert.throws(() => renderTheme(doc(), src, { dataBindings: { latest: query } }), /AD-36|TEMPLATE-level|bad-get/, JSON.stringify(query))
     for (const render of [renderCanvas, renderTheme]) {

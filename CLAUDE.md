@@ -87,6 +87,8 @@ Each was learned expensively. They are not style preferences.
    **T1 only** (owner, 2026-10-04, ruling **R-238**): T3 `ghost5.inflozo.com` was hacked and retired from
    testing. Where anything says "T1 and T3", run T1 and postpone the Ghost 5 half to DW-326's pass at the
    end of the project; a Ghost 5 check that cannot wait is a question to the owner, never a silent skip.
+   What the takeover taught (an end-of-life Ghost on the internet, a public key as a door, the theme as the
+   weapon) is in `docs/incident-2026-10-03-t3.md`, and the rules it left are in `docs/project-context.md`.
 2. **A result whose control did not pass is not a result.** Three probes in one session returned a
    convincing "held" that was really a broken test.
 3. **Propagate, never localise.** A finding is not closed until it reaches an invariant, a register
