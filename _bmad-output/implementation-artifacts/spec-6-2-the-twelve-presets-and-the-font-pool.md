@@ -659,3 +659,21 @@ key reads were refused by the permission classifier, and the head it was given w
   canvas, where a request to a font host would be a violation.
 - **Not touched, by the diff:** no migration (`git diff --name-only 3f6449a3 HEAD -- supabase/` is empty; the one new
   read is `projects.style_pack`, a column of Story 1.2's schema), no Resend, no Dodo, no T1 or T3.
+
+### Results — Deploy (2026-10-04)
+
+**Executed at Deploy.** App code only. No migration (R-99): nothing under `supabase/` changed since the baseline
+`3f6449a3`, so there is no Schema phase and no RLS-TEST.sql to rerun beyond CI's own `rls`. No tooling-only change is
+left to deploy. Every key below is named by its variable, never printed.
+
+- **CI, for HEAD `38d6920a`** (GitHub API, public, no key): `ci.yml` run 37144733599 `check`, `rls` and `deploy` all
+  `completed`/`success`; `matrix.yml` runs 37144733595 and 37163424101 `completed`/`success`. HEAD adds only the Review
+  record to this spec and the board over the reviewed build `42788c15`, so the code is what the Review's walks ran on.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID` by name): the deployment for that sha is
+  `READY`, target `production`, aliased to `inflozo.com`, `app.inflozo.com` and `www.inflozo.com`. Signed out, a plain
+  GET answered 200 on `app.inflozo.com/sign-in`, and 307 / 303 to `/sign-in` on `/pilots` and `/canvas?pack=mono`
+  (the sign-in guard, as at Review).
+- **Deployment: `dpl_EAosnbs4dwLyH8nUqQ6FFe5ZE1Dc` (https://app.inflozo.com/).**
+- **The owner's manual test** already names its URLs on `app.inflozo.com`, the real domain, in every step that has
+  one; `owner_test` stays `pending`.
+- **No question for the owner.** Questions 1–7 are ruled.
