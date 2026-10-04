@@ -391,6 +391,31 @@ names and dots.
 - Undo announces the pack it restores, because the canvas changed and the person may not see it.
 - The dashboard card reads the server's pack, so it follows once the work is synced (FR-D10). The test syncs first.
 
+## Questions for the owner
+
+### Question 1 — May this story's database change go on the live database? (R-99)
+
+**In plain English.** This story lets the save carry your Style Pack, so that one save keeps both your sections and
+your pack, and one ⌘Z can undo a pack change. For that, the database's save step needs one small change. Your rule R-99
+says that change goes on the live database first, on its own, before any of the new code. The change is written and
+passes every check on a copy of the database. It also fails exactly where it should when the change is left out. When I
+tried to go further, this computer's safety check would not let me use the live database's key at all, not even to
+read. **Nothing on the live database has changed.**
+
+**An example.** Today's save sends "these sections changed". After this change it can also send "and the pack is now
+Tangerine", in the same save. A save that does not mention a pack, which is every save the live site makes today, works
+exactly as before.
+
+1. **Let me do it (RECOMMENDED).** Reply "1. Go". I apply the change and read it back. Then I check, as a throwaway test
+   account, that today's live save still works, delete that account, and carry on with the story. Recommended because
+   reading it back needs the same key anyway.
+2. **Apply it yourself.** In Supabase, open your project → **SQL Editor** → **New query**. Paste the whole of
+   `supabase/migrations/20261004120000_sync_style_pack_preset.sql` and press **Run**. Then reply "2. Applied — you may
+   read it back". I check it and carry on.
+3. **Hold the story.** Nothing changes, and Story 6.3 waits.
+
+**Ruled:** _(awaiting the owner)_
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, on a laptop at full width, in **Pilot sections**. The test
