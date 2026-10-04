@@ -768,7 +768,8 @@ test('6.3 · a project stored in Mono opens in Mono (DW-325): the card, the list
   await page.keyboard.press('ControlOrMeta+k')
   const card = page.locator('dialog[open] iframe').first()
   await expect(card).toHaveAttribute('src', /pack=mono/)
-  await expect.poll(() => card.evaluate((f) => getComputedStyle(f.contentDocument.documentElement).getPropertyValue('--bg-page').trim().toUpperCase())).toBe(mono.light.background.toUpperCase())
+  // null-safe (review, 2026-10-04): a card's frame has no document for a moment, and a throw inside `poll` is not retried
+  await expect.poll(() => card.evaluate((f) => { const root = f.contentDocument?.documentElement; return root ? getComputedStyle(root).getPropertyValue('--bg-page').trim().toUpperCase() : '' })).toBe(mono.light.background.toUpperCase())
 })
 
 test('6.3 · Remix\'s Re-roll what (B8): Style Pack re-rolls the pack in one ⌘Z, Both re-rolls the designs and the pack in one ⌘Z', async ({ page }) => {
@@ -825,7 +826,9 @@ test('6.3 · Remix\'s Re-roll what (B8): Style Pack re-rolls the pack in one ⌘
   await expect(undoArrow(page), 'Both was one edit').toHaveAttribute('aria-disabled', 'true')
   await page.keyboard.press('ControlOrMeta+Shift+z')
   await expect(designName(page), 'and one ⇧⌘Z takes both forward').not.toHaveText(design)
-  expect(await wears(page)).not.toBe(PRESETS()[0].id)
+  // polled (review, 2026-10-04): the docs repaint in the redo's own task, the pack is worn inside the view transition's
+  // update a frame later — read at once it was still Paper on CI (run 37178794057)
+  await expect.poll(() => wears(page)).not.toBe(PRESETS()[0].id)
 })
 
 test('6.3 · Remix where no ring moves (the Post canvas): Re-roll what opens on Style Pack, Designs and Both greyed with the reason, Remix live, one ⌘Z', async ({ page }) => {
