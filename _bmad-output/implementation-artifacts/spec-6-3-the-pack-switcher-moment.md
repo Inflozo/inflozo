@@ -355,6 +355,10 @@ faces wait reads one face per family; `packChoices` is derived per read).*
   the word list it imports, the journey counted Remix's radio cards as a written 3, and a comment named
   `style-pack.test.ts` for a check that lives in `pilots.test.ts` [`new-project-sheet.tsx`; `journey.spec.mjs`;
   `lib/style-pack.ts`]
+- [x] [Review][Patch] Four reads in the checks themselves raced or assumed, each seen red on production or in CI and
+  none a product defect: the walk read the announcement when the canvas WORE the pack rather than when it landed
+  (steps 88 and 102); step 88 assumed the undo arrow awake after its ⌘Z; the journey read the pack one frame after a
+  ⇧⌘Z; and a preview card's frame was read before it had a document [`run-verify-editor.cjs`; `journey.spec.mjs`]
 - [x] [Review][Patch] DW-322, DW-325 and DW-314 were closed citing deployed walks that Dev had written and not run —
   run at this Review (`### Results — Review` below), so the closures now stand on executed evidence
 
@@ -635,7 +639,7 @@ ran in the main session.
   `sheet-packs`: the sheet's radios are the library's presets, Paper checked, every one in the form.
   `created-in-pack`: Neon checked, `style_pack` read off the pooler `{"preset":"neon"}`, the card's ground Neon's own.
 - `run-verify-lock.cjs` and `run-verify-pilots.cjs` refuse a tree with uncommitted changes, and by then it had the
-  patches: run on the Review commit, below.
+  patches: run on the reviewed build, below.
 
 **The patched tree.**
 - `pnpm check`: exit 0. `pnpm keyboard`, whole, no `--grep`: **169 passed**, exit 0. `pnpm build`: exit 0.
@@ -644,3 +648,38 @@ ran in the main session.
   carried no `pack=`), then restored byte-identical — the control.
 - No SQL changed, so the RLS gate's result stands; nothing the matrix photographs changed (the New project window, the
   save route and checks only).
+
+**CI on the Review commits.** `b4a80273` (the patches): `check`, `rls`, `deploy` success. `98fdb405` (the walk's
+timing record): `ci.yml` run 37178794057 `check` **failure** at `pnpm keyboard`, `deploy` skipped — two 6.3 journey stops
+read the canvas a frame early (the pack after a ⇧⌘Z, read before the view transition's update had worn it; a preview
+card's frame read before it had a document, a throw `expect.poll` does not retry). Both are test races, green locally
+and on the push before; patched to poll, the 6.3 stops then run three times over locally (33 of 33). `a6979409`: run
+37179416468 `check`, `rls`, `deploy` **success**, `matrix.yml` 37179416422 success. `aea9816a` (step 88's expectation,
+below): run 37180948769 all three **success**, `matrix.yml` 37180948732 success.
+
+**Real services (R-82), on the reviewed build.** Each walk asks Vercel (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`) before it
+starts: `dpl_4v7mg2UhSM4JfTainwqKKSnb3z64` READY from `a6979409`, then `dpl_CDJvTDvTbXccfY3cb3igfHWg5Tdx` READY from
+`aea9816a` (which changes the walk alone, so the app is the same code).
+- **`run-verify-editor.cjs`** on `a6979409`: 700 PASS, 1 FAIL — step 88's "one ⌘Z" assumed the undo arrow would still
+  be awake afterwards; Paper was back and said, and the arrow was asleep because nothing else was in the journal. The
+  check now compares the arrow with its state BEFORE the re-roll. Re-run on `aea9816a`: **0 FAIL, 701 PASS**, users
+  13 → 13. Its 6.3 lines:
+  - step 88: "Re-roll what" on Style Pack with Designs and Both greyed and the reason; the re-roll said once landed; one
+    ⌘Z back to Paper with the arrow as it was (`undoWas88` = `undoNow`); the save leaving `preset: paper`.
+  - step 102: the pill, the landing and "Style Pack — Tangerine"; ⌘S → `style_pack` `{brand: {seed: 'walk-102'},
+    preset: 'tangerine'}`, revision 32 → 33; the live route's 422 for `harbor`, nothing written; **the stale pack-only
+    posts** — another pack 409, the server's own pack one write past the base 200 with nothing moved, and the same
+    matching pack from two writes back **409** (the patch; the Dev build would have answered 200); a fresh browser
+    asking for `&pack=tangerine` and wearing it; Paper back, zero CSP violations.
+  - **Measured, not gated** (press → landed, the 300 ms crossfade included): 1,313 and 1,114 ms for a pack's first draw
+    (two runs), 434 and 402 ms back to Paper, 404 and 397 ms returning to a pack already drawn.
+- **`run-verify-lock.cjs`** on `a6979409`: **0 FAIL, 88 PASS**. The holder's list has every preset live (the control);
+  the reader's Change opens the list with every cell greyed, and a press moves neither the canvas nor the revision.
+- **`run-verify-pilots.cjs`** on `a6979409`: **0 FAIL, 154 PASS**. DW-325: the Pack menu's Mono asks for `&pack=mono`
+  and the document paints Mono's token; Paper takes the pack off the address and paints Paper's.
+- **`run-verify-dashboard.py`** on `a6979409`: all steps passed, users 13 before and after. `sheet-packs` and
+  `created-in-pack` (Neon) as on the Dev build — now through the controlled radios.
+- **Not touched:** T1 and T3, Resend, Dodo.
+
+**Status.** In review. Every patch is applied and no question is open for the owner. Deploy and the owner's test follow
+(R-80); this review does not mark the story done.
