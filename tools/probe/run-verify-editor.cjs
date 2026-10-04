@@ -7360,6 +7360,7 @@ async function main() {
     await pk.locator('#style-pack-change').click()
     // S7b's pill from the press until the canvas lands — watched for BEFORE the press, so a quick landing cannot hide it
     const pill102 = pk.waitForSelector('[data-pack-pill]', { timeout: 5000 }).then((h) => h.textContent(), () => null)
+    const pressed102 = Date.now()
     await pk.locator(`[data-style-pack="${target102.id}"]`).click()
     // worn AND landed (review, 2026-10-04): `data-pack` alone is the start of the transition, and the words are its end
     const landed102 = await pk.waitForFunction(({ id, said }) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id && document.getElementById('editor-said')?.textContent === said,
@@ -7376,6 +7377,19 @@ async function main() {
     check('step 102 — a press switches: S7b\'s pill names the pack, the canvas lands on its own token, the list calls it Current, and the switch is said once landed',
       landed102 && (await pill102) === PACK102.PACK_WORDS.trying(target102.name) && shown102.bg === target102.light.background.toUpperCase() &&
       shown102.current.includes(target102.name) && shown102.said === PACK102.PACK_WORDS.said(target102.name) && !shown102.switching, JSON.stringify(shown102))
+    // MEASURED, NOT GATED (the spec's Verification): press → landed for a pack this browser has never drawn, then — Paper
+    // and back — for one it has. Three presses before the one save, which is still one revision.
+    const first102 = Date.now() - pressed102
+    const land102 = async (preset) => {
+      const at = Date.now()
+      await pk.locator(`[data-style-pack="${preset.id}"]`).click()
+      const ok = await pk.waitForFunction(({ id, said }) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id && document.getElementById('editor-said')?.textContent === said,
+        { id: preset.id, said: PACK102.PACK_WORDS.said(preset.name) }, { timeout: 15000 }).then(() => true, () => false)
+      return ok ? Date.now() - at : null
+    }
+    const paper102 = await land102(presets102.find((p) => p.id === 'paper'))
+    const cached102 = await land102(target102)
+    results.push(`RECORD step 102 — press → landed on production, the 300 ms crossfade included: ${first102} ms for a pack's first draw, ${paper102} ms back to Paper, ${cached102} ms returning to the pack already drawn`)
     await pk.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
     await pk.keyboard.press('ControlOrMeta+s')
     const synced102 = await pk.waitForFunction((synced) => document.querySelector('#editor-save-state [data-sync-state]')?.getAttribute('data-sync-state') === synced, SYNCED102, { timeout: 20000 }).then(() => true, () => false)
