@@ -2,9 +2,10 @@
 title: 'Story 6.4 — Editing tokens, per mode, with contrast checked live'
 type: 'feature'
 created: '2026-10-04'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: '423e9173ff88662fd9e5cb1091fdfb7287dd2f51'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
 
@@ -336,7 +337,7 @@ case join the render matrix behind the owner's sampled review.
 drawing.
 
 **Execution:**
-- [ ] **SCHEMA FIRST, ALONE (R-99)**. Files: `supabase/migrations/20261004200000_sync_style_pack_packs.sql`, `SCHEMA.sql`,
+- [x] **SCHEMA FIRST, ALONE (R-99)**. Files: `supabase/migrations/20261004200000_sync_style_pack_packs.sql`, `SCHEMA.sql`,
   `RLS-TEST.sql` and `supabase/tests/rls.sql`.
   - The new function `sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null, p_packs
     jsonb default null)` replaces the four-argument one, using 6.3's drop-and-replace.
@@ -742,7 +743,7 @@ it, and it wins over a drawing's word wherever the two differ.
 
 ## Questions for the owner
 
-Both are ruled; nothing is open.
+All three are ruled; nothing is open.
 
 ### Question 1 — Parts of the Style Pack editor were never drawn. May I hand you a Claude Design prompt to draw them first?
 
@@ -794,6 +795,27 @@ that same cream, so it should carry the same name in both places.
 colour is "Base", as in a section's Background setting. FR-E1's "background" stays as prose describing the role, not
 as a label.
 
+### Question 3 — May this story's database change go on the live database now? (R-99)
+
+**In plain English.** This story lets your own Style Packs (a recoloured Paper, a "Studio Warm" you make) be saved
+together with your sections in one save, so one ⌘Z can undo a pack edit. For that, the database's save step needs one
+small change. It is written, and it passes every check on a copy of the database; with the change left out, the check
+fails exactly where it should. Nothing on the live database had changed when this was asked.
+
+**An example.** Today a save says "these sections changed, and the pack is now Tangerine". After the change it can also
+say "and Tangerine's accent is now blue". A save that says nothing about packs, which is every save the live site makes
+today, works exactly as before.
+
+1. **Go (RECOMMENDED).** I apply the change, read it back, then check as a throwaway test account that today's live save
+   still works and the new one saves a pack; I delete that account and carry on with the story.
+2. **Apply it yourself.** In Supabase: your project → SQL Editor → New query, paste the whole of
+   `supabase/migrations/20261004200000_sync_style_pack_packs.sql` and press Run. Then say "Applied".
+3. **Hold the story.** Nothing changes on the live database, and Story 6.4 waits.
+
+**Ruled: option 1 (owner, 2026-10-04).** *"1. Go"*, asked in the Dev session. The migration was applied through
+`SUPABASE_DB_POOLER_URL` in this session, read back, and proved on production before any code (the Schema task and
+`## Verification`).
+
 ## Owner's manual test
 
 Do this on the real site after Deploy confirms the build, on a laptop at full width, in **Pilot sections**. Steps 12
@@ -838,6 +860,29 @@ already hold their one project, so the deployed walk proves duplication instead.
 - `python3 tools/verify-design-pass.py` and `python3 tools/inventory-gen.py --check` after the export lands -- expected:
   green.
 - `python3 tools/doc-audit.py --check`, twice -- expected: green.
+
+**Executed — Schema phase (2026-10-04), before any code:**
+- `bash supabase/tests/run-rls-gate.sh` -- exit 0: the schema diff between the migrations and `SCHEMA.sql` is empty, the
+  6.3 block's PASS lines all still pass against the five-argument function, and every assertion of the Story 6.4 block
+  passes (exactly one `sync_project_doc`, taking five arguments; a packs-only call writes `packs`, moves the revision once and
+  keeps `brand` and `preset`; docs, a preset and packs land in one call; a stale base writes none of them; a preset-only
+  and a docs-only call leave `packs` byte-equal; a string, an array and a JSON-null `p_packs` each answer null and write
+  nothing; a scalar becomes `{packs}`; another tenant's project answers null and keeps its packs; anon 42501).
+  **Control:** the same gate in a scratch copy with the migration withheld and `SCHEMA.sql` at HEAD aborts at the 6.4
+  block, "1 sync_project_doc functions exist, the widest taking 4 arguments" (exit 3).
+- **Supabase production, `SUPABASE_DB_POOLER_URL`** (the owner's go, Question 3; the key read inside the script, nothing
+  on argv, nothing printed): before the apply, `pg_proc` held one `sync_project_doc(uuid,jsonb,bigint,text)`, definer,
+  anon not executable, authenticated executable. The migration was applied in one transaction. After it, `pg_proc` holds
+  exactly one `sync_project_doc(uuid,jsonb,bigint,text,jsonb)` with the same definer flag and grants, and its `prosrc`
+  is byte-identical to the file's body (1,431 characters).
+- **Supabase production over PostgREST, `SUPABASE_URL` + `SUPABASE_SECRET_KEY` + `SUPABASE_PUBLISHABLE_KEY`**, as a
+  throwaway user holding a real session (generate_link + verifyOtp) on its own project seeded
+  `{brand: {seed: '#123456'}, preset: 'paper'}`: (a) the deployed route's four-named-argument call (`p_preset:
+  'tangerine'`, no docs) answered `{applied: true, revision: 1}` and wrote no `packs`; (b) the settings page's
+  three-named-argument call answered `{applied: true, revision: 2}` and left `style_pack` as it was; (c) a five-argument
+  call with Tangerine's record (light accent `#1E6BFF`) answered `{applied: true, revision: 3}`, and `style_pack` now
+  holds `brand`, `packs` and `preset`, with `packs.tangerine.light.accent` `#1E6BFF`; (d) the control: anon (no session)
+  answered 401 `42501` and the revision stayed 3. The user was deleted (200); the user count was 13 before and after.
 
 **Real services (R-82):**
 - **Supabase production**:

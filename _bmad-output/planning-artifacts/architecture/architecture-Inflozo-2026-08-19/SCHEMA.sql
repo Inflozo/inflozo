@@ -1749,10 +1749,18 @@ grant  execute on function public.restore_account() to authenticated;
 -- retries for ever. `p_preset` defaults to null, and the three-argument function is gone rather than kept
 -- beside it — two overloads would make a three-argument call ambiguous to PostgREST.
 --
--- Mirrors `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql` and
--- `20261004120000_sync_style_pack_preset.sql`; the RLS gate diffs the database the migrations build
--- against the one this file builds, so the two move together.
-create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null)
+-- STORY 6.4 — THE SAVE CARRIES THE PROJECT'S OWN PACKS. A preset edited in this project, or a pack the
+-- project made, is a full authored record under `style_pack.packs[id]`, and every gesture that changes one
+-- is one edit (FR-E3, FR-D9, §AD1), so `p_packs` — the WHOLE map, defaulting to null — is written beside
+-- `preset` in the same compare-and-set. The stored object keeps every key it was not given (`brand`), and
+-- one that is not an object starts from `{}`. A `p_packs` that is not an object answers null and writes
+-- nothing, as a non-object `p_docs` does; the route validates every record before the call (AD-36). The
+-- four-argument function is gone for the same reason the three-argument one went.
+--
+-- Mirrors `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql`,
+-- `20261004120000_sync_style_pack_preset.sql` and `20261004200000_sync_style_pack_packs.sql`; the RLS
+-- gate diffs the database the migrations build against the one this file builds, so the two move together.
+create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null, p_packs jsonb default null)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
@@ -1760,7 +1768,8 @@ declare
   current_rev bigint;
   k text;
 begin
-  if owner_id is null or p_docs is null or jsonb_typeof(p_docs) <> 'object' then
+  if owner_id is null or p_docs is null or jsonb_typeof(p_docs) <> 'object'
+     or (p_packs is not null and jsonb_typeof(p_packs) <> 'object') then
     return null;
   end if;
 
@@ -1786,9 +1795,10 @@ begin
   update public.projects
      set revision = current_rev + 1,
          style_pack = case
-           when p_preset is null then style_pack
-           when jsonb_typeof(style_pack) = 'object' then jsonb_set(style_pack, '{preset}', to_jsonb(p_preset))
-           else jsonb_build_object('preset', p_preset)
+           when p_preset is null and p_packs is null then style_pack
+           else (case when jsonb_typeof(style_pack) = 'object' then style_pack else '{}'::jsonb end)
+             || (case when p_preset is null then '{}'::jsonb else jsonb_build_object('preset', p_preset) end)
+             || (case when p_packs is null then '{}'::jsonb else jsonb_build_object('packs', p_packs) end)
          end
    where id = p_project;
 
@@ -1799,8 +1809,8 @@ end $$;
 -- reachable without a session — `auth.uid()` is null for anon and the body returns null on the first
 -- line — but "returns null" is not the same as "cannot be called", and RLS-TEST.sql asserts the second
 -- (42501) rather than the first.
-revoke execute on function public.sync_project_doc(uuid, jsonb, bigint, text) from public, anon;
-grant  execute on function public.sync_project_doc(uuid, jsonb, bigint, text) to authenticated;
+revoke execute on function public.sync_project_doc(uuid, jsonb, bigint, text, jsonb) from public, anon;
+grant  execute on function public.sync_project_doc(uuid, jsonb, bigint, text, jsonb) to authenticated;
 
 -- ============================================================================
 -- 15. Story 5.24b — R-223: a ticket whose sign-in session has ended is refused at once

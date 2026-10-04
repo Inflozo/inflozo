@@ -1946,3 +1946,185 @@ reset role;
 
 delete from auth.users where id in ('66666666-6300-0000-0000-000000000001',
                                     '66666666-6300-0000-0000-000000000002');
+
+-- ── STORY 6.4 — the save carries the project's own Style Packs, in the same compare-and-set ─────────────
+--
+-- BEHAVIOURAL, for 5.8's reason. `sync_project_doc()` gains `p_packs` (default null) and writes it WHOLE into
+-- `style_pack.packs` in the transaction that moves the revision, beside `preset`. So: a packs-only call applies
+-- and moves the revision once, keeping `brand` and `preset`; docs, a preset and packs land in one call; a stale
+-- base writes none of them; a null `p_packs` — every call the code deployed before this story makes — leaves
+-- `packs` byte-equal; a `p_packs` that is not an object answers null and writes nothing, as a non-object
+-- `p_docs` does; a scalar the owner grant could leave there becomes `{packs}`; another tenant's project answers
+-- null and keeps its packs; anon cannot call it; and the four-argument function is GONE, replaced by the one
+-- that takes `p_packs`, because two overloads with defaults make a call ambiguous to PostgREST.
+
+reset role;
+
+delete from auth.users where id in ('66666666-6400-0000-0000-000000000001',
+                                    '66666666-6400-0000-0000-000000000002');
+insert into auth.users(id) values ('66666666-6400-0000-0000-000000000001'),
+                                  ('66666666-6400-0000-0000-000000000002');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-6400-0000-0000-000000000001','66666666-6400-0000-0000-000000000001','Own packs','own-packs-64',
+   '{"brand":{"seed":"#123456"},"preset":"paper"}');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('dddddddd-6400-0000-0000-000000000002','66666666-6400-0000-0000-000000000002','Theirs','theirs-64',
+   '{"preset":"paper","packs":{"custom-1":{"name":"Theirs"}}}');
+
+do $$
+declare n int; widest int;
+begin
+  select count(*), max(p.pronargs) into n, widest from pg_proc p join pg_namespace s on s.oid = p.pronamespace
+   where s.nspname = 'public' and p.proname = 'sync_project_doc';
+  if n <> 1 or widest <> 5 then
+    raise exception 'FAIL (6.4): % sync_project_doc functions exist, the widest taking % arguments — the four-argument one must be replaced by the one taking p_packs', n, widest;
+  end if;
+  raise notice 'PASS (6.4): exactly one sync_project_doc exists, and it takes p_packs';
+end $$;
+
+set role authenticated;
+set request.jwt.claim.sub = '66666666-6400-0000-0000-000000000001';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-6400-0000-0000-000000000001';
+  edited jsonb = '{"paper":{"name":"Paper","light":{"accent":"#1E6BFF"}}}'::jsonb;
+  made jsonb = '{"paper":{"name":"Paper","light":{"accent":"#1E6BFF"}},"custom-1":{"name":"Studio Warm"}}'::jsonb;
+  answer jsonb; rev bigint; now_rev bigint; pack jsonb; stored jsonb; before text;
+begin
+  -- (1) packs with no doc and no preset is a write: applied, the revision moved once, `brand` and `preset` untouched.
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, edited);
+  if (answer->>'applied')::boolean is not true or (answer->>'revision')::bigint <> rev + 1 then
+    raise exception 'FAIL (6.4): a packs-only call answered % on base %', answer, rev;
+  end if;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if pack->'packs' is distinct from edited or now_rev <> rev + 1 then
+    raise exception 'FAIL (6.4): a packs-only call left style_pack % at revision %', pack, now_rev;
+  end if;
+  if pack->'brand'->>'seed' is distinct from '#123456' or pack->>'preset' is distinct from 'paper' then
+    raise exception 'FAIL (6.4): the packs write lost `brand` or `preset` (%)', pack;
+  end if;
+  raise notice 'PASS (6.4): a packs-only call writes style_pack.packs, moves the revision once and keeps brand and preset';
+
+  -- (2) docs, a preset and packs in ONE call: all three land, one revision.
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"p"}]}'::jsonb), rev, 'custom-1', made);
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1 or pack->>'preset' <> 'custom-1'
+     or pack->'packs' is distinct from made or stored->'instances'->0->>'instanceId' <> 'p' then
+    raise exception 'FAIL (6.4): docs, a preset and packs in one call: % — pack %, revision %, doc %', answer, pack, now_rev, stored;
+  end if;
+  raise notice 'PASS (6.4): docs, a preset and packs land in one call and move the revision once';
+
+  -- (3) a STALE base writes none of them.
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"CLOBBER"}]}'::jsonb), rev, 'mono', '{}'::jsonb);
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if (answer->>'applied')::boolean is not false or now_rev <> rev + 1 or pack->>'preset' <> 'custom-1'
+     or pack->'packs' is distinct from made or stored->'instances'->0->>'instanceId' <> 'p' then
+    raise exception 'FAIL (6.4): a stale base wrote something: % — pack %, revision %, doc %', answer, pack, now_rev, stored;
+  end if;
+  raise notice 'PASS (6.4): a stale base writes neither the docs, the preset nor the packs';
+
+  -- (4) a NULL p_packs — a preset-only call, and a docs-only call, as the deployed code makes — leaves `packs` byte-equal.
+  before := (pack->'packs')::text;
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, 'neon');
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1 or pack->>'preset' <> 'neon'
+     or (pack->'packs')::text is distinct from before then
+    raise exception 'FAIL (6.4): a preset-only call touched packs (% against %), or did not apply (%)', pack->'packs', before, answer;
+  end if;
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj, jsonb_build_object('home', '{"instances":[]}'::jsonb), rev);
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1 or pack->>'preset' <> 'neon'
+     or (pack->'packs')::text is distinct from before then
+    raise exception 'FAIL (6.4): a docs-only call touched packs (% against %), or did not apply (%)', pack->'packs', before, answer;
+  end if;
+  raise notice 'PASS (6.4): a call with no p_packs applies and leaves packs byte-equal';
+
+  -- (5) a `p_packs` that is not an object answers null and writes nothing — a string, an array and JSON null alike.
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, '"junk"'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (6.4): a string p_packs answered %', answer;
+  end if;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, 'mono', '[]'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (6.4): an array p_packs answered %', answer;
+  end if;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, 'null'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (6.4): a JSON-null p_packs answered %', answer;
+  end if;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if now_rev <> rev or pack->>'preset' <> 'neon' or (pack->'packs')::text is distinct from before then
+    raise exception 'FAIL (6.4): a non-object p_packs wrote something — pack %, revision % on %', pack, now_rev, rev;
+  end if;
+  raise notice 'PASS (6.4): a p_packs that is not an object answers null and writes nothing';
+end $$;
+
+-- (6) a scalar `style_pack`, written by hand through the owner grant, becomes `{packs}` — never an error.
+update public.projects set style_pack = '"hand-written"'::jsonb where id = 'cccccccc-6400-0000-0000-000000000001';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-6400-0000-0000-000000000001';
+  answer jsonb; rev bigint; pack jsonb;
+begin
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, null, '{"custom-1":{"name":"Studio Warm"}}'::jsonb);
+  select style_pack into pack from public.projects where id = c_proj;
+  if (answer->>'applied')::boolean is not true
+     or pack is distinct from '{"packs":{"custom-1":{"name":"Studio Warm"}}}'::jsonb then
+    raise exception 'FAIL (6.4): a scalar style_pack answered % and became %', answer, pack;
+  end if;
+  raise notice 'PASS (6.4): a scalar style_pack is replaced by {packs}';
+end $$;
+
+-- (7) ANOTHER TENANT'S PROJECT: null, and its packs untouched.
+do $$
+declare answer jsonb;
+begin
+  answer := public.sync_project_doc('dddddddd-6400-0000-0000-000000000002', '{}'::jsonb, 1::bigint, null,
+                                    '{"custom-1":{"name":"Clobbered"}}'::jsonb);
+  if answer is not null then
+    raise exception 'FAIL (6.4): another tenant''s project answered %', answer;
+  end if;
+end $$;
+
+reset role;
+
+do $$
+declare pack jsonb;
+begin
+  select style_pack into pack from public.projects where id = 'dddddddd-6400-0000-0000-000000000002';
+  if pack is distinct from '{"preset":"paper","packs":{"custom-1":{"name":"Theirs"}}}'::jsonb then
+    raise exception 'FAIL (6.4): another tenant wrote its packs into this project (%)', pack;
+  end if;
+  raise notice 'PASS (6.4): another tenant''s project answers null and keeps its packs';
+end $$;
+
+-- (8) anon cannot call the five-argument function.
+set request.jwt.claim.sub = '';
+set role anon;
+
+do $$
+declare answered text;
+begin
+  answered := public.sync_project_doc('cccccccc-6400-0000-0000-000000000001','{}'::jsonb,0::bigint,null,'{}'::jsonb)::text;
+  raise exception 'FAIL (6.4): anon executed sync_project_doc() and got %', coalesce(answered,'null');
+exception
+  when insufficient_privilege then
+    raise notice 'PASS (6.4): anon cannot execute the five-argument sync_project_doc() (42501)';
+end $$;
+
+reset role;
+
+delete from auth.users where id in ('66666666-6400-0000-0000-000000000001',
+                                    '66666666-6400-0000-0000-000000000002');
