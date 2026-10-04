@@ -2795,6 +2795,7 @@ affordance** (UX-DR15)
 **And** Site Remix's pack re-roll returns — "Re-roll what — Style Pack · Designs · Both", with single-step undo — which Story 5.12 left absent while Paper was the only pack (FR-D17, DW-314, from Story 6.1's Create, 2026-10-03).
 **And** a pack can be chosen wherever Story 6.2 shows the twelve without a choice: the New project window offers them as D4a draws its Style Pack row, and a project starts in the pack chosen there; and the Style Pack card and roster are reachable on a tablet and in any window below 1280, where Story 5.22's Controls overlay opens only for a selection (DW-322, from Story 6.2's Create, 2026-10-03).
 **And** the card, the roster and `/pilots`' Pack menu are shown, by a check, to follow a stored pack that is not Paper, and the app's pages carry no more of the font pool's record than they draw from (DW-325, DW-323, from Story 6.2's Review, 2026-10-03).
+**And** a pack change is an edit — one journal entry and one ⌘Z, saved with the docs by `sync_project_doc` in the same transaction — so the story opens with a Schema phase (FR-D9, `addendum.md` §AD1, R-99; from Story 6.3's Create, 2026-10-04).
 
 **FRs:** FR-E2 (the moment). · **Frame:** `S7 Style Packs.dc.html` S7b. · **Owner test:** yes.
 
