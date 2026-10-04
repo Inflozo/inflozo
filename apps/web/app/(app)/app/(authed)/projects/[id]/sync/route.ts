@@ -149,7 +149,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return there?.success === true && stable(there.data) === stable(parsed[key])
     })
     const packThere = preset === undefined || (project?.style_pack as { preset?: unknown } | null | undefined)?.preset === preset
-    if (same && packThere) return json(200, { applied: true, revision: answer.revision })
+    // review, 2026-10-04 — A PACK-ONLY BODY PROVES FAR LESS THAN A DOC DOES: with no doc, `same` is true of nothing at all,
+    // and one of twelve preset ids matching says nothing about who moved the revision. So it is "already there" only where
+    // the server stands exactly ONE write past the base — this body's own, its answer lost. Further on, another session
+    // wrote docs this editor has never read, and adopting that revision over them would let its next edit overwrite them.
+    const ours = keys.length > 0 || answer.revision === (base as number) + 1
+    if (same && packThere && ours) return json(200, { applied: true, revision: answer.revision })
   }
   return json(answer.applied ? 200 : 409, { applied: answer.applied, revision: answer.revision })
 }

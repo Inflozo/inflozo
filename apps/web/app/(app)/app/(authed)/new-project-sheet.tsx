@@ -8,7 +8,7 @@ import { ring } from '@/components/kit/greyed'
 import { AlertCircle, X } from '@/components/kit/icons'
 import { PackCell } from '@/components/kit/pack-cell'
 import { STARTER_DOOR, type Door } from '@/lib/first-run'
-import { DEFAULT_PRESET, type PackCellData } from '@/lib/pack-switch'
+import { DEFAULT_PRESET, PACK_WORDS, type PackCellData } from '@/lib/pack-switch'
 import { capSentence, goProLabel, includesProjects, type PlanId } from '@/lib/plan'
 import { NEW_PROJECT_DIALOG } from '@/lib/projects'
 import { createProject, type ActionResult } from './projects/actions'
@@ -138,8 +138,10 @@ const GoPro = () => (
  */
 export function NewProjectSheet({ atCap, plan, packs }: { atCap: boolean; plan: PlanId; packs: readonly PackCellData[] }) {
   const dialog = useRef<HTMLDialogElement>(null)
-  /** Story 6.3 — the form, so a sheet closed and opened again starts on Paper (`reset` restores `defaultChecked`) */
-  const form = useRef<HTMLFormElement>(null)
+  /** Story 6.3 — the pack chosen. CONTROLLED (review, 2026-10-04): React resets a form's uncontrolled fields once its
+   *  action answers, so a Create that failed put Paper back under the Banner and the retry made a Paper project. A sheet
+   *  closed and opened again starts on Paper. */
+  const [preset, setPreset] = useState(DEFAULT_PRESET)
   const [state, action, pending] = useActionState<ActionResult | null, FormData>(createProject, null)
   // A result the sheet was CLOSED on is spent — reopened, no stale Banner (review, 2026-09-05), and
   // no stale D4b either: the `at_cap` action revalidated the page before answering, so the `atCap`
@@ -171,7 +173,7 @@ export function NewProjectSheet({ atCap, plan, packs }: { atCap: boolean; plan: 
       aria-labelledby="new-project-title"
       onClose={() => {
         setSeen(state)
-        form.current?.reset()
+        setPreset(DEFAULT_PRESET)
       }}
       // `m-auto`: Preflight resets the UA's centring margin — see project-menu.tsx. Story 6.3: and it scrolls inside
       // itself where the window is shorter than the twelve packs make it
@@ -218,7 +220,6 @@ export function NewProjectSheet({ atCap, plan, packs }: { atCap: boolean; plan: 
       {/* Story 6.3 — the form holds the Style Pack row's radios as well as the buttons; `contents`, so the dialog's own
           column lays its two parts out exactly as it laid out the row and the buttons before */}
       <form
-        ref={form}
         action={action}
         // A second submit while the first is in flight is refused HERE, not by the button's label:
         // the kit's `Button` is never `disabled` and React queues form actions rather than dropping
@@ -246,13 +247,13 @@ export function NewProjectSheet({ atCap, plan, packs }: { atCap: boolean; plan: 
         // the group is named by its row's own words (a legend would have to stand first, alone, outside the row D4a draws)
         <fieldset data-new-project-packs aria-labelledby="new-project-packs" className="flex min-w-0 flex-col gap-[9px] border-t border-line pt-[18px]">
           <div className="flex items-center gap-2">
-            <span id="new-project-packs" className="text-control-label font-medium text-ink-soft">Style Pack</span>
+            <span id="new-project-packs" className="text-control-label font-medium text-ink-soft">{PACK_WORDS.name}</span>
             <span className="ml-auto text-helper-caption text-ink-soft">Change it any time, in any project.</span>
           </div>
           <div className="grid grid-cols-3 gap-[6px]">
             {packs.map((p) => (
               <label key={p.id} data-new-project-pack={p.id} className="relative block cursor-pointer rounded-sm">
-                <input type="radio" name="preset" value={p.id} defaultChecked={p.id === DEFAULT_PRESET} className="peer sr-only" />
+                <input type="radio" name="preset" value={p.id} checked={p.id === preset} onChange={() => setPreset(p.id)} className="peer sr-only" />
                 <PackCell
                   name={p.name}
                   glyphFamily={p.glyphFamily}

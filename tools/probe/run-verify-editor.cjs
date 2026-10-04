@@ -4235,7 +4235,9 @@ async function main() {
       JSON.stringify(await pageNames()) === JSON.stringify(beforeDice512.names), JSON.stringify({ wore88, rerolled88, said88 }))
     await page.locator('section[aria-label="Canvas"]').focus()
     await page.keyboard.press('ControlOrMeta+z')
-    const undone88 = await page.waitForFunction(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === 'paper', null, { timeout: 10000 }).then(() => true, () => false)
+    // review, 2026-10-04 — `data-pack` is set when the canvas WEARS the pack, at the start of the transition; the words come
+    // once it has LANDED. Reading them at the first was a race this walk lost on production (the said line still Remix's)
+    const undone88 = await page.waitForFunction((said) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === 'paper' && document.getElementById('editor-said')?.textContent === said, PACK88.PACK_WORDS.said('Paper'), { timeout: 10000 }).then(() => true, () => false)
     check('step 88 — Story 6.3: ONE ⌘Z puts Paper back, crossfaded and said — the re-roll was one edit',
       undone88 && (await saidNow59()) === PACK88.PACK_WORDS.said('Paper') && (await page.locator('#editor-undo').getAttribute('aria-disabled')) === null,
       JSON.stringify({ undone88, said: await saidNow59() }))
@@ -7359,7 +7361,9 @@ async function main() {
     // S7b's pill from the press until the canvas lands — watched for BEFORE the press, so a quick landing cannot hide it
     const pill102 = pk.waitForSelector('[data-pack-pill]', { timeout: 5000 }).then((h) => h.textContent(), () => null)
     await pk.locator(`[data-style-pack="${target102.id}"]`).click()
-    const landed102 = await pk.waitForFunction((id) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id, target102.id, { timeout: 15000 }).then(() => true, () => false)
+    // worn AND landed (review, 2026-10-04): `data-pack` alone is the start of the transition, and the words are its end
+    const landed102 = await pk.waitForFunction(({ id, said }) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === id && document.getElementById('editor-said')?.textContent === said,
+      { id: target102.id, said: PACK102.PACK_WORDS.said(target102.name) }, { timeout: 15000 }).then(() => true, () => false)
     const shown102 = await pk.evaluate(() => {
       const doc = document.querySelector('section[aria-label="Canvas"] iframe').contentDocument
       return {
@@ -7387,6 +7391,23 @@ async function main() {
     const still102 = await row102()
     check('step 102 — the sync route refuses an unknown preset with a 422 in its own words, and writes nothing',
       refused102.status === 422 && refused102.body === 'Not a Style Pack' && still102?.revision === after102?.revision && still102?.style_pack?.preset === target102.id, JSON.stringify({ refused102, still102 }))
+    // review, 2026-10-04 — A PACK-ONLY BODY FROM A STALE BASE: another pack is a real conflict (409); the pack the server
+    // holds, ONE write past the base, is this body's own write retried (200, nothing moved); and the same body from a base
+    // further back is NOT adopted (409) — a matching preset proves nothing about docs written since
+    const stale102 = async (base, preset) => pk.evaluate(async ({ url, base, preset }) => {
+      const r = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ base, docs: {}, preset }) })
+      return { status: r.status, body: await r.json().catch(() => null) }
+    }, { url: `${PREFIX}/projects/${P}/sync`, base, preset })
+    const rev102 = after102?.revision ?? 0
+    const other102 = await stale102(rev102 - 1, presets102[4].id)
+    const own102 = await stale102(rev102 - 1, target102.id)
+    const far102 = rev102 >= 2 ? await stale102(rev102 - 2, target102.id) : null
+    const unmoved102 = await row102()
+    check('step 102 — a stale pack-only body: another pack is refused 409, the server\'s own pack one write past the base is adopted 200, and nothing is written by either',
+      other102.status === 409 && own102.status === 200 && own102.body?.applied === true && own102.body?.revision === rev102 &&
+      unmoved102?.revision === rev102 && unmoved102?.style_pack?.preset === target102.id, JSON.stringify({ other102, own102, unmoved102 }))
+    if (far102) check('step 102 — the same matching pack from a base TWO writes back is refused 409: never adopted over docs written since', far102.status === 409, JSON.stringify(far102))
+    else console.log('RECORD step 102 — the revision is below 2, so the two-writes-back control could not be posed')
     await handBack(pk)
     await packContext.close()
     // A FRESH BROWSER opens the project in its pack: no device record, so the server's

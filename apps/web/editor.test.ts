@@ -365,6 +365,8 @@ test('Story 6.3: the sync route refuses a preset this build does not know BEFORE
   assert.match(route, /p_preset: \(preset as string \| undefined\) \?\? null/, 'the preset reaches the RPC, or null')
   // a body with only a preset is a write; one with neither docs nor a preset is the old 400
   assert.match(route, /keys\.length === 0 && preset === undefined\) return no\(400, 'Nothing to write'\)/)
+  // review: a pack-only body is "already there" only one write past its base — never adopted over another session's docs
+  assert.match(route, /const ours = keys\.length > 0 \|\| answer\.revision === \(base as number\) \+ 1\n\s+if \(same && packThere && ours\) return json\(200/)
 })
 
 test('Story 6.3: Remix\'s Both writes neither when a design is refused — the fold first, the pack only once it landed, one txn (FR-D9)', () => {

@@ -194,7 +194,7 @@ export function referenceSwatches(mode: 'light' | 'dark' = 'light', pack = DEFAU
  *  dots (the engine's light values), the Background role's swatches per mode, and its canvas `1-tokens` block (Paper's is
  *  `reference-tokens.css`, which `referenceTokensCss` emits byte for byte — `test-vocabulary.mjs` holds the two equal)
  *  and `1b-faces` rules from the canvas route's own `?font=` — the very strings `/canvas?pack=` serves (`pilots.ts`'s
- *  `packHead`; `style-pack.test.ts` holds the two equal). One derivation, so a switch paints the canvas the document a
+ *  `packHead`; `pilots.test.ts` holds the two equal). One derivation, so a switch paints the canvas the document a
  *  reload would be served. ponytail: derived per editor read (twelve engine runs, milliseconds); cache it if the read
  *  ever shows it. */
 export function packChoices(): PackChoice[] {

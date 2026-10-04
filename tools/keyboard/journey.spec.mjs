@@ -760,6 +760,9 @@ test('6.3 · a project stored in Mono opens in Mono (DW-325): the card, the list
   }, REVIEW.ROLE_TOKENS)
   expect(dots.length, 'the control: the role offers coloured dots').toBeGreaterThan(1)
   for (const d of dots) expect(d.dot, d.role).toBe(d.canvas)
+  // review, 2026-10-04 — the design ring's tiles wear Mono too (they had no check: `pack` taken off the picker stayed green)
+  await selectRinged(page)
+  await expect(page.locator('#editor-design iframe').first()).toHaveAttribute('src', /pack=mono/)
   // a Section Picker card wears Mono too: its frame is asked for in Mono and resolves Mono's token
   await page.locator('section[aria-label="Canvas"]').focus()
   await page.keyboard.press('ControlOrMeta+k')
@@ -1758,7 +1761,7 @@ test('R-164: ⇧R opens the confirm AT ONCE on Cancel, and Esc leaves the canvas
   // R-161: no tick-box and no "Re-roll where" — ABSENT, never greyed (UX-DR3, R-118). Story 6.3: B8's "Re-roll what" is
   // the one group, its three radio cards opening on Designs where a ring moves
   await expect(remixDialog(page).locator('input[type="checkbox"], [role="checkbox"]')).toHaveCount(0)
-  await expect(remixDialog(page).locator('input[type="radio"]')).toHaveCount(3)
+  await expect(remixDialog(page).locator('input[type="radio"]')).toHaveCount(REMIX.REMIX_CHOICES.length)
   await expect(remixDialog(page).locator('input[value="designs"]')).toBeChecked()
   await expect(remixDialog(page)).not.toContainText(/Every page|header and footer|Re-roll where/i)
 

@@ -2,7 +2,7 @@
 title: 'Story 6.3 — The pack-switcher moment'
 type: 'feature'
 created: '2026-10-04'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '6abc26ebddc13eff84e9402b24fe43e46a81f1d2'
@@ -324,6 +324,40 @@ AD-15's flush contract (:212) and the FR-E row (:645); `epic-6-context.md`; the 
   tools/check-traces.mjs`, `bash supabase/tests/run-rls-gate.sh`, `bash tools/matrix/run-matrix-gate.sh` (no rebaseline) and
   `python3 tools/doc-audit.py --check` are green.
 
+### Review Findings
+
+*Code review, 2026-10-04 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier, the last run in the main session). CI was green on the Dev head and it was deployed, so the walks Dev wrote
+and could not run were run first, on that build. Every patch below is applied in the Review commit. No finding is the
+owner's to decide. The rest were dismissed: as unreachable while presets are only ever added (an undo or a sign-out
+holding a preset the build has dropped — the save's half is noted on DW-304), as the docs' own long-standing behaviour
+(a lost answer followed by another change meets the conflict dialog), as no new exposure (`style_pack` is already
+owner-writable, so the RPC storing an unvalidated preset adds nothing), as the Kit's own mapping (B8's chosen card is
+`coral-tint`, as every chosen radio card is), as the spec's own words ("the twelve"), or as calls the spec made (the
+faces wait reads one face per family; `packChoices` is derived per read).*
+
+- [x] [Review][Patch] **A pack-only save from a stale base was adopted over another session's docs.** With no doc in
+  the body, the route's "already there" test compared nothing, so a pending pack equal to the server's (a switch
+  undone before it was sent) answered 200 at ANY later revision: the editor took that revision over docs it had never
+  read, and its next edit would have overwritten them. Now adopted only one write past the base — the body's own write,
+  its answer lost [`sync/route.ts`; `editor.test.ts`; `run-verify-editor.cjs` step 102 posts all three cases]
+- [x] [Review][Patch] The New project window put Paper back after a Create that failed: React resets a form's
+  uncontrolled fields once its action answers, so the retry made a Paper project. The pack chosen is now state
+  [`new-project-sheet.tsx`]
+- [x] [Review][Patch] The route's "already equal → 200" half of the Conflict row had no executed check, though the
+  matrix audit called it held by the RLS gate (which proves the RPC's half) — step 102's new posts are it
+  [`run-verify-editor.cjs`]
+- [x] [Review][Patch] Nothing checked the design ring's tiles wearing the pack: the Mono stop now reads a tile's
+  address; red with `pack` taken off the picker (the control), then restored [`journey.spec.mjs`]
+- [x] [Review][Patch] `check-traces.mjs` threw on a tree with no build before its own "run `pnpm build` first" refusal
+  could be reached [`tools/check-traces.mjs`]
+- [x] [Review][Patch] R-170 and standing rule 4, three strays: the New project row's "Style Pack" was a literal beside
+  the word list it imports, the journey counted Remix's radio cards as a written 3, and a comment named
+  `style-pack.test.ts` for a check that lives in `pilots.test.ts` [`new-project-sheet.tsx`; `journey.spec.mjs`;
+  `lib/style-pack.ts`]
+- [x] [Review][Patch] DW-322, DW-325 and DW-314 were closed citing deployed walks that Dev had written and not run —
+  run at this Review (`### Results — Review` below), so the closures now stand on executed evidence
+
 ## Spec Change Log
 
 - **Dev (2026-10-04), where the build had to differ from the letter of a task** — each recorded where it lives:
@@ -574,3 +608,39 @@ changes that project's pack; step 13 puts it back.
   the font pool's record. This was rebuilt from the final tree, so the subagent's build that was two edits stale is
   replaced.
 - `pnpm keyboard`, whole, no `--grep`: **169 passed**, exit 0.
+
+### Results — Review (2026-10-04)
+
+Keys are named by their variable in `tools/probe/.env`, never by value. Node 24.18.1 throughout. The real-infra layer
+ran in the main session.
+
+**The Dev head `51fd54ca`, before any patch.**
+- **GitHub Actions** (`GITHUB_TOKEN`, read-only): `ci.yml` run 37176551890 `check`, `rls` and `deploy` **success**;
+  `matrix.yml` run 37176551874 `matrix` **success**. So the Dev build was on production when the walks ran.
+- **R-99, Supabase production through `SUPABASE_DB_POOLER_URL`, read-only:** `pg_proc` holds exactly one
+  `sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text)`, security definer, anon not executable,
+  authenticated executable, its `prosrc` byte-identical to the migration file's body. **Control:**
+  `'public.sync_project_doc(uuid,jsonb,bigint)'::regprocedure` answers `42883` — the three-argument function is gone.
+  The schema is as new as the code.
+- **`run-verify-editor.cjs` on app.inflozo.com** (`SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `VERCEL_TOKEN`,
+  `VERCEL_TEAM_ID`): 697 PASS, **2 FAIL**, users 13 → 13. Both FAILs were the walk's own race, not the product: it
+  waited for `data-pack`, which is set when the canvas WEARS the pack at the start of the transition, and read the
+  announcement there — step 102 read `said: ""` with `data-inflozo-switching` still on, step 88's ⌘Z read Remix's
+  sentence still standing. Patched to wait for the landing's words. What it did prove on production: step 88's
+  "Re-roll what" opening on Style Pack with Designs and Both greyed, and a pack re-roll (Paper → Mono) said once landed;
+  step 102's ⌘S writing `style_pack.preset = tangerine` with the seeded `brand` untouched and the revision 32 → 33; the
+  live route's 422 "Not a Style Pack" writing nothing; a fresh browser asking for `/canvas?v=51fd54ca89ff&pack=tangerine`
+  and wearing it; Paper back at the end with zero CSP violations.
+- **`run-verify-dashboard.py`** (`SUPABASE_DB_POOLER_URL` and the Supabase keys): all steps passed, users 13 after.
+  `sheet-packs`: the sheet's radios are the library's presets, Paper checked, every one in the form.
+  `created-in-pack`: Neon checked, `style_pack` read off the pooler `{"preset":"neon"}`, the card's ground Neon's own.
+- `run-verify-lock.cjs` and `run-verify-pilots.cjs` refuse a tree with uncommitted changes, and by then it had the
+  patches: run on the Review commit, below.
+
+**The patched tree.**
+- `pnpm check`: exit 0. `pnpm keyboard`, whole, no `--grep`: **169 passed**, exit 0. `pnpm build`: exit 0.
+  `node tools/check-traces.mjs`: "every route carries its files" and no client chunk carries the pool's record.
+- The Mono stop's new ring-tile check: pass; **red** with `pack={pack}` taken off the design picker (the tile's address
+  carried no `pack=`), then restored byte-identical — the control.
+- No SQL changed, so the RLS gate's result stands; nothing the matrix photographs changed (the New project window, the
+  save route and checks only).

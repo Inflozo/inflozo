@@ -8372,6 +8372,9 @@ location: `apps/web/app/(app)/app/(authed)/projects/[id]/(editor)/editor.tsx` (`
 reason: the honest answer is a state and a sentence no frame draws and no ruling gives (R-74, R-83). A 400 or 422
   needs a bug to reach it; a 404 needs the project deleted, or the account changed in the same browser, while the
   editor is open.
+  Story 6.3's Review (2026-10-04) adds one more of the same kind: the route's 422 "Not a Style Pack" for a pending
+  preset the deployed build does not hold — reachable only by a tab kept open across a build that drops a preset, and
+  the docs in the same body wait with it. The sign-out's send (`owedOf`) meets the same answer.
 
 ### DW-305: on an invite-only site, a section asking people to pay is not warned, though Ghost blocks its sign-up too
 

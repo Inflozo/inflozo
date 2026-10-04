@@ -109,7 +109,8 @@ if (shas.length === 0) {
   process.exit(2)
 }
 const STATIC = join(REPO, 'apps/web/.next/static')
-const chunks = readdirSync(STATIC, { recursive: true }).filter((f) => String(f).endsWith('.js')).map(String)
+// `existsSync` first (review, 2026-10-04): with no build `readdirSync` threw, and the refusal below was never reached
+const chunks = (existsSync(STATIC) ? readdirSync(STATIC, { recursive: true }) : []).filter((f) => String(f).endsWith('.js')).map(String)
 if (chunks.length === 0) {
   console.error(`REFUSED: ${relative(REPO, STATIC)} holds no script — run \`pnpm build\` first`)
   process.exit(2)
