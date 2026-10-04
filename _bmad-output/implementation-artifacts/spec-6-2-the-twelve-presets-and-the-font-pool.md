@@ -2,9 +2,9 @@
 title: 'Story 6.2 — The twelve presets and the font pool'
 type: 'feature'
 created: '2026-10-03'
-status: 'in-review'
+status: 'done'
 baseline_commit: '3f6449a3883f2a5c27623d1290667c79de99f322'
-owner_test: pending
+owner_test: passed
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
@@ -549,6 +549,10 @@ changes your projects.
 | 8 | same | Editor canvas | Look at the headings and paragraphs on the page. | — | Headings in Fraunces (softer, rounder than Georgia) and text in Inter — the same on any computer, even one without these fonts installed. |
 | 9 | same | Editor | Click the page once, then press **Tab** until **Change** is outlined; press **Enter**; press **Tab** a few times; then **Escape**. | — | The panel opens with the back arrow outlined, the pack list reads out, and Escape brings you back with **Change** outlined. |
 | 10 | same, in a second window | Editor, read-only | Open the same project in a second window and click **Change** there. | — | The list opens there too: looking is allowed while the other window edits. |
+
+## Owner's test findings
+
+**Passed (owner, 2026-10-04).** The owner walked `## Owner's manual test` on the deployed site and answered "passed". No findings.
 
 ## Verification
 
