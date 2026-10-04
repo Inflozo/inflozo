@@ -4224,6 +4224,10 @@ async function main() {
     // landed, every section keeping its design — and ONE ⌘Z puts Paper back, the pack's own entry in the journal
     const frame88 = () => page.evaluate(() => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack ?? null)
     const wore88 = await frame88()
+    // the undo arrow as it stands BEFORE the re-roll (review, 2026-10-04): "one edit" is one ⌘Z returning it to exactly
+    // this — asleep where the journal was empty, awake where it was not. The check used to assume awake, and failed on
+    // production over a correct undo because nothing was left to undo here
+    const undoWas88 = await page.locator('#editor-undo').getAttribute('aria-disabled')
     await page.locator('dialog[data-remix-confirm][open] [data-remix-go]').click()
     const rerolled88 = await page.waitForFunction((was) => {
       const now = document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack
@@ -4239,8 +4243,8 @@ async function main() {
     // once it has LANDED. Reading them at the first was a race this walk lost on production (the said line still Remix's)
     const undone88 = await page.waitForFunction((said) => document.querySelector('section[aria-label="Canvas"] iframe')?.dataset.pack === 'paper' && document.getElementById('editor-said')?.textContent === said, PACK88.PACK_WORDS.said('Paper'), { timeout: 10000 }).then(() => true, () => false)
     check('step 88 — Story 6.3: ONE ⌘Z puts Paper back, crossfaded and said — the re-roll was one edit',
-      undone88 && (await saidNow59()) === PACK88.PACK_WORDS.said('Paper') && (await page.locator('#editor-undo').getAttribute('aria-disabled')) === null,
-      JSON.stringify({ undone88, said: await saidNow59() }))
+      undone88 && (await saidNow59()) === PACK88.PACK_WORDS.said('Paper') && (await page.locator('#editor-undo').getAttribute('aria-disabled')) === undoWas88,
+      JSON.stringify({ undone88, said: await saidNow59(), undoWas88, undoNow: await page.locator('#editor-undo').getAttribute('aria-disabled') }))
     // the undo is owed to the server like any other: sent and heard here, so no later step meets a pack still pending
     await page.locator('header').click({ position: { x: 2, y: 2 } }).catch(() => {})
     await page.keyboard.press('ControlOrMeta+s')
