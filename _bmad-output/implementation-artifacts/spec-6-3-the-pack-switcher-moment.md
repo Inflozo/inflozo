@@ -2,9 +2,10 @@
 title: 'Story 6.3 — The pack-switcher moment'
 type: 'feature'
 created: '2026-10-04'
-status: 'ready-for-dev'
+status: 'in-progress'
 owner_test: pending
 review_loop_iteration: 0
+baseline_commit: '6abc26ebddc13eff84e9402b24fe43e46a81f1d2'
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']
 ---
 
@@ -206,7 +207,7 @@ AD-15's flush contract (:212) and the FR-E row (:645); `epic-6-context.md`; the 
 ## Tasks & Acceptance
 
 **Execution:**
-- [ ] **SCHEMA FIRST, ALONE (R-99)** — `supabase/migrations/20261004120000_sync_style_pack_preset.sql`,
+- [x] **SCHEMA FIRST, ALONE (R-99)** — `supabase/migrations/20261004120000_sync_style_pack_preset.sql`,
   `…/architecture-Inflozo-2026-08-19/SCHEMA.sql`, `RLS-TEST.sql`, `supabase/tests/rls.sql`:
   - `sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null)` REPLACES the three-argument
     function in one transaction (`drop function if exists …(uuid, jsonb, bigint)`, then `create or replace`), re-runnable,
@@ -414,7 +415,8 @@ exactly as before.
    read it back". I check it and carry on.
 3. **Hold the story.** Nothing changes, and Story 6.3 waits.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 1 (owner, 2026-10-04).** *"1. Go"*. The migration was applied through `SUPABASE_DB_POOLER_URL` in
+this session, read back, and proved on production before any code (the Schema task and `## Verification`).
 
 ## Owner's manual test
 
@@ -464,3 +466,22 @@ changes that project's pack; step 13 puts it back.
 - **GitHub Actions and Vercel** (`GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`): `check`, `rls`, `deploy` and
   `matrix.yml` green on the head, and production READY from it.
 - **Not touched:** T1 and T3 (no theme), Resend (no email), Dodo (no billing).
+
+**Executed — Schema phase (2026-10-04), before any code:**
+- `bash supabase/tests/run-rls-gate.sh` -- green: the schema diff between the migrations and `SCHEMA.sql` is empty, and the
+  Story 6.3 block's eight assertions pass (exactly one `sync_project_doc`; a preset-only call writes `preset`, moves the
+  revision once and keeps `brand`; docs and a preset land in one call; a stale base writes neither; a call with no preset
+  leaves `style_pack` byte-equal; a scalar becomes `{preset}`; another tenant's project answers null and keeps its pack;
+  anon 42501). **Control:** the same gate in a scratch copy with the migration withheld and `SCHEMA.sql` at HEAD aborts at
+  the 6.3 block, `function public.sync_project_doc(uuid, jsonb, bigint, unknown) does not exist` (exit 3).
+- **Supabase production, `SUPABASE_DB_POOLER_URL`** (the owner's go, Question 1): before the apply, `pg_proc` held one
+  `sync_project_doc(uuid,jsonb,bigint)`, definer, anon not executable, authenticated executable. The migration was applied in
+  one transaction. After it, `pg_proc` holds exactly one `sync_project_doc(uuid,jsonb,bigint,text)` with the same definer
+  flag and grants, and its `prosrc` is byte-identical to the file's body.
+- **Supabase production over PostgREST, `SUPABASE_URL` + `SUPABASE_SECRET_KEY` + `SUPABASE_PUBLISHABLE_KEY`**, as a
+  throwaway user holding a real session (generate_link + verifyOtp) on its own project seeded
+  `{brand: {seed}, preset: 'paper'}`: (a) the deployed route's three-named-argument call answered `{applied: true,
+  revision: 1}`, revision 0 → 1, `style_pack` untouched; (b) a four-argument call with `p_preset: 'tangerine'` and no docs
+  answered `{applied: true, revision: 2}`, `style_pack` `{brand: {seed: '#123456'}, preset: 'tangerine'}`; (c) the
+  control: anon (no session) answered 401 `42501` and the preset stayed `tangerine`. The user was deleted (200), and the
+  user count was 13 before and after.

@@ -1741,9 +1741,18 @@ grant  execute on function public.restore_account() to authenticated;
 --
 -- `updated_at` is set by the `_touch` triggers on both tables (§10c), so nothing here sets it.
 --
--- Mirrors `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql`; the RLS gate
--- diffs the database the migrations build against the one this file builds, so the two move together.
-create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint)
+-- STORY 6.3 — THE SAVE CARRIES THE STYLE PACK'S PRESET. A pack change is one edit (FR-D9, §AD1, AD-16),
+-- so the flush that sends the docs sends the pending preset with them: one call, one compare-and-set, one
+-- revision bump, and a refused call writes neither. Only `preset` is written (`jsonb_set`): "Use your
+-- brand" writes `brand` into the same column from the Sites page without the editor. A `style_pack` that
+-- is not an object is replaced by `{preset}` rather than raising, because a raise is a save the editor
+-- retries for ever. `p_preset` defaults to null, and the three-argument function is gone rather than kept
+-- beside it — two overloads would make a three-argument call ambiguous to PostgREST.
+--
+-- Mirrors `supabase/migrations/20260919120000_doc_sync_and_template_key_shape.sql` and
+-- `20261004120000_sync_style_pack_preset.sql`; the RLS gate diffs the database the migrations build
+-- against the one this file builds, so the two move together.
+create or replace function public.sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text default null)
 returns jsonb
 language plpgsql security definer set search_path = public as $$
 declare
@@ -1774,7 +1783,14 @@ begin
     on conflict (project_id, template_key) do update set doc = excluded.doc;
   end loop;
 
-  update public.projects set revision = current_rev + 1 where id = p_project;
+  update public.projects
+     set revision = current_rev + 1,
+         style_pack = case
+           when p_preset is null then style_pack
+           when jsonb_typeof(style_pack) = 'object' then jsonb_set(style_pack, '{preset}', to_jsonb(p_preset))
+           else jsonb_build_object('preset', p_preset)
+         end
+   where id = p_project;
 
   return jsonb_build_object('applied', true, 'revision', current_rev + 1);
 end $$;
@@ -1783,8 +1799,8 @@ end $$;
 -- reachable without a session — `auth.uid()` is null for anon and the body returns null on the first
 -- line — but "returns null" is not the same as "cannot be called", and RLS-TEST.sql asserts the second
 -- (42501) rather than the first.
-revoke execute on function public.sync_project_doc(uuid, jsonb, bigint) from public, anon;
-grant  execute on function public.sync_project_doc(uuid, jsonb, bigint) to authenticated;
+revoke execute on function public.sync_project_doc(uuid, jsonb, bigint, text) from public, anon;
+grant  execute on function public.sync_project_doc(uuid, jsonb, bigint, text) to authenticated;
 
 -- ============================================================================
 -- 15. Story 5.24b — R-223: a ticket whose sign-in session has ended is refused at once

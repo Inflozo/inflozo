@@ -1795,3 +1795,154 @@ end $$;
 reset role;
 
 delete from auth.users where id = '99999999-5524-0000-0000-00000000000b';
+
+-- ── STORY 6.3 — the save carries the Style Pack's preset, in the same compare-and-set ─────────────
+--
+-- BEHAVIOURAL, for 5.8's reason: a `has_function_privilege` passes on a function that is executable and
+-- writes the wrong rows. `sync_project_doc()` gains `p_preset` (default null) and writes it into
+-- `style_pack.preset` in the transaction that moves the revision, so every half of "one edit, one save"
+-- is asserted as the tenant: a preset-only call applies and moves the revision once; docs and a preset
+-- land together; a stale base writes neither; a null preset touches nothing of the column; `brand`, which
+-- the Sites page writes without the editor, survives every call; a scalar the owner grant could leave
+-- there becomes `{preset}` rather than an error the editor would retry for ever; another tenant's project
+-- answers null and keeps its pack; anon cannot call it; and the three-argument overload is GONE, because
+-- two overloads with a default make a three-argument call ambiguous to PostgREST.
+
+reset role;
+
+delete from auth.users where id in ('66666666-6300-0000-0000-000000000001',
+                                    '66666666-6300-0000-0000-000000000002');
+insert into auth.users(id) values ('66666666-6300-0000-0000-000000000001'),
+                                  ('66666666-6300-0000-0000-000000000002');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('cccccccc-6300-0000-0000-000000000001','66666666-6300-0000-0000-000000000001','Packed','packed-63',
+   '{"brand":{"seed":"#123456"},"preset":"paper"}');
+insert into public.projects(id,user_id,name,slug,style_pack) values
+  ('dddddddd-6300-0000-0000-000000000002','66666666-6300-0000-0000-000000000002','Theirs','theirs-63',
+   '{"preset":"paper"}');
+
+do $$
+declare n int;
+begin
+  select count(*) into n from pg_proc p join pg_namespace s on s.oid = p.pronamespace
+   where s.nspname = 'public' and p.proname = 'sync_project_doc';
+  if n <> 1 then
+    raise exception 'FAIL (6.3): % sync_project_doc functions exist — the three-argument one must be dropped, not kept beside', n;
+  end if;
+  raise notice 'PASS (6.3): exactly one sync_project_doc exists';
+end $$;
+
+set role authenticated;
+set request.jwt.claim.sub = '66666666-6300-0000-0000-000000000001';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-6300-0000-0000-000000000001';
+  answer jsonb; rev bigint; now_rev bigint; pack jsonb; stored jsonb;
+begin
+  -- (1) a preset with no doc is a write: applied, the revision moved once, `brand` untouched.
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, 'tangerine');
+  if (answer->>'applied')::boolean is not true or (answer->>'revision')::bigint <> rev + 1 then
+    raise exception 'FAIL (6.3): a preset-only call answered % on base %', answer, rev;
+  end if;
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if pack->>'preset' <> 'tangerine' or now_rev <> rev + 1 then
+    raise exception 'FAIL (6.3): a preset-only call left style_pack % at revision %', pack, now_rev;
+  end if;
+  if pack->'brand'->>'seed' is distinct from '#123456' then
+    raise exception 'FAIL (6.3): the preset write lost `brand` (%)', pack;
+  end if;
+  raise notice 'PASS (6.3): a preset-only call writes style_pack.preset, moves the revision once and keeps brand';
+
+  -- (2) docs and a preset in ONE call: both land, one revision.
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"p"}]}'::jsonb), rev, 'neon');
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1 or pack->>'preset' <> 'neon'
+     or stored->'instances'->0->>'instanceId' <> 'p' then
+    raise exception 'FAIL (6.3): docs and a preset in one call: % — pack %, revision %, doc %', answer, pack, now_rev, stored;
+  end if;
+  raise notice 'PASS (6.3): docs and a preset land in one call and move the revision once';
+
+  -- (3) a STALE base writes neither the docs nor the preset.
+  answer := public.sync_project_doc(c_proj,
+              jsonb_build_object('home', '{"instances":[{"instanceId":"CLOBBER"}]}'::jsonb), rev, 'mono');
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  select doc into stored from public.project_templates where project_id = c_proj and template_key = 'home';
+  if (answer->>'applied')::boolean is not false or now_rev <> rev + 1 or pack->>'preset' <> 'neon'
+     or stored->'instances'->0->>'instanceId' <> 'p' then
+    raise exception 'FAIL (6.3): a stale base wrote something: % — pack %, revision %, doc %', answer, pack, now_rev, stored;
+  end if;
+  raise notice 'PASS (6.3): a stale base writes neither the docs nor the preset';
+
+  -- (4) a NULL preset — every call the deployed code made before this story — leaves the column alone.
+  rev := now_rev;
+  answer := public.sync_project_doc(c_proj, jsonb_build_object('home', '{"instances":[]}'::jsonb), rev);
+  select style_pack, revision into pack, now_rev from public.projects where id = c_proj;
+  if (answer->>'applied')::boolean is not true or now_rev <> rev + 1
+     or pack is distinct from '{"brand":{"seed":"#123456"},"preset":"neon"}'::jsonb then
+    raise exception 'FAIL (6.3): a three-argument call touched style_pack (%), or did not apply (%)', pack, answer;
+  end if;
+  raise notice 'PASS (6.3): a call with no preset still applies and leaves style_pack exactly as it was';
+end $$;
+
+-- (5) a scalar `style_pack`, written by hand through the owner grant, becomes `{preset}` — never an error.
+update public.projects set style_pack = '"hand-written"'::jsonb where id = 'cccccccc-6300-0000-0000-000000000001';
+
+do $$
+declare
+  c_proj uuid = 'cccccccc-6300-0000-0000-000000000001';
+  answer jsonb; rev bigint; pack jsonb;
+begin
+  select revision into rev from public.projects where id = c_proj;
+  answer := public.sync_project_doc(c_proj, '{}'::jsonb, rev, 'mono');
+  select style_pack into pack from public.projects where id = c_proj;
+  if (answer->>'applied')::boolean is not true or pack is distinct from '{"preset":"mono"}'::jsonb then
+    raise exception 'FAIL (6.3): a scalar style_pack answered % and became %', answer, pack;
+  end if;
+  raise notice 'PASS (6.3): a scalar style_pack is replaced by {preset}';
+end $$;
+
+-- (6) ANOTHER TENANT'S PROJECT: null, and its pack untouched.
+do $$
+declare answer jsonb;
+begin
+  answer := public.sync_project_doc('dddddddd-6300-0000-0000-000000000002', '{}'::jsonb, 1::bigint, 'neon');
+  if answer is not null then
+    raise exception 'FAIL (6.3): another tenant''s project answered %', answer;
+  end if;
+end $$;
+
+reset role;
+
+do $$
+declare pack jsonb;
+begin
+  select style_pack into pack from public.projects where id = 'dddddddd-6300-0000-0000-000000000002';
+  if pack is distinct from '{"preset":"paper"}'::jsonb then
+    raise exception 'FAIL (6.3): another tenant wrote its preset into this project (%)', pack;
+  end if;
+  raise notice 'PASS (6.3): another tenant''s project answers null and keeps its pack';
+end $$;
+
+-- (7) anon cannot call the four-argument function either.
+set request.jwt.claim.sub = '';
+set role anon;
+
+do $$
+declare answered text;
+begin
+  answered := public.sync_project_doc('cccccccc-6300-0000-0000-000000000001','{}'::jsonb,0::bigint,'neon')::text;
+  raise exception 'FAIL (6.3): anon executed sync_project_doc() and got %', coalesce(answered,'null');
+exception
+  when insufficient_privilege then
+    raise notice 'PASS (6.3): anon cannot execute the four-argument sync_project_doc() (42501)';
+end $$;
+
+reset role;
+
+delete from auth.users where id in ('66666666-6300-0000-0000-000000000001',
+                                    '66666666-6300-0000-0000-000000000002');
