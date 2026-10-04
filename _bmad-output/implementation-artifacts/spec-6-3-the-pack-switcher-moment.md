@@ -484,18 +484,18 @@ changes that project's pack; step 13 puts it back.
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
 | 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Click the grey area beside the page, then **Change**. | — | The Style Pack list: Paper is Current and ringed, the twelve below it. |
-| 2 | same | Style Pack list | Click **Tangerine** and watch the page. | — | For a moment the old look fades into the new, and a dark pill at the top says "Trying on Tangerine…". Then the page is Tangerine — its colours, fonts and buttons — and the list's Current card and ring are on Tangerine. |
-| 3 | same | Editor | Press **⌘Z**, then **⇧⌘Z**. | — | ⌘Z fades the page back to Paper; ⇧⌘Z fades it to Tangerine again. |
-| 4 | same | Editor | Press the sun button (or **.**) for Dark, then back to Light. | — | Tangerine's own dark colours, then its light ones. |
-| 5 | same | Section Picker | Press **⌘K**; look at the cards; press **Esc**. Then click a section and look at the colour dots in its settings. | — | Every preview card is in Tangerine, and the dots are Tangerine's colours. |
-| 6 | same | Editor | Click the grey area, press **⌘S** and wait for the save icon's green tick; then reload the page. | — | The page reopens in Tangerine. ⌘Z still takes it back to Paper; press ⇧⌘Z to return to Tangerine. |
-| 7 | same | Editor | Press ⌘S, wait for the green tick, then click the back arrow to Projects. | — | The Pilot sections card is in Tangerine's colours. |
-| 8 | same project | Site Remix | Open the project again and click the dice beside the sun. | — | The window shows **Re-roll what**: Style Pack chosen, Designs and Both greyed with "Every section here is the only design its category has so far. More are coming." |
-| 9 | same | Site Remix | Click **Remix**; then press **⌘Z** once. | — | The dice rolls, the page fades into a different pack; one ⌘Z brings Tangerine back. |
-| 10 | same | Editor | Turn on Reduce motion (Mac: System Settings → Accessibility → Display → Reduce motion). Pick another pack. Turn it off again. | — | The pack changes at once, with no fade. |
-| 11 | same | Editor, narrow | Make the window about 1,000 px wide; open the **⋯** menu at the top right; choose **Style Pack**; pick a pack; then press **Esc**. | — | The list opens on the right, over the page; the page changes pack; Esc closes the list. |
-| 12 | same, in a second window | Editor, read-only | Open the same project in a second window; click **Change**. | — | The list opens, but every pack is greyed and clicking one does nothing. |
-| 13 | first window | Style Pack list | Click **Paper**. | — | Your project is back to Paper. |
+| 2 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Style Pack list | Click **Tangerine** and watch the page. | — | For a moment the old look fades into the new, and a dark pill at the top says "Trying on Tangerine…". Then the page is Tangerine — its colours, fonts and buttons — and the list's Current card and ring are on Tangerine. |
+| 3 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Press **⌘Z**, then **⇧⌘Z**. | — | ⌘Z fades the page back to Paper; ⇧⌘Z fades it to Tangerine again. |
+| 4 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Press the sun button (or **.**) for Dark, then back to Light. | — | Tangerine's own dark colours, then its light ones. |
+| 5 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Section Picker | Press **⌘K**; look at the cards; press **Esc**. Then click a section and look at the colour dots in its settings. | — | Every preview card is in Tangerine, and the dots are Tangerine's colours. |
+| 6 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Click the grey area, press **⌘S** and wait for the save icon's green tick; then reload the page. | — | The page reopens in Tangerine. ⌘Z still takes it back to Paper; press ⇧⌘Z to return to Tangerine. |
+| 7 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Press ⌘S, wait for the green tick, then click the back arrow to Projects. | — | The Pilot sections card is in Tangerine's colours. |
+| 8 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Site Remix | Open the project again and click the dice beside the sun. | — | The window shows **Re-roll what**: Style Pack chosen, Designs and Both greyed with "Every section here is the only design its category has so far. More are coming." |
+| 9 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Site Remix | Click **Remix**; then press **⌘Z** once. | — | The dice rolls, the page fades into a different pack; one ⌘Z brings Tangerine back. |
+| 10 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Turn on Reduce motion (Mac: System Settings → Accessibility → Display → Reduce motion). Pick another pack. Turn it off again. | — | The pack changes at once, with no fade. |
+| 11 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor, narrow | Make the window about 1,000 px wide; open the **⋯** menu at the top right; choose **Style Pack**; pick a pack; then press **Esc**. | — | The list opens on the right, over the page; the page changes pack; Esc closes the list. |
+| 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`, in a second window | Editor, read-only | Open the same project in a second window; click **Change**. | — | The list opens, but every pack is greyed and clicking one does nothing. |
+| 13 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`, in the first window | Style Pack list | Click **Paper**. | — | Your project is back to Paper. |
 | 14 | `https://app.inflozo.com/sign-in` | Sign in | Sign out, then sign in with a second address of yours. Gmail delivers it to your usual inbox. | `umngkmr+packs@gmail.com` | The welcome screen. (Your own account is on Free and already past its project allowance, so its New project window shows the upgrade box instead.) |
 | 15 | `https://app.inflozo.com/start` | Welcome → New project | Click **Blank canvas**, choose **Neon**, click **Create project**; open the new project. | — | The window lists the twelve packs, Paper ringed. The new card on Projects is in Neon's colours, and the page opens in Neon. |
 
@@ -683,3 +683,21 @@ starts: `dpl_4v7mg2UhSM4JfTainwqKKSnb3z64` READY from `a6979409`, then `dpl_CDJv
 
 **Status.** In review. Every patch is applied and no question is open for the owner. Deploy and the owner's test follow
 (R-80); this review does not mark the story done.
+
+### Results — Deploy (2026-10-04)
+
+**Executed at Deploy.** Keys are named by their variable, never printed; the script read `tools/probe/.env` itself so no
+value reached a command line.
+
+- **Schema:** applied at the Schema phase (`eb59d4f9`) through `SUPABASE_DB_POOLER_URL` on the owner's go and read back at
+  Review (one four-argument `sync_project_doc`, the three-argument one gone). Nothing under `supabase/` has changed since,
+  so no second apply; CI's `rls` gate on HEAD is green.
+- **CI, for HEAD `7f2f197a`** (`GITHUB_TOKEN`, read-only): `ci.yml` run 37182283991 `check`, `rls` and `deploy` all
+  `completed`/`success`; `matrix.yml` run 37182283972 `completed`/`success`. HEAD adds only the Review record and the board
+  over the reviewed build `aea9816a`, so the code is what the Review's walks ran on.
+- **Vercel, the production project** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): the deployment for that sha is
+  `READY`, target `production`, aliased to `inflozo.com`, `app.inflozo.com` and `www.inflozo.com`. Signed out, a plain GET
+  answered 200 on `app.inflozo.com/sign-in` and 307 to `/sign-in` on the project route and `/start` (the sign-in guard).
+- **Deployment: `dpl_5cfzKNZxm2YqAtjA2v55p2Aq7Nfv` (https://app.inflozo.com/).**
+- **The owner's manual test** now names the full URL in every step; `owner_test` stays `pending`.
+- **No question for the owner.** Question 1 is ruled.
