@@ -5185,7 +5185,11 @@ Just mention a note."*
   - The attacker then created a page on that theme's crafted template. The template is a `{{#get}}` filter carrying a
     `__proto__`/`constructor` payload, which is CVE-2026-22594. That ran the planted program as `ghost`. The attacker then
     reactivated `casper` and deleted the page.
-  - None of our keys leaked. Nothing in T1's logs or `actions` shows a foreign actor. Ghost's own docs say a major past its end of life "should be
+  - None of our keys leaked. Nothing in T1's logs or `actions` shows a foreign actor.
+  - **Executed 2026-10-04 by the owner:** the attacker's own boolean pair (`1=1` against `1=0`) on `/ghost/api/content/tags/`.
+    The control, T3 (5.130.6), answered 200 against 500, so it is **open**. T1 (6.58.0) answered 200 against 200, so it is
+    **not open**. Ghost 5 sites that Inflozo still supports remain exposed to this chain. Whether the connect wizard should
+    warn them is an open question for the owner, not yet asked. Ghost's own docs say a major past its end of life "should be
   considered insecure" (docs.ghost.org/faq/major-versions-lts), and Ghost 5 reached it in January 2026. T3 is
   destroyed by the owner and not rebuilt.
 - **The rule.** Every test, review, recording and verification runs on **T1 only**. Where a spec, a story card, the
