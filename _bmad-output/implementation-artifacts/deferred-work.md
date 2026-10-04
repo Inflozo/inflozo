@@ -8502,6 +8502,13 @@ note (Story 6.4's Create, 2026-10-04): planned. The rows take Appendix C's title
   Claude Design prompt in the spec (its Question 1, R-74). One more two-name case was found: the page colour is
   "Base" in a section's Background setting and "Background" in FR-E1 and S7c, so its one name is the owner's
   (Question 2).
+ruling (owner, 2026-10-04, Story 6.4's Create, Question 1, option 2): *"Skip the drawing this once. Ensure it is
+  perfect and match existing design."* — R-236. Nothing is drawn first. Every part no frame draws is built from the
+  drawings that exist (S7a, S7c, S7d, the Editor Sidebar Kit, P0-0, D8) exactly. The spec's "Built from" table gives
+  the values; a computed-style stop holds them, and the owner approves a side-by-side page in Dev. S7a's two font rows
+  stay two rows (Heading font, Body font).
+ruling (owner, 2026-10-04, Story 6.4's Create, Question 2, option 1): *"Base everywhere."* — R-237. The pack editor's
+  first colour is "Base", as in a section's Background setting. Story 6.4's Dev builds both and closes this entry.
 
 ### DW-311: Appendix D pairs Paper and Ink with faces no drawing uses
 

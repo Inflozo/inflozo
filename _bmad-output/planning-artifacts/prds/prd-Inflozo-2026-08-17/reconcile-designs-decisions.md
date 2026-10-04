@@ -1148,6 +1148,8 @@ name the frame its surface is built from.
 - Targets: `CLAUDE.md` (the design-export section states the ruling) · `build-sequence.md` steps 5,
   5b and 6 · `STEP-5-PROMPT.txt` · at step 6, every story with a surface carries a "matches the
   frame" acceptance criterion (owed when step 6 runs).
+- **One stated exception: R-236** (owner, 2026-10-04, Story 6.4's Create). Story 6.4's undrawn parts are built from
+  the nearest existing drawings, exactly, without a Claude Design pass. The rule stands for every other surface.
 
 **R-75 — the owner sees the product's own UI as static pages on his machine before it is built
 dynamically.** Clarified by the owner in the same session, and the clarification is the ruling:
@@ -5126,6 +5128,43 @@ Question 1, ruled **option 1** (owner, 2026-10-03): *"The plan wins"*.
 - **Declined.** Option 2, relabelling D2's heading as variable clipped to 700 (the same bytes); option 3, another font.
 - Targets: ✅ this entry · ✅ Story 6.2's spec — Question 5 · ✅ `build-pool.py`'s `STATIC_CUTS` comment and
   `pool.json` — Story 6.2's Dev, 2026-10-03.
+
+**R-236 — Story 6.4's undrawn parts are built from the drawings that exist, without a Claude Design pass: R-74's one
+stated exception.** Story 6.4's Create, Question 1, ruled **option 2** (owner, 2026-10-04): *"Skip the drawing this
+once. Ensure it is perfect and match existing design."*
+
+- **Why it was a question.** R-74 says a surface with no frame is extrapolated from the nearest frame — same components,
+  same tokens — and drawn in the same Claude Design project, and Story 6.4's card says the missing rows are drawn before
+  they are built (DW-310). S7 never drew these parts:
+  - the Gutters, Shadow and Link style rows, and the Pill step;
+  - Pill radius and Image scrim;
+  - the font-pairing list and the contrast warning;
+  - a reading-along panel, and the panel at 834.
+- **The rule.** For Story 6.4 alone, those parts are not drawn first. Each is built from the existing drawing nearest it:
+  S7a's rows and cells, S7c's dialog, S7d's colour picker, the Editor Sidebar Kit's controls (segmented, font row,
+  dropdown menu, stepper, notice banner), P0-0 and D8.
+  - It is built exactly: no new component, colour or size. A frame value with no app token becomes a token.
+  - "Perfect" is held two ways: a computed-style check against the values the spec's "Built from" table lists, and a
+    side-by-side page of every built state beside its drawing, which the owner approves in the Dev session.
+  - R-74 stands. Every other surface without a frame is still drawn in Claude Design first.
+- **Declined.** Option 1, a Claude Design pass from a prompt in the spec, with Dev waiting for the export. Option 3,
+  leaving the undrawn parts to a later story.
+- Targets: ✅ this entry · ✅ R-74's entry · ✅ Story 6.4's spec — Question 1, its Intent, Boundaries, tasks, the "Built
+  from" table and the owner's test · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ⬜ built, and
+  approved side by side — Story 6.4's Dev.
+
+**R-237 — the page's own colour is "Base", in the Style Pack editor as in a section's settings.** Story 6.4's Create,
+Question 2, ruled **option 1** (owner, 2026-10-04): *"Base everywhere."*
+
+- **Why it was a question.** A section's Background setting names `--bg-page` "Base"
+  (`packages/library/src/vocabulary.ts:274`). FR-E1 calls the same colour "background", and S7c labels its swatch
+  "Background": one colour, two names, against R-170.
+- **The rule.** The Style Pack editor's first colour is "Base". That covers the swatch, its picker's hex field, the
+  contrast warning and every check. The section setting is unchanged. FR-E1's "background" stays as prose describing the
+  role, not as a label. Per mode, the seven are: Base · Surface · Text · Muted · Border · Accent · On-accent.
+- **Declined.** Option 2, "Page" in both places. Option 3, two names.
+- Targets: ✅ this entry · ✅ Story 6.4's spec · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ⬜
+  built — Story 6.4's Dev (`PACK_EDIT_WORDS`, held by `pack-edit.test.ts`).
 
 ## B · Approved decisions superseded by this session
 

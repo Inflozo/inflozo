@@ -30,9 +30,12 @@ control, and no font list or warning (DW-310, R-74). The render matrix's per-pai
 unphotographed: the widest weights, a bold italic, a heading's accented letters and a button on a contrast ground. That
 gap matters now, because the eighteen pairings no preset wears become pickable in this story (DW-324).
 
-**Approach:** The parts never drawn are drawn first, in the Claude Design project, from the prompt this spec carries
-(Question 1). The panel takes FR-E1's and Appendix C's words, one name per thing (R-170, Question 2). A project's own
-packs are its edits to a preset and the packs it makes. Each is a full authored record in `projects.style_pack.packs`.
+**Approach:** The parts no frame draws are built from the drawings that exist, exactly: S7a's rows and cells, S7c's
+dialog, S7d's colour picker, the Editor Sidebar Kit's controls, P0-0 and D8. They are checked against those drawings
+value for value and shown side by side. This is R-236, R-74's one stated exception: for this story only, there is no
+Claude Design pass. The panel takes FR-E1's and Appendix C's words, one name per thing (R-170). The page's own colour is
+"Base", as it already is in a section's settings (R-237). A project's own packs are its edits to a preset and the packs
+it makes. Each is a full authored record in `projects.style_pack.packs`.
 Every change is one journaled edit, saved with the docs by `sync_project_doc` in one compare-and-set; a Schema phase
 goes first (R-99). Each record is validated wherever it crosses into CSS (AD-36). The browser computes an own pack's
 canvas CSS, dots and swatches with the runtime's pool-free engine, and wears the result in place as 6.3's switch does.
@@ -68,26 +71,33 @@ case join the render matrix behind the owner's sampled review.
   ring's tiles, the Controls panel's swatches, the rest card, the list and the dashboard card. The canvas restyles in
   place inside 6.3's transition: the faces are waited for, and reduced motion makes the change instant. S7b's pill
   "Trying on…" shows for a switch only.
-- **One word list** (R-170): every surface, announcement and check reads `lib/pack-edit.ts`'s words (and 6.3's
-  `PACK_WORDS`). The rows' titles and steps equal Appendix C's Style Pack rows, and a test checks it. Counts are
-  derived. Node 24. `pnpm keyboard` is run whole before the Dev commit.
+- **Built from the existing drawings, exactly (R-236).**
+  - A part S7a, S7c or S7d draws takes that frame's values: size, radius, padding, type, colour and shadow.
+  - A part none of them draws is the Kit's own drawing of that control, placed as the nearest frame places its siblings
+    (Design Notes' "Built from" table). No new component, colour or size.
+  - A value a frame draws that has no app token becomes a token, added to `globals.css`'s @theme and DESIGN.md's front
+    matter (both held by `tokens.test.ts`); never a literal.
+  - The values are held by a computed-style check, and the owner sees every built state beside its drawing before the
+    Dev commit.
+- **One word list** (R-170, R-237): every surface, announcement and check reads `lib/pack-edit.ts`'s words (and 6.3's
+  `PACK_WORDS`), and these win over a drawing's word wherever the two differ. The rows' titles and steps equal Appendix
+  C's Style Pack rows, and a test checks it. Counts are derived. Node 24. `pnpm keyboard` is run whole before the Dev
+  commit.
 
 **Ask First:**
 - The production apply of the migration. If the permission classifier refuses it, ask the owner in the session; never
   route it through a subagent.
 - The mass rebaseline that DW-324's changes cause: it needs the owner's sampled review in the Dev session
   (`docs/render-matrix.md`).
-- A landed export that changes anything beyond `S7 Style Packs.dc.html` (or the Editor Sidebar Kit, where the patch
-  notes say the redraw needed it): stop and show it.
-- A redrawn frame whose behaviour contradicts this spec.
+- A part the "Built from" table does not cover, or a value neither its frame nor the Kit drawing gives: ask, never
+  invent. R-236 waives R-74's drawing step for this story; it does not waive R-74's sources.
 
 **Never:**
 - No account-level pack library (FR-E3, Appendix G). No deleting a pack (no requirement or frame asks for one). No hover
   preview. No colour picker, hex field or font list anywhere but the Style Pack editor (DESIGN.md:586, Appendix C).
 - No brand seed and no logo (Story 6.6). "From your site" offers the site's accent as a colour to pick, and writes
   nothing until it is picked. No change to mode resolution (6.5) or theme emission (Epic 7). No `next/font`, no font
-  host, no `*-tokens.css` file. No hand edit to the design export (R-74): it changes only when Claude Design's own
-  export lands.
+  host, no `*-tokens.css` file. No edit to the design export (R-74); this story adds nothing to it (R-236).
 - Never a block on contrast, and never a computed token offered for editing (FR-E1: computed rows follow).
 
 ## I/O & Edge-Case Matrix
@@ -105,11 +115,11 @@ case join the render matrix behind the owner's sampled review.
 | New pack, no name | Save pack with the name empty or spaces | the field's error "Name your pack to save it."; focus on the field; nothing saved | — |
 | New pack saved | name "Studio Warm"; Save pack | ONE transaction: `packs['custom-<n>']` (the next free n) and `preset = custom-<n>`; the cell joins after the presets, ringed; the canvas restyles; "Style Pack — Studio Warm"; ⌘Z undoes both | — |
 | A row | Site width → Wide on the pack in force | one edit to its record; the canvas restyles; "Site width — Wide"; arrows move and select as the Kit's `Segmented` does, one edit each | — |
-| A pairing | Fonts → Lora · Lato | one edit (`pairing: 'D15'`); the canvas waits for its faces, up to `FACES_WAIT_MS`, then restyles; "Fonts — Lora · Lato" | a late face swaps in on arrival |
+| A pairing | the Heading font or the Body font row → Lora · Lato | one edit (`pairing: 'D15'`); both rows now read Lora and Lato; the canvas waits for its faces, up to `FACES_WAIT_MS`, then restyles; "Font pairing — Lora · Lato" | a late face swaps in on arrival |
 | Hex field | `#1e6bff`, `1E6BFF`, `#1af`, ` #1E6BFF ` | each becomes `#1E6BFF` (three digits expanded) and the swatch follows | `#12`, `blue`: "Not a colour — type #RRGGBB"; the swatch keeps its last valid colour |
 | Paste | the clipboard holds `#2F4A3E` | the field takes it and the swatch follows | refused or unsupported: focus the hex field and say "Press ⌘V to paste into the hex field." |
 | From your site | a linked site whose stored brand accent is `#2f4a3e` | one dot "From your site", `#2F4A3E`; a press makes it the draft's colour | no linked site or no valid accent: no row |
-| Read-only | another window holds the lock | the list opens; every cell, pencil, "+ New pack", row and the Fonts row are greyed and unclickable; nothing journaled | `commit`'s guard |
+| Read-only | another window holds the lock | the list opens; every cell, pencil, "+ New pack", row and both font rows are greyed and unclickable; nothing journaled | `commit`'s guard |
 | Lock lost mid-dialog | the dialog is open when the lock goes | the dialog closes (`[data-editor] dialog[open]`), and its draft is dropped | — |
 | Reload, unsynced | an own-pack edit not sent; F5 | the device's `packs` (equal revision); ⌘Z still undoes it | — |
 | Another session's edit | the server's revision moved | the server's `packs` and preset; the journal cleared | — |
@@ -258,7 +268,11 @@ case join the render matrix behind the owner's sampled review.
 - `apps/web/busy.test.ts` does not audit a client-only `type="button"`. The Layers Rename dialog (`layers.tsx:602-627`)
   is the precedent for a dialog that saves locally and synchronously.
 
-**The frames as they stand** (Question 1 redraws them):
+**The frames and the Kit drawings the build follows** (R-236; Design Notes' "Built from" table gives every value):
+- `Editor Sidebar Kit.dc.html`: segmented :63-82, swatch row :83-98, stepper :99-108, select rows and menus (the font
+  row and the dropdown menu, check on the active row) :109-125, pack cards :204, feedback banners :238-250.
+- `D8 Editor Below 1440.dc.html`: D8a at 834 :40, D8b at 720 :172, D8a's overflow menu :280. `P0-0 Greyed Control
+  Pattern.dc.html` is the greyed treatment.
 - `S7 Style Packs.dc.html` S7a :22-135:
   - a pencil (`title="Edit pack"`) on every cell, and "Maya's Warm" with a dashed name, then "+ New pack".
   - rows: Title font, Body font, Site width (Narrow · Standard · Wide), Corners, Density (Compact · Comfortable ·
@@ -271,9 +285,6 @@ case join the render matrix behind the owner's sampled review.
   - A stray four-swatch "Dark" row.
   - The colour-picker popover: a 112 px square, a hue strip, "From your site" dots, an "Accent colour hex" field and
     Paste.
-- `Editor Sidebar Kit.dc.html`: segmented; swatch row; select rows and menus ("Font row — live Aa rendering",
-  "Dropdown menu — check on active"); stepper; feedback banners; pack cards.
-- `P0-0 Greyed Control Pattern.dc.html` and `D8 Editor Below 1440.dc.html` (the overlay).
 - In the PRD:
   - Appendix C's scale table (`prd.md:992-1002`) gives every Style Pack row's title and steps.
   - FR-E3 is at `prd.md:255`, and NFR-5's "warns before the edit lands" at `prd.md:483`.
@@ -321,9 +332,8 @@ case join the render matrix behind the owner's sampled review.
 
 ## Tasks & Acceptance
 
-**Dev opens once both questions below are ruled.** For Question 1's option 1, it also waits until the owner has sent
-the redrawn export. The tasks build the RECOMMENDED options; Design Notes' "Ruled values" table says what each other
-option changes.
+**Both questions are ruled** (R-236, R-237; see Design Notes' "Rulings"), **so Dev can open.** Nothing waits on a
+drawing.
 
 **Execution:**
 - [ ] **SCHEMA FIRST, ALONE (R-99)**. Files: `supabase/migrations/20261004200000_sync_style_pack_packs.sql`, `SCHEMA.sql`,
@@ -349,13 +359,6 @@ option changes.
   - Then prove two calls as a throwaway user, deleting the user afterwards: the deployed code's four-named-argument call
     still applies, and a five-argument call writes `packs`.
   - Push `Story 6.4 - Schema - …`.
-- [ ] **THE REDRAW LANDS** (Question 1, option 1; this runs after the Schema push, so it never rides in it).
-  - Unzip the owner's export over `_bmad-output/planning-artifacts/design/claude-design-export/Inflozo/`.
-  - Run `python3 tools/reapply-export-edits.py`, `python3 tools/verify-design-pass.py` and
-    `python3 tools/inventory-gen.py --check`.
-  - Read `git diff --stat` on the export. Anything beyond S7, or the Kit where the patch notes name it, is Ask First.
-  - Read S7's "Patch notes — Story 6.4". Settle each line marked OPEN FOR THE OWNER, asking him only where the decision
-    is genuinely his.
 - [ ] `packages/section-runtime/src/tokens.ts`, `index.ts`, `packs.test.ts`. Export `AA_PAIRS`, the five role pairs, and
   make 6.2's sheet read it, with its control intact (Tangerine light on-accent `#FFFFFF` still caught). This makes one
   list for the preset sheet and the live warning.
@@ -384,7 +387,8 @@ option changes.
     `referenceTokensCss()`.
   - `pairingChoices()`: for each pool pairing, its id, two families, glyph family, `pairingFonts`, canvas `faces`
     (`fontFaceCss(…, fontHref('canvas'))`) and families.
-  - `pairingGlyphFacesCss(base)`: the prefixed heading faces of the pairings no preset wears, for the editor's list.
+  - `pairingGlyphFacesCss(base)`: the prefixed roman faces of every pool family that the layout's `packFacesCss` does
+    not already declare, for the two font rows and the pairing menu. A browser fetches only the faces it draws.
   - `placeholderFor` paints an own pack's light background, text and accent. The brand accent still wins (FR-C4).
 - [ ] `apps/web/lib/journal.ts` and `apps/web/lib/local-store.ts`:
   - `PACK_RECORDS_KEY` (`'pack-records'`, never a template key). Its entries' `before` and `after` are the whole `packs`
@@ -415,20 +419,24 @@ option changes.
 - [ ] `(editor)/style-pack.tsx` and `components/kit/pack-cell.tsx`:
   - The roster lists the twelve presets in §D.d's order, each shown as its own record where one exists, then the custom
     packs by number.
-  - Each cell's pencil (named "Edit pack — {name}") and "+ New pack" are buttons OUTSIDE the listbox, placed where the
-    frame draws them. An option holds no interactive content, and the listbox holds options only.
-  - Below the roster come the rows for the pack in force:
-    - the Fonts row, which opens the pairing menu: "Ag" in each heading face, then "Heading · Body", the pairing in force
-      checked, the menu scrolling inside itself;
-    - Appendix C's rows, each the Kit's `Segmented`;
-    - Pill radius, as drawn.
+  - A preset cell's corner pencil, a custom cell's name-and-pencil, and "+ New pack" are buttons OUTSIDE the listbox,
+    named "Edit pack — {name}" and "New pack". Each is placed and drawn exactly where S7a draws it ("Built from"). An
+    option holds no interactive content, and the listbox holds options only.
+  - Below the roster come the rows for the pack in force, in this order, each as the "Built from" table gives it:
+    - **Heading font** and **Body font**, S7a's two font rows. Each opens the one pairing menu (accessible name "Font
+      pairings"): "Ag" in each pairing's heading face, the heading family over the body family, the pairing in force
+      checked, the menu scrolling inside itself.
+    - **Site width, Radius, Spacing density, Gutters, Button style, Shadow and Link style**: S7a's segmented rows, through
+      the Kit's `Segmented` in S7a's dense geometry.
+    - **Pill radius**: the Kit's `Stepper` in a row of the same shape.
   - All of it sits inside `ReadOnly` for a reader.
-- [ ] `(editor)/pack-editor.tsx` (new) — the Edit pack and New pack dialog, S7c and S7d as redrawn:
+- [ ] `(editor)/pack-editor.tsx` (new) — the Edit pack and New pack dialog, S7c and S7d as drawn, with the "Built from"
+  table for every part they do not draw:
   - **The dialog.** It is portalled into `[data-editor]` and opened with native `showModal()`. Focus starts on the name
     field for New pack and on the first swatch for Edit pack. Pack name is a `TextInput` with a 40-character limit.
   - **The swatches.** There is a Light row and a Dark row of seven swatch buttons. Each is named "{Role}, {Mode},
-    #RRGGBB", with "hard to read" added where it fails. Each mode also has an Image scrim `Stepper`, 0–100 % in steps
-    of 5.
+    #RRGGBB", with "hard to read" added where it fails. Under the two rows is one Image scrim row: for each mode, the
+    mode word and the Kit's `Stepper`, 0–100 % in steps of 5.
   - **The colour picker**, a popover `openPopover` opens from the swatch:
     - the square: pointer, touch and arrow keys; `role="slider"` with its value in words;
     - the hue strip: `role="slider"`;
@@ -437,8 +445,9 @@ option changes.
       type #RRGGBB";
     - Paste, which calls `navigator.clipboard.readText()`. If that is refused, it focuses the hex field and says "Press
       ⌘V to paste into the hex field."
-  - **The warning.** A `Banner` notice under the rows, from `hardToRead`; each failing swatch carries the banner's icon.
-    It is announced when it appears, changes or clears, and never once per pointer move.
+  - **The warning.** A `Banner` notice under the rows, from `hardToRead`. Each failing swatch carries the banner's
+    triangle in a corner circle, as the "Built from" table draws it. The warning is announced when it appears, changes or
+    clears, and never once per pointer move.
   - **The buttons.**
     - Reset to defaults appears for a preset only, and makes the draft the library's record.
     - Cancel, ✕, Esc and the backdrop discard the draft.
@@ -465,12 +474,14 @@ option changes.
     - the schema refuses each vector and accepts the legitimate record.
     - `CUSTOM_ID` and `nextCustomId`.
     - `choiceOf` on Paper's record equals `packChoices()`'s Paper, apart from the generated header of its `tokens`.
-    - `hardToRead` over the five pairs. Control: Paper passes, and Paper with text `#DDDDDD` fails "Text on {page} in
+    - `hardToRead` over the five pairs. Control: Paper passes, and Paper with text `#DDDDDD` fails "Text on Base in
       Light".
     - the ratio floor; `withoutDefaults`.
     - every preset colour survives `hexToHsv` then `hsvToHex`.
-    - the words: the rows' titles and steps equal `prd.md` Appendix C's Style Pack rows and `SCALES`' keys, and none is
-      Standard, Spacious, Corners, Title font or Contrast.
+    - the words:
+      - the rows' titles and steps equal `prd.md` Appendix C's Style Pack rows and `SCALES`' keys;
+      - the font rows are Heading font and Body font, and the first colour is Base (R-237);
+      - none is Standard, Spacious, Corners, Title font, Background or Contrast.
   - `journal.test.ts`:
     - a records edit undoes and redoes.
     - New pack's two entries count as one edit.
@@ -516,6 +527,17 @@ option changes.
   - **Reading along.** The reader's pencils, "+ New pack" and rows are disabled.
   - **At 720 × 900.** ⋯ → Style Pack shows the rows, and the dialog opens.
   - **Reduced motion.** An edit's restyle is instant.
+- [ ] **R-236's check: the build matches its drawings, measured and seen.**
+  - **By computed style.** A stop in `tools/keyboard/journey.spec.mjs` runs on the harness at 1440. It opens each state:
+    the panel with its rows, the pairing menu, Edit pack, New pack showing its name error, the colour picker and the
+    warning. For each, it reads every value the "Built from" table gives (sizes, radii, paddings, type, colours,
+    shadows) and compares it to the table. Control: a deliberate 1 px change to one value, made in a scratch edit and
+    restored, turns the stop red.
+  - **By eye.** Dev takes a screenshot of each state at 1440, and of the overlay at 834. Each goes beside the drawing it
+    follows: S7a, S7c and S7d through `tools/view-designs.py`, and the Kit's drawing for the parts no frame draws.
+    - They share the private review page with DW-324's rebaseline, and the owner approves both in the Dev session with
+      one R-83 ask, before the Dev commit.
+    - A mismatch he names is fixed first.
 - [ ] Deployed walks (R-82):
   - `tools/probe/run-verify-editor.cjs`, step 103:
     - Edit Tangerine's accent through its hex field, Save, ⌘S. Read back `style_pack.packs.tangerine.light.accent`,
@@ -533,24 +555,27 @@ option changes.
 - [ ] Propagation:
   - In `deferred-work.md`, close DW-310 and DW-324 with their proof, and add the DW-66 note.
   - Update `epic-6-context.md`.
-  - `EXPERIENCE.md`: the S7 row names the redrawn frames, and the stray-row note is settled.
+  - `EXPERIENCE.md`: the S7 row says the parts no frame draws are built from the existing drawings (R-236). The
+    stray-row note (:2023-2027) says S7d's third row is the drawn popover's anchor and is not built.
   - Extend `addendum.md` §AD1's Cloud sync line (`p_packs`).
   - `ARCHITECTURE-SPINE.md`:
     - AD-15's flush carries `packs`.
     - AD-36 gains the record instance.
     - The FR-E row gains `lib/pack-edit.ts` and `style_pack.packs`.
-  - Record R-236 and R-237 in `reconcile-designs-decisions.md`.
+  - Tick the ⬜ targets of R-236 and R-237 in `reconcile-designs-decisions.md`.
   - Then grep the repo for `Standard`, `Spacious`, `Corners`, `Title font`, `"Contrast"` in the S7 code, `presetIdOf(`,
     `p_preset` and `flushPayload(` (standing rule 7).
 
 **Acceptance Criteria:**
-- Given the Style Pack panel, the Edit pack and New pack windows, the colour picker and the font pairing list, when each
-  is open, then it **matches the redrawn frames**: `S7 Style Packs.dc.html` S7a, S7c and S7d, and the frames Question 1's
-  prompt adds (the pairing list, the warning, reading along, 834). Where a drawing's word differs, the words of the one
-  list win (R-170).
+- Given the Style Pack panel, the Edit pack and New pack windows, the colour picker and the font pairing menu, when each
+  is open, then it **matches its drawing value for value** (R-236). Where `S7 Style Packs.dc.html` S7a, S7c or S7d
+  draws it, it matches that frame. Where they do not, it matches the Kit's own drawing, placed as the "Built from"
+  table places it. The computed-style stop holds this, and the owner sees it side by side before the Dev commit. Where a
+  drawing's word differs, the one list's word wins (R-170, R-237).
 - Given the panel's rows, when they are read, then their titles and steps are Appendix C's Style Pack rows exactly: Site
-  width, Radius, Spacing density, Gutters, Button style, Shadow, Link style, with Normal and Airy. The seven colours are
-  "{page} · Surface · Text · Muted · Border · Accent · On-accent", and a test holds both.
+  width, Radius, Spacing density, Gutters, Button style, Shadow, Link style, with Normal and Airy. The font rows are
+  Heading font and Body font. The seven colours are "Base · Surface · Text · Muted · Border · Accent · On-accent"
+  (R-237). A test holds all three.
 - Given Light and Dark, when either row's colours or Image scrim are edited, then only that mode's values change: per-mode
   palette editing.
 - Given an edit that breaks a pair in `AA_PAIRS`, when it is made, then the warning names the pair, its mode and its
@@ -588,12 +613,20 @@ pool-free (`check-traces.mjs` holds that), so the browser can run it. The fonts'
 server hands them over as one string per pairing (`pairingChoices`), as `packChoices` hands each preset's.
 
 **The pencil's place.** The roster is 6.3's listbox: one tab stop, with arrows that move focus and never switch. An
-option may hold no button: axe reports `nested-interactive`, and a listbox may contain options only. So the pencils
-and "+ New pack" are plain buttons after the listbox in the DOM, laid over the grid where S7a draws them. Keyboard
-order is the list (one stop), then each pencil, then "+ New pack", then the rows.
+option may hold no button: axe reports `nested-interactive`, and a listbox may contain options only. So every Edit pack
+door and "+ New pack" are plain buttons placed after the listbox in the DOM. They are laid over the grid exactly where
+S7a draws them:
+- a preset's corner pencil;
+- a custom pack's dashed name with its inline pencil;
+- the dashed "+ New pack" cell.
+
+Keyboard order is the list (one stop), then each Edit pack button, then "+ New pack", then the rows. S7a draws a custom
+pack's name with a dashed underline and a text cursor, which says "rename". So that button opens Edit pack with focus
+on Pack name, where renaming happens.
 
 **The dialog.**
-- Edit pack opens with focus on the first swatch; New pack opens with focus on the name, as S7d draws it.
+- Edit pack opens with focus on the first swatch. It opens on Pack name from a custom pack's name, and so does New pack,
+  as S7d draws its field focused.
 - A swatch opens the picker anchored to it (`openPopover`). The square and the hue strip follow pointer and touch, and
   arrow keys move them 1 at a time (10 with ⇧).
 - The hex field is the exact path, and every move updates the draft and its swatch.
@@ -614,25 +647,82 @@ order is the list (one stop), then each pencil, then "+ New pack", then the rows
 - `navigator.clipboard.readText()` throws `NotAllowedError` without the permission, and reads the text with it. Hence
   Paste's fallback.
 
-**The words (R-170)** — one list, `PACK_EDIT_WORDS`. The panel, the dialog, the announcements and every check read it.
+**Built from (R-236)** — every part, the drawing it follows, and the values the computed-style stop holds.
+
+Every colour is an app token, and each frame hex maps to one:
+
+| Frame hex | App token |
+|---|---|
+| `#EFECE7` | `paper-sunk` |
+| `#6E6A64` | `ink-soft` |
+| `#E7E2DB` | `line` |
+| `#C9C2B8` | `line-strong` |
+| `#FF5941` | `coral` |
+| `#E84B34` | `coral-deep` |
+| `#C2381F` | `coral-text` |
+| `#FFEDE8` | `coral-tint` |
+| `#1C1B1A` | `ink` |
+| `#33312E` | `ink-hover` |
+
+The dialog's backdrop and shadow are `scrim` and `shadow-modal`. A frame value with no token becomes one: the swatches'
+hairline at .14, the picker thumbs' two shadows, and Cancel's 5 % `ink` wash on hover.
+
+| Part | Follows | Built as |
+|---|---|---|
+| The panel | S7a :389-414 | 6.2's and 6.3's head, Current card and grid, as built |
+| A preset cell's pencil | S7a :416 | a 15 px circle, 1 px `line-strong`, `surface`, 4 px from the cell's top and right, holding the frame's 8 px pencil (stroke 2, `ink-soft`) |
+| A custom cell | S7a :656-674 | the preset cell with S7a's own differences: "Ag" 14 px; the name 10.5/600 over a 1 px dashed `line-strong` underline, `cursor: text`; the frame's 11 px pencil (stroke 1.5, `ink-soft`) 4 px after it; no corner pencil |
+| + New pack | S7a :675-678 | the Kit's `NewPackCell`: 1.5 px dashed `line-strong`, radius 8; "+" 16 px over "New pack" 10/600, `ink-soft`, 3 px apart; on hover a `coral` border and `coral-deep` words |
+| The rows block | S7a :680 | a 1 px `line` rule above, 7 px of padding under it, rows 6 px apart |
+| Heading font, Body font | S7a :682-702 (the Kit's font row :109-125) | each 40 px tall, padding 6 × 10, gap 9, 1 px `line`, radius 8, `surface`, hover border `line-strong`; "Aa" 14 px in the role's own face, 20 px wide; the row's name 10 px `ink-soft` over the family 12/600; a 12 px chevron (stroke 1.5, `ink-soft`) |
+| The pairing menu | the Kit's dropdown menu :109-125, opened by `openPopover` | `surface`, 1 px `line`, radius 12, `shadow-lg`, padding 6, rows 1 px apart; each row padding 7 × 10, radius 8, hover `paper`; the pairing in force on `coral-tint` with the Kit's 13 px `coral-deep` check; as wide as the font row it opens from, scrolling inside itself. Each row holds the font row's inside: "Ag" 14 px in the pairing's heading face (20 px wide), the heading family 12/600 over the body family 10 px `ink-soft` |
+| The segmented rows | S7a :704-737 | the row name 11.5/500 `ink-soft`, 4 px above the track; the track `paper-sunk`, radius 24, padding 2; each segment flex 1, padding 3 × 0, radius 20, 11/500 `ink-soft`; the chosen one 600 `ink` on `surface` with `shadow-sm`. This is the Kit's `Segmented` in S7a's dense geometry. Gutters, Shadow and Link style are three more such rows; Button style has four segments, Pill last |
+| Pill radius | the Kit's stepper :99-108 | a row of the same shape (its name 11.5/500 `ink-soft`, 4 px above) holding the Kit's `Stepper`: 1 px `line`, radius 8, `surface`; − and + each 26 × 28, `ink-soft`, hover `paper`; the value 32 px wide, 13/600 tabular, from 0 to 40, then Full |
+| Edit pack, New pack | S7c :304-327, S7d :332-365 | 520 px wide, centred over `scrim`; `surface`, radius 16, `shadow-modal`, padding 28, its blocks 20 px apart; the title Bricolage Grotesque 22/700 at −0.01em, over the frames' own subtitles at 13 px `ink-soft` (line height 1.5), 5 px apart; the frame's ✕ (16 px, stroke 1.5, `ink-soft`), 4 px down |
+| Pack name | S7c :319, S7d :347 | the label 12/500 `ink-soft`, 6 px above; the field 40 px tall, 1 px `line`, radius 8, padding 0 12, 13 px Inter, `coral` caret; focused, a `coral-text` border and the focus ring (S7d draws it focused) |
+| The swatch rows | S7c :320 | rows 14 px apart; "Light" and "Dark" 34 px wide, 11/600 `ink-soft`, 12 px before a seven-column grid with 4 px gaps; each swatch 36 × 36, radius 10, an inset 1 px hairline at .14; its name 9.5 px `ink-soft`, 5 px below, never wrapping |
+| Image scrim | S7c's mode words and the Kit's stepper | one row 14 px under the swatch rows: the name "Image scrim" styled as Pack name's label, then for each mode its word (34 px, 11/600 `ink-soft`) and the Kit's `Stepper`, reading "45 %" |
+| The warning | the Kit's notice banner :238-250 | the Kit's `Banner kind="notice"`, 20 px under the rows. A failing swatch carries the banner's own triangle in a 15 px `surface` circle with a 1 px `line-strong` border, at its top-right corner, as S7a's cells carry their pencils |
+| The footer | S7c :322-326, S7d :361-364 | 10 px gaps. **Reset to defaults** (S7c only): 38 px tall, padding 0 12, 12/500 `ink-soft`, no fill, radius 10, hover `ink`. **Cancel**, pushed right: 38 px, padding 0 16, 13/500 `ink-soft`, radius 10, hover the 5 % `ink` wash. **Save pack**: 38 px, padding 0 22, `ink` with `surface` words at 13/600, radius 10, hover `ink-hover` |
+| The colour picker | S7d :350-359 | detailed in the list below this table |
+| S7d's third swatch row | S7d :348-365 | **not built.** Its four swatches labelled "Dark" repeat four of the Dark row's seven, and they are the drawn popover's anchor (`EXPERIENCE.md:2026`). The built popover anchors to the swatch that was pressed |
+| Reading along | P0-0, and the sidebar under `ReadOnly` | the Controls sidebar's own reading-along treatment, which 6.3's cells already take |
+| Below 1280 | D8a :40, D8b :172 | 6.3's ⋯ → Style Pack overlay, with the rows scrolling under the list. The dialog is the same at every width; 520 px fits 720 |
+
+The colour picker, as S7d :350-359 draws it:
+- **The popover.** 206 px wide, anchored to its swatch; `surface`, 1 px `line`, radius 12, `shadow-modal`, padding 12,
+  its parts 10 px apart.
+- **The square.** 112 px tall, radius 8: `black` fading upward to `transparent`, over `white` fading right to the hue.
+  Its thumb is 14 px, with a 2.5 px `white` ring and a 0 1 px 3 px black shadow at 40 %.
+- **The hue strip.** 12 px tall, radius 6. Its thumb is 16 px, filled with the hue, with the same ring and the shadow
+  at 35 %.
+- **From your site.** The words at 10 px `ink-soft`, then 16 px dots, 7 px apart.
+- **The hex row.** Under a 1 px `line` rule, with 10 px between them:
+  - a 22 px swatch, radius 6, with the .12 hairline;
+  - the field, 30 px tall, 1 px `line`, radius 8, padding 0 9, mono 12 px;
+  - Paste, 30 × 30, radius 8, 1 px `line`, `surface`, holding the frame's own 13 px clipboard (stroke 1.5, `ink-soft`;
+    R-92).
+
+**The words (R-170, R-237)** — one list, `PACK_EDIT_WORDS`. The panel, the dialog, the announcements and every check read
+it, and it wins over a drawing's word wherever the two differ.
 
 | Where | Words |
 |---|---|
-| Rows (Appendix C) | **Fonts** — {heading} · {body} · **Site width** — Narrow · Normal · Wide · **Radius** — Sharp · Soft · Round · **Spacing density** — Compact · Comfortable · Airy · **Gutters** — Tight · Normal · Loose · **Button style** — Solid · Soft · Outline · Pill · **Shadow** — None · Subtle · Lifted · **Link style** — Underline · Accent · **Pill radius** — {n} px · Full |
-| The seven colours, per mode | {page} (Question 2) · Surface · Text · Muted · Border · Accent · On-accent · and **Image scrim** {n} % |
-| Cells | the pencil "Edit pack — {name}" · "New pack" |
-| Dialogs | "Edit pack" and "New pack", with S7c's and S7d's subtitles as redrawn · "Pack name" · "Name it — e.g. Studio Warm" · Reset to defaults · Cancel · Save pack |
+| Rows (S7a, and Appendix C's titles and steps) | **Heading font** — {heading family} · **Body font** — {body family} · **Site width** — Narrow · Normal · Wide · **Radius** — Sharp · Soft · Round · **Spacing density** — Compact · Comfortable · Airy · **Gutters** — Tight · Normal · Loose · **Button style** — Solid · Soft · Outline · Pill · **Shadow** — None · Subtle · Lifted · **Link style** — Underline · Accent · **Pill radius** — {n} px · Full |
+| The pairing menu | named "Font pairings"; each row "{heading family}" over "{body family}" |
+| The seven colours, per mode | Base · Surface · Text · Muted · Border · Accent · On-accent; and **Image scrim**, {n} % |
+| Cells | each Edit pack button "Edit pack — {name}" · "New pack" |
+| Dialogs | "Edit pack" and "New pack", with S7c's and S7d's own subtitles · "Pack name" · "Name it — e.g. Studio Warm" · Reset to defaults · Cancel · Save pack |
 | Picker | the hex field "{Role}, {Mode} — hex" · "From your site" · Paste · "Press ⌘V to paste into the hex field." · "Not a colour — type #RRGGBB" |
 | Name | "Name your pack to save it." |
 | Warning | "Hard to read: {pair}[; {pair}…]. Small text needs 4.5:1 — you can still save.", where a pair is "{Fg} on {Bg} in {Mode}, {ratio}:1" |
-| Said, once landed | "Changed {name}." (a Save pack) · "Style Pack — {name}" (a New pack; an undo or redo that changes the look in force; 6.3's switch) · "{Row} — {Step}" · "Fonts — {heading} · {body}" |
+| Said, once landed | "Changed {name}." (a Save pack) · "Style Pack — {name}" (a New pack; an undo or redo that changes the look in force; 6.3's switch) · "{Row} — {Step}" · "Font pairing — {heading family} · {body family}" |
 
-**Ruled values** — the one place a different ruling changes the plan:
-
-| Question | Planned (RECOMMENDED) | If ruled otherwise |
-|---|---|---|
-| 1 — the drawing | The redrawn S7 lands before Dev, and the build follows it. | **2:** Dev draws the undrawn parts from the Kit, matching S7a's segmented, the Kit's menu and stepper, and the notice banner. The frame criterion then names S7a, S7c and S7d as drawn, plus the Kit. **3:** Gutters, Shadow, Link style, Pill, Pill radius, Image scrim, the font list and the warning are left out. DW-310 stays open with a named owner, and FR-E3 is met only in part. |
-| 2 — the page colour's name, {page} | **Base** — the pack editor's word only | **Page:** also `vocabulary.ts:274`'s `base: 'Page'`, and every check that reads "Base". **Background:** the pack editor only; sections keep "Base". |
+**Rulings.**
+- **Question 1, option 2: R-236.** The parts no frame draws are built from the existing drawings exactly, as the "Built
+  from" table gives them. There is no Claude Design pass. The match is checked by computed style and by eye.
+- **Question 2, option 1: R-237.** The page's own colour is "Base" in the Style Pack editor, as it already is in a
+  section's settings. Nothing else is renamed.
 
 **Routine calls, each stated rather than asked:**
 - A New pack becomes the pack in force: S7d's "joins your pack grid" over the look you started from.
@@ -647,11 +737,12 @@ order is the list (one stop), then each pencil, then "+ New pack", then the rows
 - A warning's ratio is floored, never rounded up.
 - Today no design reads `--scrim`, so an Image scrim edit changes the token block but nothing visible until a design
   draws a photo under text (Epics 9–10). The owner's test says so.
+- S7a draws the fonts as two rows, so they stay two rows, Heading font and Body font. A pack's fonts are one pairing from
+  the pool, so either row opens the same pairing menu, and the menu says so in its name.
 
 ## Questions for the owner
 
-Both are needed before Dev. The plan above follows each one's recommended option, and Design Notes' "Ruled values" table
-says what the other options change.
+Both are ruled; nothing is open.
 
 ### Question 1 — Parts of the Style Pack editor were never drawn. May I hand you a Claude Design prompt to draw them first?
 
@@ -662,24 +753,27 @@ story's plan says the missing parts are drawn before they are built. These parts
 - the yellow note that warns about hard-to-read colours;
 - the controls for how dark photos get under text, and how round pill-shaped buttons are.
 
-I have written the prompt (below this question). It also puts the plan's words on the drawings: "Normal", not
-"Standard", and "On-accent", not "Contrast". Building starts once your drawing is back.
+I have written the prompt. It also puts the plan's words on the drawings: "Normal", not "Standard", and "On-accent", not
+"Contrast". Building starts once your drawing is back.
 
 **An example.** Today there is no drawing of a "Gutters: Tight · Normal · Loose" row. After the prompt runs, it sits
 under "Spacing density" in the same style as the rows above it, and that drawing is what gets built.
 
-1. **Run the prompt in Claude Design and send me the export (RECOMMENDED).** Open the **Inflozo** project in Claude
-   Design and start a new chat. Copy the prompt from this spec's section **"The Claude Design prompt (Question 1)"**:
-   open the spec in VS Code and copy the grey block. Paste it and let it finish, then look over the new S7 frames.
-   Export the project as a zip and save it anywhere on this computer. Then answer with the Record prompt:
-   "Ruled: 1 — the export is at <where you saved it>".
+1. **Run the prompt in Claude Design and send me the export (RECOMMENDED).** Paste the prompt into a new chat in the
+   Inflozo project, let it finish, export the project as a zip and tell me where you saved it.
 2. **Skip the drawing this once.** The build draws the missing parts by copying controls the Kit already has. That is an
    exception to R-74, like the dice (R-163). It is faster, but nothing you have looked at decides how they look.
 3. **Leave the undrawn parts out of this story.** Colours, pencils, New pack and the five rows already drawn ship now.
    Gutters, shadow, link style, the Pill button, the font list, the photo and pill controls, and the warning wait for a
    later story. FR-E3 is then only partly done.
 
-**Ruled:** _(awaiting the owner)_
+**Ruled: option 2 (owner, 2026-10-04).** *"Skip the drawing this once. Ensure it is perfect and match existing
+design."* Recorded as **R-236**, R-74's one stated exception, for this story only.
+- The parts no frame draws are built from the drawings that exist, exactly: S7a's rows and cells, S7c's dialog, S7d's
+  colour picker, the Editor Sidebar Kit's controls, P0-0 and D8. There is no new component, colour or size.
+- "Perfect" is held two ways: a computed-style stop against the "Built from" table, and a side-by-side page the owner
+  approves in the Dev session.
+- The prompt was not run, and it is no longer in this spec.
 
 ### Question 2 — The colour of the page itself has two names. Which one should it have everywhere?
 
@@ -696,96 +790,9 @@ that same cream, so it should carry the same name in both places.
    but it renames a setting you have already tested.
 3. **Keep both.** The pack editor says Background and section settings say Base. That breaks R-170.
 
-**Ruled:** _(awaiting the owner)_
-
-## The Claude Design prompt (Question 1)
-
-Paste this whole block into a new chat in the **Inflozo** project in Claude Design. It uses "Base" for the page colour
-(Question 2's recommendation). If you rule otherwise, the build uses your word, and the drawing's one label is left as
-drawn.
-
-```
-INFLOZO — STORY 6.4 · REDRAW S7 STYLE PACKS FOR THE STYLE PACK EDITOR
-
-Work only in "S7 Style Packs.dc.html". Update S7a, S7c and S7d in place, add the new frames below beside them, and
-leave S7b exactly as it is. Build every frame from what this project already draws: the Calibration Set's tokens and
-type, the Editor Sidebar Kit's controls (segmented control, swatch, font row, select row and dropdown menu with a check
-on the active row, stepper, text input, feedback banner, buttons), P0-0's greyed pattern and D8's Controls overlay.
-Invent no new component and no new colour.
-
-WHY. The Style Pack editor is being built now. The product plan decides what it does; these frames decide what it
-looks like. In a few places S7 and the plan disagree, and some parts were never drawn. Where this prompt gives a word,
-use that word exactly: the product keeps one name for one thing everywhere.
-
-THE WORDS
-- The panel's rows, in this order, each the Kit's segmented control unless said otherwise:
-  Fonts · Site width: Narrow · Normal · Wide · Radius: Sharp · Soft · Round · Spacing density: Compact · Comfortable ·
-  Airy · Gutters: Tight · Normal · Loose · Button style: Solid · Soft · Outline · Pill · Shadow: None · Subtle ·
-  Lifted · Link style: Underline · Accent · Pill radius.
-  These replace S7a's "Standard", "Spacious", "Corners", "Density" and "Buttons". "Spacious" is a section's own
-  Vertical spacing word and must not appear in the Style Pack panel.
-- A pack's seven colours, per mode, in this order: Base · Surface · Text · Muted · Border · Accent · On-accent.
-  The swatch S7c and S7d label "Contrast" is the colour of words on the accent: it is On-accent. "Contrast" already
-  names a section background, so it is not used here. "Base" is the page's own colour, the word a section's
-  Background setting already uses for it.
-- A pack's fonts are one curated pairing, never two free choices: one row titled "Fonts", showing
-  "Heading · Body", for example "Fraunces · Inter".
-
-WORK LIST
-1. S7a, the panel — update in place.
-   a. The roster's names are the plan's twelve, in this order: Paper, Ink, Orbit, Tangerine, Slate, Meadow, Dune,
-      Mono, Ocean, Berry, Neon, Quiet (S7a's own caption says its names were placeholders). Keep the custom cell,
-      "Maya's Warm", after them, and "+ New pack" last.
-   b. Every cell carries the same "Edit pack" pencil in its top-right corner, presets and custom packs alike. Draw
-      the custom cell exactly like a preset cell, with no dashed underline under its name: a pack is renamed in
-      Edit pack.
-   c. Below the roster, the rows from THE WORDS, in that order, for the pack in force.
-      - The Fonts row is the Kit's font row: "Aa" in the heading face, the label, the value "Fraunces · Inter", a
-        chevron.
-      - Pill radius is how round pill-shaped things are: tags, and buttons when Button style is Pill. Draw it as the
-        Kit's stepper in whole pixels from 0 to 40, plus "Full" for fully round ends, which is what most packs use.
-      - The panel scrolls inside itself when the rows do not fit the 900 px frame.
-2. NEW S7e — the font pairing list, open. Pressing the Fonts row opens the Kit's dropdown menu over the panel, a
-   column of pairings that scrolls inside itself.
-   - Each row is "Ag" in that pairing's heading face, then "Heading · Body" in the app's own font, with a check on
-     the pairing in force.
-   - Draw at least these rows, in this order: Fraunces · Inter; Libre Caslon Text · Source Serif 4; Space Grotesk ·
-     Inter; Bricolage Grotesque · Inter; Instrument Sans · Inter; Gantari · Nunito Sans; DM Serif Display · DM Sans;
-     Archivo · IBM Plex Mono. Show that the list continues: it holds thirty.
-3. S7c, Edit pack — update in place.
-   a. The swatch labels from THE WORDS, seven per mode.
-   b. For each mode, an "Image scrim" control: how strongly a photo is darkened under text laid over it, from 0 % to
-      100 % in steps of 5 (Light 45 %, Dark 60 % for Tangerine). Use the Kit's stepper.
-   c. Keep Reset to defaults (it puts a preset back as the plan authored it), Cancel and Save pack.
-4. NEW S7h — Edit pack with the contrast warning and the colour picker.
-   a. Under the swatch rows, the Kit's feedback banner in its marigold notice kind, with one warning icon and one plain
-      sentence: "Hard to read: Muted on Surface in Dark, 3.2:1. Small text needs 4.5:1 — you can still save."
-      Mark each swatch in a failing pair with the same small warning icon, so the warning is never carried by colour
-      alone. Save pack stays the ink button and stays pressable: this is a warning, never a block.
-   b. The colour picker open on the Dark Muted swatch: the popover S7d draws (square, hue strip, From your site, hex
-      field and paste), anchored to that swatch. The hex field's label names its role and mode: "Muted, Dark — hex".
-5. S7d, New pack — update in place.
-   a. Delete the third row ("Dark · Base · Surface · Accent · Contrast", four swatches). A pack is the two
-      seven-colour rows. Anchor the colour picker to the swatch that opened it.
-   b. "From your site" offers the connected site's own accent colour, as one dot. Leave it out when no site is
-      connected.
-   c. No Reset to defaults here: a new pack has no defaults.
-   d. Draw the state after Save pack is pressed with the name empty: the Kit's field error under Pack name, "Name your
-      pack to save it."
-6. NEW S7f — reading along. Another window holds the editor, so this one only looks. Draw the S7a panel with every
-   cell, pencil, "+ New pack" and row greyed by P0-0's pattern, the values still readable.
-7. NEW S7g — tablet, 834. Draw the panel inside D8's Controls overlay over the canvas (the list, then the rows,
-   scrolling), and Edit pack centred over the editor at the same width.
-
-OUTPUT
-- Update "S7 Style Packs.dc.html" only. Label each new frame like the others, for example "S7e · font pairing list ·
-  1440".
-- End the file with "Patch notes — Story 6.4": every change, one line each.
-- If an instruction cannot be followed without inventing a decision, do not ask in the chat and do not guess. Record it
-  in the patch notes marked OPEN FOR THE OWNER: one sentence on what you would have needed to know, and what you did
-  instead. Then carry on with the rest.
-- Export the project as a zip.
-```
+**Ruled: option 1 (owner, 2026-10-04).** *"Base everywhere."* Recorded as **R-237**. The Style Pack editor's first
+colour is "Base", as in a section's Background setting. FR-E1's "background" stays as prose describing the role, not
+as a label.
 
 ## Owner's manual test
 
@@ -795,21 +802,21 @@ already hold their one project, so the deployed walk proves duplication instead.
 
 | # | URL | Screen | What to do | Dummy data | What you should see |
 |---|-----|--------|------------|------------|---------------------|
-| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Click the grey area beside the page, then **Change**. | — | The Style Pack list. Every pack has a small pencil, and **+ New pack** is last. Below the list are **Fonts**, **Site width**, **Radius**, **Spacing density**, **Gutters**, **Button style**, **Shadow**, **Link style** and **Pill radius**. Site width reads Narrow · Normal · Wide, and Spacing density reads Compact · Comfortable · Airy. |
-| 2 | same | Edit pack | Click **Paper**'s pencil. | — | The Edit pack window: Pack name "Paper", then Light and Dark rows of seven colours (Base · Surface · Text · Muted · Border · Accent · On-accent), each row with Image scrim. Below are **Reset to defaults**, **Cancel** and **Save pack**. |
+| 1 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51` | Editor | Click the grey area beside the page, then **Change**. | — | The Style Pack list. Every pack has a small pencil, and **+ New pack** is last. Below the list are **Heading font** and **Body font**, then **Site width**, **Radius**, **Spacing density**, **Gutters**, **Button style**, **Shadow**, **Link style** and **Pill radius**. Site width reads Narrow · Normal · Wide, and Spacing density reads Compact · Comfortable · Airy. The rows look exactly like the ones in the Style Pack drawing: the same small rounded switches, sizes and greys. |
+| 2 | same | Edit pack | Click **Paper**'s pencil. | — | The Edit pack window, as the drawing shows it: Pack name "Paper", then Light and Dark rows of seven colours (Base · Surface · Text · Muted · Border · Accent · On-accent), then **Image scrim** for Light and for Dark. Below are **Reset to defaults**, **Cancel** and **Save pack**. |
 | 3 | same | Colour picker | Click the Light **Accent** colour. In the hex field, select the text and type the dummy colour, then press **Enter**. | `#1E6BFF` | A small picker with a square and a rainbow strip. The Accent colour turns blue. |
 | 4 | same | Edit pack | Click the Light **Text** colour and type the dummy colour in its hex field. | `#DDDDDD` | A yellow note appears: "Hard to read: Text on Base in Light, …:1. Small text needs 4.5:1 — you can still save." The Text colour carries a small warning sign. **Save pack** still works, but don't press it yet. |
 | 5 | same | Edit pack | Type the dummy colour into the Text hex field, then click **Save pack**. | `#232019` | The yellow note goes away and the window closes. The page's buttons and links turn blue, and Paper's dots in the list show the blue. |
 | 6 | same | Editor | Press **⌘Z**, then **⇧⌘Z**. | — | ⌘Z puts Paper's own orange back. ⇧⌘Z makes it blue again. |
 | 7 | same | Style Pack list | Click **Wide** under Site width, **Pill** under Button style and **Underline** under Link style. | — | The page gets wider, its buttons get fully round ends, and its links go plain with an underline. |
-| 8 | same | Font pairing list | Click the **Fonts** row and pick **Lora · Lato**. | — | A list of thirty pairings, each showing "Ag" in its own font. After you pick, the page's headings change to Lora and its text to Lato. |
+| 8 | same | Font pairing list | Click the **Heading font** row and pick **Lora** over **Lato**. | — | A list of thirty pairings, each with "Ag" in its own heading font and its two font names. After you pick, Heading font reads Lora and Body font reads Lato, and the page's headings and text change to them. |
 | 9 | same | New pack | Click **+ New pack**, then click **Save pack** without typing a name. | — | "Name your pack to save it." under the name, and nothing is saved. |
 | 10 | same | New pack | Type the dummy name. Click the Light **Base** colour and type the dummy colour, then click **Save pack**. | `Studio Warm`, then `#FFF4EA` | "Studio Warm" appears in the list, ringed and current, and the page turns cream. |
 | 11 | same | Editor | Click the grey area and press **⌘S**. Wait for the green tick, then reload the page. Then click the back arrow to Projects. | — | The page reopens in Studio Warm, with Paper still blue in the list. On Projects, the Pilot sections card is cream. |
 | 12 | `https://app.inflozo.com/projects/b6d4db35-8e5e-45e1-a70f-4daa28916d51`, in a second window | Editor, read-only | Open the same project in a second window, click the grey area, then **Change**. | — | Every pencil, **+ New pack** and every row is greyed, and clicking does nothing. |
-| 13 | same, in the first window | Edit pack | Click **Paper**'s pencil, click **Reset to defaults**, then **Save pack**. Click **Paper** in the list, then click the grey area and press **⌘S**. | — | Paper is back as it was, orange accent and Fraunces headings, and it is current. Studio Warm stays in this project's list: nothing in the plan or the drawings deletes a pack, so this story has no Delete. Say so if you want one. |
+| 13 | same, in the first window | Edit pack | Click **Paper**'s pencil, click **Reset to defaults**, then **Save pack**. Click **Paper** in the list, then click the grey area and press **⌘S**. | — | Paper is back as it was, orange accent and Fraunces headings, and it is current. Studio Warm stays in this project's list, with its name dotted-underlined and a small pencil beside it; clicking its name opens Edit pack on the name. Nothing in the plan or the drawings deletes a pack, so this story has no Delete. Say so if you want one. |
 | 14 | same | Editor, narrow | Make the window about 1,000 px wide, open **⋯**, choose **Style Pack**, then click a pencil. | — | The list and its rows open on the right, and the Edit pack window opens over the page. Press **Esc** to close it. |
-| 15 | same | Edit pack | Click **Paper**'s pencil and change Light **Image scrim** to 70 %. Click **Cancel**. | — | Nothing on today's page darkens a photo yet, so the page does not change; the setting is kept for sections that will. Cancel leaves Paper as it was. |
+| 15 | same | Edit pack | Click **Paper**'s pencil and change Light **Image scrim** to 70 %. Click **Cancel**. | — | The page does not change, because no section on today's page darkens a photo yet. Cancel leaves Paper as it was. |
 
 ## Verification
 
