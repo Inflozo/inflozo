@@ -1058,6 +1058,9 @@ test('6.4 · Tab from the list reaches the pack\'s pencil; Edit pack opens on th
   await expect(swatchOf(page, 'light', 'accent')).toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, '#1E6BFF', false))
   await page.keyboard.press('ControlOrMeta+a')
   await page.keyboard.type('#1af')
+  // on the way to six digits, three are not a choice yet (the review): the swatch waits for Enter
+  await expect(hex).toHaveValue('#1af')
+  await expect(swatchOf(page, 'light', 'accent'), 'a half-typed colour is not applied').toHaveAccessibleName(W.swatch(W.roles.accent, W.modes.light, '#1E6BFF', false))
   await page.keyboard.press('Enter')
   await expect(hex, 'three digits are expanded').toHaveValue('#11AAFF')
   await expect(page.locator('#pack-picker-hex-error')).toHaveCount(0)
@@ -1193,6 +1196,98 @@ test('6.4 · an own pack\'s edit is kept on this device with the docs: a reload 
   await page.keyboard.press('ControlOrMeta+z')
   await expect.poll(() => tokenOf(page, '--accent')).toBe(paper.light.accent)
   await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(paper.name))
+})
+
+/** + New pack, named and saved from the keyboard (the New pack stop holds every step of it) */
+async function makePack(page, name, listOpen = false) {
+  if (!listOpen) await intoList(page)
+  await tabOnto(page, page.locator('#style-pack-new'))
+  await page.keyboard.press('Enter')
+  await expect(page.locator('#pack-name')).toBeFocused()
+  await page.keyboard.type(name)
+  await typeHex(page, 'light', 'background', '#FFF4EA')
+  // Enter in Pack name is Save pack (the review), as in the Layers Rename dialog
+  await page.locator('#pack-name').focus()
+  await page.keyboard.press('Enter')
+  await expect(packEditor(page)).toBeHidden()
+  await expect(page.locator('#editor-said')).toHaveText(PACK.PACK_WORDS.said(name))
+}
+
+test('6.4 · the save\'s body (the review): a Save pack then ⌘S sends the whole own-pack map and no preset; a New pack then ⌘S sends its record AND its switch in one body', async ({ page }) => {
+  await open(page)
+  // the sync route, answered here as the write landing — every body written down (the harness has no database)
+  const sent = []
+  await page.route('**/sync', (route) => {
+    sent.push(route.request().postDataJSON())
+    return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ applied: true, revision: sent.length }) })
+  })
+  const save = async () => {
+    await page.locator('section[aria-label="Canvas"]').focus()
+    await page.keyboard.press('ControlOrMeta+s')
+  }
+  await intoEdit(page, 'paper')
+  await typeHex(page, 'light', 'accent', '#1E6BFF')
+  await savePack(page)
+  await expect(page.locator('#editor-said')).toHaveText(W.changed(recordOf('paper').name))
+  await save()
+  await expect.poll(() => sent.at(-1)?.packs?.paper?.light?.accent, 'the edited record goes up').toBe('#1E6BFF')
+  expect(Object.keys(sent.at(-1).packs), 'the whole map, and only the project\'s own').toEqual(['paper'])
+  expect(sent.at(-1).docs, 'no doc changed').toEqual({})
+  expect('preset' in sent.at(-1), 'an edit is no switch').toBe(false)
+  const before = sent.length
+  // the list is still open from the edit above
+  await makePack(page, 'Studio Warm', true)
+  await save()
+  await expect.poll(() => sent.length, 'the New pack is sent').toBeGreaterThan(before)
+  const body = sent.at(-1)
+  expect(body.preset, 'the switch').toBe('custom-1')
+  expect(body.packs['custom-1']?.name, 'and its record, in the same body').toBe('Studio Warm')
+  expect(body.packs.paper?.light?.accent, 'beside the edit already saved: the map is whole').toBe('#1E6BFF')
+  expect(body.base, 'on the revision the first save answered').toBe(before)
+})
+
+test('6.4 · this device\'s copy is read as untrusted (the review, AD-36): a New pack not yet sent survives F5 as the pack in force, a record planted beside it that names no pool pairing or carries CSS is dropped, and ⌘Z still removes the pack', async ({ page }) => {
+  await open(page)
+  await makePack(page, 'Studio Warm')
+  await expect.poll(async () => (await held(page)).packs['custom-1']?.name, 'the pack is written to the device').toBe('Studio Warm')
+  // planted by hand, as a browser can be made to hold them
+  await page.evaluate((id) => new Promise((resolve, reject) => {
+    const req = indexedDB.open('inflozo-doc-harness')
+    req.onerror = () => reject(req.error)
+    req.onsuccess = () => {
+      const db = req.result
+      const tx = db.transaction('meta', 'readwrite')
+      const store = tx.objectStore('meta')
+      const got = store.get(id)
+      got.onsuccess = () => {
+        const own = got.result.packs['custom-1']
+        store.put({ ...got.result, packs: {
+          ...got.result.packs,
+          'custom-2': { ...own, name: 'No such pairing', pairing: 'D999' },
+          'custom-3': { ...own, name: 'Hostile', light: { ...own.light, accent: '#fff;}body{display:none' } },
+        } })
+      }
+      tx.oncomplete = () => { db.close(); resolve() }
+      tx.onerror = () => { db.close(); reject(tx.error) }
+    }
+  }), '00000000-0000-4000-8000-000000000009')
+  expect(Object.keys((await held(page)).packs), 'the control: the device holds all three').toEqual(['custom-1', 'custom-2', 'custom-3'])
+  const errors = []
+  page.on('pageerror', (e) => errors.push(String(e)))
+  await page.reload()
+  await expect(page.frameLocator('iframe[title$="canvas"]').locator('#canvas > *').first()).toBeVisible()
+  // the pack made here is still in force, though the server never heard of it
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'custom-1')
+  await expect.poll(() => bgPage(page)).toBe('#FFF4EA')
+  await intoList(page)
+  const ids = await page.locator('#editor-controls [data-style-pack]').evaluateAll((els) => els.map((e) => e.dataset.stylePack))
+  expect(ids, 'the planted records are no packs').toEqual([...PRESETS().map((p) => p.id), 'custom-1'])
+  expect(errors, 'and the editor opened without an error').toEqual([])
+  // the journal came back with it: one ⌘Z removes the pack and puts Paper back
+  await page.locator('section[aria-label="Canvas"]').focus()
+  await page.keyboard.press('ControlOrMeta+z')
+  await expect(page.locator('iframe[title$="canvas"]')).toHaveAttribute('data-pack', 'paper')
+  await expect(option(page, 'custom-1')).toHaveCount(0)
 })
 
 test('6.4 · + New pack: it starts from the look in force; with no name it refuses; named, it joins the roster after the presets, ringed, and wears the canvas — ONE transaction, one ⌘Z removes it', async ({ page }) => {

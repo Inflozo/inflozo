@@ -188,10 +188,17 @@ function PackForm({
     e.preventDefault()
     move(step[0], step[1])
   }
+  /** Enter, or the field left. A colour the draft already holds is left alone: re-reading it would throw away the hue
+   *  and saturation the sliders hold for a colour that has none of its own (white, black, a grey) — the field loses
+   *  focus on the first press of the hue strip, and that press must stand (the review, 2026-10-04). */
   const commitTyped = () => {
     const hex = hexOf(typed)
     if (hex === null) setHexError(W.notColour)
-    else setColour(hex)
+    else if (hex !== colour) setColour(hex)
+    else {
+      setTyped(hex)
+      setHexError(null)
+    }
   }
   const paste = async () => {
     try {
@@ -248,6 +255,12 @@ function PackForm({
           const value = e.target.value
           setDraft((d) => ({ ...d, name: value }))
           setNameError(null)
+        }}
+        onKeyDown={(e) => {
+          // a name typed and Enter pressed is Save pack, as in the Layers Rename dialog (the review, 2026-10-04)
+          if (e.key !== 'Enter') return
+          e.preventDefault()
+          save()
         }}
       />
 
@@ -429,7 +442,9 @@ function PackForm({
                 const value = e.target.value
                 setTyped(value)
                 setHexError(null)
-                const hex = hexOf(value)
+                // six digits follow the typing; three are a colour only once they are finished with (Enter, or the
+                // field left) — the first three digits of six are not a choice (the review, 2026-10-04)
+                const hex = /^#?[0-9a-f]{6}$/i.test(value.trim()) ? hexOf(value) : null
                 if (hex !== null) {
                   setDraft((d) => ({ ...d, [pick.mode]: { ...d[pick.mode], [pick.role]: hex } }))
                   setHsv(hexToHsv(hex))

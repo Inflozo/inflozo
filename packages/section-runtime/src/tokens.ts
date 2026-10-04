@@ -107,6 +107,9 @@ const times = (f: number): Density => {
 const onGrounds = (colour: string, m: PackMode, target: number) => contrast(colour, m.background) >= target && contrast(colour, m.surface) >= target
 const solid = (m: PackMode): ButtonLook => ({ fill: m.accent, border: TRANSPARENT_BORDER, text: m.onAccent })
 
+/** NEVER REMOVE OR RENAME A STEP without migrating `projects.style_pack.packs` first (Story 6.4's review): a project's
+ *  own pack stores these keys, a record naming a step that is gone is dropped at read, and the next pack save then
+ *  writes the column without it. */
 export const SCALES = {
   radius: { sharp: '2px', soft: '8px', round: '16px' },
   density: { compact: times(0.75), comfortable: COMFORTABLE as Density, airy: times(1.25) },

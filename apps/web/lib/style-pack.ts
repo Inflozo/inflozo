@@ -2,7 +2,7 @@ import { familyList, pairingFonts, pairingOf, POOL, presetOf, PRESETS as LIBRARY
 import { faceRulesCss, fontFaceCss } from '@inflozo/section-runtime/fonts'
 import { REFERENCE_TOKENS, referenceTokensCss } from '@inflozo/section-runtime/reference'
 import { packTokens, type Pack } from '@inflozo/section-runtime/tokens'
-import { choiceOf, isCustom, ownPacksIn, ROLE_TOKENS, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
+import { choiceOf, hexOf, isCustom, ownPacksIn, ROLE_TOKENS, type PackFonts, type PackRecord, type PairingChoice } from './pack-edit.ts'
 import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, type PackCellData, type PackChoice } from './pack-switch.ts'
 import { z } from './zod.ts'
 import { isAccent } from './probe-rule.ts'
@@ -290,3 +290,11 @@ export function pairingGlyphFacesCss(base: string): string {
  *  (background, accent, text) — and nothing else of the pool. */
 export const packCells = (): PackCellData[] =>
   Object.values(PRESETS).map((p) => ({ id: p.id, name: p.name, glyphFamily: p.glyphFamily, dots: [p.surface, p.accent, p.text] }))
+
+/** STORY 6.4 — the linked site's stored brand accent as the colour picker offers it ("From your site"): `#rgb` expanded,
+ *  uppercase — or null. Through `isAccent`, because `site_settings` is a stored value and the answer becomes a draft's
+ *  colour (AD-36). */
+export function siteAccentOf(siteSettings: unknown): string | null {
+  const accent = (siteSettings as { brand?: { accent?: unknown } } | null | undefined)?.brand?.accent
+  return isAccent(accent) ? hexOf(accent) : null
+}

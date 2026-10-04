@@ -2870,6 +2870,7 @@ So that the two features are one action rather than two.
 **And** the Style panel shows the seeded values as ordinary editable tokens afterwards
 **And** the flow is re-runnable later from the Style panel.
 **And** S2c's project chooser is drawn in the Claude Design project from S2c before this story builds on it (R-74), and its fieldset takes the scroll bound that frame draws (DW-70).
+**And** "Use your brand" writes `brand` into `style_pack` by key, never the whole object read earlier, so a pack saved by the editor at the same moment survives it (DW-327, from Story 6.4's Review, 2026-10-04).
 
 **FRs:** FR-E5. · **Frame:** `S2 Onboarding.dc.html` S2c · `S7 Style Packs.dc.html` S7c. · **Owner test:** yes.
 

@@ -116,7 +116,7 @@ test('DW-324: each specimen draws every role at both ends of the weights pool.js
     const p = pairingOf(id)
     const doc = new JSDOM(`<body>${specimenMarkup(id)}</body>`).window.document
     for (const end of weightEnds(p.heading)) assert.ok(doc.querySelector(`[data-family="${p.heading.family}"][style*="font-weight:${end}"], [data-family="${p.heading.family}"][style*="font-weight: ${end}"]`), `${id}: no heading line at ${end}`)
-    for (const end of weightEnds(p.body)) assert.ok(doc.querySelector(`.specimen__body[style*="${end}"], .specimen__body strong[style*="${end}"]`), `${id}: no body roman at ${end}`)
+    for (const end of weightEnds(p.body)) assert.ok(doc.querySelector(`.specimen__body[style*="${end}"], .specimen__body strong[data-family][style*="${end}"]`), `${id}: no body roman at ${end}`)
     const [iLo, iHi] = weightEnds(p.body, true)
     assert.ok(doc.querySelector(`.specimen__body > em[style*="${iLo}"]`), `${id}: no italic at ${iLo}`)
     assert.ok(doc.querySelector(`.specimen__body > strong[style*="${iHi}"] > em`), `${id}: no bold italic at ${iHi}`)

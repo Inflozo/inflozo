@@ -2,7 +2,7 @@
 title: 'Story 6.4 — Editing tokens, per mode, with contrast checked live'
 type: 'feature'
 created: '2026-10-04'
-status: 'in-progress'
+status: 'in-review'
 owner_test: pending
 review_loop_iteration: 0
 baseline_commit: '423e9173ff88662fd9e5cb1091fdfb7287dd2f51'
@@ -607,6 +607,59 @@ is committed or pushed before it, and no deployed walk runs before the Dev push 
   `pnpm build && node tools/check-traces.mjs`, `bash supabase/tests/run-rls-gate.sh`, `bash tools/matrix/run-matrix-gate.sh`
   (after the approved rebaseline), and `python3 tools/doc-audit.py --check`.
 
+### Review Findings
+
+*Code review, 2026-10-04 — five layers (Blind Hunter, Edge Case Hunter, Verification Gap, Acceptance Auditor, Real-infra
+verifier, the last run in the main session). The four reading layers ran over `423e9173..b038bac5` in a first session
+that was cut off before it recorded anything; this session read their four reports, triaged them against the code and
+finished the review (no file of the story changed in between). Every patch below is applied in the Review commit, and
+each new check was seen red with its fix taken out. No finding is the owner's to decide. The rest were dismissed:*
+- *as the spec's own words — each Pill radius press is one edit; a stored record that fails the schema is dropped; the
+  warning's glyph marks the words (Spec Change Log);*
+- *as held elsewhere — a renamed token cannot draw empty dots, because `pilots.test.ts` holds every swatch to
+  `referenceSwatches`, which throws; the reader's rows are dimmed by the sidebar's own 55 % (`run-verify-lock.cjs`
+  measures it); the dashboard walk's accounts are deleted in a `finally`; the axe scan over the list, the pairing menu,
+  Edit pack and the picker is step 103's, run at this Review;*
+- *as reachable only by a hand-made body or a hand-edited device, and then harmless — a `custom-<n>` preset naming no
+  pack reads as Paper; a pill radius off the stepper's steps; a tampered copy at sign-out or in an undo; the 9,999-pack
+  ceiling;*
+- *as measured or cosmetic — the pairings' faces in the editor's payload (gzipped sizes under `## Verification`);
+  `placeholderFor` validating twice; two packs sharing a name; a paste answered after another swatch was opened during
+  the browser's own permission prompt.*
+
+- [x] [Review][Patch] **A half-typed hex applied a colour nobody chose.** The field applied three digits as it was
+  typed, so `#1E6` on the way to `#1E6BFF` made the draft `#11EE66`, and stopping there kept it — Save pack would have
+  saved it. Six digits now follow the typing; three wait for Enter or for the field to be left
+  [`pack-editor.tsx`; `journey.spec.mjs`]
+- [x] [Review][Patch] **On white, black or a grey, the first press on the hue strip was lost.** The press takes focus
+  from the hex field, whose blur re-read the same colour and reset the hue to 0. A colour the draft already holds is now
+  left alone. The picker had no pointer or touch check at all: the tablet sweep now taps the strip and the square
+  [`pack-editor.tsx`; `floor.spec.mjs`]
+- [x] [Review][Patch] Enter in Pack name did nothing; it is Save pack now, as in the Layers Rename dialog
+  [`pack-editor.tsx`; `journey.spec.mjs`]
+- [x] [Review][Patch] **The save's body for own packs ran in no CI check** — dropping `packs` from the editor's request
+  left every gate green and an own pack never reached the server. A new stop reads the body: a Save pack then ⌘S sends
+  the whole map and no preset; a New pack sends its record and its switch in one body [`journey.spec.mjs`]
+- [x] [Review][Patch] A reload with a New pack not yet sent was never exercised, and this device's copy was never tested
+  as untrusted (AD-36): a new stop plants a record naming no pool pairing and one carrying CSS beside a real pack, reloads,
+  and holds the pack in force, the planted ones dropped and ⌘Z still working [`journey.spec.mjs`]
+- [x] [Review][Patch] "From your site" on a real project had no check: `siteAccentOf` moves to `lib/style-pack.ts`,
+  where a unit test reaches it [`lib/style-pack.ts`; `read.ts`; `style-pack.test.ts`]
+- [x] [Review][Patch] DW-324's face check could not tell Alegreya from Alegreya Sans (D30's heading and body): the
+  longest of the page's families that fits a reported name now owns it [`tools/matrix/matrix.spec.mjs`]
+- [x] [Review][Patch] The specimen test's "body roman at its heaviest" was satisfied by the bold italic run
+  [`tools/matrix/cases.test.mjs`]
+- [x] [Review][Patch] The lock walk's "forced press" clicked a disabled button, which the browser never dispatches, so
+  it proved only the greying. It now lifts `disabled` for the three presses, so the lock guard underneath is what
+  refuses [`tools/probe/run-verify-lock.cjs`]
+- [x] [Review][Patch] `epic-6-context.md` still gave the column as `{ preset, brand? }` [`epic-6-context.md`]
+- [x] [Review][Defer] "Use your brand" writes the whole `style_pack` back with no revision check, so it can overwrite
+  packs saved at the same moment [`sites/actions.ts`] — deferred, pre-existing; DW-327, Story 6.6
+- [x] [Review][Patch] An own pack a later build could no longer read would be dropped at read, and the next pack save
+  would then overwrite the column without it. Nothing removes or renames a pairing or a step today, so the rule now
+  sits beside the two lists a change would touch: migrate the stored packs first [`packages/library/src/packs.ts`
+  `POOL`; `packages/section-runtime/src/tokens.ts` `SCALES`]
+
 ## Spec Change Log
 
 - **2026-10-04 · Dev — the frames draw in CSS's content-box.** Measured on the frames themselves: S7c's `width:520px;
@@ -1049,3 +1102,41 @@ already hold their one project, so the deployed walk proves duplication instead.
 - **GitHub Actions and Vercel** (`GITHUB_TOKEN`, `VERCEL_TOKEN`, `VERCEL_TEAM_ID`): `check`, `rls`, `deploy` and
   `matrix.yml` green on the head, and production READY from it.
 - **Not touched:** T1 and T3 (no theme), Resend (no email), Dodo (no billing).
+
+### Results — Review (2026-10-04)
+
+Keys are named by their variable in `tools/probe/.env`, never by value. Node 24.18.1 throughout. The real-infra layer
+ran in the main session.
+
+**Before any patch.**
+- **R-99, Supabase production through `SUPABASE_DB_POOLER_URL`, read-only:** `pg_proc` holds exactly one
+  `sync_project_doc(p_project uuid, p_docs jsonb, p_base bigint, p_preset text, p_packs jsonb)`, security definer, anon
+  not executable, authenticated executable, its `prosrc` byte-identical to the migration file's body (1,431 characters).
+  **Control:** the same comparison against 6.3's body is false. The schema is as new as the code.
+- **Vercel** (`VERCEL_TOKEN`, `VERCEL_TEAM_ID`, `VERCEL_PROJECT`): a production deployment READY from the Dev head
+  `b038bac5`, and from later heads that changed no file of the story's product code.
+- The first review session started `run-verify-editor.cjs` on that build and died with it, on a navigation timeout
+  before step 103; it proved nothing and is not counted. The three walks run on the reviewed build, below.
+
+**The patched tree.**
+- **Controls, each a scratch edit, restored** (`pnpm keyboard -g` over the affected stops): with the blur re-reading the
+  colour again, both tablets' sweeps red at "the middle of the strip, kept"; with three digits applied as typed, red at
+  "a half-typed colour is not applied"; with `packs` dropped from the editor's request, red at "the edited record goes
+  up"; with Enter in Pack name doing nothing, red where the window should have closed; with the device's packs taken
+  raw, the editor did not open after the reload. Restored, each is green.
+- `pnpm check`: exit 0 (the first run was red on this review's own comment, which spelled an example hex in
+  `pack-editor.tsx` — `tokens.test.ts` doing its job; reworded).
+- `pnpm build` then `node tools/check-traces.mjs`: exit 0.
+- `bash tools/matrix/run-matrix-gate.sh`, in the image, with the longest-family rule: exit 0, its own line "574 cases · 5
+  designs · 30 pairing specimens · 4 on the contrast ground · 3 packs · 0 violations · 0 of 394 drawn cases scroll
+  sideways · 300 specimen lines in the pool's own faces (each behind its positive control) — passed". D30's lines
+  (Alegreya over Alegreya Sans) are among them.
+- `pnpm keyboard`, whole, no `--grep`, three runs, all recorded:
+  - the first had source edited under it mid-run and is not a result;
+  - the second: 188 passed, 1 failed — the review's own new stop, which opened a list that was already open (the test's
+    mistake; fixed, green alone);
+  - the third, on the final tree: 188 passed, 1 failed — Story 5.23a's "every whole-page change repaints the whole
+    page", at "a subject", a stop this story does not touch and which passed in the second run. Repeated three times
+    alone, it passed three times. CI's own whole run on the Review head is the arbiter, recorded below.
+- The RLS gate was not re-run: the review changed no SQL, and CI runs it on the push.
+

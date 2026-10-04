@@ -434,18 +434,25 @@ async function main() {
     const [aDoors, bDoors] = [await doorsOf(A), await doorsOf(B)]
     const accent64 = (page) => page.evaluate(() => getComputedStyle(document.querySelector('section[aria-label="Canvas"] iframe').contentDocument.documentElement).getPropertyValue('--site-width').trim())
     const before64 = { width: await accent64(B), revision: (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision }
-    await B.evaluate(() => {
-      document.querySelector('#editor-controls [data-edit-pack]')?.click()
-      document.querySelector('#editor-controls #style-pack-new')?.click()
-      document.querySelector('#editor-controls #style-pack-width [role="radio"][aria-checked="false"]')?.click()
+    // FORCED: a click on a disabled control is never dispatched, so the greying alone would answer this. The fieldsets'
+    // and the controls' own `disabled` are lifted for the three presses and put back, and what refuses is the wall under
+    // the greying — the handlers' lock guard and `commit`'s (the review, 2026-10-04).
+    const forced64 = await B.evaluate(() => {
+      const lifted = [...document.querySelectorAll('#editor-controls :is(fieldset, button):disabled')].filter((el) => el.disabled)
+      for (const el of lifted) el.disabled = false
+      const targets = ['[data-edit-pack]', '#style-pack-new', '#style-pack-width [role="radio"][aria-checked="false"]'].map((s) => document.querySelector(`#editor-controls ${s}`))
+      const pressable = targets.filter((el) => el && !el.matches(':disabled')).length
+      for (const el of targets) el?.click()
+      for (const el of lifted) el.disabled = true
+      return { lifted: lifted.length, pressable }
     })
     await B.waitForTimeout(1500)
     const after64 = { width: await accent64(B), revision: (await call('/rest/v1', `/projects?id=eq.${P}&select=revision`)).body?.[0]?.revision, dialog: await B.evaluate(() => document.querySelector('dialog[data-pack-editor]')?.open === true) }
     check('Story 6.4 (R-192) control: the HOLDER\'s pencils, "+ New pack", font rows and rows are all live',
       aDoors.doors > presets63.length && aDoors.live === aDoors.doors && aDoors.rows > 0, JSON.stringify(aDoors))
     check('Story 6.4 (R-192): the READER\'s pencils, "+ New pack", font rows and rows are greyed and unclickable — a forced press opens nothing and moves neither the canvas nor the revision',
-      bDoors.doors === aDoors.doors && bDoors.live === 0 && !after64.dialog && after64.width === before64.width && after64.revision === before64.revision,
-      JSON.stringify({ bDoors, before64, after64 }))
+      bDoors.doors === aDoors.doors && bDoors.live === 0 && forced64.pressable === 3 && !after64.dialog && after64.width === before64.width && after64.revision === before64.revision,
+      JSON.stringify({ bDoors, forced64, before64, after64 }))
     for (const page of [A, B]) {
       await page.keyboard.press('Escape')
       await page.waitForTimeout(200)

@@ -129,11 +129,16 @@ async function poolFacesOnly(page, title) {
         const { attributes } = await cdp.send('DOM.getAttributes', { nodeId })
         const family = attributes[attributes.indexOf('data-family') + 1]
         const { fonts } = await cdp.send('CSS.getPlatformFontsForNode', { nodeId })
-        // a file names its family as its own name table does — an instanced variable face may add its style ("Chivo
-        // Medium", executed in the image) — so the family is the name or the name and a style
-        const ofFamily = (name) => name === family || name.startsWith(`${family} `)
-        return { family, fonts, ok: fonts.length > 0 && fonts.every((f) => f.isCustomFont && ofFamily(f.familyName)) }
+        return { family, fonts }
       }))
+    }
+    // a file names its family as its own name table does — an instanced variable face may add its style ("Chivo
+    // Medium", executed in the image) — so a name belongs to the family it equals or extends by a word. Where two of the
+    // page's families share a first word (D30: Alegreya over Alegreya Sans), the LONGEST one that fits owns the name, so
+    // a heading drawn in the body's file is caught (Story 6.4's review).
+    const held = (line, families) => {
+      const owner = (name) => families.filter((f) => name === f || name.startsWith(`${f} `)).sort((a, b) => b.length - a.length)[0]
+      return { ...line, ok: line.fonts.length > 0 && line.fonts.every((f) => f.isCustomFont && owner(f.familyName) === line.family) }
     }
     // the control: a line in a family no @font-face declares, so Chromium draws it in a system face
     await page.evaluate(() => {
@@ -144,10 +149,12 @@ async function poolFacesOnly(page, title) {
       probe.textContent = 'Control'
       document.getElementById('canvas').append(probe)
     })
-    const [control] = await drawnWith('#faces-control')
+    const [probe] = await drawnWith('#faces-control')
     await page.evaluate(() => document.getElementById('faces-control')?.remove())
+    const control = probe && held(probe, [probe.family])
     if (!control || control.ok) throw new Error(`${title}: the face check's positive control — a line in a system face — was not caught, so this check is not a result (standing rule 2)`)
-    const lines = await drawnWith('#canvas [data-family]')
+    const drawn = await drawnWith('#canvas [data-family]')
+    const lines = drawn.map((l) => held(l, [...new Set(drawn.map((d) => d.family))]))
     if (lines.length === 0) throw new Error(`${title}: the specimen names no line's family, so there is nothing to check`)
     const wrong = lines.filter((l) => !l.ok).map((l) => `${l.family}: drawn with ${l.fonts.map((f) => `${f.familyName}${f.isCustomFont ? '' : ' (not the pool\'s file)'}`).join(', ') || 'nothing'}`)
     expect.soft(wrong, `${title}: a line not drawn in the pool's own face\n${wrong.join('\n')}`).toEqual([])

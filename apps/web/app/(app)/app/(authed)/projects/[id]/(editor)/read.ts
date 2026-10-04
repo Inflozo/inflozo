@@ -4,10 +4,9 @@ import { categoryOf, isPlaceable, orbitWeekly, PAYWALL_CATEGORIES, type SectionR
 import { designate, isDesigned, isSynthesizable, parseDoc, synthesize, type DroppedRow, type ProjectDoc, type SynthesisLibrary } from '@inflozo/section-runtime'
 import type { LinkResources } from '@/components/controls/link-picker'
 import { imagePool, linkResources } from '@/lib/controls-review'
-import { hexOf, type PackRecords, type PairingChoice } from '@/lib/pack-edit'
+import type { PackRecords, PairingChoice } from '@/lib/pack-edit'
 import type { PackChoice } from '@/lib/pack-switch'
-import { ownPacksOf, packChoices, packIdOf, pairingChoices, pairingGlyphFacesCss } from '@/lib/style-pack'
-import { isAccent } from '@/lib/probe-rule'
+import { ownPacksOf, packChoices, packIdOf, pairingChoices, pairingGlyphFacesCss, siteAccentOf } from '@/lib/style-pack'
 import { canvasRouteOn } from '@/routing'
 import { hostOf, normaliseSiteUrl } from '@/lib/connect-rule'
 import { siteFrom, siteWith, type EditorSite } from '@/lib/live-content'
@@ -184,12 +183,6 @@ export type EditorData = {
   /** STORY 6.4 — S7d's "From your site": the linked site's stored brand accent (Story 3.4), through `isAccent`, as
    *  `#RRGGBB` — or null where no site is linked or it holds none */
   siteAccent: string | null
-}
-
-/** STORY 6.4 — the linked site's stored brand accent as the colour picker offers it: `#rgb` expanded, uppercase — or null. */
-export function siteAccentOf(siteSettings: unknown): string | null {
-  const accent = (siteSettings as { brand?: { accent?: unknown } } | null | undefined)?.brand?.accent
-  return isAccent(accent) ? hexOf(accent) : null
 }
 
 export async function editorData(projectId: string): Promise<EditorData> {

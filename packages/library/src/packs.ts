@@ -60,7 +60,10 @@ export type Pool = {
   pairings: Pairing[]
 }
 
-/** The pool as built — every file with its bytes and sha256, every face, every pairing (§D.c's order). */
+/** The pool as built — every file with its bytes and sha256, every face, every pairing (§D.c's order).
+ *  NEVER REMOVE OR RENAME A PAIRING ID without migrating `projects.style_pack.packs` first (Story 6.4's review): a
+ *  project's own pack names its pairing by id, a record naming none is dropped at read (`ownPacksIn`, AD-36), and the
+ *  next pack save then writes the column without it. */
 export const POOL = poolJson as unknown as Pool
 
 /** A pairing by id (`D1` … ), or a thrown error naming it — a preset or a specimen naming no pairing is a broken build. */

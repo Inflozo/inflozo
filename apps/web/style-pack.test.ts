@@ -2,7 +2,7 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packFacesCss, placeholderFor, presetIdOf } from './lib/style-pack.ts'
+import { DEFAULT_PRESET, PACK_FAMILY_PREFIX, PRESETS, defaultStylePack, packFacesCss, placeholderFor, presetIdOf, siteAccentOf } from './lib/style-pack.ts'
 
 // `placeholderFor`'s fallback is the only thing between an unknown Style Pack and a card
 // painted with `undefined` colours, and E6 is the epic that first writes a preset name an
@@ -217,4 +217,12 @@ test('pairingChoices hands every pool pairing, in §D.c\'s order, with its fonts
   // the control: every pool family is drawable — a family with no roman face here or in the layout's would be no "Ag"
   const families = new Set([...`${glyphs}\n${packFacesCss('/canvas')}`.matchAll(/font-family: '([^']+)'/g)].map((m) => m[1]))
   for (const f of Object.keys(POOL.families)) assert.ok(families.has(`${PACK_FAMILY_PREFIX}${f}`), f)
+})
+
+test('Story 6.4 (the review) — "From your site" is the linked site\'s stored brand accent, as #RRGGBB, or nothing', () => {
+  assert.equal(siteAccentOf({ brand: { accent: '#2f4a3e' } }), '#2F4A3E')
+  assert.equal(siteAccentOf({ brand: { accent: '#abc' } }), '#AABBCC', 'three digits expanded')
+  // the control's other half: anything else is no row — never a value handed to the draft
+  for (const junk of [null, undefined, 'x', {}, { brand: null }, { brand: {} }, { accent: '#2f4a3e' }, { brand: { accent: 'red' } }, { brand: { accent: '#fff;}body{display:none' } }, { brand: { accent: 7 } }])
+    assert.equal(siteAccentOf(junk), null, JSON.stringify(junk))
 })

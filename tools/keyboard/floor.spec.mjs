@@ -314,6 +314,19 @@ for (const name of ['iPad Mini', 'iPad Pro 11']) {
       // Discard by the BACKDROP, the one way out a keyboard cannot press (so here, where the floor taps): a colour typed into
       // the draft, the picker closed, then a tap beside the dialog closes it and journals nothing
       await expect(page.locator('#pack-picker-hex')).toBeFocused()
+      // THE FINGER ON THE PICKER (Story 6.4's review). White has no hue of its own, and the hex field holds focus when the
+      // picker opens: a tap on the hue strip must keep the hue it chose (the field's blur used to re-read "#FFFFFF" and
+      // put the strip back at 0), and a tap on the square then gives a colour of that hue
+      await page.keyboard.press('ControlOrMeta+a')
+      await page.keyboard.type('#FFFFFF')
+      await page.keyboard.press('Enter')
+      const [squareSlider, hueSlider] = [0, 1].map((n) => page.locator('[data-picker] [role="slider"]').nth(n))
+      await hueSlider.tap()
+      await expect(hueSlider, 'the middle of the strip, kept').toHaveAttribute('aria-valuenow', /^1[78]\d$/)
+      await squareSlider.tap()
+      await expect(hueSlider, 'and kept through the square').toHaveAttribute('aria-valuenow', /^1[78]\d$/)
+      await expect(page.locator('[data-swatch="light-accent"]'), 'the square\'s middle in that hue').not.toHaveAccessibleName(/#FFFFFF/)
+      await page.locator('#pack-picker-hex').focus()
       await page.keyboard.press('ControlOrMeta+a')
       await page.keyboard.type('#1E6BFF')
       await page.keyboard.press('Enter')

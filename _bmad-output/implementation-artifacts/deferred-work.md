@@ -8807,3 +8807,20 @@ reason: an end-of-life Ghost on the public internet was the server that got hack
   declined. Until the pass, NFR-7's 5.x claim rests on the earlier T3 recordings and nothing newer. A probe script that
   refuses to run without T3 has its T3 leg made optional by the story that next runs it. A Ghost 5 check that cannot
   wait is asked of the owner, never skipped silently.
+
+## Deferred from: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live (2026-10-04)
+
+### DW-327: "Use your brand" can overwrite a Style Pack edit saved at the same moment
+
+plain: If you press "Use your brand" in one window at the very moment the editor saves a pack you just edited in
+  another, the brand button writes the older packs back and your edit is lost without a message. It needs both to
+  happen within a fraction of a second, so it is unlikely, but nothing prevents it.
+status: open
+severity: low
+origin: code review of spec-6-4-editing-tokens-per-mode-with-contrast-checked-live.md, 2026-10-04 (Blind Hunter, Edge Case Hunter)
+owner: Story 6.6 (Auto-branding seeds the pack), which rewrites this action and whose card names this entry.
+location: `apps/web/app/(app)/app/(authed)/sites/actions.ts`, the "Use your brand" write (`.update({ style_pack: { ...pack, brand } })`)
+reason: the action is older than this story and reads `style_pack`, then writes the whole object with no revision
+  check, while the editor's save merges by key inside `sync_project_doc`. Since 6.3 the exposure was one preset id;
+  since 6.4 it is every pack the project authored. The fix is to write `brand` by key (in SQL, or through the RPC), and
+  Story 6.6 changes what this action writes, so it is fixed there rather than twice.
