@@ -5175,7 +5175,17 @@ Just mention a note."*
 
 - **Why it came up.** On 2026-10-04 DigitalOcean reported T3 (`ghost5.inflozo.com`, Ghost 5.130.6) taking part in a
   DDoS attack. A read-only check found a planted program running as the `ghost` user, so the way in was through
-  Ghost, not SSH. T1 checked clean the same day. Ghost's own docs say a major past its end of life "should be
+  Ghost, not SSH. T1 checked clean the same day.
+  **The chain, read from T3's own logs on 2026-10-04:**
+  - From 14:31 to about 16:27 UTC on 2026-10-03, one IP ran a blind SQL injection through the Content API's `filter` on
+    `/ghost/api/content/tags/`. It used the site's public Content key: `slug:['||CASE WHEN … THEN 0 ELSE EXP(710)
+    END||',…]`, reading `api_keys` one character at a time.
+  - Ghost's `actions` log then shows the built-in **Zapier** integration, whose Admin key every Ghost install has,
+    uploading and activating the theme `lytojqclrosg` at 16:27:52 UTC.
+  - The attacker then created a page on that theme's crafted template. The template is a `{{#get}}` filter carrying a
+    `__proto__`/`constructor` payload, which is CVE-2026-22594. That ran the planted program as `ghost`. The attacker then
+    reactivated `casper` and deleted the page.
+  - None of our keys leaked. Nothing in T1's logs or `actions` shows a foreign actor. Ghost's own docs say a major past its end of life "should be
   considered insecure" (docs.ghost.org/faq/major-versions-lts), and Ghost 5 reached it in January 2026. T3 is
   destroyed by the owner and not rebuilt.
 - **The rule.** Every test, review, recording and verification runs on **T1 only**. Where a spec, a story card, the
