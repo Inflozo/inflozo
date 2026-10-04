@@ -8805,6 +8805,7 @@ Requirements page, which may not ship claiming verified Ghost(Pro) behaviour unt
 **And** it is a **blocking gate before public launch**.
 **And** the captured payload decides whether B15 may name the tier ('Ghost(Pro) Starter') or keeps 'this plan' (DW-60).
 **And** on the same Starter site the editor's Content API reads answer VERIFY-AT-BUILD's three questions — whether an edge 429 carries `access-control-allow-origin`, the edge's limits against `REQUEST_CEILING` and the 60 s cache, and whether the `*.ghost.io` admin origin serves the Content API like the public domain (AD-23, DW-249).
+**And** the **Ghost 5 pass** runs at this gate, before public launch (R-238, DW-326). The owner spins up a fresh Ghost 5 server, and everything postponed when T3 was retired on 2026-10-04 runs on it: every `T1 and T3` verification, the probe scripts' GHOST5 legs, and a re-recording of the frozen `ghost5` fixtures. NFR-7's 5.x claim is tested again, not assumed.
 
 **Owner test:** yes. · **Verification:** a real Ghost(Pro) Starter site (T4). · **Note:** the owner already
 holds this as an action item with a trigger — buy the Starter trial when E13 closes and E14 opens.

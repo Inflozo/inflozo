@@ -5168,6 +5168,29 @@ Question 2, ruled **option 1** (owner, 2026-10-04): *"Base everywhere."*
 - Targets: ✅ this entry · ✅ Story 6.4's spec · ✅ `epics.md` — Story 6.4's card · ✅ DW-310 · ✅ `epic-6-context.md` · ✅
   built — Story 6.4's Dev, 2026-10-04 (`PACK_EDIT_WORDS`, held by `pack-edit.test.ts`).
 
+**R-238 — Ghost 6 is the only test server; T3 is retired from testing until the end of the project.** Owner,
+2026-10-04, outside a story: *"Ghost 6 only from now on. If any tests to be done on Ghost 5, can be postponed till the
+end of project. If any critical tests MUST be done on Ghost 5, let me know and I will spin up. Do not update the PRD …
+Just mention a note."*
+
+- **Why it came up.** On 2026-10-04 DigitalOcean reported T3 (`ghost5.inflozo.com`, Ghost 5.130.6) taking part in a
+  DDoS attack. A read-only check found a planted program running as the `ghost` user, so the way in was through
+  Ghost, not SSH. T1 checked clean the same day. Ghost's own docs say a major past its end of life "should be
+  considered insecure" (docs.ghost.org/faq/major-versions-lts), and Ghost 5 reached it in January 2026. T3 is
+  destroyed by the owner and not rebuilt.
+- **The rule.** Every test, review, recording and verification runs on **T1 only**. Where a spec, a story card, the
+  PRD or a probe script says "T1 and T3", read "T1". The Ghost 5 half of each is postponed to one Ghost 5 pass at the
+  end of the project (DW-326). If a check genuinely cannot wait, the session asks the owner to spin up a Ghost 5 server
+  rather than skipping it silently.
+- **What it does not change.** The product still supports Ghost 5 sites: NFR-7, FR-C2's 5.x connections, FR-J2's
+  `engines.ghost: ">=5.0.0"`, the Ghost 5 code paths and the recorded `ghost5` fixtures all stand. The PRD,
+  architecture and epics are not rewritten (owner); one note in `prd.md` §4 points here.
+- **Declined.** Dropping Ghost 5 support from the product (the PRD rewrite was declined as too large); rebuilding T3
+  at the pinned 5.130.6.
+- Targets: ✅ this entry · ✅ `prd.md` §4, a note under T3 · ✅ `CLAUDE.md` standing rule 1 · ✅
+  `docs/project-context.md` · ✅ `_bmad/custom/bmad-build.toml`, `bmad-build-auto.toml`, `bmad-code-review.toml` · ✅
+  DW-326 · ✅ `epics.md` — Story 15.7's card carries the Ghost 5 pass · ✅ `tools/probe/.env.example`.
+
 ## B · Approved decisions superseded by this session
 
 Standing rule: D1–D39 were settled on 2026-08-24 and are not reopened — **except** where step 4a

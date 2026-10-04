@@ -82,9 +82,11 @@ Each was learned expensively. They are not style preferences.
    proven false — most recently at Story 3.6, where "a key belonging to a different Ghost install is
    refused with our own sentence" turned out to be Ghost's ordinary 401, because `api_keys` carries no
    install identity to test against (ruling **R-100**).
-   **Cite or execute. Never assert.** Two real Ghost servers exist for this: **T1**
-   `ghost6.inflozo.com` (6.58.0) and **T3** `ghost5.inflozo.com` (5.130.6), credentials in
-   `tools/probe/.env` (gitignored), pattern `tools/probe/run-verify-all.py`.
+   **Cite or execute. Never assert.** The real Ghost server for this is **T1** `ghost6.inflozo.com`
+   (6.58.0), credentials in `tools/probe/.env` (gitignored), pattern `tools/probe/run-verify-all.py`.
+   **T1 only** (owner, 2026-10-04, ruling **R-238**): T3 `ghost5.inflozo.com` was hacked and retired from
+   testing. Where anything says "T1 and T3", run T1 and postpone the Ghost 5 half to DW-326's pass at the
+   end of the project; a Ghost 5 check that cannot wait is a question to the owner, never a silent skip.
 2. **A result whose control did not pass is not a result.** Three probes in one session returned a
    convincing "held" that was really a broken test.
 3. **Propagate, never localise.** A finding is not closed until it reaches an invariant, a register

@@ -8788,3 +8788,22 @@ location: `(editor)/read.ts` (`style_pack` in the select) · `(editor)/style-pac
 reason: no project can hold another pack until 6.3's switch writes one; its journey is the first run where the stored
   value is not the default, and it needs a harness fixture that sets the preset.
 
+## Deferred from: the owner's ruling R-238 (2026-10-04)
+
+### DW-326: the Ghost 5 half of every test, postponed to one pass at the end of the project
+
+plain: T3, the Ghost 5 test server, was hacked on 2026-10-03 and is destroyed. From 2026-10-04 everything is tested on
+  Ghost 6 (T1) only. Ghost 5 is still supported by the product, so before launch one pass re-runs on a fresh Ghost 5
+  server everything that used to run on both.
+status: open
+severity: medium
+origin: the owner's ruling R-238 (2026-10-04), after DigitalOcean's DDoS report on T3
+owner: Story 15.7 (The Ghost(Pro) launch gate), the end-of-project gate before public launch, whose criteria carry this pass with its id; the owner spins up a Ghost 5 server for it (`tools/probe/provision-ghost.sh`)
+location: every `T1 and T3` / `T1–T3` / `both majors` line in `epics.md` and the story specs (grep for them; never
+  count them here) · every probe script with a GHOST5 leg (`grep -l GHOST5 tools/probe/*`) · the recorded Ghost 5
+  fixtures `packages/library/contexts/fixtures/ghost5.json` and `packages/ghost-shim/fixtures/ghost5/`, frozen at
+  their last recording · NFR-7's 5.x claim and FR-J2's `engines.ghost: ">=5.0.0"`
+reason: an end-of-life Ghost on the public internet was the server that got hacked; testing it story by story was
+  declined. Until the pass, NFR-7's 5.x claim rests on the earlier T3 recordings and nothing newer. A probe script that
+  refuses to run without T3 has its T3 leg made optional by the story that next runs it. A Ghost 5 check that cannot
+  wait is asked of the owner, never skipped silently.
