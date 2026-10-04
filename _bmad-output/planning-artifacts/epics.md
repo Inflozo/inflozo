@@ -2819,6 +2819,8 @@ duplicating a project is how a look is carried forward
 **And** the editor and creation states match S7c and S7d.
 **And** the panel's words are FR-E1's, one name per thing (R-170): S7a says Standard and Spacious where FR-E1 says Normal and Airy, has no Pill, gutter, shadow or link-style row, and S7c names on-accent "Contrast"; the missing rows are drawn in the Claude Design project before they are built (R-74, DW-310, from Story 6.1's Create, 2026-10-03).
 **And** the pairing specimens photograph each role at the ends of its declared weights, a bold italic and a heading's latin-ext letters, each photograph is shown to be drawn from the pool's own file, and a `--button-fill` button is photographed on a contrast ground under an Outline pack — behind the owner's sampled review (DW-324, from Story 6.2's Review, 2026-10-03).
+**And** a project's own packs — its edits to a preset and the packs it makes — are one edit per gesture, saved with the docs by `sync_project_doc` in the same transaction, so the story opens with a Schema phase (FR-D9, `addendum.md` §AD1, R-99; from Story 6.4's Create, 2026-10-04).
+**And** before Dev the owner rules (R-83) how the parts no frame draws are drawn — the prompt is in the spec (Question 1) — and the page colour's one name, shared by the pack editor and a section's Background setting, which today says Base where FR-E1 and S7c say Background (Question 2) (from Story 6.4's Create, 2026-10-04).
 
 **FRs:** FR-E3. · **Frame:** `S7 Style Packs.dc.html` S7c · S7d. · **Owner test:** yes.
 

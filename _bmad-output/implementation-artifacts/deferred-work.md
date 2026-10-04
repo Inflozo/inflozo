@@ -2018,6 +2018,11 @@ note (Story 6.1's Create, 2026-10-03): the Style Pack editor is Story 6.4's and 
 note (Story 6.1's Dev, 2026-10-03): corrected — the `also:` line above names Story 6.4's editor and Story 6.6's seed,
   and `apps/web/lib/style-pack.ts`'s header now says the engine is 6.1's, the packs 6.2's, the editor and per-mode
   overrides 6.4's and the brand seed 6.6's. The token engine reads no `brand`.
+note (Story 6.4's Create, 2026-10-04): the `also:` line's decision, as 6.4 plans it. The Style Pack editor SHOWS the
+  site's accent as "From your site" in its colour picker. The accent comes from the linked site's stored brand,
+  re-validated by `isAccent`, and nothing is written until it is picked. The editor never clears `brand` and never
+  re-derives a pack from it. The logo is left for Story 6.6's seed, and the menu for the epic that places a header.
+  The editor writes `style_pack.preset` and `style_pack.packs` and nothing else.
 
 ### DW-67: a page that 404s inside the signed-in shell still answers HTTP 200
 
@@ -8490,6 +8495,13 @@ location: `S7 Style Packs.dc.html` S7a (the pack-level rows) and S7c/S7d (the sw
   :4573, :4587 (a record that flagged S7a stale; never ruled, never redrawn)
 reason: Story 6.1's engine takes FR-E1's and Appendix C's words, which are closed; what the panel prints is 6.4's under
   R-170 (one name per thing), and rows no frame draws are drawn first (R-74).
+note (Story 6.4's Create, 2026-10-04): planned. The rows take Appendix C's titles and steps (Site width, Radius, Spacing
+  density, Gutters, Button style, Shadow, Link style; Normal, Airy), the fonts are one Fonts row (the pairing), the
+  seventh colour is On-accent, and S7d's stray four-swatch row goes. Every part no frame draws — Gutters, Shadow, Link
+  style, Pill, Pill radius, Image scrim, the pairing list, the warning, reading along and 834 — is drawn first from the
+  Claude Design prompt in the spec (its Question 1, R-74). One more two-name case was found: the page colour is
+  "Base" in a section's Background setting and "Background" in FR-E1 and S7c, so its one name is the owner's
+  (Question 2).
 
 ### DW-311: Appendix D pairs Paper and Ink with faces no drawing uses
 
@@ -8716,6 +8728,14 @@ location: `tools/matrix/cases.mjs` `specimenMarkup` (`font-weight:700` and `600`
 reason: every one changes the specimens or adds cases, which is a rebaseline behind the owner's sampled review
   (`docs/render-matrix.md`); R-233's specimen is what he ruled, and 6.4 is where any pairing becomes pickable, so the
   eighteen that no preset wears first reach a customer there.
+note (Story 6.4's Create, 2026-10-04): planned. Each specimen draws every role at both ends of its declared weights
+  (`pool.json`'s `range`, `italic`, `weights`), a bold italic and a latin-ext line in the heading face. Every line is
+  checked to be drawn in the pool's own face with CDP's `CSS.getPlatformFontsForNode`: `isCustomFont` and the role's
+  family. Executed at Create in Chromium 149: the pool's Fraunces reports `isCustomFont: true` and a fallback
+  (Liberation Serif) `false`. The family alone cannot tell them apart, because the matrix image installs a system Inter.
+  Every design whose `bg` offers `contrast` and whose stylesheet draws a `--button-fill` button is photographed on
+  contrast under each Outline reference pack (Mono), in both modes. All of it is one mass rebaseline behind his sampled
+  review in Dev.
 
 ### DW-325: the Style Pack card, the list and the Pack menu have only ever been run with Paper
 
